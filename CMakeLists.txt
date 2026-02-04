@@ -34,10 +34,16 @@ else()
 	add_executable(${EXECUTABLE_NAME})
 endif()
 
+set(LUA_FILES "src/external/lua/*.h" "src/external/lua/*.c") 
+set(MUJS_FILES "src/external/mujs/*.h" "src/external/mujs/*.c") 
+set(KLIB_FILES "src/external/klib/*.h" "src/external/klib/*.c") 
+file(GLOB PROJECT_FILES "src/external/*.h" "src/external/*.c" ${LUA_FILES} ${MUJS_FILES} ${KLIB_FILES} "src/*.h" "src/*.c")
+#file(GLOB PROJECT_FILES "liv-main.c")
+
 # Add your sources to the target
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
-    src/main.c
+    ${PROJECT_FILES}
     src/iosLaunchScreen.storyboard
 )
 # What is iosLaunchScreen.storyboard? This file describes what Apple's mobile platforms
@@ -168,3 +174,5 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND NOT CMAKE_GENERATOR MATCHES "Xcode")
     set(CPACK_GENERATOR "DragNDrop")
     include(CPack)
 endif()
+
+source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})
