@@ -52,8 +52,11 @@ if(APPLE)
     target_sources("${EXECUTABLE_NAME}" PRIVATE "src/logo.png")
 endif()
 
-# Set C++ version
-target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_20)
+set_target_properties(${EXECUTABLE_NAME} PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    C_EXTENSIONS OFF
+)
 
 # on Web targets, we need CMake to generate a HTML webpage. 
 if(EMSCRIPTEN)
