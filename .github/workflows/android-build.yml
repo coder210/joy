@@ -1,4 +1,4 @@
-name: Build Sample for Android
+name: Build joy2d for Android
 
 on: [push, pull_request]
 
