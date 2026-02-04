@@ -1,2 +1,2 @@
 # joy2d
-This an easy game framework.
+This is an easy 2d game framework.
