@@ -1,9 +1,9 @@
-name: Build Sample For Web
+name: Build joy2d For Web
 on: [push, pull_request]
 
 jobs:
   build-web:
-    name: Build demo for Web
+    name: Build joy2d for Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
       - name: Prepare for upload
         run: |
            mkdir _site
-           mv build/sdl-min.html _site/index.html
+           mv build/joy2d.html _site/index.html
            mv build/sdl-* _site/
       - name: Fix permissions
         run: |
