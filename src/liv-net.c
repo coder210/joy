@@ -8,6 +8,11 @@
 #include "liv-net.h"
 #include "liv-log.h"
 
+#ifdef LIVNET_WIN
+#include <WinSock2.h>
+#pragma comment(lib, "ws2_32.lib")
+#endif
+
 typedef struct kcp_connection {
 	ikcpcb* kcp;
 	char ip[LIVNET_MAX_IP];
