@@ -25,7 +25,7 @@ jobs:
         run: |
            mkdir _site
            mv build/joy2d.html _site/index.html
-           mv build/joy2d-* _site/
+           mv build/* _site/
       - name: Fix permissions
         run: |
          chmod -c -R +rX "_site/" | while read line; do
