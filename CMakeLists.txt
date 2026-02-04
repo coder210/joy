@@ -7,7 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
-project(sdl-min)
+project(joy2d)
 
 if ((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")    # Disable shared builds on platforms where it does not make sense to use them
@@ -82,16 +82,16 @@ if (APPLE)
         target_sources(${EXECUTABLE_NAME} PRIVATE ${FILE})
         set_property(SOURCE ${FILE} PROPERTY MACOSX_PACKAGE_LOCATION "Resources/${relpath}")
     endmacro()
-    add_resource("${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf")
-    add_resource("${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg")
-    add_resource("${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg")
+    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf")
+    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg")
+    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg")
 elseif(EMSCRIPTEN)
     # on the web, we have to put the files inside of the webassembly
     # somewhat unintuitively, this is done via a linker argument.
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf@/\""
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg@/\""
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg@/\""
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf@/\""
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg@/\""
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg@/\""
     )
 else()
     if (ANDROID)
@@ -116,9 +116,9 @@ else()
 		    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/src/${filename}" "${outname}"
 	    )
     endmacro()
-    copy_helper("Inter-VariableFont.ttf")
-    copy_helper("the_entertainer.ogg")
-    copy_helper("gs_tiger.svg")
+    #copy_helper("Inter-VariableFont.ttf")
+    #copy_helper("the_entertainer.ogg")
+    #copy_helper("gs_tiger.svg")
 endif()
 
 # set some extra configs for each platform
@@ -137,8 +137,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     # in Xcode, create a Scheme in the schemes dropdown for the app.
     XCODE_GENERATE_SCHEME TRUE
     # Identification for Xcode
-    XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER "com.ravbug.sdl3-sample"
-	XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.ravbug.sdl3-sample"
+    XCODE_ATTRIBUTE_BUNDLE_IDENTIFIER "com.game.${PROJECT_NAME}"
+	XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.game.${PROJECT_NAME}"
 	XCODE_ATTRIBUTE_CURRENTYEAR "${CURRENTYEAR}"
     RESOURCE "${RESOURCE_FILES}"
 )
