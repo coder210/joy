@@ -32,7 +32,7 @@ end
 
 
 local init_ui = function()
-    app.fonts.simhei_font = graphics.create_font(app.renderer, "resources/fonts/simhei.ttf", app.grad_size * 0.4);
+    app.fonts.simhei_font = graphics.create_font(app.renderer, "fonts/simhei.ttf", app.grad_size * 0.4);
     app.texts.hello_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("上"), 255, 255, 255,
         255);
     app.texts.fps_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("fps:"), 255, 255, 255, 255);
@@ -246,7 +246,7 @@ app.start = function(ctx)
     };
     ok, app.window, app.renderer = window.create_with_renderer("client2d", app.map_size.x * app.grad_size,
         app.map_size.y * app.grad_size, 32);
-    window.set_icon(app.window, "./resources/textures/livnet.bmp");
+    window.set_icon(app.window, "./textures/livnet.bmp");
     graphics.set_logical_presentation(app.renderer, app.map_size.x * app.grad_size, app.map_size.y * app.grad_size, 1);
     ok, width, height = graphics.get_logical_presentation(app.renderer);
     app.camera = {

@@ -80,7 +80,7 @@ app.start = function(ctx)
         y = 6
     };
     ok, app.window, app.renderer = window.create_with_renderer("server2d", app.map_size.x * 50, app.map_size.y * 50, 32);
-    window.set_icon(app.window, "./resources/textures/livnet.bmp");
+    window.set_icon(app.window, "./textures/livnet.bmp");
     graphics.set_logical_presentation(app.renderer, app.map_size.x * 50, app.map_size.y * 50, 1);
     ok, width, height = graphics.get_logical_presentation(app.renderer);
     app.camera = { x = width, y = height };
@@ -95,7 +95,7 @@ app.start = function(ctx)
 
     app.fonts = {};
     app.texts = {};
-    app.fonts.simhei_font = graphics.create_font(app.renderer, "resources/fonts/simhei.ttf", app.grad_size * 0.4);
+    app.fonts.simhei_font = graphics.create_font(app.renderer, "fonts/simhei.ttf", app.grad_size * 0.4);
     app.texts.hello_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("上"), 255, 255, 255,
         255);
     app.texts.fps_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("fps:" .. 1000), 255,
@@ -110,18 +110,18 @@ app.start = function(ctx)
 
     app.anim1 = animation.create(app.renderer);
     -- add clip
-    animation.addclip(app.anim1, "resources/textures/deco/01.png", 0.1, 0, 0, 60, 60);
-    animation.addclip(app.anim1, "resources/textures/deco/04.png", 0.1, 0, 0, 60, 60);
+    animation.addclip(app.anim1, "textures/deco/01.png", 0.1, 0, 0, 60, 60);
+    animation.addclip(app.anim1, "textures/deco/04.png", 0.1, 0, 0, 60, 60);
 
     app.tree_anim = animation.create(app.renderer);
     animation.set_position(app.tree_anim, 0, 0);
     animation.set_scale(app.tree_anim, 1, 1);
     animation.set_rotation(app.tree_anim, 0);
     -- add clip
-    animation.addclip(app.tree_anim, "resources/textures/trees/tree.png", 0.1, 42, 0, 110, 186);
-    animation.addclip(app.tree_anim, "resources/textures/trees/tree.png", 0.1, 234, 0, 110, 186);
-    animation.addclip(app.tree_anim, "resources/textures/trees/tree.png", 0.1, 427, 0, 110, 186);
-    animation.addclip(app.tree_anim, "resources/textures/trees/tree.png", 0.1, 618, 0, 110, 186);
+    animation.addclip(app.tree_anim, "textures/trees/tree.png", 0.1, 42, 0, 110, 186);
+    animation.addclip(app.tree_anim, "textures/trees/tree.png", 0.1, 234, 0, 110, 186);
+    animation.addclip(app.tree_anim, "textures/trees/tree.png", 0.1, 427, 0, 110, 186);
+    animation.addclip(app.tree_anim, "textures/trees/tree.png", 0.1, 618, 0, 110, 186);
 
     app.my_timer = timer.create(66, function(dt, interval)
         -- 没有客户端在
