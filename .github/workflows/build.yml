@@ -28,6 +28,10 @@ jobs:
                     build/Release/*.exe
                     build/Release/*.dll
                     build/Release/scripts/
+                    build/Release/fonts/
+                    build/Release/shaders/
+                    build/Release/sounds/
+                    build/Release/textures/
                     
     build-linux:
         name: Build for Linux
@@ -52,6 +56,10 @@ jobs:
                     build/Release/joy2d
                     build/Release/*.so
                     build/Release/scripts/
+                    build/Release/fonts/
+                    build/Release/shaders/
+                    build/Release/sounds/
+                    build/Release/textures/
 
     build-mac:
         name: Build for Apple
