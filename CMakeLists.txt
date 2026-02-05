@@ -34,10 +34,23 @@ else()
 	add_executable(${EXECUTABLE_NAME})
 endif()
 
-set(LUA_FILES "src/external/lua/*.h" "src/external/lua/*.c") 
-set(MUJS_FILES "src/external/mujs/*.h" "src/external/mujs/*.c") 
-set(KLIB_FILES "src/external/klib/*.h" "src/external/klib/*.c") 
-file(GLOB PROJECT_FILES "src/external/*.h" "src/external/*.c" ${LUA_FILES} ${MUJS_FILES} ${KLIB_FILES} "src/*.h" "src/*.c")
+set(EXTERNAL_FILES "src/external/lua/*.h" "src/external/lua/*.c"  "src/external/mujs/*.h" "src/external/mujs/*.c"  "src/external/klib/*.h" "src/external/klib/*.c" "src/external/*.h" "src/external/*.c") 
+set(CORE_FILES "src/core/*.h" "src/core/*.c") 
+set(TEST_FILES "src/test/*.h" "src/test/*.c") 
+set(LUACLIB_FILES "src/luaclib/*.h" "src/luaclib/*.c")
+set(JSCLIB_FILES "src/jsclib/*.h" "src/jsclib/*.c") 
+set(CSCLIB_FILES "src/csclib/*.h" "src/csclib/*.c") 
+set(SRC_FILES "src/*.h" "src/*.c") 
+
+file(GLOB PROJECT_FILES
+	${EXTERNAL_FILES}
+	${CORE_FILES}
+    ${TEST_FILES}
+	${LUACLIB_FILES}
+	${JSCLIB_FILES} 
+	${CSCLIB_FILES}
+    ${SRC_FILES}
+)
 #file(GLOB PROJECT_FILES "liv-main.c")
 
 # Add your sources to the target
@@ -122,10 +135,12 @@ else()
         endif()
         add_custom_command(POST_BUILD
             TARGET "${EXECUTABLE_NAME}"
-		    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/src/${filename}" "${outname}"
+		    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/assets/${filename}" "${outname}"
 	    )
     endmacro()
-    #copy_helper("Inter-VariableFont.ttf")
+    copy_helper("scripts/adventure/server_config.lua")
+    copy_helper("scripts/adventure/server2.lua")
+    copy_helper("scripts/adventure/server.lua")
     #copy_helper("the_entertainer.ogg")
     #copy_helper("gs_tiger.svg")
 endif()
