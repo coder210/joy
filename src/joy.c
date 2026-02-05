@@ -74,17 +74,35 @@ typedef struct app {
         void (*quit)(app_p);
 }app_t, * app_p;
 
+void _print_title1()
+{
+        log_info("=======================================================");
+        log_info("     ##   #####   ##   ##   #######   ####   ");
+        log_info("     ##  ##   ##  ##   ##  ##   ##   ##  ##  ");
+        log_info("     ##  ##   ##   ## ##       ##    ##   ## ");
+        log_info(" ##  ##  ##   ##    ###       ##     ##  ##  ");
+        log_info("  ####    #####     ###    ######     ####   ");
+        log_info("=======================================================");
+}
+
+void _print_title2()
+{
+        log_info("---------------------------------------------------");
+        log_info("                    J O Y 2 D                      ");
+        log_info("                Game Engine v2.0                   ");
+        log_info("---------------------------------------------------");
+}
+
 void _print_title()
 {
         log_info("-------------------------------------------------------");
-        log_info("  ##     00  ##       ##  #######   #######  ########  ");
-        log_info("  ##     ##   ##     ##   ##   ##   #           ##     ");
-        log_info("  ##     ##    ##   ##    ##   ##   ######      ##     ");
-        log_info("  ##     ##     ## ##     ##   ##   #           ##     ");
-        log_info("  #####  ##      ###      ##   ##   #######     ##     ");
+        log_info("  JJJJ    OOOOO    Y   Y   22222    DDDDD             ");
+        log_info("    J    O     O    Y Y        2    D    D            ");
+        log_info("    J    O     O     Y      222     D     D           ");
+        log_info("J   J    O     O     Y     2        D    D            ");
+        log_info(" JJJ      OOOOO      Y    2222222   DDDDD             ");
         log_info("-------------------------------------------------------");
 }
-
 
 static void _init_env(lua_State* L, env_p env)
 {
@@ -174,8 +192,8 @@ app_p joy_create(const char* config_file)
         app = (app_p)SDL_malloc(sizeof(app_t));
         SDL_memset(app, 0, sizeof(app_t));
         app->env = env_create();
-        app->root_domain = livS_mono_jit_init("Liv");
-        app->app_domain = livS_mono_create_appdomain("LivScript", NULL);
+        app->root_domain = livS_mono_jit_init("Joy");
+        app->app_domain = livS_mono_create_appdomain("JoyScript", NULL);
         app->servers = kl_init(kcontext);
         app->quit = joy_quit;
         app->last_frame_time = SDL_GetTicks();

@@ -92,6 +92,24 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
 )
 
+
+# 获取所有lua文件
+#file(GLOB ASSET_FILES "assets/scripts/*.lua")
+set(ASSET_FILES
+    "scripts/client_config.lua"
+    "scripts/server_config.lua"
+    "scripts/server2.lua"
+    "scripts/client2.lua"
+
+    "fonts/simhei.ttf"
+
+    "textures/livnet.bmp"
+    "textures/deco/01.png"
+    "textures/deco/04.png"
+    "textures/trees/tree.png"
+
+)
+
 # Dealing with assets
 # We have some non-code resources that our application needs in order to work. How we deal with those differs per platform.
 if (APPLE)
@@ -138,9 +156,18 @@ else()
 		    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/assets/${filename}" "${outname}"
 	    )
     endmacro()
-    copy_helper("scripts/adventure/server_config.lua")
-    copy_helper("scripts/adventure/server2.lua")
-    copy_helper("scripts/adventure/server.lua")
+
+
+	foreach(asset_file ${ASSET_FILES})
+		# 从完整路径中提取文件名和相对路径
+		#get_filename_component(file_name ${asset_file} NAME)
+        message(${asset_file})
+		copy_helper(${asset_file})
+	endforeach()
+
+    #copy_helper("scripts/adventure/server_config.lua")
+    #copy_helper("scripts/adventure/server2.lua")
+    #copy_helper("scripts/adventure/server.lua")
     #copy_helper("the_entertainer.ogg")
     #copy_helper("gs_tiger.svg")
 endif()
@@ -191,3 +218,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND NOT CMAKE_GENERATOR MATCHES "Xcode")
 endif()
 
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})
+
+message(${CMAKE_CURRENT_LIST_DIR})
+message(${CMAKE_CURRENT_SOURCE_DIR})
+message(${CMAKE_CURRENT_BINARY_DIR})
+message(${CMAKE_BINARY_DIR})

@@ -11,9 +11,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 log_error("Couldn't initialize SDL: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
-        //config_file = argc > 1 ? argv[1] : "scripts/example/config4.lua";
-        config_file = argc > 1 ? argv[1] : "scripts/adventure/server_config.lua";
-        //config_file = argc > 1 ? argv[1] : "scripts/adventure/server_config.lua";
+        //config_file = argc > 1 ? argv[1] : "scripts/config4.lua";
+        config_file = argc > 1 ? argv[1] : "scripts/server_config.lua";
+        //config_file = argc > 1 ? argv[1] : "scripts/server_config.lua";
         app = joy_create(config_file);
         if (app) {
                 *appstate = app;

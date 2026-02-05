@@ -4,9 +4,9 @@ local config = {}
 config.ip = "192.168.1.26"
 config.port = 30000
 config.orientation = "LandscapeLeft"
-config.start = "scripts/adventure/client2.lua"
+config.start = "scripts/client2.lua"
 config.loader = "lualib/loader.lua"
-config.luapath = "lualib/?.lua;scripts/adventure/?.lua"
+config.luapath = "lualib/?.lua;scripts/?.lua"
 config.luacpath = "luaclib/?.dll;luaclib/?.so;"
 config.cpath = ""
 
