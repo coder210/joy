@@ -91,7 +91,6 @@ add_subdirectory(SDL EXCLUDE_FROM_ALL)
 # Link SDL to our executable. This also makes its include directory available to us. 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC 
     SDL3::SDL3
-    m
 )
 
 
@@ -143,7 +142,9 @@ elseif(EMSCRIPTEN)
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg@/\""
     )
 else()
-    if (ANDROID)
+    if(UNIX AND NOT APPLE)
+        target_link_libraries(${EXECUTABLE_NAME} PRIVATE m)
+    elseif (ANDROID)
         if (NOT MOBILE_ASSETS_DIR)
             message(FATAL_ERROR "Building for Android, but MOBILE_ASSETS_DIR is not set")
         endif()
