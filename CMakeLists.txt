@@ -40,15 +40,16 @@ set(TEST_FILES "src/test/*.h" "src/test/*.c")
 set(LUACLIB_FILES "src/luaclib/*.h" "src/luaclib/*.c")
 set(JSCLIB_FILES "src/jsclib/*.h" "src/jsclib/*.c") 
 set(CSCLIB_FILES "src/csclib/*.h" "src/csclib/*.c") 
-set(SRC_FILES "src/*.h" "src/*.c") 
+#set(SRC_FILES "src/*.h" "src/*.c") 
+set(SRC_FILES "src/main.c") 
 
 file(GLOB PROJECT_FILES
-	${EXTERNAL_FILES}
-	${CORE_FILES}
-    ${TEST_FILES}
-	${LUACLIB_FILES}
-	${JSCLIB_FILES} 
-	${CSCLIB_FILES}
+	#${EXTERNAL_FILES}
+	#${CORE_FILES}
+    #${TEST_FILES}
+	#${LUACLIB_FILES}
+	#${JSCLIB_FILES} 
+	#${CSCLIB_FILES}
     ${SRC_FILES}
 )
 #file(GLOB PROJECT_FILES "liv-main.c")
@@ -93,7 +94,7 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 )
 
 
-# »ñÈ¡ËùÓÐluaÎÄ¼þ
+# ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½luaï¿½Ä¼ï¿½
 #file(GLOB ASSET_FILES "assets/scripts/*.lua")
 set(ASSET_FILES
     "scripts/client_config.lua"
@@ -159,7 +160,7 @@ else()
 
 
 	foreach(asset_file ${ASSET_FILES})
-		# ´ÓÍêÕûÂ·¾¶ÖÐÌáÈ¡ÎÄ¼þÃûºÍÏà¶ÔÂ·¾¶
+		# ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½
 		#get_filename_component(file_name ${asset_file} NAME)
         message(${asset_file})
 		copy_helper(${asset_file})
