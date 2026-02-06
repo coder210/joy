@@ -280,7 +280,8 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                 if (s2c->loading.data_len > 0) {
                         offset = unpack_string(buf, s2c->loading.data, s2c->loading.data_len, offset);
                 }
-                offset = unpack_int32(buf, &s2c->loading.ok, offset);
+                int t = (int)s2c->loading.ok;
+                offset = unpack_int32(buf, &t, offset);
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
                 kv_init(s2c->command.player_inputs);

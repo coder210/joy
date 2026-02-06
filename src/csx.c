@@ -63,7 +63,7 @@ static void ccore_log(csx_p csx, MonoString* str)
 {
         const char* cstr;
         cstr = livS_mono_string_to_utf8(str);
-        log_info(csx->app, cstr);
+        log_info(cstr);
 }
 
 

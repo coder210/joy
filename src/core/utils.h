@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: utils.h
-Description: 通用方法
+Description: 通锟矫凤拷锟斤拷
 Author: ydlc
 Version: 1.0
 Date: 2021.3.20
@@ -206,10 +206,10 @@ utils_aes_encrypt256(const char* input, size_t* len,
 	const char* key, const char* iv)
 {
 	size_t input_len;
-	unsigned char* output;
+	unsigned char* output = NULL;
 
-	input_len = (int)SDL_strlen(input);
-	output = aes_encrypt256x(input, input_len, len, key, iv);
+	//input_len = (int)SDL_strlen(input);
+	//output = aes_encrypt256x(input, input_len, len, key, iv);
 
 	return output;
 }
@@ -221,11 +221,11 @@ static unsigned char*
 utils_aes_decrypt256(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
-	unsigned char* output;
-	size_t input_len;
+	unsigned char* output = NULL;
+	//size_t input_len;
 
-	input_len = (int)SDL_strlen(input);
-	output = aes_decrypt256x(input, input_len, out_len, key, iv);
+	//input_len = (int)SDL_strlen(input);
+	//output = aes_decrypt256x(input, input_len, out_len, key, iv);
 
 	return output;
 }
@@ -237,11 +237,11 @@ static unsigned char*
 utils_aes_encrypt128(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
-	unsigned char* output;
+	unsigned char* output = NULL;
 	int input_len;
 
-	input_len = (int)SDL_strlen(input);
-	output = aes_encrypt128x(input, input_len, out_len, key, iv);
+	//input_len = (int)SDL_strlen(input);
+	//output = aes_encrypt128x(input, input_len, out_len, key, iv);
 	return output;
 }
 
@@ -249,11 +249,11 @@ static unsigned char*
 utils_aes_decrypt128(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
-	unsigned char* output;
+	unsigned char* output = NULL;
 	int input_len;
 
 	input_len = (int)SDL_strlen(input);
-	output = aes_decrypt128x(input, input_len, out_len, key, iv);
+	//output = aes_decrypt128x(input, input_len, out_len, key, iv);
 
 	return output;
 }

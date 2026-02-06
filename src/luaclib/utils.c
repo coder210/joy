@@ -190,7 +190,8 @@ static int laes_encrypt128(lua_State *L)
 static int laes_decrypt128(lua_State *L)
 {
         size_t key_len;
-	int input_len, out_len;
+        size_t input_len;
+	size_t out_len;
 	const char *KEY, *IV, *input;
         unsigned char *out;
         
