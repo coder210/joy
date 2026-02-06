@@ -129,7 +129,14 @@ if (APPLE)
 elseif(EMSCRIPTEN)
     # on the web, we have to put the files inside of the webassembly
     # somewhat unintuitively, this is done via a linker argument.
+    set(PRELOAD_FLAGS "")
+    foreach(asset_file ${ASSET_FILES})
+        message(${asset_file})
+        string(APPEND PRELOAD_FLAGS " --preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/${asset_file}@/\"")
+    endforeach()
+
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
+		${PRELOAD_FLAGS}
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf@/\""
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg@/\""
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg@/\""
