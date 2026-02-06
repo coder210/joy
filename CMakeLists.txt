@@ -91,6 +91,7 @@ add_subdirectory(SDL EXCLUDE_FROM_ALL)
 # Link SDL to our executable. This also makes its include directory available to us. 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC 
     SDL3::SDL3
+    m
 )
 
 
@@ -136,7 +137,7 @@ elseif(EMSCRIPTEN)
     endforeach()
 
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
-		${PRELOAD_FLAGS}
+		#${PRELOAD_FLAGS}
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf@/\""
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg@/\""
         #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg@/\""
