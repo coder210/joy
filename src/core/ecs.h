@@ -22,7 +22,7 @@ void ecs_set(ecs_world_p world, ecs_id_t id, const char* name, const void* ptr, 
 size_t ecs_get(ecs_world_p world, ecs_id_t id, const char* name, void** data);
 void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name);
 vector_t(kecs) ecs_query(ecs_world_p world, int arg_cnt, ...);
-vector_t(kecs) ecs_queryx(ecs_world_p world, int arg_cnt, const char** args);
+vector_t(kecs) ecs_queryx(ecs_world_p world, int arg_cnt, char** args);
 
 void ecs_register(ecs_world_p world, ecs_system_t system);
 int ecs_test();
