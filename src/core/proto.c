@@ -174,7 +174,7 @@ int c2s_deserialize(c2s_p c2s, const char* buf, int len)
         uint8_t cmd;
 
         offset = 0;
-        offset = unpack_int8(buf, &cmd, offset);
+        offset = unpack_uint8(buf, &cmd, offset);
         c2s->cmd = (c2s_cmd_k)cmd;
 
         if (c2s->cmd == C2S_CMD_PLAYER_JOIN) {
@@ -267,7 +267,7 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
         s2c_creating_emeny_t creating_emeny;
 
         offset = 0;
-        offset = unpack_int8(buf, &cmd, offset);
+        offset = unpack_uint8(buf, &cmd, offset);
         s2c->cmd = (s2c_cmd_k)cmd;
 
         if (s2c->cmd == S2C_CMD_NONE) {
