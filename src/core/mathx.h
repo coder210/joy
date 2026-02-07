@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2022, lanchong.xyz/Ltd.
 File name: mathx.h
-Description: ÊýÑ§¿â
+Description: ï¿½ï¿½Ñ§ï¿½ï¿½
 Author: ydlc
 Version: 1.0
 Date: 2023.1.29
@@ -23,7 +23,7 @@ History:
 #define FP_ONE (1LL << FP_FRACTIONAL_PLACES)
 
 #define FP_MAX_VALUE 9223372036854775807LL
-#define FP_MIN_VALUE -9223372036854775808LL
+#define FP_MIN_VALUE (-9223372036854775807LL - 1LL)
 #define FP_PI_TIMES_2 0x6487ED511
 #define FP_PI 0x3243F6A88
 #define FP_PI_OVER_2 0x1921FB544
@@ -472,7 +472,7 @@ JOY_INLINE vec2f_t vec2f_normal(vec2f_t v)
 /*
  * x = x * cos(angle) - y * sin(angle);
  * y = x * sin(angle) + y * cos(angle);
- * vM: ÐÐÊ¸Á¿
+ * vM: ï¿½ï¿½Ê¸ï¿½ï¿½
  *[x, y] [c, -s]
  *		 [s,  c]
 */
@@ -1121,7 +1121,7 @@ JOY_INLINE vec2_t vec2_normal(vec2_t a)
 /*
  * x = x * cos(angle) - y * sin(angle);
  * y = x * sin(angle) + y * cos(angle);
- * vM: ÐÐÊ¸Á¿
+ * vM: ï¿½ï¿½Ê¸ï¿½ï¿½
  *[x, y] [c, -s]
  *		 [s,  c]
 */
