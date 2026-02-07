@@ -56,7 +56,7 @@ static int lget_current_display_mode(lua_State *L)
         mode = SDL_GetCurrentDisplayMode(index);
         lua_pushnumber(L, mode->w);
         lua_pushnumber(L, mode->h);
-        lua_pushnumber(L, mode->format);
+        lua_pushinteger(L, (int)mode->format);
         lua_pushnumber(L, mode->refresh_rate);
         return 4;
 }
@@ -67,25 +67,6 @@ static int lget_ticks(lua_State *L)
         ms = SDL_GetTicks();
         lua_pushinteger(L, ms);
         return 1;
-}
-
-static int lcreate_texture_from_surface(lua_State *L)
-{
-        SDL_Renderer *renderer;
-        const char* file;
-        size_t len;
-        SDL_Surface* surface;
-        SDL_Texture* texture;
-        SDL_assert(lua_islightuserdata(L, 1));
-        renderer = lua_touserdata(L, 1);
-        file = luaL_checklstring(L, 2, &len);
-        surface = SDL_LoadBMP(file);
-        texture = SDL_CreateTextureFromSurface(renderer, surface);
-        lua_pushlightuserdata(L, texture);
-        lua_pushinteger(L, surface->w);
-        lua_pushinteger(L, surface->h);
-        SDL_DestroySurface(surface);
-        return 3;
 }
 
 static int lget_texture_size(lua_State *L)
@@ -292,7 +273,7 @@ static int lcreate_fragment_shader(lua_State *L)
         const char* filename;
         SDL_GPUShader* shader;
         Uint8* file_data;
-        Uint64 data_size;
+        size_t data_size;
         SDL_GPUShaderCreateInfo ci;
 
         device = (SDL_GPUDevice*)lua_touserdata(L, 1);
@@ -823,7 +804,6 @@ int luaopen_sdl(lua_State *L)
             {"delay", ldelay},
             {"get_current_display_mode", lget_current_display_mode},
             {"get_ticks", lget_ticks},
-            {"create_texture_from_surface", lcreate_texture_from_surface},
             {"get_texture_size", lget_texture_size},
             {"render_texture_rotated", lrender_texture_rotated},
             {"destroy_texture", ldestroy_texture},
