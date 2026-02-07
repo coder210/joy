@@ -40,8 +40,8 @@ set(TEST_FILES "src/test/*.h" "src/test/*.c")
 set(LUACLIB_FILES "src/luaclib/*.h" "src/luaclib/*.c")
 set(JSCLIB_FILES "src/jsclib/*.h" "src/jsclib/*.c") 
 set(CSCLIB_FILES "src/csclib/*.h" "src/csclib/*.c") 
-#set(SRC_FILES "src/*.h" "src/*.c") 
-set(SRC_FILES "src/main.c") 
+set(SRC_FILES "src/*.h" "src/*.c") 
+#set(SRC_FILES "src/main.c") 
 
 file(GLOB PROJECT_FILES
 	${EXTERNAL_FILES}
