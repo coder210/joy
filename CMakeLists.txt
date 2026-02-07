@@ -124,6 +124,9 @@ if (APPLE)
         target_sources(${EXECUTABLE_NAME} PRIVATE ${FILE})
         set_property(SOURCE ${FILE} PROPERTY MACOSX_PACKAGE_LOCATION "Resources/${relpath}")
     endmacro()
+    foreach(asset_file ${ASSET_FILES})
+        add_resource("${CMAKE_CURRENT_LIST_DIR}/assets/${asset_file}")
+    endforeach()
     #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf")
     #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg")
     #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg")
@@ -132,15 +135,15 @@ elseif(EMSCRIPTEN)
     # somewhat unintuitively, this is done via a linker argument.
     set(PRELOAD_FLAGS "")
     foreach(asset_file ${ASSET_FILES})
-        message(${asset_file})
         string(APPEND PRELOAD_FLAGS " --preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/${asset_file}@/\"")
     endforeach()
 
+    message(${PRELOAD_FLAGS})
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
-		#${PRELOAD_FLAGS}
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/Inter-VariableFont.ttf@/\""
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/the_entertainer.ogg@/\""
-        "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/gs_tiger.svg@/\""
+		${PRELOAD_FLAGS}
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/Inter-VariableFont.ttf@/\""
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/the_entertainer.ogg@/\""
+        #"--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/gs_tiger.svg@/\""
     )
 else()
     if(UNIX AND NOT APPLE)
