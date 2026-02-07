@@ -45,7 +45,7 @@ set(SRC_FILES "src/main.c")
 
 file(GLOB PROJECT_FILES
 	${EXTERNAL_FILES}
-	#${CORE_FILES}
+	${CORE_FILES}
     #${TEST_FILES}
 	#${LUACLIB_FILES}
 	#${JSCLIB_FILES} 
