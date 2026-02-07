@@ -1,5 +1,11 @@
 #include "profiler.h"
 
+struct simple_fps_counter {
+	int frame_count;
+	int fps;
+	Uint64 last_time;
+	Uint64 current_time;
+};
 
 simple_fps_counter_p simple_fps_create()
 {

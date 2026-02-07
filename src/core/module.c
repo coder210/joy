@@ -7,10 +7,10 @@
 KHASH_INIT(kmod, const char*, module_p, 1, kh_str_hash_func, kh_str_hash_equal)
 
 
-typedef struct modules {
+struct modules {
 	char path[1024];
 	khash_t(kmod)* mods;
-}modules_t, * modules_p;
+};
 
 
 

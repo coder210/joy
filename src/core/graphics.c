@@ -11,12 +11,12 @@
 #include "utils.h"
 #include "graphics.h"
 
-typedef struct image {
+struct image {
 	SDL_Texture* texture;
 	char filepath[JOY_MAX_PATH];
-}image_t, * image_p;
+};
 
-typedef struct font_t {
+struct font_t {
 	stbtt_fontinfo fontinfo;
 	unsigned char* fontdata;
 	SDL_Renderer* renderer;
@@ -25,13 +25,13 @@ typedef struct font_t {
 	int ascent;
 	int descent;
 	int line_gap;
-} font_t, * font_p;
+};
 
-typedef struct text_texture {
+struct text_texture {
 	SDL_Texture *texture;
 	int real_width;
 	int real_height;
-}text_texture_t, * text_texture_p;
+};
 
 typedef struct spritebatch {
 	image_p image;
@@ -50,7 +50,7 @@ typedef struct animation_clip {
 }animation_clip_t, * animation_clip_p;
 
 
-typedef struct animation {
+struct animation {
 	SDL_Renderer* renderer;
 	kvec_t(animation_clip_t) clips;
 	bool is_loop;
@@ -61,7 +61,7 @@ typedef struct animation {
 	float rotation;
 	SDL_FPoint scale;
 	SDL_FPoint origin;
-}animation_t, * animation_p;
+};
 
 /////////////////////////////////////////////////////////////////////////
 //////////////////////////////shape//////////////////////////////////////

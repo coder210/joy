@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2022, lanchong.xyz/Ltd.
 File name: env.c
-Description: ´æ´¢±äÁ¿µÄÖµ
+Description: ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ
 Author: ydlc
 Version: 1.0
 Date: 2021.12.14
@@ -10,9 +10,9 @@ History:
 #include "env.h"
 #include <SDL3/SDL.h>
 
-typedef struct env {
+struct env {
 	SDL_Environment* sdl_env;
-}env_t, *env_p;
+};
 
 env_p env_create(void)
 {
