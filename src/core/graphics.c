@@ -33,7 +33,7 @@ struct text_texture {
 	int real_height;
 };
 
-typedef struct spritebatch {
+ struct spritebatch {
 	image_p image;
 	SDL_Vertex* vertices;
 	int* indices;
@@ -41,7 +41,7 @@ typedef struct spritebatch {
 	int num_indices;
 	int index_vertices;
 	int index_indices;
-}spritebatch_t, * spritebatch_p;
+};
 
 typedef struct animation_clip {
 	image_p image;

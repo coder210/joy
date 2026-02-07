@@ -187,19 +187,19 @@ utils_md5(const char* input, size_t len, char* output)
 	return 16;
 }
 
-static char* 
-utils_b64_encode(const char* input, size_t len)
-{
-	char* result = b64_encode(input, len);
-	return result;
-}
+// static char* 
+// utils_b64_encode(const char* input, size_t len)
+// {
+// 	char* result = b64_encode(input, len);
+// 	return result;
+// }
 
-static char* 
-utils_b64_decode(const char* input, size_t len, size_t* out_len)
-{
-	char* result = b64_decode_ex(input, len, out_len);
-	return result;
-}
+// static char* 
+// utils_b64_decode(const char* input, size_t len, size_t* out_len)
+// {
+// 	char* result = b64_decode_ex(input, len, out_len);
+// 	return result;
+// }
 
 static unsigned char* 
 utils_aes_encrypt256(const char* input, size_t* len,
