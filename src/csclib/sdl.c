@@ -54,7 +54,7 @@ create_vertex_shader(SDL_GPUDevice* device, const char* filename, const char* en
 {
 	SDL_GPUShader* shader;
 	Uint8* file_data;
-	Uint64 data_size;
+	size_t data_size;
 	SDL_GPUShaderCreateInfo ci;
 	file_data = (Uint8*)SDL_LoadFile(filename, &data_size);
 	if (file_data) {
@@ -82,7 +82,7 @@ create_fragment_shader(SDL_GPUDevice* device, const char* filename, const char* 
 {
 	SDL_GPUShader* shader;
 	Uint8* file_data;
-	Uint64 data_size;
+	size_t data_size;
 	SDL_GPUShaderCreateInfo ci;
 	file_data = (Uint8*)SDL_LoadFile(filename, &data_size);
 	if (file_data) {
