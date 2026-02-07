@@ -171,10 +171,10 @@ int c2s_serialize(const c2s_p c2s, char* buf, int* len)
 int c2s_deserialize(c2s_p c2s, const char* buf, int len)
 {
         int offset;
-        uint8_t cmd;
+        int8_t cmd;
 
         offset = 0;
-        offset = unpack_uint8(buf, &cmd, offset);
+        offset = unpack_int8(buf, &cmd, offset);
         c2s->cmd = (c2s_cmd_k)cmd;
 
         if (c2s->cmd == C2S_CMD_PLAYER_JOIN) {
@@ -259,7 +259,7 @@ int s2c_serialize(const s2c_p s2c, char* buf, int* len)
 int s2c_deserialize(s2c_p s2c, const char* buf, int len)
 {
         int offset;
-        uint8_t cmd;
+        int8_t cmd;
         int16_t num_player_joins, num_player_leaves, num_player_inputs, num_creating_emenies;
         s2c_player_join_t player_join;
         s2c_player_leave_t player_leave;
@@ -267,7 +267,7 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
         s2c_creating_emeny_t creating_emeny;
 
         offset = 0;
-        offset = unpack_uint8(buf, &cmd, offset);
+        offset = unpack_int8(buf, &cmd, offset);
         s2c->cmd = (s2c_cmd_k)cmd;
 
         if (s2c->cmd == S2C_CMD_NONE) {
