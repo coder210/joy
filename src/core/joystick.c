@@ -8,7 +8,7 @@
 #define JOYSTICK_HANDLE_ACTIVE_COLOR 0x4CAF50FF
 
 // ҡ�˽ṹ��
-typedef struct joystick {
+struct joystick {
 	SDL_Renderer* renderer;      // ��Ⱦ��
 	SDL_FRect background;        // ��������
 	SDL_FRect handle;           // �ֱ�����
@@ -21,7 +21,7 @@ typedef struct joystick {
 	bool is_dragging;           // �Ƿ������϶�
 	bool is_touch_active;       // �Ƿ�������
 	int touch_id;               // ����ID
-} joystick_t, * joystick_p;
+};
 
 // ������������
 static float distance_squared(float x1, float y1, float x2, float y2) {

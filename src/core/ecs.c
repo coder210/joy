@@ -169,13 +169,13 @@ KHASH_INIT(kecs_meta, ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
 typedef khash_t(kecs_component_data) ecs_entity_t, * ecs_entity_p;
 KHASH_INIT(kecs_entity, ecs_id_t, ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
-typedef struct ecs_world {
+struct ecs_world {
         ecs_id_t global_id;
         khash_t(kecs_meta)* metas;
         klist_t(kecs_system)* systems;
         khash_t(kecs_component)* components;
         khash_t(kecs_entity)* entities;
-} ecs_world_t, * ecs_world_p;
+};
 
 ecs_world_p ecs_create() 
 {

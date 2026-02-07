@@ -6,10 +6,10 @@
 KHASH_INIT(kcommand, int, char*, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(kworld, int, char*, 1, kh_int_hash_func, kh_int_hash_equal)
 
-typedef struct lockstep {
+struct lockstep {
         khash_t(kcommand)* cmds;
         khash_t(kworld)* worlds;
-}lockstep_t, *lockstep_p;
+};
 
 lockstep_p lockstep_create()
 {

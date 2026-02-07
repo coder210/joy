@@ -8,12 +8,12 @@ KHASH_INIT(krigidbodies, uint32_t, rigidbody_p, 1, kh_int_hash_func, kh_int_hash
 KHASH_INIT(kconnections, int, uint32_t, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(kenemies, int, enemy_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
-typedef struct world {
+struct world {
         uint32_t entity_id;
         khash_t(krigidbodies)* rigidbodies;
         khash_t(kconnections)* connections;
         khash_t(kenemies)* enemies;
-}world2df_t, * world2df_p;
+};
 
 
 world2df_p world2df_create()

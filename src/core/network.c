@@ -25,15 +25,15 @@ typedef struct kcp_connection {
 KHASH_INIT(kconn, int, kcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
 KLIST_INIT(kmq, net_message_t, free)
 
-typedef struct kcpserver {
+struct kcpserver {
 	uint64_t sockfd;
 	int conv;
 	khash_t(kconn)* conns;
 	klist_t(kmq)* mq;
-}kcpserver_t, * kcpserver_p;
+};
 
 
-typedef struct kcpclient {
+struct kcpclient {
 	ikcpcb* kcp;
 	uint64_t sockfd;
 	char server_ip[JOY_MAX_IP];
@@ -42,7 +42,7 @@ typedef struct kcpclient {
 	delay_t updating_delay;
 	delay_t connection_delay;
 	klist_t(kmq)* mq;
-}kcpclient_t, * kcpclient_p;
+};
 
 
 JOY_INLINE uint32_t iclock(uint64_t clock64)
