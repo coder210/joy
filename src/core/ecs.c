@@ -432,12 +432,12 @@ vector_t(kecs) ecs_query(ecs_world_p world, int arg_cnt, ...)
                 return empty;
         }
 
-        char** args = SDL_malloc(arg_cnt * sizeof(const char*));
+        char** args = (char**)SDL_malloc(arg_cnt * sizeof(const char*));
         va_list va;
         va_start(va, arg_cnt);
 
         for (int i = 0; i < arg_cnt; i++) {
-                args[i] = va_arg(va, const char*);
+                args[i] = (char*)va_arg(va, const char*);
         }
         va_end(va);
 

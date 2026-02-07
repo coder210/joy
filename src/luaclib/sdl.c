@@ -257,7 +257,7 @@ static int lcreate_vertex_shader(lua_State *L)
         const char* filename;
         SDL_GPUShader* shader;
         Uint8* file_data;
-        Uint64 data_size;
+        size_t data_size;
         SDL_GPUShaderCreateInfo ci;
 
         device = (SDL_GPUDevice*)lua_touserdata(L, 1);
