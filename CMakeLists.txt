@@ -153,7 +153,7 @@ elseif(EMSCRIPTEN)
     set(PRELOAD_FLAGS "")
     foreach(asset_file ${ASSET_FILES})
         # 添加两个参数：--preload-file 和 文件路径
-        list(APPEND PRELOAD_FLAGS "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/assets/${asset_file}@/\"")
+        list(APPEND PRELOAD_FLAGS "--preload-file \"${CMAKE_CURRENT_LIST_DIR}/${asset_file}@/\"")
     endforeach()
 
     message(${PRELOAD_FLAGS})
