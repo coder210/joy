@@ -692,6 +692,9 @@ void tcpclient_update(tcpclient_p tcpclient)
                                 msg.len = SDL_strlen(msg.data);
                                 *kl_pushp(kmq, tcpclient->mq) = msg;
                         }
+                        else {
+                                log_debug("tcpclient connect failed");
+                        }
                 }
         }
 
