@@ -12,7 +12,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         //config_file = argc > 1 ? argv[1] : "scripts/config4.lua";
-        config_file = argc > 1 ? argv[1] : "scripts/client_config.lua";
+        config_file = argc > 1 ? argv[1] : "assets/scripts/client_config.lua";
         //config_file = argc > 1 ? argv[1] : "scripts/server_config.lua";
         app = joy_create(config_file);
         if (app) {
