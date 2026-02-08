@@ -146,7 +146,7 @@ static int lecs_query(lua_State* L)
         component_names = SDL_malloc(sizeof(char*) * args_count);
         for (int i = 1; i <= args_count; i++) {
                 lua_rawgeti(L, 2, i); 
-                component_names[i - 1] = luaL_checkstring(L, -1);
+                component_names[i - 1] = (char*)luaL_checkstring(L, -1);
                 components_count++;
                 lua_pop(L, 1);
         }

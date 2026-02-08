@@ -92,7 +92,7 @@ sys_anyaddr(void)
 }
 
 static bool 
-sys_closesocket(uint64_t sockfd)
+sys_closesocket(int64_t sockfd)
 {
 #if defined(JOY_WIN)
 	return closesocket(sockfd) == 0;
@@ -108,7 +108,7 @@ sys_closesocket(uint64_t sockfd)
 }
 
 static int 
-sys_set_sock_sndtimeo(uint64_t sockfd, int ms)
+sys_set_sock_sndtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -135,7 +135,7 @@ sys_set_sock_sndtimeo(uint64_t sockfd, int ms)
 }
 
 static int 
-sys_set_sock_rcvtimeo(uint64_t sockfd, int ms)
+sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -154,10 +154,30 @@ sys_set_sock_rcvtimeo(uint64_t sockfd, int ms)
 	return r;
 }
 
-static uint64_t 
+static int
+sys_set_sock_accpettimeo(int64_t sockfd, int ms)
+{
+	int r, sz;
+
+	r = 0;
+#if defined(JOY_WIN)
+	sz = (int)sizeof(int);
+        r = ioctlsocket(sockfd, FIONBIO, (u_long*)&ms);
+	//r = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&ms, sz);
+#elif defined(JOY_LINUX)
+	int flags = fcntl(sockfd, F_GETFL, 0);
+	fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+	//r = setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&ms, sizeof(int));
+#elif defined(JOY_MACOS)
+#elif defined(JOY_UNIX)
+#else
+#endif
+	return r;
+}
+static int64_t
 sys_tcp()
 {
-	uint64_t sockfd;
+	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 #else
@@ -166,10 +186,10 @@ sys_tcp()
 	return sockfd;
 }
 
-static uint64_t 
+static int64_t
 sys_udp()
 {
-	uint64_t sockfd;
+	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 #else
@@ -179,7 +199,7 @@ sys_udp()
 }
 
 static bool 
-sys_bind(uint64_t sockfd, const char* ip, int port)
+sys_bind(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -196,7 +216,7 @@ sys_bind(uint64_t sockfd, const char* ip, int port)
 }
 
 static bool 
-sys_connect(uint64_t sockfd, const char* ip, int port)
+sys_connect(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -212,7 +232,7 @@ sys_connect(uint64_t sockfd, const char* ip, int port)
 }
 
 static bool 
-sys_listen(uint64_t sockfd)
+sys_listen(int64_t sockfd)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -223,10 +243,10 @@ sys_listen(uint64_t sockfd)
 	return resval;
 }
 
-static uint64_t 
-sys_accept(uint64_t sockfd, char* ip, int* port)
+static int64_t
+sys_accept(int64_t sockfd, char* ip, int* port)
 {
-	uint64_t acceptfd;
+	int64_t acceptfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	struct sockaddr_in client;
 	int len = sizeof(client);
@@ -240,7 +260,7 @@ sys_accept(uint64_t sockfd, char* ip, int* port)
 }
 
 static int 
-sys_send(uint64_t sockfd, const char* buf, int len)
+sys_send(int64_t sockfd, const char* buf, int len)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -252,7 +272,7 @@ sys_send(uint64_t sockfd, const char* buf, int len)
 }
 
 static int 
-sys_recv(uint64_t sockfd, char* buf)
+sys_recv(int64_t sockfd, char* buf)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -265,7 +285,7 @@ sys_recv(uint64_t sockfd, char* buf)
 }
 
 static int 
-sys_recvfrom(uint64_t sockfd, char* buf, char* ip, int* port)
+sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 {
 	int n, len;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -282,7 +302,7 @@ sys_recvfrom(uint64_t sockfd, char* buf, char* ip, int* port)
 }
 
 static int 
-sys_sendto(uint64_t sockfd, const char* buf,
+sys_sendto(int64_t sockfd, const char* buf,
 	int len, const char* ip, int port)
 {
 	int n;

@@ -46,7 +46,7 @@ set(SRC_FILES "src/*.h" "src/*.c")
 file(GLOB PROJECT_FILES
 	${EXTERNAL_FILES}
 	${CORE_FILES}
-    #${TEST_FILES}
+    ${TEST_FILES}
 	${LUACLIB_FILES}
 	${JSCLIB_FILES} 
 	${CSCLIB_FILES}
@@ -95,22 +95,27 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 )
 
 
-# ��ȡ����lua�ļ�
-#file(GLOB ASSET_FILES "assets/scripts/*.lua")
-set(ASSET_FILES
-    "scripts/client_config.lua"
-    "scripts/server_config.lua"
-    "scripts/server2.lua"
-    "scripts/client2.lua"
-
-    "fonts/simhei.ttf"
-
-    "textures/livnet.bmp"
-    "textures/deco/01.png"
-    "textures/deco/04.png"
-    "textures/trees/tree.png"
-
+# 递归搜索assets目录下的所有文件
+file(GLOB_RECURSE ASSET_FILES 
+    "${CMAKE_CURRENT_LIST_DIR}/assets/*"
 )
+
+# 如果需要排除某些文件类型，可以使用以下方式
+file(GLOB_RECURSE ALL_ASSET_FILES 
+    "${CMAKE_CURRENT_LIST_DIR}/assets/*"
+)
+
+# 过滤掉不需要的文件
+set(ASSET_FILES "")
+foreach(file ${ALL_ASSET_FILES})
+    # 排除.svn、.git等版本控制文件
+    if(NOT file MATCHES "\\.svn/" AND NOT file MATCHES "\\.git/")
+        # 获取相对路径（相对于assets目录）
+        file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_LIST_DIR}/assets" "${file}")
+        list(APPEND ASSET_FILES "${rel_path}")
+    endif()
+endforeach()
+
 
 # Dealing with assets
 # We have some non-code resources that our application needs in order to work. How we deal with those differs per platform.
