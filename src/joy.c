@@ -63,7 +63,7 @@ void _context_free(struct __kl1_kcontext* ctx)
         SDL_free(ctx->data);
 }
 
-typedef struct app {
+struct app {
         env_p env;
         modules_p modules;
         klist_t(kcontext)* servers;
@@ -72,7 +72,7 @@ typedef struct app {
         bool running;
         Uint32 last_frame_time;
         void (*quit)(app_p);
-}app_t, * app_p;
+};
 
 void _print_title1()
 {
