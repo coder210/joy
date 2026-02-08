@@ -681,7 +681,7 @@ void tcpclient_update(tcpclient_p tcpclient)
                 }
         }
         else {
-                if (utils_wait_delay(&tcpclient->connection_delay, current_time)) {
+                /*if (utils_wait_delay(&tcpclient->connection_delay, current_time)) {
                         log_debug("tcpclient connecting to %s:%d",
                                 tcpclient->server_ip, tcpclient->server_port);
                         if (sys_connect(tcpclient->sockfd, tcpclient->server_ip, tcpclient->server_port)) {
@@ -695,6 +695,19 @@ void tcpclient_update(tcpclient_p tcpclient)
                         else {
                                 log_debug("tcpclient connect failed");
                         }
+                }*/
+                log_debug("tcpclient connecting to %s:%d",
+                        tcpclient->server_ip, tcpclient->server_port);
+                if (sys_connect(tcpclient->sockfd, tcpclient->server_ip, tcpclient->server_port)) {
+                        tcpclient->connected = true;
+                        msg.type = NET_TYPE_CONNECTED;
+                        msg.conv = (int)tcpclient->sockfd;
+                        msg.data = SDL_strdup("connected");
+                        msg.len = SDL_strlen(msg.data);
+                        *kl_pushp(kmq, tcpclient->mq) = msg;
+                }
+                else {
+                        log_debug("tcpclient connect failed");
                 }
         }
 
