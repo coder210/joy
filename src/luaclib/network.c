@@ -553,6 +553,174 @@ static int l_kcpclient_poll(lua_State* L)
 
 
 
+static int l_tcpserver_create(lua_State* L)
+{
+        const char* ip;
+        int port;
+        uint64_t sockfd;
+        tcpserver_p tcpserver;
+        ip = luaL_checkstring(L, 1);
+        port = luaL_checkinteger(L, 2);
+        tcpserver = tcpserver_create(ip, port);
+        lua_pushlightuserdata(L, tcpserver);
+        return 1;
+}
+
+static int l_tcpserver_destroy(lua_State* L)
+{
+        tcpserver_p tcpserver;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        tcpserver_destroy(tcpserver);
+        return 0;
+}
+
+static int l_tcpserver_send(lua_State* L)
+{
+        tcpserver_p tcpserver;
+        const char* data;
+        int conv;
+        size_t len;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        conv = luaL_checkinteger(L, 2);
+        data = luaL_checklstring(L, 3, &len);
+        tcpserver_send(tcpserver, conv, data, len);
+        return 0;
+}
+
+static int l_tcpserver_broadcast(lua_State* L)
+{
+        tcpserver_p tcpserver;
+        const char* data;
+        size_t len;
+        int result;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        data = luaL_checklstring(L, 2, &len);
+        tcpserver_broadcast(tcpserver, data, len);
+        return 0;
+}
+
+static int l_tcpserver_offline(lua_State* L)
+{
+        tcpserver_p tcpserver;
+        int conv;
+        size_t len;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        conv = luaL_checkinteger(L, 2);
+        tcpserver_offline(tcpserver, conv);
+        return 0;
+}
+
+static int l_tcpserver_update(lua_State* L)
+{
+        tcpserver_p tcpserver;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        tcpserver_update(tcpserver);
+        return 0;
+}
+
+static int l_tcpserver_poll(lua_State* L)
+{
+        net_message_t msg = { 0 };
+        tcpserver_p tcpserver;
+        tcpserver = (tcpserver_p)lua_touserdata(L, 1);
+        if (tcpserver_poll_message(tcpserver, &msg)) {
+                lua_pushboolean(L, 1);
+                lua_newtable(L);
+                lua_pushinteger(L, msg.type);
+                lua_setfield(L, -2, "type");
+                lua_pushinteger(L, msg.conv);
+                lua_setfield(L, -2, "conv");
+                lua_pushlstring(L, msg.data, msg.len);
+                lua_setfield(L, -2, "data");
+                SDL_free(msg.data);
+        }
+        else {
+                lua_pushboolean(L, false);
+                lua_pushnil(L);
+        }
+        return 2;
+}
+
+
+
+static int l_tcpclient_create(lua_State* L)
+{
+        const char* ip;
+        int port;
+        tcpclient_p tcpclient;
+        ip = luaL_checkstring(L, 1);
+        port = luaL_checkinteger(L, 2);
+        tcpclient = tcpclient_create(ip, port);
+        lua_pushlightuserdata(L, tcpclient);
+        return 1;
+}
+
+static int l_tcpclient_destroy(lua_State* L)
+{
+        tcpclient_p tcpclient;
+        tcpclient = (tcpclient_p)lua_touserdata(L, 1);
+        tcpclient_destroy(tcpclient);
+        return 0;
+}
+
+static int l_tcpclient_getconv(lua_State* L)
+{
+        tcpclient_p tcpclient;
+        bool result;
+        int conv;
+        tcpclient = (tcpclient_p)lua_touserdata(L, 1);
+        result = tcpclient_getconv(tcpclient, &conv);
+        lua_pushboolean(L, result);
+        lua_pushinteger(L, conv);
+        return 2;
+}
+
+static int l_tcpclient_send(lua_State* L)
+{
+        tcpclient_p tcpclient;
+        const char* data;
+        size_t len;
+        int result;
+        tcpclient = (tcpclient_p)lua_touserdata(L, 1);
+        data = luaL_checklstring(L, 2, &len);
+        result = tcpclient_send(tcpclient, data, len);
+        lua_pushinteger(L, result);
+        return 1;
+}
+
+static int l_tcpclient_update(lua_State* L)
+{
+        tcpclient_p tcpclient;
+        tcpclient = (tcpclient_p)lua_touserdata(L, 1);
+        tcpclient_update(tcpclient);
+        return 0;
+}
+
+static int l_tcpclient_poll(lua_State* L)
+{
+        net_message_t msg = { 0 };
+        tcpclient_p tcpclient;
+        tcpclient = (tcpclient_p)lua_touserdata(L, 1);
+        if (tcpclient_poll_message(tcpclient, &msg)) {
+                lua_pushboolean(L, 1);
+                lua_newtable(L);
+                lua_pushinteger(L, msg.type);
+                lua_setfield(L, -2, "type");
+                lua_pushinteger(L, msg.conv);
+                lua_setfield(L, -2, "conv");
+                lua_pushlstring(L, msg.data, msg.len);
+                lua_setfield(L, -2, "data");
+                SDL_free(msg.data);
+        }
+        else {
+                lua_pushboolean(L, 0);
+                lua_pushnil(L);
+        }
+        return 2;
+}
+
+
+
 int luaopen_net(lua_State *L)
 {
         luaL_checkversion(L);
@@ -618,6 +786,30 @@ int luaopen_net(lua_State *L)
         };
         luaL_newlib(L, kcpclient_lib);
         lua_setfield(L, -2, "kcpclient");
+
+        luaL_Reg tcpserver_lib[] = {
+            {"create", l_tcpserver_create},
+            {"destroy", l_tcpserver_destroy},
+            {"send", l_tcpserver_send},
+            {"broadcast", l_tcpserver_broadcast},
+            {"update", l_tcpserver_update},
+            {"poll", l_tcpserver_poll},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, tcpserver_lib);
+        lua_setfield(L, -2, "tcpserver");
+
+        luaL_Reg tcpclient_lib[] = {
+            {"create", l_tcpclient_create},
+            {"destroy", l_tcpclient_destroy},
+            {"get_conv", l_tcpclient_getconv},
+            {"send", l_tcpclient_send},
+            {"update", l_tcpclient_update},
+            {"poll", l_tcpclient_poll},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, tcpclient_lib);
+        lua_setfield(L, -2, "tcpclient");
 
         return 1;
 }

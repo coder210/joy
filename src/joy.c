@@ -177,7 +177,6 @@ app_p joy_create(const char* config_file)
 
         _print_title();
         log_debug(SDL_GetBasePath());
-
         file_data = SDL_LoadFile(config_file, &data_size);
         if (!file_data) {
                 return app;

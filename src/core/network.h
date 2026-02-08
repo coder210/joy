@@ -29,6 +29,8 @@ typedef struct net_message {
 typedef struct kcpserver kcpserver_t, *kcpserver_p;
 typedef struct kcpclient kcpclient_t, *kcpclient_p;
 
+typedef struct tcpserver tcpserver_t, * tcpserver_p;
+typedef struct tcpclient tcpclient_t, * tcpclient_p;
 
 kcpserver_p kcpserver_create(const char* ip, int port);
 int kcpserver_destroy(kcpserver_p ks);
@@ -45,5 +47,20 @@ int kcpclient_send(kcpclient_p kc, const char* data, int len);
 void kcpclient_update(kcpclient_p kc);
 bool kcpclient_poll_message(kcpclient_p kc, net_message_p msg);
 
+
+tcpserver_p tcpserver_create(const char* ip, int port);
+int tcpserver_destroy(tcpserver_p tcpserver);
+void tcpserver_send(tcpserver_p tcpserver, int conv, const char* data, int len);
+void tcpserver_broadcast(tcpserver_p tcpserver, const char* data, int len);
+void tcpserver_offline(tcpserver_p tcpserver, int conv);
+void tcpserver_update(tcpserver_p tcpserver);
+bool tcpserver_poll_message(tcpserver_p tcpserver, net_message_p msg);
+
+tcpclient_p tcpclient_create(const char* ip, int port);
+void tcpclient_destroy(tcpclient_p tcpclient);
+bool tcpclient_getconv(tcpclient_p tcpclient, int* conv);
+int tcpclient_send(tcpclient_p tcpclient, const char* data, int len);
+void tcpclient_update(tcpclient_p tcpclient);
+bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
 
 #endif // !CORE_NETWORK_H
