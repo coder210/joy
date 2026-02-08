@@ -175,13 +175,14 @@ app_p joy_create(const char* config_file)
 
         app = NULL;
 
-        _print_title();
         log_debug(SDL_GetBasePath());
+        log_debug("config_file=%s", config_file);
         file_data = SDL_LoadFile(config_file, &data_size);
         if (!file_data) {
                 return app;
         }
 
+        _print_title();
 
         L = luaL_newstate();
         //root_path = SDL_GetBasePath();
