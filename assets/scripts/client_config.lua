@@ -1,7 +1,7 @@
 local config = {}
 
---config.ip = "8.148.188.213"
-config.ip = "192.168.1.26"
+config.ip = "8.148.188.213"
+--config.ip = "192.168.1.26"
 config.port = 30000
 config.orientation = "LandscapeLeft"
 config.start = "test_tcpclient.lua"
