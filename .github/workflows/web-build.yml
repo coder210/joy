@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
   build-web:
     name: Build joy2d for Web
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,7 +52,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     # Specify runner + deployment step
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
