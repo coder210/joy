@@ -638,6 +638,7 @@ tcpclient_p tcpclient_create(const char* ip, int port)
         tcpclient->connection_delay.timeout = 3000;
         tcpclient->timeout = 1200;
         tcpclient->mq = kl_init(kmq);
+        log_debug("tcpclient_create ip=%s,port=%d", ip, port);
         sys_set_sock_rcvtimeo(tcpclient->sockfd, 1);
         return tcpclient;
 }
@@ -666,7 +667,7 @@ void tcpclient_update(tcpclient_p tcpclient)
         net_message_t msg;
         char buf[JOY_MAX_BUFFER];
         int len;
-
+        log_debug("tcpclient_update");
         current_time = sys_current_time();
         if (tcpclient->connected) {
                 len = sys_recv(tcpclient->sockfd, buf);
