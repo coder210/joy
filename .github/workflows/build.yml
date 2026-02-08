@@ -4,7 +4,7 @@ on: [push, pull_request]
 jobs:
     build-win:
         name: Build for Windows
-        runs-on: windows-18.04
+        runs-on: windows-latest
         strategy:
           fail-fast: false
           matrix:
@@ -35,7 +35,7 @@ jobs:
                     
     build-linux:
         name: Build for Linux
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         steps:
           - uses: actions/checkout@v4
             with:
