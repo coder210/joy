@@ -97,6 +97,15 @@ local function handle_player_leaves(world, player_leaves)
     end
 end
 
+local function handle_player_inputs(world, player_inputs)
+    if not player_inputs then
+        return;
+    end
+    for _, player_input in ipairs(player_inputs) do
+        world2df.move_rigidbody(world, player_input.conv, player_input.keycode);
+    end
+end
+
 local function handle_creating_emenies(world, creating_emenies)
     if not creating_emenies then
         return;
@@ -155,63 +164,71 @@ local message = function(data)
             end
         end
     elseif t.cmd == 4 then
-        core.log(app.ctx, "==================frame_id:" .. t.frame_id .. "===================");
+        core.log(app.ctx, "==================current frame id:" .. t.frame_id .. "===================");
         core.log(app.ctx, cjson.encode(t));
+
+        --1.第一步先把当前世界回滚到上一个确认的帧上
+        client.rollback(app.client, app.world);
+
+        --2.第二再执行当前到达的帧
         client.set_server_frameid(app.client, t.frame_id);
-
-        local world_checksum = world2df.checksum(app.world);
-
-        if t.checksum == world_checksum then
-            core.log(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
-        else
-            core.error(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
-        end
-
+        -- local world_checksum = world2df.checksum(app.world);
+        -- if t.checksum == world_checksum then
+        --     core.log(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
+        -- else
+        --     core.error(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
+        -- end
         if #t.player_leaves > 0 then
             handle_player_leaves(app.world, t.player_leaves);
         end
+        
         if #t.player_joins > 0 then
             handle_player_joins(app.game_world, app.world, t.player_joins);
         end
+
         if #t.creating_emenies > 0 then
             handle_creating_emenies(app.world, t.creating_emenies);
         end
 
         if #t.player_inputs > 0 then
             -- 保存服务器帧
-            client.add_command(app.client, t.player_inputs);
+            --client.add_command(app.client, t.player_inputs);
+            handle_player_inputs(app.world, t.player_inputs);
         end
-        
-        
+
+        -- 执行完后添加world备份
+        local world_data = world2df.serialize(app.world);
+        local world_checksum = world2df.checksum(app.world);
+        client.add_world(app.client, t.frame_id, world_data);
+
+        --3.在此基础再继续预测
+        client.predict(app.client, app.world);
+
         -- local world_data = world2df.serialize(app.world);
         -- local world_checksum = world2df.checksum(app.world);
         -- client.add_world(app.client, t.frame_id, world_data);
 
-
         --是否要回滚t.frameid
-        local local_inputs = client.get_local_inputs(app.client, t.frame_id);
-        if #t.player_inputs ~= #local_inputs then
-            core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-            client.rollback(app.client, app.world, t.frame_id);
-            return;
-        else
-            for _, server_input in ipairs(t.player_inputs) do
-                for _, local_input in ipairs(local_inputs) do
-                    if server_input.conv == local_input.conv then
-                        if server_input.keycode ~= local_input.keycode then
-                            core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-                            client.rollback(app.client, app.world, t.frame_id);
-                            return;
-                        end
-                    end
-                end
-            end
-            core.log(app.ctx, "相同" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-            return;
-        end
-        
-
-
+        -- local local_inputs = client.get_local_inputs(app.client, t.frame_id);
+        -- if #t.player_inputs ~= #local_inputs then
+        --     core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
+        --     client.rollback(app.client, app.world, t.frame_id);
+        --     return;
+        -- else
+        --     for _, server_input in ipairs(t.player_inputs) do
+        --         for _, local_input in ipairs(local_inputs) do
+        --             if server_input.conv == local_input.conv then
+        --                 if server_input.keycode ~= local_input.keycode then
+        --                     core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
+        --                     client.rollback(app.client, app.world, t.frame_id);
+        --                     return;
+        --                 end
+        --             end
+        --         end
+        --     end
+        --     core.log(app.ctx, "相同" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
+        --     return;
+        -- end
         -- world2df.update_emeny(app.world, mathx.from_float(app.map_size.x), mathx.from_float(app.map_size.y));
     end
 
@@ -263,6 +280,8 @@ app.start = function(ctx)
 
     local ip = core.get_env(app.ctx, "ip");
     local port = math.tointeger(core.get_env(app.ctx, "port"));
+    core.log(app.ctx, "ip:" .. ip .. " port:" .. port);
+
     app.world = world2df.create();
     app.kcpclient = net.kcpclient.create(ip, port);
     app.client = client.create();
@@ -327,8 +346,8 @@ app.start = function(ctx)
             --return;
         end
 
-        -- 本地预测
-        client.predict(app.client, app.world, conv, app.keycode);
+        -- 应用本地输入
+        client.apply_input(app.client, app.world, conv, app.keycode);
 
         -- 同步到服务器
         local str = c2s.serialize_player_input(app.keycode);

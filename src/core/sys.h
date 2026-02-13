@@ -19,6 +19,7 @@ History:
 #if defined(JOY_WIN)
 #	include <time.h>
 #	include <winsock2.h>
+#	pragma comment(lib, "ws2_32.lib")
 #elif defined(JOY_LINUX)
 #	include<sys/time.h>
 #	include<sys/socket.h>
@@ -208,7 +209,6 @@ sys_bind(int64_t sockfd, const char* ip, int port)
 	peer.sin_addr.s_addr = inet_addr(ip);
 	peer.sin_port = htons(port);
 	resval = bind(sockfd, (struct sockaddr*)&peer, sizeof(peer)) == 0;
-	//SDL_Log("bind:%d", errno);
 #else
 	resval = false;
 #endif
