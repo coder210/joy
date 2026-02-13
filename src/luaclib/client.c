@@ -25,11 +25,6 @@ key: conv,
 */
 KHASH_INIT(kplayerinput, int, player_input_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
-/*
-key:frameid
-value: local_buffer
-*/
-KHASH_INIT(klbuffer, int, khash_t(kplayerinput)*, 1, kh_int_hash_func, kh_int_hash_equal)
 
 /*
 key:frameid
@@ -44,12 +39,10 @@ typedef struct lockstep_client {
 	int saving_cursor; /* 保存的字节数 */
 	int local_frameid;
 	int server_frameid;
-	int validate_frameid;
-	khash_t(kworld)* worlds;
-	khash_t(klbuffer)* local_buffers;
-	khash_t(ksbuffer)* server_buffers; /* 远程buf */
+	khash_t(kworld)* worlds;  /* 服务器的帧world */
+	khash_t(kplayerinput)* local_buffers; /* 本地预测输入 */
+	//khash_t(ksbuffer)* server_buffers; /* 服务端的输入 */
 }lockstep_client_t, * lockstep_client_p;
-
 
 static int l_client_create(lua_State* L)
 {
@@ -60,10 +53,9 @@ static int l_client_create(lua_State* L)
 	client->saving_cursor = 0;
 	client->local_frameid = 0;
 	client->server_frameid = 0;
-	client->validate_frameid = 0;
 	client->worlds = kh_init(kworld);
-	client->local_buffers = kh_init(klbuffer);
-	client->server_buffers = kh_init(ksbuffer);
+	client->local_buffers = kh_init(kplayerinput);
+	//client->server_buffers = kh_init(ksbuffer);
 	lua_pushlightuserdata(L, client);
 	return 1;
 }
@@ -73,8 +65,8 @@ static int l_client_destroy(lua_State* L)
 	lockstep_client_p client;
 	client = lua_touserdata(L, 1);
 	kh_destroy(kworld, client->worlds);
-	kh_destroy(klbuffer, client->local_buffers);
-	kh_destroy(ksbuffer, client->server_buffers);
+	kh_destroy(kplayerinput, client->local_buffers);
+	//kh_destroy(ksbuffer, client->server_buffers);
 	SDL_free(client);
 	return 0;
 }
@@ -90,8 +82,6 @@ static int l_client_cmd_loading1(lua_State* L)
 	bool ok;
 	world2df_p world2d;
 
-	khash_t(kplayerinput)* local_buffer;
-	local_buffer = kh_init(kplayerinput);
 	client = (lockstep_client_p)lua_touserdata(L, 1);
 	world2d = (world2df_p)lua_touserdata(L, 2);
 	ok = lua_toboolean(L, 3);
@@ -125,7 +115,6 @@ static int l_client_cmd_loading1(lua_State* L)
 
 	if (client->ready) {
 		client->server_frameid = frame_id;
-		client->validate_frameid = frame_id;
 		client->local_frameid = frame_id;
 	}
 	lua_pushboolean(L, client->ready);
@@ -190,6 +179,28 @@ static int l_client_cmd_playerjoin(lua_State* L)
 
 static int l_client_predict(lua_State* L)
 {
+	lockstep_client_p client;
+	world2df_p world;
+	client = (lockstep_client_p)lua_touserdata(L, 1);
+	world = (world2df_p)lua_touserdata(L, 2);
+        int start_frameid = client->server_frameid + 1;
+	if (client->local_frameid > start_frameid) {
+		for (int i = start_frameid; i < client->local_frameid; i++) {
+			if (kh_exist(client->local_buffers, i)) {
+				player_input_t player_input = kh_val(client->local_buffers, i);
+				world2df_move_rigidbody(world, player_input.conv, player_input.keycode);
+			}
+		}
+	}
+	else {
+
+	}
+	return 0;
+}
+
+
+static int l_client_apply_input(lua_State* L)
+{
 	khint_t k;
 	frame_t frame;
 	lockstep_client_p client;
@@ -198,117 +209,70 @@ static int l_client_predict(lua_State* L)
 	s2c_t s2c;
 	int ret;
 
-	khash_t(kplayerinput)* server_buffer;
-	khash_t(kplayerinput)* local_buffer;
-	local_buffer = kh_init(kplayerinput);
-
 	client = (lockstep_client_p)lua_touserdata(L, 1);
 	world = (world2df_p)lua_touserdata(L, 2);
 
-	client->local_frameid++;
+	if (client->local_frameid > client->server_frameid) {
 
-	/* 取server_buffer最后一帧数据 */
-	k = kh_get(ksbuffer, client->server_buffers, client->server_frameid);
-	if (k != kh_end(client->server_buffers)) {
-		server_buffer = kh_val(client->server_buffers, k);
-		for (k = kh_begin(server_buffer); k != kh_end(server_buffer); k++) {
-			if (kh_exist(server_buffer, k)) {
-				player_input = kh_val(server_buffer, k);
-				k = kh_put(kplayerinput, local_buffer, player_input.conv, &ret);
-				kh_val(local_buffer, k) = player_input;
-			}
-		}
 	}
+	else {
+
+	}
+
+	client->local_frameid++;
 
 	/* 当前客户端 */
 	player_input.conv = (int16_t)luaL_checkinteger(L, 3);
 	player_input.keycode = (int16_t)luaL_checkinteger(L, 4);
-	k = kh_put(kplayerinput, local_buffer, player_input.conv, &ret);
-	kh_val(local_buffer, k) = player_input;
 
-	k = kh_put(klbuffer, client->local_buffers, client->local_frameid, &ret);
-	kh_val(client->local_buffers, k) = local_buffer;
+	k = kh_put(kplayerinput, client->local_buffers, client->local_frameid, &ret);
+	kh_val(client->local_buffers, k) = player_input;
 
 	/* 先执行 */
-	for (k = kh_begin(local_buffer); k != kh_end(local_buffer); k++) {
-		if (kh_exist(local_buffer, k)) {
-			player_input = kh_val(local_buffer, k);
-			world2df_move_rigidbody(world, player_input.conv, player_input.keycode);
-		}
-	}
+	world2df_move_rigidbody(world, player_input.conv, player_input.keycode);
 
 	return 0;
 }
 
 static int l_client_rollback(lua_State* L)
 {
-	khint_t k;
 	lockstep_client_p client;
-	world2df_p world;
-	int frame_id, ret;
+	world2df_p main_world;
 
 	client = (lockstep_client_p)lua_touserdata(L, 1);
-	world = (world2df_p)lua_touserdata(L, 2);
-	frame_id = (int)luaL_checkinteger(L, 3);
+	main_world = (world2df_p)lua_touserdata(L, 2);
 
-	//k = kh_get(kworld, client->worlds, frame_id - 1, &ret);
-	//if (k != kh_end(client->worlds)) {
-
-	//}
-	//kh_val(client->worlds, k) = frame;
-
-	//world2df_deserialize(world, )
-
-	//if (client->server_frameid > client->validate_frameid) {
-	//        /* 服务器有帧过来 */
-	//        for (int i = client->validate_frameid; i <= client->server_frameid; i++) {
-	//                k = kh_get(ksbuffer, client->server_buffers, i);
-	//                if (k != kh_end(client->server_buffers)) {
-	//                        frame = kh_val(client->server_buffers, k);
-	//                        s2c_deserialize(&s2c, frame.data, frame.len);
-	//                        if (s2c.cmd == S2C_CMD_COMMAND) {
-	//                               
-	//                        }
-	//                }
-	//        }
-	//        client->validate_frameid = client->server_frameid;
-	//}
-
-	//client->validate_frameid
-
-	//world2df_deserialize(world, client->buf, client->saving_cursor);
-
-	return 0;
+	khint_t k = kh_get(kworld, client->worlds, client->server_frameid);
+	if (k != kh_end(client->worlds)) {
+		frame_t world_packet = kh_val(client->worlds, k);
+		world2df_deserialize(main_world, world_packet.data, world_packet.len);
+		lua_pushboolean(L, true);
+	}
+	else {
+		lua_pushboolean(L, false);
+	}
+	return 1;
 }
 
 static int l_get_local_inputs(lua_State* L)
 {
-	khint_t k;
-	int i;
-	lockstep_client_p client;
-	int frame_id;
-	khash_t(kplayerinput)* local_buffer;
-	player_input_t player_input;
-
-	client = (lockstep_client_p)lua_touserdata(L, 1);
-	frame_id = (int)luaL_checkinteger(L, 2);
-
+	lockstep_client_p client = (lockstep_client_p)
+	luaL_checkudata(L, 1, "lockstep_client");
+	int frame_id = (int)luaL_checkinteger(L, 2);
+	if (client->local_buffers == NULL) {
+		lua_newtable(L);
+		return 1;
+	}
 	lua_newtable(L);
-
-	k = kh_get(klbuffer, client->local_buffers, frame_id);
+	khint_t k = kh_get(kplayerinput, client->local_buffers, frame_id);
 	if (k != kh_end(client->local_buffers)) {
-		local_buffer = kh_val(client->local_buffers, k);
-		for (k = kh_begin(local_buffer), i = 0; k != kh_end(local_buffer); k++, i++) {
-			if (kh_exist(local_buffer, k)) {
-				player_input = kh_val(local_buffer, k);
-				lua_newtable(L);
-				lua_pushinteger(L, player_input.conv);
-				lua_setfield(L, -2, "conv");
-				lua_pushinteger(L, player_input.keycode);
-				lua_setfield(L, -2, "keycode");
-				lua_rawseti(L, -2, i + 1);
-			}
-		}
+		player_input_t player_input = kh_val(client->local_buffers, k);
+		lua_newtable(L);
+		lua_pushinteger(L, player_input.conv);
+		lua_setfield(L, -2, "conv");
+		lua_pushinteger(L, player_input.keycode);
+		lua_setfield(L, -2, "keycode");
+		lua_rawseti(L, -2, 1);
 	}
 
 	return 1;
@@ -316,7 +280,7 @@ static int l_get_local_inputs(lua_State* L)
 
 static int l_client_add_command(lua_State* L)
 {
-	khint_t k;
+	/*khint_t k;
 	int ret, len;
 	lockstep_client_p client;
 	player_input_t player_input;
@@ -344,7 +308,7 @@ static int l_client_add_command(lua_State* L)
 	}
 
 	k = kh_put(ksbuffer, client->server_buffers, client->server_frameid, &ret);
-	kh_val(client->server_buffers, k) = server_player_inputs;
+	kh_val(client->server_buffers, k) = server_player_inputs;*/
 
 	return 0;
 }
@@ -407,6 +371,7 @@ int luaopen_client(lua_State* L)
 	    {"create_player_join", l_client_create_player_join},
 	    {"predict", l_client_predict },
 	    {"rollback", l_client_rollback },
+	    {"apply_input", l_client_apply_input },
 	    {"get_local_inputs", l_get_local_inputs },
 	    {"add_command", l_client_add_command },
 	    {"add_world", l_client_add_world },
