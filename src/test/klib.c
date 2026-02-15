@@ -137,14 +137,16 @@
 //	*kl_pushp(32, kl) = 10;
 //	kl_shift(32, kl, 0);
 //	//kl_shift(32, kl, 0);
-//	*kl_pushp(32, kl) = 10;
+//	*kl_pushp(32, kl) = 20;
+//	kl_shift(32, kl, 0);
+//	kl_shift(32, kl, 0);
 //
 //	for (p = kl_begin(kl); p != kl_end(kl); p = kl_next(p))
 //		printf("%d\n", kl_val(p));
 //	kl_destroy(32, kl);
 //	return 0;
 //}
-
+//
 
 
 //static int main()

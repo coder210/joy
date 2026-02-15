@@ -26,7 +26,7 @@ typedef struct connection {
         bool ready;
         int pointer;
         char* arr;
-        int keycode;
+        //int keycode;
 }connection_t, * connection_p;
 
 typedef struct frame {
@@ -108,7 +108,7 @@ handle_cmd_ready(lockstep_server_p ctx, int conv, char* data)
         conn->health = 10;
         conn->conv = conv;
         conn->pointer = 0;
-        conn->keycode = KEYCODE_NONE;
+        //conn->keycode = KEYCODE_NONE;
         k = kh_put(kconn, ctx->conns, conv, &ret);
         kh_val(ctx->conns, k) = conn;
 
@@ -240,27 +240,27 @@ static int
 handle_cmd_player_input(lockstep_server_p ctx, int conv, int keycode)
 {
         /* 判断是否已经有输入 */
-        /*s2c_player_input_p found_player_input;
+        s2c_player_input_p found_player_input;
         s2c_player_input_t player_input;
-        for (int i = 0; i < kv_size(ctx->command.player_inputs); i++) {
+      /*  for (int i = 0; i < kv_size(ctx->command.player_inputs); i++) {
                 found_player_input = &kv_A(ctx->command.player_inputs, i);
                  if (found_player_input->conv == conv) {
                          found_player_input->keycode = keycode;
                          return;
                  }
-        }
+        }*/
 
         player_input.conv = conv;
         player_input.keycode = keycode;
-        kv_push(s2c_player_input_t, ctx->command.player_inputs, player_input);*/
+        kv_push(s2c_player_input_t, ctx->command.player_inputs, player_input);
 
-        khint_t k;
+       /* khint_t k;
         connection_p conn;
         k = kh_get(kconn, ctx->conns, conv);
         if (k != kh_end(ctx->conns)) {
                 conn = kh_val(ctx->conns, k);
                 conn->keycode = keycode;
-        }
+        }*/
         return 0;
 }
 
@@ -366,7 +366,6 @@ static int l_server_create_enemy(lua_State* L)
         return 0;
 }
 
-
 static int l_server_has_command(lua_State* L)
 {
         lockstep_server_p ctx;
@@ -400,7 +399,7 @@ static int l_server_collect_command(lua_State* L)
         world_checksum = luaL_checklstring(L, 3, &world_checksum_size);
 
         /* 补帧 */
-        for (k = kh_begin(ctx->conns); k != kh_end(ctx->conns); k++) {
+        /*for (k = kh_begin(ctx->conns); k != kh_end(ctx->conns); k++) {
                 if (kh_exist(ctx->conns, k)) {
                         conn = kh_val(ctx->conns, k);
                         if (conn->ready) {
@@ -410,7 +409,7 @@ static int l_server_collect_command(lua_State* L)
                                 conn->keycode = KEYCODE_NONE;
                         }
                 }
-        }
+        }*/
 
         count = kv_size(ctx->command.player_inputs);
         count += kv_size(ctx->command.player_joins);
@@ -517,11 +516,55 @@ static int l_server_remove_connection(lua_State* L)
         return 1;
 }
 
+
+static int
+get_target_frameid(int curr_frameid, int context_frameid)
+{
+        int target_frameid = curr_frameid;
+        int diff = context_frameid - curr_frameid;
+
+        if (diff >= 50) {
+                target_frameid = curr_frameid + 9;
+        }
+        else if (diff >= 10 && diff < 30) {
+                target_frameid = curr_frameid + 4;
+        }
+        else if (diff > 2 && diff < 10) {
+                target_frameid = curr_frameid + 2;
+        }
+        // 其他情况保持 target_frameid = curr_frameid
+
+        return target_frameid;
+}
+
+static void
+server_sync_commands(lua_State* L, connection_p conn,
+        lockstep_server_p ctx, int callback_ref)
+{
+        khint_t k;
+        frame_t frame;
+        int taget_frameid = get_target_frameid(conn->frameid, ctx->frameid);
+        for (int i = conn->frameid; i < taget_frameid; i++) {
+                k = kh_get(kcommand, ctx->commands, i);
+                if (k != kh_end(ctx->commands)) {
+                        frame = kh_val(ctx->commands, k);
+                        lua_rawgeti(L, LUA_REGISTRYINDEX, callback_ref);
+                        lua_pushinteger(L, conn->conv);
+                        lua_pushlstring(L, frame.data, frame.len);
+                        if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
+                                log_error(lua_tostring(L, -1));
+                                lua_pop(L, 1);  // 弹出错误信息
+                        }
+                }
+        }
+        conn->frameid = taget_frameid;
+}
+
 static int l_server_sync(lua_State* L)
 {
         khint_t k, p;
         connection_p conn;
-        frame_t frame;
+
         lockstep_server_p ctx;
         ctx = (lockstep_server_p)lua_touserdata(L, 1);
         luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -534,20 +577,7 @@ static int l_server_sync(lua_State* L)
                 if (kh_exist(ctx->conns, k)) {
                         conn = kh_val(ctx->conns, k);
                         if (conn->ready) {
-                                p = kh_get(kcommand, ctx->commands, conn->frameid);
-                                if (p != kh_end(ctx->commands)) {
-                                        frame = kh_val(ctx->commands, p);
-                                        lua_rawgeti(L, LUA_REGISTRYINDEX, callback_ref);
-                                        lua_pushinteger(L, conn->conv);
-                                        lua_pushlstring(L, frame.data, frame.len);
-                                        if (lua_pcall(L, 2, 0, 0) != LUA_OK) {
-                                                log_error(lua_tostring(L, -1));
-                                                lua_pop(L, 1);  // 弹出错误信息
-                                        }
-                                        else {
-                                                conn->frameid++;
-                                        }
-                                }
+                                server_sync_commands(L, conn, ctx, callback_ref);
                         }
                 }
         }
@@ -555,6 +585,7 @@ static int l_server_sync(lua_State* L)
         luaL_unref(L, LUA_REGISTRYINDEX, callback_ref);
         return 0;
 }
+
 
 static int l_server_get_world(lua_State* L)
 {
