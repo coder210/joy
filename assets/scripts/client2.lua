@@ -101,7 +101,14 @@ local function handle_player_inputs(world, player_inputs)
     if not player_inputs then
         return;
     end
+    
+    core.log(app.ctx, "=========apply inputs===========");
+    local ok, conv = net.kcpclient.get_conv(app.kcpclient);
     for _, player_input in ipairs(player_inputs) do
+        core.log(app.ctx, "conv:" .. player_input.conv .. " keycode:" .. player_input.keycode);
+        if conv == player_input.conv then
+            client.pop_local_input(app.client);
+        end
         world2df.move_rigidbody(world, player_input.conv, player_input.keycode);
     end
 end
@@ -164,20 +171,19 @@ local message = function(data)
             end
         end
     elseif t.cmd == 4 then
-        core.log(app.ctx, "==================current frame id:" .. t.frame_id .. "===================");
-        core.log(app.ctx, cjson.encode(t));
+        --core.log(app.ctx, cjson.encode(t));
 
         --1.第一步先把当前世界回滚到上一个确认的帧上
         client.rollback(app.client, app.world);
 
         --2.第二再执行当前到达的帧
-        client.set_server_frameid(app.client, t.frame_id);
-        -- local world_checksum = world2df.checksum(app.world);
-        -- if t.checksum == world_checksum then
-        --     core.log(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
-        -- else
-        --     core.error(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
-        -- end
+        client.set_frameid(app.client, t.frame_id);
+        local world_checksum = world2df.checksum(app.world);
+        if t.checksum == world_checksum then
+            core.log(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
+        else
+            core.error(app.ctx, "S2C_CMD_COMMAND:" .. t.checksum .. ":" .. world_checksum);
+        end
         if #t.player_leaves > 0 then
             handle_player_leaves(app.world, t.player_leaves);
         end
@@ -191,45 +197,16 @@ local message = function(data)
         end
 
         if #t.player_inputs > 0 then
-            -- 保存服务器帧
-            --client.add_command(app.client, t.player_inputs);
             handle_player_inputs(app.world, t.player_inputs);
         end
 
         -- 执行完后添加world备份
         local world_data = world2df.serialize(app.world);
-        local world_checksum = world2df.checksum(app.world);
+        --local world_checksum = world2df.checksum(app.world);
         client.add_world(app.client, t.frame_id, world_data);
 
         --3.在此基础再继续预测
         client.predict(app.client, app.world);
-
-        -- local world_data = world2df.serialize(app.world);
-        -- local world_checksum = world2df.checksum(app.world);
-        -- client.add_world(app.client, t.frame_id, world_data);
-
-        --是否要回滚t.frameid
-        -- local local_inputs = client.get_local_inputs(app.client, t.frame_id);
-        -- if #t.player_inputs ~= #local_inputs then
-        --     core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-        --     client.rollback(app.client, app.world, t.frame_id);
-        --     return;
-        -- else
-        --     for _, server_input in ipairs(t.player_inputs) do
-        --         for _, local_input in ipairs(local_inputs) do
-        --             if server_input.conv == local_input.conv then
-        --                 if server_input.keycode ~= local_input.keycode then
-        --                     core.error(app.ctx, "不同:" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-        --                     client.rollback(app.client, app.world, t.frame_id);
-        --                     return;
-        --                 end
-        --             end
-        --         end
-        --     end
-        --     core.log(app.ctx, "相同" .. cjson.encode(t.player_inputs) .. "|" .. cjson.encode(local_inputs));
-        --     return;
-        -- end
-        -- world2df.update_emeny(app.world, mathx.from_float(app.map_size.x), mathx.from_float(app.map_size.y));
     end
 
 end
@@ -303,13 +280,16 @@ app.start = function(ctx)
             -- core.log(app.ctx, "position_str:" .. position_str);
 
             local body = world2df.get_rigidbody(app.world, conv.conv);
-            if body then
-                local x, y = rigidbody.get_position(body);
-                position = vec2.lerp(position, {
-                    x = x,
-                    y = y
-                }, dt * 10);
-            end
+            -- if body then
+            --     local x, y = rigidbody.get_position(body);
+            --     position = vec2.lerp(position, {
+            --         x = x,
+            --         y = y
+            --     }, dt * 10);
+            -- end
+            local x, y = rigidbody.get_position(body);
+            position.x = x;
+            position.y = y;
             ecs.setex(game_world, entities[i], "position", {
                 x = position.x,
                 y = position.y
@@ -330,8 +310,6 @@ app.start = function(ctx)
     end);
 
     app.my_timer = timer.create(66, function(dt, interval)
-        
-
         local ok, conv = net.kcpclient.get_conv(app.kcpclient);
         if not ok then
             return;
@@ -340,10 +318,9 @@ app.start = function(ctx)
         if not client.is_ready(app.client) then
             return;
         end
-      
-
+        
         if app.keycode == app.keycodes.NONE then
-            --return;
+            return;
         end
 
         -- 应用本地输入
@@ -430,8 +407,8 @@ app.update = function(dt)
     ecs.process(app.game_world, dt);
 
 
-    local server_frame_id, local_frame_id = client.get_frame_id(app.client);
-    local str = app.convert_to_codepoints("中fps:" .. fps .. " l:" .. local_frame_id .. " s:" .. server_frame_id);
+    local frameid = client.get_frameid(app.client);
+    local str = app.convert_to_codepoints("中fps:" .. fps .. " frameid:" .. frameid);
     graphics.update_text(app.texts.fps_text, app.fonts.simhei_font, str, 255, 255, 255, 255);
     graphics.print_text(app.renderer, app.texts.fps_text, 100, 0);
 

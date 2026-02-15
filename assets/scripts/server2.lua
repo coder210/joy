@@ -128,6 +128,10 @@ app.start = function(ctx)
         if server.connections_count(app.server) <= 0 then
             return;
         end
+        
+        if not server.has_command(app.server) then
+            --return;
+        end
 
         -- 收集消息,并执行
         local world_payload = world2df.serialize(app.world);
@@ -136,11 +140,7 @@ app.start = function(ctx)
         -- core.log(app.ctx, str);
         local command = s2c.deserialize(str);
         if s2c.is_command(command.cmd) then
-            core.log(app.ctx, "=====frame_id:" .. command.frame_id .. "=========");
-            core.log(app.ctx, cjson.encode(command));
-            local world_checksum = world2df.checksum(app.world);
-            core.log(app.ctx, "world_checksum:" .. world_checksum);
-
+            --local world_checksum = world2df.checksum(app.world);
             if #command.player_leaves > 0 then
                 handle_player_leaves(app.server, app.world, command.player_leaves);
             end
