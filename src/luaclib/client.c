@@ -166,17 +166,18 @@ static int l_client_predict(lua_State* L)
 	world = (world2df_p)lua_touserdata(L, 2);
 
 
-	SDL_Log("================predict========================");
-	for (it = kl_begin(client->local_buffers);
-		it != kl_end(client->local_buffers);
-		it = kl_next(it)) {
-		player_input = kl_val(it);
-		SDL_Log("keycode=%d,", player_input.keycode);
-	}
+	//SDL_Log("================predict========================");
+	//for (it = kl_begin(client->local_buffers);
+	//	it != kl_end(client->local_buffers);
+	//	it = kl_next(it)) {
+	//	player_input = kl_val(it);
+	//	SDL_Log("keycode=%d,", player_input.keycode);
+	//}
 
-	//      local ok, conv = net.kcpclient.get_conv(app.kcpclient);
-        //kl_shift(kinput_queue, client->local_buffers, 0);
-	SDL_Log("================predict2========================");
+	////      local ok, conv = net.kcpclient.get_conv(app.kcpclient);
+ //       //kl_shift(kinput_queue, client->local_buffers, 0);
+	//SDL_Log("================predict2========================");
+
 	for (it = kl_begin(client->local_buffers); 
 		it != kl_end(client->local_buffers); 
 		it = kl_next(it)) {
