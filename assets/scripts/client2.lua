@@ -37,6 +37,9 @@ local init_ui = function()
         255);
     app.texts.fps_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("fps:"), 255, 255, 255, 255);
 
+    app.texts.ip_port_text = graphics.create_text(app.fonts.simhei_font, app.convert_to_codepoints("ip:" .. app.ip .. " port:" .. app.port), 255, 255, 255, 255);
+    --"ip:" .. app.ip .. " port:" .. app.port .. 
+
     app.buttons.move_up_btn = ui.button.create(app.renderer, app.grad_size, (app.map_size.y - 3) * app.grad_size,
         app.grad_size, app.grad_size);
     ui.button.set_text(app.buttons.move_up_btn, app.fonts.simhei_font, app.convert_to_codepoints("上"), 0, 255, 0, 255);
@@ -257,6 +260,8 @@ app.start = function(ctx)
 
     local ip = core.get_env(app.ctx, "ip");
     local port = math.tointeger(core.get_env(app.ctx, "port"));
+    app.ip = ip;
+    app.port = port;
     core.log(app.ctx, "ip:" .. ip .. " port:" .. port);
 
     app.world = world2df.create();
@@ -277,7 +282,7 @@ app.start = function(ctx)
             local position = cjson.decode(position_str);
             local conv = cjson.decode(conv_str);
 
-            core.log(app.ctx, "dt:" .. dt);
+            --core.log(app.ctx, "dt:" .. dt);
             -- core.log(app.ctx, "position_str:" .. position_str);
 
             local body = world2df.get_rigidbody(app.world, conv.conv);
@@ -411,7 +416,8 @@ app.update = function(dt)
     local frameid = client.get_frameid(app.client);
     local str = app.convert_to_codepoints("中fps:" .. fps .. " frameid:" .. frameid);
     graphics.update_text(app.texts.fps_text, app.fonts.simhei_font, str, 255, 255, 255, 255);
-    graphics.print_text(app.renderer, app.texts.fps_text, 100, 0);
+    graphics.print_text(app.renderer, app.texts.fps_text, 100, 30);
+    graphics.print_text(app.renderer, app.texts.ip_port_text, 100, 0);
 
     -- world2df.foreach_body(app.world, function (body)
     --         --core.log(app.ctx, "body:" .. rigidbody.tostring(body));
