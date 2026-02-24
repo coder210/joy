@@ -277,19 +277,20 @@ app.start = function(ctx)
             local position = cjson.decode(position_str);
             local conv = cjson.decode(conv_str);
 
+            core.log(app.ctx, "dt:" .. dt);
             -- core.log(app.ctx, "position_str:" .. position_str);
 
             local body = world2df.get_rigidbody(app.world, conv.conv);
-            if body then
-                local x, y = rigidbody.get_position(body);
-                position = vec2.lerp(position, {
-                    x = x,
-                    y = y
-                }, dt * 10);
-            end
-            -- local x, y = rigidbody.get_position(body);
-            -- position.x = x;
-            -- position.y = y;
+            -- if body then
+            --     local x, y = rigidbody.get_position(body);
+            --     position = vec2.lerp(position, {
+            --         x = x,
+            --         y = y
+            --     }, dt);
+            -- end
+            local x, y = rigidbody.get_position(body);
+            position.x = x;
+            position.y = y;
             ecs.setex(game_world, entities[i], "position", {
                 x = position.x,
                 y = position.y
