@@ -277,6 +277,7 @@ app.start = function(ctx)
             local position = cjson.decode(position_str);
             local conv = cjson.decode(conv_str);
 
+            core.log(app.ctx, "dt:" .. dt);
             -- core.log(app.ctx, "position_str:" .. position_str);
 
             local body = world2df.get_rigidbody(app.world, conv.conv);

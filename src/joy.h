@@ -12,7 +12,6 @@
 
 typedef struct app app_t, *app_p;
 
-void joy_print_title();
 app_p joy_create(const char* config_file);
 void joy_destroy(app_p app);
 void joy_update(app_p app);
