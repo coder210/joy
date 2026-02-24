@@ -171,12 +171,18 @@ else()
             set(outname "${MOBILE_ASSETS_DIR}/${filename}")    
         else()
             # for platforms that do not have a good packaging format, all we can do is copy the assets to the process working directory.
-            set(outname "${CMAKE_BINARY_DIR}/$<CONFIGURATION>/${filename}")
+			set(outname "${CMAKE_BINARY_DIR}/$<CONFIGURATION>/${filename}")
         endif()
         add_custom_command(POST_BUILD
             TARGET "${EXECUTABLE_NAME}"
 		    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/assets/${filename}" "${outname}"
 	    )
+        if(MSVC)
+			add_custom_command(POST_BUILD
+				TARGET "${EXECUTABLE_NAME}"
+				COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_LIST_DIR}/assets/${filename}" "${CMAKE_BINARY_DIR}/${filename}"
+			)
+		endif()
     endmacro()
 
 
