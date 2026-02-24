@@ -1,8 +1,8 @@
 local config = {}
 
---config.ip = "8.148.188.213"
-config.ip = "192.168.1.8"
-config.port = 30001
+config.ip = "8.148.188.213"
+--config.ip = "192.168.1.8"
+config.port = 30000
 config.orientation = "LandscapeLeft"
 config.start = "scripts/client2.lua"
 config.loader = "lualib/loader.lua"
