@@ -143,8 +143,10 @@ end
 local message = function(data)
     local t = s2c.deserialize(data);
     if t.cmd == 3 then
+        core.log(app.ctx, cjson.encode(t));
         core.log(app.ctx, "S2C_CMD_LOADING:" .. t.frame_id);
         if t.ok then
+            core.log(app.ctx, "loaded");
             if not client.cmd_loading1(app.client, app.world, t.ok, t.data, t.frame_id) then
                 return;
             end
@@ -177,8 +179,9 @@ local message = function(data)
             local world_data = world2df.serialize(app.world);
             local world_checksum = world2df.checksum(app.world);
             client.add_world(app.client, t.frame_id, world_data);
-            core.log(app.ctx, "cmd_loading:" .. world_checksum);
+            core.log(app.ctx, "cmd_loaded:" .. world_checksum);
         else
+            core.log(app.ctx, "loading");
             local str = client.cmd_loading2(app.client, t.ok, t.data);
             if str then
                 net.kcpclient.send(app.kcpclient, str, string.len(str));
