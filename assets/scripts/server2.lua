@@ -45,6 +45,17 @@ local function handle_player_leaves(server_k, world, player_leaves)
             server.remove_connection(server_k, player_leave.conv);
             world2df.remove_connection(world, player_leave.conv);
             world2df.destroy_rigidbody(world, entityid);
+
+            -- deleting renderer
+            local entities = ecs.query(app.game_world, {"conv"});
+            for i = 1, #entities do
+                local conv_str = ecs.get(app.game_world, entities[i], "conv");
+                local conv = cjson.decode(conv_str);
+                if player_leave.conv == conv then
+                    ecs.kill(app.game_world, conv);
+                    break;
+                end
+            end
         end
     end
 end
