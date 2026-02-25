@@ -89,7 +89,7 @@ typedef struct s2c_loading {
         int32_t conv;
         int32_t data_len;
         char data[JOY_MAX_BUFFER];
-        bool ok;
+        int ok;
 }s2c_loading_t, * s2c_loading_p;
 
 typedef struct s2c_player {
