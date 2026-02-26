@@ -390,17 +390,7 @@ app.event = function(event)
     ui.button.listen(app.buttons.move_left_btn, event);
     ui.button.listen(app.buttons.move_right_btn, event);
 
-    if ui.button.is_clicked(app.buttons.move_up_btn) then
-        app.keycode = app.keycodes.UP;
-    elseif ui.button.is_clicked(app.buttons.move_down_btn) then
-        app.keycode = app.keycodes.DOWN;
-    elseif ui.button.is_clicked(app.buttons.move_left_btn) then
-        app.keycode = app.keycodes.LEFT;
-    elseif ui.button.is_clicked(app.buttons.move_right_btn) then
-        app.keycode = app.keycodes.RIGHT;
-    end
-
-
+    
 end
 
 local draw_ui = function()
@@ -444,6 +434,18 @@ app.update = function(dt)
     draw_ui();
 
     graphics.present(app.renderer);
+
+    
+    if ui.button.is_clicked(app.buttons.move_up_btn) then
+        app.keycode = app.keycodes.UP;
+    elseif ui.button.is_clicked(app.buttons.move_down_btn) then
+        app.keycode = app.keycodes.DOWN;
+    elseif ui.button.is_clicked(app.buttons.move_left_btn) then
+        app.keycode = app.keycodes.LEFT;
+    elseif ui.button.is_clicked(app.buttons.move_right_btn) then
+        app.keycode = app.keycodes.RIGHT;
+    end
+
 end
 
 app.destroy = function()
