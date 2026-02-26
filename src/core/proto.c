@@ -22,7 +22,7 @@ void pack_test()
                 s2c_t s2c1 = { 0 };
                 s2c1.cmd = S2C_CMD_LOADING;
                 s2c1.loading.conv = 100;
-                s2c1.loading.ok = false;
+                s2c1.loading.ok = 0;
                 s2c1.loading.data_len = 0;
                 //SDL_memcpy(s2c1.loading.data, "liweiaaaab", s2c1.loading.data_len);
 
@@ -280,8 +280,7 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                 if (s2c->loading.data_len > 0) {
                         offset = unpack_string(buf, s2c->loading.data, s2c->loading.data_len, offset);
                 }
-                int t = (int)s2c->loading.ok;
-                offset = unpack_int32(buf, &t, offset);
+                offset = unpack_int32(buf, &s2c->loading.ok, offset);
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
                 kv_init(s2c->command.player_inputs);
