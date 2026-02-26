@@ -281,7 +281,8 @@ app.start = function(ctx)
     app.world = world2df.create();
     app.kcpclient = net.kcpclient.create(ip, port);
     app.client = client.create();
-    app.keycode = app.keycodes.NONE;
+    app.keyboard_keycode = app.keycodes.NONE;
+    app.button_keycode = app.keycodes.NONE;
 
     app.fps = profiler.simple_fps.create();
 
@@ -339,15 +340,22 @@ app.start = function(ctx)
             return;
         end
         
-        if app.keycode == app.keycodes.NONE then
+        local keycode = app.keycodes.NONE;
+        if app.keyboard_keycode == app.keycodes.NONE and app.button_keycode == app.keycodes.NONE then
             return;
         end
 
+        if app.keyboard_keycode ~= app.keycodes.NONE then
+            keycode = app.keyboard_keycode;
+        elseif app.button_keycode ~= app.keycodes.NONE then
+            keycode = app.button_keycode;
+        end
+
         -- 应用本地输入
-        client.apply_input(app.client, app.world, conv, app.keycode);
+        client.apply_input(app.client, app.world, conv, keycode);
 
         -- 同步到服务器
-        local str = c2s.serialize_player_input(app.keycode);
+        local str = c2s.serialize_player_input(keycode);
         net.kcpclient.send(app.kcpclient, str, string.len(str));
     end);
 
@@ -370,17 +378,17 @@ app.event = function(event)
         -- core.quit(app.ctx);
         -- kcpclient.send(app.kcpclient, "hello, server", string.len("hello, server"));
     elseif keyboard.is_down(event, "UP") then
-        app.keycode = app.keycodes.UP;
+        app.keyboard_keycode = app.keycodes.UP;
     elseif keyboard.is_down(event, "RIGHT") then
-        app.keycode = app.keycodes.RIGHT;
+        app.keyboard_keycode = app.keycodes.RIGHT;
     elseif keyboard.is_down(event, "DOWN") then
-        app.keycode = app.keycodes.DOWN;
+        app.keyboard_keycode = app.keycodes.DOWN;
     elseif keyboard.is_down(event, "LEFT") then
-        app.keycode = app.keycodes.LEFT;
+        app.keyboard_keycode = app.keycodes.LEFT;
     elseif keyboard.is_down(event, "SPACE") then
-        app.keycode = app.keycodes.SPACE;
+        app.keyboard_keycode = app.keycodes.SPACE;
     elseif keyboard.is_keyup(event) then
-        app.keycode = app.keycodes.NONE;
+        app.keyboard_keycode = app.keycodes.NONE;
     end
 
     joystick.handle_event(app.left_joystick, event);
@@ -435,15 +443,17 @@ app.update = function(dt)
 
     graphics.present(app.renderer);
 
-    
+
     if ui.button.is_clicked(app.buttons.move_up_btn) then
-        app.keycode = app.keycodes.UP;
+        app.button_keycode = app.keycodes.UP;
     elseif ui.button.is_clicked(app.buttons.move_down_btn) then
-        app.keycode = app.keycodes.DOWN;
+        app.button_keycode = app.keycodes.DOWN;
     elseif ui.button.is_clicked(app.buttons.move_left_btn) then
-        app.keycode = app.keycodes.LEFT;
+        app.button_keycode = app.keycodes.LEFT;
     elseif ui.button.is_clicked(app.buttons.move_right_btn) then
-        app.keycode = app.keycodes.RIGHT;
+        app.button_keycode = app.keycodes.RIGHT;
+    else
+        app.button_keycode = app.keycodes.NONE;
     end
 
 end
