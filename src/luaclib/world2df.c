@@ -96,11 +96,11 @@ static int l_world2df_destroy_rigidbody(lua_State* L)
 static int l_world2df_get_rigidbody(lua_State* L)
 {
         world2df_p world;
-        int conv;
+        uint32_t entity_id;
         rigidbody_p body;
         world = lua_touserdata(L, 1);
-        conv = luaL_checkinteger(L, 2);
-        body = world2df_get_rigidbody(world, conv);
+        entity_id = luaL_checkinteger(L, 2);
+        body = world2df_get_rigidbody(world, entity_id);
         if (body) {
                 lua_pushlightuserdata(L, body);
         }
@@ -110,7 +110,24 @@ static int l_world2df_get_rigidbody(lua_State* L)
         return 1;
 }
 
-static int l_world2df_move_rigidbody(lua_State* L)
+static int l_world2df_get_player(lua_State* L)
+{
+        world2df_p world;
+        int conv;
+        rigidbody_p body;
+        world = lua_touserdata(L, 1);
+        conv = luaL_checkinteger(L, 2);
+        body = world2df_get_player(world, conv);
+        if (body) {
+                lua_pushlightuserdata(L, body);
+        }
+        else {
+                lua_pushnil(L);
+        }
+        return 1;
+}
+
+static int l_world2df_move_player(lua_State* L)
 {
         world2df_p world;
         uint32_t id;
@@ -118,7 +135,7 @@ static int l_world2df_move_rigidbody(lua_State* L)
         world = lua_touserdata(L, 1);
         id = luaL_checkinteger(L, 2);
         keycode = (short)luaL_checkinteger(L, 3);
-        world2df_move_rigidbody(world, id, keycode);
+        world2df_move_player(world, id, keycode);
         return 0;
 }
 
@@ -327,7 +344,8 @@ int luaopen_world2df(lua_State* L)
             {"create_rigidbody", l_world2df_create_rigidbody},
             {"destroy_rigidbody", l_world2df_destroy_rigidbody},
             {"get_rigidbody", l_world2df_get_rigidbody},
-            {"move_rigidbody", l_world2df_move_rigidbody},
+            {"get_player", l_world2df_get_player},
+            {"move_player", l_world2df_move_player},
             {"get_entity_id", l_world2df_get_entity_id},
             {"connections_count", l_world2df_connections_count},
             {"add_connection", l_world2df_add_connection},

@@ -182,8 +182,8 @@ static int l_client_predict(lua_State* L)
 		it != kl_end(client->local_buffers); 
 		it = kl_next(it)) {
                 player_input = kl_val(it);
-		world2df_move_rigidbody(world, player_input.conv, player_input.keycode);
-                SDL_Log("keycode=%d,", player_input.keycode);
+		world2df_move_player(world, player_input.conv, player_input.keycode);
+                //SDL_Log("keycode=%d,", player_input.keycode);
 	}
 
 	return 0;
@@ -210,7 +210,7 @@ static int l_client_apply_input(lua_State* L)
 	*kl_pushp(kinput_queue, client->local_buffers) = player_input;
 
 	/* 先执行 */
-	world2df_move_rigidbody(world, player_input.conv, player_input.keycode);
+	world2df_move_player(world, player_input.conv, player_input.keycode);
 
 	return 0;
 }

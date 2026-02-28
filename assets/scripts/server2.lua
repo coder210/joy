@@ -29,7 +29,7 @@ local function handle_player_joins(game_world, world, player_joins)
             x = 1.0,
             y = 1.0
         }));
-        ecs.set(app.game_world, entity_id, "conv", cjson.encode({
+        ecs.set(app.game_world, entity_id, "player", cjson.encode({
             conv = player_join.conv
         }));
     end
@@ -47,12 +47,12 @@ local function handle_player_leaves(server_k, world, player_leaves)
             world2df.destroy_rigidbody(world, entityid);
 
             -- deleting renderer
-            local entities = ecs.query(app.game_world, {"conv"});
+            local entities = ecs.query(app.game_world, {"player"});
             for i = 1, #entities do
-                local conv_str = ecs.get(app.game_world, entities[i], "conv");
-                local conv = cjson.decode(conv_str);
-                if player_leave.conv == conv then
-                    ecs.kill(app.game_world, conv);
+                local player_str = ecs.get(app.game_world, entities[i], "player");
+                local player = cjson.decode(player_str);
+                if player_leave.conv == player.conv then
+                    ecs.kill(app.game_world, entities[i]);
                     break;
                 end
             end
@@ -64,8 +64,11 @@ local function handle_player_inputs(world, player_inputs)
     if not player_inputs then
         return;
     end
+
+    core.log(app.ctx, "=========apply inputs===========");
     for _, player_input in ipairs(player_inputs) do
-        world2df.move_rigidbody(world, player_input.conv, player_input.keycode);
+        core.log(app.ctx, "conv:" .. player_input.conv .. " keycode:" .. player_input.keycode);
+        world2df.move_player(world, player_input.conv, player_input.keycode);
     end
 end
 
@@ -78,6 +81,19 @@ local function handle_creating_emenies(world, creating_emenies)
         rigidbody.set_linear_velocity(body, creating_emeny.linear_velocity_x, creating_emeny.linear_velocity_y);
         rigidbody.set_position(body, creating_emeny.position_x, creating_emeny.position_y);
         world2df.add_emeny(world, rigidbody.get_id(body));
+
+        local entity_id = ecs.spawn(app.game_world);
+        ecs.set(app.game_world, entity_id, "position", cjson.encode({
+            x = mathx.to_float(creating_emeny.position_x),
+            y = mathx.to_float(creating_emeny.position_y)
+        }));
+        ecs.set(app.game_world, entity_id, "size", cjson.encode({
+            x = mathx.to_float(creating_emeny.width),
+            y = mathx.to_float(creating_emeny.height),
+        }));
+        ecs.set(app.game_world, entity_id, "emeny", cjson.encode({
+            entityid = rigidbody.get_id(body)
+        }));
     end
 end
 
@@ -117,7 +133,8 @@ app.start = function(ctx)
     ecs.define(app.game_world, "position", 256);
     ecs.define(app.game_world, "velocity", 256);
     ecs.define(app.game_world, "size", 256);
-    ecs.define(app.game_world, "conv", 256);
+    ecs.define(app.game_world, "player", 256);
+    ecs.define(app.game_world, "emeny", 256);
 
     app.anim1 = animation.create(app.renderer);
     -- add clip
@@ -164,62 +181,92 @@ app.start = function(ctx)
             if #command.creating_emenies > 0 then
                 handle_creating_emenies(app.world, command.creating_emenies);
             end
-
             world2df.update_emeny(app.world, mathx.from_float(app.map_size.x), mathx.from_float(app.map_size.y));
         end
 
-        -- local enemies_count = world2df.enemies_count(app.world);
-        -- if enemies_count >= 10 then
-        --         core.log(app.ctx, "enemies count > 2 " .. enemies_count);
-        -- else
-        --         core.log(app.ctx, "enemy spawn timer:" .. enemies_count);
-        --         local r1 = math.random();
-        --         local r2 = math.random() - 0.5;
-        --         local r3 = math.random(1, app.map_size.y);
-        --         core.log(app.ctx, "r1:" .. r1 .. " r2:" .. r2 .. " r3:" .. r3);
-        --         local width = mathx.from_float(r1);
-        --         local height = width;
-        --         local liner_velocity_x = mathx.from_float(r2);
-        --         local liner_velocity_y = 0;
-        --         local position_x = 0;
-        --         if r2 >= 0 then
-        --                 position_x = 0;
-        --         else
-        --                 position_x = mathx.from_float(app.map_size.y);
-        --         end
-        --         local position_y = mathx.from_float(r3);
-        --         server.create_enemy(app.server, width, height, liner_velocity_x, liner_velocity_y, position_x, position_y);
-        -- end
+        local enemies_count = world2df.enemies_count(app.world);
+        if enemies_count >= 10 then
+                core.log(app.ctx, "enemies count > 2 " .. enemies_count);
+        else
+                core.log(app.ctx, "enemy spawn timer:" .. enemies_count);
+                local r1 = math.random();
+                local r2 = math.random() - 0.5;
+                local r3 = math.random(1, app.map_size.y);
+                core.log(app.ctx, "r1:" .. r1 .. " r2:" .. r2 .. " r3:" .. r3);
+                local width = mathx.from_float(r1);
+                local height = width;
+                local liner_velocity_x = mathx.from_float(r2);
+                local liner_velocity_y = 0;
+                local position_x = 0;
+                if r2 >= 0 then
+                        position_x = 0;
+                else
+                        position_x = mathx.from_float(app.map_size.y);
+                end
+                local position_y = mathx.from_float(r3);
+                server.create_enemy(app.server, width, height, liner_velocity_x, liner_velocity_y, position_x, position_y);
+        end
 
         server.sync(app.server, function(conv, str)
             net.kcpserver.send(app.kcpserver, conv, str, string.len(str));
         end);
     end);
 
-    -- move
+    -- player move
     ecs.register(app.game_world, function(game_world, dt)
-        local entities = ecs.query(game_world, {"position", "conv"});
+        local entities = ecs.query(game_world, {"position", "player"});
         for i = 1, #entities do
             local position_str = ecs.get(game_world, entities[i], "position");
-            local conv_str = ecs.get(game_world, entities[i], "conv");
+            local player_str = ecs.get(game_world, entities[i], "player");
             local position = cjson.decode(position_str);
-            local conv = cjson.decode(conv_str);
+            local player = cjson.decode(player_str);
 
-            local body = world2df.get_rigidbody(app.world, conv.conv);
+            core.log(app.ctx, "=============== player move ====================");
+
+            local body = world2df.get_player(app.world, player.conv);
+            if body then
+                local x, y = rigidbody.get_position(body);
+                core.log(app.ctx, "========x:" .. x .. " y:" .. y .. "===========");
+                -- position = vec2.lerp(position, {
+                --     x = x,
+                --     y = y
+                -- }, dt * 10);
+                position.x = x;
+                position.y = y;
+
+                ecs.set(game_world, entities[i], "position", cjson.encode({
+                    x = position.x,
+                    y = position.y
+                }));
+            end
+        end
+    end);
+
+    -- emeny move
+    ecs.register(app.game_world, function(game_world, dt)
+        local entities = ecs.query(game_world, {"position", "emeny"});
+        for i = 1, #entities do
+            local position_str = ecs.get(game_world, entities[i], "position");
+            local emeny_str = ecs.get(game_world, entities[i], "emeny");
+            local position = cjson.decode(position_str);
+            local emeny = cjson.decode(emeny_str);
+
+            local body = world2df.get_rigidbody(app.world, emeny.entityid);
             if body then
                 local x, y = rigidbody.get_position(body);
                 position = vec2.lerp(position, {
                     x = x,
                     y = y
                 }, dt * 10);
+                ecs.set(game_world, entities[i], "position", cjson.encode({
+                    x = position.x,
+                    y = position.y
+                }));
             end
-            ecs.set(game_world, entities[i], "position", cjson.encode({
-                x = position.x,
-                y = position.y
-            }));
         end
     end);
 
+    --renderer
     ecs.register(app.game_world, function(game_world, dt)
         local entities = ecs.query(game_world, {"position", "size"});
         for i = 1, #entities do
@@ -238,8 +285,13 @@ app.start = function(ctx)
         --         core.log(app.ctx, "enemies count > 2 " .. enemies_count);
         -- else
         --         core.log(app.ctx, "enemy spawn timer:" .. enemies_count);
-        --         local r1 = math.random(5);
-        --         server.create_enemy(app.server, mathx.from_float(r1), mathx.from_float(1));
+        --         local width = mathx.from_float(1);
+        --         local height = mathx.from_float(1);
+        --         local liner_velocity_x = mathx.from_float(1);
+        --         local liner_velocity_y = mathx.from_float(1);
+        --         local position_x = mathx.from_float(math.random(5));
+        --         local position_y = mathx.from_float(1);
+        --         server.create_enemy(app.server, width, height, liner_velocity_x, liner_velocity_y, position_x, position_y);
         -- end
     end);
 end
