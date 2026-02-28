@@ -207,7 +207,20 @@ void world2df_destroy_rigidbody(world2df_p world, uint32_t id)
         }
 }
 
-rigidbody_p world2df_get_rigidbody(world2df_p world, int conv)
+rigidbody_p world2df_get_rigidbody(world2df_p world, uint32_t id)
+{
+        int ret;
+        khint_t k;
+        rigidbody_p body;
+        k = kh_get(krigidbodies, world->rigidbodies, id);
+        if (k == kh_end(world->rigidbodies)) {
+                return NULL;
+        }
+        body = kh_val(world->rigidbodies, k);
+        return body;
+}
+
+rigidbody_p world2df_get_player(world2df_p world, int conv)
 {
         uint32_t entity_id;
         int ret;
@@ -230,7 +243,7 @@ rigidbody_p world2df_get_rigidbody(world2df_p world, int conv)
         return body;
 }
 
-int world2df_move_rigidbody(world2df_p world, int conv, short keycode)
+int world2df_move_player(world2df_p world, int conv, short keycode)
 {
         uint32_t entity_id;
         int ret;
@@ -445,10 +458,10 @@ void world2df_update_emeny(world2df_p world, vec2f_t map_size)
                                 body = kh_val(world->rigidbodies, k);
                                 if (body->linear_velocity.x > 0) {
                                         if (body->position.x >= map_size.x) {
-                                                kh_del(kenemies, world->enemies, i);
+                                               /* kh_del(kenemies, world->enemies, i);
                                                 kh_del(krigidbodies, world->rigidbodies, k);
                                                 SDL_free(enemy);
-                                                SDL_free(body);
+                                                SDL_free(body);*/
                                         }
                                         else {
                                                 body->position = vec2f_add(body->position, body->linear_velocity);
@@ -456,10 +469,10 @@ void world2df_update_emeny(world2df_p world, vec2f_t map_size)
                                 }
                                 else {
                                         if (body->position.x <= 0) {
-                                                kh_del(kenemies, world->enemies, i);
+                                               /* kh_del(kenemies, world->enemies, i);
                                                 kh_del(krigidbodies, world->rigidbodies, k);
                                                 SDL_free(enemy);
-                                                SDL_free(body);
+                                                SDL_free(body);*/
                                         }
                                         else {
                                                 body->position = vec2f_add(body->position, body->linear_velocity);

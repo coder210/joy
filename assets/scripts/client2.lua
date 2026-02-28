@@ -81,7 +81,7 @@ local function handle_player_joins(game_world, world, player_joins)
             x = 1.0,
             y = 1.0
         });
-        ecs.setex(app.game_world, entity_id, "conv", {
+        ecs.setex(app.game_world, entity_id, "player", {
             conv = player_join.conv
         });
     end
@@ -98,12 +98,12 @@ local function handle_player_leaves(world, player_leaves)
             world2df.destroy_rigidbody(world, entityid);
 
              -- deleting renderer
-            local entities = ecs.query(app.game_world, {"conv"});
+            local entities = ecs.query(app.game_world, {"player"});
             for i = 1, #entities do
-                local conv_str = ecs.get(app.game_world, entities[i], "conv");
-                local conv = cjson.decode(conv_str);
-                if player_leave.conv == conv then
-                    ecs.kill(app.game_world, conv);
+                local player_str = ecs.get(app.game_world, entities[i], "player");
+                local player = cjson.decode(player_str);
+                if player_leave.conv == player.conv then
+                    ecs.kill(app.game_world, entities[i]);
                     break;
                 end
             end
@@ -123,7 +123,7 @@ local function handle_player_inputs(world, player_inputs)
         if conv == player_input.conv then
             client.pop_local_input(app.client);
         end
-        world2df.move_rigidbody(world, player_input.conv, player_input.keycode);
+        world2df.move_player(world, player_input.conv, player_input.keycode);
     end
 end
 
@@ -136,6 +136,19 @@ local function handle_creating_emenies(world, creating_emenies)
         rigidbody.set_linear_velocity(body, creating_emeny.linear_velocity_x, creating_emeny.linear_velocity_y);
         rigidbody.set_position(body, creating_emeny.position_x, creating_emeny.position_y);
         world2df.add_emeny(world, rigidbody.get_id(body));
+
+        local entity_id = ecs.spawn(app.game_world);
+        ecs.set(app.game_world, entity_id, "position", cjson.encode({
+            x = mathx.to_float(creating_emeny.position_x),
+            y = mathx.to_float(creating_emeny.position_y)
+        }));
+        ecs.set(app.game_world, entity_id, "size", cjson.encode({
+            x = mathx.to_float(creating_emeny.width),
+            y = mathx.to_float(creating_emeny.height),
+        }));
+        ecs.set(app.game_world, entity_id, "emeny", cjson.encode({
+            entityid = rigidbody.get_id(body)
+        }));
     end
 end
 
@@ -153,7 +166,7 @@ local message = function(data)
 
             -- 判断添加了玩家,敌人的数量
             world2df.foreach_connection(app.world, function(conv, body_id)
-                local body = world2df.get_rigidbody(app.world, conv);
+                local body = world2df.get_player(app.world, conv);
                 local x, y = rigidbody.get_position(body);
                 local width = rigidbody.get_width(body);
                 local height = rigidbody.get_height(body);
@@ -167,7 +180,7 @@ local message = function(data)
                     x = width,
                     y = height
                 });
-                ecs.setex(app.game_world, entity_id, "conv", {
+                ecs.setex(app.game_world, entity_id, "player", {
                     conv = conv
                 });
             end);
@@ -209,13 +222,16 @@ local message = function(data)
             handle_player_joins(app.game_world, app.world, t.player_joins);
         end
 
+        if #t.player_inputs > 0 then
+            handle_player_inputs(app.world, t.player_inputs);
+        end
+
         if #t.creating_emenies > 0 then
             handle_creating_emenies(app.world, t.creating_emenies);
         end
 
-        if #t.player_inputs > 0 then
-            handle_player_inputs(app.world, t.player_inputs);
-        end
+        -- 敌人操作
+        world2df.update_emeny(app.world, mathx.from_float(app.map_size.x), mathx.from_float(app.map_size.y));
 
         -- 执行完后添加world备份
         local world_data = world2df.serialize(app.world);
@@ -226,24 +242,6 @@ local message = function(data)
         client.predict(app.client, app.world);
     end
 
-end
-
-local test = function()
-    local result, msg = net.kcpclient.poll(app.kcpclient);
-    if result then
-        if msg.type == 0 then
-            local ok, conv = net.kcpclient.get_conv(app.kcpclient);
-            core.log(app.ctx, "kcp eventcb connected:" .. conv);
-            local str = c2s.serialize_ready();
-            net.kcpclient.send(app.kcpclient, str, string.len(str));
-        elseif msg.type == 1 then
-            local ok, conv = net.kcpclient.get_conv(app.kcpclient);
-            core.log(app.ctx, "disconnected:" .. conv);
-        elseif msg.type == 2 then
-            -- sdl.log("etype:" .. event.data);
-            message(msg.data);
-        end
-    end
 end
 
 app.start = function(ctx)
@@ -270,7 +268,8 @@ app.start = function(ctx)
     ecs.define(app.game_world, "position", 256);
     ecs.define(app.game_world, "velocity", 256);
     ecs.define(app.game_world, "size", 256);
-    ecs.define(app.game_world, "conv", 256);
+    ecs.define(app.game_world, "player", 256);
+    ecs.define(app.game_world, "emeny", 256);
 
     local ip = core.get_env(app.ctx, "ip");
     local port = math.tointeger(core.get_env(app.ctx, "port"));
@@ -288,36 +287,58 @@ app.start = function(ctx)
 
     init_ui();
 
-    -- move
+    -- player move
     ecs.register(app.game_world, function(game_world, dt)
-        local entities = ecs.query(game_world, {"position", "conv"});
+        local entities = ecs.query(game_world, {"position", "player"});
         for i = 1, #entities do
             local position_str = ecs.get(game_world, entities[i], "position");
-            local conv_str = ecs.get(game_world, entities[i], "conv");
+            local player_str = ecs.get(game_world, entities[i], "player");
             local position = cjson.decode(position_str);
-            local conv = cjson.decode(conv_str);
+            local player = cjson.decode(player_str);
 
-            --core.log(app.ctx, "dt:" .. dt);
-            -- core.log(app.ctx, "position_str:" .. position_str);
+            local body = world2df.get_player(app.world, player.conv);
+            if body then
+                local x, y = rigidbody.get_position(body);
+                -- position = vec2.lerp(position, {
+                --     x = x,
+                --     y = y
+                -- }, dt * 10);
+                position.x = x;
+                position.y = y;
 
-            local body = world2df.get_rigidbody(app.world, conv.conv);
-            -- if body then
-            --     local x, y = rigidbody.get_position(body);
-            --     position = vec2.lerp(position, {
-            --         x = x,
-            --         y = y
-            --     }, dt);
-            -- end
-            local x, y = rigidbody.get_position(body);
-            position.x = x;
-            position.y = y;
-            ecs.setex(game_world, entities[i], "position", {
-                x = position.x,
-                y = position.y
-            });
+                ecs.set(game_world, entities[i], "position", cjson.encode({
+                    x = position.x,
+                    y = position.y
+                }));
+            end
         end
     end);
 
+    -- emeny move
+    ecs.register(app.game_world, function(game_world, dt)
+        local entities = ecs.query(game_world, {"position", "emeny"});
+        for i = 1, #entities do
+            local position_str = ecs.get(game_world, entities[i], "position");
+            local emeny_str = ecs.get(game_world, entities[i], "emeny");
+            local position = cjson.decode(position_str);
+            local emeny = cjson.decode(emeny_str);
+
+            local body = world2df.get_rigidbody(app.world, emeny.entityid);
+            if body then
+                local x, y = rigidbody.get_position(body);
+                position = vec2.lerp(position, {
+                    x = x,
+                    y = y
+                }, dt * 10);
+                ecs.set(game_world, entities[i], "position", cjson.encode({
+                    x = position.x,
+                    y = position.y
+                }));
+            end
+        end
+    end);
+
+    --renderer
     ecs.register(app.game_world, function(game_world, dt)
         local entities = ecs.query(game_world, {"position", "size"});
         for i = 1, #entities do
@@ -325,8 +346,8 @@ app.start = function(ctx)
             local size_str = ecs.get(game_world, entities[i], "size");
             local position = cjson.decode(position_str);
             local size = cjson.decode(size_str);
-            graphics.rectangle(app.renderer, "fill", position.x * app.grad_size, position.y * app.grad_size,
-                size.x * app.grad_size, size.y * app.grad_size);
+            -- core.log(app.ctx, position_str);
+            graphics.rectangle(app.renderer, "fill", position.x * 50, position.y * 50, size.x * 50, size.y * 50);
         end
     end);
 
@@ -413,7 +434,21 @@ end
 app.update = function(dt)
     local fps = profiler.simple_fps.update(app.fps);
     net.kcpclient.update(app.kcpclient);
-    test();
+    local result, msg = net.kcpclient.poll(app.kcpclient);
+    if result then
+        if msg.type == 0 then
+            local ok, conv = net.kcpclient.get_conv(app.kcpclient);
+            core.log(app.ctx, "kcp eventcb connected:" .. conv);
+            local str = c2s.serialize_ready();
+            net.kcpclient.send(app.kcpclient, str, string.len(str));
+        elseif msg.type == 1 then
+            local ok, conv = net.kcpclient.get_conv(app.kcpclient);
+            core.log(app.ctx, "disconnected:" .. conv);
+        elseif msg.type == 2 then
+            -- sdl.log("etype:" .. event.data);
+            message(msg.data);
+        end
+    end
 
     timer.trigger(app.my_timer);
     timer.trigger(app.heartbeat_timer);
@@ -423,7 +458,6 @@ app.update = function(dt)
     graphics.set_color(app.renderer, 128, 128, 128, 255);
 
     ecs.process(app.game_world, dt);
-
 
     local frameid = client.get_frameid(app.client);
     local str = app.convert_to_codepoints("中fps:" .. fps .. " frameid:" .. frameid);
