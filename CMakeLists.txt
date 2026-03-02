@@ -23,7 +23,7 @@ if(MSVC)
 endif()
 
 # Set the name of the executable
-set(EXECUTABLE_NAME ${PROJECT_NAME})
+set(EXECUTABLE_NAME "${PROJECT_NAME}_loader")
 
 # Create an executable or a shared library based on the platform and add our sources to it
 if (ANDROID)
@@ -89,12 +89,12 @@ endif()
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
 # pollute upwards into our configuration.
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
-add_subdirectory(core EXCLUDE_FROM_ALL)
+add_subdirectory(joy2d_core EXCLUDE_FROM_ALL)
 
 # Link SDL to our executable. This also makes its include directory available to us. 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC 
     SDL3::SDL3
-    core
+    joy2d_core
 )
 
 
