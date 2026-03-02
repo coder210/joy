@@ -24,6 +24,7 @@ endif()
 
 # Set the name of the executable
 set(EXECUTABLE_NAME "${PROJECT_NAME}_loader")
+set(SRC_DIR_NAME "${PROJECT_NAME}_loader")
 
 # Create an executable or a shared library based on the platform and add our sources to it
 if (ANDROID)
@@ -34,13 +35,13 @@ else()
 	add_executable(${EXECUTABLE_NAME})
 endif()
 
-set(EXTERNAL_FILES "${EXECUTABLE_NAME}/external/lua/*.h" "${EXECUTABLE_NAME}/external/lua/*.c"  "${EXECUTABLE_NAME}/external/mujs/*.h" "${EXECUTABLE_NAME}/external/mujs/*.c"  "${EXECUTABLE_NAME}/external/klib/*.h" "${EXECUTABLE_NAME}/external/klib/*.c" "${EXECUTABLE_NAME}/external/*.h" "${EXECUTABLE_NAME}/external/*.c") 
-set(CORE_FILES "${EXECUTABLE_NAME}/core/*.h" "${EXECUTABLE_NAME}/core/*.c") 
-set(TEST_FILES "${EXECUTABLE_NAME}/test/*.h" "${EXECUTABLE_NAME}/test/*.c") 
-set(LUACLIB_FILES "${EXECUTABLE_NAME}/luaclib/*.h" "${EXECUTABLE_NAME}/luaclib/*.c")
-set(JSCLIB_FILES "${EXECUTABLE_NAME}/jsclib/*.h" "${EXECUTABLE_NAME}/jsclib/*.c") 
-set(CSCLIB_FILES "${EXECUTABLE_NAME}/csclib/*.h" "${EXECUTABLE_NAME}/csclib/*.c") 
-set(SRC_FILES "${EXECUTABLE_NAME}/*.h" "${EXECUTABLE_NAME}/*.c") 
+set(EXTERNAL_FILES "${SRC_DIR_NAME}/external/lua/*.h" "${SRC_DIR_NAME}/external/lua/*.c"  "${SRC_DIR_NAME}/external/mujs/*.h" "${SRC_DIR_NAME}/external/mujs/*.c"  "${SRC_DIR_NAME}/external/klib/*.h" "${SRC_DIR_NAME}/external/klib/*.c" "${SRC_DIR_NAME}/external/*.h" "${SRC_DIR_NAME}/external/*.c") 
+set(CORE_FILES "${SRC_DIR_NAME}/core/*.h" "${SRC_DIR_NAME}/core/*.c") 
+set(TEST_FILES "${SRC_DIR_NAME}/test/*.h" "${SRC_DIR_NAME}/test/*.c") 
+set(LUACLIB_FILES "${SRC_DIR_NAME}/luaclib/*.h" "${SRC_DIR_NAME}/luaclib/*.c")
+set(JSCLIB_FILES "${SRC_DIR_NAME}/jsclib/*.h" "${SRC_DIR_NAME}/jsclib/*.c") 
+set(CSCLIB_FILES "${SRC_DIR_NAME}/csclib/*.h" "${SRC_DIR_NAME}/csclib/*.c") 
+set(SRC_FILES "${SRC_DIR_NAME}/*.h" "${SRC_DIR_NAME}/*.c") 
 #set(SRC_FILES "src/main.c") 
 
 file(GLOB PROJECT_FILES
@@ -58,7 +59,7 @@ file(GLOB PROJECT_FILES
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
     ${PROJECT_FILES}
-    ${EXECUTABLE_NAME}/iosLaunchScreen.storyboard
+    ${SRC_DIR_NAME}/iosLaunchScreen.storyboard
 )
 
 # What is iosLaunchScreen.storyboard? This file describes what Apple's mobile platforms
@@ -125,7 +126,7 @@ endforeach()
 if (APPLE)
     # on Apple targets, the application bundle has a "resources" subfolder where we can place our assets.
     # SDL_GetBasePath() gives us easy access to that location.
-    set(input_root "${CMAKE_CURRENT_LIST_DIR}/${EXECUTABLE_NAME}")
+    set(input_root "${CMAKE_CURRENT_LIST_DIR}/${SRC_DIR_NAME}")
     macro(add_resource FILE)
         file(RELATIVE_PATH relpath "${input_root}" "${FILE}")
         get_filename_component(relpath "${relpath}" DIRECTORY)
@@ -200,9 +201,9 @@ else()
 endif()
 
 # set some extra configs for each platform
-set(RESOURCE_FILES "${EXECUTABLE_NAME}/logo.png")
+set(RESOURCE_FILES "${SRC_DIR_NAME}/logo.png")
 if(IOS)
-    set(RESOURCE_FILES "${EXECUTABLE_NAME}/iosLaunchScreen.storyboard;${EXECUTABLE_NAME}/logo.png") # make the splash screen show up on iOS
+    set(RESOURCE_FILES "${SRC_DIR_NAME}/iosLaunchScreen.storyboard;${SRC_DIR_NAME}/logo.png") # make the splash screen show up on iOS
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES 
@@ -210,7 +211,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     MACOSX_BUNDLE TRUE
     # Set the Info.plist file for Apple Mobile platforms. Without this file, your app
     # will not launch. 
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/${EXECUTABLE_NAME}/Info.plist.in"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/${SRC_DIR_NAME}/Info.plist.in"
 
     # in Xcode, create a Scheme in the schemes dropdown for the app.
     XCODE_GENERATE_SCHEME TRUE
