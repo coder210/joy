@@ -7,7 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
-project(joy2d C)
+project(joy2d CXX)
 
 if ((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")    # Disable shared builds on platforms where it does not make sense to use them
@@ -41,7 +41,7 @@ set(TEST_FILES "${SRC_DIR_NAME}/test/*.h" "${SRC_DIR_NAME}/test/*.c")
 set(LUACLIB_FILES "${SRC_DIR_NAME}/luaclib/*.h" "${SRC_DIR_NAME}/luaclib/*.c")
 set(JSCLIB_FILES "${SRC_DIR_NAME}/jsclib/*.h" "${SRC_DIR_NAME}/jsclib/*.c") 
 set(CSCLIB_FILES "${SRC_DIR_NAME}/csclib/*.h" "${SRC_DIR_NAME}/csclib/*.c") 
-set(SRC_FILES "${SRC_DIR_NAME}/*.h" "${SRC_DIR_NAME}/*.c") 
+set(SRC_FILES "${SRC_DIR_NAME}/*.h" "${SRC_DIR_NAME}/*.cpp") 
 #set(SRC_FILES "src/main.c") 
 
 file(GLOB PROJECT_FILES
@@ -76,9 +76,11 @@ if(APPLE)
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-    C_STANDARD 99
-    C_STANDARD_REQUIRED ON
-    C_EXTENSIONS OFF
+	CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED ON
+    #C_STANDARD 99
+    #C_STANDARD_REQUIRED ON
+    #C_EXTENSIONS OFF
 )
 
 # on Web targets, we need CMake to generate a HTML webpage. 
