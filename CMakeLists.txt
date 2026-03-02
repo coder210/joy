@@ -7,7 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # Declare the project
-project(joy2d CXX)
+project(joy2d C CXX)
 
 if ((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")    # Disable shared builds on platforms where it does not make sense to use them
@@ -78,9 +78,9 @@ endif()
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 	CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
-    #C_STANDARD 99
-    #C_STANDARD_REQUIRED ON
-    #C_EXTENSIONS OFF
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    C_EXTENSIONS OFF
 )
 
 # on Web targets, we need CMake to generate a HTML webpage. 
