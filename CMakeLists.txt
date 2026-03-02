@@ -89,10 +89,12 @@ endif()
 # we use EXCLUDE_FROM_ALL so that its install targets and configs don't
 # pollute upwards into our configuration.
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
+add_subdirectory(core EXCLUDE_FROM_ALL)
 
 # Link SDL to our executable. This also makes its include directory available to us. 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC 
     SDL3::SDL3
+    core
 )
 
 
