@@ -68,13 +68,19 @@
  */
 
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
+extern "C" {
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <joy2d_core/calculator.h>
+}
+
+#include <map>
+#include <string>
 
  /* We will use this renderer to draw into this window every frame. */
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
+static std::map<std::string, double> cache;
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -89,6 +95,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         if (!SDL_CreateWindowAndRenderer("examples/renderer/clear", 640, 480, 0, &window, &renderer)) {
                 SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
+        }
+
+        cache.insert(std::make_pair("1.2f+2.3f", add(1.2f, 2.3f)));
+        cache.insert(std::make_pair("1f+2f", add(1.0f, 2.0f)));
+        for (auto it = cache.begin(); it != cache.end(); ++it) {
+                //std::cout << it->first << ": " << it->second << std::endl;
+                SDL_Log("t=%s, %f", it->first.c_str(), it->second);
         }
 
         double t = add(1.2f, 2.3f);
