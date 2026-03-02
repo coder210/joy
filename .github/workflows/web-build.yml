@@ -24,7 +24,7 @@ jobs:
       - name: Prepare for upload
         run: |
            mkdir _site
-           mv build/joy2d.html _site/index.html
+           mv build/joy2d_loader.html _site/index.html
            mv build/* _site/
       - name: Fix permissions
         run: |

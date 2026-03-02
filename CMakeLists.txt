@@ -34,13 +34,13 @@ else()
 	add_executable(${EXECUTABLE_NAME})
 endif()
 
-set(EXTERNAL_FILES "src/external/lua/*.h" "src/external/lua/*.c"  "src/external/mujs/*.h" "src/external/mujs/*.c"  "src/external/klib/*.h" "src/external/klib/*.c" "src/external/*.h" "src/external/*.c") 
-set(CORE_FILES "src/core/*.h" "src/core/*.c") 
-set(TEST_FILES "src/test/*.h" "src/test/*.c") 
-set(LUACLIB_FILES "src/luaclib/*.h" "src/luaclib/*.c")
-set(JSCLIB_FILES "src/jsclib/*.h" "src/jsclib/*.c") 
-set(CSCLIB_FILES "src/csclib/*.h" "src/csclib/*.c") 
-set(SRC_FILES "src/*.h" "src/*.c") 
+set(EXTERNAL_FILES "${EXECUTABLE_NAME}/external/lua/*.h" "${EXECUTABLE_NAME}/external/lua/*.c"  "${EXECUTABLE_NAME}/external/mujs/*.h" "${EXECUTABLE_NAME}/external/mujs/*.c"  "${EXECUTABLE_NAME}/external/klib/*.h" "${EXECUTABLE_NAME}/external/klib/*.c" "${EXECUTABLE_NAME}/external/*.h" "${EXECUTABLE_NAME}/external/*.c") 
+set(CORE_FILES "${EXECUTABLE_NAME}/core/*.h" "${EXECUTABLE_NAME}/core/*.c") 
+set(TEST_FILES "${EXECUTABLE_NAME}/test/*.h" "${EXECUTABLE_NAME}/test/*.c") 
+set(LUACLIB_FILES "${EXECUTABLE_NAME}/luaclib/*.h" "${EXECUTABLE_NAME}/luaclib/*.c")
+set(JSCLIB_FILES "${EXECUTABLE_NAME}/jsclib/*.h" "${EXECUTABLE_NAME}/jsclib/*.c") 
+set(CSCLIB_FILES "${EXECUTABLE_NAME}/csclib/*.h" "${EXECUTABLE_NAME}/csclib/*.c") 
+set(SRC_FILES "${EXECUTABLE_NAME}/*.h" "${EXECUTABLE_NAME}/*.c") 
 #set(SRC_FILES "src/main.c") 
 
 file(GLOB PROJECT_FILES
@@ -58,7 +58,7 @@ file(GLOB PROJECT_FILES
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
     ${PROJECT_FILES}
-    src/iosLaunchScreen.storyboard
+    ${EXECUTABLE_NAME}/iosLaunchScreen.storyboard
 )
 
 # What is iosLaunchScreen.storyboard? This file describes what Apple's mobile platforms
@@ -71,7 +71,7 @@ PRIVATE
 # Afterward, the image file in Info.plist.in.
 if(APPLE)
     add_definitions(-DLUA_USE_IOS)
-    target_sources("${EXECUTABLE_NAME}" PRIVATE "src/logo.png")
+    target_sources("${EXECUTABLE_NAME}" PRIVATE "${EXECUTABLE_NAME}/logo.png")
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
@@ -125,7 +125,7 @@ endforeach()
 if (APPLE)
     # on Apple targets, the application bundle has a "resources" subfolder where we can place our assets.
     # SDL_GetBasePath() gives us easy access to that location.
-    set(input_root "${CMAKE_CURRENT_LIST_DIR}/src")
+    set(input_root "${CMAKE_CURRENT_LIST_DIR}/${EXECUTABLE_NAME}")
     macro(add_resource FILE)
         file(RELATIVE_PATH relpath "${input_root}" "${FILE}")
         get_filename_component(relpath "${relpath}" DIRECTORY)
@@ -135,9 +135,6 @@ if (APPLE)
     foreach(asset_file ${ASSET_FILES})
         add_resource("${CMAKE_CURRENT_LIST_DIR}/assets/${asset_file}")
     endforeach()
-    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/Inter-VariableFont.ttf")
-    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/the_entertainer.ogg")
-    #add_resource("${CMAKE_CURRENT_LIST_DIR}/src/gs_tiger.svg")
 elseif(EMSCRIPTEN)
     # on the web, we have to put the files inside of the webassembly
     # somewhat unintuitively, this is done via a linker argument.
@@ -203,9 +200,9 @@ else()
 endif()
 
 # set some extra configs for each platform
-set(RESOURCE_FILES "src/logo.png")
+set(RESOURCE_FILES "${EXECUTABLE_NAME}/logo.png")
 if(IOS)
-    set(RESOURCE_FILES "src/iosLaunchScreen.storyboard;src/logo.png") # make the splash screen show up on iOS
+    set(RESOURCE_FILES "${EXECUTABLE_NAME}/iosLaunchScreen.storyboard;${EXECUTABLE_NAME}/logo.png") # make the splash screen show up on iOS
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES 
@@ -213,7 +210,7 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     MACOSX_BUNDLE TRUE
     # Set the Info.plist file for Apple Mobile platforms. Without this file, your app
     # will not launch. 
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/src/Info.plist.in"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/${EXECUTABLE_NAME}/Info.plist.in"
 
     # in Xcode, create a Scheme in the schemes dropdown for the app.
     XCODE_GENERATE_SCHEME TRUE
