@@ -24,13 +24,7 @@ jobs:
         with:
           name: joy2d-${{ matrix.target }}-${{ matrix.arch }}
           path: |
-            build/Release/*.exe
-            build/Release/*.dll
-            build/Release/scripts/
-            build/Release/fonts/
-            build/Release/shaders/
-            build/Release/sounds/
-            build/Release/textures/
+            build/Release/*
 
   build-linux:
     name: Build for Linux
@@ -52,14 +46,7 @@ jobs:
         with:
           name: joy2d-Linux
           path: |
-            build/Release/joy2d_loader*        # 匹配所有以 joy2d_loader 开头的可执行文件
-            build/Release/*.so
-            build/Release/scripts/
-            build/Release/fonts/
-            build/Release/shaders/
-            build/Release/sounds/
-            build/Release/textures/
-          # 如果实际输出在 build/ 而非 build/Release/，请将上述路径中的 "Release/" 去掉
+            build/Release/*
 
   build-mac:
     name: Build for Apple
