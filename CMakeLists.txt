@@ -29,6 +29,7 @@ endif()
 add_subdirectory(SDL)          # SDL3 库
 add_subdirectory(joy2d_core)   # joy2d 核心库
 add_subdirectory(joy2d_loader) # 可执行程序
+add_subdirectory(joy2d_adventure) # 可执行程序
 
 # 可选：CPack 打包配置（如果原来有）
 # include(CPack)
