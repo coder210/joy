@@ -9,9 +9,6 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-# 源文件目录（当前目录即为 joy2d_loader 根）
-set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-
 # 定义各模块源文件通配符（使用相对路径）
 file(GLOB EXTERNAL_FILES
     "external/lua/*.h" "external/lua/*.c"
@@ -72,7 +69,8 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
-set(ASSETS_ROOT "${PROJECT_SOURCE_DIR}/assets")
+# CMAKE_CURRENT_SOURCE_DIR换成项目目录
+set(ASSETS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
 # 递归搜索资产文件（排除版本控制目录）
 file(GLOB_RECURSE ALL_ASSET_FILES "${ASSETS_ROOT}/*")
