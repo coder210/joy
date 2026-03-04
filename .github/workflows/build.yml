@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build-win:
-    name: Build for Windows (${{ matrix.project }})
+    name: Build for Windows (${{ matrix.project }}-${{ matrix.arch })
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -11,6 +11,8 @@ jobs:
         arch: [x64, ARM64]
         target: [Windows]
         project: [loader, adventure]
+        macro: [BUILD_LOADER, BUILD_ADVENTURE]
+
 
     steps:
       - uses: actions/checkout@v4
@@ -24,8 +26,7 @@ jobs:
           cmake -DCMAKE_SYSTEM_NAME=${{ matrix.target }} ^
                 -DCMAKE_SYSTEM_VERSION="10.0" ^
                 -A${{ matrix.arch }} ^
-                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} ^
-                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} ^
+                -D${{ matrix.macro }}='ON' ^
                 -S . -B build
 
       - name: Build
@@ -68,8 +69,7 @@ jobs:
       - name: Configure
         run: |
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
-                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
-                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} \
+                -D${{ matrix.macro }}='ON' \
                 -S . -B build
 
       - name: Build
@@ -109,8 +109,7 @@ jobs:
                 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
                 -DCMAKE_SYSTEM_NAME=${{ matrix.target }} \
                 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
-                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} \
+                -D${{ matrix.macro }}='ON' \
                 -S . -B build
 
       - name: Build
