@@ -10,6 +10,7 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,10 +22,11 @@ jobs:
       - name: Upload Build
         uses: actions/upload-artifact@v4
         if: ${{ matrix.target != 'WindowsStore' }}
-        with:
+        with: 
           name: joy2d-${{ matrix.target }}-${{ matrix.arch }}
           path: |
-            build/Release/*
+            build/Release/*.exe
+            build/Release/*.dll
 
   build-linux:
     name: Build for Linux
@@ -43,10 +45,12 @@ jobs:
         run: cmake --build build --config Release
       - name: Upload Build
         uses: actions/upload-artifact@v4
-        with:
+        with: 
           name: joy2d-Linux
           path: |
-            build/Release/*
+            build/Release/joy2d_*        # 匹配所有以 joy2d_ 开头的可执行文件
+            build/Release/*.so
+            build/Release/*.a              # 如果生成了静态库也可包含
 
   build-mac:
     name: Build for Apple
@@ -54,7 +58,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [iOS, tvOS, visionOS, '']
+        target: [iOS, tvOS, visionOS, '']   # 空字符串表示 macOS
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -69,13 +74,14 @@ jobs:
         run: cmake --build build --config Release
       - name: Ad-Hoc Codesign (sign all .app bundles)
         run: |
-          find ./build/Release -name "*.app" -exec codesign -s - -f {} --deep \;
+          find "./build/Release" -name "*.app" -exec codesign -s - -f {} --deep \;
       - name: Create DMG
         run: |
           cd build
-          hdiutil create -size 2g -srcfolder Release -volname joy2d-apple-${{ matrix.target }} joy2d-apple-${{ matrix.target }}.dmg
+          # 将整个 Release 目录打包成 DMG，文件名包含目标名称
+          hdiutil create -size 2g -srcfolder Release -volname "joy2d-apple-${{ matrix.target }}" "joy2d-apple-${{ matrix.target }}.dmg"
       - name: Upload Build
         uses: actions/upload-artifact@v4
-        with:
+        with: 
           name: joy2d-apple-${{ matrix.target }}
           path: build/*.dmg

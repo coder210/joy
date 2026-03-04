@@ -3,31 +3,59 @@ name: Build joy2d for Android
 on: [push, pull_request]
 
 jobs:
-  apk:
-    name: Apk Build
+  apk-loader:
+    name: Build Loader APK
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        with: { submodules: recursive }
       - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+        with: { distribution: 'temurin', java-version: '17' }
 
-      - name: Update the build.gradle
-        run:  |
-               cp build.gradle SDL/android-project/app/
+      - name: Configure for loader
+        run: echo "set(BUILD_LOADER ON)" > loader.cmake && echo "set(BUILD_ADVENTURE OFF)" >> loader.cmake
 
-      - name: Build the APK
+      - name: Copy build.gradle
+        run: cp build.gradle SDL/android-project/app/
+
+      - name: Build APK with CMake args
         run: |
-              cd SDL/android-project/
-              chmod +x gradlew
-              ./gradlew assembleDebug
+          cd SDL/android-project/
+          chmod +x gradlew
+          ./gradlew assembleDebug -PcmakeArgs="-C $GITHUB_WORKSPACE/loader.cmake"
+        # 注意：Gradle 需要能够接收外部 CMake 参数，这可能需要修改 build.gradle 以支持 -PcmakeArgs
 
-      - name: Upload the APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
-        with: 
-          name: app-debug.apk
+        with:
+          name: app-loader-debug.apk
+          path: SDL/android-project/app/build/outputs/apk/debug/app-debug.apk
+
+  apk-adventure:
+    name: Build Adventure APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: actions/setup-java@v4
+        with: { distribution: 'temurin', java-version: '17' }
+
+      - name: Configure for adventure
+        run: echo "set(BUILD_LOADER OFF)" > adventure.cmake && echo "set(BUILD_ADVENTURE ON)" >> adventure.cmake
+
+      - name: Copy build.gradle
+        run: cp build.gradle SDL/android-project/app/
+
+      - name: Build APK with CMake args
+        run: |
+          cd SDL/android-project/
+          chmod +x gradlew
+          ./gradlew assembleDebug -PcmakeArgs="-C $GITHUB_WORKSPACE/adventure.cmake"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-adventure-debug.apk
           path: SDL/android-project/app/build/outputs/apk/debug/app-debug.apk
