@@ -62,23 +62,23 @@ jobs:
           name: joy2d_${{ matrix.project }}-web
           path: _site_${{ matrix.project }}/
 
-  # 部署作业：仅将 loader 的站点部署到 GitHub Pages（可根据需求调整）
-  deploy:
-    needs: build-web
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download loader artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: joy2d_loader-web
-          path: _site/
+    # 部署作业：仅将 loader 的站点部署到 GitHub Pages（可根据需求调整）
+    deploy:
+      needs: build-web
+      permissions:
+        pages: write
+        id-token: write
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download loader artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: joy2d_loader-web
+            path: _site/
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v4
