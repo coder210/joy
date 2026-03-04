@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build-win:
-    name: "Build for Windows (${{ matrix.project }}-${{ matrix.arch }})"
+    name: Build for Windows (${{ matrix.project }}-${{ matrix.arch })
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -17,15 +17,6 @@ jobs:
         with:
           submodules: recursive
 
-      # 将项目名转为大写并存入环境变量
-      - name: Set uppercase project name
-        shell: pwsh
-        run: |
-          $upper = "$env:PROJECT".ToUpper()
-          echo "PROJECT_UPPER=$upper" >> $env:GITHUB_ENV
-        env:
-          PROJECT: ${{ matrix.project }}
-
       # 显式使用 cmd shell，以便使用 ^ 续行符
       - name: Configure
         shell: cmd
@@ -33,7 +24,8 @@ jobs:
           cmake -DCMAKE_SYSTEM_NAME=${{ matrix.target }} ^
                 -DCMAKE_SYSTEM_VERSION="10.0" ^
                 -A${{ matrix.arch }} ^
-                -DBUILD_${{ env.PROJECT_UPPER }}=ON ^
+                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} ^
+                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} ^
                 -S . -B build
 
       - name: Build
@@ -49,7 +41,7 @@ jobs:
             build/Release/*.dll
 
   build-linux:
-    name: "Build for Linux (${{ matrix.project }})"
+    name: Build for Linux (${{ matrix.project }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -72,17 +64,12 @@ jobs:
             fcitx-libs-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev \
             libxtst-dev
 
-      # 将项目名转为大写并存入环境变量
-      - name: Set uppercase project name
-        run: echo "PROJECT_UPPER=${PROJECT^^}" >> $GITHUB_ENV
-        env:
-          PROJECT: ${{ matrix.project }}
-
       # Linux 使用 bash，续行符为 \
       - name: Configure
         run: |
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
-                -DBUILD_${{ env.PROJECT_UPPER }}=ON \
+                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
+                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} \
                 -S . -B build
 
       - name: Build
@@ -97,7 +84,7 @@ jobs:
             build/Release/*.so
 
   build-mac:
-    name: "Build for Apple (${{ matrix.project }}-${{ matrix.target }})"
+    name: Build for Apple (${{ matrix.project }}-${{ matrix.target }})
     runs-on: macos-14
     strategy:
       fail-fast: false
@@ -115,20 +102,15 @@ jobs:
         with:
           xcode-version: "16.1"
 
-      # 将项目名转为大写并存入环境变量
-      - name: Set uppercase project name
-        run: echo "PROJECT_UPPER=${PROJECT^^}" >> $GITHUB_ENV
-        env:
-          PROJECT: ${{ matrix.project }}
-
-      # macOS 使用 bash，续行符为 \
+      # macOS 使用 bash，续行符为 \（已正确）
       - name: Configure
         run: |
           cmake -G "Xcode" \
                 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
                 -DCMAKE_SYSTEM_NAME=${{ matrix.target }} \
                 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-                -DBUILD_${{ env.PROJECT_UPPER }}=ON \
+                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
+                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} \
                 -S . -B build
 
       - name: Build
