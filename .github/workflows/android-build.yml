@@ -6,41 +6,57 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [loader, adventure]          # 两个构建目标
+        target: [loader, adventure]      # 并行构建两个目标
+      fail-fast: false                   # 一个失败不影响另一个
+
     name: Build ${{ matrix.target }} APK
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 1. 检出代码（包含子模块）
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-java@v4
+      # 2. 设置 JDK 17（Gradle 需要）
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 将项目根目录下自定义的 build.gradle 复制到 SDL 的 Android 项目模板中
-      - name: Update the build.gradle
+      # 3. 将项目根目录下的 build.gradle 复制到 SDL 的 Android 项目模板中
+      - name: Copy build.gradle to SDL project
         run: |
           cp build.gradle SDL/android-project/app/
 
-      # 根据矩阵目标执行 Gradle 构建，同时传递 CMake 选项
-      - name: Build the APK for ${{ matrix.target }}
+      # 4. 根据目标临时修改 build.gradle 中的 CMake 参数
+      - name: Modify CMake arguments in build.gradle for ${{ matrix.target }}
+        run: |
+          cd SDL/android-project/app/
+          if [ "${{ matrix.target }}" == "loader" ]; then
+            # 将 BUILD_LOADER 设为 ON，BUILD_ADVENTURE 设为 OFF
+            sed -i 's/DBUILD_LOADER=[A-Z]\+/DBUILD_LOADER=ON/g' build.gradle
+            sed -i 's/DBUILD_ADVENTURE=[A-Z]\+/DBUILD_ADVENTURE=OFF/g' build.gradle
+          else
+            # 将 BUILD_LOADER 设为 OFF，BUILD_ADVENTURE 设为 ON
+            sed -i 's/DBUILD_LOADER=[A-Z]\+/DBUILD_LOADER=OFF/g' build.gradle
+            sed -i 's/DBUILD_ADVENTURE=[A-Z]\+/DBUILD_ADVENTURE=ON/g' build.gradle
+          fi
+          # 可选：打印修改后的内容以便调试
+          grep -A 2 "externalNativeBuild" build.gradle || true
+
+      # 5. 构建 APK
+      - name: Build APK
         run: |
           cd SDL/android-project/
           chmod +x gradlew
-          # 清理之前的构建产物（在新 job 中非必须，但保持习惯）
-          ./gradlew clean
-          if [ "${{ matrix.target }}" == "loader" ]; then
-            ./gradlew assembleDebug -Penable_loader=ON -Penable_adventure=OFF
-          else
-            ./gradlew assembleDebug -Penable_loader=OFF -Penable_adventure=ON
-          fi
+          ./gradlew assembleDebug
 
-      # 上传构建出的 APK，并重命名 artifact 以便区分
-      - name: Upload the APK
+      # 6. 上传 APK 产物，文件名区分目标
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: joy2d-${{ matrix.target }}-debug.apk
+          name: joy2d-${{ matrix.target }}-debug
           path: SDL/android-project/app/build/outputs/apk/debug/app-debug.apk
