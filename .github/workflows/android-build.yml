@@ -7,6 +7,7 @@ jobs:
     strategy:
       matrix:
         target: [loader, adventure]      # 并行构建两个目标
+        macro: [BUILD_LOADER, BUILD_ADVENTURE]
       fail-fast: false                   # 一个失败不影响另一个
 
     name: Build ${{ matrix.target }} APK
@@ -38,16 +39,11 @@ jobs:
           # 备份原文件
           cp build.gradle build.gradle.bak
           
-          if [ "${{ matrix.target }}" == "loader" ]; then
-            # 尝试替换已有参数，如果不存在则添加新行
-            sed -i -E 's/arguments "?[^"]*"?/arguments "-DBUILD_LOADER=ON", "-DBUILD_ADVENTURE=OFF"/' build.gradle
-          else
-            sed -i -E 's/arguments "?[^"]*"?/arguments "-DBUILD_LOADER=OFF", "-DBUILD_ADVENTURE=ON"/' build.gradle
-          fi
+          sed -i -E 's/arguments "?[^"]*"?/arguments "-D${{ matrix.macro }}=ON"/' build.gradle
           
           # 如果文件中根本没有 arguments 行，则在 defaultConfig 块内插入
           if ! grep -q "arguments" build.gradle; then
-            sed -i '/defaultConfig {/a \        externalNativeBuild.cmake.arguments "-DBUILD_LOADER=ON", "-DBUILD_ADVENTURE=OFF"' build.gradle
+            sed -i '/defaultConfig {/a \        externalNativeBuild.cmake.arguments "-D${{ matrix.macro }}=ON"' build.gradle
           fi
           
           # 打印修改后的内容
