@@ -3,59 +3,44 @@ name: Build joy2d for Android
 on: [push, pull_request]
 
 jobs:
-  apk-loader:
-    name: Build Loader APK
+  build:
+    strategy:
+      matrix:
+        target: [loader, adventure]          # 两个构建目标
+    name: Build ${{ matrix.target }} APK
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-        with: { submodules: recursive }
+        with:
+          submodules: recursive
+
       - uses: actions/setup-java@v4
-        with: { distribution: 'temurin', java-version: '17' }
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Configure for loader
-        run: echo "set(BUILD_LOADER ON)" > loader.cmake && echo "set(BUILD_ADVENTURE OFF)" >> loader.cmake
+      # 将项目根目录下自定义的 build.gradle 复制到 SDL 的 Android 项目模板中
+      - name: Update the build.gradle
+        run: |
+          cp build.gradle SDL/android-project/app/
 
-      - name: Copy build.gradle
-        run: cp build.gradle SDL/android-project/app/
-
-      - name: Build APK with CMake args
+      # 根据矩阵目标执行 Gradle 构建，同时传递 CMake 选项
+      - name: Build the APK for ${{ matrix.target }}
         run: |
           cd SDL/android-project/
           chmod +x gradlew
-          ./gradlew assembleDebug -PcmakeArgs="-C $GITHUB_WORKSPACE/loader.cmake"
-        # 注意：Gradle 需要能够接收外部 CMake 参数，这可能需要修改 build.gradle 以支持 -PcmakeArgs
+          # 清理之前的构建产物（在新 job 中非必须，但保持习惯）
+          ./gradlew clean
+          if [ "${{ matrix.target }}" == "loader" ]; then
+            ./gradlew assembleDebug -Penable_loader=ON -Penable_adventure=OFF
+          else
+            ./gradlew assembleDebug -Penable_loader=OFF -Penable_adventure=ON
+          fi
 
-      - name: Upload APK
+      # 上传构建出的 APK，并重命名 artifact 以便区分
+      - name: Upload the APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-loader-debug.apk
-          path: SDL/android-project/app/build/outputs/apk/debug/app-debug.apk
-
-  apk-adventure:
-    name: Build Adventure APK
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-        with: { submodules: recursive }
-      - uses: actions/setup-java@v4
-        with: { distribution: 'temurin', java-version: '17' }
-
-      - name: Configure for adventure
-        run: echo "set(BUILD_LOADER OFF)" > adventure.cmake && echo "set(BUILD_ADVENTURE ON)" >> adventure.cmake
-
-      - name: Copy build.gradle
-        run: cp build.gradle SDL/android-project/app/
-
-      - name: Build APK with CMake args
-        run: |
-          cd SDL/android-project/
-          chmod +x gradlew
-          ./gradlew assembleDebug -PcmakeArgs="-C $GITHUB_WORKSPACE/adventure.cmake"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-adventure-debug.apk
+          name: joy2d-${{ matrix.target }}-debug.apk
           path: SDL/android-project/app/build/outputs/apk/debug/app-debug.apk
