@@ -32,20 +32,26 @@ jobs:
           cp build.gradle SDL/android-project/app/
 
       # 4. 根据目标临时修改 build.gradle 中的 CMake 参数
-      - name: Modify CMake arguments in build.gradle for ${{ matrix.target }}
+      - name: Modify CMake arguments in build.gradle
         run: |
           cd SDL/android-project/app/
+          # 备份原文件
+          cp build.gradle build.gradle.bak
+          
           if [ "${{ matrix.target }}" == "loader" ]; then
-            # 将 BUILD_LOADER 设为 ON，BUILD_ADVENTURE 设为 OFF
-            sed -i 's/DBUILD_LOADER=[A-Z]\+/DBUILD_LOADER=ON/g' build.gradle
-            sed -i 's/DBUILD_ADVENTURE=[A-Z]\+/DBUILD_ADVENTURE=OFF/g' build.gradle
+            # 尝试替换已有参数，如果不存在则添加新行
+            sed -i -E 's/arguments "?[^"]*"?/arguments "-DBUILD_LOADER=ON", "-DBUILD_ADVENTURE=OFF"/' build.gradle
           else
-            # 将 BUILD_LOADER 设为 OFF，BUILD_ADVENTURE 设为 ON
-            sed -i 's/DBUILD_LOADER=[A-Z]\+/DBUILD_LOADER=OFF/g' build.gradle
-            sed -i 's/DBUILD_ADVENTURE=[A-Z]\+/DBUILD_ADVENTURE=ON/g' build.gradle
+            sed -i -E 's/arguments "?[^"]*"?/arguments "-DBUILD_LOADER=OFF", "-DBUILD_ADVENTURE=ON"/' build.gradle
           fi
-          # 可选：打印修改后的内容以便调试
-          grep -A 2 "externalNativeBuild" build.gradle || true
+          
+          # 如果文件中根本没有 arguments 行，则在 defaultConfig 块内插入
+          if ! grep -q "arguments" build.gradle; then
+            sed -i '/defaultConfig {/a \        externalNativeBuild.cmake.arguments "-DBUILD_LOADER=ON", "-DBUILD_ADVENTURE=OFF"' build.gradle
+          fi
+          
+          # 打印修改后的内容
+          cat build.gradle
 
       # 5. 构建 APK
       - name: Build APK

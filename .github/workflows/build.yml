@@ -10,14 +10,16 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [loader, adventure]          # 新增 project 矩阵
+        project: [loader, adventure]
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      # 显式使用 cmd shell，以便使用 ^ 续行符
       - name: Configure
+        shell: cmd
         run: |
           cmake -DCMAKE_SYSTEM_NAME=${{ matrix.target }} ^
                 -DCMAKE_SYSTEM_VERSION="10.0" ^
@@ -44,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [loader, adventure]          # 新增 project 矩阵
+        project: [loader, adventure]
 
     steps:
       - uses: actions/checkout@v4
@@ -62,11 +64,12 @@ jobs:
             fcitx-libs-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev \
             libxtst-dev
 
+      # Linux 使用 bash，续行符为 \
       - name: Configure
         run: |
-          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ^
-                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} ^
-                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} ^
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
+                -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }} \
                 -S . -B build
 
       - name: Build
@@ -87,7 +90,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
-        project: [loader, adventure]            # 新增 project 矩阵
+        project: [loader, adventure]
 
     steps:
       - uses: actions/checkout@v4
@@ -99,6 +102,7 @@ jobs:
         with:
           xcode-version: "16.1"
 
+      # macOS 使用 bash，续行符为 \（已正确）
       - name: Configure
         run: |
           cmake -G "Xcode" \
@@ -113,7 +117,6 @@ jobs:
         run: cmake --build build --target joy2d_${{ matrix.project }} --config Release
 
       - name: Ad-Hoc Codesign
-        # 假设生成的 app 名称为 joy2d_loader.app / joy2d_adventure.app
         run: |
           codesign -s - -f "./build/Release/joy2d_${{ matrix.project }}.app" --deep
 

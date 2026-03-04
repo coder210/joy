@@ -11,7 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 project(joy2d C CXX)
 
 
-option(BUILD_LOADER "Build joy2d_loader" ON)
+option(BUILD_LOADER "Build joy2d_loader" OFF)
 option(BUILD_ADVENTURE "Build joy2d_adventure" OFF)
 
 
