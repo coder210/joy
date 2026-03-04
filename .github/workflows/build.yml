@@ -11,8 +11,6 @@ jobs:
         arch: [x64, ARM64]
         target: [Windows]
         project: [loader, adventure]
-        macro: [BUILD_LOADER, BUILD_ADVENTURE]
-
 
     steps:
       - uses: actions/checkout@v4
@@ -26,7 +24,7 @@ jobs:
           cmake -DCMAKE_SYSTEM_NAME=${{ matrix.target }} ^
                 -DCMAKE_SYSTEM_VERSION="10.0" ^
                 -A${{ matrix.arch }} ^
-                -D${{ matrix.macro }}='ON' ^
+                -DBUILD_${{ toUpperCase(matrix.project) }}=ON ^
                 -S . -B build
 
       - name: Build
@@ -69,7 +67,7 @@ jobs:
       - name: Configure
         run: |
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
-                -D${{ matrix.macro }}='ON' \
+                -DBUILD_${{ toUpperCase(matrix.project) }}=ON \
                 -S . -B build
 
       - name: Build
@@ -109,7 +107,7 @@ jobs:
                 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
                 -DCMAKE_SYSTEM_NAME=${{ matrix.target }} \
                 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-                -D${{ matrix.macro }}='ON' \
+                -DBUILD_${{ toUpperCase(matrix.project) }}=ON \
                 -S . -B build
 
       - name: Build
