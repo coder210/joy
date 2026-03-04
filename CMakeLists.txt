@@ -10,6 +10,11 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 # 项目声明
 project(joy2d C CXX)
 
+
+option(BUILD_LOADER "Build joy2d_loader" ON)
+option(BUILD_ADVENTURE "Build joy2d_adventure" OFF)
+
+
 # 平台相关共享库设置（可能影响所有子目录）
 if ((APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin") OR EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
@@ -28,8 +33,15 @@ endif()
 # 添加子目录
 add_subdirectory(SDL)          # SDL3 库
 add_subdirectory(joy2d_core)   # joy2d 核心库
-add_subdirectory(joy2d_loader) # 可执行程序
-add_subdirectory(joy2d_adventure) # 可执行程序
+
+if(BUILD_LOADER)
+    add_subdirectory(joy2d_loader)
+endif()
+
+if(BUILD_ADVENTURE)
+    add_subdirectory(joy2d_adventure)
+endif()
+
 
 # 可选：CPack 打包配置（如果原来有）
 # include(CPack)
