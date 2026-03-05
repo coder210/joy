@@ -2,13 +2,20 @@ name: Build joy2d For Web
 on: [push, pull_request]
 
 jobs:
-   build-web:
+  build-web:
     name: Build joy2d for Web (${{ matrix.project }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         project: [loader, adventure]
+        include:
+          - project: loader
+            BUILD_LOADER: ON
+            BUILD_ADVENTURE: OFF
+          - project: adventure
+            BUILD_LOADER: OFF
+            BUILD_ADVENTURE: ON
 
     steps:
       - name: Checkout code
@@ -29,8 +36,8 @@ jobs:
           emcmake cmake -S . -B build \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
             -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0" \
-            -DBUILD_LOADER=${{ matrix.project == 'loader' && 'ON' || 'OFF' }} \
-            -DBUILD_ADVENTURE=${{ matrix.project == 'adventure' && 'ON' || 'OFF' }}
+            -DBUILD_LOADER=${{ matrix.BUILD_LOADER }} \
+            -DBUILD_ADVENTURE=${{ matrix.BUILD_ADVENTURE }}
 
       - name: Build
         run: |
@@ -62,23 +69,23 @@ jobs:
           name: joy2d_${{ matrix.project }}-web
           path: _site_${{ matrix.project }}/
 
-    # 部署作业：仅将 loader 的站点部署到 GitHub Pages（可根据需求调整）
-    deploy:
-      needs: build-web
-      permissions:
-        pages: write
-        id-token: write
-      environment:
-        name: github-pages
-        url: ${{ steps.deployment.outputs.page_url }}
-      runs-on: ubuntu-latest
-      steps:
-        - name: Download loader artifact
-          uses: actions/download-artifact@v4
-          with:
-            name: joy2d_loader-web
-            path: _site/
+  # 部署作业：仅将 loader 的站点部署到 GitHub Pages
+  deploy:
+    needs: build-web
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download loader artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: joy2d_loader-web
+          path: _site/
 
-        - name: Deploy to GitHub Pages
-          id: deployment
-          uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
