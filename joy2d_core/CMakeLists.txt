@@ -60,6 +60,11 @@ if(WIN32)
     # set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
+# Apple
+if(APPLE)
+    add_definitions(-DLUA_USE_IOS)
+endif()
+
 # Android：通过 NDK 工具链构建，需要设置 ABI 等
 if(ANDROID)
     # 通常 NDK 工具链已处理 -fPIC，这里可额外添加 Android 特定标志
