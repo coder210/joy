@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir -p _site_${{ matrix.project }}
           # 复制所有 Web 相关文件（跟随符号链接）
-          cp build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
+          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
           # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
@@ -72,10 +72,11 @@ jobs:
             echo "::warning title=Invalid file permissions automatically fixed::$line"
           done
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      # 使用专为 GitHub Pages 设计的 artifact 上传 action
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: joy2d_${{ matrix.project }}-web
+          name: joy2d-${{ matrix.project }}-web   # 为每个项目指定唯一名称
           path: _site_${{ matrix.project }}/
 
   deploy:
@@ -90,6 +91,6 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages (loader only)
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v3
         with:
-          artifact_name: joy2d_loader-web   # 指定只部署 loader 版本
+          artifact_name: joy2d-loader-web   # 与上传时的名称一致，部署 loader 版本
