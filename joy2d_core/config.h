@@ -25,6 +25,8 @@
 
 #ifdef JOY_WIN
 #	define JOY_API __declspec(dllexport)
+#elif defined(__GNUC__) && (__GNUC__ >= 4) || defined(__clang__)
+#	define JOY_API __attribute__((visibility("default")))
 #else
 #	define JOY_API  
 #endif 
