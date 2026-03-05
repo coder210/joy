@@ -75,8 +75,19 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Download loader artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: joy2d_loader-web
+          path: _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages
+          path: _site/
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact_name: joy2d_loader-web   # 直接指定需要部署的 artifact 名称
+        # 默认使用 github-pages artifact
