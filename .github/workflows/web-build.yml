@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir -p _site_${{ matrix.project }}
           # 复制所有 Web 相关文件（跟随符号链接）
-          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
+          cp build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
           # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
