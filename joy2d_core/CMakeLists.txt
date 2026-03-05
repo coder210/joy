@@ -5,7 +5,6 @@ project(Calculator VERSION 1.0.0 LANGUAGES C)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-
 # 设置 C 标准
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -22,8 +21,14 @@ file(GLOB PROJECT_FILES
     ${SRC_FILES}
 )
 
-# 定义库
-add_library(${LIB_NAME} SHARED ${PROJECT_FILES})
+# 根据平台选择库类型：Emscripten 下构建静态库，其他平台构建共享库
+if(EMSCRIPTEN)
+    set(LIB_TYPE STATIC)
+else()
+    set(LIB_TYPE SHARED)
+endif()
+
+add_library(${LIB_NAME} ${LIB_TYPE} ${PROJECT_FILES})
 
 # Windows：定义导出宏，设置运行时库（可选）
 if(WIN32)
@@ -37,7 +42,6 @@ if(ANDROID)
     # 通常 NDK 工具链已处理 -fPIC，这里可额外添加 Android 特定标志
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
     # 若需要日志等，可链接 log 库
-#include "../"
     # target_link_libraries(${LIB_NAME} log)
 endif()
 
@@ -53,17 +57,12 @@ if(IOS)
     # iOS 动态库需嵌入应用，通常建议使用静态库，但此处仍可生成动态库
 endif()
 
-# Web (Emscripten)：使用 Emscripten 工具链
+# Web (Emscripten)：构建静态库
 if(EMSCRIPTEN)
-    # 设置输出为 WebAssembly 模块（动态库模式）
-    set_target_properties(${LIB_NAME} PROPERTIES
-        PREFIX ""          # 取消 lib 前缀
-        SUFFIX ".wasm"     # 后缀设为 .wasm
-    )
-    # 以 SIDE_MODULE 方式构建，用于动态链接
-    target_link_options(${LIB_NAME} PRIVATE -sSIDE_MODULE=1)
+    # 静态库不需要特殊前缀/后缀，也不需要 SIDE_MODULE 链接选项
+    # 可选的 -fPIC 保留或移除均可，此处保留以保持一致性
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-    # 如果需要导出函数给 JavaScript，可添加 -sEXPORTED_FUNCTIONS
+    # 如果需要导出函数给链接器，可添加 -sEXPORTED_FUNCTIONS（但通常用于可执行文件）
 endif()
 
 # 通用：对于非 Windows 平台，显式设置位置无关代码
