@@ -16,20 +16,30 @@
 #endif
 
 
-
 #ifdef __cplusplus
 #       define JOY_DECL extern "C"
 #else
 #       define JOY_DECL 
 #endif
 
-#ifdef JOY_WIN
-#	define JOY_API __declspec(dllexport)
-#elif defined(__GNUC__) && (__GNUC__ >= 4) || defined(__clang__)
-#	define JOY_API __attribute__((visibility("default")))
+
+#if defined(JOY_STATIC)
+// 静态库：不需要任何导入导出声明
+#       define JOY_API
+#elif defined(JOY_WIN) || defined(__CYGWIN__)
+// Windows 或 Cygwin：使用 __declspec(dllexport/import)
+#ifdef JOY_EXPORTS
+#       define JOY_API __declspec(dllexport)
 #else
-#	define JOY_API  
-#endif 
+#       define JOY_API __declspec(dllimport)
+#endif
+#elif defined(__GNUC__) && (__GNUC__ >= 4) || defined(__clang__)
+// GCC >= 4 或 Clang：使用可见性属性
+#       define JOY_API __attribute__((visibility("default")))
+#else
+// 其他编译器：无特殊声明
+#       define JOY_API
+#endif
 
 #define JOY_INLINE static inline
 #define JOY_MAX_BUFFER 1024
