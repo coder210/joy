@@ -46,15 +46,11 @@ jobs:
 
       - name: Prepare for upload (per project)
         run: |
-          # 创建独立目录，存放当前项目的 Web 产物
           mkdir -p _site_${{ matrix.project }}
-          # 复制所有相关文件（.html, .js, .wasm, .data 等）
           cp build/joy2d_${{ matrix.project }}.* _site_${{ matrix.project }}/ 2>/dev/null || true
-          # 将主 HTML 重命名为 index.html
           if [ -f "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
           fi
-          # 复制其他可能的资源（如 .data 文件）
           cp build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
 
       - name: Fix permissions
@@ -70,17 +66,17 @@ jobs:
           path: _site_${{ matrix.project }}/
 
   deploy:
-  needs: build-web
-  permissions:
-    pages: write
-    id-token: write
-  environment:
-    name: github-pages
-    url: ${{ steps.deployment.outputs.page_url }}
-  runs-on: ubuntu-latest
-  steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-      with:
-        artifact_name: joy2d_loader-web   # 指定要部署的 artifact
+    needs: build-web
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: joy2d_loader-web   # 直接指定需要部署的 artifact 名称
