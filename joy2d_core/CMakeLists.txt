@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.10)
-project(Calculator VERSION 1.0.0 LANGUAGES C)
 
 # 统一输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
@@ -8,6 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # 设置 C 标准
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 set(LIB_NAME joy2d_core)
 
 # 默认隐藏符号，只导出 API 标记的函数（GCC/Clang）
@@ -15,10 +15,33 @@ if(NOT MSVC)
     set(CMAKE_C_VISIBILITY_PRESET hidden)
 endif()
 
-set(SRC_FILES "*.h" "*.c") 
+# 定义各模块源文件通配符（使用相对路径）
+file(GLOB EXTERNAL_FILES
+    "external/lua/*.h" "external/lua/*.c"
+    "external/mujs/*.h" "external/mujs/*.c"
+    "external/klib/*.h" "external/klib/*.c"
+    "external/*.h" "external/*.c"
+)
+
+file(GLOB LUACLIB_FILES "luaclib/*.h" "luaclib/*.c")
+file(GLOB JSCLIB_FILES "jsclib/*.h" "jsclib/*.c")
+file(GLOB CSCLIB_FILES "csclib/*.h" "csclib/*.c")
+file(GLOB TEST_FILES "test/*.h" "test/*.c")
+file(GLOB SRC_FILES "*.h" "*.c")
+
+# 合并所有源文件
+set(PROJECT_FILES
+    ${EXTERNAL_FILES}
+    ${CORE_FILES}
+    ${TEST_FILES}
+    ${LUACLIB_FILES}
+    ${JSCLIB_FILES}
+    ${CSCLIB_FILES}
+    ${SRC_FILES}
+)
 
 file(GLOB PROJECT_FILES
-    ${SRC_FILES}
+    ${PROJECT_FILES}
 )
 
 # 根据平台选择库类型：Emscripten 下构建静态库，其他平台构建共享库
@@ -69,6 +92,11 @@ endif()
 if(NOT WIN32)
     set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
+
+# 链接依赖库（由根目录的 add_subdirectory 引入）
+target_link_libraries(${LIB_NAME} PUBLIC
+    SDL3::SDL3
+)
 
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})

@@ -9,28 +9,11 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-# 定义各模块源文件通配符（使用相对路径）
-file(GLOB EXTERNAL_FILES
-    "external/lua/*.h" "external/lua/*.c"
-    "external/mujs/*.h" "external/mujs/*.c"
-    "external/klib/*.h" "external/klib/*.c"
-    "external/*.h" "external/*.c"
-)
-file(GLOB CORE_FILES "core/*.h" "core/*.c")
-file(GLOB TEST_FILES "test/*.h" "test/*.c")
-file(GLOB LUACLIB_FILES "luaclib/*.h" "luaclib/*.c")
-file(GLOB JSCLIB_FILES "jsclib/*.h" "jsclib/*.c")
-file(GLOB CSCLIB_FILES "csclib/*.h" "csclib/*.c")
+
 file(GLOB SRC_FILES "*.h" "*.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
-    ${EXTERNAL_FILES}
-    ${CORE_FILES}
-    ${TEST_FILES}
-    ${LUACLIB_FILES}
-    ${JSCLIB_FILES}
-    ${CSCLIB_FILES}
     ${SRC_FILES}
 )
 
@@ -51,9 +34,6 @@ endif()
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED ON
-    C_STANDARD 99
-    C_STANDARD_REQUIRED ON
-    C_EXTENSIONS OFF
 )
 
 # Web 平台输出 HTML
