@@ -44,14 +44,27 @@ jobs:
           source emsdk/emsdk_env.sh
           cmake --build build --parallel --verbose
 
+      - name: List build directory (debug)
+        run: ls -la build/
+
       - name: Prepare for upload (per project)
         run: |
           mkdir -p _site_${{ matrix.project }}
-          cp build/joy2d_${{ matrix.project }}.* _site_${{ matrix.project }}/ 2>/dev/null || true
+          # 复制所有 Web 相关文件（跟随符号链接）
+          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
+          # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
           fi
-          cp build/*.data _site_${{ matrix.project }}/ 2>/dev/null || true
+          # 删除任何残留的符号链接（确保安全）
+          find _site_${{ matrix.project }} -type l -delete
+
+      - name: Verify no symlinks remain
+        run: |
+          if [ $(find _site_${{ matrix.project }} -type l | wc -l) -ne 0 ]; then
+            echo "::error::Symlinks still exist in artifact"
+            exit 1
+          fi
 
       - name: Fix permissions
         run: |
@@ -59,7 +72,7 @@ jobs:
             echo "::warning title=Invalid file permissions automatically fixed::$line"
           done
 
-      - name: Upload artifact (matrix)
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: joy2d_${{ matrix.project }}-web
@@ -75,19 +88,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download loader artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: joy2d_loader-web
-          path: _site/
-
-      - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: github-pages
-          path: _site/
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages (loader only)
         id: deployment
         uses: actions/deploy-pages@v4
-        # 默认使用 github-pages artifact
+        with:
+          artifact_name: joy2d_loader-web   # 指定只部署 loader 版本
