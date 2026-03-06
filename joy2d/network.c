@@ -1,4 +1,5 @@
 #include <string.h>
+#include <SDL3/SDL.h>
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/kcp.h"
