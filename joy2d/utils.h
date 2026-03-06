@@ -11,6 +11,7 @@ History:
 #define UTILS_H
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 #include "config.h"
 
 typedef struct delay {
