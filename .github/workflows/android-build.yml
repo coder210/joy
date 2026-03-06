@@ -9,11 +9,9 @@ jobs:
         target: [loader, adventure]      # 并行构建两个目标
         include:
           - target: loader
-            BUILD_LOADER: ON
-            BUILD_ADVENTURE: OFF
+            build_macro: "BUILD_LOADER"
           - target: adventure
-            BUILD_LOADER: OFF
-            BUILD_ADVENTURE: ON
+            build_macro: "BUILD_ADVENTURE"
       fail-fast: false                   # 一个失败不影响另一个
 
     name: Build ${{ matrix.target }} APK
@@ -46,7 +44,7 @@ jobs:
           cp build.gradle build.gradle.bak
           
           # 构建新的 arguments 字符串
-          NEW_ARGS='arguments "-DBUILD_LOADER=${{ matrix.BUILD_LOADER }}", "-DBUILD_ADVENTURE=${{ matrix.BUILD_ADVENTURE }}"'
+          NEW_ARGS='arguments "-D${{ matrix.build_macro }}=ON"'
           
           # 尝试替换已有的 arguments 行
           sed -i -E "s/arguments[[:space:]]+\".*\"/${NEW_ARGS}/" build.gradle
