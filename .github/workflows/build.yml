@@ -90,12 +90,12 @@ jobs:
             build/Release/*.so
 
   build-mac:
-    name: Build for Apple (${{ matrix.project }}-${{ matrix.target }})
+    name: Build for Apple (${{ matrix.project }}-${{ matrix.target == '' && 'desktop' || matrix.target }})
     runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
-        target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
+        target: [iOS, tvOS, visionOS, 'desktop']      # '' 表示 macOS 本地
         project: [loader, adventure]
         include:
           - project: loader
