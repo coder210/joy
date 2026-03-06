@@ -28,11 +28,7 @@
 #       define JOY_API
 #elif defined(JOY_WIN) || defined(__CYGWIN__)
 // Windows 或 Cygwin：使用 __declspec(dllexport/import)
-#ifdef JOY_EXPORTS
 #       define JOY_API __declspec(dllexport)
-#else
-#       define JOY_API __declspec(dllimport)
-#endif
 #elif defined(__GNUC__) && (__GNUC__ >= 4) || defined(__clang__)
 // GCC >= 4 或 Clang：使用可见性属性
 #       define JOY_API __attribute__((visibility("default")))
