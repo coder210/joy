@@ -116,13 +116,20 @@ typedef struct s2c {
 }s2c_t, *s2c_p;
 
 
-void pack_test();
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int c2s_serialize(const c2s_p c2s, char* buf, int* len);
-int c2s_deserialize(c2s_p c2s, const char* buf, int len);
+        JOY_API void pack_test();
 
-int s2c_serialize(const s2c_p s2c, char* buf, int* len);
-int s2c_deserialize(s2c_p s2c, const char* buf, int len);
+        JOY_API int c2s_serialize(const c2s_p c2s, char* buf, int* len);
+        JOY_API int c2s_deserialize(c2s_p c2s, const char* buf, int len);
 
+        JOY_API int s2c_serialize(const s2c_p s2c, char* buf, int* len);
+        JOY_API int s2c_deserialize(s2c_p s2c, const char* buf, int len);
 
-#endif // !CORE_PROTO_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // !PROTO_H

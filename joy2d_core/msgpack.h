@@ -77,4 +77,4 @@ unpack_string(const char* buf, char* value, int type_size, int offset)
 	return offset + type_size;
 }
 
-#endif // !CORE_MSGPACK_H
+#endif // !MSGPACK_H

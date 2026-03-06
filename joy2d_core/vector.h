@@ -69,5 +69,5 @@ static void vector_destroy_##name(vector_##name##_p vec) \
 #define vector_destroy(name, vec) vector_destroy_##name(vec)
 
 
-#endif // !CORE_VECTOR_H
+#endif // !VECTOR_H
 

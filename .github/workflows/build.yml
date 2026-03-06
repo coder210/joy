@@ -13,11 +13,9 @@ jobs:
         project: [loader, adventure]
         include:
           - project: loader
-            BUILD_LOADER: ON
-            BUILD_ADVENTURE: OFF
+            build_macro: "BUILD_LOADER"
           - project: adventure
-            BUILD_LOADER: OFF
-            BUILD_ADVENTURE: ON
+            build_macro: "BUILD_ADVENTURE"
 
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +28,7 @@ jobs:
           cmake -DCMAKE_SYSTEM_NAME=${{ matrix.target }} ^
                 -DCMAKE_SYSTEM_VERSION="10.0" ^
                 -A${{ matrix.arch }} ^
-                -DBUILD_LOADER=${{ matrix.BUILD_LOADER }} ^
-                -DBUILD_ADVENTURE=${{ matrix.BUILD_ADVENTURE }} ^
+                -D${{ matrix.build_macro }}=ON ^
                 -S . -B build
 
       - name: Build
@@ -55,11 +52,9 @@ jobs:
         project: [loader, adventure]
         include:
           - project: loader
-            BUILD_LOADER: ON
-            BUILD_ADVENTURE: OFF
+            build_macro: "BUILD_LOADER"
           - project: adventure
-            BUILD_LOADER: OFF
-            BUILD_ADVENTURE: ON
+            build_macro: "BUILD_ADVENTURE"
 
     steps:
       - uses: actions/checkout@v4
@@ -80,8 +75,7 @@ jobs:
       - name: Configure
         run: |
           cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
-                -DBUILD_LOADER=${{ matrix.BUILD_LOADER }} \
-                -DBUILD_ADVENTURE=${{ matrix.BUILD_ADVENTURE }} \
+                -D${{ matrix.build_macro }}=ON \
                 -S . -B build
 
       - name: Build
@@ -105,11 +99,9 @@ jobs:
         project: [loader, adventure]
         include:
           - project: loader
-            BUILD_LOADER: ON
-            BUILD_ADVENTURE: OFF
+            build_macro: "BUILD_LOADER"
           - project: adventure
-            BUILD_LOADER: OFF
-            BUILD_ADVENTURE: ON
+            build_macro: "BUILD_ADVENTURE"
 
     steps:
       - uses: actions/checkout@v4
@@ -127,8 +119,7 @@ jobs:
                 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
                 -DCMAKE_SYSTEM_NAME=${{ matrix.target }} \
                 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-                -DBUILD_LOADER=${{ matrix.BUILD_LOADER }} \
-                -DBUILD_ADVENTURE=${{ matrix.BUILD_ADVENTURE }} \
+                -D${{ matrix.build_macro }}=ON \
                 -S . -B build
 
       - name: Build
