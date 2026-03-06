@@ -1,13 +1,16 @@
+#include <stdlib.h>
+#include <assert.h>
 #include "mujs/mujs.h"
 #include "jsx.h"
 #include "joy2d/utils.h"
 #include "joy2d/log.h"
 #include "jsclib.h"
 
-//typedef struct jsx {
-//        js_State* j;
-//        app_p app;
-//}jsx_t, *jsx_p;
+struct jsx {
+        js_State* j;
+        void* userdata;
+};
+
 //
 //static void jrequire(js_State* J)
 //{
@@ -113,165 +116,45 @@
 //        js_setproperty(J, -2, "set_env");
 //        js_setglobal(J, "core");
 //}
-//
-//void* jsx_create(void)
-//{
-//        jsx_p jsx;
-//        jsx = (jsx_p)SDL_malloc(sizeof(jsx_t));
-//        SDL_assert(jsx);
-//        jsx->j = js_newstate(NULL, jsx, JS_STRICT);
-//        SDL_assert(jsx->j);
-//        return jsx;
-//}
-//
-//int jsx_init(void* inst, void *app_ptr, const char* param)
-//{
-//        const char* root_path;
-//        char filename[JOY_MAX_PATH] = { 0 };
-//        size_t data_size;
-//        char* data;
-//        jsx_p jsx;
-//
-//        jsx = (jsx_p)inst;
-//        jsx->app = (app_p)app_ptr;
-//        jsopen_core(jsx->j);
-//        jsopen_base(jsx->j);
-//        jsopen_fp(jsx->j);
-//        jsopen_vec2f(jsx->j);
-//        jsopen_vec2(jsx->j);
-//        jsopen_lockstep(jsx->j);
-//
-//        js_setcontext(jsx->j, jsx);
-//        root_path = joy_getenv(jsx->app, "root_path");
-//        SDL_strlcat(filename, root_path, JOY_MAX_PATH);
-//        SDL_strlcat(filename, param, JOY_MAX_PATH);
-//        data = SDL_LoadFile(filename, &data_size);
-//        if (data) {
-//                if (js_dostring(jsx->j, data)) {
-//                        SDL_free(data);
-//                        SDL_Log("%s", js_tostring(jsx->j, -1));
-//                        goto failure;
-//                }
-//                else {
-//                        SDL_free(data);
-//                }
-//        }
-//
-//        if (!js_try(jsx->j)) {
-//                js_getglobal(jsx->j, "app");
-//                if (!js_isundefined(jsx->j, -1)) {
-//                        if (!js_iscallable(jsx->j, -1)) {
-//                                js_getproperty(jsx->j, -1, "start");
-//                                js_copy(jsx->j, -2);
-//                                js_pushnumber(jsx->j, (uint64_t)jsx);
-//                                js_call(jsx->j, 1);
-//
-//                                /* pop return value */
-//                                js_pop(jsx->j, 1);
-//
-//                        }
-//                }
-//                js_pop(jsx->j, 1);
-//        }
-//        else {
-//                SDL_Log("Error calling start: %s", js_tostring(jsx->j, -1));
-//                js_pop(jsx->j, 1);
-//
-//        }
-//        js_endtry(jsx->j);
-//
-//failure:
-//        return 0;
-//}
-//
-//int jsx_event_handler(void* inst, void* event)
-//{
-//        jsx_p jsx;
-//
-//        jsx = (jsx_p)inst;
-//        if (!js_try(jsx->j)) {
-//                js_getglobal(jsx->j, "app");
-//                if (!js_isundefined(jsx->j, -1)) {
-//                        if (!js_iscallable(jsx->j, -1)) {
-//                                js_getproperty(jsx->j, -1, "event");
-//                                js_copy(jsx->j, -2);
-//                                js_pushnumber(jsx->j, (uint64_t)event);
-//                                js_call(jsx->j, 1);
-//
-//                                /* pop return value */
-//                                js_pop(jsx->j, 1);
-//                        }
-//                }
-//                js_pop(jsx->j, 1);
-//        }
-//        else {
-//                SDL_Log("Error calling event: %s", js_tostring(jsx->j, -1));
-//                js_pop(jsx->j, 1);
-//
-//        }
-//        js_endtry(jsx->j);
-//        
-//        return 0;
-//}
-//
-//int jsx_update(void* inst, float delta_time)
-//{
-//        jsx_p jsx;
-//
-//        jsx = (jsx_p)inst;
-//        
-//        int k = js_gettop(jsx->j);
-//        if (!js_try(jsx->j)) {
-//                js_getglobal(jsx->j, "app");
-//                if (!js_isundefined(jsx->j, -1)) {
-//                        if (!js_iscallable(jsx->j, -1)) {
-//                                js_getproperty(jsx->j, -1, "update");
-//                                js_copy(jsx->j, -2);
-//                                js_pushnumber(jsx->j, delta_time);
-//                                js_call(jsx->j, 1);
-//                                js_pop(jsx->j, 1);
-//                        }
-//                }
-//                js_pop(jsx->j, 1);
-//        }
-//        else {
-//                SDL_Log("Error calling update: %s", js_tostring(jsx->j, -1));
-//                js_pop(jsx->j, 1);
-//
-//        }
-//        js_endtry(jsx->j);
-//        k = js_gettop(jsx->j);
-//
-//        return 0;
-//}
-//
-//void jsx_release(void* inst)
-//{
-//        jsx_p jsx;
-//        jsx = (jsx_p)inst;
-//
-//        if (!js_try(jsx->j)) {
-//                js_getglobal(jsx->j, "app");
-//                if (!js_isundefined(jsx->j, -1)) {
-//                        if (!js_iscallable(jsx->j, -1)) {
-//                                js_getproperty(jsx->j, -1, "destroy");
-//                                js_copy(jsx->j, -2);
-//                                js_call(jsx->j, 0);
-//
-//                                /* pop return value */
-//                                js_pop(jsx->j, 1);
-//                        }
-//                }
-//                js_pop(jsx->j, 1);
-//        }
-//        else {
-//                SDL_Log("Error calling release: %s", js_tostring(jsx->j, -1));
-//                js_pop(jsx->j, 1);
-//
-//        }
-//        js_endtry(jsx->j);
-//
-//
-//        js_freestate(jsx->j);
-//        SDL_free(jsx);
-//}
+
+jsx_p jsx_create(void)
+{
+        jsx_p jsx;
+        jsx = (jsx_p)malloc(sizeof(jsx_t));
+        assert(jsx);
+        jsx->j = js_newstate(NULL, jsx, JS_STRICT);
+        assert(jsx->j);
+        jsopen_base(jsx->j);
+        jsopen_fp(jsx->j);
+        jsopen_fp(jsx->j);
+        jsopen_vec2f(jsx->j);
+        jsopen_vec2(jsx->j);
+        js_setcontext(jsx->j, jsx);
+        return jsx;
+}
+
+bool jsx_dofile(jsx_p jsx, const char* filename)
+{
+        size_t data_size;
+        char* data;
+        data = utils_read_file(filename, &data_size);
+        if (data) {
+                if (js_dostring(jsx->j, data)) {
+                        free(data);
+                        log_info("%s", js_tostring(jsx->j, -1));
+                        return true;
+                }
+                else {
+                        free(data);
+                        return false;
+                }
+        }
+        return false;
+}
+
+
+void jsx_release(jsx_p jsx)
+{
+        js_freestate(jsx->j);
+        free(jsx);
+}

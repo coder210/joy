@@ -16,7 +16,7 @@ if(NOT MSVC)
 endif()
 
 # 定义各模块源文件通配符（使用相对路径）
-file(GLOB EXTERNAL_FILES "lua/*.h" "lua/*.c")
+file(GLOB EXTERNAL_FILES "lua/*.h" "lua/*.c" "cjson/*.h" "cjson/*.c")
 file(GLOB SRC_FILES "*.h" "*.c")
 
 # 合并所有源文件

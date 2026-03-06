@@ -10,7 +10,6 @@ History:
 #ifndef LUACLIB_H
 #define LUACLIB_H
 #include "lua/lualib.h"
-#include "external/lua_cjson.h"
 
 
 int luaopen_window(lua_State* L);
@@ -26,7 +25,6 @@ int luaopen_collision2d(lua_State *L);
 int luaopen_collision3d(lua_State *L);
 int luaopen_packagex(lua_State *L);
 int luaopen_ui(lua_State* L);
-int luaopen_lockstep(lua_State* L);
 int luaopen_c2s(lua_State* L);
 int luaopen_s2c(lua_State* L);
 int luaopen_ecs(lua_State* L);
