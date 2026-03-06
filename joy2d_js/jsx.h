@@ -15,13 +15,10 @@ History:
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	//JOY_API void* jsx_create(void);
-	//JOY_API int jsx_init(void* inst, void *app_ptr, const char* param);
-	//JOY_API int jsx_event_handler(void* inst, void* event);
-	//JOY_API int jsx_update(void* inst, float delta_time);
-	//JOY_API void jsx_release(void* inst);
-
+        typedef struct jsx jsx_t, *jsx_p;
+	JOY_API jsx_p jsx_create(void);
+	JOY_API bool jsx_dofile(jsx_p jsx, const char* filename);
+	JOY_API void jsx_release(jsx_p jsx);
 #ifdef __cplusplus
 }
 #endif

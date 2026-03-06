@@ -14,13 +14,10 @@ History:
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-	/*JOY_API void* luax_create(void);
-	JOY_API int luax_init(void* inst, void *app_ptr, const char* param);
-	JOY_API int luax_event_handler(void* inst, void* event);
-	JOY_API int luax_update(void* inst, float delta_time);
-	JOY_API void luax_release(void* inst);*/
-
+	typedef struct luax luax_t, *luax_p;
+	JOY_API luax_p luax_create(void);
+	JOY_API bool luax_dofile(luax_p luax, const char* filename);
+	JOY_API void luax_release(luax_p luax);
 #ifdef __cplusplus
 }
 #endif

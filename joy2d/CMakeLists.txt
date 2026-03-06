@@ -17,9 +17,6 @@ endif()
 
 # 定义各模块源文件通配符（使用相对路径）
 file(GLOB EXTERNAL_FILES
-    "external/lua/*.h" "external/lua/*.c"
-    "external/mujs/*.h" "external/mujs/*.c"
-    "external/klib/*.h" "external/klib/*.c"
     "external/*.h" "external/*.c"
 )
 
