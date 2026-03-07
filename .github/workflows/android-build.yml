@@ -38,14 +38,14 @@ jobs:
         run: |
           cp build.gradle SDL/android-project/app/
 
-      # 5. 构建 APK
+      # 4. 构建 APK
       - name: Build APK
         run: |
           cd SDL/android-project/
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 6. 上传 APK 产物，文件名区分目标
+      # 5. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
