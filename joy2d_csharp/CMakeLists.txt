@@ -37,10 +37,10 @@ else()
     set(LIB_TYPE SHARED)
 endif()
 
+add_library(${LIB_NAME} ${LIB_TYPE} ${PROJECT_FILES})
 
 # Windows：定义导出宏，设置运行时库（可选）
 if(WIN32)
-	add_library(${LIB_NAME} ${LIB_TYPE} ${PROJECT_FILES})
     target_compile_definitions(${LIB_NAME} PRIVATE CALCULATOR_EXPORTS)
     # 可选用 MT / MD 等，此处以动态运行时库为例
     # set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
