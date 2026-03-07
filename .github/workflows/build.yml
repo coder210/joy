@@ -13,7 +13,7 @@ jobs:
         project: [joy2d_editor, adventure_server, adventure_client]
         include:
           - project: joy2d_editor
-            build_macro: "BUILD_EDITOR"
+            build_macro: "BUILD_JOY2D_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client
