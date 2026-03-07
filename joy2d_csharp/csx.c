@@ -1,181 +1,156 @@
-//#include <SDL3/SDL.h>
-//#include "mono.h"
-//#include "log.h"
-//#include "utils.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/appdomain.h>
+#include <mono/metadata/class.h>
+#include <mono/metadata/object.h>
+#include "joy2d/log.h"
+#include "joy2d/utils.h"
 //#include "./csclib/csclib.h"
-//#include "csx.h"
-//
-//typedef struct csx {
-//        app_p app;
-//	MonoImage* image;
-//        MonoClass* klass;
-//        MonoObject* instance;
-//}csx_t, *csx_p;
-//
-//
-//static void
-//_load_csharp_script(csx_p csx, const char* root_path, const char* csharp_start)
-//{
-//        char filename[JOY_MAX_PATH];
-//        MonoImage* image;
-//        MonoDomain* app_domain;
-//        app_domain = joy_get_appdomain(csx->app);
-//        SDL_memset(filename, 0, JOY_MAX_PATH);
-//        SDL_strlcat(filename, root_path, 1024);
-//        SDL_strlcat(filename, csharp_start, 1024);
-//        image = livS_mono_image_open(filename, SDL_LoadFile);
-//        if (image) {
-//                csx->klass = livS_mono_class_from_name(image, "", "Program");
-//                csx->instance = livS_mono_object_new(app_domain, csx->klass);
-//                livS_mono_runtime_object_init(csx->instance);
-//        }
-//}
-//
-//static bool ccore_running(csx_p csx)
-//{
-//        return joy_running(csx->app);
-//}
-//
-//static void ccore_quit(csx_p csx)
-//{
-//        joy_quit(csx->app);
-//}
-//
-//static MonoString* ccore_get_env(csx_p csx, MonoString* name)
-//{
-//        const char* cstr_value;
-//        char* cstr_name;
-//        cstr_name = livS_mono_string_to_utf8(name);
-//        cstr_value = joy_getenv(csx->app, cstr_name);
-//        livS_mono_free(cstr_name);
-//        return livS_mono_string_new(livS_mono_domain_get(), cstr_value);
-//}
-//
-//static void ccore_set_env(csx_p csx, MonoString* name, MonoString* value)
-//{
-//        const char* cstr_value, * cstr_name;
-//        cstr_name = livS_mono_string_to_utf8(name);
-//        cstr_value = livS_mono_string_to_utf8(value);
-//        joy_setenv(csx->app, cstr_name, cstr_value);
-//}
-//
-//static void ccore_log(csx_p csx, MonoString* str)
-//{
-//        const char* cstr;
-//        cstr = livS_mono_string_to_utf8(str);
-//        log_info(cstr);
-//}
-//
-//
-//
-//static void csopen_core()
-//{
-//        livS_mono_add_internal_call("Joy.Core::Running", ccore_running);
-//        livS_mono_add_internal_call("Joy.Core::Quit", ccore_quit);
-//        livS_mono_add_internal_call("Joy.Core::Log", ccore_log);
-//        livS_mono_add_internal_call("Joy.Core::GetEnv", ccore_get_env);
-//        livS_mono_add_internal_call("Joy.Core::SetEnv", ccore_set_env);
-//        livS_mono_add_internal_call("Joy.Core::Log", ccore_log);
-//}
-//
-//void* csx_create(void)
-//{
-//        const char *root_path;
-//	csx_p csx;
-//	csx = (csx_p)SDL_malloc(sizeof(csx_t));
-//	SDL_assert(csx);
-//	return csx;
-//}
-//
-//int csx_init(void* inst, void *app_ptr, const char* param)
-//{
-//        csx_p csx;
-//        MonoImageOpenStatus status;
-//        MonoString* exc_str;
-//        MonoObject* ex;
-//        MonoMethod* start_method;
-//        void* args[1];
-//        const char *root_path;
-//
-//        csx = (csx_p)inst;
-//        csx->app = (app_p)app_ptr;
-//        root_path = joy_getenv(csx->app, "root_path");
-//
-//        csopen_sdl();
-//        csopen_kcp();
-//        csopen_math();
-//        csopen_collision();
-//        csopen_sys();
-//        csopen_utils();
-//        csopen_core();
-//      
-//        _load_csharp_script(inst, root_path, param);
-//
-//        args[0] = &csx;
-//        start_method = livS_mono_class_get_method(csx->klass, "Start", 1);
-//        livS_mono_runtime_invoke(start_method, csx->instance, args, &ex);
-//        if (ex) {
-//                exc_str = livS_mono_object_to_string(ex, NULL);
-//                log_info("Exception: %s", livS_mono_string_to_utf8(exc_str));
-//        }
-//        return 0;
-//}
-//
-//int csx_event_handler(void *inst, void* event)
-//{
-//        csx_p csx;
-//        MonoObject* ex;
-//        MonoString* exc_str;
-//        MonoMethod* event_method;
-//        void* args[1];
-//
-//        csx = (csx_p)inst;
-//        args[0] = event;
-//        event_method = livS_mono_class_get_method(csx->klass, "Event", 1);
-//        livS_mono_runtime_invoke(event_method, csx->instance, args, &ex);
-//        if (ex) {
-//                exc_str = livS_mono_object_to_string(ex, NULL);
-//                //SDL_Log(livS_mono_string_to_utf8(exc_str));
-//        }
-//        return 0;
-//}
-//
-//int csx_update(void* inst, float delta_time)
-//{
-//        csx_p csx;
-//        MonoObject* exception;
-//        MonoString* exc_str;
-//        MonoMethod* update_method;
-//        csx = (csx_p)inst;
-//        void* args[1];
-//
-//        args[0] = &delta_time;
-//        update_method = livS_mono_class_get_method(csx->klass, "Update", 1);
-//        livS_mono_runtime_invoke(update_method, csx->instance, args, &exception);
-//        if (exception) {
-//                exc_str = livS_mono_object_to_string(exception, NULL);
-//                //SDL_Log(livS_mono_string_to_utf8(exc_str));
-//        }
-//        return 0;
-//}
-//
-//void csx_release(void* inst)
-//{
-//        csx_p csx;
-//        MonoImage* image;
-//        MonoObject* exception;
-//        MonoString* exc_str;
-//        MonoMethod* destroy_method;
-//        csx = (csx_p)inst;
-//
-//        destroy_method = livS_mono_class_get_method(csx->klass, "Destroy", 0);
-//        livS_mono_runtime_invoke(destroy_method, csx->instance, NULL, &exception);
-//        if (exception) {
-//                exc_str = livS_mono_object_to_string(exception, NULL);
-//                //SDL_Log(livS_mono_string_to_utf8(exc_str));
-//        }
-//
-//        image = livS_mono_class_get_image(csx->klass);
-//        livS_mono_image_close(image);
-//}
-//
+#include "csx.h"
+
+// 动态数组，存储已加载的程序集
+typedef struct assembly_list {
+        MonoAssembly** items;
+        int count;
+        int capacity;
+} assembly_list_t, * assembly_list_p;
+
+struct csx {
+        MonoDomain* domain;
+        assembly_list_t assemblies;   // 所有已加载的程序集
+        void* userdata;
+};
+
+// 初始化程序集列表
+static void assembly_list_init(assembly_list_p list) 
+{
+        list->items = NULL;
+        list->count = 0;
+        list->capacity = 0;
+}
+
+// 向列表添加程序集
+static void assembly_list_add(assembly_list_p list, MonoAssembly* asm_)
+{
+        if (list->count >= list->capacity) {
+                int new_cap = list->capacity == 0 ? 4 : list->capacity * 2;
+                list->items = (MonoAssembly**)realloc(list->items, new_cap * sizeof(MonoAssembly*));
+                list->capacity = new_cap;
+        }
+        list->items[list->count++] = asm_;
+}
+
+// 释放列表内存（不释放程序集本身，程序集由 domain 管理）
+static void assembly_list_free(assembly_list_p list)
+{
+        free(list->items);
+        list->items = NULL;
+        list->count = list->capacity = 0;
+}
+
+csx_p csx_create(void) {
+        csx_p csx = (csx_p)malloc(sizeof(csx_t));
+        assert(csx);
+        // 可选：设置 Mono 库路径（根据实际情况调整）
+        // mono_set_dirs("path_to_lib", "");
+        csx->domain = mono_jit_init("joy2d");
+        if (!csx->domain) {
+                log_error("Failed to initialize Mono domain");
+                free(csx);
+                return NULL;
+        }
+        assembly_list_init(&csx->assemblies);
+        csx->userdata = NULL;
+        return csx;
+}
+
+bool csx_load_assembly(csx_p csx, const char* filename)
+{
+        size_t data_size;
+        char* assembly_data = utils_read_file(filename, &data_size);
+        if (!assembly_data) {
+                log_error("Failed to read assembly file: %s", filename);
+                return false;
+        }
+
+        MonoImageOpenStatus status;
+        // 第三个参数 1 表示 Mono 会复制数据，之后我们可以安全释放
+        MonoImage* image = mono_image_open_from_data(assembly_data, data_size, 1, &status);
+        if (status != MONO_IMAGE_OK || !image) {
+                log_error("Failed to open image from data: %s", filename);
+                free(assembly_data);
+                return false;
+        }
+
+        // 从映像加载程序集，并指定简单名称（可选）
+        MonoAssembly* assembly = mono_assembly_load_from_full(image, "joy2d_asm", &status, 0);
+        free(assembly_data);  // 数据已被复制，可以释放
+
+        if (!assembly) {
+                log_error("Failed to load assembly from image: %s", filename);
+                mono_image_close(image);
+                return false;
+        }
+
+        // 保存程序集到列表
+        assembly_list_add(&csx->assemblies, assembly);
+        log_info("Loaded assembly: %s", filename);
+        return true;
+}
+
+MonoClass* 
+csx_find_class(csx_p csx, const char* namespace_name, const char* class_name)
+{
+        MonoClass* klass;
+        for (int i = 0; i < csx->assemblies.count; i++) {
+                MonoAssembly* asm = csx->assemblies.items[i];
+                MonoImage* image = mono_assembly_get_image(asm);
+                klass = mono_class_from_name(image, namespace_name, class_name);
+                if (klass) {
+                        return klass;
+                }
+        }
+        log_error("Class %s.%s not found in any loaded assembly", namespace_name, class_name);
+        return NULL;
+}
+
+MonoObject* 
+csx_invoke_static_method(csx_p csx, const char* namespace_name, 
+        const char* class_name, const char* method_name, void** args)
+{
+        MonoClass* klass = csx_find_class(csx, namespace_name, class_name);
+        if (!klass) return NULL;
+        /* -1 表示忽略参数数量（简单查找） */
+        MonoMethod* method = mono_class_get_method_from_name(klass, method_name, -1);
+        if (!method) {
+                log_error("Method %s not found in class %s.%s", method_name, namespace_name, class_name);
+                return NULL;
+        }
+
+        MonoObject* exception = NULL;
+        MonoObject* result = mono_runtime_invoke(method, NULL, args, &exception);
+        if (exception) {
+                MonoString* exc_str = mono_object_to_string(exception, NULL);
+                char* exc_cstr = mono_string_to_utf8(exc_str);
+                log_error("Exception: %s", exc_cstr);
+                return NULL;
+        }
+        return result;
+}
+
+void csx_register_internal_call(const char* name, const void* method) 
+{
+        mono_add_internal_call(name, method);
+}
+
+void csx_release(csx_p csx)
+{
+        if (!csx) return;
+        // 程序集会随 domain 卸载自动释放，不需要手动关闭
+        assembly_list_free(&csx->assemblies);
+        mono_domain_unload(csx->domain);
+        mono_jit_cleanup(csx->domain);
+        free(csx);
+}
