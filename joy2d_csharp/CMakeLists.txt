@@ -15,7 +15,10 @@ if(NOT MSVC)
     set(CMAKE_C_VISIBILITY_PRESET hidden)
 endif()
 
-
+if(WIN32)
+	include_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release/include/mono-2.0)
+	link_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release)
+endif()
 
 file(GLOB SRC_FILES "*.h" "*.c")
 
@@ -41,11 +44,16 @@ if(WIN32)
     target_compile_definitions(${LIB_NAME} PRIVATE CALCULATOR_EXPORTS)
     # 可选用 MT / MD 等，此处以动态运行时库为例
     # set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+
+	# 链接依赖库（由根目录的 add_subdirectory 引入）
+	target_link_libraries(${LIB_NAME} PUBLIC
+		joy2d
+        coreclr.import
+	)
 endif()
 
 # Apple
 if(APPLE)
-    add_definitions(-DLUA_USE_IOS)
 endif()
 
 # Android：通过 NDK 工具链构建，需要设置 ABI 等
@@ -80,11 +88,6 @@ endif()
 if(NOT WIN32)
     set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-
-# 链接依赖库（由根目录的 add_subdirectory 引入）
-target_link_libraries(${LIB_NAME} PUBLIC
-    joy2d
-)
 
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})

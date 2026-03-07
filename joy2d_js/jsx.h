@@ -12,10 +12,11 @@ History:
 #include <stdbool.h>
 #include "joy2d/config.h"
 
+typedef struct jsx jsx_t, *jsx_p;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-        typedef struct jsx jsx_t, *jsx_p;
 	JOY_API jsx_p jsx_create(void);
 	JOY_API bool jsx_dofile(jsx_p jsx, const char* filename);
 	JOY_API void jsx_release(jsx_p jsx);
