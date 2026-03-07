@@ -10,9 +10,9 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [editor, adventure_server, adventure_client]
+        project: [joy2d_editor, adventure_server, adventure_client]
         include:
-          - project: editor
+          - project: joy2d_editor
             build_macro: "BUILD_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
@@ -34,13 +34,13 @@ jobs:
                 -S . -B build
 
       - name: Build
-        run: cmake --build build --target joy2d_${{ matrix.project }} --config Release
+        run: cmake --build build --target ${{ matrix.project }} --config Release
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         if: ${{ matrix.target != 'WindowsStore' }}
         with:
-          name: joy2d_${{ matrix.project }}-${{ matrix.target }}-${{ matrix.arch }}
+          name: ${{ matrix.project }}-${{ matrix.target }}-${{ matrix.arch }}
           path: |
             build/Release/*.exe
             build/Release/*.dll
@@ -51,10 +51,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [editor, adventure_server, adventure_client]
+        project: [joy2d_editor, adventure_server, adventure_client]
         include:
-          - project: editor
-            build_macro: "BUILD_EDITOR"
+          - project: joy2d_editor
+            build_macro: "BUILD_JOY2D_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client
@@ -83,14 +83,14 @@ jobs:
                 -S . -B build
 
       - name: Build
-        run: cmake --build build --target joy2d_${{ matrix.project }} --config Release
+        run: cmake --build build --target ${{ matrix.project }} --config Release
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: joy2d_${{ matrix.project }}-Linux
+          name: ${{ matrix.project }}-Linux
           path: |
-            build/Release/joy2d_${{ matrix.project }}
+            build/Release/${{ matrix.project }}
             build/Release/*.so
 
   build-mac:
@@ -100,10 +100,10 @@ jobs:
       fail-fast: false
       matrix:
         target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
-        project: [editor, adventure_server, adventure_client]
+        project: [joy2d_editor, adventure_server, adventure_client]
         include:
-          - project: editor
-            build_macro: "BUILD_EDITOR"
+          - project: joy2d_editor
+            build_macro: "BUILD_JOY2D_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client
@@ -129,21 +129,21 @@ jobs:
                 -S . -B build
 
       - name: Build
-        run: cmake --build build --target joy2d_${{ matrix.project }} --config Release
+        run: cmake --build build --target ${{ matrix.project }} --config Release
 
       - name: Ad-Hoc Codesign
         run: |
-          codesign -s - -f "./build/Release/joy2d_${{ matrix.project }}.app" --deep
+          codesign -s - -f "./build/Release/${{ matrix.project }}.app" --deep
 
       - name: Create DMG
         run: |
           cd build
           hdiutil create -size 2g -srcfolder Release \
-            -volname joy2d_${{ matrix.project }}_apple_${{ matrix.target }} \
-            joy2d_${{ matrix.project }}_apple_${{ matrix.target }}.dmg
+            -volname ${{ matrix.project }}_apple_${{ matrix.target }} \
+            ${{ matrix.project }}_apple_${{ matrix.target }}.dmg
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: joy2d_${{ matrix.project }}-apple-${{ matrix.target }}
+          name: ${{ matrix.project }}-apple-${{ matrix.target }}
           path: build/*.dmg

@@ -11,7 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 project(joy2d C CXX)
 
 
-option(BUILD_EDITOR "Build joy2d_editor" OFF)
+option(BUILD_JOY2D_EDITOR "Build joy2d_editor" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 
@@ -42,10 +42,9 @@ if (WIN32)
 	add_subdirectory(joy2d_cslib)
 endif()
 
-if(BUILD_EDITOR)
+if(BUILD_JOY2D_EDITOR)
     add_subdirectory(joy2d_editor)
 endif()
-
 
 # examples
 if(BUILD_ADVENTURE_SERVER)
