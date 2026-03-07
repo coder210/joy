@@ -8,10 +8,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [editor, adventure_server, adventure_client]
+        project: [joy2d_editor, adventure_server, adventure_client]
         include:
-          - project: editor
-            build_macro: "BUILD_EDITOR"
+          - project: joy2d_editor
+            build_macro: "BUILD_JOY2D_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client
@@ -53,8 +53,8 @@ jobs:
           # 注意：如果文件不存在，cp 会报错并导致步骤失败，便于及时发现缺失文件
           cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ || true
           # 将主 HTML 重命名为 index.html（如果存在）
-          if [ -f "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" ]; then
-            mv "_site_${{ matrix.project }}/joy2d_${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
+          if [ -f "_site_${{ matrix.project }}/${{ matrix.project }}.html" ]; then
+            mv "_site_${{ matrix.project }}/${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
           fi
           # 删除任何残留的符号链接（确保安全）
           find _site_${{ matrix.project }} -type l -delete
@@ -79,7 +79,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: joy2d-${{ matrix.project }}-web   # 为每个项目指定唯一名称
+          name: ${{ matrix.project }}-web   # 为每个项目指定唯一名称
           path: _site_${{ matrix.project }}/
 
   deploy:
@@ -96,4 +96,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: joy2d-editor-web   # 必须与上传时 editor 项目的 artifact 名称一致
+          artifact_name: joy2d_editor-web   # 必须与上传时 editor 项目的 artifact 名称一致
