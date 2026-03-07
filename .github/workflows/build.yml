@@ -10,12 +10,14 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [editor, adventure]
+        project: [editor, adventure_server, adventure_client]
         include:
           - project: editor
             build_macro: "BUILD_EDITOR"
-          - project: adventure
-            build_macro: "BUILD_ADVENTURE"
+          - project: adventure_server
+            build_macro: "BUILD_ADVENTURE_SERVER"
+          - project: adventure_client
+            build_macro: "BUILD_ADVENTURE_CLIENT"
 
     steps:
       - uses: actions/checkout@v4
@@ -49,12 +51,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [editor, adventure]
+        project: [editor, adventure_server, adventure_client]
         include:
           - project: editor
             build_macro: "BUILD_EDITOR"
-          - project: adventure
-            build_macro: "BUILD_ADVENTURE"
+          - project: adventure_server
+            build_macro: "BUILD_ADVENTURE_SERVER"
+          - project: adventure_client
+            build_macro: "BUILD_ADVENTURE_CLIENT"
 
     steps:
       - uses: actions/checkout@v4
@@ -96,12 +100,14 @@ jobs:
       fail-fast: false
       matrix:
         target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
-        project: [editor, adventure]
+        project: [editor, adventure_server, adventure_client]
         include:
           - project: editor
             build_macro: "BUILD_EDITOR"
-          - project: adventure
-            build_macro: "BUILD_ADVENTURE"
+          - project: adventure_server
+            build_macro: "BUILD_ADVENTURE_SERVER"
+          - project: adventure_client
+            build_macro: "BUILD_ADVENTURE_CLIENT"
 
     steps:
       - uses: actions/checkout@v4

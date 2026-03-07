@@ -12,7 +12,8 @@ project(joy2d C CXX)
 
 
 option(BUILD_EDITOR "Build joy2d_editor" OFF)
-option(BUILD_ADVENTURE "Build joy2d_adventure" OFF)
+option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
+option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -45,10 +46,15 @@ if(BUILD_EDITOR)
     add_subdirectory(joy2d_editor)
 endif()
 
-if(BUILD_ADVENTURE)
-    add_subdirectory(joy2d_adventure)
+
+# examples
+if(BUILD_ADVENTURE_SERVER)
+    add_subdirectory(adventure_server)
 endif()
 
+if(BUILD_ADVENTURE_CLIENT)
+    add_subdirectory(adventure_client)
+endif()
 
 # 可选：CPack 打包配置（如果原来有）
 # include(CPack)

@@ -8,12 +8,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [editor, adventure]
+        project: [editor, adventure_server, adventure_client]
         include:
           - project: editor
             build_macro: "BUILD_EDITOR"
-          - project: adventure
-            build_macro: "BUILD_ADVENTURE"
+          - project: adventure_server
+            build_macro: "BUILD_ADVENTURE_SERVER"
+          - project: adventure_client
+            build_macro: "BUILD_ADVENTURE_CLIENT"
 
     steps:
       - name: Checkout code

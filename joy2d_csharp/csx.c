@@ -32,14 +32,14 @@ static void assembly_list_init(assembly_list_p list)
 }
 
 // 向列表添加程序集
-static void assembly_list_add(assembly_list_p list, MonoAssembly* asm_)
+static void assembly_list_add(assembly_list_p list, MonoAssembly* asm)
 {
         if (list->count >= list->capacity) {
                 int new_cap = list->capacity == 0 ? 4 : list->capacity * 2;
                 list->items = (MonoAssembly**)realloc(list->items, new_cap * sizeof(MonoAssembly*));
                 list->capacity = new_cap;
         }
-        list->items[list->count++] = asm_;
+        list->items[list->count++] = asm;
 }
 
 // 释放列表内存（不释放程序集本身，程序集由 domain 管理）
