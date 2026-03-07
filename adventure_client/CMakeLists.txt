@@ -3,6 +3,7 @@ set(EXECUTABLE_NAME "adventure_client")
 
 # 如果是 Android，必须命名为 main
 if (ANDROID)
+    message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
     set(EXECUTABLE_NAME main)
     add_library(${EXECUTABLE_NAME} SHARED)
 else()
@@ -98,8 +99,6 @@ else()
             # Android: 复制到 MOBILE_ASSETS_DIR（由外部传入）
             if (NOT MOBILE_ASSETS_DIR)
                 message(FATAL_ERROR "Building for Android, but MOBILE_ASSETS_DIR is not set")
-            elseif()
-                message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
             endif()
             set(outname "${MOBILE_ASSETS_DIR}/${filename}")
         else()
