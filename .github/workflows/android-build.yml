@@ -38,27 +38,6 @@ jobs:
         run: |
           cp build.gradle SDL/android-project/app/
 
-      # 4. 根据目标修改 build.gradle 中的 CMake 参数（使用矩阵中定义的变量）
-      - name: Modify CMake arguments in build.gradle
-        run: |
-          cd SDL/android-project/app/
-          # 备份原文件
-          cp build.gradle build.gradle.bak
-          
-          # 构建新的 arguments 字符串
-          NEW_ARGS='arguments "-D${{ matrix.build_macro }}=ON"'
-          
-          # 尝试替换已有的 arguments 行
-          sed -i -E "s/arguments[[:space:]]+\".*\"/${NEW_ARGS}/" build.gradle
-          
-          # 如果替换失败（即文件中根本没有 arguments 行），则在 defaultConfig 块内插入
-          if ! grep -q "arguments" build.gradle; then
-            sed -i "/defaultConfig {/a \\        externalNativeBuild.cmake.${NEW_ARGS}" build.gradle
-          fi
-          
-          # 打印修改后的内容以便调试
-          cat build.gradle
-
       # 5. 构建 APK
       - name: Build APK
         run: |

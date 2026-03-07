@@ -98,6 +98,8 @@ else()
             # Android: 复制到 MOBILE_ASSETS_DIR（由外部传入）
             if (NOT MOBILE_ASSETS_DIR)
                 message(FATAL_ERROR "Building for Android, but MOBILE_ASSETS_DIR is not set")
+            elseif()
+                message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
             endif()
             set(outname "${MOBILE_ASSETS_DIR}/${filename}")
         else()
