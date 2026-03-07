@@ -11,7 +11,7 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 project(joy2d C CXX)
 
 
-option(BUILD_LOADER "Build joy2d_loader" OFF)
+option(BUILD_EDITOR "Build joy2d_editor" OFF)
 option(BUILD_ADVENTURE "Build joy2d_adventure" OFF)
 
 
@@ -37,8 +37,8 @@ add_subdirectory(joy2d_lua)   # joy2d_lua lua绑定库
 add_subdirectory(joy2d_js)   # joy2d_js js绑定库
 add_subdirectory(joy2d_csharp)   # joy2d_csharp chsarp绑定库
 
-if(BUILD_LOADER)
-    add_subdirectory(joy2d_loader)
+if(BUILD_EDITOR)
+    add_subdirectory(joy2d_editor)
 endif()
 
 if(BUILD_ADVENTURE)

@@ -6,10 +6,10 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [loader, adventure]      # 并行构建两个目标
+        target: [editor, adventure]      # 并行构建两个目标
         include:
-          - target: loader
-            build_macro: "BUILD_LOADER"
+          - target: editor
+            build_macro: "BUILD_EDITOR"
           - target: adventure
             build_macro: "BUILD_ADVENTURE"
       fail-fast: false                   # 一个失败不影响另一个

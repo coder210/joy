@@ -8,12 +8,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [loader, adventure]
+        project: [editor, adventure]
         include:
-          - project: loader
-            build_macro: "BUILD_LOADER"
+          - project: editor
+            build_macro: "BUILD_EDITOR"
           - project: adventure
-            BUILD_LOADER: OFF
             build_macro: "BUILD_ADVENTURE"
 
     steps:
@@ -91,8 +90,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages (loader only)
+      - name: Deploy to GitHub Pages (editor only)
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: joy2d-loader-web   # 必须与上传时 loader 项目的 artifact 名称一致
+          artifact_name: joy2d-editor-web   # 必须与上传时 editor 项目的 artifact 名称一致
