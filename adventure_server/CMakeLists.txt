@@ -54,7 +54,7 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
 # CMAKE_CURRENT_SOURCE_DIR换成项目目录
-set(ASSETS_ROOT "${CMAKE_CURRENT_LIST_DIR}/assets")
+set(ASSETS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
 # 递归搜索资产文件（排除版本控制目录）
 file(GLOB_RECURSE ALL_ASSET_FILES "${ASSETS_ROOT}/*")

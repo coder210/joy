@@ -13,7 +13,7 @@ project(joy2d C CXX)
 
 option(BUILD_JOY2D_EDITOR "Build joy2d_editor" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
-option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
+option(BUILD_ADVENTURE_CLIENT "Build adventure_client" ON)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
