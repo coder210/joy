@@ -1,5 +1,5 @@
 # 可执行文件名（保持不变）
-set(EXECUTABLE_NAME "joy2d_loader")
+set(EXECUTABLE_NAME "joy2d_editor")
 
 # 如果是 Android，必须命名为 main
 if (ANDROID)
