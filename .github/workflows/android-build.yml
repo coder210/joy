@@ -98,7 +98,7 @@ jobs:
         run: |
           cd SDL/android-project/
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug -PtargetName=${{ matrix.target }}
 
       # 7. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
