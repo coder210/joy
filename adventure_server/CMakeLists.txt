@@ -2,7 +2,6 @@
 set(EXECUTABLE_NAME "adventure_server")
 
 # 如果是 Android，必须命名为 main
-    message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
 if (ANDROID)
     message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
     set(EXECUTABLE_NAME main)
