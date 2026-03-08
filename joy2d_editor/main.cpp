@@ -342,9 +342,6 @@ bool initSDL() {
 SDL_GPUShader* loadSDLGPUShader(const char* filename, SDL_GPUShaderStage stage,
         uint32_t sampler_num, uint32_t uniform_buffer_num) {
         size_t file_size;
-        std::string tt = SDL_GetBasePath();
-        tt += filename;
-
         Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
         if (!data) {
                 SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "load file %s failed!: %s",
