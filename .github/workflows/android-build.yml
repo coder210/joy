@@ -38,6 +38,36 @@ jobs:
         run: |
           cp build.gradle SDL/android-project/app/
 
+      # 3.1. 添加 copyIcons 任务到 build.gradle，确保图标在资源合并前更新
+      - name: Add copyIcons task to build.gradle
+        run: |
+
+          // 复制图标到所有 mipmap 目录，确保资源合并前更新
+          task copyIcons {
+              doLast {
+                  def densities = ['hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+                  def sourceFile = file('${{ matrix.target }}/logo.png')
+                  if (!sourceFile.exists()) {
+                      throw new GradleException("logo.png not found at ${sourceFile.absolutePath}")
+                  }
+                  densities.each { density ->
+                      def targetDir = file("SDL/android-project/app/src/main/res/mipmap-${density}")
+                      if (!targetDir.exists()) {
+                          targetDir.mkdirs()
+                      }
+                      copy {
+                          from sourceFile
+                          into targetDir
+                          rename '.*', 'ic_launcher.png'
+                      }
+                      println "Copied logo.png to ${targetDir}/ic_launcher.png"
+                  }
+              }
+          }
+
+          preBuild.dependsOn copyIcons
+          EOF
+
       # 4. 根据目标修改 build.gradle 中的 CMake 参数（使用矩阵中定义的变量）
       - name: Modify CMake arguments in build.gradle
         run: |
@@ -61,37 +91,7 @@ jobs:
           # 打印修改后的内容以便调试
           cat build.gradle
 
-      # 5. 添加 copyIcons 任务到 build.gradle，确保图标在资源合并前更新
-      - name: Add copyIcons task to build.gradle
-        run: |
-          cd SDL/android-project/app/
-          cat >> build.gradle << 'EOF'
-
-          // 复制图标到所有 mipmap 目录，确保资源合并前更新
-          task copyIcons {
-              doLast {
-                  def densities = ['hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
-                  def sourceFile = file('../../logo.png')
-                  if (!sourceFile.exists()) {
-                      throw new GradleException("logo.png not found at ${sourceFile.absolutePath}")
-                  }
-                  densities.each { density ->
-                      def targetDir = file("src/main/res/mipmap-${density}")
-                      if (!targetDir.exists()) {
-                          targetDir.mkdirs()
-                      }
-                      copy {
-                          from sourceFile
-                          into targetDir
-                          rename '.*', 'ic_launcher.png'
-                      }
-                      println "Copied logo.png to ${targetDir}/ic_launcher.png"
-                  }
-              }
-          }
-
-          preBuild.dependsOn copyIcons
-          EOF
+      
 
       # 6. 构建 APK
       - name: Build APK
