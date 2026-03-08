@@ -4,8 +4,37 @@ set(EXECUTABLE_NAME "adventure_server")
 # 如果是 Android，必须命名为 main
 if (ANDROID)
     set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
+    set(MOBILE_RES_DIR "${MOBILE_MAIN_DIR}/res")
     message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
+    message(STATUS "MOBILE_RES_DIR = '${MOBILE_RES_DIR}'")
+
+    # 定义所有 mipmap 子目录
+	set(MIPMAP_DIRS
+		mipmap-hdpi
+		mipmap-mdpi
+		mipmap-xhdpi
+		mipmap-xxhdpi
+		mipmap-xxxhdpi
+	)
+
     set(EXECUTABLE_NAME main)
+    # 源文件路径
+	set(LOGO_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
+
+    # 为每个密度目录添加 POST_BUILD 复制命令
+    #file(COPY ${LOGO_SOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME})
+	foreach(dir ${MIPMAP_DIRS})
+        set(target_dir "${MOBILE_RES_DIR}/${dir}")
+        set(target_file "${target_dir}/ic_launcher.png")
+        # 确保目标目录存在（CMake 3.15+ 可自动创建，但保险起见可手动创建）
+        file(MAKE_DIRECTORY ${target_dir})
+        # 复制文件到目标目录（保留原文件名 logo.png）
+        file(COPY ${LOGO_SOURCE} DESTINATION ${target_dir})
+        # 重命名为 ic_launcher.png（如果目标文件已存在，可先删除）
+        file(REMOVE ${target_file})
+        file(RENAME "${target_dir}/logo.png" "${target_file}")
+    endforeach()
+
     add_library(${EXECUTABLE_NAME} SHARED)
 else()
     add_executable(${EXECUTABLE_NAME})
