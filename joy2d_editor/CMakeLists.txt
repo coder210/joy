@@ -24,11 +24,10 @@ if (ANDROID)
 	# 为每个密度目录添加 POST_BUILD 复制命令
 	foreach(dir ${MIPMAP_DIRS})
 		set(target_file "${ANDROID_RES_DIR}/${dir}/ic_launcher.png")
-		add_custom_command(
-			TARGET ${EXECUTABLE_NAME} POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LOGO_SOURCE}" "${target_file}"
-			COMMENT "Copying logo to ${target_file}"
-		)
+        add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LOGO_SOURCE}" "${target_file}"
+        )
+
 	endforeach()
 
 else()
