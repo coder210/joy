@@ -44,19 +44,20 @@ jobs:
           cd SDL/android-project/app/
           # 备份原文件
           cp build.gradle build.gradle.bak
-          
+
           # 构建新的 arguments 字符串（包含原有矩阵宏和新增参数）
           # 使用单引号保护 ${System.getProperty(...)} 不被 Shell 展开
           NEW_ARGS='arguments "-D'"${{ matrix.build_macro }}"'=ON", "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DCMAKE_VERBOSE_MAKEFILE=ON", "-DMOBILE_ASSETS_DIR=${System.getProperty("user.dir")}/app/src/main/assets"'
-          
-          # 尝试替换已有的 arguments 行
-          sed -i -E "s/arguments[[:space:]]+\".*\"/${NEW_ARGS}/" build.gradle
-          
-          # 如果替换失败（即文件中根本没有 arguments 行），则在 defaultConfig 块内插入
+
+          # 尝试替换已有的 arguments 行（使用 # 作为分隔符，避免与路径中的 / 冲突）
+          sed -i -E "s#arguments[[:space:]]+\".*\"#${NEW_ARGS}#" build.gradle
+
+          # 如果替换失败（文件中没有 arguments 行），则在 defaultConfig 块内插入
           if ! grep -q "arguments" build.gradle; then
+            # 注意：原插入逻辑可能不符合 Groovy 语法，但保持与原脚本一致
             sed -i "/defaultConfig {/a \\        externalNativeBuild.cmake.${NEW_ARGS}" build.gradle
           fi
-          
+
           # 打印修改后的内容以便调试
           cat build.gradle
 
