@@ -61,14 +61,46 @@ jobs:
           # 打印修改后的内容以便调试
           cat build.gradle
 
-      # 5. 构建 APK
+      # 5. 添加 copyIcons 任务到 build.gradle，确保图标在资源合并前更新
+      - name: Add copyIcons task to build.gradle
+        run: |
+          cd SDL/android-project/app/
+          cat >> build.gradle << 'EOF'
+
+          // 复制图标到所有 mipmap 目录，确保资源合并前更新
+          task copyIcons {
+              doLast {
+                  def densities = ['hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+                  def sourceFile = file('../../logo.png')
+                  if (!sourceFile.exists()) {
+                      throw new GradleException("logo.png not found at ${sourceFile.absolutePath}")
+                  }
+                  densities.each { density ->
+                      def targetDir = file("src/main/res/mipmap-${density}")
+                      if (!targetDir.exists()) {
+                          targetDir.mkdirs()
+                      }
+                      copy {
+                          from sourceFile
+                          into targetDir
+                          rename '.*', 'ic_launcher.png'
+                      }
+                      println "Copied logo.png to ${targetDir}/ic_launcher.png"
+                  }
+              }
+          }
+
+          preBuild.dependsOn copyIcons
+          EOF
+
+      # 6. 构建 APK
       - name: Build APK
         run: |
           cd SDL/android-project/
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # 6. 上传 APK 产物，文件名区分目标
+      # 7. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
