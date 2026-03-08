@@ -3,6 +3,7 @@ set(EXECUTABLE_NAME "adventure_client")
 
 # 如果是 Android，必须命名为 main
 if (ANDROID)
+    set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
     message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
     set(EXECUTABLE_NAME main)
     add_library(${EXECUTABLE_NAME} SHARED)

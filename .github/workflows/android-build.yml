@@ -47,7 +47,7 @@ jobs:
 
           # 构建新的 arguments 字符串（包含原有矩阵宏和新增参数）
           # 使用单引号保护 ${System.getProperty(...)} 不被 Shell 展开
-          NEW_ARGS='arguments "-D'"${{ matrix.build_macro }}"'=ON", "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DCMAKE_VERBOSE_MAKEFILE=ON", "-DMOBILE_ASSETS_DIR=${System.getProperty("user.dir")}/app/src/main/assets"'
+          NEW_ARGS='arguments "-D'"${{ matrix.build_macro }}"'=ON", "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DCMAKE_VERBOSE_MAKEFILE=ON", "-DMOBILE_MAIN_DIR=${System.getProperty("user.dir")}/app/src/main"'
 
           # 尝试替换已有的 arguments 行（使用 # 作为分隔符，避免与路径中的 / 冲突）
           sed -i -E "s#arguments[[:space:]]+\".*\"#${NEW_ARGS}#" build.gradle
