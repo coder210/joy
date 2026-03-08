@@ -24,8 +24,8 @@ if (ANDROID)
     # 为每个密度目录添加 POST_BUILD 复制命令
     #file(COPY ${LOGO_SOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME})
 	foreach(dir ${MIPMAP_DIRS})
-		set(target_file "${MOBILE_RES_DIR}/${dir}/ic_launcher.png")
-        file(COPY ${LOGO_SOURCE} DESTINATION ${target_file})
+        set(target_file "${MOBILE_RES_DIR}/${dir}/ic_launcher.png")
+        configure_file(${LOGO_SOURCE} ${target_file} COPYONLY)
     endforeach()
 
     add_library(${EXECUTABLE_NAME} SHARED)
