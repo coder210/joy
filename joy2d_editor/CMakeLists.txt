@@ -4,7 +4,31 @@ set(EXECUTABLE_NAME "joy2d_editor")
 # 如果是 Android，必须命名为 main
 if (ANDROID)
     set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
+    set(ANDROID_RES_DIR "${MOBILE_MAIN_DIR}/res")
     message(STATUS "MOBILE_ASSETS_DIR = '${MOBILE_ASSETS_DIR}'")
+
+    # 定义所有 mipmap 子目录
+	set(MIPMAP_DIRS
+		mipmap-hdpi
+		mipmap-mdpi
+		mipmap-xhdpi
+		mipmap-xxhdpi
+		mipmap-xxxhdpi
+	)
+
+    # 源文件路径
+	set(LOGO_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
+
+	# 为每个密度目录添加 POST_BUILD 复制命令
+	foreach(dir ${MIPMAP_DIRS})
+		set(target_file "${ANDROID_RES_DIR}/${dir}/ic_launcher.png")
+		add_custom_command(
+			TARGET ${EXECUTABLE_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LOGO_SOURCE}" "${target_file}"
+			COMMENT "Copying logo to ${target_file}"
+		)
+	endforeach()
+
     set(EXECUTABLE_NAME main)
     add_library(${EXECUTABLE_NAME} SHARED)
 else()
