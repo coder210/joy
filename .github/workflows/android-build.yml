@@ -92,6 +92,13 @@ jobs:
 
           preBuild.dependsOn copyIcons
 
+          // 动态设置应用显示名称
+          if (project.hasProperty('appDisplayName')) {
+              android.defaultConfig {
+                  resValue "string", "app_name", project.appDisplayName
+              }
+          }
+
           // 动态设置 APK 输出文件名
           android.applicationVariants.all { variant ->
               variant.outputs.all { output ->
@@ -108,7 +115,7 @@ jobs:
         run: |
           cd SDL/android-project/
           chmod +x gradlew
-          ./gradlew assembleDebug -PtargetName=${{ matrix.target }}
+          ./gradlew assembleDebug -PtargetName=${{ matrix.target }} -PappDisplayName="${{ matrix.target }}"
 
       # 7. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
