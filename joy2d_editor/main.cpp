@@ -410,7 +410,7 @@ SDL_GPUGraphicsPipeline* createGraphicsPipeline() {
         attributes[1].offset = sizeof(float) * 3;
 
         ci.vertex_input_state.vertex_attributes = attributes;
-        ci.vertex_input_state.num_vertex_attributes = std::size(attributes);
+        ci.vertex_input_state.num_vertex_attributes = sizeof(attributes) / sizeof(attributes[0]);;
 
         SDL_GPUVertexBufferDescription buffer_desc;
         buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
