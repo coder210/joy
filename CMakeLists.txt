@@ -34,8 +34,8 @@ endif()
 # 添加子目录
 add_subdirectory(SDL)          # SDL3 库
 add_subdirectory(joy2d)   # joy2d 核心库
-#add_subdirectory(joy2d_lua)   # joy2d_lua lua绑定库
-#add_subdirectory(joy2d_js)   # joy2d_js js绑定库
+add_subdirectory(joy2d_lua)   # joy2d_lua lua绑定库
+add_subdirectory(joy2d_js)   # joy2d_js js绑定库
 
 if (WIN32)
 	add_subdirectory(joy2d_csharp)   # joy2d_csharp chsarp绑定库
