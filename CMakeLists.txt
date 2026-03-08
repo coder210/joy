@@ -44,8 +44,6 @@ elseif (ANDROID)
 	 message(STATUS "Root MOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
 endif()
 
-message(STATUS "Root MOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
-
 if(BUILD_JOY2D_EDITOR)
     add_subdirectory(joy2d_editor)
 endif()
