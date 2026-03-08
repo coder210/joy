@@ -23,17 +23,21 @@ if (ANDROID)
 
     # 为每个密度目录添加 POST_BUILD 复制命令
     #file(COPY ${LOGO_SOURCE} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME})
-	
+	foreach(dir ${MIPMAP_DIRS})
+		set(target_file "${MOBILE_RES_DIR}/${dir}/ic_launcher.png")
+        file(COPY ${LOGO_SOURCE} DESTINATION ${target_file})
+    endforeach()
+
     add_library(${EXECUTABLE_NAME} SHARED)
 
 	# 为每个密度目录添加 POST_BUILD 复制命令
-	foreach(dir ${MIPMAP_DIRS})
-		set(target_file "${MOBILE_RES_DIR}/${dir}/ic_launcher.png")
-        add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${target_dir}"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LOGO_SOURCE}" "${target_file}"
-        )
-    endforeach()
+	# foreach(dir ${MIPMAP_DIRS})
+	# 	set(target_file "${MOBILE_RES_DIR}/${dir}/ic_launcher.png")
+    #     add_custom_command(TARGET ${EXECUTABLE_NAME} PRE_BUILD
+    #         COMMAND ${CMAKE_COMMAND} -E make_directory "${target_dir}"
+    #         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LOGO_SOURCE}" "${target_file}"
+    #     )
+    # endforeach()
 
 else()
     add_executable(${EXECUTABLE_NAME})
