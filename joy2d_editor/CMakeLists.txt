@@ -16,9 +16,11 @@ if (ANDROID)
 		mipmap-xxxhdpi
 	)
 
+    set(EXECUTABLE_NAME main)
+    add_library(${EXECUTABLE_NAME} SHARED)
+
     # 源文件路径
 	set(LOGO_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/logo.png")
-
 	# 为每个密度目录添加 POST_BUILD 复制命令
 	foreach(dir ${MIPMAP_DIRS})
 		set(target_file "${ANDROID_RES_DIR}/${dir}/ic_launcher.png")
@@ -29,8 +31,6 @@ if (ANDROID)
 		)
 	endforeach()
 
-    set(EXECUTABLE_NAME main)
-    add_library(${EXECUTABLE_NAME} SHARED)
 else()
     add_executable(${EXECUTABLE_NAME})
 endif()
