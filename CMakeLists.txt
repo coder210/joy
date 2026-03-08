@@ -41,8 +41,10 @@ if (WIN32)
 	add_subdirectory(joy2d_csharp)   # joy2d_csharp chsarp绑定库
 	add_subdirectory(joy2d_cslib)
 elseif (ANDROID)
-	 message(STATUS "Root DMOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
+	 message(STATUS "Root MOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
 endif()
+
+ message(STATUS "Root MOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
 
 if(BUILD_JOY2D_EDITOR)
     add_subdirectory(joy2d_editor)
