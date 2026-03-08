@@ -26,6 +26,7 @@ if (ANDROID)
 	foreach(dir ${MIPMAP_DIRS})
         set(target_dir "${MOBILE_RES_DIR}/${dir}")
         set(target_file "${target_dir}/ic_launcher.png")
+        message(STATUS "target_file = '${target_file}'")
         # 确保目标目录存在（CMake 3.15+ 可自动创建，但保险起见可手动创建）
         file(MAKE_DIRECTORY ${target_dir})
         # 复制文件到目标目录（保留原文件名 logo.png）
