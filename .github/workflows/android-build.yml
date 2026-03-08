@@ -91,6 +91,16 @@ jobs:
           }
 
           preBuild.dependsOn copyIcons
+
+          // 动态设置 APK 输出文件名
+          android.applicationVariants.all { variant ->
+              variant.outputs.all { output ->
+                  def targetName = project.hasProperty('targetName') ? project.targetName : 'Game'
+                  def buildType = variant.buildType.name
+                  outputFileName = "${targetName}-${buildType}.apk"
+              }
+          }
+
           EOF
 
       # 6. 构建 APK
