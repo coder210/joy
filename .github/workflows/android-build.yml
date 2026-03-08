@@ -99,6 +99,24 @@ jobs:
               }
           }
 
+          // 根据传入参数动态设置包名(applicationId)
+          if (project.hasProperty('applicationId')) {
+              android.defaultConfig {
+                  applicationId project.applicationId
+              }
+              println "Application ID set to: ${project.applicationId}"
+          } else if (project.hasProperty('packageSuffix')) {
+              // 如果只传了后缀，组合出完整包名(假设基础包名为 com.joy2d)
+              def basePackage = "com.joy2d"
+              android.defaultConfig {
+                  applicationId "${basePackage}.${project.packageSuffix}"
+              }
+              println "Application ID set to: ${basePackage}.${project.packageSuffix}"
+          } else {
+              // 未传参数时使用默认值(如 org.libsdl.app)
+              println "Using default application ID from manifest"
+          }
+
           // 动态设置 APK 输出文件名
           android.applicationVariants.all { variant ->
               variant.outputs.all { output ->
@@ -115,7 +133,7 @@ jobs:
         run: |
           cd SDL/android-project/
           chmod +x gradlew
-          ./gradlew assembleDebug -PtargetName=${{ matrix.target }} -PappDisplayName="${{ matrix.target }}"
+          ./gradlew assembleDebug -PtargetName=${{ matrix.target }} -PappDisplayName="${{ matrix.target }}" -PpackageSuffix=${{ matrix.target }}
 
       # 7. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
