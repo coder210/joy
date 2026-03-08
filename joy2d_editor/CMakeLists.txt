@@ -12,7 +12,7 @@ else()
 endif()
 
 
-file(GLOB SRC_FILES "*.h" "*.cpp")
+file(GLOB SRC_FILES "*.h" "*.hpp" "*.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
