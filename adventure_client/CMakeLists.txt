@@ -1,6 +1,6 @@
 # 可执行文件名（保持不变）
 set(EXECUTABLE_NAME "adventure_client")
-
+message(STATUS "EXECUTABLE_NAME = '${EXECUTABLE_NAME}'")
 # 如果是 Android，必须命名为 main
 if (ANDROID)
     set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
