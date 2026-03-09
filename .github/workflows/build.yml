@@ -42,13 +42,7 @@ jobs:
         with:
           name: ${{ matrix.project }}-${{ matrix.target }}-${{ matrix.arch }}
           path: |
-            build/Release/*.exe
-            build/Release/*.dll
-            build/Release/scripts/
-            build/Release/fonts/
-            build/Release/shaders/
-            build/Release/sounds/
-            build/Release/textures/
+            build/Release/**
 
   build-linux:
     name: Build for Linux (${{ matrix.project }})
