@@ -315,18 +315,31 @@ bool initSDL() {
                 return false;
         }
 
+        gWindow =
+                SDL_CreateWindow("FPS Camera Demo", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+        if (!gWindow) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SDL create gWindow failed");
+                return false;
+        }
+
+        int num_drivers = SDL_GetNumRenderDrivers();
+        for (int i = 0; i < num_drivers; i++) {
+                const char* name = SDL_GetRenderDriver(i);
+                SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, name);
+                if (renderer) {
+                        SDL_Log("[OK] %s\n", name);
+                        SDL_DestroyRenderer(renderer);
+                }
+                else {
+                        SDL_Log("[NO] %s\n", name);
+                }
+        }
+
         gDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV,
                 true, nullptr);
         if (!gDevice) {
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL create gpu gDevice failed: %s",
                         SDL_GetError());
-                return false;
-        }
-
-        gWindow =
-                SDL_CreateWindow("FPS Camera Demo", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-        if (!gWindow) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SDL create gWindow failed");
                 return false;
         }
 
@@ -707,11 +720,23 @@ void processInput() {
         if (gKeys[5]) gCamera.processKeyboard(5, gDeltaTime);
 }
 
+
+static void print_available_video_backends() {
+        int num = SDL_GetNumVideoDrivers();
+        for (int i = 0; i < num; i++) {
+                const char* name = SDL_GetVideoDriver(i);
+                SDL_Log("[OK] %s\n", name);
+        }
+}
+
 // SDL main loop
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+        //print_available_video_backends();
+
         if (!initSDL()) {
                 return SDL_APP_FAILURE;
         }
+
 
         gShaders = createSDLGPUShaderBundle();
         if (!gShaders) {
@@ -725,6 +750,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
                         SDL_GetError());
                 return SDL_APP_FAILURE;
         }
+
+
 
         createAndUploadVertexData();
         createImageTexture();
