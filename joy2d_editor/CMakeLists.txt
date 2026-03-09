@@ -110,11 +110,11 @@ else()
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${outname}"
         )
         # MSVC 额外复制一份到构建根目录（兼容旧逻辑）
-        if(MSVC)
-            add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${CMAKE_BINARY_DIR}/${filename}"
-            )
-        endif()
+        #if(MSVC)
+            #add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+             #   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${CMAKE_BINARY_DIR}/${filename}"
+            #)
+        #endif()
     endmacro()
 
     foreach(asset_file ${ASSET_FILES})
@@ -138,9 +138,11 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     XCODE_ATTRIBUTE_CURRENTYEAR "${CURRENTYEAR}"
     RESOURCE "${RESOURCE_FILES}"
 )
-
-# Visual Studio 启动项目设置（作用于当前目录）
-set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${EXECUTABLE_NAME}")
+if(MSVC)
+    set_target_properties(${EXECUTABLE_NAME} PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
+	)
+endif()
 
 # macOS 非 Xcode 生成器时的 bundle 修复（可选）
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND NOT CMAKE_GENERATOR MATCHES "Xcode")

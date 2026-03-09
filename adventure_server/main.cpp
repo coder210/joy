@@ -1,4 +1,4 @@
-﻿#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
+#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #define UTF8_IMPLEMENTATION
 extern "C" {
 #include <SDL3/SDL.h>
@@ -24,27 +24,40 @@ static int grad_size = 50;
 static text_texture_p up_text = NULL;
 static text_texture_p fps_text = NULL;
 static ecs_world_p ecs_world = NULL;
-static utf8_int32_t chinese_codepoints[132];
-static int chinese_codepoints_num;
-static utf8_int32_t chinese_codepoints2[132];
-static int chinese_codepoints2_num;
+static uint32_t* chinese_codepoints;
+static size_t chinese_codepoints_num;
+static uint32_t* chinese_codepoints2;
+static size_t chinese_codepoints2_num;
 
-
-static int get_codepoints(const char* text, utf8_int32_t *codepoints)
-{
-        utf8_int32_t cp;
-        int count = 0;
-        const char* pos = text;
-        while ((pos = utf8codepoint(pos, &cp)) && cp != 0) {
-                codepoints[count] = cp;
-                ++count;
-                //printf("字符%d:U+%04x,%d\n", ++count, cp, cp);
-                //if (utf8islower(cp)) printf(" (小写)");
-                //if (utf8isupper(cp)) printf(" (大写)");
-                //printf(",字节数:%zu\n", utf8codepointsize(cp));
+static const char* utf8_decode(const char* s, int* code) {
+        unsigned char c = *(unsigned char*)s;
+        if (c < 0x80) {                /* 单字节: 0xxxxxxx */
+                *code = c;
+                return s + 1;
         }
-        return count;
+        else if (c < 0xE0) {           /* 双字节: 110xxxxx 10xxxxxx */
+                if ((s[1] & 0xC0) != 0x80) return NULL;
+                *code = ((c & 0x1F) << 6) | (s[1] & 0x3F);
+                if (*code < 0x80) return NULL;  /* 过度编码 */
+                return s + 2;
+        }
+        else if (c < 0xF0) {           /* 三字节: 1110xxxx 10xxxxxx 10xxxxxx */
+                if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80) return NULL;
+                *code = ((c & 0x0F) << 12) | ((s[1] & 0x3F) << 6) | (s[2] & 0x3F);
+                if (*code < 0x800) return NULL;  /* 过度编码 */
+                return s + 3;
+        }
+        else if (c < 0xF8) {           /* 四字节: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
+                if ((s[1] & 0xC0) != 0x80 || (s[2] & 0xC0) != 0x80 || (s[3] & 0xC0) != 0x80) return NULL;
+                *code = ((c & 0x07) << 18) | ((s[1] & 0x3F) << 12) | ((s[2] & 0x3F) << 6) | (s[3] & 0x3F);
+                if (*code < 0x10000) return NULL; /* 过度编码 */
+                return s + 4;
+        }
+        else {
+                return NULL;               /* 5字节及以上或非法首字节 */
+        }
 }
+
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -70,13 +83,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         std::string k = SDL_GetBasePath();
         k.append("fonts/simhei.ttf");
-       
-        chinese_codepoints_num = get_codepoints("中国", chinese_codepoints);
-        chinese_codepoints2_num = get_codepoints("chinese", chinese_codepoints2);
+        chinese_codepoints = utf8_decode_all("中国", strlen("中国"), &chinese_codepoints_num);
+        chinese_codepoints2 = utf8_decode_all("chinese", strlen("chinese"), &chinese_codepoints2_num);
+
+        //chinese_codepoints[0] = 20013;
+        //chinese_codepoints[1] = 22269;
+        //chinese_codepoints_num = 2;
+        
+
 
         simhei_font = font_create(renderer, k.c_str(), grad_size * 0.4f);
-        up_text = text_create(simhei_font, chinese_codepoints, chinese_codepoints_num, {255, 255, 255, 255});
-        fps_text = text_create(simhei_font, chinese_codepoints2, chinese_codepoints2_num, {255, 255, 255, 255});
+        up_text = text_create(simhei_font, (int*)chinese_codepoints, chinese_codepoints_num, {255, 255, 255, 255});
+        fps_text = text_create(simhei_font, (int*)chinese_codepoints2, chinese_codepoints2_num, {255, 255, 255, 255});
         fps_counter = simple_fps_create();
 
         ecs_world = ecs_create();

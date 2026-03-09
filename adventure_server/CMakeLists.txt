@@ -11,7 +11,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES "*.h" "*.cpp")
+file(GLOB SRC_FILES "*.h" "*.c" "*.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -109,12 +109,6 @@ else()
         add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${outname}"
         )
-        # MSVC 额外复制一份到构建根目录（兼容旧逻辑）
-        if(MSVC)
-            add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${CMAKE_BINARY_DIR}/${filename}"
-            )
-        endif()
     endmacro()
 
     foreach(asset_file ${ASSET_FILES})
@@ -138,7 +132,11 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     XCODE_ATTRIBUTE_CURRENTYEAR "${CURRENTYEAR}"
     RESOURCE "${RESOURCE_FILES}"
 )
-
+if(MSVC)
+    set_target_properties(${EXECUTABLE_NAME} PROPERTIES
+		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
+	)
+endif()
 # Visual Studio 启动项目设置（作用于当前目录）
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${EXECUTABLE_NAME}")
 
