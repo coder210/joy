@@ -289,7 +289,7 @@ int world2df_move_player(world2df_p world, int conv, short keycode)
         return 1;
 }
 
-bool world2df_get_entity_id(world2df_p world, int conv, uint32_t* entity_id)
+bool world2df_get_playerid(world2df_p world, int conv, uint32_t* entity_id)
 {
         int ret;
         khint_t k;

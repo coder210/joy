@@ -1,149 +1,6 @@
-#include <SDL3/SDL.h>
-#include "config.h"
-#include "msgpack.h"
+#include <joy2d/msgpack.h>
 #include "proto.h"
 
-void pack_test()
-{
-        {
-                c2s_t c2s1 = { 0 };
-                c2s1.cmd = C2S_CMD_READY;
-                int len = sizeof(c2s1);
-                char buf[JOY_MIN_BUFFER];
-                c2s_serialize(&c2s1, buf, &len);
-
-                c2s_t c2s2;
-                c2s_deserialize(&c2s2, buf, len);
-                int t = 0;
-        }
-
-
-        {
-                s2c_t s2c1 = { 0 };
-                s2c1.cmd = S2C_CMD_LOADING;
-                s2c1.loading.conv = 100;
-                s2c1.loading.ok = 0;
-                s2c1.loading.data_len = 0;
-                //SDL_memcpy(s2c1.loading.data, "liweiaaaab", s2c1.loading.data_len);
-
-                int len;
-                //int len = sizeof(s2c1);
-                char buf[JOY_MAX_BUFFER];
-                s2c_serialize(&s2c1, buf, &len);
-
-                s2c_t s2c2;
-                s2c_deserialize(&s2c2, buf, len);
-                int t = 0;
-        }
-
-
-        {
-                c2s_t c2s1 = { 0 };
-                c2s1.cmd = C2S_CMD_PLAYER_JOIN;
-                c2s1.player_join.position_x = 10;
-                c2s1.player_join.position_y = 12;
-                int len = sizeof(c2s1);
-                char* buf = (char*)SDL_malloc(sizeof(char) * len);
-                c2s_serialize(&c2s1, buf, &len);
-
-                c2s_t c2s2;
-                c2s_deserialize(&c2s2, buf, len);
-                int t = 0;
-        }
-
-        {
-                c2s_t c2s1;
-                c2s1.cmd = C2S_CMD_PLAYER_INPUT;
-                c2s1.player_input.keycode = 10;
-                int len = sizeof(c2s_p);
-                char* buf = (char*)malloc(sizeof(char) * len);
-                c2s_serialize(&c2s1, buf, &len);
-
-                c2s_t c2s2;
-                c2s_deserialize(&c2s2, buf, len);
-                int t = 0;
-        }
-
-        {
-                /*s2c_t s2c1;
-
-                s2c1.cmd = S2C_CMD_COMMAND;
-                s2c1.command.frame_id = 1;
-
-                s2c_init(&s2c1);
-
-                player_join_t player_join1;
-                player_join1.conv = 100;
-                player_join1.position_x = 1;
-                player_join1.position_y = 3;
-                kv_push(player_join_t, s2c1.command.player_joins, player_join1);
-
-                player_join_t player_join2;
-                player_join2.conv = 200;
-                player_join2.position_x = 21;
-                player_join2.position_y = 13;
-                kv_push(player_join_t, s2c1.command.player_joins, player_join2);
-
-                player_cmd_t player_cmd1;
-                player_cmd1.conv = 100;
-                player_cmd1.keycode = 68;
-                kv_push(player_cmd_t, s2c1.command.player_cmds, player_cmd1);
-
-                player_cmd_t player_cmd2;
-                player_cmd2.conv = 200;
-                player_cmd2.keycode = 67;
-                kv_push(player_cmd_t, s2c1.command.player_cmds, player_cmd2);
-
-
-                s2c1.world.entity_id = 10;
-                entity_t entity1;
-                entity1.id = 10;
-                entity1.position_x = 10;
-                entity1.position_y = 10;
-                entity1.linear_velocity_x = 10;
-                entity1.linear_velocity_y = 10;
-                entity1.rotation = 10;
-                entity1.angular_velocity = 10;
-                entity1.width = 10;
-                entity1.height = 101;
-                kv_push(entity_t, s2c1.world.entities, entity1);
-
-                entity_t entity2;
-                entity2.id = 11;
-                entity2.position_x = 100;
-                entity2.position_y = 100;
-                entity2.linear_velocity_x = 100;
-                entity2.linear_velocity_y = 100;
-                entity2.rotation = 100;
-                entity2.angular_velocity = 100;
-                entity2.width = 100;
-                entity2.height = 100;
-                kv_push(entity_t, s2c1.world.entities, entity2);
-
-                player_t player1;
-                player1.conv = 100;
-                player1.entity_id = 10;
-                kv_push(player_t, s2c1.world.players, player1);
-
-                player_t player2;
-                player2.conv = 101;
-                player2.entity_id = 10;
-                kv_push(player_t, s2c1.world.players, player2);
-
-                SDL_strlcpy(s2c1.world.checksum, "11111111", 16);
-                s2c1.world.checksum_len = SDL_strlen(s2c1.world.checksum);
-
-                char buf[JOY_MAX_BUFFER];
-                int len;
-                s2c_serialize(&s2c1, buf, &len);
-
-                s2c_t s2c2;
-                s2c_init(&s2c2);
-                s2c_deserialize(&s2c2, buf, len);
-                s2c_release(&s2c1);
-                s2c_release(&s2c2);*/
-        }
-}
 
 int c2s_serialize(const c2s_p c2s, char* buf, int* len)
 {
@@ -193,6 +50,22 @@ int c2s_deserialize(c2s_p c2s, const char* buf, int len)
         return true;
 }
 
+int s2c_command_count(s2c_command_p command)
+{
+        int count = command->player_inputs.size();
+        count += command->player_joins.size();
+        count += command->player_leaves.size();
+        count += command->creating_emenies.size();
+        return count;
+}
+
+void s2c_command_clear(s2c_command_p command)
+{
+        command->player_inputs.clear();
+        command->player_leaves.clear();
+        command->creating_emenies.clear();
+}
+
 int s2c_serialize(const s2c_p s2c, char* buf, int* len)
 {
         int offset;
@@ -220,27 +93,27 @@ int s2c_serialize(const s2c_p s2c, char* buf, int* len)
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
                 offset = pack_int32(buf, s2c->command.frame_id, offset);
-                offset = pack_int16(buf, kv_size(s2c->command.player_joins), offset);
-                offset = pack_int16(buf, kv_size(s2c->command.player_leaves), offset);
-                offset = pack_int16(buf, kv_size(s2c->command.player_inputs), offset);
-                offset = pack_int16(buf, kv_size(s2c->command.creating_emenies), offset);
-                for (int i = 0; i < kv_size(s2c->command.player_joins); i++) {
-                        player_join = kv_A(s2c->command.player_joins, i);
+                offset = pack_int16(buf, s2c->command.player_joins.size(), offset);
+                offset = pack_int16(buf, s2c->command.player_leaves.size(), offset);
+                offset = pack_int16(buf, s2c->command.player_inputs.size(), offset);
+                offset = pack_int16(buf, s2c->command.creating_emenies.size(), offset);
+                for (int i = 0; i < s2c->command.player_joins.size(); i++) {
+                        player_join = s2c->command.player_joins[i];
                         offset = pack_int32(buf, player_join.conv, offset);
                         offset = pack_int64(buf, player_join.position_x, offset);
                         offset = pack_int64(buf, player_join.position_y, offset);
                 }
-                for (int i = 0; i < kv_size(s2c->command.player_leaves); i++) {
-                        player_leave = kv_A(s2c->command.player_leaves, i);
+                for (int i = 0; i < s2c->command.player_leaves.size(); i++) {
+                        player_leave = s2c->command.player_leaves[i];
                         offset = pack_int32(buf, player_leave, offset);
                 }
-                for (int i = 0; i < kv_size(s2c->command.player_inputs); i++) {
-                        player_input = kv_A(s2c->command.player_inputs, i);
+                for (int i = 0; i < s2c->command.player_inputs.size(); i++) {
+                        player_input = s2c->command.player_inputs[i];
                         offset = pack_int32(buf, player_input.conv, offset);
                         offset = pack_int16(buf, player_input.keycode, offset);
                 }
-                for (int i = 0; i < kv_size(s2c->command.creating_emenies); i++) {
-                        creating_emeny = kv_A(s2c->command.creating_emenies, i);
+                for (int i = 0; i < s2c->command.creating_emenies.size(); i++) {
+                        creating_emeny = s2c->command.creating_emenies[i];
                         offset = pack_int64(buf, creating_emeny.width, offset);
                         offset = pack_int64(buf, creating_emeny.height, offset);
                         offset = pack_int64(buf, creating_emeny.linear_velocity_x, offset);
@@ -283,10 +156,6 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                 offset = unpack_int32(buf, &s2c->loading.ok, offset);
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
-                kv_init(s2c->command.player_inputs);
-                kv_init(s2c->command.player_joins);
-                kv_init(s2c->command.player_leaves);
-                kv_init(s2c->command.creating_emenies);
                 offset = unpack_int32(buf, &s2c->command.frame_id, offset);
                 offset = unpack_int16(buf, &num_player_joins, offset);
                 offset = unpack_int16(buf, &num_player_leaves, offset);
@@ -296,16 +165,16 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                         offset = unpack_int32(buf, &player_join.conv, offset);
                         offset = unpack_int64(buf, &player_join.position_x, offset);
                         offset = unpack_int64(buf, &player_join.position_y, offset);
-                        kv_push(s2c_player_join_t, s2c->command.player_joins, player_join);
+                        s2c->command.player_joins.push_back(player_join);
                 }
                 for (int i = 0; i < num_player_leaves; i++) {
                         offset = unpack_int32(buf, &player_leave, offset);
-                        kv_push(s2c_player_leave_t, s2c->command.player_leaves, player_leave);
+                        s2c->command.player_leaves.push_back(player_leave);
                 }
                 for (int i = 0; i < num_player_inputs; i++) {
                         offset = unpack_int32(buf, &player_input.conv, offset);
                         offset = unpack_int16(buf, &player_input.keycode, offset);
-                        kv_push(s2c_player_input_t, s2c->command.player_inputs, player_input);
+                        s2c->command.player_inputs.push_back(player_input);
                 }
                 for (int i = 0; i < num_creating_emenies; i++) {
                         offset = unpack_int64(buf, &creating_emeny.width, offset);
@@ -314,7 +183,7 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                         offset = unpack_int64(buf, &creating_emeny.linear_velocity_y, offset);
                         offset = unpack_int64(buf, &creating_emeny.position_x, offset);
                         offset = unpack_int64(buf, &creating_emeny.position_y, offset);
-                        kv_push(s2c_creating_emeny_t, s2c->command.creating_emenies, creating_emeny);
+                        s2c->command.creating_emenies.push_back(creating_emeny);
                 }
                 offset = unpack_int32(buf, &s2c->command.checksum_len, offset);
                 offset = unpack_string(buf, s2c->command.checksum, s2c->command.checksum_len, offset);

@@ -58,7 +58,7 @@ extern "C" {
 	JOY_API rigidbody_p world2df_get_rigidbody(world2df_p world, uint32_t id);
 	JOY_API rigidbody_p world2df_get_player(world2df_p world, int conv);
 	JOY_API int world2df_move_player(world2df_p world, int conv, short keycode);
-	JOY_API bool world2df_get_entity_id(world2df_p world, int conv, uint32_t *entity_id);
+	JOY_API bool world2df_get_playerid(world2df_p world, int conv, uint32_t *entity_id);
 	JOY_API int world2df_connections_count(world2df_p world);
 	JOY_API void world2df_add_connection(world2df_p world, int conv, uint32_t entity_id);
 	JOY_API void world2df_add_emeny(world2df_p world, uint32_t entity_id);

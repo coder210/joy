@@ -5,6 +5,7 @@
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"
+#include "vector.h"
 
 // ==================== Bitsetʵ�� ====================
 typedef struct bitset {
@@ -424,12 +425,11 @@ void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name)
 //        return vec;
 //}
 
-vector_t(kecs) ecs_query(ecs_world_p world, int arg_cnt, ...)
+ecs_id_array_t ecs_query(ecs_world_p world, int arg_cnt, ...)
 {
+        ecs_id_array_t result = { 0 };
         if (arg_cnt <= 0) {
-                vector_t(kecs) empty;
-                vector_init(kecs, &empty);
-                return empty;
+                return result;
         }
 
         char** args = (char**)SDL_malloc(arg_cnt * sizeof(const char*));
@@ -441,22 +441,20 @@ vector_t(kecs) ecs_query(ecs_world_p world, int arg_cnt, ...)
         }
         va_end(va);
 
-        vector_t(kecs) result = ecs_queryx(world, arg_cnt, args);
+        result = ecs_queryx(world, arg_cnt, args);
         SDL_free(args);
 
         return result;
 }
 
-vector_t(kecs) ecs_queryx(ecs_world_p world, int arg_cnt, char**args) 
+ecs_id_array_t ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
 {
-        vector_t(kecs) result;
-        vector_init(kecs, &result);
+        ecs_id_array_t result = { 0 };
 
         if (arg_cnt <= 0) {
                 return result;
         }
 
-        // ������ʱλ�����ڽ�������
         bitset_t* temp_bitset = bitset_create(world->global_id + 64);
         bitset_t* result_bitset = bitset_create(world->global_id + 64);
         bool first = true;
@@ -467,30 +465,23 @@ vector_t(kecs) ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
                 khint_t k = kh_get(kecs_component, world->components, component_id);
 
                 if (k == kh_end(world->components)) {
-                        // ��һ����������ڣ����Ϊ��
-                        vector_destroy(kecs, &result);
                         bitset_destroy(temp_bitset);
                         bitset_destroy(result_bitset);
-                        vector_init(kecs, &result);
                         return result;
                 }
 
                 component_store_t* store = kh_val(world->components, k);
 
                 if (first) {
-                        // ��һ�������������λ��
                         bitset_copy(result_bitset, store->bitset);
                         first = false;
                 }
                 else {
-                        // �������������λ��ȡ����
                         bitset_copy(temp_bitset, store->bitset);
                         bitset_and(result_bitset, temp_bitset);
                 }
         }
 
-        // �ӽ��λ������ȡʵ��ID
-        // Ϊ�����Ч�ʣ����ǿ��Ա�����һ�������ʵ���б��������Ǳ�������λ��
         if (!first) {
                 const char* first_comp = args[0];
                 ecs_cid_t first_cid = murmur3_hash(first_comp);
@@ -500,11 +491,10 @@ vector_t(kecs) ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
                         component_store_t* store = kh_val(world->components, k);
                         sparse_set_p sparse_set = store->sparse_set;
 
-                        // ������һ�������ʵ�壬����Ƿ��ڽ��λ����
                         for (int i = 0; i < kv_size(sparse_set->density); i++) {
                                 ecs_id_t id = kv_A(sparse_set->density, i);
                                 if (bitset_test(result_bitset, id)) {
-                                        vector_push(kecs, &result, id);
+                                        result.ids[result.num++] = id;
                                 }
                         }
                 }
@@ -533,67 +523,67 @@ typedef struct velocity {
 
 int ecs_test()
 {
-        sparse_set_p sparse_set;
-        sparse_set = sparse_set_create();
+       // sparse_set_p sparse_set;
+       // sparse_set = sparse_set_create();
 
-        for (int i = 0; i < 100000; i++) {
-                sparse_set_insert(sparse_set, i);
-        }
+       // for (int i = 0; i < 100000; i++) {
+       //         sparse_set_insert(sparse_set, i);
+       // }
 
-        sparse_set_remove(sparse_set, 1000);
+       // sparse_set_remove(sparse_set, 1000);
 
-        int index = 1000;
-        bool found = false;
-       /* if (!sparse_set_contian(sparse_set, index)) {
-                SDL_Log("%d not exists", index);
-                for (size_t i = 0; i < kv_size(sparse_set->density); i++) {
-                        int value = kv_A(sparse_set->density, i);
-                        if (value == index) {
-                                found = true;
-                                break;
-                        }
+       // int index = 1000;
+       // bool found = false;
+       ///* if (!sparse_set_contian(sparse_set, index)) {
+       //         SDL_Log("%d not exists", index);
+       //         for (size_t i = 0; i < kv_size(sparse_set->density); i++) {
+       //                 int value = kv_A(sparse_set->density, i);
+       //                 if (value == index) {
+       //                         found = true;
+       //                         break;
+       //                 }
 
-                }
+       //         }
 
-                if (!found) {
-                        SDL_Log("%d not exists 2", index);
-                }
-        }
-        sparse_set_destroy(sparse_set);*/
-
-
-        ecs_world_p world;
-        world = ecs_create();
-        ecs_define(world, "position_t", sizeof(position_t));
-        ecs_define(world, "velocity_t", sizeof(velocity_t));
-
-        ecs_id_t id1 = ecs_spawn(world);
-        ecs_id_t id2 = ecs_spawn(world);
-        /*ecs_set(world, id1, "position_t", &(position_t){0.2, 0.3});
-        ecs_set(world, id1, "velocity_t", &(velocity_t){2.2, 4.3});
-        ecs_set(world, id2, "position_t", &(position_t){2.2, 3.3});
-        ecs_set(world, id2, "velocity_t", &(velocity_t){3.3, 4.4});*/
-
-        ecs_remove(world, id1, "position_t");
-        //ecs_set(world, id1, "velocity_t", &(velocity_t){2, 5});
-        //ecs_kill(world, id2);
-
-        /*  vector_t entities = ecs_query(world, 2, "position_t", "velocity_t");
-          for (int i = 0; i < vector_size(&entities); i++) {
-                  ecs_id_t id = vector_a(&entities, i);
-                  position_t* position = (position_t*)ecs_get(world, id, "position_t");
-                  velocity_t* velocity = (velocity_t*)ecs_get(world, id, "velocity_t");
-                  SDL_Log("%d <%f,%f> <%f,%f>", id, position->x, position->y, velocity->x, velocity->y);
-          }*/
-        vector_t(kecs) entities = ecs_query(world, 1, "position_t");
-        for (int i = 0; i < vector_size(kecs, &entities); i++) {
-                ecs_id_t id = vector_a(kecs, &entities, i);
-                //position_t* position = (position_t*)ecs_get(world, id, "position_t");
-                //SDL_Log("%d <%f,%f>", id, position->x, position->y);
-        }
+       //         if (!found) {
+       //                 SDL_Log("%d not exists 2", index);
+       //         }
+       // }
+       // sparse_set_destroy(sparse_set);*/
 
 
+       // ecs_world_p world;
+       // world = ecs_create();
+       // ecs_define(world, "position_t", sizeof(position_t));
+       // ecs_define(world, "velocity_t", sizeof(velocity_t));
 
-        ecs_destroy(world);
+       // ecs_id_t id1 = ecs_spawn(world);
+       // ecs_id_t id2 = ecs_spawn(world);
+       // /*ecs_set(world, id1, "position_t", &(position_t){0.2, 0.3});
+       // ecs_set(world, id1, "velocity_t", &(velocity_t){2.2, 4.3});
+       // ecs_set(world, id2, "position_t", &(position_t){2.2, 3.3});
+       // ecs_set(world, id2, "velocity_t", &(velocity_t){3.3, 4.4});*/
+
+       // ecs_remove(world, id1, "position_t");
+       // //ecs_set(world, id1, "velocity_t", &(velocity_t){2, 5});
+       // //ecs_kill(world, id2);
+
+       // /*  vector_t entities = ecs_query(world, 2, "position_t", "velocity_t");
+       //   for (int i = 0; i < vector_size(&entities); i++) {
+       //           ecs_id_t id = vector_a(&entities, i);
+       //           position_t* position = (position_t*)ecs_get(world, id, "position_t");
+       //           velocity_t* velocity = (velocity_t*)ecs_get(world, id, "velocity_t");
+       //           SDL_Log("%d <%f,%f> <%f,%f>", id, position->x, position->y, velocity->x, velocity->y);
+       //   }*/
+       // vector_t(kecs) entities = ecs_query(world, 1, "position_t");
+       // for (int i = 0; i < vector_size(kecs, &entities); i++) {
+       //         ecs_id_t id = vector_a(kecs, &entities, i);
+       //         //position_t* position = (position_t*)ecs_get(world, id, "position_t");
+       //         //SDL_Log("%d <%f,%f>", id, position->x, position->y);
+       // }
+
+
+
+       // ecs_destroy(world);
         return 0;
 }
