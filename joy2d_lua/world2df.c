@@ -141,7 +141,7 @@ static int l_world2df_move_player(lua_State* L)
 
 static int l_world2df_get_entity_id(lua_State* L)
 {
-        world2df_p world;
+        /*world2df_p world;
         uint32_t entity_id;
         bool ret;
         int conv;
@@ -149,7 +149,7 @@ static int l_world2df_get_entity_id(lua_State* L)
         conv = luaL_checkinteger(L, 2);
         ret = world2df_get_entity_id(world, conv, &entity_id);
         lua_pushboolean(L, ret);
-        lua_pushinteger(L, entity_id);
+        lua_pushinteger(L, entity_id);*/
         return 2;
 }
 
