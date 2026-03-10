@@ -5,7 +5,7 @@
 #include "joy2d/external/klib/khash.h"
 #include "joy2d/external/klib/klist.h"
 #include "joy2d/log.h"
-#include "joy2d/proto.h"
+//#include "joy2d/proto.h"
 #include "joy2d/mathx.h"
 #include "joy2d/physics.h"
 
