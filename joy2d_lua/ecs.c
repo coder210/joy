@@ -133,7 +133,7 @@ static int lecs_remove(lua_State* L)
 
 static int lecs_query(lua_State* L)
 {
-        vector_t(kecs) id_arr;
+        /*vector_t(kecs) id_arr;
         ecs_world_p world;
         int args_count;
         char** component_names;
@@ -161,7 +161,7 @@ static int lecs_query(lua_State* L)
                 lua_rawseti(L, -2, i + 1); 
         }
         vector_destroy(kecs, &id_arr);
-        SDL_free(component_names);
+        SDL_free(component_names);*/
         return 1;
 }
 
