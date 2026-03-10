@@ -2,6 +2,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <joy2d/calculator.h>
+#include <joy2d/sys.h>
+#include <joy2d/network.h>
+#include <joy2d/log.h>
 #include "flecs.h"
 #include <iostream>
 #include <map>
@@ -9,6 +12,7 @@
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
+static kcpserver_p kcpserver = NULL;
 static std::map<std::string, double> cache;
 static flecs::world world;
 
@@ -30,6 +34,7 @@ struct Player {};  // 标记组件，用于标识玩家实体
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
+        sys_init_netenv();
         SDL_SetAppMetadata("Adventure server", "1.0", "com.example.adventure-server");
 
         if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -41,6 +46,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
+
+        kcpserver = kcpserver_create("192.168.1.13", 10000);
 
         // 注册组件
         world.component<Position>();
@@ -105,6 +112,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
         // 计算时间差
+        net_message_t msg;
         Uint64 currentTime = SDL_GetPerformanceCounter();
         if (lastTime == 0) {
                 lastTime = currentTime;
@@ -118,6 +126,27 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 world.progress(FIXED_TIMESTEP);   // 以固定步长驱动ECS系统
                 accumulator -= FIXED_TIMESTEP;
         }
+
+        // 更新网络服务器
+        kcpserver_update(kcpserver);
+        while (kcpserver_poll_message(kcpserver, &msg)) {
+                // 处理消息（这里只是简单打印，实际应用中应该根据协议解析并更新游戏状态）
+                //std::string data(msg.data, msg.len);
+                //std::cout << "Received message: " << data << std::endl;
+                //SDL_free(msg.data);  // 记得释放消息数据的内存
+                if (msg.type == NET_TYPE_CONNECTED) {
+                        log_info("connected=%d", msg.conv);
+                }
+                else if (msg.type == NET_TYPE_DISCONNECTED) {
+                        log_info("disconnected=%d", msg.conv);
+                }
+                else if (msg.type == NET_TYPE_MESSAGE) {
+                        std::string data(msg.data, msg.len);
+                        std::cout << "Received message: " << data << std::endl;
+                        SDL_free(msg.data);  // 记得释放消息数据的内存
+                }
+        }
+
 
         // 渲染部分保持不变
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
@@ -136,4 +165,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
         // flecs 世界会自动释放资源
+        kcpserver_destroy(kcpserver);
+        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(renderer);
+        sys_release_netenv();
 }
