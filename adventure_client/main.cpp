@@ -1,102 +1,139 @@
-
-#define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
-extern "C" {
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <joy2d/calculator.h>
-}
-
+#include "flecs.h"
+#include <iostream>
 #include <map>
 #include <string>
 
- /* We will use this renderer to draw into this window every frame. */
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static std::map<std::string, double> cache;
+static flecs::world world;
 
-/* This function runs once at startup. */
+// 方向键状态
+static bool upPressed = false;
+static bool downPressed = false;
+static bool leftPressed = false;
+static bool rightPressed = false;
+static const float MOVE_SPEED = 5.0f;
+
+static Uint64 lastTime = 0;
+static float accumulator = 0.0f;
+static const float FIXED_TIMESTEP = 1.0f / 60.0f;   // 60Hz固定步长
+
+// 组件定义
+struct Position { float x, y; };
+struct Velocity { float x, y; };
+struct Player {};  // 标记组件，用于标识玩家实体
+
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-        SDL_SetAppMetadata("Example Renderer Lines", "1.0", "com.example.renderer-lines");
+        SDL_SetAppMetadata("Adventure server", "1.0", "com.example.adventure-server");
 
         if (!SDL_Init(SDL_INIT_VIDEO)) {
                 SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
 
-        if (!SDL_CreateWindowAndRenderer("examples/renderer/lines", 640, 480, 0, &window, &renderer)) {
+        if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &window, &renderer)) {
                 SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
-        cache.insert(std::make_pair("1.2f+2.3f", add(1.2f, 2.3f)));
-        cache.insert(std::make_pair("1f+2f", add(1.0f, 2.0f)));
-        for (auto it = cache.begin(); it != cache.end(); ++it) {
-                //std::cout << it->first << ": " << it->second << std::endl;
-                SDL_Log("t=%s, %f", it->first.c_str(), it->second);
-        }
 
-        double t = add(1.2f, 2.3f);
-        SDL_Log("t=%f", t);
-        return SDL_APP_CONTINUE;  /* carry on with the program! */
+        // 注册组件
+        world.component<Position>();
+        world.component<Velocity>();
+        world.component<Player>();
+
+        // 创建玩家实体（小方块），添加 Player 标记
+        world.entity()
+                .set<Position>({ 320.0f, 240.0f })
+                .set<Velocity>({ 0.0f, 0.0f })
+                .add<Player>();
+
+        // 移动系统：每帧将速度加到位置
+        world.system<Position, Velocity>()
+                .each([](Position& p, Velocity& v) {
+                p.x += v.x;
+                p.y += v.y;
+                        });
+
+        return SDL_APP_CONTINUE;
 }
 
-/* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
         if (event->type == SDL_EVENT_QUIT) {
-                return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
+                return SDL_APP_SUCCESS;
         }
-        return SDL_APP_CONTINUE;  /* carry on with the program! */
+
+        if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
+                bool isDown = (event->type == SDL_EVENT_KEY_DOWN);
+                SDL_Keycode key = event->key.key;
+
+                // 更新方向键状态
+                switch (key) {
+                case SDLK_UP:    upPressed = isDown; break;
+                case SDLK_DOWN:  downPressed = isDown; break;
+                case SDLK_LEFT:  leftPressed = isDown; break;
+                case SDLK_RIGHT: rightPressed = isDown; break;
+                case SDLK_Q:
+                        if (isDown) return SDL_APP_SUCCESS;
+                        break;
+                default: break;
+                }
+
+                // 合成速度
+                float vx = 0.0f, vy = 0.0f;
+                if (rightPressed) vx += MOVE_SPEED;
+                if (leftPressed)  vx -= MOVE_SPEED;
+                if (downPressed)  vy += MOVE_SPEED;
+                if (upPressed)    vy -= MOVE_SPEED;
+
+                // 通过查询找到玩家实体并更新其速度
+                world.query<Player, Velocity>().each([vx, vy](Player& player, Velocity& vel) {
+                        vel.x = vx;
+                        vel.y = vy;
+                        });
+        }
+
+        return SDL_APP_CONTINUE;
 }
 
-/* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-        int i;
+        // 计算时间差
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+        if (lastTime == 0) {
+                lastTime = currentTime;
+        }
+        float deltaTime = (float)((currentTime - lastTime) / (double)SDL_GetPerformanceFrequency());
+        lastTime = currentTime;
 
-        /* Lines (line segments, really) are drawn in terms of points: a set of
-           X and Y coordinates, one set for each end of the line.
-           (0, 0) is the top left of the window, and larger numbers go down
-           and to the right. This isn't how geometry works, but this is pretty
-           standard in 2D graphics. */
-        static const SDL_FPoint line_points[] = {
-            { 100, 354 }, { 220, 230 }, { 140, 230 }, { 320, 100 }, { 500, 230 },
-            { 420, 230 }, { 540, 354 }, { 400, 354 }, { 100, 354 }
-        };
-
-        /* as you can see from this, rendering draws over whatever was drawn before it. */
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);  /* grey, full alpha */
-        SDL_RenderClear(renderer);  /* start with a blank canvas. */
-
-        /* You can draw lines, one at a time, like these brown ones... */
-        SDL_SetRenderDrawColor(renderer, 127, 49, 32, SDL_ALPHA_OPAQUE);
-        SDL_RenderLine(renderer, 240, 450, 400, 450);
-        SDL_RenderLine(renderer, 240, 356, 400, 356);
-        SDL_RenderLine(renderer, 240, 356, 240, 450);
-        SDL_RenderLine(renderer, 400, 356, 400, 450);
-
-        /* You can also draw a series of connected lines in a single batch... */
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderLines(renderer, line_points, SDL_arraysize(line_points));
-
-        /* here's a bunch of lines drawn out from a center point in a circle. */
-        /* we randomize the color of each line, so it functions as animation. */
-        for (i = 0; i < 360; i++) {
-                const float size = 30.0f;
-                const float x = 320.0f;
-                const float y = 95.0f - (size / 2.0f);
-                SDL_SetRenderDrawColor(renderer, SDL_rand(256), SDL_rand(256), SDL_rand(256), SDL_ALPHA_OPAQUE);
-                SDL_RenderLine(renderer, x, y, x + SDL_sinf((float)i) * size, y + SDL_cosf((float)i) * size);
+        // 固定时间步长更新
+        accumulator += deltaTime;
+        while (accumulator >= FIXED_TIMESTEP) {
+                world.progress(FIXED_TIMESTEP);   // 以固定步长驱动ECS系统
+                accumulator -= FIXED_TIMESTEP;
         }
 
-        SDL_RenderPresent(renderer);  /* put it all on the screen! */
+        // 渲染部分保持不变
+        SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
 
-        return SDL_APP_CONTINUE;  /* carry on with the program! */
+        world.query<Player, Position>().each([=](Player& t, Position& p) {
+                SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+                SDL_RenderFillRect(renderer, &rect);
+                });
+
+        SDL_RenderPresent(renderer);
+        return SDL_APP_CONTINUE;
 }
 
-/* This function runs once at shutdown. */
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
-        /* SDL will clean up the window/renderer for us. */
+        // flecs 世界会自动释放资源
 }
-
