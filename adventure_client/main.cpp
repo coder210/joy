@@ -2,6 +2,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <joy2d/calculator.h>
+#include <joy2d/network.h>
+#include <joy2d/sys.h>
+#include <joy2d/log.h>
 #include "flecs.h"
 #include <iostream>
 #include <map>
@@ -9,7 +12,7 @@
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
-static std::map<std::string, double> cache;
+static kcpclient_p kcpclient = NULL;
 static flecs::world world;
 
 // 方向键状态
@@ -30,6 +33,7 @@ struct Player {};  // 标记组件，用于标识玩家实体
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
+        sys_init_netenv();
         SDL_SetAppMetadata("Adventure client", "1.0", "com.example.adventure-client");
 
         if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -41,6 +45,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
+
+        kcpclient = kcpclient_create("192.168.2.11", 10000);
 
         // 注册组件
         world.component<Position>();
@@ -119,6 +125,23 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 accumulator -= FIXED_TIMESTEP;
         }
 
+        // 更新网络服务器
+        net_message_t msg;
+        kcpclient_update(kcpclient);
+        while (kcpclient_poll_message(kcpclient, &msg)) {
+                if (msg.type == NET_TYPE_CONNECTED) {
+                        log_info("connected=%d", msg.conv);
+                }
+                else if (msg.type == NET_TYPE_DISCONNECTED) {
+                        log_info("disconnected=%d", msg.conv);
+                }
+                else if (msg.type == NET_TYPE_MESSAGE) {
+                        std::string data(msg.data, msg.len);
+                        std::cout << "Received message: " << data << std::endl;
+                }
+		SDL_free(msg.data);  // 记得释放消息数据的内存
+        }
+
         // 渲染部分保持不变
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
@@ -136,4 +159,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
         // flecs 世界会自动释放资源
+        kcpclient_destroy(kcpclient);
+        SDL_DestroyWindow(window);
+        SDL_DestroyRenderer(renderer);
+        sys_release_netenv();
 }
