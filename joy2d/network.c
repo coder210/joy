@@ -348,7 +348,7 @@ kcpclient_input(kcpclient_p kc, const char* data, int sz)
                 }
         }
         else {
-                log_debug("liv-kc-input create\n");
+                log_debug("kcpclient create");
                 conv = utils_bit2int((uint8_t*)data);
                 kc->kcp = ikcp_create(conv, kc);
                 ikcp_wndsize(kc->kcp, 512, 512);
