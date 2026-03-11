@@ -46,7 +46,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        kcpserver = kcpserver_create("192.168.2.11", 10000);
+        kcpserver = kcpserver_create("192.168.1.13", 10000);
 
         // 注册组件
         world.component<Position>();
@@ -137,12 +137,12 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                         log_info("disconnected=%d", msg.conv);
                 }
                 else if (msg.type == NET_TYPE_MESSAGE) {
-                        std::string data(msg.data, msg.len);
-                        std::cout << "Received message: " << data << std::endl;
+                        //std::string data(msg.data, msg.len);
+                        //std::cout << "Received message: " << data << std::endl;
+
                 }
 		SDL_free(msg.data);  // 记得释放消息数据的内存
         }
-
 
         // 渲染部分保持不变
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);

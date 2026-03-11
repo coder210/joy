@@ -46,7 +46,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        kcpclient = kcpclient_create("192.168.2.11", 10000);
+        kcpclient = kcpclient_create("192.168.1.13", 10000);
 
         // 注册组件
         world.component<Position>();
@@ -54,10 +54,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         world.component<Player>();
 
         // 创建玩家实体（小方块），添加 Player 标记
-        world.entity()
+        /*world.entity()
                 .set<Position>({ 320.0f, 240.0f })
                 .set<Velocity>({ 0.0f, 0.0f })
-                .add<Player>();
+                .add<Player>();*/
 
         // 移动系统：每帧将速度加到位置
         world.system<Position, Velocity>()
@@ -99,10 +99,12 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
                 if (upPressed)    vy -= MOVE_SPEED;
 
                 // 通过查询找到玩家实体并更新其速度
-                world.query<Player, Velocity>().each([vx, vy](Player& player, Velocity& vel) {
+                /*world.query<Player, Velocity>().each([vx, vy](Player& player, Velocity& vel) {
                         vel.x = vx;
                         vel.y = vy;
-                        });
+                        });*/
+                // 发送操作指令给服务器
+
         }
 
         return SDL_APP_CONTINUE;
