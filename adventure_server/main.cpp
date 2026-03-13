@@ -8,12 +8,14 @@
 #include "flecs.h"
 #include <iostream>
 #include <map>
+#include <list>
 #include <string>
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static kcpserver_p kcpserver = NULL;
 static flecs::world world;
+
 
 // 方向键状态
 static bool upPressed = false;
@@ -31,6 +33,24 @@ struct Position { float x, y; };
 struct Velocity { float x, y; };
 struct Player {};  // 标记组件，用于标识玩家实体
 
+
+static void msg_callback(net_message_p msg, void* userdata)
+{
+        if (msg->type == NET_TYPE_CONNECTED) {
+                log_info("connected=%d", msg->conv);
+        }
+        else if (msg->type == NET_TYPE_DISCONNECTED) {
+                log_info("disconnected=%d", msg->conv);
+        }
+        else if (msg->type == NET_TYPE_MESSAGE) {
+                log_info("msg=%s", msg->data);
+                //std::string data(msg->data, msg->len);
+                //std::cout << "Received message: " << data << std::endl;
+        }
+        SDL_free(msg->data);  // 记得释放消息数据的内存
+}
+
+
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
         sys_init_netenv();
@@ -46,7 +66,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        kcpserver = kcpserver_create("192.168.1.13", 10000);
+        log_info("server start");
+        kcpserver = kcpserver_create("192.168.2.11", 10000);
+        kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
         // 注册组件
         world.component<Position>();
@@ -81,13 +103,11 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
                 // 更新方向键状态
                 switch (key) {
-                case SDLK_UP:    upPressed = isDown; break;
-                case SDLK_DOWN:  downPressed = isDown; break;
-                case SDLK_LEFT:  leftPressed = isDown; break;
-                case SDLK_RIGHT: rightPressed = isDown; break;
-                case SDLK_Q:
-                        if (isDown) return SDL_APP_SUCCESS;
-                        break;
+                case SDLK_W: upPressed = isDown; break;    // W -> 上
+                case SDLK_S: downPressed = isDown; break;  // S -> 下
+                case SDLK_A: leftPressed = isDown; break;  // A -> 左
+                case SDLK_D: rightPressed = isDown; break; // D -> 右
+                case SDLK_Q: if (isDown) return SDL_APP_SUCCESS; break; // Q退出
                 default: break;
                 }
 
@@ -99,10 +119,10 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
                 if (upPressed)    vy -= MOVE_SPEED;
 
                 // 通过查询找到玩家实体并更新其速度
-                world.query<Player, Velocity>().each([vx, vy](Player& player, Velocity& vel) {
+                /*world.query<Player, Velocity>().each([vx, vy](Player& player, Velocity& vel) {
                         vel.x = vx;
                         vel.y = vy;
-                        });
+                        });*/
         }
 
         return SDL_APP_CONTINUE;
@@ -128,21 +148,21 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         // 更新网络服务器
         net_message_t msg;
         kcpserver_update(kcpserver);
-        while (kcpserver_poll_message(kcpserver, &msg)) {
-                //std::string data(msg.data, msg.len);
-                if (msg.type == NET_TYPE_CONNECTED) {
-                        log_info("connected=%d", msg.conv);
-                }
-                else if (msg.type == NET_TYPE_DISCONNECTED) {
-                        log_info("disconnected=%d", msg.conv);
-                }
-                else if (msg.type == NET_TYPE_MESSAGE) {
-                        //std::string data(msg.data, msg.len);
-                        //std::cout << "Received message: " << data << std::endl;
+  //      while (kcpserver_poll_message(kcpserver, &msg)) {
+  //              //std::string data(msg.data, msg.len);
+  //              if (msg.type == NET_TYPE_CONNECTED) {
+  //                      log_info("connected=%d", msg.conv);
+  //              }
+  //              else if (msg.type == NET_TYPE_DISCONNECTED) {
+  //                      log_info("disconnected=%d", msg.conv);
+  //              }
+  //              else if (msg.type == NET_TYPE_MESSAGE) {
+  //                      //std::string data(msg.data, msg.len);
+  //                      //std::cout << "Received message: " << data << std::endl;
 
-                }
-		SDL_free(msg.data);  // 记得释放消息数据的内存
-        }
+  //              }
+		//SDL_free(msg.data);  // 记得释放消息数据的内存
+  //      }
 
         // 渲染部分保持不变
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);

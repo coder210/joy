@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: network.h
-Description: ÍøÂçÏà¹Ø
+Description: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 Author: ydlc
 Version: 1.0
 Date: 2021.4.23
@@ -26,9 +26,9 @@ typedef struct net_message {
 	int len;
 }net_message_t, *net_message_p;
 
+typedef void (*net_callback)(net_message_p msg, void* userdata);
 typedef struct kcpserver kcpserver_t, *kcpserver_p;
 typedef struct kcpclient kcpclient_t, *kcpclient_p;
-
 typedef struct tcpserver tcpserver_t, * tcpserver_p;
 typedef struct tcpclient tcpclient_t, * tcpclient_p;
 
@@ -43,6 +43,7 @@ extern "C" {
 	JOY_API void kcpserver_offline(kcpserver_p ks, int conv);
 	JOY_API void kcpserver_update(kcpserver_p ks);
 	JOY_API bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg);
+	JOY_API void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata);
 
 	JOY_API kcpclient_p kcpclient_create(const char* ip, int port);
 	JOY_API void kcpclient_destroy(kcpclient_p kc);
@@ -50,6 +51,7 @@ extern "C" {
 	JOY_API int kcpclient_send(kcpclient_p kc, const char* data, int len);
 	JOY_API void kcpclient_update(kcpclient_p kc);
 	JOY_API bool kcpclient_poll_message(kcpclient_p kc, net_message_p msg);
+	JOY_API void kcpclient_set_callback(kcpclient_p kc, net_callback cb, void* userdata);
 
 	JOY_API tcpserver_p tcpserver_create(const char* ip, int port);
 	JOY_API int tcpserver_destroy(tcpserver_p tcpserver);
