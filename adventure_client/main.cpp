@@ -136,7 +136,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.system<LogicVelocity, Player>()
                 .interval(0.05f)
-                .each([](LogicVelocity& v, Player& pr) {
+                .each([](LogicVelocity& v, Player player) {
                 /* 服务器输入 */
                 for (auto rit = server_inputs.rbegin(); rit != server_inputs.rend(); ++rit) {
                         int sequence = rit->first;
@@ -198,9 +198,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.system<LogicPosition, Position>()
                 .interval(0.02f)
-                .each([=](LogicPosition& logicp, Position& p) {
-                p.x = fp_to_float(logicp.x);
-                p.y = fp_to_float(logicp.y);
+                .each([=](LogicPosition& logic_position, Position& p) {
+                p.x = fp_to_float(logic_position.x);
+                p.y = fp_to_float(logic_position.y);
                         });
 
         return SDL_APP_CONTINUE;
@@ -284,7 +284,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_RenderClear(renderer);
 
         // 绘制所有带有 Player 标记的实体（白色方块）
-        world.query<Player, Position>().each([=](Player&, Position& p) {
+        world.query<Player, Position>().each([=](Player, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
