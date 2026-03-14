@@ -10,7 +10,7 @@ struct timer {
         void* userdata;            // 用户数据
 };
 
-timer_p timer_create(int interval, timer_callback cb, void* userdata)
+timer_p joy_timer_create(int interval, timer_callback cb, void* userdata)
 {
         timer_p timer = (timer_p)malloc(sizeof(struct timer));
         if (!timer) return NULL;
@@ -24,14 +24,14 @@ timer_p timer_create(int interval, timer_callback cb, void* userdata)
         return timer;
 }
 
-void timer_destroy(timer_p timer)
+void joy_timer_destroy(timer_p timer)
 {
         if (timer) {
                 free(timer);
         }
 }
 
-void timer_trigger(timer_p timer)
+void joy_timer_trigger(timer_p timer)
 {
         if (!timer || !timer->active || !timer->callback) {
                 return;
@@ -56,14 +56,14 @@ void timer_trigger(timer_p timer)
         }
 }
 
-void timer_set_interval(timer_p timer, int interval)
+void joy_timer_set_interval(timer_p timer, int interval)
 {
         if (timer) {
                 timer->interval = interval;
         }
 }
 
-void timer_set_active(timer_p timer, bool active)
+void joy_timer_set_active(timer_p timer, bool active)
 {
         if (timer) {
                 timer->active = active;
@@ -73,14 +73,14 @@ void timer_set_active(timer_p timer, bool active)
         }
 }
 
-void timer_reset(timer_p timer)
+void joy_timer_reset(timer_p timer)
 {
         if (timer) {
                 timer->last_time = SDL_GetTicks();
         }
 }
 
-uint64_t timer_get_elapsed(timer_p timer)
+uint64_t joy_timer_get_elapsed(timer_p timer)
 {
         if (!timer) return 0;
         return SDL_GetTicks() - timer->last_time;

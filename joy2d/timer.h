@@ -25,34 +25,34 @@ extern "C" {
 	 * @param userdata 用户数据，透传给回调
 	 * @return 定时器指针，失败返回 NULL
 	 */
-	JOY_API timer_p timer_create(int interval, timer_callback cb, void* userdata);
+	JOY_API timer_p joy_timer_create(int interval, timer_callback cb, void* userdata);
 
 	/**
 	 * 销毁定时器
 	 * @param timer 定时器指针
 	 */
-	JOY_API void timer_destroy(timer_p timer);
+	JOY_API void joy_timer_destroy(timer_p timer);
 
 	/**
 	 * 触发检查（通常放在主循环中每帧调用）
 	 * 内部使用 SDL_GetTicks() 获取当前时间，若达到间隔则调用回调
 	 * @param timer 定时器指针
 	 */
-	JOY_API void timer_trigger(timer_p timer);
+	JOY_API void joy_timer_trigger(timer_p timer);
 
 	/**
 	 * 设置定时器间隔
 	 * @param timer    定时器指针
 	 * @param interval 新间隔（毫秒）
 	 */
-	JOY_API void timer_set_interval(timer_p timer, int interval);
+	JOY_API void joy_timer_set_interval(timer_p timer, int interval);
 
 	/**
 	 * 设置激活状态
 	 * @param timer  定时器指针
 	 * @param active true 激活，false 暂停
 	 */
-	JOY_API void timer_set_active(timer_p timer, bool active);
+	JOY_API void joy_timer_set_active(timer_p timer, bool active);
 
 	/**
 	 * 重置定时器（将上次触发时间设为当前时间）
