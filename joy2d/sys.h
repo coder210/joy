@@ -9,6 +9,8 @@ History:
 *************************************************/
 #ifndef SYS_H
 #define SYS_H
+#include <stdbool.h>
+#include <stdint.h>
 #include "config.h"
 
 #ifdef __cplusplus
