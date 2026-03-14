@@ -21,6 +21,7 @@ History:
 #	include <winsock2.h>
 #	pragma comment(lib, "ws2_32.lib")
 #elif defined(JOY_LINUX)
+#	include<unistd.h>
 #	include<sys/time.h>
 #	include<sys/socket.h>
 #	include<arpa/inet.h>
