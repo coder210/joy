@@ -19,7 +19,8 @@ int c2s_serialize(const c2s_p c2s, char* buf, int* len)
                 offset = pack_int32(buf, c2s->player_leave, offset);
         }
         else if (c2s->cmd == C2S_CMD_PLAYER_INPUT) {
-                offset = pack_int16(buf, c2s->player_input.keycode, offset);
+                offset = pack_int32(buf, c2s->player_input.sequence, offset);
+                offset = pack_int32(buf, c2s->player_input.keycode, offset);
         }
         *len = offset;
         return true;
@@ -42,7 +43,8 @@ int c2s_deserialize(c2s_p c2s, const char* buf, int len)
                 offset = unpack_int32(buf, &c2s->player_leave, offset);
         }
         else if (c2s->cmd == C2S_CMD_PLAYER_INPUT) {
-                offset = unpack_int16(buf, &c2s->player_input.keycode, offset);
+                offset = unpack_int32(buf, &c2s->player_input.sequence, offset);
+                offset = unpack_int32(buf, &c2s->player_input.keycode, offset);
         }
         else {
                 return false;

@@ -31,7 +31,8 @@ typedef struct c2s_player_join {
 typedef int c2s_player_leave_t, * c2s_player_leave_p;
 
 typedef struct c2s_player_input {
-	int16_t keycode;
+	int32_t sequence;
+	int32_t keycode;
 }c2s_player_input_t, * c2s_player_input_p;
 
 typedef struct c2s_player_live {
