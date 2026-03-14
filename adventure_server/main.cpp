@@ -1,11 +1,11 @@
 #define SDL_MAIN_USE_CALLBACKS 1
+#include "flecs.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <joy2d/calculator.h>
 #include <joy2d/sys.h>
 #include <joy2d/network.h>
 #include <joy2d/log.h>
-#include "flecs.h"
 #include <iostream>
 #include <map>
 #include <list>
@@ -67,7 +67,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
 
         log_info("server start");
-        kcpserver = kcpserver_create("192.168.2.11", 10000);
+        kcpserver = kcpserver_create("192.168.1.13", 10000);
         kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
         // 注册组件
