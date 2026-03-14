@@ -189,7 +189,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 移动系统：每帧将速度加到位置
         world.system<LogicPosition, LogicVelocity>()
-                .each([](LogicPosition& p, LogicVelocity& v) {
+                .each([=](LogicPosition& p, LogicVelocity& v) {
                 p.x = fp_add(p.x, v.x);
                 p.y = fp_add(p.y, v.y);
                 v.x = 0;
@@ -198,7 +198,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.system<LogicPosition, Position>()
                 .interval(0.02f)
-                .each([](LogicPosition& logicp, Position& p) {
+                .each([=](LogicPosition& logicp, Position& p) {
                 p.x = fp_to_float(logicp.x);
                 p.y = fp_to_float(logicp.y);
                         });
@@ -284,11 +284,11 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_RenderClear(renderer);
 
         // 绘制所有带有 Player 标记的实体（白色方块）
-       /* world.query<Player, Position>().each([=](Player&, Position& p) {
+        world.query<Player, Position>().each([=](Player&, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
-                });*/
+                });
 
         SDL_RenderPresent(renderer);
         return SDL_APP_CONTINUE;
