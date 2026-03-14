@@ -119,7 +119,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
                 if (upPressed)    vy -= MOVE_SPEED;
 
                 // 通过查询找到玩家实体并更新其速度
-                world.query<Player, Velocity>().each([vx, vy](Player player, Velocity& vel) {
+                world.query<Player, Velocity>()
+                        .each([vx, vy](Player& player, Velocity& vel) {
                         vel.x = vx;
                         vel.y = vy;
                         });
@@ -168,7 +169,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        world.query<Player, Position>().each([=](Player t, Position& p) {
+        world.query<Player, Position>().each([=](Player& player, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
