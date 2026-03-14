@@ -58,14 +58,14 @@ extern "C" {
 	 * 重置定时器（将上次触发时间设为当前时间）
 	 * @param timer 定时器指针
 	 */
-	JOY_API void timer_reset(timer_p timer);
+	JOY_API void joy_timer_reset(timer_p timer);
 
 	/**
 	 * 获取自上次触发以来经过的时间（毫秒）
 	 * @param timer 定时器指针
 	 * @return 经过的毫秒数
 	 */
-	JOY_API uint64_t timer_get_elapsed(timer_p timer);
+	JOY_API uint64_t joy_timer_get_elapsed(timer_p timer);
 
 #ifdef __cplusplus
 }
