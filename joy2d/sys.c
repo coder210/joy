@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
 #include "sys.h"
 
@@ -27,8 +25,7 @@
 #endif
 
 
-static bool 
-sys_init_netenv(void)
+bool sys_init_netenv(void)
 {
 #if defined(JOY_WIN)
 	WSADATA data;
@@ -45,8 +42,7 @@ sys_init_netenv(void)
 #endif
 }
 
-static bool 
-sys_release_netenv(void)
+bool sys_release_netenv(void)
 {
 #if defined(JOY_WIN)
 	int r;
@@ -64,8 +60,7 @@ sys_release_netenv(void)
 	return false;
 }
 
-static int 
-sys_anyaddr(void)
+int sys_anyaddr(void)
 {
 #if defined(JOY_WIN)
 	int anyaddr = htonl(INADDR_ANY);
@@ -82,8 +77,7 @@ sys_anyaddr(void)
 #endif
 }
 
-static bool 
-sys_closesocket(int64_t sockfd)
+bool sys_closesocket(int64_t sockfd)
 {
 #if defined(JOY_WIN)
 	return closesocket(sockfd) == 0;
@@ -98,8 +92,7 @@ sys_closesocket(int64_t sockfd)
 #endif
 }
 
-static int 
-sys_set_sock_sndtimeo(int64_t sockfd, int ms)
+int sys_set_sock_sndtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -125,8 +118,7 @@ sys_set_sock_sndtimeo(int64_t sockfd, int ms)
 	return r;
 }
 
-static int 
-sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
+int sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -145,8 +137,7 @@ sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
 	return r;
 }
 
-static int
-sys_set_sock_accpettimeo(int64_t sockfd, int ms)
+int sys_set_sock_accpettimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -165,8 +156,8 @@ sys_set_sock_accpettimeo(int64_t sockfd, int ms)
 #endif
 	return r;
 }
-static int64_t
-sys_tcp()
+
+int64_t sys_tcp()
 {
 	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -177,8 +168,7 @@ sys_tcp()
 	return sockfd;
 }
 
-static int64_t
-sys_udp()
+int64_t sys_udp()
 {
 	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -189,8 +179,7 @@ sys_udp()
 	return sockfd;
 }
 
-static bool 
-sys_bind(int64_t sockfd, const char* ip, int port)
+bool sys_bind(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -205,8 +194,7 @@ sys_bind(int64_t sockfd, const char* ip, int port)
 	return resval;
 }
 
-static bool 
-sys_connect(int64_t sockfd, const char* ip, int port)
+bool sys_connect(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -221,8 +209,7 @@ sys_connect(int64_t sockfd, const char* ip, int port)
 	return resval;
 }
 
-static bool 
-sys_listen(int64_t sockfd)
+bool sys_listen(int64_t sockfd)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -233,8 +220,7 @@ sys_listen(int64_t sockfd)
 	return resval;
 }
 
-static int64_t
-sys_accept(int64_t sockfd, char* ip, int* port)
+int64_t sys_accept(int64_t sockfd, char* ip, int* port)
 {
 	int64_t acceptfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -249,8 +235,7 @@ sys_accept(int64_t sockfd, char* ip, int* port)
 	return acceptfd;
 }
 
-static int 
-sys_send(int64_t sockfd, const char* buf, int len)
+int sys_send(int64_t sockfd, const char* buf, int len)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -261,8 +246,7 @@ sys_send(int64_t sockfd, const char* buf, int len)
 	return n;
 }
 
-static int 
-sys_recv(int64_t sockfd, char* buf)
+int sys_recv(int64_t sockfd, char* buf)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -274,8 +258,7 @@ sys_recv(int64_t sockfd, char* buf)
 	return n;
 }
 
-static int 
-sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
+int sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 {
 	int n, len;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -291,9 +274,8 @@ sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 	return n;
 }
 
-static int 
-sys_sendto(int64_t sockfd, const char* buf,
-	int len, const char* ip, int port)
+int sys_sendto(int64_t sockfd, const char* buf, int len, 
+	const char* ip, int port)
 {
 	int n;
 	size_t sz;
@@ -310,8 +292,7 @@ sys_sendto(int64_t sockfd, const char* buf,
 	return n;
 }
 
-static int64_t 
-sys_current_time()
+int64_t sys_current_time()
 {
 	int64_t current_time;
 #if defined(JOY_WIN)
@@ -341,8 +322,7 @@ sys_current_time()
 	return current_time;
 }
 
-static void 
-sys_sleep(int ms)
+void sys_sleep(int ms)
 {
 #if defined(JOY_WIN)
 	Sleep(ms);
@@ -354,8 +334,7 @@ sys_sleep(int ms)
 #endif
 }
 
-static void 
-sys_create_iocp(int ms)
+void sys_create_iocp(int ms)
 {
 #if defined(JOY_WIN)
 	HANDLE completion_port;
