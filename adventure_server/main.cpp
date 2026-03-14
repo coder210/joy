@@ -83,7 +83,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 移动系统：每帧将速度加到位置
         world.system<Position, Velocity>()
-                .each([](Position& p, Velocity& v) {
+                .each([=](Position& p, Velocity& v) {
                 p.x += v.x;
                 p.y += v.y;
                         });
