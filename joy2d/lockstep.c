@@ -1,7 +1,7 @@
-#include "lockstep.h"
-#include "external/klib/khash.h"
-#include "log.h"
 #include "SDL3/SDL.h"
+#include "external/klib/khash.h"
+#include "core.h"
+#include "lockstep.h"
 
 KHASH_INIT(kcommand, int, char*, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(kworld, int, char*, 1, kh_int_hash_func, kh_int_hash_equal)

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "SDL3/SDL.h"
 #include "external/klib/khash.h"
-#include "msgpack.h"
 #include "utils.h"
 #include "physics.h"
 

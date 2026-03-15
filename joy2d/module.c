@@ -1,7 +1,7 @@
 #include "module.h"
 #include <SDL3/SDL.h>
 #include "external/klib/khash.h"
-#include "log.h"
+#include "core.h"
 
 
 KHASH_INIT(kmod, const char*, module_p, 1, kh_str_hash_func, kh_str_hash_equal)
