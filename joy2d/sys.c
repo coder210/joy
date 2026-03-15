@@ -422,7 +422,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
         packet->target_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,
                 NULL, 0, WSA_FLAG_OVERLAPPED);
         if (packet->target_socket == INVALID_SOCKET) {
-                //Log("WSASocket for client failed: %d", WSAGetLastError());
+                //printf("WSASocket for client failed: %d", WSAGetLastError());
                 return;
         }
 
@@ -436,7 +436,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
                 address_size, address_size,
                 &bytes_received, &packet->overlapped)) {
                 if (WSAGetLastError() != ERROR_IO_PENDING) {
-                        //Log("AcceptEx operation failed: %d", WSAGetLastError());
+                        //printf("AcceptEx operation failed: %d", WSAGetLastError());
                         closesocket(packet->target_socket);
                 }
         }
@@ -464,7 +464,7 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
                 1, &bytes_received, &flags, &(packet->overlapped), NULL);
 
         if (result == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
-                //Log("WSARecv operation failed: %d", WSAGetLastError());
+                //printf("WSARecv operation failed: %d", WSAGetLastError());
                 free(packet);
                 return -1;
         }
@@ -481,8 +481,8 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
 
         // 处理接收到的数据
         if (bytes_transferred > 0) {
-                Log("Received %lu bytes from client %s:%d",
-                        bytes_transferred, session->client_ip, session->client_port);
+                //printf("Received %lu bytes from client %s:%d",
+                 //       bytes_transferred, session->client_ip, session->client_port);
 
                 // 示例：回显数据
                 WSABUF wsa_buffer;
@@ -502,7 +502,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                                 1, &bytes_sent,
                                 0, &send_packet->overlapped, NULL) == SOCKET_ERROR) {
                                 if (WSAGetLastError() != WSA_IO_PENDING) {
-                                        Log("WSASend operation failed: %d", WSAGetLastError());
+                                        printf("WSASend operation failed: %d", WSAGetLastError());
                                         free(send_packet);
                                 }
                         }
@@ -554,13 +554,13 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
         snprintf(session->client_ip, sizeof(session->client_ip), "%s", client_ip_address);
         session->client_port = ntohs(remote_address->sin_port);
 
-        Log("New client connected from %s:%d", session->client_ip, session->client_port);
+        printf("New client connected from %s:%d", session->client_ip, session->client_port);
 
         // 将客户端套接字关联到完成端口
         if (CreateIoCompletionPort((HANDLE)client_socket,
                 server->completion_port,
                 (ULONG_PTR)session, 0) == NULL) {
-                Log("Failed to associate client socket with completion port: %d", GetLastError());
+                printf("Failed to associate client socket with completion port: %d", GetLastError());
                 iocp_cleanup_client_session(session);
                 return;
         }
@@ -590,7 +590,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
 {
         WSADATA wsa_data;
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-                Log("WSAStartup initialization failed: %d", WSAGetLastError());
+                printf("WSAStartup initialization failed: %d", WSAGetLastError());
                 return NULL;
         }
 
@@ -610,7 +610,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         server->completion_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE,
                 NULL, 0, 0);
         if (server->completion_port == NULL) {
-                Log("Failed to create completion port: %d", GetLastError());
+                printf("Failed to create completion port: %d", GetLastError());
                 goto error_cleanup;
         }
 
@@ -618,7 +618,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         server->listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0,
                 WSA_FLAG_OVERLAPPED);
         if (server->listen_socket == INVALID_SOCKET) {
-                Log("Failed to create listen socket: %d", WSAGetLastError());
+                printf("Failed to create listen socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -635,12 +635,12 @@ iocp_server_p iocp_server_create(const char* ip, int port)
 
         if (bind(server->listen_socket, (struct sockaddr*)&server_address,
                 sizeof(server_address)) != 0) {
-                Log("Failed to bind socket: %d", WSAGetLastError());
+                printf("Failed to bind socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
         if (listen(server->listen_socket, SOMAXCONN) != 0) {
-                Log("Failed to listen on socket: %d", WSAGetLastError());
+                printf("Failed to listen on socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -649,7 +649,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 &guid_acceptex, sizeof(guid_acceptex),
                 &server->acceptex_function, sizeof(server->acceptex_function),
                 &bytes_returned, NULL, NULL) != 0) {
-                Log("Failed to get AcceptEx function: %d", WSAGetLastError());
+                printf("Failed to get AcceptEx function: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -660,7 +660,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 &server->get_acceptex_sockaddrs_function,
                 sizeof(server->get_acceptex_sockaddrs_function),
                 &bytes_returned, NULL, NULL) != 0) {
-                Log("Failed to get GetAcceptExSockaddrs function: %d", WSAGetLastError());
+                printf("Failed to get GetAcceptExSockaddrs function: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -668,7 +668,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         if (CreateIoCompletionPort((HANDLE)server->listen_socket,
                 server->completion_port,
                 (ULONG_PTR)server, 0) == NULL) {
-                Log("Failed to associate listen socket with completion port: %d",
+                printf("Failed to associate listen socket with completion port: %d",
                         GetLastError());
                 goto error_cleanup;
         }
@@ -679,7 +679,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 iocp_post_accept_operation(server, packet);
         }
 
-        Log("IOCP server created successfully on %s:%d", ip, port);
+        printf("IOCP server created successfully on %s:%d", ip, port);
         return server;
 
 error_cleanup:
@@ -730,7 +730,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
         if (!result) {
                 DWORD error_code = GetLastError();
                 if (error_code != WAIT_TIMEOUT) {
-                        Log("GetQueuedCompletionStatus failed with error: %d", error_code);
+                        printf("GetQueuedCompletionStatus failed with error: %d", error_code);
                 }
                 return;
         }
@@ -757,7 +757,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 
                 // 客户端断开连接
                 if (bytes_transferred == 0 && operation_packet && operation_packet->operation_type == IOCP_OPERATION_RECEIVE) {
-                        Log("Client disconnected: %s:%d", session->client_ip, session->client_port);
+                        printf("Client disconnected: %s:%d", session->client_ip, session->client_port);
                         iocp_cleanup_client_session(session);
                         free(operation_packet);
                         return;
@@ -786,7 +786,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 // 非Windows平台的空实现
 iocp_server_p iocp_server_create(const char* bind_ip, int bind_port)
 {
-        Log("IOCP is only supported on Windows platform");
+        printf("IOCP is only supported on Windows platform");
         return NULL;
 }
 
