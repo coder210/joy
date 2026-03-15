@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "sys.h"
 
 
@@ -405,7 +406,7 @@ static void iocp_cleanup_client_session(iocp_client_session_ptr session)
                 session->client_socket = INVALID_SOCKET;
         }
 
-        SDL_free(session);
+        free(session);
 }
 
 // 投递AcceptEx操作
@@ -421,7 +422,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
         packet->target_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,
                 NULL, 0, WSA_FLAG_OVERLAPPED);
         if (packet->target_socket == INVALID_SOCKET) {
-                SDL_Log("WSASocket for client failed: %d", WSAGetLastError());
+                //Log("WSASocket for client failed: %d", WSAGetLastError());
                 return;
         }
 
@@ -435,7 +436,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
                 address_size, address_size,
                 &bytes_received, &packet->overlapped)) {
                 if (WSAGetLastError() != ERROR_IO_PENDING) {
-                        SDL_Log("AcceptEx operation failed: %d", WSAGetLastError());
+                        //Log("AcceptEx operation failed: %d", WSAGetLastError());
                         closesocket(packet->target_socket);
                 }
         }
@@ -446,7 +447,7 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
 {
         if (!session || session->client_socket == INVALID_SOCKET) return -1;
 
-        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)SDL_calloc(1, sizeof(iocp_operation_packet_t));
+        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
         if (!packet) return -1;
 
         packet->operation_type = IOCP_OPERATION_RECEIVE;
@@ -463,8 +464,8 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
                 1, &bytes_received, &flags, &(packet->overlapped), NULL);
 
         if (result == SOCKET_ERROR && WSAGetLastError() != WSA_IO_PENDING) {
-                SDL_Log("WSARecv operation failed: %d", WSAGetLastError());
-                SDL_free(packet);
+                //Log("WSARecv operation failed: %d", WSAGetLastError());
+                free(packet);
                 return -1;
         }
 
@@ -480,7 +481,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
 
         // 处理接收到的数据
         if (bytes_transferred > 0) {
-                SDL_Log("Received %lu bytes from client %s:%d",
+                Log("Received %lu bytes from client %s:%d",
                         bytes_transferred, session->client_ip, session->client_port);
 
                 // 示例：回显数据
@@ -488,7 +489,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                 wsa_buffer.buf = packet->buffer;
                 wsa_buffer.len = bytes_transferred;
 
-                iocp_operation_packet_ptr send_packet = (iocp_operation_packet_ptr)SDL_calloc(1, sizeof(iocp_operation_packet_t));
+                iocp_operation_packet_ptr send_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
                 if (send_packet) {
                         send_packet->operation_type = IOCP_OPERATION_SEND;
                         send_packet->wsabuffer = wsa_buffer;
@@ -501,8 +502,8 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                                 1, &bytes_sent,
                                 0, &send_packet->overlapped, NULL) == SOCKET_ERROR) {
                                 if (WSAGetLastError() != WSA_IO_PENDING) {
-                                        SDL_Log("WSASend operation failed: %d", WSAGetLastError());
-                                        SDL_free(send_packet);
+                                        Log("WSASend operation failed: %d", WSAGetLastError());
+                                        free(send_packet);
                                 }
                         }
                 }
@@ -514,7 +515,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
         }
 
         // 释放操作包
-        SDL_free(packet);
+        free(packet);
 }
 
 // 处理Accept完成事件
@@ -537,7 +538,7 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
                 (struct sockaddr**)&remote_address, &remote_address_length);
 
         // 创建客户端会话
-        iocp_client_session_ptr session = (iocp_client_session_ptr)SDL_calloc(1, sizeof(iocp_client_session_t));
+        iocp_client_session_ptr session = (iocp_client_session_ptr)calloc(1, sizeof(iocp_client_session_t));
         if (!session) {
                 closesocket(client_socket);
                 return;
@@ -550,16 +551,16 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
         // 获取客户端IP和端口
         char client_ip_address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &remote_address->sin_addr, client_ip_address, sizeof(client_ip_address));
-        SDL_snprintf(session->client_ip, sizeof(session->client_ip), "%s", client_ip_address);
+        snprintf(session->client_ip, sizeof(session->client_ip), "%s", client_ip_address);
         session->client_port = ntohs(remote_address->sin_port);
 
-        SDL_Log("New client connected from %s:%d", session->client_ip, session->client_port);
+        Log("New client connected from %s:%d", session->client_ip, session->client_port);
 
         // 将客户端套接字关联到完成端口
         if (CreateIoCompletionPort((HANDLE)client_socket,
                 server->completion_port,
                 (ULONG_PTR)session, 0) == NULL) {
-                SDL_Log("Failed to associate client socket with completion port: %d", GetLastError());
+                Log("Failed to associate client socket with completion port: %d", GetLastError());
                 iocp_cleanup_client_session(session);
                 return;
         }
@@ -575,13 +576,13 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
         }
 
         // 重新投递Accept操作，准备接受下一个连接
-        iocp_operation_packet_ptr new_packet = (iocp_operation_packet_ptr)SDL_calloc(1, sizeof(iocp_operation_packet_t));
+        iocp_operation_packet_ptr new_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
         if (new_packet) {
                 iocp_post_accept_operation(server, new_packet);
         }
 
         // 释放当前Accept操作包
-        SDL_free(packet);
+        free(packet);
 }
 
 // 创建IOCP服务器
@@ -589,7 +590,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
 {
         WSADATA wsa_data;
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
-                SDL_Log("WSAStartup initialization failed: %d", WSAGetLastError());
+                Log("WSAStartup initialization failed: %d", WSAGetLastError());
                 return NULL;
         }
 
@@ -597,7 +598,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         GUID guid_acceptex = WSAID_ACCEPTEX;
         GUID guid_get_acceptex_sockaddrs = WSAID_GETACCEPTEXSOCKADDRS;
 
-        iocp_server_p server = (iocp_server_p)SDL_calloc(1, sizeof(iocp_server_t));
+        iocp_server_p server = (iocp_server_p)calloc(1, sizeof(iocp_server_t));
         if (!server) {
                 return NULL;
         }
@@ -609,7 +610,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         server->completion_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE,
                 NULL, 0, 0);
         if (server->completion_port == NULL) {
-                SDL_Log("Failed to create completion port: %d", GetLastError());
+                Log("Failed to create completion port: %d", GetLastError());
                 goto error_cleanup;
         }
 
@@ -617,7 +618,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         server->listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0,
                 WSA_FLAG_OVERLAPPED);
         if (server->listen_socket == INVALID_SOCKET) {
-                SDL_Log("Failed to create listen socket: %d", WSAGetLastError());
+                Log("Failed to create listen socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -634,12 +635,12 @@ iocp_server_p iocp_server_create(const char* ip, int port)
 
         if (bind(server->listen_socket, (struct sockaddr*)&server_address,
                 sizeof(server_address)) != 0) {
-                SDL_Log("Failed to bind socket: %d", WSAGetLastError());
+                Log("Failed to bind socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
         if (listen(server->listen_socket, SOMAXCONN) != 0) {
-                SDL_Log("Failed to listen on socket: %d", WSAGetLastError());
+                Log("Failed to listen on socket: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -648,7 +649,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 &guid_acceptex, sizeof(guid_acceptex),
                 &server->acceptex_function, sizeof(server->acceptex_function),
                 &bytes_returned, NULL, NULL) != 0) {
-                SDL_Log("Failed to get AcceptEx function: %d", WSAGetLastError());
+                Log("Failed to get AcceptEx function: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -659,7 +660,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 &server->get_acceptex_sockaddrs_function,
                 sizeof(server->get_acceptex_sockaddrs_function),
                 &bytes_returned, NULL, NULL) != 0) {
-                SDL_Log("Failed to get GetAcceptExSockaddrs function: %d", WSAGetLastError());
+                Log("Failed to get GetAcceptExSockaddrs function: %d", WSAGetLastError());
                 goto error_cleanup;
         }
 
@@ -667,18 +668,18 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         if (CreateIoCompletionPort((HANDLE)server->listen_socket,
                 server->completion_port,
                 (ULONG_PTR)server, 0) == NULL) {
-                SDL_Log("Failed to associate listen socket with completion port: %d",
+                Log("Failed to associate listen socket with completion port: %d",
                         GetLastError());
                 goto error_cleanup;
         }
 
         // 投递初始的Accept操作
-        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)SDL_calloc(1, sizeof(iocp_operation_packet_t));
+        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
         if (packet) {
                 iocp_post_accept_operation(server, packet);
         }
 
-        SDL_Log("IOCP server created successfully on %s:%d", ip, port);
+        Log("IOCP server created successfully on %s:%d", ip, port);
         return server;
 
 error_cleanup:
@@ -706,7 +707,7 @@ void iocp_server_destroy(iocp_server_p server)
         }
 
         DeleteCriticalSection(&server->critical_section);
-        SDL_free(server);
+        free(server);
 
         WSACleanup();
 }
@@ -729,7 +730,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
         if (!result) {
                 DWORD error_code = GetLastError();
                 if (error_code != WAIT_TIMEOUT) {
-                        SDL_Log("GetQueuedCompletionStatus failed with error: %d", error_code);
+                        Log("GetQueuedCompletionStatus failed with error: %d", error_code);
                 }
                 return;
         }
@@ -750,15 +751,15 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
                 iocp_client_session_ptr session = (iocp_client_session_ptr)completion_key;
 
                 if (!session || !session->is_active) {
-                        if (operation_packet) SDL_free(operation_packet);
+                        if (operation_packet) free(operation_packet);
                         return;
                 }
 
                 // 客户端断开连接
                 if (bytes_transferred == 0 && operation_packet && operation_packet->operation_type == IOCP_OPERATION_RECEIVE) {
-                        SDL_Log("Client disconnected: %s:%d", session->client_ip, session->client_port);
+                        Log("Client disconnected: %s:%d", session->client_ip, session->client_port);
                         iocp_cleanup_client_session(session);
-                        SDL_free(operation_packet);
+                        free(operation_packet);
                         return;
                 }
 
@@ -770,10 +771,10 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
                                 break;
                         case IOCP_OPERATION_SEND:
                                 // 发送完成处理
-                                SDL_free(operation_packet);
+                                free(operation_packet);
                                 break;
                         default:
-                                SDL_free(operation_packet);
+                                free(operation_packet);
                                 break;
                         }
                 }
@@ -785,7 +786,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 // 非Windows平台的空实现
 iocp_server_p iocp_server_create(const char* bind_ip, int bind_port)
 {
-        SDL_Log("IOCP is only supported on Windows platform");
+        Log("IOCP is only supported on Windows platform");
         return NULL;
 }
 
