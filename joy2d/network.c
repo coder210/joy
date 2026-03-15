@@ -6,7 +6,7 @@
 #include "config.h"
 #include "utils.h"
 #include "sys.h"
-#include "log.h"
+#include "core.h"
 #include "network.h"
 
 #ifdef JOY_WIN

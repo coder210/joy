@@ -1,26 +1,16 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
-File name: grphics.h
-Description: Í¼ÐÎ¿â
+File name: ui.h
+Description: ui¿â
 Author: ydlc
 Version: 1.0
 Date: 2024.7.15
 History:
 *************************************************/
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
-#include "SDL3/SDL.h"
-#include "config.h"
-
-typedef struct image image_t, *image_p;
-typedef struct spritebatch spritebatch_t, * spritebatch_p;
-typedef struct font_t  font_t, *font_p;
-typedef struct text_texture text_texture_t, *text_texture_p;
-typedef struct animation animation_t, * animation_p;
-typedef struct codepoint_array {
-	int* array;
-	int length;
-}codepoint_array_t, * codepoint_array_p;
+#ifndef UI_H
+#define UI_H
+#include "textures.h"
+#include "text.h"
 
 typedef struct label {
 	SDL_Renderer* renderer;
@@ -128,71 +118,11 @@ typedef struct checkbox {
 	SDL_FRect hit_area;           // µã»÷ÇøÓò
 } checkbox_t, * checkbox_p;
 
+typedef struct joystick joystick_t, * joystick_p;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/////////////////////////////////////////////////////////////////////////
-//////////////////////////////shape//////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-
-	JOY_API bool shape_draw_line(SDL_Renderer* renderer, float x1, float y1, float x2, float y2);
-	JOY_API bool shape_draw_rectangle(SDL_Renderer* renderer, const char* mode, SDL_FRect rect);
-	JOY_API bool shape_draw_polygon(SDL_Renderer* renderer, const char* mode, SDL_FPoint* points, int point_count, SDL_FColor color);
-	JOY_API bool shape_draw_circle(SDL_Renderer* renderer, const char* mode, SDL_FPoint center, float radius, int segments);
-	JOY_API bool shape_draw_grid(SDL_Renderer* renderer,
-	SDL_FPoint start, SDL_FPoint end, float grid_size);
-	JOY_API bool shape_draw_gridx(SDL_Renderer* renderer,
-	SDL_FPoint position,
-	int rows, int cols, float grid_size);
-
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////image/////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-	JOY_API image_p image_create(SDL_Renderer* renderer, const char* filename);
-	JOY_API void image_destroy(image_p image);
-	JOY_API void image_draw(image_p image, SDL_FPoint position);
-	JOY_API void image_draw_ex(image_p image, const SDL_FRect* srcrect, SDL_FPoint position,
-	float rotation, SDL_FPoint scale, SDL_FPoint origin);
-	JOY_API spritebatch_p spritebatch_create(SDL_Renderer* renderer, const char* filename);
-	JOY_API void spritebatch_destroy(spritebatch_p batch);
-	JOY_API void spritebatch_add(spritebatch_p batch, SDL_FPoint position, float rotation, 
-		float scale_x, float scale_y, SDL_FPoint origin, SDL_FRect src_rect);
-	JOY_API float spritebatch_get_width(spritebatch_p batch);
-	JOY_API float spritebatch_get_height(spritebatch_p batch);
-	JOY_API void spritebatch_add_ex(spritebatch_p batch, 
-		SDL_FRect src_rect, SDL_FRect dest_rect, 
-		float rotation, SDL_FPoint origin);
-	JOY_API void spritebatch_clear(spritebatch_p batch);
-	JOY_API void spritebatch_set_image(spritebatch_p batch, const char* filename);
-	JOY_API void spritebatch_draw(spritebatch_p batch);
-
-	JOY_API animation_p animation_create(SDL_Renderer *renderer);
-	JOY_API void animation_destroy(animation_p animation);
-	JOY_API void animation_reset(animation_p animation);
-	JOY_API void animation_add_clip(animation_p animation, 
-		const char* image_path, float duration, SDL_FRect src_rect);
-	JOY_API bool animation_is_finished(animation_p animation);
-	JOY_API void animation_set_position(animation_p animation, float x, float y);
-	JOY_API void animation_set_scale(animation_p animation, float x, float y);
-	JOY_API void animation_set_rotation(animation_p animation, float rotation);
-	JOY_API void animation_update(animation_p animation, float dt);
-	JOY_API void animation_draw(animation_p animation, SDL_FRect* camera);
-
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////font//////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-	JOY_API font_p font_create(SDL_Renderer* renderer, const char* filename, int fontsize);
-	JOY_API void font_destroy(font_p font);
-	JOY_API text_texture_p text_create(font_p font, const int* codepoints, int num_codepoints, SDL_Color color);
-	JOY_API void text_update(text_texture_p text, font_p font, 
-		const int* codepoints, int num_codepoints, SDL_Color color);
-	JOY_API void text_destroy(text_texture_p text_tex);
-	JOY_API void text_print(SDL_Renderer* renderer, text_texture_p text_tex, float x, float y);
-
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////ui////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
 
 	JOY_API label_p label_create(SDL_Renderer* renderer, font_p fontinfo, const int* codepoints, int len);
 	JOY_API void label_destroy(label_p label);
@@ -219,8 +149,8 @@ extern "C" {
 	JOY_API void combobox_draw(combobox_p combobox);
 
 	JOY_API datagrid_p datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_header, void* font);
-	JOY_API void datagrid_setheaders(datagrid_p grid, const codepoint_array_p* headers);
-	JOY_API void datagrid_setheader(datagrid_p grid, int index, const codepoint_array_p header);
+	JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
+	JOY_API void datagrid_setheader(datagrid_p grid, int index, const char *header);
 	JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
 	JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
 	JOY_API void datagrid_destroy(datagrid_p grid);
@@ -244,8 +174,17 @@ extern "C" {
 	JOY_API bool checkbox_handle_event(checkbox_p checkbox, SDL_Event* event, SDL_Renderer* renderer);
 	JOY_API void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font);
 
+	JOY_API joystick_p joystick_create(SDL_Renderer* renderer, float x, float y, float radius);
+	JOY_API void joystick_destroy(joystick_p joystick);
+	JOY_API void joystick_draw(joystick_p joystick);
+	JOY_API void joystick_handle_event(joystick_p joystick, SDL_Event* event);
+	JOY_API void joystick_reset(joystick_p joystick);
+	JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
+	JOY_API SDL_FPoint joystick_get_direction(joystick_p joystick);
+	JOY_API float joystick_get_magnitude(joystick_p joystick);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !GRAPHICS_H
+#endif // !UI_H

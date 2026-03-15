@@ -397,3 +397,290 @@ utils_random_next(random_num_p rnum)
 	return y;
 }
 
+unsigned long sdbm_hash(const char* str, int size)
+{
+	unsigned long hash = 0;
+	int c;
+	while ((c = *str++)) {
+		hash = c + (hash << 6) + (hash << 16) - hash;
+	}
+	return hash % size;
+}
+
+unsigned long fnv1a_hash(const char* str, int size)
+{
+	unsigned long hash = 2166136261u;  // FNV_offset_basis
+	int c;
+	while ((c = *str++)) {
+		hash ^= c;
+		hash *= 16777619u;  // FNV_prime
+	}
+	return hash % size;
+}
+
+
+unsigned long jenkins_hash(const char* str, int size)
+{
+	unsigned long hash = 0;
+	int c;
+	while ((c = *str++)) {
+		hash += c;
+		hash += (hash << 10);
+		hash ^= (hash >> 6);
+	}
+	hash += (hash << 3);
+	hash ^= (hash >> 11);
+	hash += (hash << 15);
+	return hash % size;
+}
+
+unsigned long murmur3_hash(const char* str)
+{
+	unsigned long hash = 0;
+	const unsigned int seed = 0x9747b28c;
+	const unsigned int c1 = 0xcc9e2d51;
+	const unsigned int c2 = 0x1b873593;
+
+	const unsigned char* data = (const unsigned char*)str;
+	int len = strlen(str);
+
+	while (len >= 4) {
+		unsigned int k = *(unsigned int*)data;
+
+		k *= c1;
+		k = (k << 15) | (k >> 17);
+		k *= c2;
+
+		hash ^= k;
+		hash = (hash << 13) | (hash >> 19);
+		hash = hash * 5 + 0xe6546b64;
+
+		data += 4;
+		len -= 4;
+	}
+
+	unsigned int k = 0;
+	switch (len) {
+	case 3: k ^= data[2] << 16;
+	case 2: k ^= data[1] << 8;
+	case 1: k ^= data[0];
+		k *= c1;
+		k = (k << 15) | (k >> 17);
+		k *= c2;
+		hash ^= k;
+	}
+
+	hash ^= strlen(str);
+	hash ^= hash >> 16;
+	hash *= 0x85ebca6b;
+	hash ^= hash >> 13;
+	hash *= 0xc2b2ae35;
+	hash ^= hash >> 16;
+
+	return hash;
+}
+
+unsigned long kr_hash(const char* str, int size)
+{
+	unsigned long hash = 0;
+	int c;
+	while ((c = *str++)) {
+		hash = c + hash * 31;
+	}
+	return hash % size;
+}
+
+
+#define MAXUNICODE 0x10FFFFu
+#define iscont(c) (((c) & 0xC0) == 0x80)
+
+/* 各长度字符的最小合法码点（防止过短表示） */
+static const uint32_t limits[] = {
+    ~(uint32_t)0, 0x80, 0x800, 0x10000u, 0x200000u, 0x4000000u
+};
+
+size_t utf8_decode(const char* s, size_t len, int32_t* code)
+{
+	if (len == 0) return 0;
+
+	unsigned char c = (unsigned char)s[0];
+
+	/* ASCII */
+	if (c < 0x80) {
+		*code = c;
+		return 1;
+	}
+
+	int nbytes;
+	uint32_t min;
+	uint32_t res;
+
+	/* 根据首字节判断字节数 */
+	if (c < 0xC2) {
+		return 0;
+	}
+	else if (c < 0xE0) {        /* 2字节: 110xxxxx */
+		nbytes = 2;
+		min = 0x80;
+		res = c & 0x1F;
+	}
+	else if (c < 0xF0) {        /* 3字节: 1110xxxx */
+		nbytes = 3;
+		min = 0x800;
+		res = c & 0x0F;
+	}
+	else if (c < 0xF5) {        /* 4字节: 11110xxx (F4 是能表示 0x10FFFF 的最大值) */
+		nbytes = 4;
+		min = 0x10000;
+		res = c & 0x07;
+	}
+	else {
+		return 0;                  /* 0xF5~0xFF 非法 */
+	}
+
+	if (len < (size_t)nbytes)
+		return 0;
+
+	/* 处理后续字节 */
+	for (int i = 1; i < nbytes; i++) {
+		unsigned char cc = (unsigned char)s[i];
+		if (!iscont(cc))
+			return 0;
+		res = (res << 6) | (cc & 0x3F);
+	}
+
+	/* 过短检查 */
+	if (res < min)
+		return 0;
+
+	/* 最大值及代理项检查（严格模式） */
+	if (res > MAXUNICODE)
+		return 0;
+	if (0xD800 <= res && res <= 0xDFFF)
+		return 0;
+
+	*code = (int32_t)res;
+	return nbytes;
+}
+
+int utf8_next(const char* s, size_t len, size_t* pos, int32_t* code)
+{
+	if (*pos >= len) return 0;
+	size_t consumed = utf8_decode(s + *pos, len - *pos, code);
+	if (consumed == 0) return 0;
+	*pos += consumed;
+	return 1;
+}
+
+size_t utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out_capacity)
+{
+	size_t count = 0;
+	size_t pos = 0;
+
+	/* 第一次遍历：计算所需码点个数，同时验证字符串有效性 */
+	while (pos < len) {
+		int32_t cp;  /* 临时存储，无需实际值 */
+		size_t consumed = utf8_decode(s + pos, len - pos, &cp);
+		if (consumed == 0) {
+			return 0;  /* 无效 UTF-8 序列 */
+		}
+		count++;
+		pos += consumed;
+	}
+
+	/* 如果 out_codes 为 NULL，则只返回所需长度（用于缓冲区预分配） */
+	if (out_codes == NULL) {
+		return count;
+	}
+
+	/* 检查缓冲区容量是否足够 */
+	if (out_capacity < count) {
+		return 0;  /* 缓冲区太小，失败 */
+	}
+
+	/* 第二次遍历：填充数组 */
+	pos = 0;
+	size_t idx = 0;
+	while (pos < len) {
+		int32_t cp;
+		size_t consumed = utf8_decode(s + pos, len - pos, &cp);
+		/* 此时不会失败，因为第一次已验证过 */
+		out_codes[idx++] = cp;
+		pos += consumed;
+	}
+
+	return count;
+}
+
+
+int pack_int8(char* buf, int8_t value, int offset)
+{
+	int type_size = sizeof(int8_t);
+	SDL_memcpy(buf + offset, &value, type_size);
+	return offset + type_size;
+}
+int pack_int16(char* buf, int16_t value, int offset)
+{
+	int type_size = sizeof(int16_t);
+	SDL_memcpy(buf + offset, &value, type_size);
+	return offset + type_size;
+}
+int pack_int32(char* buf, int32_t value, int offset)
+{
+	int type_size = sizeof(int32_t);
+	SDL_memcpy(buf + offset, &value, type_size);
+	return offset + type_size;
+}
+int pack_uint32(char* buf, uint32_t value, int offset)
+{
+	int type_size = sizeof(uint32_t);
+	SDL_memcpy(buf + offset, &value, type_size);
+	return offset + type_size;
+}
+int pack_int64(char* buf, int64_t value, int offset)
+{
+	int type_size = sizeof(int64_t);
+	SDL_memcpy(buf + offset, &value, type_size);
+	return offset + type_size;
+}
+
+int unpack_int8(const char* buf, int8_t* value, int offset)
+{
+	int type_size = sizeof(int8_t);
+	*value = *((int8_t*)(buf + offset));
+	return offset + type_size;
+}
+int unpack_int16(const char* buf, int16_t* value, int offset)
+{
+	int type_size = sizeof(int16_t);
+	*value = *((int16_t*)(buf + offset));
+	return offset + type_size;
+}
+int unpack_int32(const char* buf, int32_t* value, int offset)
+{
+	int type_size = sizeof(int32_t);
+	*value = *((int32_t*)(buf + offset));
+	return offset + type_size;
+}
+int unpack_uint32(const char* buf, uint32_t* value, int offset)
+{
+	int type_size = sizeof(uint32_t);
+	*value = *((uint32_t*)(buf + offset));
+	return offset + type_size;
+}
+int unpack_int64(const char* buf, int64_t* value, int offset)
+{
+	int type_size = sizeof(int64_t);
+	*value = *((int64_t*)(buf + offset));
+	return offset + type_size;
+}
+int pack_string(char* buf, const char* value, int type_size, int offset)
+{
+	memcpy(buf + offset, value, type_size);
+	return offset + type_size;
+}
+int unpack_string(const char* buf, char* value, int type_size, int offset)
+{
+	memcpy(value, buf + offset, type_size);
+	return offset + type_size;
+}

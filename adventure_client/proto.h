@@ -11,7 +11,7 @@ History:
 #define PROTO_H
 #include <stdint.h>
 #include <vector>
-#include <joy2d/config.h>
+#include <joy2d/mathx.h>
 
 typedef enum {
 	C2S_CMD_NONE = 0x1,
@@ -65,7 +65,8 @@ typedef int s2c_player_leave_t, * s2c_player_leave_p;
 
 typedef struct s2c_player_input {
 	int32_t conv;
-	int16_t keycode;
+	int32_t sequence;
+	int32_t keycode;
 }s2c_player_input_t, * s2c_player_input_p;
 
 typedef struct s2c_player_live {
@@ -84,12 +85,12 @@ typedef struct s2c_creating_emeny {
 
 typedef int s2c_destroying_emeny_t, * s2c_destroying_emeny_p;
 
+
 typedef struct s2c_loading {
 	int32_t frame_id;
 	int32_t conv;
-	int32_t data_len;
-	char data[JOY_MAX_BUFFER];
-	int ok;
+	char data[JOY_MAX_BUFFER * 10];
+        int32_t data_len;
 }s2c_loading_t, * s2c_loading_p;
 
 typedef struct s2c_player {

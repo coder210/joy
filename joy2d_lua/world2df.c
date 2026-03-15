@@ -2,7 +2,7 @@
 #include "joy2d/physics.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 
 static int l_world2df_create(lua_State* L)
 {

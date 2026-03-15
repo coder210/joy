@@ -2,7 +2,7 @@
 #include "lua/lua.h"
 #include <SDL3/SDL.h>
 #include "joy2d/physics.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 #include "luaclib.h"
 
 // rigidbody µÄ metatable Ãû³Æ

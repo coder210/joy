@@ -14,7 +14,7 @@ History:
 #include "lua/lualib.h"
 #include "lua/lauxlib.h"
 #include "cjson/lua_cjson.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 #include "joy2d/utils.h"
 #include "luaclib.h"
 #include "luax.h"
@@ -129,7 +129,7 @@ luax_p luax_create(void)
         luaL_requiref(luax->L, "window", luaopen_window, 1);
         luaL_requiref(luax->L, "sdl", luaopen_sdl, 1);
         luaL_requiref(luax->L, "audio", luaopen_audio, 1);
-        luaL_requiref(luax->L, "graphics", luaopen_graphics, 1);
+        //luaL_requiref(luax->L, "graphics", luaopen_graphics, 1);
         luaL_requiref(luax->L, "keyboard", luaopen_keyboard, 1);
         luaL_requiref(luax->L, "net", luaopen_net, 1);
         luaL_requiref(luax->L, "utils", luaopen_utils, 1);

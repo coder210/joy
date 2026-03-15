@@ -1,13 +1,8 @@
 #ifndef JOY_H
 #define JOY_H
 #include <stdbool.h>
-#include "./external/lua/lua.h"
-#include "./external/lua/lualib.h"
-#include "./external/lua/lauxlib.h"
-#include "mono.h"
 #include "sys.h"
 #include "config.h"
-#include "log.h"
 #include "physics.h"
 
 //typedef struct app app_t, *app_p;
