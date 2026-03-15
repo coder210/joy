@@ -1,11 +1,12 @@
 #include "SDL3/SDL.h"
-#include "ecs.h"
-#include "config.h"
-#include "core.h"
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"
 #include "vector.h"
+#include "ecs.h"
+#include "config.h"
+#include "core.h"
+#include "utils.h"
 
 // ==================== Bitsetʵ�� ====================
 typedef struct bitset {
