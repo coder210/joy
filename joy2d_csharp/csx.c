@@ -5,7 +5,7 @@
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 #include "joy2d/utils.h"
 //#include "./csclib/csclib.h"
 #include "csx.h"

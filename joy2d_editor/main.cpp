@@ -2,7 +2,7 @@
 #include "flecs.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <joy2d/calculator.h>
+#include <joy2d/core.h>
 #include <iostream>
 #include <map>
 #include <string>

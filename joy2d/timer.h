@@ -1,3 +1,12 @@
+/************************************************
+Copyright: 2021-2028, lanchong.xyz/Ltd.
+File name: timer.h
+Description:
+Author: ydlc
+Version: 1.0
+Date: 2025.7.20
+History:
+*************************************************/
 #ifndef TIMER_H
 #define TIMER_H
 

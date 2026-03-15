@@ -1,4 +1,4 @@
-#include <joy2d/msgpack.h>
+#include <joy2d/utils.h>
 #include "proto.h"
 
 
@@ -46,6 +46,12 @@ int c2s_deserialize(c2s_p c2s, const char* buf, int len)
                 offset = unpack_int32(buf, &c2s->player_input.sequence, offset);
                 offset = unpack_int32(buf, &c2s->player_input.keycode, offset);
         }
+        else if (c2s->cmd == C2S_CMD_READY) {
+        }
+        else if (c2s->cmd == C2S_CMD_LOADING) {
+        }
+        else if (c2s->cmd == C2S_CMD_HEARTBEAT) {
+        }
         else {
                 return false;
         }
@@ -91,7 +97,6 @@ int s2c_serialize(const s2c_p s2c, char* buf, int* len)
                 if (s2c->loading.data_len > 0) {
                         offset = pack_string(buf, s2c->loading.data, s2c->loading.data_len, offset);
                 }
-                offset = pack_int32(buf, s2c->loading.ok, offset);
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
                 offset = pack_int32(buf, s2c->command.frame_id, offset);
@@ -112,6 +117,7 @@ int s2c_serialize(const s2c_p s2c, char* buf, int* len)
                 for (int i = 0; i < s2c->command.player_inputs.size(); i++) {
                         player_input = s2c->command.player_inputs[i];
                         offset = pack_int32(buf, player_input.conv, offset);
+                        offset = pack_int32(buf, player_input.sequence, offset);
                         offset = pack_int16(buf, player_input.keycode, offset);
                 }
                 for (int i = 0; i < s2c->command.creating_emenies.size(); i++) {
@@ -155,7 +161,6 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                 if (s2c->loading.data_len > 0) {
                         offset = unpack_string(buf, s2c->loading.data, s2c->loading.data_len, offset);
                 }
-                offset = unpack_int32(buf, &s2c->loading.ok, offset);
         }
         else if (s2c->cmd == S2C_CMD_COMMAND) {
                 offset = unpack_int32(buf, &s2c->command.frame_id, offset);
@@ -175,7 +180,8 @@ int s2c_deserialize(s2c_p s2c, const char* buf, int len)
                 }
                 for (int i = 0; i < num_player_inputs; i++) {
                         offset = unpack_int32(buf, &player_input.conv, offset);
-                        offset = unpack_int16(buf, &player_input.keycode, offset);
+                        offset = unpack_int32(buf, &player_input.sequence, offset);
+                        offset = unpack_int32(buf, &player_input.keycode, offset);
                         s2c->command.player_inputs.push_back(player_input);
                 }
                 for (int i = 0; i < num_creating_emenies; i++) {

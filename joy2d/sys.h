@@ -13,6 +13,8 @@ History:
 #include <stdint.h>
 #include "config.h"
 
+typedef struct iocp_server iocp_server_t, * iocp_server_p;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,7 +39,11 @@ extern "C" {
                 int len, const char* ip, int port);
         JOY_API int64_t sys_current_time();
         JOY_API void sys_sleep(int ms);
-        JOY_API void sys_create_iocp(int ms);
+
+        JOY_API iocp_server_p iocp_server_create(const char* bind_ip, int bind_port);
+        JOY_API void iocp_server_destroy(iocp_server_p server);
+        JOY_API void iocp_process_events(iocp_server_p server, int timeout_ms);
+
 
 #ifdef __cplusplus
 }

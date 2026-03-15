@@ -1,5 +1,5 @@
 /************************************************
-Copyright: 2021-2022, lanchong.xyz/Ltd.
+Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: mathx.h
 Description: ��ѧ��
 Author: ydlc

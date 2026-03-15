@@ -3,7 +3,7 @@
 #include "mujs/mujs.h"
 #include "jsx.h"
 #include "joy2d/utils.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 #include "jsclib.h"
 
 struct jsx {

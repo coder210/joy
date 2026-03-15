@@ -1,7 +1,7 @@
 #include "SDL3/SDL.h"
 #include "ecs.h"
 #include "config.h"
-#include "hash.h"
+#include "core.h"
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"

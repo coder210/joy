@@ -1,963 +1,33 @@
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "external/stb_image.h"
-#include "external/stb_image_write.h"
-#include "external/stb_truetype.h"
-#include "external/klib/khash.h"
-#include "external/klib/kvec.h"
-#include "mathx.h"
-#include "hash.h"
-#include "utils.h"
-#include "graphics.h"
+#include "ui.h"
 
-struct image {
-	SDL_Texture* texture;
-	char filepath[JOY_MAX_PATH];
+
+// ��ɫ���
+#define JOYSTICK_BG_COLOR 0x555555FF
+#define JOYSTICK_HANDLE_COLOR 0x888888FF
+#define JOYSTICK_HANDLE_ACTIVE_COLOR 0x4CAF50FF
+
+// ҡ�˽ṹ��
+struct joystick {
+	SDL_Renderer* renderer;      // ��Ⱦ��
+	SDL_FRect background;        // ��������
+	SDL_FRect handle;           // �ֱ�����
+	SDL_FPoint center;          // ҡ�����ĵ�
+	float radius;               // �����뾶
+	float handle_radius;        // �ֱ��뾶
+	SDL_FPoint direction;       // �������� (x: -1��1, y: -1��1)
+	float magnitude;            // ǿ�� (0��1)
+	float deadzone;             // ������ֵ
+	bool is_dragging;           // �Ƿ������϶�
+	bool is_touch_active;       // �Ƿ�������
+	int touch_id;               // ����ID
 };
 
-struct font_t {
-	stbtt_fontinfo fontinfo;
-	unsigned char* fontdata;
-	SDL_Renderer* renderer;
-	int fontsize;
-	float scale;
-	int ascent;
-	int descent;
-	int line_gap;
-};
-
-struct text_texture {
-	SDL_Texture *texture;
-	int real_width;
-	int real_height;
-};
-
- struct spritebatch {
-	image_p image;
-	SDL_Vertex* vertices;
-	int* indices;
-	int num_vertices;
-	int num_indices;
-	int index_vertices;
-	int index_indices;
-};
-
-typedef struct animation_clip {
-	image_p image;
-	float duration;
-	SDL_FRect src_rect;
-}animation_clip_t, * animation_clip_p;
-
-
-struct animation {
-	SDL_Renderer* renderer;
-	kvec_t(animation_clip_t) clips;
-	bool is_loop;
-	int idx_frame;
-	float total_time;
-	float last_time;
-	SDL_FPoint position;
-	float rotation;
-	SDL_FPoint scale;
-	SDL_FPoint origin;
-};
-
-/////////////////////////////////////////////////////////////////////////
-//////////////////////////////shape//////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-
-bool shape_draw_line(SDL_Renderer* renderer, float x1, float y1, float x2, float y2)
-{
-	bool result;
-	result = SDL_RenderLine(renderer, x1, y1, x2, y2);
-	return result;
+// ������������
+static float distance_squared(float x1, float y1, float x2, float y2) {
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	return dx * dx + dy * dy;
 }
-
-bool shape_draw_rectangle(SDL_Renderer* renderer, const char* mode, SDL_FRect rect)
-{
-	bool result;
-	if (SDL_strcmp(mode, "line") == 0) {
-		result = SDL_RenderRect(renderer, &rect);
-	}
-	else if (SDL_strcmp(mode, "fill") == 0) {
-		result = SDL_RenderFillRect(renderer, &rect);
-	}
-	else {
-		result = false;
-	}
-	return result;
-}
-
-static bool
-draw_polygon_outline(SDL_Renderer* renderer, SDL_FPoint* points, int point_count)
-{
-	bool result;
-	int vertex_count = point_count - 1;
-	points[vertex_count].x = points[0].x;
-	points[vertex_count].y = points[0].y;
-	result = SDL_RenderLines(renderer, points, point_count);
-	return result;
-}
-
-static bool
-draw_polygon_filled(SDL_Renderer* renderer,
-	SDL_FPoint* points, int point_count, SDL_FColor color)
-{
-	bool result;
-	SDL_Vertex* vertices;
-	int vertex_count;
-	int* indices = NULL;
-	int indices_count = 0;
-
-	vertex_count = point_count - 1;
-	vertices = SDL_malloc(sizeof(SDL_Vertex) * vertex_count);
-
-	if (vertex_count >= 3) {
-		indices_count = (vertex_count - 2) * 3;
-		indices = SDL_malloc(sizeof(int) * indices_count);
-		if (indices) {
-			for (int i = 0; i < vertex_count - 2; i++) {
-				indices[i * 3] = 0;
-				indices[i * 3 + 1] = i + 1;
-				indices[i * 3 + 2] = i + 2;
-			}
-		}
-	}
-
-	for (int i = 0; i < vertex_count; i++) {
-		vertices[i].position.x = points[i].x;
-		vertices[i].position.y = points[i].y;
-		vertices[i].color = color;
-		vertices[i].tex_coord.x = 0.0f;
-		vertices[i].tex_coord.y = 0.0f;
-	}
-
-	if (indices) {
-		result = SDL_RenderGeometry(renderer, NULL, vertices, vertex_count, indices, indices_count);
-		SDL_free(indices);
-	}
-	else {
-		result = false;
-	}
-
-	SDL_free(vertices);
-
-	return result;
-}
-
-bool
-shape_draw_polygon(SDL_Renderer* renderer, const char* mode,
-	SDL_FPoint* points, int point_count, SDL_FColor color)
-{
-	bool result;
-	if (SDL_strcmp(mode, "line") == 0) {
-		result = draw_polygon_outline(renderer, points, point_count);
-	}
-	else if (SDL_strcmp(mode, "fill") == 0) {
-		result = draw_polygon_filled(renderer, points, point_count, color);
-	}
-	else {
-		result = false;
-	}
-	return result;
-}
-
-static bool
-draw_circle_outline(SDL_Renderer* renderer, SDL_FPoint center, float radius, int segments)
-{
-	bool result;
-	float angle;
-	SDL_FPoint* points;
-	points = SDL_malloc(sizeof(SDL_FPoint) * (segments + 1));
-	for (int i = 0; i < segments; i++) {
-		angle = (float)i / (float)segments * 2.0f * 3.1415926535f;
-		points[i].x = center.x + cosf(angle) * radius;
-		points[i].y = center.y + sinf(angle) * radius;
-	}
-	points[segments].x = points[0].x;
-	points[segments].y = points[0].y;
-	result = SDL_RenderLines(renderer, points, segments + 1);
-	SDL_free(points);
-	return result;
-}
-
-static bool
-draw_circle_filled(SDL_Renderer* renderer, SDL_FPoint center, float radius, int segments, SDL_FColor color)
-{
-	bool result;
-	SDL_Vertex* vertices;
-	int vertex_count;
-	int* indices;
-
-	vertex_count = segments + 1;
-	vertices = SDL_malloc(sizeof(SDL_Vertex) * vertex_count);
-	indices = SDL_malloc(sizeof(int) * segments * 3);
-
-	if (!vertices || !indices) {
-		if (vertices) SDL_free(vertices);
-		if (indices) SDL_free(indices);
-		return false;
-	}
-
-	vertices[0].position.x = center.x;
-	vertices[0].position.y = center.y;
-	vertices[0].color = color;
-	vertices[0].tex_coord.x = 0.0f;
-	vertices[0].tex_coord.y = 0.0f;
-
-	for (int i = 0; i < segments; i++) {
-		float angle = (float)i / (float)segments * 2.0f * 3.1415926535f;
-		vertices[i + 1].position.x = center.x + cosf(angle) * radius;
-		vertices[i + 1].position.y = center.y + sinf(angle) * radius;
-		vertices[i + 1].color = color;
-		vertices[i + 1].tex_coord.x = 0.0f;
-		vertices[i + 1].tex_coord.y = 0.0f;
-
-		indices[i * 3] = 0;
-		indices[i * 3 + 1] = i + 1;
-		indices[i * 3 + 2] = (i + 1) % segments + 1;
-	}
-
-	result = SDL_RenderGeometry(renderer, NULL, vertices, vertex_count, indices, segments * 3);
-
-	SDL_free(vertices);
-	SDL_free(indices);
-
-	return result;
-}
-
-bool
-shape_draw_circle(SDL_Renderer* renderer, const char* mode, SDL_FPoint center, float radius, int segments)
-{
-	bool result;
-	SDL_FColor color;
-	if (segments < 8) segments = 8;
-	if (segments > 360) segments = 360;
-	if (SDL_strcmp(mode, "line") == 0) {
-		result = draw_circle_outline(renderer, center, radius, segments);
-	}
-	else if (SDL_strcmp(mode, "fill") == 0) {
-		SDL_GetRenderDrawColorFloat(renderer, &color.r, &color.g, &color.b, &color.a);
-		result = draw_circle_filled(renderer, center, radius, segments, color);
-	}
-	else {
-		result = false;
-	}
-	return result;
-}
-
-bool
-shape_draw_grid(SDL_Renderer* renderer,
-	SDL_FPoint start, SDL_FPoint end,
-	float grid_size)
-{
-	float x1, x2, y1, y2;
-	for (float x = start.x; x <= end.x; x += grid_size) {
-		x1 = x;
-		x2 = start.y;
-		y1 = x;
-		y2 = end.y;
-		SDL_RenderLine(renderer, x1, x2, y1, y2);
-	}
-	for (float y = start.y; y <= end.y; y += grid_size) {
-		x1 = start.x;
-		x2 = y;
-		y1 = end.x;
-		y2 = y;
-		SDL_RenderLine(renderer, x1, x2, y1, y2);
-	}
-	return true;
-}
-
-bool
-shape_draw_gridx(SDL_Renderer* renderer,
-	SDL_FPoint position,
-	int rows, int cols, float grid_size)
-{
-	float x1, x2, y1, y2;
-	for (int i = 0; i <= rows; i++) {
-		x1 = position.x;
-		y1 = i * grid_size + position.y;
-		x2 = cols * grid_size + position.x;
-		y2 = y1;
-		SDL_RenderLine(renderer, x1, y1, x2, y2);
-	}
-	for (int i = 0; i <= cols; i++) {
-		x1 = i * grid_size + position.x;
-		y1 = position.y;
-		x2 = x1;
-		y2 = rows * grid_size + position.y;
-		SDL_RenderLine(renderer, x1, y1, x2, y2);
-	}
-	return true;
-}
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////image/////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-static image_p load_bmp(SDL_Renderer* renderer, const char* filename)
-{
-	char filepath[JOY_MAX_PATH] = { 0 };
-	image_p image;
-	//SDL_strlcat(filepath, SDL_GetBasePath(), JOY_MAX_PATH);
-	SDL_strlcat(filepath, filename, JOY_MAX_PATH);
-	SDL_Surface* surface = SDL_LoadBMP(filepath);
-	if (!surface) {
-		return NULL;
-	}
-	image = (image_p)SDL_malloc(sizeof(image_t));
-	SDL_assert(image);
-	SDL_strlcpy(image->filepath, filepath, JOY_MAX_PATH);
-	image->texture = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_DestroySurface(surface);
-	return image;
-}
-
-static image_p load_png(SDL_Renderer* renderer, const char* filename)
-{
-	stbi_uc* filedata;
-	size_t sz;
-	char filepath[JOY_MAX_PATH] = { 0 };
-	image_p image;
-	int w, h, channels;
-	unsigned char* pixels;
-	SDL_Surface* surface;
-	filedata = (stbi_uc*)SDL_LoadFile(filename, &sz);
-	if (!filedata) {
-		return NULL;
-	}
-
-	image = (image_p)SDL_malloc(sizeof(image_t));
-	SDL_assert(image);
-	//SDL_strlcat(filepath, SDL_GetBasePath(), JOY_MAX_PATH);
-	SDL_strlcat(filepath, filename, JOY_MAX_PATH);
-	pixels = stbi_load_from_memory(filedata, sz, &w, &h, &channels, STBI_rgb_alpha);
-	surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, pixels, w * 4);
-	image->texture = SDL_CreateTextureFromSurface(renderer, surface);
-	SDL_DestroySurface(surface);
-	SDL_free(filedata);
-	SDL_strlcpy(image->filepath, filepath, JOY_MAX_PATH);
-	return image;
-}
-
-image_p image_create(SDL_Renderer* renderer, const char* filename)
-{
-	image_p image = NULL;
-	if (SDL_strstr(filename, ".bmp")) {
-		image = load_bmp(renderer, filename);
-	}
-	else if (SDL_strstr(filename, ".png")) {
-		image = load_png(renderer, filename);
-	}
-	return image;
-}
-
-void image_destroy(image_p image)
-{
-	SDL_assert(image);
-	if (image->texture) {
-		SDL_DestroyTexture(image->texture);
-	}
-	SDL_free(image);
-}
-
-void image_draw(image_p image, SDL_FPoint position)
-{
-	SDL_FRect srcrect = { 0, 0, image->texture->w, image->texture->h };
-	SDL_FPoint scale = { 1.0f, 1.0f };
-	SDL_FPoint origin = { 0.0f, 0.0f };
-	image_draw_ex(image, &srcrect, position, 0.0f, scale, origin);
-}
-
-void image_draw_ex(image_p image, const SDL_FRect* srcrect, SDL_FPoint position,
-	float rotation, SDL_FPoint scale, SDL_FPoint origin)
-{
-	SDL_FColor color;
-	SDL_Renderer* renderer;
-	float w, h;
-	SDL_FRect dest_rect;
-	SDL_FPoint center;
-	w = srcrect->w;
-	h = srcrect->h;
-	renderer = SDL_GetRendererFromTexture(image->texture);
-	SDL_GetRenderDrawColorFloat(renderer, &color.r, &color.g, &color.b, &color.a);
-	dest_rect.x = (position.x - origin.x * scale.x);
-	dest_rect.y = (position.y - origin.y * scale.y);
-	dest_rect.w = w * scale.x;
-	dest_rect.h = h * scale.y;
-	center.x = origin.x * scale.x;
-	center.y = origin.y * scale.y;
-	//SDL_SetTextureColorModFloat(image->texture, color.r, color.g, color.b);
-	//SDL_SetTextureAlphaModFloat(image->texture, color.a);
-	SDL_RenderTextureRotated(renderer, image->texture,
-		srcrect, &dest_rect,
-		rotation * 180.0f / 3.1415926f,
-		&center, SDL_FLIP_NONE);
-	//SDL_SetTextureColorMod(image->texture, 255, 255, 255);
-	//SDL_SetTextureAlphaMod(image->texture, 255);
-}
-
-spritebatch_p
-spritebatch_create(SDL_Renderer* renderer, const char* filename)
-{
-	const int capacity = 256;
-	spritebatch_p batch;
-	batch = (spritebatch_p)SDL_malloc(sizeof(spritebatch_t));
-	batch->image = image_create(renderer, filename);
-	batch->num_indices = capacity * 6;
-	batch->num_vertices = capacity * 4;
-	batch->index_indices = 0;
-	batch->index_vertices = 0;
-	batch->vertices = (SDL_Vertex*)SDL_malloc(sizeof(SDL_Vertex) * batch->num_vertices);
-	batch->indices = (int*)SDL_malloc(sizeof(int) * batch->num_indices);
-	return batch;
-}
-
-void spritebatch_destroy(spritebatch_p batch)
-{
-	SDL_free(batch->vertices);
-	SDL_free(batch->indices);
-	image_destroy(batch->image);
-	SDL_free(batch);
-}
-
-void spritebatch_add(spritebatch_p batch,
-	SDL_FPoint position,
-	float rotation,
-	float scale_x, float scale_y,
-	SDL_FPoint origin,
-	SDL_FRect src_rect)
-{
-	SDL_Renderer* renderer;
-	float w, h;
-	SDL_FRect dest_rect;
-	SDL_FPoint center;
-
-	renderer = SDL_GetRendererFromTexture(batch->image->texture);
-	SDL_GetTextureSize(batch->image->texture, &w, &h);
-
-	dest_rect.x = position.x;
-	dest_rect.y = position.y;
-	dest_rect.w = w * scale_x;
-	dest_rect.h = h * scale_y;
-
-	/* Ĭ��ͼƬ���ĵ� */
-	center.x = dest_rect.x + dest_rect.w / 2;
-	center.y = dest_rect.y + dest_rect.h / 2;
-
-	spritebatch_add_ex(batch, src_rect, dest_rect, rotation, center);
-}
-
-float spritebatch_get_width(spritebatch_p batch)
-{
-	return batch->image->texture->w;
-}
-
-float spritebatch_get_height(spritebatch_p batch)
-{
-	return batch->image->texture->h;
-}
-
-void spritebatch_add_ex(spritebatch_p batch,
-	SDL_FRect src_rect, SDL_FRect dest_rect,
-	float rotation, SDL_FPoint origin)
-{
-	SDL_Renderer* renderer;
-	float w, h;
-	SDL_FColor color;
-	SDL_Vertex* vertex;
-	vec2_t translated;
-
-	if (batch->num_indices <= batch->index_indices) {
-		batch->num_indices *= 2;
-		batch->indices = (int*)SDL_realloc(batch->indices, sizeof(int) * batch->num_indices);
-	}
-	if (batch->num_vertices <= batch->index_vertices) {
-		batch->num_vertices *= 2;
-		batch->vertices = (SDL_Vertex*)SDL_realloc(batch->vertices, sizeof(SDL_Vertex) * batch->num_vertices);
-	}
-
-	renderer = SDL_GetRendererFromTexture(batch->image->texture);
-	SDL_GetRenderDrawColorFloat(renderer, &color.r, &color.g, &color.b, &color.a);
-	SDL_GetTextureSize(batch->image->texture, &w, &h);
-
-	batch->indices[batch->index_indices++] = 0 + batch->index_vertices;
-	batch->indices[batch->index_indices++] = 1 + batch->index_vertices;
-	batch->indices[batch->index_indices++] = 2 + batch->index_vertices;
-	batch->indices[batch->index_indices++] = 0 + batch->index_vertices;
-	batch->indices[batch->index_indices++] = 2 + batch->index_vertices;
-	batch->indices[batch->index_indices++] = 3 + batch->index_vertices;
-
-	vertex = &batch->vertices[batch->index_vertices];
-	vertex->position.x = dest_rect.x;
-	vertex->position.y = dest_rect.y;
-	vertex->color = color;
-	vertex->tex_coord.x = src_rect.x / w;
-	vertex->tex_coord.y = src_rect.y / h;
-	batch->index_vertices++;
-
-	vertex = &batch->vertices[batch->index_vertices];
-	vertex->position.x = dest_rect.x + dest_rect.w;
-	vertex->position.y = dest_rect.y;
-	vertex->color = color;
-	vertex->tex_coord.x = (src_rect.x + src_rect.w) / w;
-	vertex->tex_coord.y = src_rect.y / h;
-	batch->index_vertices++;
-
-	vertex = &batch->vertices[batch->index_vertices];
-	vertex->position.x = dest_rect.x + dest_rect.w;
-	vertex->position.y = dest_rect.y + dest_rect.h;
-	vertex->color = color;
-	vertex->tex_coord.x = (src_rect.x + src_rect.w) / w;
-	vertex->tex_coord.y = (src_rect.y + src_rect.h) / h;
-	batch->index_vertices++;
-
-	vertex = &batch->vertices[batch->index_vertices];
-	vertex->position.x = dest_rect.x;
-	vertex->position.y = dest_rect.y + dest_rect.h;
-	vertex->color = color;
-	vertex->tex_coord.x = src_rect.x / w;
-	vertex->tex_coord.y = (src_rect.y + src_rect.h) / h;
-	batch->index_vertices++;
-
-	ft_t angle = rotation / 180.0f * 3.1415926353f;
-
-	for (int i = batch->index_vertices - 4; i < batch->index_vertices; i++) {
-		vertex = &batch->vertices[i];
-
-		// ��ת
-		translated.x = vertex->position.x - origin.x;
-		translated.y = vertex->position.y - origin.y;
-		translated = vec2_rotate(translated, angle);
-
-		// ƽ�ƻ�ԭλ��
-		vertex->position.x = origin.x + translated.x;
-		vertex->position.y = origin.y + translated.y;
-	}
-}
-
-void spritebatch_clear(spritebatch_p batch)
-{
-	if (batch) {
-		batch->index_indices = 0;
-		batch->index_vertices = 0;
-	}
-}
-
-void spritebatch_set_image(spritebatch_p batch, const char* filename)
-{
-	SDL_Renderer* renderer;
-	if (batch) {
-		renderer = SDL_GetRendererFromTexture(batch->image->texture);
-		image_destroy(batch->image);
-		batch->image = image_create(renderer, filename);
-	}
-}
-
-void spritebatch_draw(spritebatch_p batch)
-{
-	SDL_Renderer* renderer;
-	renderer = SDL_GetRendererFromTexture(batch->image->texture);
-	SDL_RenderGeometry(renderer,
-		batch->image->texture,
-		batch->vertices,
-		batch->index_vertices,
-		batch->indices,
-		batch->index_indices);
-}
-
-
-animation_p animation_create(SDL_Renderer* renderer)
-{
-	animation_p animation;
-	animation = (animation_p)SDL_malloc(sizeof(animation_t));
-	animation->renderer = renderer;
-	animation->is_loop = true;
-	kv_init(animation->clips);
-	animation->position = (SDL_FPoint){0, 0};
-	animation->rotation = 0;
-	animation->scale = (SDL_FPoint){ 1.0f, 1.0f };
-	animation->origin = (SDL_FPoint){ 0.0f, 0.0f };
-	animation->total_time = animation->last_time = animation->idx_frame = 0;
-	return animation;
-}
-
-void animation_destroy(animation_p animation)
-{
-	kv_destroy(animation->clips);
-	SDL_free(animation);
-}
-
-void animation_reset(animation_p animation)
-{
-	uint64_t ticks;
-	animation->idx_frame = 0;
-	animation->total_time = 0;
-	if (utils_get_current_time(&ticks)) {
-		animation->last_time = ticks;
-	}
-	else {
-		animation->last_time = 0;
-	}
-}
-
-void animation_add_clip(animation_p animation,
-	const char* image_path, float duration,
-	SDL_FRect src_rect)
-{
-	animation_clip_t animation_clip;
-	animation_clip.image = image_create(animation->renderer, image_path);
-	animation_clip.duration = duration;
-	animation_clip.src_rect = src_rect;
-	kv_push(animation_clip_t, animation->clips, animation_clip);
-}
-
-bool animation_is_finished(animation_p animation)
-{
-	if (animation->is_loop) {
-		return false;
-	}
-	else {
-		return (animation->idx_frame == kv_size(animation->clips));
-	}
-}
-
-void animation_set_position(animation_p animation, float x, float y)
-{
-	animation->position.x = x;
-	animation->position.y = y;
-}
-
-void animation_set_scale(animation_p animation, float x, float y)
-{
-	animation->scale.x = x;
-	animation->scale.y = y;
-}
-
-void animation_set_rotation(animation_p animation, float rotation)
-{
-	animation->rotation = rotation;
-}
-
-void animation_update(animation_p animation, float dt)
-{
-	animation_clip_p animation_clip;
-	if (kv_size(animation->clips) <= 0) {
-		return;
-	}
-
-	animation_clip = &kv_A(animation->clips, animation->idx_frame);
-	animation->total_time += dt;
-	if (animation->total_time >= animation_clip->duration) {
-		if (animation->idx_frame >= kv_size(animation->clips) - 1) {
-			if (animation->is_loop)
-				animation->idx_frame = 0;
-			else
-				animation->idx_frame = kv_size(animation->clips) - 1;
-		}
-		else {
-			animation->idx_frame += 1;
-		}
-		animation->total_time -= animation_clip->duration;
-	}
-}
-
-void animation_draw(animation_p animation, SDL_FRect* camera)
-{
-	animation_clip_p animation_clip;
-	float r_x, r_y;
-	SDL_FRect dest_rect;
-	SDL_FPoint center = { 0 };
-
-	if (kv_size(animation->clips) <= 0) {
-		return;
-	}
-
-	animation_clip = &kv_A(animation->clips, animation->idx_frame);
-	image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
-}
-
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////font//////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-
-
-/**
- * �����������
- */
-font_p font_create(SDL_Renderer* renderer, const char* filename, int fontsize)
-{
-	size_t data_size;
-	unsigned char* fontdata;
-	font_p font;
-
-	// ���������ļ�
-	fontdata = SDL_LoadFile(filename, &data_size);
-	if (!fontdata) {
-		SDL_Log("Failed to load font file: %s", filename);
-		return NULL;
-	}
-
-	// ��������ṹ��
-	font = (font_p)SDL_calloc(1, sizeof(font_t));
-	if (!font) {
-		SDL_free(fontdata);
-		return NULL;
-	}
-
-	// ��ʼ��stb_truetype������Ϣ
-	if (!stbtt_InitFont(&font->fontinfo, fontdata, 0)) {
-		SDL_Log("Failed to initialize font");
-		SDL_free(fontdata);
-		SDL_free(font);
-		return NULL;
-	}
-
-	// ��������
-	font->fontdata = fontdata;
-	font->renderer = renderer;
-	font->fontsize = fontsize;
-
-	/**
-	 * ��ȡ��ֱ�����ϵĶ���
-	 * ascent������ӻ��ߵ������ĸ߶ȣ�
-	 * descent�����ߵ��ײ��ĸ߶ȣ�ͨ��Ϊ��ֵ��
-	 * line_gap����������֮��ļ�ࣻ
-	 * �м��Ϊ��ascent - descent + line_gap��
-	*/
-	stbtt_GetFontVMetrics(&font->fontinfo,
-		&font->ascent,
-		&font->descent,
-		&font->line_gap);
-
-	/* �������ŵ����ָ� */
-	font->scale = stbtt_ScaleForPixelHeight(&font->fontinfo, fontsize);
-	font->ascent = roundf(font->ascent * font->scale);
-	font->descent = roundf(font->descent * font->scale);
-
-	return font;
-}
-
-/**
- * �ͷ��������
- */
-void font_destroy(font_p font)
-{
-	if (!font) return;
-
-	if (font->fontdata) {
-		SDL_free(font->fontdata);
-	}
-	SDL_free(font);
-}
-
-
-/**
- * �����ı�����
- */
-text_texture_p text_create(font_p font, 
-	const int* codepoints, int num_codepoints, 
-	SDL_Color color)
-{
-	size_t sizedata;
-	int pitch;
-	int x, y;/* λͼ��x,����λͼ��y (��ͬ�ַ��ĸ߶Ȳ�ͬ�� */
-	float scale;
-	int bitmap_index, pixel_index;
-	unsigned char* bitmap;
-	int advance_width, left_side_bearing;
-	int c_x1, c_y1, c_x2, c_y2;
-	SDL_Surface* surface;
-	unsigned char* surface_pixels;
-	Uint8 alpha;
-	text_texture_p text;
-	char pixel;
-	int kern;
-
-	x = 0;
-	advance_width = left_side_bearing = 0;
-	scale = font->scale;
-
-	/* ����λͼ */
-	text = (text_texture_p)SDL_malloc(sizeof(text_texture_t));
-	text->real_width = font->fontsize * num_codepoints; /* λͼ�Ŀ� */
-	text->real_height = font->fontsize; /* λͼ�ĸ� */
-	bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
-
-	/* ѭ������codepoints��ÿ���ַ� */
-	for (int i = 0; i < num_codepoints; ++i) {
-		/**
-		  * ��ȡˮƽ�����ϵĶ���
-		  * advanceWidth���ֿ���
-		  * leftSideBearing�����λ�ã�
-		*/
-		stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
-
-		/* ��ȡ�ַ��ı߿򣨱߽磩 */
-		stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-
-		/* ����λͼ��y (��ͬ�ַ��ĸ߶Ȳ�ͬ�� */
-		y = font->ascent + c_y1;
-
-		/* ��Ⱦ�ַ� */
-		int byte_offset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-		stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
-		/* ����x */
-		x += roundf(advance_width * scale);
-
-		/* �����־� */
-		kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
-		x += roundf(kern * scale);
-	}
-	surface = SDL_CreateSurface(1024, text->real_height, SDL_PIXELFORMAT_RGBA32);
-	if (!surface) {
-		SDL_free(bitmap);
-		return NULL;
-	}
-
-	surface_pixels = (Uint8*)surface->pixels;
-	pitch = surface->pitch / sizeof(Uint8);
-	/* �Ҷ�תRGBA����͸���ȣ� */
-	for (y = 0; y < text->real_height; ++y) {
-		for (x = 0; x < text->real_width; ++x) {
-			bitmap_index = y * text->real_width + x;
-			pixel_index = y * (pitch / 4) + x;
-			pixel = bitmap[bitmap_index];
-			surface_pixels[pixel_index * 4 + 0] = color.r;
-			surface_pixels[pixel_index * 4 + 1] = color.g;
-			surface_pixels[pixel_index * 4 + 2] = color.b;
-			surface_pixels[pixel_index * 4 + 3] = pixel & color.a;
-		}
-	}
-	text->texture = SDL_CreateTextureFromSurface(font->renderer, surface);
-	SDL_free(bitmap);
-	SDL_DestroySurface(surface);
-	return text;
-}
-
-void text_update(text_texture_p text, font_p font,
-	const int* codepoints, int num_codepoints,
-        SDL_Color color)
-{
-        int pitch;
-        int x, y;/* λͼ��x,����λͼ��y (��ͬ�ַ��ĸ߶Ȳ�ͬ�� */
-        float scale;
-        float w, h;
-        int bitmap_index, pixel_index;
-        unsigned char* bitmap;
-        int advance_width, left_side_bearing;
-        int c_x1, c_y1, c_x2, c_y2;
-        Uint8 alpha;
-        char pixel;
-        int kern;
-        unsigned char* pixels;
-        SDL_Renderer* renderer;
-
-        x = 0;
-        advance_width = left_side_bearing = 0;
-
-        /* scale = fontsize / (ascent - descent) */
-        scale = font->scale;
-
-        /* ����λͼ */
-	text->real_width = font->fontsize * num_codepoints; /* λͼ�Ŀ� */
-	text->real_height = font->fontsize; /* λͼ�ĸ� */
-
-        bitmap = (unsigned char*)SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
-
-        /* ѭ������codepoints��ÿ���ַ� */
-        for (int i = 0; i < num_codepoints; ++i) {
-                /**
-                  * ��ȡˮƽ�����ϵĶ���
-                  * advanceWidth���ֿ���
-                  * leftSideBearing�����λ�ã�
-                */
-                stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
-
-                /* ��ȡ�ַ��ı߿򣨱߽磩 */
-                stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-
-                /* ����λͼ��y (��ͬ�ַ��ĸ߶Ȳ�ͬ�� */
-                y = font->ascent + c_y1;
-
-                /* ��Ⱦ�ַ� */
-                int byteOffset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
-
-                /* ����x */
-                x += roundf(advance_width * scale);
-
-                /* �����־� */
-                kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
-                x += roundf(kern * scale);
-        }
-
-        SDL_Surface* surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
-        if (!surface) return;
-
-        Uint8* surface_pixels = (Uint8*)surface->pixels;
-        pitch = surface->pitch / sizeof(Uint8);
-
-        /* �Ҷ�תRGBA����͸���ȣ� */
-        for (y = 0; y < text->real_height; ++y) {
-                for (x = 0; x < text->real_width; ++x) {
-                        bitmap_index = y * text->real_width + x;
-                        pixel_index = y * (pitch / 4) + x;
-                        pixel = bitmap[bitmap_index];
-                        surface_pixels[pixel_index * 4 + 0] = color.r;
-                        surface_pixels[pixel_index * 4 + 1] = color.g;
-                        surface_pixels[pixel_index * 4 + 2] = color.b;
-                        surface_pixels[pixel_index * 4 + 3] = pixel & color.a;
-                }
-        }
-
-        SDL_GetTextureSize(text->texture, &w, &h);
-
-        if ((text->real_width > w || text->real_height > h) && false) {
-		/* TODO:����û�иı�text��ֵ */
-                renderer = SDL_GetRendererFromTexture(text->texture);
-                SDL_DestroyTexture(text->texture);
-		text->texture = SDL_CreateTextureFromSurface(renderer, surface);
-        }
-        else {
-                SDL_Rect rect;
-                rect.x = 0;
-                rect.y = 0;
-                rect.w = text->real_width;
-                rect.h = text->real_height;
-                SDL_UpdateTexture(text->texture, &rect, surface_pixels, pitch);
-        }
-
-        SDL_free(bitmap);
-        SDL_DestroySurface(surface);
-}
-
-
-/**
- * �ͷ��ı�����
- */
-void text_destroy(text_texture_p text)
-{
-	if (!text) return;
-	SDL_DestroyTexture(text->texture);
-	SDL_free(text);
-}
-
-/**
- * �����ı�����
- */
-void text_print(SDL_Renderer* renderer,
-	text_texture_p text,
-	float x, float y)
-{
-	SDL_FRect dst_rect = { x, y, text->texture->w, text->texture->h };
-	SDL_RenderTexture(renderer, text->texture, NULL, &dst_rect);
-}
-
-
-////////////////////////////////////////////////////////////////////////
-//////////////////////////////ui////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
 
 label_p
 label_create(SDL_Renderer* renderer, font_p fontinfo, const int* codepoints, int num_codepoints)
@@ -1060,7 +130,7 @@ void button_destroy(button_p btn)
 {
 	if (!btn) return;
 	if (btn->text) text_destroy(btn->text);
-	if (btn->image) SDL_DestroyTexture(btn->image->texture);
+	if (btn->image) image_destroy(btn->image);
 	SDL_free(btn);
 }
 
@@ -1087,12 +157,14 @@ void button_draw(button_p btn)
 	SDL_RenderRect(renderer, &btn->rect);
 
 	if (btn->image) {
-		SDL_RenderTexture(renderer, btn->image->texture, NULL, &btn->rect);
+		image_draw1(btn->image, NULL, &btn->rect);
 	}
 
 	if (btn->text) {
-		dest_rect.x = btn->rect.x + (btn->rect.w - btn->text->real_width) / 2.0f;
-		dest_rect.y = btn->rect.y + (btn->rect.h - btn->text->real_height) / 2.0f;
+		int widht = text_get_width(btn->text);
+		int height = text_get_height(btn->text);
+		dest_rect.x = btn->rect.x + (btn->rect.w - widht) / 2.0f;
+		dest_rect.y = btn->rect.y + (btn->rect.h - height) / 2.0f;
 		//dest_rect.w = btn->text->texture->w;
 		//dest_rect.h = btn->text->texture->h;
 		//SDL_RenderTexture(renderer, btn->text, NULL, &dest_rect);
@@ -1352,7 +424,7 @@ datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_h
 	grid->text_color = (SDL_Color){ 0x00, 0x00, 0x00, 0xFF };
 	grid->header_bg_color = (SDL_Color){ 0xEE, 0xEE, 0xEE, 0xFF };
 	grid->selected_color = (SDL_Color){ 0x33, 0x99, 0xFF, 0xFF };
-	SDL_memset(grid->headers, 0, 512 * sizeof(codepoint_array_p));
+	SDL_memset(grid->headers, 0, 512 * sizeof(char));
 	int default_width = grid->width / col_count;
 	for (int i = 0; i < col_count; i++) {
 		grid->col_widths[i] = default_width;
@@ -1361,7 +433,7 @@ datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_h
 }
 
 
-void datagrid_setheaders(datagrid_p grid, const codepoint_array_p* headers)
+void datagrid_setheaders(datagrid_p grid, const char* headers)
 {
 	font_p fontinfo;
 	SDL_Color color;
@@ -1373,7 +445,7 @@ void datagrid_setheaders(datagrid_p grid, const codepoint_array_p* headers)
 	}
 }
 
-void datagrid_setheader(datagrid_p grid, int index, const codepoint_array_p header)
+void datagrid_setheader(datagrid_p grid, int index, const char* header)
 {
 	font_p fontinfo;
 	SDL_Color color;
@@ -2041,3 +1113,297 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 }
 
 
+
+
+// ��ʼ��ҡ��
+joystick_p joystick_create(SDL_Renderer* renderer, float x, float y, float radius)
+{
+	joystick_p joystick;
+	joystick = (joystick_p)SDL_malloc(sizeof(joystick_t));
+
+	joystick->renderer = renderer;
+	joystick->center.x = x;
+	joystick->center.y = y;
+	joystick->radius = radius;
+	joystick->handle_radius = radius * 0.4f;
+
+	joystick->background.x = x - radius;
+	joystick->background.y = y - radius;
+	joystick->background.w = radius * 2;
+	joystick->background.h = radius * 2;
+
+	joystick->handle.x = x - joystick->handle_radius;
+	joystick->handle.y = y - joystick->handle_radius;
+	joystick->handle.w = joystick->handle_radius * 2;
+	joystick->handle.h = joystick->handle_radius * 2;
+
+	joystick->direction.x = 0.0f;
+	joystick->direction.y = 0.0f;
+	joystick->magnitude = 0.0f;
+	joystick->deadzone = 0.1f;
+	joystick->is_dragging = false;
+	joystick->is_touch_active = false;
+	joystick->touch_id = -1;
+	return joystick;
+}
+
+void joystick_destroy(joystick_p joystick)
+{
+	SDL_free(joystick);
+}
+
+// ����ҡ��λ��
+void joystick_set_position(joystick_p joystick, float x, float y)
+{
+	joystick->center.x = x;
+	joystick->center.y = y;
+
+	joystick->background.x = x - joystick->radius;
+	joystick->background.y = y - joystick->radius;
+
+	if (!joystick->is_dragging) {
+		joystick->handle.x = x - joystick->handle_radius;
+		joystick->handle.y = y - joystick->handle_radius;
+	}
+}
+
+// ����ҡ����ק����
+static void joystick_update_drag(joystick_p joystick, float touch_x, float touch_y)
+{
+	// ������������ĵ������
+	float dx = touch_x - joystick->center.x;
+	float dy = touch_y - joystick->center.y;
+
+	// �������
+	float distance = sqrtf(dx * dx + dy * dy);
+
+	// ���ƾ��벻���������뾶
+	if (distance > joystick->radius) {
+		dx = (dx / distance) * joystick->radius;
+		dy = (dy / distance) * joystick->radius;
+		distance = joystick->radius;
+	}
+
+	// ���㷽���ǿ��
+	joystick->magnitude = distance / joystick->radius;
+
+	// Ӧ������
+	if (joystick->magnitude < joystick->deadzone) {
+		joystick->direction.x = 0.0f;
+		joystick->direction.y = 0.0f;
+		joystick->magnitude = 0.0f;
+
+		// �ֱ��ص�����
+		joystick->handle.x = joystick->center.x - joystick->handle_radius;
+		joystick->handle.y = joystick->center.y - joystick->handle_radius;
+	}
+	else {
+		// ��һ����������
+		joystick->direction.x = dx / joystick->radius;
+		joystick->direction.y = dy / joystick->radius;
+
+		// �����ֱ�λ��
+		joystick->handle.x = joystick->center.x + dx - joystick->handle_radius;
+		joystick->handle.y = joystick->center.y + dy - joystick->handle_radius;
+	}
+}
+
+// �����¼�������Ӧ�߼��ֱ��ʣ�
+void joystick_handle_event(joystick_p joystick, SDL_Event* event)
+{
+	SDL_FPoint logic_pos;
+	int window_width, window_height;
+
+	// ��ȡ��Ⱦ������ߴ�
+	SDL_GetRenderOutputSize(joystick->renderer, &window_width, &window_height);
+
+	switch (event->type) {
+	case SDL_EVENT_FINGER_DOWN: {
+		// ת�����굽�߼��ռ�
+		SDL_RenderCoordinatesFromWindow(joystick->renderer,
+			event->tfinger.x * window_width,
+			event->tfinger.y * window_height,
+			&logic_pos.x, &logic_pos.y);
+
+		// ����Ƿ���ҡ��������
+		float dist_sq = distance_squared(logic_pos.x, logic_pos.y,
+			joystick->center.x, joystick->center.y);
+		if (dist_sq <= (joystick->radius * joystick->radius)) {
+			joystick->is_dragging = true;
+			joystick->is_touch_active = true;
+			joystick->touch_id = (int)event->tfinger.fingerID;
+			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
+		}
+		break;
+	}
+
+	case SDL_EVENT_FINGER_MOTION: {
+		if (joystick->is_touch_active && joystick->touch_id == (int)event->tfinger.fingerID) {
+			// ת�����굽�߼��ռ�
+			SDL_RenderCoordinatesFromWindow(joystick->renderer,
+				event->tfinger.x * window_width,
+				event->tfinger.y * window_height,
+				&logic_pos.x, &logic_pos.y);
+
+			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
+		}
+		break;
+	}
+
+	case SDL_EVENT_FINGER_UP: {
+		if (joystick->is_touch_active && joystick->touch_id == (int)event->tfinger.fingerID) {
+			joystick_reset(joystick);
+		}
+		break;
+	}
+
+	case SDL_EVENT_MOUSE_BUTTON_DOWN: {
+		if (event->button.which == SDL_TOUCH_MOUSEID) {
+			return; // ���Դ���ģ�������¼�
+		}
+
+		if (event->button.button == SDL_BUTTON_LEFT) {
+			// ת�����굽�߼��ռ�
+			SDL_RenderCoordinatesFromWindow(joystick->renderer,
+				event->button.x, event->button.y,
+				&logic_pos.x, &logic_pos.y);
+
+			// ����Ƿ���ҡ��������
+			float dist_sq = distance_squared(logic_pos.x, logic_pos.y,
+				joystick->center.x, joystick->center.y);
+			if (dist_sq <= (joystick->radius * joystick->radius)) {
+				joystick->is_dragging = true;
+				joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
+			}
+		}
+		break;
+	}
+
+	case SDL_EVENT_MOUSE_MOTION: {
+		if (event->motion.which == SDL_TOUCH_MOUSEID) {
+			return; // ���Դ���ģ�������¼�
+		}
+
+		if (joystick->is_dragging && !joystick->is_touch_active) {
+			// ת�����굽�߼��ռ�
+			SDL_RenderCoordinatesFromWindow(joystick->renderer,
+				event->motion.x, event->motion.y,
+				&logic_pos.x, &logic_pos.y);
+
+			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
+		}
+		break;
+	}
+
+	case SDL_EVENT_MOUSE_BUTTON_UP: {
+		if (event->button.which == SDL_TOUCH_MOUSEID) {
+			return; // ���Դ���ģ�������¼�
+		}
+
+		if (event->button.button == SDL_BUTTON_LEFT && joystick->is_dragging && !joystick->is_touch_active) {
+			joystick_reset(joystick);
+		}
+		break;
+	}
+
+	case SDL_EVENT_WINDOW_RESIZED: {
+		// ����������µ���ҡ��λ�ã������Ҫ�������λ�ã�
+		break;
+	}
+	}
+}
+
+// ����ҡ��
+void joystick_reset(joystick_p joystick)
+{
+	joystick->direction.x = 0.0f;
+	joystick->direction.y = 0.0f;
+	joystick->magnitude = 0.0f;
+	joystick->is_dragging = false;
+	joystick->is_touch_active = false;
+	joystick->touch_id = -1;
+
+	// �ֱ��ص�����
+	joystick->handle.x = joystick->center.x - joystick->handle_radius;
+	joystick->handle.y = joystick->center.y - joystick->handle_radius;
+}
+
+// ����ҡ��
+void joystick_draw(joystick_p joystick)
+{
+	SDL_Renderer* renderer = joystick->renderer;
+
+	// ���Ʊ���Բ��
+	SDL_SetRenderDrawColor(renderer,
+		(JOYSTICK_BG_COLOR >> 24) & 0xFF,
+		(JOYSTICK_BG_COLOR >> 16) & 0xFF,
+		(JOYSTICK_BG_COLOR >> 8) & 0xFF,
+		JOYSTICK_BG_COLOR & 0xFF);
+	// ����Բ�α�����ʹ�ö����ģ��Բ�Σ�
+	shape_draw_circle(renderer, "line", joystick->center, joystick->radius, 32);
+
+	// ����ʮ����
+	SDL_SetRenderDrawColor(renderer, 0x66, 0x66, 0x66, 0xFF);
+	SDL_RenderLine(renderer,
+		joystick->center.x - joystick->radius, joystick->center.y,
+		joystick->center.x + joystick->radius, joystick->center.y);
+	SDL_RenderLine(renderer,
+		joystick->center.x, joystick->center.y - joystick->radius,
+		joystick->center.x, joystick->center.y + joystick->radius);
+
+	// �����ֱ�
+	SDL_Color handle_color = joystick->is_dragging ?
+		(SDL_Color) {
+		0x4C, 0xAF, 0x50, 0xFF
+	} :
+		(SDL_Color) {
+		0x88, 0x88, 0x88, 0xFF
+	};
+
+		SDL_SetRenderDrawColor(renderer, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
+
+		// ����Բ���ֱ�
+
+		SDL_FPoint handle_center = {
+		joystick->handle.x + joystick->handle_radius,
+		joystick->handle.y + joystick->handle_radius
+		};
+		shape_draw_circle(renderer, "fill", handle_center, joystick->radius * 0.5f, 24);
+
+		// ����ֱ�
+		SDL_SetRenderDrawColor(renderer, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
+
+		SDL_FRect handle_fill = {
+		    joystick->handle.x + 2,
+		    joystick->handle.y + 2,
+		    joystick->handle.w - 4,
+		    joystick->handle.h - 4
+		};
+		//shape_draw_rectangle(renderer, "fill", handle_fill);
+
+
+
+		SDL_RenderFillRect(renderer, &handle_fill);
+
+
+		/*	if (joystick_get_magnitude(joystick) > 0) {
+				SDL_FPoint dir = joystick_get_direction(joystick);
+				SDL_RenderLine(renderer,
+					joystick->center.x,
+					joystick->center.y,
+					joystick->center.x + dir.x * joystick->radius,
+					joystick->center.y + dir.y * joystick->radius);
+			}*/
+}
+
+// ��ȡҡ�˷���
+SDL_FPoint joystick_get_direction(joystick_p joystick)
+{
+	return joystick->direction;
+}
+
+// ��ȡҡ��ǿ��
+float joystick_get_magnitude(joystick_p joystick)
+{
+	return joystick->magnitude;
+}

@@ -2,10 +2,9 @@
 #include "flecs.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <joy2d/calculator.h>
 #include <joy2d/network.h>
+#include <joy2d/core.h>
 #include <joy2d/sys.h>
-#include <joy2d/log.h>
 #include <joy2d/mathx.h>
 #include "proto.h"
 #include <iostream>
@@ -54,6 +53,24 @@ struct LogicVelocity { fp_t x, y; };
 struct Position { float x, y; };
 struct Player {};  // 标记组件，用于标识玩家实体
 
+static void handle_cmd_loading(s2c_p s2c)
+{
+        log_info("C2S_CMD_LOADING");
+        ready = true;
+        //loaded_world_data.append(s2c->loading.data, s2c->loading.data_len);
+        /* 初始化ecs世界 */
+
+        /* 创建角色 */
+        char data[JOY_MAX_BUFFER];
+        int len;
+        c2s_t c2s;
+        c2s.cmd = C2S_CMD_PLAYER_JOIN;
+        c2s.player_join.position_x = fp_from_float(1.2f);
+        c2s.player_join.position_y = fp_from_float(2.3f);
+        c2s_serialize(&c2s, data, &len);
+        kcpclient_send(kcpclient, data, len);
+}
+
 // 网络消息回调（接收服务器消息）
 static void msg_callback(net_message_p msg, void* userdata)
 {
@@ -76,17 +93,7 @@ static void msg_callback(net_message_p msg, void* userdata)
                 s2c_t s2c;
                 if (s2c_deserialize(&s2c, msg->data, msg->len)) {
                         if (s2c.cmd == S2C_CMD_LOADING) {
-                                // 处理服务器加载状态（如资源列表、初始数据等）
-                                log_info("loading frame_id=%d conv=%d data_len=%d",
-                                        s2c.loading.frame_id, s2c.loading.conv, s2c.loading.data_len);
-                                if (s2c.loading.ok) {
-                                        loaded_world_data.append(s2c.loading.data, s2c.loading.data_len);
-                                        /* 初始化ecs世界 */
-                                        //world.fro
-                                }
-                                else {
-
-                                }
+                                handle_cmd_loading(&s2c);
                         }
                         else if (s2c.cmd == S2C_CMD_COMMAND) {
                                 // 处理服务器命令（如玩家加入/离开、输入等）
@@ -128,11 +135,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 注意：如果服务器会同步玩家实体，则客户端不需要主动创建。
         // 如需本地测试，可取消下面注释创建一个玩家实体
-        world.entity()
+       /* world.entity()
                 .set<LogicPosition>({ fp_from_float(320.0f), fp_from_float(240.0f) })
                 .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
                 .set<Position>({ 320.0f, 240.0f })
-                .add<Player>();
+                .add<Player>();*/
 
         world.system<LogicVelocity, Player>()
                 .interval(0.05f)
@@ -267,17 +274,6 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         // 处理网络事件（接收消息和更新连接状态）
         kcpclient_update(kcpclient);
-
-        // 如果需要从 local_inputs 列表批量发送，可以在这里处理
-        // 但当前已在按键事件中直接发送，故 local_inputs 列表暂不使用
-        /*
-        while (!local_inputs.empty()) {
-            int input = local_inputs.front();
-            local_inputs.pop_front();
-            uint32_t netInput = htonl(static_cast<uint32_t>(input));
-            kcpclient_send(kcpclient, reinterpret_cast<const char*>(&netInput), sizeof(netInput));
-        }
-        */
 
         // 渲染
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
