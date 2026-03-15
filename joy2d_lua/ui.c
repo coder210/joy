@@ -1,5 +1,5 @@
 #include "luaclib.h"
-#include "joy2d/graphics.h"
+#include "joy2d/ui.h"
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
 
@@ -433,36 +433,36 @@ static int ldatagrid_create(lua_State* L)
 
 static int ldatagrid_setheaders(lua_State* L)
 {
-	datagrid_p datagrid;
-	char** headers;
-	codepoint_array_p codepoints[128];
-	int i, j, rows, cols, codepoint;
-	datagrid = (datagrid_p)lua_touserdata(L, 1);
-	rows = (int)luaL_len(L, 2);
-	for (i = 1; i <= rows; i++) {
-		// 获取第 i 行
-		lua_geti(L, 2, i);
+	//datagrid_p datagrid;
+	//char** headers;
+	//codepoint_array_p codepoints[128];
+	//int i, j, rows, cols, codepoint;
+	//datagrid = (datagrid_p)lua_touserdata(L, 1);
+	//rows = (int)luaL_len(L, 2);
+	//for (i = 1; i <= rows; i++) {
+	//	// 获取第 i 行
+	//	lua_geti(L, 2, i);
 
-		// 获取内层数组的长度（列数）
-		cols = (int)luaL_len(L, -1);
+	//	// 获取内层数组的长度（列数）
+	//	cols = (int)luaL_len(L, -1);
 
-		// 分配内存存储该行的整数
-		codepoints[i - 1] = (codepoint_array_p)SDL_malloc(sizeof(codepoint_array_t));
-		codepoints[i - 1]->length = cols;
-		codepoints[i - 1]->array = (int*)SDL_malloc(sizeof(int) * cols);
+	//	// 分配内存存储该行的整数
+	//	codepoints[i - 1] = (codepoint_array_p)SDL_malloc(sizeof(codepoint_array_t));
+	//	codepoints[i - 1]->length = cols;
+	//	codepoints[i - 1]->array = (int*)SDL_malloc(sizeof(int) * cols);
 
-		for (j = 1; j <= cols; j++) {
-			// 获取第 j 列的值
-			lua_geti(L, -1, j);
-			codepoints[i - 1]->array[j - 1] = luaL_checkinteger(L, -1);
-			lua_pop(L, 1);
-		}
+	//	for (j = 1; j <= cols; j++) {
+	//		// 获取第 j 列的值
+	//		lua_geti(L, -1, j);
+	//		codepoints[i - 1]->array[j - 1] = luaL_checkinteger(L, -1);
+	//		lua_pop(L, 1);
+	//	}
 
-		// 弹出内层表
-		lua_pop(L, 1);
-	}
+	//	// 弹出内层表
+	//	lua_pop(L, 1);
+	//}
 
-	datagrid_setheaders(datagrid, codepoints);
+	//datagrid_setheaders(datagrid, codepoints);
 	return 0;
 }
 

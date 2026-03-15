@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 //#include "joy2d/proto.h"
 //#include "luaclib.h"
 //

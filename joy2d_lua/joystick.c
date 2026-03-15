@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include "lua/lauxlib.h"
 #include "lua/lua.h"
-#include "joy2d/joystick.h"
+#include "joy2d/ui.h"
 #include "luaclib.h"
 
 static int l_joystick_create(lua_State* L)
