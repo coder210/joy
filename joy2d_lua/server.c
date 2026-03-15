@@ -3,7 +3,7 @@
 #include "lua/lua.h"
 //#include "joy2d/external/klib/khash.h"
 //#include <SDL3/SDL.h>
-//#include "joy2d/log.h"
+//#include "joy2d/core.h"
 //#include "joy2d/mathx.h"
 //#include "joy2d/proto.h"
 //

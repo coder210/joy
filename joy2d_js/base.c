@@ -1,5 +1,5 @@
 #include "jsclib.h"
-#include "joy2d/log.h"
+#include "joy2d/core.h"
 
 static void jconsole_log(js_State* J)
 {

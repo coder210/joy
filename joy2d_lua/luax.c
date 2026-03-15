@@ -151,7 +151,7 @@ luax_p luax_create(void)
         luaL_requiref(luax->L, "timer", luaopen_timer, 1);
         luaL_requiref(luax->L, "animation", luaopen_animation, 1);
         luaL_requiref(luax->L, "joystick", luaopen_joystick, 1);
-        luaL_requiref(luax->L, "profiler", luaopen_profiler, 1);
+        //luaL_requiref(luax->L, "profiler", luaopen_profiler, 1);
         return luax;
 }
 
