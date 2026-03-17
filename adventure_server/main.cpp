@@ -106,18 +106,13 @@ static void handle_cmd_player_input(s2c_player_input_p player_input)
 static void handle_cmd_heartbeat(int conv, c2s_p c2s)
 {
         log_info("C2S_CMD_HEARTBEAT");
-        flecs::entity found;
         world.each([&](flecs::entity e, Connection& conn) {
                 if (conn.conv == conv) {
-                        found = e;
+			e.get_mut<Connection>()->health = 10;
                         return false;
                 }
                 return true;
                 });
-
-        if (found) {
-                found.get_mut<Connection>()->health = 10;
-        }
 }
 
 static void msg_callback(net_message_p msg, void* userdata)
