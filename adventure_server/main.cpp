@@ -36,7 +36,7 @@ static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 60.0f;   // 60Hz固定步长
 
-struct Connection { 
+struct Connection {
         int health;
         int frameid;
         int conv;
@@ -50,7 +50,7 @@ struct LogicPosition { fp_t x, y; };
 struct LogicVelocity { fp_t x, y; };
 
 // 组件定义
-struct NetworkSingleton { };
+struct NetworkSingleton {};
 struct Position { float x, y; };
 struct Player {};  // 标记组件，用于标识玩家实体
 struct Test {};
@@ -89,7 +89,7 @@ static void handle_cmd_loading(int conv, c2s_p c2s)
 
 static void handle_cmd_player_join(s2c_player_join_p player_join)
 {
-        
+
 
 }
 
@@ -108,7 +108,7 @@ static void handle_cmd_heartbeat(int conv, c2s_p c2s)
         log_info("C2S_CMD_HEARTBEAT");
         world.each([&](flecs::entity e, Connection& conn) {
                 if (conn.conv == conv) {
-			e.get_mut<Connection>()->health = 10;
+                        e.get_mut<Connection>()->health = 10;
                         return false;
                 }
                 return true;
@@ -138,10 +138,10 @@ static void msg_callback(net_message_p msg, void* userdata)
                         else if (c2s.cmd == C2S_CMD_PLAYER_JOIN) {
                                 //world.query<Connection>().each();
                                 g_player_joins.push_back({
-                                        msg->conv, 
+                                        msg->conv,
                                         c2s.player_join.position_x,
                                         c2s.player_join.position_y
-                                });
+                                        });
                         }
                         else if (c2s.cmd == C2S_CMD_PLAYER_LEAVE) {
                                 g_player_leaves.push_back(msg->conv);
@@ -151,7 +151,7 @@ static void msg_callback(net_message_p msg, void* userdata)
                                         msg->conv,
                                         c2s.player_input.sequence,
                                         c2s.player_input.keycode
-                                });
+                                        });
                         }
                         else if (c2s.cmd == C2S_CMD_HEARTBEAT) {
                                 handle_cmd_heartbeat(msg->conv, &c2s);
@@ -248,7 +248,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                                 return true;
                                 });
                 }
-        });
+                        });
 
         world.system<Connection>()
                 .interval(0.05f)
@@ -261,30 +261,30 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                                         .set<Position>({ fp_to_float(player_join.position_x), fp_to_float(player_join.position_y) })
                                         .add<Player>();
                         }
-			conn.player_joins.clear();
+                        conn.player_joins.clear();
                 }});
 
-        // 移动系统：每帧将速度加到位置
-        world.system<LogicPosition, LogicVelocity>()
-                .each([=](LogicPosition& p, LogicVelocity& v) {
-                p.x = fp_add(p.x, v.x);
-                p.y = fp_add(p.y, v.y);
-                v.x = 0;
-                v.y = 0;
-                        });
+                // 移动系统：每帧将速度加到位置
+                world.system<LogicPosition, LogicVelocity>()
+                        .each([=](LogicPosition& p, LogicVelocity& v) {
+                        p.x = fp_add(p.x, v.x);
+                        p.y = fp_add(p.y, v.y);
+                        v.x = 0;
+                        v.y = 0;
+                                });
 
-        world.system<LogicPosition, Position>()
-                .interval(0.02f)
-                .each([=](LogicPosition& logic_position, Position& p) {
-                p.x = fp_to_float(logic_position.x) * PIXELS_PER_METER;
-                p.y = fp_to_float(logic_position.y) * PIXELS_PER_METER;
-                        });
+                world.system<LogicPosition, Position>()
+                        .interval(0.02f)
+                        .each([=](LogicPosition& logic_position, Position& p) {
+                        p.x = fp_to_float(logic_position.x) * PIXELS_PER_METER;
+                        p.y = fp_to_float(logic_position.y) * PIXELS_PER_METER;
+                                });
 
-        // 添加第0帧的世界数据
-        world_map.insert({ g_frameid, "" });
+                // 添加第0帧的世界数据
+                world_map.insert({ g_frameid, "" });
 
 
-        return SDL_APP_CONTINUE;
+                return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
@@ -341,7 +341,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        world.query<Player, Position>().each([=](Player& player, Position& p) {
+        // 修复点：将 Player& 改为 Player（按值接收空标记组件）
+        world.query<Player, Position>().each([=](Player /*player*/, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
