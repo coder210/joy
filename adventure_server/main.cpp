@@ -193,7 +193,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         auto network_singleton = world.entity().add<NetworkSingleton>();
         world.system<NetworkSingleton>()
                 .interval(0.05f)
-                .each([](NetworkSingleton& tp) {
+                .each([](const NetworkSingleton& tp) {   // 修改点：添加 const
                 char data[JOY_MIN_BUFFER] = { 0 };
                 int len;
 
