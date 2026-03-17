@@ -34,7 +34,7 @@ endif()
 
 # 设置语言标准
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-    CXX_STANDARD 11
+    CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
