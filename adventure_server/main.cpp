@@ -36,7 +36,14 @@ static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 60.0f;   // 60Hz固定步长
 
-struct Connection { int health; int frameid; int conv; };
+struct Connection { 
+        int health;
+        int frameid;
+        int conv;
+        std::vector<s2c_player_join_t> player_joins;
+        std::vector<s2c_player_leave_t> player_leaves;
+        std::vector<s2c_player_input_t> player_inputs;
+};
 
 // 组件定义
 struct LogicPosition { fp_t x, y; };
@@ -82,17 +89,7 @@ static void handle_cmd_loading(int conv, c2s_p c2s)
 
 static void handle_cmd_player_join(s2c_player_join_p player_join)
 {
-        log_info("C2S_CMD_PLAYER_JOIN");
-        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
-                if (conn.conv == player_join->conv) {
-                        e.set<LogicPosition>({ player_join->position_x, player_join->position_y })
-                                .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
-                                .set<Position>({ fp_to_float(player_join->position_x), fp_to_float(player_join->position_y) })
-                                .add<Player>();
-                        return false;
-                }
-                return true;
-                });
+        
 
 }
 
@@ -144,6 +141,7 @@ static void msg_callback(net_message_p msg, void* userdata)
                                 handle_cmd_loading(msg->conv, &c2s);
                         }
                         else if (c2s.cmd == C2S_CMD_PLAYER_JOIN) {
+                                //world.query<Connection>().each();
                                 g_player_joins.push_back({
                                         msg->conv, 
                                         c2s.player_join.position_x,
@@ -185,7 +183,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
 
         log_info("server start");
-        kcpserver = kcpserver_create("192.168.1.13", 10000);
+        kcpserver = kcpserver_create("192.168.2.11", 10000);
         kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
         // 注册组件
@@ -223,19 +221,53 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 s2c_serialize(&s2c, data, &len);
                 kcpserver_broadcast(kcpserver, data, len);
 
-                /* 执行command */
+                /* 分配command */
                 for (int i = 0; i < s2c.command.player_joins.size(); i++) {
-                        handle_cmd_player_join(&s2c.command.player_joins[i]);
+                        s2c_player_join_t player_join = s2c.command.player_joins[i];
+                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+                                if (conn.conv == player_join.conv) {
+                                        conn.player_joins.push_back(player_join);
+                                        return false;
+                                }
+                                return true;
+                                });
                 }
                 for (int i = 0; i < s2c.command.player_leaves.size(); i++) {
-                        handle_cmd_player_leave(&s2c.command.player_leaves[i]);
+                        s2c_player_leave_t player_leave = s2c.command.player_leaves[i];
+                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+                                if (conn.conv == player_leave) {
+                                        conn.player_leaves.push_back(player_leave);
+                                        return false;
+                                }
+                                return true;
+                                });
+
                 }
                 for (int i = 0; i < s2c.command.player_inputs.size(); i++) {
-                        handle_cmd_player_input(&s2c.command.player_inputs[i]);
+                        s2c_player_input_t player_input = s2c.command.player_inputs[i];
+                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+                                if (conn.conv == player_input.conv) {
+                                        conn.player_inputs.push_back(player_input);
+                                        return false;
+                                }
+                                return true;
+                                });
                 }
         });
 
-        world.entity().add<Position>();
+        world.system<Connection>()
+                .interval(0.05f)
+                .each([](flecs::entity e, Connection& conn) {
+                if (conn.player_joins.size() > 0) {
+                        for (int i = 0; i < conn.player_joins.size(); i++) {
+                                s2c_player_join_t player_join = conn.player_joins[i];
+                                e.set<LogicPosition>({ player_join.position_x, player_join.position_y })
+                                        .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
+                                        .set<Position>({ fp_to_float(player_join.position_x), fp_to_float(player_join.position_y) })
+                                        .add<Player>();
+                        }
+			conn.player_joins.clear();
+                }});
 
         // 移动系统：每帧将速度加到位置
         world.system<LogicPosition, LogicVelocity>()

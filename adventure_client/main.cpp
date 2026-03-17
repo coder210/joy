@@ -13,6 +13,8 @@
 #include <string>
 #include <cstring>      // for memcpy
 
+const int PIXELS_PER_METER = 50;
+
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static kcpclient_p kcpclient = NULL;
@@ -45,6 +47,8 @@ const int INPUT_RIGHT = 1 << 3;   // 8
 static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 60.0f;   // 60Hz固定步长
+
+struct NetworkSingleton {};
 
 // 组件定义
 struct LogicPosition { fp_t x, y; };
@@ -88,7 +92,7 @@ static void msg_callback(net_message_p msg, void* userdata)
                 log_info("disconnected=%d", msg->conv);
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
-                log_info("msg=%s", msg->data);
+                //log_info("msg=%s", msg->data);
                 // 这里可以解析服务器下发的实体状态更新
                 s2c_t s2c;
                 if (s2c_deserialize(&s2c, msg->data, msg->len)) {
@@ -97,8 +101,21 @@ static void msg_callback(net_message_p msg, void* userdata)
                         }
                         else if (s2c.cmd == S2C_CMD_COMMAND) {
                                 // 处理服务器命令（如玩家加入/离开、输入等）
-                                for (const auto& player_input : s2c.command.player_inputs) {
-                                        //server_inputs.insert({ player_input.sequence, player_input.keycode });
+                                for (int i = 0; i < s2c.command.player_joins.size(); i++) {
+                                        s2c_player_join_t player_join = s2c.command.player_joins[i];
+                                        float px = fp_to_float(player_join.position_x);
+                                        float py = fp_to_float(player_join.position_y);
+                                        world.entity()
+                                                .set<LogicPosition>({ player_join.position_x, player_join.position_y })
+                                                .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
+                                                .set<Position>({ px, py })
+                                                .add<Player>();
+                                }
+				for (int i = 0; i < s2c.command.player_leaves.size(); i++) {
+
+                                }
+                                for (int i = 0; i < s2c.command.player_inputs.size(); i++) {
+
                                 }
                         }
                 }
@@ -124,7 +141,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 连接到服务器（请根据实际情况修改IP和端口）
         log_info("client");
-        kcpclient = kcpclient_create("192.168.1.13", 10000);
+        kcpclient = kcpclient_create("192.168.2.11", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, kcpclient);
 
         // 注册组件
@@ -196,7 +213,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 移动系统：每帧将速度加到位置
         world.system<LogicPosition, LogicVelocity>()
-                .each([=](LogicPosition& p, LogicVelocity& v) {
+                .each([](LogicPosition& p, LogicVelocity& v) {
                 p.x = fp_add(p.x, v.x);
                 p.y = fp_add(p.y, v.y);
                 v.x = 0;
@@ -205,9 +222,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.system<LogicPosition, Position>()
                 .interval(0.02f)
-                .each([=](LogicPosition& logic_position, Position& p) {
-                p.x = fp_to_float(logic_position.x);
-                p.y = fp_to_float(logic_position.y);
+                .each([](LogicPosition& logic_position, Position& p) {
+                p.x = fp_to_float(logic_position.x) * PIXELS_PER_METER;
+                p.y = fp_to_float(logic_position.y) * PIXELS_PER_METER;
                         });
 
         return SDL_APP_CONTINUE;
@@ -280,7 +297,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_RenderClear(renderer);
 
         // 绘制所有带有 Player 标记的实体（白色方块）
-        world.query<Player, Position>().each([=](Player& player, Position& p) {
+        world.query<Player, Position>().each([](Player& player, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
