@@ -124,7 +124,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        world.query<Player, Position>().each([=](Player& player, Position& p) {
+        world.query<Player, Position>().each([](Player& player, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
