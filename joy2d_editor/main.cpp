@@ -93,11 +93,12 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
                 if (upPressed)    vy -= MOVE_SPEED;
 
                 // 通过查询找到玩家实体并更新其速度
+                // 注意：Player 是空标记组件，flecs 可能按值传递，因此使用值类型接收
                 world.query<Player, Velocity>()
-                        .each([vx, vy](Player& player, Velocity& vel) {
+                        .each([vx, vy](Player /*player*/, Velocity& vel) {
                         vel.x = vx;
                         vel.y = vy;
-                        });
+                                });
         }
 
         return SDL_APP_CONTINUE;
@@ -120,11 +121,13 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 accumulator -= FIXED_TIMESTEP;
         }
 
-        // 渲染部分保持不变
+        // 渲染部分
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        world.query<Player, Position>().each([](Player& player, Position& p) {
+        // 绘制玩家
+        // 同样，Player 按值传递
+        world.query<Player, Position>().each([=](Player /*player*/, Position& p) {
                 SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
