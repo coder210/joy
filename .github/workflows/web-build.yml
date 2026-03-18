@@ -27,8 +27,8 @@ jobs:
         run: |
           git clone https://github.com/emscripten-core/emsdk.git --depth=1
           cd emsdk
-          ./emsdk install tot
-          ./emsdk activate tot
+          ./emsdk install 3.1.64
+          ./emsdk activate 3.1.64
 
       - name: Configure with Emscripten
         run: |
