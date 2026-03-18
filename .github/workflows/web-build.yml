@@ -34,8 +34,6 @@ jobs:
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
-            -DCMAKE_CXX_STANDARD=17 \
-            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
             -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB" \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
             -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0" \
