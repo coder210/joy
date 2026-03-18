@@ -27,15 +27,18 @@ jobs:
         run: |
           git clone https://github.com/emscripten-core/emsdk.git --depth=1
           cd emsdk
-          ./emsdk install tot
-          ./emsdk activate tot
+          ./emsdk install 3.1.64      # 替换为最新稳定版号
+          ./emsdk activate 3.1.64
 
       - name: Configure with Emscripten
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=17 \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+            -DCMAKE_CXX_EXTENSIONS=OFF \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
-            -DCMAKE_CXX_FLAGS="-std=c++20 -s USE_PTHREADS=0" \
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0" \
             -D${{ matrix.build_macro }}=ON
 
       - name: Build
