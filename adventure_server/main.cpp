@@ -20,9 +20,7 @@ static flecs::world world;
 static int g_frameid = 0;
 static std::map<int, std::string> world_map;
 
-static std::vector<s2c_player_join_t> g_player_joins;
-static std::vector<s2c_player_leave_t> g_player_leaves;
-static std::vector<s2c_player_input_t> g_player_inputs;
+
 
 
 // 方向键状态
@@ -37,12 +35,12 @@ static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 60.0f;   // 60Hz固定步长
 
 struct Connection {
-        int health;
-        int frameid;
-        int conv;
-        std::vector<s2c_player_join_t> player_joins;
-        std::vector<s2c_player_leave_t> player_leaves;
-        std::vector<s2c_player_input_t> player_inputs;
+	int health;
+	int frameid;
+	int conv;
+	std::vector<s2c_player_join_t> player_joins;
+	std::vector<s2c_player_leave_t> player_leaves;
+	std::vector<s2c_player_input_t> player_inputs;
 };
 
 // 组件定义
@@ -50,41 +48,45 @@ struct LogicPosition { fp_t x, y; };
 struct LogicVelocity { fp_t x, y; };
 
 // 组件定义
-struct NetworkSingleton {};
+struct NetworkSingleton {
+	std::vector<s2c_player_join_t> player_joins;
+	std::vector<s2c_player_leave_t> player_leaves;
+	std::vector<s2c_player_input_t> player_inputs;
+};
 struct Position { float x, y; };
 struct Player {};  // 标记组件，用于标识玩家实体
 struct Test {};
 
 static void handle_cmd_ready(int conv, c2s_p c2s)
 {
-        log_info("C2S_CMD_READY");
-        char data[JOY_MAX_BUFFER];
-        int len;
+	log_info("C2S_CMD_READY");
+	char data[JOY_MAX_BUFFER];
+	int len;
 
-        flecs::entity entity = world.entity()
-                .set<Connection>({ 10, g_frameid, conv });
-        auto conn = entity.get_mut<Connection>();
-        s2c_t s2c;
-        s2c.cmd = S2C_CMD_LOADING;
-        s2c.loading.frame_id = conn->frameid;
-        s2c.loading.conv = conn->conv;
-        if (world_map.find(conn->frameid) != world_map.end()) {
-                std::string world_data = world_map[conn->frameid];
-                s2c.loading.data_len = world_data.size();
-                if (s2c.loading.data_len > 0) {
-                        memcpy(s2c.loading.data, world_data.c_str(), s2c.loading.data_len);
-                }
-        }
-        else {
-                s2c.loading.data_len = 0;
-        }
-        s2c_serialize(&s2c, data, &len);
-        kcpserver_send(kcpserver, conn->conv, data, len);
+	flecs::entity entity = world.entity()
+		.set<Connection>({ 10, g_frameid, conv });
+	auto conn = entity.get_mut<Connection>();
+	s2c_t s2c;
+	s2c.cmd = S2C_CMD_LOADING;
+	s2c.loading.frame_id = conn->frameid;
+	s2c.loading.conv = conn->conv;
+	if (world_map.find(conn->frameid) != world_map.end()) {
+		std::string world_data = world_map[conn->frameid];
+		s2c.loading.data_len = world_data.size();
+		if (s2c.loading.data_len > 0) {
+			memcpy(s2c.loading.data, world_data.c_str(), s2c.loading.data_len);
+		}
+	}
+	else {
+		s2c.loading.data_len = 0;
+	}
+	s2c_serialize(&s2c, data, &len);
+	kcpserver_send(kcpserver, conn->conv, data, len);
 }
 
 static void handle_cmd_loading(int conv, c2s_p c2s)
 {
-        log_info("C2S_CMD_LOADING");
+	log_info("C2S_CMD_LOADING");
 }
 
 static void handle_cmd_player_join(s2c_player_join_p player_join)
@@ -95,268 +97,262 @@ static void handle_cmd_player_join(s2c_player_join_p player_join)
 
 static void handle_cmd_player_leave(s2c_player_leave_p player_leave)
 {
-        log_info("C2S_CMD_PLAYER_LEAVE");
+	log_info("C2S_CMD_PLAYER_LEAVE");
 }
 
 static void handle_cmd_player_input(s2c_player_input_p player_input)
 {
-        log_info("C2S_CMD_PLAYER_INPUT");
+	log_info("C2S_CMD_PLAYER_INPUT");
 }
 
 static void handle_cmd_heartbeat(int conv, c2s_p c2s)
 {
-        log_info("C2S_CMD_HEARTBEAT");
-        world.each([&](flecs::entity e, Connection& conn) {
-                if (conn.conv == conv) {
-                        e.get_mut<Connection>()->health = 10;
-                        return false;
-                }
-                return true;
-                });
+	log_info("C2S_CMD_HEARTBEAT");
+	world.each([&](flecs::entity e, Connection& conn) {
+		if (conn.conv == conv) {
+			e.get_mut<Connection>()->health = 10;
+			return false;
+		}
+		return true;
+		});
 }
 
 static void msg_callback(net_message_p msg, void* userdata)
 {
-        if (msg->type == NET_TYPE_CONNECTED) {
-                log_info("connected=%d", msg->conv);
-        }
-        else if (msg->type == NET_TYPE_DISCONNECTED) {
-                log_info("disconnected=%d", msg->conv);
-        }
-        else if (msg->type == NET_TYPE_MESSAGE) {
-                log_info("msg=%s", msg->data);
-                //std::string data(msg->data, msg->len);
-                //std::cout << "Received message: " << data << std::endl;
-                c2s_t c2s;
-                if (c2s_deserialize(&c2s, msg->data, msg->len)) {
-                        if (c2s.cmd == C2S_CMD_READY) {
-                                handle_cmd_ready(msg->conv, &c2s);
-                        }
-                        else if (c2s.cmd == C2S_CMD_LOADING) {
-                                handle_cmd_loading(msg->conv, &c2s);
-                        }
-                        else if (c2s.cmd == C2S_CMD_PLAYER_JOIN) {
-                                //world.query<Connection>().each();
-                                g_player_joins.push_back({
-                                        msg->conv,
-                                        c2s.player_join.position_x,
-                                        c2s.player_join.position_y
-                                        });
-                        }
-                        else if (c2s.cmd == C2S_CMD_PLAYER_LEAVE) {
-                                g_player_leaves.push_back(msg->conv);
-                        }
-                        else if (c2s.cmd == C2S_CMD_PLAYER_INPUT) {
-                                g_player_inputs.push_back({
-                                        msg->conv,
-                                        c2s.player_input.sequence,
-                                        c2s.player_input.keycode
-                                        });
-                        }
-                        else if (c2s.cmd == C2S_CMD_HEARTBEAT) {
-                                handle_cmd_heartbeat(msg->conv, &c2s);
-                        }
-                }
-        }
-        SDL_free(msg->data);  // 记得释放消息数据的内存
+	if (msg->type == NET_TYPE_CONNECTED) {
+		log_info("connected=%d", msg->conv);
+	}
+	else if (msg->type == NET_TYPE_DISCONNECTED) {
+		log_info("disconnected=%d", msg->conv);
+	}
+	else if (msg->type == NET_TYPE_MESSAGE) {
+		log_info("msg=%s", msg->data);
+		//std::string data(msg->data, msg->len);
+		//std::cout << "Received message: " << data << std::endl;
+		c2s_t c2s;
+		if (c2s_deserialize(&c2s, msg->data, msg->len)) {
+			if (c2s.cmd == C2S_CMD_READY) {
+				handle_cmd_ready(msg->conv, &c2s);
+			}
+			else if (c2s.cmd == C2S_CMD_LOADING) {
+				handle_cmd_loading(msg->conv, &c2s);
+			}
+			else if (c2s.cmd == C2S_CMD_PLAYER_JOIN) {
+				world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+					if (conn.conv == msg->conv) {
+						conn.player_joins.push_back({ msg->conv, c2s.player_join.position_x , c2s.player_join.position_y });
+						return false;
+					}
+					return true;
+					});
+			}
+			else if (c2s.cmd == C2S_CMD_PLAYER_LEAVE) {
+				world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+					if (conn.conv == msg->conv) {
+						conn.player_leaves.push_back({ msg->conv });
+						return false;
+					}
+					return true;
+					});
+			}
+			else if (c2s.cmd == C2S_CMD_PLAYER_INPUT) {
+				world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
+					if (conn.conv == msg->conv) {
+						conn.player_inputs.push_back({ msg->conv, c2s.player_input.sequence, c2s.player_input.keycode });
+						return false;
+					}
+					return true;
+					});
+			}
+			else if (c2s.cmd == C2S_CMD_HEARTBEAT) {
+				handle_cmd_heartbeat(msg->conv, &c2s);
+			}
+		}
+	}
+	SDL_free(msg->data);  // 记得释放消息数据的内存
 }
 
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-        sys_init_netenv();
-        SDL_SetAppMetadata("Adventure server", "1.0", "com.example.adventure-server");
+	sys_init_netenv();
+	SDL_SetAppMetadata("Adventure server", "1.0", "com.example.adventure-server");
 
-        if (!SDL_Init(SDL_INIT_VIDEO)) {
-                SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
-                return SDL_APP_FAILURE;
-        }
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
 
-        if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &window, &renderer)) {
-                SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
-                return SDL_APP_FAILURE;
-        }
+	if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &window, &renderer)) {
+		SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
+		return SDL_APP_FAILURE;
+	}
 
-        log_info("server start");
-        kcpserver = kcpserver_create("192.168.2.11", 10000);
-        kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
+	log_info("server start");
+	kcpserver = kcpserver_create("192.168.2.11", 10000);
+	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
-        // 注册组件
-        world.component<NetworkSingleton>();
-        world.component<Connection>();
-        world.component<LogicPosition>();
-        world.component<LogicVelocity>();
-        world.component<Position>();
-        world.component<Player>();
+	// 注册组件
+	world.component<NetworkSingleton>();
+	world.component<Connection>();
+	world.component<LogicPosition>();
+	world.component<LogicVelocity>();
+	world.component<Position>();
+	world.component<Player>();
 
-        /* 收集command,并执行 20 frames per 1 meter */
-        auto network_singleton = world.entity().add<NetworkSingleton>();
-        world.system<NetworkSingleton>()
-                .interval(0.05f)
-                .each([](const NetworkSingleton& tp) {   // 修改点：添加 const
-                char data[JOY_MIN_BUFFER] = { 0 };
-                int len;
+	/* 收集command,并执行 20 frames per 1 meter */
+	world.set<NetworkSingleton>({});
 
-                s2c_t s2c;
-                s2c.cmd = S2C_CMD_COMMAND;
-                s2c.command.checksum_len = 0;
-                s2c.command.frame_id = g_frameid++;
-                for (int i = 0; i < g_player_joins.size(); i++) {
-                        s2c.command.player_joins.push_back(g_player_joins[i]);
-                }
-                for (int i = 0; i < g_player_leaves.size(); i++) {
-                        s2c.command.player_leaves.push_back(g_player_leaves[i]);
-                }
-                for (int i = 0; i < g_player_inputs.size(); i++) {
-                        s2c.command.player_inputs.push_back(g_player_inputs[i]);
-                }
-                g_player_joins.clear();
-                g_player_leaves.clear();
-                g_player_inputs.clear();
-                s2c_serialize(&s2c, data, &len);
-                kcpserver_broadcast(kcpserver, data, len);
+	//world.system<NetworkSingleton>()
+	//	.interval(0.05f)
+	//	.each([](const NetworkSingleton& tp) {   // 修改点：添加 const
+	//	char data[JOY_MIN_BUFFER] = { 0 };
+	//	int len;
 
-                /* 分配command */
-                for (int i = 0; i < s2c.command.player_joins.size(); i++) {
-                        s2c_player_join_t player_join = s2c.command.player_joins[i];
-                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
-                                if (conn.conv == player_join.conv) {
-                                        conn.player_joins.push_back(player_join);
-                                        return false;
-                                }
-                                return true;
-                                });
-                }
-                for (int i = 0; i < s2c.command.player_leaves.size(); i++) {
-                        s2c_player_leave_t player_leave = s2c.command.player_leaves[i];
-                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
-                                if (conn.conv == player_leave) {
-                                        conn.player_leaves.push_back(player_leave);
-                                        return false;
-                                }
-                                return true;
-                                });
+	//	/*s2c_t s2c;
+	//	s2c.cmd = S2C_CMD_COMMAND;
+	//	s2c.command.checksum_len = 0;
+	//	s2c.command.frame_id = g_frameid++;
+	//	for (int i = 0; i < g_player_joins.size(); i++) {
+	//		s2c.command.player_joins.push_back(g_player_joins[i]);
+	//	}
+	//	for (int i = 0; i < g_player_leaves.size(); i++) {
+	//		s2c.command.player_leaves.push_back(g_player_leaves[i]);
+	//	}
+	//	for (int i = 0; i < g_player_inputs.size(); i++) {
+	//		s2c.command.player_inputs.push_back(g_player_inputs[i]);
+	//	}
+	//	g_player_joins.clear();
+	//	g_player_leaves.clear();
+	//	g_player_inputs.clear();*/
+	//	/* s2c_serialize(&s2c, data, &len);
+	//	 kcpserver_broadcast(kcpserver, data, len);*/
+	//		});
 
-                }
-                for (int i = 0; i < s2c.command.player_inputs.size(); i++) {
-                        s2c_player_input_t player_input = s2c.command.player_inputs[i];
-                        world.query<Connection>().each([&](flecs::entity e, Connection& conn) {
-                                if (conn.conv == player_input.conv) {
-                                        conn.player_inputs.push_back(player_input);
-                                        return false;
-                                }
-                                return true;
-                                });
-                }
-                        });
+	world.system<Connection>()
+		.interval(0.05f)
+		.each([](flecs::entity e, Connection& conn) {
+			auto ns = e.world().get_mut<NetworkSingleton>();
+			//ns.player_joins.insert({});
+			if (conn.player_joins.size() > 0) {
+				for (int i = 0; i < conn.player_joins.size(); i++) {
+					s2c_player_join_t player_join = conn.player_joins[i];
+					e.set<LogicPosition>({ player_join.position_x, player_join.position_y })
+						.set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
+						.set<Position>({ fp_to_float(player_join.position_x), fp_to_float(player_join.position_y) })
+						.add<Player>();
+				}
+				conn.player_joins.clear();
+			}
+			if (conn.player_leaves.size() > 0) {
+				for (int i = 0; i < conn.player_leaves.size(); i++) {
+					s2c_player_leave_t player_leave = conn.player_leaves[i];
+					
+				}
+				conn.player_leaves.clear();
+			}
+			if (conn.player_inputs.size() > 0) {
+				for (int i = 0; i < conn.player_inputs.size(); i++) {
+					s2c_player_input_t player_input = conn.player_inputs[i];
 
-        world.system<Connection>()
-                .interval(0.05f)
-                .each([](flecs::entity e, Connection& conn) {
-                if (conn.player_joins.size() > 0) {
-                        for (int i = 0; i < conn.player_joins.size(); i++) {
-                                s2c_player_join_t player_join = conn.player_joins[i];
-                                e.set<LogicPosition>({ player_join.position_x, player_join.position_y })
-                                        .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
-                                        .set<Position>({ fp_to_float(player_join.position_x), fp_to_float(player_join.position_y) })
-                                        .add<Player>();
-                        }
-                        conn.player_joins.clear();
-                }});
+				}
+				conn.player_inputs.clear();
+			}
+		});
 
-                // 移动系统：每帧将速度加到位置
-                world.system<LogicPosition, LogicVelocity>()
-                        .each([=](LogicPosition& p, LogicVelocity& v) {
-                        p.x = fp_add(p.x, v.x);
-                        p.y = fp_add(p.y, v.y);
-                        v.x = 0;
-                        v.y = 0;
-                                });
+	// 移动系统：每帧将速度加到位置
+	world.system<LogicPosition, LogicVelocity>()
+		.each([=](LogicPosition& p, LogicVelocity& v) {
+		p.x = fp_add(p.x, v.x);
+		p.y = fp_add(p.y, v.y);
+		v.x = 0;
+		v.y = 0;
+			});
 
-                world.system<LogicPosition, Position>()
-                        .interval(0.02f)
-                        .each([=](LogicPosition& logic_position, Position& p) {
-                        p.x = fp_to_float(logic_position.x) * PIXELS_PER_METER;
-                        p.y = fp_to_float(logic_position.y) * PIXELS_PER_METER;
-                                });
+	world.system<LogicPosition, Position>()
+		.interval(0.02f)
+		.each([=](LogicPosition& logic_position, Position& p) {
+		p.x = fp_to_float(logic_position.x) * PIXELS_PER_METER;
+		p.y = fp_to_float(logic_position.y) * PIXELS_PER_METER;
+			});
 
-                // 添加第0帧的世界数据
-                world_map.insert({ g_frameid, "" });
+	// 添加第0帧的世界数据
+	world_map.insert({ g_frameid, "" });
 
 
-                return SDL_APP_CONTINUE;
+	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
-        if (event->type == SDL_EVENT_QUIT) {
-                return SDL_APP_SUCCESS;
-        }
+	if (event->type == SDL_EVENT_QUIT) {
+		return SDL_APP_SUCCESS;
+	}
 
-        if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
-                bool isDown = (event->type == SDL_EVENT_KEY_DOWN);
-                SDL_Keycode key = event->key.key;
+	if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
+		bool isDown = (event->type == SDL_EVENT_KEY_DOWN);
+		SDL_Keycode key = event->key.key;
 
-                // 更新方向键状态
-                switch (key) {
-                case SDLK_W: upPressed = isDown; break;    // W -> 上
-                case SDLK_S: downPressed = isDown; break;  // S -> 下
-                case SDLK_A: leftPressed = isDown; break;  // A -> 左
-                case SDLK_D: rightPressed = isDown; break; // D -> 右
-                case SDLK_Q: if (isDown) return SDL_APP_SUCCESS; break; // Q退出
-                default: break;
-                }
+		// 更新方向键状态
+		switch (key) {
+		case SDLK_W: upPressed = isDown; break;    // W -> 上
+		case SDLK_S: downPressed = isDown; break;  // S -> 下
+		case SDLK_A: leftPressed = isDown; break;  // A -> 左
+		case SDLK_D: rightPressed = isDown; break; // D -> 右
+		case SDLK_Q: if (isDown) return SDL_APP_SUCCESS; break; // Q退出
+		default: break;
+		}
 
-                // 合成速度
-                float vx = 0.0f, vy = 0.0f;
-                if (rightPressed) vx += MOVE_SPEED;
-                if (leftPressed)  vx -= MOVE_SPEED;
-                if (downPressed)  vy += MOVE_SPEED;
-                if (upPressed)    vy -= MOVE_SPEED;
-        }
+		// 合成速度
+		float vx = 0.0f, vy = 0.0f;
+		if (rightPressed) vx += MOVE_SPEED;
+		if (leftPressed)  vx -= MOVE_SPEED;
+		if (downPressed)  vy += MOVE_SPEED;
+		if (upPressed)    vy -= MOVE_SPEED;
+	}
 
-        return SDL_APP_CONTINUE;
+	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-        // 计算时间差
-        Uint64 currentTime = SDL_GetPerformanceCounter();
-        if (lastTime == 0) {
-                lastTime = currentTime;
-        }
-        float deltaTime = (float)((currentTime - lastTime) / (double)SDL_GetPerformanceFrequency());
-        lastTime = currentTime;
+	// 计算时间差
+	Uint64 currentTime = SDL_GetPerformanceCounter();
+	if (lastTime == 0) {
+		lastTime = currentTime;
+	}
+	float deltaTime = (float)((currentTime - lastTime) / (double)SDL_GetPerformanceFrequency());
+	lastTime = currentTime;
 
-        // 固定时间步长更新
-        accumulator += deltaTime;
-        while (accumulator >= FIXED_TIMESTEP) {
-                world.progress(FIXED_TIMESTEP);   // 以固定步长驱动ECS系统
-                accumulator -= FIXED_TIMESTEP;
-        }
+	// 固定时间步长更新
+	accumulator += deltaTime;
+	while (accumulator >= FIXED_TIMESTEP) {
+		world.progress(FIXED_TIMESTEP);   // 以固定步长驱动ECS系统
+		accumulator -= FIXED_TIMESTEP;
+	}
 
-        // 更新网络服务器
-        kcpserver_update(kcpserver);
+	// 更新网络服务器
+	kcpserver_update(kcpserver);
 
-        SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
+	SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);
 
-        // 修复点：将 Player& 改为 Player（按值接收空标记组件）
-        world.query<Player, Position>().each([=](Player /*player*/, Position& p) {
-                SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-                SDL_RenderFillRect(renderer, &rect);
-                });
+	// 修复点：将 Player& 改为 Player（按值接收空标记组件）
+	world.query<Player, Position>().each([=](Player /*player*/, Position& p) {
+		SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+		SDL_RenderFillRect(renderer, &rect);
+		});
 
-        SDL_RenderPresent(renderer);
-        return SDL_APP_CONTINUE;
+	SDL_RenderPresent(renderer);
+	return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
-        // flecs 世界会自动释放资源
-        kcpserver_destroy(kcpserver);
-        SDL_DestroyWindow(window);
-        SDL_DestroyRenderer(renderer);
-        sys_release_netenv();
+	// flecs 世界会自动释放资源
+	kcpserver_destroy(kcpserver);
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
+	sys_release_netenv();
 }
