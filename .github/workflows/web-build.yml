@@ -34,6 +34,7 @@ jobs:
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
+            -DCMAKE_CXX_STANDARD=17 \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
             -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0" \
             -D${{ matrix.build_macro }}=ON 
