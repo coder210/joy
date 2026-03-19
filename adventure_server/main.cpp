@@ -202,8 +202,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	// 注册组件
 	world.component<NetworkSingleton>();
 	world.component<Connection>();
-	world.component<LogicPosition>();
-	world.component<LogicVelocity>();
+	world.component<LogicPosition>()
+		.member<fp_t>("x")
+		.member<fp_t>("y");
+	world.component<LogicVelocity>()
+		.member<fp_t>("x")
+		.member<fp_t>("y");
 	world.component<Position>();
 	world.component<Player>();
 
