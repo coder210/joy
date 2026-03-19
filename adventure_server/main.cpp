@@ -196,7 +196,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	log_info("server start");
-	kcpserver = kcpserver_create("192.168.2.11", 10000);
+	kcpserver = kcpserver_create("192.168.1.14", 10000);
 	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
 	// 注册组件
@@ -344,7 +344,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		.set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
 		.set<Position>({ 100.0f, 0.0f });
 
-	std::string str = world.to_json();
+	std::string str = world.to_json().c_str();
 
 
 
