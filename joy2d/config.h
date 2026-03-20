@@ -44,4 +44,4 @@
 #define JOY_MAX_IP 127 
 
 
-#endif // !CORE_CONIFG_H
+#endif // !CONIFG_H

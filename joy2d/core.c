@@ -140,6 +140,37 @@ int log_error(const char* format, ...)
         return len;
 }
 
+void log_title(int type)
+{
+        if (type == 1) {
+                log_info("=======================================================");
+                log_info("     ##   #####   ##   ##   #######   ####   ");
+                log_info("     ##  ##   ##  ##   ##  ##   ##   ##  ##  ");
+                log_info("     ##  ##   ##   ## ##       ##    ##   ## ");
+                log_info(" ##  ##  ##   ##    ###       ##     ##  ##  ");
+                log_info("  ####    #####     ###    ######     ####   ");
+                log_info("=======================================================");
+        }
+        else if (type == 2) {
+                log_info("---------------------------------------------------");
+                log_info("                    J O Y 2 D                      ");
+                log_info("                Game Engine v2.0                   ");
+                log_info("---------------------------------------------------");
+        }
+        else if (type == 3) {
+                log_info("-------------------------------------------------------");
+                log_info("  JJJJ    OOOOO    Y   Y   22222    DDDDD             ");
+                log_info("    J    O     O    Y Y        2    D    D            ");
+                log_info("    J    O     O     Y      222     D     D           ");
+                log_info("J   J    O     O     Y     2        D    D            ");
+                log_info(" JJJ      OOOOO      Y    2222222   DDDDD             ");
+                log_info("-------------------------------------------------------");
+        }
+        else {
+                log_info("joy2d");
+        }
+}
+
 env_p env_create(void)
 {
 	env_p env;
@@ -198,3 +229,5 @@ int simple_fps_update(simple_fps_counter_p fps)
 
         return fps->fps;
 }
+
+

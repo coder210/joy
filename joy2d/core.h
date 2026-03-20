@@ -20,6 +20,7 @@ extern "C" {
 	JOY_API int log_info(const char* format, ...);
 	JOY_API int log_debug(const char* format, ...);
 	JOY_API int log_error(const char* format, ...);
+	JOY_API void log_title(int type);
 
 	JOY_API env_p env_create(void);
 	JOY_API const char* env_get(env_p env, const char* key);

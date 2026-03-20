@@ -73,37 +73,7 @@
 //        Uint32 last_frame_time;
 //        void (*quit)(app_p);
 //};
-//
-//void _print_title1()
-//{
-//        log_info("=======================================================");
-//        log_info("     ##   #####   ##   ##   #######   ####   ");
-//        log_info("     ##  ##   ##  ##   ##  ##   ##   ##  ##  ");
-//        log_info("     ##  ##   ##   ## ##       ##    ##   ## ");
-//        log_info(" ##  ##  ##   ##    ###       ##     ##  ##  ");
-//        log_info("  ####    #####     ###    ######     ####   ");
-//        log_info("=======================================================");
-//}
-//
-//void _print_title2()
-//{
-//        log_info("---------------------------------------------------");
-//        log_info("                    J O Y 2 D                      ");
-//        log_info("                Game Engine v2.0                   ");
-//        log_info("---------------------------------------------------");
-//}
-//
-//void _print_title()
-//{
-//        log_info("-------------------------------------------------------");
-//        log_info("  JJJJ    OOOOO    Y   Y   22222    DDDDD             ");
-//        log_info("    J    O     O    Y Y        2    D    D            ");
-//        log_info("    J    O     O     Y      222     D     D           ");
-//        log_info("J   J    O     O     Y     2        D    D            ");
-//        log_info(" JJJ      OOOOO      Y    2222222   DDDDD             ");
-//        log_info("-------------------------------------------------------");
-//}
-//
+
 //static void _init_env(lua_State* L, env_p env)
 //{
 //        const char* value;
@@ -290,29 +260,4 @@
 //                }
 //                p = kl_next(p);
 //        }
-//}
-//
-//bool joy_running(app_p app)
-//{
-//        return app->running;
-//}
-//
-//void joy_quit(app_p app)
-//{
-//        app->running = false;
-//}
-//
-//void joy_setenv(app_p app, const char* key, const char* value)
-//{
-//        env_set(app->env, key, value);
-//}
-//
-//const char* joy_getenv(app_p app, const char* key)
-//{
-//        return env_get(app->env, key);
-//}
-//
-//void* joy_get_appdomain(app_p app)
-//{
-//        return app->app_domain;
 //}
