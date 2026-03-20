@@ -196,7 +196,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	log_info("server start");
-	kcpserver = kcpserver_create("192.168.1.14", 10000);
+	kcpserver = kcpserver_create("192.168.2.11", 10000);
 	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
 	// 注册组件
@@ -208,7 +208,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	world.component<LogicVelocity>()
 		.member<fp_t>("x")
 		.member<fp_t>("y");
-	world.component<Position>();
+	world.component<Position>()
+		.member<ft_t>("x")
+		.member<ft_t>("y");;
 	world.component<Player>();
 
 	/* 收集command,并执行 20 frames per 1 meter */
@@ -349,7 +351,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		.set<Position>({ 100.0f, 0.0f });
 
 	std::string str = world.to_json().c_str();
-
+	flecs::snapshot_t* str2 = world.snapshot().c_ptr();
+	
 
 
 	return SDL_APP_CONTINUE;
