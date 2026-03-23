@@ -298,8 +298,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_RenderClear(renderer);
 
         // 修正点2：将 Player& 改为 Player（值类型）
-        world.query<Player, Position>().each([](Player /*player*/, Position& p) {
-                SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
+        world.query<Position>().each([=](Position& p) {
+                SDL_FRect rect = { p.x, p.y, 30.0f, 30.0f };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
                 SDL_RenderFillRect(renderer, &rect);
                 });
