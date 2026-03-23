@@ -167,7 +167,7 @@ static void msg_callback(net_message_p msg, void* userdata)
 		log_info("disconnected=%d", msg->conv);
 	}
 	else if (msg->type == NET_TYPE_MESSAGE) {
-		log_info("msg=%s", msg->data);
+		//log_info("msg=%s", msg->data);
 		//std::string data(msg->data, msg->len);
 		//std::cout << "Received message: " << data << std::endl;
 		c2s_t c2s;
@@ -230,7 +230,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	log_info("server start");
-	kcpserver = kcpserver_create("192.168.2.11", 10000);
+	kcpserver = kcpserver_create("192.168.1.33", 10000);
 	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
 	// 注册组件
@@ -254,7 +254,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	world.system<Connection>()
 		.interval(0.05f)
 		.each([](flecs::entity e, Connection& conn) {
-		log_info("A");
+		//log_info("A");
 		auto ns = e.world().get_mut<NetworkSingleton>();
 		if (conn.player_joins.size() > 0) {
 			for (int i = 0; i < conn.player_joins.size(); i++) {
@@ -302,8 +302,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	/* B */
 	world.system<Connection>()
 		.interval(0.05f)
-		.iter([](flecs::iter iter) {
-		auto ns = iter.world().get_mut<NetworkSingleton>();
+		.iter([](flecs::iter it) {
+		auto ns = it.world().get_mut<NetworkSingleton>();
 		char data[JOY_MAX_BUFFER] = { 0 };
 		int len;
 		s2c_t s2c;
@@ -322,13 +322,29 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		ns->player_leaves.clear();
 		ns->player_inputs.clear();
 		ns->commands.insert({ s2c.command.frame_id, str_data });
+
+		char temp[JOY_MAX_BUFFER] = { 0 };
+		int offset = 0;
+		int64_t count = it.count();
+		offset = pack_int64(temp, count, offset);
+		for (auto i : it) {
+			flecs::entity e = it.entity(i);
+			if (e.has<LogicVelocity>() && e.has<LogicPosition>()) {
+				LogicVelocity* logicVelocity = e.get_mut<LogicVelocity>();
+				LogicPosition* logicPosition = e.get_mut<LogicPosition>();
+				offset = pack_logic_velocity(temp, logicVelocity, offset);
+				offset = pack_logic_position(temp, logicPosition, offset);
+			}
+		}
+		ns->worlds.insert({ g_frameid , std::string(temp, offset) });
+
 			});
 
 	/* C */
 	world.system<Connection>()
 		.interval(0.05f)
 		.each([](flecs::entity e, Connection& conn) {
-		log_info("C");
+		//log_info("C");
 		auto ns = e.world().get_mut<NetworkSingleton>();
 		auto iter = ns->commands.find(conn.frameid);
 		if (iter != ns->commands.end()) {
@@ -382,18 +398,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	world.system<LogicPosition, LogicVelocity>("Startup")
 		.kind(flecs::OnStart)
 		.iter([](flecs::iter& it, LogicPosition* pos, LogicVelocity* vel) {
-			char temp[JOY_MAX_BUFFER];
+                        char temp[JOY_MAX_BUFFER] = { 0 };
 			int offset = 0;
+                        int64_t count = it.count();
+			offset = pack_int64(temp, count, offset);
 			for (auto i : it) {
 				flecs::entity e = it.entity(i);
 				LogicVelocity* logicVelocity = e.get_mut<LogicVelocity>();
 				LogicPosition* logicPosition = e.get_mut<LogicPosition>();
 				offset = pack_logic_velocity(temp, logicVelocity, offset);
 				offset = pack_logic_position(temp, logicPosition, offset);
-				//log_info("enity=%d", e.id());
 			}
 			NetworkSingleton* ns = it.world().get_mut<NetworkSingleton>();
-			ns->worlds.insert({ g_frameid , temp });
+			ns->worlds.insert({ g_frameid , std::string(temp, offset) });
 		});
 
 
