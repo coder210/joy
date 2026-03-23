@@ -6,12 +6,13 @@
 #include <joy2d/core.h>
 #include <joy2d/sys.h>
 #include <joy2d/mathx.h>
+#include <joy2d/utils.h>
 #include "proto.h"
 #include <iostream>
 #include <map>
 #include <list>
 #include <string>
-#include <cstring>      // for memcpy
+#include <cstring>
 
 const int PIXELS_PER_METER = 50;
 
@@ -57,12 +58,59 @@ struct LogicVelocity { fp_t x, y; };
 struct Position { float x, y; };
 struct Player {};  // 标记组件，用于标识玩家实体
 
+
+static int pack_logic_position(char* buf, const struct LogicPosition* pos, int offset)
+{
+        offset += pack_int64(buf, pos->x, offset);
+        offset += pack_int64(buf, pos->y, offset);
+        return offset;
+}
+
+static int pack_logic_velocity(char* buf, const struct LogicVelocity* vel, int offset)
+{
+        offset += pack_int64(buf, vel->x, offset);
+        offset += pack_int64(buf, vel->y, offset);
+        return offset;
+}
+
+static int unpack_logic_position(const char* buf, struct LogicPosition* pos, int offset)
+{
+        offset += unpack_int64(buf, &pos->x, offset);
+        offset += unpack_int64(buf, &pos->y, offset);
+        return offset;
+}
+
+static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int offset)
+{
+        offset += unpack_int64(buf, &vel->x, offset);
+        offset += unpack_int64(buf, &vel->y, offset);
+        return offset;
+}
+
+
+
 static void handle_cmd_loading(s2c_p s2c)
 {
-        log_info("C2S_CMD_LOADING");
+        //log_info("C2S_CMD_LOADING");
         ready = true;
         //loaded_world_data.append(s2c->loading.data, s2c->loading.data_len);
         /* 初始化ecs世界 */
+        int64_t count;
+        int offset = 0;
+        offset = unpack_int64(s2c->loading.data, &count, offset);
+        for (size_t i = 0; i < count; i++) {
+                LogicVelocity logicVelocity;
+                LogicPosition logicPosition;
+                offset = unpack_logic_velocity(s2c->loading.data, &logicVelocity, offset);
+                offset = unpack_logic_position(s2c->loading.data, &logicPosition, offset);
+                float px = fp_to_float(logicPosition.x);
+                float py = fp_to_float(logicPosition.y);
+                world.entity()
+                        .set<LogicPosition>({ logicPosition.x, logicPosition.y })
+                        .set<LogicVelocity>({ logicVelocity.x, logicVelocity.y })
+                        .set<Position>({ px, py });
+        }
+
 
         /* 创建角色 */
         char data[JOY_MAX_BUFFER];
@@ -119,7 +167,6 @@ static void msg_callback(net_message_p msg, void* userdata)
                                 }
                         }
                 }
-
         }
         SDL_free(msg->data);  // 释放消息数据内存
 }
@@ -141,7 +188,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 连接到服务器（请根据实际情况修改IP和端口）
         log_info("client");
-        kcpclient = kcpclient_create("192.168.2.11", 10000);
+        kcpclient = kcpclient_create("192.168.1.33", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, kcpclient);
 
         // 注册组件
@@ -158,7 +205,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 .set<Position>({ 320.0f, 240.0f })
                 .add<Player>();*/
 
-                // 修正点1：将 Player& 改为 Player（值类型）
         world.system<LogicVelocity, Player>()
                 .interval(0.05f)
                 .each([](LogicVelocity& v, Player /*player*/) {
@@ -211,6 +257,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 }
                 local_inputs.clear();
                         });
+
+        world.system<Player>()
+                .interval(3.0f)
+                .each([](Player& player) {
+                        //log_info("Player is alive");
+                        char data[JOY_MAX_BUFFER];
+                        int len;
+                        c2s_t c2s;
+                        c2s.cmd = C2S_CMD_HEARTBEAT;
+                        c2s_serialize(&c2s, data, &len);
+                        kcpclient_send(kcpclient, data, len);
+                });
 
         // 移动系统：每帧将速度加到位置
         world.system<LogicPosition, LogicVelocity>()
