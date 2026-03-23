@@ -5,6 +5,7 @@
 #include <joy2d/sys.h>
 #include <joy2d/network.h>
 #include <joy2d/core.h>
+#include <joy2d/utils.h>
 #include <iostream>
 #include <map>
 #include <list>
@@ -18,7 +19,7 @@ static SDL_Renderer* renderer = NULL;
 static kcpserver_p kcpserver = NULL;
 static flecs::world world;
 static int g_frameid = 1;
-static std::map<int, std::string> world_map;
+
 
 
 // 位掩码定义（每个方向占用一个独立位）
@@ -58,10 +59,41 @@ struct NetworkSingleton {
 	std::vector<s2c_player_leave_t> player_leaves;
 	std::vector<s2c_player_input_t> player_inputs;
 	std::map<int, std::string> commands;
+	std::map<int, std::string> worlds;
 };
 struct Position { float x, y; };
-struct Player {};  // 标记组件，用于标识玩家实体
-struct Test {};
+struct Player {};
+
+
+static int pack_logic_position(char* buf, const struct LogicPosition* pos, int offset)
+{
+	offset += pack_int64(buf, pos->x, offset);
+	offset += pack_int64(buf, pos->y, offset);
+	return offset;
+}
+
+static int pack_logic_velocity(char* buf, const struct LogicVelocity* vel, int offset)
+{
+	offset += pack_int64(buf, vel->x, offset);
+	offset += pack_int64(buf, vel->y, offset);
+	return offset;
+}
+
+static int unpack_logic_position(const char* buf, struct LogicPosition* pos, int offset)
+{
+	offset += unpack_int64(buf, &pos->x, offset);
+	offset += unpack_int64(buf, &pos->y, offset);
+	return offset;
+}
+
+static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int offset)
+{
+	offset += unpack_int64(buf, &vel->x, offset);
+	offset += unpack_int64(buf, &vel->y, offset);
+	return offset;
+}
+
+
 
 static void handle_cmd_ready(int conv, c2s_p c2s)
 {
@@ -75,12 +107,14 @@ static void handle_cmd_ready(int conv, c2s_p c2s)
 	conn->frameid = g_frameid;
 	conn->health = 10;
 
+	auto ns = world.get_mut<NetworkSingleton>();
+
 	s2c_t s2c;
 	s2c.cmd = S2C_CMD_LOADING;
 	s2c.loading.frame_id = conn->frameid;
 	s2c.loading.conv = conn->conv;
-	if (world_map.find(conn->frameid) != world_map.end()) {
-		std::string world_data = world_map[conn->frameid];
+	if (ns->worlds.find(conn->frameid) != ns->worlds.end()) {
+		std::string world_data = ns->worlds[conn->frameid];
 		s2c.loading.data_len = world_data.size();
 		if (s2c.loading.data_len > 0) {
 			memcpy(s2c.loading.data, world_data.c_str(), s2c.loading.data_len);
@@ -269,7 +303,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	world.system<Connection>()
 		.interval(0.05f)
 		.iter([](flecs::iter iter) {
-		log_info("B");
 		auto ns = iter.world().get_mut<NetworkSingleton>();
 		char data[JOY_MAX_BUFFER] = { 0 };
 		int len;
@@ -335,26 +368,49 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	//	//std::cout << it.system().name() << "\n";
 	//		});
 
-	world.system<LogicPosition, LogicVelocity>("Startup")
+	/*world.system<LogicPosition, LogicVelocity>("Startup")
 		.kind(flecs::OnStart)
 		.each([](flecs::entity e, LogicPosition& logic_position, LogicVelocity& logic_velocity) {
-		NetworkSingleton *ns = e.world().get_mut<NetworkSingleton>();
-
-
-
-
-
-			});
-
-	world.entity().set<LogicPosition>({ fp_from_float(100.0f), fp_from_float(0.0f) })
+			NetworkSingleton *ns = e.world().get_mut<NetworkSingleton>();
+			ns->worlds.insert({ g_frameid , ""});
+		});
+*/
+	world.entity().set<LogicPosition>({ fp_from_float(1.0f), fp_from_float(1.0f) })
 		.set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
-		.set<Position>({ 100.0f, 0.0f });
+		.set<Position>({ 1.0f, 1.0f });
 
-	std::string str = world.to_json().c_str();
-	flecs::snapshot_t* str2 = world.snapshot().c_ptr();
-	
+	world.system<LogicPosition, LogicVelocity>("Startup")
+		.kind(flecs::OnStart)
+		.iter([](flecs::iter& it, LogicPosition* pos, LogicVelocity* vel) {
+			char temp[JOY_MAX_BUFFER];
+			int offset = 0;
+			for (auto i : it) {
+				flecs::entity e = it.entity(i);
+				LogicVelocity* logicVelocity = e.get_mut<LogicVelocity>();
+				LogicPosition* logicPosition = e.get_mut<LogicPosition>();
+				offset = pack_logic_velocity(temp, logicVelocity, offset);
+				offset = pack_logic_position(temp, logicPosition, offset);
+				//log_info("enity=%d", e.id());
+			}
+			NetworkSingleton* ns = it.world().get_mut<NetworkSingleton>();
+			ns->worlds.insert({ g_frameid , temp });
+		});
 
 
+	//world.system<Position>("Renderer")
+	//	.kind(flecs::OnStore)
+	//	.iter([](flecs::iter& it, Position* pos) {
+	//	//SDL_SetRenderDrawColor(renderer, 100, 100, 100, SDL_ALPHA_OPAQUE);
+	//	//SDL_RenderClear(renderer);
+	//		for (auto i : it) {
+	//			flecs::entity e = it.entity(i);
+	//			Position* position = e.get_mut<Position>();
+	//			SDL_FRect rect = { position->x - 15.0f, position->y - 15.0f, 30.0f, 30.0f };
+	//			SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+	//			SDL_RenderFillRect(renderer, &rect);
+	//		}
+	//		//SDL_RenderPresent(renderer);
+	//	});
 	return SDL_APP_CONTINUE;
 }
 
@@ -391,6 +447,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
+
+
 	// 计算时间差
 	Uint64 currentTime = SDL_GetPerformanceCounter();
 	if (lastTime == 0) {
@@ -413,13 +471,14 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 	SDL_RenderClear(renderer);
 
 	// 修复点：将 Player& 改为 Player（按值接收空标记组件）
-	world.query<Player, Position>().each([=](Player /*player*/, Position& p) {
-		SDL_FRect rect = { p.x - 15.0f, p.y - 15.0f, 30.0f, 30.0f };
+	world.query<Position>().each([=](Position& p) {
+		SDL_FRect rect = { p.x, p.y, 30.0f, 30.0f };
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 		SDL_RenderFillRect(renderer, &rect);
 		});
 
 	SDL_RenderPresent(renderer);
+
 	return SDL_APP_CONTINUE;
 }
 
