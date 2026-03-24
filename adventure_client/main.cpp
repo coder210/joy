@@ -56,38 +56,36 @@ struct LogicPosition { fp_t x, y; };
 struct LogicVelocity { fp_t x, y; };
 
 struct Position { float x, y; };
-struct Player {};  // 标记组件，用于标识玩家实体
+struct Player { int conv; };  // 标记组件，用于标识玩家实体
 
 
 static int pack_logic_position(char* buf, const struct LogicPosition* pos, int offset)
 {
-        offset += pack_int64(buf, pos->x, offset);
-        offset += pack_int64(buf, pos->y, offset);
+        offset = pack_int64(buf, pos->x, offset);
+        offset = pack_int64(buf, pos->y, offset);
         return offset;
 }
 
 static int pack_logic_velocity(char* buf, const struct LogicVelocity* vel, int offset)
 {
-        offset += pack_int64(buf, vel->x, offset);
-        offset += pack_int64(buf, vel->y, offset);
+        offset = pack_int64(buf, vel->x, offset);
+        offset = pack_int64(buf, vel->y, offset);
         return offset;
 }
 
 static int unpack_logic_position(const char* buf, struct LogicPosition* pos, int offset)
 {
-        offset += unpack_int64(buf, &pos->x, offset);
-        offset += unpack_int64(buf, &pos->y, offset);
+        offset = unpack_int64(buf, &pos->x, offset);
+        offset = unpack_int64(buf, &pos->y, offset);
         return offset;
 }
 
 static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int offset)
 {
-        offset += unpack_int64(buf, &vel->x, offset);
-        offset += unpack_int64(buf, &vel->y, offset);
+        offset = unpack_int64(buf, &vel->x, offset);
+        offset = unpack_int64(buf, &vel->y, offset);
         return offset;
 }
-
-
 
 static void handle_cmd_loading(s2c_p s2c)
 {
@@ -123,6 +121,22 @@ static void handle_cmd_loading(s2c_p s2c)
         kcpclient_send(kcpclient, data, len);
 }
 
+static void apply_input(LogicVelocity *v, int sequence, int input)
+{
+        if (INPUT_UP == input) {
+                v->y = fp_sub(v->y, MOVE_SPEED);
+        }
+        else if (INPUT_DOWN == input) {
+                v->y = fp_add(v->y, MOVE_SPEED);
+        }
+        else if (INPUT_LEFT == input) {
+                v->x = fp_sub(v->x, MOVE_SPEED);
+        }
+        else if (INPUT_RIGHT == input) {
+                v->x = fp_add(v->x, MOVE_SPEED);
+        }
+}
+
 // 网络消息回调（接收服务器消息）
 static void msg_callback(net_message_p msg, void* userdata)
 {
@@ -153,17 +167,37 @@ static void msg_callback(net_message_p msg, void* userdata)
                                         s2c_player_join_t player_join = s2c.command.player_joins[i];
                                         float px = fp_to_float(player_join.position_x);
                                         float py = fp_to_float(player_join.position_y);
+					log_info("CMD_PLAYER_JOIN");
                                         world.entity()
                                                 .set<LogicPosition>({ player_join.position_x, player_join.position_y })
                                                 .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
                                                 .set<Position>({ px, py })
-                                                .add<Player>();
+                                                .set<Player>({ player_join.conv });
                                 }
                                 for (int i = 0; i < s2c.command.player_leaves.size(); i++) {
 
                                 }
                                 for (int i = 0; i < s2c.command.player_inputs.size(); i++) {
-
+                                        s2c_player_input_t player_input = s2c.command.player_inputs[i];
+                                        //int currentConv;
+                                        //kcpclient_getconv(kcpclient, &currentConv);
+                                        //if (player_input.conv == currentConv) {
+                                        //        server_inputs.insert({player_input.sequence, player_input.keycode});
+                                        //}
+                                        //else {
+                                        //        //apply_input();
+                                        //}
+                                        world.query<Player>().each([&](flecs::entity e, Player& player) {
+                                                if (player.conv == msg->conv) {
+                                                        server_inputs.insert({ player_input.sequence, player_input.keycode });
+                                                }
+                                                else {
+                                                        if (e.has<Player>() && e.has<LogicVelocity>()) {
+                                                                LogicVelocity* v = e.get_mut<LogicVelocity>();
+                                                                apply_input(v, player_input.sequence, player_input.keycode);
+                                                        }
+                                                }
+                                                });
                                 }
                         }
                 }
@@ -188,7 +222,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 连接到服务器（请根据实际情况修改IP和端口）
         log_info("client");
-        kcpclient = kcpclient_create("192.168.1.33", 10000);
+        kcpclient = kcpclient_create("192.168.2.37", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, kcpclient);
 
         // 注册组件
@@ -204,54 +238,26 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
                 .set<Position>({ 320.0f, 240.0f })
                 .add<Player>();*/
-
         world.system<LogicVelocity, Player>()
                 .interval(0.05f)
                 .each([](LogicVelocity& v, Player /*player*/) {
                 /* 服务器输入 */
                 for (auto rit = server_inputs.rbegin(); rit != server_inputs.rend(); ++rit) {
-                        int sequence = rit->first;
-                        int input = rit->second;
-                        if (INPUT_UP == input) {
-                                v.y = fp_sub(v.y, MOVE_SPEED);
-                        }
-                        else if (INPUT_DOWN == input) {
-                                v.y = fp_add(v.y, MOVE_SPEED);
-                        }
-                        else if (INPUT_LEFT == input) {
-                                v.x = fp_sub(v.x, MOVE_SPEED);
-                        }
-                        else if (INPUT_RIGHT == input) {
-                                v.x = fp_add(v.x, MOVE_SPEED);
-                        }
+                        apply_input(&v, rit->first, rit->second);
                 }
                 server_inputs.clear();
 
                 /* 应用本地输入 */
                 for (auto rit = local_inputs.rbegin(); rit != local_inputs.rend(); ++rit) {
-                        int sequence = rit->first;
-                        int input = rit->second;
-                        if (INPUT_UP == input) {
-                                v.y = fp_sub(v.y, MOVE_SPEED);
-                        }
-                        else if (INPUT_DOWN == input) {
-                                v.y = fp_add(v.y, MOVE_SPEED);
-                        }
-                        else if (INPUT_LEFT == input) {
-                                v.x = fp_sub(v.x, MOVE_SPEED);
-                        }
-                        else if (INPUT_RIGHT == input) {
-                                v.x = fp_add(v.x, MOVE_SPEED);
-                        }
-                        //log_info("%d", *rit);
+                        apply_input(&v, rit->first, rit->second);
 
                         /* 同步到服务器 */
                         int len;
                         char buf[JOY_MAX_BUFFER];
                         c2s_t c2s;
                         c2s.cmd = C2S_CMD_PLAYER_INPUT;
-                        c2s.player_input.sequence = sequence;
-                        c2s.player_input.keycode = input;
+                        c2s.player_input.sequence = rit->first;
+                        c2s.player_input.keycode = rit->second;
                         c2s_serialize(&c2s, buf, &len);
                         kcpclient_send(kcpclient, buf, len);
                 }
@@ -260,8 +266,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.system<Player>()
                 .interval(3.0f)
-                .each([](Player& player) {
-                        //log_info("Player is alive");
+                .iter([](flecs::iter it) {
                         char data[JOY_MAX_BUFFER];
                         int len;
                         c2s_t c2s;

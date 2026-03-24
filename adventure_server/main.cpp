@@ -65,33 +65,35 @@ struct Position { float x, y; };
 struct Player {};
 
 
+
 static int pack_logic_position(char* buf, const struct LogicPosition* pos, int offset)
 {
-	offset += pack_int64(buf, pos->x, offset);
-	offset += pack_int64(buf, pos->y, offset);
+	offset = pack_int64(buf, pos->x, offset);
+	offset = pack_int64(buf, pos->y, offset);
 	return offset;
 }
 
 static int pack_logic_velocity(char* buf, const struct LogicVelocity* vel, int offset)
 {
-	offset += pack_int64(buf, vel->x, offset);
-	offset += pack_int64(buf, vel->y, offset);
+	offset = pack_int64(buf, vel->x, offset);
+	offset = pack_int64(buf, vel->y, offset);
 	return offset;
 }
 
 static int unpack_logic_position(const char* buf, struct LogicPosition* pos, int offset)
 {
-	offset += unpack_int64(buf, &pos->x, offset);
-	offset += unpack_int64(buf, &pos->y, offset);
+	offset = unpack_int64(buf, &pos->x, offset);
+	offset = unpack_int64(buf, &pos->y, offset);
 	return offset;
 }
 
 static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int offset)
 {
-	offset += unpack_int64(buf, &vel->x, offset);
-	offset += unpack_int64(buf, &vel->y, offset);
+	offset = unpack_int64(buf, &vel->x, offset);
+	offset = unpack_int64(buf, &vel->y, offset);
 	return offset;
 }
+
 
 
 
@@ -156,6 +158,22 @@ static void handle_cmd_heartbeat(int conv, c2s_p c2s)
 		}
 		return true;
 		});
+}
+
+static void apply_input(LogicVelocity* v, int sequence, int input)
+{
+	if (INPUT_UP == input) {
+		v->y = fp_sub(v->y, MOVE_SPEED);
+	}
+	else if (INPUT_DOWN == input) {
+		v->y = fp_add(v->y, MOVE_SPEED);
+	}
+	else if (INPUT_LEFT == input) {
+		v->x = fp_sub(v->x, MOVE_SPEED);
+	}
+	else if (INPUT_RIGHT == input) {
+		v->x = fp_add(v->x, MOVE_SPEED);
+	}
 }
 
 static void msg_callback(net_message_p msg, void* userdata)
@@ -230,7 +248,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	log_info("server start");
-	kcpserver = kcpserver_create("192.168.1.33", 10000);
+	kcpserver = kcpserver_create("192.168.2.37", 10000);
 	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
 	// 注册组件
@@ -279,19 +297,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 			for (int i = 0; i < conn.player_inputs.size(); i++) {
 				s2c_player_input_t player_input = conn.player_inputs[i];
 				if (e.has<Player>() && e.has<LogicVelocity>()) {
-					auto v = e.get_mut<LogicVelocity>();
-					if (INPUT_UP == player_input.keycode) {
-						v->y = fp_sub(v->y, MOVE_SPEED);
-					}
-					else if (INPUT_DOWN == player_input.keycode) {
-						v->y = fp_add(v->y, MOVE_SPEED);
-					}
-					else if (INPUT_LEFT == player_input.keycode) {
-						v->x = fp_sub(v->x, MOVE_SPEED);
-					}
-					else if (INPUT_RIGHT == player_input.keycode) {
-						v->x = fp_add(v->x, MOVE_SPEED);
-					}
+					LogicVelocity* v = e.get_mut<LogicVelocity>();
+					apply_input(v, player_input.sequence, player_input.keycode);
 				}
 				ns->player_inputs.push_back(player_input);
 			}
@@ -464,8 +471,6 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-
-
 	// 计算时间差
 	Uint64 currentTime = SDL_GetPerformanceCounter();
 	if (lastTime == 0) {
