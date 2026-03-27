@@ -94,9 +94,6 @@ static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int
 	return offset;
 }
 
-
-
-
 static void handle_cmd_ready(int conv, c2s_p c2s)
 {
 	log_info("C2S_CMD_READY");
@@ -321,6 +318,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 			for (int i = 0; i < ns->player_joins.size(); i++) {
 				s2c_player_join_t player_join = ns->player_joins[i];
 				s2c.command.player_joins.push_back(player_join);
+			}
+		}
+		if (ns->player_inputs.size() > 0) {
+			for (int i = 0; i < ns->player_inputs.size(); i++) {
+				s2c_player_input_t player_input = ns->player_inputs[i];
+				s2c.command.player_inputs.push_back(player_input);
 			}
 		}
 		s2c_serialize(&s2c, data, &len);

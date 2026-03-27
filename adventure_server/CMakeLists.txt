@@ -45,6 +45,7 @@ endif()
 # 链接依赖库（由根目录的 add_subdirectory 引入）
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
+    protobuf::libprotobuf
     joy2d
 )
 
