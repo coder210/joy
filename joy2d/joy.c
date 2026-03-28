@@ -7,16 +7,16 @@
 //Date: 2021.12.11
 //History:
 //**********************************************/
-//#include "./external/lua/lua.h"
-//#include "./external/lua/lualib.h"
-//#include "./external/lua/lauxlib.h"
+//#include "./external/../external/lua/lua.h"
+//#include "./external/../external/lua/lualib.h"
+//#include "./external/../external/lua/lauxlib.h"
 //#include "./external/klib/klist.h"
-//#include "config.h"
+//#include "jconfig.h"
 //#include "env.h"
 //#include "module.h"
 //#include "log.h"
-//#include "sys.h"
-//#include "utils.h"
+//#include "jsys.h"
+//#include "jutils.h"
 //#include "proto.h"
 //#include "./luax.h"
 //#include "./jsx.h"
