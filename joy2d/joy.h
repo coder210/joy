@@ -1,9 +1,9 @@
 #ifndef JOY_H
 #define JOY_H
 #include <stdbool.h>
-#include "sys.h"
-#include "config.h"
-#include "physics.h"
+#include "jsys.h"
+#include "jconfig.h"
+#include "jphysics.h"
 
 //typedef struct app app_t, *app_p;
 //app_p joy_create(const char* config_file);

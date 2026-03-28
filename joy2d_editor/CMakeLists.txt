@@ -47,8 +47,6 @@ endif()
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
     joy2d
-    joy2d_lua
-    joy2d_js
 )
 
 # ------------------- 资产处理 -------------------

@@ -11,8 +11,8 @@ History:
 #define PROTO_H
 #include <stdint.h>
 #include <vector>
-#include <joy2d/utils.h>
-#include <joy2d/mathx.h>
+#include <joy2d/jutils.h>
+#include <joy2d/jmath.h>
 
 typedef enum {
 	C2S_CMD_NONE = 0x1,

@@ -2,11 +2,11 @@
 #include "flecs.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <joy2d/network.h>
-#include <joy2d/core.h>
-#include <joy2d/sys.h>
-#include <joy2d/mathx.h>
-#include <joy2d/utils.h>
+#include <joy2d/jnetwork.h>
+#include <joy2d/jcore.h>
+#include <joy2d/jsys.h>
+#include <joy2d/jmath.h>
+#include <joy2d/jutils.h>
 #include "proto.h"
 #include <iostream>
 #include <map>
