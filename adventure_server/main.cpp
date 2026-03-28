@@ -245,7 +245,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	log_info("server start");
-	kcpserver = kcpserver_create("192.168.2.37", 10000);
+	kcpserver = kcpserver_create("192.168.1.33", 10000);
 	kcpserver_set_callback(kcpserver, msg_callback, kcpserver);
 
 	// 注册组件
