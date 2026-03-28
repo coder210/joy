@@ -222,7 +222,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         // 连接到服务器（请根据实际情况修改IP和端口）
         log_info("client");
-        kcpclient = kcpclient_create("192.168.2.37", 10000);
+        kcpclient = kcpclient_create("192.168.1.33", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, kcpclient);
 
         // 注册组件
