@@ -7,7 +7,7 @@
 #include <joy2d/jsys.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
-#include "proto.h"
+#include "adventure.pb.h"
 #include <iostream>
 #include <map>
 #include <list>
@@ -58,70 +58,7 @@ struct LogicVelocity { fp_t x, y; };
 struct Position { float x, y; };
 struct Player { int conv; };  // 标记组件，用于标识玩家实体
 
-
-static int pack_logic_position(char* buf, const struct LogicPosition* pos, int offset)
-{
-        offset = pack_int64(buf, pos->x, offset);
-        offset = pack_int64(buf, pos->y, offset);
-        return offset;
-}
-
-static int pack_logic_velocity(char* buf, const struct LogicVelocity* vel, int offset)
-{
-        offset = pack_int64(buf, vel->x, offset);
-        offset = pack_int64(buf, vel->y, offset);
-        return offset;
-}
-
-static int unpack_logic_position(const char* buf, struct LogicPosition* pos, int offset)
-{
-        offset = unpack_int64(buf, &pos->x, offset);
-        offset = unpack_int64(buf, &pos->y, offset);
-        return offset;
-}
-
-static int unpack_logic_velocity(const char* buf, struct LogicVelocity* vel, int offset)
-{
-        offset = unpack_int64(buf, &vel->x, offset);
-        offset = unpack_int64(buf, &vel->y, offset);
-        return offset;
-}
-
-static void handle_cmd_loading(s2c_p s2c)
-{
-        //log_info("C2S_CMD_LOADING");
-        ready = true;
-        //loaded_world_data.append(s2c->loading.data, s2c->loading.data_len);
-        /* 初始化ecs世界 */
-        int64_t count;
-        int offset = 0;
-        offset = unpack_int64(s2c->loading.data, &count, offset);
-        for (size_t i = 0; i < count; i++) {
-                LogicVelocity logicVelocity;
-                LogicPosition logicPosition;
-                offset = unpack_logic_velocity(s2c->loading.data, &logicVelocity, offset);
-                offset = unpack_logic_position(s2c->loading.data, &logicPosition, offset);
-                float px = fp_to_float(logicPosition.x);
-                float py = fp_to_float(logicPosition.y);
-                world.entity()
-                        .set<LogicPosition>({ logicPosition.x, logicPosition.y })
-                        .set<LogicVelocity>({ logicVelocity.x, logicVelocity.y })
-                        .set<Position>({ px, py });
-        }
-
-
-        /* 创建角色 */
-        char data[JOY_MAX_BUFFER];
-        int len;
-        c2s_t c2s;
-        c2s.cmd = C2S_CMD_PLAYER_JOIN;
-        c2s.player_join.position_x = fp_from_float(1.2f);
-        c2s.player_join.position_y = fp_from_float(2.3f);
-        c2s_serialize(&c2s, data, &len);
-        kcpclient_send(kcpclient, data, len);
-}
-
-static void apply_input(LogicVelocity *v, int sequence, int input)
+static void apply_input(LogicVelocity* v, int sequence, int input)
 {
         if (INPUT_UP == input) {
                 v->y = fp_sub(v->y, MOVE_SPEED);
@@ -137,68 +74,85 @@ static void apply_input(LogicVelocity *v, int sequence, int input)
         }
 }
 
+static void handle_cmd_loading(adventure::S2C *s2c)
+{
+        ready = true;
+        for (size_t i = 0; i < s2c->map().entities().size(); i++) {
+                auto entity = s2c->map().entities().at(i);
+                world.entity()
+                        .set<LogicPosition>({ entity.position_x(), entity.position_y()})
+                        .set<Position>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
+        }
+
+        /* 创建角色 */
+        adventure::C2S c2s;
+        c2s.set_cmd(adventure::CMD_PLAYER_JOIN);
+        adventure::C2SPlayerJoin* playerjoin = new adventure::C2SPlayerJoin();
+        playerjoin->set_position_x(fp_from_float(1.2f));
+        playerjoin->set_position_y(fp_from_float(2.3f));
+        c2s.set_allocated_player_join(playerjoin);
+        auto data = c2s.SerializeAsString();
+        kcpclient_send(kcpclient, data.c_str(), data.length());
+}
+
+static void handle_cmd_command(adventure::S2C* s2c)
+{
+        for (int i = 0; i < s2c->command().player_joins().size(); i++) {
+                auto player_join = s2c->command().player_joins().at(i);
+                float px = fp_to_float(player_join.position_x());
+                float py = fp_to_float(player_join.position_y());
+                log_info("CMD_PLAYER_JOIN");
+                world.entity()
+                        .set<LogicPosition>({ player_join.position_x(), player_join.position_y() })
+                        .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
+                        .set<Position>({ px, py })
+                        .set<Player>({ player_join.conv() });
+        }
+        for (int i = 0; i < s2c->command().player_leaves().size(); i++) {
+                auto player_leave = s2c->command().player_leaves().at(i);
+                world.query<Player>().each([&](flecs::entity e, Player& player) {
+                        if (player.conv == player_leave.conv()) {
+                                e.destruct();
+                                return;
+                        }
+                        });
+        }
+        for (int i = 0; i < s2c->command().player_inputs().size(); i++) {
+                auto player_input = s2c->command().player_inputs().at(i);
+                world.query<Player>().each([&](flecs::entity e, Player& player) {
+                        if (player.conv == player_input.conv()) {
+                                if (e.has<Player>() && e.has<LogicVelocity>()) {
+                                        LogicVelocity* v = e.get_mut<LogicVelocity>();
+                                        apply_input(v, player_input.sequence(), player_input.keycode());
+                                }
+                        }
+                        });
+        }
+}
+
+
 // 网络消息回调（接收服务器消息）
 static void msg_callback(net_message_p msg, void* userdata)
 {
         if (msg->type == NET_TYPE_CONNECTED) {
                 log_info("connected=%d", msg->conv);
                 /* 发送准备包 */
-                c2s_t c2s;
-                int len;
-                char buf[JOY_MAX_BUFFER];
-                c2s.cmd = C2S_CMD_READY;
-                c2s_serialize(&c2s, buf, &len);
-                kcpclient_send(kcpclient, buf, len);
+                adventure::C2S c2s;
+                c2s.set_cmd(adventure::CMD_LOADING);
+                auto data = c2s.SerializeAsString();
+                kcpclient_send(kcpclient, data.c_str(), data.length());
         }
         else if (msg->type == NET_TYPE_DISCONNECTED) {
                 log_info("disconnected=%d", msg->conv);
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
-                //log_info("msg=%s", msg->data);
-                // 这里可以解析服务器下发的实体状态更新
-                s2c_t s2c;
-                if (s2c_deserialize(&s2c, msg->data, msg->len)) {
-                        if (s2c.cmd == S2C_CMD_LOADING) {
+                adventure::S2C s2c;
+                if (s2c.ParseFromArray(msg->data, msg->len)) {
+                        if (s2c.cmd() == adventure::S2C_CMD_LOADING) {
                                 handle_cmd_loading(&s2c);
                         }
-                        else if (s2c.cmd == S2C_CMD_COMMAND) {
-                                // 处理服务器命令（如玩家加入/离开、输入等）
-                                for (int i = 0; i < s2c.command.player_joins.size(); i++) {
-                                        s2c_player_join_t player_join = s2c.command.player_joins[i];
-                                        float px = fp_to_float(player_join.position_x);
-                                        float py = fp_to_float(player_join.position_y);
-					log_info("CMD_PLAYER_JOIN");
-                                        world.entity()
-                                                .set<LogicPosition>({ player_join.position_x, player_join.position_y })
-                                                .set<LogicVelocity>({ fp_from_float(0.0f), fp_from_float(0.0f) })
-                                                .set<Position>({ px, py })
-                                                .set<Player>({ player_join.conv });
-                                }
-                                for (int i = 0; i < s2c.command.player_leaves.size(); i++) {
-
-                                }
-                                for (int i = 0; i < s2c.command.player_inputs.size(); i++) {
-                                        s2c_player_input_t player_input = s2c.command.player_inputs[i];
-                                        //int currentConv;
-                                        //kcpclient_getconv(kcpclient, &currentConv);
-                                        //if (player_input.conv == currentConv) {
-                                        //        server_inputs.insert({player_input.sequence, player_input.keycode});
-                                        //}
-                                        //else {
-                                        //        //apply_input();
-                                        //}
-                                        world.query<Player>().each([&](flecs::entity e, Player& player) {
-                                                if (player.conv == msg->conv) {
-                                                        server_inputs.insert({ player_input.sequence, player_input.keycode });
-                                                }
-                                                else {
-                                                        if (e.has<Player>() && e.has<LogicVelocity>()) {
-                                                                LogicVelocity* v = e.get_mut<LogicVelocity>();
-                                                                apply_input(v, player_input.sequence, player_input.keycode);
-                                                        }
-                                                }
-                                                });
-                                }
+                        else if (s2c.cmd() == adventure::S2C_CMD_COMMAND) {
+                                handle_cmd_command(&s2c);
                         }
                 }
         }
@@ -249,17 +203,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
                 /* 应用本地输入 */
                 for (auto rit = local_inputs.rbegin(); rit != local_inputs.rend(); ++rit) {
-                        apply_input(&v, rit->first, rit->second);
+                        //apply_input(&v, rit->first, rit->second);
 
                         /* 同步到服务器 */
-                        int len;
-                        char buf[JOY_MAX_BUFFER];
-                        c2s_t c2s;
-                        c2s.cmd = C2S_CMD_PLAYER_INPUT;
-                        c2s.player_input.sequence = rit->first;
-                        c2s.player_input.keycode = rit->second;
-                        c2s_serialize(&c2s, buf, &len);
-                        kcpclient_send(kcpclient, buf, len);
+                        adventure::C2S c2s;
+                        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
+                        auto playerInput = new adventure::C2SPlayerInput();
+                        playerInput->set_sequence(rit->first);
+                        playerInput->set_keycode(rit->second);
+                        c2s.set_allocated_player_input(playerInput);
+                        std::string data = c2s.SerializeAsString();
+                        kcpclient_send(kcpclient, data.c_str(), data.length());
                 }
                 local_inputs.clear();
                         });
@@ -267,12 +221,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         world.system<Player>()
                 .interval(3.0f)
                 .iter([](flecs::iter it) {
-                        char data[JOY_MAX_BUFFER];
-                        int len;
-                        c2s_t c2s;
-                        c2s.cmd = C2S_CMD_HEARTBEAT;
-                        c2s_serialize(&c2s, data, &len);
-                        kcpclient_send(kcpclient, data, len);
+                        adventure::C2S c2s;
+                        c2s.set_cmd(adventure::C2SCmd::CMD_PLAYER_HEART);
+                        std::string data = c2s.SerializeAsString();
+                        kcpclient_send(kcpclient, data.c_str(), data.length());
                 });
 
         // 移动系统：每帧将速度加到位置
