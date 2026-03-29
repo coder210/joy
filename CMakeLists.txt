@@ -30,6 +30,7 @@ if(MSVC)
     if(NOT CMAKE_GENERATOR STREQUAL "Ninja")
         add_definitions(/MP)
     endif()
+   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 # 添加子目录

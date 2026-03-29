@@ -11,7 +11,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES "*.h" "*.c" "*.cpp")
+file(GLOB SRC_FILES "*.h" "*.c" "*.cc" "*.hpp" "*.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES

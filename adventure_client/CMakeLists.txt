@@ -11,7 +11,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES "*.h" "*.c" "*.cpp")
+file(GLOB SRC_FILES "*.h" "*.c" "*.cc" "*.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -45,6 +45,7 @@ endif()
 # 链接依赖库（由根目录的 add_subdirectory 引入）
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
+    protobuf::libprotobuf
     joy2d
 )
 
