@@ -50,7 +50,7 @@ const int INPUT_RIGHT = 1 << 3;
 // ###########################
 static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
-static const float FIXED_TIMESTEP = 1.0f / 60.0f;
+static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 
 struct NetworkSingleton {};
 
@@ -76,9 +76,15 @@ static void handle_cmd_loading(adventure::S2C* s2c)
 {
         ready = true;
         for (auto& entity : s2c->map().entities()) {
-                world.entity()
+                auto ecs_entity = world.entity()
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
                         .set<PositionComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
+                if (entity.type() == adventure::S2C_TYPE_NORMAL) {
+
+                }
+                else if (entity.type() == adventure::S2C_TYPE_PLAYER) {
+                        ecs_entity.set<PlayerComponent>({ entity.player_conv() });
+                }
         }
 
         // 发送玩家加入
@@ -244,7 +250,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
 
         log_info("client start");
-        kcpclient = kcpclient_create("192.168.2.37", 10000);
+        kcpclient = kcpclient_create("192.168.1.33", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, kcpclient);
 
         // 注册组件

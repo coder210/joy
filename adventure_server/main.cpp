@@ -38,7 +38,7 @@ static const fp_t MOVE_SPEED = fp_from_float(0.5f);
 // ###########################
 static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
-static const float FIXED_TIMESTEP = 1.0f / 60.0f;
+static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 
 struct NetworkSingleton {
     int g_id = 1;
@@ -199,7 +199,13 @@ static void CollectCommandSystem(flecs::world& world)
         .each([&](flecs::entity e, IdComponent& id, LogicPositionComponent& pos, LogicVelocityComponent& vel) {
             adventure::S2CEntity ent;
             ent.set_id(id.id);
-            ent.set_type(0);
+            if (e.has<PlayerComponent>()) {
+                    ent.set_type(adventure::S2C_TYPE_PLAYER); // 玩家
+                    ent.set_player_conv(e.get_mut<PlayerComponent>()->conv);
+            }
+            else {
+                    ent.set_type(adventure::S2C_TYPE_NORMAL); // 其他实体
+            }
             ent.set_hp(0);
             ent.set_position_x(pos.x);
             ent.set_position_y(pos.y);
@@ -277,10 +283,16 @@ static void StartupSystem(flecs::world& world)
     std::vector<adventure::S2CEntity> entities;
 
     world.query<IdComponent, LogicPositionComponent, LogicVelocityComponent>()
-        .each([&](IdComponent& id, LogicPositionComponent& pos, LogicVelocityComponent& vel) {
+        .each([&](flecs::entity e, IdComponent& id, LogicPositionComponent& pos, LogicVelocityComponent& vel) {
             adventure::S2CEntity ent;
             ent.set_id(id.id);
-            ent.set_type(0);
+            if (e.has<PlayerComponent>()) {
+                    ent.set_type(adventure::S2C_TYPE_PLAYER); // 玩家
+                    ent.set_player_conv(e.get_mut<PlayerComponent>()->conv);
+            }
+            else {
+                    ent.set_type(adventure::S2C_TYPE_NORMAL); // 其他实体
+            }
             ent.set_hp(0);
             ent.set_position_x(pos.x);
             ent.set_position_y(pos.y);
@@ -344,7 +356,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 
     log_info("server start");
-    kcpserver = kcpserver_create("192.168.2.37", 10000);
+    kcpserver = kcpserver_create("192.168.1.33", 10000);
     kcpserver_set_callback(kcpserver, OnMessage, kcpserver);
 
     world.component<NetworkSingleton>();

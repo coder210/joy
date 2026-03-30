@@ -154,6 +154,32 @@ inline bool S2CCmd_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<S2CCmd>(
     S2CCmd_descriptor(), name, value);
 }
+enum S2CType : int {
+  S2C_TYPE_NORMAL = 0,
+  S2C_TYPE_PLAYER = 1,
+  S2C_TYPE_ENEMY = 2,
+  S2CType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  S2CType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool S2CType_IsValid(int value);
+constexpr S2CType S2CType_MIN = S2C_TYPE_NORMAL;
+constexpr S2CType S2CType_MAX = S2C_TYPE_ENEMY;
+constexpr int S2CType_ARRAYSIZE = S2CType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* S2CType_descriptor();
+template<typename T>
+inline const std::string& S2CType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, S2CType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function S2CType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    S2CType_descriptor(), enum_t_value);
+}
+inline bool S2CType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, S2CType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<S2CType>(
+    S2CType_descriptor(), name, value);
+}
 // ===================================================================
 
 class C2SPlayerJoin final :
@@ -1075,6 +1101,11 @@ class S2CEntity final :
   static const S2CEntity& default_instance() {
     return *internal_default_instance();
   }
+  enum ExtendCase {
+    kPlayerConv = 6,
+    EXTEND_NOT_SET = 0,
+  };
+
   static inline const S2CEntity* internal_default_instance() {
     return reinterpret_cast<const S2CEntity*>(
                &_S2CEntity_default_instance_);
@@ -1158,6 +1189,7 @@ class S2CEntity final :
     kPositionXFieldNumber = 3,
     kPositionYFieldNumber = 4,
     kHpFieldNumber = 5,
+    kPlayerConvFieldNumber = 6,
   };
   // int32 id = 1;
   void clear_id();
@@ -1168,13 +1200,13 @@ class S2CEntity final :
   void _internal_set_id(int32_t value);
   public:
 
-  // int32 type = 2;
+  // .adventure.S2CType type = 2;
   void clear_type();
-  int32_t type() const;
-  void set_type(int32_t value);
+  ::adventure::S2CType type() const;
+  void set_type(::adventure::S2CType value);
   private:
-  int32_t _internal_type() const;
-  void _internal_set_type(int32_t value);
+  ::adventure::S2CType _internal_type() const;
+  void _internal_set_type(::adventure::S2CType value);
   public:
 
   // int64 position_x = 3;
@@ -1204,20 +1236,46 @@ class S2CEntity final :
   void _internal_set_hp(int64_t value);
   public:
 
+  // int32 player_conv = 6;
+  bool has_player_conv() const;
+  private:
+  bool _internal_has_player_conv() const;
+  public:
+  void clear_player_conv();
+  int32_t player_conv() const;
+  void set_player_conv(int32_t value);
+  private:
+  int32_t _internal_player_conv() const;
+  void _internal_set_player_conv(int32_t value);
+  public:
+
+  void clear_extend();
+  ExtendCase extend_case() const;
   // @@protoc_insertion_point(class_scope:adventure.S2CEntity)
  private:
   class _Internal;
+  void set_has_player_conv();
+
+  inline bool has_extend() const;
+  inline void clear_has_extend();
 
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
     int32_t id_;
-    int32_t type_;
+    int type_;
     int64_t position_x_;
     int64_t position_y_;
     int64_t hp_;
+    union ExtendUnion {
+      constexpr ExtendUnion() : _constinit_{} {}
+        ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized _constinit_;
+      int32_t player_conv_;
+    } extend_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    uint32_t _oneof_case_[1];
+
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_adventure;
@@ -2817,22 +2875,22 @@ inline void S2CEntity::set_id(int32_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CEntity.id)
 }
 
-// int32 type = 2;
+// .adventure.S2CType type = 2;
 inline void S2CEntity::clear_type() {
   _impl_.type_ = 0;
 }
-inline int32_t S2CEntity::_internal_type() const {
-  return _impl_.type_;
+inline ::adventure::S2CType S2CEntity::_internal_type() const {
+  return static_cast< ::adventure::S2CType >(_impl_.type_);
 }
-inline int32_t S2CEntity::type() const {
+inline ::adventure::S2CType S2CEntity::type() const {
   // @@protoc_insertion_point(field_get:adventure.S2CEntity.type)
   return _internal_type();
 }
-inline void S2CEntity::_internal_set_type(int32_t value) {
+inline void S2CEntity::_internal_set_type(::adventure::S2CType value) {
   
   _impl_.type_ = value;
 }
-inline void S2CEntity::set_type(int32_t value) {
+inline void S2CEntity::set_type(::adventure::S2CType value) {
   _internal_set_type(value);
   // @@protoc_insertion_point(field_set:adventure.S2CEntity.type)
 }
@@ -2897,6 +2955,53 @@ inline void S2CEntity::set_hp(int64_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CEntity.hp)
 }
 
+// int32 player_conv = 6;
+inline bool S2CEntity::_internal_has_player_conv() const {
+  return extend_case() == kPlayerConv;
+}
+inline bool S2CEntity::has_player_conv() const {
+  return _internal_has_player_conv();
+}
+inline void S2CEntity::set_has_player_conv() {
+  _impl_._oneof_case_[0] = kPlayerConv;
+}
+inline void S2CEntity::clear_player_conv() {
+  if (_internal_has_player_conv()) {
+    _impl_.extend_.player_conv_ = 0;
+    clear_has_extend();
+  }
+}
+inline int32_t S2CEntity::_internal_player_conv() const {
+  if (_internal_has_player_conv()) {
+    return _impl_.extend_.player_conv_;
+  }
+  return 0;
+}
+inline void S2CEntity::_internal_set_player_conv(int32_t value) {
+  if (!_internal_has_player_conv()) {
+    clear_extend();
+    set_has_player_conv();
+  }
+  _impl_.extend_.player_conv_ = value;
+}
+inline int32_t S2CEntity::player_conv() const {
+  // @@protoc_insertion_point(field_get:adventure.S2CEntity.player_conv)
+  return _internal_player_conv();
+}
+inline void S2CEntity::set_player_conv(int32_t value) {
+  _internal_set_player_conv(value);
+  // @@protoc_insertion_point(field_set:adventure.S2CEntity.player_conv)
+}
+
+inline bool S2CEntity::has_extend() const {
+  return extend_case() != EXTEND_NOT_SET;
+}
+inline void S2CEntity::clear_has_extend() {
+  _impl_._oneof_case_[0] = EXTEND_NOT_SET;
+}
+inline S2CEntity::ExtendCase S2CEntity::extend_case() const {
+  return S2CEntity::ExtendCase(_impl_._oneof_case_[0]);
+}
 // -------------------------------------------------------------------
 
 // S2CPlayerJoin
@@ -3572,6 +3677,11 @@ template <> struct is_proto_enum< ::adventure::S2CCmd> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::adventure::S2CCmd>() {
   return ::adventure::S2CCmd_descriptor();
+}
+template <> struct is_proto_enum< ::adventure::S2CType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::adventure::S2CType>() {
+  return ::adventure::S2CType_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE
