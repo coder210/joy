@@ -1,0 +1,106 @@
+syntax = "proto3";
+package adventure;
+
+// 命令类型枚举
+enum C2SCmd {
+    CMD_UNKNOWN = 0;
+    CMD_PLAYER_JOIN = 1;
+    CMD_PLAYER_LEAVE = 2;
+    CMD_PLAYER_INPUT = 3;
+    CMD_PLAYER_HEART = 4;
+    CMD_LOADING = 5;
+}
+
+// 玩家加入消息
+message C2SPlayerJoin {
+    int64 position_x = 1;
+    int64 position_y = 2;
+}
+
+// 玩家离开消息
+message C2SPlayerLeave {
+    int32 player_id = 1;
+}
+
+// 玩家输入消息
+message C2SPlayerInput {
+    int32 sequence = 1;
+    int32 keycode = 2;
+}
+
+// 玩家心跳消息
+message C2SPlayerHeart {
+    int32 conv = 1;
+    int64 current_time = 2;
+}
+
+// 客户端到服务器的总消息
+message C2S {
+    C2SCmd cmd = 1;
+    oneof payload {
+        C2SPlayerJoin player_join = 2;
+        C2SPlayerLeave player_leave = 3;
+        C2SPlayerInput player_input = 4;
+        C2SPlayerHeart player_heart = 5;
+    }
+}
+
+// 服务器到客户端的命令枚举
+enum S2CCmd {
+    S2C_CMD_NONE = 0;
+    S2C_CMD_LOADING = 1;
+    S2C_CMD_COMMAND = 2;
+}
+
+enum S2CType {
+    S2C_TYPE_NORMAL = 0;
+    S2C_TYPE_PLAYER = 1;
+    S2C_TYPE_ENEMY = 2;
+}
+
+message S2CEntity {
+    int32 id = 1;
+    S2CType type = 2;
+    int64 position_x = 3;
+    int64 position_y = 4;
+    int64 hp = 5;
+    oneof extend {
+        int32 player_conv = 6;
+    }
+}
+
+message S2CPlayerJoin {
+    int32 conv = 1;
+    int64 position_x = 2;
+    int64 position_y = 3;
+}
+
+message S2CPlayerLeave {
+    int32 conv = 1;
+}
+
+message S2CPlayerInput {
+    int32 conv = 1;
+    int32 sequence = 2;
+    int32 keycode = 3;
+}
+
+message S2CMap {
+    int32 frame_id = 1;
+    int32 conv = 2;
+    repeated S2CEntity entities = 3;
+}
+
+message S2CCommand {
+    int32 frame_id = 1;
+    repeated S2CPlayerJoin player_joins = 2;
+    repeated S2CPlayerLeave player_leaves = 3;
+    repeated S2CPlayerInput player_inputs = 4;
+    string checksum = 5;
+}
+
+message S2C {
+    S2CCmd cmd = 1;
+    S2CMap map = 2;
+    S2CCommand command = 3;
+}
