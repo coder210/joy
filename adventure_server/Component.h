@@ -35,6 +35,7 @@ struct PositionComponent
 
 struct PlayerComponent
 {
+        int conv;
 };
 
 #endif
