@@ -1,6 +1,7 @@
 # 可执行文件名（保持不变）
 set(EXECUTABLE_NAME "joy2d_editor")
 message(STATUS "EXECUTABLE_NAME = '${EXECUTABLE_NAME}'")
+
 # 如果是 Android，必须命名为 main
 if (ANDROID)
     set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
@@ -10,7 +11,6 @@ if (ANDROID)
 else()
     add_executable(${EXECUTABLE_NAME})
 endif()
-
 
 file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp")
 
@@ -43,59 +43,9 @@ if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
-# ======================================================
-# ✅ 这里我帮你添加了 【全平台自动链接 OpenGL/ES】
-# ======================================================
-if(ANDROID)
-    # Android 链接 OpenGL ES 2
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-        GLESv2
-        EGL
-    )
-elseif(APPLE)
-    # macOS / iOS 链接 OpenGL 框架
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-        "-framework OpenGL"
-    )
-elseif(UNIX)
-    # Linux 链接 libGL
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-        GL
-    )
-elseif(EMSCRIPTEN)
-    # Linux 链接 libGL
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-        GL
-    )
-elseif(WIN32)
-    # Windows 链接 opengl32.lib
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-        opengl32
-    )
-else()
-    # 默认
-    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-        SDL3::SDL3
-        joy2d
-    )
-endif()
-
 # ------------------- 资产处理 -------------------
-# 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
-# CMAKE_CURRENT_SOURCE_DIR换成项目目录
 set(ASSETS_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
-# 递归搜索资产文件（排除版本控制目录）
 file(GLOB_RECURSE ALL_ASSET_FILES "${ASSETS_ROOT}/*")
 set(ASSET_FILES "")
 foreach(file ${ALL_ASSET_FILES})
@@ -105,9 +55,7 @@ foreach(file ${ALL_ASSET_FILES})
     endif()
 endforeach()
 
-# 根据不同平台处理资产
 if (APPLE)
-    # macOS/iOS: 放入 Resources 目录
     macro(add_resource FILE)
         file(RELATIVE_PATH relpath "${ASSETS_ROOT}" "${FILE}")
         get_filename_component(dir "${relpath}" DIRECTORY)
@@ -119,7 +67,6 @@ if (APPLE)
     endforeach()
 
 elseif(EMSCRIPTEN)
-    # Emscripten: 使用 --preload-file
     set(PRELOAD_FLAGS "")
     foreach(asset_file ${ASSET_FILES})
         list(APPEND PRELOAD_FLAGS "--preload-file \"${ASSETS_ROOT}/${asset_file}@${asset_file}\"")
@@ -133,16 +80,13 @@ else()
         target_link_libraries(${EXECUTABLE_NAME} PRIVATE m)
     endif()
 
-    # 辅助宏：复制资产到目标位置
     macro(copy_helper filename)
         if (ANDROID)
-            # Android: 复制到 MOBILE_ASSETS_DIR（由外部传入）
             if (NOT MOBILE_ASSETS_DIR)
                 message(FATAL_ERROR "Building for Android, but MOBILE_ASSETS_DIR is not set")
             endif()
             set(outname "${MOBILE_ASSETS_DIR}/${filename}")
         else()
-            # 其他桌面平台：复制到可执行文件同目录
             set(outname "${CMAKE_BINARY_DIR}/$<CONFIGURATION>/${filename}")
         endif()
         add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
@@ -173,8 +117,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 )
 if(MSVC)
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
-	)
+        VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
+    )
 endif()
 
 # macOS 非 Xcode 生成器时的 bundle 修复（可选）
@@ -198,4 +142,38 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${PROJECT_FILES})
 # 调试信息（可选）
 message(STATUS "Loader current dir: ${CMAKE_CURRENT_LIST_DIR}")
 message(STATUS "Loader source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "Loader binary dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "Loader binary dir: ${CMAKE_BINARY_DIR}")
+
+# ------------------- 链接 SDL3 -------------------
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL3::SDL3)
+
+# ------------------- 平台特定链接（仅需链接运行时库） -------------------
+if(ANDROID)
+    # Android 需要链接系统库
+    find_library(GLESv2 GLESv2)
+    find_library(EGL EGL)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${GLESv2} ${EGL} android log)
+
+elseif(EMSCRIPTEN)
+    # Emscripten 链接选项（已包含 WebGL 支持）
+    target_link_options(${EXECUTABLE_NAME} PRIVATE
+        -sUSE_SDL=3
+        -sMAX_WEBGL_VERSION=1
+        -sMIN_WEBGL_VERSION=1
+        -sALLOW_MEMORY_GROWTH=1
+    )
+
+elseif(WIN32)
+    # Windows：只链接 SDL3，OpenGL ES 由 SDL 运行时动态加载（通过 ANGLE 或系统驱动）
+    # 无需额外链接 OpenGL 或 ES 库，否则会导致符号冲突或找不到库的错误
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE opengl32.lib)
+
+else()
+    # Linux / macOS：桌面 OpenGL 支持（若使用桌面 OpenGL 需链接）
+    # 注意：如果你使用 OpenGL ES 代码，在 macOS 上仍需 ANGLE 或使用桌面 OpenGL 核心版本。
+    # 这里保留传统的 OpenGL 链接，但若你的代码是纯 ES 且运行在 Linux 原生 ES 驱动下，则无需链接桌面 OpenGL。
+    # 为兼容大多数情况，仍然链接 OpenGL 库（Linux 下 libGL.so 包含 ES 转发？不一定）。
+    # 如果你的 Linux 系统有 libGLESv2，可以改为查找 GLESv2。
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${OPENGL_LIBRARIES})
+endif()
