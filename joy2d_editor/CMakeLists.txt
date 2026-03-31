@@ -68,6 +68,13 @@ elseif(UNIX)
         joy2d
         GL
     )
+elseif(EMSCRIPTEN)
+    # Linux 链接 libGL
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+        GL
+    )
 elseif(WIN32)
     # Windows 链接 opengl32.lib
     target_link_libraries(${EXECUTABLE_NAME} PUBLIC
