@@ -43,11 +43,45 @@ if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
-# 链接依赖库（由根目录的 add_subdirectory 引入）
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-    SDL3::SDL3
-    joy2d
-)
+# ======================================================
+# ✅ 这里我帮你添加了 【全平台自动链接 OpenGL/ES】
+# ======================================================
+if(ANDROID)
+    # Android 链接 OpenGL ES 2
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+        GLESv2
+        EGL
+    )
+elseif(APPLE)
+    # macOS / iOS 链接 OpenGL 框架
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+        "-framework OpenGL"
+    )
+elseif(UNIX)
+    # Linux 链接 libGL
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+        GL
+    )
+elseif(WIN32)
+    # Windows 链接 opengl32.lib
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+        opengl32
+    )
+else()
+    # 默认
+    target_link_libraries(${EXECUTABLE_NAME} PUBLIC
+        SDL3::SDL3
+        joy2d
+    )
+endif()
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
@@ -107,12 +141,6 @@ else()
         add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${outname}"
         )
-        # MSVC 额外复制一份到构建根目录（兼容旧逻辑）
-        #if(MSVC)
-            #add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
-             #   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASSETS_ROOT}/${filename}" "${CMAKE_BINARY_DIR}/${filename}"
-            #)
-        #endif()
     endmacro()
 
     foreach(asset_file ${ASSET_FILES})
