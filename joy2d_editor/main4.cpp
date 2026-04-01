@@ -3,8 +3,6 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_opengles2.h>
 
-#define GL_GLEXT_PROTOTYPES
-#include <SDL3/SDL_opengles2_gl2ext.h>
 #include <math.h>
 
 // ============ 全部GLES函数指针 ============
