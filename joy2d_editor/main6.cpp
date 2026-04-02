@@ -24,7 +24,7 @@ static GLint uModelLoc, uViewLoc, uProjLoc;
 // 窗口尺寸（用于适配投影矩阵）
 static int g_windowWidth = 800;
 static int g_windowHeight = 600;
-
+static Uint64 g_lastTime = 0;    // 上一帧时间（纳秒）
 // ============ 矩阵工具 ============
 static void MatIdentity(float m[16]) {
         for (int i = 0; i < 16; i++) m[i] = 0;
@@ -266,7 +266,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         glEnableVertexAttribArray(aPosLoc);
         glVertexAttribPointer(aColorLoc, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
         glEnableVertexAttribArray(aColorLoc);
-
+        // 新增：初始化时间戳
+        g_lastTime = SDL_GetTicksNS();
         return SDL_APP_CONTINUE;
 }
 
@@ -286,8 +287,17 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e) {
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
         (void)appstate;
+
+        // ============ 修改：基于时间的旋转速度（跨平台统一60帧流畅度） ============
+        Uint64 now = SDL_GetTicksNS();                // 获取当前纳秒时间
+        float deltaTime = (now - g_lastTime) / 1e9f; // 计算上一帧耗时（秒）
+        g_lastTime = now;                            // 更新上一帧时间
+
+
+
+
         static float angle = 0.0f;
-        angle += 0.015f;
+        angle += deltaTime * 0.9f;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
