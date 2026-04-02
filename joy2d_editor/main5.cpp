@@ -1,10 +1,9 @@
-﻿//// main.cpp
-//#include <SDL3/SDL.h>
-//#include "glad.h"   // GLAD 提供的 OpenGL ES 2.0 头文件
+﻿//#include <SDL3/SDL.h>
+//#include "glad.h"          // 使用桌面 OpenGL 的 GLAD 头文件
 //#include <cmath>
 //#include <cstdio>
 //
-//// 全局变量
+//// 全局变量（与之前相同）
 //SDL_Window* g_window = nullptr;
 //SDL_GLContext g_glContext = nullptr;
 //GLuint        g_program = 0;
@@ -16,19 +15,19 @@
 //Uint64        g_lastTime = 0;
 //bool          g_running = true;
 //
-//// 顶点数据 (两个三角形组成矩形)
+//// 顶点和索引数据（与之前相同）
 //static const float vertices[] = {
-//    -0.8f, -0.8f,   // 左下
-//     0.8f, -0.8f,   // 右下
-//    -0.8f,  0.8f,   // 左上
-//     0.8f,  0.8f    // 右上
+//    -0.8f, -0.8f,
+//     0.8f, -0.8f,
+//    -0.8f,  0.8f,
+//     0.8f,  0.8f
 //};
 //static const GLushort indices[] = {
-//    0, 1, 2,   // 三角形1
-//    1, 3, 2    // 三角形2
+//    0, 1, 2,
+//    1, 3, 2
 //};
 //
-//// 顶点着色器 (OpenGL ES 2.0)
+//// 着色器源码（OpenGL ES 2.0 语法，桌面 OpenGL 3.3 也支持）
 //static const char* vertexShaderSource =
 //"uniform float u_rotation; \n"
 //"attribute vec2 a_position; \n"
@@ -42,14 +41,13 @@
 //"    gl_Position = vec4(rotatedPos, 0.0, 1.0); \n"
 //"} \n";
 //
-//// 片段着色器 (OpenGL ES 2.0)
 //static const char* fragmentShaderSource =
 //"uniform vec4 u_color; \n"
 //"void main() { \n"
 //"    gl_FragColor = u_color; \n"
 //"} \n";
 //
-//// 编译着色器
+//// 编译着色器（函数与之前相同）
 //GLuint compileShader(GLenum type, const char* source) {
 //        GLuint shader = glCreateShader(type);
 //        glShaderSource(shader, 1, &source, nullptr);
@@ -72,7 +70,6 @@
 //        return shader;
 //}
 //
-//// 链接程序
 //GLuint createProgram() {
 //        GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
 //        GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
@@ -103,7 +100,6 @@
 //        return program;
 //}
 //
-//// 初始化 OpenGL 资源
 //bool initGL() {
 //        g_program = createProgram();
 //        if (!g_program) return false;
@@ -112,17 +108,14 @@
 //        g_uRotationLoc = glGetUniformLocation(g_program, "u_rotation");
 //        g_uColorLoc = glGetUniformLocation(g_program, "u_color");
 //
-//        // 创建 VBO
 //        glGenBuffers(1, &g_vbo);
 //        glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
 //        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 //
-//        // 获取顶点属性位置并启用
 //        GLint posLoc = glGetAttribLocation(g_program, "a_position");
 //        glEnableVertexAttribArray(posLoc);
 //        glVertexAttribPointer(posLoc, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 //
-//        // 创建 IBO
 //        glGenBuffers(1, &g_ibo);
 //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ibo);
 //        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -131,54 +124,42 @@
 //        return true;
 //}
 //
-//// 清理资源
 //void cleanupGL() {
 //        if (g_program) glDeleteProgram(g_program);
 //        if (g_vbo) glDeleteBuffers(1, &g_vbo);
 //        if (g_ibo) glDeleteBuffers(1, &g_ibo);
 //}
 //
-//// 绘制一帧
 //void renderFrame() {
 //        glClear(GL_COLOR_BUFFER_BIT);
 //        glUseProgram(g_program);
-//
-//        // 更新旋转角度
 //        glUniform1f(g_uRotationLoc, g_angle);
 //
-//        // 动态颜色 (彩虹色)
 //        float r = (sin(g_angle) + 1.0f) / 2.0f;
 //        float g = (cos(g_angle * 0.7f) + 1.0f) / 2.0f;
 //        float b = (sin(g_angle * 1.3f + 2.0f) + 1.0f) / 2.0f;
 //        glUniform4f(g_uColorLoc, r, g, b, 1.0f);
 //
-//        // 绘制矩形 (两个三角形)
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (void*)0);
-//
 //        SDL_GL_SwapWindow(g_window);
 //}
 //
-//// 主循环
 //void mainLoop() {
 //        g_lastTime = SDL_GetTicks();
 //        while (g_running) {
 //                SDL_Event event;
 //                while (SDL_PollEvent(&event)) {
-//                        if (event.type == SDL_EVENT_QUIT) {
-//                                g_running = false;
-//                        }
-//                        else if (event.type == SDL_EVENT_KEY_DOWN) {
-//                                if (event.key.key == SDLK_ESCAPE) g_running = false;
-//                        }
+//                        if (event.type == SDL_EVENT_QUIT) g_running = false;
+//                        else if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE) g_running = false;
 //                }
 //
 //                Uint64 now = SDL_GetTicks();
 //                float delta = (now - g_lastTime) / 1000.0f;
 //                g_lastTime = now;
-//                g_angle += delta * 1.5f;   // 旋转速度 1.5 弧度/秒
+//                g_angle += delta * 1.5f;
 //
 //                renderFrame();
-//                SDL_Delay(16);  // 约 60 FPS
+//                SDL_Delay(16);
 //        }
 //}
 //
@@ -188,8 +169,28 @@
 //                return -1;
 //        }
 //
-//        // 请求 OpenGL ES 2.0 上下文
-//        g_window = SDL_CreateWindow("Rotating Rectangle - SDL3", 800, 600, SDL_WINDOW_OPENGL);
+//        // ========== 平台相关的 OpenGL 上下文设置 ==========
+//#ifdef WIN32
+//    // Windows: 使用桌面 OpenGL 3.3 Core
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+//#elif defined(__EMSCRIPTEN__) || defined(ANDROID)
+//    // Web / Android: 使用 OpenGL ES 2.0
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+//#else
+//    // Linux / macOS 等默认尝试桌面 OpenGL 3.3
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+//        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+//#endif
+//
+//        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+//        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+//
+//        g_window = SDL_CreateWindow("Rotating Rectangle", 800, 600, SDL_WINDOW_OPENGL);
 //        if (!g_window) {
 //                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation failed: %s", SDL_GetError());
 //                SDL_Quit();
@@ -204,14 +205,15 @@
 //                return -1;
 //        }
 //
-//        // 关键: 使用 GLAD 加载 OpenGL ES 2.0 函数
+//        // ========== 跨平台 GLAD 加载 ==========
+//        // 使用同一套 GLAD（桌面 OpenGL 生成的文件），但不同平台的加载函数不同
 //        if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-//                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load OpenGL ES functions");
+//                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load OpenGL functions");
 //                return -1;
 //        }
 //
 //        const char* version = (const char*)glGetString(GL_VERSION);
-//        SDL_Log("OpenGL ES version: %s", version ? version : "Unknown");
+//        SDL_Log("OpenGL version: %s", version ? version : "Unknown");
 //
 //        if (!initGL()) {
 //                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "initGL failed");
