@@ -231,15 +231,6 @@ static void CollectCommandSystem(flecs::world& world)
                         });
 
         ns->worlds[ns->g_frameid] = world_entities;
-
-        // ========== 修复：限制历史帧数量，防止内存无限暴涨 ==========
-        int min_frame = ns->g_frameid - MAX_FRAME_HISTORY;
-        while (!ns->commands.empty() && ns->commands.begin()->first < min_frame) {
-                ns->commands.erase(ns->commands.begin());
-        }
-        while (!ns->worlds.empty() && ns->worlds.begin()->first < min_frame) {
-                ns->worlds.erase(ns->worlds.begin());
-        }
 }
 
 // ###########################################################################
@@ -269,7 +260,7 @@ static void HandleCommandSystem(flecs::world& world)
                         .set<IdComponent>({ GenId(ns) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y) })
+                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
                         .set<PlayerComponent>({ player_join.conv() });
         }
 
@@ -378,7 +369,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
 
         log_info("server start");
-        kcpserver = kcpserver_create("192.168.2.36", 10000);
+        kcpserver = kcpserver_create("192.168.1.33", 10000);
         kcpserver_set_callback(kcpserver, OnMessage, kcpserver);
 
         world.component<NetworkSingleton>();
