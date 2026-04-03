@@ -27,10 +27,14 @@ struct LogicVelocityComponent
         fp_t y;
 };
 
-struct PositionComponent
+struct TransformComponent
 {
-        float x;
-        float y;
+        float position_x;
+        float position_y;
+        float rotation_x;
+        float rotation_y;
+        float scale_x;
+        float scale_y;
 };
 
 struct PlayerComponent

@@ -269,7 +269,7 @@ static void HandleCommandSystem(flecs::world& world)
                         .set<IdComponent>({ GenId(ns) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                        .set<PositionComponent>({ fp_to_float(x), fp_to_float(y) })
+                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y) })
                         .set<PlayerComponent>({ player_join.conv() });
         }
 
@@ -343,10 +343,10 @@ static void MoveSystem(LogicPositionComponent& p, LogicVelocityComponent& v)
 // ###########################
 // Flecs 系统：渲染插值
 // ###########################
-static void LerpSystem(LogicPositionComponent& lp, PositionComponent& p)
+static void LerpSystem(LogicPositionComponent& lp, TransformComponent& t)
 {
-        p.x = fp_to_float(lp.x) * PIXELS_PER_METER;
-        p.y = fp_to_float(lp.y) * PIXELS_PER_METER;
+        t.position_x = fp_to_float(lp.x) * PIXELS_PER_METER;
+        t.position_y = fp_to_float(lp.y) * PIXELS_PER_METER;
 }
 
 // ###########################################################################
@@ -360,7 +360,7 @@ static void FixedLogicUpdate(flecs::world& world)
         NotifySystem(world);
 }
 
-static flecs::query<IdComponent, PositionComponent> render_query;
+static flecs::query<IdComponent, TransformComponent> render_query;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
@@ -383,29 +383,29 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.component<NetworkSingleton>();
         world.component<ConnectionComponent>();
-        world.component<LogicPositionComponent>().member<fp_t>("x").member<fp_t>("y");
-        world.component<LogicVelocityComponent>().member<fp_t>("x").member<fp_t>("y");
-        world.component<PositionComponent>().member<ft_t>("x").member<ft_t>("y");
+        world.component<LogicPositionComponent>();
+        world.component<LogicVelocityComponent>();
+        world.component<TransformComponent>();
         world.component<PlayerComponent>();
         world.set<NetworkSingleton>({});
 
         auto ns = world.get_mut<NetworkSingleton>();
 
         world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSystem);
-        world.system<LogicPositionComponent, PositionComponent>().each(LerpSystem);
+        world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
 
         world.entity()
                 .set<IdComponent>({ GenId(ns) })
                 .set<LogicPositionComponent>({ fp_from_float(1), fp_from_float(1) })
                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                .set<PositionComponent>({ 1,1 });
+                .set<TransformComponent>({ 1,1 });
 
         world.entity()
                 .set<IdComponent>({ GenId(ns) })
                 .set<LogicPositionComponent>({ fp_from_float(2), fp_from_float(2) })
                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                .set<PositionComponent>({ 2,2 });
-        render_query = world.query<IdComponent, PositionComponent>();
+                .set<TransformComponent>({ 2,2 });
+        render_query = world.query<IdComponent, TransformComponent>();
         StartupSystem(world);
         return SDL_APP_CONTINUE;
 }
@@ -446,8 +446,8 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderClear(renderer);
-        render_query.each([&](IdComponent& id, PositionComponent& p) {
-                SDL_FRect r = { p.x, p.y, 30,30 };
+        render_query.each([&](IdComponent& id, TransformComponent& t) {
+                SDL_FRect r = { t.position_x, t.position_y, 30,30 };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
                 });
