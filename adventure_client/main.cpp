@@ -59,6 +59,7 @@ static void handle_cmd_loading(adventure::S2C* s2c)
         for (auto& entity : s2c->map().entities())
         {
                 auto e = world.entity()
+			.set<IdComponent>({ entity.id() })
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
                         .set<PositionComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
 
@@ -188,13 +189,16 @@ static void FixedLogicUpdate(float dt)
         world.progress(dt);
 }
 
+
+static flecs::query<IdComponent, PositionComponent> render_query;
+
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
         sys_init_netenv();
         SDL_Init(SDL_INIT_VIDEO);
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &window, &renderer);
 
-        kcpclient = kcpclient_create("192.168.2.37", 10000);
+        kcpclient = kcpclient_create("192.168.2.36", 10000);
         kcpclient_set_callback(kcpclient, msg_callback, nullptr);
 
         world.component<IdComponent>();
@@ -205,6 +209,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         world.component<PlayerComponent>();
 
         world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSys);
+        render_query = world.query<IdComponent, PositionComponent>();
+
         return SDL_APP_CONTINUE;
 }
 
@@ -247,8 +253,8 @@ SDL_AppResult SDL_AppIterate(void*)
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderClear(renderer);
 
-        world.query<PositionComponent>().each([&](PositionComponent& p) {
-                SDL_FRect r{ p.x,p.y,30,30 };
+        render_query.each([&](IdComponent& id, PositionComponent& p) {
+                SDL_FRect r = { p.x, p.y, 30,30 };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
                 });
