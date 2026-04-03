@@ -1,5 +1,5 @@
 name: Build joy2d For Web
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build-web:
