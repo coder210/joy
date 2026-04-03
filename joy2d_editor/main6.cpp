@@ -74,16 +74,29 @@ static void MatLookAt(float view[16], float eyeX, float eyeY, float eyeZ, float 
         view[14] = -(-fx * eyeX - fy * eyeY - fz * eyeZ);
 }
 
+//static void MatPerspective(float proj[16], float fov, float aspect, float near, float far) {
+//        MatIdentity(proj);
+//        float tanH = tanf(fov / 2.0f);
+//        proj[0] = 1.0f / (aspect * tanH);
+//        proj[5] = 1.0f / tanH;
+//        proj[10] = -(far + near) / (far - near);
+//        proj[11] = -1.0f;
+//        proj[14] = -(2.0f * far * near) / (far - near);
+//        proj[15] = 0.0f;
+//}
 static void MatPerspective(float proj[16], float fov, float aspect, float near, float far) {
         MatIdentity(proj);
-        float tanH = tanf(fov / 2.0f);
-        proj[0] = 1.0f / (aspect * tanH);
-        proj[5] = 1.0f / tanH;
-        proj[10] = -(far + near) / (far - near);
-        proj[11] = -1.0f;
+        float tanHalfFovy = tanf(fov / 2.0f);
+
+        proj[0] = 1.0f / (aspect * tanHalfFovy);  // X轴缩放
+        proj[5] = 1.0f / tanHalfFovy;              // Y轴缩放
+        proj[10] = -(far + near) / (far - near);    // Z轴深度映射
+        proj[11] = -1.0f;                           // 齐次坐标
         proj[14] = -(2.0f * far * near) / (far - near);
         proj[15] = 0.0f;
 }
+
+
 
 // ============ 立方体顶点与颜色 ============
 static const float cubeVerts[] = {
@@ -277,11 +290,20 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e) {
                 return SDL_APP_SUCCESS;
 
         // 窗口大小变化处理 (全平台)
+        /*if (e->type == SDL_EVENT_WINDOW_RESIZED) {
+                g_windowWidth = e->window.data1;
+                g_windowHeight = e->window.data2;
+                glViewport(0, 0, g_windowWidth, g_windowHeight);
+        }*/
         if (e->type == SDL_EVENT_WINDOW_RESIZED) {
                 g_windowWidth = e->window.data1;
                 g_windowHeight = e->window.data2;
                 glViewport(0, 0, g_windowWidth, g_windowHeight);
+
+                // 新增：强制下一帧重新计算投影矩阵（无成本，更流畅）
+                //SDL_Log("窗口大小已适配：%d x %d", g_windowWidth, g_windowHeight);
         }
+
         return SDL_APP_CONTINUE;
 }
 
