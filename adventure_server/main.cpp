@@ -360,6 +360,8 @@ static void FixedLogicUpdate(flecs::world& world)
         NotifySystem(world);
 }
 
+static flecs::query<IdComponent, PositionComponent> render_query;
+
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
         sys_init_netenv();
@@ -376,7 +378,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
 
         log_info("server start");
-        kcpserver = kcpserver_create("192.168.2.37", 10000);
+        kcpserver = kcpserver_create("192.168.2.36", 10000);
         kcpserver_set_callback(kcpserver, OnMessage, kcpserver);
 
         world.component<NetworkSingleton>();
@@ -403,7 +405,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 .set<LogicPositionComponent>({ fp_from_float(2), fp_from_float(2) })
                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                 .set<PositionComponent>({ 2,2 });
-
+        render_query = world.query<IdComponent, PositionComponent>();
         StartupSystem(world);
         return SDL_APP_CONTINUE;
 }
@@ -444,7 +446,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderClear(renderer);
-        world.query<IdComponent, PositionComponent>().each([&](IdComponent& id, PositionComponent& p) {
+        render_query.each([&](IdComponent& id, PositionComponent& p) {
                 SDL_FRect r = { p.x, p.y, 30,30 };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
