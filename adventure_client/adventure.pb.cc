@@ -157,7 +157,7 @@ PROTOBUF_CONSTEXPR S2CMap::S2CMap(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.entities_)*/{}
   , /*decltype(_impl_.frame_id_)*/0
-  , /*decltype(_impl_.conv_)*/0
+  , /*decltype(_impl_.global_entity_id_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2CMapDefaultTypeInternal {
   PROTOBUF_CONSTEXPR S2CMapDefaultTypeInternal()
@@ -294,7 +294,7 @@ const uint32_t TableStruct_adventure::offsets[] PROTOBUF_SECTION_VARIABLE(protod
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.frame_id_),
-  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.conv_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.global_entity_id_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.entities_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CCommand, _internal_metadata_),
@@ -367,28 +367,28 @@ const char descriptor_table_protodef_adventure[] PROTOBUF_SECTION_VARIABLE(proto
   "\n\004conv\030\001 \001(\005\022\022\n\nposition_x\030\002 \001(\003\022\022\n\nposi"
   "tion_y\030\003 \001(\003\"\036\n\016S2CPlayerLeave\022\014\n\004conv\030\001"
   " \001(\005\"A\n\016S2CPlayerInput\022\014\n\004conv\030\001 \001(\005\022\020\n\010"
-  "sequence\030\002 \001(\005\022\017\n\007keycode\030\003 \001(\005\"P\n\006S2CMa"
-  "p\022\020\n\010frame_id\030\001 \001(\005\022\014\n\004conv\030\002 \001(\005\022&\n\010ent"
-  "ities\030\003 \003(\0132\024.adventure.S2CEntity\"\304\001\n\nS2"
-  "CCommand\022\020\n\010frame_id\030\001 \001(\005\022.\n\014player_joi"
-  "ns\030\002 \003(\0132\030.adventure.S2CPlayerJoin\0220\n\rpl"
-  "ayer_leaves\030\003 \003(\0132\031.adventure.S2CPlayerL"
-  "eave\0220\n\rplayer_inputs\030\004 \003(\0132\031.adventure."
-  "S2CPlayerInput\022\020\n\010checksum\030\005 \001(\t\"m\n\003S2C\022"
-  "\036\n\003cmd\030\001 \001(\0162\021.adventure.S2CCmd\022\036\n\003map\030\002"
-  " \001(\0132\021.adventure.S2CMap\022&\n\007command\030\003 \001(\013"
-  "2\025.adventure.S2CCommand*\201\001\n\006C2SCmd\022\017\n\013CM"
-  "D_UNKNOWN\020\000\022\023\n\017CMD_PLAYER_JOIN\020\001\022\024\n\020CMD_"
-  "PLAYER_LEAVE\020\002\022\024\n\020CMD_PLAYER_INPUT\020\003\022\024\n\020"
-  "CMD_PLAYER_HEART\020\004\022\017\n\013CMD_LOADING\020\005*D\n\006S"
-  "2CCmd\022\020\n\014S2C_CMD_NONE\020\000\022\023\n\017S2C_CMD_LOADI"
-  "NG\020\001\022\023\n\017S2C_CMD_COMMAND\020\002*G\n\007S2CType\022\023\n\017"
-  "S2C_TYPE_NORMAL\020\000\022\023\n\017S2C_TYPE_PLAYER\020\001\022\022"
-  "\n\016S2C_TYPE_ENEMY\020\002b\006proto3"
+  "sequence\030\002 \001(\005\022\017\n\007keycode\030\003 \001(\005\"\\\n\006S2CMa"
+  "p\022\020\n\010frame_id\030\001 \001(\005\022\030\n\020global_entity_id\030"
+  "\002 \001(\005\022&\n\010entities\030\003 \003(\0132\024.adventure.S2CE"
+  "ntity\"\304\001\n\nS2CCommand\022\020\n\010frame_id\030\001 \001(\005\022."
+  "\n\014player_joins\030\002 \003(\0132\030.adventure.S2CPlay"
+  "erJoin\0220\n\rplayer_leaves\030\003 \003(\0132\031.adventur"
+  "e.S2CPlayerLeave\0220\n\rplayer_inputs\030\004 \003(\0132"
+  "\031.adventure.S2CPlayerInput\022\020\n\010checksum\030\005"
+  " \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 \001(\0162\021.adventure.S2C"
+  "Cmd\022\036\n\003map\030\002 \001(\0132\021.adventure.S2CMap\022&\n\007c"
+  "ommand\030\003 \001(\0132\025.adventure.S2CCommand*\201\001\n\006"
+  "C2SCmd\022\017\n\013CMD_UNKNOWN\020\000\022\023\n\017CMD_PLAYER_JO"
+  "IN\020\001\022\024\n\020CMD_PLAYER_LEAVE\020\002\022\024\n\020CMD_PLAYER"
+  "_INPUT\020\003\022\024\n\020CMD_PLAYER_HEART\020\004\022\017\n\013CMD_LO"
+  "ADING\020\005*D\n\006S2CCmd\022\020\n\014S2C_CMD_NONE\020\000\022\023\n\017S"
+  "2C_CMD_LOADING\020\001\022\023\n\017S2C_CMD_COMMAND\020\002*G\n"
+  "\007S2CType\022\023\n\017S2C_TYPE_NORMAL\020\000\022\023\n\017S2C_TYP"
+  "E_PLAYER\020\001\022\022\n\016S2C_TYPE_ENEMY\020\002b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_adventure_once;
 const ::_pbi::DescriptorTable descriptor_table_adventure = {
-    false, false, 1466, descriptor_table_protodef_adventure,
+    false, false, 1478, descriptor_table_protodef_adventure,
     "adventure",
     &descriptor_table_adventure_once, nullptr, 0, 12,
     schemas, file_default_instances, TableStruct_adventure::offsets,
@@ -2734,13 +2734,13 @@ S2CMap::S2CMap(const S2CMap& from)
   new (&_impl_) Impl_{
       decltype(_impl_.entities_){from._impl_.entities_}
     , decltype(_impl_.frame_id_){}
-    , decltype(_impl_.conv_){}
+    , decltype(_impl_.global_entity_id_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&_impl_.frame_id_, &from._impl_.frame_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.conv_) -
-    reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.conv_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.global_entity_id_) -
+    reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.global_entity_id_));
   // @@protoc_insertion_point(copy_constructor:adventure.S2CMap)
 }
 
@@ -2751,7 +2751,7 @@ inline void S2CMap::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_.entities_){arena}
     , decltype(_impl_.frame_id_){0}
-    , decltype(_impl_.conv_){0}
+    , decltype(_impl_.global_entity_id_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -2782,8 +2782,8 @@ void S2CMap::Clear() {
 
   _impl_.entities_.Clear();
   ::memset(&_impl_.frame_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.conv_) -
-      reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.conv_));
+      reinterpret_cast<char*>(&_impl_.global_entity_id_) -
+      reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.global_entity_id_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2801,10 +2801,10 @@ const char* S2CMap::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
         } else
           goto handle_unusual;
         continue;
-      // int32 conv = 2;
+      // int32 global_entity_id = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          _impl_.conv_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.global_entity_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -2857,10 +2857,10 @@ uint8_t* S2CMap::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_frame_id(), target);
   }
 
-  // int32 conv = 2;
-  if (this->_internal_conv() != 0) {
+  // int32 global_entity_id = 2;
+  if (this->_internal_global_entity_id() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_conv(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_global_entity_id(), target);
   }
 
   // repeated .adventure.S2CEntity entities = 3;
@@ -2899,9 +2899,9 @@ size_t S2CMap::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_frame_id());
   }
 
-  // int32 conv = 2;
-  if (this->_internal_conv() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_conv());
+  // int32 global_entity_id = 2;
+  if (this->_internal_global_entity_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_global_entity_id());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -2926,8 +2926,8 @@ void S2CMap::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   if (from._internal_frame_id() != 0) {
     _this->_internal_set_frame_id(from._internal_frame_id());
   }
-  if (from._internal_conv() != 0) {
-    _this->_internal_set_conv(from._internal_conv());
+  if (from._internal_global_entity_id() != 0) {
+    _this->_internal_set_global_entity_id(from._internal_global_entity_id());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -2948,8 +2948,8 @@ void S2CMap::InternalSwap(S2CMap* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.entities_.InternalSwap(&other->_impl_.entities_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.conv_)
-      + sizeof(S2CMap::_impl_.conv_)
+      PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.global_entity_id_)
+      + sizeof(S2CMap::_impl_.global_entity_id_)
       - PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.frame_id_)>(
           reinterpret_cast<char*>(&_impl_.frame_id_),
           reinterpret_cast<char*>(&other->_impl_.frame_id_));
