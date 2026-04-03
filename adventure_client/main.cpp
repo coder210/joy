@@ -48,21 +48,31 @@ static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 static flecs::query<IdComponent, TransformComponent> render_query;
 static flecs::query<LogicPositionComponent, TransformComponent> sync_pos_query;
 
-static void ApplyInput(LogicVelocityComponent* v, int input)
+
+static void ApplyInput(LogicVelocityComponent* v, int conv, int sequence, int input)
 {
-        if (input & INPUT_UP)    v->y = fp_sub(v->y, MOVE_SPEED);
-        if (input & INPUT_DOWN)  v->y = fp_add(v->y, MOVE_SPEED);
-        if (input & INPUT_LEFT)  v->x = fp_sub(v->x, MOVE_SPEED);
-        if (input & INPUT_RIGHT) v->x = fp_add(v->x, MOVE_SPEED);
+        if (INPUT_UP == input) {
+                v->y = fp_sub(v->y, MOVE_SPEED);
+        }
+        else if (INPUT_DOWN == input) {
+                v->y = fp_add(v->y, MOVE_SPEED);
+        }
+        else if (INPUT_LEFT == input) {
+                v->x = fp_sub(v->x, MOVE_SPEED);
+        }
+        else if (INPUT_RIGHT == input) {
+                v->x = fp_add(v->x, MOVE_SPEED);
+        }
 }
 
-static void handle_cmd_loading(adventure::S2C* s2c)
+
+static void HandleCmdLoading(adventure::S2C* s2c)
 {
         ready = true;
         for (auto& entity : s2c->map().entities())
         {
                 auto e = world.entity()
-			.set<IdComponent>({ entity.id() })
+                        .set<IdComponent>({ entity.id() })
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
                         .set<TransformComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
 
@@ -83,54 +93,50 @@ static void handle_cmd_loading(adventure::S2C* s2c)
         kcpclient_send(kcpclient, data.c_str(), data.size());
 }
 
-static void handle_cmd_command(adventure::S2C* s2c)
+static void HandleCmdCommand(adventure::S2C& s2c)
 {
-        // 玩家加入
-        for (auto& j : s2c->command().player_joins())
-        {
+        // 创建玩家
+        for (auto& player_join : s2c.command().player_joins()) {
+                log_info("%d:CMD_PLAYER_JOIN", player_join.conv());
+                fp_t x = player_join.position_x();
+                fp_t y = player_join.position_y();
+
                 world.entity()
                         .set<IdComponent>({ 0 })
-                        .set<LogicPositionComponent>({ j.position_x(), j.position_y() })
+                        .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                        .set<TransformComponent>({ fp_to_float(j.position_x()), fp_to_float(j.position_y()) })
-                        .set<PlayerComponent>({ j.conv() });
+                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
+                        .set<PlayerComponent>({ player_join.conv() });
         }
 
         // 玩家离开
-        for (auto& l : s2c->command().player_leaves())
-        {
-                world.query<PlayerComponent>().each([&](flecs::entity e, PlayerComponent& p) {
-                        if (e.has<ConnectionComponent>() && e.get<ConnectionComponent>()->conv == l.conv())
-                                e.destruct();
-                        });
-        }
+        for (auto& player_leave : s2c.command().player_leaves()) {}
 
         // 应用输入
-        for (auto& in : s2c->command().player_inputs())
-        {
+        for (auto& input : s2c.command().player_inputs()) {
                 world.query<PlayerComponent, LogicVelocityComponent>()
-                        .each([&](flecs::entity, PlayerComponent& p, LogicVelocityComponent& v) {
-                        if (p.conv == in.conv()) ApplyInput(&v, in.keycode());
+                        .each([&](flecs::entity e, PlayerComponent& p, LogicVelocityComponent& v) {
+                        if (p.conv != input.conv()) return;
+                        ApplyInput(&v, input.conv(), input.sequence(), input.keycode());
                                 });
         }
 }
 
-static void msg_callback(net_message_p msg, void*)
+static void OnMessage(net_message_p msg, void*)
 {
-        if (msg->type == NET_TYPE_CONNECTED)
-        {
+        if (msg->type == NET_TYPE_CONNECTED) {
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_LOADING);
                 std::string d = c2s.SerializeAsString();
                 kcpclient_send(kcpclient, d.c_str(), d.size());
         }
-        else if (msg->type == NET_TYPE_MESSAGE)
-        {
+        else if (msg->type == NET_TYPE_MESSAGE) {
                 adventure::S2C s2c;
-                if (s2c.ParseFromArray(msg->data, msg->len))
-                {
-                        if (s2c.cmd() == adventure::S2C_CMD_LOADING) handle_cmd_loading(&s2c);
-                        if (s2c.cmd() == adventure::S2C_CMD_COMMAND) handle_cmd_command(&s2c);
+                if (s2c.ParseFromArray(msg->data, msg->len)) {
+                        if (s2c.cmd() == adventure::S2C_CMD_LOADING) 
+                                HandleCmdLoading(&s2c);
+                        if (s2c.cmd() == adventure::S2C_CMD_COMMAND)
+                                HandleCmdCommand(s2c);
                 }
         }
 
@@ -194,8 +200,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_Init(SDL_INIT_VIDEO);
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &window, &renderer);
 
-        kcpclient = kcpclient_create("192.168.2.36", 10000);
-        kcpclient_set_callback(kcpclient, msg_callback, nullptr);
+        kcpclient = kcpclient_create("192.168.1.33", 10000);
+        kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.component<IdComponent>();
         world.component<ConnectionComponent>();
@@ -232,8 +238,10 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 SDL_AppResult SDL_AppIterate(void*)
 {
         Uint64 now = SDL_GetPerformanceCounter();
+        if (lastTime == 0) lastTime = now;
         float delta = (now - lastTime) / (double)SDL_GetPerformanceFrequency();
         lastTime = now;
+
         accumulator += delta;
 
         while (accumulator >= FIXED_TIMESTEP)
@@ -243,10 +251,10 @@ SDL_AppResult SDL_AppIterate(void*)
         }
 
         // 渲染同步放这里（你之前改对的位置）
-        sync_pos_query.each([](LogicPositionComponent & lp, TransformComponent & t){
+        sync_pos_query.each([](LogicPositionComponent& lp, TransformComponent& t) {
                 t.position_x = fp_to_float(lp.x) * PIXELS_PER_METER;
                 t.position_y = fp_to_float(lp.y) * PIXELS_PER_METER;
-        });
+                });
 
         kcpclient_update(kcpclient);
 
