@@ -45,6 +45,9 @@ static Uint64 lastTime = 0;
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 
+static flecs::query<IdComponent, TransformComponent> render_query;
+static flecs::query<LogicPositionComponent, TransformComponent> sync_pos_query;
+
 static void ApplyInput(LogicVelocityComponent* v, int input)
 {
         if (input & INPUT_UP)    v->y = fp_sub(v->y, MOVE_SPEED);
@@ -61,7 +64,7 @@ static void handle_cmd_loading(adventure::S2C* s2c)
                 auto e = world.entity()
 			.set<IdComponent>({ entity.id() })
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
-                        .set<PositionComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
+                        .set<TransformComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()) });
 
                 if (entity.type() == adventure::S2C_TYPE_PLAYER)
                 {
@@ -89,7 +92,7 @@ static void handle_cmd_command(adventure::S2C* s2c)
                         .set<IdComponent>({ 0 })
                         .set<LogicPositionComponent>({ j.position_x(), j.position_y() })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                        .set<PositionComponent>({ fp_to_float(j.position_x()), fp_to_float(j.position_y()) })
+                        .set<TransformComponent>({ fp_to_float(j.position_x()), fp_to_float(j.position_y()) })
                         .set<PlayerComponent>({ j.conv() });
         }
 
@@ -176,11 +179,6 @@ static void MoveSys(LogicPositionComponent& p, LogicVelocityComponent& v)
         v.x = v.y = fp_from_float(0);
 }
 
-static void SyncRenderPos(LogicPositionComponent& lp, PositionComponent& rp)
-{
-        rp.x = fp_to_float(lp.x) * PIXELS_PER_METER;
-        rp.y = fp_to_float(lp.y) * PIXELS_PER_METER;
-}
 
 static void FixedLogicUpdate(float dt)
 {
@@ -189,8 +187,6 @@ static void FixedLogicUpdate(float dt)
         world.progress(dt);
 }
 
-
-static flecs::query<IdComponent, PositionComponent> render_query;
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
@@ -205,11 +201,12 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         world.component<ConnectionComponent>();
         world.component<LogicPositionComponent>();
         world.component<LogicVelocityComponent>();
-        world.component<PositionComponent>();
+        world.component<TransformComponent>();
         world.component<PlayerComponent>();
 
         world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSys);
-        render_query = world.query<IdComponent, PositionComponent>();
+        render_query = world.query<IdComponent, TransformComponent>();
+        sync_pos_query = world.query<LogicPositionComponent, TransformComponent>();
 
         return SDL_APP_CONTINUE;
 }
@@ -246,15 +243,18 @@ SDL_AppResult SDL_AppIterate(void*)
         }
 
         // 渲染同步放这里（你之前改对的位置）
-        world.query<LogicPositionComponent, PositionComponent>().each(SyncRenderPos);
+        sync_pos_query.each([](LogicPositionComponent & lp, TransformComponent & t){
+                t.position_x = fp_to_float(lp.x) * PIXELS_PER_METER;
+                t.position_y = fp_to_float(lp.y) * PIXELS_PER_METER;
+        });
 
         kcpclient_update(kcpclient);
 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderClear(renderer);
 
-        render_query.each([&](IdComponent& id, PositionComponent& p) {
-                SDL_FRect r = { p.x, p.y, 30,30 };
+        render_query.each([&](IdComponent& id, TransformComponent& t) {
+                SDL_FRect r = { t.position_x, t.position_y, 30,30 };
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
                 });
