@@ -168,14 +168,12 @@ elseif(WIN32)
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE opengl32.lib)
 
 elseif(APPLE)
-       # =====================================================================
-    # ✅ 完美兼容：macOS + iOS + tvOS + visionOS
-    # =====================================================================
-    if(IOS OR tvOS)
-        # iPhone / iPad / AppleTV：使用 OpenGL ES
+    # ✅ 终极正确：全苹果平台识别
+    if(CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "tvOS")
         target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGLES")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "visionOS")
+        # visionOS 不需要手动链接 OpenGL
     else()
-        # macOS / visionOS：使用原生 OpenGL（无 ES）
         target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGL")
     endif()
 else()
