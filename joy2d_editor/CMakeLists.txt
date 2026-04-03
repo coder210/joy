@@ -165,17 +165,18 @@ elseif(EMSCRIPTEN)
 
 elseif(WIN32)
     # Windows：只链接 SDL3，OpenGL ES 由 SDL 运行时动态加载（通过 ANGLE 或系统驱动）
-    # 无需额外链接 OpenGL 或 ES 库，否则会导致符号冲突或找不到库的错误
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE opengl32.lib)
+
 elseif(APPLE)
-    # macOS / iOS：直接链接系统 OpenGL 框架，不需要 find_package
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGLES")
+    # ✅ 修复：macOS / iOS 自动区分链接正确框架
+    if(IOS)
+        target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGLES")
+    else()
+        target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGL")
+    endif()
+
 else()
-    # Linux / macOS：桌面 OpenGL 支持（若使用桌面 OpenGL 需链接）
-    # 注意：如果你使用 OpenGL ES 代码，在 macOS 上仍需 ANGLE 或使用桌面 OpenGL 核心版本。
-    # 这里保留传统的 OpenGL 链接，但若你的代码是纯 ES 且运行在 Linux 原生 ES 驱动下，则无需链接桌面 OpenGL。
-    # 为兼容大多数情况，仍然链接 OpenGL 库（Linux 下 libGL.so 包含 ES 转发？不一定）。
-    # 如果你的 Linux 系统有 libGLESv2，可以改为查找 GLESv2。
+    # Linux
     find_package(OpenGL REQUIRED)
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${OPENGL_LIBRARIES})
 endif()
