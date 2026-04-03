@@ -168,13 +168,16 @@ elseif(WIN32)
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE opengl32.lib)
 
 elseif(APPLE)
-    # ✅ 修复：macOS / iOS 自动区分链接正确框架
-    if(IOS)
+       # =====================================================================
+    # ✅ 完美兼容：macOS + iOS + tvOS + visionOS
+    # =====================================================================
+    if(IOS OR tvOS)
+        # iPhone / iPad / AppleTV：使用 OpenGL ES
         target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGLES")
     else()
+        # macOS / visionOS：使用原生 OpenGL（无 ES）
         target_link_libraries(${EXECUTABLE_NAME} PRIVATE "-framework OpenGL")
     endif()
-
 else()
     # Linux
     find_package(OpenGL REQUIRED)
