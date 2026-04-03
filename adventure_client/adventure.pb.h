@@ -1893,7 +1893,7 @@ class S2CMap final :
   enum : int {
     kEntitiesFieldNumber = 3,
     kFrameIdFieldNumber = 1,
-    kConvFieldNumber = 2,
+    kGlobalEntityIdFieldNumber = 2,
   };
   // repeated .adventure.S2CEntity entities = 3;
   int entities_size() const;
@@ -1922,13 +1922,13 @@ class S2CMap final :
   void _internal_set_frame_id(int32_t value);
   public:
 
-  // int32 conv = 2;
-  void clear_conv();
-  int32_t conv() const;
-  void set_conv(int32_t value);
+  // int32 global_entity_id = 2;
+  void clear_global_entity_id();
+  int32_t global_entity_id() const;
+  void set_global_entity_id(int32_t value);
   private:
-  int32_t _internal_conv() const;
-  void _internal_set_conv(int32_t value);
+  int32_t _internal_global_entity_id() const;
+  void _internal_set_global_entity_id(int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:adventure.S2CMap)
@@ -1941,7 +1941,7 @@ class S2CMap final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::adventure::S2CEntity > entities_;
     int32_t frame_id_;
-    int32_t conv_;
+    int32_t global_entity_id_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -3178,24 +3178,24 @@ inline void S2CMap::set_frame_id(int32_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CMap.frame_id)
 }
 
-// int32 conv = 2;
-inline void S2CMap::clear_conv() {
-  _impl_.conv_ = 0;
+// int32 global_entity_id = 2;
+inline void S2CMap::clear_global_entity_id() {
+  _impl_.global_entity_id_ = 0;
 }
-inline int32_t S2CMap::_internal_conv() const {
-  return _impl_.conv_;
+inline int32_t S2CMap::_internal_global_entity_id() const {
+  return _impl_.global_entity_id_;
 }
-inline int32_t S2CMap::conv() const {
-  // @@protoc_insertion_point(field_get:adventure.S2CMap.conv)
-  return _internal_conv();
+inline int32_t S2CMap::global_entity_id() const {
+  // @@protoc_insertion_point(field_get:adventure.S2CMap.global_entity_id)
+  return _internal_global_entity_id();
 }
-inline void S2CMap::_internal_set_conv(int32_t value) {
+inline void S2CMap::_internal_set_global_entity_id(int32_t value) {
   
-  _impl_.conv_ = value;
+  _impl_.global_entity_id_ = value;
 }
-inline void S2CMap::set_conv(int32_t value) {
-  _internal_set_conv(value);
-  // @@protoc_insertion_point(field_set:adventure.S2CMap.conv)
+inline void S2CMap::set_global_entity_id(int32_t value) {
+  _internal_set_global_entity_id(value);
+  // @@protoc_insertion_point(field_set:adventure.S2CMap.global_entity_id)
 }
 
 // repeated .adventure.S2CEntity entities = 3;
