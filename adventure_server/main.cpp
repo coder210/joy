@@ -8,6 +8,7 @@
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
 #include <joy2d/jtext.h>
+#include <joy2d/jcollision.h>
 #include "Component.h"
 #include <map>
 #include <queue>
@@ -30,6 +31,7 @@ const int INPUT_UP = 1 << 0;
 const int INPUT_DOWN = 1 << 1;
 const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
+const int INPUT_ATTACK = 1 << 4;
 
 static bool upPressed = false;
 static bool downPressed = false;
@@ -61,10 +63,10 @@ struct NetworkSingleton {
 };
 
 
-static flecs::query<IdComponent, TransformComponent> render_query;
-static flecs::query<IdComponent, LogicPositionComponent, LogicVelocityComponent> body_query;
+static flecs::query<IdComponent, LogicRectComponent, TransformComponent> render_query;
+static flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 static flecs::query<ConnectionComponent> connection_query;
-static flecs::query<PlayerComponent, LogicPositionComponent> player_query;
+static flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
 static flecs::query<LogicPositionComponent, TransformComponent> sync_pos_query;
 
 static int GenId(NetworkSingleton* ns)
@@ -136,7 +138,8 @@ static void handle_cmd_heartbeat(int conv, adventure::C2S* c2s)
 }
 
 
-static void ApplyInput(LogicPositionComponent* p, int conv, int sequence, int input)
+static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
+        IdComponent& currId, int conv, int sequence, int input)
 {
         // 必须先清空！！！
         //v->x = fp_from_float(0);
@@ -154,6 +157,28 @@ static void ApplyInput(LogicPositionComponent* p, int conv, int sequence, int in
         }
         if (input & INPUT_RIGHT) {
                 p->x = fp_add(p->x, MOVE_SPEED);
+        }
+        if (input & INPUT_ATTACK) {
+                log_info("attack");
+                ray2df_t ray;
+                ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
+                ray.origin.y = p->y;
+                ray.direction.x = fp_from_float(0);
+                ray.direction.y = fp_from_float(-10.0f);
+                body_query.each([&](IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
+                                if (currId.id == id.id) return;
+                                rectanglef_t rect = { 0 };
+                                rect.x = pos.x;
+                                rect.y = pos.y;
+                                rect.width = r.width;
+                                rect.height = r.height;
+                                ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
+                                if (result.hit) {
+                                        log_info("Entity %d hit at distance %.2f", id.id, fp_to_float(result.distance));
+                                        return;
+                                }
+                        });
         }
 
         //p.x = fp_add(p.x, v.x);
@@ -231,7 +256,7 @@ static void CollectCommandSystem(flecs::world& world)
         map.set_frame_id(command->frame_id());
         map.set_global_entity_id(ns->g_id);
         body_query.each([&](flecs::entity e, IdComponent& id,
-                LogicPositionComponent& pos, LogicVelocityComponent& vel) {
+                LogicRectComponent& r, LogicPositionComponent& pos) {
                         adventure::S2CEntity* ent = map.add_entities();
                         ent->set_id(id.id);
                         if (e.has<PlayerComponent>()) {
@@ -274,6 +299,7 @@ static void HandleCommandSystem(flecs::world& world)
 
                 world.entity()
                         .set<IdComponent>({ GenId(ns) })
+                        .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                         .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
@@ -284,10 +310,14 @@ static void HandleCommandSystem(flecs::world& world)
         for (auto& player_leave : s2c.command().player_leaves()) {}
 
         // 应用输入
+        //log_info("Applying inputs for frame %d", s2c.command().frame_id());
         for (auto& input : s2c.command().player_inputs()) {
-                player_query.each([&](PlayerComponent& p, LogicPositionComponent& pos) {
-                        if (p.conv != input.conv()) return;
-                        ApplyInput(&pos, input.conv(), input.sequence(), input.keycode());
+                //log_info("input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
+                player_query.each([&](PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
+                                if (p.conv != input.conv()) return;
+                                //log_info("Apply input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
+                                ApplyInput(&pos, r, id, input.conv(), input.sequence(), input.keycode());
                         });
         }
 
@@ -329,7 +359,7 @@ static void StartupSystem(flecs::world& world)
         map.set_frame_id(ns->g_frameid);
         map.set_global_entity_id(ns->g_id);
         body_query.each([&](flecs::entity e, IdComponent& id,
-                LogicPositionComponent& pos, LogicVelocityComponent& vel) {
+                LogicRectComponent& r, LogicPositionComponent& pos) {
                         adventure::S2CEntity* ent = map.add_entities();
                         ent->set_id(id.id);
                         if (e.has<PlayerComponent>()) {
@@ -408,6 +438,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.component<NetworkSingleton>();
         world.component<ConnectionComponent>();
+        world.component<LogicRectComponent>();
         world.component<LogicPositionComponent>();
         world.component<LogicVelocityComponent>();
         world.component<TransformComponent>();
@@ -421,19 +452,19 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         world.entity()
                 .set<IdComponent>({ GenId(ns) })
+                .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
                 .set<LogicPositionComponent>({ fp_from_float(1), fp_from_float(1) })
-                .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                 .set<TransformComponent>({ 1,1 });
 
         world.entity()
                 .set<IdComponent>({ GenId(ns) })
-                .set<LogicPositionComponent>({ fp_from_float(2), fp_from_float(2) })
-                .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
+                .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
+                .set<LogicPositionComponent>({ fp_from_float(4), fp_from_float(4) })
                 .set<TransformComponent>({ 2,2 });
-        render_query = world.query<IdComponent, TransformComponent>();
-        body_query = world.query<IdComponent, LogicPositionComponent, LogicVelocityComponent>();
+        render_query = world.query<IdComponent, LogicRectComponent, TransformComponent>();
+        body_query = world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
         connection_query = world.query<ConnectionComponent>();
-        player_query = world.query<PlayerComponent, LogicPositionComponent>();
+        player_query = world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
         StartupSystem(world);
         return SDL_APP_CONTINUE;
@@ -490,11 +521,16 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_RenderClear(renderer);
-        render_query.each([&](IdComponent& id, TransformComponent& t) {
-                SDL_FRect r = { t.position_x * PIXELS_PER_METER, t.position_y * PIXELS_PER_METER, 30,30 };
+        render_query.each([&](IdComponent& id, 
+                LogicRectComponent& rect, TransformComponent& t) {
+                SDL_FRect r = {0};
+                r.x = t.position_x * PIXELS_PER_METER;
+                r.y = t.position_y * PIXELS_PER_METER;
+                r.w = fp_to_float(rect.width) * PIXELS_PER_METER;
+                r.h = fp_to_float(rect.height) * PIXELS_PER_METER;
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
-                });
+        });
 
         auto ns = world.get_mut<NetworkSingleton>();
 

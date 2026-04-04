@@ -3,16 +3,22 @@
 
 #include <joy2d/jmath.h>
 
-struct IdComponent
-{
-        int id;
-};
-
 struct ConnectionComponent
 {
         int health;
         int frameid;
         int conv;
+};
+
+struct IdComponent
+{
+        int id;
+};
+
+struct LogicRectComponent
+{
+        fp_t width;
+        fp_t height;
 };
 
 struct LogicPositionComponent
