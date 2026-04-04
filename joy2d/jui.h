@@ -135,6 +135,7 @@ extern "C" {
 	JOY_API void button_set_normal_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_hover_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_pressed_color(button_p btn, SDL_Color color);
+	JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, SDL_Color color);
 	JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, SDL_Color color);
 	JOY_API void button_draw(button_p btn);
 	JOY_API void button_handle_event(button_p btn, SDL_Event* event);

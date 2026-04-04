@@ -1,5 +1,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_truetype.h"
+#include "jutils.h"
 #include "jtext.h"
 
 
@@ -90,6 +91,16 @@ void font_destroy(font_p font)
 	SDL_free(font);
 }
 
+text_texture_p text_createx(font_p font, 
+	const char* str, int len, SDL_Color color) {
+	text_texture_p texture;
+	int capacity_codepoints = len * 4;
+	int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
+        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        texture = text_create(font, codepoints, num_codepoints, color);
+	SDL_free(codepoints);
+	return texture;
+}
 
 /**
  * �����ı�����
@@ -172,6 +183,17 @@ text_texture_p text_create(font_p font,
 	SDL_free(bitmap);
 	SDL_DestroySurface(surface);
 	return text;
+}
+
+
+void text_updatex(text_texture_p text, font_p font,
+	const char* str, int len, SDL_Color color) {
+	text_texture_p texture;
+	int capacity_codepoints = len * 4;
+	int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
+	int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
+	text_update(text, font, codepoints, num_codepoints, color);
+	SDL_free(codepoints);
 }
 
 void text_update(text_texture_p text, font_p font,

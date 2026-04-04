@@ -7,13 +7,16 @@
 #include <joy2d/jsys.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
+#include <joy2d/jui.h>
 #include "Component.h"
 #include "adventure.pb.h"
 #include <iostream>
 #include <map>
 #include <list>
 #include <string>
-#include <cstring>
+#include "DebugLayer.h"
+#include "MobileInputLayer.h"
+
 
 const int PIXELS_PER_METER = 50;
 
@@ -26,6 +29,10 @@ static std::map<int, int> server_inputs;
 static bool ready = false;
 static int server_frameid = 0;
 static int server_entity_id = 0;
+
+static Resources* resources = NULL;
+static DebugLayer* debugLayer = NULL;
+static MobileInputLayer* mobileInputLayer = NULL;
 
 // 按键状态
 static bool upPressed = false;
@@ -42,34 +49,37 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 
 // 固定逻辑步
-static Uint64 lastTime = 0;
+static Uint64 lastTime = SDL_GetTicks();
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 
 static flecs::query<IdComponent, TransformComponent> render_query;
 static flecs::query<LogicPositionComponent, TransformComponent> sync_pos_query;
-static flecs::query<PlayerComponent, LogicVelocityComponent> player_query;
+static flecs::query<PlayerComponent, LogicPositionComponent> player_query;
 
 
-static void ApplyInput(LogicVelocityComponent* v, int conv, int sequence, int input)
+static void ApplyInput(LogicPositionComponent* p, int conv, int sequence, int input)
 {
         // 必须先清空！！！
-        v->x = fp_from_float(0);
-        v->y = fp_from_float(0);
+        //v->x = fp_from_float(0);
+        //v->y = fp_from_float(0);
 
         // 用 & 判断按键，支持多键同时按
         if (input & INPUT_UP) {
-                v->y = fp_sub(v->y, MOVE_SPEED);
+                p->y = fp_sub(p->y, MOVE_SPEED);
         }
         if (input & INPUT_DOWN) {
-                v->y = fp_add(v->y, MOVE_SPEED);
+                p->y = fp_add(p->y, MOVE_SPEED);
         }
         if (input & INPUT_LEFT) {
-                v->x = fp_sub(v->x, MOVE_SPEED);
+                p->x = fp_sub(p->x, MOVE_SPEED);
         }
         if (input & INPUT_RIGHT) {
-                v->x = fp_add(v->x, MOVE_SPEED);
+                p->x = fp_add(p->x, MOVE_SPEED);
         }
+
+        //p.x = fp_add(p.x, v.x);
+        //p.y = fp_add(p.y, v.y);
 }
 
 
@@ -105,6 +115,7 @@ static void HandleCmdLoading(adventure::S2C* s2c)
 static void HandleCmdCommand(adventure::S2C& s2c)
 {
         // 创建玩家
+        server_frameid = s2c.command().frame_id();
         for (auto& player_join : s2c.command().player_joins()) {
                 log_info("%d:CMD_PLAYER_JOIN", player_join.conv());
                 fp_t x = player_join.position_x();
@@ -120,17 +131,24 @@ static void HandleCmdCommand(adventure::S2C& s2c)
 
         // 玩家离开
         for (auto& player_leave : s2c.command().player_leaves()) {
-
+                log_info("%d:CMD_PLAYER_LEAVE", player_leave.conv());
+                player_query.each([&](flecs::entity& entity, 
+                        PlayerComponent& p, LogicPositionComponent& pos) {
+                        if (p.conv == player_leave.conv()) {
+                                entity.destruct();
+                                log_info("Entity removed for conv %d", p.conv);
+                        }
+                        });
         }
 
         // 应用输入
-        log_info("Applying inputs for frame %d", s2c.command().frame_id());
+        //log_info("Applying inputs for frame %d", s2c.command().frame_id());
         for (auto& input : s2c.command().player_inputs()) {
-                log_info("input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
-                player_query.each([&](PlayerComponent& p, LogicVelocityComponent& v) {
+                //log_info("input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
+                player_query.each([&](PlayerComponent& p, LogicPositionComponent& pos) {
                         if (p.conv != input.conv()) return;
-                        log_info("Apply input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
-                        ApplyInput(&v, input.conv(), input.sequence(), input.keycode());
+                        //log_info("Apply input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
+                        ApplyInput(&pos, input.conv(), input.sequence(), input.keycode());
                 });
         }
 }
@@ -146,10 +164,12 @@ static void OnMessage(net_message_p msg, void*)
         else if (msg->type == NET_TYPE_MESSAGE) {
                 adventure::S2C s2c;
                 if (s2c.ParseFromArray(msg->data, msg->len)) {
-                        if (s2c.cmd() == adventure::S2C_CMD_LOADING) 
+                        if (s2c.cmd() == adventure::S2C_CMD_LOADING) {
                                 HandleCmdLoading(&s2c);
-                        if (s2c.cmd() == adventure::S2C_CMD_COMMAND)
+                        }
+                        else if (s2c.cmd() == adventure::S2C_CMD_COMMAND) {
                                 HandleCmdCommand(s2c);
+                        }
                 }
         }
 
@@ -160,6 +180,7 @@ static void OnMessage(net_message_p msg, void*)
 // ========== 发包：彻底无内存泄漏版 ==========
 static void SendLocalInputToServer()
 {
+        if (!ready) return;     
         int cur = 0;
         if (upPressed) cur |= INPUT_UP;
         if (downPressed) cur |= INPUT_DOWN;
@@ -201,9 +222,18 @@ static void MoveSystem(LogicPositionComponent& p, LogicVelocityComponent& v)
 
 static void FixedLogicUpdate(float dt)
 {
+        net_message_t msg;
+        for (int i = 0; i < 10; i++) {
+                if (kcpclient_poll_message(kcpclient, &msg)) {
+                        OnMessage(&msg, NULL);
+                }
+                else {
+                        break;
+                }
+        }
+        
         SendLocalInputToServer();
         SendHeartbeat(dt);
-        world.progress(dt);
 }
 
 
@@ -214,7 +244,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &window, &renderer);
 
         kcpclient = kcpclient_create("192.168.1.33", 10000);
-        kcpclient_set_callback(kcpclient, OnMessage, nullptr);
+        //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.component<IdComponent>();
         world.component<ConnectionComponent>();
@@ -223,11 +253,14 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         world.component<TransformComponent>();
         world.component<PlayerComponent>();
 
-        world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSystem);
         render_query = world.query<IdComponent, TransformComponent>();
         sync_pos_query = world.query<LogicPositionComponent, TransformComponent>();
-        player_query = world.query<PlayerComponent, LogicVelocityComponent>();
+        player_query = world.query<PlayerComponent, LogicPositionComponent>();
 
+        resources = new Resources(renderer);
+        debugLayer = new DebugLayer(resources);
+        mobileInputLayer = new MobileInputLayer(resources, renderer);
+       
         return SDL_APP_CONTINUE;
 }
 
@@ -251,17 +284,21 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 
 SDL_AppResult SDL_AppIterate(void*)
 {
-        kcpclient_update(kcpclient);
-
-        Uint64 now = SDL_GetPerformanceCounter();
-        if (lastTime == 0) lastTime = now;
-        float delta = (now - lastTime) / (double)SDL_GetPerformanceFrequency();
+        char buff[JOY_MAX_PATH];
+        Uint64 now = SDL_GetTicks();
+        float delta = (now - lastTime) / 1000.0f;
         lastTime = now;
         accumulator += delta;
+
+        kcpclient_update(kcpclient);
         while (accumulator >= FIXED_TIMESTEP){
+                //utils_current_datetime("%H:%M:%S", buff, JOY_MAX_PATH);
+                //log_info(buff);
                 FixedLogicUpdate(FIXED_TIMESTEP);
                 accumulator -= FIXED_TIMESTEP;
         }
+
+        world.progress(delta);
 
         // 渲染同步放这里（你之前改对的位置）
         sync_pos_query.each([=](LogicPositionComponent& lp, TransformComponent& t) {
@@ -271,6 +308,8 @@ SDL_AppResult SDL_AppIterate(void*)
                 float alpha = accumulator / FIXED_TIMESTEP;
                 t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
                 t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
+                /*t.position_x = target_position_x;
+                t.position_y = target_position_y;*/
         });
 
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
@@ -285,12 +324,21 @@ SDL_AppResult SDL_AppIterate(void*)
                 SDL_RenderFillRect(renderer, &r);
         });
 
+        debugLayer->Update(server_frameid, 0);
+        debugLayer->Draw(renderer);
+        mobileInputLayer->Update();
+        mobileInputLayer->Draw();
+
         SDL_RenderPresent(renderer);
         return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void*, SDL_AppResult)
 {
+        delete resources;
+        delete debugLayer;
+        delete mobileInputLayer;
+
         kcpclient_destroy(kcpclient);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
