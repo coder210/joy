@@ -174,13 +174,10 @@ void button_draw(button_p btn)
 	}
 
 	if (btn->text) {
-		int widht = text_get_width(btn->text);
-		int height = text_get_height(btn->text);
+		float widht = text_get_width(btn->text);
+		float height = text_get_height(btn->text);
 		dest_rect.x = btn->rect.x + (btn->rect.w - widht) / 2.0f;
 		dest_rect.y = btn->rect.y + (btn->rect.h - height) / 2.0f;
-		//dest_rect.w = btn->text->texture->w;
-		//dest_rect.h = btn->text->texture->h;
-		//SDL_RenderTexture(renderer, btn->text, NULL, &dest_rect);
 		text_print(renderer, btn->text, dest_rect.x, dest_rect.y);
 	}
 }
