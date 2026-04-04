@@ -86,12 +86,16 @@ JOY_INLINE uint32_t iclock(uint64_t clock64)
         return (uint32_t)(clock64 & 0xfffffffful);
 }
 
+// ==============================
+// 服务端
+// ==============================
 kcpserver_p
-kcpserver_create(const char *ip, int port)
+kcpserver_create(const char* ip, int port)
 {
         kcpserver_p ks;
         ks = (kcpserver_p)SDL_malloc(sizeof(kcpserver_t));
         SDL_assert(ks);
+        SDL_memset(ks, 0, sizeof(kcpserver_t));
         ks->sockfd = sys_udp();
         ks->conv = 1000;
         ks->conns = kh_init(kconn);
@@ -105,7 +109,7 @@ kcpserver_create(const char *ip, int port)
         {
                 log_info("bind successful");
         }
-        sys_set_sock_rcvtimeo(ks->sockfd, 1);
+        sys_set_sock_rcvtimeo(ks->sockfd, 10);
         log_info("ip:%s,port=%d", ip, port);
         log_info("sockfd:%d", ks->sockfd);
         return ks;
@@ -113,14 +117,36 @@ kcpserver_create(const char *ip, int port)
 
 int kcpserver_destroy(kcpserver_p ks)
 {
+        if (!ks) return 0;
+
+        for (khint_t p = kh_begin(ks->conns); p != kh_end(ks->conns); p++)
+        {
+                if (kh_exist(ks->conns, p))
+                {
+                        kcp_connection_p conn = kh_val(ks->conns, p);
+                        if (conn)
+                        {
+                                if (conn->kcp) ikcp_release(conn->kcp);
+                                SDL_free(conn);
+                        }
+                }
+        }
+
+        net_message_t msg;
+        while (kcpserver_poll_message(ks, &msg))
+        {
+                if (msg.data) SDL_free(msg.data);
+        }
+
         sys_closesocket(ks->sockfd);
         kh_destroy(kconn, ks->conns);
+        //kl_destroy(kmq, ks->mq);
         SDL_free(ks);
         return 1;
 }
 
 static int
-kcpserver_output(const char *data, int len, ikcpcb *kcp, void *user)
+kcpserver_output(const char* data, int len, ikcpcb* kcp, void* user)
 {
         IUINT32 conv;
         kcpserver_p ks;
@@ -138,8 +164,8 @@ kcpserver_output(const char *data, int len, ikcpcb *kcp, void *user)
 }
 
 static void
-kcpserver_input(kcpserver_p ks, const char *data, int len,
-                const char *ip, int port)
+kcpserver_input(kcpserver_p ks, const char* data, int len,
+        const char* ip, int port)
 {
         char buf[4];
         int conv, ret;
@@ -147,54 +173,10 @@ kcpserver_input(kcpserver_p ks, const char *data, int len,
         kcp_connection_p conn;
         net_message_t msg;
 
-        conv = utils_bit2int((uint8_t *)data);
+        conv = utils_bit2int((uint8_t*)data);
         k = kh_get(kconn, ks->conns, conv);
-        if (k == kh_end(ks->conns))
-        {
-                for (k = kh_begin(ks->conns); k != kh_end(ks->conns); k++)
-                {
-                        if (kh_exist(ks->conns, k))
-                        {
-                                conn = kh_val(ks->conns, k);
-                                if (conn && strcmp(conn->ip, ip) == 0 && conn->port == port)
-                                {
-                                        return;
-                                }
-                        }
-                }
 
-                conn = (kcp_connection_p)SDL_malloc(sizeof(kcp_connection_t));
-                assert(conn);
-                conn->kcp = ikcp_create(ks->conv++, ks);
-                ikcp_wndsize(conn->kcp, 512, 512);
-                ikcp_nodelay(conn->kcp, 1, 20, 2, 1);
-                ikcp_setoutput(conn->kcp, kcpserver_output);
-                strcpy(conn->ip, ip);
-                conn->port = port;
-                conn->timeout = 120;
-                conn->updating_delay.time = sys_current_time();
-                conn->updating_delay.timeout = 1000;
-
-                conv = ikcp_getconv(conn->kcp);
-                k = kh_put(kconn, ks->conns, conv, &ret);
-                kh_val(ks->conns, k) = conn;
-
-                utils_int2bit((uint8_t *)buf, conv);
-                sys_sendto(ks->sockfd, buf, 4, conn->ip, conn->port);
-                msg.type = NET_TYPE_CONNECTED;
-                msg.data = SDL_strdup("connected");
-                msg.len = SDL_strlen(msg.data);
-                msg.conv = conv;
-
-                if (ks->cb){
-                        ks->cb(&msg, ks->userdata);
-                }
-                else{
-                        *kl_pushp(kmq, ks->mq) = msg;
-                }
-                // log_debug("connected conv=%d\n", conv);
-        }
-        else
+        if (k != kh_end(ks->conns))
         {
                 conn = kh_val(ks->conns, k);
                 if (conn && strcmp(conn->ip, ip) == 0 && conn->port == port)
@@ -202,10 +184,66 @@ kcpserver_input(kcpserver_p ks, const char *data, int len,
                         conn->timeout = 120;
                         ikcp_input(conn->kcp, data, len);
                 }
+                return;
+        }
+
+        for (k = kh_begin(ks->conns); k != kh_end(ks->conns); k++)
+        {
+                if (kh_exist(ks->conns, k))
+                {
+                        conn = kh_val(ks->conns, k);
+                        if (conn && strcmp(conn->ip, ip) == 0 && conn->port == port)
+                        {
+                                conn->timeout = 120;
+                                ikcp_input(conn->kcp, data, len);
+                                return;
+                        }
+                }
+        }
+
+        conn = (kcp_connection_p)SDL_malloc(sizeof(kcp_connection_t));
+        assert(conn);
+        memset(conn, 0, sizeof(kcp_connection_t));
+
+        conn->kcp = ikcp_create(ks->conv++, ks);
+        ikcp_wndsize(conn->kcp, 512, 512);
+        ikcp_nodelay(conn->kcp, 0, 40, 0, 0);
+        ikcp_setoutput(conn->kcp, kcpserver_output);
+
+        strcpy(conn->ip, ip);
+        conn->port = port;
+        conn->timeout = 120;
+        conn->updating_delay.time = sys_current_time();
+        conn->updating_delay.timeout = 1000;
+
+        conv = ikcp_getconv(conn->kcp);
+        k = kh_put(kconn, ks->conns, conv, &ret);
+        if (ret == -1)
+        {
+                log_error("kh_put failed");
+                ikcp_release(conn->kcp);
+                SDL_free(conn);
+                return;
+        }
+        kh_val(ks->conns, k) = conn;
+
+        utils_int2bit((uint8_t*)buf, conv);
+        sys_sendto(ks->sockfd, buf, 4, conn->ip, conn->port);
+
+        msg.type = NET_TYPE_CONNECTED;
+        msg.data = SDL_strdup("connected");
+        msg.len = SDL_strlen(msg.data);
+        msg.conv = conv;
+
+        if (ks->cb) {
+                ks->cb(&msg, ks->userdata);
+        }
+        else {
+                *kl_pushp(kmq, ks->mq) = msg;
         }
 }
 
-void kcpserver_send(kcpserver_p ks, int conv, const char *data, int len)
+void kcpserver_send(kcpserver_p ks, int conv, const char* data, int len)
 {
         khint_t k;
         kcp_connection_p conn;
@@ -217,7 +255,7 @@ void kcpserver_send(kcpserver_p ks, int conv, const char *data, int len)
         }
 }
 
-void kcpserver_broadcast(kcpserver_p ks, const char *data, int len)
+void kcpserver_broadcast(kcpserver_p ks, const char* data, int len)
 {
         khint_t k;
         kcp_connection_p conn;
@@ -248,10 +286,8 @@ void kcpserver_offline(kcpserver_p ks, int conv)
 void kcpserver_update(kcpserver_p ks)
 {
         uint64_t current_time;
-        int len, port, conv;
+        int len, port;
         char buf[JOY_MAX_BUFFER], ip[JOY_MAX_IP];
-        khint_t p;
-        kcp_connection_p conn;
         net_message_t msg;
 
         current_time = sys_current_time();
@@ -261,66 +297,74 @@ void kcpserver_update(kcpserver_p ks)
                 kcpserver_input(ks, buf, len, ip, port);
         }
 
-        for (p = kh_begin(ks->conns); p != kh_end(ks->conns); p++)
-        {
-                if (kh_exist(ks->conns, p))
-                {
-                        conv = kh_key(ks->conns, p);
-                        conn = kh_val(ks->conns, p);
-                        ikcp_update(conn->kcp, current_time);
-                        len = ikcp_recv(conn->kcp, buf, JOY_MAX_BUFFER);
-                        if (len > 0)
-                        {
-                                msg.type = NET_TYPE_MESSAGE;
-                                msg.len = len;
-                                msg.data = (char *)SDL_malloc(msg.len);
-                                SDL_memcpy(msg.data, buf, msg.len);
-                                msg.conv = ikcp_getconv(conn->kcp);
+        khint_t* del_list = SDL_malloc(kh_size(ks->conns) * sizeof(khint_t));
+        int del_cnt = 0;
 
-                                if (ks->cb){
-                                        ks->cb(&msg, ks->userdata);
-                                }
-                                else{
-                                        *kl_pushp(kmq, ks->mq) = msg;
-                                }
+        for (khint_t p = kh_begin(ks->conns); p != kh_end(ks->conns); p++)
+        {
+                if (!kh_exist(ks->conns, p)) continue;
+                kcp_connection_p conn = kh_val(ks->conns, p);
+
+                if (conn->timeout < 0)
+                {
+                        del_list[del_cnt++] = p;
+                        continue;
+                }
+
+                if (utils_wait_delay(&conn->updating_delay, current_time))
+                {
+                        conn->timeout--;
+                }
+
+                ikcp_update(conn->kcp, ikcp_check(conn->kcp, current_time));
+
+                len = ikcp_recv(conn->kcp, buf, JOY_MAX_BUFFER - 1);
+                if (len > 0)
+                {
+                        buf[len] = 0;
+                        msg.type = NET_TYPE_MESSAGE;
+                        msg.len = len;
+                        msg.data = SDL_malloc(msg.len);
+                        SDL_memcpy(msg.data, buf, msg.len);
+                        msg.conv = ikcp_getconv(conn->kcp);
+
+                        if (ks->cb) {
+                                ks->cb(&msg, ks->userdata);
+                        }
+                        else {
+                                *kl_pushp(kmq, ks->mq) = msg;
                         }
                 }
         }
 
-        for (p = kh_begin(ks->conns); p != kh_end(ks->conns); p++)
+        for (int i = 0; i < del_cnt; i++)
         {
-                if (kh_exist(ks->conns, p))
-                {
-                        conv = kh_key(ks->conns, p);
-                        conn = kh_val(ks->conns, p);
-                        if (conn->timeout < 0)
-                        {
-                                msg.type = NET_TYPE_DISCONNECTED;
-                                msg.data = SDL_strdup("disconnected");
-                                msg.len = SDL_strlen(msg.data);
-                                msg.conv = ikcp_getconv(conn->kcp);
-                                
-                                if (ks->cb){
-                                        ks->cb(&msg, ks->userdata);
-                                }
-                                else{
-                                        *kl_pushp(kmq, ks->mq) = msg;
-                                }
+                khint_t p = del_list[i];
+                kcp_connection_p conn = kh_val(ks->conns, p);
 
-                                ikcp_release(conn->kcp);
-                                kh_del(kconn, ks->conns, p);
-                        }
-                        else if (utils_wait_delay(&conn->updating_delay, current_time))
-                        {
-                                conn->timeout--;
-                        }
+                msg.type = NET_TYPE_DISCONNECTED;
+                msg.data = SDL_strdup("disconnected");
+                msg.len = SDL_strlen(msg.data);
+                msg.conv = ikcp_getconv(conn->kcp);
+
+                if (ks->cb) {
+                        ks->cb(&msg, ks->userdata);
                 }
+                else {
+                        *kl_pushp(kmq, ks->mq) = msg;
+                }
+
+                ikcp_release(conn->kcp);
+                SDL_free(conn);
+                kh_del(kconn, ks->conns, p);
         }
+        SDL_free(del_list);
 }
 
 bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg)
 {
-        kliter_t(kmq) * p;
+        if (!ks || !msg) return false;
+        kliter_t(kmq)* p;
         p = kl_begin(ks->mq);
         if (p != kl_end(ks->mq))
         {
@@ -334,17 +378,21 @@ bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg)
         }
 }
 
-void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void *userdata)
+void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata)
 {
         ks->cb = cb;
         ks->userdata = userdata;
 }
 
-kcpclient_p kcpclient_create(const char *ip, int port)
+// ==============================
+// 客户端
+// ==============================
+kcpclient_p kcpclient_create(const char* ip, int port)
 {
         kcpclient_p kc;
         kc = (kcpclient_p)SDL_malloc(sizeof(kcpclient_t));
         SDL_assert(kc);
+        memset(kc, 0, sizeof(kcpclient_t)); // 【修复】初始化全0
         kc->kcp = NULL;
         kc->sockfd = sys_udp();
         strcpy(kc->server_ip, ip);
@@ -356,19 +404,27 @@ kcpclient_p kcpclient_create(const char *ip, int port)
         kc->timeout = 1200;
         kc->mq = kl_init(kmq);
         kc->cb = NULL;
-        sys_set_sock_rcvtimeo(kc->sockfd, 1);
+        sys_set_sock_rcvtimeo(kc->sockfd, 10);
         return kc;
 }
 
 void kcpclient_destroy(kcpclient_p kc)
 {
+        if (!kc) return;
         sys_closesocket(kc->sockfd);
-        if (kc->kcp)
+        if (kc->kcp) {
                 ikcp_release(kc->kcp);
+                kc->kcp = NULL;
+        }
+        net_message_t msg;
+        while (kcpclient_poll_message(kc, &msg)) {
+                if (msg.data) SDL_free(msg.data);
+        }
+        //kl_destroy(kmq, kc->mq);
         SDL_free(kc);
 }
 
-bool kcpclient_getconv(kcpclient_p kc, int *conv)
+bool kcpclient_getconv(kcpclient_p kc, int* conv)
 {
         if (kc->kcp)
         {
@@ -383,7 +439,7 @@ bool kcpclient_getconv(kcpclient_p kc, int *conv)
 }
 
 static int
-kcpclient_output(const char *data, int size, ikcpcb *kcp, void *user)
+kcpclient_output(const char* data, int size, ikcpcb* kcp, void* user)
 {
         int n;
         kcpclient_p kc;
@@ -393,25 +449,28 @@ kcpclient_output(const char *data, int size, ikcpcb *kcp, void *user)
 }
 
 static void
-kcpclient_input(kcpclient_p kc, const char *data, int sz)
+kcpclient_input(kcpclient_p kc, const char* data, int sz)
 {
         net_message_t msg;
         int conv;
         if (kc->kcp)
         {
-                if (sz > 4)
+                if (sz >= 4)
                 {
-                        int len = ikcp_input(kc->kcp, data, sz);
+                        ikcp_input(kc->kcp, data, sz);
                         kc->timeout = 1200;
                 }
         }
         else
         {
+                // 【修复】必须判断长度=4，防止野包创建连接
+                if (sz != 4) return;
+
                 log_debug("kcpclient create");
-                conv = utils_bit2int((uint8_t *)data);
+                conv = utils_bit2int((uint8_t*)data);
                 kc->kcp = ikcp_create(conv, kc);
                 ikcp_wndsize(kc->kcp, 512, 512);
-                ikcp_nodelay(kc->kcp, 1, 20, 2, 1);
+                ikcp_nodelay(kc->kcp, 0, 40, 0, 0);
                 ikcp_setoutput(kc->kcp, kcpclient_output);
                 msg.conv = conv;
                 msg.data = SDL_strdup("connected");
@@ -428,7 +487,7 @@ kcpclient_input(kcpclient_p kc, const char *data, int sz)
         }
 }
 
-int kcpclient_send(kcpclient_p kc, const char *data, int len)
+int kcpclient_send(kcpclient_p kc, const char* data, int len)
 {
         if (kc->kcp)
         {
@@ -441,21 +500,21 @@ void kcpclient_update(kcpclient_p kc)
 {
         int64_t current_time;
         net_message_t msg;
-        char data[4] = {0};
+        char data[4] = { 0 };
         char buf[JOY_MAX_BUFFER];
         char ip[JOY_MAX_IP];
         int port, len;
 
         current_time = sys_current_time();
         len = sys_recvfrom(kc->sockfd, buf, ip, &port);
-        if (len > 0)
-        {
+
+        if (len > 0) {
                 kcpclient_input(kc, buf, len);
         }
 
         if (kc->kcp)
         {
-                if (kc->timeout < 0)
+                if (kc->timeout <= 0)
                 {
                         return;
                 }
@@ -465,10 +524,14 @@ void kcpclient_update(kcpclient_p kc)
                 }
                 if (kc->timeout == 0)
                 {
+                        // 【修复】断开后释放kcp
+                        ikcp_release(kc->kcp);
+                        kc->kcp = NULL;
+
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
-                        msg.len = 9;
-                        msg.data = SDL_strdup("connected");
+                        msg.len = 11;
+                        msg.data = SDL_strdup("disconnected");
                         if (kc->cb)
                         {
                                 kc->cb(&msg, kc->userdata);
@@ -479,21 +542,19 @@ void kcpclient_update(kcpclient_p kc)
                         }
                         return;
                 }
-                ikcp_update(kc->kcp, ikcp_check(kc->kcp, current_time));
+                ikcp_update(kc->kcp, ikcp_check(kc->kcp, iclock(current_time)));
                 len = ikcp_recv(kc->kcp, buf, JOY_MAX_BUFFER);
-                if (len > 0)
-                {
+                if (len > 0) {
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = ikcp_getconv(kc->kcp);
                         msg.len = len;
-                        msg.data = (char *)SDL_malloc(msg.len);
+                        msg.data = (char*)SDL_malloc(msg.len);
                         SDL_memcpy(msg.data, buf, msg.len);
-                        if (kc->cb)
-                        {
+
+                        if (kc->cb) {
                                 kc->cb(&msg, kc->userdata);
                         }
-                        else
-                        {
+                        else {
                                 *kl_pushp(kmq, kc->mq) = msg;
                         }
                 }
@@ -502,12 +563,14 @@ void kcpclient_update(kcpclient_p kc)
         {
                 data[0] = data[1] = data[2] = data[3] = 0;
                 sys_sendto(kc->sockfd, data, 4, kc->server_ip, kc->server_port);
+                kc->connection_delay.time = current_time;
         }
 }
 
 bool kcpclient_poll_message(kcpclient_p kc, net_message_p msg)
 {
-        kliter_t(kmq) * p;
+        if (!kc || !msg) return false;
+        kliter_t(kmq)* p;
         p = kl_begin(kc->mq);
         if (p != kl_end(kc->mq))
         {
@@ -757,7 +820,7 @@ tcpclient_p tcpclient_create(const char *ip, int port)
         tcpclient->timeout = 1200;
         tcpclient->mq = kl_init(kmq);
         log_debug("tcpclient_create ip=%s,port=%d", ip, port);
-        sys_set_sock_rcvtimeo(tcpclient->sockfd, 1);
+        sys_set_sock_rcvtimeo(tcpclient->sockfd, 10);
         return tcpclient;
 }
 

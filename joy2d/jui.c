@@ -116,6 +116,17 @@ void button_set_pressed_color(button_p btn, SDL_Color color)
 	btn->pressed_color = color;
 }
 
+void button_set_textx(button_p btn, font_p fontinfo,
+	const char* str, int len, SDL_Color color)
+{
+	if (btn->text) {
+		text_updatex(btn->text, fontinfo, str, len, color);
+	}
+	else {
+		btn->text = text_createx(fontinfo, str, len, color);
+	}
+}
+
 void
 button_set_text(button_p btn, font_p fontinfo,
 	const int* codepoints, int num_codepoints, SDL_Color color)

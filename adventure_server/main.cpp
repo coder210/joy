@@ -7,6 +7,7 @@
 #include <joy2d/jcore.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
+#include <joy2d/jtext.h>
 #include "Component.h"
 #include <map>
 #include <queue>
@@ -20,6 +21,9 @@ static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static kcpserver_p kcpserver = NULL;
 static flecs::world world;
+
+static font_p simhei_font = NULL;
+static text_texture_p fps_texture = NULL;
 
 // 位掩码定义
 const int INPUT_UP = 1 << 0;
@@ -36,7 +40,7 @@ static const fp_t MOVE_SPEED = fp_from_float(0.5f);
 // ###########################
 // 帧同步核心：固定时间步
 // ###########################
-static Uint64 lastTime = 0;
+static Uint64 lastTime = SDL_GetTicks();
 static float accumulator = 0.0f;
 static const float FIXED_TIMESTEP = 1.0f / 16.0f;
 
@@ -60,7 +64,7 @@ struct NetworkSingleton {
 static flecs::query<IdComponent, TransformComponent> render_query;
 static flecs::query<IdComponent, LogicPositionComponent, LogicVelocityComponent> body_query;
 static flecs::query<ConnectionComponent> connection_query;
-static flecs::query<PlayerComponent, LogicVelocityComponent> player_query;
+static flecs::query<PlayerComponent, LogicPositionComponent> player_query;
 static flecs::query<LogicPositionComponent, TransformComponent> sync_pos_query;
 
 static int GenId(NetworkSingleton* ns)
@@ -128,28 +132,32 @@ static void handle_cmd_heartbeat(int conv, adventure::C2S* c2s)
                         return false;
                 }
                 return true;
-        });
+                });
 }
 
-static void ApplyInput(LogicVelocityComponent* v, int conv, int sequence, int input)
+
+static void ApplyInput(LogicPositionComponent* p, int conv, int sequence, int input)
 {
         // 必须先清空！！！
-        v->x = fp_from_float(0);
-        v->y = fp_from_float(0);
+        //v->x = fp_from_float(0);
+        //v->y = fp_from_float(0);
 
         // 用 & 判断按键，支持多键同时按
         if (input & INPUT_UP) {
-                v->y = fp_sub(v->y, MOVE_SPEED);
+                p->y = fp_sub(p->y, MOVE_SPEED);
         }
         if (input & INPUT_DOWN) {
-                v->y = fp_add(v->y, MOVE_SPEED);
+                p->y = fp_add(p->y, MOVE_SPEED);
         }
         if (input & INPUT_LEFT) {
-                v->x = fp_sub(v->x, MOVE_SPEED);
+                p->x = fp_sub(p->x, MOVE_SPEED);
         }
         if (input & INPUT_RIGHT) {
-                v->x = fp_add(v->x, MOVE_SPEED);
+                p->x = fp_add(p->x, MOVE_SPEED);
         }
+
+        //p.x = fp_add(p.x, v.x);
+        //p.y = fp_add(p.y, v.y);
 }
 
 static void OnMessage(net_message_p msg, void* userdata)
@@ -222,21 +230,21 @@ static void CollectCommandSystem(flecs::world& world)
         adventure::S2CMap map;
         map.set_frame_id(command->frame_id());
         map.set_global_entity_id(ns->g_id);
-        body_query.each([&](flecs::entity e, IdComponent& id, 
+        body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicPositionComponent& pos, LogicVelocityComponent& vel) {
-                adventure::S2CEntity* ent = map.add_entities();
-                ent->set_id(id.id);
-                if (e.has<PlayerComponent>()) {
-                        ent->set_type(adventure::S2C_TYPE_PLAYER);
-                        ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-                }
-                else {
-                        ent->set_type(adventure::S2C_TYPE_NORMAL);
-                }
-                ent->set_hp(0);
-                ent->set_position_x(pos.x);
-                ent->set_position_y(pos.y);
-                        });
+                        adventure::S2CEntity* ent = map.add_entities();
+                        ent->set_id(id.id);
+                        if (e.has<PlayerComponent>()) {
+                                ent->set_type(adventure::S2C_TYPE_PLAYER);
+                                ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+                        }
+                        else {
+                                ent->set_type(adventure::S2C_TYPE_NORMAL);
+                        }
+                        ent->set_hp(0);
+                        ent->set_position_x(pos.x);
+                        ent->set_position_y(pos.y);
+                });
 
         ns->worlds[map.frame_id()] = map.SerializeAsString();
 }
@@ -277,13 +285,25 @@ static void HandleCommandSystem(flecs::world& world)
 
         // 应用输入
         for (auto& input : s2c.command().player_inputs()) {
-                player_query.each([&](PlayerComponent& p, LogicVelocityComponent& v) {
+                player_query.each([&](PlayerComponent& p, LogicPositionComponent& pos) {
                         if (p.conv != input.conv()) return;
-                        ApplyInput(&v, input.conv(), input.sequence(), input.keycode());
-                });
+                        ApplyInput(&pos, input.conv(), input.sequence(), input.keycode());
+                        });
         }
 
         ns->command_queue.pop();
+}
+
+static int get_target_frameid(int curr_frameid, int context_frameid)
+{
+        int diff = context_frameid - curr_frameid;
+
+        if (diff >= 50)      return curr_frameid + 9;
+        if (diff >= 30)      return curr_frameid;
+        if (diff >= 10)      return curr_frameid + 4;
+        if (diff > 2)        return curr_frameid + 2;
+
+        return curr_frameid;
 }
 
 // ###########################################################################
@@ -293,12 +313,13 @@ static void NotifySystem(flecs::world& world)
 {
         auto ns = world.get_mut<NetworkSingleton>();
         connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
-                auto it = ns->commands.find(conn.frameid);
-                if (it != ns->commands.end()) {
-                        conn.frameid++;
+                int taget_frameid = get_target_frameid(conn.frameid, ns->g_frameid);
+                for (int i = conn.frameid; i < taget_frameid; i++) {
+                        auto it = ns->commands.find(i);
                         kcpserver_send(kcpserver, conn.conv, it->second.c_str(), it->second.size());
                 }
-        });
+                conn.frameid = taget_frameid;
+                });
 }
 
 static void StartupSystem(flecs::world& world)
@@ -324,6 +345,10 @@ static void StartupSystem(flecs::world& world)
                 });
 
         ns->worlds[map.frame_id()] = map.SerializeAsString();
+
+        simhei_font = font_create(renderer, "adventure_server_fonts/simhei.ttf", 24);
+        const char* fps_str = "fps:";
+        fps_texture = text_createx(simhei_font, fps_str, SDL_strlen(fps_str), { 255,255,255,255 });
 }
 
 // ###########################
@@ -351,9 +376,13 @@ static void LerpSystem(LogicPositionComponent& lp, TransformComponent& t)
 // ###########################################################################
 static void FixedLogicUpdate(flecs::world& world)
 {
+        net_message_t msg;
+        while (kcpserver_poll_message(kcpserver, &msg)) {
+                OnMessage(&msg, NULL);
+                //SDL_free(msg.data);
+        }
         CollectCommandSystem(world);
         HandleCommandSystem(world);
-        world.progress(FIXED_TIMESTEP);
         NotifySystem(world);
 }
 
@@ -375,7 +404,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         log_info("server start");
         kcpserver = kcpserver_create("192.168.1.33", 10000);
-        kcpserver_set_callback(kcpserver, OnMessage, kcpserver);
+        //kcpserver_set_callback(kcpserver, OnMessage, kcpserver);
 
         world.component<NetworkSingleton>();
         world.component<ConnectionComponent>();
@@ -387,7 +416,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
         auto ns = world.get_mut<NetworkSingleton>();
 
-        world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSystem);
+        //world.system<LogicPositionComponent, LogicVelocityComponent>().each(MoveSystem);
         sync_pos_query = world.query<LogicPositionComponent, TransformComponent>();
 
         world.entity()
@@ -404,7 +433,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         render_query = world.query<IdComponent, TransformComponent>();
         body_query = world.query<IdComponent, LogicPositionComponent, LogicVelocityComponent>();
         connection_query = world.query<ConnectionComponent>();
-        player_query = world.query<PlayerComponent, LogicVelocityComponent>();
+        player_query = world.query<PlayerComponent, LogicPositionComponent>();
 
         StartupSystem(world);
         return SDL_APP_CONTINUE;
@@ -430,28 +459,32 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-        kcpserver_update(kcpserver);
-
-        Uint64 now = SDL_GetPerformanceCounter();
-        if (lastTime == 0) lastTime = now;
-        float delta = (now - lastTime) / (double)SDL_GetPerformanceFrequency();
+        char buff[JOY_MAX_PATH];
+        Uint64 now = SDL_GetTicks();
+        float delta = (now - lastTime) / 1000.0f;
         lastTime = now;
-
         accumulator += delta;
-
+        kcpserver_update(kcpserver);
         while (accumulator >= FIXED_TIMESTEP) {
+                //utils_current_datetime("%H:%M:%S", buff, JOY_MAX_PATH);
+                //log_info(buff);
                 FixedLogicUpdate(world);
                 accumulator -= FIXED_TIMESTEP;
         }
+
+        world.progress(delta);
+
 
         // 渲染同步放这里（你之前改对的位置）
         sync_pos_query.each([=](LogicPositionComponent& lp, TransformComponent& t) {
                 float target_position_x = fp_to_float(lp.x);
                 float target_position_y = fp_to_float(lp.y);
                 // 正确的固定步插值 alpha（0~1）
-                float alpha = accumulator / FIXED_TIMESTEP;
+               /* float alpha = accumulator / FIXED_TIMESTEP;
                 t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
-                t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
+                t.position_y = ft_lerp(t.position_y, target_position_y, alpha);*/
+                t.position_x = target_position_x;
+                t.position_y = target_position_y;
                 });
 
 
@@ -462,6 +495,14 @@ SDL_AppResult SDL_AppIterate(void* appstate)
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderFillRect(renderer, &r);
                 });
+
+        auto ns = world.get_mut<NetworkSingleton>();
+
+        char content[JOY_MAX_PATH] = { 0 };
+        sprintf(content, "fps:%d", ns->g_frameid);
+        text_updatex(fps_texture, simhei_font, content, SDL_strlen(content), { 255,255,255,255 });
+        text_print(renderer, fps_texture, 10, 10);
+
         SDL_RenderPresent(renderer);
 
         return SDL_APP_CONTINUE;
@@ -469,6 +510,9 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
+        font_destroy(simhei_font);
+        text_destroy(fps_texture);
+
         kcpserver_destroy(kcpserver);
         SDL_DestroyWindow(window);
         SDL_DestroyRenderer(renderer);
