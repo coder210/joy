@@ -313,7 +313,7 @@ void kcpserver_update(kcpserver_p ks)
 
                 if (utils_wait_delay(&conn->updating_delay, current_time))
                 {
-                        conn->timeout--;
+                        conn->timeout -= 100;
                 }
 
                 ikcp_update(conn->kcp, ikcp_check(conn->kcp, current_time));
@@ -359,6 +359,11 @@ void kcpserver_update(kcpserver_p ks)
                 kh_del(kconn, ks->conns, p);
         }
         SDL_free(del_list);
+}
+
+int kcpserver_connection_count(kcpserver_p ks)
+{
+        return kh_size(ks->conns);
 }
 
 bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg)

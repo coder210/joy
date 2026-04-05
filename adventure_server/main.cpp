@@ -40,7 +40,7 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
         flecs::entity entity = world.entity().add<ConnectionComponent>();
         auto conn = entity.get_mut<ConnectionComponent>();
         conn->conv = conv;
-        conn->frameid = ctx->g_frameid - 1;
+        conn->frameid = ctx->commands.size();
         conn->health = 10;
 
         adventure::S2C s2c;
@@ -48,11 +48,11 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
         s2c.set_cmd(adventure::S2C_CMD_LOADING);
         auto it = ctx->worlds.find(conn->frameid);
         if (it == ctx->worlds.end()) {
-                SDL_Log("没有world");
+                log_info("没有world");
                 return;
         }
         if (!map->ParseFromArray(it->second.c_str(), it->second.length())) {
-                SDL_Log("解析失败");
+                log_info("解析失败");
                 return;
         }
         auto data = s2c.SerializeAsString();
@@ -146,6 +146,9 @@ static void Attack(LogicPositionComponent* p,
         if (nearest_id != nullptr) {
                 // 仅对最近目标减血
                 nearest_id->hp--;
+                if (nearest_id->hp <= 0) {
+                }
+
                 // 绘制最近目标的攻击射线特效
                 SDL_FRect line;
                 float end_x = fp_to_float(ray.origin.x);
@@ -191,6 +194,10 @@ static void OnMessage(net_message_p msg, void* userdata)
         }
         else if (msg->type == NET_TYPE_DISCONNECTED) {
                 log_info("disconnected=%d", msg->conv);
+                auto ctx = world.get_mut<Context>();
+                adventure::S2CPlayerLeave playerLeave;
+                playerLeave.set_conv(msg->conv);
+                ctx->player_leaves.push_back(playerLeave);
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
                 adventure::C2S c2s;
@@ -231,6 +238,9 @@ static void CollectCommandSystem(flecs::world& world)
 
         for (auto& pj : ctx->player_joins) {
                 *command->add_player_joins() = pj;
+        }
+        for (auto& pl : ctx->player_leaves) {
+                *command->add_player_leaves() = pl;
         }
         for (auto& pi : ctx->player_inputs) {
                 *command->add_player_inputs() = pi;
@@ -300,7 +310,17 @@ static void HandleCommandSystem(flecs::world& world)
         }
 
         // 玩家离开
-        for (auto& player_leave : s2c.command().player_leaves()) {}
+        world.defer_begin();
+        for (auto& player_leave : s2c.command().player_leaves()) {
+                int conv = player_leave.conv();
+                ctx->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
+                                if (p.conv == conv) {
+                                        e.destruct();
+                                }
+                        });
+        }
+        world.defer_end();   // 此时才真正执行删除
 
         // 应用输入
         //log_info("Applying inputs for frame %d", s2c.command().frame_id());
@@ -351,8 +371,8 @@ static void NotifySystem(flecs::world& world)
 // ###########################################################################
 static void FixedLogicUpdate(flecs::world& world)
 {
-        net_message_t msg;
         auto ctx = world.get_mut<Context>();
+        net_message_t msg;
         while (kcpserver_poll_message(ctx->kcpserver, &msg)) {
                 OnMessage(&msg, NULL);
         }
@@ -389,8 +409,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
        
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })

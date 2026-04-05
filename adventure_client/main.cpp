@@ -78,10 +78,6 @@ static void Attack(LogicPositionComponent* p,
         if (nearest_id != nullptr) {
                 // 仅对最近目标减血
                 nearest_id->hp--;
-                if (nearest_id->hp <= 0) {
-                        ctx->running = false;
-                }
-
                 // 绘制最近目标的攻击射线特效
                 SDL_FRect line;
                 float end_x = fp_to_float(ray.origin.x);
@@ -168,17 +164,19 @@ static void HandleCommand(adventure::S2C& s2c)
         }
 
         // 玩家离开
+        world.defer_begin();
         for (auto& player_leave : s2c.command().player_leaves()) {
-                log_info("%d:CMD_PLAYER_LEAVE", player_leave.conv());
+                //log_info("%d:CMD_PLAYER_LEAVE", player_leave.conv());
                 ctx->player_query.each([&](flecs::entity entity,
                         PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv == player_leave.conv()) {
                                         entity.destruct();
-                                        log_info("Entity removed for conv %d", p.conv);
+                                        //log_info("Entity removed for conv %d", p.conv);
                                 }
                         });
         }
+        world.defer_end();   // 此时才真正执行删除
 
         // 应用输入
         //log_info("Applying inputs for frame %d", s2c.command().frame_id());
@@ -265,7 +263,6 @@ static void FixedLogicUpdate(float dt)
                         break;
                 }
         }
-
         SendLocalInputToServer();
         SendHeartbeat(dt);
 }
@@ -290,8 +287,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         auto ctx = world.get_mut<Context>();
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
-        //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
+        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);

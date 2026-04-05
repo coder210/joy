@@ -42,6 +42,7 @@ extern "C" {
 	JOY_API void kcpserver_broadcast(kcpserver_p ks, const char *data, int len);
 	JOY_API void kcpserver_offline(kcpserver_p ks, int conv);
 	JOY_API void kcpserver_update(kcpserver_p ks);
+	JOY_API int kcpserver_connection_count(kcpserver_p ks);
 	JOY_API bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg);
 	JOY_API void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata);
 
