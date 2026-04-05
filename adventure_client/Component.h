@@ -2,6 +2,7 @@
 #define COMPONENT_H
 
 #include <joy2d/jmath.h>
+#include <stdint.h>
 
 struct ConnectionComponent
 {
@@ -13,6 +14,7 @@ struct ConnectionComponent
 struct IdComponent
 {
         int id;
+        int64_t hp;
 };
 
 struct LogicRectComponent
@@ -46,6 +48,11 @@ struct TransformComponent
 struct PlayerComponent
 {
         int conv;
+    
 };
 
+struct AttackRayEffectComponent {
+        float x, y, w, h;
+        float lifetime;
+};
 #endif

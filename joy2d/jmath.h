@@ -210,6 +210,11 @@ static fp_t fp_div(fp_t a, fp_t b)
 	return result;
 }
 
+static fp_t fp_eq(fp_t a, fp_t b)
+{
+	return a == b;
+}
+
 static fp_t fp_abs(fp_t x)
 {
 	fp_t r;
