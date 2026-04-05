@@ -7,35 +7,35 @@ MobileInputLayer::MobileInputLayer(Resources* resources, SDL_Renderer* renderer)
 {
         this->resources = resources;
 
-        int w, h;
-        SDL_GetRenderOutputSize(renderer, &w, &h);
+        SDL_Rect logical_rect;
+        SDL_GetRenderLogicalPresentation(renderer, &logical_rect.w, &logical_rect.h, NULL);
+        int logical_w = logical_rect.w;
+        int logical_h = logical_rect.h;
 
-        // 单独设置各边距（单位：像素）
-        const int left_margin = 10;    // 方向键组距离左边距离
-        const int bottom_margin = 60;  // 方向键组和攻击按钮距离下边距离
-        const int right_margin = 10;   // 攻击按钮距离右边距离
+        // 边距（基于逻辑分辨率）
+        const int left_margin = 10;
+        const int bottom_margin = 60;
+        const int right_margin = 10;
 
-        // 方向键组整体宽高（4个50x50按钮组成的十字布局）
         const int dir_group_w = 100;
         const int dir_group_h = 100;
-        // 攻击按钮尺寸
         const int attack_w = 60;
         const int attack_h = 60;
 
-        // 方向键组左下角锚点（X使用左边距，Y使用下边距）
+        // 方向键组左下角（逻辑坐标）
         float dir_x = left_margin;
-        float dir_y = h - dir_group_h - bottom_margin;
+        float dir_y = logical_h - dir_group_h - bottom_margin;  // 480-100-60=320
 
-        // 攻击按钮右下角锚点（X使用右边距，Y使用下边距）
-        float attack_x = w - attack_w - right_margin;
-        float attack_y = h - attack_h - bottom_margin;
+        // 攻击按钮右下角（逻辑坐标）
+        float attack_x = logical_w - attack_w - right_margin;   // 640-60-10=570
+        float attack_y = logical_h - attack_h - bottom_margin;  // 480-60-60=360
 
-        // 创建按钮（相对坐标基于锚点）
+        // 创建按钮（使用逻辑坐标）
         this->upButton = button_create(renderer, { dir_x + 50, dir_y + 0,   50, 50 });
         this->downButton = button_create(renderer, { dir_x + 50, dir_y + 100, 50, 50 });
         this->leftButton = button_create(renderer, { dir_x + 0,  dir_y + 50,  50, 50 });
         this->rightButton = button_create(renderer, { dir_x + 100, dir_y + 50, 50, 50 });
-        this->attackButton = button_create(renderer, { attack_x, attack_y, (float)attack_w, (float)attack_h });
+        this->attackButton = button_create(renderer, { attack_x, attack_y, 60, 60 });
 
         // 设置按钮文字
         button_set_textx(this->upButton, resources->GetSimheiFont24(), "U",
