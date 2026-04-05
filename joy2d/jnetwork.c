@@ -317,7 +317,6 @@ void kcpserver_update(kcpserver_p ks)
                 }
 
                 ikcp_update(conn->kcp, ikcp_check(conn->kcp, current_time));
-
                 len = ikcp_recv(conn->kcp, buf, JOY_MAX_BUFFER - 1);
                 if (len > 0)
                 {
