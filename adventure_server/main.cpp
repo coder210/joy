@@ -409,8 +409,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
        
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
