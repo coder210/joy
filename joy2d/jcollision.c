@@ -59,74 +59,115 @@ collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
         }
 }
 
-
-ray2d_collisionf_t 
-collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rect)
+// 辅助函数：计算矩形碰撞点的法线（轴对齐边界专用）
+static vec2f_t collision2df_calculate_rect_normal(vec2f_t point, vec2f_t min, vec2f_t max)
 {
-        ray2d_collisionf_t result={0};
-        vec2f_t min, max, distance;
+        vec2f_t normal = { fp_zero(), fp_zero() };
+        const fp_t epsilon = fp_from_float(1); // 极小值，避免浮点误差
+
+        // 左边界
+        if (fp_abs(fp_sub(point.x, min.x)) < epsilon) {
+                normal.x = fp_from_float(-1);
+        }
+        // 右边界
+        else if (fp_abs(fp_sub(point.x, max.x)) < epsilon) {
+                normal.x = fp_from_float(1);
+        }
+        // 下边界
+        else if (fp_abs(fp_sub(point.y, min.y)) < epsilon) {
+                normal.y = fp_from_float(-1);
+        }
+        // 上边界
+        else if (fp_abs(fp_sub(point.y, max.y)) < epsilon) {
+                normal.y = fp_from_float(1);
+        }
+
+        return vec2f_normalize(normal);
+}
+
+// 放在函数上方 / 头文件中
+#define SWAP(a, b)  do { fp_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
+
+// 射线-矩形碰撞检测（修复版）
+ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rect)
+{
+        ray2d_collisionf_t result = { 0 };
+        vec2f_t min, max;
         fp_t t_min, t_max, inv_dir;
         fp_t t1, t2, tmp;
 
+
+        ray.direction = vec2f_normalize(ray.direction);
+
+        // 1. 计算矩形的最小/最大坐标
         min.x = rect.x;
         min.y = rect.y;
         max.x = fp_add(rect.x, rect.width);
         max.y = fp_add(rect.y, rect.height);
-        t_min = fp_zero();
-        t_max = fp_one();
-        
-        /* check x axis */
-        if (ray.direction.y == fp_zero()){
-                /* parallel x axis */
-                if (ray.origin.y < min.y || ray.origin.y > max.y)
-                        return result;
-        }
-        else{
-                inv_dir = fp_div(fp_one(), ray.direction.y);
-                t1 = fp_mul(fp_sub(min.y, ray.origin.y), inv_dir);
-                t2 = fp_mul(fp_sub(max.y, ray.origin.y), inv_dir);
-                if (t1 > t2) {
-                        tmp = t1;
-                        t1 = t2;
-                        t2 = tmp;
-                }
-                t_min = fp_max(t_min, t1);
-                t_max = fp_min(t_max, t2);
-                if (t_min > t_max)
-                        return result;
-        }
 
-        /* check y axis */
-        if (ray.direction.x == fp_zero()){
-                /* parallel y axis */
+        // 2. 初始化射线参数：t_min=0（起点），t_max=极大值（无限射线）
+        t_min = fp_zero();
+        t_max = fp_max_value(); // 【修复】替换为你的定点数最大值（无穷大）
+
+        // ===================== 【修复】检查 X 轴 =====================
+        if (ray.direction.x == fp_zero()) {
+                // 射线平行于Y轴，判断起点X是否在矩形内
                 if (ray.origin.x < min.x || ray.origin.x > max.x)
                         return result;
         }
-        else{
+        else {
                 inv_dir = fp_div(fp_one(), ray.direction.x);
                 t1 = fp_mul(fp_sub(min.x, ray.origin.x), inv_dir);
                 t2 = fp_mul(fp_sub(max.x, ray.origin.x), inv_dir);
-                if (t1 > t2) {
-                        tmp = t1;
-                        t1 = t2;
-                        t2 = tmp;
-                }
+
+                // 保证t1 < t2
+                if (t1 > t2) { SWAP(t1, t2); }
+
                 t_min = fp_max(t_min, t1);
                 t_max = fp_min(t_max, t2);
-                if (t_min > t_max)
-                        return result;
+
+                // 无交集
+                if (t_min > t_max) return result;
         }
 
-        distance.x = fp_mul(t_min, ray.direction.x);
-        distance.y = fp_mul(t_min, ray.direction.y);
+        // ===================== 【修复】检查 Y 轴 =====================
+        if (ray.direction.y == fp_zero()) {
+                // 射线平行于X轴，判断起点Y是否在矩形内
+                if (ray.origin.y < min.y || ray.origin.y > max.y)
+                        return result;
+        }
+        else {
+                inv_dir = fp_div(fp_one(), ray.direction.y);
+                t1 = fp_mul(fp_sub(min.y, ray.origin.y), inv_dir);
+                t2 = fp_mul(fp_sub(max.y, ray.origin.y), inv_dir);
 
+                if (t1 > t2) { SWAP(t1, t2); }
+
+                t_min = fp_max(t_min, t1);
+                t_max = fp_min(t_max, t2);
+
+                if (t_min > t_max) return result;
+        }
+
+        // ===================== 计算碰撞结果 =====================
         result.hit = true;
-        result.distance = vec2f_length(distance);
-        result.point = vec2f_add(ray.origin, distance);
-        result.normal = vec2f_normalize(distance);
+        // 【修复】正确的碰撞距离 = t_min（射线参数）
+        result.distance = t_min;
 
-        return result;    
+        // 碰撞点 = 起点 + t_min * 方向
+        vec2f_t delta = {
+            fp_mul(t_min, ray.direction.x),
+            fp_mul(t_min, ray.direction.y)
+        };
+        result.point = vec2f_add(ray.origin, delta);
+
+        // 【修复】正确计算矩形碰撞法线（垂直于碰撞边）
+        result.normal = collision2df_calculate_rect_normal(result.point, min, max);
+
+        return result;
 }
+
+
 
 ray2d_collisionf_t 
 collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
