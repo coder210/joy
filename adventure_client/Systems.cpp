@@ -22,7 +22,7 @@ void StartupSystem(flecs::world& world)
 // ###########################
 // Flecs œµÕ≥£∫‰÷»æ≤Â÷µ
 // ###########################
-void LerpSystem(flecs::entity& entity,
+void LerpSystem(flecs::entity entity,
         LogicPositionComponent& lp, TransformComponent& t)
 {
         auto ctx = entity.world().get_mut<Context>();
@@ -36,7 +36,7 @@ void LerpSystem(flecs::entity& entity,
         t.position_y = target_position_y;*/
 }
 
-void RendererSystem(flecs::entity& entity,
+void RendererSystem(flecs::entity entity,
         IdComponent& id, LogicRectComponent& rect, TransformComponent& t)
 {
         auto ctx = entity.world().get_mut<Context>();
