@@ -313,7 +313,7 @@ void kcpserver_update(kcpserver_p ks)
 
                 if (utils_wait_delay(&conn->updating_delay, current_time))
                 {
-                        conn->timeout -= 100;
+                        conn->timeout -= 1;
                 }
 
                 ikcp_update(conn->kcp, ikcp_check(conn->kcp, current_time));
