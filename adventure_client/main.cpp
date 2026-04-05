@@ -170,7 +170,7 @@ static void HandleCommand(adventure::S2C& s2c)
         // 玩家离开
         for (auto& player_leave : s2c.command().player_leaves()) {
                 log_info("%d:CMD_PLAYER_LEAVE", player_leave.conv());
-                ctx->player_query.each([&](flecs::entity& entity,
+                ctx->player_query.each([&](flecs::entity entity,
                         PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv == player_leave.conv()) {
