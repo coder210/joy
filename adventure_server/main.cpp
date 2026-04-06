@@ -40,7 +40,7 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
         flecs::entity entity = world.entity().add<ConnectionComponent>();
         auto conn = entity.get_mut<ConnectionComponent>();
         conn->conv = conv;
-        conn->frameid = ctx->commands.size();
+        conn->frameid = std::max(ctx->g_frameid - 1, 1);
         conn->health = 10;
 
         adventure::S2C s2c;
@@ -227,6 +227,56 @@ static void OnMessage(net_message_p msg, void* userdata)
 // ###########################################################################
 // 【帧同步】收集命令（每固定帧执行一次，非定时器）
 // ###########################################################################
+//static void CollectCommandSystem(flecs::world& world)
+//{
+//        auto ctx = world.get_mut<Context>();
+//        adventure::S2C s2c;
+//        s2c.set_cmd(adventure::S2C_CMD_COMMAND);
+//
+//        adventure::S2CCommand* command = s2c.mutable_command();
+//        command->set_frame_id(ctx->g_frameid++);
+//
+//        for (auto& pj : ctx->player_joins) {
+//                *command->add_player_joins() = pj;
+//        }
+//        for (auto& pl : ctx->player_leaves) {
+//                *command->add_player_leaves() = pl;
+//        }
+//        for (auto& pi : ctx->player_inputs) {
+//                *command->add_player_inputs() = pi;
+//        }
+//
+//        auto command_data = s2c.SerializeAsString();
+//        ctx->commands[command->frame_id()] = command_data;
+//        ctx->command_queue.push(command_data);
+//
+//        ctx->player_joins.clear();
+//        ctx->player_leaves.clear();
+//        ctx->player_inputs.clear();
+//
+//        // 收集世界实体状态
+//        adventure::S2CMap map;
+//        map.set_frame_id(command->frame_id());
+//        map.set_global_entity_id(ctx->g_id);
+//        ctx->body_query.each([&](flecs::entity e, IdComponent& id,
+//                LogicRectComponent& r, LogicPositionComponent& pos) {
+//                        adventure::S2CEntity* ent = map.add_entities();
+//                        ent->set_id(id.id);
+//                        if (e.has<PlayerComponent>()) {
+//                                ent->set_type(adventure::S2C_TYPE_PLAYER);
+//                                ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+//                        }
+//                        else {
+//                                ent->set_type(adventure::S2C_TYPE_NORMAL);
+//                        }
+//                        ent->set_hp(id.hp);
+//                        ent->set_position_x(pos.x);
+//                        ent->set_position_y(pos.y);
+//                });
+//
+//        ctx->worlds[map.frame_id()] = map.SerializeAsString();
+//}
+
 static void CollectCommandSystem(flecs::world& world)
 {
         auto ctx = world.get_mut<Context>();
@@ -275,7 +325,17 @@ static void CollectCommandSystem(flecs::world& world)
                 });
 
         ctx->worlds[map.frame_id()] = map.SerializeAsString();
+
+        // ========== 新增：限制 worlds 和 commands 最多保留 1000 帧 ==========
+        const size_t MAX_FRAMES = 1000;
+        while (ctx->commands.size() > MAX_FRAMES) {
+                ctx->commands.erase(ctx->commands.begin());
+        }
+        while (ctx->worlds.size() > MAX_FRAMES) {
+                ctx->worlds.erase(ctx->worlds.begin());
+        }
 }
+
 
 // ###########################################################################
 // 【帧同步】执行命令
@@ -352,6 +412,19 @@ static int GetTargetFrameId(int curr_frameid, int context_frameid)
 // ###########################################################################
 // 【帧同步】通知客户端
 // ###########################################################################
+//static void NotifySystem(flecs::world& world)
+//{
+//        auto ctx = world.get_mut<Context>();
+//        ctx->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
+//                int taget_frameid = GetTargetFrameId(conn.frameid, ctx->g_frameid);
+//                for (int i = conn.frameid; i < taget_frameid; i++) {
+//                        auto it = ctx->commands.find(i);
+//                        kcpserver_send(ctx->kcpserver, conn.conv, it->second.c_str(), it->second.size());
+//                }
+//                conn.frameid = taget_frameid;
+//                });
+//}
+
 static void NotifySystem(flecs::world& world)
 {
         auto ctx = world.get_mut<Context>();
@@ -359,7 +432,13 @@ static void NotifySystem(flecs::world& world)
                 int taget_frameid = GetTargetFrameId(conn.frameid, ctx->g_frameid);
                 for (int i = conn.frameid; i < taget_frameid; i++) {
                         auto it = ctx->commands.find(i);
-                        kcpserver_send(ctx->kcpserver, conn.conv, it->second.c_str(), it->second.size());
+                        if (it != ctx->commands.end()) {
+                                kcpserver_send(ctx->kcpserver, conn.conv, it->second.c_str(), it->second.size());
+                        }
+                        else {
+                                // 可选：记录日志，或跳过丢失的帧（客户端可能已断开或过于落后）
+                                log_error("Frame %d not found in commands, skip sending.", i);
+                        }
                 }
                 conn.frameid = taget_frameid;
                 });
