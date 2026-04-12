@@ -541,9 +541,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
         SDL_RenderClear(ctx->renderer);
 
-        if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
-                //utils_current_datetime("%H:%M:%S", buff, JOY_MAX_PATH);
-                //log_info(buff);
+        while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 FixedLogicUpdate(world);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
