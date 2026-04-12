@@ -45,6 +45,7 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
 
         adventure::S2C s2c;
         adventure::S2CMap* map = s2c.mutable_map();
+        map->set_frame_id(conn->frameid);
         s2c.set_cmd(adventure::S2C_CMD_LOADING);
         auto it = ctx->worlds.find(conn->frameid);
         if (it == ctx->worlds.end()) {
@@ -94,7 +95,7 @@ static void HandleHeartbeat(int conv, adventure::C2S* c2s)
                         return false;
                 }
                 return true;
-        });
+                });
 }
 static void Attack(LogicPositionComponent* p,
         LogicRectComponent& currRect,
@@ -227,56 +228,6 @@ static void OnMessage(net_message_p msg, void* userdata)
 // ###########################################################################
 // 【帧同步】收集命令（每固定帧执行一次，非定时器）
 // ###########################################################################
-//static void CollectCommandSystem(flecs::world& world)
-//{
-//        auto ctx = world.get_mut<Context>();
-//        adventure::S2C s2c;
-//        s2c.set_cmd(adventure::S2C_CMD_COMMAND);
-//
-//        adventure::S2CCommand* command = s2c.mutable_command();
-//        command->set_frame_id(ctx->g_frameid++);
-//
-//        for (auto& pj : ctx->player_joins) {
-//                *command->add_player_joins() = pj;
-//        }
-//        for (auto& pl : ctx->player_leaves) {
-//                *command->add_player_leaves() = pl;
-//        }
-//        for (auto& pi : ctx->player_inputs) {
-//                *command->add_player_inputs() = pi;
-//        }
-//
-//        auto command_data = s2c.SerializeAsString();
-//        ctx->commands[command->frame_id()] = command_data;
-//        ctx->command_queue.push(command_data);
-//
-//        ctx->player_joins.clear();
-//        ctx->player_leaves.clear();
-//        ctx->player_inputs.clear();
-//
-//        // 收集世界实体状态
-//        adventure::S2CMap map;
-//        map.set_frame_id(command->frame_id());
-//        map.set_global_entity_id(ctx->g_id);
-//        ctx->body_query.each([&](flecs::entity e, IdComponent& id,
-//                LogicRectComponent& r, LogicPositionComponent& pos) {
-//                        adventure::S2CEntity* ent = map.add_entities();
-//                        ent->set_id(id.id);
-//                        if (e.has<PlayerComponent>()) {
-//                                ent->set_type(adventure::S2C_TYPE_PLAYER);
-//                                ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-//                        }
-//                        else {
-//                                ent->set_type(adventure::S2C_TYPE_NORMAL);
-//                        }
-//                        ent->set_hp(id.hp);
-//                        ent->set_position_x(pos.x);
-//                        ent->set_position_y(pos.y);
-//                });
-//
-//        ctx->worlds[map.frame_id()] = map.SerializeAsString();
-//}
-
 static void CollectCommandSystem(flecs::world& world)
 {
         auto ctx = world.get_mut<Context>();
@@ -412,19 +363,6 @@ static int GetTargetFrameId(int curr_frameid, int context_frameid)
 // ###########################################################################
 // 【帧同步】通知客户端
 // ###########################################################################
-//static void NotifySystem(flecs::world& world)
-//{
-//        auto ctx = world.get_mut<Context>();
-//        ctx->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
-//                int taget_frameid = GetTargetFrameId(conn.frameid, ctx->g_frameid);
-//                for (int i = conn.frameid; i < taget_frameid; i++) {
-//                        auto it = ctx->commands.find(i);
-//                        kcpserver_send(ctx->kcpserver, conn.conv, it->second.c_str(), it->second.size());
-//                }
-//                conn.frameid = taget_frameid;
-//                });
-//}
-
 static void NotifySystem(flecs::world& world)
 {
         auto ctx = world.get_mut<Context>();
@@ -448,16 +386,14 @@ static void NotifySystem(flecs::world& world)
 // ###########################################################################
 // 【帧同步核心】固定逻辑帧更新
 // ###########################################################################
-static void FixedLogicUpdate(flecs::world& world)
+static void FixedLogicUpdate(float dt)
 {
         auto ctx = world.get_mut<Context>();
         net_message_t msg;
-        while (kcpserver_poll_message(ctx->kcpserver, &msg)) {
+        if (kcpserver_poll_message(ctx->kcpserver, &msg)) {
                 OnMessage(&msg, NULL);
         }
-        CollectCommandSystem(world);
-        HandleCommandSystem(world);
-        NotifySystem(world);
+        world.progress(dt);
 }
 
 
@@ -488,9 +424,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
-       
+        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
                 .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
@@ -501,9 +437,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
                 .set<LogicPositionComponent>({ fp_from_float(4), fp_from_float(4) })
                 .set<TransformComponent>({ 2,2 });
+
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
-        world.system<IdComponent, LogicRectComponent, TransformComponent>().each(RendererSystem);
-        world.system<AttackRayEffectComponent>().each(RendererAttackRayEffectSystem);
+        world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
+
+        ctx->renderer_query = world.query<IdComponent, LogicRectComponent, TransformComponent>();
+        ctx->renderer_attack_rayeffect_query = world.query<AttackRayEffectComponent>();
+        //world.system<IdComponent, LogicRectComponent, TransformComponent>().each(RendererSystem);
+        //world.system<AttackRayEffectComponent>().each(RendererAttackRayEffectSystem);
 
         StartupSystem(world);
         return SDL_APP_CONTINUE;
@@ -538,15 +479,26 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         ctx->accumulator += delta;
         kcpserver_update(ctx->kcpserver);
 
-        SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
-        SDL_RenderClear(ctx->renderer);
-
-        while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
-                FixedLogicUpdate(world);
+        // ---------- 固定步长物理更新（60Hz） ----------
+        if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
+                FixedLogicUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
 
-        world.progress(delta);
+        // ---------- 独立的输入发送定时器（15Hz） ----------
+        ctx->serverTickTimer += delta;
+        if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {
+                ctx->serverTickTimer -= ctx->SERVER_TICK_INTERVAL;
+                CollectCommandSystem(world);
+                HandleCommandSystem(world);
+                NotifySystem(world);
+        }
+
+        SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
+        SDL_RenderClear(ctx->renderer);
+
+        ctx->renderer_query.each(RendererSystem);
+        ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
 
         ctx->debugLayer->Update(ctx->g_frameid, 0);
         ctx->debugLayer->Draw(ctx->renderer);

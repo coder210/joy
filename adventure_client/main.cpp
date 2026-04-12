@@ -240,10 +240,10 @@ static void SendLocalInputToServer()
 static void SendHeartbeat(float dt)
 {
         auto ctx = world.get_mut<Context>();
-        ctx->heartbeat_timer += dt;
-        if (ctx->heartbeat_timer >= 1.f)
+        ctx->heartbeatTimer += dt;
+        if (ctx->heartbeatTimer >= 3.f)
         {
-                ctx->heartbeat_timer = 0.f;
+                ctx->heartbeatTimer = 0.f;
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_PLAYER_HEART);
                 std::string d = c2s.SerializeAsString();
@@ -258,10 +258,8 @@ static void FixedLogicUpdate(float dt)
         if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
                 OnMessage(&msg, NULL);
         }
-        SendLocalInputToServer();
-        SendHeartbeat(dt);
+        world.progress(dt);
 }
-
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
@@ -283,13 +281,15 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
+        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
-        world.system<IdComponent, LogicRectComponent, TransformComponent>().each(RendererSystem);
-        world.system<AttackRayEffectComponent>().each(RendererAttackRayEffectSystem);
+        world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
+
+        ctx->renderer_query = world.query<IdComponent, LogicRectComponent, TransformComponent>();
+        ctx->renderer_attack_rayeffect_query = world.query<AttackRayEffectComponent>();
 
         ctx->player_query = world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
         ctx->body_query = world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
@@ -348,15 +348,31 @@ SDL_AppResult SDL_AppIterate(void*)
         ctx->accumulator += delta;
 
         kcpclient_update(ctx->kcpclient);
-        SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
-        SDL_RenderClear(ctx->renderer);
+       
 
+        // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 FixedLogicUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
 
-        world.progress(delta);
+        // ---------- 独立的输入发送定时器（15Hz） ----------
+        ctx->inputSendTimer += delta;
+        if (ctx->inputSendTimer >= ctx->INPUT_SEND_INTERVAL) {
+                ctx->inputSendTimer -= ctx->INPUT_SEND_INTERVAL;
+                SendLocalInputToServer();   // 按15Hz发送
+        }
+
+        // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
+        // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，
+        // 但为了避免依赖 FixedLogicUpdate，现在直接调用即可（内部计时器决定是否真正发送）
+        SendHeartbeat(delta);
+
+        SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
+        SDL_RenderClear(ctx->renderer);
+
+        ctx->renderer_query.each(RendererSystem);
+        ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
 
         ctx->debugLayer->Update(ctx->server_frameid, 0);
         ctx->debugLayer->Draw(ctx->renderer);

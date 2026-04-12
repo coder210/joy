@@ -24,8 +24,6 @@ struct Context {
         int server_frameid = 0;
         int server_entity_id = 0;
 
-        float heartbeat_timer = 0.f;
-
         Resources* resources = NULL;
         DebugLayer* debugLayer = NULL;
         MobileInputLayer* mobileInputLayer = NULL;
@@ -44,11 +42,18 @@ struct Context {
         // 固定逻辑步
         Uint64 lastTime = SDL_GetTicks();
         float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 16.0f;
+        float FIXED_TIMESTEP = 1.0f / 60.0f;
+
+        // 在 Context 结构体内添加
+        float inputSendTimer = 0.0f;        // 输入发送计时器
+        float heartbeatTimer = 0.0f;        // 已经存在（heartbeat_timer），注意命名一致性
+        float INPUT_SEND_INTERVAL = 1.0f / 15.0f;  // 15Hz
 
 
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+        flecs::query<IdComponent, LogicRectComponent, TransformComponent> renderer_query;
+        flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
 };
 
 

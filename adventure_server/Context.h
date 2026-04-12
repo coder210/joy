@@ -23,8 +23,14 @@ struct Context {
         bool leftPressed = false;
         bool rightPressed = false;
 
-        float FIXED_TIMESTEP = 1.0f / 16.0f;
+        float FIXED_TIMESTEP = 1.0f / 60.0f;
         float accumulator = 0.0f;
+
+        // 在 Context 结构体内添加
+        float serverTickTimer = 0.0f;        // 输入发送计时器
+        float SERVER_TICK_INTERVAL = 1.0f / 15.0f;  // 15Hz
+
+
         Uint64 lastTime = SDL_GetTicks();
 
         Resources* resources = NULL;
@@ -33,6 +39,8 @@ struct Context {
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
         flecs::query<ConnectionComponent> connection_query;
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+        flecs::query<IdComponent, LogicRectComponent, TransformComponent> renderer_query;
+        flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
 
         std::vector<adventure::S2CPlayerJoin> player_joins;
         std::vector<adventure::S2CPlayerLeave> player_leaves;
