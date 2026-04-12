@@ -488,8 +488,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
        
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
@@ -541,7 +541,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
         SDL_RenderClear(ctx->renderer);
 
-        while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
+        if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 //utils_current_datetime("%H:%M:%S", buff, JOY_MAX_PATH);
                 //log_info(buff);
                 FixedLogicUpdate(world);

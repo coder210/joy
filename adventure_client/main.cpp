@@ -255,13 +255,8 @@ static void FixedLogicUpdate(float dt)
 {
         auto ctx = world.get_mut<Context>();
         net_message_t msg;
-        for (int i = 0; i < 10; i++) {
-                if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
-                        OnMessage(&msg, NULL);
-                }
-                else {
-                        break;
-                }
+        if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
+                OnMessage(&msg, NULL);
         }
         SendLocalInputToServer();
         SendHeartbeat(dt);
@@ -288,8 +283,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
+        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
@@ -356,7 +351,7 @@ SDL_AppResult SDL_AppIterate(void*)
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
         SDL_RenderClear(ctx->renderer);
 
-        while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
+        if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 FixedLogicUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
