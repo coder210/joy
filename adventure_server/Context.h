@@ -28,7 +28,7 @@ struct Context {
 
         // 在 Context 结构体内添加
         float serverTickTimer = 0.0f;        // 输入发送计时器
-        float SERVER_TICK_INTERVAL = 1.0f / 15.0f;  // 15Hz
+        float SERVER_TICK_INTERVAL = 1.0f / 30.0f;  // 15Hz
 
 
         Uint64 lastTime = SDL_GetTicks();
