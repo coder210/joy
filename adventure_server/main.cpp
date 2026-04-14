@@ -24,7 +24,7 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
 
-static const fp_t MOVE_SPEED = fp_from_float(0.5f);
+static const fp_t MOVE_SPEED = fp_from_float(10.0f);
 
 
 
@@ -167,17 +167,22 @@ static void Attack(LogicPositionComponent* p,
 static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
         IdComponent& currId, int conv, int sequence, int input)
 {
+        // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
+        auto ctx = world.get_mut<Context>();
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);  // 1/60 秒
+        fp_t step = fp_mul(MOVE_SPEED, delta);            // 速度 × 时间
+
         if (input & INPUT_UP) {
-                p->y = fp_sub(p->y, MOVE_SPEED);
+                p->y = fp_sub(p->y, step);
         }
         if (input & INPUT_DOWN) {
-                p->y = fp_add(p->y, MOVE_SPEED);
+                p->y = fp_add(p->y, step);
         }
         if (input & INPUT_LEFT) {
-                p->x = fp_sub(p->x, MOVE_SPEED);
+                p->x = fp_sub(p->x, step);
         }
         if (input & INPUT_RIGHT) {
-                p->x = fp_add(p->x, MOVE_SPEED);
+                p->x = fp_add(p->x, step);
         }
         if (input & INPUT_ATTACK) {
                 Attack(p, currRect, currId);
@@ -425,7 +430,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        ctx->kcpserver = kcpserver_create("192.168.2.36", 10000);
+        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
 
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })

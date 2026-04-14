@@ -19,7 +19,7 @@ static flecs::world world;
 
 
 
-static const fp_t MOVE_SPEED = fp_from_float(0.5f);
+static const fp_t MOVE_SPEED = fp_from_float(10.0f);
 
 // 输入掩码
 const int INPUT_UP = 1 << 0;
@@ -95,17 +95,22 @@ static void Attack(LogicPositionComponent* p,
 static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
         IdComponent& currId, int conv, int sequence, int input)
 {
+        // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
+        auto ctx = world.get_mut<Context>();
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);  // 1/60 秒
+        fp_t step = fp_mul(MOVE_SPEED, delta);            // 速度 × 时间
+
         if (input & INPUT_UP) {
-                p->y = fp_sub(p->y, MOVE_SPEED);
+                p->y = fp_sub(p->y, step);
         }
         if (input & INPUT_DOWN) {
-                p->y = fp_add(p->y, MOVE_SPEED);
+                p->y = fp_add(p->y, step);
         }
         if (input & INPUT_LEFT) {
-                p->x = fp_sub(p->x, MOVE_SPEED);
+                p->x = fp_sub(p->x, step);
         }
         if (input & INPUT_RIGHT) {
-                p->x = fp_add(p->x, MOVE_SPEED);
+                p->x = fp_add(p->x, step);
         }
         if (input & INPUT_ATTACK) {
                 Attack(p, currRect, currId);
@@ -259,6 +264,18 @@ static void FixedLogicUpdate(float dt)
                 OnMessage(&msg, NULL);
         }
         world.progress(dt);
+
+        // 3. 更新所有实体的 TransformComponent 历史缓冲（手动）
+        ctx->sync_query.each([&](flecs::entity e, IdComponent &id, LogicPositionComponent& lp, TransformComponent& t) {
+                float new_x = fp_to_float(lp.x);
+                float new_y = fp_to_float(lp.y);
+                if (new_x != t.position_x || new_y != t.position_y) {
+                        t.prev_position_x = t.position_x;
+                        t.prev_position_y = t.position_y;
+                        t.position_x = new_x;
+                        t.position_y = new_y;
+                }
+        });
 }
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
@@ -282,12 +299,14 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
+        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
         world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
 
+        ctx->sync_query = world.query<IdComponent, LogicPositionComponent, TransformComponent>();
         ctx->renderer_query = world.query<IdComponent, LogicRectComponent, TransformComponent>();
         ctx->renderer_attack_rayeffect_query = world.query<AttackRayEffectComponent>();
 
