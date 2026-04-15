@@ -47,7 +47,7 @@ struct Context {
         // 在 Context 结构体内添加
         float inputSendTimer = 0.0f;        // 输入发送计时器
         float heartbeatTimer = 0.0f;        // 已经存在（heartbeat_timer），注意命名一致性
-        float INPUT_SEND_INTERVAL = 1.0f / 30.0f;  // 15Hz
+        float INPUT_SEND_INTERVAL = 1.0f / 15.0f;  // 15Hz
 
 
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;

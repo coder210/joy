@@ -299,8 +299,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
-        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        //ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
+        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
