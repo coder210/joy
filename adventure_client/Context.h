@@ -44,11 +44,10 @@ struct Context {
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 60.0f;
 
-        // 在 Context 结构体内添加
-        float inputSendTimer = 0.0f;        // 输入发送计时器
+        int current_input_mask = 0;
         float heartbeatTimer = 0.0f;        // 已经存在（heartbeat_timer），注意命名一致性
-        float INPUT_SEND_INTERVAL = 1.0f / 15.0f;  // 15Hz
 
+        bool attack_triggered = false;   // 攻击键按下待发送
 
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;

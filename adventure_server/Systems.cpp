@@ -48,13 +48,12 @@ void LerpSystem(flecs::entity e,
         auto ctx = e.world().get_mut<Context>();
         float target_position_x = fp_to_float(lp.x);
         float target_position_y = fp_to_float(lp.y);
-        // 正确的固定步插值 alpha（0~1）
-        float alpha = ctx->accumulator / ctx->FIXED_TIMESTEP;
+        float smooth_time = 0.1f;  // 可从 Context 中读取
+        //float alpha = std::min(1.0f, e.world().delta_time() / smooth_time);
+        float alpha = e.world().delta_time() * 10;
         alpha = std::clamp(alpha, 0.0f, 1.0f);
         t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
         t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
-        /*t.position_x = target_position_x;
-        t.position_y = target_position_y;*/
 }
 
 // 在 FixedLogicUpdate 中运行
