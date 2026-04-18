@@ -25,24 +25,16 @@ void StartupSystem(flecs::world& world)
 void LerpSystem(flecs::entity e,
         LogicPositionComponent& lp, TransformComponent& t)
 {
-        //auto ctx = e.world().get_mut<Context>();
-        //float target_position_x = fp_to_float(lp.x);
-        //float target_position_y = fp_to_float(lp.y);
-        //// 正确的固定步插值 alpha（0~1）
-        //float alpha = ctx->accumulator / ctx->FIXED_TIMESTEP;
-        //alpha = std::clamp(alpha, 0.0f, 1.0f);
-        //t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
-        //t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
-
-        //t.render_x = t.position_x;
-        //t.render_y = t.position_y;
-
         auto ctx = e.world().get_mut<Context>();
-        // alpha 是当前渲染时刻在两个逻辑帧之间的时间比例
-        float alpha = ctx->accumulator / ctx->FIXED_TIMESTEP;
-        alpha = std::clamp(alpha, 0.0f, 1.0f);
-        t.render_x = ft_lerp(t.prev_position_x, t.position_x, alpha);
-        t.render_y = ft_lerp(t.prev_position_y, t.position_y, alpha);
+        float target_position_x = fp_to_float(lp.x);
+        float target_position_y = fp_to_float(lp.y);
+        float smooth_time = 0.1f;  // 可从 Context 中读取
+        //float alpha = std::min(1.0f, e.world().delta_time() / smooth_time);
+        //alpha = std::clamp(alpha, 0.0f, 1.0f);
+        float alpha = e.world().delta_time() * 10;
+        t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
+        t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
+
 }
 
 // 在 FixedLogicUpdate 中运行
@@ -60,8 +52,8 @@ void RendererSystem(flecs::entity e, IdComponent& id, LogicRectComponent& rect, 
         auto ctx = e.world().get_mut<Context>();
         SDL_FRect body = { 0 };
         SDL_FRect header = { 0 };
-        body.x = t.render_x * PIXELS_PER_METER;
-        body.y = t.render_y * PIXELS_PER_METER;
+        body.x = t.position_x * PIXELS_PER_METER;
+        body.y = t.position_y * PIXELS_PER_METER;
         body.w = fp_to_float(rect.width) * PIXELS_PER_METER;
         body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
         if (e.has<PlayerComponent>()) {

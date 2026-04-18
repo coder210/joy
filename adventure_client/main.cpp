@@ -19,7 +19,7 @@ static flecs::world world;
 
 
 
-static const fp_t MOVE_SPEED = fp_from_float(10.0f);
+static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
 // 输入掩码
 const int INPUT_UP = 1 << 0;
@@ -184,13 +184,10 @@ static void HandleCommand(adventure::S2C& s2c)
         world.defer_end();   // 此时才真正执行删除
 
         // 应用输入
-        //log_info("Applying inputs for frame %d", s2c.command().frame_id());
         for (auto& input : s2c.command().player_inputs()) {
-                //log_info("input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
                 ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv != input.conv()) return;
-                                //log_info("Apply input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
                                 ApplyInput(&pos, r, id, input.conv(), input.sequence(), input.keycode());
                         });
         }
@@ -256,26 +253,37 @@ static void SendHeartbeat(float dt)
         }
 }
 
-static void FixedLogicUpdate(float dt)
+static void FixedUpdate(float dt)
 {
-        auto ctx = world.get_mut<Context>();
         net_message_t msg;
+        auto ctx = world.get_mut<Context>();
+
+        // ---------- 每帧发送当前输入 ----------
+        if (ctx->ready) {
+                int send_mask = ctx->current_input_mask;
+                // 如果攻击键被触发，合并攻击位并清除触发标志
+                if (ctx->attack_triggered) {
+                        send_mask |= INPUT_ATTACK;
+                        ctx->attack_triggered = false;
+                }
+                // 仅在有效输入时发送（可去掉 if，允许发送空输入表示无操作）
+                if (send_mask != 0) {
+                        adventure::C2S c2s;
+                        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
+                        auto* pi = c2s.mutable_player_input();
+                        pi->set_sequence(ctx->globalSequence++);
+                        pi->set_keycode(send_mask);
+                        std::string data = c2s.SerializeAsString();
+                        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
+                }
+        }
+
+
+
+
         if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
                 OnMessage(&msg, NULL);
         }
-        world.progress(dt);
-
-        // 3. 更新所有实体的 TransformComponent 历史缓冲（手动）
-        ctx->sync_query.each([&](flecs::entity e, IdComponent &id, LogicPositionComponent& lp, TransformComponent& t) {
-                float new_x = fp_to_float(lp.x);
-                float new_y = fp_to_float(lp.y);
-                if (new_x != t.position_x || new_y != t.position_y) {
-                        t.prev_position_x = t.position_x;
-                        t.prev_position_y = t.position_y;
-                        t.position_x = new_x;
-                        t.position_y = new_y;
-                }
-        });
 }
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
@@ -298,9 +306,9 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
         //ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
-        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
@@ -320,40 +328,71 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         return SDL_APP_CONTINUE;
 }
 
+static void SendCurrentInput(Context *ctx)
+{
+        if (!ctx->ready) return;
+        adventure::C2S c2s;
+        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
+        auto* pi = c2s.mutable_player_input();
+        pi->set_sequence(ctx->globalSequence++);
+        pi->set_keycode(ctx->current_input_mask);
+        std::string data = c2s.SerializeAsString();
+        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
+}
+
 SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 {
         auto ctx = world.get_mut<Context>();
+
         if (e->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
-        if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP)
-        {
-                bool d = (e->type == SDL_EVENT_KEY_DOWN);
-                switch (e->key.key)
-                {
-                case SDLK_W: ctx->upPressed = d; break;
-                case SDLK_S: ctx->downPressed = d; break;
-                case SDLK_A: ctx->leftPressed = d; break;
-                case SDLK_D: ctx->rightPressed = d; break;
-                case SDLK_J: ctx->attackPressed = d; break;
+
+        // 键盘事件：仅更新输入掩码
+        if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
+                bool is_down = (e->type == SDL_EVENT_KEY_DOWN);
+                int key_mask = 0;
+                switch (e->key.key) {
+                case SDLK_W: key_mask = INPUT_UP; break;
+                case SDLK_S: key_mask = INPUT_DOWN; break;
+                case SDLK_A: key_mask = INPUT_LEFT; break;
+                case SDLK_D: key_mask = INPUT_RIGHT; break;
+                case SDLK_J: key_mask = INPUT_ATTACK; break;
                 case SDLK_Q: return SDL_APP_SUCCESS;
+                default: break;
+                }
+                if (key_mask) {
+                        if (is_down) {
+                                ctx->current_input_mask |= key_mask;
+                                // 攻击键需要特殊标记：下一帧发送后立即清除
+                                if (key_mask == INPUT_ATTACK) {
+                                        ctx->attack_triggered = true;
+                                }
+                        }
+                        else {
+                                ctx->current_input_mask &= ~key_mask;
+                        }
                 }
         }
+        // 移动输入事件（触屏）同理
         else if (e->type == MOBILE_INPUT_EVENT) {
-                switch (e->user.code)
-                {
-                case MOBILE_INPUT_UP: ctx->upPressed = true; break;
-                case MOBILE_INPUT_DOWN: ctx->downPressed = true; break;
-                case MOBILE_INPUT_LEFT: ctx->leftPressed = true; break;
-                case MOBILE_INPUT_RIGHT: ctx->rightPressed = true; break;
-                case MOBILE_INPUT_ATTACK: ctx->attackPressed = true; break;
-                default:
-                        ctx->upPressed = ctx->downPressed = false;
-                        ctx->leftPressed = ctx->rightPressed = false;
+                int new_mask = ctx->current_input_mask;
+                switch (e->user.code) {
+                case MOBILE_INPUT_UP:    new_mask |= INPUT_UP; break;
+                case MOBILE_INPUT_DOWN:  new_mask |= INPUT_DOWN; break;
+                case MOBILE_INPUT_LEFT:  new_mask |= INPUT_LEFT; break;
+                case MOBILE_INPUT_RIGHT: new_mask |= INPUT_RIGHT; break;
+                case MOBILE_INPUT_ATTACK:
+                        ctx->attack_triggered = true;
                         break;
+                default:
+                        new_mask &= ~(INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT);
+                        break;
+                }
+                if (new_mask != ctx->current_input_mask) {
+                        ctx->current_input_mask = new_mask;
                 }
         }
 
         ctx->mobileInputLayer->ListenEvent(e);
-
         return ctx->running ? SDL_APP_CONTINUE : SDL_APP_SUCCESS;
 }
 
@@ -367,20 +406,14 @@ SDL_AppResult SDL_AppIterate(void*)
         ctx->accumulator += delta;
 
         kcpclient_update(ctx->kcpclient);
-       
 
         // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
-                FixedLogicUpdate(ctx->FIXED_TIMESTEP);
+                FixedUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
 
-        // ---------- 独立的输入发送定时器（15Hz） ----------
-        ctx->inputSendTimer += delta;
-        if (ctx->inputSendTimer >= ctx->INPUT_SEND_INTERVAL) {
-                ctx->inputSendTimer -= ctx->INPUT_SEND_INTERVAL;
-                SendLocalInputToServer();   // 按15Hz发送
-        }
+        world.progress(delta);
 
         // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
         // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，

@@ -24,7 +24,7 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
 
-static const fp_t MOVE_SPEED = fp_from_float(10.0f);
+static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
 
 
@@ -391,14 +391,13 @@ static void NotifySystem(flecs::world& world)
 // ###########################################################################
 // 【帧同步核心】固定逻辑帧更新
 // ###########################################################################
-static void FixedLogicUpdate(float dt)
+static void FixedUpdate(float dt)
 {
         auto ctx = world.get_mut<Context>();
         net_message_t msg;
         if (kcpserver_poll_message(ctx->kcpserver, &msg)) {
                 OnMessage(&msg, NULL);
         }
-        world.progress(dt);
 }
 
 
@@ -429,9 +428,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
         //ctx->kcpserver = kcpserver_create("192.168.2.36", 10000);
-        ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
 
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
@@ -487,10 +486,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
         // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
-                FixedLogicUpdate(ctx->FIXED_TIMESTEP);
+                FixedUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
-
+        world.progress(delta);
         // ---------- 独立的输入发送定时器（15Hz） ----------
         ctx->serverTickTimer += delta;
         if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {

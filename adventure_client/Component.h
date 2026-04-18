@@ -38,10 +38,8 @@ struct LogicVelocityComponent
 struct TransformComponent
 {
         float position_x, position_y;
-        float prev_position_x, prev_position_y;
         float rotation_x, rotation_y;
         float scale_x, scale_y;
-        float render_x, render_y;
 };
 
 struct PlayerComponent
