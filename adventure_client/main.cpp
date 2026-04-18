@@ -8,16 +8,13 @@
 #include <joy2d/jcollision.h>
 #include <joy2d/jshapes.h>
 #include <string>
+#include <algorithm>
 #include "Systems.h"
 #include "Context.h"
 
-
 const int PIXELS_PER_METER = 50;
 
-
 static flecs::world world;
-
-
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
@@ -28,6 +25,9 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
 
+// ----------------------------------------------------------------------
+// 攻击逻辑（保持不变）
+// ----------------------------------------------------------------------
 static void Attack(LogicPositionComponent* p,
         LogicRectComponent& currRect,
         IdComponent& currId)
@@ -39,18 +39,13 @@ static void Attack(LogicPositionComponent* p,
         ray.direction.x = fp_from_float(.0f);
         ray.direction.y = fp_from_float(-1.0f);
 
-        // ===================== 核心修改：初始化最近目标存储变量 =====================
-        // 记录最近的碰撞结果（初始化为未命中）
         ray2d_collisionf_t nearest_hit = { 0 };
-        // 记录最近的目标Id组件（空指针）
         IdComponent* nearest_id = nullptr;
-        // 记录最近距离（初始化为极大值，确保第一个有效碰撞会替换它）
         float nearest_dist = 999999.0f;
 
-        // 遍历所有碰撞体（不再中途return，必须遍历完所有目标）
         ctx->body_query.each([&](IdComponent& id,
-                LogicRectComponent& r, LogicPositionComponent& pos) {
-                        // 跳过自身
+                LogicRectComponent& r,
+                LogicPositionComponent& pos) {
                         if (currId.id == id.id) return;
 
                         rectanglef_t rect = { 0 };
@@ -60,25 +55,18 @@ static void Attack(LogicPositionComponent* p,
                         rect.height = r.height;
                         ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
 
-                        // ===================== 修改：仅收集碰撞，不立即处理 =====================
                         if (result.hit) {
-                                // 计算当前碰撞点与射线起点的距离（垂直射线，直接算Y轴差值即可）
                                 float current_dist = fp_to_float(fp_sub(ray.origin.y, result.point.y));
-
-                                // 如果当前目标更近，更新最近目标信息
                                 if (current_dist < nearest_dist) {
                                         nearest_dist = current_dist;
                                         nearest_hit = result;
-                                        nearest_id = &id; // 记录目标指针
+                                        nearest_id = &id;
                                 }
                         }
                 });
 
-        // ===================== 修改：遍历完成后，仅处理【最近的目标】 =====================
         if (nearest_id != nullptr) {
-                // 仅对最近目标减血
                 nearest_id->hp--;
-                // 绘制最近目标的攻击射线特效
                 SDL_FRect line;
                 float end_x = fp_to_float(ray.origin.x);
                 float end_y = fp_to_float(ray.origin.y);
@@ -92,54 +80,49 @@ static void Attack(LogicPositionComponent* p,
         }
 }
 
-static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
-        IdComponent& currId, int conv, int sequence, int input)
+// ----------------------------------------------------------------------
+// 应用输入（每收到一个输入包就移动一次）
+// ----------------------------------------------------------------------
+static void ApplyInput(LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
+        int conv, int sequence, int input)
 {
-        // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
         auto ctx = world.get_mut<Context>();
-        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);  // 1/60 秒
-        fp_t step = fp_mul(MOVE_SPEED, delta);            // 速度 × 时间
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+        fp_t step = fp_mul(MOVE_SPEED, delta);
 
-        if (input & INPUT_UP) {
-                p->y = fp_sub(p->y, step);
-        }
-        if (input & INPUT_DOWN) {
-                p->y = fp_add(p->y, step);
-        }
-        if (input & INPUT_LEFT) {
-                p->x = fp_sub(p->x, step);
-        }
-        if (input & INPUT_RIGHT) {
-                p->x = fp_add(p->x, step);
-        }
-        if (input & INPUT_ATTACK) {
-                Attack(p, currRect, currId);
-        }
+        if (input & INPUT_UP)    p->y = fp_sub(p->y, step);
+        if (input & INPUT_DOWN)  p->y = fp_add(p->y, step);
+        if (input & INPUT_LEFT)  p->x = fp_sub(p->x, step);
+        if (input & INPUT_RIGHT) p->x = fp_add(p->x, step);
+        if (input & INPUT_ATTACK) Attack(p, currRect, currId);
 }
 
-
+// ----------------------------------------------------------------------
+// 加载地图（收到 S2C_CMD_LOADING）
+// ----------------------------------------------------------------------
 static void HandleLoading(adventure::S2C* s2c)
 {
         auto ctx = world.get_mut<Context>();
         ctx->ready = true;
         ctx->server_frameid = s2c->map().frame_id();
         ctx->server_entity_id = s2c->map().global_entity_id();
-        for (auto& entity : s2c->map().entities())
-        {
+
+        for (auto& entity : s2c->map().entities()) {
                 auto e = world.entity()
                         .set<IdComponent>({ entity.id(), entity.hp() })
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
-                        .set<TransformComponent>({ fp_to_float(entity.position_x()), fp_to_float(entity.position_y()), 0, 0, 0, 0 });
-
-                if (entity.type() == adventure::S2C_TYPE_PLAYER)
-                {
+                        .set<TransformComponent>({ fp_to_float(entity.position_x()),
+                                                   fp_to_float(entity.position_y()), 0, 0, 0, 0 });
+                if (entity.type() == adventure::S2C_TYPE_PLAYER) {
                         e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
-                        e.set<PlayerComponent>({ entity.player_conv()});
+                        e.set<PlayerComponent>({ entity.player_conv() });
                 }
         }
 
-        // ========== 修复：不用new，避免内存泄漏 ==========
+        // 告知服务器本地玩家加入
         adventure::C2S c2s;
         c2s.set_cmd(adventure::CMD_PLAYER_JOIN);
         auto* join = c2s.mutable_player_join();
@@ -149,16 +132,20 @@ static void HandleLoading(adventure::S2C* s2c)
         kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
 }
 
+// ----------------------------------------------------------------------
+// 处理服务器命令帧（包含玩家加入/离开、输入、可选的世界快照）
+// ----------------------------------------------------------------------
 static void HandleCommand(adventure::S2C& s2c)
 {
-        // 创建玩家
         auto ctx = world.get_mut<Context>();
-        ctx->server_frameid = s2c.command().frame_id();
+        uint32_t server_frame = s2c.command().frame_id();
+        ctx->server_frameid = server_frame;
+
+        // 1. 处理新玩家加入
         for (auto& player_join : s2c.command().player_joins()) {
                 log_info("%d:CMD_PLAYER_JOIN", player_join.conv());
                 fp_t x = player_join.position_x();
                 fp_t y = player_join.position_y();
-
                 world.entity()
                         .set<IdComponent>({ ctx->server_entity_id++, 10 })
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
@@ -168,23 +155,84 @@ static void HandleCommand(adventure::S2C& s2c)
                         .set<PlayerComponent>({ player_join.conv() });
         }
 
-        // 玩家离开
+        // 2. 处理玩家离开
         world.defer_begin();
         for (auto& player_leave : s2c.command().player_leaves()) {
-                //log_info("%d:CMD_PLAYER_LEAVE", player_leave.conv());
                 ctx->player_query.each([&](flecs::entity entity,
-                        PlayerComponent& p, IdComponent& id,
-                        LogicRectComponent& r, LogicPositionComponent& pos) {
-                                if (p.conv == player_leave.conv()) {
-                                        entity.destruct();
-                                        //log_info("Entity removed for conv %d", p.conv);
-                                }
+                        PlayerComponent& p,
+                        IdComponent& id,
+                        LogicRectComponent& r,
+                        LogicPositionComponent& pos) {
+                                if (p.conv == player_leave.conv()) entity.destruct();
                         });
         }
-        world.defer_end();   // 此时才真正执行删除
+        world.defer_end();
 
-        // 应用输入
+        // 3. 更新已确认的输入序列号（从服务器返回的输入中找本地玩家的最大序列号）
+        uint32_t max_confirmed_seq = 0;
         for (auto& input : s2c.command().player_inputs()) {
+                if (input.conv() == ctx->local_conv) {
+                        if (input.sequence() > max_confirmed_seq)
+                                max_confirmed_seq = input.sequence();
+                }
+        }
+        if (max_confirmed_seq > 0) {
+                ctx->pending_inputs.erase(
+                        std::remove_if(ctx->pending_inputs.begin(), ctx->pending_inputs.end(),
+                                [max_confirmed_seq](const InputRecord& rec) {
+                                        return rec.sequence <= max_confirmed_seq;
+                                }),
+                        ctx->pending_inputs.end());
+                ctx->last_confirmed_sequence = max_confirmed_seq;
+        }
+
+        // 4. 如果服务器提供了世界快照（需要修改协议），则进行回滚和重放
+        // 目前服务器未提供，此处预留代码，一旦服务器支持即可启用
+        /*
+        if (s2c.command().has_world_snapshot()) {
+            const auto& snapshot = s2c.command().world_snapshot();
+            fp_t auth_x = 0, auth_y = 0;
+            bool found = false;
+            for (auto& ent : snapshot.entities()) {
+                if (ent.type() == adventure::S2C_TYPE_PLAYER && ent.player_conv() == ctx->local_conv) {
+                    auth_x = ent.position_x();
+                    auth_y = ent.position_y();
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                auto it = std::find_if(ctx->snapshots.begin(), ctx->snapshots.end(),
+                                       [server_frame](const StateSnapshot& ss) {
+                                           return ss.frame_id == server_frame;
+                                       });
+                if (it != ctx->snapshots.end()) {
+                    fp_t dx = fp_sub(auth_x, it->player_x);
+                    fp_t dy = fp_sub(auth_y, it->player_y);
+                    if (fp_abs(dx) > fp_from_float(0.01f) || fp_abs(dy) > fp_from_float(0.01f)) {
+                        // 回滚本地玩家位置
+                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                                   LogicRectComponent& r, LogicPositionComponent& pos) {
+                            pos.x = auth_x;
+                            pos.y = auth_y;
+                        });
+                        ctx->snapshots.erase(it, ctx->snapshots.end());
+                        // 重放未确认的输入
+                        for (auto& rec : ctx->pending_inputs) {
+                            ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                                       LogicRectComponent& r, LogicPositionComponent& pos) {
+                                ApplyInput(&pos, r, id, ctx->local_conv, rec.sequence, rec.keycode);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        */
+
+        // 5. 应用其他玩家的输入（本地玩家的输入已经通过预测重放，这里跳过）
+        for (auto& input : s2c.command().player_inputs()) {
+                if (input.conv() == ctx->local_conv) continue;
                 ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv != input.conv()) return;
@@ -193,10 +241,14 @@ static void HandleCommand(adventure::S2C& s2c)
         }
 }
 
+// ----------------------------------------------------------------------
+// 网络消息回调
+// ----------------------------------------------------------------------
 static void OnMessage(net_message_p msg, void*)
 {
         auto ctx = world.get_mut<Context>();
         if (msg->type == NET_TYPE_CONNECTED) {
+                ctx->local_conv = msg->conv;   // 记录本地玩家连接号
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_LOADING);
                 std::string d = c2s.SerializeAsString();
@@ -213,38 +265,17 @@ static void OnMessage(net_message_p msg, void*)
                         }
                 }
         }
-
         if (msg->data) SDL_free(msg->data);
 }
 
-static void SendLocalInputToServer()
-{
-        auto ctx = world.get_mut<Context>();
-        if (!ctx->ready) return;
-        int cur = 0;
-        if (ctx->upPressed) { cur |= INPUT_UP; ctx->upPressed = false; }
-        if (ctx->downPressed) { cur |= INPUT_DOWN; ctx->downPressed = false; }
-        if (ctx->leftPressed) { cur |= INPUT_LEFT; ctx->leftPressed = false; }
-        if (ctx->rightPressed) { cur |= INPUT_RIGHT; ctx->rightPressed = false; }
-        if (ctx->attackPressed) { cur |= INPUT_ATTACK; ctx->attackPressed = false; }
-
-        adventure::C2S c2s;
-        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
-        auto* pi = c2s.mutable_player_input();
-        pi->set_sequence(ctx->globalSequence++);
-        pi->set_keycode(cur);
-
-        std::string data = c2s.SerializeAsString();
-        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
-}
-
-
+// ----------------------------------------------------------------------
+// 心跳发送
+// ----------------------------------------------------------------------
 static void SendHeartbeat(float dt)
 {
         auto ctx = world.get_mut<Context>();
         ctx->heartbeatTimer += dt;
-        if (ctx->heartbeatTimer >= 3.f)
-        {
+        if (ctx->heartbeatTimer >= 3.f) {
                 ctx->heartbeatTimer = 0.f;
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_PLAYER_HEART);
@@ -253,21 +284,48 @@ static void SendHeartbeat(float dt)
         }
 }
 
+// ----------------------------------------------------------------------
+// 固定步长更新（预测发送 + 接收网络消息）
+// ----------------------------------------------------------------------
 static void FixedUpdate(float dt)
 {
-        net_message_t msg;
         auto ctx = world.get_mut<Context>();
 
-        // ---------- 每帧发送当前输入 ----------
+        // --- 预测：保存快照 -> 记录输入 -> 立即移动（预测） -> 发送到服务器 ---
         if (ctx->ready) {
                 int send_mask = ctx->current_input_mask;
-                // 如果攻击键被触发，合并攻击位并清除触发标志
                 if (ctx->attack_triggered) {
                         send_mask |= INPUT_ATTACK;
                         ctx->attack_triggered = false;
                 }
-                // 仅在有效输入时发送（可去掉 if，允许发送空输入表示无操作）
                 if (send_mask != 0) {
+                        // 保存当前快照（预测前的状态）
+                        StateSnapshot snapshot;
+                        snapshot.frame_id = ctx->server_frameid + 1;
+                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
+                                        snapshot.player_x = pos.x;
+                                        snapshot.player_y = pos.y;
+                                });
+                        ctx->snapshots.push_back(snapshot);
+                        while (ctx->snapshots.size() > 120) ctx->snapshots.erase(ctx->snapshots.begin());
+
+                        // 记录待确认输入
+                        InputRecord record;
+                        record.sequence = ctx->globalSequence;
+                        record.keycode = send_mask;
+                        ctx->pending_inputs.push_back(record);
+
+                        // 立即应用输入（预测移动）
+                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
+                                        if (p.conv == ctx->local_conv) {
+                                                ApplyInput(&pos, r, id, ctx->local_conv, record.sequence, send_mask);
+                                                return;
+                                        }
+                                });
+
+                        // 发送输入到服务器
                         adventure::C2S c2s;
                         c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
                         auto* pi = c2s.mutable_player_input();
@@ -278,14 +336,16 @@ static void FixedUpdate(float dt)
                 }
         }
 
-
-
-
+        // 接收网络消息
+        net_message_t msg;
         if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
                 OnMessage(&msg, NULL);
         }
 }
 
+// ----------------------------------------------------------------------
+// SDL3 回调函数
+// ----------------------------------------------------------------------
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
         sys_init_netenv();
@@ -305,11 +365,11 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         auto ctx = world.get_mut<Context>();
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
-        SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
+        SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480,
+                SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        //ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
-        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
-        //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
+        // ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
+        // ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
         world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
@@ -328,25 +388,13 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         return SDL_APP_CONTINUE;
 }
 
-static void SendCurrentInput(Context *ctx)
-{
-        if (!ctx->ready) return;
-        adventure::C2S c2s;
-        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
-        auto* pi = c2s.mutable_player_input();
-        pi->set_sequence(ctx->globalSequence++);
-        pi->set_keycode(ctx->current_input_mask);
-        std::string data = c2s.SerializeAsString();
-        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
-}
-
 SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 {
         auto ctx = world.get_mut<Context>();
 
         if (e->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
 
-        // 键盘事件：仅更新输入掩码
+        // 键盘事件：更新输入掩码
         if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
                 bool is_down = (e->type == SDL_EVENT_KEY_DOWN);
                 int key_mask = 0;
@@ -362,7 +410,6 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
                 if (key_mask) {
                         if (is_down) {
                                 ctx->current_input_mask |= key_mask;
-                                // 攻击键需要特殊标记：下一帧发送后立即清除
                                 if (key_mask == INPUT_ATTACK) {
                                         ctx->attack_triggered = true;
                                 }
@@ -372,7 +419,7 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
                         }
                 }
         }
-        // 移动输入事件（触屏）同理
+        // 移动输入事件（触屏）
         else if (e->type == MOBILE_INPUT_EVENT) {
                 int new_mask = ctx->current_input_mask;
                 switch (e->user.code) {
@@ -399,7 +446,6 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 SDL_AppResult SDL_AppIterate(void*)
 {
         auto ctx = world.get_mut<Context>();
-        char buff[JOY_MAX_PATH];
         Uint64 now = SDL_GetTicks();
         float delta = (now - ctx->lastTime) / 1000.0f;
         ctx->lastTime = now;
@@ -407,17 +453,13 @@ SDL_AppResult SDL_AppIterate(void*)
 
         kcpclient_update(ctx->kcpclient);
 
-        // ---------- 固定步长物理更新（60Hz） ----------
+        // 固定步长逻辑更新（60Hz）
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 FixedUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
 
         world.progress(delta);
-
-        // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
-        // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，
-        // 但为了避免依赖 FixedLogicUpdate，现在直接调用即可（内部计时器决定是否真正发送）
         SendHeartbeat(delta);
 
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
