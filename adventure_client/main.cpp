@@ -303,11 +303,15 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         world.component<PlayerComponent>();
         world.set<Context>({});
         auto ctx = world.get_mut<Context>();
+        game_timer_init(&ctx->game_timer);
+        game_timer_set_target_fps(&ctx->game_timer, 60);
+        game_timer_set_time_scale(&ctx->game_timer, 1.0f);
+        ctx->sample_fps = simple_fps_create();
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
-        //ctx->kcpclient = kcpclient_create("192.168.2.36", 10000);
+        //ctx->kcpclient = kcpclient_create("192.168.1.33", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.2.49", 10000);
         //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
@@ -399,13 +403,13 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 SDL_AppResult SDL_AppIterate(void*)
 {
         auto ctx = world.get_mut<Context>();
-        char buff[JOY_MAX_PATH];
-        Uint64 now = SDL_GetTicks();
-        float delta = (now - ctx->lastTime) / 1000.0f;
-        ctx->lastTime = now;
-        ctx->accumulator += delta;
+        game_timer_update(&ctx->game_timer);
+        float dt = game_timer_get_delta_time(&ctx->game_timer);
+        ctx->accumulator += dt;
 
         kcpclient_update(ctx->kcpclient);
+
+        int fps = simple_fps_update(ctx->sample_fps);
 
         // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
@@ -413,12 +417,12 @@ SDL_AppResult SDL_AppIterate(void*)
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
 
-        world.progress(delta);
+        world.progress(dt);
 
         // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
         // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，
         // 但为了避免依赖 FixedLogicUpdate，现在直接调用即可（内部计时器决定是否真正发送）
-        SendHeartbeat(delta);
+        SendHeartbeat(dt);
 
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
         SDL_RenderClear(ctx->renderer);
@@ -426,7 +430,7 @@ SDL_AppResult SDL_AppIterate(void*)
         ctx->renderer_query.each(RendererSystem);
         ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
 
-        ctx->debugLayer->Update(ctx->server_frameid, 0);
+        ctx->debugLayer->Update(ctx->server_frameid, fps);
         ctx->debugLayer->Draw(ctx->renderer);
         ctx->mobileInputLayer->Update();
         ctx->mobileInputLayer->Draw();
@@ -441,6 +445,7 @@ void SDL_AppQuit(void*, SDL_AppResult)
         delete ctx->resources;
         delete ctx->debugLayer;
         delete ctx->mobileInputLayer;
+        simple_fps_destory(ctx->sample_fps);
         kcpclient_destroy(ctx->kcpclient);
         SDL_DestroyRenderer(ctx->renderer);
         SDL_DestroyWindow(ctx->window);
