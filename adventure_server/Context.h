@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include "adventure.pb.h"
 #include "flecs.h"
+#include <joy2d/jcore.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jnetwork.h>
 #include <map>
@@ -18,20 +19,20 @@ struct Context {
         SDL_Renderer* renderer = NULL;
         kcpserver_p kcpserver = NULL;
 
+        game_timer_t game_timer;
+        simple_fps_counter_p sample_fps;
+
         bool upPressed = false;
         bool downPressed = false;
         bool leftPressed = false;
         bool rightPressed = false;
 
-        float FIXED_TIMESTEP = 1.0f / 60.0f;
+        float FIXED_TIMESTEP = 1.0f / 50.0f;
         float accumulator = 0.0f;
 
         // 在 Context 结构体内添加
         float serverTickTimer = 0.0f;        // 输入发送计时器
         float SERVER_TICK_INTERVAL = 1.0f / 15.0f;  // 15Hz
-
-
-        Uint64 lastTime = SDL_GetTicks();
 
         Resources* resources = NULL;
         DebugLayer* debugLayer = NULL;

@@ -1,7 +1,6 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
 #include <joy2d/jsys.h>
-#include <joy2d/jcore.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
 #include <joy2d/jtext.h>
@@ -422,14 +421,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         world.component<PlayerComponent>();
         world.set<Context>({});
         auto ctx = world.get_mut<Context>();
+        game_timer_init(&ctx->game_timer);
+        game_timer_set_target_fps(&ctx->game_timer, 60);
+        game_timer_set_time_scale(&ctx->game_timer, 1.0f);
+        ctx->sample_fps = simple_fps_create();
 
         if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &ctx->window, &ctx->renderer)) {
                 SDL_Log("Window failed: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
-        //ctx->kcpserver = kcpserver_create("192.168.2.36", 10000);
+        //ctx->kcpserver = kcpserver_create("192.168.1.33", 10000);
+        ctx->kcpserver = kcpserver_create("192.168.2.49", 10000);
         //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
 
         world.entity()
@@ -477,21 +480,20 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
         auto ctx = world.get_mut<Context>();
-        char buff[JOY_MAX_PATH];
-        Uint64 now = SDL_GetTicks();
-        float delta = (now - ctx->lastTime) / 1000.0f;
-        ctx->lastTime = now;
-        ctx->accumulator += delta;
+        game_timer_update(&ctx->game_timer);
+        float dt = game_timer_get_delta_time(&ctx->game_timer);
+        ctx->accumulator += dt;
         kcpserver_update(ctx->kcpserver);
+        int fps = simple_fps_update(ctx->sample_fps);
 
         // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 FixedUpdate(ctx->FIXED_TIMESTEP);
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
         }
-        world.progress(delta);
+        world.progress(dt);
         // ---------- 独立的输入发送定时器（15Hz） ----------
-        ctx->serverTickTimer += delta;
+        ctx->serverTickTimer += dt;
         if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {
                 ctx->serverTickTimer -= ctx->SERVER_TICK_INTERVAL;
                 CollectCommandSystem(world);
@@ -505,7 +507,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         ctx->renderer_query.each(RendererSystem);
         ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
 
-        ctx->debugLayer->Update(ctx->g_frameid, 0);
+        ctx->debugLayer->Update(ctx->g_frameid, fps);
         ctx->debugLayer->Draw(ctx->renderer);
 
         SDL_RenderPresent(ctx->renderer);
@@ -518,6 +520,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
         auto ctx = world.get_mut<Context>();
         delete ctx->resources;
         delete ctx->debugLayer;
+        simple_fps_destory(ctx->sample_fps);
         kcpserver_destroy(ctx->kcpserver);
         SDL_DestroyWindow(ctx->window);
         SDL_DestroyRenderer(ctx->renderer);

@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include "adventure.pb.h"
 #include "flecs.h"
+#include <joy2d/jcore.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jnetwork.h>
 #include <map>
@@ -28,6 +29,8 @@ struct Context {
         DebugLayer* debugLayer = NULL;
         MobileInputLayer* mobileInputLayer = NULL;
 
+        game_timer_t game_timer;
+        simple_fps_counter_p sample_fps;
 
         // °´¼ü×´Ì¬
         bool upPressed = false;
