@@ -58,7 +58,7 @@ struct Context {
         // ¹Ì¶¨Âß¼­²½
         Uint64 lastTime = SDL_GetTicks();
         float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 60.0f;
+        float FIXED_TIMESTEP = 1.0f / 50.0f;
 
         int current_input_mask = 0;
         float heartbeatTimer = 0.0f;

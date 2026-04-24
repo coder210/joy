@@ -168,8 +168,8 @@ static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
 {
         // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
         auto ctx = world.get_mut<Context>();
-        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);  // 1/60 秒
-        fp_t step = fp_mul(MOVE_SPEED, delta);            // 速度 × 时间
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+        fp_t step = fp_mul(MOVE_SPEED, delta); 
 
         if (input & INPUT_UP) {
                 p->y = fp_sub(p->y, step);
