@@ -158,15 +158,21 @@ static void HandleCommand(adventure::S2C& s2c)
         auto ctx = world.get_mut<Context>();
         {
                 // 先回滚到上一个快照状态（如果有的话），再应用服务器命令
-                auto snapshots = ctx->snapshots.find(ctx->server_frameid)->second;
-                ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
-                        LogicRectComponent& r, LogicPositionComponent& pos) {
-                                auto it = snapshots.find(id.id);
-                                if (it != snapshots.end()) {
-                                        pos.x = it->second.position_x;
-                                        pos.y = it->second.position_y;
-                                }
-                        });
+                auto iter = ctx->snapshots.find(ctx->server_frameid);
+                if (iter != ctx->snapshots.end()) {
+                        auto snapshots = iter->second;
+                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
+                                        auto it = snapshots.find(id.id);
+                                        if (it != snapshots.end()) {
+                                                pos.x = it->second.position_x;
+                                                pos.y = it->second.position_y;
+                                        }
+                                });
+                }
+                else {
+                        int i = 0;
+                }
         }
 
         ctx->server_frameid = s2c.command().frame_id();
@@ -202,10 +208,12 @@ static void HandleCommand(adventure::S2C& s2c)
         for (auto& input : s2c.command().player_inputs()) {
                 ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
-                                if (p.conv == ctx->local_conv) {
-                                        ctx->pending_inputs.pop_back();   // 已确认，移除一个待确认输入
+                                if (p.conv == input.conv()) {
+                                        if (input.conv() == ctx->local_conv) {
+                                                ctx->pending_inputs.pop_back();
+                                        }
+                                        apply_input(&pos, r, id, input.conv(), input.keycode());
                                 }
-                                apply_input(&pos, r, id, input.conv(), input.keycode());
                         });
         }
 
@@ -226,7 +234,7 @@ static void HandleCommand(adventure::S2C& s2c)
                         ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
                                         if (p.conv == ctx->local_conv) {
-                                                preapply_input(&pos, r, id, ctx->local_conv, input);
+                                                preapply_input(&pos, r, id, p.conv, input);
                                         }
                                 });
                 }
