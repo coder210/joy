@@ -15,16 +15,9 @@
 #include "DebugLayer.h"
 #include "MobileInputLayer.h"
 
-// 输入记录（用于重放）
-struct InputRecord {
-        uint32_t sequence;
-        int keycode;
-};
-
 // 状态快照（用于回滚）
 struct StateSnapshot {
-        uint32_t frame_id;       // 对应的服务器帧号
-        fp_t player_x, player_y; // 本地玩家的逻辑位置
+        fp_t position_x, position_y; // 本地玩家的逻辑位置
 };
 
 struct Context {
@@ -53,8 +46,6 @@ struct Context {
         bool rightPressed = false;
         bool attackPressed = false;
 
-        int globalSequence = 0;
-
         // 固定逻辑步
         Uint64 lastTime = SDL_GetTicks();
         float accumulator = 0.0f;
@@ -67,9 +58,8 @@ struct Context {
 
         // ========== 预测回滚相关 ==========
         uint32_t local_conv = 0;                     // 本地玩家的 conv（连接标识）
-        uint32_t last_confirmed_sequence = 0;        // 服务器最后确认的输入序列号
-        std::vector<StateSnapshot> snapshots;        // 按 frame_id 递增存储的历史快照
-        std::vector<InputRecord> pending_inputs;     // 已发送但未确认的输入
+        std::map<int, std::map<int, StateSnapshot>> snapshots;        // 按 frame_id 递增存储的历史快照
+        std::vector<int> pending_inputs;     // 已发送但未确认的输入
 
         // Flecs 查询
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;

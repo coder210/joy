@@ -50,8 +50,7 @@ struct C2SPlayerLeaveDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 C2SPlayerLeaveDefaultTypeInternal _C2SPlayerLeave_default_instance_;
 PROTOBUF_CONSTEXPR C2SPlayerInput::C2SPlayerInput(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.sequence_)*/0
-  , /*decltype(_impl_.keycode_)*/0
+    /*decltype(_impl_.keycode_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct C2SPlayerInputDefaultTypeInternal {
   PROTOBUF_CONSTEXPR C2SPlayerInputDefaultTypeInternal()
@@ -141,7 +140,6 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR S2CPlayerInput::S2CPlayerInput(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.conv_)*/0
-  , /*decltype(_impl_.sequence_)*/0
   , /*decltype(_impl_.keycode_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2CPlayerInputDefaultTypeInternal {
@@ -227,7 +225,6 @@ const uint32_t TableStruct_adventure::offsets[] PROTOBUF_SECTION_VARIABLE(protod
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::adventure::C2SPlayerInput, _impl_.sequence_),
   PROTOBUF_FIELD_OFFSET(::adventure::C2SPlayerInput, _impl_.keycode_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::adventure::C2SPlayerHeart, _internal_metadata_),
@@ -285,7 +282,6 @@ const uint32_t TableStruct_adventure::offsets[] PROTOBUF_SECTION_VARIABLE(protod
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CPlayerInput, _impl_.conv_),
-  PROTOBUF_FIELD_OFFSET(::adventure::S2CPlayerInput, _impl_.sequence_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CPlayerInput, _impl_.keycode_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _internal_metadata_),
@@ -321,15 +317,15 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 0, -1, -1, sizeof(::adventure::C2SPlayerJoin)},
   { 8, -1, -1, sizeof(::adventure::C2SPlayerLeave)},
   { 15, -1, -1, sizeof(::adventure::C2SPlayerInput)},
-  { 23, -1, -1, sizeof(::adventure::C2SPlayerHeart)},
-  { 31, -1, -1, sizeof(::adventure::C2S)},
-  { 43, -1, -1, sizeof(::adventure::S2CEntity)},
-  { 56, -1, -1, sizeof(::adventure::S2CPlayerJoin)},
-  { 65, -1, -1, sizeof(::adventure::S2CPlayerLeave)},
-  { 72, -1, -1, sizeof(::adventure::S2CPlayerInput)},
-  { 81, -1, -1, sizeof(::adventure::S2CMap)},
-  { 90, -1, -1, sizeof(::adventure::S2CCommand)},
-  { 101, -1, -1, sizeof(::adventure::S2C)},
+  { 22, -1, -1, sizeof(::adventure::C2SPlayerHeart)},
+  { 30, -1, -1, sizeof(::adventure::C2S)},
+  { 42, -1, -1, sizeof(::adventure::S2CEntity)},
+  { 55, -1, -1, sizeof(::adventure::S2CPlayerJoin)},
+  { 64, -1, -1, sizeof(::adventure::S2CPlayerLeave)},
+  { 71, -1, -1, sizeof(::adventure::S2CPlayerInput)},
+  { 79, -1, -1, sizeof(::adventure::S2CMap)},
+  { 88, -1, -1, sizeof(::adventure::S2CCommand)},
+  { 99, -1, -1, sizeof(::adventure::S2C)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -350,45 +346,45 @@ static const ::_pb::Message* const file_default_instances[] = {
 const char descriptor_table_protodef_adventure[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\tadventure\022\tadventure\"7\n\rC2SPlayerJoin\022"
   "\022\n\nposition_x\030\001 \001(\003\022\022\n\nposition_y\030\002 \001(\003\""
-  "#\n\016C2SPlayerLeave\022\021\n\tplayer_id\030\001 \001(\005\"3\n\016"
-  "C2SPlayerInput\022\020\n\010sequence\030\001 \001(\005\022\017\n\007keyc"
-  "ode\030\002 \001(\005\"4\n\016C2SPlayerHeart\022\014\n\004conv\030\001 \001("
-  "\005\022\024\n\014current_time\030\002 \001(\003\"\372\001\n\003C2S\022\036\n\003cmd\030\001"
-  " \001(\0162\021.adventure.C2SCmd\022/\n\013player_join\030\002"
-  " \001(\0132\030.adventure.C2SPlayerJoinH\000\0221\n\014play"
-  "er_leave\030\003 \001(\0132\031.adventure.C2SPlayerLeav"
-  "eH\000\0221\n\014player_input\030\004 \001(\0132\031.adventure.C2"
-  "SPlayerInputH\000\0221\n\014player_heart\030\005 \001(\0132\031.a"
-  "dventure.C2SPlayerHeartH\000B\t\n\007payload\"\216\001\n"
-  "\tS2CEntity\022\n\n\002id\030\001 \001(\005\022 \n\004type\030\002 \001(\0162\022.a"
-  "dventure.S2CType\022\022\n\nposition_x\030\003 \001(\003\022\022\n\n"
-  "position_y\030\004 \001(\003\022\n\n\002hp\030\005 \001(\003\022\025\n\013player_c"
-  "onv\030\006 \001(\005H\000B\010\n\006extend\"E\n\rS2CPlayerJoin\022\014"
-  "\n\004conv\030\001 \001(\005\022\022\n\nposition_x\030\002 \001(\003\022\022\n\nposi"
-  "tion_y\030\003 \001(\003\"\036\n\016S2CPlayerLeave\022\014\n\004conv\030\001"
-  " \001(\005\"A\n\016S2CPlayerInput\022\014\n\004conv\030\001 \001(\005\022\020\n\010"
-  "sequence\030\002 \001(\005\022\017\n\007keycode\030\003 \001(\005\"\\\n\006S2CMa"
-  "p\022\020\n\010frame_id\030\001 \001(\005\022\030\n\020global_entity_id\030"
-  "\002 \001(\005\022&\n\010entities\030\003 \003(\0132\024.adventure.S2CE"
-  "ntity\"\304\001\n\nS2CCommand\022\020\n\010frame_id\030\001 \001(\005\022."
-  "\n\014player_joins\030\002 \003(\0132\030.adventure.S2CPlay"
-  "erJoin\0220\n\rplayer_leaves\030\003 \003(\0132\031.adventur"
-  "e.S2CPlayerLeave\0220\n\rplayer_inputs\030\004 \003(\0132"
-  "\031.adventure.S2CPlayerInput\022\020\n\010checksum\030\005"
-  " \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 \001(\0162\021.adventure.S2C"
-  "Cmd\022\036\n\003map\030\002 \001(\0132\021.adventure.S2CMap\022&\n\007c"
-  "ommand\030\003 \001(\0132\025.adventure.S2CCommand*\201\001\n\006"
-  "C2SCmd\022\017\n\013CMD_UNKNOWN\020\000\022\023\n\017CMD_PLAYER_JO"
-  "IN\020\001\022\024\n\020CMD_PLAYER_LEAVE\020\002\022\024\n\020CMD_PLAYER"
-  "_INPUT\020\003\022\024\n\020CMD_PLAYER_HEART\020\004\022\017\n\013CMD_LO"
-  "ADING\020\005*D\n\006S2CCmd\022\020\n\014S2C_CMD_NONE\020\000\022\023\n\017S"
-  "2C_CMD_LOADING\020\001\022\023\n\017S2C_CMD_COMMAND\020\002*G\n"
-  "\007S2CType\022\023\n\017S2C_TYPE_NORMAL\020\000\022\023\n\017S2C_TYP"
-  "E_PLAYER\020\001\022\022\n\016S2C_TYPE_ENEMY\020\002b\006proto3"
+  "#\n\016C2SPlayerLeave\022\021\n\tplayer_id\030\001 \001(\005\"!\n\016"
+  "C2SPlayerInput\022\017\n\007keycode\030\001 \001(\005\"4\n\016C2SPl"
+  "ayerHeart\022\014\n\004conv\030\001 \001(\005\022\024\n\014current_time\030"
+  "\002 \001(\003\"\372\001\n\003C2S\022\036\n\003cmd\030\001 \001(\0162\021.adventure.C"
+  "2SCmd\022/\n\013player_join\030\002 \001(\0132\030.adventure.C"
+  "2SPlayerJoinH\000\0221\n\014player_leave\030\003 \001(\0132\031.a"
+  "dventure.C2SPlayerLeaveH\000\0221\n\014player_inpu"
+  "t\030\004 \001(\0132\031.adventure.C2SPlayerInputH\000\0221\n\014"
+  "player_heart\030\005 \001(\0132\031.adventure.C2SPlayer"
+  "HeartH\000B\t\n\007payload\"\216\001\n\tS2CEntity\022\n\n\002id\030\001"
+  " \001(\005\022 \n\004type\030\002 \001(\0162\022.adventure.S2CType\022\022"
+  "\n\nposition_x\030\003 \001(\003\022\022\n\nposition_y\030\004 \001(\003\022\n"
+  "\n\002hp\030\005 \001(\003\022\025\n\013player_conv\030\006 \001(\005H\000B\010\n\006ext"
+  "end\"E\n\rS2CPlayerJoin\022\014\n\004conv\030\001 \001(\005\022\022\n\npo"
+  "sition_x\030\002 \001(\003\022\022\n\nposition_y\030\003 \001(\003\"\036\n\016S2"
+  "CPlayerLeave\022\014\n\004conv\030\001 \001(\005\"/\n\016S2CPlayerI"
+  "nput\022\014\n\004conv\030\001 \001(\005\022\017\n\007keycode\030\002 \001(\005\"\\\n\006S"
+  "2CMap\022\020\n\010frame_id\030\001 \001(\005\022\030\n\020global_entity"
+  "_id\030\002 \001(\005\022&\n\010entities\030\003 \003(\0132\024.adventure."
+  "S2CEntity\"\304\001\n\nS2CCommand\022\020\n\010frame_id\030\001 \001"
+  "(\005\022.\n\014player_joins\030\002 \003(\0132\030.adventure.S2C"
+  "PlayerJoin\0220\n\rplayer_leaves\030\003 \003(\0132\031.adve"
+  "nture.S2CPlayerLeave\0220\n\rplayer_inputs\030\004 "
+  "\003(\0132\031.adventure.S2CPlayerInput\022\020\n\010checks"
+  "um\030\005 \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 \001(\0162\021.adventure"
+  ".S2CCmd\022\036\n\003map\030\002 \001(\0132\021.adventure.S2CMap\022"
+  "&\n\007command\030\003 \001(\0132\025.adventure.S2CCommand*"
+  "\201\001\n\006C2SCmd\022\017\n\013CMD_UNKNOWN\020\000\022\023\n\017CMD_PLAYE"
+  "R_JOIN\020\001\022\024\n\020CMD_PLAYER_LEAVE\020\002\022\024\n\020CMD_PL"
+  "AYER_INPUT\020\003\022\024\n\020CMD_PLAYER_HEART\020\004\022\017\n\013CM"
+  "D_LOADING\020\005*D\n\006S2CCmd\022\020\n\014S2C_CMD_NONE\020\000\022"
+  "\023\n\017S2C_CMD_LOADING\020\001\022\023\n\017S2C_CMD_COMMAND\020"
+  "\002*G\n\007S2CType\022\023\n\017S2C_TYPE_NORMAL\020\000\022\023\n\017S2C"
+  "_TYPE_PLAYER\020\001\022\022\n\016S2C_TYPE_ENEMY\020\002b\006prot"
+  "o3"
   ;
 static ::_pbi::once_flag descriptor_table_adventure_once;
 const ::_pbi::DescriptorTable descriptor_table_adventure = {
-    false, false, 1478, descriptor_table_protodef_adventure,
+    false, false, 1442, descriptor_table_protodef_adventure,
     "adventure",
     &descriptor_table_adventure_once, nullptr, 0, 12,
     schemas, file_default_instances, TableStruct_adventure::offsets,
@@ -856,14 +852,11 @@ C2SPlayerInput::C2SPlayerInput(const C2SPlayerInput& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   C2SPlayerInput* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.sequence_){}
-    , decltype(_impl_.keycode_){}
+      decltype(_impl_.keycode_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&_impl_.sequence_, &from._impl_.sequence_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.keycode_) -
-    reinterpret_cast<char*>(&_impl_.sequence_)) + sizeof(_impl_.keycode_));
+  _this->_impl_.keycode_ = from._impl_.keycode_;
   // @@protoc_insertion_point(copy_constructor:adventure.C2SPlayerInput)
 }
 
@@ -872,8 +865,7 @@ inline void C2SPlayerInput::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.sequence_){0}
-    , decltype(_impl_.keycode_){0}
+      decltype(_impl_.keycode_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -901,9 +893,7 @@ void C2SPlayerInput::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::memset(&_impl_.sequence_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.keycode_) -
-      reinterpret_cast<char*>(&_impl_.sequence_)) + sizeof(_impl_.keycode_));
+  _impl_.keycode_ = 0;
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -913,17 +903,9 @@ const char* C2SPlayerInput::_InternalParse(const char* ptr, ::_pbi::ParseContext
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // int32 sequence = 1;
+      // int32 keycode = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          _impl_.sequence_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // int32 keycode = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
           _impl_.keycode_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
@@ -958,16 +940,10 @@ uint8_t* C2SPlayerInput::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // int32 sequence = 1;
-  if (this->_internal_sequence() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_sequence(), target);
-  }
-
-  // int32 keycode = 2;
+  // int32 keycode = 1;
   if (this->_internal_keycode() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_keycode(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_keycode(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -986,12 +962,7 @@ size_t C2SPlayerInput::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // int32 sequence = 1;
-  if (this->_internal_sequence() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_sequence());
-  }
-
-  // int32 keycode = 2;
+  // int32 keycode = 1;
   if (this->_internal_keycode() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_keycode());
   }
@@ -1014,9 +985,6 @@ void C2SPlayerInput::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from._internal_sequence() != 0) {
-    _this->_internal_set_sequence(from._internal_sequence());
-  }
   if (from._internal_keycode() != 0) {
     _this->_internal_set_keycode(from._internal_keycode());
   }
@@ -1037,12 +1005,7 @@ bool C2SPlayerInput::IsInitialized() const {
 void C2SPlayerInput::InternalSwap(C2SPlayerInput* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(C2SPlayerInput, _impl_.keycode_)
-      + sizeof(C2SPlayerInput::_impl_.keycode_)
-      - PROTOBUF_FIELD_OFFSET(C2SPlayerInput, _impl_.sequence_)>(
-          reinterpret_cast<char*>(&_impl_.sequence_),
-          reinterpret_cast<char*>(&other->_impl_.sequence_));
+  swap(_impl_.keycode_, other->_impl_.keycode_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata C2SPlayerInput::GetMetadata() const {
@@ -2498,7 +2461,6 @@ S2CPlayerInput::S2CPlayerInput(const S2CPlayerInput& from)
   S2CPlayerInput* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.conv_){}
-    , decltype(_impl_.sequence_){}
     , decltype(_impl_.keycode_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
@@ -2515,7 +2477,6 @@ inline void S2CPlayerInput::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.conv_){0}
-    , decltype(_impl_.sequence_){0}
     , decltype(_impl_.keycode_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -2564,17 +2525,9 @@ const char* S2CPlayerInput::_InternalParse(const char* ptr, ::_pbi::ParseContext
         } else
           goto handle_unusual;
         continue;
-      // int32 sequence = 2;
+      // int32 keycode = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          _impl_.sequence_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // int32 keycode = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
           _impl_.keycode_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
@@ -2615,16 +2568,10 @@ uint8_t* S2CPlayerInput::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_conv(), target);
   }
 
-  // int32 sequence = 2;
-  if (this->_internal_sequence() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_sequence(), target);
-  }
-
-  // int32 keycode = 3;
+  // int32 keycode = 2;
   if (this->_internal_keycode() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(3, this->_internal_keycode(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_keycode(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2648,12 +2595,7 @@ size_t S2CPlayerInput::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_conv());
   }
 
-  // int32 sequence = 2;
-  if (this->_internal_sequence() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_sequence());
-  }
-
-  // int32 keycode = 3;
+  // int32 keycode = 2;
   if (this->_internal_keycode() != 0) {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_keycode());
   }
@@ -2678,9 +2620,6 @@ void S2CPlayerInput::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const :
 
   if (from._internal_conv() != 0) {
     _this->_internal_set_conv(from._internal_conv());
-  }
-  if (from._internal_sequence() != 0) {
-    _this->_internal_set_sequence(from._internal_sequence());
   }
   if (from._internal_keycode() != 0) {
     _this->_internal_set_keycode(from._internal_keycode());

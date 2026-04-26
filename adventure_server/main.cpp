@@ -80,7 +80,6 @@ static void AddPlayerInput(int conv, adventure::C2S* c2s)
         adventure::S2CPlayerInput player_input;
         player_input.set_conv(conv);
         player_input.set_keycode(c2s->player_input().keycode());
-        player_input.set_sequence(c2s->player_input().sequence());
         world.get_mut<Context>()->player_inputs.push_back(player_input);
 }
 
@@ -164,7 +163,7 @@ static void Attack(LogicPositionComponent* p,
 }
 
 static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
-        IdComponent& currId, int conv, int sequence, int input)
+        IdComponent& currId, int conv, int input)
 {
         // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
         auto ctx = world.get_mut<Context>();
@@ -345,7 +344,7 @@ static void HandleCommandSystem(flecs::world& world)
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv != input.conv()) return;
                                 //log_info("Apply input from conv %d: seq=%d, keycode=%d", input.conv(), input.sequence(), input.keycode());
-                                ApplyInput(&pos, r, id, input.conv(), input.sequence(), input.keycode());
+                                ApplyInput(&pos, r, id, input.conv(), input.keycode());
                         });
         }
 

@@ -83,10 +83,8 @@ static void Attack(LogicPositionComponent* p,
 // ----------------------------------------------------------------------
 // 应用输入（每收到一个输入包就移动一次）
 // ----------------------------------------------------------------------
-static void ApplyInput(LogicPositionComponent* p,
-        LogicRectComponent& currRect,
-        IdComponent& currId,
-        int conv, int sequence, int input)
+static void apply_input(LogicPositionComponent* p,
+        LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
         auto ctx = world.get_mut<Context>();
         fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
@@ -97,6 +95,18 @@ static void ApplyInput(LogicPositionComponent* p,
         if (input & INPUT_LEFT)  p->x = fp_sub(p->x, step);
         if (input & INPUT_RIGHT) p->x = fp_add(p->x, step);
         if (input & INPUT_ATTACK) Attack(p, currRect, currId);
+}
+static void preapply_input(LogicPositionComponent* p,
+        LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
+{
+        auto ctx = world.get_mut<Context>();
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+        fp_t step = fp_mul(MOVE_SPEED, delta);
+
+        if (input & INPUT_UP)    p->y = fp_sub(p->y, step);
+        if (input & INPUT_DOWN)  p->y = fp_add(p->y, step);
+        if (input & INPUT_LEFT)  p->x = fp_sub(p->x, step);
+        if (input & INPUT_RIGHT) p->x = fp_add(p->x, step);
 }
 
 // ----------------------------------------------------------------------
@@ -122,6 +132,14 @@ static void HandleLoading(adventure::S2C* s2c)
                 }
         }
 
+        // 保存当前快照（预测前的状态）
+        std::map<int, StateSnapshot> snapshots;
+        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                LogicRectComponent& r, LogicPositionComponent& pos) {
+                        snapshots.insert({ id.id, { pos.x, pos.y } });
+                });
+        ctx->snapshots.insert({ ctx->server_frameid, snapshots });
+
         // 告知服务器本地玩家加入
         adventure::C2S c2s;
         c2s.set_cmd(adventure::CMD_PLAYER_JOIN);
@@ -138,8 +156,20 @@ static void HandleLoading(adventure::S2C* s2c)
 static void HandleCommand(adventure::S2C& s2c)
 {
         auto ctx = world.get_mut<Context>();
-        uint32_t server_frame = s2c.command().frame_id();
-        ctx->server_frameid = server_frame;
+        {
+                // 先回滚到上一个快照状态（如果有的话），再应用服务器命令
+                auto snapshots = ctx->snapshots.find(ctx->server_frameid)->second;
+                ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
+                                auto it = snapshots.find(id.id);
+                                if (it != snapshots.end()) {
+                                        pos.x = it->second.position_x;
+                                        pos.y = it->second.position_y;
+                                }
+                        });
+        }
+
+        ctx->server_frameid = s2c.command().frame_id();
 
         // 1. 处理新玩家加入
         for (auto& player_join : s2c.command().player_joins()) {
@@ -168,77 +198,40 @@ static void HandleCommand(adventure::S2C& s2c)
         }
         world.defer_end();
 
-        // 3. 更新已确认的输入序列号（从服务器返回的输入中找本地玩家的最大序列号）
-        uint32_t max_confirmed_seq = 0;
-        for (auto& input : s2c.command().player_inputs()) {
-                if (input.conv() == ctx->local_conv) {
-                        if (input.sequence() > max_confirmed_seq)
-                                max_confirmed_seq = input.sequence();
-                }
-        }
-        if (max_confirmed_seq > 0) {
-                ctx->pending_inputs.erase(
-                        std::remove_if(ctx->pending_inputs.begin(), ctx->pending_inputs.end(),
-                                [max_confirmed_seq](const InputRecord& rec) {
-                                        return rec.sequence <= max_confirmed_seq;
-                                }),
-                        ctx->pending_inputs.end());
-                ctx->last_confirmed_sequence = max_confirmed_seq;
-        }
-
-        // 4. 如果服务器提供了世界快照（需要修改协议），则进行回滚和重放
-        // 目前服务器未提供，此处预留代码，一旦服务器支持即可启用
-        /*
-        if (s2c.command().has_world_snapshot()) {
-            const auto& snapshot = s2c.command().world_snapshot();
-            fp_t auth_x = 0, auth_y = 0;
-            bool found = false;
-            for (auto& ent : snapshot.entities()) {
-                if (ent.type() == adventure::S2C_TYPE_PLAYER && ent.player_conv() == ctx->local_conv) {
-                    auth_x = ent.position_x();
-                    auth_y = ent.position_y();
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                auto it = std::find_if(ctx->snapshots.begin(), ctx->snapshots.end(),
-                                       [server_frame](const StateSnapshot& ss) {
-                                           return ss.frame_id == server_frame;
-                                       });
-                if (it != ctx->snapshots.end()) {
-                    fp_t dx = fp_sub(auth_x, it->player_x);
-                    fp_t dy = fp_sub(auth_y, it->player_y);
-                    if (fp_abs(dx) > fp_from_float(0.01f) || fp_abs(dy) > fp_from_float(0.01f)) {
-                        // 回滚本地玩家位置
-                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
-                                                   LogicRectComponent& r, LogicPositionComponent& pos) {
-                            pos.x = auth_x;
-                            pos.y = auth_y;
-                        });
-                        ctx->snapshots.erase(it, ctx->snapshots.end());
-                        // 重放未确认的输入
-                        for (auto& rec : ctx->pending_inputs) {
-                            ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
-                                                       LogicRectComponent& r, LogicPositionComponent& pos) {
-                                ApplyInput(&pos, r, id, ctx->local_conv, rec.sequence, rec.keycode);
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        */
-
         // 5. 应用其他玩家的输入（本地玩家的输入已经通过预测重放，这里跳过）
         for (auto& input : s2c.command().player_inputs()) {
-                if (input.conv() == ctx->local_conv) continue;
                 ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
-                                if (p.conv != input.conv()) return;
-                                ApplyInput(&pos, r, id, input.conv(), input.sequence(), input.keycode());
+                                if (p.conv == ctx->local_conv) {
+                                        ctx->pending_inputs.pop_back();   // 已确认，移除一个待确认输入
+                                }
+                                apply_input(&pos, r, id, input.conv(), input.keycode());
                         });
         }
+
+        // 保存当前服务帧权威快照
+        {
+                std::map<int, StateSnapshot> snapshots;
+                ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
+                                snapshots.insert({ id.id, { pos.x, pos.y } });
+                        });
+                ctx->snapshots.insert({ ctx->server_frameid, snapshots });
+        }
+
+        // 执行后面的预测
+        {
+                // 重放未确认的输入
+                for (auto& input : ctx->pending_inputs) {
+                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
+                                        if (p.conv == ctx->local_conv) {
+                                                preapply_input(&pos, r, id, ctx->local_conv, input);
+                                        }
+                                });
+                }
+        }
+
 }
 
 // ----------------------------------------------------------------------
@@ -299,28 +292,14 @@ static void FixedUpdate(float dt)
                         ctx->attack_triggered = false;
                 }
                 if (send_mask != 0) {
-                        // 保存当前快照（预测前的状态）
-                        StateSnapshot snapshot;
-                        snapshot.frame_id = ctx->server_frameid + 1;
-                        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
-                                LogicRectComponent& r, LogicPositionComponent& pos) {
-                                        snapshot.player_x = pos.x;
-                                        snapshot.player_y = pos.y;
-                                });
-                        ctx->snapshots.push_back(snapshot);
-                        while (ctx->snapshots.size() > 120) ctx->snapshots.erase(ctx->snapshots.begin());
-
                         // 记录待确认输入
-                        InputRecord record;
-                        record.sequence = ctx->globalSequence;
-                        record.keycode = send_mask;
-                        ctx->pending_inputs.push_back(record);
+                        ctx->pending_inputs.push_back(send_mask);
 
                         // 立即应用输入（预测移动）
                         ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
                                         if (p.conv == ctx->local_conv) {
-                                                ApplyInput(&pos, r, id, ctx->local_conv, record.sequence, send_mask);
+                                                preapply_input(&pos, r, id, ctx->local_conv, send_mask);
                                                 return;
                                         }
                                 });
@@ -329,7 +308,6 @@ static void FixedUpdate(float dt)
                         adventure::C2S c2s;
                         c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
                         auto* pi = c2s.mutable_player_input();
-                        pi->set_sequence(ctx->globalSequence++);
                         pi->set_keycode(send_mask);
                         std::string data = c2s.SerializeAsString();
                         kcpclient_send(ctx->kcpclient, data.c_str(), data.size());

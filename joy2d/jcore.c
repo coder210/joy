@@ -252,7 +252,7 @@ void game_timer_init(game_timer_p timer)
 	timer->time_scale = 1.0;
 	timer->target_fps = 0;
 	timer->target_frame_time = 0.0;
-	SDL_Log("[Gametimer] Initialized. Last time: %llu ns\n", (unsigned long long)now);
+	log_info("[Gametimer] Initialized. Last time: %llu ns", (unsigned long long)now);
 }
 
 void game_timer_update(game_timer_p timer)
@@ -294,7 +294,7 @@ void game_timer_set_time_scale(game_timer_p timer, float scale)
 {
 	if (!timer) return;
 	if (scale < 0.0f) {
-		fprintf(stderr, "[Gametimer] Warning: Time scale cannot be negative. Clamping to 0.\n");
+		log_info("[Gametimer] Warning: Time scale cannot be negative. Clamping to 0.");
 		scale = 0.0f;
 	}
 	timer->time_scale = (double)scale;
@@ -311,7 +311,7 @@ void game_timer_set_target_fps(game_timer_p timer, int fps)
 	if (!timer) return;
 
 	if (fps < 0) {
-		SDL_Log("[Gametimer] Warning: Target FPS cannot be negative. Setting to 0 (unlimited).\n");
+		log_info("[Gametimer] Warning: Target FPS cannot be negative. Setting to 0 (unlimited).");
 		timer->target_fps = 0;
 	}
 	else {
@@ -320,12 +320,12 @@ void game_timer_set_target_fps(game_timer_p timer, int fps)
 
 	if (timer->target_fps > 0) {
 		timer->target_frame_time = 1.0 / (double)timer->target_fps;
-		SDL_Log("[Gametimer] Target FPS set to: %d (Frame time: %.6f s)\n",
+		log_info("[Gametimer] Target FPS set to: %d (Frame time: %.6f s)",
 			timer->target_fps, timer->target_frame_time);
 	}
 	else {
 		timer->target_frame_time = 0.0;
-		SDL_Log("[Gametimer] Target FPS set to: Unlimited\n");
+		log_info("[Gametimer] Target FPS set to: Unlimited");
 	}
 }
 

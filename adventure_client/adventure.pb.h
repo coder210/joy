@@ -610,19 +610,9 @@ class C2SPlayerInput final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kSequenceFieldNumber = 1,
-    kKeycodeFieldNumber = 2,
+    kKeycodeFieldNumber = 1,
   };
-  // int32 sequence = 1;
-  void clear_sequence();
-  int32_t sequence() const;
-  void set_sequence(int32_t value);
-  private:
-  int32_t _internal_sequence() const;
-  void _internal_set_sequence(int32_t value);
-  public:
-
-  // int32 keycode = 2;
+  // int32 keycode = 1;
   void clear_keycode();
   int32_t keycode() const;
   void set_keycode(int32_t value);
@@ -639,7 +629,6 @@ class C2SPlayerInput final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    int32_t sequence_;
     int32_t keycode_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -1722,8 +1711,7 @@ class S2CPlayerInput final :
 
   enum : int {
     kConvFieldNumber = 1,
-    kSequenceFieldNumber = 2,
-    kKeycodeFieldNumber = 3,
+    kKeycodeFieldNumber = 2,
   };
   // int32 conv = 1;
   void clear_conv();
@@ -1734,16 +1722,7 @@ class S2CPlayerInput final :
   void _internal_set_conv(int32_t value);
   public:
 
-  // int32 sequence = 2;
-  void clear_sequence();
-  int32_t sequence() const;
-  void set_sequence(int32_t value);
-  private:
-  int32_t _internal_sequence() const;
-  void _internal_set_sequence(int32_t value);
-  public:
-
-  // int32 keycode = 3;
+  // int32 keycode = 2;
   void clear_keycode();
   int32_t keycode() const;
   void set_keycode(int32_t value);
@@ -1761,7 +1740,6 @@ class S2CPlayerInput final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     int32_t conv_;
-    int32_t sequence_;
     int32_t keycode_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -2438,27 +2416,7 @@ inline void C2SPlayerLeave::set_player_id(int32_t value) {
 
 // C2SPlayerInput
 
-// int32 sequence = 1;
-inline void C2SPlayerInput::clear_sequence() {
-  _impl_.sequence_ = 0;
-}
-inline int32_t C2SPlayerInput::_internal_sequence() const {
-  return _impl_.sequence_;
-}
-inline int32_t C2SPlayerInput::sequence() const {
-  // @@protoc_insertion_point(field_get:adventure.C2SPlayerInput.sequence)
-  return _internal_sequence();
-}
-inline void C2SPlayerInput::_internal_set_sequence(int32_t value) {
-  
-  _impl_.sequence_ = value;
-}
-inline void C2SPlayerInput::set_sequence(int32_t value) {
-  _internal_set_sequence(value);
-  // @@protoc_insertion_point(field_set:adventure.C2SPlayerInput.sequence)
-}
-
-// int32 keycode = 2;
+// int32 keycode = 1;
 inline void C2SPlayerInput::clear_keycode() {
   _impl_.keycode_ = 0;
 }
@@ -3114,27 +3072,7 @@ inline void S2CPlayerInput::set_conv(int32_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CPlayerInput.conv)
 }
 
-// int32 sequence = 2;
-inline void S2CPlayerInput::clear_sequence() {
-  _impl_.sequence_ = 0;
-}
-inline int32_t S2CPlayerInput::_internal_sequence() const {
-  return _impl_.sequence_;
-}
-inline int32_t S2CPlayerInput::sequence() const {
-  // @@protoc_insertion_point(field_get:adventure.S2CPlayerInput.sequence)
-  return _internal_sequence();
-}
-inline void S2CPlayerInput::_internal_set_sequence(int32_t value) {
-  
-  _impl_.sequence_ = value;
-}
-inline void S2CPlayerInput::set_sequence(int32_t value) {
-  _internal_set_sequence(value);
-  // @@protoc_insertion_point(field_set:adventure.S2CPlayerInput.sequence)
-}
-
-// int32 keycode = 3;
+// int32 keycode = 2;
 inline void S2CPlayerInput::clear_keycode() {
   _impl_.keycode_ = 0;
 }
