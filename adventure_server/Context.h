@@ -30,9 +30,9 @@ struct Context {
         float FIXED_TIMESTEP = 1.0f / 50.0f;
         float accumulator = 0.0f;
 
-        // 在 Context 结构体内添加
-        float serverTickTimer = 0.0f;        // 输入发送计时器
-        float SERVER_TICK_INTERVAL = 1.0f / 15.0f;  // 15Hz
+        // 锟斤拷 Context 锟结构锟斤拷锟斤拷锟斤拷锟斤拷
+        float serverTickTimer = 0.0f;        // 锟斤拷锟诫发锟酵硷拷时锟斤拷
+        float SERVER_TICK_INTERVAL = 1.0f / 20.0f;  // 30Hz
 
         Resources* resources = NULL;
         DebugLayer* debugLayer = NULL;
