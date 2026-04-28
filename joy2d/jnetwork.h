@@ -69,6 +69,42 @@ extern "C" {
 	JOY_API void tcpclient_update(tcpclient_p tcpclient);
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
 
+	// ==============================
+	// WebSocket Client (仅 emscripten)
+	// ==============================
+#ifdef __EMSCRIPTEN__
+	typedef struct wsclient wsclient_t, *wsclient_p;
+
+	JOY_API wsclient_p wsclient_create(const char* url);
+	JOY_API void wsclient_destroy(wsclient_p ws);
+	JOY_API bool wsclient_getconv(wsclient_p ws, int* conv);
+	JOY_API int wsclient_send(wsclient_p ws, const char* data, int len);
+	JOY_API void wsclient_update(wsclient_p ws);
+	JOY_API bool wsclient_poll_message(wsclient_p ws, net_message_p msg);
+	JOY_API void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata);
+#endif
+
+	// ==============================
+	// Unified NetClient (封装 kcp/tcp/ws)
+	// ==============================
+	typedef enum {
+		NET_CLIENT_TCP,
+		NET_CLIENT_KCP,
+		NET_CLIENT_WEBSOCKET,
+		NET_CLIENT_AUTO,          // 自动选择: emscripten用ws, 否则用kcp
+	} net_client_type;
+
+	typedef struct netclient netclient_t, *netclient_p;
+
+	JOY_API netclient_p netclient_create(net_client_type type, const char* host, int port);
+	JOY_API void netclient_destroy(netclient_p nc);
+	JOY_API bool netclient_getconv(netclient_p nc, int* conv);
+	JOY_API int netclient_send(netclient_p nc, const char* data, int len);
+	JOY_API void netclient_update(netclient_p nc);
+	JOY_API bool netclient_poll_message(netclient_p nc, net_message_p msg);
+	JOY_API void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata);
+	JOY_API net_client_type netclient_get_type(netclient_p nc);
+
 #ifdef __cplusplus
 }
 #endif

@@ -254,7 +254,7 @@ static void HandleLoading(adventure::S2C* s2c)
         join->set_position_x(fp_from_float(1.2f));
         join->set_position_y(fp_from_float(2.3f));
         std::string data = c2s.SerializeAsString();
-        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
+        netclient_send(ctx->netclient, data.c_str(), data.size());
 }
 
 // ----------------------------------------------------------------------
@@ -383,7 +383,7 @@ static void OnMessage(net_message_p msg, void*)
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_LOADING);
                 std::string d = c2s.SerializeAsString();
-                kcpclient_send(ctx->kcpclient, d.c_str(), d.size());
+                netclient_send(ctx->netclient, d.c_str(), d.size());
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
                 adventure::S2C s2c;
@@ -411,7 +411,7 @@ static void SendHeartbeat(float dt)
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_PLAYER_HEART);
                 std::string d = c2s.SerializeAsString();
-                kcpclient_send(ctx->kcpclient, d.c_str(), d.size());
+                netclient_send(ctx->netclient, d.c_str(), d.size());
         }
 }
 
@@ -425,7 +425,7 @@ static void FixedUpdate(float dt)
         // --- 先处理网络消息（确认输入必须在发送新输入之前）---
         // 避免 FixedUpdate push 新输入后，网络消息才处理旧确认导致的错位
         net_message_t msg;
-        if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
+        if (netclient_poll_message(ctx->netclient, &msg)) {
                 OnMessage(&msg, NULL);
         }
 
@@ -455,7 +455,7 @@ static void FixedUpdate(float dt)
                         auto* pi = c2s.mutable_player_input();
                         pi->set_keycode(send_mask);
                         std::string data = c2s.SerializeAsString();
-                        kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
+                        netclient_send(ctx->netclient, data.c_str(), data.size());
                 }
         }
 }
@@ -487,10 +487,10 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpclient = kcpclient_create("192.168.1.16", 10000);
-        ctx->kcpclient = kcpclient_create("192.168.2.61", 10000);
-        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
-        //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
+        //ctx->netclient = netclient_create(NET_CLIENT_KCP, "192.168.1.16", 10000);
+        //ctx->netclient = netclient_create(NET_CLIENT_KCP, "192.168.2.61", 10000);
+        ctx->netclient = netclient_create(NET_CLIENT_KCP, "8.148.188.213", 10000);
+        netclient_set_callback(ctx->netclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
         world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
@@ -575,7 +575,7 @@ SDL_AppResult SDL_AppIterate(void*)
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         ctx->accumulator += dt;
 
-        kcpclient_update(ctx->kcpclient);
+        netclient_update(ctx->netclient);
 
         int fps = simple_fps_update(ctx->sample_fps);
 
@@ -614,7 +614,7 @@ void SDL_AppQuit(void*, SDL_AppResult)
         delete ctx->debugLayer;
         delete ctx->mobileInputLayer;
         simple_fps_destory(ctx->sample_fps);
-        kcpclient_destroy(ctx->kcpclient);
+        netclient_destroy(ctx->netclient);
         SDL_DestroyRenderer(ctx->renderer);
         SDL_DestroyWindow(ctx->window);
         sys_release_netenv();
