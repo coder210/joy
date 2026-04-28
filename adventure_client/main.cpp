@@ -28,7 +28,7 @@ const int INPUT_ATTACK = 1 << 4;
 // ----------------------------------------------------------------------
 // 攻击逻辑（保持不变）
 // ----------------------------------------------------------------------
-static void Attack(LogicPositionComponent* p,
+static void attack(LogicPositionComponent* p,
         LogicRectComponent& currRect,
         IdComponent& currId)
 {
@@ -66,7 +66,49 @@ static void Attack(LogicPositionComponent* p,
                 });
 
         if (nearest_id != nullptr) {
+		// 只有服务器权威时才真正修改 HP，客户端预测时不修改（或只做视觉效果）
                 nearest_id->hp--;
+        }
+}
+
+static void pre_attack(LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId)
+{
+        auto ctx = world.get_mut<Context>();
+        ray2df_t ray;
+        ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
+        ray.origin.y = p->y;
+        ray.direction.x = fp_from_float(.0f);
+        ray.direction.y = fp_from_float(-1.0f);
+
+        ray2d_collisionf_t nearest_hit = { 0 };
+        IdComponent* nearest_id = nullptr;
+        float nearest_dist = 999999.0f;
+
+        ctx->body_query.each([&](IdComponent& id,
+                LogicRectComponent& r,
+                LogicPositionComponent& pos) {
+                        if (currId.id == id.id) return;
+
+                        rectanglef_t rect = { 0 };
+                        rect.x = pos.x;
+                        rect.y = pos.y;
+                        rect.width = r.width;
+                        rect.height = r.height;
+                        ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
+
+                        if (result.hit) {
+                                float current_dist = fp_to_float(fp_sub(ray.origin.y, result.point.y));
+                                if (current_dist < nearest_dist) {
+                                        nearest_dist = current_dist;
+                                        nearest_hit = result;
+                                        nearest_id = &id;
+                                }
+                        }
+                });
+
+        if (nearest_id != nullptr) {
                 SDL_FRect line;
                 float end_x = fp_to_float(ray.origin.x);
                 float end_y = fp_to_float(ray.origin.y);
@@ -141,7 +183,7 @@ static void apply_input(LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
         if (input & INPUT_ATTACK) {
-                Attack(p, currRect, currId);
+                attack(p, currRect, currId);
         }
 
         // 计算移动量
@@ -158,6 +200,10 @@ static void apply_input(LogicPositionComponent* p,
 static void preapply_input(LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
+        if (input & INPUT_ATTACK) {
+                pre_attack(p, currRect, currId);
+        }
+
         // 计算移动量
         fp_t move_x, move_y;
         calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
@@ -370,11 +416,18 @@ static void SendHeartbeat(float dt)
 }
 
 // ----------------------------------------------------------------------
-// 固定步长更新（预测发送 + 接收网络消息）
+// 固定步长更新（接收网络消息 + 预测发送）
 // ----------------------------------------------------------------------
 static void FixedUpdate(float dt)
 {
         auto ctx = world.get_mut<Context>();
+
+        // --- 先处理网络消息（确认输入必须在发送新输入之前）---
+        // 避免 FixedUpdate push 新输入后，网络消息才处理旧确认导致的错位
+        net_message_t msg;
+        if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
+                OnMessage(&msg, NULL);
+        }
 
         // --- 预测：保存快照 -> 记录输入 -> 立即移动（预测） -> 发送到服务器 ---
         if (ctx->ready) {
@@ -390,11 +443,11 @@ static void FixedUpdate(float dt)
                         // 立即应用输入（预测移动）
                         ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
-                                        if (p.conv == ctx->local_conv) {
-                                                preapply_input(&pos, r, id, ctx->local_conv, send_mask);
-                                                return;
-                                        }
-                                });
+                                if (p.conv == ctx->local_conv) {
+                                        preapply_input(&pos, r, id, ctx->local_conv, send_mask);
+                                        return;
+                                }
+                        });
 
                         // 发送输入到服务器
                         adventure::C2S c2s;
@@ -404,12 +457,6 @@ static void FixedUpdate(float dt)
                         std::string data = c2s.SerializeAsString();
                         kcpclient_send(ctx->kcpclient, data.c_str(), data.size());
                 }
-        }
-
-        // 接收网络消息
-        net_message_t msg;
-        if (kcpclient_poll_message(ctx->kcpclient, &msg)) {
-                OnMessage(&msg, NULL);
         }
 }
 
@@ -441,8 +488,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpclient = kcpclient_create("192.168.1.16", 10000);
-        //ctx->kcpclient = kcpclient_create("192.168.2.61", 10000);
-        ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
+        ctx->kcpclient = kcpclient_create("192.168.2.61", 10000);
+        //ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
