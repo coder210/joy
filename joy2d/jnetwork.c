@@ -956,7 +956,7 @@ struct wsclient
 static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return EM_BOOL_FALSE;
+        if (!ws) return false;
 
         net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
@@ -971,13 +971,13 @@ static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, 
                 *kl_pushp(kmq, ws->mq) = msg;
         }
         log_info("WebSocket connected");
-        return EM_BOOL_TRUE;
+        return true;
 }
 
 static EM_BOOL ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return EM_BOOL_FALSE;
+        if (!ws) return false;
 
         net_message_t msg;
         msg.type = NET_TYPE_MESSAGE;
@@ -991,13 +991,13 @@ static EM_BOOL ws_on_message(int eventType, const EmscriptenWebSocketMessageEven
         } else {
                 *kl_pushp(kmq, ws->mq) = msg;
         }
-        return EM_BOOL_TRUE;
+        return true;
 }
 
 static EM_BOOL ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return EM_BOOL_FALSE;
+        if (!ws) return false;
 
         ws->connected = false;
 
@@ -1013,16 +1013,16 @@ static EM_BOOL ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e
                 *kl_pushp(kmq, ws->mq) = msg;
         }
         log_info("WebSocket closed");
-        return EM_BOOL_TRUE;
+        return true;
 }
 
 static EM_BOOL ws_on_error(int eventType, const EmscriptenWebSocketErrorEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return EM_BOOL_FALSE;
+        if (!ws) return false;
 
         log_error("WebSocket error");
-        return EM_BOOL_TRUE;
+        return true;
 }
 
 wsclient_p wsclient_create(const char* url)
@@ -1117,6 +1117,308 @@ bool wsclient_poll_message(wsclient_p ws, net_message_p msg)
 }
 
 void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata)
+{
+        if (!ws) return;
+        ws->cb = cb;
+        ws->userdata = userdata;
+}
+
+// ==============================
+// WebSocket Server (仅 emscripten)
+// ==============================
+
+typedef struct ws_connection {
+        EMSCRIPTEN_WEBSOCKET_T socket;
+        char ip[JOY_MAX_IP];
+        int port;
+        int timeout;
+        delay_t updating_delay;
+} ws_connection_t, *ws_connection_p;
+
+KHASH_INIT(wsconn, int, ws_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
+
+struct wsserver {
+        EMSCRIPTEN_WEBSOCKET_SERVER_T server;
+        int conv;
+        khash_t(wsconn) * conns;
+        klist_t(kmq) * mq;
+        net_callback cb;
+        void* userdata;
+};
+
+static void wsserver_on_open(wsserver_p ws, EMSCRIPTEN_WEBSOCKET_T socket)
+{
+        ws_connection_p conn = (ws_connection_p)SDL_malloc(sizeof(ws_connection_t));
+        if (!conn) return;
+
+        memset(conn, 0, sizeof(ws_connection_t));
+        conn->socket = socket;
+        conn->timeout = 120;
+        conn->updating_delay.time = sys_current_time();
+        conn->updating_delay.timeout = 1000;
+
+        int ret;
+        int conv = ws->conv++;
+        khint_t k = kh_put(wsconn, ws->conns, conv, &ret);
+        if (ret == -1) {
+                SDL_free(conn);
+                return;
+        }
+        kh_val(ws->conns, k) = conn;
+
+        net_message_t msg;
+        msg.type = NET_TYPE_CONNECTED;
+        msg.conv = conv;
+        msg.data = SDL_strdup("connected");
+        msg.len = SDL_strlen(msg.data);
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+        log_info("WebSocket client connected, conv=%d", conv);
+}
+
+static void wsserver_on_message(wsserver_p ws, EMSCRIPTEN_WEBSOCKET_T socket, const char* data, int len)
+{
+        int conv = -1;
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); p++) {
+                if (!kh_exist(ws->conns, p)) continue;
+                ws_connection_p conn = kh_val(ws->conns, p);
+                if (conn && conn->socket == socket) {
+                        conn->timeout = 120;
+                        conv = kh_key(ws->conns, p);
+                        break;
+                }
+        }
+
+        if (conv < 0) return;
+
+        net_message_t msg;
+        msg.type = NET_TYPE_MESSAGE;
+        msg.conv = conv;
+        msg.len = len;
+        msg.data = (char*)SDL_malloc(len);
+        memcpy(msg.data, data, len);
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+}
+
+static void wsserver_on_close(wsserver_p ws, EMSCRIPTEN_WEBSOCKET_T socket)
+{
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); p++) {
+                if (!kh_exist(ws->conns, p)) continue;
+                ws_connection_p conn = kh_val(ws->conns, p);
+                if (conn && conn->socket == socket) {
+                        int conv = kh_key(ws->conns, p);
+                        conn->timeout = -1; // 标记待删除
+
+                        net_message_t msg;
+                        msg.type = NET_TYPE_DISCONNECTED;
+                        msg.conv = conv;
+                        msg.data = SDL_strdup("disconnected");
+                        msg.len = SDL_strlen(msg.data);
+
+                        if (ws->cb) {
+                                ws->cb(&msg, ws->userdata);
+                        } else {
+                                *kl_pushp(kmq, ws->mq) = msg;
+                        }
+                        log_info("WebSocket client disconnected, conv=%d", conv);
+                        return;
+                }
+        }
+}
+
+static EM_BOOL wsserver_on_open_callback(int eventType, const EmscriptenWebSocketServerOpenEvent *e, void *userData)
+{
+        wsserver_p ws = (wsserver_p)userData;
+        if (!ws) return false;
+        wsserver_on_open(ws, e->socket);
+        return true;
+}
+
+static EM_BOOL wsserver_on_message_callback(int eventType, const EmscriptenWebSocketServerMessageEvent *e, void *userData)
+{
+        wsserver_p ws = (wsserver_p)userData;
+        if (!ws) return false;
+        wsserver_on_message(ws, e->socket, e->data, (int)e->numBytes);
+        return true;
+}
+
+static EM_BOOL wsserver_on_close_callback(int eventType, const EmscriptenWebSocketServerCloseEvent *e, void *userData)
+{
+        wsserver_p ws = (wsserver_p)userData;
+        if (!ws) return false;
+        wsserver_on_close(ws, e->socket);
+        return true;
+}
+
+static EM_BOOL wsserver_on_error_callback(int eventType, const EmscriptenWebSocketServerErrorEvent *e, void *userData)
+{
+        log_error("WebSocket server error");
+        return true;
+}
+
+wsserver_p wsserver_create(const char* ip, int port)
+{
+        wsserver_p ws = (wsserver_p)SDL_malloc(sizeof(wsserver_t));
+        if (!ws) return NULL;
+
+        memset(ws, 0, sizeof(wsserver_t));
+        ws->conv = 1000;
+        ws->conns = kh_init(wsconn);
+        ws->mq = kl_init(kmq);
+
+        EmscriptenWebSocketServerCreateAttributes attrs = {
+                .port = port
+        };
+
+        ws->server = emscripten_websocket_server_create(&attrs);
+        if (ws->server <= 0) {
+                log_error("Failed to create WebSocket server");
+                kh_destroy(wsconn, ws->conns);
+                kl_destroy(kmq, ws->mq);
+                SDL_free(ws);
+                return NULL;
+        }
+
+        emscripten_websocket_server_on_open(ws->server, ws, wsserver_on_open_callback);
+        emscripten_websocket_server_on_message(ws->server, ws, wsserver_on_message_callback);
+        emscripten_websocket_server_on_close(ws->server, ws, wsserver_on_close_callback);
+        emscripten_websocket_server_on_error(ws->server, ws, wsserver_on_error_callback);
+
+        log_info("WebSocket server created on port %d", port);
+        return ws;
+}
+
+int wsserver_destroy(wsserver_p ws)
+{
+        if (!ws) return 0;
+
+        // 关闭所有连接
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); p++) {
+                if (!kh_exist(ws->conns, p)) continue;
+                ws_connection_p conn = kh_val(ws->conns, p);
+                if (conn) {
+                        emscripten_websocket_close(conn->socket, 1000, "server closing");
+                        SDL_free(conn);
+                }
+        }
+
+        // 清理消息队列
+        for (kliter_t(kmq)* p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
+                net_message_t* msg = &kl_val(p);
+                if (msg->data) SDL_free(msg->data);
+        }
+        kl_destroy(kmq, ws->mq);
+
+        kh_destroy(wsconn, ws->conns);
+        emscripten_websocket_server_destroy(ws->server);
+        SDL_free(ws);
+
+        return 1;
+}
+
+void wsserver_send(wsserver_p ws, int conv, const char* data, int len)
+{
+        if (!ws || conv < 0) return;
+
+        khint_t k = kh_get(wsconn, ws->conns, conv);
+        if (k != kh_end(ws->conns)) {
+                ws_connection_p conn = kh_val(ws->conns, k);
+                if (conn) {
+                        emscripten_websocket_send_binary(conn->socket, (char*)data, len);
+                }
+        }
+}
+
+void wsserver_broadcast(wsserver_p ws, const char* data, int len)
+{
+        if (!ws) return;
+
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); p++) {
+                if (!kh_exist(ws->conns, p)) continue;
+                ws_connection_p conn = kh_val(ws->conns, p);
+                if (conn) {
+                        emscripten_websocket_send_binary(conn->socket, (char*)data, len);
+                }
+        }
+}
+
+void wsserver_offline(wsserver_p ws, int conv)
+{
+        if (!ws || conv < 0) return;
+
+        khint_t k = kh_get(wsconn, ws->conns, conv);
+        if (k != kh_end(ws->conns)) {
+                ws_connection_p conn = kh_val(ws->conns, k);
+                if (conn) {
+                        emscripten_websocket_close(conn->socket, 1000, "offline");
+                        conn->timeout = -1;
+                }
+        }
+}
+
+void wsserver_update(wsserver_p ws)
+{
+        if (!ws) return;
+
+        uint64_t current_time = sys_current_time();
+
+        // 检查超时连接
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); p++) {
+                if (!kh_exist(ws->conns, p)) continue;
+                ws_connection_p conn = kh_val(ws->conns, p);
+
+                if (conn->timeout < 0) continue;
+
+                if (utils_wait_delay(&conn->updating_delay, current_time)) {
+                        conn->timeout--;
+                }
+        }
+
+        // 删除已断开的连接
+        for (khint_t p = kh_begin(ws->conns); p != kh_end(ws->conns); ) {
+                if (!kh_exist(ws->conns, p)) {
+                        p++;
+                        continue;
+                }
+                ws_connection_p conn = kh_val(ws->conns, p);
+                if (conn && conn->timeout < 0) {
+                        SDL_free(conn);
+                        kh_del(wsconn, ws->conns, p);
+                } else {
+                        p++;
+                }
+        }
+}
+
+int wsserver_connection_count(wsserver_p ws)
+{
+        if (!ws) return 0;
+        return kh_size(ws->conns);
+}
+
+bool wsserver_poll_message(wsserver_p ws, net_message_p msg)
+{
+        if (!ws || !msg) return false;
+
+        kliter_t(kmq)* p = kl_begin(ws->mq);
+        if (p != kl_end(ws->mq)) {
+                *msg = kl_val(p);
+                kl_shift(kmq, ws->mq, 0);
+                return true;
+        }
+        return false;
+}
+
+void wsserver_set_callback(wsserver_p ws, net_callback cb, void* userdata)
 {
         if (!ws) return;
         ws->cb = cb;
