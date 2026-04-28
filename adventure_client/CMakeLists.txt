@@ -40,6 +40,12 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 # Web 平台输出 HTML
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
+    
+    # 添加 WebSocket 支持及必要的链接选项
+    target_link_options(${EXECUTABLE_NAME} PRIVATE
+        "-sWEBSOCKET_SUPPORT=1"
+        "-sUSE_WEBSOCKET=1"          # 一些旧版本需要这个
+    )
 endif()
 
 # 链接依赖库（由根目录的 add_subdirectory 引入）
@@ -84,7 +90,7 @@ elseif(EMSCRIPTEN)
         list(APPEND PRELOAD_FLAGS "--preload-file \"${ASSETS_ROOT}/${asset_file}@${asset_file}\"")
     endforeach()
     message(STATUS "PRELOAD_FLAGS: ${PRELOAD_FLAGS}")
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${PRELOAD_FLAGS})
+    target_link_options(${EXECUTABLE_NAME} PRIVATE ${PRELOAD_FLAGS})
 
 else()
     # 其他平台（Windows, Linux, Android 等）
