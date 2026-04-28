@@ -953,10 +953,10 @@ struct wsclient
         void* userdata;
 };
 
-static void ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
+static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return;
+        if (!ws) return EM_BOOL_FALSE;
 
         net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
@@ -971,12 +971,13 @@ static void ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, voi
                 *kl_pushp(kmq, ws->mq) = msg;
         }
         log_info("WebSocket connected");
+        return EM_BOOL_TRUE;
 }
 
-static void ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *e, void *userData)
+static EM_BOOL ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return;
+        if (!ws) return EM_BOOL_FALSE;
 
         net_message_t msg;
         msg.type = NET_TYPE_MESSAGE;
@@ -990,12 +991,13 @@ static void ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *
         } else {
                 *kl_pushp(kmq, ws->mq) = msg;
         }
+        return EM_BOOL_TRUE;
 }
 
-static void ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, void *userData)
+static EM_BOOL ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return;
+        if (!ws) return EM_BOOL_FALSE;
 
         ws->connected = false;
 
@@ -1011,14 +1013,16 @@ static void ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, v
                 *kl_pushp(kmq, ws->mq) = msg;
         }
         log_info("WebSocket closed");
+        return EM_BOOL_TRUE;
 }
 
-static void ws_on_error(int eventType, const EmscriptenWebSocketErrorEvent *e, void *userData)
+static EM_BOOL ws_on_error(int eventType, const EmscriptenWebSocketErrorEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return;
+        if (!ws) return EM_BOOL_FALSE;
 
         log_error("WebSocket error");
+        return EM_BOOL_TRUE;
 }
 
 wsclient_p wsclient_create(const char* url)
@@ -1032,23 +1036,20 @@ wsclient_p wsclient_create(const char* url)
 
         EmscriptenWebSocketCreateAttributes ws_attrs = {
                 .url = url,
-                .protocols = NULL,
-                .created = false
+                .protocols = NULL
         };
 
-        EMSCRIPTEN_WEBSOCKET_T socket;
-        EMSCRIPTEN_RESULT result = emscripten_websocket_create(&ws_attrs, &socket, ws);
-        if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-                log_error("Failed to create WebSocket: %d", result);
+        ws->socket = emscripten_websocket_new(&ws_attrs);
+        if (ws->socket <= 0) {
+                log_error("Failed to create WebSocket: %d", ws->socket);
                 SDL_free(ws);
                 return NULL;
         }
-        ws->socket = socket;
 
-        emscripten_websocket_set_onopen_callback(socket, ws, ws_on_open);
-        emscripten_websocket_set_onmessage_callback(socket, ws, ws_on_message);
-        emscripten_websocket_set_onclose_callback(socket, ws, ws_on_close);
-        emscripten_websocket_set_onerror_callback(socket, ws, ws_on_error);
+        emscripten_websocket_set_onopen_callback(ws->socket, ws, ws_on_open);
+        emscripten_websocket_set_onmessage_callback(ws->socket, ws, ws_on_message);
+        emscripten_websocket_set_onclose_callback(ws->socket, ws, ws_on_close);
+        emscripten_websocket_set_onerror_callback(ws->socket, ws, ws_on_error);
 
         log_info("WebSocket creating: %s", url);
         return ws;
@@ -1059,7 +1060,7 @@ void wsclient_destroy(wsclient_p ws)
         if (!ws) return;
 
         if (ws->connected && ws->socket != 0) {
-                emscripten_websocket_close(ws->socket);
+                emscripten_websocket_close(ws->socket, 1000, "closing");
         }
 
         // 清理消息队列
