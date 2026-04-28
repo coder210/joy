@@ -96,6 +96,21 @@ extern "C" {
 #endif
 
 	// ==============================
+	// Native WebSocket Server (非 Emscripten 平台)
+	// ==============================
+	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
+
+	JOY_API wsnetserver_p wsnetserver_create(const char* ip, int port);
+	JOY_API int wsnetserver_destroy(wsnetserver_p ws);
+	JOY_API void wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int len);
+	JOY_API void wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len);
+	JOY_API void wsnetserver_offline(wsnetserver_p ws, int conv);
+	JOY_API void wsnetserver_update(wsnetserver_p ws);
+	JOY_API int wsnetserver_connection_count(wsnetserver_p ws);
+	JOY_API bool wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg);
+	JOY_API void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata);
+
+	// ==============================
 	// Unified NetClient (封装 kcp/tcp/ws)
 	// ==============================
 	typedef enum {
