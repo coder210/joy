@@ -162,29 +162,80 @@ static void Attack(LogicPositionComponent* p,
         }
 }
 
+// ----------------------------------------------------------------------
+// 计算移动量
+// ----------------------------------------------------------------------
+static void calc_move_step(fp_t* out_x, fp_t* out_y, int input)
+{
+        auto ctx = world.get_mut<Context>();
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+        fp_t step = fp_mul(MOVE_SPEED, delta);
+
+        *out_x = fp_zero();
+        *out_y = fp_zero();
+
+        if (input & INPUT_UP)    *out_y = fp_sub(*out_y, step);
+        if (input & INPUT_DOWN)  *out_y = fp_add(*out_y, step);
+        if (input & INPUT_LEFT)  *out_x = fp_sub(*out_x, step);
+        if (input & INPUT_RIGHT) *out_x = fp_add(*out_x, step);
+}
+
+// ----------------------------------------------------------------------
+// 检测并处理与所有实体的碰撞
+// ----------------------------------------------------------------------
+static void resolve_collision(LogicPositionComponent* p,
+        LogicRectComponent& currRect, IdComponent& currId)
+{
+        auto ctx = world.get_mut<Context>();
+
+        ctx->body_query.each([&](IdComponent& other_id,
+                LogicRectComponent& r,
+                LogicPositionComponent& other_pos) {
+                // 跳过自己
+                if (other_id.id == currId.id) return;
+
+                // 构建两个实体的矩形
+                rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
+                rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
+
+                // 检测碰撞
+                contact2df_t contact;
+                if (collision2df_get_rectangles(curr_rect, fp_zero(),
+                        other_rect, fp_zero(), &contact)) {
+                        // contact->depth 可能是负值（表示重叠），取绝对值确保为正
+                        fp_t depth = contact.depth;
+                        if (depth < fp_zero()) {
+                                depth = fp_sub(fp_zero(), depth);
+                        }
+                        // 沿法线反方向分离（normal 从当前实体指向对方）
+                        fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+                        fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+                        p->x = fp_add(p->x, fp_mul(nx, depth));
+                        p->y = fp_add(p->y, fp_mul(ny, depth));
+                }
+        });
+}
+
+// ----------------------------------------------------------------------
+// 应用输入
+// ----------------------------------------------------------------------
 static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
         IdComponent& currId, int conv, int input)
 {
-        // 获取逻辑步长（可以从 ctx 传入，或者使用全局常量）
-        auto ctx = world.get_mut<Context>();
-        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
-        fp_t step = fp_mul(MOVE_SPEED, delta); 
-
-        if (input & INPUT_UP) {
-                p->y = fp_sub(p->y, step);
-        }
-        if (input & INPUT_DOWN) {
-                p->y = fp_add(p->y, step);
-        }
-        if (input & INPUT_LEFT) {
-                p->x = fp_sub(p->x, step);
-        }
-        if (input & INPUT_RIGHT) {
-                p->x = fp_add(p->x, step);
-        }
         if (input & INPUT_ATTACK) {
                 Attack(p, currRect, currId);
         }
+
+        // 计算移动量
+        fp_t move_x, move_y;
+        calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
+
+        // 先应用移动
+        p->x = fp_add(p->x, move_x);
+        p->y = fp_add(p->y, move_y);
+
+        // 然后检测并处理碰撞
+        resolve_collision(p, currRect, currId);
 }
 
 
@@ -431,7 +482,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpserver = kcpserver_create("192.168.1.16", 10000);
-        //ctx->kcpserver = kcpserver_create("192.168.2.49", 10000);
+        //ctx->kcpserver = kcpserver_create("192.168.2.61", 10000);
         ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
 
         world.entity()

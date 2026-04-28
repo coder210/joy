@@ -81,32 +81,93 @@ static void Attack(LogicPositionComponent* p,
 }
 
 // ----------------------------------------------------------------------
+// 计算移动后的新位置
+// ----------------------------------------------------------------------
+static void calc_move_step(fp_t* out_x, fp_t* out_y, int input)
+{
+        auto ctx = world.get_mut<Context>();
+        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+        fp_t step = fp_mul(MOVE_SPEED, delta);
+
+        *out_x = fp_zero();
+        *out_y = fp_zero();
+
+        if (input & INPUT_UP)    *out_y = fp_sub(*out_y, step);
+        if (input & INPUT_DOWN)  *out_y = fp_add(*out_y, step);
+        if (input & INPUT_LEFT)  *out_x = fp_sub(*out_x, step);
+        if (input & INPUT_RIGHT) *out_x = fp_add(*out_x, step);
+}
+
+// ----------------------------------------------------------------------
+// 检测并处理与所有实体的碰撞
+// ----------------------------------------------------------------------
+static void resolve_collision(LogicPositionComponent* p,
+        LogicRectComponent& currRect, IdComponent& currId)
+{
+        auto ctx = world.get_mut<Context>();
+
+        ctx->body_query.each([&](IdComponent& other_id,
+                LogicRectComponent& r,
+                LogicPositionComponent& other_pos) {
+                // 跳过自己
+                if (other_id.id == currId.id) return;
+
+                // 构建两个实体的矩形
+                rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
+                rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
+
+                // 检测碰撞
+                contact2df_t contact;
+                if (collision2df_get_rectangles(curr_rect, fp_zero(),
+                        other_rect, fp_zero(), &contact)) {
+                        // contact->depth 可能是负值（表示重叠），取绝对值确保为正
+                        fp_t depth = contact.depth;
+                        if (depth < fp_zero()) {
+                                depth = fp_sub(fp_zero(), depth);
+                        }
+                        // 沿法线反方向分离（normal 从当前实体指向对方）
+                        fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+                        fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+                        p->x = fp_add(p->x, fp_mul(nx, depth));
+                        p->y = fp_add(p->y, fp_mul(ny, depth));
+                }
+        });
+}
+
+// ----------------------------------------------------------------------
 // 应用输入（每收到一个输入包就移动一次）
 // ----------------------------------------------------------------------
 static void apply_input(LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
-        auto ctx = world.get_mut<Context>();
-        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
-        fp_t step = fp_mul(MOVE_SPEED, delta);
+        if (input & INPUT_ATTACK) {
+                Attack(p, currRect, currId);
+        }
 
-        if (input & INPUT_UP)    p->y = fp_sub(p->y, step);
-        if (input & INPUT_DOWN)  p->y = fp_add(p->y, step);
-        if (input & INPUT_LEFT)  p->x = fp_sub(p->x, step);
-        if (input & INPUT_RIGHT) p->x = fp_add(p->x, step);
-        if (input & INPUT_ATTACK) Attack(p, currRect, currId);
+        // 计算移动量
+        fp_t move_x, move_y;
+        calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
+
+        // 先应用移动
+        p->x = fp_add(p->x, move_x);
+        p->y = fp_add(p->y, move_y);
+
+        // 然后检测并处理碰撞
+        resolve_collision(p, currRect, currId);
 }
 static void preapply_input(LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
-        auto ctx = world.get_mut<Context>();
-        fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
-        fp_t step = fp_mul(MOVE_SPEED, delta);
+        // 计算移动量
+        fp_t move_x, move_y;
+        calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
 
-        if (input & INPUT_UP)    p->y = fp_sub(p->y, step);
-        if (input & INPUT_DOWN)  p->y = fp_add(p->y, step);
-        if (input & INPUT_LEFT)  p->x = fp_sub(p->x, step);
-        if (input & INPUT_RIGHT) p->x = fp_add(p->x, step);
+        // 先应用移动
+        p->x = fp_add(p->x, move_x);
+        p->y = fp_add(p->y, move_y);
+
+        // 然后检测并处理碰撞
+        resolve_collision(p, currRect, currId);
 }
 
 // ----------------------------------------------------------------------
@@ -204,13 +265,36 @@ static void HandleCommand(adventure::S2C& s2c)
         }
         world.defer_end();
 
-        // 5. 应用其他玩家的输入（本地玩家的输入已经通过预测重放，这里跳过）
+        // 5. 应用所有玩家的输入
         for (auto& input : s2c.command().player_inputs()) {
                 ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv == input.conv()) {
                                         if (input.conv() == ctx->local_conv) {
-                                                ctx->pending_inputs.pop_back();
+                                                // 按先进先出（FIFO）确认输入
+                                                // 如果 keycode 匹配，移除最早的那个输入
+                                                if (!ctx->pending_inputs.empty() 
+                                                    && ctx->pending_inputs.front() == input.keycode()) {
+                                                        log_info("%d:%d", ctx->pending_inputs.front(), input.keycode());
+                                                        ctx->pending_inputs.erase(ctx->pending_inputs.begin());
+                                                }
+                                                else {
+                                                        // keycode 不匹配，可能是乱序或重复
+                                                        // 尝试在队列中找到匹配的输入并移除
+                                                        bool found = false;
+                                                        for (auto it = ctx->pending_inputs.begin(); 
+                                                             it != ctx->pending_inputs.end(); ++it) {
+                                                                if (*it == input.keycode()) {
+                                                                        log_error("%d:%d", *it, input.keycode());
+                                                                        ctx->pending_inputs.erase(it);
+                                                                        found = true;
+                                                                        break;
+                                                                }
+                                                        }
+                                                        if (!found) {
+                                                                log_error("input:%d not found in pending", input.keycode());
+                                                        }
+                                                }
                                         }
                                         apply_input(&pos, r, id, input.conv(), input.keycode());
                                 }
@@ -357,7 +441,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->kcpclient = kcpclient_create("192.168.1.16", 10000);
-        //ctx->kcpclient = kcpclient_create("192.168.2.49", 10000);
+        //ctx->kcpclient = kcpclient_create("192.168.2.61", 10000);
         ctx->kcpclient = kcpclient_create("8.148.188.213", 10000);
         //kcpclient_set_callback(kcpclient, OnMessage, nullptr);
 
@@ -417,6 +501,10 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
                 case MOBILE_INPUT_DOWN:  new_mask |= INPUT_DOWN; break;
                 case MOBILE_INPUT_LEFT:  new_mask |= INPUT_LEFT; break;
                 case MOBILE_INPUT_RIGHT: new_mask |= INPUT_RIGHT; break;
+                case MOBILE_INPUT_RELEASE_UP:    new_mask &= ~INPUT_UP; break;
+                case MOBILE_INPUT_RELEASE_DOWN:  new_mask &= ~INPUT_DOWN; break;
+                case MOBILE_INPUT_RELEASE_LEFT:  new_mask &= ~INPUT_LEFT; break;
+                case MOBILE_INPUT_RELEASE_RIGHT: new_mask &= ~INPUT_RIGHT; break;
                 case MOBILE_INPUT_ATTACK:
                         ctx->attack_triggered = true;
                         break;
