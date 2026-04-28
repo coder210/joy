@@ -18,6 +18,48 @@
 #include <emscripten/websocket.h>
 #endif
 
+// http_parser for WebSocket handshake
+#include "external/http_parser.h"
+
+// ==============================
+// WebSocket Protocol Constants (RFC 6455)
+// ==============================
+#define WS_OPCODE_CONTINUATION  0x0
+#define WS_OPCODE_TEXT          0x1
+#define WS_OPCODE_BINARY        0x2
+#define WS_OPCODE_CLOSE         0x8
+#define WS_OPCODE_PING          0x9
+#define WS_OPCODE_PONG          0xA
+
+#define WS_MAGIC_STRING         "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
+// WebSocket frame header size (minimum, for payload < 126)
+#define WS_FRAME_HEADER_MIN     2
+#define WS_FRAME_HEADER_EXT16   4
+#define WS_FRAME_HEADER_EXT64   10
+
+// Connection state
+typedef enum {
+    WS_CONN_STATE_HANDSHAKE,  // Waiting for HTTP Upgrade
+    WS_CONN_STATE_OPEN,       // WebSocket connected
+    WS_CONN_STATE_CLOSING,     // Closing handshake
+    WS_CONN_STATE_CLOSED,     // Connection closed
+} ws_conn_state;
+
+// SHA-1 context for handshake
+typedef struct {
+    uint32_t state[5];
+    uint32_t count[2];
+    unsigned char buffer[64];
+} ws_sha1_context;
+
+static void ws_sha1_init(ws_sha1_context* ctx);
+static void ws_sha1_update(ws_sha1_context* ctx, const unsigned char* data, uint32_t len);
+static void ws_sha1_final(unsigned char* digest, ws_sha1_context* ctx);
+
+// Base64 encoding
+static void ws_base64_encode(const unsigned char* in, int inlen, char* out);
+
 typedef struct kcp_connection
 {
         ikcpcb *kcp;
@@ -84,6 +126,366 @@ struct tcpclient
         delay_t connection_delay;
         klist_t(kmq) * mq;
 };
+
+// ==============================
+// Native WebSocket Server (非 Emscripten 平台)
+// ==============================
+typedef struct wsnetserver_conn {
+        int64_t sockfd;
+        char ip[JOY_MAX_IP];
+        int port;
+        int timeout;
+        int conv;                      // Connection ID
+        delay_t updating_delay;
+        ws_conn_state state;           // Connection state
+        char* recv_buf;               // Buffer for partial frame
+        int recv_len;                 // Buffer length
+        int recv_cap;                 // Buffer capacity
+} wsnetserver_conn_t, *wsnetserver_conn_p;
+
+KHASH_INIT(wsnconn, int, wsnetserver_conn_p, 1, kh_int_hash_func, kh_int_hash_equal)
+
+struct wsnetserver {
+        int64_t sockfd;
+        int conv;
+        khash_t(wsnconn) * conns;
+        klist_t(kmq) * mq;
+        net_callback cb;
+        void* userdata;
+};
+
+// SHA-1 implementation
+#define WS_ROL(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
+
+static void ws_sha1_transform(ws_sha1_context* ctx, const unsigned char* buffer)
+{
+        uint32_t a, b, c, d, e;
+        const uint32_t* w = (const uint32_t*)buffer;
+
+        a = ctx->state[0];
+        b = ctx->state[1];
+        c = ctx->state[2];
+        d = ctx->state[3];
+        e = ctx->state[4];
+
+#define WS_K0  0x5A827999
+#define WS_K1  0x6ED9EBA1
+#define WS_K2  0x8F1BBCDC
+#define WS_K3  0xCA62C1D6
+#define WS_K4  0x8F1BBCDC
+
+#define WS_F1(x, y, z) (z ^ (x & (y ^ z)))
+#define WS_F2(x, y, z) (x ^ y ^ z)
+#define WS_F3(x, y, z) ((x & y) | (z & (x | y)))
+#define WS_F4(x, y, z) (x ^ y ^ z)
+
+#define WS_MIX(i) \
+        temp = WS_ROL(a, 5) + WS_F##i(b, c, d) + e + w[i] + WS_K##i; \
+        e = d; d = c; c = WS_ROL(b, 30); b = a; a = temp;
+
+        uint32_t temp;
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(1);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(2);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(3);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+        WS_MIX(4);
+
+#undef WS_K0
+#undef WS_K1
+#undef WS_K2
+#undef WS_K3
+#undef WS_F1
+#undef WS_F2
+#undef WS_F3
+#undef WS_F4
+#undef WS_MIX
+
+        ctx->state[0] += a;
+        ctx->state[1] += b;
+        ctx->state[2] += c;
+        ctx->state[3] += d;
+        ctx->state[4] += e;
+}
+
+static void ws_sha1_init(ws_sha1_context* ctx)
+{
+        ctx->state[0] = 0x67452301;
+        ctx->state[1] = 0xEFCDAB89;
+        ctx->state[2] = 0x98BADCFE;
+        ctx->state[3] = 0x10325476;
+        ctx->state[4] = 0xC3D2E1F0;
+        ctx->count[0] = ctx->count[1] = 0;
+}
+
+static void ws_sha1_update(ws_sha1_context* ctx, const unsigned char* data, uint32_t len)
+{
+        uint32_t i, j;
+
+        j = ctx->count[0];
+        if ((ctx->count[0] += len << 3) < j)
+                ctx->count[1]++;
+        ctx->count[1] += (len >> 29);
+        j = (j >> 3) & 63;
+        if ((j + len) > 63) {
+                memcpy(&ctx->buffer[j], data, (i = 64 - j));
+                ws_sha1_transform(ctx, ctx->buffer);
+                for (; i + 63 < len; i += 64)
+                        ws_sha1_transform(ctx, &data[i]);
+                j = 0;
+        } else {
+                i = 0;
+        }
+        memcpy(&ctx->buffer[j], &data[i], len - i);
+}
+
+static void ws_sha1_final(unsigned char* digest, ws_sha1_context* ctx)
+{
+        unsigned int i;
+        unsigned char finalcount[8];
+        unsigned char c;
+
+        for (i = 0; i < 8; i++) {
+                finalcount[i] = (unsigned char)((ctx->count[(i >= 4 ? 0 : 1)] >> ((3 - (i & 3)) * 8)) & 255);
+        }
+        c = 0x80;
+        ws_sha1_update(ctx, &c, 1);
+        while ((ctx->count[0] & 504) != 448) {
+                c = 0;
+                ws_sha1_update(ctx, &c, 1);
+        }
+        ws_sha1_update(ctx, finalcount, 8);
+        for (i = 0; i < 20; i++)
+                digest[i] = (unsigned char)((ctx->state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
+}
+
+// Base64 encoding table
+static const char ws_base64_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static void ws_base64_encode(const unsigned char* in, int inlen, char* out)
+{
+        int i, j;
+        unsigned char o1, o2, o3;
+
+        for (i = 0, j = 0; i < inlen; i += 3) {
+                o1 = in[i];
+                o2 = (i + 1 < inlen) ? in[i + 1] : 0;
+                o3 = (i + 2 < inlen) ? in[i + 2] : 0;
+
+                out[j++] = ws_base64_table[(o1 >> 2) & 0x3F];
+                out[j++] = ws_base64_table[((o1 << 4) | (o2 >> 4)) & 0x3F];
+                out[j++] = (i + 1 < inlen) ? ws_base64_table[((o2 << 2) | (o3 >> 6)) & 0x3F] : '=';
+                out[j++] = (i + 2 < inlen) ? ws_base64_table[o3 & 0x3F] : '=';
+        }
+        out[j] = '\0';
+}
+
+// WebSocket frame building
+static int ws_build_frame(const char* data, int len, char opcode, char* out, int out_cap)
+{
+        int header_len;
+        int payload_len = len;
+
+        if (payload_len < 126) {
+                header_len = 2;
+                out[0] = 0x80 | opcode;  // FIN + opcode
+                out[1] = (char)payload_len;
+        } else if (payload_len < 65536) {
+                header_len = 4;
+                out[0] = 0x80 | opcode;
+                out[1] = 126;
+                out[2] = (payload_len >> 8) & 0xFF;
+                out[3] = payload_len & 0xFF;
+        } else {
+                header_len = 10;
+                out[0] = 0x80 | opcode;
+                out[1] = 127;
+                // 64-bit length (big-endian)
+                out[2] = 0;
+                out[3] = 0;
+                out[4] = 0;
+                out[5] = 0;
+                out[6] = (payload_len >> 24) & 0xFF;
+                out[7] = (payload_len >> 16) & 0xFF;
+                out[8] = (payload_len >> 8) & 0xFF;
+                out[9] = payload_len & 0xFF;
+        }
+
+        if (header_len + payload_len > out_cap)
+                return -1;
+
+        memcpy(out + header_len, data, payload_len);
+        return header_len + payload_len;
+}
+
+// WebSocket handshake (returns 1 on success, 0 on need more data, -1 on error)
+static int ws_handle_handshake(int64_t sockfd, char* buf, int buf_len, char* resp, int resp_cap)
+{
+        (void)sockfd;  // Unused
+        char ws_key[256] = {0};
+
+        // Simple header parsing for WebSocket key
+        char* end = buf + buf_len;
+        char* line_start = buf;
+        int key_found = 0;
+
+        // Find end of headers (double CRLF)
+        char* header_end = NULL;
+        for (char* p = buf; p < end - 3; p++) {
+                if (p[0] == '\r' && p[1] == '\n' && p[2] == '\r' && p[3] == '\n') {
+                        header_end = p;
+                        break;
+                }
+        }
+
+        if (!header_end)
+                return 0;  // Need more data
+
+        // Case-insensitive header comparison
+        int header_len = 18;  // "Sec-WebSocket-Key:" length
+        for (char* p = line_start; p < header_end && !key_found; ) {
+                char* line_end = p;
+                while (line_end < header_end && *line_end != '\r' && *line_end != '\n')
+                        line_end++;
+
+                if (line_end > p && line_end - p > header_len) {
+                        // Check if this line starts with "Sec-WebSocket-Key:"
+                        int match = 1;
+                        const char* h = "sec-websocket-key:";
+                        const char* line = p;
+                        for (int i = 0; i < header_len && match; i++) {
+                                char c1 = line[i];
+                                char c2 = h[i];
+                                // Case insensitive comparison
+                                if (c1 >= 'A' && c1 <= 'Z') c1 = c1 - 'A' + 'a';
+                                if (c2 >= 'A' && c2 <= 'Z') c2 = c2 - 'A' + 'a';
+                                if (c1 != c2) match = 0;
+                        }
+                        if (match) {
+                                char* key_start = p + header_len;
+                                while (key_start < line_end && (*key_start == ' ' || *key_start == '\t'))
+                                        key_start++;
+                                int key_len = (int)(line_end - key_start);
+                                if (key_len > 0 && key_len < 256) {
+                                        memcpy(ws_key, key_start, key_len);
+                                        ws_key[key_len] = '\0';
+                                        key_found = 1;
+                                }
+                        }
+                }
+
+                // Move to next line
+                p = line_end;
+                while (p < header_end && (*p == '\r' || *p == '\n'))
+                        p++;
+        }
+
+        if (!key_found)
+                return -1;
+
+        // Compute accept key
+        ws_sha1_context sha;
+        unsigned char sha_digest[20];
+        char accept_key[64];
+
+        ws_sha1_init(&sha);
+        ws_sha1_update(&sha, (unsigned char*)ws_key, (uint32_t)strlen(ws_key));
+        ws_sha1_update(&sha, (unsigned char*)WS_MAGIC_STRING, (uint32_t)strlen(WS_MAGIC_STRING));
+        ws_sha1_final(sha_digest, &sha);
+        ws_base64_encode(sha_digest, 20, accept_key);
+
+        // Build response
+        SDL_snprintf(resp, resp_cap,
+                "HTTP/1.1 101 Switching Protocols\r\n"
+                "Upgrade: websocket\r\n"
+                "Connection: Upgrade\r\n"
+                "Sec-WebSocket-Accept: %s\r\n"
+                "\r\n",
+                accept_key);
+
+        return 1;
+}
+
+// Process WebSocket frame (returns payload length, -1 for close frame, -2 for error)
+static int ws_parse_frame(char* buf, int buf_len, char* payload_out, int payload_cap)
+{
+        if (buf_len < 2)
+                return -2;
+
+        int fin = (buf[0] & 0x80) != 0;
+        int opcode = buf[0] & 0x0F;
+        int masked = (buf[1] & 0x80) != 0;
+        int payload_len = buf[1] & 0x7F;
+
+        int header_len;
+        int mask_key_offset;
+
+        if (payload_len == 126) {
+                if (buf_len < 4) return -2;
+                payload_len = (unsigned char)buf[2] << 8 | (unsigned char)buf[3];
+                header_len = 4;
+                mask_key_offset = 4;
+        } else if (payload_len == 127) {
+                if (buf_len < 10) return -2;
+                payload_len = 0;
+                for (int i = 0; i < 8; i++)
+                        payload_len = (payload_len << 8) | (unsigned char)buf[2 + i];
+                header_len = 10;
+                mask_key_offset = 10;
+        } else {
+                header_len = 2;
+                mask_key_offset = 2;
+        }
+
+        if (!masked)
+                return -2;  // Client frames must be masked
+
+        int frame_len = mask_key_offset + payload_len;
+        if (buf_len < frame_len)
+                return -2;  // Need more data
+
+        // Unmask payload (XOR with mask key)
+        char* mask_key = buf + mask_key_offset;
+        for (int i = 0; i < payload_len && i < payload_cap; i++) {
+                payload_out[i] = buf[mask_key_offset + i] ^ mask_key[i % 4];
+        }
+
+        return payload_len;
+}
 
 JOY_INLINE uint32_t iclock(uint64_t clock64)
 {
@@ -953,6 +1355,39 @@ struct wsclient
         void* userdata;
 };
 
+// ==============================
+// WebSocket Server (仅 emscripten)
+// ==============================
+
+typedef struct ws_connection {
+        EMSCRIPTEN_WEBSOCKET_T socket;
+        char ip[JOY_MAX_IP];
+        int port;
+        int timeout;
+        delay_t updating_delay;
+} ws_connection_t, *ws_connection_p;
+
+KHASH_INIT(wsconn, int, ws_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
+
+struct wsserver {
+        EMSCRIPTEN_WEBSOCKET_SERVER_T server;
+        int conv;
+        khash_t(wsconn) * conns;
+        klist_t(kmq) * mq;
+        net_callback cb;
+        void* userdata;
+};
+
+struct wsnetserver
+{
+        int64_t sockfd;
+        int conv;
+        khash_t(wsnconn) * conns;
+        net_callback cb;
+        klist_t(kmq) * mq;
+        void* userdata;
+};
+
 static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
@@ -1123,28 +1558,12 @@ void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata)
         ws->userdata = userdata;
 }
 
+#endif // __EMSCRIPTEN__ (wsclient)
+
 // ==============================
 // WebSocket Server (仅 emscripten)
 // ==============================
-
-typedef struct ws_connection {
-        EMSCRIPTEN_WEBSOCKET_T socket;
-        char ip[JOY_MAX_IP];
-        int port;
-        int timeout;
-        delay_t updating_delay;
-} ws_connection_t, *ws_connection_p;
-
-KHASH_INIT(wsconn, int, ws_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
-
-struct wsserver {
-        EMSCRIPTEN_WEBSOCKET_SERVER_T server;
-        int conv;
-        khash_t(wsconn) * conns;
-        klist_t(kmq) * mq;
-        net_callback cb;
-        void* userdata;
-};
+#ifdef __EMSCRIPTEN__
 
 static void wsserver_on_open(wsserver_p ws, EMSCRIPTEN_WEBSOCKET_T socket)
 {
@@ -1424,6 +1843,363 @@ void wsserver_set_callback(wsserver_p ws, net_callback cb, void* userdata)
         ws->cb = cb;
         ws->userdata = userdata;
 }
+
+#endif // __EMSCRIPTEN__ (wsserver)
+
+// ==============================
+// Native WebSocket Server (非 Emscripten 平台)
+// ==============================
+
+#else
+
+wsnetserver_p wsnetserver_create(const char* ip, int port)
+{
+        wsnetserver_p ws = (wsnetserver_p)SDL_malloc(sizeof(wsnetserver_t));
+        if (!ws) return NULL;
+        SDL_memset(ws, 0, sizeof(wsnetserver_t));
+
+        ws->sockfd = sys_tcp();
+        ws->conv = 1000;
+        ws->conns = kh_init(wsnconn);
+        ws->mq = kl_init(kmq);
+        ws->cb = NULL;
+        ws->userdata = NULL;
+
+        sys_set_sock_accpettimeo(ws->sockfd, 1);
+        if (!sys_bind(ws->sockfd, ip, port)) {
+                log_error("wsnetserver bind error");
+        }
+        if (!sys_listen(ws->sockfd)) {
+                log_error("wsnetserver listen error");
+        }
+        log_info("wsnetserver listening on %s:%d, sockfd=%lld", ip, port, (long long)ws->sockfd);
+        return ws;
+}
+
+int wsnetserver_destroy(wsnetserver_p ws)
+{
+        if (!ws) return 0;
+
+        // Close all connections
+        khint_t k;
+        for (k = kh_begin(ws->conns); k != kh_end(ws->conns); ++k) {
+                if (kh_exist(ws->conns, k)) {
+                        wsnetserver_conn_p conn = kh_val(ws->conns, k);
+                        if (conn) {
+                                sys_closesocket(conn->sockfd);
+                                if (conn->recv_buf) SDL_free(conn->recv_buf);
+                                SDL_free(conn);
+                        }
+                }
+        }
+
+        // Free messages
+        kliter_t(kmq)* p;
+        for (p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
+                net_message_t* msg = &kl_val(p);
+                if (msg->data) SDL_free(msg->data);
+        }
+        kl_destroy(kmq, ws->mq);
+
+        kh_destroy(wsnconn, ws->conns);
+        sys_closesocket(ws->sockfd);
+        SDL_free(ws);
+        return 1;
+}
+
+void wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int len)
+{
+        if (!ws || conv < 0 || !data) return;
+
+        khint_t k = kh_get(wsnconn, ws->conns, conv);
+        if (k != kh_end(ws->conns)) {
+                wsnetserver_conn_p conn = kh_val(ws->conns, k);
+                if (conn && conn->state == WS_CONN_STATE_OPEN) {
+                        char frame[JOY_MAX_BUFFER + 16];
+                        int frame_len = ws_build_frame(data, len, WS_OPCODE_BINARY, frame, sizeof(frame));
+                        if (frame_len > 0) {
+                                sys_send(conn->sockfd, frame, frame_len);
+                        }
+                }
+        }
+}
+
+void wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len)
+{
+        if (!ws || !data) return;
+
+        char frame[JOY_MAX_BUFFER + 16];
+        int frame_len = ws_build_frame(data, len, WS_OPCODE_BINARY, frame, sizeof(frame));
+        if (frame_len <= 0) return;
+
+        khint_t k;
+        for (k = kh_begin(ws->conns); k != kh_end(ws->conns); ++k) {
+                if (kh_exist(ws->conns, k)) {
+                        wsnetserver_conn_p conn = kh_val(ws->conns, k);
+                        if (conn && conn->state == WS_CONN_STATE_OPEN) {
+                                sys_send(conn->sockfd, frame, frame_len);
+                        }
+                }
+        }
+}
+
+void wsnetserver_offline(wsnetserver_p ws, int conv)
+{
+        if (!ws || conv < 0) return;
+
+        khint_t k = kh_get(wsnconn, ws->conns, conv);
+        if (k != kh_end(ws->conns)) {
+                wsnetserver_conn_p conn = kh_val(ws->conns, k);
+                if (conn) {
+                        // Send close frame
+                        char close_frame[2] = {0x88, 0x00};  // FIN + CLOSE opcode, empty payload
+                        sys_send(conn->sockfd, close_frame, 2);
+                        conn->timeout = -1;
+                }
+        }
+}
+
+static void wsnetserver_accept(wsnetserver_p ws, int64_t sockfd, const char* ip, int port)
+{
+        int ret, conv;
+        khint_t k;
+        wsnetserver_conn_p conn;
+
+        conn = (wsnetserver_conn_p)SDL_malloc(sizeof(wsnetserver_conn_t));
+        if (!conn) return;
+
+        SDL_memset(conn, 0, sizeof(wsnetserver_conn_t));
+        conn->sockfd = sockfd;
+        SDL_strlcpy(conn->ip, ip, sizeof(conn->ip));
+        conn->port = port;
+        conn->timeout = 120;
+        conn->state = WS_CONN_STATE_HANDSHAKE;
+        conn->updating_delay.time = sys_current_time();
+        conn->updating_delay.timeout = 1000;
+        conv = ws->conv++;
+        conn->conv = conv;
+
+        k = kh_put(wsnconn, ws->conns, conv, &ret);
+        if (ret == -1) {
+                SDL_free(conn);
+                return;
+        }
+        kh_val(ws->conns, k) = conn;
+
+        log_info("wsnetserver: new connection %d from %s:%d (awaiting handshake)", conv, ip, port);
+}
+
+static void wsnetserver_handle_frame(wsnetserver_p ws, wsnetserver_conn_p conn, char* payload, int payload_len)
+{
+        if (payload_len < 0) {
+                // Close frame
+                if (payload_len == -1) {
+                        log_info("wsnetserver: client %d sent close frame", conn->conv);
+                        conn->state = WS_CONN_STATE_CLOSING;
+                }
+                return;
+        }
+
+        net_message_t msg;
+        msg.type = NET_TYPE_MESSAGE;
+        msg.conv = conn->conv;
+        msg.data = (char*)SDL_malloc(payload_len);
+        if (!msg.data) return;
+        memcpy(msg.data, payload, payload_len);
+        msg.len = payload_len;
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+}
+
+void wsnetserver_update(wsnetserver_p ws)
+{
+        if (!ws) return;
+
+        uint64_t current_time = sys_current_time();
+        int port;
+        char ip[JOY_MAX_IP];
+        int64_t sockfd;
+        char buf[JOY_MAX_BUFFER];
+        char resp[256];
+
+        // Accept new connections
+        sockfd = sys_accept(ws->sockfd, ip, &port);
+        if (sockfd > 0) {
+                wsnetserver_accept(ws, sockfd, ip, port);
+        }
+
+        // Process existing connections
+        khint_t p;
+        for (p = kh_begin(ws->conns); p != kh_end(ws->conns); ) {
+                if (!kh_exist(ws->conns, p)) {
+                        p++;
+                        continue;
+                }
+
+                int conv = kh_key(ws->conns, p);
+                wsnetserver_conn_p conn = kh_val(ws->conns, p);
+
+                if (conn->timeout < 0) {
+                        // Connection marked for removal
+                        sys_closesocket(conn->sockfd);
+                        if (conn->recv_buf) SDL_free(conn->recv_buf);
+                        SDL_free(conn);
+                        kh_del(wsnconn, ws->conns, p);
+
+                        // Queue disconnected message
+                        net_message_t msg;
+                        msg.type = NET_TYPE_DISCONNECTED;
+                        msg.conv = conv;
+                        msg.data = SDL_strdup("disconnected");
+                        msg.len = SDL_strlen(msg.data);
+                        if (ws->cb) {
+                                ws->cb(&msg, ws->userdata);
+                        } else {
+                                *kl_pushp(kmq, ws->mq) = msg;
+                        }
+                        continue;
+                }
+
+                // Update timeout counter
+                if (utils_wait_delay(&conn->updating_delay, current_time)) {
+                        conn->timeout--;
+                }
+
+                // Handle based on state
+                if (conn->state == WS_CONN_STATE_HANDSHAKE) {
+                        int len = sys_recv(conn->sockfd, buf);
+                        if (len > 0) {
+                                int result = ws_handle_handshake(conn->sockfd, buf, len, resp, sizeof(resp));
+                                if (result == 1) {
+                                        sys_send(conn->sockfd, resp, (int)strlen(resp));
+                                        conn->state = WS_CONN_STATE_OPEN;
+                                        log_info("wsnetserver: handshake complete for conv=%d", conn->conv);
+
+                                        // Queue connected message
+                                        net_message_t msg;
+                                        msg.type = NET_TYPE_CONNECTED;
+                                        msg.conv = conn->conv;
+                                        msg.data = SDL_strdup("connected");
+                                        msg.len = SDL_strlen(msg.data);
+                                        if (ws->cb) {
+                                                ws->cb(&msg, ws->userdata);
+                                        } else {
+                                                *kl_pushp(kmq, ws->mq) = msg;
+                                        }
+                                } else if (result == -1) {
+                                        log_error("wsnetserver: invalid handshake from conv=%d", conn->conv);
+                                        conn->timeout = -1;
+                                }
+                                // result == 0 means need more data, wait for next recv
+                        } else if (len == 0) {
+                                // Client closed connection during handshake
+                                conn->timeout = -1;
+                        }
+                } else if (conn->state == WS_CONN_STATE_OPEN || conn->state == WS_CONN_STATE_CLOSING) {
+                        int len = sys_recv(conn->sockfd, buf);
+                        if (len > 0) {
+                                // Expand buffer if needed
+                                int new_cap = conn->recv_len + len;
+                                if (new_cap > conn->recv_cap) {
+                                        if (new_cap > JOY_MAX_BUFFER * 2) {
+                                                log_error("wsnetserver: recv buffer overflow conv=%d", conn->conv);
+                                                conn->timeout = -1;
+                                                continue;
+                                        }
+                                        char* new_buf = (char*)SDL_realloc(conn->recv_buf, new_cap);
+                                        if (!new_buf) {
+                                                conn->timeout = -1;
+                                                continue;
+                                        }
+                                        conn->recv_buf = new_buf;
+                                        conn->recv_cap = new_cap;
+                                }
+                                memcpy(conn->recv_buf + conn->recv_len, buf, len);
+                                conn->recv_len += len;
+
+                                // Process frames
+                                char payload[JOY_MAX_BUFFER];
+                                while (conn->recv_len > 0) {
+                                        int payload_len = ws_parse_frame(conn->recv_buf, conn->recv_len, payload, sizeof(payload));
+                                        if (payload_len == -2) {
+                                                // Need more data
+                                                break;
+                                        } else if (payload_len < 0) {
+                                                // Error or close frame
+                                                conn->state = WS_CONN_STATE_CLOSING;
+                                                conn->timeout = -1;
+                                                break;
+                                        } else {
+                                                // Valid frame - calculate header size and shift buffer
+                                                int header_len;
+                                                int mask_key_offset = 2;
+                                                int frame_payload_len = payload_len;
+
+                                                if ((conn->recv_buf[1] & 0x7F) < 126) {
+                                                        header_len = 2;
+                                                } else if ((conn->recv_buf[1] & 0x7F) == 126) {
+                                                        header_len = 4;
+                                                } else {
+                                                        header_len = 10;
+                                                }
+
+                                                int frame_len = header_len + frame_payload_len;
+
+                                                // Get opcode to check for close
+                                                int opcode = conn->recv_buf[0] & 0x0F;
+                                                if (opcode == WS_OPCODE_CLOSE) {
+                                                        conn->state = WS_CONN_STATE_CLOSING;
+                                                        conn->timeout = -1;
+                                                }
+
+                                                wsnetserver_handle_frame(ws, conn, payload, payload_len);
+
+                                                // Shift remaining data
+                                                memmove(conn->recv_buf, conn->recv_buf + frame_len, conn->recv_len - frame_len);
+                                                conn->recv_len -= frame_len;
+                                        }
+                                }
+                        } else if (len == 0) {
+                                // Client closed connection
+                                conn->timeout = -1;
+                        }
+                }
+
+                p++;
+        }
+}
+
+int wsnetserver_connection_count(wsnetserver_p ws)
+{
+        if (!ws) return 0;
+        return kh_size(ws->conns);
+}
+
+bool wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg)
+{
+        if (!ws || !msg) return false;
+
+        kliter_t(kmq)* p = kl_begin(ws->mq);
+        if (p != kl_end(ws->mq)) {
+                *msg = kl_val(p);
+                kl_shift(kmq, ws->mq, 0);
+                return true;
+        }
+        return false;
+}
+
+void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
+{
+        if (!ws) return;
+        ws->cb = cb;
+        ws->userdata = userdata;
+}
+
+#endif // #else wsnetserver
 
 #endif // __EMSCRIPTEN__
 
