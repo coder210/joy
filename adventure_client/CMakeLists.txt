@@ -42,10 +42,9 @@ if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
     
     # 添加 WebSocket 支持及必要的链接选项
-    #target_link_options(${EXECUTABLE_NAME} PRIVATE
-    #    "-sWEBSOCKET_SUPPORT=1"
-    #    "-sUSE_WEBSOCKET=1"          # 一些旧版本需要这个
-    #)
+    target_link_options(${EXECUTABLE_NAME} PRIVATE
+        "-sWEBSOCKET_SUPPORT=1"
+    )
 endif()
 
 # 链接依赖库（由根目录的 add_subdirectory 引入）
