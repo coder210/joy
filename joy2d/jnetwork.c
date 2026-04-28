@@ -1378,16 +1378,6 @@ struct wsserver {
         void* userdata;
 };
 
-struct wsnetserver
-{
-        int64_t sockfd;
-        int conv;
-        khash_t(wsnconn) * conns;
-        net_callback cb;
-        klist_t(kmq) * mq;
-        void* userdata;
-};
-
 static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
 {
         wsclient_p ws = (wsclient_p)userData;
@@ -1844,13 +1834,11 @@ void wsserver_set_callback(wsserver_p ws, net_callback cb, void* userdata)
         ws->userdata = userdata;
 }
 
-#endif // __EMSCRIPTEN__ (wsserver)
+#else
 
 // ==============================
 // Native WebSocket Server (非 Emscripten 平台)
 // ==============================
-
-#else
 
 wsnetserver_p wsnetserver_create(const char* ip, int port)
 {
