@@ -14,6 +14,10 @@
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/websocket.h>
+#endif
+
 typedef struct kcp_connection
 {
         ikcpcb *kcp;
@@ -933,4 +937,398 @@ bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg)
         {
                 return false;
         }
+}
+
+// ==============================
+// WebSocket Client (仅 emscripten)
+// ==============================
+#ifdef __EMSCRIPTEN__
+
+struct wsclient
+{
+        EMSCRIPTEN_WEBSOCKET_T socket;
+        bool connected;
+        klist_t(kmq) * mq;
+        net_callback cb;
+        void* userdata;
+};
+
+static void ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
+{
+        wsclient_p ws = (wsclient_p)userData;
+        if (!ws) return;
+
+        net_message_t msg;
+        msg.type = NET_TYPE_CONNECTED;
+        msg.conv = 0;
+        msg.data = SDL_strdup("connected");
+        msg.len = SDL_strlen(msg.data);
+        ws->connected = true;
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+        log_info("WebSocket connected");
+}
+
+static void ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *e, void *userData)
+{
+        wsclient_p ws = (wsclient_p)userData;
+        if (!ws) return;
+
+        net_message_t msg;
+        msg.type = NET_TYPE_MESSAGE;
+        msg.conv = 0;
+        msg.len = (int)e->numBytes;
+        msg.data = (char*)SDL_malloc(msg.len);
+        SDL_memcpy(msg.data, e->data, msg.len);
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+}
+
+static void ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, void *userData)
+{
+        wsclient_p ws = (wsclient_p)userData;
+        if (!ws) return;
+
+        ws->connected = false;
+
+        net_message_t msg;
+        msg.type = NET_TYPE_DISCONNECTED;
+        msg.conv = 0;
+        msg.data = SDL_strdup("disconnected");
+        msg.len = SDL_strlen(msg.data);
+
+        if (ws->cb) {
+                ws->cb(&msg, ws->userdata);
+        } else {
+                *kl_pushp(kmq, ws->mq) = msg;
+        }
+        log_info("WebSocket closed");
+}
+
+static void ws_on_error(int eventType, const EmscriptenWebSocketErrorEvent *e, void *userData)
+{
+        wsclient_p ws = (wsclient_p)userData;
+        if (!ws) return;
+
+        log_error("WebSocket error");
+}
+
+wsclient_p wsclient_create(const char* url)
+{
+        wsclient_p ws = (wsclient_p)SDL_malloc(sizeof(wsclient_t));
+        if (!ws) return NULL;
+
+        SDL_memset(ws, 0, sizeof(wsclient_t));
+        ws->mq = kl_init(kmq);
+        ws->connected = false;
+
+        EmscriptenWebSocketCreateAttributes ws_attrs = {
+                .url = url,
+                .protocols = NULL,
+                .created = false
+        };
+
+        EMSCRIPTEN_WEBSOCKET_T socket;
+        EMSCRIPTEN_RESULT result = emscripten_websocket_create(&ws_attrs, &socket, ws);
+        if (result != EMSCRIPTEN_RESULT_SUCCESS) {
+                log_error("Failed to create WebSocket: %d", result);
+                SDL_free(ws);
+                return NULL;
+        }
+        ws->socket = socket;
+
+        emscripten_websocket_set_onopen_callback(socket, ws, ws_on_open);
+        emscripten_websocket_set_onmessage_callback(socket, ws, ws_on_message);
+        emscripten_websocket_set_onclose_callback(socket, ws, ws_on_close);
+        emscripten_websocket_set_onerror_callback(socket, ws, ws_on_error);
+
+        log_info("WebSocket creating: %s", url);
+        return ws;
+}
+
+void wsclient_destroy(wsclient_p ws)
+{
+        if (!ws) return;
+
+        if (ws->connected && ws->socket != 0) {
+                emscripten_websocket_close(ws->socket);
+        }
+
+        // 清理消息队列
+        kliter_t(kmq)* p;
+        for (p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
+                net_message_t* msg = &kl_val(p);
+                if (msg->data) SDL_free(msg->data);
+        }
+        kl_destroy(kmq, ws->mq);
+
+        SDL_free(ws);
+}
+
+bool wsclient_getconv(wsclient_p ws, int* conv)
+{
+        if (!ws || !conv) return false;
+        *conv = (int)ws->socket;
+        return ws->connected;
+}
+
+int wsclient_send(wsclient_p ws, const char* data, int len)
+{
+        if (!ws || !ws->connected || ws->socket == 0 || !data || len <= 0) {
+                return -1;
+        }
+
+        // WebSocket 发送二进制数据
+        EMSCRIPTEN_RESULT result = emscripten_websocket_send_binary(ws->socket, (char*)data, len);
+        if (result != EMSCRIPTEN_RESULT_SUCCESS) {
+                log_error("WebSocket send failed: %d", result);
+                return -1;
+        }
+        return len;
+}
+
+void wsclient_update(wsclient_p ws)
+{
+        // emscripten WebSocket 是事件驱动的，update 主要用于保持连接活跃
+        // WebSocket 事件会在回调中处理，这里可以做心跳等操作
+        (void)ws;
+}
+
+bool wsclient_poll_message(wsclient_p ws, net_message_p msg)
+{
+        if (!ws || !msg) return false;
+
+        kliter_t(kmq)* p = kl_begin(ws->mq);
+        if (p != kl_end(ws->mq)) {
+                *msg = kl_val(p);
+                kl_shift(kmq, ws->mq, 0);
+                return true;
+        }
+        return false;
+}
+
+void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata)
+{
+        if (!ws) return;
+        ws->cb = cb;
+        ws->userdata = userdata;
+}
+
+#endif // __EMSCRIPTEN__
+
+// ==============================
+// Unified NetClient (封装 kcp/tcp/ws)
+// ==============================
+
+struct netclient
+{
+        net_client_type type;
+        union {
+                kcpclient_p kcp;
+                tcpclient_p tcp;
+#ifdef __EMSCRIPTEN__
+                wsclient_p ws;
+#endif
+                void* ptr;
+        } client;
+        net_callback cb;
+        void* userdata;
+};
+
+netclient_p netclient_create(net_client_type type, const char* host, int port)
+{
+        netclient_p nc = (netclient_p)SDL_malloc(sizeof(netclient_t));
+        if (!nc) return NULL;
+
+        SDL_memset(nc, 0, sizeof(netclient_t));
+        nc->type = type;
+        nc->cb = NULL;
+        nc->userdata = NULL;
+
+        // 自动选择类型
+        if (type == NET_CLIENT_AUTO) {
+#ifdef __EMSCRIPTEN__
+                type = NET_CLIENT_WEBSOCKET;
+#else
+                type = NET_CLIENT_KCP;
+#endif
+                nc->type = type;
+        }
+
+        switch (type) {
+        case NET_CLIENT_KCP:
+                nc->client.kcp = kcpclient_create(host, port);
+                if (!nc->client.kcp) {
+                        SDL_free(nc);
+                        return NULL;
+                }
+                break;
+        case NET_CLIENT_TCP:
+                nc->client.tcp = tcpclient_create(host, port);
+                if (!nc->client.tcp) {
+                        SDL_free(nc);
+                        return NULL;
+                }
+                break;
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                // 构建 ws:// URL
+                {
+                        char url[512];
+                        // 检查是否已经是 ws:// 或 wss:// 开头
+                        if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
+                                SDL_strlcpy(url, host, sizeof(url));
+                        } else {
+                                SDL_snprintf(url, sizeof(url), "ws://%s:%d", host, port);
+                        }
+                        nc->client.ws = wsclient_create(url);
+                        if (!nc->client.ws) {
+                                SDL_free(nc);
+                                return NULL;
+                        }
+                }
+                break;
+#endif
+        default:
+                SDL_free(nc);
+                return NULL;
+        }
+
+        return nc;
+}
+
+void netclient_destroy(netclient_p nc)
+{
+        if (!nc) return;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                if (nc->client.kcp) kcpclient_destroy(nc->client.kcp);
+                break;
+        case NET_CLIENT_TCP:
+                if (nc->client.tcp) tcpclient_destroy(nc->client.tcp);
+                break;
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                if (nc->client.ws) wsclient_destroy(nc->client.ws);
+                break;
+#endif
+        default:
+                break;
+        }
+
+        SDL_free(nc);
+}
+
+bool netclient_getconv(netclient_p nc, int* conv)
+{
+        if (!nc || !conv) return false;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                return kcpclient_getconv(nc->client.kcp, conv);
+        case NET_CLIENT_TCP:
+                return tcpclient_getconv(nc->client.tcp, conv);
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                return wsclient_getconv(nc->client.ws, conv);
+#endif
+        default:
+                return false;
+        }
+}
+
+int netclient_send(netclient_p nc, const char* data, int len)
+{
+        if (!nc) return -1;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                return kcpclient_send(nc->client.kcp, data, len);
+        case NET_CLIENT_TCP:
+                return tcpclient_send(nc->client.tcp, data, len);
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                return wsclient_send(nc->client.ws, data, len);
+#endif
+        default:
+                return -1;
+        }
+}
+
+void netclient_update(netclient_p nc)
+{
+        if (!nc) return;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                kcpclient_update(nc->client.kcp);
+                break;
+        case NET_CLIENT_TCP:
+                tcpclient_update(nc->client.tcp);
+                break;
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                wsclient_update(nc->client.ws);
+                break;
+#endif
+        default:
+                break;
+        }
+}
+
+bool netclient_poll_message(netclient_p nc, net_message_p msg)
+{
+        if (!nc || !msg) return false;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                return kcpclient_poll_message(nc->client.kcp, msg);
+        case NET_CLIENT_TCP:
+                return tcpclient_poll_message(nc->client.tcp, msg);
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                return wsclient_poll_message(nc->client.ws, msg);
+#endif
+        default:
+                return false;
+        }
+}
+
+void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata)
+{
+        if (!nc) return;
+
+        nc->cb = cb;
+        nc->userdata = userdata;
+
+        switch (nc->type) {
+        case NET_CLIENT_KCP:
+                kcpclient_set_callback(nc->client.kcp, cb, userdata);
+                break;
+        case NET_CLIENT_TCP:
+                // tcpclient 没有回调接口
+                break;
+#ifdef __EMSCRIPTEN__
+        case NET_CLIENT_WEBSOCKET:
+                wsclient_set_callback(nc->client.ws, cb, userdata);
+                break;
+#endif
+        default:
+                break;
+        }
+}
+
+net_client_type netclient_get_type(netclient_p nc)
+{
+        if (!nc) return NET_CLIENT_TCP; // 默认值
+        return nc->type;
 }

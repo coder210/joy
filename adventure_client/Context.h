@@ -25,7 +25,7 @@ struct Context {
 
         SDL_Window* window = NULL;
         SDL_Renderer* renderer = NULL;
-        kcpclient_p kcpclient = NULL;
+        netclient_p netclient = NULL;
 
         std::map<int, int> server_inputs;
         bool ready = false;

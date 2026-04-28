@@ -1,5 +1,5 @@
 name: Build joy2d For Web
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   build-web:
@@ -97,4 +97,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: joy2d_editor-web   # 必须与上传时 editor 项目的 artifact 名称一致
+          artifact_name: adventure_client-web   # 必须与上传时 editor 项目的 artifact 名称一致
