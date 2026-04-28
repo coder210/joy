@@ -70,10 +70,11 @@ extern "C" {
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
 
 	// ==============================
-	// WebSocket Client (仅 emscripten)
+	// WebSocket Client & Server (仅 emscripten)
 	// ==============================
 #ifdef __EMSCRIPTEN__
 	typedef struct wsclient wsclient_t, *wsclient_p;
+	typedef struct wsserver wsserver_t, *wsserver_p;
 
 	JOY_API wsclient_p wsclient_create(const char* url);
 	JOY_API void wsclient_destroy(wsclient_p ws);
@@ -82,6 +83,16 @@ extern "C" {
 	JOY_API void wsclient_update(wsclient_p ws);
 	JOY_API bool wsclient_poll_message(wsclient_p ws, net_message_p msg);
 	JOY_API void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata);
+
+	JOY_API wsserver_p wsserver_create(const char* ip, int port);
+	JOY_API int wsserver_destroy(wsserver_p ws);
+	JOY_API void wsserver_send(wsserver_p ws, int conv, const char* data, int len);
+	JOY_API void wsserver_broadcast(wsserver_p ws, const char* data, int len);
+	JOY_API void wsserver_offline(wsserver_p ws, int conv);
+	JOY_API void wsserver_update(wsserver_p ws);
+	JOY_API int wsserver_connection_count(wsserver_p ws);
+	JOY_API bool wsserver_poll_message(wsserver_p ws, net_message_p msg);
+	JOY_API void wsserver_set_callback(wsserver_p ws, net_callback cb, void* userdata);
 #endif
 
 	// ==============================
