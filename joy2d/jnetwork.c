@@ -324,7 +324,7 @@ static int ws_build_frame(const char* data, int len, char opcode, char* out, int
                 header_len = 2;
                 out[0] = 0x80 | opcode;  // FIN + opcode
                 out[1] = (char)payload_len;
-        } else if (payload_len < 65536) {
+        } else if (payload_len <= 65535) {
                 header_len = 4;
                 out[0] = 0x80 | opcode;
                 out[1] = 126;
@@ -2188,8 +2188,6 @@ void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
 }
 
 #endif // #else wsnetserver
-
-#endif // __EMSCRIPTEN__
 
 // ==============================
 // Unified NetClient (封装 kcp/tcp/ws)
