@@ -48,6 +48,12 @@ MobileInputLayer::MobileInputLayer(Resources* resources, SDL_Renderer* renderer)
                 (int)strlen("R"), { 255, 255, 255, 255 });
         button_set_textx(this->attackButton, resources->GetSimheiFont24(), "A",
                 (int)strlen("A"), { 255, 255, 255, 255 });
+        
+        // 初始化按钮状态追踪
+        this->prevUpPressed = false;
+        this->prevDownPressed = false;
+        this->prevLeftPressed = false;
+        this->prevRightPressed = false;
 }
 
 MobileInputLayer::~MobileInputLayer()
@@ -59,7 +65,37 @@ MobileInputLayer::~MobileInputLayer()
         button_destroy(this->attackButton);
 }
 
+void MobileInputLayer::SendInputEvent(MobileInput input)
+{
+        SDL_Event event;
+        SDL_zero(event);
+        event.type = MOBILE_INPUT_EVENT;
+        event.user.code = input;
+        SDL_PushEvent(&event);
+}
 
+void MobileInputLayer::CheckAndSendReleaseEvents()
+{
+        // 检测方向键松开事件
+        if (this->prevUpPressed && !this->upButton->is_pressed) {
+                SendInputEvent(MOBILE_INPUT_RELEASE_UP);
+        }
+        if (this->prevDownPressed && !this->downButton->is_pressed) {
+                SendInputEvent(MOBILE_INPUT_RELEASE_DOWN);
+        }
+        if (this->prevLeftPressed && !this->leftButton->is_pressed) {
+                SendInputEvent(MOBILE_INPUT_RELEASE_LEFT);
+        }
+        if (this->prevRightPressed && !this->rightButton->is_pressed) {
+                SendInputEvent(MOBILE_INPUT_RELEASE_RIGHT);
+        }
+        
+        // 更新上一帧状态
+        this->prevUpPressed = this->upButton->is_pressed;
+        this->prevDownPressed = this->downButton->is_pressed;
+        this->prevLeftPressed = this->leftButton->is_pressed;
+        this->prevRightPressed = this->rightButton->is_pressed;
+}
 
 void MobileInputLayer::ListenEvent(SDL_Event* e)
 {
@@ -73,54 +109,29 @@ void MobileInputLayer::ListenEvent(SDL_Event* e)
 
 void MobileInputLayer::Update()
 {
+        // 先检测并发送松开事件
+        CheckAndSendReleaseEvents();
+        
+        // 发送按下事件
         if (this->upButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_UP;
-                SDL_PushEvent(&event);
+                SendInputEvent(MOBILE_INPUT_UP);
         }
 
         if (this->downButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_DOWN;
-                SDL_PushEvent(&event);
+                SendInputEvent(MOBILE_INPUT_DOWN);
         }
 
         if (this->leftButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_LEFT;
-                SDL_PushEvent(&event);
+                SendInputEvent(MOBILE_INPUT_LEFT);
         }
 
         if (this->rightButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_RIGHT;
-                SDL_PushEvent(&event);
+                SendInputEvent(MOBILE_INPUT_RIGHT);
         }
 
         if (this->attackButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_ATTACK;
-                SDL_PushEvent(&event);
+                SendInputEvent(MOBILE_INPUT_ATTACK);
                 this->attackButton->is_pressed = false;
-        }
-
-        if (!this->attackButton->is_pressed && !this->upButton->is_pressed && !this->downButton->is_pressed
-                && !this->leftButton->is_pressed && !this->rightButton->is_pressed) {
-                SDL_Event event;
-                SDL_zero(event);
-                event.type = MOBILE_INPUT_EVENT;
-                event.user.code = MOBILE_INPUT_NONE;
-                SDL_PushEvent(&event);
         }
 }
 
