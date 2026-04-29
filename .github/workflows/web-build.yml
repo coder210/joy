@@ -1,5 +1,5 @@
 name: Build joy2d For Web
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   build-web:
@@ -27,18 +27,16 @@ jobs:
         run: |
           git clone https://github.com/emscripten-core/emsdk.git --depth=1
           cd emsdk
-          ./emsdk install 3.1.64
-          ./emsdk activate 3.1.64
+          ./emsdk install tot
+          ./emsdk activate tot
 
       - name: Configure with Emscripten
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB" \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
-            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0" \
-            -D${{ matrix.build_macro }}=ON
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0" \
+            -D${{ matrix.build_macro }}=ON 
 
       - name: Build
         run: |
@@ -53,7 +51,7 @@ jobs:
           mkdir -p _site_${{ matrix.project }}
           # 复制所有 Web 相关文件（跟随符号链接）
           # 注意：如果文件不存在，cp 会报错并导致步骤失败，便于及时发现缺失文件
-          cp -L build/Release/*.wasm build/Release/*.js build/Release/*.html build/Release/*.data _site_${{ matrix.project }}/ || true
+          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ || true
           # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
