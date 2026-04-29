@@ -1,5 +1,5 @@
 name: Build joy2d For Web
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build-web:
@@ -34,9 +34,10 @@ jobs:
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
-            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB -lwebsocket" \
-            -DCMAKE_C_FLAGS="-s USE_PTHREADS=0 -DEMSCRIPTEN_WEBSOCKET_SERVER" \
-            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0 -DEMSCRIPTEN_WEBSOCKET_SERVER" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB" \
+            -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0" \
             -D${{ matrix.build_macro }}=ON
 
       - name: Build
@@ -51,7 +52,8 @@ jobs:
         run: |
           mkdir -p _site_${{ matrix.project }}
           # 复制所有 Web 相关文件（跟随符号链接）
-          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ || true
+          # 注意：如果文件不存在，cp 会报错并导致步骤失败，便于及时发现缺失文件
+          cp -L build/Release/*.wasm build/Release/*.js build/Release/*.html build/Release/*.data _site_${{ matrix.project }}/ || true
           # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
@@ -79,7 +81,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          name: ${{ matrix.project }}-web
+          name: ${{ matrix.project }}-web   # 为每个项目指定唯一名称
           path: _site_${{ matrix.project }}/
 
   deploy:
@@ -96,4 +98,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: adventure_client-web   # 可根据需要修改或动态获取
+          artifact_name: adventure_client-web   # 必须与上传时 editor 项目的 artifact 名称一致
