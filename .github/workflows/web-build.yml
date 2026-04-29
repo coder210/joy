@@ -52,7 +52,7 @@ jobs:
           mkdir -p _site_${{ matrix.project }}
           # 复制所有 Web 相关文件（跟随符号链接）
           # 注意：如果文件不存在，cp 会报错并导致步骤失败，便于及时发现缺失文件
-          cp -L build/*.wasm build/*.js build/*.html build/*.data _site_${{ matrix.project }}/ || true
+          cp -L build/Release/*.wasm build/Release/*.js build/Release/*.html build/Release/*.data _site_${{ matrix.project }}/ || true
           # 将主 HTML 重命名为 index.html（如果存在）
           if [ -f "_site_${{ matrix.project }}/${{ matrix.project }}.html" ]; then
             mv "_site_${{ matrix.project }}/${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
