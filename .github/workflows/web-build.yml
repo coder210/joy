@@ -27,16 +27,17 @@ jobs:
         run: |
           git clone https://github.com/emscripten-core/emsdk.git --depth=1
           cd emsdk
-          ./emsdk install tot
-          ./emsdk activate tot
+          ./emsdk install 3.1.64
+          ./emsdk activate 3.1.64
 
       - name: Configure with Emscripten
         run: |
           source emsdk/emsdk_env.sh
           emcmake cmake -S . -B build \
+            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB" \
             -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
-            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0" \
-            -D${{ matrix.build_macro }}=ON 
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0" \
+            -D${{ matrix.build_macro }}=ON
 
       - name: Build
         run: |
@@ -96,4 +97,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: adventure_client-web   # 必须与上传时 editor 项目的 artifact 名称一致
+          artifact_name: joy2d_editor-web   # 必须与上传时 editor 项目的 artifact 名称一致
