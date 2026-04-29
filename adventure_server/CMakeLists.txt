@@ -84,7 +84,7 @@ elseif(EMSCRIPTEN)
         list(APPEND PRELOAD_FLAGS "--preload-file \"${ASSETS_ROOT}/${asset_file}@${asset_file}\"")
     endforeach()
     message(STATUS "PRELOAD_FLAGS: ${PRELOAD_FLAGS}")
-    target_link_options(${EXECUTABLE_NAME} PRIVATE ${PRELOAD_FLAGS})
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${PRELOAD_FLAGS})
 
 else()
     # 其他平台（Windows, Linux, Android 等）
