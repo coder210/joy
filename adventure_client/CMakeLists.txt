@@ -86,7 +86,7 @@ elseif(EMSCRIPTEN)
     message(STATUS "PRELOAD_FLAGS: ${PRELOAD_FLAGS}")
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${PRELOAD_FLAGS})
     target_link_options(${EXECUTABLE_NAME} PRIVATE
-        -s USE_WEBSOCKET=1
+        -s WEBSOCKET=1
     )
 else()
     # 其他平台（Windows, Linux, Android 等）
