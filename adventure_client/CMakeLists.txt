@@ -40,11 +40,6 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 # Web 平台输出 HTML
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
-    
-    # 添加 WebSocket 支持及必要的链接选项
-    target_link_options(${EXECUTABLE_NAME} PRIVATE
-        "-sWEBSOCKET_SUPPORT=1"
-    )
 endif()
 
 # 链接依赖库（由根目录的 add_subdirectory 引入）
