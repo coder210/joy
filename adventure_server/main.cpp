@@ -481,8 +481,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->server = netserver_create(NET_SERVER_KCP, "192.168.2.61", 10000);
-        ctx->server = netserver_create(NET_SERVER_KCP, "172.24.9.215", 10000);
+        //ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.61", 10000);
+        ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "172.24.9.215", 10000);
 
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
