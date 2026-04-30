@@ -89,6 +89,7 @@ extern "C" {
 	// ==============================
 	// Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
 	// ==============================
+#ifndef __EMSCRIPTEN__
 	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
 
 	// ==============================
@@ -114,6 +115,7 @@ extern "C" {
 	JOY_API void wsnetclient_update(wsnetclient_p wc);
 	JOY_API bool wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg);
 	JOY_API void wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata);
+#endif
 
 	// ==============================
 	// Unified NetClient (封装 kcp/tcp/ws)
