@@ -60,6 +60,7 @@ extern "C" {
 	JOY_API void tcpserver_broadcast(tcpserver_p tcpserver, const char* data, int len);
 	JOY_API void tcpserver_offline(tcpserver_p tcpserver, int conv);
 	JOY_API void tcpserver_update(tcpserver_p tcpserver);
+	JOY_API int tcpserver_connection_count(tcpserver_p tcpserver);
 	JOY_API bool tcpserver_poll_message(tcpserver_p tcpserver, net_message_p msg);
 
 	JOY_API tcpclient_p tcpclient_create(const char* ip, int port);
@@ -83,22 +84,17 @@ extern "C" {
 	JOY_API void wsclient_update(wsclient_p ws);
 	JOY_API bool wsclient_poll_message(wsclient_p ws, net_message_p msg);
 	JOY_API void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata);
-
-	JOY_API wsserver_p wsserver_create(const char* ip, int port);
-	JOY_API int wsserver_destroy(wsserver_p ws);
-	JOY_API void wsserver_send(wsserver_p ws, int conv, const char* data, int len);
-	JOY_API void wsserver_broadcast(wsserver_p ws, const char* data, int len);
-	JOY_API void wsserver_offline(wsserver_p ws, int conv);
-	JOY_API void wsserver_update(wsserver_p ws);
-	JOY_API int wsserver_connection_count(wsserver_p ws);
-	JOY_API bool wsserver_poll_message(wsserver_p ws, net_message_p msg);
-	JOY_API void wsserver_set_callback(wsserver_p ws, net_callback cb, void* userdata);
 #endif
 
 	// ==============================
-	// Native WebSocket Server (非 Emscripten 平台)
+	// Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
 	// ==============================
 	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
+
+	// ==============================
+	// Native WebSocket Client (非 Emscripten 平台) - 基于 Mongoose
+	// ==============================
+	typedef struct wsnetclient wsnetclient_t, *wsnetclient_p;
 
 	JOY_API wsnetserver_p wsnetserver_create(const char* ip, int port);
 	JOY_API int wsnetserver_destroy(wsnetserver_p ws);
@@ -110,14 +106,23 @@ extern "C" {
 	JOY_API bool wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg);
 	JOY_API void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata);
 
+	// Native WebSocket Client APIs
+	JOY_API wsnetclient_p wsnetclient_create(const char* url);
+	JOY_API void wsnetclient_destroy(wsnetclient_p wc);
+	JOY_API bool wsnetclient_getconv(wsnetclient_p wc, int* conv);
+	JOY_API int wsnetclient_send(wsnetclient_p wc, const char* data, int len);
+	JOY_API void wsnetclient_update(wsnetclient_p wc);
+	JOY_API bool wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg);
+	JOY_API void wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata);
+
 	// ==============================
 	// Unified NetClient (封装 kcp/tcp/ws)
 	// ==============================
 	typedef enum {
 		NET_CLIENT_TCP,
 		NET_CLIENT_KCP,
-		NET_CLIENT_WEBSOCKET,
-		NET_CLIENT_AUTO,          // 自动选择: emscripten用ws, 否则用kcp
+		NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
+		NET_CLIENT_AUTO,      // 自动选择: emscripten用ws, 否则用kcp
 	} net_client_type;
 
 	typedef struct netclient netclient_t, *netclient_p;
@@ -130,6 +135,28 @@ extern "C" {
 	JOY_API bool netclient_poll_message(netclient_p nc, net_message_p msg);
 	JOY_API void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata);
 	JOY_API net_client_type netclient_get_type(netclient_p nc);
+
+	// ==============================
+	// Unified NetServer (封装 kcp/tcp/ws 服务器)
+	// ==============================
+	typedef enum {
+		NET_SERVER_KCP,
+		NET_SERVER_TCP,
+		NET_SERVER_WEBSOCKET,
+	} net_server_type;
+
+	typedef struct netserver netserver_t, *netserver_p;
+
+	JOY_API netserver_p netserver_create(net_server_type type, const char* ip, int port);
+	JOY_API void netserver_destroy(netserver_p ns);
+	JOY_API void netserver_send(netserver_p ns, int conv, const char* data, int len);
+	JOY_API void netserver_broadcast(netserver_p ns, const char* data, int len);
+	JOY_API void netserver_offline(netserver_p ns, int conv);
+	JOY_API void netserver_update(netserver_p ns);
+	JOY_API int netserver_connection_count(netserver_p ns);
+	JOY_API bool netserver_poll_message(netserver_p ns, net_message_p msg);
+	JOY_API void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata);
+	JOY_API net_server_type netserver_get_type(netserver_p ns);
 
 #ifdef __cplusplus
 }
