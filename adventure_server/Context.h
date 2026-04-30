@@ -17,7 +17,7 @@ struct Context {
 
         SDL_Window* window = NULL;
         SDL_Renderer* renderer = NULL;
-        kcpserver_p kcpserver = NULL;
+        netserver_p server = NULL;
 
         game_timer_t game_timer;
         simple_fps_counter_p sample_fps;

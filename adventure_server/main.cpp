@@ -56,7 +56,7 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
                 return;
         }
         auto data = s2c.SerializeAsString();
-        kcpserver_send(ctx->kcpserver, conn->conv, data.c_str(), data.length());
+        netserver_send(ctx->server, conn->conv, data.c_str(), data.length());
 }
 
 static void AddPlayerJoin(int conv, adventure::C2S* c2s)
@@ -425,7 +425,7 @@ static void NotifySystem(flecs::world& world)
                 for (int i = conn.frameid; i < taget_frameid; i++) {
                         auto it = ctx->commands.find(i);
                         if (it != ctx->commands.end()) {
-                                kcpserver_send(ctx->kcpserver, conn.conv, it->second.c_str(), it->second.size());
+                                netserver_send(ctx->server, conn.conv, it->second.c_str(), it->second.size());
                         }
                         else {
                                 // 可选：记录日志，或跳过丢失的帧（客户端可能已断开或过于落后）
@@ -444,7 +444,7 @@ static void FixedUpdate(float dt)
 {
         auto ctx = world.get_mut<Context>();
         net_message_t msg;
-        if (kcpserver_poll_message(ctx->kcpserver, &msg)) {
+        if (netserver_poll_message(ctx->server, &msg)) {
                 OnMessage(&msg, NULL);
         }
 }
@@ -481,9 +481,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->kcpserver = kcpserver_create("192.168.1.16", 10000);
-        ctx->kcpserver = kcpserver_create("192.168.2.61", 10000);
-        //ctx->kcpserver = kcpserver_create("172.24.9.215", 10000);
+        //ctx->server = netserver_create(NET_SERVER_KCP, "192.168.2.61", 10000);
+        ctx->server = netserver_create(NET_SERVER_KCP, "172.24.9.215", 10000);
 
         world.entity()
                 .set<IdComponent>({ GenId(ctx), 100 })
@@ -533,7 +532,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         game_timer_update(&ctx->game_timer);
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         ctx->accumulator += dt;
-        kcpserver_update(ctx->kcpserver);
+        netserver_update(ctx->server);
         int fps = simple_fps_update(ctx->sample_fps);
 
         // ---------- 固定步长物理更新（60Hz） ----------
@@ -571,7 +570,7 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
         delete ctx->resources;
         delete ctx->debugLayer;
         simple_fps_destory(ctx->sample_fps);
-        kcpserver_destroy(ctx->kcpserver);
+        netserver_destroy(ctx->server);
         SDL_DestroyWindow(ctx->window);
         SDL_DestroyRenderer(ctx->renderer);
         sys_release_netenv();
