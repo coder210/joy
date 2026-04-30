@@ -4,11 +4,6 @@
 #include "external/klib/klist.h"
 #include "external/kcp.h"
 
-// 非 Emscripten 平台才包含 mongoose（WebAssembly 使用原生 WebSocket）
-#ifndef __EMSCRIPTEN__
-#include "external/mongoose.h"
-#endif
-
 #include "jconfig.h"
 #include "jutils.h"
 #include "jsys.h"
@@ -23,6 +18,8 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten/websocket.h>
 #endif
+
+#include "external/mongoose.h"
 
 typedef struct kcp_connection
 {
