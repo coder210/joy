@@ -3,7 +3,12 @@
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/kcp.h"
+
+// 非 Emscripten 平台才包含 mongoose（WebAssembly 使用原生 WebSocket）
+#ifndef __EMSCRIPTEN__
 #include "external/mongoose.h"
+#endif
+
 #include "jconfig.h"
 #include "jutils.h"
 #include "jsys.h"
@@ -89,6 +94,7 @@ struct tcpclient
 // ==============================
 // Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
 // ==============================
+#ifndef __EMSCRIPTEN__
 
 // Mongoose 连接上下文（存储在 mg_connection::data 中）
 // MG_DATA_SIZE = 32 字节，足够存储 conv ID
@@ -1381,9 +1387,12 @@ void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
         ws->userdata = userdata;
 }
 
+#endif  // !__EMSCRIPTEN__
+
 // ==============================
 // Native WebSocket Client (非 Emscripten 平台) - 基于 Mongoose
 // ==============================
+#ifndef __EMSCRIPTEN__
 
 struct wsnetclient
 {
@@ -1587,6 +1596,8 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         }
 }
 
+#endif  // !__EMSCRIPTEN__
+
 // ==============================
 // Unified NetClient (封装 kcp/tcp/ws)
 // ==============================
@@ -1599,8 +1610,9 @@ struct netclient
                 tcpclient_p tcp;
 #ifdef __EMSCRIPTEN__
                 wsclient_p ws;
-#endif
+#else
                 wsnetclient_p ws_native; // mongoose WebSocket 客户端
+#endif
                 void* ptr;
         } client;
         net_callback cb;

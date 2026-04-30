@@ -40,6 +40,11 @@ file(GLOB EXTERNAL_FILES
     "external/lua_cjson/*.h" "external/lua_cjson/*.c"
 )
 
+# Emscripten 平台不支持 mongoose（WebAssembly 环境使用原生 WebSocket）
+if(EMSCRIPTEN)
+    list(FILTER EXTERNAL_FILES EXCLUDE REGEX "external/mongoose\\.(c|h)$")
+endif()
+
 file(GLOB LUACLIB_FILES "luaclib/*.h" "luaclib/*.c")
 file(GLOB JSCLIB_FILES "jsclib/*.h" "jsclib/*.c")
 file(GLOB TEST_FILES "test/*.h" "test/*.c")
