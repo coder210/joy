@@ -119,6 +119,11 @@ if(NOT WIN32)
     set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
+# Unix/Linux 平台：定义必要的宏以支持 mongoose.c 中的 POSIX 函数
+if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
+    target_compile_definitions(${LIB_NAME} PRIVATE _GNU_SOURCE _POSIX_C_SOURCE=199309L)
+endif()
+
 if (ENABLED_CSHARP_SCRIPT)
 	target_link_libraries(${LIB_NAME} PUBLIC
 		SDL3::SDL3
