@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-
 # 统一输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
@@ -23,7 +22,6 @@ if(NOT MSVC)
     set(CMAKE_C_VISIBILITY_PRESET hidden)
 endif()
 
-
 if (ENABLED_CSHARP_SCRIPT)
 		include_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release/include/mono-2.0)
 		link_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release)
@@ -31,7 +29,6 @@ if (ENABLED_CSHARP_SCRIPT)
 else()
         set(CSCLIB_FILES "")
 endif()
-
 
 # 定义各模块源文件通配符（使用相对路径）
 file(GLOB EXTERNAL_FILES
@@ -101,12 +98,16 @@ if(IOS)
     # iOS 动态库需嵌入应用，通常建议使用静态库，但此处仍可生成动态库
 endif()
 
-# Web (Emscripten)：构建静态库
+# ==============================================
+# 【关键修复】Emscripten 专门适配 Mongoose
+# 解决 alloca / clock_gettime 未定义错误
+# ==============================================
 if(EMSCRIPTEN)
-    # 静态库不需要特殊前缀/后缀，也不需要 SIDE_MODULE 链接选项
-    # 可选的 -fPIC 保留或移除均可，此处保留以保持一致性
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-    # 如果需要导出函数给链接器，可添加 -sEXPORTED_FUNCTIONS（但通常用于可执行文件）
+    target_compile_definitions(${LIB_NAME} PRIVATE
+        MG_EMBEDDED
+        MG_DISABLE_CLOCK_GETTIME
+    )
 endif()
 
 # 通用：对于非 Windows 平台，显式设置位置无关代码
@@ -129,7 +130,6 @@ else()
 		SDL3::SDL3
 	)
 endif()
-
 
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})
