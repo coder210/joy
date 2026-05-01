@@ -74,8 +74,6 @@ jobs:
             libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
             fcitx-libs-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev \
             libxtst-dev
-          # 升级 wayland-protocols(通过 PPA 已包含)
-          sudo apt upgrade -y wayland-protocols
 
       - name: Configure
         run: |
