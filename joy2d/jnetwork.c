@@ -1871,18 +1871,28 @@ netserver_p netserver_create(net_server_type type, const char* ip, int port)
 
         switch (type) {
         case NET_SERVER_KCP:
+#ifdef __EMSCRIPTEN__
+                SDL_free(ns);
+                return NULL;
+#else
                 ns->server.kcp = kcpserver_create(ip, port);
                 if (!ns->server.kcp) {
                         SDL_free(ns);
                         return NULL;
                 }
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifdef __EMSCRIPTEN__
+                SDL_free(ns);
+                return NULL;
+#else
                 ns->server.tcp = tcpserver_create(ip, port);
                 if (!ns->server.tcp) {
                         SDL_free(ns);
                         return NULL;
                 }
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -1910,10 +1920,14 @@ void netserver_destroy(netserver_p ns)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 if (ns->server.kcp) kcpserver_destroy(ns->server.kcp);
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 if (ns->server.tcp) tcpserver_destroy(ns->server.tcp);
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -1933,10 +1947,14 @@ void netserver_send(netserver_p ns, int conv, const char* data, int len)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpserver_send(ns->server.kcp, conv, data, len);
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 tcpserver_send(ns->server.tcp, conv, data, len);
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -1954,10 +1972,14 @@ void netserver_broadcast(netserver_p ns, const char* data, int len)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpserver_broadcast(ns->server.kcp, data, len);
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 tcpserver_broadcast(ns->server.tcp, data, len);
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -1975,10 +1997,14 @@ void netserver_offline(netserver_p ns, int conv)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpserver_offline(ns->server.kcp, conv);
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 tcpserver_offline(ns->server.tcp, conv);
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -1996,10 +2022,14 @@ void netserver_update(netserver_p ns)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpserver_update(ns->server.kcp);
+#endif
                 break;
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 tcpserver_update(ns->server.tcp);
+#endif
                 break;
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
@@ -2017,9 +2047,17 @@ int netserver_connection_count(netserver_p ns)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 return kcpserver_connection_count(ns->server.kcp);
+#else
+                return 0;
+#endif
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 return tcpserver_connection_count(ns->server.tcp);
+#else
+                return 0;
+#endif
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
                 return wsnetserver_connection_count(ns->server.ws);
@@ -2037,9 +2075,17 @@ bool netserver_poll_message(netserver_p ns, net_message_p msg)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 return kcpserver_poll_message(ns->server.kcp, msg);
+#else
+                return false;
+#endif
         case NET_SERVER_TCP:
+#ifndef __EMSCRIPTEN__
                 return tcpserver_poll_message(ns->server.tcp, msg);
+#else
+                return false;
+#endif
         case NET_SERVER_WEBSOCKET:
 #ifndef __EMSCRIPTEN__
                 return wsnetserver_poll_message(ns->server.ws, msg);
@@ -2060,7 +2106,9 @@ void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata)
 
         switch (ns->type) {
         case NET_SERVER_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpserver_set_callback(ns->server.kcp, cb, userdata);
+#endif
                 break;
         case NET_SERVER_TCP:
                 // tcpserver 没有回调接口
