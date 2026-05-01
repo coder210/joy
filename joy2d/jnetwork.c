@@ -1069,7 +1069,7 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
         
         // 构造监听 URL
         char url[256];
-        SDL_snprintf(url, sizeof(url), "ws://%s:%d", ip && ip[0] ? ip : "0.0.0.0", port);
+        SDL_snprintf(url, sizeof(url), "wss://%s:%d", ip && ip[0] ? ip : "0.0.0.0", port);
         
         // 创建 HTTP 监听（用于接收 WebSocket 升级请求）
         struct mg_connection* c = mg_http_listen(&ws->mgr, url, wsnetserver_ev_handler, ws);
@@ -1448,7 +1448,7 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
                         if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
                                 SDL_strlcpy(url, host, sizeof(url));
                         } else {
-                                SDL_snprintf(url, sizeof(url), "ws://%s:%d", host, port);
+                                SDL_snprintf(url, sizeof(url), "wss://%s:%d", host, port);
                         }
                         nc->client.ws = wsnetclient_create(url);
                         if (!nc->client.ws) {
