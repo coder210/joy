@@ -385,7 +385,6 @@ static int l_sys_current_time(lua_State *L)
 
 
 
-#ifndef __EMSCRIPTEN__
 static int l_kcpserver_create(lua_State* L)
 {
         const char* ip;
@@ -812,7 +811,7 @@ int luaopen_net(lua_State *L)
         luaL_newlib(L, tcpclient_lib);
         lua_setfield(L, -2, "tcpclient");
 
-#endif // !__EMSCRIPTEN__
 
         return 1;
 }
+
