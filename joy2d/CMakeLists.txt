@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
+# 定义 POSIX 标准版本 (用于 mongoose 等第三方库在 Linux 上的兼容性)
+# 200112L = POSIX.1-2001, 支持 clock_gettime, struct ip_mreq 等
+add_definitions(-D_POSIX_C_SOURCE=200112L)
+
 # 统一输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")

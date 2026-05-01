@@ -2,9 +2,7 @@
 set(EXECUTABLE_NAME "adventure_client")
 message(STATUS "EXECUTABLE_NAME = '${EXECUTABLE_NAME}'")
 
-# 定义 POSIX 标准版本 (用于 mongoose 等第三方库在 Linux 上的兼容性)
-# 200112L = POSIX.1-2001, 支持 clock_gettime, struct ip_mreq 等
-add_definitions(-D_POSIX_C_SOURCE=200112L)
+
 # 如果是 Android，必须命名为 main
 if (ANDROID)
     set(MOBILE_ASSETS_DIR "${MOBILE_MAIN_DIR}/assets")
