@@ -7,7 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # 设置 C 标准
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)  # 必须打开，否则 alloca 报错
+set(CMAKE_C_EXTENSIONS OFF)
 
 if (WIN32)
 	set(ENABLED_CSHARP_SCRIPT OFF)
@@ -22,13 +22,15 @@ if(NOT MSVC)
     set(CMAKE_C_VISIBILITY_PRESET hidden)
 endif()
 
+
 if (ENABLED_CSHARP_SCRIPT)
-	include_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release/include/mono-2.0)
-	link_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release)
-    file(GLOB CSCLIB_FILES "csclib/*.h" "csclib/*.c")
+		include_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release/include/mono-2.0)
+		link_directories(${PROJECT_SOURCE_DIR}/mono/windows.x64.Release)
+        file(GLOB CSCLIB_FILES "csclib/*.h" "csclib/*.c")
 else()
-    set(CSCLIB_FILES "")
+        set(CSCLIB_FILES "")
 endif()
+
 
 # 定义各模块源文件通配符（使用相对路径）
 file(GLOB EXTERNAL_FILES
@@ -53,6 +55,10 @@ set(PROJECT_FILES
     ${SRC_FILES}
 )
 
+file(GLOB PROJECT_FILES
+    ${PROJECT_FILES}
+)
+
 # 根据平台选择库类型：Emscripten 下构建静态库，其他平台构建共享库
 if(EMSCRIPTEN)
     set(LIB_TYPE STATIC)
@@ -62,9 +68,11 @@ endif()
 
 add_library(${LIB_NAME} ${LIB_TYPE} ${PROJECT_FILES})
 
-# Windows：定义导出宏
+# Windows：定义导出宏，设置运行时库（可选）
 if(WIN32)
     target_compile_definitions(${LIB_NAME} PRIVATE CALCULATOR_EXPORTS)
+    # 可选用 MT / MD 等，此处以动态运行时库为例
+    # set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
 # Apple
@@ -72,46 +80,46 @@ if(APPLE)
     add_definitions(-DLUA_USE_IOS)
 endif()
 
-# Android
+# Android：通过 NDK 工具链构建，需要设置 ABI 等
 if(ANDROID)
+    # 通常 NDK 工具链已处理 -fPIC，这里可额外添加 Android 特定标志
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
+   
+    # 若需要日志等，可链接 log 库
+    # target_link_libraries(${LIB_NAME} log)
 endif()
 
-# iOS
+# iOS：使用 Xcode 工具链或 ios.toolchain.cmake
 if(IOS)
+    # 启用 bitcode
     target_compile_options(${LIB_NAME} PRIVATE -fembed-bitcode)
+    # 生成 framework 包（可选）
     set_target_properties(${LIB_NAME} PROPERTIES
         FRAMEWORK TRUE
         MACOSX_FRAMEWORK_IDENTIFIER com.example.${LIB_NAME}
     )
+    # iOS 动态库需嵌入应用，通常建议使用静态库，但此处仍可生成动态库
 endif()
 
-# ==============================================
-# 【终极修复】Emscripten + Mongoose 完全兼容
-# 解决 struct ip_mreq / alloca / clock_gettime 全部错误
-# ==============================================
+# Web (Emscripten)：构建静态库
 if(EMSCRIPTEN)
+    # 静态库不需要特殊前缀/后缀，也不需要 SIDE_MODULE 链接选项
+    # 可选的 -fPIC 保留或移除均可，此处保留以保持一致性
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-    target_compile_definitions(${LIB_NAME} PRIVATE
-        MG_EMBEDDED
-        MG_DISABLE_CLOCK_GETTIME
-        MG_DISABLE_MULTICAST   # 禁用组播，解决 struct ip_mreq 错误
-        _GNU_SOURCE           # 自动包含 alloca
-        __BSD_VISIBLE=1       # 暴露 alloca 声明
-    )
+    # 如果需要导出函数给链接器，可添加 -sEXPORTED_FUNCTIONS（但通常用于可执行文件）
+     # 6.13+ 通用无 alloca 宏
+	target_compile_definitions(${LIB_NAME} PRIVATE
+		MG_ARCH=MG_ARCH_CUSTOM
+		MG_DISABLE_ALLOCA=1
+		MG_DISABLE_CLOCK_GETTIME=1
+		MG_DISABLE_MULTICAST=1
+		_GNU_SOURCE
+	)
 endif()
 
 # 通用：对于非 Windows 平台，显式设置位置无关代码
 if(NOT WIN32)
     set_target_properties(${LIB_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
-
-# Unix/Linux 平台
-if(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
-    target_compile_definitions(${LIB_NAME} PRIVATE
-        _GNU_SOURCE
-        _POSIX_C_SOURCE=199309L
-    )
 endif()
 
 if (ENABLED_CSHARP_SCRIPT)
@@ -124,6 +132,7 @@ else()
 		SDL3::SDL3
 	)
 endif()
+
 
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})
