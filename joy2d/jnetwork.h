@@ -73,10 +73,7 @@ extern "C" {
 	JOY_API void tcpclient_update(tcpclient_p tcpclient);
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
 
-	// ==============================
-	// WebSocket Server & Client (基于 Mongoose)
-	// ==============================
-#ifndef __EMSCRIPTEN__
+
 	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
 	typedef struct wsnetclient wsnetclient_t, *wsnetclient_p;
 
@@ -97,7 +94,6 @@ extern "C" {
 	JOY_API void wsnetclient_update(wsnetclient_p wc);
 	JOY_API bool wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg);
 	JOY_API void wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata);
-#endif
 
 	// ==============================
 	// Unified NetClient (封装 kcp/tcp/ws)

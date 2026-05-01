@@ -84,10 +84,7 @@ struct tcpclient
         klist_t(kmq) * mq;
 };
 
-// ==============================
-// Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
-// ==============================
-#ifndef __EMSCRIPTEN__
+
 
 // Mongoose 连接上下文（存储在 mg_connection::data 中）
 // MG_DATA_SIZE = 32 字节，足够存储 conv ID
@@ -1195,12 +1192,8 @@ void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
         ws->userdata = userdata;
 }
 
-#endif  // !__EMSCRIPTEN__
 
-// ==============================
-// Native WebSocket Client (非 Emscripten 平台) - 基于 Mongoose
-// ==============================
-#ifndef __EMSCRIPTEN__
+
 
 struct wsnetclient
 {
@@ -1407,13 +1400,10 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         }
 }
 
-#endif  // !__EMSCRIPTEN__
 
 // ==============================
 // Unified NetClient (封装 kcp/tcp/ws)
 // ==============================
-
-
 struct netclient
 {
         net_client_type type;
@@ -1792,9 +1782,7 @@ void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata)
                 // tcpserver 没有回调接口
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 wsnetserver_set_callback(ns->server.ws, cb, userdata);
-#endif
                 break;
         default:
                 break;
