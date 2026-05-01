@@ -36,6 +36,10 @@ typedef struct tcpclient tcpclient_t, * tcpclient_p;
 extern "C" {
 #endif
 
+	// ==============================
+	// KCP Server & Client (非 Emscripten 平台)
+	// ==============================
+#ifndef __EMSCRIPTEN__
 	JOY_API kcpserver_p kcpserver_create(const char* ip, int port);
 	JOY_API int kcpserver_destroy(kcpserver_p ks);
 	JOY_API void kcpserver_send(kcpserver_p ks, int conv, const char *data, int len);
@@ -69,6 +73,7 @@ extern "C" {
 	JOY_API int tcpclient_send(tcpclient_p tcpclient, const char* data, int len);
 	JOY_API void tcpclient_update(tcpclient_p tcpclient);
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
+#endif // !__EMSCRIPTEN__
 
 	// ==============================
 	// WebSocket Client & Server (仅 emscripten)
