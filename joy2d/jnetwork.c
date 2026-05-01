@@ -1644,18 +1644,28 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
 
         switch (type) {
         case NET_CLIENT_KCP:
+#ifdef __EMSCRIPTEN__
+                SDL_free(nc);
+                return NULL;
+#else
                 nc->client.kcp = kcpclient_create(host, port);
                 if (!nc->client.kcp) {
                         SDL_free(nc);
                         return NULL;
                 }
+#endif
                 break;
         case NET_CLIENT_TCP:
+#ifdef __EMSCRIPTEN__
+                SDL_free(nc);
+                return NULL;
+#else
                 nc->client.tcp = tcpclient_create(host, port);
                 if (!nc->client.tcp) {
                         SDL_free(nc);
                         return NULL;
                 }
+#endif
                 break;
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
@@ -1706,10 +1716,14 @@ void netclient_destroy(netclient_p nc)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 if (nc->client.kcp) kcpclient_destroy(nc->client.kcp);
+#endif
                 break;
         case NET_CLIENT_TCP:
+#ifndef __EMSCRIPTEN__
                 if (nc->client.tcp) tcpclient_destroy(nc->client.tcp);
+#endif
                 break;
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
@@ -1731,9 +1745,17 @@ bool netclient_getconv(netclient_p nc, int* conv)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 return kcpclient_getconv(nc->client.kcp, conv);
+#else
+                return false;
+#endif
         case NET_CLIENT_TCP:
+#ifndef __EMSCRIPTEN__
                 return tcpclient_getconv(nc->client.tcp, conv);
+#else
+                return false;
+#endif
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
                 return wsclient_getconv(nc->client.ws, conv);
@@ -1751,9 +1773,17 @@ int netclient_send(netclient_p nc, const char* data, int len)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 return kcpclient_send(nc->client.kcp, data, len);
+#else
+                return -1;
+#endif
         case NET_CLIENT_TCP:
+#ifndef __EMSCRIPTEN__
                 return tcpclient_send(nc->client.tcp, data, len);
+#else
+                return -1;
+#endif
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
                 return wsclient_send(nc->client.ws, data, len);
@@ -1771,10 +1801,14 @@ void netclient_update(netclient_p nc)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpclient_update(nc->client.kcp);
+#endif
                 break;
         case NET_CLIENT_TCP:
+#ifndef __EMSCRIPTEN__
                 tcpclient_update(nc->client.tcp);
+#endif
                 break;
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
@@ -1794,9 +1828,17 @@ bool netclient_poll_message(netclient_p nc, net_message_p msg)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 return kcpclient_poll_message(nc->client.kcp, msg);
+#else
+                return false;
+#endif
         case NET_CLIENT_TCP:
+#ifndef __EMSCRIPTEN__
                 return tcpclient_poll_message(nc->client.tcp, msg);
+#else
+                return false;
+#endif
         case NET_CLIENT_WEBSOCKET:
 #ifdef __EMSCRIPTEN__
                 return wsclient_poll_message(nc->client.ws, msg);
@@ -1817,7 +1859,9 @@ void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata)
 
         switch (nc->type) {
         case NET_CLIENT_KCP:
+#ifndef __EMSCRIPTEN__
                 kcpclient_set_callback(nc->client.kcp, cb, userdata);
+#endif
                 break;
         case NET_CLIENT_TCP:
                 // tcpclient 没有回调接口
