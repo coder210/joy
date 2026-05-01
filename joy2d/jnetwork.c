@@ -1256,6 +1256,9 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
         ws->cb = NULL;
         ws->userdata = NULL;
         
+        // 关闭 Mongoose 日志输出
+        mg_log_set(MG_LL_NONE);
+        
         // 初始化 Mongoose manager
         mg_mgr_init(&ws->mgr);
         
@@ -1425,6 +1428,9 @@ wsnetclient_p wsnetclient_create(const char* url)
         if (url) {
                 SDL_strlcpy(wc->url, url, sizeof(wc->url));
         }
+
+        // 关闭 Mongoose 日志输出
+        mg_log_set(MG_LL_NONE);
 
         // 初始化 Mongoose manager
         mg_mgr_init(&wc->mgr);
@@ -1844,7 +1850,9 @@ struct netserver
         union {
                 kcpserver_p kcp;
                 tcpserver_p tcp;
+#ifndef __EMSCRIPTEN__
                 wsnetserver_p ws;
+#endif
                 void* ptr;
         } server;
         net_callback cb;
@@ -1877,11 +1885,16 @@ netserver_p netserver_create(net_server_type type, const char* ip, int port)
                 }
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 ns->server.ws = wsnetserver_create(ip, port);
                 if (!ns->server.ws) {
                         SDL_free(ns);
                         return NULL;
                 }
+#else
+                SDL_free(ns);
+                return NULL;
+#endif
                 break;
         default:
                 SDL_free(ns);
@@ -1903,7 +1916,9 @@ void netserver_destroy(netserver_p ns)
                 if (ns->server.tcp) tcpserver_destroy(ns->server.tcp);
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 if (ns->server.ws) wsnetserver_destroy(ns->server.ws);
+#endif
                 break;
         default:
                 break;
@@ -1924,7 +1939,9 @@ void netserver_send(netserver_p ns, int conv, const char* data, int len)
                 tcpserver_send(ns->server.tcp, conv, data, len);
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 wsnetserver_send(ns->server.ws, conv, data, len);
+#endif
                 break;
         default:
                 break;
@@ -1943,7 +1960,9 @@ void netserver_broadcast(netserver_p ns, const char* data, int len)
                 tcpserver_broadcast(ns->server.tcp, data, len);
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 wsnetserver_broadcast(ns->server.ws, data, len);
+#endif
                 break;
         default:
                 break;
@@ -1962,7 +1981,9 @@ void netserver_offline(netserver_p ns, int conv)
                 tcpserver_offline(ns->server.tcp, conv);
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 wsnetserver_offline(ns->server.ws, conv);
+#endif
                 break;
         default:
                 break;
@@ -1981,7 +2002,9 @@ void netserver_update(netserver_p ns)
                 tcpserver_update(ns->server.tcp);
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 wsnetserver_update(ns->server.ws);
+#endif
                 break;
         default:
                 break;
@@ -1998,7 +2021,11 @@ int netserver_connection_count(netserver_p ns)
         case NET_SERVER_TCP:
                 return tcpserver_connection_count(ns->server.tcp);
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 return wsnetserver_connection_count(ns->server.ws);
+#else
+                return 0;
+#endif
         default:
                 return 0;
         }
@@ -2014,7 +2041,11 @@ bool netserver_poll_message(netserver_p ns, net_message_p msg)
         case NET_SERVER_TCP:
                 return tcpserver_poll_message(ns->server.tcp, msg);
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 return wsnetserver_poll_message(ns->server.ws, msg);
+#else
+                return false;
+#endif
         default:
                 return false;
         }
@@ -2035,7 +2066,9 @@ void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata)
                 // tcpserver 没有回调接口
                 break;
         case NET_SERVER_WEBSOCKET:
+#ifndef __EMSCRIPTEN__
                 wsnetserver_set_callback(ns->server.ws, cb, userdata);
+#endif
                 break;
         default:
                 break;
