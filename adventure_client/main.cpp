@@ -487,9 +487,9 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 10000);
+        ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 10000);
         //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.61", 10000);
-        ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
+        //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         netclient_set_callback(ctx->netclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
