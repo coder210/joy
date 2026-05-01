@@ -15,10 +15,6 @@
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/websocket.h>
-#endif
-
 #include "external/mongoose.h"
 
 typedef struct kcp_connection
@@ -973,194 +969,6 @@ bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg)
 }
 
 // ==============================
-// WebSocket Client (仅 emscripten)
-// ==============================
-#ifdef __EMSCRIPTEN__
-
-struct wsclient
-{
-        EMSCRIPTEN_WEBSOCKET_T socket;
-        bool connected;
-        klist_t(kmq) * mq;
-        net_callback cb;
-        void* userdata;
-};
-
-
-
-static EM_BOOL ws_on_open(int eventType, const EmscriptenWebSocketOpenEvent *e, void *userData)
-{
-        wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return false;
-
-        net_message_t msg;
-        msg.type = NET_TYPE_CONNECTED;
-        msg.conv = 0;
-        msg.data = SDL_strdup("connected");
-        msg.len = SDL_strlen(msg.data);
-        ws->connected = true;
-
-        if (ws->cb) {
-                ws->cb(&msg, ws->userdata);
-        } else {
-                *kl_pushp(kmq, ws->mq) = msg;
-        }
-        log_info("WebSocket connected");
-        return true;
-}
-
-static EM_BOOL ws_on_message(int eventType, const EmscriptenWebSocketMessageEvent *e, void *userData)
-{
-        wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return false;
-
-        net_message_t msg;
-        msg.type = NET_TYPE_MESSAGE;
-        msg.conv = 0;
-        msg.len = (int)e->numBytes;
-        msg.data = (char*)SDL_malloc(msg.len);
-        SDL_memcpy(msg.data, e->data, msg.len);
-
-        if (ws->cb) {
-                ws->cb(&msg, ws->userdata);
-        } else {
-                *kl_pushp(kmq, ws->mq) = msg;
-        }
-        return true;
-}
-
-static EM_BOOL ws_on_close(int eventType, const EmscriptenWebSocketCloseEvent *e, void *userData)
-{
-        wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return false;
-
-        ws->connected = false;
-
-        net_message_t msg;
-        msg.type = NET_TYPE_DISCONNECTED;
-        msg.conv = 0;
-        msg.data = SDL_strdup("disconnected");
-        msg.len = SDL_strlen(msg.data);
-
-        if (ws->cb) {
-                ws->cb(&msg, ws->userdata);
-        } else {
-                *kl_pushp(kmq, ws->mq) = msg;
-        }
-        log_info("WebSocket closed");
-        return true;
-}
-
-static EM_BOOL ws_on_error(int eventType, const EmscriptenWebSocketErrorEvent *e, void *userData)
-{
-        wsclient_p ws = (wsclient_p)userData;
-        if (!ws) return false;
-
-        log_error("WebSocket error");
-        return true;
-}
-
-wsclient_p wsclient_create(const char* url)
-{
-        wsclient_p ws = (wsclient_p)SDL_malloc(sizeof(wsclient_t));
-        if (!ws) return NULL;
-
-        SDL_memset(ws, 0, sizeof(wsclient_t));
-        ws->mq = kl_init(kmq);
-        ws->connected = false;
-
-        EmscriptenWebSocketCreateAttributes ws_attrs = {
-                .url = url,
-                .protocols = NULL
-        };
-
-        ws->socket = emscripten_websocket_new(&ws_attrs);
-        if (ws->socket <= 0) {
-                log_error("Failed to create WebSocket: %d", ws->socket);
-                SDL_free(ws);
-                return NULL;
-        }
-
-        emscripten_websocket_set_onopen_callback(ws->socket, ws, ws_on_open);
-        emscripten_websocket_set_onmessage_callback(ws->socket, ws, ws_on_message);
-        emscripten_websocket_set_onclose_callback(ws->socket, ws, ws_on_close);
-        emscripten_websocket_set_onerror_callback(ws->socket, ws, ws_on_error);
-
-        log_info("WebSocket creating: %s", url);
-        return ws;
-}
-
-void wsclient_destroy(wsclient_p ws)
-{
-        if (!ws) return;
-
-        if (ws->connected && ws->socket != 0) {
-                emscripten_websocket_close(ws->socket, 1000, "closing");
-        }
-
-        // 清理消息队列
-        kliter_t(kmq)* p;
-        for (p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
-                net_message_t* msg = &kl_val(p);
-                if (msg->data) SDL_free(msg->data);
-        }
-        kl_destroy(kmq, ws->mq);
-
-        SDL_free(ws);
-}
-
-bool wsclient_getconv(wsclient_p ws, int* conv)
-{
-        if (!ws || !conv) return false;
-        *conv = (int)ws->socket;
-        return ws->connected;
-}
-
-int wsclient_send(wsclient_p ws, const char* data, int len)
-{
-        if (!ws || !ws->connected || ws->socket == 0 || !data || len <= 0) {
-                return -1;
-        }
-
-        // WebSocket 发送二进制数据
-        EMSCRIPTEN_RESULT result = emscripten_websocket_send_binary(ws->socket, (char*)data, len);
-        if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-                log_error("WebSocket send failed: %d", result);
-                return -1;
-        }
-        return len;
-}
-
-void wsclient_update(wsclient_p ws)
-{
-        // emscripten WebSocket 是事件驱动的，update 主要用于保持连接活跃
-        // WebSocket 事件会在回调中处理，这里可以做心跳等操作
-        (void)ws;
-}
-
-bool wsclient_poll_message(wsclient_p ws, net_message_p msg)
-{
-        if (!ws || !msg) return false;
-
-        kliter_t(kmq)* p = kl_begin(ws->mq);
-        if (p != kl_end(ws->mq)) {
-                *msg = kl_val(p);
-                kl_shift(kmq, ws->mq, 0);
-                return true;
-        }
-        return false;
-}
-
-void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata)
-{
-        if (!ws) return;
-        ws->cb = cb;
-        ws->userdata = userdata;
-}
-
-#endif // __EMSCRIPTEN__ (wsclient)
-
-// ==============================
 // Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
 // ==============================
 
@@ -1605,17 +1413,14 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 // Unified NetClient (封装 kcp/tcp/ws)
 // ==============================
 
+
 struct netclient
 {
         net_client_type type;
         union {
                 kcpclient_p kcp;
                 tcpclient_p tcp;
-#ifdef __EMSCRIPTEN__
-                wsclient_p ws;
-#else
-                wsnetclient_p ws_native; // mongoose WebSocket 客户端
-#endif
+                wsnetclient_p ws; // mongoose WebSocket 客户端
                 void* ptr;
         } client;
         net_callback cb;
@@ -1648,39 +1453,19 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
                 }
                 break;
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                // 构建 ws:// URL
                 {
                         char url[512];
-                        // 检查是否已经是 ws:// 或 wss:// 开头
                         if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
                                 SDL_strlcpy(url, host, sizeof(url));
                         } else {
                                 SDL_snprintf(url, sizeof(url), "ws://%s:%d", host, port);
                         }
-                        nc->client.ws = wsclient_create(url);
+                        nc->client.ws = wsnetclient_create(url);
                         if (!nc->client.ws) {
                                 SDL_free(nc);
                                 return NULL;
                         }
                 }
-#else
-                // 基于 mongoose 的 WebSocket 客户端
-                {
-                        char url[512];
-                        // 检查是否已经是 ws:// 或 wss:// 开头
-                        if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
-                                SDL_strlcpy(url, host, sizeof(url));
-                        } else {
-                                SDL_snprintf(url, sizeof(url), "ws://%s:%d", host, port);
-                        }
-                        nc->client.ws_native = wsnetclient_create(url);
-                        if (!nc->client.ws_native) {
-                                SDL_free(nc);
-                                return NULL;
-                        }
-                }
-#endif
                 break;
         default:
                 SDL_free(nc);
@@ -1702,11 +1487,7 @@ void netclient_destroy(netclient_p nc)
                 if (nc->client.tcp) tcpclient_destroy(nc->client.tcp);
                 break;
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                if (nc->client.ws) wsclient_destroy(nc->client.ws);
-#else
-                if (nc->client.ws_native) wsnetclient_destroy(nc->client.ws_native);
-#endif
+                if (nc->client.ws) wsnetclient_destroy(nc->client.ws);
                 break;
         default:
                 break;
@@ -1725,11 +1506,7 @@ bool netclient_getconv(netclient_p nc, int* conv)
         case NET_CLIENT_TCP:
                 return tcpclient_getconv(nc->client.tcp, conv);
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                return wsclient_getconv(nc->client.ws, conv);
-#else
-                return wsnetclient_getconv(nc->client.ws_native, conv);
-#endif
+                return wsnetclient_getconv(nc->client.ws, conv);
         default:
                 return false;
         }
@@ -1745,11 +1522,7 @@ int netclient_send(netclient_p nc, const char* data, int len)
         case NET_CLIENT_TCP:
                 return tcpclient_send(nc->client.tcp, data, len);
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                return wsclient_send(nc->client.ws, data, len);
-#else
-                return wsnetclient_send(nc->client.ws_native, data, len);
-#endif
+                return wsnetclient_send(nc->client.ws, data, len);
         default:
                 return -1;
         }
@@ -1767,11 +1540,7 @@ void netclient_update(netclient_p nc)
                 tcpclient_update(nc->client.tcp);
                 break;
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                wsclient_update(nc->client.ws);
-#else
-                wsnetclient_update(nc->client.ws_native);
-#endif
+                wsnetclient_update(nc->client.ws);
                 break;
         default:
                 break;
@@ -1789,11 +1558,7 @@ bool netclient_poll_message(netclient_p nc, net_message_p msg)
         case NET_CLIENT_TCP:
                 return tcpclient_poll_message(nc->client.tcp, msg);
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                return wsclient_poll_message(nc->client.ws, msg);
-#else
-                return wsnetclient_poll_message(nc->client.ws_native, msg);
-#endif
+                return wsnetclient_poll_message(nc->client.ws, msg);
         default:
                 return false;
         }
@@ -1814,11 +1579,7 @@ void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata)
                 // tcpclient 没有回调接口
                 break;
         case NET_CLIENT_WEBSOCKET:
-#ifdef __EMSCRIPTEN__
-                wsclient_set_callback(nc->client.ws, cb, userdata);
-#else
-                wsnetclient_set_callback(nc->client.ws_native, cb, userdata);
-#endif
+                wsnetclient_set_callback(nc->client.ws, cb, userdata);
                 break;
         default:
                 break;
@@ -1840,9 +1601,7 @@ struct netserver
         union {
                 kcpserver_p kcp;
                 tcpserver_p tcp;
-#ifndef __EMSCRIPTEN__
                 wsnetserver_p ws;
-#endif
                 void* ptr;
         } server;
         net_callback cb;
@@ -1875,16 +1634,11 @@ netserver_p netserver_create(net_server_type type, const char* ip, int port)
                 }
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 ns->server.ws = wsnetserver_create(ip, port);
                 if (!ns->server.ws) {
                         SDL_free(ns);
                         return NULL;
                 }
-#else
-                SDL_free(ns);
-                return NULL;
-#endif
                 break;
         default:
                 SDL_free(ns);
@@ -1906,9 +1660,7 @@ void netserver_destroy(netserver_p ns)
                 if (ns->server.tcp) tcpserver_destroy(ns->server.tcp);
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 if (ns->server.ws) wsnetserver_destroy(ns->server.ws);
-#endif
                 break;
         default:
                 break;
@@ -1948,9 +1700,7 @@ void netserver_broadcast(netserver_p ns, const char* data, int len)
                 tcpserver_broadcast(ns->server.tcp, data, len);
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 wsnetserver_broadcast(ns->server.ws, data, len);
-#endif
                 break;
         default:
                 break;
@@ -1969,9 +1719,7 @@ void netserver_offline(netserver_p ns, int conv)
                 tcpserver_offline(ns->server.tcp, conv);
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 wsnetserver_offline(ns->server.ws, conv);
-#endif
                 break;
         default:
                 break;
@@ -1990,9 +1738,7 @@ void netserver_update(netserver_p ns)
                 tcpserver_update(ns->server.tcp);
                 break;
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 wsnetserver_update(ns->server.ws);
-#endif
                 break;
         default:
                 break;
@@ -2009,11 +1755,7 @@ int netserver_connection_count(netserver_p ns)
         case NET_SERVER_TCP:
                 return tcpserver_connection_count(ns->server.tcp);
         case NET_SERVER_WEBSOCKET:
-#ifndef __EMSCRIPTEN__
                 return wsnetserver_connection_count(ns->server.ws);
-#else
-                return 0;
-#endif
         default:
                 return 0;
         }

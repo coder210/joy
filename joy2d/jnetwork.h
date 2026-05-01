@@ -37,9 +37,8 @@ extern "C" {
 #endif
 
 	// ==============================
-	// KCP Server & Client (非 Emscripten 平台)
+	// KCP Server & Client
 	// ==============================
-#ifndef __EMSCRIPTEN__
 	JOY_API kcpserver_p kcpserver_create(const char* ip, int port);
 	JOY_API int kcpserver_destroy(kcpserver_p ks);
 	JOY_API void kcpserver_send(kcpserver_p ks, int conv, const char *data, int len);
@@ -73,33 +72,12 @@ extern "C" {
 	JOY_API int tcpclient_send(tcpclient_p tcpclient, const char* data, int len);
 	JOY_API void tcpclient_update(tcpclient_p tcpclient);
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
-#endif // !__EMSCRIPTEN__
 
 	// ==============================
-	// WebSocket Client & Server (仅 emscripten)
-	// ==============================
-#ifdef __EMSCRIPTEN__
-	typedef struct wsclient wsclient_t, *wsclient_p;
-	typedef struct wsserver wsserver_t, *wsserver_p;
-
-	JOY_API wsclient_p wsclient_create(const char* url);
-	JOY_API void wsclient_destroy(wsclient_p ws);
-	JOY_API bool wsclient_getconv(wsclient_p ws, int* conv);
-	JOY_API int wsclient_send(wsclient_p ws, const char* data, int len);
-	JOY_API void wsclient_update(wsclient_p ws);
-	JOY_API bool wsclient_poll_message(wsclient_p ws, net_message_p msg);
-	JOY_API void wsclient_set_callback(wsclient_p ws, net_callback cb, void* userdata);
-#endif
-
-	// ==============================
-	// Native WebSocket Server (非 Emscripten 平台) - 基于 Mongoose
+	// WebSocket Server & Client (基于 Mongoose)
 	// ==============================
 #ifndef __EMSCRIPTEN__
 	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
-
-	// ==============================
-	// Native WebSocket Client (非 Emscripten 平台) - 基于 Mongoose
-	// ==============================
 	typedef struct wsnetclient wsnetclient_t, *wsnetclient_p;
 
 	JOY_API wsnetserver_p wsnetserver_create(const char* ip, int port);
@@ -112,7 +90,6 @@ extern "C" {
 	JOY_API bool wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg);
 	JOY_API void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata);
 
-	// Native WebSocket Client APIs
 	JOY_API wsnetclient_p wsnetclient_create(const char* url);
 	JOY_API void wsnetclient_destroy(wsnetclient_p wc);
 	JOY_API bool wsnetclient_getconv(wsnetclient_p wc, int* conv);
