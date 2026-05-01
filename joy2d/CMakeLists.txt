@@ -108,13 +108,13 @@ if(EMSCRIPTEN)
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
     # 如果需要导出函数给链接器，可添加 -sEXPORTED_FUNCTIONS（但通常用于可执行文件）
      # 6.13+ 通用无 alloca 宏
-	target_compile_definitions(${LIB_NAME} PRIVATE
-		MG_ARCH=MG_ARCH_CUSTOM
-		MG_DISABLE_ALLOCA=1
-		MG_DISABLE_CLOCK_GETTIME=1
-		MG_DISABLE_MULTICAST=1
-		_GNU_SOURCE
-	)
+	 target_compile_definitions(${LIB_NAME} PRIVATE
+        MG_EMBEDDED
+        MG_DISABLE_CLOCK_GETTIME
+        MG_DISABLE_MULTICAST   # 禁用组播，解决 struct ip_mreq 错误
+        _GNU_SOURCE           # 自动包含 alloca
+        __BSD_VISIBLE=1       # 暴露 alloca 声明
+    )
 endif()
 
 # 通用：对于非 Windows 平台，显式设置位置无关代码
