@@ -129,7 +129,6 @@ extern "C" {
 		NET_CLIENT_TCP,
 		NET_CLIENT_KCP,
 		NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
-		NET_CLIENT_AUTO,      // 自动选择: emscripten用ws, 否则用kcp
 	} net_client_type;
 
 	typedef struct netclient netclient_t, *netclient_p;
