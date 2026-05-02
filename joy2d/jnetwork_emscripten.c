@@ -6,6 +6,7 @@
 #include <emscripten/websocket.h>
 
 #include "jconfig.h"
+#include "jcore.h"
 #include "jutils.h"
 #include "jnetwork.h"
 #include "jnetwork_emscripten.h"
