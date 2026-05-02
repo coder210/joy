@@ -983,7 +983,14 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         }
         if (ws == NULL) return;
         
-        if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
+        if (ev == MG_EV_WEBSOCKET_HANDSHAKE_REQUEST) {
+                // 收到 WebSocket 握手请求（来自浏览器等标准客户端）
+                struct http_message* hm = (struct http_message*)ev_data;
+                log_info("wsnetserver: handshake request from %.*s %.*s", 
+                         (int)hm->method.len, hm->method.p,
+                         (int)hm->uri.len, hm->uri.p);
+        }
+        else if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
                 // 为连接分配上下文
                 wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)SDL_malloc(sizeof(wsnetserver_ctx_t));
@@ -1247,10 +1254,30 @@ wsnetclient_p wsnetclient_create(const char* url)
         // 初始化 Mongoose manager
         mg_mgr_init(&wc->mgr, (void*)wc);
 
+        log_info("wsnetclient: === Starting connection to %s ===", url);
+        
+        // 验证 URL 格式
+        if (strncmp(url, "ws://", 5) != 0 && strncmp(url, "wss://", 6) != 0) {
+                log_error("wsnetclient: FATAL - Invalid WebSocket URL format: %s", url);
+                log_error("wsnetclient: URL must start with ws:// or wss://");
+                mg_mgr_free(&wc->mgr);
+                kl_destroy(kmq, wc->mq);
+                SDL_free(wc);
+                return NULL;
+        }
+        
         // 连接到 WebSocket 服务器
+        log_info("wsnetclient: Calling mg_connect_ws...");
         struct mg_connection* c = mg_connect_ws(&wc->mgr, wsnetclient_ev_handler, url, NULL, NULL);
         if (c == NULL) {
-                log_error("wsnetclient: failed to connect to %s", url);
+                log_error("wsnetclient: FATAL - mg_connect_ws returned NULL for %s", url);
+                log_error("wsnetclient: This usually means TCP connection failed!");
+                log_error("wsnetclient: Possible causes:");
+                log_error("wsnetclient:   1. Server is not running");
+                log_error("wsnetclient:   2. IP/Port is incorrect (check if host:port is reachable)");
+                log_error("wsnetclient:   3. Firewall blocking connection");
+                log_error("wsnetclient:   4. Wrong network interface");
+                log_error("wsnetclient: Try using 127.0.0.1 instead of hostname to test");
                 mg_mgr_free(&wc->mgr);
                 kl_destroy(kmq, wc->mq);
                 SDL_free(wc);
@@ -1261,7 +1288,8 @@ wsnetclient_p wsnetclient_create(const char* url)
         c->user_data = wc;
         wc->conn = c;
         wc->initialized = true;
-        log_info("wsnetclient connecting to %s", url);
+        log_info("wsnetclient: mg_connect_ws returned success, connection initiated");
+        log_info("wsnetclient: Waiting for MG_EV_CONNECT event...");
         return wc;
 }
 
@@ -1341,24 +1369,61 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 
         // 获取客户端实例
         wsnetclient_p wc = (wsnetclient_p)c->user_data;
+        if (wc == NULL) {
+                // 尝试从 manager 获取
+                if (c->mgr != NULL) {
+                        wc = (wsnetclient_p)c->mgr->user_data;
+                }
+        }
         if (wc == NULL) return;
+
+        // 调试日志
+        switch(ev) {
+                case MG_EV_CONNECT:
+                        log_debug("wsnetclient: event MG_EV_CONNECT");
+                        break;
+                case MG_EV_WEBSOCKET_HANDSHAKE_REQUEST:
+                        log_debug("wsnetclient: event MG_EV_WEBSOCKET_HANDSHAKE_REQUEST");
+                        break;
+                case MG_EV_WEBSOCKET_HANDSHAKE_DONE:
+                        log_debug("wsnetclient: event MG_EV_WEBSOCKET_HANDSHAKE_DONE");
+                        break;
+                case MG_EV_WEBSOCKET_FRAME:
+                        log_debug("wsnetclient: event MG_EV_WEBSOCKET_FRAME");
+                        break;
+                case MG_EV_CLOSE:
+                        log_debug("wsnetclient: event MG_EV_CLOSE");
+                        break;
+                default:
+                        log_debug("wsnetclient: event %d", ev);
+                        break;
+        }
 
         if (ev == MG_EV_CONNECT) {
                 // 连接结果
                 int* err = (int*)ev_data;
                 if (*err != 0) {
-                        log_error("wsnetclient: connection failed, error=%d", *err);
+                        log_error("wsnetclient: MG_EV_CONNECT failed, error=%d", *err);
+                        log_error("wsnetclient: strerror: %s", strerror(*err));
+                        log_error("wsnetclient: Connection to %s FAILED!", wc->url);
                         wc->connecting = false;
                         return;
                 }
                 // 连接成功，启用 WebSocket 协议
-                mg_set_protocol_http_websocket(c);
+                // 注意：mg_connect_ws 已经自动设置了 WebSocket 协议，这里不需要再次调用
+                // mg_set_protocol_http_websocket(c);
+                log_info("wsnetclient: === TCP CONNECT SUCCESS ===");
+                log_info("wsnetclient: WebSocket handshake request should be sent automatically...");
+                log_info("wsnetclient: Waiting for MG_EV_WEBSOCKET_HANDSHAKE_DONE event...");
         }
         else if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
                 struct http_message* hm = (struct http_message*)ev_data;
+                log_info("wsnetclient: === WEBSOCKET HANDSHAKE COMPLETE ===");
+                log_info("wsnetclient: Response code: %d", hm->resp_code);
+                
                 if (hm->resp_code != 101) {
-                        log_error("wsnetclient: handshake failed, resp_code=%d", hm->resp_code);
+                        log_error("wsnetclient: handshake FAILED, resp_code=%d", hm->resp_code);
                         wc->connecting = false;
                         return;
                 }
@@ -1368,7 +1433,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 // Mongoose 6.x: 使用指针地址作为 conv 标识符
                 wc->conv = (int)(intptr_t)c;
 
-                log_info("wsnetclient: connected, conv=%d", wc->conv);
+                log_info("wsnetclient: === FULLY CONNECTED, conv=%d ===", wc->conv);
 
                 // 发送连接消息
                 net_message_t msg;

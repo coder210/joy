@@ -273,6 +273,9 @@ static void OnMessage(net_message_p msg, void* userdata)
                                 HandleHeartbeat(msg->conv, &c2s);
                         }
                 }
+                else {
+                        log_info("Failed to parse message from conv=%d, %s", msg->conv, msg_data);
+                }
         }
         if (msg_data) {
                 SDL_free(msg_data);
