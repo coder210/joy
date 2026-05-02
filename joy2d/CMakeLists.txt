@@ -79,13 +79,15 @@ endif()
 # Apple
 if(APPLE)
     add_definitions(-DLUA_USE_IOS)
+    target_compile_definitions(${LIB_NAME} PRIVATE MG_ENABLE_CGI=0)
 endif()
 
 # Android：通过 NDK 工具链构建，需要设置 ABI 等
 if(ANDROID)
     # 通常 NDK 工具链已处理 -fPIC，这里可额外添加 Android 特定标志
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-   
+    # fseeko等函数
+    target_compile_definitions(${LIB_NAME} PRIVATE _GNU_SOURCE) 
     # 若需要日志等，可链接 log 库
     # target_link_libraries(${LIB_NAME} log)
 endif()
