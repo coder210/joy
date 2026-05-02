@@ -17,7 +17,7 @@
 
 #include "external/mongoose.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef JOY_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #include <emscripten/websocket.h>
 #endif
@@ -1223,7 +1223,7 @@ void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
 
 
 
-#ifndef __EMSCRIPTEN__
+#ifndef JOY_EMSCRIPTEN
 
 struct wsnetclient
 {
@@ -1396,8 +1396,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 wc->connected = true;
                 wc->connecting = false;
                 // 客户端 conv 使用递增计数器
-                static int client_conv_counter = 1000;
-                wc->conv = client_conv_counter++;
+                wc->conv = 1000;
 
                 // 发送连接消息
                 net_message_t msg;
@@ -1486,8 +1485,7 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
 
         wc->connected = true;
         wc->connecting = false;
-        static int client_conv_counter = 1000;
-        wc->conv = client_conv_counter++;
+        wc->conv = 1000;
 
         // 发送连接消息
         net_message_t msg;
@@ -1691,7 +1689,7 @@ void wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata)
 }
 
 
-#endif // __EMSCRIPTEN__ - Mongoose WebSocket 客户端
+#endif // JOY_EMSCRIPTEN - Mongoose WebSocket 客户端
 
 
 // ==============================
