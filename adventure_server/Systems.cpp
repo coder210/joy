@@ -10,15 +10,13 @@ const int PIXELS_PER_METER = 50;
 void StartupSystem(flecs::world& world)
 {
         auto ctx = world.get_mut<Context>();
-        adventure::S2CMap map;
-        map.set_frame_id(ctx->g_frameid);
-        map.set_global_entity_id(ctx->g_id);
+        adventure::S2CWorld s2c_world;
         ctx->body_query = world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
         ctx->connection_query = world.query<ConnectionComponent>();
         ctx->player_query = world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
         ctx->body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
-                        adventure::S2CEntity* ent = map.add_entities();
+                        adventure::S2CEntity* ent = s2c_world.add_entities();
                         ent->set_id(id.id);
                         if (e.has<PlayerComponent>()) {
                                 ent->set_type(adventure::S2C_TYPE_PLAYER);
@@ -32,7 +30,7 @@ void StartupSystem(flecs::world& world)
                         ent->set_position_y(pos.y);
                 });
 
-        ctx->worlds[map.frame_id()] = map.SerializeAsString();
+        ctx->worlds[ctx->g_frameid] = s2c_world.SerializeAsString();
 
         ctx->resources = new Resources(ctx->renderer);
         ctx->debugLayer = new DebugLayer(ctx->resources);
