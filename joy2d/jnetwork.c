@@ -86,10 +86,10 @@ struct tcpclient
 
 
 
-// Mongoose 连接上下文（存储在 mg_connection::data 中）
-// MG_DATA_SIZE = 32 字节，足够存储 conv ID
+// Mongoose 连接上下文（存储在 mg_connection::user_data 中）
 typedef struct {
         int conv;                      // Connection ID
+        struct wsnetserver* server;    // 服务器实例指针（用于后续事件访问）
 } wsnetserver_ctx_t;
 
 struct wsnetserver {
@@ -975,65 +975,66 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         if (c == NULL) return;
         
         // 获取服务器实例
-        wsnetserver_p ws = (wsnetserver_p)c->fn_data;
+        // 首先尝试从连接的 user_data 获取（客户端连接会在握手完成后设置）
+        // 如果为 NULL，则从 manager 的 user_data 获取（监听连接）
+        wsnetserver_p ws = (wsnetserver_p)c->user_data;
+        if (ws == NULL && c->mgr != NULL) {
+                ws = (wsnetserver_p)c->mgr->user_data;
+        }
         if (ws == NULL) return;
         
-        if (ev == MG_EV_HTTP_MSG) {
-                // HTTP 升级请求 - 升级为 WebSocket
-                struct mg_http_message* hm = (struct mg_http_message*)ev_data;
-                // 检查是否为 WebSocket 升级请求
-                struct mg_str* upgrade = mg_http_get_header(hm, "Upgrade");
-                if (upgrade && strstr(upgrade->buf, "websocket") != NULL) {
-                        // 执行 WebSocket 升级，第三个参数为 WebSocket 路径（NULL 表示任意路径）
-                        mg_ws_upgrade(c, hm, NULL);
-                }
-        }
-        else if (ev == MG_EV_WS_OPEN) {
+        if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->data;
-                ctx->conv = ws->conv++;
-                
-                log_info("wsnetserver: new connection conv=%d", ctx->conv);
-                
-                // 发送连接消息
-                net_message_t msg;
-                msg.type = NET_TYPE_CONNECTED;
-                msg.conv = ctx->conv;
-                msg.data = SDL_strdup("connected");
-                msg.len = (int)strlen(msg.data);
-                if (ws->cb) {
-                        ws->cb(&msg, ws->userdata);
-                } else {
-                        *kl_pushp(kmq, ws->mq) = msg;
+                // 为连接分配上下文
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)SDL_malloc(sizeof(wsnetserver_ctx_t));
+                if (ctx) {
+                        ctx->conv = ws->conv++;
+                        ctx->server = ws;  // 保存服务器指针
+                        c->user_data = ctx;
+                        log_info("wsnetserver: new connection conv=%d", ctx->conv);
+                        
+                        // 发送连接消息
+                        net_message_t msg;
+                        msg.type = NET_TYPE_CONNECTED;
+                        msg.conv = ctx->conv;
+                        msg.data = SDL_strdup("connected");
+                        msg.len = (int)strlen(msg.data);
+                        if (ws->cb) {
+                                ws->cb(&msg, ws->userdata);
+                        } else {
+                                *kl_pushp(kmq, ws->mq) = msg;
+                        }
                 }
         }
-        else if (ev == MG_EV_WS_MSG) {
+        else if (ev == MG_EV_WEBSOCKET_FRAME) {
                 // 收到 WebSocket 消息
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->data;
-                struct mg_ws_message* wm = (struct mg_ws_message*)ev_data;
-                int payload_len = (int)wm->data.len;
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                struct websocket_message* wm = (struct websocket_message*)ev_data;
+                int payload_len = (int)wm->size;
                 
-                if (payload_len > 0 && ctx != NULL) {
+                if (payload_len > 0 && ctx != NULL && ctx->server != NULL) {
+                        wsnetserver_p server = ctx->server;
                         net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = ctx->conv;
                         msg.data = (char*)SDL_malloc(payload_len);
                         if (msg.data) {
-                                memcpy(msg.data, wm->data.buf, payload_len);
+                                memcpy(msg.data, wm->data, payload_len);
                                 msg.len = payload_len;
                                 
-                                if (ws->cb) {
-                                        ws->cb(&msg, ws->userdata);
+                                if (server->cb) {
+                                        server->cb(&msg, server->userdata);
                                 } else {
-                                        *kl_pushp(kmq, ws->mq) = msg;
+                                        *kl_pushp(kmq, server->mq) = msg;
                                 }
                         }
                 }
         }
         else if (ev == MG_EV_CLOSE) {
                 // 连接关闭
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->data;
-                if (ctx != NULL) {
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                if (ctx != NULL && ctx->server != NULL) {
+                        wsnetserver_p server = ctx->server;
                         log_info("wsnetserver: connection closed conv=%d", ctx->conv);
                         
                         net_message_t msg;
@@ -1041,11 +1042,13 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         msg.conv = ctx->conv;
                         msg.data = SDL_strdup("disconnected");
                         msg.len = (int)strlen(msg.data);
-                        if (ws->cb) {
-                                ws->cb(&msg, ws->userdata);
+                        if (server->cb) {
+                                server->cb(&msg, server->userdata);
                         } else {
-                                *kl_pushp(kmq, ws->mq) = msg;
+                                *kl_pushp(kmq, server->mq) = msg;
                         }
+                        SDL_free(ctx);
+                        c->user_data = NULL;
                 }
         }
 }
@@ -1061,28 +1064,39 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
         ws->cb = NULL;
         ws->userdata = NULL;
         
-        // 关闭 Mongoose 日志输出
-        mg_log_set(MG_LL_NONE);
+        // 初始化 Mongoose manager，传递 ws 作为 user_data 供后续连接使用
+        mg_mgr_init(&ws->mgr, (void*)ws);
+
+        // 构造监听地址
+        // Mongoose 6.x: TCP 监听地址格式为 [tcp://][IP_ADDRESS]:PORT
+        // WebSocket 协议通过 mg_set_protocol_http_websocket() 自动启用
+        char addr[256];
+        if (ip && ip[0] && strcmp(ip, "0.0.0.0") != 0) {
+                // 绑定到特定 IP（如果需要限制在特定接口）
+                SDL_snprintf(addr, sizeof(addr), "tcp://%s:%d", ip, port);
+        } else {
+                // 绑定到所有接口（推荐）
+                SDL_snprintf(addr, sizeof(addr), "tcp://:%d", port);
+        }
         
-        // 初始化 Mongoose manager
-        mg_mgr_init(&ws->mgr);
-        
-        // 构造监听 URL
-        char url[256];
-        SDL_snprintf(url, sizeof(url), "ws://%s:%d", ip && ip[0] ? ip : "0.0.0.0", port);
-        
-        // 创建 HTTP 监听（用于接收 WebSocket 升级请求）
-        struct mg_connection* c = mg_http_listen(&ws->mgr, url, wsnetserver_ev_handler, ws);
+        // 创建 TCP 监听
+        struct mg_connection* c = mg_bind(&ws->mgr, addr, wsnetserver_ev_handler);
         if (c == NULL) {
-                log_error("wsnetserver: failed to listen on %s", url);
+                log_error("wsnetserver: failed to listen on %s", addr);
                 mg_mgr_free(&ws->mgr);
                 kl_destroy(kmq, ws->mq);
                 SDL_free(ws);
                 return NULL;
         }
         
+        // 启用 HTTP 和 WebSocket 协议支持（在连接上启用，不是 manager）
+        mg_set_protocol_http_websocket(c);
+        
+        // 注意：不需要在这里设置 c->user_data = ws
+        // mg_mgr_init 中传递的 ws 会在 mg_connect 或 accept 时自动传递给新连接
+        
         ws->initialized = true;
-        log_info("wsnetserver listening on %s", url);
+        log_info("wsnetserver listening on %s", addr);
         return ws;
 }
 
@@ -1111,10 +1125,10 @@ void wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int len)
         
         // 遍历所有连接找到对应的 conv
         struct mg_connection* c;
-        for (c = ws->mgr.conns; c != NULL; c = c->next) {
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->data;
-                if (ctx && ctx->conv == conv) {
-                        mg_ws_send(c, data, len, WEBSOCKET_OP_BINARY);
+        for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                if (ctx && ctx->conv == conv && (c->flags & MG_F_IS_WEBSOCKET)) {
+                        mg_send_websocket_frame(c, WEBSOCKET_OP_BINARY, data, len);
                         return;
                 }
         }
@@ -1126,9 +1140,9 @@ void wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len)
         
         // 向所有 WebSocket 连接广播消息
         struct mg_connection* c;
-        for (c = ws->mgr.conns; c != NULL; c = c->next) {
-                if (c->is_websocket) {
-                        mg_ws_send(c, data, len, WEBSOCKET_OP_BINARY);
+        for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
+                if (c->flags & MG_F_IS_WEBSOCKET) {
+                        mg_send_websocket_frame(c, WEBSOCKET_OP_BINARY, data, len);
                 }
         }
 }
@@ -1139,12 +1153,12 @@ void wsnetserver_offline(wsnetserver_p ws, int conv)
         
         // 遍历找到对应连接并关闭
         struct mg_connection* c;
-        for (c = ws->mgr.conns; c != NULL; c = c->next) {
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->data;
+        for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
                 if (ctx && ctx->conv == conv) {
                         // 发送 WebSocket 关闭帧
-                        mg_ws_send(c, "", 0, WEBSOCKET_OP_CLOSE);
-                        c->is_closing = 1;
+                        mg_send_websocket_frame(c, WEBSOCKET_OP_CLOSE, "", 0);
+                        c->flags |= MG_F_CLOSE_IMMEDIATELY;
                         return;
                 }
         }
@@ -1164,8 +1178,8 @@ int wsnetserver_connection_count(wsnetserver_p ws)
         
         int count = 0;
         struct mg_connection* c;
-        for (c = ws->mgr.conns; c != NULL; c = c->next) {
-                if (c->is_websocket) {
+        for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
+                if (c->flags & MG_F_IS_WEBSOCKET) {
                         count++;
                 }
         }
@@ -1230,14 +1244,11 @@ wsnetclient_p wsnetclient_create(const char* url)
                 SDL_strlcpy(wc->url, url, sizeof(wc->url));
         }
 
-        // 关闭 Mongoose 日志输出
-        mg_log_set(MG_LL_NONE);
-
         // 初始化 Mongoose manager
-        mg_mgr_init(&wc->mgr);
+        mg_mgr_init(&wc->mgr, (void*)wc);
 
         // 连接到 WebSocket 服务器
-        struct mg_connection* c = mg_ws_connect(&wc->mgr, url, wsnetclient_ev_handler, wc, NULL);
+        struct mg_connection* c = mg_connect_ws(&wc->mgr, wsnetclient_ev_handler, url, NULL, NULL);
         if (c == NULL) {
                 log_error("wsnetclient: failed to connect to %s", url);
                 mg_mgr_free(&wc->mgr);
@@ -1246,6 +1257,8 @@ wsnetclient_p wsnetclient_create(const char* url)
                 return NULL;
         }
 
+        // 设置连接的用户数据
+        c->user_data = wc;
         wc->conn = c;
         wc->initialized = true;
         log_info("wsnetclient connecting to %s", url);
@@ -1258,7 +1271,7 @@ void wsnetclient_destroy(wsnetclient_p wc)
 
         // 关闭连接
         if (wc->conn) {
-                wc->conn->is_closing = 1;
+                wc->conn->flags |= MG_F_CLOSE_IMMEDIATELY;
         }
 
         // 关闭 Mongoose manager（会自动关闭所有连接）
@@ -1289,7 +1302,7 @@ int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
         }
 
         // 通过 WebSocket 发送二进制数据
-        mg_ws_send(wc->conn, data, len, WEBSOCKET_OP_BINARY);
+        mg_send_websocket_frame(wc->conn, WEBSOCKET_OP_BINARY, data, len);
         return len;
 }
 
@@ -1327,14 +1340,33 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         if (c == NULL) return;
 
         // 获取客户端实例
-        wsnetclient_p wc = (wsnetclient_p)c->fn_data;
+        wsnetclient_p wc = (wsnetclient_p)c->user_data;
         if (wc == NULL) return;
 
-        if (ev == MG_EV_WS_OPEN) {
+        if (ev == MG_EV_CONNECT) {
+                // 连接结果
+                int* err = (int*)ev_data;
+                if (*err != 0) {
+                        log_error("wsnetclient: connection failed, error=%d", *err);
+                        wc->connecting = false;
+                        return;
+                }
+                // 连接成功，启用 WebSocket 协议
+                mg_set_protocol_http_websocket(c);
+        }
+        else if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
+                struct http_message* hm = (struct http_message*)ev_data;
+                if (hm->resp_code != 101) {
+                        log_error("wsnetclient: handshake failed, resp_code=%d", hm->resp_code);
+                        wc->connecting = false;
+                        return;
+                }
+                
                 wc->connected = true;
                 wc->connecting = false;
-                wc->conv = (int)(intptr_t)c->fd;
+                // Mongoose 6.x: 使用指针地址作为 conv 标识符
+                wc->conv = (int)(intptr_t)c;
 
                 log_info("wsnetclient: connected, conv=%d", wc->conv);
 
@@ -1350,10 +1382,10 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         *kl_pushp(kmq, wc->mq) = msg;
                 }
         }
-        else if (ev == MG_EV_WS_MSG) {
+        else if (ev == MG_EV_WEBSOCKET_FRAME) {
                 // 收到 WebSocket 消息
-                struct mg_ws_message* wm = (struct mg_ws_message*)ev_data;
-                int payload_len = (int)wm->data.len;
+                struct websocket_message* wm = (struct websocket_message*)ev_data;
+                int payload_len = (int)wm->size;
 
                 if (payload_len > 0) {
                         net_message_t msg;
@@ -1361,7 +1393,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         msg.conv = wc->conv;
                         msg.data = (char*)SDL_malloc(payload_len);
                         if (msg.data) {
-                                memcpy(msg.data, wm->data.buf, payload_len);
+                                memcpy(msg.data, wm->data, payload_len);
                                 msg.len = payload_len;
 
                                 if (wc->cb) {
@@ -1391,12 +1423,6 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         }
                 }
                 wc->conn = NULL;
-        }
-        else if (ev == MG_EV_ERROR) {
-                // 连接错误
-                log_error("wsnetclient: connection error");
-                wc->connected = false;
-                wc->connecting = false;
         }
 }
 
@@ -1544,7 +1570,6 @@ bool netclient_poll_message(netclient_p nc, net_message_p msg)
         switch (nc->type) {
         case NET_CLIENT_KCP:
                 return kcpclient_poll_message(nc->client.kcp, msg);
-                return false;
         case NET_CLIENT_TCP:
                 return tcpclient_poll_message(nc->client.tcp, msg);
         case NET_CLIENT_WEBSOCKET:

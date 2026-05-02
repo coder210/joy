@@ -7,7 +7,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # 设置 C 标准
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
+#set(CMAKE_C_EXTENSIONS ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
 if (WIN32)
 	set(ENABLED_CSHARP_SCRIPT OFF)
@@ -108,13 +109,13 @@ if(EMSCRIPTEN)
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
     # 如果需要导出函数给链接器，可添加 -sEXPORTED_FUNCTIONS（但通常用于可执行文件）
      # 6.13+ 通用无 alloca 宏
-	 target_compile_definitions(${LIB_NAME} PRIVATE
-        MG_EMBEDDED
-        MG_DISABLE_CLOCK_GETTIME
-        MG_DISABLE_MULTICAST   # 禁用组播，解决 struct ip_mreq 错误
-        _GNU_SOURCE           # 自动包含 alloca
-        __BSD_VISIBLE=1       # 暴露 alloca 声明
-    )
+	#target_compile_definitions(${LIB_NAME} PRIVATE
+    #    MG_EMBEDDED
+    #    MG_DISABLE_CLOCK_GETTIME
+    #    MG_DISABLE_MULTICAST   # 禁用组播，解决 struct ip_mreq 错误
+    #    _GNU_SOURCE           # 自动包含 alloca
+    #    __BSD_VISIBLE=1       # 暴露 alloca 声明
+    #)
 endif()
 
 # 通用：对于非 Windows 平台，显式设置位置无关代码
