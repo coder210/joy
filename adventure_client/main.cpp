@@ -490,6 +490,21 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 10000);
         //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.61", 10000);
         //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
+        
+        // 检查网络客户端是否创建成功
+        if (!ctx->netclient) {
+            SDL_Log("FATAL: Failed to create network client!");
+            SDL_Log("Please check:");
+            SDL_Log("  1. Is the server running at 192.168.1.25:10000?");
+            SDL_Log("  2. Is the IP address correct?");
+            SDL_Log("  3. Is firewall blocking the connection?");
+            SDL_Log("  4. Can you ping the server?");
+            SDL_DestroyRenderer(ctx->renderer);
+            SDL_DestroyWindow(ctx->window);
+            SDL_Quit();
+            return SDL_APP_FAILURE;
+        }
+        
         netclient_set_callback(ctx->netclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
