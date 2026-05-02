@@ -43,15 +43,18 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
         conn->health = 10;
 
         adventure::S2C s2c;
-        adventure::S2CMap* map = s2c.mutable_map();
-        map->set_frame_id(conn->frameid);
         s2c.set_cmd(adventure::S2C_CMD_LOADING);
+
+        adventure::S2CMap* map = s2c.mutable_map();
+        map->set_conv(conn->conv);
+        map->set_frame_id(conn->frameid);
+        adventure::S2CWorld* s2c_world = map->mutable_world();
         auto it = ctx->worlds.find(conn->frameid);
         if (it == ctx->worlds.end()) {
                 log_info("没有world");
                 return;
         }
-        if (!map->ParseFromArray(it->second.c_str(), it->second.length())) {
+        if (!s2c_world->ParseFromArray(it->second.c_str(), it->second.length())) {
                 log_info("解析失败");
                 return;
         }
@@ -313,12 +316,11 @@ static void CollectCommandSystem(flecs::world& world)
         ctx->player_inputs.clear();
 
         // 收集世界实体状态
-        adventure::S2CMap map;
-        map.set_frame_id(command->frame_id());
-        map.set_global_entity_id(ctx->g_id);
+        adventure::S2CWorld s2c_world;
+        s2c_world.set_entity_id(ctx->g_id);
         ctx->body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
-                        adventure::S2CEntity* ent = map.add_entities();
+                        adventure::S2CEntity* ent = s2c_world.add_entities();
                         ent->set_id(id.id);
                         if (e.has<PlayerComponent>()) {
                                 ent->set_type(adventure::S2C_TYPE_PLAYER);
@@ -332,7 +334,7 @@ static void CollectCommandSystem(flecs::world& world)
                         ent->set_position_y(pos.y);
                 });
 
-        ctx->worlds[map.frame_id()] = map.SerializeAsString();
+        ctx->worlds[command->frame_id()] = s2c_world.SerializeAsString();
 
         // ========== 新增：限制 worlds 和 commands 最多保留 1000 帧 ==========
         const size_t MAX_FRAMES = 1000;

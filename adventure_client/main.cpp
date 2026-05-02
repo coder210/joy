@@ -223,10 +223,11 @@ static void HandleLoading(adventure::S2C* s2c)
 {
         auto ctx = world.get_mut<Context>();
         ctx->ready = true;
+        ctx->local_conv = s2c->map().conv();
         ctx->server_frameid = s2c->map().frame_id();
-        ctx->server_entity_id = s2c->map().global_entity_id();
+        ctx->server_entity_id = s2c->map().world().entity_id();
 
-        for (auto& entity : s2c->map().entities()) {
+        for (auto& entity : s2c->map().world().entities()) {
                 auto e = world.entity()
                         .set<IdComponent>({ entity.id(), entity.hp() })
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
@@ -379,7 +380,6 @@ static void OnMessage(net_message_p msg, void*)
 {
         auto ctx = world.get_mut<Context>();
         if (msg->type == NET_TYPE_CONNECTED) {
-                ctx->local_conv = msg->conv;   // 记录本地玩家连接号
                 adventure::C2S c2s;
                 c2s.set_cmd(adventure::CMD_LOADING);
                 std::string d = c2s.SerializeAsString();

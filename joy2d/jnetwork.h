@@ -32,6 +32,9 @@ typedef struct kcpclient kcpclient_t, *kcpclient_p;
 typedef struct tcpserver tcpserver_t, * tcpserver_p;
 typedef struct tcpclient tcpclient_t, * tcpclient_p;
 
+typedef struct wsnetserver wsnetserver_t, * wsnetserver_p;
+typedef struct wsnetclient wsnetclient_t, * wsnetclient_p;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,7 +54,6 @@ extern "C" {
 
 	JOY_API kcpclient_p kcpclient_create(const char* ip, int port);
 	JOY_API void kcpclient_destroy(kcpclient_p kc);
-	JOY_API bool kcpclient_getconv(kcpclient_p kc, int* conv);
 	JOY_API int kcpclient_send(kcpclient_p kc, const char* data, int len);
 	JOY_API void kcpclient_update(kcpclient_p kc);
 	JOY_API bool kcpclient_poll_message(kcpclient_p kc, net_message_p msg);
@@ -68,14 +70,9 @@ extern "C" {
 
 	JOY_API tcpclient_p tcpclient_create(const char* ip, int port);
 	JOY_API void tcpclient_destroy(tcpclient_p tcpclient);
-	JOY_API bool tcpclient_getconv(tcpclient_p tcpclient, int* conv);
 	JOY_API int tcpclient_send(tcpclient_p tcpclient, const char* data, int len);
 	JOY_API void tcpclient_update(tcpclient_p tcpclient);
 	JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
-
-
-	typedef struct wsnetserver wsnetserver_t, *wsnetserver_p;
-	typedef struct wsnetclient wsnetclient_t, *wsnetclient_p;
 
 	JOY_API wsnetserver_p wsnetserver_create(const char* ip, int port);
 	JOY_API int wsnetserver_destroy(wsnetserver_p ws);
@@ -89,7 +86,6 @@ extern "C" {
 
 	JOY_API wsnetclient_p wsnetclient_create(const char* url);
 	JOY_API void wsnetclient_destroy(wsnetclient_p wc);
-	JOY_API bool wsnetclient_getconv(wsnetclient_p wc, int* conv);
 	JOY_API int wsnetclient_send(wsnetclient_p wc, const char* data, int len);
 	JOY_API void wsnetclient_update(wsnetclient_p wc);
 	JOY_API bool wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg);
@@ -108,7 +104,6 @@ extern "C" {
 
 	JOY_API netclient_p netclient_create(net_client_type type, const char* host, int port);
 	JOY_API void netclient_destroy(netclient_p nc);
-	JOY_API bool netclient_getconv(netclient_p nc, int* conv);
 	JOY_API int netclient_send(netclient_p nc, const char* data, int len);
 	JOY_API void netclient_update(netclient_p nc);
 	JOY_API bool netclient_poll_message(netclient_p nc, net_message_p msg);

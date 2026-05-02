@@ -457,20 +457,6 @@ void kcpclient_destroy(kcpclient_p kc)
         SDL_free(kc);
 }
 
-bool kcpclient_getconv(kcpclient_p kc, int* conv)
-{
-        if (kc->kcp)
-        {
-                *conv = ikcp_getconv(kc->kcp);
-                return true;
-        }
-        else
-        {
-                *conv = -1;
-                return false;
-        }
-}
-
 static int
 kcpclient_output(const char* data, int size, ikcpcb* kcp, void* user)
 {
@@ -869,12 +855,6 @@ void tcpclient_destroy(tcpclient_p tcpclient)
         SDL_free(tcpclient);
 }
 
-bool tcpclient_getconv(tcpclient_p tcpclient, int *conv)
-{
-        *conv = 0;
-        return true;
-}
-
 int tcpclient_send(tcpclient_p tcpclient, const char *data, int len)
 {
         return sys_send(tcpclient->sockfd, data, len);
@@ -1229,7 +1209,6 @@ struct wsnetclient
 {
         struct mg_mgr mgr;             // Mongoose manager
         struct mg_connection* conn;   // 连接
-        int conv;                      // Connection ID (使用 sockfd)
         bool connected;                // 连接状态
         char url[512];                 // WebSocket URL
         klist_t(kmq) * mq;            // Message queue
@@ -1248,7 +1227,6 @@ wsnetclient_p wsnetclient_create(const char* url)
         if (!wc) return NULL;
         SDL_memset(wc, 0, sizeof(wsnetclient_t));
 
-        wc->conv = -1;
         wc->connected = false;
         wc->connecting = true;
         wc->mq = kl_init(kmq);
@@ -1311,13 +1289,6 @@ void wsnetclient_destroy(wsnetclient_p wc)
         kl_destroy(kmq, wc->mq);
 
         SDL_free(wc);
-}
-
-bool wsnetclient_getconv(wsnetclient_p wc, int* conv)
-{
-        if (!wc || !conv) return false;
-        *conv = wc->conv;
-        return wc->connected;
 }
 
 int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
@@ -1395,13 +1366,11 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 
                 wc->connected = true;
                 wc->connecting = false;
-                // 客户端 conv 使用递增计数器
-                wc->conv = 1000;
 
                 // 发送连接消息
                 net_message_t msg;
                 msg.type = NET_TYPE_CONNECTED;
-                msg.conv = wc->conv;
+                msg.conv = 0;
                 msg.data = SDL_strdup("connected");
                 msg.len = (int)strlen(msg.data);
                 if (wc->cb) {
@@ -1418,7 +1387,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 if (payload_len > 0) {
                         net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
-                        msg.conv = wc->conv;
+                        msg.conv = 0;
                         msg.data = (char*)SDL_malloc(payload_len);
                         if (msg.data) {
                                 memcpy(msg.data, wm->data, payload_len);
@@ -1435,13 +1404,10 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         else if (ev == MG_EV_CLOSE) {
                 // 连接关闭
                 if (wc->connected) {
-                        log_info("wsnetclient: connection closed, conv=%d", wc->conv);
-
                         wc->connected = false;
-
                         net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
-                        msg.conv = wc->conv;
+                        msg.conv = 0;
                         msg.data = SDL_strdup("disconnected");
                         msg.len = (int)strlen(msg.data);
                         if (wc->cb) {
@@ -1458,7 +1424,6 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 
 struct wsnetclient {
         int ws_socket;                 // emscripten WebSocket socket descriptor
-        int conv;                      // Connection ID
         bool connected;                // 连接状态
         char url[512];                 // WebSocket URL
         klist_t(kmq)* mq;            // Message queue
@@ -1485,12 +1450,11 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
 
         wc->connected = true;
         wc->connecting = false;
-        wc->conv = 1000;
 
         // 发送连接消息
         net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
-        msg.conv = wc->conv;
+        msg.conv = 0;
         msg.data = SDL_strdup("connected");
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
@@ -1512,12 +1476,12 @@ static bool em_ws_onmessage(int eventType, const EmscriptenWebSocketMessageEvent
         if (e->numBytes > 0) {
                 net_message_t msg;
                 msg.type = NET_TYPE_MESSAGE;
-                msg.conv = wc->conv;
+                msg.conv = 0;
                 msg.len = (int)e->numBytes;
                 msg.data = (char*)SDL_malloc(msg.len + 1);
                 if (msg.data) {
                         memcpy(msg.data, e->data, msg.len);
-                        msg.data[msg.len] = '\0';
+                        msg.data[msg.len] = 0;
 
                         if (wc->cb) {
                                 wc->cb(&msg, wc->userdata);
@@ -1548,14 +1512,12 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
         wsnetclient_p wc = (wsnetclient_p)userData;
         if (!wc) return true;
 
-        log_info("emscripten_ws: closed");
-
         wc->connected = false;
         wc->connecting = false;
 
         net_message_t msg;
         msg.type = NET_TYPE_DISCONNECTED;
-        msg.conv = wc->conv;
+        msg.conv = 0;
         msg.data = SDL_strdup("disconnected");
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
@@ -1574,7 +1536,6 @@ wsnetclient_p wsnetclient_create(const char* url)
         if (!wc) return NULL;
         SDL_memset(wc, 0, sizeof(wsnetclient_t));
 
-        wc->conv = -1;
         wc->connected = false;
         wc->connecting = true;
         wc->mq = kl_init(kmq);
@@ -1637,13 +1598,6 @@ void wsnetclient_destroy(wsnetclient_p wc)
         kl_destroy(kmq, wc->mq);
 
         SDL_free(wc);
-}
-
-bool wsnetclient_getconv(wsnetclient_p wc, int* conv)
-{
-        if (!wc || !conv) return false;
-        *conv = wc->conv;
-        return wc->connected;
 }
 
 int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
@@ -1775,22 +1729,6 @@ void netclient_destroy(netclient_p nc)
         }
 
         SDL_free(nc);
-}
-
-bool netclient_getconv(netclient_p nc, int* conv)
-{
-        if (!nc || !conv) return false;
-
-        switch (nc->type) {
-        case NET_CLIENT_KCP:
-                return kcpclient_getconv(nc->client.kcp, conv);
-        case NET_CLIENT_TCP:
-                return tcpclient_getconv(nc->client.tcp, conv);
-        case NET_CLIENT_WEBSOCKET:
-                return wsnetclient_getconv(nc->client.ws, conv);
-        default:
-                return false;
-        }
 }
 
 int netclient_send(netclient_p nc, const char* data, int len)

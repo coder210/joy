@@ -151,11 +151,25 @@ struct S2CPlayerInputDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2CPlayerInputDefaultTypeInternal _S2CPlayerInput_default_instance_;
-PROTOBUF_CONSTEXPR S2CMap::S2CMap(
+PROTOBUF_CONSTEXPR S2CWorld::S2CWorld(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.entities_)*/{}
+  , /*decltype(_impl_.entity_id_)*/0
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct S2CWorldDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR S2CWorldDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~S2CWorldDefaultTypeInternal() {}
+  union {
+    S2CWorld _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2CWorldDefaultTypeInternal _S2CWorld_default_instance_;
+PROTOBUF_CONSTEXPR S2CMap::S2CMap(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.world_)*/nullptr
   , /*decltype(_impl_.frame_id_)*/0
-  , /*decltype(_impl_.global_entity_id_)*/0
+  , /*decltype(_impl_.conv_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct S2CMapDefaultTypeInternal {
   PROTOBUF_CONSTEXPR S2CMapDefaultTypeInternal()
@@ -199,7 +213,7 @@ struct S2CDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 S2CDefaultTypeInternal _S2C_default_instance_;
 }  // namespace adventure
-static ::_pb::Metadata file_level_metadata_adventure[12];
+static ::_pb::Metadata file_level_metadata_adventure[13];
 static const ::_pb::EnumDescriptor* file_level_enum_descriptors_adventure[3];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_adventure = nullptr;
 
@@ -284,14 +298,22 @@ const uint32_t TableStruct_adventure::offsets[] PROTOBUF_SECTION_VARIABLE(protod
   PROTOBUF_FIELD_OFFSET(::adventure::S2CPlayerInput, _impl_.conv_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CPlayerInput, _impl_.keycode_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CWorld, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CWorld, _impl_.entity_id_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CWorld, _impl_.entities_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.frame_id_),
-  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.global_entity_id_),
-  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.entities_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.conv_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CMap, _impl_.world_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::adventure::S2CCommand, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -323,9 +345,10 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 55, -1, -1, sizeof(::adventure::S2CPlayerJoin)},
   { 64, -1, -1, sizeof(::adventure::S2CPlayerLeave)},
   { 71, -1, -1, sizeof(::adventure::S2CPlayerInput)},
-  { 79, -1, -1, sizeof(::adventure::S2CMap)},
-  { 88, -1, -1, sizeof(::adventure::S2CCommand)},
-  { 99, -1, -1, sizeof(::adventure::S2C)},
+  { 79, -1, -1, sizeof(::adventure::S2CWorld)},
+  { 87, -1, -1, sizeof(::adventure::S2CMap)},
+  { 96, -1, -1, sizeof(::adventure::S2CCommand)},
+  { 107, -1, -1, sizeof(::adventure::S2C)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -338,6 +361,7 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::adventure::_S2CPlayerJoin_default_instance_._instance,
   &::adventure::_S2CPlayerLeave_default_instance_._instance,
   &::adventure::_S2CPlayerInput_default_instance_._instance,
+  &::adventure::_S2CWorld_default_instance_._instance,
   &::adventure::_S2CMap_default_instance_._instance,
   &::adventure::_S2CCommand_default_instance_._instance,
   &::adventure::_S2C_default_instance_._instance,
@@ -362,31 +386,32 @@ const char descriptor_table_protodef_adventure[] PROTOBUF_SECTION_VARIABLE(proto
   "end\"E\n\rS2CPlayerJoin\022\014\n\004conv\030\001 \001(\005\022\022\n\npo"
   "sition_x\030\002 \001(\003\022\022\n\nposition_y\030\003 \001(\003\"\036\n\016S2"
   "CPlayerLeave\022\014\n\004conv\030\001 \001(\005\"/\n\016S2CPlayerI"
-  "nput\022\014\n\004conv\030\001 \001(\005\022\017\n\007keycode\030\002 \001(\005\"\\\n\006S"
-  "2CMap\022\020\n\010frame_id\030\001 \001(\005\022\030\n\020global_entity"
-  "_id\030\002 \001(\005\022&\n\010entities\030\003 \003(\0132\024.adventure."
-  "S2CEntity\"\304\001\n\nS2CCommand\022\020\n\010frame_id\030\001 \001"
-  "(\005\022.\n\014player_joins\030\002 \003(\0132\030.adventure.S2C"
-  "PlayerJoin\0220\n\rplayer_leaves\030\003 \003(\0132\031.adve"
-  "nture.S2CPlayerLeave\0220\n\rplayer_inputs\030\004 "
-  "\003(\0132\031.adventure.S2CPlayerInput\022\020\n\010checks"
-  "um\030\005 \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 \001(\0162\021.adventure"
-  ".S2CCmd\022\036\n\003map\030\002 \001(\0132\021.adventure.S2CMap\022"
-  "&\n\007command\030\003 \001(\0132\025.adventure.S2CCommand*"
-  "\201\001\n\006C2SCmd\022\017\n\013CMD_UNKNOWN\020\000\022\023\n\017CMD_PLAYE"
-  "R_JOIN\020\001\022\024\n\020CMD_PLAYER_LEAVE\020\002\022\024\n\020CMD_PL"
-  "AYER_INPUT\020\003\022\024\n\020CMD_PLAYER_HEART\020\004\022\017\n\013CM"
-  "D_LOADING\020\005*D\n\006S2CCmd\022\020\n\014S2C_CMD_NONE\020\000\022"
-  "\023\n\017S2C_CMD_LOADING\020\001\022\023\n\017S2C_CMD_COMMAND\020"
-  "\002*G\n\007S2CType\022\023\n\017S2C_TYPE_NORMAL\020\000\022\023\n\017S2C"
-  "_TYPE_PLAYER\020\001\022\022\n\016S2C_TYPE_ENEMY\020\002b\006prot"
-  "o3"
+  "nput\022\014\n\004conv\030\001 \001(\005\022\017\n\007keycode\030\002 \001(\005\"E\n\010S"
+  "2CWorld\022\021\n\tentity_id\030\001 \001(\005\022&\n\010entities\030\002"
+  " \003(\0132\024.adventure.S2CEntity\"L\n\006S2CMap\022\020\n\010"
+  "frame_id\030\001 \001(\005\022\014\n\004conv\030\002 \001(\005\022\"\n\005world\030\003 "
+  "\001(\0132\023.adventure.S2CWorld\"\304\001\n\nS2CCommand\022"
+  "\020\n\010frame_id\030\001 \001(\005\022.\n\014player_joins\030\002 \003(\0132"
+  "\030.adventure.S2CPlayerJoin\0220\n\rplayer_leav"
+  "es\030\003 \003(\0132\031.adventure.S2CPlayerLeave\0220\n\rp"
+  "layer_inputs\030\004 \003(\0132\031.adventure.S2CPlayer"
+  "Input\022\020\n\010checksum\030\005 \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 "
+  "\001(\0162\021.adventure.S2CCmd\022\036\n\003map\030\002 \001(\0132\021.ad"
+  "venture.S2CMap\022&\n\007command\030\003 \001(\0132\025.advent"
+  "ure.S2CCommand*\201\001\n\006C2SCmd\022\017\n\013CMD_UNKNOWN"
+  "\020\000\022\023\n\017CMD_PLAYER_JOIN\020\001\022\024\n\020CMD_PLAYER_LE"
+  "AVE\020\002\022\024\n\020CMD_PLAYER_INPUT\020\003\022\024\n\020CMD_PLAYE"
+  "R_HEART\020\004\022\017\n\013CMD_LOADING\020\005*D\n\006S2CCmd\022\020\n\014"
+  "S2C_CMD_NONE\020\000\022\023\n\017S2C_CMD_LOADING\020\001\022\023\n\017S"
+  "2C_CMD_COMMAND\020\002*G\n\007S2CType\022\023\n\017S2C_TYPE_"
+  "NORMAL\020\000\022\023\n\017S2C_TYPE_PLAYER\020\001\022\022\n\016S2C_TYP"
+  "E_ENEMY\020\002b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_adventure_once;
 const ::_pbi::DescriptorTable descriptor_table_adventure = {
-    false, false, 1442, descriptor_table_protodef_adventure,
+    false, false, 1497, descriptor_table_protodef_adventure,
     "adventure",
-    &descriptor_table_adventure_once, nullptr, 0, 12,
+    &descriptor_table_adventure_once, nullptr, 0, 13,
     schemas, file_default_instances, TableStruct_adventure::offsets,
     file_level_metadata_adventure, file_level_enum_descriptors_adventure,
     file_level_service_descriptors_adventure,
@@ -2657,10 +2682,227 @@ void S2CPlayerInput::InternalSwap(S2CPlayerInput* other) {
 
 // ===================================================================
 
-class S2CMap::_Internal {
+class S2CWorld::_Internal {
  public:
 };
 
+S2CWorld::S2CWorld(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:adventure.S2CWorld)
+}
+S2CWorld::S2CWorld(const S2CWorld& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  S2CWorld* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.entities_){from._impl_.entities_}
+    , decltype(_impl_.entity_id_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.entity_id_ = from._impl_.entity_id_;
+  // @@protoc_insertion_point(copy_constructor:adventure.S2CWorld)
+}
+
+inline void S2CWorld::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.entities_){arena}
+    , decltype(_impl_.entity_id_){0}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+S2CWorld::~S2CWorld() {
+  // @@protoc_insertion_point(destructor:adventure.S2CWorld)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void S2CWorld::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.entities_.~RepeatedPtrField();
+}
+
+void S2CWorld::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void S2CWorld::Clear() {
+// @@protoc_insertion_point(message_clear_start:adventure.S2CWorld)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.entities_.Clear();
+  _impl_.entity_id_ = 0;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* S2CWorld::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // int32 entity_id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.entity_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .adventure.S2CEntity entities = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_entities(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* S2CWorld::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:adventure.S2CWorld)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // int32 entity_id = 1;
+  if (this->_internal_entity_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_entity_id(), target);
+  }
+
+  // repeated .adventure.S2CEntity entities = 2;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_entities_size()); i < n; i++) {
+    const auto& repfield = this->_internal_entities(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:adventure.S2CWorld)
+  return target;
+}
+
+size_t S2CWorld::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:adventure.S2CWorld)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated .adventure.S2CEntity entities = 2;
+  total_size += 1UL * this->_internal_entities_size();
+  for (const auto& msg : this->_impl_.entities_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
+  // int32 entity_id = 1;
+  if (this->_internal_entity_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_entity_id());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData S2CWorld::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    S2CWorld::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*S2CWorld::GetClassData() const { return &_class_data_; }
+
+
+void S2CWorld::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<S2CWorld*>(&to_msg);
+  auto& from = static_cast<const S2CWorld&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:adventure.S2CWorld)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  _this->_impl_.entities_.MergeFrom(from._impl_.entities_);
+  if (from._internal_entity_id() != 0) {
+    _this->_internal_set_entity_id(from._internal_entity_id());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void S2CWorld::CopyFrom(const S2CWorld& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:adventure.S2CWorld)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool S2CWorld::IsInitialized() const {
+  return true;
+}
+
+void S2CWorld::InternalSwap(S2CWorld* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  _impl_.entities_.InternalSwap(&other->_impl_.entities_);
+  swap(_impl_.entity_id_, other->_impl_.entity_id_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata S2CWorld::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_adventure_getter, &descriptor_table_adventure_once,
+      file_level_metadata_adventure[9]);
+}
+
+// ===================================================================
+
+class S2CMap::_Internal {
+ public:
+  static const ::adventure::S2CWorld& world(const S2CMap* msg);
+};
+
+const ::adventure::S2CWorld&
+S2CMap::_Internal::world(const S2CMap* msg) {
+  return *msg->_impl_.world_;
+}
 S2CMap::S2CMap(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
@@ -2671,15 +2913,18 @@ S2CMap::S2CMap(const S2CMap& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   S2CMap* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.entities_){from._impl_.entities_}
+      decltype(_impl_.world_){nullptr}
     , decltype(_impl_.frame_id_){}
-    , decltype(_impl_.global_entity_id_){}
+    , decltype(_impl_.conv_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  if (from._internal_has_world()) {
+    _this->_impl_.world_ = new ::adventure::S2CWorld(*from._impl_.world_);
+  }
   ::memcpy(&_impl_.frame_id_, &from._impl_.frame_id_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.global_entity_id_) -
-    reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.global_entity_id_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.conv_) -
+    reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.conv_));
   // @@protoc_insertion_point(copy_constructor:adventure.S2CMap)
 }
 
@@ -2688,9 +2933,9 @@ inline void S2CMap::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.entities_){arena}
+      decltype(_impl_.world_){nullptr}
     , decltype(_impl_.frame_id_){0}
-    , decltype(_impl_.global_entity_id_){0}
+    , decltype(_impl_.conv_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -2706,7 +2951,7 @@ S2CMap::~S2CMap() {
 
 inline void S2CMap::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.entities_.~RepeatedPtrField();
+  if (this != internal_default_instance()) delete _impl_.world_;
 }
 
 void S2CMap::SetCachedSize(int size) const {
@@ -2719,10 +2964,13 @@ void S2CMap::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  _impl_.entities_.Clear();
+  if (GetArenaForAllocation() == nullptr && _impl_.world_ != nullptr) {
+    delete _impl_.world_;
+  }
+  _impl_.world_ = nullptr;
   ::memset(&_impl_.frame_id_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.global_entity_id_) -
-      reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.global_entity_id_));
+      reinterpret_cast<char*>(&_impl_.conv_) -
+      reinterpret_cast<char*>(&_impl_.frame_id_)) + sizeof(_impl_.conv_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2740,24 +2988,19 @@ const char* S2CMap::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
         } else
           goto handle_unusual;
         continue;
-      // int32 global_entity_id = 2;
+      // int32 conv = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          _impl_.global_entity_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          _impl_.conv_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // repeated .adventure.S2CEntity entities = 3;
+      // .adventure.S2CWorld world = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
-          ptr -= 1;
-          do {
-            ptr += 1;
-            ptr = ctx->ParseMessage(_internal_add_entities(), ptr);
-            CHK_(ptr);
-            if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+          ptr = ctx->ParseMessage(_internal_mutable_world(), ptr);
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -2796,18 +3039,17 @@ uint8_t* S2CMap::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(1, this->_internal_frame_id(), target);
   }
 
-  // int32 global_entity_id = 2;
-  if (this->_internal_global_entity_id() != 0) {
+  // int32 conv = 2;
+  if (this->_internal_conv() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_global_entity_id(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(2, this->_internal_conv(), target);
   }
 
-  // repeated .adventure.S2CEntity entities = 3;
-  for (unsigned i = 0,
-      n = static_cast<unsigned>(this->_internal_entities_size()); i < n; i++) {
-    const auto& repfield = this->_internal_entities(i);
+  // .adventure.S2CWorld world = 3;
+  if (this->_internal_has_world()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
+      InternalWriteMessage(3, _Internal::world(this),
+        _Internal::world(this).GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2826,11 +3068,11 @@ size_t S2CMap::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated .adventure.S2CEntity entities = 3;
-  total_size += 1UL * this->_internal_entities_size();
-  for (const auto& msg : this->_impl_.entities_) {
-    total_size +=
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  // .adventure.S2CWorld world = 3;
+  if (this->_internal_has_world()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *_impl_.world_);
   }
 
   // int32 frame_id = 1;
@@ -2838,9 +3080,9 @@ size_t S2CMap::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_frame_id());
   }
 
-  // int32 global_entity_id = 2;
-  if (this->_internal_global_entity_id() != 0) {
-    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_global_entity_id());
+  // int32 conv = 2;
+  if (this->_internal_conv() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_conv());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -2861,12 +3103,15 @@ void S2CMap::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  _this->_impl_.entities_.MergeFrom(from._impl_.entities_);
+  if (from._internal_has_world()) {
+    _this->_internal_mutable_world()->::adventure::S2CWorld::MergeFrom(
+        from._internal_world());
+  }
   if (from._internal_frame_id() != 0) {
     _this->_internal_set_frame_id(from._internal_frame_id());
   }
-  if (from._internal_global_entity_id() != 0) {
-    _this->_internal_set_global_entity_id(from._internal_global_entity_id());
+  if (from._internal_conv() != 0) {
+    _this->_internal_set_conv(from._internal_conv());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -2885,19 +3130,18 @@ bool S2CMap::IsInitialized() const {
 void S2CMap::InternalSwap(S2CMap* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  _impl_.entities_.InternalSwap(&other->_impl_.entities_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.global_entity_id_)
-      + sizeof(S2CMap::_impl_.global_entity_id_)
-      - PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.frame_id_)>(
-          reinterpret_cast<char*>(&_impl_.frame_id_),
-          reinterpret_cast<char*>(&other->_impl_.frame_id_));
+      PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.conv_)
+      + sizeof(S2CMap::_impl_.conv_)
+      - PROTOBUF_FIELD_OFFSET(S2CMap, _impl_.world_)>(
+          reinterpret_cast<char*>(&_impl_.world_),
+          reinterpret_cast<char*>(&other->_impl_.world_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata S2CMap::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_adventure_getter, &descriptor_table_adventure_once,
-      file_level_metadata_adventure[9]);
+      file_level_metadata_adventure[10]);
 }
 
 // ===================================================================
@@ -3229,7 +3473,7 @@ void S2CCommand::InternalSwap(S2CCommand* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S2CCommand::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_adventure_getter, &descriptor_table_adventure_once,
-      file_level_metadata_adventure[10]);
+      file_level_metadata_adventure[11]);
 }
 
 // ===================================================================
@@ -3497,7 +3741,7 @@ void S2C::InternalSwap(S2C* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S2C::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_adventure_getter, &descriptor_table_adventure_once,
-      file_level_metadata_adventure[11]);
+      file_level_metadata_adventure[12]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -3538,6 +3782,10 @@ Arena::CreateMaybeMessage< ::adventure::S2CPlayerLeave >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::adventure::S2CPlayerInput*
 Arena::CreateMaybeMessage< ::adventure::S2CPlayerInput >(Arena* arena) {
   return Arena::CreateMessageInternal< ::adventure::S2CPlayerInput >(arena);
+}
+template<> PROTOBUF_NOINLINE ::adventure::S2CWorld*
+Arena::CreateMaybeMessage< ::adventure::S2CWorld >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::adventure::S2CWorld >(arena);
 }
 template<> PROTOBUF_NOINLINE ::adventure::S2CMap*
 Arena::CreateMaybeMessage< ::adventure::S2CMap >(Arena* arena) {
