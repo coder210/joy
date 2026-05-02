@@ -12,6 +12,8 @@
 // 该实现仅在 Emscripten (Web) 平台上编译使用，
 // 通过 emscripten_websocket_* API 直接调用浏览器原生 WebSocket。
 
+KLIST_INIT(kmq, net_message_t, free)
+
 struct wsnetclient {
         int ws_socket;                 // emscripten WebSocket socket descriptor
         int conv;                      // Connection ID
