@@ -88,8 +88,6 @@ elseif(EMSCRIPTEN)
     message(STATUS "PRELOAD_FLAGS: ${PRELOAD_FLAGS}")
     # Emscripten WebSocket 支持（使用浏览器原生 WebSocket API）
     target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
-        -s USE_WEBSOCKET
-        -s FETCH=1
         ${PRELOAD_FLAGS}
     )
 else()
