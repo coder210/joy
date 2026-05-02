@@ -15,13 +15,13 @@
 // Emscripten WebSocket Client 实现
 // ==============================
 
-// Emscripten WebSocket 事件回调
-static void em_ws_onopen(int eventType, const EMScriptenWebSocketOpenEvent* e, void* userData)
+// Emscripten WebSocket 事件回调 (返回 bool 以符合 emscripten 6.x API)
+static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, void* userData)
 {
         (void)eventType;
         (void)e;
         wsnetclient_p wc = (wsnetclient_p)userData;
-        if (!wc) return;
+        if (!wc) return true;
 
         log_info("emscripten_ws: connected!");
 
@@ -42,13 +42,14 @@ static void em_ws_onopen(int eventType, const EMScriptenWebSocketOpenEvent* e, v
         } else {
                 *kl_pushp(kmq, wc->mq) = msg;
         }
+        return true;
 }
 
-static void em_ws_onmessage(int eventType, const EMScriptenWebSocketMessageEvent* e, void* userData)
+static bool em_ws_onmessage(int eventType, const EmscriptenWebSocketMessageEvent* e, void* userData)
 {
         (void)eventType;
         wsnetclient_p wc = (wsnetclient_p)userData;
-        if (!wc) return;
+        if (!wc) return true;
 
         if (e->numBytes > 0) {
                 net_message_t msg;
@@ -68,23 +69,25 @@ static void em_ws_onmessage(int eventType, const EMScriptenWebSocketMessageEvent
                         }
                 }
         }
+        return true;
 }
 
-static void em_ws_onerror(int eventType, const EMScriptenWebSocketErrorEvent* e, void* userData)
+static bool em_ws_onerror(int eventType, const EmscriptenWebSocketErrorEvent* e, void* userData)
 {
         (void)eventType;
         (void)e;
         wsnetclient_p wc = (wsnetclient_p)userData;
-        if (!wc) return;
+        if (!wc) return true;
         log_error("emscripten_ws: error");
+        return true;
 }
 
-static void em_ws_onclose(int eventType, const EMScriptenWebSocketCloseEvent* e, void* userData)
+static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e, void* userData)
 {
         (void)eventType;
         (void)e;
         wsnetclient_p wc = (wsnetclient_p)userData;
-        if (!wc) return;
+        if (!wc) return true;
 
         log_info("emscripten_ws: closed");
 
@@ -102,6 +105,7 @@ static void em_ws_onclose(int eventType, const EMScriptenWebSocketCloseEvent* e,
         } else {
                 *kl_pushp(kmq, wc->mq) = msg;
         }
+        return true;
 }
 
 wsnetclient_p wsnetclient_create(const char* url)
