@@ -4,6 +4,7 @@
 #ifdef __EMSCRIPTEN__
 
 #include "jnetwork.h"
+#include "./external/klib/klist.h"
 
 // ==============================
 // Emscripten WebSocket Client (使用浏览器原生 WebSocket API)
