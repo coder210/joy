@@ -17,6 +17,10 @@
 
 #include "external/mongoose.h"
 
+#ifdef __EMSCRIPTEN__
+#include "jnetwork_emscripten.h"
+#endif
+
 typedef struct kcp_connection
 {
         ikcpcb *kcp;
@@ -1031,6 +1035,12 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         }
                 }
         }
+        else if (ev == MG_EV_HTTP_REQUEST) {
+                //struct mg_serve_http_opts opts;
+                //opts.document_root = ".";  // Serve current directory
+                //opts.enable_directory_listing = "yes";
+                //mg_serve_http(c, (struct http_message*)ev_data, opts);
+        }
         else if (ev == MG_EV_CLOSE) {
                 // 连接关闭
                 wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
@@ -1209,6 +1219,10 @@ void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
 
 
 
+
+
+
+#ifndef __EMSCRIPTEN__
 
 struct wsnetclient
 {
@@ -1439,6 +1453,8 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 wc->conn = NULL;
         }
 }
+
+#endif // __EMSCRIPTEN__ - Mongoose WebSocket 客户端
 
 
 // ==============================
