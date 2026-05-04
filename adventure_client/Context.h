@@ -11,9 +11,9 @@
 #include <queue>
 #include <vector>
 #include <cstdint>
-#include "Component.h"
-#include "DebugLayer.h"
-#include "MobileInputLayer.h"
+#include "component.h"
+#include "debug_layer.h"
+#include "mobile_input_layer.h"
 
 // 状态快照（用于回滚）
 struct StateSnapshot {
