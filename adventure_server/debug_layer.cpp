@@ -1,4 +1,4 @@
-#include "DebugLayer.h"
+#include "debug_layer.h"
 
 DebugLayer::DebugLayer(Resources* resources)
 {

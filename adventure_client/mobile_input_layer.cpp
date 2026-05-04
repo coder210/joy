@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 #include <string.h>
-#include "MobileInputLayer.h"
+#include "mobile_input_layer.h"
 
 
 MobileInputLayer::MobileInputLayer(Resources* resources, SDL_Renderer* renderer)

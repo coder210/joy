@@ -8,8 +8,8 @@
 #include <joy2d/jnetwork.h>
 #include <map>
 #include <queue>
-#include "Component.h"
-#include "DebugLayer.h"
+#include "component.h"
+#include "debug_layer.h"
 
 struct Context {
         int g_id = 1;
