@@ -25,102 +25,6 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
 
-// ----------------------------------------------------------------------
-// 攻击逻辑（保持不变）
-// ----------------------------------------------------------------------
-static void attack(LogicPositionComponent* p,
-        LogicRectComponent& currRect,
-        IdComponent& currId)
-{
-        auto ctx = world.get_mut<Context>();
-        ray2df_t ray;
-        ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
-        ray.origin.y = p->y;
-        ray.direction.x = fp_from_float(.0f);
-        ray.direction.y = fp_from_float(-1.0f);
-
-        ray2d_collisionf_t nearest_hit = { 0 };
-        IdComponent* nearest_id = nullptr;
-        float nearest_dist = 999999.0f;
-
-        ctx->body_query.each([&](IdComponent& id,
-                LogicRectComponent& r,
-                LogicPositionComponent& pos) {
-                        if (currId.id == id.id) return;
-
-                        rectanglef_t rect = { 0 };
-                        rect.x = pos.x;
-                        rect.y = pos.y;
-                        rect.width = r.width;
-                        rect.height = r.height;
-                        ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
-
-                        if (result.hit) {
-                                float current_dist = fp_to_float(fp_sub(ray.origin.y, result.point.y));
-                                if (current_dist < nearest_dist) {
-                                        nearest_dist = current_dist;
-                                        nearest_hit = result;
-                                        nearest_id = &id;
-                                }
-                        }
-                });
-
-        if (nearest_id != nullptr) {
-		// 只有服务器权威时才真正修改 HP，客户端预测时不修改（或只做视觉效果）
-                nearest_id->hp--;
-        }
-}
-
-static void pre_attack(LogicPositionComponent* p,
-        LogicRectComponent& currRect,
-        IdComponent& currId)
-{
-        auto ctx = world.get_mut<Context>();
-        ray2df_t ray;
-        ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
-        ray.origin.y = p->y;
-        ray.direction.x = fp_from_float(.0f);
-        ray.direction.y = fp_from_float(-1.0f);
-
-        ray2d_collisionf_t nearest_hit = { 0 };
-        IdComponent* nearest_id = nullptr;
-        float nearest_dist = 999999.0f;
-
-        ctx->body_query.each([&](IdComponent& id,
-                LogicRectComponent& r,
-                LogicPositionComponent& pos) {
-                        if (currId.id == id.id) return;
-
-                        rectanglef_t rect = { 0 };
-                        rect.x = pos.x;
-                        rect.y = pos.y;
-                        rect.width = r.width;
-                        rect.height = r.height;
-                        ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
-
-                        if (result.hit) {
-                                float current_dist = fp_to_float(fp_sub(ray.origin.y, result.point.y));
-                                if (current_dist < nearest_dist) {
-                                        nearest_dist = current_dist;
-                                        nearest_hit = result;
-                                        nearest_id = &id;
-                                }
-                        }
-                });
-
-        if (nearest_id != nullptr) {
-                SDL_FRect line;
-                float end_x = fp_to_float(ray.origin.x);
-                float end_y = fp_to_float(ray.origin.y);
-                float start_x = fp_to_float(nearest_hit.point.x);
-                float start_y = fp_to_float(nearest_hit.point.y);
-                line.w = 0.05f;
-                line.h = (end_y - start_y);
-                line.x = start_x - line.w * 0.5f;
-                line.y = start_y;
-                world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
-        }
-}
 
 // ----------------------------------------------------------------------
 // 计算移动后的新位置
@@ -151,59 +55,155 @@ static void resolve_collision(LogicPositionComponent* p,
         ctx->body_query.each([&](IdComponent& other_id,
                 LogicRectComponent& r,
                 LogicPositionComponent& other_pos) {
-                // 跳过自己
-                if (other_id.id == currId.id) return;
+                        // 跳过自己
+                        if (other_id.id == currId.id) return;
 
-                // 构建两个实体的矩形
-                rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
-                rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
+                        // 构建两个实体的矩形
+                        rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
+                        rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
 
-                // 检测碰撞
-                contact2df_t contact;
-                if (collision2df_get_rectangles(curr_rect, fp_zero(),
-                        other_rect, fp_zero(), &contact)) {
-                        // contact->depth 可能是负值（表示重叠），取绝对值确保为正
-                        fp_t depth = contact.depth;
-                        if (depth < fp_zero()) {
-                                depth = fp_sub(fp_zero(), depth);
+                        // 检测碰撞
+                        contact2df_t contact;
+                        if (collision2df_get_rectangles(curr_rect, fp_zero(),
+                                other_rect, fp_zero(), &contact)) {
+                                // contact->depth 可能是负值（表示重叠），取绝对值确保为正
+                                fp_t depth = contact.depth;
+                                if (depth < fp_zero()) {
+                                        depth = fp_sub(fp_zero(), depth);
+                                }
+                                // 沿法线反方向分离（normal 从当前实体指向对方）
+                                fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+                                fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+                                p->x = fp_add(p->x, fp_mul(nx, depth));
+                                p->y = fp_add(p->y, fp_mul(ny, depth));
                         }
-                        // 沿法线反方向分离（normal 从当前实体指向对方）
-                        fp_t nx = fp_sub(fp_zero(), contact.normal.x);
-                        fp_t ny = fp_sub(fp_zero(), contact.normal.y);
-                        p->x = fp_add(p->x, fp_mul(nx, depth));
-                        p->y = fp_add(p->y, fp_mul(ny, depth));
-                }
-        });
+                });
 }
 
-// ----------------------------------------------------------------------
-// 应用输入（每收到一个输入包就移动一次）
-// ----------------------------------------------------------------------
-static void apply_input(LogicPositionComponent* p,
-        LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
+// 定义最近目标查找结果的结构体
+struct NearestAttackTarget {
+        IdComponent* id = nullptr;
+        ray2d_collisionf_t hit = { 0 };
+        float distance = 999999.0f;
+};
+
+// 公共函数：从攻击者位置向上发射射线，找到最近的命中目标
+static NearestAttackTarget find_nearest_target_in_attack_ray(
+        LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId)
 {
-        if (input & INPUT_ATTACK) {
-                attack(p, currRect, currId);
-        }
+        auto ctx = world.get_mut<Context>();
+        NearestAttackTarget result;
 
-        // 计算移动量
-        fp_t move_x, move_y;
-        calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
+        // 构造射线（起点为矩形上边中点，方向竖直向上）
+        ray2df_t ray;
+        ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
+        ray.origin.y = p->y;
+        ray.direction.x = fp_from_float(0.0f);
+        ray.direction.y = fp_from_float(-1.0f);
 
-        // 先应用移动
-        p->x = fp_add(p->x, move_x);
-        p->y = fp_add(p->y, move_y);
+        // 遍历所有碰撞体
+        ctx->body_query.each([&](IdComponent& id,
+                LogicRectComponent& r,
+                LogicPositionComponent& pos) {
+                        // 跳过自身
+                        if (currId.id == id.id) return;
 
-        // 然后检测并处理碰撞
-        resolve_collision(p, currRect, currId);
+                        rectanglef_t rect = {
+                            pos.x,
+                            pos.y,
+                            r.width,
+                            r.height
+                        };
+                        ray2d_collisionf_t coll = collision2df_get_ray_rectangle(ray, rect);
+
+                        if (coll.hit) {
+                                // 垂直射线，距离 = 射线起点Y - 碰撞点Y
+                                float dist = fp_to_float(fp_sub(ray.origin.y, coll.point.y));
+                                if (dist < result.distance) {
+                                        result.distance = dist;
+                                        result.hit = coll;
+                                        result.id = &id;
+                                }
+                        }
+                });
+
+        return result;
 }
-static void preapply_input(LogicPositionComponent* p,
+
+// 攻击（减血 + 特效）
+static void attack_with_damage_and_effect(LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
+        int conv, int input)
+{
+        NearestAttackTarget target = find_nearest_target_in_attack_ray(p, currRect, currId);
+
+        if (target.id != nullptr) {
+                // 减血
+                if (target.id->hp > 0)
+                        target.id->hp--;
+                else
+                        target.id->hp = 0;
+
+                // 绘制攻击射线特效
+                float start_x = fp_to_float(target.hit.point.x);
+                float start_y = fp_to_float(target.hit.point.y);
+                float end_x = fp_to_float(p->x + fp_mul(currRect.width, fp_half()));
+                float end_y = fp_to_float(p->y);
+
+                SDL_FRect line;
+                line.w = 0.05f;
+                line.h = end_y - start_y;
+                line.x = start_x - line.w * 0.5f;
+                line.y = start_y;
+                world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
+        }
+}
+
+// 仅攻击（减血，无特效）
+static void attack_damage_only(LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
+        int conv, int input)
+{
+        NearestAttackTarget target = find_nearest_target_in_attack_ray(p, currRect, currId);
+
+        if (target.id != nullptr) {
+                if (target.id->hp > 0)
+                        target.id->hp--;
+                else
+                        target.id->hp = 0;
+        }
+}
+
+// 仅显示特效（不减血）
+static void attack_effect_only(LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
+        int conv, int input)
+{
+        NearestAttackTarget target = find_nearest_target_in_attack_ray(p, currRect, currId);
+
+        if (target.id != nullptr) {
+                float start_x = fp_to_float(target.hit.point.x);
+                float start_y = fp_to_float(target.hit.point.y);
+                float end_x = fp_to_float(p->x + fp_mul(currRect.width, fp_half()));
+                float end_y = fp_to_float(p->y);
+
+                SDL_FRect line;
+                line.w = 0.05f;
+                line.h = end_y - start_y;
+                line.x = start_x - line.w * 0.5f;
+                line.y = start_y;
+                world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
+        }
+}
+
+static void movement(LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int conv, int input)
 {
-        if (input & INPUT_ATTACK) {
-                pre_attack(p, currRect, currId);
-        }
-
         // 计算移动量
         fp_t move_x, move_y;
         calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
@@ -320,8 +320,8 @@ static void HandleCommand(adventure::S2C& s2c)
                                         if (input.conv() == ctx->local_conv) {
                                                 // 按先进先出（FIFO）确认输入
                                                 // 如果 keycode 匹配，移除最早的那个输入
-                                                if (!ctx->pending_inputs.empty() 
-                                                    && ctx->pending_inputs.front() == input.keycode()) {
+                                                if (!ctx->pending_inputs.empty()
+                                                        && ctx->pending_inputs.front() == input.keycode()) {
                                                         log_info("%d:%d", ctx->pending_inputs.front(), input.keycode());
                                                         ctx->pending_inputs.erase(ctx->pending_inputs.begin());
                                                 }
@@ -329,8 +329,8 @@ static void HandleCommand(adventure::S2C& s2c)
                                                         // keycode 不匹配，可能是乱序或重复
                                                         // 尝试在队列中找到匹配的输入并移除
                                                         bool found = false;
-                                                        for (auto it = ctx->pending_inputs.begin(); 
-                                                             it != ctx->pending_inputs.end(); ++it) {
+                                                        for (auto it = ctx->pending_inputs.begin();
+                                                                it != ctx->pending_inputs.end(); ++it) {
                                                                 if (*it == input.keycode()) {
                                                                         log_error("%d:%d", *it, input.keycode());
                                                                         ctx->pending_inputs.erase(it);
@@ -342,8 +342,17 @@ static void HandleCommand(adventure::S2C& s2c)
                                                                 log_error("input:%d not found in pending", input.keycode());
                                                         }
                                                 }
+                                                if (input.keycode() & INPUT_ATTACK) {
+                                                        attack_damage_only(&pos, r, id, input.conv(), input.keycode());
+                                                }
+                                                movement(&pos, r, id, input.conv(), input.keycode());
                                         }
-                                        apply_input(&pos, r, id, input.conv(), input.keycode());
+                                        else {
+                                                if (input.keycode() & INPUT_ATTACK) {
+                                                        attack_with_damage_and_effect(&pos, r, id, input.conv(), input.keycode());
+                                                }
+                                                movement(&pos, r, id, input.conv(), input.keycode());
+                                        }
                                 }
                         });
         }
@@ -365,7 +374,7 @@ static void HandleCommand(adventure::S2C& s2c)
                         ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
                                         if (p.conv == ctx->local_conv) {
-                                                preapply_input(&pos, r, id, p.conv, input);
+                                                movement(&pos, r, id, p.conv, input);
                                         }
                                 });
                 }
@@ -443,11 +452,14 @@ static void FixedUpdate(float dt)
                         // 立即应用输入（预测移动）
                         ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
-                                if (p.conv == ctx->local_conv) {
-                                        preapply_input(&pos, r, id, ctx->local_conv, send_mask);
-                                        return;
-                                }
-                        });
+                                        if (p.conv == ctx->local_conv) {
+                                                if (send_mask & INPUT_ATTACK) {
+                                                        attack_effect_only(&pos, r, id, ctx->local_conv, send_mask);
+                                                }
+                                                movement(&pos, r, id, ctx->local_conv, send_mask);
+                                                return;
+                                        }
+                                });
 
                         // 发送输入到服务器
                         adventure::C2S c2s;
@@ -487,24 +499,24 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-        //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 10000);
+        ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 10000);
         //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.61", 10000);
-        ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
-        
+        //ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
+
         // 检查网络客户端是否创建成功
         if (!ctx->netclient) {
-            SDL_Log("FATAL: Failed to create network client!");
-            SDL_Log("Please check:");
-            SDL_Log("  1. Is the server running at 192.168.1.25:10000?");
-            SDL_Log("  2. Is the IP address correct?");
-            SDL_Log("  3. Is firewall blocking the connection?");
-            SDL_Log("  4. Can you ping the server?");
-            SDL_DestroyRenderer(ctx->renderer);
-            SDL_DestroyWindow(ctx->window);
-            SDL_Quit();
-            return SDL_APP_FAILURE;
+                SDL_Log("FATAL: Failed to create network client!");
+                SDL_Log("Please check:");
+                SDL_Log("  1. Is the server running at 192.168.1.25:10000?");
+                SDL_Log("  2. Is the IP address correct?");
+                SDL_Log("  3. Is firewall blocking the connection?");
+                SDL_Log("  4. Can you ping the server?");
+                SDL_DestroyRenderer(ctx->renderer);
+                SDL_DestroyWindow(ctx->window);
+                SDL_Quit();
+                return SDL_APP_FAILURE;
         }
-        
+
         netclient_set_callback(ctx->netclient, OnMessage, nullptr);
 
         world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
