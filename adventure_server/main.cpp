@@ -7,8 +7,8 @@
 #include <joy2d/jcollision.h>
 #include <joy2d/jshapes.h>
 #include <string>
-#include "Systems.h"
-#include "Context.h"
+#include "systems.h"
+#include "context.h"
 
 
 const int PIXELS_PER_METER = 50;

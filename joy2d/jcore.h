@@ -1,6 +1,6 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
-File name: core.h
+File name: jcore.h
 Description: 窗口创建,日志打印等
 Author: ydlc
 Version: 1.0
@@ -9,14 +9,14 @@ History:
 *************************************************/
 #ifndef CORE_H
 #define CORE_H
-#include <SDL3/SDL.h>
+#include <stdint.h>
 #include "jconfig.h"
 
 typedef struct env env_t, * env_p;
 typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
 typedef struct game_timer {
-	Uint64 last_time;          // 上一帧结束时的纳秒时间戳
-	Uint64 frame_start_time;   // 当前帧开始时的纳秒时间戳
+	int64_t last_time;          // 上一帧结束时的纳秒时间戳
+	int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
 	double delta_time;         // 未缩放的帧间隔时间（秒）
 	double time_scale;         // 时间缩放因子
 	int target_fps;            // 目标 FPS（0 表示不限制）
