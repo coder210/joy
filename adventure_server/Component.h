@@ -10,6 +10,7 @@ struct ConnectionComponent
         int conv;
 };
 
+
 struct IdComponent
 {
         int id;
