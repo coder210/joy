@@ -1,5 +1,5 @@
 #include "jcore.h"
-
+#include <SDL3/SDL.h>
 
 struct env {
 	SDL_Environment* sdl_env;

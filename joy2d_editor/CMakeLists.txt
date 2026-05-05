@@ -145,7 +145,7 @@ message(STATUS "Loader source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Loader binary dir: ${CMAKE_BINARY_DIR}")
 
 # ------------------- 链接 SDL3 -------------------
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL3::SDL3)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3 joy2d)
 
 # ------------------- 平台特定链接（仅需链接运行时库） -------------------
 if(ANDROID)
