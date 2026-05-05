@@ -69,4 +69,14 @@ struct Context {
         flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
 };
 
+
+struct Context2 {
+        bool running = true;
+        SDL_Window* window = NULL;
+        SDL_Renderer* renderer = NULL;
+        netclient_p netclient = NULL;
+};
+
+
+
 #endif
