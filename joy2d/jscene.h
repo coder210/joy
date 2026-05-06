@@ -57,7 +57,7 @@ extern "C" {
         JOY_API void node_set_destroy_callback(node_p node, node_destroy_fn cb);
 
         JOY_API void node_update(node_p node, float delta_time);
-        JOY_API void node_render(node_p node);
+        JOY_API void node_render(node_p node, const void* arg);
 
         JOY_API scene_p scene_create(const char* name);
         JOY_API void scene_destroy(scene_p scene);
@@ -68,7 +68,7 @@ extern "C" {
         JOY_API node_p scene_get_root_at(scene_p scene, int index);
 
         JOY_API void scene_update(scene_p scene, float delta_time);
-        JOY_API void scene_render(scene_p scene);
+        JOY_API void scene_render(scene_p scene, const void *arg);
 
         JOY_API void scene_set_load_callback(scene_p scene, scene_load_fn cb);
         JOY_API void scene_set_update_callback(scene_p scene, scene_update_fn cb);
@@ -87,7 +87,7 @@ extern "C" {
         JOY_API void scene_manager_pop(scene_manager_p mgr);
 
         JOY_API void scene_manager_update(scene_manager_p mgr, float delta_time);
-        JOY_API void scene_manager_render(scene_manager_p mgr);
+        JOY_API void scene_manager_render(scene_manager_p mgr, const void* arg);
 
         JOY_API scene_p scene_manager_get_current(scene_manager_p mgr);
         JOY_API int scene_manager_get_count(scene_manager_p mgr);

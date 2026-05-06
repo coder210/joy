@@ -190,13 +190,13 @@ void node_update(node_p node, float delta_time)
     }
 }
 
-void node_render(node_p node)
+void node_render(node_p node, const void* arg)
 {
     if (!node) return;
     if (node->on_render) node->on_render(node);
     node_p child = node->first_child;
     while (child) {
-        node_render(child);
+        node_render(child, arg);
         child = child->next_sibling;
     }
 }
@@ -290,12 +290,12 @@ void scene_update(scene_p scene, float delta_time)
     }
 }
 
-void scene_render(scene_p scene)
+void scene_render(scene_p scene, const void* arg)
 {
     if (!scene) return;
     if (scene->on_render) scene->on_render(scene);
     for (int i = 0; i < scene->root_count; i++) {
-        node_render(scene->root_nodes[i]);
+        node_render(scene->root_nodes[i], arg);
     }
 }
 
@@ -382,10 +382,10 @@ void scene_manager_update(scene_manager_p mgr, float delta_time)
     scene_update(mgr->scenes[mgr->scene_count - 1], delta_time);
 }
 
-void scene_manager_render(scene_manager_p mgr)
+void scene_manager_render(scene_manager_p mgr, const void* arg)
 {
     if (!mgr || mgr->scene_count == 0) return;
-    scene_render(mgr->scenes[mgr->scene_count - 1]);
+    scene_render(mgr->scenes[mgr->scene_count - 1], arg);
 }
 
 scene_p scene_manager_get_current(scene_manager_p mgr)
