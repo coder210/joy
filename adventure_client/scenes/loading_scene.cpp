@@ -55,8 +55,9 @@ LoadingScene::LoadingScene()
 LoadingScene::~LoadingScene() = default;
 
 
-static void menu_box_render(node_p n) {
+static void menu_box_render(node_p n, const void* arg) {
         float x, y;
+        SDL_Renderer* renderer = (SDL_Renderer*)arg;
         node_get_world_position(n, &x, &y);
         int z = node_get_zorder(n);
         SDL_Color c;
@@ -64,8 +65,8 @@ static void menu_box_render(node_p n) {
         else if (z >= 20) c = { 80, 255, 120, 255 };
         else              c = { 255, 80, 80, 255 };
         SDL_FRect r = { x - 30, y - 30, 60, 60 };
-        //SDL_SetRenderDrawColor(m_ctx->renderer, c.r, c.g, c.b, c.a);
-        //SDL_RenderFillRect(m_ctx->renderer, &r);
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+        SDL_RenderFillRect(renderer, &r);
 }
 
 static void menu_box_update(node_p n, float dt) {
@@ -118,7 +119,7 @@ void LoadingScene::OnUpdate(float dt) {
     m_progress += dt * 0.5f; // 2秒完成
     if (m_progress >= 1.0f) {
         m_progress = 1.0f;
-        SDL_Log("[LoadingScene] 加载完成! 可切换到下一场景");
+        //SDL_Log("[LoadingScene] 加载完成! 可切换到下一场景");
     }
 }
 

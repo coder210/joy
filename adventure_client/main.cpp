@@ -12,6 +12,7 @@
 
 
 static scene_manager_p g_mgr = NULL;
+static game_timer_t g_timer;  // 帧率控制器
 static Context2* ctx = NULL;
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
@@ -27,8 +28,9 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         g_mgr = scene_manager_create();
         LoadingScene* loading = new LoadingScene();
         scene_manager_push(g_mgr, loading->get_scene());
-        // 注意: loading 的释放由场景管理器 pop 时触发 OnDestroy 回调处理
-        // 或在 SDL_AppQuit 中统一清理
+
+        game_timer_init(&g_timer);
+        game_timer_set_target_fps(&g_timer, 60);  // 锁定 60 FPS
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
@@ -44,18 +46,20 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 
 SDL_AppResult SDL_AppIterate(void*)
 {
-        scene_manager_update(g_mgr, 1.0f / 60.0f);
+        game_timer_update(&g_timer);
+        float dt = game_timer_get_delta_time(&g_timer);
+        scene_manager_update(g_mgr, dt);
         SDL_SetRenderDrawColor(ctx->renderer, 30, 30, 40, 255);
         SDL_RenderClear(ctx->renderer);
-        scene_manager_render(g_mgr);
+        scene_manager_render(g_mgr, ctx->renderer);
         SDL_RenderPresent(ctx->renderer);
         return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void*, SDL_AppResult)
 {
-        sys_release_netenv();
         scene_manager_destroy(g_mgr);
         SDL_DestroyRenderer(ctx->renderer);
         SDL_DestroyWindow(ctx->window);
+        sys_release_netenv();
 }

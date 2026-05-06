@@ -193,7 +193,7 @@ void node_update(node_p node, float delta_time)
 void node_render(node_p node, const void* arg)
 {
     if (!node) return;
-    if (node->on_render) node->on_render(node);
+    if (node->on_render) node->on_render(node, arg);
     node_p child = node->first_child;
     while (child) {
         node_render(child, arg);
