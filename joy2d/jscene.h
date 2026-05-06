@@ -20,7 +20,7 @@ extern "C" {
         typedef struct scene_manager scene_manager_t, * scene_manager_p;
 
         typedef void (*node_update_fn)(node_p, float);
-        typedef void (*node_render_fn)(node_p);
+        typedef void (*node_render_fn)(node_p, const void*);
         typedef void (*node_destroy_fn)(node_p);
 
         typedef void (*scene_load_fn)(scene_p);
