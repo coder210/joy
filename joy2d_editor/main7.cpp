@@ -238,7 +238,7 @@ SDL_AppResult SDL_AppIterate(void* st) {
     SDL_SetRenderDrawColor(g_ren, 30, 30, 40, 255);
     SDL_RenderClear(g_ren);
     scene_manager_update(g_mgr, dt);
-    scene_manager_render(g_mgr);
+    scene_manager_render(g_mgr, g_ren);
     // HUD
     scene_p cur = scene_manager_get_current(g_mgr);
     const char* txt = cur && strcmp(scene_get_name(cur), "Menu") ? "[Game] Arrows: Move  ESC: Back  R: Reset"
