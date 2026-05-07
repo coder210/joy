@@ -50,51 +50,37 @@ struct game_scene {
     flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
 
 };
-
-// ============================================================
-// 节点回调（static，内部使用）
-// ============================================================
-static void menu_box_render(scene_node_p n, const void* arg) {
-    float x, y;
-    SDL_Renderer* renderer = (SDL_Renderer*)arg;
-    scene_node_get_world_position(n, &x, &y);
-    int z = scene_node_get_zorder(n);
-    SDL_Color c;
-    if (z >= 30)      c = { 80, 160, 255, 255 };
-    else if (z >= 20) c = { 80, 255, 120, 255 };
-    else              c = { 255, 80, 80, 255 };
-    SDL_FRect r = { x - 30, y - 30, 60, 60 };
-    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-    SDL_RenderFillRect(renderer, &r);
+static void mobile_input_layer_render(scene_node_p n, const void* arg) {
+        float x, y;
+        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        scene_node_get_world_position(n, &x, &y);
+        int z = scene_node_get_zorder(n);
+        SDL_Color c;
+        if (z >= 30)      c = { 80, 160, 255, 255 };
+        else if (z >= 20) c = { 80, 255, 120, 255 };
+        else              c = { 255, 80, 80, 255 };
+        SDL_FRect r = { x - 30, y - 30, 60, 60 };
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
+        SDL_RenderFillRect(renderer, &r);
 }
-
-static void menu_box_update(scene_node_p n, float dt) {
-    (void)dt;
-    float bx, by;
-    float phase = 0.0f;
-    float* p = (float*)scene_node_get_userdata(n);
-    if (p) phase = *p;
-    static float t = 0.0f;
-    t += 0.016f;
-    scene_node_get_scale(n, &bx, &by);
-    scene_node_set_position(n, bx + sinf(t * 1.5f + phase) * 30.0f,
-            by + cosf(t * 1.2f + phase) * 20.0f);
-}
-
-static void menu_box_destroy(scene_node_p n) {
-    float* p = (float*)scene_node_get_userdata(n);
-    free(p);
-}
-
-// ============================================================
-// 场景回调（static）
-// ============================================================
 
 static void on_load(scene_p s) {
     game_scene_p self = (game_scene_p)scene_get_userdata(s);
     log_info("[GameScene] OnStart...");
 
-   
+    // creating mobile input layer
+    scene_node_p mobile_input_layer = scene_node_create();
+    scene_node_set_position(mobile_input_layer, 200, 150);
+    scene_node_set_zorder(mobile_input_layer, 1);
+    scene_node_set_scale(mobile_input_layer, 1, 1);
+    scene_node_set_render_callback(mobile_input_layer, mobile_input_layer_render);
+  /*  scene_node_set_update_callback(mobile_input_layer, menu_box_update);
+    scene_node_set_event_callback(mobile_input_layer, menu_box_event);
+    scene_node_set_render_callback(mobile_input_layer, menu_box_render);
+    scene_node_set_destroy_callback(mobile_input_layer, menu_box_destroy);*/
+
+
+    scene_add_root_node(self->scene, mobile_input_layer);
 }
 
 static void on_update(scene_p s, float dt) {
