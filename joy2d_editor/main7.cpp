@@ -11,14 +11,14 @@
 static SDL_Window*   g_win = NULL;
 static SDL_Renderer* g_ren = NULL;
 static scene_manager_p g_mgr = NULL;
-static node_p g_player = NULL;
+static scene_node_p g_player = NULL;
 static game_timer_t g_timer;  // 帧率控制器
 static const int W = 800, H = 600;
 
-static void menu_box_render(node_p n) {
+static void menu_box_render(scene_node_p n, const void* arg) {
     float x, y;
-    node_get_world_position(n, &x, &y);
-    int z = node_get_zorder(n);
+    scene_node_get_world_position(n, &x, &y);
+    int z = scene_node_get_zorder(n);
     SDL_Color c;
     if (z >= 30)      c = { 80, 160, 255, 255 };
     else if (z >= 20) c = { 80, 255, 120, 255 };
@@ -28,23 +28,23 @@ static void menu_box_render(node_p n) {
     SDL_RenderFillRect(g_ren, &r);
 }
 
-static void menu_box_update(node_p n, float dt) {
+static void menu_box_update(scene_node_p n, float dt) {
     (void)dt;
     float bx = 0; float by = 0;
     // 从 userdata 读取相位偏移，做浮动动画
     float phase = 0.0f;
-    float* p = (float*)node_get_userdata(n);
+    float* p = (float*)scene_node_get_userdata(n);
     if (p) phase = *p;
     static float t = 0.0f;
     t += 0.016f;
     // base 坐标存在 scale_x/scale_y 中（偷懒用法）
-    node_get_scale(n, &bx, &by);
-    node_set_position(n, bx + sinf(t * 1.5f + phase) * 30.0f,
+    scene_node_get_scale(n, &bx, &by);
+    scene_node_set_position(n, bx + sinf(t * 1.5f + phase) * 30.0f,
                          by + cosf(t * 1.2f + phase) * 20.0f);
 }
 
-static void menu_box_destroy(node_p n) {
-    float* p = (float*)node_get_userdata(n);
+static void menu_box_destroy(scene_node_p n) {
+    float* p = (float*)scene_node_get_userdata(n);
     free(p);
 }
 
@@ -55,16 +55,16 @@ static void on_menu_load(scene_p s) {
     int zs[3] = { 10, 20, 30 };
     float phases[3] = { 0.0f, 1.5f, 3.0f };
     for (int i = 0; i < 3; i++) {
-        node_p n = node_create();
-        node_set_position(n, bases[i][0], bases[i][1]);
-        node_set_zorder(n, zs[i]);
-        node_set_scale(n, bases[i][0], bases[i][1]); // 偷存 base
-        node_set_update_callback(n, menu_box_update);
-        node_set_render_callback(n, menu_box_render);
-        node_set_destroy_callback(n, menu_box_destroy);
+        scene_node_p n = scene_node_create();
+        scene_node_set_position(n, bases[i][0], bases[i][1]);
+        scene_node_set_zorder(n, zs[i]);
+        scene_node_set_scale(n, bases[i][0], bases[i][1]); // 偷存 base
+        scene_node_set_update_callback(n, menu_box_update);
+        scene_node_set_render_callback(n, menu_box_render);
+        scene_node_set_destroy_callback(n, menu_box_destroy);
         float* ph = (float*)malloc(sizeof(float));
         *ph = phases[i];
-        node_set_userdata(n, ph);
+        scene_node_set_userdata(n, ph);
         scene_add_root_node(s, n);
     }
 }
@@ -74,10 +74,10 @@ static void on_menu_load(scene_p s) {
 // ============================================================
 typedef struct { int up, down, left, right; } pdir_t;
 
-static void player_part_render(node_p n) {
+static void player_part_render(scene_node_p n, const void* arg) {
     float x, y;
-    node_get_world_position(n, &x, &y);
-    int z = node_get_zorder(n);
+    scene_node_get_world_position(n, &x, &y);
+    int z = scene_node_get_zorder(n);
     SDL_Color c;
     if (z == 110)       c = { 255, 255, 255, 255 };
     else if (z == 100)  c = { 200, 200, 210, 255 };
@@ -92,19 +92,19 @@ static void player_part_render(node_p n) {
     SDL_RenderFillRect(g_ren, &r);
 }
 
-static void enemy_render(node_p n) {
+static void enemy_render(scene_node_p n, const void* arg) {
     float x, y;
-    node_get_world_position(n, &x, &y);
+    scene_node_get_world_position(n, &x, &y);
     SDL_SetRenderDrawColor(g_ren, 255, 100, 100, 255);
     SDL_FRect r = { x-15, y-15, 30, 30 };
     SDL_RenderFillRect(g_ren, &r);
 }
 
-static void player_update(node_p n, float dt) {
-    pdir_t* d = (pdir_t*)node_get_userdata(n);
+static void player_update(scene_node_p n, float dt) {
+    pdir_t* d = (pdir_t*)scene_node_get_userdata(n);
     if (!d) return;
     float x, y;
-    node_get_position(n, &x, &y);
+    scene_node_get_position(n, &x, &y);
     const float sp = 200.0f;
     if (d->up)    y -= sp * dt;
     if (d->down)  y += sp * dt;
@@ -112,55 +112,55 @@ static void player_update(node_p n, float dt) {
     if (d->right) x += sp * dt;
     x = fmaxf(20.0f, fminf((float)W-20.0f, x));
     y = fmaxf(20.0f, fminf((float)H-20.0f, y));
-    node_set_position(n, x, y);
+    scene_node_set_position(n, x, y);
 }
 
-static void player_destroy(node_p n) {
-    free(node_get_userdata(n));
+static void player_destroy(scene_node_p n) {
+    free(scene_node_get_userdata(n));
 }
 
 static void on_game_load(scene_p s) {
     (void)s;
     SDL_Log("[Game] loaded");
-    g_player = node_create();
-    node_set_position(g_player, 400, 300);
-    node_set_zorder(g_player, 100);
-    node_set_update_callback(g_player, player_update);
+    g_player = scene_node_create();
+    scene_node_set_position(g_player, 400, 300);
+    scene_node_set_zorder(g_player, 100);
+    scene_node_set_update_callback(g_player, player_update);
 
     // 头 (z=110, 相对父节点上方偏移)
-    node_p head = node_create();
-    node_set_position(head, 0, -22);
-    node_set_zorder(head, 110);
-    node_set_render_callback(head, player_part_render);
-    node_add_child(g_player, head);
+    scene_node_p head = scene_node_create();
+    scene_node_set_position(head, 0, -22);
+    scene_node_set_zorder(head, 110);
+    scene_node_set_render_callback(head, player_part_render);
+    scene_node_add_child(g_player, head);
 
     // 身 (z=100, 居中)
-    node_p body = node_create();
-    node_set_zorder(body, 100);
-    node_set_render_callback(body, player_part_render);
-    node_add_child(g_player, body);
+    scene_node_p body = scene_node_create();
+    scene_node_set_zorder(body, 100);
+    scene_node_set_render_callback(body, player_part_render);
+    scene_node_add_child(g_player, body);
 
     // 脚 (z=90, 相对父节点下方偏移)
-    node_p foot = node_create();
-    node_set_position(foot, 0, 22);
-    node_set_zorder(foot, 90);
-    node_set_render_callback(foot, player_part_render);
-    node_add_child(g_player, foot);
+    scene_node_p foot = scene_node_create();
+    scene_node_set_position(foot, 0, 22);
+    scene_node_set_zorder(foot, 90);
+    scene_node_set_render_callback(foot, player_part_render);
+    scene_node_add_child(g_player, foot);
 
     pdir_t* d = (pdir_t*)malloc(sizeof(pdir_t));
     d->up = d->down = d->left = d->right = 0;
-    node_set_userdata(g_player, d);
+    scene_node_set_userdata(g_player, d);
     scene_add_root_node(s, g_player);
 
-    node_p e1 = node_create();
-    node_set_position(e1, 100, 100);
-    node_set_render_callback(e1, enemy_render);
+    scene_node_p e1 = scene_node_create();
+    scene_node_set_position(e1, 100, 100);
+    scene_node_set_render_callback(e1, enemy_render);
     scene_add_root_node(s, e1);
 
-    node_p e2 = node_create();
-    node_set_position(e2, 0, 50);
-    node_set_render_callback(e2, enemy_render);
-    node_add_child(e1, e2);
+    scene_node_p e2 = scene_node_create();
+    scene_node_set_position(e2, 0, 50);
+    scene_node_set_render_callback(e2, enemy_render);
+    scene_node_add_child(e1, e2);
 }
 
 // ============================================================
@@ -215,7 +215,7 @@ SDL_AppResult SDL_AppEvent(void* st, SDL_Event* e) {
             break;
         default:
             if (g_player) {
-                pdir_t* dir = (pdir_t*)node_get_userdata(g_player);
+                pdir_t* dir = (pdir_t*)scene_node_get_userdata(g_player);
                 if (dir) {
                     switch (e->key.scancode) {
                     case SDL_SCANCODE_UP:    dir->up    = d; break;
