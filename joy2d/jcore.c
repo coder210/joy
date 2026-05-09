@@ -212,7 +212,7 @@ void simple_fps_destory(simple_fps_counter_p fps)
 	SDL_free(fps);
 }
 
-int simple_fps_update(simple_fps_counter_p fps)
+void simple_fps_update(simple_fps_counter_p fps)
 {
 	fps->frame_count++;
 	fps->current_time = SDL_GetTicks();
@@ -224,7 +224,10 @@ int simple_fps_update(simple_fps_counter_p fps)
 		fps->frame_count = 0;
 		fps->last_time = fps->current_time;
 	}
+}
 
+int simple_fps_value(simple_fps_counter_p fps)
+{
 	return fps->fps;
 }
 

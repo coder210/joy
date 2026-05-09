@@ -230,7 +230,7 @@ struct scene {
     scene_event_fn   on_event;
 
     void* userdata;
-    char name[64];
+    char name[JOY_MAX_BUFFER];
 };
 
 // ============================================================
@@ -239,7 +239,7 @@ struct scene {
 
 scene_p scene_create(const char* name)
 {
-    struct scene* s = (struct scene*)SDL_malloc(sizeof(struct scene));
+    scene_p s = (scene_p)SDL_malloc(sizeof(struct scene));
     SDL_assert(s);
     SDL_memset(s, 0, sizeof(struct scene));
     if (name) SDL_strlcpy(s->name, name, sizeof(s->name));
@@ -323,7 +323,10 @@ void scene_handle_event(scene_p scene, const void* e)
 }
 
 void scene_set_load_callback(scene_p scene, scene_load_fn cb) { if (scene) scene->on_load = cb; }
-void scene_set_update_callback(scene_p scene, scene_update_fn cb) { if (scene) scene->on_update = cb; }
+void scene_set_update_callback(scene_p scene, scene_update_fn cb) 
+{ 
+        if (scene) scene->on_update = cb;
+}
 void scene_set_render_callback(scene_p scene, scene_render_fn cb) { if (scene) scene->on_render = cb; }
 void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
 void scene_set_event_callback(scene_p scene, scene_event_fn cb) { if (scene) scene->on_event = cb; }

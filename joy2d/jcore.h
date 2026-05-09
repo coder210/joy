@@ -39,8 +39,8 @@ extern "C" {
 
 	JOY_API simple_fps_counter_p simple_fps_create();
 	JOY_API void simple_fps_destory(simple_fps_counter_p fps);
-	JOY_API int simple_fps_update(simple_fps_counter_p fps);
-
+	JOY_API void simple_fps_update(simple_fps_counter_p fps);
+	JOY_API int simple_fps_value(simple_fps_counter_p fps);
 
 	JOY_API void game_timer_init(game_timer_p clock);
 	JOY_API void game_timer_update(game_timer_p clock);
