@@ -29,7 +29,8 @@ static void send_gameplay_control_event(int event_code)
 
 static void on_event(scene_node_p n, const void* e)
 {
-	gameplay_controls_layer_p self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
+	gameplay_controls_layer_p self;
+	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 	SDL_Event* event = (SDL_Event*)e;
 	button_handle_event(self->upButton, event);
 	button_handle_event(self->downButton, event);
@@ -40,7 +41,8 @@ static void on_event(scene_node_p n, const void* e)
 
 static void on_update(scene_node_p n, float dt)
 {
-	gameplay_controls_layer_p self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
+	gameplay_controls_layer_p self;
+	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 
 	// 检测方向键松开事件
 	if (self->prevUpPressed && !self->upButton->is_pressed) {
@@ -86,7 +88,8 @@ static void on_update(scene_node_p n, float dt)
 static void on_render(scene_node_p n, const void* arg)
 {
 	SDL_Renderer* renderer = (SDL_Renderer*)arg;
-	gameplay_controls_layer_p self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
+	gameplay_controls_layer_p self;
+	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 	button_draw(self->upButton);
 	button_draw(self->downButton);
 	button_draw(self->leftButton);
@@ -96,7 +99,8 @@ static void on_render(scene_node_p n, const void* arg)
 
 static void on_destroy(scene_node_p n)
 {
-	gameplay_controls_layer_p self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
+	gameplay_controls_layer_p self;
+	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 	button_destroy(self->upButton);
 	button_destroy(self->downButton);
 	button_destroy(self->leftButton);
@@ -106,7 +110,8 @@ static void on_destroy(scene_node_p n)
 
 gameplay_controls_layer_p create_gameplay_controls_layer(Context2* ctx)
 {
-	gameplay_controls_layer_p self = (gameplay_controls_layer_p)SDL_malloc(sizeof(gameplay_controls_layer_t));
+	gameplay_controls_layer_p self;
+	self = (gameplay_controls_layer_p)SDL_malloc(sizeof(gameplay_controls_layer_t));
 	SDL_assert(self);
 	self->scene_node = scene_node_create();
 	SDL_assert(self->scene_node);
