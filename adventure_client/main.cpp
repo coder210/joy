@@ -8,6 +8,7 @@
 #include <joy2d/jcore.h>
 #include <joy2d/jsys.h>
 #include "context.h"
+#include "asset_manager.h"
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
 
@@ -35,6 +36,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
+
+        AssetManager::Init(ctx->renderer);
 
         return SDL_APP_CONTINUE;
 }

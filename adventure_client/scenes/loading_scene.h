@@ -1,6 +1,5 @@
 #ifndef LOADING_SCENE_H
 #define LOADING_SCENE_H
-
 #include <joy2d/jscene.h>
 #include "../context.h"
 

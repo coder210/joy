@@ -1,6 +1,5 @@
 #ifndef GAME_SCENE_H
 #define GAME_SCENE_H
-
 #include <joy2d/jscene.h>
 #include "../context.h"
 
