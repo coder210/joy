@@ -46,7 +46,7 @@ static void menu_box_destroy(scene_node_p n) {
 
 static void on_load(scene_p s) {
     loading_scene_p self = (loading_scene_p)scene_get_userdata(s);
-    log_info("[LoadingScene] OnStart...");
+    log_info("[loading scene] onstart...");
 
     float bases[3][2] = { {200,150}, {500,200}, {350,400} };
     int zs[3] = { 10, 20, 30 };
