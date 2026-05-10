@@ -490,7 +490,7 @@ static void fixedupdate(game_scene_p self, float dt)
 {
         net_message_t msg;
         if (netclient_poll_message(self->netclient, &msg)) {
-                on_message(&msg, NULL);
+                on_message(&msg, self);
         }
 
         if (self->ready) {
@@ -526,6 +526,17 @@ static void fixedupdate(game_scene_p self, float dt)
         }
 }
 
+static void send_heartbeat(game_scene_p self, float dt)
+{
+        self->heartbeatTimer += dt;
+        if (self->heartbeatTimer >= 3.f) {
+                self->heartbeatTimer = 0.f;
+                adventure::C2S c2s;
+                c2s.set_cmd(adventure::CMD_PLAYER_HEART);
+                std::string d = c2s.SerializeAsString();
+                netclient_send(self->netclient, d.c_str(), d.size());
+        }
+}
 
 static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -540,7 +551,7 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
         // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，
         // 但为了避免依赖 FixedLogicUpdate，现在直接调用即可（内部计时器决定是否真正发送）
-        //SendHeartbeat(dt);
+        send_heartbeat(self, dt);
 
 
 
