@@ -7,15 +7,15 @@
 #include <joy2d/jscene.h>
 #include <joy2d/jcore.h>
 #include <joy2d/jsys.h>
-#include "context.h"
+#include "game_context.h"
 #include "asset_manager.h"
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
 
 
-static scene_manager_p g_mgr = NULL;
+static scene_manager_p g_mgr;
 static game_timer_t g_timer;
-static Context2* ctx = NULL;
+static context* ctx;
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
@@ -25,7 +25,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
                 return SDL_APP_FAILURE;
         }
 
-        ctx = (Context2*)calloc(1, sizeof(Context2));
+        ctx = (context*)calloc(1, sizeof(context));
 
         g_mgr = scene_manager_create();
         loading_scene_t* loading = loading_scene_create(ctx);

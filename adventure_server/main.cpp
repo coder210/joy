@@ -487,7 +487,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         }
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         //ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.61", 10000);
-        ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 10000);
+        ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.20", 10000);
         //ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "172.24.9.215", 10000);
 
         world.entity()
@@ -539,7 +539,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         ctx->accumulator += dt;
         netserver_update(ctx->server);
-        int fps = simple_fps_update(ctx->sample_fps);
+        simple_fps_update(ctx->sample_fps);
 
         // ---------- 固定步长物理更新（60Hz） ----------
         if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
@@ -562,7 +562,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         ctx->renderer_query.each(RendererSystem);
         ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
 
-        ctx->debugLayer->Update(ctx->g_frameid, fps);
+        ctx->debugLayer->Update(ctx->g_frameid, simple_fps_value(ctx->sample_fps));
         ctx->debugLayer->Draw(ctx->renderer);
 
         SDL_RenderPresent(ctx->renderer);

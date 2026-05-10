@@ -108,7 +108,7 @@ static void on_destroy(scene_node_p n)
 	button_destroy(self->attackButton);
 }
 
-gameplay_controls_layer_p create_gameplay_controls_layer(Context2* ctx)
+gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
 {
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)SDL_malloc(sizeof(gameplay_controls_layer_t));

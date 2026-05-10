@@ -5,7 +5,10 @@
 #include "../components/logic_rect_component.h"
 #include "../components/transform_component.h"
 
-static void drawing_entity_system(flecs::entity e, id_component& id, logic_rect_component& rect, transform_component& t)
+static void drawing_entity_system(flecs::entity e, 
+        id_component& id,
+        logic_rect_component& rect, 
+        transform_component& t)
 {
        /* auto ctx = e.world().get_mut<Context>();
         SDL_FRect body = { 0 };

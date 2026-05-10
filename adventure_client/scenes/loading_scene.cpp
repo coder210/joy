@@ -1,11 +1,12 @@
 #include "loading_scene.h"
 #include <SDL3/SDL.h>
+#include <joy2d/jcore.h>
 #include <stdlib.h>
 #include <math.h>
 
 struct loading_scene {
     scene_p scene;
-    Context2* ctx;
+    context* ctx;
 };
 
 static void menu_box_render(scene_node_p n, const void* arg) {
@@ -86,7 +87,7 @@ static void on_destroy(scene_p s) {
     free(self);
 }
 
-loading_scene_p loading_scene_create(Context2* ctx) {
+loading_scene_p loading_scene_create(context* ctx) {
     loading_scene_p self = (loading_scene_p)malloc(sizeof(loading_scene_t));
     self->scene = scene_create("Loading");
     self->ctx = ctx;
