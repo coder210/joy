@@ -29,8 +29,8 @@ History:
 #define FP_PI_OVER_2 0x1921FB544
 #define FP_LUT_SIZE (int)(FP_PI >> 16)
 
-typedef int64_t fp_t;
-
+#define fp_t int64_t
+#define ft_t float
 
 typedef struct vec2f {
 	fp_t x, y;
@@ -61,7 +61,6 @@ typedef struct mat44f {
 }mat44f_t;
 
 
-typedef float ft_t;
 
 
 typedef struct vec2 {

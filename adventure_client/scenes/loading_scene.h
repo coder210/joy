@@ -1,11 +1,11 @@
 #ifndef LOADING_SCENE_H
 #define LOADING_SCENE_H
 #include <joy2d/jscene.h>
-#include "../context.h"
+#include "../game_context.h"
 
 typedef struct loading_scene loading_scene_t, *loading_scene_p;
 
-loading_scene_p loading_scene_create(Context2* ctx);
+loading_scene_p loading_scene_create(context* ctx);
 void loading_scene_destroy(loading_scene_p s);
 scene_p loading_scene_get_scene(loading_scene_p s);
 
