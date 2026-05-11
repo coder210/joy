@@ -85,13 +85,15 @@ void label_handle_event(label_p label, SDL_Event* event)
 }
 
 button_p
-button_create(SDL_Renderer* renderer, SDL_FRect rect)
+button_create(SDL_Renderer* renderer, float width, float height)
 {
 	button_p btn = (button_p)SDL_malloc(sizeof(button_t));
 	int codepoint_len;
 	if (!btn) return NULL;
 	btn->renderer = renderer;
-	btn->rect = rect;
+	btn->position = (SDL_FPoint){0, 0};
+	btn->width = width;
+	btn->height = height;
 	btn->normal_color = (SDL_Color){ 100, 100, 200, 255 };
 	btn->hover_color = (SDL_Color){ 150, 150, 250, 255 };
 	btn->pressed_color = (SDL_Color){ 50, 50, 150, 255 };
@@ -151,7 +153,7 @@ void button_destroy(button_p btn)
 void button_draw(button_p btn)
 {
 	SDL_Renderer* renderer;
-	SDL_FRect dest_rect;
+	SDL_FRect dest_rect, rect;
 	SDL_Color color;
 	if (!btn) return;
 
@@ -163,21 +165,26 @@ void button_draw(button_p btn)
 		color = btn->hover_color;
 	}
 
+	rect.x = btn->position.x;
+	rect.y = btn->position.y;
+	rect.w = btn->width;
+	rect.h = btn->height;
+
 	renderer = btn->renderer;
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-	SDL_RenderFillRect(renderer, &btn->rect);
+	SDL_RenderFillRect(renderer, &rect);
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderRect(renderer, &btn->rect);
+	SDL_RenderRect(renderer, &rect);
 
 	if (btn->image) {
-		image_draw1(btn->image, NULL, &btn->rect);
+		image_draw1(btn->image, NULL, &rect);
 	}
 
 	if (btn->text) {
 		float widht = text_get_width(btn->text);
 		float height = text_get_height(btn->text);
-		dest_rect.x = btn->rect.x + (btn->rect.w - widht) / 2.0f;
-		dest_rect.y = btn->rect.y + (btn->rect.h - height) / 2.0f;
+		dest_rect.x = rect.x + (rect.w - widht) / 2.0f;
+		dest_rect.y = rect.y + (rect.h - height) / 2.0f;
 		text_print(renderer, btn->text, dest_rect.x, dest_rect.y);
 	}
 }
@@ -186,17 +193,23 @@ void button_handle_event(button_p btn, SDL_Event* event)
 {
 	SDL_Renderer* renderer;
 	SDL_FPoint logic_pos;
+	SDL_FRect rect;
 	int window_width, window_height;
 	renderer = btn->renderer;
 	SDL_GetRenderOutputSize(renderer, &window_width, &window_height);
 
+	rect.x = btn->position.x;
+	rect.y = btn->position.y;
+	rect.w = btn->width;
+	rect.h = btn->height;
+
 	if (event->type == SDL_EVENT_FINGER_MOTION) {
 		SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * window_width, event->tfinger.y * window_height, &logic_pos.x, &logic_pos.y);
-		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &btn->rect);
+		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &rect);
 	}
 	else if (event->type == SDL_EVENT_FINGER_DOWN) {
 		SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * window_width, event->tfinger.y * window_height, &logic_pos.x, &logic_pos.y);
-		if (SDL_PointInRectFloat(&logic_pos, &btn->rect)) {
+		if (SDL_PointInRectFloat(&logic_pos, &rect)) {
 			btn->is_pressed = true;
 		}
 	}
@@ -208,7 +221,7 @@ void button_handle_event(button_p btn, SDL_Event* event)
 			return;
 		}
 		SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &logic_pos.x, &logic_pos.y);
-		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &btn->rect);
+		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &rect);
 	}
 	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (event->button.which == SDL_TOUCH_MOUSEID) {
@@ -216,7 +229,7 @@ void button_handle_event(button_p btn, SDL_Event* event)
 		}
 		if (event->button.button == SDL_BUTTON_LEFT) {
 			SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &logic_pos.x, &logic_pos.y);
-			if (SDL_PointInRectFloat(&logic_pos, &btn->rect)) {
+			if (SDL_PointInRectFloat(&logic_pos, &rect)) {
 				btn->is_pressed = true;
 			}
 		}

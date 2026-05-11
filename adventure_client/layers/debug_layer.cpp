@@ -50,16 +50,17 @@ debug_layer_p create_debug_layer()
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 	self->fps_texture = text_createx(simhei_font, "fps:", SDL_strlen("fps:"), { 255,255,255,255 });
 	scene_node_set_userdata(self->scene_node, self);
-
 	scene_node_set_update_callback(self->scene_node, on_update);
 	scene_node_set_render_callback(self->scene_node, on_render);
 	scene_node_set_destroy_callback(self->scene_node, on_destroy);
-
-	scene_node_set_position(self->scene_node, 300, 150);
+	scene_node_set_position(self->scene_node, 0, 0);
 	scene_node_set_zorder(self->scene_node, 1);
-	scene_node_set_scale(self->scene_node, 2, 2);
+	scene_node_set_scale(self->scene_node, 1, 1);
 
+
+	// children
 	scene_node_p fps_node = scene_node_create();
+	scene_node_set_position(fps_node, 0, 0);
 	scene_node_set_userdata(fps_node, self);
 	scene_node_set_zorder(fps_node, 100);
 	scene_node_set_update_callback(fps_node, [](scene_node_p n, float dt) {
@@ -69,12 +70,14 @@ debug_layer_p create_debug_layer()
 		int fps = simple_fps_value(self->simple_fps);
 		sprintf(content, "fps:%d", fps);
 		text_updatex(self->fps_texture, simhei_font, content, SDL_strlen(content), { 255,255,255,255 });
-	});
+		});
 	scene_node_set_render_callback(fps_node, [](scene_node_p n, const void* arg) {
 		SDL_Renderer* renderer = (SDL_Renderer*)arg;
 		debug_layer_p self = (debug_layer_p)scene_node_get_userdata(n);
-		text_print(renderer, self->fps_texture, 10, 10);
-	});
+		float x, y;
+		scene_node_get_world_position(n, &x, &y);
+		text_print(renderer, self->fps_texture, x, y);
+		});
 
 	scene_node_add_child(self->scene_node, fps_node);
 
