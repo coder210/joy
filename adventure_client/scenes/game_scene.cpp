@@ -129,7 +129,7 @@ static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int inpu
 // ----------------------------------------------------------------------
 // 检测并处理与所有实体的碰撞
 // ----------------------------------------------------------------------
-static void resolve_collision(game_scene_p self, 
+static void resolve_collision(game_scene_p self,
         logic_position_component* p,
         logic_rect_component& currRect,
         id_component& currId)
@@ -240,14 +240,14 @@ static void attack_with_damage_and_effect(game_scene_p self,
                 line.h = end_y - start_y;
                 line.x = start_x - line.w * 0.5f;
                 line.y = start_y;
-                self->ecs_world.entity().set<attack_ray_effect_component>({ 
+                self->ecs_world.entity().set<attack_ray_effect_component>({
                         line.x, line.y, line.w, line.h, 0.1f
                         });
         }
 }
 
 // 仅攻击（减血，无特效）
-static void attack_damage_only(game_scene_p self, 
+static void attack_damage_only(game_scene_p self,
         logic_position_component* p,
         logic_rect_component& currRect,
         id_component& currId,
@@ -468,8 +468,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<player_component>();
         self->ecs_world.component<attack_ray_effect_component>();
 
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         //netclient_set_callback(self->netclient, on_message, self);
 
@@ -536,6 +536,59 @@ static void send_heartbeat(game_scene_p self, float dt)
         }
 }
 
+static void on_handle_event(scene_p s, const void* ev)
+{
+        SDL_Event* e = (SDL_Event*)ev;
+        game_scene_p self = (game_scene_p)scene_get_userdata(s);
+
+        if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
+                bool is_down = (e->type == SDL_EVENT_KEY_DOWN);
+                int key_mask = 0;
+                switch (e->key.key) {
+                case SDLK_W: key_mask = INPUT_UP; break;
+                case SDLK_S: key_mask = INPUT_DOWN; break;
+                case SDLK_A: key_mask = INPUT_LEFT; break;
+                case SDLK_D: key_mask = INPUT_RIGHT; break;
+                case SDLK_J: key_mask = INPUT_ATTACK; break;
+                default: break;
+                }
+                if (key_mask) {
+                        if (is_down) {
+                                self->current_input_mask |= key_mask;
+                                if (key_mask == INPUT_ATTACK) {
+                                        self->attack_triggered = true;
+                                }
+                        }
+                        else {
+                                self->current_input_mask &= ~key_mask;
+                        }
+                }
+        }
+        // 移动输入事件（触屏）
+        else if (e->type == GAMEPLAY_CONTROL_EVENT) {
+                int new_mask = self->current_input_mask;
+                switch (e->user.code) {
+                case GAMEPLAY_CONTROL_UP:    new_mask |= INPUT_UP; break;
+                case GAMEPLAY_CONTROL_DOWN:  new_mask |= INPUT_DOWN; break;
+                case GAMEPLAY_CONTROL_LEFT:  new_mask |= INPUT_LEFT; break;
+                case GAMEPLAY_CONTROL_RIGHT: new_mask |= INPUT_RIGHT; break;
+                case GAMEPLAY_CONTROL_RELEASE_UP:    new_mask &= ~INPUT_UP; break;
+                case GAMEPLAY_CONTROL_RELEASE_DOWN:  new_mask &= ~INPUT_DOWN; break;
+                case GAMEPLAY_CONTROL_RELEASE_LEFT:  new_mask &= ~INPUT_LEFT; break;
+                case GAMEPLAY_CONTROL_RELEASE_RIGHT: new_mask &= ~INPUT_RIGHT; break;
+                case GAMEPLAY_CONTROL_ATTACK:
+                        self->attack_triggered = true;
+                        break;
+                default:
+                        new_mask &= ~(INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT);
+                        break;
+                }
+                if (new_mask != self->current_input_mask) {
+                        self->current_input_mask = new_mask;
+                }
+        }
+}
+
 static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         netclient_update(self->netclient);
@@ -573,9 +626,10 @@ game_scene_p game_scene_create(context* ctx) {
         self->scene = scene_create("game");
         self->ctx = ctx;
         self->accumulator = 0;
-	self->ecs_world.set_ctx(ctx);
+        self->ecs_world.set_ctx(ctx);
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);
+        scene_set_event_callback(self->scene, on_handle_event);
         scene_set_update_callback(self->scene, on_update);
         scene_set_render_callback(self->scene, on_render);
         scene_set_destroy_callback(self->scene, on_destroy);
