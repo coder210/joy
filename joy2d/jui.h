@@ -21,8 +21,10 @@ typedef struct label {
 
 
 typedef struct button {
-	SDL_Renderer* renderer;
-	SDL_FRect rect;           // 按钮的位置和大小
+	SDL_Renderer* renderer;  // 渲染器
+	SDL_FPoint position;           // 按钮的位置和大小
+	float width;
+	float height;
 	SDL_Color normal_color;   // 正常状态颜色
 	SDL_Color hover_color;    // 悬停状态颜色
 	SDL_Color pressed_color;  // 按下状态颜色
@@ -130,7 +132,7 @@ extern "C" {
 	JOY_API void label_draw(label_p label);
 	JOY_API void label_handle_event(label_p label, SDL_Event* event);
 
-	JOY_API button_p button_create(SDL_Renderer* renderer, SDL_FRect rect);
+	JOY_API button_p button_create(SDL_Renderer* renderer, float width, float height);
 	JOY_API void button_destroy(button_p btn);
 	JOY_API void button_set_normal_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_hover_color(button_p btn, SDL_Color color);

@@ -106,7 +106,7 @@ static int l_button_create(lua_State* L)
 	rect.y = luaL_checknumber(L, 3);
 	rect.w = luaL_checknumber(L, 4);
 	rect.h = luaL_checknumber(L, 5);
-	btn = button_create(renderer, rect);
+	//btn = button_create(renderer, rect);
 	lua_pushlightuserdata(L, btn);
 	return 1;
 }
