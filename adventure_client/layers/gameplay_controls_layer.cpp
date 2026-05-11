@@ -157,13 +157,11 @@ gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
  //       button_set_textx(self->rightButton, simhei_font, "R", (int)strlen("R"), { 255, 255, 255, 255 });
  //       button_set_textx(self->attackButton, simhei_font, "A", (int)strlen("A"), { 255, 255, 255, 255 });
  //       
- //       // 初始化按钮状态追踪
+ //     // 初始化按钮状态追踪
 	//self->prevUpPressed = false;
 	//self->prevDownPressed = false;
 	//self->prevLeftPressed = false;
 	//self->prevRightPressed = false;
-
-
 	// children
 
 	// up
@@ -199,7 +197,7 @@ gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
 	button_p down_button = button_create(ctx->renderer, 50, 50);
 	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 255, 255, 255, 255 });
 	scene_node_p down_button_node = scene_node_create();
-	scene_node_set_position(down_button_node, 0, 50);
+	scene_node_set_position(down_button_node, 0, 100);
 	scene_node_set_userdata(down_button_node, down_button);
 	scene_node_set_zorder(down_button_node, 100);
 	scene_node_set_update_callback(down_button_node, [](scene_node_p n, float dt) {
@@ -224,6 +222,63 @@ gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
 
 	scene_node_add_child(self->scene_node, down_button_node);
 
+	// left
+	button_p left_button = button_create(ctx->renderer, 50, 50);
+	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 255, 255, 255, 255 });
+	scene_node_p left_button_node = scene_node_create();
+	scene_node_set_position(left_button_node, 0, 100);
+	scene_node_set_userdata(left_button_node, left_button);
+	scene_node_set_zorder(left_button_node, 100);
+	scene_node_set_update_callback(left_button_node, [](scene_node_p n, float dt) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		scene_node_get_world_position(n, &self->position.x, &self->position.y);
+		if (self->is_pressed) {
+			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP);
+		}
+		});
+
+	scene_node_set_event_callback(left_button_node, [](scene_node_p n, const void* e) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		SDL_Event* event = (SDL_Event*)e;
+		button_handle_event(self, event);
+		});
+
+	scene_node_set_render_callback(left_button_node, [](scene_node_p n, const void* arg) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		button_draw(self);
+		});
+
+	scene_node_add_child(self->scene_node, left_button_node);
+
+	// right
+	button_p right_button = button_create(ctx->renderer, 100, 50);
+	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 255, 255, 255, 255 });
+	scene_node_p right_button_node = scene_node_create();
+	scene_node_set_position(right_button_node, 0, 100);
+	scene_node_set_userdata(right_button_node, right_button);
+	scene_node_set_zorder(right_button_node, 100);
+	scene_node_set_update_callback(right_button_node, [](scene_node_p n, float dt) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		scene_node_get_world_position(n, &self->position.x, &self->position.y);
+		if (self->is_pressed) {
+			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP);
+		}
+		});
+
+	scene_node_set_event_callback(right_button_node, [](scene_node_p n, const void* e) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		SDL_Event* event = (SDL_Event*)e;
+		button_handle_event(self, event);
+		});
+
+	scene_node_set_render_callback(right_button_node, [](scene_node_p n, const void* arg) {
+		button_p self = (button_p)scene_node_get_userdata(n);
+		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		button_draw(self);
+		});
+
+	scene_node_add_child(self->scene_node, right_button_node);
 
 	return self;
 }
