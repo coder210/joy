@@ -20,8 +20,6 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 
 
-const int PIXELS_PER_METER = 50;
-
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
 // 输入掩码
@@ -455,7 +453,7 @@ static void on_message(net_message_p msg, void* arg)
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        log_info("[game scene] onstart...");
+        log_info("[game scene] start...");
 
         debug_layer_p debug_layer = create_debug_layer();
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
@@ -470,8 +468,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<player_component>();
         self->ecs_world.component<attack_ray_effect_component>();
 
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.61", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         //netclient_set_callback(self->netclient, on_message, self);
 
@@ -541,6 +539,7 @@ static void send_heartbeat(game_scene_p self, float dt)
 static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         netclient_update(self->netclient);
+        self->accumulator += dt;
         if (self->accumulator >= self->FIXED_TIMESTEP) {
                 fixedupdate(self, self->FIXED_TIMESTEP);
                 self->accumulator -= self->FIXED_TIMESTEP;
@@ -571,9 +570,10 @@ static void on_destroy(scene_p s) {
 
 game_scene_p game_scene_create(context* ctx) {
         game_scene_p self = new game_scene();
-        SDL_assert(self);
         self->scene = scene_create("game");
         self->ctx = ctx;
+        self->accumulator = 0;
+	self->ecs_world.set_ctx(ctx);
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);
         scene_set_update_callback(self->scene, on_update);
