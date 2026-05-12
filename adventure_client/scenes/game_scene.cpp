@@ -468,8 +468,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<player_component>();
         self->ecs_world.component<attack_ray_effect_component>();
 
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         //netclient_set_callback(self->netclient, on_message, self);
 
@@ -494,7 +494,7 @@ static void fixedupdate(game_scene_p self, float dt)
         if (self->ready) {
                 int send_mask = self->current_input_mask;
                 if (self->attack_triggered) {
-                        //send_mask |= INPUT_ATTACK;
+                        send_mask |= INPUT_ATTACK;
                         self->attack_triggered = false;
                 }
                 if (send_mask != 0) {
