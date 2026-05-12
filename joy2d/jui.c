@@ -88,7 +88,6 @@ button_p
 button_create(SDL_Renderer* renderer, float width, float height)
 {
 	button_p btn = (button_p)SDL_malloc(sizeof(button_t));
-	int codepoint_len;
 	if (!btn) return NULL;
 	btn->renderer = renderer;
 	btn->position = (SDL_FPoint){0, 0};
@@ -100,27 +99,33 @@ button_create(SDL_Renderer* renderer, float width, float height)
 	btn->image = NULL;
 	btn->text = NULL;
 	btn->is_hovered = btn->is_pressed = false;
+	btn->on_press = btn->on_release = NULL;
+	btn->cb_userdata = NULL;
 	return btn;
 }
 
 void button_set_normal_color(button_p btn, SDL_Color color)
 {
+	if (!btn) return;
 	btn->normal_color = color;
 }
 
 void button_set_hover_color(button_p btn, SDL_Color color)
 {
+	if (!btn) return;
 	btn->hover_color = color;
 }
 
 void button_set_pressed_color(button_p btn, SDL_Color color)
 {
+	if (!btn) return;
 	btn->pressed_color = color;
 }
 
 void button_set_textx(button_p btn, font_p fontinfo,
 	const char* str, int len, SDL_Color color)
 {
+	if (!btn) return;
 	if (btn->text) {
 		text_updatex(btn->text, fontinfo, str, len, color);
 	}
@@ -133,12 +138,21 @@ void
 button_set_text(button_p btn, font_p fontinfo,
 	const int* codepoints, int num_codepoints, SDL_Color color)
 {
+	if (!btn) return;
 	if (btn->text) {
 		text_update(btn->text, fontinfo, codepoints, num_codepoints, color);
 	}
 	else {
 		btn->text = text_create(fontinfo, codepoints, num_codepoints, color);
 	}
+}
+
+void button_set_callback(button_p btn, button_callback_fn press, button_callback_fn release, void* userdata)
+{
+	if (!btn) return;
+	btn->on_press = press;
+	btn->on_release = release;
+	btn->cb_userdata = userdata;
 }
 
 void button_destroy(button_p btn)
@@ -195,6 +209,10 @@ void button_handle_event(button_p btn, SDL_Event* event)
 	SDL_FPoint logic_pos;
 	SDL_FRect rect;
 	int window_width, window_height;
+	if (!btn || !event) return;
+
+	bool was_pressed = btn->is_pressed;
+
 	renderer = btn->renderer;
 	SDL_GetRenderOutputSize(renderer, &window_width, &window_height);
 
@@ -214,7 +232,9 @@ void button_handle_event(button_p btn, SDL_Event* event)
 		}
 	}
 	else if (event->type == SDL_EVENT_FINGER_UP) {
-		btn->is_pressed = false;
+		if (btn->is_pressed) {
+			btn->is_pressed = false;
+		}
 	}
 	else if (event->type == SDL_EVENT_MOUSE_MOTION) {
 		if (event->motion.which == SDL_TOUCH_MOUSEID) {
@@ -238,9 +258,17 @@ void button_handle_event(button_p btn, SDL_Event* event)
 		if (event->button.which == SDL_TOUCH_MOUSEID) {
 			return;
 		}
-		if (event->button.button == SDL_BUTTON_LEFT) {
+		if (event->button.button == SDL_BUTTON_LEFT && btn->is_pressed) {
 			btn->is_pressed = false;
 		}
+	}
+
+	// 检测状态变化并触发回调
+	if (!was_pressed && btn->is_pressed && btn->on_press) {
+		btn->on_press(btn, btn->cb_userdata);
+	}
+	else if (was_pressed && !btn->is_pressed && btn->on_release) {
+		btn->on_release(btn, btn->cb_userdata);
 	}
 }
 
