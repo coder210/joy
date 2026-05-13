@@ -96,6 +96,8 @@ PROTOBUF_CONSTEXPR S2CEntity::S2CEntity(
   , /*decltype(_impl_.type_)*/0
   , /*decltype(_impl_.position_x_)*/int64_t{0}
   , /*decltype(_impl_.position_y_)*/int64_t{0}
+  , /*decltype(_impl_.width_)*/int64_t{0}
+  , /*decltype(_impl_.height_)*/int64_t{0}
   , /*decltype(_impl_.hp_)*/int64_t{0}
   , /*decltype(_impl_.extend_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
@@ -270,6 +272,8 @@ const uint32_t TableStruct_adventure::offsets[] PROTOBUF_SECTION_VARIABLE(protod
   PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.type_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.position_x_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.position_y_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.width_),
+  PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.height_),
   PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.hp_),
   ::_pbi::kInvalidFieldOffsetTag,
   PROTOBUF_FIELD_OFFSET(::adventure::S2CEntity, _impl_.extend_),
@@ -342,13 +346,13 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 22, -1, -1, sizeof(::adventure::C2SPlayerHeart)},
   { 30, -1, -1, sizeof(::adventure::C2S)},
   { 42, -1, -1, sizeof(::adventure::S2CEntity)},
-  { 55, -1, -1, sizeof(::adventure::S2CPlayerJoin)},
-  { 64, -1, -1, sizeof(::adventure::S2CPlayerLeave)},
-  { 71, -1, -1, sizeof(::adventure::S2CPlayerInput)},
-  { 79, -1, -1, sizeof(::adventure::S2CWorld)},
-  { 87, -1, -1, sizeof(::adventure::S2CMap)},
-  { 96, -1, -1, sizeof(::adventure::S2CCommand)},
-  { 107, -1, -1, sizeof(::adventure::S2C)},
+  { 57, -1, -1, sizeof(::adventure::S2CPlayerJoin)},
+  { 66, -1, -1, sizeof(::adventure::S2CPlayerLeave)},
+  { 73, -1, -1, sizeof(::adventure::S2CPlayerInput)},
+  { 81, -1, -1, sizeof(::adventure::S2CWorld)},
+  { 89, -1, -1, sizeof(::adventure::S2CMap)},
+  { 98, -1, -1, sizeof(::adventure::S2CCommand)},
+  { 109, -1, -1, sizeof(::adventure::S2C)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -379,37 +383,38 @@ const char descriptor_table_protodef_adventure[] PROTOBUF_SECTION_VARIABLE(proto
   "dventure.C2SPlayerLeaveH\000\0221\n\014player_inpu"
   "t\030\004 \001(\0132\031.adventure.C2SPlayerInputH\000\0221\n\014"
   "player_heart\030\005 \001(\0132\031.adventure.C2SPlayer"
-  "HeartH\000B\t\n\007payload\"\216\001\n\tS2CEntity\022\n\n\002id\030\001"
+  "HeartH\000B\t\n\007payload\"\255\001\n\tS2CEntity\022\n\n\002id\030\001"
   " \001(\005\022 \n\004type\030\002 \001(\0162\022.adventure.S2CType\022\022"
-  "\n\nposition_x\030\003 \001(\003\022\022\n\nposition_y\030\004 \001(\003\022\n"
-  "\n\002hp\030\005 \001(\003\022\025\n\013player_conv\030\006 \001(\005H\000B\010\n\006ext"
-  "end\"E\n\rS2CPlayerJoin\022\014\n\004conv\030\001 \001(\005\022\022\n\npo"
-  "sition_x\030\002 \001(\003\022\022\n\nposition_y\030\003 \001(\003\"\036\n\016S2"
-  "CPlayerLeave\022\014\n\004conv\030\001 \001(\005\"/\n\016S2CPlayerI"
-  "nput\022\014\n\004conv\030\001 \001(\005\022\017\n\007keycode\030\002 \001(\005\"E\n\010S"
-  "2CWorld\022\021\n\tentity_id\030\001 \001(\005\022&\n\010entities\030\002"
-  " \003(\0132\024.adventure.S2CEntity\"L\n\006S2CMap\022\020\n\010"
-  "frame_id\030\001 \001(\005\022\014\n\004conv\030\002 \001(\005\022\"\n\005world\030\003 "
-  "\001(\0132\023.adventure.S2CWorld\"\304\001\n\nS2CCommand\022"
-  "\020\n\010frame_id\030\001 \001(\005\022.\n\014player_joins\030\002 \003(\0132"
-  "\030.adventure.S2CPlayerJoin\0220\n\rplayer_leav"
-  "es\030\003 \003(\0132\031.adventure.S2CPlayerLeave\0220\n\rp"
-  "layer_inputs\030\004 \003(\0132\031.adventure.S2CPlayer"
-  "Input\022\020\n\010checksum\030\005 \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 "
-  "\001(\0162\021.adventure.S2CCmd\022\036\n\003map\030\002 \001(\0132\021.ad"
-  "venture.S2CMap\022&\n\007command\030\003 \001(\0132\025.advent"
-  "ure.S2CCommand*\201\001\n\006C2SCmd\022\017\n\013CMD_UNKNOWN"
-  "\020\000\022\023\n\017CMD_PLAYER_JOIN\020\001\022\024\n\020CMD_PLAYER_LE"
-  "AVE\020\002\022\024\n\020CMD_PLAYER_INPUT\020\003\022\024\n\020CMD_PLAYE"
-  "R_HEART\020\004\022\017\n\013CMD_LOADING\020\005*D\n\006S2CCmd\022\020\n\014"
-  "S2C_CMD_NONE\020\000\022\023\n\017S2C_CMD_LOADING\020\001\022\023\n\017S"
-  "2C_CMD_COMMAND\020\002*G\n\007S2CType\022\023\n\017S2C_TYPE_"
-  "NORMAL\020\000\022\023\n\017S2C_TYPE_PLAYER\020\001\022\022\n\016S2C_TYP"
-  "E_ENEMY\020\002b\006proto3"
+  "\n\nposition_x\030\003 \001(\003\022\022\n\nposition_y\030\004 \001(\003\022\r"
+  "\n\005width\030\005 \001(\003\022\016\n\006height\030\006 \001(\003\022\n\n\002hp\030\007 \001("
+  "\003\022\025\n\013player_conv\030\010 \001(\005H\000B\010\n\006extend\"E\n\rS2"
+  "CPlayerJoin\022\014\n\004conv\030\001 \001(\005\022\022\n\nposition_x\030"
+  "\002 \001(\003\022\022\n\nposition_y\030\003 \001(\003\"\036\n\016S2CPlayerLe"
+  "ave\022\014\n\004conv\030\001 \001(\005\"/\n\016S2CPlayerInput\022\014\n\004c"
+  "onv\030\001 \001(\005\022\017\n\007keycode\030\002 \001(\005\"E\n\010S2CWorld\022\021"
+  "\n\tentity_id\030\001 \001(\005\022&\n\010entities\030\002 \003(\0132\024.ad"
+  "venture.S2CEntity\"L\n\006S2CMap\022\020\n\010frame_id\030"
+  "\001 \001(\005\022\014\n\004conv\030\002 \001(\005\022\"\n\005world\030\003 \001(\0132\023.adv"
+  "enture.S2CWorld\"\304\001\n\nS2CCommand\022\020\n\010frame_"
+  "id\030\001 \001(\005\022.\n\014player_joins\030\002 \003(\0132\030.adventu"
+  "re.S2CPlayerJoin\0220\n\rplayer_leaves\030\003 \003(\0132"
+  "\031.adventure.S2CPlayerLeave\0220\n\rplayer_inp"
+  "uts\030\004 \003(\0132\031.adventure.S2CPlayerInput\022\020\n\010"
+  "checksum\030\005 \001(\t\"m\n\003S2C\022\036\n\003cmd\030\001 \001(\0162\021.adv"
+  "enture.S2CCmd\022\036\n\003map\030\002 \001(\0132\021.adventure.S"
+  "2CMap\022&\n\007command\030\003 \001(\0132\025.adventure.S2CCo"
+  "mmand*\201\001\n\006C2SCmd\022\017\n\013CMD_UNKNOWN\020\000\022\023\n\017CMD"
+  "_PLAYER_JOIN\020\001\022\024\n\020CMD_PLAYER_LEAVE\020\002\022\024\n\020"
+  "CMD_PLAYER_INPUT\020\003\022\024\n\020CMD_PLAYER_HEART\020\004"
+  "\022\017\n\013CMD_LOADING\020\005*D\n\006S2CCmd\022\020\n\014S2C_CMD_N"
+  "ONE\020\000\022\023\n\017S2C_CMD_LOADING\020\001\022\023\n\017S2C_CMD_CO"
+  "MMAND\020\002*G\n\007S2CType\022\023\n\017S2C_TYPE_NORMAL\020\000\022"
+  "\023\n\017S2C_TYPE_PLAYER\020\001\022\022\n\016S2C_TYPE_ENEMY\020\002"
+  "b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_adventure_once;
 const ::_pbi::DescriptorTable descriptor_table_adventure = {
-    false, false, 1497, descriptor_table_protodef_adventure,
+    false, false, 1528, descriptor_table_protodef_adventure,
     "adventure",
     &descriptor_table_adventure_once, nullptr, 0, 13,
     schemas, file_default_instances, TableStruct_adventure::offsets,
@@ -1721,6 +1726,8 @@ S2CEntity::S2CEntity(const S2CEntity& from)
     , decltype(_impl_.type_){}
     , decltype(_impl_.position_x_){}
     , decltype(_impl_.position_y_){}
+    , decltype(_impl_.width_){}
+    , decltype(_impl_.height_){}
     , decltype(_impl_.hp_){}
     , decltype(_impl_.extend_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1752,6 +1759,8 @@ inline void S2CEntity::SharedCtor(
     , decltype(_impl_.type_){0}
     , decltype(_impl_.position_x_){int64_t{0}}
     , decltype(_impl_.position_y_){int64_t{0}}
+    , decltype(_impl_.width_){int64_t{0}}
+    , decltype(_impl_.height_){int64_t{0}}
     , decltype(_impl_.hp_){int64_t{0}}
     , decltype(_impl_.extend_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -1847,17 +1856,33 @@ const char* S2CEntity::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx
         } else
           goto handle_unusual;
         continue;
-      // int64 hp = 5;
+      // int64 width = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.width_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int64 height = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+          _impl_.height_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // int64 hp = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 56)) {
           _impl_.hp_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // int32 player_conv = 6;
-      case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+      // int32 player_conv = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 64)) {
           _internal_set_player_conv(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
           CHK_(ptr);
         } else
@@ -1917,16 +1942,28 @@ uint8_t* S2CEntity::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt64ToArray(4, this->_internal_position_y(), target);
   }
 
-  // int64 hp = 5;
-  if (this->_internal_hp() != 0) {
+  // int64 width = 5;
+  if (this->_internal_width() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt64ToArray(5, this->_internal_hp(), target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(5, this->_internal_width(), target);
   }
 
-  // int32 player_conv = 6;
+  // int64 height = 6;
+  if (this->_internal_height() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(6, this->_internal_height(), target);
+  }
+
+  // int64 hp = 7;
+  if (this->_internal_hp() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteInt64ToArray(7, this->_internal_hp(), target);
+  }
+
+  // int32 player_conv = 8;
   if (_internal_has_player_conv()) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteInt32ToArray(6, this->_internal_player_conv(), target);
+    target = ::_pbi::WireFormatLite::WriteInt32ToArray(8, this->_internal_player_conv(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1966,13 +2003,23 @@ size_t S2CEntity::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_position_y());
   }
 
-  // int64 hp = 5;
+  // int64 width = 5;
+  if (this->_internal_width() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_width());
+  }
+
+  // int64 height = 6;
+  if (this->_internal_height() != 0) {
+    total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_height());
+  }
+
+  // int64 hp = 7;
   if (this->_internal_hp() != 0) {
     total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(this->_internal_hp());
   }
 
   switch (extend_case()) {
-    // int32 player_conv = 6;
+    // int32 player_conv = 8;
     case kPlayerConv: {
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_player_conv());
       break;
@@ -2010,6 +2057,12 @@ void S2CEntity::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   }
   if (from._internal_position_y() != 0) {
     _this->_internal_set_position_y(from._internal_position_y());
+  }
+  if (from._internal_width() != 0) {
+    _this->_internal_set_width(from._internal_width());
+  }
+  if (from._internal_height() != 0) {
+    _this->_internal_set_height(from._internal_height());
   }
   if (from._internal_hp() != 0) {
     _this->_internal_set_hp(from._internal_hp());

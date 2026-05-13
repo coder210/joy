@@ -4,8 +4,7 @@
 struct TransformComponent {
 	float position_x;
 	float position_y;
-	float rotation_x;
-	float rotation_y;
+	float rotation;
 	float scale_x;
 	float scale_y;
 };

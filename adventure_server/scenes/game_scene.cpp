@@ -11,6 +11,7 @@
 #include <joy2d/jcollision.h>
 #include <joy2d/jshapes.h>
 #include <joy2d/jnetwork.h>
+#include "../layers/debug_layer.h"
 #include "../app_context.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
@@ -50,7 +51,7 @@ struct game_scene {
 	float serverTickTimer = 0.0f;
 	float SERVER_TICK_INTERVAL = 1.0f / 20.0f;
 
-	netserver_p server = NULL;
+	netserver_p netserver;
 	Context* ctx;
 
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
@@ -101,7 +102,7 @@ static void HandleLoading(game_scene_p g, int conv, adventure::C2S* c2s)
 		return;
 	}
 	auto data = s2c.SerializeAsString();
-	netserver_send(g->server, conn->conv, data.c_str(), data.length());
+	netserver_send(g->netserver, conn->conv, data.c_str(), data.length());
 }
 
 static void AddPlayerJoin(game_scene_p g, int conv, adventure::C2S* c2s)
@@ -335,6 +336,8 @@ static void CollectCommandSystem(game_scene_p self)
 		ent->set_hp(id.hp);
 		ent->set_position_x(pos.x);
 		ent->set_position_y(pos.y);
+		ent->set_width(r.width);
+		ent->set_height(r.height);
 	});
 
 	self->worlds[command->frame_id()] = s2c_world.SerializeAsString();
@@ -374,7 +377,7 @@ static void HandleCommandSystem(game_scene_p self)
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
 			.set<LogicPositionComponent>({ x, y })
 			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-			.set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
+			.set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
 			.set<PlayerComponent>({ player_join.conv() });
 	}
 
@@ -423,7 +426,7 @@ static void NotifySystem(game_scene_p self)
 		for (int i = conn.frameid; i < taget_frameid; i++) {
 			auto it = self->commands.find(i);
 			if (it != self->commands.end()) {
-				netserver_send(self->server, conn.conv, it->second.c_str(), it->second.size());
+				netserver_send(self->netserver, conn.conv, it->second.c_str(), it->second.size());
 			}
 			else {
 				log_error("Frame %d not found in commands, skip sending.", i);
@@ -437,7 +440,7 @@ static void NotifySystem(game_scene_p self)
 static void FixedUpdate(game_scene_p self, float dt)
 {
 	net_message_t msg;
-	if (netserver_poll_message(self->server, &msg)) {
+	if (netserver_poll_message(self->netserver, &msg)) {
 		OnMessage(self, &msg, NULL);
 	}
 }
@@ -446,18 +449,34 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	self->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.32", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+
+	debug_layer_p debug_layer = create_debug_layer();
+	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
+
 	self->world.set_ctx(self->ctx);
+
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
-		.set<LogicPositionComponent>({ fp_from_float(1), fp_from_float(1) })
-		.set<TransformComponent>({ 1,1 });
+		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.6f) })
+		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(-0.5f) })
+		.set<TransformComponent>({ 0,-0.5f,0,1,1 });
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
-		.set<LogicPositionComponent>({ fp_from_float(4), fp_from_float(4) })
-		.set<TransformComponent>({ 2,2 });
+		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(12) })
+		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(0) })
+		.set<TransformComponent>({ 0,0,0,1,1 });
+	self->world.entity()
+		.set<IdComponent>({ GenId(self), 100 })
+		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(12) })
+		.set<LogicPositionComponent>({ fp_from_float(12), fp_from_float(0) })
+		.set<TransformComponent>({ 12,0,0,1,1 });
+	self->world.entity()
+		.set<IdComponent>({ GenId(self), 100 })
+		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.6f) })
+		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(6) })
+		.set<TransformComponent>({ 0,6,0,1,1 });
+
 
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
@@ -481,13 +500,13 @@ static void on_load(scene_p s)
 				ent->set_type(adventure::S2C_TYPE_NORMAL);
 			}
 			ent->set_hp(id.hp);
+			ent->set_width(r.width);
+			ent->set_height(r.height);
 			ent->set_position_x(pos.x);
 			ent->set_position_y(pos.y);
 		});
 
 	self->worlds[self->g_frameid] = s2c_world.SerializeAsString();
-
-	//ctx->debugLayer = new DebugLayer(ctx->resources);
 }
 
 static void on_handle_event(scene_p s, const void* ev)
@@ -519,7 +538,7 @@ static void on_update(scene_p s, float dt)
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 
 	self->accumulator += dt;
-	netserver_update(self->server);
+	netserver_update(self->netserver);
 	simple_fps_update(self->sample_fps);
 
 	// 固定步长物理更新（50Hz）
@@ -551,7 +570,7 @@ static void on_destroy(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	simple_fps_destory(self->sample_fps);
-	netserver_destroy(self->server);
+	netserver_destroy(self->netserver);
 	
 }
 

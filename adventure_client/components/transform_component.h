@@ -5,7 +5,7 @@
 struct TransformComponent
 {
         float position_x, position_y;
-        float rotation_x, rotation_y;
+        float rotation;
         float scale_x, scale_y;
 };
 

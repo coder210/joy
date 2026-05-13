@@ -5,6 +5,7 @@
 #include <joy2d/jscene.h>
 #include "scenes/game_scene.h"
 #include "app_context.h"
+#include "asset_manager.h"
 
 static scene_manager_p g_mgr;
 static Context* ctx;
@@ -19,6 +20,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 		return SDL_APP_FAILURE;
 	}
 
+
 	ctx = (Context*)calloc(1, sizeof(Context));
         ctx->FIXED_TIMESTEP = 1 / 50.0f;
 
@@ -27,6 +29,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 	SDL_CreateWindowAndRenderer("server", 640, 480, 0, &ctx->window, &ctx->renderer);
 	SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
+        AssetManager::Init(ctx->renderer);
 
 	g_mgr = scene_manager_create();
 	scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
