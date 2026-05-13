@@ -1,22 +1,11 @@
 #ifndef DEBUG_LAYER_H
 #define DEBUG_LAYER_H
 #include <joy2d/jtext.h>
-#include "../asset_manager.h"
+#include <joy2d/jscene.h>
 
-class DebugLayer
-{
-public:
-	DebugLayer(AssetManager* assetManager);
-	~DebugLayer();
-	void Update(int frameId, int fps);
-        void Draw(SDL_Renderer* renderer);
-private:
-	int frameId;
-	int fps;
-	AssetManager* assetManager;
-	text_texture_p fpsTexture;
-	text_texture_p frameTexture;
-};
+typedef struct debug_layer debug_layer_t, *debug_layer_p;
 
+debug_layer_p create_debug_layer();
+scene_node_p debug_layer_get_node(debug_layer_p debug_layer);
 
 #endif

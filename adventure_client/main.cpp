@@ -27,17 +27,18 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         ctx = (context*)calloc(1, sizeof(context));
 
-        g_mgr = scene_manager_create();
-        loading_scene_t* loading = loading_scene_create(ctx);
-        scene_manager_push(g_mgr, loading_scene_get_scene(loading));
-
         game_timer_init(&g_timer);
         game_timer_set_target_fps(&g_timer, 60);  // 锁定 60 FPS
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-
         AssetManager::Init(ctx->renderer);
+
+
+        g_mgr = scene_manager_create();
+        loading_scene_t* loading = loading_scene_create(ctx);
+        scene_manager_push(g_mgr, loading_scene_get_scene(loading));
+       
 
         return SDL_APP_CONTINUE;
 }
