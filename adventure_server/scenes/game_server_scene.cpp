@@ -1,6 +1,5 @@
-#include "game_server_scene.h"
-#include "../protocol/adventure.pb.h"
 #include "../flecs.h"
+#include "../protocol/adventure.pb.h"
 #include <string>
 #include <map>
 #include <queue>
@@ -13,11 +12,13 @@
 #include <joy2d/jshapes.h>
 #include "../app_context.h"
 #include "../components/connection_component.h"
+#include "../components/player_component.h"
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
 #include "../systems/renderer_attack_ray_effect_system.h"
 #include "../systems/renderer_system.h"
+#include "game_server_scene.h"
 
 
 // 位掩码定义
@@ -441,47 +442,11 @@ static void FixedUpdate(game_server_scene_p self, float dt)
 	}
 }
 
-static void StartupSystem(flecs::world& world)
-{
-	//auto ctx = world.get_mut<Context>();
-	//adventure::S2CWorld s2c_world;
-	//ctx->body_query = world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
-	//ctx->connection_query = world.query<ConnectionComponent>();
-	//ctx->player_query = world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-	//ctx->body_query.each([&](flecs::entity e, IdComponent& id,
-	//	LogicRectComponent& r, LogicPositionComponent& pos) {
-	//		adventure::S2CEntity* ent = s2c_world.add_entities();
-	//		ent->set_id(id.id);
-	//		if (e.has<PlayerComponent>()) {
-	//			ent->set_type(adventure::S2C_TYPE_PLAYER);
-	//			ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-	//		}
-	//		else {
-	//			ent->set_type(adventure::S2C_TYPE_NORMAL);
-	//		}
-	//		ent->set_hp(id.hp);
-	//		ent->set_position_x(pos.x);
-	//		ent->set_position_y(pos.y);
-	//	});
-
-	//ctx->worlds[ctx->g_frameid] = s2c_world.SerializeAsString();
-
-	//ctx->resources = new Resources(ctx->renderer);
-	//ctx->debugLayer = new DebugLayer(ctx->resources);
-}
-
 static void on_load(scene_p s)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-
-	if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &self->ctx->window, &self->ctx->renderer)) {
-		SDL_Log("Window failed: %s", SDL_GetError());
-		return;
-	}
-	SDL_SetRenderLogicalPresentation(self->ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
 	self->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.32", 10000);
-
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
 		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
@@ -498,8 +463,30 @@ static void on_load(scene_p s)
 
 	self->renderer_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
 	self->renderer_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
+	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
+	self->connection_query = self->world.query<ConnectionComponent>();
+	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
-	StartupSystem(self->world);
+	adventure::S2CWorld s2c_world;
+	self->body_query.each([&](flecs::entity e, IdComponent& id,
+		LogicRectComponent& r, LogicPositionComponent& pos) {
+			adventure::S2CEntity* ent = s2c_world.add_entities();
+			ent->set_id(id.id);
+			if (e.has<PlayerComponent>()) {
+				ent->set_type(adventure::S2C_TYPE_PLAYER);
+				ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+			}
+			else {
+				ent->set_type(adventure::S2C_TYPE_NORMAL);
+			}
+			ent->set_hp(id.hp);
+			ent->set_position_x(pos.x);
+			ent->set_position_y(pos.y);
+		});
+
+	self->worlds[self->g_frameid] = s2c_world.SerializeAsString();
+
+	//ctx->debugLayer = new DebugLayer(ctx->resources);
 }
 
 static void on_handle_event(scene_p s, const void* ev)
@@ -536,38 +523,33 @@ static void on_update(scene_p s, float dt)
 
 	// 固定步长物理更新（50Hz）
 	if (self->accumulator >= self->FIXED_TIMESTEP) {
-		//FixedUpdate(self->FIXED_TIMESTEP);
+		FixedUpdate(self, self->FIXED_TIMESTEP);
 		self->accumulator -= self->FIXED_TIMESTEP;
 	}
 
 	self->world.progress(dt);
 
 	// 独立的帧同步 Tick（20Hz）
-	//self->serverTickTimer += fixed_dt;
-	//if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {
-	//	ctx->serverTickTimer -= ctx->SERVER_TICK_INTERVAL;
-	//	CollectCommandSystem();
-	//	HandleCommandSystem();
-	//	NotifySystem();
-	//}
+	self->serverTickTimer += dt;
+	if (self->serverTickTimer >= self->SERVER_TICK_INTERVAL) {
+		self->serverTickTimer -= self->SERVER_TICK_INTERVAL;
+		CollectCommandSystem(self);
+		HandleCommandSystem(self);
+		NotifySystem(self);
+	}
 }
 
 static void on_render(scene_p s)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-
-	SDL_SetRenderDrawColor(self->ctx->renderer, 100, 100, 100, 255);
-	SDL_RenderClear(self->ctx->renderer);
 	self->renderer_query.each(RendererSystem);
 	self->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
-	SDL_RenderPresent(self->ctx->renderer);
 }
 
 static void on_destroy(scene_p s)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
 	auto ctx = self->world.get_mut<Context>();
-
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->server);
 	
@@ -584,7 +566,6 @@ game_server_scene_p game_server_scene_create(Context* ctx)
 	self->world.component<LogicVelocityComponent>();
 	self->world.component<TransformComponent>();
 	self->world.component<PlayerComponent>();
-	self->world.set<Context>({});
 
 	scene_set_userdata(self->scene, self);
 	scene_set_load_callback(self->scene, on_load);
