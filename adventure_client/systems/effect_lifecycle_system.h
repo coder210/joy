@@ -4,10 +4,10 @@
 #include "../game_context.h"
 #include "../components/attack_ray_effect_component.h"
 
-static void effect_lifecycle_system(flecs::entity e, attack_ray_effect_component& effect)
+static void effect_lifecycle_system(flecs::entity e, AttackRayEffectComponent& effect)
 {
         struct context* ctx = (struct context*)e.world().get_ctx();
-        effect.lifetime -= ctx->FIXED_TIMESTEP;  // 使用固定步长，与物理同步
+        effect.lifetime -= ctx->FIXED_TIMESTEP;  // 使霉潭同
         if (effect.lifetime <= 0.0f) {
                 e.destruct();
         }

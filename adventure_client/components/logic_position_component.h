@@ -2,7 +2,7 @@
 #define LOGIC_POSITION_COMPONENT_H
 #include <joy2d/jmath.h>
 
-struct logic_position_component
+struct LogicPositionComponent
 {
         fp_t x;
         fp_t y;

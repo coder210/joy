@@ -8,9 +8,9 @@
 #include "../components/transform_component.h"
 
 static void drawing_entity_system(flecs::entity e, 
-        id_component& id,
-        logic_rect_component& rect, 
-        transform_component& t)
+        IdComponent& id,
+        LogicRectComponent& rect, 
+        TransformComponent& t)
 {
         struct context* ctx = (struct context*)e.world().get_ctx();
         SDL_FRect body = { 0 };
@@ -19,7 +19,7 @@ static void drawing_entity_system(flecs::entity e,
         body.y = t.position_y * PIXELS_PER_METER;
         body.w = fp_to_float(rect.width) * PIXELS_PER_METER;
         body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
-        if (e.has<player_component>()) {
+        if (e.has<PlayerComponent>()) {
                 SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 255, 255);
                 SDL_RenderFillRect(ctx->renderer, &body);
                 header.w = 0.1f * PIXELS_PER_METER;

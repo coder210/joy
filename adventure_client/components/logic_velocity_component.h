@@ -2,7 +2,7 @@
 #define LOGIC_VELOCITY_COMPONENT_H
 #include <joy2d/jmath.h>
 
-struct logic_velocity_component
+struct LogicVelocityComponent
 {
         fp_t x;
         fp_t y;
