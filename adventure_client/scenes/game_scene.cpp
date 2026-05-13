@@ -63,8 +63,8 @@ struct game_scene {
         flecs::query<id_component, logic_rect_component, logic_position_component> body_query;
         flecs::query<player_component, id_component, logic_rect_component, logic_position_component> player_query;
         flecs::query<id_component, logic_position_component, transform_component> sync_query;
-        flecs::query<id_component, logic_rect_component, transform_component> renderer_query;
-        flecs::query<attack_ray_effect_component> attack_rayeffect_query;
+        flecs::query<id_component, logic_rect_component, transform_component> drawing_entity_query;
+        flecs::query<attack_ray_effect_component> attack_ray_effect_query;
 
 };
 
@@ -473,8 +473,8 @@ static void on_load(scene_p s)
         self->ecs_world.system<logic_position_component, transform_component>().each(lerp_system);
         self->ecs_world.system<attack_ray_effect_component>().each(effect_lifecycle_system);
         self->sync_query = self->ecs_world.query<id_component, logic_position_component, transform_component>();
-        self->renderer_query = self->ecs_world.query<id_component, logic_rect_component, transform_component>();
-        self->attack_rayeffect_query = self->ecs_world.query<attack_ray_effect_component>();
+        self->drawing_entity_query = self->ecs_world.query<id_component, logic_rect_component, transform_component>();
+        self->attack_ray_effect_query = self->ecs_world.query<attack_ray_effect_component>();
         self->player_query = self->ecs_world.query<player_component, id_component, logic_rect_component, logic_position_component>();
         self->body_query = self->ecs_world.query<id_component, logic_rect_component, logic_position_component>();
 
@@ -609,8 +609,8 @@ static void on_update(scene_p s, float dt) {
 static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         SDL_SetRenderDrawColor(self->ctx->renderer, 100, 100, 100, 255);
-        self->renderer_query.each(drawing_entity_system);
-        //self->attack_rayeffect_query.each(drawing_attack_ray_effect_system);
+        self->drawing_entity_query.each(drawing_entity_system);
+        self->attack_ray_effect_query.each(drawing_attack_ray_effect_system);
 }
 
 static void on_destroy(scene_p s) {

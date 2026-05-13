@@ -43,7 +43,7 @@ static void on_destroy(scene_node_p n)
 	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 }
 
-static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
+static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	int logical_width, logical_height;
 	SDL_GetRenderLogicalPresentation(ctx->renderer, &logical_width, &logical_height, NULL);
@@ -175,7 +175,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 }
 
 
-static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
+static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 	int logical_width, logical_height;
@@ -217,7 +217,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_add_child(root_node, attack_button_node);
 }
 
-gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
+gameplay_controls_layer_p create_gameplay_controls_layer(Context* ctx)
 {
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)SDL_malloc(sizeof(gameplay_controls_layer_t));
