@@ -1,0 +1,12 @@
+#ifndef GAME_SCENE_H
+#define GAME_SCENE_H
+#include <joy2d/jscene.h>
+#include "../flecs.h"
+#include "../app_context.h"
+
+typedef struct game_scene game_scene_t, *game_scene_p;
+
+game_scene_p game_scene_create(Context* ctx);
+scene_p game_scene_get_scene(game_scene_p g);
+
+#endif

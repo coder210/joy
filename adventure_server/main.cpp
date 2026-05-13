@@ -3,7 +3,7 @@
 #include <joy2d/jcore.h>
 #include <joy2d/jsys.h>
 #include <joy2d/jscene.h>
-#include "scenes/game_server_scene.h"
+#include "scenes/game_scene.h"
 #include "app_context.h"
 
 static scene_manager_p g_mgr;
@@ -29,7 +29,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
 
 	g_mgr = scene_manager_create();
-	scene_manager_push(g_mgr, game_server_scene_get_scene(game_server_scene_create(ctx)));
+	scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
 
 	log_info("server start");
 	return SDL_APP_CONTINUE;

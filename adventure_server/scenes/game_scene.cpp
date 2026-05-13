@@ -16,9 +16,9 @@
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
-#include "../systems/renderer_attack_ray_effect_system.h"
-#include "../systems/renderer_system.h"
-#include "game_server_scene.h"
+#include "../systems/drawing_attack_ray_effect_system.h"
+#include "../systems/drawing_entity_system.h"
+#include "game_scene.h"
 
 
 // 位掩码定义
@@ -30,7 +30,7 @@ const int INPUT_ATTACK = 1 << 4;
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
-struct game_server_scene {
+struct game_scene {
 	scene_p scene;
 	flecs::world world;
 
@@ -56,8 +56,8 @@ struct game_server_scene {
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 	flecs::query<ConnectionComponent> connection_query;
 	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
-	flecs::query<IdComponent, LogicRectComponent, TransformComponent> renderer_query;
-	flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
+	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
+	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
 	std::vector<adventure::S2CPlayerJoin> player_joins;
 	std::vector<adventure::S2CPlayerLeave> player_leaves;
@@ -70,12 +70,12 @@ struct game_server_scene {
 };
 
 
-static int GenId(game_server_scene_p game_scene)
+static int GenId(game_scene_p game_scene)
 {
 	return game_scene->g_id++;
 }
 
-static void HandleLoading(game_server_scene_p g, int conv, adventure::C2S* c2s)
+static void HandleLoading(game_scene_p g, int conv, adventure::C2S* c2s)
 {
 	log_info("C2S_CMD_LOADING");
 	flecs::entity entity = g->world.entity().add<ConnectionComponent>();
@@ -104,7 +104,7 @@ static void HandleLoading(game_server_scene_p g, int conv, adventure::C2S* c2s)
 	netserver_send(g->server, conn->conv, data.c_str(), data.length());
 }
 
-static void AddPlayerJoin(game_server_scene_p g, int conv, adventure::C2S* c2s)
+static void AddPlayerJoin(game_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerJoin player_join;
 	player_join.set_conv(conv);
@@ -113,14 +113,14 @@ static void AddPlayerJoin(game_server_scene_p g, int conv, adventure::C2S* c2s)
 	g->player_joins.push_back(player_join);
 }
 
-static void AddPlayerLeave(game_server_scene_p g, int conv, adventure::C2S* c2s)
+static void AddPlayerLeave(game_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerLeave player_leave;
 	player_leave.set_conv(conv);
 	g->player_leaves.push_back(player_leave);
 }
 
-static void AddPlayerInput(game_server_scene_p g, int conv, adventure::C2S* c2s)
+static void AddPlayerInput(game_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerInput player_input;
 	player_input.set_conv(conv);
@@ -128,7 +128,7 @@ static void AddPlayerInput(game_server_scene_p g, int conv, adventure::C2S* c2s)
 	g->player_inputs.push_back(player_input);
 }
 
-static void HandleHeartbeat(game_server_scene_p g, int conv, adventure::C2S* c2s)
+static void HandleHeartbeat(game_scene_p g, int conv, adventure::C2S* c2s)
 {
 	log_info("%d: C2S_CMD_HEARTBEAT", conv);
 	g->connection_query.each([&](ConnectionComponent& conn) {
@@ -140,7 +140,7 @@ static void HandleHeartbeat(game_server_scene_p g, int conv, adventure::C2S* c2s
 	});
 }
 
-static void Attack(game_server_scene_p self, LogicPositionComponent* p,
+static void Attack(game_scene_p self, LogicPositionComponent* p,
 	LogicRectComponent& currRect,
 	IdComponent& currId)
 {
@@ -192,7 +192,7 @@ static void Attack(game_server_scene_p self, LogicPositionComponent* p,
 	}
 }
 
-static void calc_move_step(game_server_scene_p self, fp_t* out_x, fp_t* out_y, int input)
+static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int input)
 {
 	fp_t delta = fp_from_float(self->FIXED_TIMESTEP);
 	fp_t step = fp_mul(MOVE_SPEED, delta);
@@ -206,7 +206,7 @@ static void calc_move_step(game_server_scene_p self, fp_t* out_x, fp_t* out_y, i
 	if (input & INPUT_RIGHT) *out_x = fp_add(*out_x, step);
 }
 
-static void resolve_collision(game_server_scene_p self, LogicPositionComponent* p,
+static void resolve_collision(game_scene_p self, LogicPositionComponent* p,
 	LogicRectComponent& currRect, IdComponent& currId)
 {
 	self->body_query.each([&](IdComponent& other_id,
@@ -232,7 +232,7 @@ static void resolve_collision(game_server_scene_p self, LogicPositionComponent* 
 	});
 }
 
-static void ApplyInput(game_server_scene_p self, 
+static void ApplyInput(game_scene_p self, 
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
@@ -249,7 +249,7 @@ static void ApplyInput(game_server_scene_p self,
 	resolve_collision(self, p, currRect, currId);
 }
 
-static void OnMessage(game_server_scene_p self, net_message_p msg, void* userdata)
+static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 {
 	void* msg_data = msg->data;
 	size_t msg_len = msg->len;
@@ -292,7 +292,7 @@ static void OnMessage(game_server_scene_p self, net_message_p msg, void* userdat
 }
 
 // 帧同步：收集命令
-static void CollectCommandSystem(game_server_scene_p self)
+static void CollectCommandSystem(game_scene_p self)
 {
 	adventure::S2C s2c;
 	s2c.set_cmd(adventure::S2C_CMD_COMMAND);
@@ -350,7 +350,7 @@ static void CollectCommandSystem(game_server_scene_p self)
 }
 
 // 帧同步：执行命令
-static void HandleCommandSystem(game_server_scene_p self)
+static void HandleCommandSystem(game_scene_p self)
 {
 	if (self->command_queue.empty()) return;
 
@@ -416,7 +416,7 @@ static int GetTargetFrameId(int curr_frameid, int context_frameid)
 }
 
 // 帧同步：通知客户端
-static void NotifySystem(game_server_scene_p self)
+static void NotifySystem(game_scene_p self)
 {
 	self->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
 		int taget_frameid = GetTargetFrameId(conn.frameid, self->g_frameid);
@@ -434,7 +434,7 @@ static void NotifySystem(game_server_scene_p self)
 }
 
 // 固定逻辑帧更新
-static void FixedUpdate(game_server_scene_p self, float dt)
+static void FixedUpdate(game_scene_p self, float dt)
 {
 	net_message_t msg;
 	if (netserver_poll_message(self->server, &msg)) {
@@ -444,9 +444,10 @@ static void FixedUpdate(game_server_scene_p self, float dt)
 
 static void on_load(scene_p s)
 {
-	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
+	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
 	self->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.32", 10000);
+	self->world.set_ctx(self->ctx);
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
 		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
@@ -461,8 +462,8 @@ static void on_load(scene_p s)
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
 
-	self->renderer_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
-	self->renderer_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
+	self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
+	self->drawing_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
 	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->connection_query = self->world.query<ConnectionComponent>();
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
@@ -491,7 +492,7 @@ static void on_load(scene_p s)
 
 static void on_handle_event(scene_p s, const void* ev)
 {
-	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
+	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	SDL_Event* event = (SDL_Event*)ev;
 
 	if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
@@ -515,7 +516,7 @@ static void on_handle_event(scene_p s, const void* ev)
 
 static void on_update(scene_p s, float dt)
 {
-	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
+	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 
 	self->accumulator += dt;
 	netserver_update(self->server);
@@ -541,23 +542,22 @@ static void on_update(scene_p s, float dt)
 
 static void on_render(scene_p s)
 {
-	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-	self->renderer_query.each(RendererSystem);
-	self->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
+	game_scene_p self = (game_scene_p)scene_get_userdata(s);
+	self->drawing_entity_query.each(DrawingEntitySystem);
+	self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
 }
 
 static void on_destroy(scene_p s)
 {
-	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-	auto ctx = self->world.get_mut<Context>();
+	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->server);
 	
 }
 
-game_server_scene_p game_server_scene_create(Context* ctx)
+game_scene_p game_scene_create(Context* ctx)
 {
-	game_server_scene_p self = new game_server_scene();
+	game_scene_p self = new game_scene();
 	self->scene = scene_create("game_server");
 	self->ctx = ctx;
 	self->world.component<ConnectionComponent>();
@@ -577,7 +577,7 @@ game_server_scene_p game_server_scene_create(Context* ctx)
 	return self;
 }
 
-scene_p game_server_scene_get_scene(game_server_scene_p g)
+scene_p game_scene_get_scene(game_scene_p g)
 {
 	return g ? g->scene : NULL;
 }
