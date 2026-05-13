@@ -8,7 +8,7 @@
 
 static void 
 drawing_attack_ray_effect_system(flecs::entity e, 
-        attack_ray_effect_component& effect)
+        AttackRayEffectComponent& effect)
 {
         struct context* ctx = (struct context*)e.world().get_ctx();
         SDL_FRect line;

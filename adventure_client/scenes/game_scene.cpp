@@ -59,11 +59,11 @@ struct game_scene {
         std::map<int, std::map<int, state_snapshot>> snapshots;        // 按 frame_id 递增存储的历史快照
         std::vector<int> pending_inputs;     // 已发送但未确认的输入
 
-        flecs::query<id_component, logic_rect_component, logic_position_component> body_query;
-        flecs::query<player_component, id_component, logic_rect_component, logic_position_component> player_query;
-        flecs::query<id_component, logic_position_component, transform_component> sync_query;
-        flecs::query<id_component, logic_rect_component, transform_component> drawing_entity_query;
-        flecs::query<attack_ray_effect_component> attack_ray_effect_query;
+        flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
+        flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+        flecs::query<IdComponent, LogicPositionComponent, TransformComponent> sync_query;
+        flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
+        flecs::query<AttackRayEffectComponent> attack_ray_effect_query;
 
 };
 
@@ -76,21 +76,21 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 
         for (auto& entity : s2c->map().world().entities()) {
                 auto e = self->ecs_world.entity()
-                        .set<id_component>({ entity.id(), entity.hp() })
-                        .set<logic_rect_component>({ fp_from_float(.6f), fp_from_float(.6f) })
-                        .set<logic_position_component>({ entity.position_x(), entity.position_y() })
-                        .set<transform_component>({ fp_to_float(entity.position_x()),
+                        .set<IdComponent>({ entity.id(), entity.hp() })
+                        .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
+                        .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
+                        .set<TransformComponent>({ fp_to_float(entity.position_x()),
                                                    fp_to_float(entity.position_y()), 0, 0, 0, 0 });
                 if (entity.type() == adventure::S2C_TYPE_PLAYER) {
-                        e.set<logic_velocity_component>({ fp_from_float(0), fp_from_float(0) });
-                        e.set<player_component>({ entity.player_conv() });
+                        e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
+                        e.set<PlayerComponent>({ entity.player_conv() });
                 }
         }
 
         // 保存当前快照（预测前的状态）
         std::map<int, state_snapshot> snapshots;
-        self->player_query.each([&](player_component& p, id_component& id,
-                logic_rect_component& r, logic_position_component& pos) {
+        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                LogicRectComponent& r, LogicPositionComponent& pos) {
                         snapshots.insert({ id.id, { pos.x, pos.y } });
                 });
         self->snapshots.insert({ self->server_frameid, snapshots });
@@ -126,13 +126,13 @@ static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int inpu
 // 检测并处理与所有实体的碰撞
 // ----------------------------------------------------------------------
 static void resolve_collision(game_scene_p self,
-        logic_position_component* p,
-        logic_rect_component& currRect,
-        id_component& currId)
+        LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId)
 {
-        self->body_query.each([&](id_component& other_id,
-                logic_rect_component& r,
-                logic_position_component& other_pos) {
+        self->body_query.each([&](IdComponent& other_id,
+                LogicRectComponent& r,
+                LogicPositionComponent& other_pos) {
                         // 跳过自己
                         if (other_id.id == currId.id) return;
 
@@ -160,7 +160,7 @@ static void resolve_collision(game_scene_p self,
 
 // 定义最近目标查找结果的结构体
 struct nearest_attack_target {
-        id_component* id = nullptr;
+        IdComponent* id = nullptr;
         ray2d_collisionf_t hit = { 0 };
         float distance = 999999.0f;
 };
@@ -168,9 +168,9 @@ struct nearest_attack_target {
 // 公共函数：从攻击者位置向上发射射线，找到最近的命中目标
 static nearest_attack_target find_nearest_target_in_attack_ray(
         game_scene_p self,
-        logic_position_component* p,
-        logic_rect_component& currRect,
-        id_component& currId)
+        LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId)
 {
         nearest_attack_target result;
 
@@ -182,9 +182,9 @@ static nearest_attack_target find_nearest_target_in_attack_ray(
         ray.direction.y = fp_from_float(-1.0f);
 
         // 遍历所有碰撞体
-        self->body_query.each([&](id_component& id,
-                logic_rect_component& r,
-                logic_position_component& pos) {
+        self->body_query.each([&](IdComponent& id,
+                LogicRectComponent& r,
+                LogicPositionComponent& pos) {
                         // 跳过自身
                         if (currId.id == id.id) return;
 
@@ -212,8 +212,8 @@ static nearest_attack_target find_nearest_target_in_attack_ray(
 
 // 攻击（减血 + 特效）
 static void attack_with_damage_and_effect(game_scene_p self,
-        logic_position_component* p, logic_rect_component& currRect,
-        id_component& currId,
+        LogicPositionComponent* p, LogicRectComponent& currRect,
+        IdComponent& currId,
         int conv, int input)
 {
         nearest_attack_target target = find_nearest_target_in_attack_ray(self, p, currRect, currId);
@@ -236,7 +236,7 @@ static void attack_with_damage_and_effect(game_scene_p self,
                 line.h = end_y - start_y;
                 line.x = start_x - line.w * 0.5f;
                 line.y = start_y;
-                self->ecs_world.entity().set<attack_ray_effect_component>({
+                self->ecs_world.entity().set<AttackRayEffectComponent>({
                         line.x, line.y, line.w, line.h, 0.1f
                         });
         }
@@ -244,9 +244,9 @@ static void attack_with_damage_and_effect(game_scene_p self,
 
 // 仅攻击（减血，无特效）
 static void attack_damage_only(game_scene_p self,
-        logic_position_component* p,
-        logic_rect_component& currRect,
-        id_component& currId,
+        LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
         int conv, int input)
 {
         nearest_attack_target target;
@@ -261,9 +261,9 @@ static void attack_damage_only(game_scene_p self,
 }
 
 // 仅显示特效（不减血）
-static void attack_effect_only(game_scene_p self, logic_position_component* p,
-        logic_rect_component& currRect,
-        id_component& currId,
+static void attack_effect_only(game_scene_p self, LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
         int conv, int input)
 {
         nearest_attack_target target;
@@ -279,14 +279,14 @@ static void attack_effect_only(game_scene_p self, logic_position_component* p,
                 line.h = end_y - start_y;
                 line.x = start_x - line.w * 0.5f;
                 line.y = start_y;
-                self->ecs_world.entity().set<attack_ray_effect_component>({
+                self->ecs_world.entity().set<AttackRayEffectComponent>({
                         line.x, line.y, line.w, line.h, 0.1f });
         }
 }
 
-static void movement(game_scene_p self, logic_position_component* p,
-        logic_rect_component& currRect,
-        id_component& currId,
+static void movement(game_scene_p self, LogicPositionComponent* p,
+        LogicRectComponent& currRect,
+        IdComponent& currId,
         int conv, int input)
 {
         // 计算移动量
@@ -310,8 +310,8 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                 auto iter = self->snapshots.find(self->server_frameid);
                 if (iter != self->snapshots.end()) {
                         auto snapshots = iter->second;
-                        self->player_query.each([&](player_component& p, id_component& id,
-                                logic_rect_component& r, logic_position_component& pos) {
+                        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
                                         auto it = snapshots.find(id.id);
                                         if (it != snapshots.end()) {
                                                 pos.x = it->second.position_x;
@@ -329,22 +329,22 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                 fp_t x = player_join.position_x();
                 fp_t y = player_join.position_y();
                 self->ecs_world.entity()
-                        .set<id_component>({ self->server_entity_id++, 10 })
-                        .set<logic_rect_component>({ fp_from_float(.6f), fp_from_float(.6f) })
-                        .set<logic_position_component>({ x, y })
-                        .set<logic_velocity_component>({ fp_from_float(0), fp_from_float(0) })
-                        .set<transform_component>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
-                        .set<player_component>({ player_join.conv() });
+                        .set<IdComponent>({ self->server_entity_id++, 10 })
+                        .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
+                        .set<LogicPositionComponent>({ x, y })
+                        .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
+                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
+                        .set<PlayerComponent>({ player_join.conv() });
         }
 
         // 2. 处理玩家离开
         self->ecs_world.defer_begin();
         for (auto& player_leave : s2c.command().player_leaves()) {
                 self->player_query.each([&](flecs::entity entity,
-                        player_component& p,
-                        id_component& id,
-                        logic_rect_component& r,
-                        logic_position_component& pos) {
+                        PlayerComponent& p,
+                        IdComponent& id,
+                        LogicRectComponent& r,
+                        LogicPositionComponent& pos) {
                                 if (p.conv == player_leave.conv()) {
                                         entity.destruct();
                                 }
@@ -354,8 +354,8 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
 
         // 5. 应用所有玩家的输入
         for (auto& input : s2c.command().player_inputs()) {
-                self->player_query.each([&](player_component& p, id_component& id,
-                        logic_rect_component& r, logic_position_component& pos) {
+                self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv == input.conv()) {
                                         if (input.conv() == self->local_conv) {
                                                 // 按先进先出（FIFO）确认输入
@@ -400,8 +400,8 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
         // 保存当前服务帧权威快照
         {
                 std::map<int, state_snapshot> snapshots;
-                self->player_query.each([&](player_component& p, id_component& id,
-                        logic_rect_component& r, logic_position_component& pos) {
+                self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                        LogicRectComponent& r, LogicPositionComponent& pos) {
                                 snapshots.insert({ id.id, { pos.x, pos.y } });
                         });
                 self->snapshots.insert({ self->server_frameid, snapshots });
@@ -411,8 +411,8 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
         {
                 // 重放未确认的输入
                 for (auto& input : self->pending_inputs) {
-                        self->player_query.each([&](player_component& p, id_component& id,
-                                logic_rect_component& r, logic_position_component& pos) {
+                        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
                                         if (p.conv == self->local_conv) {
                                                 movement(self, &pos, r, id, p.conv, input);
                                         }
@@ -456,26 +456,26 @@ static void on_load(scene_p s)
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
 
-        self->ecs_world.component<connection_component>();
-        self->ecs_world.component<logic_rect_component>();
-        self->ecs_world.component<logic_position_component>();
-        self->ecs_world.component<logic_velocity_component>();
-        self->ecs_world.component<transform_component>();
-        self->ecs_world.component<player_component>();
-        self->ecs_world.component<attack_ray_effect_component>();
+        self->ecs_world.component<ConnectionComponent>();
+        self->ecs_world.component<LogicRectComponent>();
+        self->ecs_world.component<LogicPositionComponent>();
+        self->ecs_world.component<LogicVelocityComponent>();
+        self->ecs_world.component<TransformComponent>();
+        self->ecs_world.component<PlayerComponent>();
+        self->ecs_world.component<AttackRayEffectComponent>();
 
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
         self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         //netclient_set_callback(self->netclient, on_message, self);
 
-        self->ecs_world.system<logic_position_component, transform_component>().each(lerp_system);
-        self->ecs_world.system<attack_ray_effect_component>().each(effect_lifecycle_system);
-        self->sync_query = self->ecs_world.query<id_component, logic_position_component, transform_component>();
-        self->drawing_entity_query = self->ecs_world.query<id_component, logic_rect_component, transform_component>();
-        self->attack_ray_effect_query = self->ecs_world.query<attack_ray_effect_component>();
-        self->player_query = self->ecs_world.query<player_component, id_component, logic_rect_component, logic_position_component>();
-        self->body_query = self->ecs_world.query<id_component, logic_rect_component, logic_position_component>();
+        self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
+        self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
+        self->sync_query = self->ecs_world.query<IdComponent, LogicPositionComponent, TransformComponent>();
+        self->drawing_entity_query = self->ecs_world.query<IdComponent, LogicRectComponent, TransformComponent>();
+        self->attack_ray_effect_query = self->ecs_world.query<AttackRayEffectComponent>();
+        self->player_query = self->ecs_world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+        self->body_query = self->ecs_world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 
 }
 
@@ -498,8 +498,8 @@ static void fixedupdate(game_scene_p self, float dt)
                         self->pending_inputs.push_back(send_mask);
 
                         // 立即应用输入（预测移动）
-                        self->player_query.each([&](player_component& p, id_component& id,
-                                logic_rect_component& r, logic_position_component& pos) {
+                        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+                                LogicRectComponent& r, LogicPositionComponent& pos) {
                                         if (p.conv == self->local_conv) {
                                                 if (send_mask & INPUT_ATTACK) {
                                                         attack_effect_only(self, &pos, r, id, self->local_conv, send_mask);

@@ -2,7 +2,7 @@
 #define ID_COMPONENT_H
 #include <joy2d/jmath.h>
 
-struct id_component
+struct IdComponent
 {
         int id;
         fp_t hp;
