@@ -7,7 +7,6 @@
 #include "app_context.h"
 
 static scene_manager_p g_mgr;
-static game_timer_t g_timer;
 static Context* ctx;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -21,9 +20,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	}
 
 	ctx = (Context*)calloc(1, sizeof(Context));
+        ctx->FIXED_TIMESTEP = 1 / 50.0f;
 
-	game_timer_init(&g_timer);
-	game_timer_set_target_fps(&g_timer, 60);  // Ëø¶¨ 60 FPS
+	game_timer_init(&ctx->game_timer);
+	game_timer_set_target_fps(&ctx->game_timer, 60);  // Ëø¶¨ 60 FPS
 
 	SDL_CreateWindowAndRenderer("server", 640, 480, 0, &ctx->window, &ctx->renderer);
 	SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
@@ -61,8 +61,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-        game_timer_update(&g_timer);
-        float dt = game_timer_get_delta_time(&g_timer);
+        game_timer_update(&ctx->game_timer);
+        float dt = game_timer_get_delta_time(&ctx->game_timer);
         scene_manager_update(g_mgr, dt);
         SDL_SetRenderDrawColor(ctx->renderer, 30, 30, 40, 255);
         SDL_RenderClear(ctx->renderer);

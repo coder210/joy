@@ -13,7 +13,6 @@
 #include "../layers/gameplay_controls_layer.h"
 #include "../components/connection_component.h"
 #include "../components/logic_velocity_component.h"
-#include "../systems/startup_system.h"
 #include "../systems/lerp_system.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
