@@ -8,7 +8,14 @@
 #include <joy2d/jnetwork.h>
 #include <map>
 #include <queue>
-#include "component.h"
+#include "components/connection_component.h"
+#include "components/id_component.h"
+#include "components/logic_rect_component.h"
+#include "components/logic_position_component.h"
+#include "components/logic_velocity_component.h"
+#include "components/player_component.h"
+#include "components/transform_component.h"
+#include "components/attack_ray_effect_component.h"
 #include "debug_layer.h"
 
 struct Context {

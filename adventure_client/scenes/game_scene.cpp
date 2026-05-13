@@ -106,9 +106,6 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
         netclient_send(self->netclient, data.c_str(), data.size());
 }
 
-
-
-
 // ----------------------------------------------------------------------
 // 计算移动后的新位置
 // ----------------------------------------------------------------------
