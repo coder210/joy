@@ -1095,7 +1095,7 @@ class S2CEntity final :
     return *internal_default_instance();
   }
   enum ExtendCase {
-    kPlayerConv = 6,
+    kPlayerConv = 8,
     EXTEND_NOT_SET = 0,
   };
 
@@ -1181,8 +1181,10 @@ class S2CEntity final :
     kTypeFieldNumber = 2,
     kPositionXFieldNumber = 3,
     kPositionYFieldNumber = 4,
-    kHpFieldNumber = 5,
-    kPlayerConvFieldNumber = 6,
+    kWidthFieldNumber = 5,
+    kHeightFieldNumber = 6,
+    kHpFieldNumber = 7,
+    kPlayerConvFieldNumber = 8,
   };
   // int32 id = 1;
   void clear_id();
@@ -1220,7 +1222,25 @@ class S2CEntity final :
   void _internal_set_position_y(int64_t value);
   public:
 
-  // int64 hp = 5;
+  // int64 width = 5;
+  void clear_width();
+  int64_t width() const;
+  void set_width(int64_t value);
+  private:
+  int64_t _internal_width() const;
+  void _internal_set_width(int64_t value);
+  public:
+
+  // int64 height = 6;
+  void clear_height();
+  int64_t height() const;
+  void set_height(int64_t value);
+  private:
+  int64_t _internal_height() const;
+  void _internal_set_height(int64_t value);
+  public:
+
+  // int64 hp = 7;
   void clear_hp();
   int64_t hp() const;
   void set_hp(int64_t value);
@@ -1229,7 +1249,7 @@ class S2CEntity final :
   void _internal_set_hp(int64_t value);
   public:
 
-  // int32 player_conv = 6;
+  // int32 player_conv = 8;
   bool has_player_conv() const;
   private:
   bool _internal_has_player_conv() const;
@@ -1260,6 +1280,8 @@ class S2CEntity final :
     int type_;
     int64_t position_x_;
     int64_t position_y_;
+    int64_t width_;
+    int64_t height_;
     int64_t hp_;
     union ExtendUnion {
       constexpr ExtendUnion() : _constinit_{} {}
@@ -3065,7 +3087,47 @@ inline void S2CEntity::set_position_y(int64_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CEntity.position_y)
 }
 
-// int64 hp = 5;
+// int64 width = 5;
+inline void S2CEntity::clear_width() {
+  _impl_.width_ = int64_t{0};
+}
+inline int64_t S2CEntity::_internal_width() const {
+  return _impl_.width_;
+}
+inline int64_t S2CEntity::width() const {
+  // @@protoc_insertion_point(field_get:adventure.S2CEntity.width)
+  return _internal_width();
+}
+inline void S2CEntity::_internal_set_width(int64_t value) {
+  
+  _impl_.width_ = value;
+}
+inline void S2CEntity::set_width(int64_t value) {
+  _internal_set_width(value);
+  // @@protoc_insertion_point(field_set:adventure.S2CEntity.width)
+}
+
+// int64 height = 6;
+inline void S2CEntity::clear_height() {
+  _impl_.height_ = int64_t{0};
+}
+inline int64_t S2CEntity::_internal_height() const {
+  return _impl_.height_;
+}
+inline int64_t S2CEntity::height() const {
+  // @@protoc_insertion_point(field_get:adventure.S2CEntity.height)
+  return _internal_height();
+}
+inline void S2CEntity::_internal_set_height(int64_t value) {
+  
+  _impl_.height_ = value;
+}
+inline void S2CEntity::set_height(int64_t value) {
+  _internal_set_height(value);
+  // @@protoc_insertion_point(field_set:adventure.S2CEntity.height)
+}
+
+// int64 hp = 7;
 inline void S2CEntity::clear_hp() {
   _impl_.hp_ = int64_t{0};
 }
@@ -3085,7 +3147,7 @@ inline void S2CEntity::set_hp(int64_t value) {
   // @@protoc_insertion_point(field_set:adventure.S2CEntity.hp)
 }
 
-// int32 player_conv = 6;
+// int32 player_conv = 8;
 inline bool S2CEntity::_internal_has_player_conv() const {
   return extend_case() == kPlayerConv;
 }

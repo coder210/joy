@@ -77,11 +77,12 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
         for (auto& entity : s2c->map().world().entities()) {
                 auto e = self->ecs_world.entity()
                         .set<IdComponent>({ entity.id(), entity.hp() })
-                        .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
+                        .set<LogicRectComponent>({ entity.width(), entity.height() })
                         .set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
                         .set<TransformComponent>({ fp_to_float(entity.position_x()),
-                                                   fp_to_float(entity.position_y()), 0, 0, 0, 0 });
+                                                   fp_to_float(entity.position_y()), 0, 1, 1 });
                 if (entity.type() == adventure::S2C_TYPE_PLAYER) {
+                        
                         e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
                         e.set<PlayerComponent>({ entity.player_conv() });
                 }
@@ -333,7 +334,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 0, 0, 0 })
+                        .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
                         .set<PlayerComponent>({ player_join.conv() });
         }
 
@@ -464,8 +465,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
 
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.20", 10000);
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.32", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
         //netclient_set_callback(self->netclient, on_message, self);
 
