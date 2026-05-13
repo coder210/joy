@@ -1,15 +1,24 @@
 #include "game_server_scene.h"
-#include "../Systems.h"
-#include "../Context.h"
+#include "../protocol/adventure.pb.h"
+#include "../flecs.h"
+#include <string>
+#include <map>
+#include <queue>
+#include <joy2d/jcore.h>
 #include <joy2d/jsys.h>
 #include <joy2d/jmath.h>
 #include <joy2d/jutils.h>
 #include <joy2d/jtext.h>
 #include <joy2d/jcollision.h>
 #include <joy2d/jshapes.h>
-#include <string>
+#include "../app_context.h"
+#include "../components/connection_component.h"
+#include "../components/logic_velocity_component.h"
+#include "../systems/effect_lifecycle_system.h"
+#include "../systems/lerp_system.h"
+#include "../systems/renderer_attack_ray_effect_system.h"
+#include "../systems/renderer_system.h"
 
-const int PIXELS_PER_METER = 50;
 
 // 位掩码定义
 const int INPUT_UP = 1 << 0;
@@ -23,24 +32,55 @@ static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 struct game_server_scene {
 	scene_p scene;
 	flecs::world world;
+
+	int g_id = 1;
+	int g_frameid = 1;
+
+	simple_fps_counter_p sample_fps;
+
+	bool upPressed = false;
+	bool downPressed = false;
+	bool leftPressed = false;
+	bool rightPressed = false;
+
+	float FIXED_TIMESTEP = 1.0f / 50.0f;
+	float accumulator = 0.0f;
+
+	float serverTickTimer = 0.0f;
+	float SERVER_TICK_INTERVAL = 1.0f / 20.0f;
+
+	netserver_p server = NULL;
+	Context* ctx;
+
+	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
+	flecs::query<ConnectionComponent> connection_query;
+	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+	flecs::query<IdComponent, LogicRectComponent, TransformComponent> renderer_query;
+	flecs::query<AttackRayEffectComponent> renderer_attack_rayeffect_query;
+
+	std::vector<adventure::S2CPlayerJoin> player_joins;
+	std::vector<adventure::S2CPlayerLeave> player_leaves;
+	std::vector<adventure::S2CPlayerInput> player_inputs;
+
+	std::map<int, std::string> commands;
+	std::queue<std::string> command_queue;
+	std::map<int, std::string> worlds;
+
 };
 
-// 模块级 self 指针，供静态函数访问场景状态
-static game_server_scene_p g_self = NULL;
 
-static int GenId(Context* ns)
+static int GenId(game_server_scene_p game_scene)
 {
-	return ns->g_id++;
+	return game_scene->g_id++;
 }
 
-static void HandleLoading(int conv, adventure::C2S* c2s)
+static void HandleLoading(game_server_scene_p g, int conv, adventure::C2S* c2s)
 {
 	log_info("C2S_CMD_LOADING");
-	auto ctx = g_self->world.get_mut<Context>();
-	flecs::entity entity = g_self->world.entity().add<ConnectionComponent>();
+	flecs::entity entity = g->world.entity().add<ConnectionComponent>();
 	auto conn = entity.get_mut<ConnectionComponent>();
 	conn->conv = conv;
-	conn->frameid = std::max(ctx->g_frameid - 1, 1);
+	conn->frameid = std::max(g->g_frameid - 1, 1);
 	conn->health = 10;
 
 	adventure::S2C s2c;
@@ -50,8 +90,8 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
 	map->set_conv(conn->conv);
 	map->set_frame_id(conn->frameid);
 	adventure::S2CWorld* s2c_world = map->mutable_world();
-	auto it = ctx->worlds.find(conn->frameid);
-	if (it == ctx->worlds.end()) {
+	auto it = g->worlds.find(conn->frameid);
+	if (it == g->worlds.end()) {
 		log_info("没有world");
 		return;
 	}
@@ -60,38 +100,37 @@ static void HandleLoading(int conv, adventure::C2S* c2s)
 		return;
 	}
 	auto data = s2c.SerializeAsString();
-	netserver_send(ctx->server, conn->conv, data.c_str(), data.length());
+	netserver_send(g->server, conn->conv, data.c_str(), data.length());
 }
 
-static void AddPlayerJoin(int conv, adventure::C2S* c2s)
+static void AddPlayerJoin(game_server_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerJoin player_join;
 	player_join.set_conv(conv);
 	player_join.set_position_x(c2s->player_join().position_x());
 	player_join.set_position_y(c2s->player_join().position_y());
-	g_self->world.get_mut<Context>()->player_joins.push_back(player_join);
+	g->player_joins.push_back(player_join);
 }
 
-static void AddPlayerLeave(int conv, adventure::C2S* c2s)
+static void AddPlayerLeave(game_server_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerLeave player_leave;
 	player_leave.set_conv(conv);
-	g_self->world.get_mut<Context>()->player_leaves.push_back(player_leave);
+	g->player_leaves.push_back(player_leave);
 }
 
-static void AddPlayerInput(int conv, adventure::C2S* c2s)
+static void AddPlayerInput(game_server_scene_p g, int conv, adventure::C2S* c2s)
 {
 	adventure::S2CPlayerInput player_input;
 	player_input.set_conv(conv);
 	player_input.set_keycode(c2s->player_input().keycode());
-	g_self->world.get_mut<Context>()->player_inputs.push_back(player_input);
+	g->player_inputs.push_back(player_input);
 }
 
-static void HandleHeartbeat(int conv, adventure::C2S* c2s)
+static void HandleHeartbeat(game_server_scene_p g, int conv, adventure::C2S* c2s)
 {
 	log_info("%d: C2S_CMD_HEARTBEAT", conv);
-	auto ctx = g_self->world.get_mut<Context>();
-	ctx->connection_query.each([&](ConnectionComponent& conn) {
+	g->connection_query.each([&](ConnectionComponent& conn) {
 		if (conn.conv == conv) {
 			conn.health = 10;
 			return false;
@@ -100,11 +139,10 @@ static void HandleHeartbeat(int conv, adventure::C2S* c2s)
 	});
 }
 
-static void Attack(LogicPositionComponent* p,
+static void Attack(game_server_scene_p self, LogicPositionComponent* p,
 	LogicRectComponent& currRect,
 	IdComponent& currId)
 {
-	auto ctx = g_self->world.get_mut<Context>();
 	ray2df_t ray;
 	ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
 	ray.origin.y = p->y;
@@ -115,7 +153,7 @@ static void Attack(LogicPositionComponent* p,
 	IdComponent* nearest_id = nullptr;
 	float nearest_dist = 999999.0f;
 
-	ctx->body_query.each([&](IdComponent& id,
+	self->body_query.each([&](IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
 		if (currId.id == id.id) return;
 
@@ -149,14 +187,13 @@ static void Attack(LogicPositionComponent* p,
 		line.h = (end_y - start_y);
 		line.x = start_x - line.w * 0.5f;
 		line.y = start_y;
-		g_self->world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
+		self->world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
 	}
 }
 
-static void calc_move_step(fp_t* out_x, fp_t* out_y, int input)
+static void calc_move_step(game_server_scene_p self, fp_t* out_x, fp_t* out_y, int input)
 {
-	auto ctx = g_self->world.get_mut<Context>();
-	fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
+	fp_t delta = fp_from_float(self->FIXED_TIMESTEP);
 	fp_t step = fp_mul(MOVE_SPEED, delta);
 
 	*out_x = fp_zero();
@@ -168,12 +205,10 @@ static void calc_move_step(fp_t* out_x, fp_t* out_y, int input)
 	if (input & INPUT_RIGHT) *out_x = fp_add(*out_x, step);
 }
 
-static void resolve_collision(LogicPositionComponent* p,
+static void resolve_collision(game_server_scene_p self, LogicPositionComponent* p,
 	LogicRectComponent& currRect, IdComponent& currId)
 {
-	auto ctx = g_self->world.get_mut<Context>();
-
-	ctx->body_query.each([&](IdComponent& other_id,
+	self->body_query.each([&](IdComponent& other_id,
 		LogicRectComponent& r,
 		LogicPositionComponent& other_pos) {
 		if (other_id.id == currId.id) return;
@@ -196,23 +231,24 @@ static void resolve_collision(LogicPositionComponent* p,
 	});
 }
 
-static void ApplyInput(LogicPositionComponent* p, LogicRectComponent& currRect,
+static void ApplyInput(game_server_scene_p self, 
+	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
 	if (input & INPUT_ATTACK) {
-		Attack(p, currRect, currId);
+		Attack(self, p, currRect, currId);
 	}
 
 	fp_t move_x, move_y;
-	calc_move_step(&move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
+	calc_move_step(self, &move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
 
 	p->x = fp_add(p->x, move_x);
 	p->y = fp_add(p->y, move_y);
 
-	resolve_collision(p, currRect, currId);
+	resolve_collision(self, p, currRect, currId);
 }
 
-static void OnMessage(net_message_p msg, void* userdata)
+static void OnMessage(game_server_scene_p self, net_message_p msg, void* userdata)
 {
 	void* msg_data = msg->data;
 	size_t msg_len = msg->len;
@@ -222,28 +258,27 @@ static void OnMessage(net_message_p msg, void* userdata)
 	}
 	else if (msg->type == NET_TYPE_DISCONNECTED) {
 		log_info("disconnected=%d", msg->conv);
-		auto ctx = g_self->world.get_mut<Context>();
 		adventure::S2CPlayerLeave playerLeave;
 		playerLeave.set_conv(msg->conv);
-		ctx->player_leaves.push_back(playerLeave);
+		self->player_leaves.push_back(playerLeave);
 	}
 	else if (msg->type == NET_TYPE_MESSAGE) {
 		adventure::C2S c2s;
 		if (c2s.ParseFromArray(msg_data, msg_len)) {
 			if (c2s.cmd() == adventure::CMD_LOADING) {
-				HandleLoading(msg->conv, &c2s);
+				HandleLoading(self, msg->conv, &c2s);
 			}
 			else if (c2s.cmd() == adventure::CMD_PLAYER_JOIN) {
-				AddPlayerJoin(msg->conv, &c2s);
+				AddPlayerJoin(self, msg->conv, &c2s);
 			}
 			else if (c2s.cmd() == adventure::CMD_PLAYER_LEAVE) {
-				AddPlayerLeave(msg->conv, &c2s);
+				AddPlayerLeave(self, msg->conv, &c2s);
 			}
 			else if (c2s.cmd() == adventure::CMD_PLAYER_INPUT) {
-				AddPlayerInput(msg->conv, &c2s);
+				AddPlayerInput(self, msg->conv, &c2s);
 			}
 			else if (c2s.cmd() == adventure::CMD_PLAYER_HEART) {
-				HandleHeartbeat(msg->conv, &c2s);
+				HandleHeartbeat(self, msg->conv, &c2s);
 			}
 		}
 		else {
@@ -256,37 +291,36 @@ static void OnMessage(net_message_p msg, void* userdata)
 }
 
 // 帧同步：收集命令
-static void CollectCommandSystem()
+static void CollectCommandSystem(game_server_scene_p self)
 {
-	auto ctx = g_self->world.get_mut<Context>();
 	adventure::S2C s2c;
 	s2c.set_cmd(adventure::S2C_CMD_COMMAND);
 
 	adventure::S2CCommand* command = s2c.mutable_command();
-	command->set_frame_id(ctx->g_frameid++);
+	command->set_frame_id(self->g_frameid++);
 
-	for (auto& pj : ctx->player_joins) {
+	for (auto& pj : self->player_joins) {
 		*command->add_player_joins() = pj;
 	}
-	for (auto& pl : ctx->player_leaves) {
+	for (auto& pl : self->player_leaves) {
 		*command->add_player_leaves() = pl;
 	}
-	for (auto& pi : ctx->player_inputs) {
+	for (auto& pi : self->player_inputs) {
 		*command->add_player_inputs() = pi;
 	}
 
 	auto command_data = s2c.SerializeAsString();
-	ctx->commands[command->frame_id()] = command_data;
-	ctx->command_queue.push(command_data);
+	self->commands[command->frame_id()] = command_data;
+	self->command_queue.push(command_data);
 
-	ctx->player_joins.clear();
-	ctx->player_leaves.clear();
-	ctx->player_inputs.clear();
+	self->player_joins.clear();
+	self->player_leaves.clear();
+	self->player_inputs.clear();
 
 	// 收集世界实体状态
 	adventure::S2CWorld s2c_world;
-	s2c_world.set_entity_id(ctx->g_id);
-	ctx->body_query.each([&](flecs::entity e, IdComponent& id,
+	s2c_world.set_entity_id(self->g_id);
+	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
 		adventure::S2CEntity* ent = s2c_world.add_entities();
 		ent->set_id(id.id);
@@ -302,30 +336,29 @@ static void CollectCommandSystem()
 		ent->set_position_y(pos.y);
 	});
 
-	ctx->worlds[command->frame_id()] = s2c_world.SerializeAsString();
+	self->worlds[command->frame_id()] = s2c_world.SerializeAsString();
 
 	// 限制 worlds 和 commands 最多保留 1000 帧
 	const size_t MAX_FRAMES = 1000;
-	while (ctx->commands.size() > MAX_FRAMES) {
-		ctx->commands.erase(ctx->commands.begin());
+	while (self->commands.size() > MAX_FRAMES) {
+		self->commands.erase(self->commands.begin());
 	}
-	while (ctx->worlds.size() > MAX_FRAMES) {
-		ctx->worlds.erase(ctx->worlds.begin());
+	while (self->worlds.size() > MAX_FRAMES) {
+		self->worlds.erase(self->worlds.begin());
 	}
 }
 
 // 帧同步：执行命令
-static void HandleCommandSystem()
+static void HandleCommandSystem(game_server_scene_p self)
 {
-	auto ctx = g_self->world.get_mut<Context>();
-	if (ctx->command_queue.empty()) return;
+	if (self->command_queue.empty()) return;
 
-	std::string command_data = ctx->command_queue.front();
+	std::string command_data = self->command_queue.front();
 	adventure::S2C s2c;
 
 	if (!s2c.ParseFromString(command_data)) {
 		log_info("Failed to parse command");
-		ctx->command_queue.pop();
+		self->command_queue.pop();
 		return;
 	}
 
@@ -335,8 +368,8 @@ static void HandleCommandSystem()
 		fp_t x = player_join.position_x();
 		fp_t y = player_join.position_y();
 
-		g_self->world.entity()
-			.set<IdComponent>({ GenId(ctx), 10 })
+		self->world.entity()
+			.set<IdComponent>({ GenId(self), 10 })
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
 			.set<LogicPositionComponent>({ x, y })
 			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
@@ -345,28 +378,28 @@ static void HandleCommandSystem()
 	}
 
 	// 玩家离开
-	g_self->world.defer_begin();
+	self->world.defer_begin();
 	for (auto& player_leave : s2c.command().player_leaves()) {
 		int conv = player_leave.conv();
-		ctx->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv == conv) {
 				e.destruct();
 			}
 		});
 	}
-	g_self->world.defer_end();
+	self->world.defer_end();
 
 	// 应用输入
 	for (auto& input : s2c.command().player_inputs()) {
-		ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv != input.conv()) return;
-			ApplyInput(&pos, r, id, input.conv(), input.keycode());
+			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
 		});
 	}
 
-	ctx->command_queue.pop();
+	self->command_queue.pop();
 }
 
 static int GetTargetFrameId(int curr_frameid, int context_frameid)
@@ -382,15 +415,14 @@ static int GetTargetFrameId(int curr_frameid, int context_frameid)
 }
 
 // 帧同步：通知客户端
-static void NotifySystem()
+static void NotifySystem(game_server_scene_p self)
 {
-	auto ctx = g_self->world.get_mut<Context>();
-	ctx->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
-		int taget_frameid = GetTargetFrameId(conn.frameid, ctx->g_frameid);
+	self->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
+		int taget_frameid = GetTargetFrameId(conn.frameid, self->g_frameid);
 		for (int i = conn.frameid; i < taget_frameid; i++) {
-			auto it = ctx->commands.find(i);
-			if (it != ctx->commands.end()) {
-				netserver_send(ctx->server, conn.conv, it->second.c_str(), it->second.size());
+			auto it = self->commands.find(i);
+			if (it != self->commands.end()) {
+				netserver_send(self->server, conn.conv, it->second.c_str(), it->second.size());
 			}
 			else {
 				log_error("Frame %d not found in commands, skip sending.", i);
@@ -401,42 +433,62 @@ static void NotifySystem()
 }
 
 // 固定逻辑帧更新
-static void FixedUpdate(float dt)
+static void FixedUpdate(game_server_scene_p self, float dt)
 {
-	auto ctx = g_self->world.get_mut<Context>();
 	net_message_t msg;
-	if (netserver_poll_message(ctx->server, &msg)) {
-		OnMessage(&msg, NULL);
+	if (netserver_poll_message(self->server, &msg)) {
+		OnMessage(self, &msg, NULL);
 	}
 }
 
-// ==================== 场景回调 ====================
+static void StartupSystem(flecs::world& world)
+{
+	//auto ctx = world.get_mut<Context>();
+	//adventure::S2CWorld s2c_world;
+	//ctx->body_query = world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
+	//ctx->connection_query = world.query<ConnectionComponent>();
+	//ctx->player_query = world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+	//ctx->body_query.each([&](flecs::entity e, IdComponent& id,
+	//	LogicRectComponent& r, LogicPositionComponent& pos) {
+	//		adventure::S2CEntity* ent = s2c_world.add_entities();
+	//		ent->set_id(id.id);
+	//		if (e.has<PlayerComponent>()) {
+	//			ent->set_type(adventure::S2C_TYPE_PLAYER);
+	//			ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+	//		}
+	//		else {
+	//			ent->set_type(adventure::S2C_TYPE_NORMAL);
+	//		}
+	//		ent->set_hp(id.hp);
+	//		ent->set_position_x(pos.x);
+	//		ent->set_position_y(pos.y);
+	//	});
+
+	//ctx->worlds[ctx->g_frameid] = s2c_world.SerializeAsString();
+
+	//ctx->resources = new Resources(ctx->renderer);
+	//ctx->debugLayer = new DebugLayer(ctx->resources);
+}
 
 static void on_load(scene_p s)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-	g_self = self;
+	self->sample_fps = simple_fps_create();
 
-	auto ctx = self->world.get_mut<Context>();
-	game_timer_init(&ctx->game_timer);
-	game_timer_set_target_fps(&ctx->game_timer, 60);
-	game_timer_set_time_scale(&ctx->game_timer, 1.0f);
-	ctx->sample_fps = simple_fps_create();
-
-	if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &ctx->window, &ctx->renderer)) {
+	if (!SDL_CreateWindowAndRenderer("adventure/server", 640, 480, 0, &self->ctx->window, &self->ctx->renderer)) {
 		SDL_Log("Window failed: %s", SDL_GetError());
 		return;
 	}
-	SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
-	ctx->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.32", 10000);
+	SDL_SetRenderLogicalPresentation(self->ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
+	self->server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.32", 10000);
 
 	self->world.entity()
-		.set<IdComponent>({ GenId(ctx), 100 })
+		.set<IdComponent>({ GenId(self), 100 })
 		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
 		.set<LogicPositionComponent>({ fp_from_float(1), fp_from_float(1) })
 		.set<TransformComponent>({ 1,1 });
 	self->world.entity()
-		.set<IdComponent>({ GenId(ctx), 100 })
+		.set<IdComponent>({ GenId(self), 100 })
 		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(0.6f) })
 		.set<LogicPositionComponent>({ fp_from_float(4), fp_from_float(4) })
 		.set<TransformComponent>({ 2,2 });
@@ -444,8 +496,8 @@ static void on_load(scene_p s)
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
 
-	ctx->renderer_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
-	ctx->renderer_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
+	self->renderer_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
+	self->renderer_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
 
 	StartupSystem(self->world);
 }
@@ -454,15 +506,14 @@ static void on_handle_event(scene_p s, const void* ev)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
 	SDL_Event* event = (SDL_Event*)ev;
-	auto ctx = self->world.get_mut<Context>();
 
 	if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
 		bool isDown = event->type == SDL_EVENT_KEY_DOWN;
 		switch (event->key.key) {
-		case SDLK_W: ctx->upPressed = isDown; break;
-		case SDLK_S: ctx->downPressed = isDown; break;
-		case SDLK_A: ctx->leftPressed = isDown; break;
-		case SDLK_D: ctx->rightPressed = isDown; break;
+		case SDLK_W: self->upPressed = isDown; break;
+		case SDLK_S: self->downPressed = isDown; break;
+		case SDLK_A: self->leftPressed = isDown; break;
+		case SDLK_D: self->rightPressed = isDown; break;
 		case SDLK_Q: {
 			SDL_Event quit_event;
 			SDL_zero(quit_event);
@@ -478,48 +529,38 @@ static void on_handle_event(scene_p s, const void* ev)
 static void on_update(scene_p s, float dt)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-	auto ctx = self->world.get_mut<Context>();
 
-	// 更新定时器
-	game_timer_update(&ctx->game_timer);
-	float fixed_dt = game_timer_get_delta_time(&ctx->game_timer);
-	ctx->accumulator += fixed_dt;
-	netserver_update(ctx->server);
-	simple_fps_update(ctx->sample_fps);
+	self->accumulator += dt;
+	netserver_update(self->server);
+	simple_fps_update(self->sample_fps);
 
 	// 固定步长物理更新（50Hz）
-	if (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
-		FixedUpdate(ctx->FIXED_TIMESTEP);
-		ctx->accumulator -= ctx->FIXED_TIMESTEP;
+	if (self->accumulator >= self->FIXED_TIMESTEP) {
+		//FixedUpdate(self->FIXED_TIMESTEP);
+		self->accumulator -= self->FIXED_TIMESTEP;
 	}
 
-	self->world.progress(fixed_dt);
+	self->world.progress(dt);
 
 	// 独立的帧同步 Tick（20Hz）
-	ctx->serverTickTimer += fixed_dt;
-	if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {
-		ctx->serverTickTimer -= ctx->SERVER_TICK_INTERVAL;
-		CollectCommandSystem();
-		HandleCommandSystem();
-		NotifySystem();
-	}
+	//self->serverTickTimer += fixed_dt;
+	//if (ctx->serverTickTimer >= ctx->SERVER_TICK_INTERVAL) {
+	//	ctx->serverTickTimer -= ctx->SERVER_TICK_INTERVAL;
+	//	CollectCommandSystem();
+	//	HandleCommandSystem();
+	//	NotifySystem();
+	//}
 }
 
 static void on_render(scene_p s)
 {
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
-	auto ctx = self->world.get_mut<Context>();
 
-	SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);
-	SDL_RenderClear(ctx->renderer);
-
-	ctx->renderer_query.each(RendererSystem);
-	ctx->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
-
-	ctx->debugLayer->Update(ctx->g_frameid, simple_fps_value(ctx->sample_fps));
-	ctx->debugLayer->Draw(ctx->renderer);
-
-	SDL_RenderPresent(ctx->renderer);
+	SDL_SetRenderDrawColor(self->ctx->renderer, 100, 100, 100, 255);
+	SDL_RenderClear(self->ctx->renderer);
+	self->renderer_query.each(RendererSystem);
+	self->renderer_attack_rayeffect_query.each(RendererAttackRayEffectSystem);
+	SDL_RenderPresent(self->ctx->renderer);
 }
 
 static void on_destroy(scene_p s)
@@ -527,24 +568,16 @@ static void on_destroy(scene_p s)
 	game_server_scene_p self = (game_server_scene_p)scene_get_userdata(s);
 	auto ctx = self->world.get_mut<Context>();
 
-	delete ctx->resources;
-	delete ctx->debugLayer;
-	simple_fps_destory(ctx->sample_fps);
-	netserver_destroy(ctx->server);
-	SDL_DestroyWindow(ctx->window);
-	SDL_DestroyRenderer(ctx->renderer);
-
-	google::protobuf::ShutdownProtobufLibrary();
-	g_self = NULL;
+	simple_fps_destory(self->sample_fps);
+	netserver_destroy(self->server);
+	
 }
 
-game_server_scene_p game_server_scene_create()
+game_server_scene_p game_server_scene_create(Context* ctx)
 {
 	game_server_scene_p self = new game_server_scene();
 	self->scene = scene_create("game_server");
-
-	// 初始化 flecs world 和 Context（类似 client game_scene）
-	self->world.component<Context>();
+	self->ctx = ctx;
 	self->world.component<ConnectionComponent>();
 	self->world.component<LogicRectComponent>();
 	self->world.component<LogicPositionComponent>();

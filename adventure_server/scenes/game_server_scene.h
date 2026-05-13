@@ -2,10 +2,11 @@
 #define GAME_SERVER_SCENE_H
 #include <joy2d/jscene.h>
 #include "../flecs.h"
+#include "../app_context.h"
 
 typedef struct game_server_scene game_server_scene_t, *game_server_scene_p;
 
-game_server_scene_p game_server_scene_create();
+game_server_scene_p game_server_scene_create(Context* ctx);
 scene_p game_server_scene_get_scene(game_server_scene_p g);
 
 #endif
