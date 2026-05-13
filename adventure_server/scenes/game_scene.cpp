@@ -10,6 +10,7 @@
 #include <joy2d/jtext.h>
 #include <joy2d/jcollision.h>
 #include <joy2d/jshapes.h>
+#include <joy2d/jnetwork.h>
 #include "../app_context.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
@@ -44,7 +45,6 @@ struct game_scene {
 	bool leftPressed = false;
 	bool rightPressed = false;
 
-	float FIXED_TIMESTEP = 1.0f / 50.0f;
 	float accumulator = 0.0f;
 
 	float serverTickTimer = 0.0f;
@@ -194,7 +194,7 @@ static void Attack(game_scene_p self, LogicPositionComponent* p,
 
 static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int input)
 {
-	fp_t delta = fp_from_float(self->FIXED_TIMESTEP);
+	fp_t delta = fp_from_float(self->ctx->FIXED_TIMESTEP);
 	fp_t step = fp_mul(MOVE_SPEED, delta);
 
 	*out_x = fp_zero();
@@ -523,9 +523,9 @@ static void on_update(scene_p s, float dt)
 	simple_fps_update(self->sample_fps);
 
 	// 固定步长物理更新（50Hz）
-	if (self->accumulator >= self->FIXED_TIMESTEP) {
-		FixedUpdate(self, self->FIXED_TIMESTEP);
-		self->accumulator -= self->FIXED_TIMESTEP;
+	if (self->accumulator >= self->ctx->FIXED_TIMESTEP) {
+		FixedUpdate(self, self->ctx->FIXED_TIMESTEP);
+		self->accumulator -= self->ctx->FIXED_TIMESTEP;
 	}
 
 	self->world.progress(dt);
