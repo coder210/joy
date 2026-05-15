@@ -159,7 +159,10 @@ text_texture_p text_create(font_p font,
 		kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
 		x += roundf(kern * scale);
 	}
-	surface = SDL_CreateSurface(1024, text->real_height, SDL_PIXELFORMAT_RGBA32);
+	/* 用实际渲染宽度代替估算值 */
+	int bitmap_width = text->real_width;
+	text->real_width = x > 0 ? x : 1;
+	surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
 	if (!surface) {
 		SDL_free(bitmap);
 		return NULL;
@@ -170,7 +173,7 @@ text_texture_p text_create(font_p font,
 	/* �Ҷ�תRGBA����͸���ȣ� */
 	for (y = 0; y < text->real_height; ++y) {
 		for (x = 0; x < text->real_width; ++x) {
-			bitmap_index = y * text->real_width + x;
+			bitmap_index = y * bitmap_width + x;
 			pixel_index = y * (pitch / 4) + x;
 			pixel = bitmap[bitmap_index];
 			surface_pixels[pixel_index * 4 + 0] = color.r;
@@ -253,6 +256,10 @@ void text_update(text_texture_p text, font_p font,
                 x += roundf(kern * scale);
         }
 
+        /* 用实际渲染宽度代替估算值 */
+        int old_bitmap_width = text->real_width;
+        text->real_width = x > 0 ? x : 1;
+
         SDL_Surface* surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
         if (!surface) return;
 
@@ -262,7 +269,7 @@ void text_update(text_texture_p text, font_p font,
         /* �Ҷ�תRGBA����͸���ȣ� */
         for (y = 0; y < text->real_height; ++y) {
                 for (x = 0; x < text->real_width; ++x) {
-                        bitmap_index = y * text->real_width + x;
+                        bitmap_index = y * old_bitmap_width + x;
                         pixel_index = y * (pitch / 4) + x;
                         pixel = bitmap[bitmap_index];
                         surface_pixels[pixel_index * 4 + 0] = color.r;

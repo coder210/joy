@@ -3,6 +3,7 @@
 #include <joy2d/jcore.h>
 #include <stdlib.h>
 #include <math.h>
+#include "../layers/menu_layer.h"
 
 struct loading_scene {
     scene_p scene;
@@ -48,6 +49,10 @@ static void menu_box_destroy(scene_node_p n) {
 static void on_load(scene_p s) {
     loading_scene_p self = (loading_scene_p)scene_get_userdata(s);
     log_info("[loading scene] start...");
+
+    // 添加菜单层
+    menu_layer_p menu = create_menu_layer(self->ctx);
+    scene_add_root_node(self->scene, menu_layer_get_node(menu));
 
     float bases[3][2] = { {200,150}, {500,200}, {350,400} };
     int zs[3] = { 10, 20, 30 };

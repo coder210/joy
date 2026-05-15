@@ -11,6 +11,7 @@
 #include "asset_manager.h"
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
+#include "layers/menu_layer.h"
 
 
 static scene_manager_p g_mgr;
@@ -67,6 +68,24 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
                                 scene_manager_push(g_mgr, loading_scene_get_scene(loading_scene_create(ctx)));
                         }
                         break;
+                }
+        }
+        // 菜单层按钮事件
+        else if (e->type == MENU_EVENT) {
+                switch (e->user.code) {
+                case MENU_EVENT_START:
+                        scene_manager_replace(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
+                        break;
+                case MENU_EVENT_SETTINGS:
+                        SDL_Log("Settings button is clickable (work in progress)");
+                        break;
+                case MENU_EVENT_EXIT: {
+                        SDL_Event quit;
+                        SDL_zero(quit);
+                        quit.type = SDL_EVENT_QUIT;
+                        SDL_PushEvent(&quit);
+                        break;
+                }
                 }
         }
 
