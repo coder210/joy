@@ -5,7 +5,7 @@ AssetManager* AssetManager::instance_ = nullptr;
 
 AssetManager::AssetManager(SDL_Renderer* renderer)
 {
-        simheiFont24_ = font_create(renderer, "adventure_client_fonts/simhei.ttf", 24);
+        simheiFont24_ = font_create(renderer, "adventure_server_fonts/simhei.ttf", 24);
 }
 
 AssetManager::~AssetManager()
