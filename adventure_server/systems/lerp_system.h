@@ -3,7 +3,7 @@
 #include "../flecs.h"
 #include "../components/logic_position_component.h"
 #include "../components/transform_component.h"
-#include "../app_context.h"
+#include "../context.h"
 
 static void LerpSystem(flecs::entity e,
 	LogicPositionComponent& lp, TransformComponent& t)

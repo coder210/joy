@@ -55,7 +55,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_add_child(self->scene_node, root_node);
 
 	button_p up_button = button_create(ctx->renderer, 50, 50);
-	button_set_textx(up_button, simhei_font, "U", (int)strlen("U"), { 255, 255, 255, 255 });
+	button_set_textx(up_button, simhei_font, "U", (int)strlen("U"), { 220, 200, 160, 255 });
 	button_set_callback(up_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_UP); },
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP); },
@@ -85,7 +85,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// down
 	button_p down_button = button_create(ctx->renderer, 50, 50);
-	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 255, 255, 255, 255 });
+	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 220, 200, 160, 255 });
 	button_set_callback(down_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN); },
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_DOWN); },
@@ -115,7 +115,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// left
 	button_p left_button = button_create(ctx->renderer, 50, 50);
-	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 255, 255, 255, 255 });
+	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 220, 200, 160, 255 });
 	button_set_callback(left_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT); },
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_LEFT); },
@@ -145,7 +145,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// right
 	button_p right_button = button_create(ctx->renderer, 50, 50);
-	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 255, 255, 255, 255 });
+	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 220, 200, 160, 255 });
 	button_set_callback(right_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT); },
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_RIGHT); },
@@ -188,7 +188,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// attack
 	button_p attack_button = button_create(ctx->renderer, 50, 50);
-	button_set_textx(attack_button, simhei_font, "A", (int)strlen("A"), { 255, 255, 255, 255 });
+	button_set_textx(attack_button, simhei_font, "A", (int)strlen("A"), { 220, 200, 160, 255 });
 	button_set_callback(attack_button,
 		nullptr,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK); },

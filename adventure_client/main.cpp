@@ -7,7 +7,7 @@
 #include <joy2d/jscene.h>
 #include <joy2d/jcore.h>
 #include <joy2d/jsys.h>
-#include "game_context.h"
+#include "context.h"
 #include "asset_manager.h"
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"

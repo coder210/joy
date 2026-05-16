@@ -12,7 +12,6 @@
 #include <joy2d/jshapes.h>
 #include <joy2d/jnetwork.h>
 #include "../layers/debug_layer.h"
-#include "../app_context.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
 #include "../components/logic_velocity_component.h"
@@ -20,6 +19,7 @@
 #include "../systems/lerp_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
+#include "../context.h"
 #include "game_scene.h"
 
 
@@ -459,24 +459,24 @@ static void on_load(scene_p s)
 
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.6f) })
-		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(-0.5f) })
-		.set<TransformComponent>({ 0,-0.5f,0,1,1 });
-	self->world.entity()
-		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(12) })
+		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.5f) })
 		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(0) })
 		.set<TransformComponent>({ 0,0,0,1,1 });
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(12) })
+		.set<LogicRectComponent>({ fp_from_float(.5f), fp_from_float(12) })
+		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(0) })
+		.set<TransformComponent>({ 0,0,0,1,1 });
+	self->world.entity()
+		.set<IdComponent>({ GenId(self), 100 })
+		.set<LogicRectComponent>({ fp_from_float(.5f), fp_from_float(12) })
 		.set<LogicPositionComponent>({ fp_from_float(12), fp_from_float(0) })
 		.set<TransformComponent>({ 12,0,0,1,1 });
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.6f) })
-		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(6) })
-		.set<TransformComponent>({ 0,6,0,1,1 });
+		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.5f) })
+		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(9) })
+		.set<TransformComponent>({ 0,9, 0,1,1 });
 
 
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);

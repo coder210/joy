@@ -1,7 +1,7 @@
 #ifndef LERP_SYSTEM_H
 #define LERP_SYSTEM_H
 #include "../flecs.h"
-#include "../game_context.h"
+#include "../context.h"
 #include "../components/logic_position_component.h"
 #include "../components/transform_component.h"
 

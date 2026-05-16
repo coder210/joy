@@ -2,7 +2,7 @@
 #define EFFECT_LIFECYCLE_SYSTEM_H
 #include "../flecs.h"
 #include "../components/attack_ray_effect_component.h"
-#include "../app_context.h"
+#include "../context.h"
 
 static void EffectLifecycleSystem(flecs::entity e, AttackRayEffectComponent& effect)
 {
