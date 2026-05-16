@@ -310,6 +310,7 @@ static void CollectCommandSystem(game_scene_p self)
 	for (auto& pi : self->player_inputs) {
 		*command->add_player_inputs() = pi;
 	}
+        command->set_checksum("TODO");
 
 	auto command_data = s2c.SerializeAsString();
 	self->commands[command->frame_id()] = command_data;
@@ -506,7 +507,6 @@ static void on_load(scene_p s)
 			ent->set_position_x(pos.x);
 			ent->set_position_y(pos.y);
 		});
-
 	self->worlds[self->g_frameid] = s2c_world.SerializeAsString();
 }
 

@@ -465,6 +465,12 @@ static void on_load(scene_p s)
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
 
+        self->ecs_world.entity()
+                .set<IdComponent>({ 10000, 100 })
+                .set<LogicRectComponent>({ fp_from_float(0.5f), fp_from_float(0.5f) })
+                .set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
+                .set<TransformComponent>({ 5,5,0,1,1 });
+
         self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
