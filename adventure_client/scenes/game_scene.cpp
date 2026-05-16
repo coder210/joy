@@ -465,10 +465,9 @@ static void on_load(scene_p s)
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
 
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
-        //netclient_set_callback(self->netclient, on_message, self);
 
         self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
         self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
@@ -615,6 +614,10 @@ static void on_render(scene_p s) {
 
 static void on_destroy(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
+        if (self->netclient) {
+                netclient_destroy(self->netclient);
+                self->netclient = NULL;
+        }
         delete self;
 }
 

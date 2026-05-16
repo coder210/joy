@@ -25,25 +25,33 @@ static void menu_box_render(scene_node_p n, const void* arg) {
 }
 
 static void menu_box_update(scene_node_p n, float dt) {
-    (void)dt;
     float bx, by;
-    float phase = 0.0f;
-    float* p = (float*)scene_node_get_userdata(n);
-    if (p) phase = *p;
-    static float t = 0.0f;
-    t += 0.016f;
+    float* ptr = (float*)scene_node_get_userdata(n);
+    if (!ptr) return;
+    float phase = ptr[0];
+    ptr[1] += dt;
     scene_node_get_scale(n, &bx, &by);
-    scene_node_set_position(n, bx + sinf(t * 1.5f + phase) * 30.0f,
-            by + cosf(t * 1.2f + phase) * 20.0f);
-}
-
-static void menu_box_event(scene_node_p n, const void *e) {
-       
+    scene_node_set_position(n, bx + sinf(ptr[1] * 1.5f + phase) * 30.0f,
+            by + cosf(ptr[1] * 1.2f + phase) * 20.0f);
 }
 
 static void menu_box_destroy(scene_node_p n) {
     float* p = (float*)scene_node_get_userdata(n);
-    free(p);
+    delete[] p;
+}
+
+static void menu_box_event(scene_node_p n, const void* e) {
+    (void)n;
+    (void)e;
+}
+
+static void on_update(scene_p s, float dt) {
+    (void)s;
+    (void)dt;
+}
+
+static void on_render(scene_p s) {
+    (void)s;
 }
 
 static void on_load(scene_p s) {
@@ -64,36 +72,26 @@ static void on_load(scene_p s) {
         scene_node_set_zorder(n, zs[i]);
         scene_node_set_scale(n, bases[i][0], bases[i][1]);
         scene_node_set_update_callback(n, menu_box_update);
-	scene_node_set_event_callback(n, menu_box_event);
+        scene_node_set_event_callback(n, menu_box_event);
         scene_node_set_render_callback(n, menu_box_render);
         scene_node_set_destroy_callback(n, menu_box_destroy);
 
-        float* ph = (float*)malloc(sizeof(float));
-        *ph = phases[i];
+        float* ph = new float[2];
+        ph[0] = phases[i];
+        ph[1] = 0.0f;
         scene_node_set_userdata(n, ph);
 
         scene_add_root_node(self->scene, n);
     }
 }
 
-static void on_update(scene_p s, float dt) {
-    (void)s;
-    (void)dt;
-    // 模拟加载进度（可后续扩展）
-}
-
-static void on_render(scene_p s) {
-    (void)s;
-    // TODO: 绘制进度条
-}
-
 static void on_destroy(scene_p s) {
     loading_scene_p self = (loading_scene_p)scene_get_userdata(s);
-    free(self);
+    delete self;
 }
 
 loading_scene_p loading_scene_create(context* ctx) {
-    loading_scene_p self = (loading_scene_p)malloc(sizeof(loading_scene_t));
+    loading_scene_p self = new loading_scene_t();
     self->scene = scene_create("Loading");
     self->ctx = ctx;
 
@@ -111,7 +109,7 @@ void loading_scene_destroy(loading_scene_p s) {
         if (s->scene) {
             scene_destroy(s->scene);
         }
-        free(s);
+        delete s;
     }
 }
 
