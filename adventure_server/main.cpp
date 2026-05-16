@@ -25,7 +25,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         ctx->FIXED_TIMESTEP = 1 / 50.0f;
 
 	game_timer_init(&ctx->game_timer);
-	game_timer_set_target_fps(&ctx->game_timer, 60);  // Ëø¶¨ 60 FPS
+	game_timer_set_target_fps(&ctx->game_timer, 60);  // é”å®š 60 FPS
 
 	SDL_CreateWindowAndRenderer("server", 640, 480, 0, &ctx->window, &ctx->renderer);
 	SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
