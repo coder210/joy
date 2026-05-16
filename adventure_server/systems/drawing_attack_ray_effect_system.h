@@ -2,7 +2,7 @@
 #define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #include "../flecs.h"
 #include "../components/attack_ray_effect_component.h"
-#include "../app_context.h"
+#include "../context.h"
 
 static const int PIXELS_PER_METER = 50;
 

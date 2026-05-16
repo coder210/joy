@@ -51,7 +51,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
 
         // 开始按钮
         button_p start_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
-        button_set_textx(start_btn, simhei_font, "Start", (int)strlen("Start"), { 255, 255, 255, 255 });
+        button_set_textx(start_btn, simhei_font, "Start", (int)strlen("Start"), { 220, 200, 160, 255 });
         button_set_callback(start_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_START); },
                 nullptr, nullptr);
@@ -78,7 +78,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         // 设置按钮
         int settings_y = start_y + btn_height + 20;
         button_p settings_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
-        button_set_textx(settings_btn, simhei_font, "Settings", (int)strlen("Settings"), { 255, 255, 255, 255 });
+        button_set_textx(settings_btn, simhei_font, "Settings", (int)strlen("Settings"), { 220, 200, 160, 255 });
         button_set_callback(settings_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_SETTINGS); },
                 nullptr, nullptr);
@@ -105,7 +105,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         // 退出按钮
         int exit_y = settings_y + btn_height + 20;
         button_p exit_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
-        button_set_textx(exit_btn, simhei_font, "Exit", (int)strlen("Exit"), { 255, 255, 255, 255 });
+        button_set_textx(exit_btn, simhei_font, "Exit", (int)strlen("Exit"), { 220, 200, 160, 255 });
         button_set_callback(exit_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_EXIT); },
                 nullptr, nullptr);

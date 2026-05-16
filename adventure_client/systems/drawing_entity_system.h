@@ -1,7 +1,7 @@
 #ifndef DRAWING_ENTITY_SYSTEM_H
 #define DRAWING_ENTITY_SYSTEM_H
 #include "../flecs.h"
-#include "../game_context.h"
+#include "../context.h"
 #include "../components/id_component.h"
 #include "../components/player_component.h"
 #include "../components/logic_rect_component.h"
@@ -29,7 +29,7 @@ static void drawing_entity_system(flecs::entity e,
                 SDL_RenderFillRect(ctx->renderer, &header);
         }
         else {
-                SDL_SetRenderDrawColor(ctx->renderer, 255, 255, 255, 255);
+                SDL_SetRenderDrawColor(ctx->renderer, 160, 140, 110, 255);
                 SDL_RenderFillRect(ctx->renderer, &body);
         }
 

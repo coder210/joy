@@ -2,7 +2,7 @@
 #define MENU_LAYER_H
 #include <joy2d/jui.h>
 #include <joy2d/jscene.h>
-#include "../game_context.h"
+#include "../context.h"
 
 #define MENU_EVENT (SDL_EVENT_USER + 0x2)
 

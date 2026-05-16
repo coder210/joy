@@ -4,8 +4,8 @@
 #include <joy2d/jsys.h>
 #include <joy2d/jscene.h>
 #include "scenes/game_scene.h"
-#include "app_context.h"
 #include "asset_manager.h"
+#include "context.h"
 
 static scene_manager_p g_mgr;
 static Context* ctx;
