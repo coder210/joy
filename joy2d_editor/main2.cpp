@@ -1,908 +1,753 @@
-﻿//#define SDL_MAIN_USE_CALLBACKS
-//#define STB_IMAGE_IMPLEMENTATION
-//#include "SDL3/SDL.h"
-//#include "SDL3/SDL_main.h"
-//#include "stb_image.h"
-//#include <chrono>
-//#include <cmath>    // ���� sinf, cosf, tanf, sqrtf
-//#include <cstring>  // ���� memcpy
-//#include <iostream>
-//#include <vector>
-//
-//// -------------------- �Զ�����ѧ�� --------------------
-//struct Vec3 {
-//        float x, y, z;
-//
-//        Vec3() : x(0), y(0), z(0) {}
-//
-//        Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
-//
-//        Vec3 operator+(const Vec3& v) const {
-//                return Vec3(x + v.x, y + v.y, z + v.z);
-//        }
-//
-//        Vec3 operator-(const Vec3& v) const {
-//                return Vec3(x - v.x, y - v.y, z - v.z);
-//        }
-//
-//        Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }
-//
-//        Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }
-//
-//        Vec3& operator+=(const Vec3& v) {
-//                x += v.x;
-//                y += v.y;
-//                z += v.z;
-//                return *this;
-//        }
-//
-//        Vec3& operator-=(const Vec3& v) {
-//                x -= v.x;
-//                y -= v.y;
-//                z -= v.z;
-//                return *this;
-//        }
-//
-//        Vec3& operator*=(float s) {
-//                x *= s;
-//                y *= s;
-//                z *= s;
-//                return *this;
-//        }
-//
-//        Vec3& operator/=(float s) {
-//                x /= s;
-//                y /= s;
-//                z /= s;
-//                return *this;
-//        }
-//};
-//
-//inline float dot(const Vec3& a, const Vec3& b) {
-//        return a.x * b.x + a.y * b.y + a.z * b.z;
-//}
-//
-//inline Vec3 cross(const Vec3& a, const Vec3& b) {
-//        return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
-//                a.x * b.y - a.y * b.x);
-//}
-//
-//inline float length(const Vec3& v) {
-//        return sqrtf(dot(v, v));
-//}
-//
-//inline Vec3 normalize(const Vec3& v) {
-//        float len = length(v);
-//        return (len > 0) ? v / len : Vec3(0, 0, 0);
-//}
-//
-//struct Mat4 {
-//        float m[16];  // ������
-//
-//        // Ĭ�Ϲ��쵥λ����
-//        Mat4() {
-//                for (int i = 0; i < 16; ++i) m[i] = 0;
-//                m[0] = m[5] = m[10] = m[15] = 1.0f;
-//        }
-//
-//        // �����鹹��
-//        Mat4(const float* data) { memcpy(m, data, sizeof(m)); }
-//
-//        // ����˷�
-//        Mat4 operator*(const Mat4& other) const {
-//                Mat4 res;
-//                for (int col = 0; col < 4; ++col) {
-//                        for (int row = 0; row < 4; ++row) {
-//                                float sum = 0;
-//                                for (int k = 0; k < 4; ++k) {
-//                                        sum += m[col * 4 + k] * other.m[k * 4 + row];
-//                                }
-//                                res.m[col * 4 + row] = sum;
-//                        }
-//                }
-//                return res;
-//        }
-//
-//        // ����Ԫ�� (col, row)
-//        float& operator()(int col, int row) { return m[col * 4 + row]; }
-//
-//        const float& operator()(int col, int row) const { return m[col * 4 + row]; }
-//
-//        // ---------- ��̬���췽�� ----------
-//        static Mat4 identity() { return Mat4(); }
-//
-//        static Mat4 translate(const Vec3& t) {
-//                Mat4 mat;
-//                mat.m[12] = t.x;
-//                mat.m[13] = t.y;
-//                mat.m[14] = t.z;
-//                return mat;
-//        }
-//
-//        static Mat4 rotateX(float angle) {
-//                Mat4 mat;
-//                float c = cosf(angle), s = sinf(angle);
-//                mat.m[5] = c;
-//                mat.m[6] = s;
-//                mat.m[9] = -s;
-//                mat.m[10] = c;
-//                return mat;
-//        }
-//
-//        static Mat4 rotateY(float angle) {
-//                Mat4 mat;
-//                float c = cosf(angle), s = sinf(angle);
-//                mat.m[0] = c;
-//                mat.m[2] = -s;
-//                mat.m[8] = s;
-//                mat.m[10] = c;
-//                return mat;
-//        }
-//
-//        static Mat4 rotateZ(float angle) {
-//                Mat4 mat;
-//                float c = cosf(angle), s = sinf(angle);
-//                mat.m[0] = c;
-//                mat.m[1] = s;
-//                mat.m[4] = -s;
-//                mat.m[5] = c;
-//                return mat;
-//        }
-//
-//        // ͸��ͶӰ���� (������)
-//        static Mat4 perspective(float fov, float aspect, float near, float far) {
-//                float tanHalf = tanf(fov / 2.0f);
-//                Mat4 mat;
-//                mat.m[0] = 1.0f / (aspect * tanHalf);
-//                mat.m[5] = 1.0f / tanHalf;
-//                mat.m[10] = far / (near - far);
-//                mat.m[11] = -1.0f;
-//                mat.m[14] = (near * far) / (near - far);
-//                mat.m[15] = 0.0f;
-//                return mat;
-//        }
-//
-//        // �۲���� (lookAt)
-//        static Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up) {
-//                Vec3 f = normalize(center - eye);
-//                Vec3 s = normalize(cross(f, up));
-//                Vec3 u = cross(s, f);
-//
-//                Mat4 mat;
-//                // ��һ��
-//                mat.m[0] = s.x;
-//                mat.m[1] = s.y;
-//                mat.m[2] = s.z;
-//                mat.m[3] = 0;
-//                // �ڶ���
-//                mat.m[4] = u.x;
-//                mat.m[5] = u.y;
-//                mat.m[6] = u.z;
-//                mat.m[7] = 0;
-//                // ������
-//                mat.m[8] = -f.x;
-//                mat.m[9] = -f.y;
-//                mat.m[10] = -f.z;
-//                mat.m[11] = 0;
-//                // ������
-//                mat.m[12] = -dot(s, eye);
-//                mat.m[13] = -dot(u, eye);
-//                mat.m[14] = dot(f, eye);
-//                mat.m[15] = 1.0f;
-//                return mat;
-//        }
-//};
-//
-//// �Ƕ�ת����
-//inline float radians(float degrees) {
-//        return degrees * (3.14159265358979323846f / 180.0f);
-//}
-//
-//// -------------------- ԭ���루glm �������滻�� --------------------
-//
-//struct GPUShaderBundle {
-//        SDL_GPUShader* vertex{};
-//        SDL_GPUShader* fragment{};
-//
-//        operator bool() const { return vertex && fragment; }
-//};
-//
-//SDL_Window* gWindow = nullptr;
-//bool gShouldExit = false;
-//
-//// SDL GPU resources
-//SDL_GPUDevice* gDevice = nullptr;
-//GPUShaderBundle gShaders;
-//SDL_GPUGraphicsPipeline* gGraphicsPipeline;
-//SDL_GPUBuffer* gPlaneVertexBuffer;
-//SDL_GPUTexture* gTexture;
-//SDL_GPUTexture* gDepthTexture;
-//SDL_GPUSampler* gSampler;
-//
-//#define WINDOW_WIDTH 1024
-//#define WINDOW_HEIGHT 720
-//
-//// ��һ�˳�������ṹ��ʹ���Զ��� Vec3��
-//struct FPSCamera {
-//        Vec3 position = Vec3(0.0f, 0.0f, 5.0f);
-//        Vec3 front = Vec3(0.0f, 0.0f, -1.0f);
-//        Vec3 up = Vec3(0.0f, 1.0f, 0.0f);
-//        Vec3 right = Vec3(1.0f, 0.0f, 0.0f);
-//        Vec3 worldUp = Vec3(0.0f, 1.0f, 0.0f);
-//
-//        float yaw = -90.0f;
-//        float pitch = 0.0f;
-//
-//        float movementSpeed = 2.5f;
-//        float mouseSensitivity = 0.1f;
-//        float zoom = 45.0f;
-//
-//        void updateCameraVectors() {
-//                Vec3 newFront;
-//                newFront.x = cosf(radians(yaw)) * cosf(radians(pitch));
-//                newFront.y = sinf(radians(pitch));
-//                newFront.z = sinf(radians(yaw)) * cosf(radians(pitch));
-//                front = normalize(newFront);
-//
-//                right = normalize(cross(front, worldUp));
-//                up = normalize(cross(right, front));
-//        }
-//
-//        Mat4 getViewMatrix() {
-//                return Mat4::lookAt(position, position + front, up);
-//        }
-//
-//        void processMouseMovement(float xoffset, float yoffset,
-//                bool constrainPitch = true) {
-//                xoffset *= mouseSensitivity;
-//                yoffset *= mouseSensitivity;
-//
-//                yaw += xoffset;
-//                pitch += yoffset;
-//
-//                if (constrainPitch) {
-//                        if (pitch > 89.0f) pitch = 89.0f;
-//                        if (pitch < -89.0f) pitch = -89.0f;
-//                }
-//                updateCameraVectors();
-//        }
-//
-//        void processKeyboard(int direction, float deltaTime) {
-//                float velocity = movementSpeed * deltaTime;
-//                switch (direction) {
-//                case 0:
-//                        position += front * velocity;
-//                        break;
-//                case 1:
-//                        position -= front * velocity;
-//                        break;
-//                case 2:
-//                        position -= right * velocity;
-//                        break;
-//                case 3:
-//                        position += right * velocity;
-//                        break;
-//                case 4:
-//                        position += worldUp * velocity;
-//                        break;
-//                case 5:
-//                        position -= worldUp * velocity;
-//                        break;
-//                }
-//        }
-//};
-//
-//FPSCamera gCamera;
-//
-//// ʱ�����
-//std::chrono::high_resolution_clock::time_point gLastFrameTime;
-//float gDeltaTime = 0.0f;
-//
-//// ����״̬
-//bool gKeys[6] = { false };  // W, S, A, D, Space, LShift
-//
-//struct MVP {
-//        Mat4 proj;
-//        Mat4 model;
-//} gMVP;
-//
-//float gRotateY = 0;
-//float gRotateX = 0;
-//
-//bool initSDL() {
-//        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
-//                SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "SDL init failed");
-//                return false;
-//        }
-//
-//        gWindow =
-//                SDL_CreateWindow("FPS Camera Demo", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-//        if (!gWindow) {
-//                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SDL create gWindow failed");
-//                return false;
-//        }
-//
-//        int num_drivers = SDL_GetNumRenderDrivers();
-//        for (int i = 0; i < num_drivers; i++) {
-//                const char* name = SDL_GetRenderDriver(i);
-//                SDL_Renderer* renderer = SDL_CreateRenderer(gWindow, name);
-//                if (renderer) {
-//                        SDL_Log("[OK] %s\n", name);
-//                        SDL_DestroyRenderer(renderer);
-//                }
-//                else {
-//                        SDL_Log("[NO] %s\n", name);
-//                }
-//        }
-//
-//        gDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV,
-//                true, nullptr);
-//        if (!gDevice) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL create gpu gDevice failed: %s",
-//                        SDL_GetError());
-//                return false;
-//        }
-//
-//        if (!SDL_ClaimWindowForGPUDevice(gDevice, gWindow)) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Your system don't support SDL GPU");
-//                return false;
-//        }
-//
-//        gLastFrameTime = std::chrono::high_resolution_clock::now();
-//        return true;
-//}
-//
-//SDL_GPUShader* loadSDLGPUShader(const char* filename, SDL_GPUShaderStage stage,
-//        uint32_t sampler_num, uint32_t uniform_buffer_num) {
-//        size_t file_size;
-//        Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
-//        if (!data) {
-//                SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "load file %s failed!: %s",
-//                        filename, SDL_GetError());
-//                return nullptr;
-//        }
-//
-//        SDL_GPUShaderCreateInfo ci{};
-//        ci.code = data;
-//        ci.code_size = file_size;
-//        ci.entrypoint = "main";
-//        ci.format = SDL_GPU_SHADERFORMAT_SPIRV;
-//        ci.num_samplers = sampler_num;
-//        ci.num_uniform_buffers = uniform_buffer_num;
-//        ci.num_storage_buffers = 0;
-//        ci.num_storage_textures = 0;
-//        ci.stage = stage;
-//
-//        SDL_GPUShader* shader = SDL_CreateGPUShader(gDevice, &ci);
-//        SDL_free(data);  // ���۳ɹ�����ͷ���ʱ����
-//
-//        if (!shader) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU,
-//                        "create gpu shader from %s failed: %s", filename,
-//                        SDL_GetError());
-//        }
-//        return shader;
-//}
-//
-//GPUShaderBundle createSDLGPUShaderBundle() {
-//   /*     const char* dir = "shaders";
-//        SDL_Storage* storage = SDL_OpenFileStorage(dir);
-//        if (!storage) {
-//                SDL_LogError(
-//                        SDL_LOG_CATEGORY_SYSTEM,
-//                        "Open storage %s failed! You must run this program at root dir!",
-//                        dir);
-//                return {};
-//        }
-//
-//        while (!SDL_StorageReady(storage)) {
-//                SDL_Delay(1);
-//        }*/
-//
-//        GPUShaderBundle bundle;
-//        bundle.vertex =
-//                loadSDLGPUShader("shaders/vert.spv",SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-//        bundle.fragment = loadSDLGPUShader("shaders/frag.spv", 
-//                SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
-//        //SDL_CloseStorage(storage);
-//        return bundle;
-//}
-//
-//SDL_GPUGraphicsPipeline* createGraphicsPipeline() {
-//        SDL_GPUGraphicsPipelineCreateInfo ci{};
-//
-//        SDL_GPUVertexAttribute attributes[2];
-//        attributes[0].location = 0;
-//        attributes[0].buffer_slot = 0;
-//        attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
-//        attributes[0].offset = 0;
-//
-//        attributes[1].location = 1;
-//        attributes[1].buffer_slot = 0;
-//        attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-//        attributes[1].offset = sizeof(float) * 3;
-//
-//        ci.vertex_input_state.vertex_attributes = attributes;
-//        ci.vertex_input_state.num_vertex_attributes = sizeof(attributes) / sizeof(attributes[0]);;
-//
-//        SDL_GPUVertexBufferDescription buffer_desc;
-//        buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-//        buffer_desc.instance_step_rate = 0;
-//        buffer_desc.slot = 0;
-//        buffer_desc.pitch = sizeof(float) * 5;
-//
-//        ci.vertex_input_state.num_vertex_buffers = 1;
-//        ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
-//
-//        ci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-//        ci.vertex_shader = gShaders.vertex;
-//        ci.fragment_shader = gShaders.fragment;
-//
-//        ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
-//        ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-//
-//        ci.multisample_state.enable_mask = false;
-//        ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-//
-//        ci.target_info.num_color_targets = 1;
-//        ci.target_info.has_depth_stencil_target = true;
-//        ci.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-//
-//        SDL_GPUDepthStencilState state{};
-//        state.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
-//        state.back_stencil_state.pass_op = SDL_GPU_STENCILOP_ZERO;
-//        state.back_stencil_state.fail_op = SDL_GPU_STENCILOP_ZERO;
-//        state.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
-//        state.compare_op = SDL_GPU_COMPAREOP_LESS;
-//        state.enable_depth_test = true;
-//        state.enable_depth_write = true;
-//        state.enable_stencil_test = false;
-//        state.compare_mask = 0xFF;
-//        state.write_mask = 0xFF;
-//        ci.depth_stencil_state = state;
-//
-//        SDL_GPUColorTargetDescription desc;
-//        desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-//        desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-//        desc.blend_state.color_write_mask =
-//                SDL_GPU_COLORCOMPONENT_A | SDL_GPU_COLORCOMPONENT_R |
-//                SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
-//        desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-//        desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-//        desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-//        desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-//        desc.blend_state.enable_blend = true;
-//        desc.blend_state.enable_color_write_mask = false;
-//        desc.format = SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow);
-//
-//        ci.target_info.color_target_descriptions = &desc;
-//
-//        return SDL_CreateGPUGraphicsPipeline(gDevice, &ci);
-//}
-//
-//struct Vertex {
-//        float x, y, z;
-//        float u, v;
-//};
-//
-//void createAndUploadVertexData() {
-//        // clang-format off
-//        Vertex vertices[] = {
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 0.0f},
-//            Vertex{ 0.5f, -0.5f, -0.5f,  1.0f, 0.0f},
-//            Vertex{ 0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{ 0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{-0.5f,  0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 0.0f},
-//
-//            Vertex{-0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-//            Vertex{ 0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 1.0f},
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 1.0f},
-//            Vertex{-0.5f,  0.5f,  0.5f,  0.0f, 1.0f},
-//            Vertex{-0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-//
-//            Vertex{-0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{-0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{-0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-//            Vertex{-0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{ 0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{ 0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{ 0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{ 0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{ 0.5f, -0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{ 0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{ 0.5f, -0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{-0.5f, -0.5f,  0.5f,  0.0f, 0.0f},
-//            Vertex{-0.5f, -0.5f, -0.5f,  0.0f, 1.0f},
-//
-//            Vertex{-0.5f,  0.5f, -0.5f,  0.0f, 1.0f},
-//            Vertex{ 0.5f,  0.5f, -0.5f,  1.0f, 1.0f},
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{ 0.5f,  0.5f,  0.5f,  1.0f, 0.0f},
-//            Vertex{-0.5f,  0.5f,  0.5f,  0.0f, 0.0f},
-//            Vertex{-0.5f,  0.5f, -0.5f,  0.0f, 1.0f}
-//        };
-//        //clang-format on
-//
-//        SDL_GPUTransferBufferCreateInfo transfer_buffer_ci;
-//        transfer_buffer_ci.size = sizeof(vertices);
-//        transfer_buffer_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-//
-//        SDL_GPUTransferBuffer* transfer_buffer =
-//                SDL_CreateGPUTransferBuffer(gDevice, &transfer_buffer_ci);
-//        void* ptr = SDL_MapGPUTransferBuffer(gDevice, transfer_buffer, false);
-//        memcpy(ptr, &vertices, sizeof(vertices));
-//        SDL_UnmapGPUTransferBuffer(gDevice, transfer_buffer);
-//
-//        SDL_GPUBufferCreateInfo gpu_buffer_ci;
-//        gpu_buffer_ci.size = sizeof(vertices);
-//        gpu_buffer_ci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-//
-//        gPlaneVertexBuffer = SDL_CreateGPUBuffer(gDevice, &gpu_buffer_ci);
-//
-//        SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
-//        SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
-//        SDL_GPUTransferBufferLocation location;
-//        location.offset = 0;
-//        location.transfer_buffer = transfer_buffer;
-//        SDL_GPUBufferRegion region;
-//        region.buffer = gPlaneVertexBuffer;
-//        region.offset = 0;
-//        region.size = sizeof(vertices);
-//        SDL_UploadToGPUBuffer(copy_pass, &location, &region, false);
-//        SDL_EndGPUCopyPass(copy_pass);
-//
-//        SDL_SubmitGPUCommandBuffer(cmd);
-//        SDL_ReleaseGPUTransferBuffer(gDevice, transfer_buffer);
-//}
-//
-//void createImageTexture() {
-//        int w, h;
-//        stbi_set_flip_vertically_on_load(true);
-//
-//        // ʹ�� SDL_LoadFile ��ȡ�ļ�����
-//        size_t file_size = 0;
-//        void* file_data = SDL_LoadFile("textures/logo.png", &file_size);
-//        if (!file_data) {
-//                SDL_Log("Failed to load file: textures/logo.png");
-//                return;
-//        }
-//
-//        // ���ڴ����ͼ��
-//        unsigned char* data = stbi_load_from_memory(
-//                static_cast<const unsigned char*>(file_data),
-//                static_cast<int>(file_size),
-//                &w, &h, nullptr, STBI_rgb_alpha
-//        );
-//        SDL_free(file_data); // �ͷ��ļ�����
-//
-//        if (!data) {
-//                SDL_Log("Failed to parse image from memory");
-//                return;
-//        }
-//
-//        size_t image_size = 4 * w * h;
-//
-//        SDL_GPUTransferBufferCreateInfo transfer_buffer_ci;
-//        transfer_buffer_ci.size = image_size;
-//        transfer_buffer_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-//
-//        SDL_GPUTransferBuffer* transfer_buffer =
-//                SDL_CreateGPUTransferBuffer(gDevice, &transfer_buffer_ci);
-//        void* ptr = SDL_MapGPUTransferBuffer(gDevice, transfer_buffer, false);
-//        memcpy(ptr, data, image_size);
-//        SDL_UnmapGPUTransferBuffer(gDevice, transfer_buffer);
-//
-//        SDL_GPUTextureCreateInfo texture_ci;
-//        texture_ci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-//        texture_ci.height = h;
-//        texture_ci.width = w;
-//        texture_ci.layer_count_or_depth = 1;
-//        texture_ci.num_levels = 1;
-//        texture_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-//        texture_ci.type = SDL_GPU_TEXTURETYPE_2D;
-//        texture_ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-//
-//        gTexture = SDL_CreateGPUTexture(gDevice, &texture_ci);
-//
-//        SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
-//        SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
-//
-//        SDL_GPUTextureTransferInfo transfer_info;
-//        transfer_info.offset = 0;
-//        transfer_info.pixels_per_row = w;
-//        transfer_info.rows_per_layer = h;
-//        transfer_info.transfer_buffer = transfer_buffer;
-//
-//        SDL_GPUTextureRegion region;
-//        region.w = w;
-//        region.h = h;
-//        region.x = 0;
-//        region.y = 0;
-//        region.layer = 0;
-//        region.mip_level = 0;
-//        region.z = 0;
-//        region.d = 1;
-//        region.texture = gTexture;
-//
-//        SDL_UploadToGPUTexture(copy_pass, &transfer_info, &region, false);
-//        SDL_EndGPUCopyPass(copy_pass);
-//
-//        SDL_SubmitGPUCommandBuffer(cmd);
-//        SDL_ReleaseGPUTransferBuffer(gDevice, transfer_buffer);
-//        stbi_image_free(data);
-//}
-//
-//void createDepthTexture(int w, int h) {
-//        SDL_GPUTextureCreateInfo texture_ci;
-//        texture_ci.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-//        texture_ci.height = h;
-//        texture_ci.width = w;
-//        texture_ci.layer_count_or_depth = 1;
-//        texture_ci.num_levels = 1;
-//        texture_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-//        texture_ci.type = SDL_GPU_TEXTURETYPE_2D;
-//        texture_ci.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-//
-//        gDepthTexture = SDL_CreateGPUTexture(gDevice, &texture_ci);
-//}
-//
-//void createSampler() {
-//        SDL_GPUSamplerCreateInfo ci;
-//        ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-//        ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-//        ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-//        ci.enable_anisotropy = false;
-//        ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
-//        ci.enable_compare = false;
-//        ci.mag_filter = SDL_GPU_FILTER_LINEAR;
-//        ci.min_filter = SDL_GPU_FILTER_LINEAR;
-//        ci.max_lod = 1.0;
-//        ci.min_lod = 1.0;
-//        ci.mip_lod_bias = 0.0;
-//        ci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
-//
-//        gSampler = SDL_CreateGPUSampler(gDevice, &ci);
-//}
-//
-//void updateMVPData() {
-//        Vec3 cubePositions[] = {
-//            Vec3(0.0f, 0.0f, 0.0f),
-//            Vec3(2.0f, 0.0f, 0.0f),
-//            Vec3(-2.0f, 0.0f, 0.0f),
-//            Vec3(0.0f, 0.0f, 2.0f),
-//            Vec3(0.0f, 0.0f, -2.0f),
-//            Vec3(0.0f, 2.0f, 0.0f),
-//            Vec3(0.0f, -2.0f, 0.0f)
-//        };
-//
-//        // ʹ�õ�һ��������ı任
-//        gMVP.model = Mat4::identity();
-//        // �����ת������Y����X��������ԭ����ͼһ�£�
-//       /* gMVP.model = Mat4::rotateY(radians(gRotateY)) *
-//                     Mat4::rotateX(radians(gRotateX)) *
-//                     gMVP.model;*/
-//        gMVP.model = Mat4::translate(cubePositions[0]);  // ƽ��
-//
-//        // ������ͼ����
-//        Mat4 view = gCamera.getViewMatrix();
-//        gMVP.model = view * gMVP.model;
-//
-//        // ͶӰ����
-//        gMVP.proj = Mat4::perspective(radians(gCamera.zoom),
-//                (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
-//                0.1f, 100.0f);
-//}
-//
-//void processInput() {
-//        const bool* keyboardState = SDL_GetKeyboardState(NULL);
-//
-//        gKeys[0] = keyboardState[SDL_SCANCODE_W];
-//        gKeys[1] = keyboardState[SDL_SCANCODE_S];
-//        gKeys[2] = keyboardState[SDL_SCANCODE_A];
-//        gKeys[3] = keyboardState[SDL_SCANCODE_D];
-//        gKeys[4] = keyboardState[SDL_SCANCODE_SPACE];
-//        gKeys[5] = keyboardState[SDL_SCANCODE_LSHIFT];
-//
-//        if (gKeys[0]) gCamera.processKeyboard(0, gDeltaTime);
-//        if (gKeys[1]) gCamera.processKeyboard(1, gDeltaTime);
-//        if (gKeys[2]) gCamera.processKeyboard(2, gDeltaTime);
-//        if (gKeys[3]) gCamera.processKeyboard(3, gDeltaTime);
-//        if (gKeys[4]) gCamera.processKeyboard(4, gDeltaTime);
-//        if (gKeys[5]) gCamera.processKeyboard(5, gDeltaTime);
-//}
-//
-//
-//static void print_available_video_backends() {
-//        int num = SDL_GetNumVideoDrivers();
-//        for (int i = 0; i < num; i++) {
-//                const char* name = SDL_GetVideoDriver(i);
-//                SDL_Log("[OK] %s\n", name);
-//        }
-//}
-//
-//// SDL main loop
-//SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
-//        //print_available_video_backends();
-//
-//        if (!initSDL()) {
-//                return SDL_APP_FAILURE;
-//        }
-//
-//
-//        gShaders = createSDLGPUShaderBundle();
-//        if (!gShaders) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Shader load failed! Program exit!");
-//                return SDL_APP_FAILURE;
-//        }
-//
-//        gGraphicsPipeline = createGraphicsPipeline();
-//        if (!gGraphicsPipeline) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU, "Graphics pipeline load failed! %s",
-//                        SDL_GetError());
-//                return SDL_APP_FAILURE;
-//        }
-//
-//
-//
-//        createAndUploadVertexData();
-//        createImageTexture();
-//        createDepthTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
-//        createSampler();
-//
-//        gCamera.updateCameraVectors();
-//        updateMVPData();
-//
-//        return SDL_APP_CONTINUE;
-//}
-//
-//SDL_AppResult SDL_AppIterate(void* appstate) {
-//        auto currentTime = std::chrono::high_resolution_clock::now();
-//        gDeltaTime = std::chrono::duration<float>(currentTime - gLastFrameTime).count();
-//        gLastFrameTime = currentTime;
-//
-//        gRotateX += 20.0f * gDeltaTime;
-//        gRotateY += 30.0f * gDeltaTime;
-//
-//        processInput();
-//        updateMVPData();
-//
-//        bool is_minimized = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_MINIMIZED;
-//        if (is_minimized) {
-//                return SDL_APP_CONTINUE;
-//        }
-//
-//        SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
-//        SDL_GPUTexture* swapchain_texture = nullptr;
-//        Uint32 width, height;
-//
-//        if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd, gWindow, &swapchain_texture,
-//                &width, &height)) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU,
-//                        "SDL swapchain texture acquire failed! %s",
-//                        SDL_GetError());
-//        }
-//
-//        if (!swapchain_texture) {
-//                return SDL_APP_CONTINUE;
-//        }
-//
-//        SDL_GPUColorTargetInfo color_target_info{};
-//        color_target_info.clear_color.r = 0.1;
-//        color_target_info.clear_color.g = 0.1;
-//        color_target_info.clear_color.b = 0.1;
-//        color_target_info.clear_color.a = 1;
-//        color_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
-//        color_target_info.mip_level = 0;
-//        color_target_info.store_op = SDL_GPU_STOREOP_STORE;
-//        color_target_info.texture = swapchain_texture;
-//        color_target_info.cycle = true;
-//        color_target_info.layer_or_depth_plane = 0;
-//        color_target_info.cycle_resolve_texture = false;
-//
-//        SDL_GPUDepthStencilTargetInfo depth_target_info{};
-//        depth_target_info.clear_depth = 1;
-//        depth_target_info.cycle = false;
-//        depth_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
-//        depth_target_info.store_op = SDL_GPU_STOREOP_DONT_CARE;
-//        depth_target_info.texture = gDepthTexture;
-//
-//        SDL_GPURenderPass* render_pass =
-//                SDL_BeginGPURenderPass(cmd, &color_target_info, 1, &depth_target_info);
-//        SDL_BindGPUGraphicsPipeline(render_pass, gGraphicsPipeline);
-//
-//        SDL_GPUBufferBinding binding;
-//        binding.buffer = gPlaneVertexBuffer;
-//        binding.offset = 0;
-//        SDL_BindGPUVertexBuffers(render_pass, 0, &binding, 1);
-//
-//        SDL_GPUTextureSamplerBinding sampler_binding;
-//        sampler_binding.texture = gTexture;
-//        sampler_binding.sampler = gSampler;
-//        SDL_BindGPUFragmentSamplers(render_pass, 0, &sampler_binding, 1);
-//
-//        // ���� uniform ���ݣ�gMVP ���� proj �� model��˳������ɫ��һ�£�
-//        SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
-//
-//        int window_width, window_height;
-//        SDL_GetWindowSize(gWindow, &window_width, &window_height);
-//
-//        SDL_GPUViewport viewport;
-//        viewport.x = 0;
-//        viewport.y = 0;
-//        viewport.w = window_width;
-//        viewport.h = window_height;
-//        viewport.min_depth = 0;
-//        viewport.max_depth = 1;
-//        SDL_SetGPUViewport(render_pass, &viewport);
-//        SDL_DrawGPUPrimitives(render_pass, 36, 1, 0, 0);
-//
-//        SDL_EndGPURenderPass(render_pass);
-//
-//        if (!SDL_SubmitGPUCommandBuffer(cmd)) {
-//                SDL_LogError(SDL_LOG_CATEGORY_GPU,
-//                        "SDL submit command buffer failed! %s", SDL_GetError());
-//        }
-//
-//        return SDL_APP_CONTINUE;
-//}
-//
-//SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
-//        if (event->type == SDL_EVENT_QUIT) {
-//                return SDL_APP_SUCCESS;
-//        }
-//
-//        if (event->type == SDL_EVENT_MOUSE_MOTION) {
-//                static int lastX = WINDOW_WIDTH / 2;
-//                static int lastY = WINDOW_HEIGHT / 2;
-//
-//                int x = event->motion.x;
-//                int y = event->motion.y;
-//
-//                float xoffset = x - lastX;
-//                float yoffset = lastY - y; // Y�ᷴת
-//
-//                lastX = x;
-//                lastY = y;
-//
-//                gCamera.processMouseMovement(xoffset, yoffset);
-//        }
-//
-//        if (event->type == SDL_EVENT_MOUSE_WHEEL) {
-//                gCamera.zoom -= event->wheel.y * 5.0f;
-//                if (gCamera.zoom < 1.0f) gCamera.zoom = 1.0f;
-//                if (gCamera.zoom > 90.0f) gCamera.zoom = 90.0f;
-//        }
-//
-//        if (event->type == SDL_EVENT_KEY_DOWN) {
-//                if (event->key.key == SDLK_ESCAPE) {
-//                        return SDL_APP_SUCCESS;
-//                }
-//        }
-//
-//        return SDL_APP_CONTINUE;
-//}
-//
-//void SDL_AppQuit(void* appstate, SDL_AppResult result) {
-//        SDL_WaitForGPUIdle(gDevice);
-//
-//        SDL_ReleaseGPUSampler(gDevice, gSampler);
-//        SDL_ReleaseGPUTexture(gDevice, gTexture);
-//        SDL_ReleaseGPUTexture(gDevice, gDepthTexture);
-//        SDL_ReleaseGPUBuffer(gDevice, gPlaneVertexBuffer);
-//        SDL_ReleaseGPUGraphicsPipeline(gDevice, gGraphicsPipeline);
-//        SDL_ReleaseGPUShader(gDevice, gShaders.vertex);
-//        SDL_ReleaseGPUShader(gDevice, gShaders.fragment);
-//        SDL_ReleaseWindowFromGPUDevice(gDevice, gWindow);
-//        SDL_DestroyGPUDevice(gDevice);
-//        SDL_DestroyWindow(gWindow);
-//        SDL_Quit();
-//}
+﻿#define SDL_MAIN_USE_CALLBACKS
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_main.h"
+#include <chrono>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <vector>
+#include <cstdio>
+
+// -------------------- 自定义数学库 --------------------
+struct Vec3 {
+    float x, y, z;
+    Vec3() : x(0), y(0), z(0) {}
+    Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+    Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
+    Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
+    Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }
+    Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }
+    Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+    Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+    Vec3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+    Vec3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
+};
+
+inline float dot(const Vec3& a, const Vec3& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+inline Vec3 cross(const Vec3& a, const Vec3& b) { return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
+inline float length(const Vec3& v) { return sqrtf(dot(v, v)); }
+inline Vec3 normalize(const Vec3& v) { float len = length(v); return (len > 0) ? v / len : Vec3(0, 0, 0); }
+
+struct Mat4 {
+    float m[16];
+    Mat4() { for (int i = 0; i < 16; ++i) m[i] = 0; m[0] = m[5] = m[10] = m[15] = 1.0f; }
+    Mat4(const float* data) { memcpy(m, data, sizeof(m)); }
+    Mat4 operator*(const Mat4& other) const {
+        Mat4 res;
+        for (int col = 0; col < 4; ++col)
+            for (int row = 0; row < 4; ++row) {
+                float sum = 0;
+                for (int k = 0; k < 4; ++k) sum += m[col * 4 + k] * other.m[k * 4 + row];
+                res.m[col * 4 + row] = sum;
+            }
+        return res;
+    }
+    float& operator()(int col, int row) { return m[col * 4 + row]; }
+    const float& operator()(int col, int row) const { return m[col * 4 + row]; }
+
+    static Mat4 identity() { return Mat4(); }
+    static Mat4 translate(const Vec3& t) {
+        Mat4 mat; mat.m[12] = t.x; mat.m[13] = t.y; mat.m[14] = t.z; return mat;
+    }
+    static Mat4 scale(const Vec3& s) {
+        Mat4 mat; mat.m[0] = s.x; mat.m[5] = s.y; mat.m[10] = s.z; return mat;
+    }
+    static Mat4 rotateX(float angle) {
+        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+        mat.m[5] = c; mat.m[6] = s; mat.m[9] = -s; mat.m[10] = c; return mat;
+    }
+    static Mat4 rotateY(float angle) {
+        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+        mat.m[0] = c; mat.m[2] = -s; mat.m[8] = s; mat.m[10] = c; return mat;
+    }
+    static Mat4 rotateZ(float angle) {
+        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+        mat.m[0] = c; mat.m[1] = s; mat.m[4] = -s; mat.m[5] = c; return mat;
+    }
+    static Mat4 perspective(float fov, float aspect, float near, float far) {
+        float tanHalf = tanf(fov / 2.0f);
+        Mat4 mat; mat.m[0] = 1.0f / (aspect * tanHalf); mat.m[5] = 1.0f / tanHalf;
+        mat.m[10] = far / (near - far); mat.m[11] = -1.0f;
+        mat.m[14] = (near * far) / (near - far); mat.m[15] = 0.0f; return mat;
+    }
+    static Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up) {
+        Vec3 f = normalize(center - eye); Vec3 s = normalize(cross(f, up)); Vec3 u = cross(s, f);
+        Mat4 mat;
+        mat.m[0] = s.x; mat.m[1] = s.y; mat.m[2] = s.z; mat.m[3] = 0;
+        mat.m[4] = u.x; mat.m[5] = u.y; mat.m[6] = u.z; mat.m[7] = 0;
+        mat.m[8] = -f.x; mat.m[9] = -f.y; mat.m[10] = -f.z; mat.m[11] = 0;
+        mat.m[12] = -dot(s, eye); mat.m[13] = -dot(u, eye); mat.m[14] = dot(f, eye); mat.m[15] = 1.0f;
+        return mat;
+    }
+};
+
+inline float radians(float degrees) { return degrees * (3.14159265358979323846f / 180.0f); }
+
+// -------------------- GPU 资源 --------------------
+struct GPUShaderBundle {
+    SDL_GPUShader* vertex{};
+    SDL_GPUShader* fragment{};
+    operator bool() const { return vertex && fragment; }
+};
+
+SDL_Window* gWindow = nullptr;
+SDL_GPUDevice* gDevice = nullptr;
+GPUShaderBundle gShaders;
+SDL_GPUGraphicsPipeline* gGraphicsPipeline;
+SDL_GPUBuffer* gCubeVertexBuffer;
+SDL_GPUBuffer* gFloorVertexBuffer;
+SDL_GPUBuffer* gUnitCubeVertexBuffer = nullptr;
+SDL_GPUTexture* gTexture;
+SDL_GPUTexture* gDepthTexture;
+SDL_GPUSampler* gSampler;
+
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 720
+
+// 玩家
+Vec3 gPlayerPos = Vec3(0.0f, 0.5f, 0.0f);
+float gPlayerYaw = 0.0f;       // 玩家/相机水平朝向
+float gPitch = 25.0f;          // 相机俯角
+static const float CAM_DIST = 6.0f;
+
+// 时间
+std::chrono::high_resolution_clock::time_point gLastFrameTime;
+float gDeltaTime = 0.0f;
+
+// 输入
+struct {
+    bool forward = false;
+    bool backward = false;
+    bool left = false;
+    bool right = false;
+} gKeys;
+
+// MVP 数据
+struct MVPData {
+    Mat4 viewProj;
+    Mat4 model;
+};
+
+struct DrawMesh {
+    SDL_GPUBuffer* vertexBuffer;
+    int vertexCount;
+};
+
+std::vector<DrawMesh> gDrawMeshes;
+std::vector<Mat4> gModelMatrices;
+
+// AABB 碰撞体
+struct AABB {
+    Vec3 min, max;
+};
+
+struct BoxObstacle {
+    Vec3 pos;
+    Vec3 size;
+    AABB aabb;
+};
+
+std::vector<BoxObstacle> gBoxes;
+
+static const Vec3 PLAYER_HALF_SIZE = Vec3(0.3f, 0.6f, 0.3f);
+
+AABB makeAABB(const Vec3& center, const Vec3& halfSize) {
+    return { center - halfSize, center + halfSize };
+}
+
+bool aabbOverlap(const AABB& a, const AABB& b) {
+    return (a.min.x < b.max.x && a.max.x > b.min.x &&
+            a.min.y < b.max.y && a.max.y > b.min.y &&
+            a.min.z < b.max.z && a.max.z > b.min.z);
+}
+
+// -------------------- 初始化 --------------------
+bool initSDL() {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
+        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "SDL init failed");
+        return false;
+    }
+    gWindow = SDL_CreateWindow("First Person Demo", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    if (!gWindow) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SDL create window failed");
+        return false;
+    }
+
+    gDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, nullptr);
+    if (!gDevice) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "SDL create GPU device failed: %s", SDL_GetError());
+        return false;
+    }
+    if (!SDL_ClaimWindowForGPUDevice(gDevice, gWindow)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Your system doesn't support SDL GPU");
+        return false;
+    }
+    gLastFrameTime = std::chrono::high_resolution_clock::now();
+    return true;
+}
+
+// -------------------- shader 加载 --------------------
+SDL_GPUShader* loadSDLGPUShader(const char* filename, SDL_GPUShaderStage stage,
+    uint32_t sampler_num, uint32_t uniform_buffer_num) {
+    size_t file_size;
+    Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
+    if (!data) {
+        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "load file %s failed: %s", filename, SDL_GetError());
+        return nullptr;
+    }
+    SDL_GPUShaderCreateInfo ci{};
+    ci.code = data;
+    ci.code_size = file_size;
+    ci.entrypoint = "main";
+    ci.format = SDL_GPU_SHADERFORMAT_SPIRV;
+    ci.num_samplers = sampler_num;
+    ci.num_uniform_buffers = uniform_buffer_num;
+    ci.num_storage_buffers = 0;
+    ci.num_storage_textures = 0;
+    ci.stage = stage;
+    SDL_GPUShader* shader = SDL_CreateGPUShader(gDevice, &ci);
+    SDL_free(data);
+    if (!shader)
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "create shader from %s failed: %s", filename, SDL_GetError());
+    return shader;
+}
+
+GPUShaderBundle createSDLGPUShaderBundle() {
+    GPUShaderBundle bundle;
+    bundle.vertex = loadSDLGPUShader("joy2d_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+    bundle.fragment = loadSDLGPUShader("joy2d_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+    return bundle;
+}
+
+// -------------------- 图形管线 --------------------
+SDL_GPUGraphicsPipeline* createGraphicsPipeline() {
+    SDL_GPUGraphicsPipelineCreateInfo ci{};
+    SDL_GPUVertexAttribute attributes[2];
+    attributes[0].location = 0;
+    attributes[0].buffer_slot = 0;
+    attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+    attributes[0].offset = 0;
+    attributes[1].location = 1;
+    attributes[1].buffer_slot = 0;
+    attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+    attributes[1].offset = sizeof(float) * 3;
+
+    ci.vertex_input_state.vertex_attributes = attributes;
+    ci.vertex_input_state.num_vertex_attributes = 2;
+
+    SDL_GPUVertexBufferDescription buffer_desc{};
+    buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+    buffer_desc.instance_step_rate = 0;
+    buffer_desc.slot = 0;
+    buffer_desc.pitch = sizeof(float) * 5;
+
+    ci.vertex_input_state.num_vertex_buffers = 1;
+    ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
+    ci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    ci.vertex_shader = gShaders.vertex;
+    ci.fragment_shader = gShaders.fragment;
+    ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+    ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+    ci.multisample_state.enable_mask = false;
+    ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    ci.target_info.num_color_targets = 1;
+    ci.target_info.has_depth_stencil_target = true;
+    ci.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+
+    SDL_GPUDepthStencilState ds{};
+    ds.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
+    ds.back_stencil_state.pass_op = SDL_GPU_STENCILOP_ZERO;
+    ds.back_stencil_state.fail_op = SDL_GPU_STENCILOP_ZERO;
+    ds.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
+    ds.compare_op = SDL_GPU_COMPAREOP_LESS;
+    ds.enable_depth_test = true;
+    ds.enable_depth_write = true;
+    ds.enable_stencil_test = false;
+    ds.compare_mask = 0xFF;
+    ds.write_mask = 0xFF;
+    ci.depth_stencil_state = ds;
+
+    SDL_GPUColorTargetDescription desc{};
+    desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_A | SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
+    desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+    desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+    desc.blend_state.enable_blend = true;
+    desc.blend_state.enable_color_write_mask = false;
+    desc.format = SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow);
+    ci.target_info.color_target_descriptions = &desc;
+
+    return SDL_CreateGPUGraphicsPipeline(gDevice, &ci);
+}
+
+// -------------------- 顶点数据 --------------------
+struct Vertex {
+    float x, y, z;
+    float u, v;
+};
+
+SDL_GPUBuffer* createAndUploadBuffer(const Vertex* vertices, int count) {
+    size_t size = count * sizeof(Vertex);
+
+    SDL_GPUTransferBufferCreateInfo tb_ci{};
+    tb_ci.size = size;
+    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
+    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
+    memcpy(ptr, vertices, size);
+    SDL_UnmapGPUTransferBuffer(gDevice, tb);
+
+    SDL_GPUBufferCreateInfo buf_ci{};
+    buf_ci.size = size;
+    buf_ci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+    SDL_GPUBuffer* buf = SDL_CreateGPUBuffer(gDevice, &buf_ci);
+
+    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
+    SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
+    SDL_GPUTransferBufferLocation loc{};
+    loc.offset = 0;
+    loc.transfer_buffer = tb;
+    SDL_GPUBufferRegion region{};
+    region.buffer = buf;
+    region.offset = 0;
+    region.size = size;
+    SDL_UploadToGPUBuffer(copy_pass, &loc, &region, false);
+    SDL_EndGPUCopyPass(copy_pass);
+    SDL_SubmitGPUCommandBuffer(cmd);
+    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+    return buf;
+}
+
+// 生成地板顶点
+void createFloorMesh() {
+    std::vector<Vertex> verts;
+    float half = 10.0f;
+    int segments = 10;
+    float step = (half * 2) / segments;
+
+    for (int iz = 0; iz < segments; iz++) {
+        for (int ix = 0; ix < segments; ix++) {
+            float x0 = -half + ix * step;
+            float z0 = -half + iz * step;
+            float x1 = x0 + step;
+            float z1 = z0 + step;
+            float u0 = (float)ix / segments;
+            float v0 = (float)iz / segments;
+            float u1 = (float)(ix + 1) / segments;
+            float v1 = (float)(iz + 1) / segments;
+
+            verts.push_back({ x0, 0, z0, u0, v0 });
+            verts.push_back({ x1, 0, z0, u1, v0 });
+            verts.push_back({ x1, 0, z1, u1, v1 });
+
+            verts.push_back({ x0, 0, z0, u0, v0 });
+            verts.push_back({ x1, 0, z1, u1, v1 });
+            verts.push_back({ x0, 0, z1, u0, v1 });
+        }
+    }
+
+    gFloorVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
+    gDrawMeshes.push_back({ gFloorVertexBuffer, (int)verts.size() });
+    gModelMatrices.push_back(Mat4::identity());
+}
+
+// 生成立方体（玩家用）
+void createCubeMesh() {
+    float hw = 0.3f, hh = 0.6f;
+    Vertex verts[] = {
+        // 前面
+        {-hw, -hh,  hw, 0,0}, { hw, -hh,  hw, 1,0}, { hw,  hh,  hw, 1,1},
+        { hw,  hh,  hw, 1,1}, {-hw,  hh,  hw, 0,1}, {-hw, -hh,  hw, 0,0},
+        // 后面
+        { hw, -hh, -hw, 0,0}, {-hw, -hh, -hw, 1,0}, {-hw,  hh, -hw, 1,1},
+        {-hw,  hh, -hw, 1,1}, { hw,  hh, -hw, 0,1}, { hw, -hh, -hw, 0,0},
+        // 左面
+        {-hw, -hh, -hw, 0,0}, {-hw, -hh,  hw, 1,0}, {-hw,  hh,  hw, 1,1},
+        {-hw,  hh,  hw, 1,1}, {-hw,  hh, -hw, 0,1}, {-hw, -hh, -hw, 0,0},
+        // 右面
+        { hw, -hh,  hw, 0,0}, { hw, -hh, -hw, 1,0}, { hw,  hh, -hw, 1,1},
+        { hw,  hh, -hw, 1,1}, { hw,  hh,  hw, 0,1}, { hw, -hh,  hw, 0,0},
+        // 上面
+        {-hw,  hh,  hw, 0,0}, { hw,  hh,  hw, 1,0}, { hw,  hh, -hw, 1,1},
+        { hw,  hh, -hw, 1,1}, {-hw,  hh, -hw, 0,1}, {-hw,  hh,  hw, 0,0},
+        // 下面
+        {-hw, -hh, -hw, 0,0}, { hw, -hh, -hw, 1,0}, { hw, -hh,  hw, 1,1},
+        { hw, -hh,  hw, 1,1}, {-hw, -hh,  hw, 0,1}, {-hw, -hh, -hw, 0,0},
+    };
+    gCubeVertexBuffer = createAndUploadBuffer(verts, 36);
+}
+
+// 生成立方体（障碍物箱子用）
+void createUnitCubeMesh() {
+    float hw = 0.5f;
+    Vertex verts[] = {
+        // 前面
+        {-hw, -hw,  hw, 0,0}, { hw, -hw,  hw, 1,0}, { hw,  hw,  hw, 1,1},
+        { hw,  hw,  hw, 1,1}, {-hw,  hw,  hw, 0,1}, {-hw, -hw,  hw, 0,0},
+        // 后面
+        { hw, -hw, -hw, 0,0}, {-hw, -hw, -hw, 1,0}, {-hw,  hw, -hw, 1,1},
+        {-hw,  hw, -hw, 1,1}, { hw,  hw, -hw, 0,1}, { hw, -hw, -hw, 0,0},
+        // 左面
+        {-hw, -hw, -hw, 0,0}, {-hw, -hw,  hw, 1,0}, {-hw,  hw,  hw, 1,1},
+        {-hw,  hw,  hw, 1,1}, {-hw,  hw, -hw, 0,1}, {-hw, -hw, -hw, 0,0},
+        // 右面
+        { hw, -hw,  hw, 0,0}, { hw, -hw, -hw, 1,0}, { hw,  hw, -hw, 1,1},
+        { hw,  hw, -hw, 1,1}, { hw,  hw,  hw, 0,1}, { hw, -hw,  hw, 0,0},
+        // 上面
+        {-hw,  hw,  hw, 0,0}, { hw,  hw,  hw, 1,0}, { hw,  hw, -hw, 1,1},
+        { hw,  hw, -hw, 1,1}, {-hw,  hw, -hw, 0,1}, {-hw,  hw,  hw, 0,0},
+        // 下面
+        {-hw, -hw, -hw, 0,0}, { hw, -hw, -hw, 1,0}, { hw, -hw,  hw, 1,1},
+        { hw, -hw,  hw, 1,1}, {-hw, -hw,  hw, 0,1}, {-hw, -hw, -hw, 0,0},
+    };
+    gUnitCubeVertexBuffer = createAndUploadBuffer(verts, 36);
+}
+
+// 创建纹理（科幻金属网格）
+void createFloorTexture() {
+    const int tex_w = 512, tex_h = 512;
+    size_t image_size = tex_w * tex_h * 4;
+    unsigned char* pixels = new unsigned char[image_size];
+    for (int y = 0; y < tex_h; y++) {
+        for (int x = 0; x < tex_w; x++) {
+            int idx = (y * tex_w + x) * 4;
+            bool isGrid = ((x / 32) + (y / 32)) % 2 == 0;
+            if (isGrid) {
+                pixels[idx + 0] = 60;  pixels[idx + 1] = 68;  pixels[idx + 2] = 80;
+            } else {
+                pixels[idx + 0] = 28;  pixels[idx + 1] = 32;  pixels[idx + 2] = 40;
+            }
+            int gx = x % 32, gy = y % 32;
+            if (gx < 1 || gy < 1 || gx > 30 || gy > 30) {
+                pixels[idx + 0] = 30;  pixels[idx + 1] = 180; pixels[idx + 2] = 255;
+            }
+            pixels[idx + 3] = 255;
+        }
+    }
+
+    SDL_GPUTransferBufferCreateInfo tb_ci{};
+    tb_ci.size = image_size;
+    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
+    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
+    memcpy(ptr, pixels, image_size);
+    SDL_UnmapGPUTransferBuffer(gDevice, tb);
+
+    SDL_GPUTextureCreateInfo tex_ci{};
+    tex_ci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    tex_ci.height = tex_h;
+    tex_ci.width = tex_w;
+    tex_ci.layer_count_or_depth = 1;
+    tex_ci.num_levels = 1;
+    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    gTexture = SDL_CreateGPUTexture(gDevice, &tex_ci);
+
+    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
+    SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
+    SDL_GPUTextureTransferInfo ti{};
+    ti.offset = 0;
+    ti.pixels_per_row = tex_w;
+    ti.rows_per_layer = tex_h;
+    ti.transfer_buffer = tb;
+    SDL_GPUTextureRegion region{};
+    region.w = tex_w; region.h = tex_h; region.x = 0; region.y = 0;
+    region.layer = 0; region.mip_level = 0; region.z = 0; region.d = 1;
+    region.texture = gTexture;
+    SDL_UploadToGPUTexture(copy_pass, &ti, &region, false);
+    SDL_EndGPUCopyPass(copy_pass);
+    SDL_SubmitGPUCommandBuffer(cmd);
+    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+    delete[] pixels;
+}
+
+void createDepthTexture(int w, int h) {
+    SDL_GPUTextureCreateInfo tex_ci{};
+    tex_ci.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+    tex_ci.height = h;
+    tex_ci.width = w;
+    tex_ci.layer_count_or_depth = 1;
+    tex_ci.num_levels = 1;
+    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    gDepthTexture = SDL_CreateGPUTexture(gDevice, &tex_ci);
+}
+
+void createSampler() {
+    SDL_GPUSamplerCreateInfo ci{};
+    ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+    ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+    ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+    ci.enable_anisotropy = true;
+    ci.max_anisotropy = 4.0f;
+    ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
+    ci.enable_compare = false;
+    ci.mag_filter = SDL_GPU_FILTER_LINEAR;
+    ci.min_filter = SDL_GPU_FILTER_LINEAR;
+    ci.max_lod = 10.0f;
+    ci.min_lod = 0.0f;
+    ci.mip_lod_bias = 0.0f;
+    ci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
+    gSampler = SDL_CreateGPUSampler(gDevice, &ci);
+}
+
+MVPData gMVP;
+
+// -------------------- 输入处理 --------------------
+void processInput() {
+    const bool* kb = SDL_GetKeyboardState(NULL);
+    gKeys.forward  = kb[SDL_SCANCODE_W];
+    gKeys.backward = kb[SDL_SCANCODE_S];
+    gKeys.left     = kb[SDL_SCANCODE_A];
+    gKeys.right    = kb[SDL_SCANCODE_D];
+
+    float yawRad = radians(gPlayerYaw);
+    Vec3 forward = Vec3(sinf(yawRad), 0, cosf(yawRad));
+    Vec3 right   = Vec3(cosf(yawRad), 0, -sinf(yawRad));
+
+    Vec3 moveDir(0,0,0);
+    if (gKeys.forward)  moveDir += forward;
+    if (gKeys.backward) moveDir -= forward;
+    if (gKeys.left)     moveDir += right;
+    if (gKeys.right)    moveDir -= right;
+
+    if (length(moveDir) > 0.001f) {
+        moveDir = normalize(moveDir);
+
+        float totalDist = 5.0f * gDeltaTime;
+        const float MAX_STEP = 0.02f;
+        while (totalDist > 0.0001f) {
+            float step = (totalDist > MAX_STEP) ? MAX_STEP : totalDist;
+            totalDist -= step;
+
+            Vec3 newPos = gPlayerPos + moveDir * step;
+            AABB playerBox = makeAABB(newPos, PLAYER_HALF_SIZE);
+            bool blocked = false;
+            for (auto& box : gBoxes) {
+                if (aabbOverlap(playerBox, box.aabb)) { blocked = true; break; }
+            }
+
+            if (!blocked) {
+                gPlayerPos = newPos;
+            } else {
+                break;
+            }
+        }
+    }
+}
+
+// -------------------- 更新 MVP --------------------
+void updateMVPData() {
+    float yawRad = radians(gPlayerYaw);
+    float pitchRad = radians(gPitch);
+    Vec3 camOffset = Vec3(-sinf(yawRad) * cosf(pitchRad) * CAM_DIST,
+                           sinf(pitchRad) * CAM_DIST,
+                           -cosf(yawRad) * cosf(pitchRad) * CAM_DIST);
+    Vec3 eye = gPlayerPos + camOffset;
+    Vec3 center = gPlayerPos + Vec3(0, 1.0f, 0);
+
+    Mat4 view = Mat4::lookAt(eye, center, Vec3(0,1,0));
+    Mat4 proj = Mat4::perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    Mat4 viewProj = view * proj;
+
+    gMVP.viewProj = viewProj;
+
+    // 地板
+    gModelMatrices[0] = Mat4::identity();
+
+    // 玩家立方体（手动构建矩阵，避免 rotateY 错误）
+    {
+        Mat4 m;
+        float y = radians(gPlayerYaw), c = cosf(y), s = sinf(y);
+        m.m[0] = c;  m.m[2]  = -s;
+        m.m[8] = s;  m.m[10] = c;
+        m.m[12] = gPlayerPos.x;
+        m.m[13] = gPlayerPos.y;
+        m.m[14] = gPlayerPos.z;
+        gModelMatrices[1] = m;
+    }
+
+    // 障碍物箱子
+    for (size_t i = 0; i < gBoxes.size(); i++) {
+        auto& box = gBoxes[i];
+        Mat4 m;
+        m.m[0]  = box.size.x;
+        m.m[5]  = box.size.y;
+        m.m[10] = box.size.z;
+        m.m[12] = box.pos.x;
+        m.m[13] = box.pos.y;
+        m.m[14] = box.pos.z;
+        gModelMatrices[2 + i] = m;
+    }
+}
+
+// -------------------- 主循环 --------------------
+SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+    if (!initSDL()) return SDL_APP_FAILURE;
+
+    gShaders = createSDLGPUShaderBundle();
+    if (!gShaders) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Shader load failed! Program exit!");
+        return SDL_APP_FAILURE;
+    }
+
+    gGraphicsPipeline = createGraphicsPipeline();
+    if (!gGraphicsPipeline) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Graphics pipeline load failed!");
+        return SDL_APP_FAILURE;
+    }
+
+    createFloorMesh();
+
+    createCubeMesh();
+    gModelMatrices.push_back(Mat4::identity());
+    gDrawMeshes.push_back({ gCubeVertexBuffer, 36 });
+
+    createUnitCubeMesh();
+
+    // 创建障碍物箱子
+    {
+        struct { float x, z; float sx, sy, sz; } boxDefs[] = {
+            { 3, 3, 1, 1, 1 },
+            { -3, -2, 1, 0.5f, 1 },
+            { 5, -4, 0.8f, 1.2f, 0.8f },
+            { -4, 4, 1, 1, 1 },
+            { -5, -4, 1.5f, 0.8f, 1.5f },
+            { 4, -5, 0.5f, 1.5f, 0.5f },
+            { 0, 5, 1, 1, 1.5f },
+            { -1, -5, 1.2f, 0.6f, 1.2f },
+        };
+        for (auto& def : boxDefs) {
+            BoxObstacle box;
+            box.pos = Vec3(def.x, def.sy * 0.5f, def.z);
+            box.size = Vec3(def.sx, def.sy, def.sz);
+            box.aabb = makeAABB(box.pos, box.size * 0.5f);
+            gBoxes.push_back(box);
+
+            Mat4 m;
+            m.m[0]  = box.size.x;
+            m.m[5]  = box.size.y;
+            m.m[10] = box.size.z;
+            m.m[12] = box.pos.x;
+            m.m[13] = box.pos.y;
+            m.m[14] = box.pos.z;
+            gModelMatrices.push_back(m);
+            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
+        }
+    }
+
+    createFloorTexture();
+    createDepthTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+    createSampler();
+
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void* appstate) {
+    auto now = std::chrono::high_resolution_clock::now();
+    gDeltaTime = std::chrono::duration<float>(now - gLastFrameTime).count();
+    gLastFrameTime = now;
+
+    processInput();
+    updateMVPData();
+
+    bool minimized = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_MINIMIZED;
+    if (minimized) return SDL_APP_CONTINUE;
+
+    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
+    SDL_GPUTexture* swapchain = nullptr;
+    Uint32 width, height;
+    if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd, gWindow, &swapchain, &width, &height)) {
+        return SDL_APP_CONTINUE;
+    }
+    if (!swapchain) return SDL_APP_CONTINUE;
+
+    SDL_GPUColorTargetInfo color{};
+    color.clear_color.r = 0.05f;
+    color.clear_color.g = 0.06f;
+    color.clear_color.b = 0.10f;
+    color.clear_color.a = 1;
+    color.load_op = SDL_GPU_LOADOP_CLEAR;
+    color.mip_level = 0;
+    color.store_op = SDL_GPU_STOREOP_STORE;
+    color.texture = swapchain;
+    color.cycle = true;
+    color.layer_or_depth_plane = 0;
+    color.cycle_resolve_texture = false;
+
+    SDL_GPUDepthStencilTargetInfo depth{};
+    depth.clear_depth = 1;
+    depth.cycle = false;
+    depth.load_op = SDL_GPU_LOADOP_CLEAR;
+    depth.store_op = SDL_GPU_STOREOP_DONT_CARE;
+    depth.texture = gDepthTexture;
+
+    SDL_GPURenderPass* rp = SDL_BeginGPURenderPass(cmd, &color, 1, &depth);
+    SDL_BindGPUGraphicsPipeline(rp, gGraphicsPipeline);
+
+    int ww, wh;
+    SDL_GetWindowSize(gWindow, &ww, &wh);
+    SDL_GPUViewport vp{};
+    vp.x = 0; vp.y = 0;
+    vp.w = (float)ww; vp.h = (float)wh;
+    vp.min_depth = 0; vp.max_depth = 1;
+    SDL_SetGPUViewport(rp, &vp);
+
+    for (size_t i = 0; i < gDrawMeshes.size(); i++) {
+        auto& mesh = gDrawMeshes[i];
+        gMVP.model = gModelMatrices[i];
+        SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
+
+        SDL_GPUTextureSamplerBinding samp{};
+        samp.texture = gTexture;
+        samp.sampler = gSampler;
+        SDL_BindGPUFragmentSamplers(rp, 0, &samp, 1);
+
+        SDL_GPUBufferBinding bind{};
+        bind.buffer = mesh.vertexBuffer;
+        bind.offset = 0;
+        SDL_BindGPUVertexBuffers(rp, 0, &bind, 1);
+
+        SDL_DrawGPUPrimitives(rp, mesh.vertexCount, 1, 0, 0);
+    }
+
+    SDL_EndGPURenderPass(rp);
+
+    if (!SDL_SubmitGPUCommandBuffer(cmd)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Submit command buffer failed! %s", SDL_GetError());
+    }
+
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+    if (event->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
+
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_ESCAPE) {
+        return SDL_APP_SUCCESS;
+    }
+
+    return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void* appstate, SDL_AppResult result) {
+    SDL_WaitForGPUIdle(gDevice);
+    SDL_ReleaseGPUSampler(gDevice, gSampler);
+    SDL_ReleaseGPUTexture(gDevice, gTexture);
+    SDL_ReleaseGPUTexture(gDevice, gDepthTexture);
+    SDL_ReleaseGPUBuffer(gDevice, gFloorVertexBuffer);
+    SDL_ReleaseGPUBuffer(gDevice, gCubeVertexBuffer);
+    if (gUnitCubeVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gUnitCubeVertexBuffer);
+    SDL_ReleaseGPUGraphicsPipeline(gDevice, gGraphicsPipeline);
+    SDL_ReleaseGPUShader(gDevice, gShaders.vertex);
+    SDL_ReleaseGPUShader(gDevice, gShaders.fragment);
+    SDL_ReleaseWindowFromGPUDevice(gDevice, gWindow);
+    SDL_DestroyGPUDevice(gDevice);
+    SDL_DestroyWindow(gWindow);
+    SDL_Quit();
+}
