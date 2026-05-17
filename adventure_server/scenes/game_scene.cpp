@@ -310,7 +310,28 @@ static void CollectCommandSystem(game_scene_p self)
 	for (auto& pi : self->player_inputs) {
 		*command->add_player_inputs() = pi;
 	}
-        command->set_checksum("TODO");
+
+	// 只收集玩家实体，按 id 排序确保顺序一致
+	std::vector<std::pair<int, std::pair<fp_t, fp_t>>> positions;
+	self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+		LogicRectComponent& r, LogicPositionComponent& pos) {
+			positions.push_back({ id.id, { (int64_t)pos.x, (int64_t)pos.y } });
+		});
+	std::sort(positions.begin(), positions.end());
+
+	std::string pos_data;
+	for (auto& entry : positions) {
+		char buf[64];
+		int n = snprintf(buf, sizeof(buf), "%d:%lld:%lld,",
+			entry.first, (long long)entry.second.first,
+			(long long)entry.second.second);
+		pos_data.append(buf, n);
+	}
+	char md5_out[64] = { 0 };
+	utils_md5x(pos_data.c_str(), pos_data.size(), md5_out);
+	command->set_checksum(md5_out);
+	log_info("[checksum] frame=%d md5=%s", s2c.command().frame_id(), md5_out);
+
 
 	auto command_data = s2c.SerializeAsString();
 	self->commands[command->frame_id()] = command_data;
