@@ -1,6 +1,7 @@
 #ifndef GJK_H
 #define GJK_H
 #include <cstdint>
+#include <cfloat>
 #include <array>
 #include <vector>
 
