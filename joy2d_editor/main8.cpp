@@ -200,6 +200,7 @@ SDL_GPUTexture* gTextureOBB = nullptr;
 
 // 斜坡（GJK 碰撞形状）
 struct RampShape : MeshShape {
+    ShapeType GetShapeType() override { return m_shapeType; }
     RampShape(const FixedVec3& hw_hl, FP height) {
         m_shapeType = BOX;
         FP hw = hw_hl.x, hl = hw_hl.z;
