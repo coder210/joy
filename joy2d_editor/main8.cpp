@@ -198,32 +198,41 @@ struct OBBObstacle {
 std::vector<OBBObstacle> gOBBs;
 SDL_GPUTexture* gTextureOBB = nullptr;
 
-// 斜坡
-struct Ramp {
-    Vec3 basePos;      // 底边中心位置
-    float width;       // X 方向宽度
-    float length;      // Z 方向长度
-    float height;      // Y 方向高度
+// 斜坡（GJK 碰撞形状）
+struct RampShape : MeshShape {
+    RampShape(const FixedVec3& hw_hl, FP height) {
+        m_shapeType = BOX;
+        FP hw = hw_hl.x, hl = hw_hl.z;
+        m_localVertices = {
+            { -hw, FP::Zero(), -hl }, { hw, FP::Zero(), -hl },
+            { -hw, height, hl },       { hw, height, hl },
+            { -hw, FP::Zero(), hl },   { hw, FP::Zero(), hl },
+        };
+        m_vertices = m_localVertices;
+    }
+};
 
-    // 斜坡沿 +Z 方向上升，从 basePos.y 升到 basePos.y + height
-    // basePos.z - length/2 = 地面端, basePos.z + length/2 = 高端
+struct RampObstacle {
+    Vec3 basePos;
+    float width, length, height;
+    RampShape gjkShape;
+    RampObstacle() : gjkShape(FixedVec3(FP::Zero(), FP::Zero(), FP::Zero()), FP::Zero()) {}
+
     float getHeight(float x, float z) const {
         float localZ = z - basePos.z;
         float halfLen = length * 0.5f;
-        float t = (localZ + halfLen) / length;  // 0 = 底端, 1 = 顶端
+        float t = (localZ + halfLen) / length;
         if (t < 0.0f) t = 0.0f;
         if (t > 1.0f) t = 1.0f;
         return basePos.y + t * height;
     }
 
     bool isInXZ(float x, float z) const {
-        float hw = width * 0.5f;
-        float hl = length * 0.5f;
-        return fabsf(x - basePos.x) <= hw && fabsf(z - basePos.z) <= hl;
+        return fabsf(x - basePos.x) <= width * 0.5f && fabsf(z - basePos.z) <= length * 0.5f;
     }
 };
 
-std::vector<Ramp> gRamps;
+std::vector<RampObstacle> gRamps;
 
 // 敌人
 struct Enemy {
@@ -780,6 +789,12 @@ void processInput() {
                     if (Gjk(&playerShape, obb.gjkShape, &c)) { blocked = true; break; }
                 }
             }
+            if (!blocked) {
+                for (auto& ramp : gRamps) {
+                    FixedContact c;
+                    if (Gjk(&playerShape, &ramp.gjkShape, &c)) { blocked = true; break; }
+                }
+            }
 
             if (!blocked) {
                 // 空气墙：限制在地板边界内（地板范围 ±10）
@@ -797,7 +812,7 @@ void processInput() {
     // 计算地面高度（斜坡、箱子顶部、地面中取最高值）
     float groundY = 0.0f;  // 默认地面 y = 0
 
-    // 斜坡
+    // 斜坡（高度 + GJK 侧向碰撞已在移动检测中处理）
     for (auto& ramp : gRamps) {
         if (ramp.isInXZ(gPlayerPos.x, gPlayerPos.z)) {
             float sy = ramp.getHeight(gPlayerPos.x, gPlayerPos.z);
@@ -928,11 +943,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     // 创建斜坡
     {
-        Ramp ramp;
+        RampObstacle ramp;
         ramp.basePos = Vec3(-6, 0, 0);
         ramp.width = 2.0f;
         ramp.length = 3.0f;
         ramp.height = 1.5f;
+        ramp.gjkShape = RampShape(toFV(Vec3(ramp.width * 0.5f, 0, ramp.length * 0.5f)), FP(ramp.height));
+        ramp.gjkShape.UpdateVertices(toFV(Vec3(0, 1, 0)), FP::Zero(), toFV(ramp.basePos));
         gRamps.push_back(ramp);
 
         Mat4 m = Mat4::translate(ramp.basePos);
