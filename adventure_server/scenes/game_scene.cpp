@@ -14,6 +14,7 @@
 #include "../layers/debug_layer.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
+#include "../components/local_only_component.h"
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
@@ -346,6 +347,7 @@ static void CollectCommandSystem(game_scene_p self)
 	s2c_world.set_entity_id(self->g_id);
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
+		if (e.has<LocalOnlyComponent>()) return; // 本地实体不同步到客户端
 		adventure::S2CEntity* ent = s2c_world.add_entities();
 		ent->set_id(id.id);
 		if (e.has<PlayerComponent>()) {
@@ -471,13 +473,21 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
 	self->world.set_ctx(self->ctx);
+
+	// 本地方块：有碰撞检测，但不会同步到客户端（因为有 LocalOnlyComponent）
+	self->world.entity()
+		.add<LocalOnlyComponent>()
+		.set<IdComponent>({ 10000, 100 })
+		.set<LogicRectComponent>({ fp_from_float(0.5f), fp_from_float(0.5f) })
+		.set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
+		.set<TransformComponent>({ 5,5,0,1,1 });
 
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
