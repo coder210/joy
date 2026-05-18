@@ -1,4 +1,5 @@
 #include "GJK.h"
+#include "../joy2d/jlut.h"
 
 #define FP_NUM_BITS 64
 #define FP_FRACTIONAL_PLACES 32
@@ -149,11 +150,16 @@ FP FP::Sqrt(FP x) {
 	return (int64_t)result;
 }
 
+#define FP_PI_TIMES_2 0x6487ED511LL
+#define FP_PI 0x3243F6A88LL
+#define FP_PI_OVER_2 0x1921FB544LL
+#define FP_LUT_SIZE (int)(FP_PI >> 16)
+
 static int64_t ClampSinValue(int64_t angle, bool* flipHorizontal, bool* flipVertical) {
-	int64_t largePI = 7244019458077122842;
+	int64_t largePI = 7244019458077122842LL;
 	int64_t clamped2Pi = angle;
 	for (int i = 0; i < 29; ++i) clamped2Pi %= (largePI >> i);
-	if (angle < 0) clamped2Pi += 0x6487ED511; // FP_PI_TIMES_2
+	if (angle < 0) clamped2Pi += FP_PI_TIMES_2;
 	*flipVertical = clamped2Pi >= FP_PI;
 	int64_t clampedPi = clamped2Pi;
 	while (clampedPi >= FP_PI) clampedPi -= FP_PI;
@@ -164,8 +170,13 @@ static int64_t ClampSinValue(int64_t angle, bool* flipHorizontal, bool* flipVert
 }
 
 FP FP::Sin(FP x) {
-	// NOTE: 需要 sin_lut 查找表（T_Lut.h）才能工作，当前暂缺
-	return FP::Zero();
+	bool flipHorizontal = false;
+	bool flipVertical = false;
+	int64_t clampedL = ClampSinValue(x, &flipHorizontal, &flipVertical);
+	uint32_t rawIndex = (uint32_t)(clampedL >> 15);
+	rawIndex = rawIndex >= FP_LUT_SIZE ? FP_LUT_SIZE - 1 : rawIndex;
+	int64_t nearestValue = SIN_LUT[flipHorizontal ? FP_LUT_SIZE - 1 - (int)rawIndex : (int)rawIndex];
+	return flipVertical ? -nearestValue : nearestValue;
 }
 FP FP::Cos(FP x) {
 	int64_t xl = x;

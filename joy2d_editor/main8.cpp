@@ -173,6 +173,31 @@ struct BoxObstacle {
 
 std::vector<BoxObstacle> gBoxes;
 
+// GJK 测试球体
+struct BallObstacle {
+    Vec3 pos;
+    float radius;
+    SphereShape gjkShape;
+    BallObstacle() : gjkShape(FP::Zero()) {}
+};
+std::vector<BallObstacle> gBalls;
+SDL_GPUTexture* gTextureBall = nullptr;
+
+// 旋转箱子（OBB，GJK 支持但 AABB 不支持）
+struct OBBObstacle {
+    Vec3 pos;
+    Vec3 size;
+    float angle;
+    BoxShape* gjkShape = nullptr;
+    ~OBBObstacle() { delete gjkShape; }
+    OBBObstacle() = default;
+    OBBObstacle(const OBBObstacle&) = delete;
+    OBBObstacle& operator=(const OBBObstacle&) = delete;
+    OBBObstacle(OBBObstacle&& other) noexcept : pos(other.pos), size(other.size), angle(other.angle), gjkShape(other.gjkShape) { other.gjkShape = nullptr; }
+};
+std::vector<OBBObstacle> gOBBs;
+SDL_GPUTexture* gTextureOBB = nullptr;
+
 // 斜坡
 struct Ramp {
     Vec3 basePos;      // 底边中心位置
@@ -483,6 +508,38 @@ void createUnitCubeMesh() {
 
 // 生成子弹网格（小立方体）
 SDL_GPUBuffer* gBulletVertexBuffer = nullptr;
+SDL_GPUBuffer* gSphereVertexBuffer = nullptr;
+
+// 生成球体网格（UV 球体）
+void createSphereMesh() {
+    std::vector<Vertex> verts;
+    const int slices = 16, stacks = 12;
+    for (int j = 0; j < stacks; j++) {
+        float phi1 = (float)j / stacks * 3.14159265f;
+        float phi2 = (float)(j + 1) / stacks * 3.14159265f;
+        for (int i = 0; i < slices; i++) {
+            float theta1 = (float)i / slices * 2.0f * 3.14159265f;
+            float theta2 = (float)(i + 1) / slices * 2.0f * 3.14159265f;
+
+            float x1 = sinf(phi1) * cosf(theta1), y1 = cosf(phi1), z1 = sinf(phi1) * sinf(theta1);
+            float x2 = sinf(phi1) * cosf(theta2), y2 = cosf(phi1), z2 = sinf(phi1) * sinf(theta2);
+            float x3 = sinf(phi2) * cosf(theta2), y3 = cosf(phi2), z3 = sinf(phi2) * sinf(theta2);
+            float x4 = sinf(phi2) * cosf(theta1), y4 = cosf(phi2), z4 = sinf(phi2) * sinf(theta1);
+
+            float u1 = (float)i / slices, u2 = (float)(i + 1) / slices;
+            float v1 = (float)j / stacks, v2 = (float)(j + 1) / stacks;
+
+            verts.push_back({ x1, y1, z1, u1, v1 });
+            verts.push_back({ x2, y2, z2, u2, v1 });
+            verts.push_back({ x3, y3, z3, u2, v2 });
+            verts.push_back({ x1, y1, z1, u1, v1 });
+            verts.push_back({ x3, y3, z3, u2, v2 });
+            verts.push_back({ x4, y4, z4, u1, v2 });
+        }
+    }
+    gSphereVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
+}
+
 void createBulletMesh() {
     float hs = 0.1f;
     Vertex verts[] = {
@@ -638,6 +695,8 @@ SDL_GPUTexture* createSolidTexture(unsigned char r, unsigned char g, unsigned ch
 void createEnemyBulletTextures() {
     gTextureEnemy = createSolidTexture(220, 40, 40);    // 红色敌人
     gTextureBullet = createSolidTexture(255, 200, 50);  // 黄色子弹
+    gTextureBall = createSolidTexture(40, 220, 40);     // 绿色球体
+    gTextureOBB = createSolidTexture(255, 165, 0);      // 橙色旋转箱子
 }
 
 void createDepthTexture(int w, int h) {
@@ -708,6 +767,18 @@ void processInput() {
             for (auto& box : gBoxes) {
                 FixedContact c;
                 if (Gjk(&playerShape, &box.gjkShape, &c)) { blocked = true; break; }
+            }
+            if (!blocked) {
+                for (auto& ball : gBalls) {
+                    FixedContact c;
+                    if (Gjk(&playerShape, &ball.gjkShape, &c)) { blocked = true; break; }
+                }
+            }
+            if (!blocked) {
+                for (auto& obb : gOBBs) {
+                    FixedContact c;
+                    if (Gjk(&playerShape, obb.gjkShape, &c)) { blocked = true; break; }
+                }
             }
 
             if (!blocked) {
@@ -900,13 +971,52 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         }
     }
 
+    // 创建 GJK 测试球体
+    {
+        BallObstacle ball;
+        ball.pos = Vec3(2, 0.5f, 2);
+        ball.radius = 0.5f;
+        ball.gjkShape = SphereShape(FP(ball.radius));
+        ball.gjkShape.UpdateVertices({ FP::Zero(), FP::One(), FP::Zero() }, FP::Zero(), toFV(ball.pos));
+        gBalls.push_back(ball);
+        {
+            Mat4 m;
+            m.m[0] = ball.radius * 2; m.m[5] = ball.radius * 2; m.m[10] = ball.radius * 2;
+            m.m[12] = ball.pos.x; m.m[13] = ball.pos.y; m.m[14] = ball.pos.z;
+            gModelMatrices.push_back(m);
+            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
+        }
+    }
+
+    // 创建 GJK 测试 OBB（旋转 45° 的箱子，AABB 无法精确处理）
+    {
+        OBBObstacle obb;
+        obb.pos = Vec3(-2, 0.5f, 2);
+        obb.size = Vec3(0.8f, 0.8f, 0.8f);
+        obb.angle = 45.0f;
+        obb.gjkShape = new BoxShape(toFV(obb.size * 0.5f));
+        float rad = radians(obb.angle);
+        obb.gjkShape->UpdateVertices(toFV(Vec3(0, 1, 0)), FP(rad), toFV(obb.pos));
+        gOBBs.push_back(std::move(obb));
+        {
+            float y = radians(obb.angle), c = cosf(y), s = sinf(y);
+            Mat4 m;
+            m.m[0] = obb.size.x * c;  m.m[2]  = obb.size.x * -s;
+            m.m[5] = obb.size.y;
+            m.m[8] = obb.size.z * s;  m.m[10] = obb.size.z * c;
+            m.m[12] = obb.pos.x; m.m[13] = obb.pos.y; m.m[14] = obb.pos.z;
+            gModelMatrices.push_back(m);
+            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
+        }
+    }
+
     createFloorTexture();
     createEnemyBulletTextures();
     createDepthTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
     createSampler();
     createBulletMesh();
 
-    // 创建敌人
+    /* 敌人已屏蔽
     {
         struct { float x, z; } enemyPos[] = {
             { 4, 4 }, { -4, -3 }, { 6, -5 }, { -5, 5 }, { 0, -6 },
@@ -916,7 +1026,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
             e.pos = Vec3(ep.x, 0.6f, ep.z);
             gEnemies.push_back(e);
         }
-    }
+    }*/
 
     gPlayerHP = gPlayerMaxHP;
 
@@ -979,63 +1089,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         if (b.age > b.lifetime) { gBullets.erase(gBullets.begin() + i); continue; }
     }
 
-    // ----- 敌人更新 -----
+    /* 敌人已屏蔽
     float yawRad = radians(gPlayerYaw);
     Vec3 playerForward = Vec3(sinf(yawRad), 0, cosf(yawRad));
-    for (auto& e : gEnemies) {
-        if (!e.alive) continue;
-        e.attackTimer += gDeltaTime;
-
-        Vec3 toPlayer = gPlayerPos - e.pos;
-        float dist = length(toPlayer);
-        toPlayer = normalize(toPlayer);
-
-        // 追击玩家
-        if (dist < e.aggroRange) {
-            Vec3 moveDir = toPlayer;
-            moveDir.y = 0;
-            moveDir = normalize(moveDir);
-
-            float totalDist = e.speed * gDeltaTime;
-            const float MAX_STEP = 0.02f;
-            while (totalDist > 0.0001f) {
-                float step = (totalDist > MAX_STEP) ? MAX_STEP : totalDist;
-                totalDist -= step;
-
-                Vec3 newPos = e.pos + moveDir * step;
-                GJKEntityShape enemyShape(toFV(newPos), toFV(Vec3(0.25f, 0.25f, 0.25f)));
-                bool blocked = false;
-                for (auto& box : gBoxes) {
-                    FixedContact c;
-                    if (Gjk(&enemyShape, &box.gjkShape, &c)) { blocked = true; break; }
-                }
-                if (!blocked) {
-                    e.pos = newPos;
-                } else {
-                    break;
-                }
-            }
-
-            // 空气墙
-            if (e.pos.x > 9.0f) e.pos.x = 9.0f;
-            if (e.pos.x < -9.0f) e.pos.x = -9.0f;
-            if (e.pos.z > 9.0f) e.pos.z = 9.0f;
-            if (e.pos.z < -9.0f) e.pos.z = -9.0f;
-            e.pos.y = 0.6f;
-        }
-
-        // 攻击玩家
-        if (dist < e.attackRange && e.attackTimer >= e.attackCooldown) {
-            e.attackTimer = 0.0f;
-            gPlayerHP -= e.damage;
-            SDL_Log("玩家受到伤害! HP: %d/%d", gPlayerHP, gPlayerMaxHP);
-            if (gPlayerHP <= 0) {
-                SDL_Log("玩家死亡! 重新开始...");
-                gPlayerHP = gPlayerMaxHP;
-                gPlayerPos = Vec3(0, 0.6f, 0);
-            }
-        }
-    }
+    for (auto& e : gEnemies) { }
+    */
 
     bool minimized = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_MINIMIZED;
     if (minimized) return SDL_APP_CONTINUE;
@@ -1098,7 +1156,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         SDL_DrawGPUPrimitives(rp, mesh.vertexCount, 1, 0, 0);
     }
 
-    // 绘制敌人（红色立方体）
+    /* 敌人已屏蔽
     for (auto& e : gEnemies) {
         if (!e.alive) continue;
         Mat4 m;
@@ -1118,6 +1176,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         SDL_BindGPUVertexBuffers(rp, 0, &bind, 1);
         SDL_DrawGPUPrimitives(rp, 36, 1, 0, 0);
     }
+    */
 
     // 绘制子弹（黄色小立方体）
     for (auto& b : gBullets) {
@@ -1164,12 +1223,15 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     SDL_ReleaseGPUTexture(gDevice, gTexture);
     SDL_ReleaseGPUTexture(gDevice, gTextureEnemy);
     SDL_ReleaseGPUTexture(gDevice, gTextureBullet);
+    if (gTextureBall) SDL_ReleaseGPUTexture(gDevice, gTextureBall);
+    if (gTextureOBB) SDL_ReleaseGPUTexture(gDevice, gTextureOBB);
     SDL_ReleaseGPUTexture(gDevice, gDepthTexture);
     SDL_ReleaseGPUBuffer(gDevice, gFloorVertexBuffer);
     SDL_ReleaseGPUBuffer(gDevice, gCubeVertexBuffer);
     if (gUnitCubeVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gUnitCubeVertexBuffer);
     if (gRampVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gRampVertexBuffer);
     if (gBulletVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gBulletVertexBuffer);
+    if (gSphereVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gSphereVertexBuffer);
     SDL_ReleaseGPUGraphicsPipeline(gDevice, gGraphicsPipeline);
     SDL_ReleaseGPUShader(gDevice, gShaders.vertex);
     SDL_ReleaseGPUShader(gDevice, gShaders.fragment);
