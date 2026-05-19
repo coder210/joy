@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
-#include "GJK.h"
+#include <joy2d/jgjk.h>
 #include <cfloat>
 
 
@@ -87,22 +87,7 @@ struct Mat4 {
 inline float radians(float degrees) { return degrees * (3.14159265358979323846f / 180.0f); }
 
 // GJK 定点数转换辅助
-static FixedVec3 toFV(const Vec3& v) { return { FP(v.x), FP(v.y), FP(v.z) }; }
-static Vec3 toVec(const FixedVec3& v) { return { (float)v.x, (float)v.y, (float)v.z }; }
-
-// 临时碰撞体形状（用于 GJK 碰撞检测）
-struct GJKEntityShape : Shape {
-    FixedVec3 center, halfSize;
-    GJKEntityShape() : center(FP::Zero(), FP::Zero(), FP::Zero()), halfSize(FP::Zero(), FP::Zero(), FP::Zero()) {}
-    GJKEntityShape(const FixedVec3& c, const FixedVec3& h) : center(c), halfSize(h) {}
-    ShapeType GetShapeType() override { return BOX; }
-    FixedVec3 FindFurthestPoint(FixedVec3 dir) override {
-        return { center.x + (dir.x > FP::Zero() ? halfSize.x : -halfSize.x),
-                 center.y + (dir.y > FP::Zero() ? halfSize.y : -halfSize.y),
-                 center.z + (dir.z > FP::Zero() ? halfSize.z : -halfSize.z) };
-    }
-    void UpdateVertices(FixedVec3, FP, const FixedVec3&) override {}
-};
+static vec3f_t toV3f(const Vec3& v) { return { fp_from_float(v.x), fp_from_float(v.y), fp_from_float(v.z) }; }
 
 // -------------------- GPU 资源 --------------------
 struct GPUShaderBundle {
@@ -167,8 +152,8 @@ std::vector<Mat4> gModelMatrices;
 struct BoxObstacle {
     Vec3 pos;
     Vec3 size;
-    GJKEntityShape gjkShape;
-    BoxObstacle() : gjkShape(FixedVec3(), FixedVec3()) {}
+    gjk3d_collider_t gjkShape;
+    BoxObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
 };
 
 std::vector<BoxObstacle> gBoxes;
@@ -177,8 +162,8 @@ std::vector<BoxObstacle> gBoxes;
 struct BallObstacle {
     Vec3 pos;
     float radius;
-    SphereShape gjkShape;
-    BallObstacle() : gjkShape(FP::Zero()) {}
+    gjk3d_collider_t gjkShape;
+    BallObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
 };
 std::vector<BallObstacle> gBalls;
 SDL_GPUTexture* gTextureBall = nullptr;
@@ -188,36 +173,18 @@ struct OBBObstacle {
     Vec3 pos;
     Vec3 size;
     float angle;
-    BoxShape* gjkShape = nullptr;
-    ~OBBObstacle() { delete gjkShape; }
-    OBBObstacle() = default;
-    OBBObstacle(const OBBObstacle&) = delete;
-    OBBObstacle& operator=(const OBBObstacle&) = delete;
-    OBBObstacle(OBBObstacle&& other) noexcept : pos(other.pos), size(other.size), angle(other.angle), gjkShape(other.gjkShape) { other.gjkShape = nullptr; }
+    gjk3d_collider_t gjkShape;
+    vec3f_t worldVerts[8];
 };
 std::vector<OBBObstacle> gOBBs;
 SDL_GPUTexture* gTextureOBB = nullptr;
 
 // 斜坡（GJK 碰撞形状）
-struct RampShape : MeshShape {
-    ShapeType GetShapeType() override { return m_shapeType; }
-    RampShape(const FixedVec3& hw_hl, FP height) {
-        m_shapeType = BOX;
-        FP hw = hw_hl.x, hl = hw_hl.z;
-        m_localVertices = {
-            { -hw, FP::Zero(), -hl }, { hw, FP::Zero(), -hl },
-            { -hw, height, hl },       { hw, height, hl },
-            { -hw, FP::Zero(), hl },   { hw, FP::Zero(), hl },
-        };
-        m_vertices = m_localVertices;
-    }
-};
-
 struct RampObstacle {
     Vec3 basePos;
     float width, length, height;
-    RampShape gjkShape;
-    RampObstacle() : gjkShape(FixedVec3(FP::Zero(), FP::Zero(), FP::Zero()), FP::Zero()) {}
+    gjk3d_collider_t gjkShape;
+    vec3f_t worldVerts[6];
 
     float getHeight(float x, float z) const {
         float localZ = z - basePos.z;
@@ -772,28 +739,30 @@ void processInput() {
             totalDist -= step;
 
             Vec3 newPos = gPlayerPos + moveDir * step;
-            GJKEntityShape playerShape(toFV(newPos), toFV(PLAYER_HALF_SIZE));
+            gjk3d_collider_t playerShape;
+            gjk3d_init_box(&playerShape, toV3f(newPos), toV3f(PLAYER_HALF_SIZE));
+            vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
             bool blocked = false;
             for (auto& box : gBoxes) {
-                FixedContact c;
-                if (Gjk(&playerShape, &box.gjkShape, &c)) { blocked = true; break; }
+                gjk3d_contact_t c;
+                if (gjk3d_collide(&playerShape, &box.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
             }
             if (!blocked) {
                 for (auto& ball : gBalls) {
-                    FixedContact c;
-                    if (Gjk(&playerShape, &ball.gjkShape, &c)) { blocked = true; break; }
+                    gjk3d_contact_t c;
+                    if (gjk3d_collide(&playerShape, &ball.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
                 }
             }
             if (!blocked) {
                 for (auto& obb : gOBBs) {
-                    FixedContact c;
-                    if (Gjk(&playerShape, obb.gjkShape, &c)) { blocked = true; break; }
+                    gjk3d_contact_t c;
+                    if (gjk3d_collide(&playerShape, &obb.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
                 }
             }
             if (!blocked) {
                 for (auto& ramp : gRamps) {
-                    FixedContact c;
-                    if (Gjk(&playerShape, &ramp.gjkShape, &c)) { blocked = true; break; }
+                    gjk3d_contact_t c;
+                    if (gjk3d_collide(&playerShape, &ramp.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
                 }
             }
 
@@ -825,9 +794,11 @@ void processInput() {
         float boxTop = box.pos.y + box.size.y * 0.5f;
         float boxBottom = box.pos.y - box.size.y * 0.5f;
         // 使用 GJK 做 XZ 平面重叠检测
-        GJKEntityShape playerFeetShape(toFV(Vec3(gPlayerPos.x, boxTop, gPlayerPos.z)), toFV(Vec3(PLAYER_HALF_SIZE.x * 0.8f, 0.01f, PLAYER_HALF_SIZE.z * 0.8f)));
-        FixedContact c;
-        if (Gjk(&playerFeetShape, &box.gjkShape, &c)) {
+        gjk3d_collider_t playerFeetShape;
+        gjk3d_init_box(&playerFeetShape, toV3f(Vec3(gPlayerPos.x, boxTop, gPlayerPos.z)), toV3f(Vec3(PLAYER_HALF_SIZE.x * 0.8f, 0.01f, PLAYER_HALF_SIZE.z * 0.8f)));
+        vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
+        gjk3d_contact_t c;
+        if (gjk3d_collide(&playerFeetShape, &box.gjkShape, gjkInitDir, &c)) {
             float playerFeet = gPlayerPos.y - PLAYER_HALF_SIZE.y;
             float playerHead = gPlayerPos.y + PLAYER_HALF_SIZE.y;
 
@@ -944,14 +915,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     // 创建斜坡
     {
-        RampObstacle ramp;
+        gRamps.emplace_back();
+        auto& ramp = gRamps.back();
         ramp.basePos = Vec3(-6, 0, 0);
         ramp.width = 2.0f;
         ramp.length = 3.0f;
         ramp.height = 1.5f;
-        ramp.gjkShape = RampShape(toFV(Vec3(ramp.width * 0.5f, 0, ramp.length * 0.5f)), FP(ramp.height));
-        ramp.gjkShape.UpdateVertices(toFV(Vec3(0, 1, 0)), FP::Zero(), toFV(ramp.basePos));
-        gRamps.push_back(ramp);
+        {
+            ramp.worldVerts[0] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f));
+            ramp.worldVerts[1] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f));
+            ramp.worldVerts[2] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f));
+            ramp.worldVerts[3] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f));
+            ramp.worldVerts[4] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f));
+            ramp.worldVerts[5] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f));
+            gjk3d_init_mesh(&ramp.gjkShape, ramp.worldVerts, 6);
+        }
 
         Mat4 m = Mat4::translate(ramp.basePos);
         gModelMatrices.push_back(m);
@@ -974,7 +952,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
             BoxObstacle box;
             box.pos = Vec3(def.x, def.sy * 0.5f, def.z);
             box.size = Vec3(def.sx, def.sy, def.sz);
-            box.gjkShape = GJKEntityShape(toFV(box.pos), toFV(box.size * 0.5f));
+            gjk3d_init_box(&box.gjkShape, toV3f(box.pos), toV3f(Vec3(box.size.x * 0.5f, box.size.y * 0.5f, box.size.z * 0.5f)));
             gBoxes.push_back(box);
 
             Mat4 m;
@@ -994,8 +972,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         BallObstacle ball;
         ball.pos = Vec3(2, 0.5f, 2);
         ball.radius = 0.5f;
-        ball.gjkShape = SphereShape(FP(ball.radius));
-        ball.gjkShape.UpdateVertices({ FP::Zero(), FP::One(), FP::Zero() }, FP::Zero(), toFV(ball.pos));
+        gjk3d_init_sphere(&ball.gjkShape, toV3f(ball.pos), fp_from_float(ball.radius));
         gBalls.push_back(ball);
         {
             Mat4 m;
@@ -1008,14 +985,30 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     // 创建 GJK 测试 OBB（旋转 45° 的箱子，AABB 无法精确处理）
     {
-        OBBObstacle obb;
+        gOBBs.emplace_back();
+        auto& obb = gOBBs.back();
         obb.pos = Vec3(-2, 0.5f, 2);
         obb.size = Vec3(0.8f, 0.8f, 0.8f);
         obb.angle = 45.0f;
-        obb.gjkShape = new BoxShape(toFV(obb.size * 0.5f));
-        float rad = radians(obb.angle);
-        obb.gjkShape->UpdateVertices(toFV(Vec3(0, 1, 0)), FP(rad), toFV(obb.pos));
-        gOBBs.push_back(std::move(obb));
+        {
+            vec3f_t half = toV3f(Vec3(obb.size.x * 0.5f, obb.size.y * 0.5f, obb.size.z * 0.5f));
+            vec3f_t localVerts[8] = {
+                { -half.x,  half.y, -half.z }, {  half.x,  half.y, -half.z },
+                {  half.x,  half.y,  half.z }, { -half.x,  half.y,  half.z },
+                { -half.x, -half.y, -half.z }, {  half.x, -half.y, -half.z },
+                {  half.x, -half.y,  half.z }, { -half.x, -half.y,  half.z },
+            };
+            float rad = radians(obb.angle);
+            mat44f_t t = mat44f_translate(fp_from_float(obb.pos.x), fp_from_float(obb.pos.y), fp_from_float(obb.pos.z));
+            mat44f_t r = mat44f_rotate_y(fp_from_float(rad));
+            mat44f_t transform = mat44f_mul(r, t);
+            for (int i = 0; i < 8; i++) {
+                vec4f_t v = { localVerts[i].x, localVerts[i].y, localVerts[i].z, fp_one() };
+                vec4f_t res = mat44f_mul_vec4f(transform, v);
+                obb.worldVerts[i] = { res.x, res.y, res.z };
+            }
+            gjk3d_init_mesh(&obb.gjkShape, obb.worldVerts, 8);
+        }
         {
             float y = radians(obb.angle), c = cosf(y), s = sinf(y);
             Mat4 m;
@@ -1082,9 +1075,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         // 子弹击中箱子 → 销毁
         bool hitBox = false;
         for (auto& box : gBoxes) {
-            GJKEntityShape bulShape(toFV(b.pos), toFV(Vec3(0.15f, 0.15f, 0.15f)));
-            FixedContact c;
-            if (Gjk(&bulShape, &box.gjkShape, &c)) { hitBox = true; break; }
+            gjk3d_collider_t bulShape;
+            gjk3d_init_box(&bulShape, toV3f(b.pos), toV3f(Vec3(0.15f, 0.15f, 0.15f)));
+            vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
+            gjk3d_contact_t c;
+            if (gjk3d_collide(&bulShape, &box.gjkShape, gjkInitDir, &c)) { hitBox = true; break; }
         }
         if (hitBox) { gBullets.erase(gBullets.begin() + i); continue; }
 
