@@ -1553,5 +1553,41 @@ JOY_INLINE vec4_t mat44_mul_vec4(mat44_t left, vec4_t right)
 	return result;
 }
 
+JOY_INLINE vec3_t vec3_div(vec3_t a, ft_t s) {
+	vec3_t r;
+	r.x = ft_div(a.x, s);
+	r.y = ft_div(a.y, s);
+	r.z = ft_div(a.z, s);
+	return r;
+}
+
+JOY_INLINE ft_t ft_radians(ft_t degrees) {
+	return degrees * (3.14159265358979323846f / 180.0f);
+}
+
+JOY_INLINE mat44_t mat44_perspective(ft_t fov, ft_t aspect, ft_t near, ft_t far) {
+	ft_t tan_half = tanf(fov / 2.0f);
+	mat44_t result = { 0 };
+	result.m0 = 1.0f / (aspect * tan_half);
+	result.m5 = 1.0f / tan_half;
+	result.m10 = far / (near - far);
+	result.m11 = -1.0f;
+	result.m14 = (near * far) / (near - far);
+	return result;
+}
+
+JOY_INLINE mat44_t mat44_lookAt(vec3_t eye, vec3_t center, vec3_t up) {
+	vec3_t f = vec3_normalize(vec3_sub(center, eye));
+	vec3_t s = vec3_normalize(vec3_cross(f, up));
+	vec3_t u = vec3_cross(s, f);
+	mat44_t result = { 0 };
+	result.m0 = s.x; result.m1 = s.y; result.m2 = s.z; result.m3 = 0;
+	result.m4 = u.x; result.m5 = u.y; result.m6 = u.z; result.m7 = 0;
+	result.m8 = -f.x; result.m9 = -f.y; result.m10 = -f.z; result.m11 = 0;
+	result.m12 = -vec3_dot(s, eye); result.m13 = -vec3_dot(u, eye);
+	result.m14 = vec3_dot(f, eye); result.m15 = 1.0f;
+	return result;
+}
+
 
 #endif //!MATHX_H
