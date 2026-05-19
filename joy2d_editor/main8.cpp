@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstdio>
 #include <joy2d/jgjk.h>
+#include <joy2d/jrender.h>
 #include <cfloat>
 
 
@@ -59,19 +60,7 @@ struct {
 float gVerticalVelocity = 0.0f;
 bool gOnGround = true;
 
-// MVP 数据 (GPU 期望列主序 float[16])
-struct MVPData {
-    float viewProj[16];
-    float model[16];
-};
-
-// 将 mat44_t(行主序内存布局) 转为列主序 float[16] 用于 GPU 上传
-static void mat44_to_gpu(const mat44_t& m, float* out) {
-    out[0]  = m.m0;  out[1]  = m.m1;  out[2]  = m.m2;  out[3]  = m.m3;
-    out[4]  = m.m4;  out[5]  = m.m5;  out[6]  = m.m6;  out[7]  = m.m7;
-    out[8]  = m.m8;  out[9]  = m.m9;  out[10] = m.m10; out[11] = m.m11;
-    out[12] = m.m12; out[13] = m.m13; out[14] = m.m14; out[15] = m.m15;
-}
+render_mvp_t gMVP;
 
 struct DrawMesh {
     SDL_GPUBuffer* vertexBuffer;
@@ -195,140 +184,18 @@ bool initSDL() {
     return true;
 }
 
-// -------------------- shader 加载 --------------------
-SDL_GPUShader* loadSDLGPUShader(const char* filename, SDL_GPUShaderStage stage,
-    uint32_t sampler_num, uint32_t uniform_buffer_num) {
-    size_t file_size;
-    Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
-    if (!data) {
-        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "load file %s failed: %s", filename, SDL_GetError());
-        return nullptr;
-    }
-    SDL_GPUShaderCreateInfo ci{};
-    ci.code = data;
-    ci.code_size = file_size;
-    ci.entrypoint = "main";
-    ci.format = SDL_GPU_SHADERFORMAT_SPIRV;
-    ci.num_samplers = sampler_num;
-    ci.num_uniform_buffers = uniform_buffer_num;
-    ci.num_storage_buffers = 0;
-    ci.num_storage_textures = 0;
-    ci.stage = stage;
-    SDL_GPUShader* shader = SDL_CreateGPUShader(gDevice, &ci);
-    SDL_free(data);
-    if (!shader)
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "create shader from %s failed: %s", filename, SDL_GetError());
-    return shader;
-}
-
 GPUShaderBundle createSDLGPUShaderBundle() {
     GPUShaderBundle bundle;
-    bundle.vertex = loadSDLGPUShader("joy2d_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-    bundle.fragment = loadSDLGPUShader("joy2d_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+    bundle.vertex = render_load_shader(gDevice, "joy2d_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+    bundle.fragment = render_load_shader(gDevice, "joy2d_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
     return bundle;
 }
 
-// -------------------- 图形管线 --------------------
-SDL_GPUGraphicsPipeline* createGraphicsPipeline() {
-    SDL_GPUGraphicsPipelineCreateInfo ci{};
-    SDL_GPUVertexAttribute attributes[2];
-    attributes[0].location = 0;
-    attributes[0].buffer_slot = 0;
-    attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
-    attributes[0].offset = 0;
-    attributes[1].location = 1;
-    attributes[1].buffer_slot = 0;
-    attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
-    attributes[1].offset = sizeof(float) * 3;
-
-    ci.vertex_input_state.vertex_attributes = attributes;
-    ci.vertex_input_state.num_vertex_attributes = 2;
-
-    SDL_GPUVertexBufferDescription buffer_desc{};
-    buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
-    buffer_desc.instance_step_rate = 0;
-    buffer_desc.slot = 0;
-    buffer_desc.pitch = sizeof(float) * 5;
-
-    ci.vertex_input_state.num_vertex_buffers = 1;
-    ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
-    ci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-    ci.vertex_shader = gShaders.vertex;
-    ci.fragment_shader = gShaders.fragment;
-    ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
-    ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
-    ci.multisample_state.enable_mask = false;
-    ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    ci.target_info.num_color_targets = 1;
-    ci.target_info.has_depth_stencil_target = true;
-    ci.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-
-    SDL_GPUDepthStencilState ds{};
-    ds.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
-    ds.back_stencil_state.pass_op = SDL_GPU_STENCILOP_ZERO;
-    ds.back_stencil_state.fail_op = SDL_GPU_STENCILOP_ZERO;
-    ds.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
-    ds.compare_op = SDL_GPU_COMPAREOP_LESS;
-    ds.enable_depth_test = true;
-    ds.enable_depth_write = true;
-    ds.enable_stencil_test = false;
-    ds.compare_mask = 0xFF;
-    ds.write_mask = 0xFF;
-    ci.depth_stencil_state = ds;
-
-    SDL_GPUColorTargetDescription desc{};
-    desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
-    desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
-    desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_A | SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
-    desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-    desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-    desc.blend_state.enable_blend = true;
-    desc.blend_state.enable_color_write_mask = false;
-    desc.format = SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow);
-    ci.target_info.color_target_descriptions = &desc;
-
-    return SDL_CreateGPUGraphicsPipeline(gDevice, &ci);
-}
-
-// -------------------- 顶点数据 --------------------
+// 顶点格式
 struct Vertex {
     float x, y, z;
     float u, v;
 };
-
-SDL_GPUBuffer* createAndUploadBuffer(const Vertex* vertices, int count) {
-    size_t size = count * sizeof(Vertex);
-
-    SDL_GPUTransferBufferCreateInfo tb_ci{};
-    tb_ci.size = size;
-    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
-    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
-    memcpy(ptr, vertices, size);
-    SDL_UnmapGPUTransferBuffer(gDevice, tb);
-
-    SDL_GPUBufferCreateInfo buf_ci{};
-    buf_ci.size = size;
-    buf_ci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
-    SDL_GPUBuffer* buf = SDL_CreateGPUBuffer(gDevice, &buf_ci);
-
-    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
-    SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
-    SDL_GPUTransferBufferLocation loc{};
-    loc.offset = 0;
-    loc.transfer_buffer = tb;
-    SDL_GPUBufferRegion region{};
-    region.buffer = buf;
-    region.offset = 0;
-    region.size = size;
-    SDL_UploadToGPUBuffer(copy_pass, &loc, &region, false);
-    SDL_EndGPUCopyPass(copy_pass);
-    SDL_SubmitGPUCommandBuffer(cmd);
-    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
-    return buf;
-}
 
 // 生成地板顶点
 void createFloorMesh() {
@@ -358,7 +225,7 @@ void createFloorMesh() {
         }
     }
 
-    gFloorVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
+    gFloorVertexBuffer = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
     gDrawMeshes.push_back({ gFloorVertexBuffer, (int)verts.size() });
     gModelMatrices.push_back(mat44_identity());
 }
@@ -386,7 +253,7 @@ void createCubeMesh() {
         {-hw, -hh, -hw, 0,0}, { hw, -hh, -hw, 1,0}, { hw, -hh,  hw, 1,1},
         { hw, -hh,  hw, 1,1}, {-hw, -hh,  hw, 0,1}, {-hw, -hh, -hw, 0,0},
     };
-    gCubeVertexBuffer = createAndUploadBuffer(verts, 36);
+    gCubeVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
 }
 
 // 生成立方体（障碍物箱子用）
@@ -412,7 +279,7 @@ void createUnitCubeMesh() {
         {-hw, -hw, -hw, 0,0}, { hw, -hw, -hw, 1,0}, { hw, -hw,  hw, 1,1},
         { hw, -hw,  hw, 1,1}, {-hw, -hw,  hw, 0,1}, {-hw, -hw, -hw, 0,0},
     };
-    gUnitCubeVertexBuffer = createAndUploadBuffer(verts, 36);
+    gUnitCubeVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
 }
 
 // 生成子弹网格（小立方体）
@@ -446,7 +313,7 @@ void createSphereMesh() {
             verts.push_back({ x4, y4, z4, u1, v2 });
         }
     }
-    gSphereVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
+    gSphereVertexBuffer = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
 }
 
 void createBulletMesh() {
@@ -465,7 +332,7 @@ void createBulletMesh() {
         {-hs, -hs, -hs, 0,0}, { hs, -hs, -hs, 1,0}, { hs, -hs,  hs, 1,1},
         { hs, -hs,  hs, 1,1}, {-hs, -hs,  hs, 0,1}, {-hs, -hs, -hs, 0,0},
     };
-    gBulletVertexBuffer = createAndUploadBuffer(verts, 36);
+    gBulletVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
 }
 
 // 生成斜坡网格
@@ -490,7 +357,7 @@ void createRampMesh() {
         {-hw, 0, -hl, 0,0}, { hw, 0, -hl, 1,0}, { hw, 0,  hl, 1,1},
         {-hw, 0, -hl, 0,0}, { hw, 0,  hl, 1,1}, {-hw, 0,  hl, 0,1},
     };
-    gRampVertexBuffer = createAndUploadBuffer(verts, sizeof(verts)/sizeof(Vertex));
+    gRampVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
 }
 
 // 创建纹理（科幻金属网格）
@@ -552,94 +419,12 @@ void createFloorTexture() {
     delete[] pixels;
 }
 
-SDL_GPUTexture* createSolidTexture(unsigned char r, unsigned char g, unsigned char b) {
-    const int tw = 16, th = 16;
-    size_t image_size = tw * th * 4;
-    unsigned char* pixels = new unsigned char[image_size];
-    for (int i = 0; i < tw * th; i++) {
-        pixels[i * 4 + 0] = r;
-        pixels[i * 4 + 1] = g;
-        pixels[i * 4 + 2] = b;
-        pixels[i * 4 + 3] = 255;
-    }
-
-    SDL_GPUTransferBufferCreateInfo tb_ci{};
-    tb_ci.size = image_size;
-    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
-    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
-    memcpy(ptr, pixels, image_size);
-    SDL_UnmapGPUTransferBuffer(gDevice, tb);
-
-    SDL_GPUTextureCreateInfo tex_ci{};
-    tex_ci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    tex_ci.height = th;
-    tex_ci.width = tw;
-    tex_ci.layer_count_or_depth = 1;
-    tex_ci.num_levels = 1;
-    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
-    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-    SDL_GPUTexture* tex = SDL_CreateGPUTexture(gDevice, &tex_ci);
-
-    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
-    SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(cmd);
-    SDL_GPUTextureTransferInfo ti{};
-    ti.offset = 0;
-    ti.pixels_per_row = tw;
-    ti.rows_per_layer = th;
-    ti.transfer_buffer = tb;
-    SDL_GPUTextureRegion region{};
-    region.w = tw; region.h = th; region.x = 0; region.y = 0;
-    region.layer = 0; region.mip_level = 0; region.z = 0; region.d = 1;
-    region.texture = tex;
-    SDL_UploadToGPUTexture(copy, &ti, &region, false);
-    SDL_EndGPUCopyPass(copy);
-    SDL_SubmitGPUCommandBuffer(cmd);
-    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
-    delete[] pixels;
-    return tex;
-}
-
 void createEnemyBulletTextures() {
-    gTextureEnemy = createSolidTexture(220, 40, 40);    // 红色敌人
-    gTextureBullet = createSolidTexture(255, 200, 50);  // 黄色子弹
-    gTextureBall = createSolidTexture(40, 220, 40);     // 绿色球体
-    gTextureOBB = createSolidTexture(255, 165, 0);      // 橙色旋转箱子
+    gTextureEnemy = render_create_solid_texture(gDevice, 220, 40, 40);    // 红色敌人
+    gTextureBullet = render_create_solid_texture(gDevice, 255, 200, 50);  // 黄色子弹
+    gTextureBall = render_create_solid_texture(gDevice, 40, 220, 40);     // 绿色球体
+    gTextureOBB = render_create_solid_texture(gDevice, 255, 165, 0);      // 橙色旋转箱子
 }
-
-void createDepthTexture(int w, int h) {
-    SDL_GPUTextureCreateInfo tex_ci{};
-    tex_ci.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
-    tex_ci.height = h;
-    tex_ci.width = w;
-    tex_ci.layer_count_or_depth = 1;
-    tex_ci.num_levels = 1;
-    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
-    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
-    gDepthTexture = SDL_CreateGPUTexture(gDevice, &tex_ci);
-}
-
-void createSampler() {
-    SDL_GPUSamplerCreateInfo ci{};
-    ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-    ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-    ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-    ci.enable_anisotropy = true;
-    ci.max_anisotropy = 4.0f;
-    ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
-    ci.enable_compare = false;
-    ci.mag_filter = SDL_GPU_FILTER_LINEAR;
-    ci.min_filter = SDL_GPU_FILTER_LINEAR;
-    ci.max_lod = 10.0f;
-    ci.min_lod = 0.0f;
-    ci.mip_lod_bias = 0.0f;
-    ci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
-    gSampler = SDL_CreateGPUSampler(gDevice, &ci);
-}
-
-MVPData gMVP;
 
 // -------------------- 输入处理 --------------------
 void processInput() {
@@ -803,7 +588,7 @@ void updateMVPData() {
     mat44_t proj = mat44_perspective(ft_radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
     mat44_t viewProj = mat44_mul(view, proj);
 
-    mat44_to_gpu(viewProj, gMVP.viewProj);
+    render_mat44_to_float16(&viewProj, gMVP.viewProj);
 
     // 地板
     gModelMatrices[0] = mat44_identity();
@@ -847,7 +632,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         return SDL_APP_FAILURE;
     }
 
-    gGraphicsPipeline = createGraphicsPipeline();
+    gGraphicsPipeline = render_create_pipeline(gDevice, gShaders.vertex, gShaders.fragment, SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow), SDL_GPU_TEXTUREFORMAT_D16_UNORM);
     if (!gGraphicsPipeline) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Graphics pipeline load failed!");
         return SDL_APP_FAILURE;
@@ -972,8 +757,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 
     createFloorTexture();
     createEnemyBulletTextures();
-    createDepthTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
-    createSampler();
+    gDepthTexture = render_create_depth_texture(gDevice, WINDOW_WIDTH, WINDOW_HEIGHT);
+    gSampler = render_create_sampler(gDevice);
     createBulletMesh();
 
     /* 敌人已屏蔽
@@ -1102,7 +887,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // 绘制静态物体（地板、箱子等）
     for (size_t i = 0; i < gDrawMeshes.size(); i++) {
         auto& mesh = gDrawMeshes[i];
-        mat44_to_gpu(gModelMatrices[i], gMVP.model);
+        render_mat44_to_float16(&gModelMatrices[i], gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1124,7 +909,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         mat44_t m = mat44_identity();
         m.m0 = 0.5f; m.m5 = 0.5f; m.m10 = 0.5f;
         m.m12 = e.pos.x; m.m13 = e.pos.y; m.m14 = e.pos.z;
-        mat44_to_gpu(m, gMVP.model);
+        render_mat44_to_float16(&m, gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1145,7 +930,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         mat44_t m = mat44_identity();
         m.m0 = 0.08f; m.m5 = 0.08f; m.m10 = 0.08f;
         m.m12 = b.pos.x; m.m13 = b.pos.y; m.m14 = b.pos.z;
-        mat44_to_gpu(m, gMVP.model);
+        render_mat44_to_float16(&m, gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1200,7 +985,4 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     SDL_ReleaseWindowFromGPUDevice(gDevice, gWindow);
     SDL_DestroyGPUDevice(gDevice);
     SDL_DestroyWindow(gWindow);
-    SDL_Quit();
 }
-// EOF
-
