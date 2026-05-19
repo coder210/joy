@@ -11,83 +11,7 @@
 #include <cfloat>
 
 
-// -------------------- 自定义数学库 --------------------
-struct Vec3 {
-    float x, y, z;
-    Vec3() : x(0), y(0), z(0) {}
-    Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
-    Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
-    Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
-    Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }
-    Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }
-    Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
-    Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-    Vec3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
-    Vec3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
-};
-
-inline float dot(const Vec3& a, const Vec3& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
-inline Vec3 cross(const Vec3& a, const Vec3& b) { return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
-inline float length(const Vec3& v) { return sqrtf(dot(v, v)); }
-inline Vec3 normalize(const Vec3& v) { float len = length(v); return (len > 0) ? v / len : Vec3(0, 0, 0); }
-
-struct Mat4 {
-    float m[16];
-    Mat4() { for (int i = 0; i < 16; ++i) m[i] = 0; m[0] = m[5] = m[10] = m[15] = 1.0f; }
-    Mat4(const float* data) { memcpy(m, data, sizeof(m)); }
-    Mat4 operator*(const Mat4& other) const {
-        Mat4 res;
-        for (int col = 0; col < 4; ++col)
-            for (int row = 0; row < 4; ++row) {
-                float sum = 0;
-                for (int k = 0; k < 4; ++k) sum += m[col * 4 + k] * other.m[k * 4 + row];
-                res.m[col * 4 + row] = sum;
-            }
-        return res;
-    }
-    float& operator()(int col, int row) { return m[col * 4 + row]; }
-    const float& operator()(int col, int row) const { return m[col * 4 + row]; }
-
-    static Mat4 identity() { return Mat4(); }
-    static Mat4 translate(const Vec3& t) {
-        Mat4 mat; mat.m[12] = t.x; mat.m[13] = t.y; mat.m[14] = t.z; return mat;
-    }
-    static Mat4 scale(const Vec3& s) {
-        Mat4 mat; mat.m[0] = s.x; mat.m[5] = s.y; mat.m[10] = s.z; return mat;
-    }
-    static Mat4 rotateX(float angle) {
-        Mat4 mat; float c = cosf(angle), s = sinf(angle);
-        mat.m[5] = c; mat.m[6] = s; mat.m[9] = -s; mat.m[10] = c; return mat;
-    }
-    static Mat4 rotateY(float angle) {
-        Mat4 mat; float c = cosf(angle), s = sinf(angle);
-        mat.m[0] = c; mat.m[2] = -s; mat.m[8] = s; mat.m[10] = c; return mat;
-    }
-    static Mat4 rotateZ(float angle) {
-        Mat4 mat; float c = cosf(angle), s = sinf(angle);
-        mat.m[0] = c; mat.m[1] = s; mat.m[4] = -s; mat.m[5] = c; return mat;
-    }
-    static Mat4 perspective(float fov, float aspect, float near, float far) {
-        float tanHalf = tanf(fov / 2.0f);
-        Mat4 mat; mat.m[0] = 1.0f / (aspect * tanHalf); mat.m[5] = 1.0f / tanHalf;
-        mat.m[10] = far / (near - far); mat.m[11] = -1.0f;
-        mat.m[14] = (near * far) / (near - far); mat.m[15] = 0.0f; return mat;
-    }
-    static Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up) {
-        Vec3 f = normalize(center - eye); Vec3 s = normalize(cross(f, up)); Vec3 u = cross(s, f);
-        Mat4 mat;
-        mat.m[0] = s.x; mat.m[1] = s.y; mat.m[2] = s.z; mat.m[3] = 0;
-        mat.m[4] = u.x; mat.m[5] = u.y; mat.m[6] = u.z; mat.m[7] = 0;
-        mat.m[8] = -f.x; mat.m[9] = -f.y; mat.m[10] = -f.z; mat.m[11] = 0;
-        mat.m[12] = -dot(s, eye); mat.m[13] = -dot(u, eye); mat.m[14] = dot(f, eye); mat.m[15] = 1.0f;
-        return mat;
-    }
-};
-
-inline float radians(float degrees) { return degrees * (3.14159265358979323846f / 180.0f); }
-
-// GJK 定点数转换辅助
-static vec3f_t toV3f(const Vec3& v) { return { fp_from_float(v.x), fp_from_float(v.y), fp_from_float(v.z) }; }
+static vec3f_t toV3f(vec3_t v) { return { fp_from_float(v.x), fp_from_float(v.y), fp_from_float(v.z) }; }
 
 // -------------------- GPU 资源 --------------------
 struct GPUShaderBundle {
@@ -113,7 +37,7 @@ SDL_GPUSampler* gSampler;
 #define WINDOW_HEIGHT 720
 
 // 玩家
-Vec3 gPlayerPos = Vec3(0.0f, 0.6f, 0.0f);
+vec3_t gPlayerPos = {0.0f, 0.6f, 0.0f};
 float gPlayerYaw = 0.0f;       // 玩家/相机水平朝向
 float gPitch = 25.0f;          // 相机俯角
 static const float CAM_DIST = 6.0f;
@@ -135,11 +59,19 @@ struct {
 float gVerticalVelocity = 0.0f;
 bool gOnGround = true;
 
-// MVP 数据
+// MVP 数据 (GPU 期望列主序 float[16])
 struct MVPData {
-    Mat4 viewProj;
-    Mat4 model;
+    float viewProj[16];
+    float model[16];
 };
+
+// 将 mat44_t(行主序内存布局) 转为列主序 float[16] 用于 GPU 上传
+static void mat44_to_gpu(const mat44_t& m, float* out) {
+    out[0]  = m.m0;  out[1]  = m.m1;  out[2]  = m.m2;  out[3]  = m.m3;
+    out[4]  = m.m4;  out[5]  = m.m5;  out[6]  = m.m6;  out[7]  = m.m7;
+    out[8]  = m.m8;  out[9]  = m.m9;  out[10] = m.m10; out[11] = m.m11;
+    out[12] = m.m12; out[13] = m.m13; out[14] = m.m14; out[15] = m.m15;
+}
 
 struct DrawMesh {
     SDL_GPUBuffer* vertexBuffer;
@@ -147,11 +79,11 @@ struct DrawMesh {
 };
 
 std::vector<DrawMesh> gDrawMeshes;
-std::vector<Mat4> gModelMatrices;
+std::vector<mat44_t> gModelMatrices;
 
 struct BoxObstacle {
-    Vec3 pos;
-    Vec3 size;
+    vec3_t pos;
+    vec3_t size;
     gjk3d_collider_t gjkShape;
     BoxObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
 };
@@ -160,7 +92,7 @@ std::vector<BoxObstacle> gBoxes;
 
 // GJK 测试球体
 struct BallObstacle {
-    Vec3 pos;
+    vec3_t pos;
     float radius;
     gjk3d_collider_t gjkShape;
     BallObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
@@ -170,8 +102,8 @@ SDL_GPUTexture* gTextureBall = nullptr;
 
 // 旋转箱子（OBB，GJK 支持但 AABB 不支持）
 struct OBBObstacle {
-    Vec3 pos;
-    Vec3 size;
+    vec3_t pos;
+    vec3_t size;
     float angle;
     gjk3d_collider_t gjkShape;
     vec3f_t worldVerts[8];
@@ -181,7 +113,7 @@ SDL_GPUTexture* gTextureOBB = nullptr;
 
 // 斜坡（GJK 碰撞形状）
 struct RampObstacle {
-    Vec3 basePos;
+    vec3_t basePos;
     float width, length, height;
     gjk3d_collider_t gjkShape;
     vec3f_t worldVerts[6];
@@ -204,7 +136,7 @@ std::vector<RampObstacle> gRamps;
 
 // 敌人
 struct Enemy {
-    Vec3 pos;
+    vec3_t pos;
     float hp = 3.0f;
     float speed = 2.0f;
     float aggroRange = 8.0f;      // 发现玩家距离
@@ -221,8 +153,8 @@ int gPlayerMaxHP = 10;
 
 // 子弹
 struct Bullet {
-    Vec3 pos;
-    Vec3 dir;
+    vec3_t pos;
+    vec3_t dir;
     float speed = 15.0f;
     float lifetime = 2.0f;
     float age = 0.0f;
@@ -234,7 +166,7 @@ std::vector<Bullet> gBullets;
 float gShootCooldown = 0.25f;
 float gShootTimer = 0.0f;
 
-static const Vec3 PLAYER_HALF_SIZE = Vec3(0.3f, 0.6f, 0.3f);
+static const vec3_t PLAYER_HALF_SIZE = {0.3f, 0.6f, 0.3f};
 
 
 
@@ -428,7 +360,7 @@ void createFloorMesh() {
 
     gFloorVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
     gDrawMeshes.push_back({ gFloorVertexBuffer, (int)verts.size() });
-    gModelMatrices.push_back(Mat4::identity());
+    gModelMatrices.push_back(mat44_identity());
 }
 
 // 生成立方体（玩家用）
@@ -719,18 +651,18 @@ void processInput() {
     gKeys.jump     = kb[SDL_SCANCODE_SPACE];
     gKeys.shoot    = kb[SDL_SCANCODE_F];
 
-    float yawRad = radians(gPlayerYaw);
-    Vec3 forward = Vec3(sinf(yawRad), 0, cosf(yawRad));
-    Vec3 right   = Vec3(cosf(yawRad), 0, -sinf(yawRad));
+    float yawRad = ft_radians(gPlayerYaw);
+    vec3_t forward = {sinf(yawRad), 0, cosf(yawRad)};
+    vec3_t right   = {cosf(yawRad), 0, -sinf(yawRad)};
 
-    Vec3 moveDir(0,0,0);
-    if (gKeys.forward)  moveDir += forward;
-    if (gKeys.backward) moveDir -= forward;
-    if (gKeys.left)     moveDir += right;
-    if (gKeys.right)    moveDir -= right;
+    vec3_t moveDir = {0,0,0};
+    if (gKeys.forward)  moveDir = vec3_add(moveDir, forward);
+    if (gKeys.backward) moveDir = vec3_sub(moveDir, forward);
+    if (gKeys.left)     moveDir = vec3_add(moveDir, right);
+    if (gKeys.right)    moveDir = vec3_sub(moveDir, right);
 
-    if (length(moveDir) > 0.001f) {
-        moveDir = normalize(moveDir);
+    if (vec3_length(moveDir) > 0.001f) {
+        moveDir = vec3_normalize(moveDir);
 
         float totalDist = 5.0f * gDeltaTime;
         const float MAX_STEP = 0.02f;
@@ -738,7 +670,20 @@ void processInput() {
             float step = (totalDist > MAX_STEP) ? MAX_STEP : totalDist;
             totalDist -= step;
 
-            Vec3 newPos = gPlayerPos + moveDir * step;
+            vec3_t newPos = vec3_add(gPlayerPos, vec3_scale(moveDir, step));
+
+            // 爬坡：新位置在斜坡 XZ 范围内时自动贴合坡面
+            for (auto& ramp : gRamps) {
+                if (ramp.isInXZ(newPos.x, newPos.z)) {
+                    float rampY = ramp.getHeight(newPos.x, newPos.z);
+                    float playerBottom = newPos.y - PLAYER_HALF_SIZE.y;
+                    if (playerBottom <= rampY + 0.2f) {
+                        newPos.y = rampY + PLAYER_HALF_SIZE.y + 0.01f;
+                    }
+                    break;
+                }
+            }
+
             gjk3d_collider_t playerShape;
             gjk3d_init_box(&playerShape, toV3f(newPos), toV3f(PLAYER_HALF_SIZE));
             vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
@@ -761,6 +706,10 @@ void processInput() {
             }
             if (!blocked) {
                 for (auto& ramp : gRamps) {
+                    // 玩家站在斜坡上时跳过碰撞
+                    bool onRamp = ramp.isInXZ(newPos.x, newPos.z) &&
+                        fabsf(newPos.y - PLAYER_HALF_SIZE.y - ramp.getHeight(newPos.x, newPos.z)) < 0.3f;
+                    if (onRamp) continue;
                     gjk3d_contact_t c;
                     if (gjk3d_collide(&playerShape, &ramp.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
                 }
@@ -795,7 +744,7 @@ void processInput() {
         float boxBottom = box.pos.y - box.size.y * 0.5f;
         // 使用 GJK 做 XZ 平面重叠检测
         gjk3d_collider_t playerFeetShape;
-        gjk3d_init_box(&playerFeetShape, toV3f(Vec3(gPlayerPos.x, boxTop, gPlayerPos.z)), toV3f(Vec3(PLAYER_HALF_SIZE.x * 0.8f, 0.01f, PLAYER_HALF_SIZE.z * 0.8f)));
+        gjk3d_init_box(&playerFeetShape, toV3f({gPlayerPos.x, boxTop, gPlayerPos.z}), toV3f({PLAYER_HALF_SIZE.x * 0.8f, 0.01f, PLAYER_HALF_SIZE.z * 0.8f}));
         vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
         gjk3d_contact_t c;
         if (gjk3d_collide(&playerFeetShape, &box.gjkShape, gjkInitDir, &c)) {
@@ -842,48 +791,48 @@ void processInput() {
 
 // -------------------- 更新 MVP --------------------
 void updateMVPData() {
-    float yawRad = radians(gPlayerYaw);
-    float pitchRad = radians(gPitch);
-    Vec3 camOffset = Vec3(-sinf(yawRad) * cosf(pitchRad) * CAM_DIST,
+    float yawRad = ft_radians(gPlayerYaw);
+    float pitchRad = ft_radians(gPitch);
+    vec3_t camOffset = {-sinf(yawRad) * cosf(pitchRad) * CAM_DIST,
                            sinf(pitchRad) * CAM_DIST,
-                           -cosf(yawRad) * cosf(pitchRad) * CAM_DIST);
-    Vec3 eye = gPlayerPos + camOffset;
-    Vec3 center = gPlayerPos + Vec3(0, 1.0f, 0);
+                           -cosf(yawRad) * cosf(pitchRad) * CAM_DIST};
+    vec3_t eye = vec3_add(gPlayerPos, camOffset);
+    vec3_t center = vec3_add(gPlayerPos, {0, 1.0f, 0});
 
-    Mat4 view = Mat4::lookAt(eye, center, Vec3(0,1,0));
-    Mat4 proj = Mat4::perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-    Mat4 viewProj = view * proj;
+    mat44_t view = mat44_lookAt(eye, center, {0,1,0});
+    mat44_t proj = mat44_perspective(ft_radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+    mat44_t viewProj = mat44_mul(view, proj);
 
-    gMVP.viewProj = viewProj;
+    mat44_to_gpu(viewProj, gMVP.viewProj);
 
     // 地板
-    gModelMatrices[0] = Mat4::identity();
+    gModelMatrices[0] = mat44_identity();
 
     // 玩家立方体（手动构建矩阵，避免 rotateY 错误）
     {
-        Mat4 m;
-        float y = radians(gPlayerYaw), c = cosf(y), s = sinf(y);
-        m.m[0] = c;  m.m[2]  = -s;
-        m.m[8] = s;  m.m[10] = c;
-        m.m[12] = gPlayerPos.x;
-        m.m[13] = gPlayerPos.y;
-        m.m[14] = gPlayerPos.z;
+        mat44_t m = mat44_identity();
+        float y = ft_radians(gPlayerYaw), c = cosf(y), s = sinf(y);
+        m.m0 = c;  m.m2  = -s;
+        m.m8 = s;  m.m10 = c;
+        m.m12 = gPlayerPos.x;
+        m.m13 = gPlayerPos.y;
+        m.m14 = gPlayerPos.z;
         gModelMatrices[1] = m;
     }
 
     // 斜坡（固定位置）
-    gModelMatrices[2] = Mat4::translate(gRamps[0].basePos);
+    gModelMatrices[2] = mat44_translate(gRamps[0].basePos.x, gRamps[0].basePos.y, gRamps[0].basePos.z);
 
     // 障碍物箱子（斜坡占 index 2，箱子从 3 开始）
     for (size_t i = 0; i < gBoxes.size(); i++) {
         auto& box = gBoxes[i];
-        Mat4 m;
-        m.m[0]  = box.size.x;
-        m.m[5]  = box.size.y;
-        m.m[10] = box.size.z;
-        m.m[12] = box.pos.x;
-        m.m[13] = box.pos.y;
-        m.m[14] = box.pos.z;
+        mat44_t m = mat44_identity();
+        m.m0  = box.size.x;
+        m.m5  = box.size.y;
+        m.m10 = box.size.z;
+        m.m12 = box.pos.x;
+        m.m13 = box.pos.y;
+        m.m14 = box.pos.z;
         gModelMatrices[3 + i] = m;
     }
 }
@@ -907,7 +856,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     createFloorMesh();
 
     createCubeMesh();
-    gModelMatrices.push_back(Mat4::identity());
+    gModelMatrices.push_back(mat44_identity());
     gDrawMeshes.push_back({ gCubeVertexBuffer, 36 });
 
     createUnitCubeMesh();
@@ -917,21 +866,21 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     {
         gRamps.emplace_back();
         auto& ramp = gRamps.back();
-        ramp.basePos = Vec3(-6, 0, 0);
+        ramp.basePos = {-6, 0, 0};
         ramp.width = 2.0f;
         ramp.length = 3.0f;
         ramp.height = 1.5f;
         {
-            ramp.worldVerts[0] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f));
-            ramp.worldVerts[1] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f));
-            ramp.worldVerts[2] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f));
-            ramp.worldVerts[3] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f));
-            ramp.worldVerts[4] = toV3f(Vec3(ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f));
-            ramp.worldVerts[5] = toV3f(Vec3(ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f));
+            ramp.worldVerts[0] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f});
+            ramp.worldVerts[1] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f});
+            ramp.worldVerts[2] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f});
+            ramp.worldVerts[3] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f});
+            ramp.worldVerts[4] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f});
+            ramp.worldVerts[5] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f});
             gjk3d_init_mesh(&ramp.gjkShape, ramp.worldVerts, 6);
         }
 
-        Mat4 m = Mat4::translate(ramp.basePos);
+        mat44_t m = mat44_translate(ramp.basePos.x, ramp.basePos.y, ramp.basePos.z);
         gModelMatrices.push_back(m);
         gDrawMeshes.push_back({ gRampVertexBuffer, 24 });
     }
@@ -950,18 +899,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         };
         for (auto& def : boxDefs) {
             BoxObstacle box;
-            box.pos = Vec3(def.x, def.sy * 0.5f, def.z);
-            box.size = Vec3(def.sx, def.sy, def.sz);
-            gjk3d_init_box(&box.gjkShape, toV3f(box.pos), toV3f(Vec3(box.size.x * 0.5f, box.size.y * 0.5f, box.size.z * 0.5f)));
+            box.pos = {def.x, def.sy * 0.5f, def.z};
+            box.size = {def.sx, def.sy, def.sz};
+            gjk3d_init_box(&box.gjkShape, toV3f(box.pos), toV3f({box.size.x * 0.5f, box.size.y * 0.5f, box.size.z * 0.5f}));
             gBoxes.push_back(box);
 
-            Mat4 m;
-            m.m[0]  = box.size.x;
-            m.m[5]  = box.size.y;
-            m.m[10] = box.size.z;
-            m.m[12] = box.pos.x;
-            m.m[13] = box.pos.y;
-            m.m[14] = box.pos.z;
+            mat44_t m = mat44_identity();
+            m.m0  = box.size.x;
+            m.m5  = box.size.y;
+            m.m10 = box.size.z;
+            m.m12 = box.pos.x;
+            m.m13 = box.pos.y;
+            m.m14 = box.pos.z;
             gModelMatrices.push_back(m);
             gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
         }
@@ -970,14 +919,14 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     // 创建 GJK 测试球体
     {
         BallObstacle ball;
-        ball.pos = Vec3(2, 0.5f, 2);
+        ball.pos = {2, 0.5f, 2};
         ball.radius = 0.5f;
         gjk3d_init_sphere(&ball.gjkShape, toV3f(ball.pos), fp_from_float(ball.radius));
         gBalls.push_back(ball);
         {
-            Mat4 m;
-            m.m[0] = ball.radius * 2; m.m[5] = ball.radius * 2; m.m[10] = ball.radius * 2;
-            m.m[12] = ball.pos.x; m.m[13] = ball.pos.y; m.m[14] = ball.pos.z;
+            mat44_t m = mat44_identity();
+            m.m0 = ball.radius * 2; m.m5 = ball.radius * 2; m.m10 = ball.radius * 2;
+            m.m12 = ball.pos.x; m.m13 = ball.pos.y; m.m14 = ball.pos.z;
             gModelMatrices.push_back(m);
             gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
         }
@@ -987,18 +936,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
     {
         gOBBs.emplace_back();
         auto& obb = gOBBs.back();
-        obb.pos = Vec3(-2, 0.5f, 2);
-        obb.size = Vec3(0.8f, 0.8f, 0.8f);
+        obb.pos = {-2, 0.5f, 2};
+        obb.size = {0.8f, 0.8f, 0.8f};
         obb.angle = 45.0f;
         {
-            vec3f_t half = toV3f(Vec3(obb.size.x * 0.5f, obb.size.y * 0.5f, obb.size.z * 0.5f));
+            vec3f_t half = toV3f({obb.size.x * 0.5f, obb.size.y * 0.5f, obb.size.z * 0.5f});
             vec3f_t localVerts[8] = {
                 { -half.x,  half.y, -half.z }, {  half.x,  half.y, -half.z },
                 {  half.x,  half.y,  half.z }, { -half.x,  half.y,  half.z },
                 { -half.x, -half.y, -half.z }, {  half.x, -half.y, -half.z },
                 {  half.x, -half.y,  half.z }, { -half.x, -half.y,  half.z },
             };
-            float rad = radians(obb.angle);
+            float rad = ft_radians(obb.angle);
             mat44f_t t = mat44f_translate(fp_from_float(obb.pos.x), fp_from_float(obb.pos.y), fp_from_float(obb.pos.z));
             mat44f_t r = mat44f_rotate_y(fp_from_float(rad));
             mat44f_t transform = mat44f_mul(r, t);
@@ -1010,12 +959,12 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
             gjk3d_init_mesh(&obb.gjkShape, obb.worldVerts, 8);
         }
         {
-            float y = radians(obb.angle), c = cosf(y), s = sinf(y);
-            Mat4 m;
-            m.m[0] = obb.size.x * c;  m.m[2]  = obb.size.x * -s;
-            m.m[5] = obb.size.y;
-            m.m[8] = obb.size.z * s;  m.m[10] = obb.size.z * c;
-            m.m[12] = obb.pos.x; m.m[13] = obb.pos.y; m.m[14] = obb.pos.z;
+            float y = ft_radians(obb.angle), c = cosf(y), s = sinf(y);
+            mat44_t m = mat44_identity();
+            m.m0 = obb.size.x * c;  m.m2  = obb.size.x * -s;
+            m.m5 = obb.size.y;
+            m.m8 = obb.size.z * s;  m.m10 = obb.size.z * c;
+            m.m12 = obb.pos.x; m.m13 = obb.pos.y; m.m14 = obb.pos.z;
             gModelMatrices.push_back(m);
             gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
         }
@@ -1034,7 +983,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
         };
         for (auto& ep : enemyPos) {
             Enemy e;
-            e.pos = Vec3(ep.x, 0.6f, ep.z);
+            e.pos = {ep.x, 0.6f, ep.z};
             gEnemies.push_back(e);
         }
     }*/
@@ -1056,10 +1005,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     gShootTimer += gDeltaTime;
     if (gKeys.shoot && gShootTimer >= gShootCooldown) {
         gShootTimer = 0.0f;
-        float yawRad = radians(gPlayerYaw);
-        Vec3 dir = Vec3(sinf(yawRad), 0, cosf(yawRad));
+        float yawRad = ft_radians(gPlayerYaw);
+        vec3_t dir = {sinf(yawRad), 0, cosf(yawRad)};
         Bullet b;
-        b.pos = gPlayerPos + Vec3(0, 0.4f, 0) + dir * 0.6f;
+        b.pos = vec3_add(vec3_add(gPlayerPos, {0, 0.4f, 0}), vec3_scale(dir, 0.6f));
         b.dir = dir;
         gBullets.push_back(b);
     }
@@ -1067,7 +1016,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     for (int i = (int)gBullets.size() - 1; i >= 0; i--) {
         auto& b = gBullets[i];
         b.age += gDeltaTime;
-        b.pos = b.pos + b.dir * b.speed * gDeltaTime;
+        b.pos = vec3_add(b.pos, vec3_scale(b.dir, b.speed * gDeltaTime));
 
         // 子弹超出边界 → 销毁
         if (fabsf(b.pos.x) > 10.5f || fabsf(b.pos.z) > 10.5f) { gBullets.erase(gBullets.begin() + i); continue; }
@@ -1076,7 +1025,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         bool hitBox = false;
         for (auto& box : gBoxes) {
             gjk3d_collider_t bulShape;
-            gjk3d_init_box(&bulShape, toV3f(b.pos), toV3f(Vec3(0.15f, 0.15f, 0.15f)));
+            gjk3d_init_box(&bulShape, toV3f(b.pos), toV3f({0.15f, 0.15f, 0.15f}));
             vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
             gjk3d_contact_t c;
             if (gjk3d_collide(&bulShape, &box.gjkShape, gjkInitDir, &c)) { hitBox = true; break; }
@@ -1087,9 +1036,9 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         bool hitEnemy = false;
         for (auto& e : gEnemies) {
             if (!e.alive) continue;
-            Vec3 diff = b.pos - e.pos;
+            vec3_t diff = vec3_sub(b.pos, e.pos);
             diff.y = 0;
-            if (length(diff) < 0.6f) {
+            if (vec3_length(diff) < 0.6f) {
                 e.hp -= b.damage;
                 if (e.hp <= 0) e.alive = false;
                 hitEnemy = true;
@@ -1103,8 +1052,8 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
 
     /* 敌人已屏蔽
-    float yawRad = radians(gPlayerYaw);
-    Vec3 playerForward = Vec3(sinf(yawRad), 0, cosf(yawRad));
+    float yawRad = ft_radians(gPlayerYaw);
+    vec3_t playerForward = {sinf(yawRad), 0, cosf(yawRad)};
     for (auto& e : gEnemies) { }
     */
 
@@ -1153,7 +1102,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // 绘制静态物体（地板、箱子等）
     for (size_t i = 0; i < gDrawMeshes.size(); i++) {
         auto& mesh = gDrawMeshes[i];
-        gMVP.model = gModelMatrices[i];
+        mat44_to_gpu(gModelMatrices[i], gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1172,10 +1121,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     /* 敌人已屏蔽
     for (auto& e : gEnemies) {
         if (!e.alive) continue;
-        Mat4 m;
-        m.m[0] = 0.5f; m.m[5] = 0.5f; m.m[10] = 0.5f;
-        m.m[12] = e.pos.x; m.m[13] = e.pos.y; m.m[14] = e.pos.z;
-        gMVP.model = m;
+        mat44_t m = mat44_identity();
+        m.m0 = 0.5f; m.m5 = 0.5f; m.m10 = 0.5f;
+        m.m12 = e.pos.x; m.m13 = e.pos.y; m.m14 = e.pos.z;
+        mat44_to_gpu(m, gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1193,10 +1142,10 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     // 绘制子弹（黄色小立方体）
     for (auto& b : gBullets) {
-        Mat4 m;
-        m.m[0] = 0.08f; m.m[5] = 0.08f; m.m[10] = 0.08f;
-        m.m[12] = b.pos.x; m.m[13] = b.pos.y; m.m[14] = b.pos.z;
-        gMVP.model = m;
+        mat44_t m = mat44_identity();
+        m.m0 = 0.08f; m.m5 = 0.08f; m.m10 = 0.08f;
+        m.m12 = b.pos.x; m.m13 = b.pos.y; m.m14 = b.pos.z;
+        mat44_to_gpu(m, gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
         SDL_GPUTextureSamplerBinding samp{};
@@ -1253,3 +1202,5 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
     SDL_DestroyWindow(gWindow);
     SDL_Quit();
 }
+// EOF
+
