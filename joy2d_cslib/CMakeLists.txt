@@ -5,7 +5,8 @@ if(MSVC)
         "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/*.cs"
         "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/Native/*.cs"
         "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/FixMath/*.cs"
-        "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/Collision/*.cs")
+        "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/Collision/*.cs"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Livlib/GJK2D/*.cs")
     add_library(Joy2dSharp SHARED ${JOY2D_SHARP_FILES})
     
     file(GLOB TEST1_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Test1/*.cs")
