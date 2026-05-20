@@ -14,6 +14,13 @@ endif()
 
 file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp")
 
+# 默认编 main8.cpp (编辑器); 开启 BUILD_GJK2D_TEST 则编 main9.cpp (GJK2D 图形测试)
+if(BUILD_GJK2D_TEST)
+    list(REMOVE_ITEM SRC_FILES "main8.cpp")
+else()
+    list(REMOVE_ITEM SRC_FILES "main9.cpp")
+endif()
+
 # 合并所有源文件
 set(PROJECT_FILES
     ${SRC_FILES}
@@ -23,7 +30,7 @@ set(PROJECT_FILES
 target_sources(${EXECUTABLE_NAME}
     PRIVATE
         ${PROJECT_FILES}
-        iosLaunchScreen.storyboard   # 直接使用文件名，已在当前目录
+        iosLaunchScreen.storyboard
 )
 
 # Apple 平台额外图标

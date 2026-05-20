@@ -1,376 +1,501 @@
+#define SDL_MAIN_USE_CALLBACKS
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
 #include "gjk2d.h"
-#include <iostream>
-#include <memory>
+#include <cstdio>
 #include <cmath>
+#include <memory>
+#include <vector>
 
 using namespace gjk2d;
 
-static int tests_passed = 0;
-static int tests_failed = 0;
+// ============================================================================
+// 原始单元测试（来自原 main9.cpp）
+// ============================================================================
+static int tests_passed = 0, tests_failed = 0;
 
-void check(const char* name, bool expected, bool actual) {
-    if (expected == actual) {
-        std::cout << "  [PASS] " << name << std::endl;
-        tests_passed++;
-    } else {
-        std::cout << "  [FAIL] " << name << " (expected=" << expected << ", actual=" << actual << ")" << std::endl;
-        tests_failed++;
-    }
+static void tcheck(const char* name, bool expected, bool actual) {
+    if (expected == actual) { SDL_Log("  [PASS] %s", name); tests_passed++; }
+    else { SDL_Log("  [FAIL] %s (expected=%d, actual=%d)", name, expected, actual); tests_failed++; }
 }
 
-void check_penetration(const char* name, bool expected_hit, bool actual_hit,
-                       const Penetration& pen, float expected_depth_lo, float expected_depth_hi,
-                       float nx, float ny) {
-    if (expected_hit != actual_hit) {
-        std::cout << "  [FAIL] " << name << " (expected=" << expected_hit << ", actual=" << actual_hit << ")" << std::endl;
-        tests_failed++;
-        return;
-    }
-    if (!actual_hit) {
-        std::cout << "  [PASS] " << name << std::endl;
-        tests_passed++;
-        return;
-    }
-    bool depth_ok = pen.depth >= expected_depth_lo - 0.01f && pen.depth <= expected_depth_hi + 0.01f;
-    bool normal_ok = std::abs(pen.normal.x - nx) < 0.05f && std::abs(pen.normal.y - ny) < 0.05f;
-    if (depth_ok && normal_ok) {
-        std::cout << "  [PASS] " << name << " (depth=" << pen.depth << " normal=(" << pen.normal.x << "," << pen.normal.y << "))" << std::endl;
-        tests_passed++;
-    } else {
-        std::cout << "  [FAIL] " << name << " depth=" << pen.depth << " (expected ~" << (expected_depth_lo+expected_depth_hi)/2
-                  << ") normal=(" << pen.normal.x << "," << pen.normal.y << ") (expected ~(" << nx << "," << ny << "))" << std::endl;
-        tests_failed++;
-    }
+static void tcheck_pen(const char* name, bool exp_hit, bool act_hit,
+                       const Penetration& pen, float lo, float hi, float nx, float ny) {
+    if (exp_hit != act_hit) { SDL_Log("  [FAIL] %s", name); tests_failed++; return; }
+    if (!act_hit) { SDL_Log("  [PASS] %s", name); tests_passed++; return; }
+    bool dok = pen.depth >= lo-0.01f && pen.depth <= hi+0.01f;
+    bool nok = std::abs(pen.normal.x-nx)<0.05f && std::abs(pen.normal.y-ny)<0.05f;
+    if (dok && nok) { SDL_Log("  [PASS] %s", name); tests_passed++; }
+    else { SDL_Log("  [FAIL] %s", name); tests_failed++; }
 }
 
-// ============================================================================
-// 严格数学验证 - 圆碰撞
-// ============================================================================
-void test_circle_math() {
-    std::cout << "\n--- Circle-Circle (mathematical validation) ---" << std::endl;
-
+static void test_circle_math() {
+    SDL_Log("\n--- Circle-Circle ---");
     auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(2.0f)));
     auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1.5f)));
+    Transform t1, t2; t1.position = {0,0};
+    t2.position = {5,0}; tcheck("d=5 r_sum=3.5", false, GJK::Detect(c1.get(),t1,c2.get(),t2));
+    t2.position = {3.5f,0}; tcheck("d=3.5 touching", true, GJK::Detect(c1.get(),t1,c2.get(),t2));
+    t2.position = {2,0}; Penetration p; bool h=GJK::Detect(c1.get(),t1,c2.get(),t2,p);
+    tcheck_pen("d=2 ov=1.5", true, h, p, 1.5f,1.5f,1.0f,0.0f);
+    t2.position = {2,2}; h=GJK::Detect(c1.get(),t1,c2.get(),t2,p);
+    float ed=3.5f-std::sqrt(8.0f), en=2.0f/std::sqrt(8.0f);
+    tcheck_pen("d=2.828 ov=0.672", true, h, p, ed-0.05f,ed+0.05f, en, en);
+}
 
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
+static void test_rect_math() {
+    SDL_Log("\n--- Rectangle ---");
+    auto r = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(4,2)));
+    Transform t; t.position = {0,0};
+    tcheck("+x", true, std::abs(r->GetFarthestProjectionPoint(t,{1,0}).x-2.0f)<0.01f);
+    tcheck("-x", true, std::abs(r->GetFarthestProjectionPoint(t,{-1,0}).x+2.0f)<0.01f);
+}
 
-    // 间距 = 5, 半径和 = 3.5 => 分离
-    t2.position = Vector2(5, 0);
-    check("d=5 r_sum=3.5", false, GJK::Detect(c1.get(), t1, c2.get(), t2));
+static void test_exhaustive_rect_rect() {
+    SDL_Log("\n--- Rect-Rect exhaustive ---");
+    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2,2)));
+    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2,2)));
+    Transform t1,t2; t1.position={0,0};
+    struct {float x,y;bool h;const char*d;} cs[]={
+        {0,0,1,"center"},{1,0,1,"edge x=1"},{2.1f,0,0,"x=2.1"},{0,1,1,"edge y=1"},
+        {1,1,1,"corner(1,1)"},{2,0,0,"touch x=2"},{3,3,0,"far(3,3)"},{0.5f,0.5f,1,"overlap"},
+        {-1.5f,0,1,"neg x"},
+    };
+    for(auto&c:cs){t2.position={c.x,c.y};tcheck(c.d,c.h,GJK::Detect(r1.get(),t1,r2.get(),t2));}
+}
 
-    // 间距 = 3.5, 半径和 = 3.5 => 相切
-    t2.position = Vector2(3.5f, 0);
-    check("d=3.5 r_sum=3.5 touching", true, GJK::Detect(c1.get(), t1, c2.get(), t2));
+static void test_rotation() {
+    SDL_Log("\n--- Rotation ---");
+    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2,4)));
+    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(4,2)));
+    Transform t1,t2; t1.position={0,0}; t2.position={2,0};
+    tcheck("unrotated", true, GJK::Detect(r1.get(),t1,r2.get(),t2));
+    t1.rotation=90; tcheck("rot90", true, GJK::Detect(r1.get(),t1,r2.get(),t2));
+    t2.position={4,0}; tcheck("sep after rot", false, GJK::Detect(r1.get(),t1,r2.get(),t2));
+}
 
-    // 间距 = 2, 半径和 = 3.5 => 相交, 穿透深度 = 3.5-2 = 1.5
-    t2.position = Vector2(2, 0);
-    Penetration pen;
-    bool hit = GJK::Detect(c1.get(), t1, c2.get(), t2, pen);
-    check_penetration("d=2.0 overlap=1.5", true, hit, pen, 1.5f, 1.5f, 1.0f, 0.0f);
+static void test_ellipse() {
+    SDL_Log("\n--- Ellipse ---");
+    auto e = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Ellipse(4,2)));
+    auto c = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
+    Transform t1,t2; t1.position={0,0};
+    t2.position={0,0}; tcheck("circle inside", true, GJK::Detect(e.get(),t1,c.get(),t2));
+    t2.position={5,0}; tcheck("circle far", false, GJK::Detect(e.get(),t1,c.get(),t2));
+}
 
-    // 圆心在 (3,4), 间距 = 5, 半径和 = 3.5 => 分离
-    t2.position = Vector2(3, 4);
-    check("d=5(x=3,y=4) r_sum=3.5", false, GJK::Detect(c1.get(), t1, c2.get(), t2));
+static void test_segment() {
+    SDL_Log("\n--- Segment ---");
+    auto s = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Segment(2,{0,1})));
+    auto c = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
+    Transform t1,t2; t1.position={0,0};
+    t2.position={0,0}; tcheck("center", true, GJK::Detect(s.get(),t1,c.get(),t2));
+    t2.position={3,0}; tcheck("far", false, GJK::Detect(s.get(),t1,c.get(),t2));
+}
 
-    // 圆心在 (2,2), 间距 = sqrt(8) ≈ 2.828, 半径和 = 3.5 => 相交
-    t2.position = Vector2(2, 2);
-    hit = GJK::Detect(c1.get(), t1, c2.get(), t2, pen);
-    float expected_depth = 3.5f - std::sqrt(8.0f);
-    float expected_nx = 2.0f / std::sqrt(8.0f);
-    float expected_ny = 2.0f / std::sqrt(8.0f);
-    check_penetration("d=2.828 overlap=0.672", true, hit, pen,
-                      expected_depth - 0.05f, expected_depth + 0.05f,
-                      expected_nx, expected_ny);
+static void test_polygon_directions() {
+    SDL_Log("\n--- Polygon ---");
+    std::vector<Vector2> v={{-2,-1},{2,-1},{2,1},{-2,1}}; Polygon poly(v);
+    tcheck("+x", true, std::abs(poly.GetFarthestProjectionPoint({1,0}).x-2.0f)<0.01f);
+    tcheck("-x", true, std::abs(poly.GetFarthestProjectionPoint({-1,0}).x+2.0f)<0.01f);
+}
+
+static void test_negative_coords() {
+    SDL_Log("\n--- Negative coordinates ---");
+    auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1)));
+    auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1)));
+    Transform t1,t2; t1.position={-5,-5};
+    t2.position={-4.5f,-4.5f}; tcheck("overlap", true, GJK::Detect(c1.get(),t1,c2.get(),t2));
+    t2.position={-2,-5}; tcheck("sep x", false, GJK::Detect(c1.get(),t1,c2.get(),t2));
+}
+
+static void test_epa_normal() {
+    SDL_Log("\n--- EPA normal ---");
+    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2,2)));
+    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2,2)));
+    Transform t1,t2; t1.position={0,0}; Penetration p;
+    t2.position={1.5f,0}; GJK::Detect(r1.get(),t1,r2.get(),t2,p);
+    tcheck("normal +x", true, p.normal.x>0.9f&&std::abs(p.normal.y)<0.1f);
+    t2.position={0,1.5f}; GJK::Detect(r1.get(),t1,r2.get(),t2,p);
+    tcheck("normal +y", true, p.normal.y>0.9f&&std::abs(p.normal.x)<0.1f);
+}
+
+static void test_large_sep() {
+    SDL_Log("\n--- Large separation ---");
+    auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
+    auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
+    Transform t1,t2; t1.position={0,0};
+    t2.position={10000,0}; tcheck("far x", false, GJK::Detect(c1.get(),t1,c2.get(),t2));
+    t2.position={10000,10000}; tcheck("far diag", false, GJK::Detect(c1.get(),t1,c2.get(),t2));
+}
+
+static void run_all_tests() {
+    SDL_Log("========== GJK2D Comprehensive Tests ==========");
+    tests_passed=tests_failed=0;
+    test_circle_math(); test_rect_math(); test_exhaustive_rect_rect();
+    test_rotation(); test_ellipse(); test_segment();
+    test_polygon_directions(); test_negative_coords();
+    test_epa_normal(); test_large_sep();
+    SDL_Log("========== Results: %d passed, %d failed ==========", tests_passed, tests_failed);
 }
 
 // ============================================================================
-// 严格数学验证 - 矩形碰撞
+// 2D 场景 — 类似 main8.cpp 的 GJK 3D 测试场景
 // ============================================================================
-void test_rectangle_math() {
-    std::cout << "\n--- Rectangle (mathematical validation) ---" << std::endl;
+#define WW 1024
+#define WH 720
+#define GS 40
+#define CX (WW/2)
+#define CY (WH/2)
 
-    auto r = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(4, 2)));
-    Transform t;
-    t.position = Vector2(0, 0);
+static float wx(float x) { return CX + x * GS; }
+static float wy(float y) { return CY - y * GS; }
 
-    // 矩形 local space 中 x=[-2,2], y=[-1,1]
+// 玩家
+static constexpr float PLAYER_RADIUS = 0.4f;
+static Vector2 gPlayerPos = {0, 0};
+static Vector2 gPlayerVel = {0, 0};
 
-    // 点在矩形内部
-    check("rect contains (0,0)", true, r->GetFarthestProjectionPoint(t, Vector2(1, 0)).x > 1.9f);
-    check("rect support +x", true, std::abs(r->GetFarthestProjectionPoint(t, Vector2(1, 0)).x - 2.0f) < 0.01f);
-    check("rect support -x", true, std::abs(r->GetFarthestProjectionPoint(t, Vector2(-1, 0)).x + 2.0f) < 0.01f);
-    check("rect support +y", true, std::abs(r->GetFarthestProjectionPoint(t, Vector2(0, 1)).y - 1.0f) < 0.01f);
-    check("rect support -y", true, std::abs(r->GetFarthestProjectionPoint(t, Vector2(0, -1)).y + 1.0f) < 0.01f);
-}
+// 障碍物类型
+enum class ObsType { Circle, Rect, Poly, Capsule, Pie, Segment };
 
-// ============================================================================
-// 碰撞与非碰撞逐一验证
-// ============================================================================
-void test_exhaustive_rect_rect() {
-    std::cout << "\n--- Rectangle-Rectangle (exhaustive) ---" << std::endl;
+struct Obstacle {
+    std::unique_ptr<ICollider> collider;
+    Transform transform;
+    float cr, cg, cb; // color RGB
+    ObsType type;
+};
 
-    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2, 2)));
-    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2, 2)));
+static std::vector<Obstacle> gObstacles;
 
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
+static void create_scene() {
+    gObstacles.clear();
+    gPlayerPos = {-8, 0};
 
-    // 各种偏移（矩形半边长=1，范围 x=[-1,1], y=[-1,1]）
-    struct { float x, y; bool hit; const char* desc; } cases[] = {
-        {0,   0,   true,  "center overlap"},
-        {1,   0,   true,  "edge aligned x=1"},
-        {2.1f, 0,  false, "x=2.1 separated"},       // rect2 x=[1.1,3.1], rect1 x=[-1,1], no overlap
-        {0,   1,   true,  "edge aligned y=1"},
-        {1,   1,   true,  "corner overlap (1,1)"},
-        {2,   0,   false, "just touching x=2"},      // rect2 x=[1,3], rect1 x=[-1,1], touching
-        {3,   3,   false, "far corner (3,3)"},
-        {0.5f, 0.5f, true, "small overlap (0.5,0.5)"},
-        {-1.5f, 0,  true,  "negative x overlap"},
+    // 类似 main8.cpp 的障碍物布局，多个形状分布在地图各处
+    struct { float x, y; float p1, p2; float cr, cg, cb; ObsType t; } defs[] = {
+        // 圆形障碍物
+        {5, 0, 1.0f,  0, 0.3f, 0.8f, 0.3f, ObsType::Circle},
+        {-2, 4, 0.8f, 0, 0.8f, 0.3f, 0.3f, ObsType::Circle},
+        {4, -4, 0.6f, 0, 0.3f, 0.3f, 0.8f, ObsType::Circle},
+        // 矩形障碍物
+        {-3, -3, 2, 2, 0.2f, 0.7f, 0.7f, ObsType::Rect},
+        {7, 3, 3, 1, 0.7f, 0.5f, 0.2f, ObsType::Rect},
+        {0, -5, 1.5f, 1.5f, 0.8f, 0.8f, 0.2f, ObsType::Rect},
+        // 多边形障碍物（不规则凸多边形）
+        { -6, 2, 0, 0, 0.9f, 0.4f, 0.1f, ObsType::Poly },
+        { 3, -2, 0, 0, 0.5f, 0.2f, 0.7f, ObsType::Poly },
+        // 胶囊体障碍物
+        { -5, -2, 2.0f, 0.6f, 0.1f, 0.6f, 0.4f, ObsType::Capsule },
+        { 6, -2, 1.5f, 0.4f, 0.7f, 0.2f, 0.5f, ObsType::Capsule },
+        // 扇形障碍物
+        { 8, 5, 1.5f, 120, 0.9f, 0.6f, 0.1f, ObsType::Pie },
+        // 线段障碍物
+        { -8, 5, 3.0f, 0, 0.3f, 0.4f, 0.9f, ObsType::Segment },
     };
 
-    for (auto& c : cases) {
-        t2.position = Vector2(c.x, c.y);
-        check(c.desc, c.hit, GJK::Detect(r1.get(), t1, r2.get(), t2));
+    for (auto& d : defs) {
+        Obstacle obs;
+        obs.transform.position = {d.x, d.y};
+        obs.transform.rotation = float(rand() % 360); // 随机旋转
+        obs.cr = d.cr; obs.cg = d.cg; obs.cb = d.cb;
+        obs.type = d.t;
+
+        switch (d.t) {
+        case ObsType::Circle:
+            obs.collider.reset(ColliderFactory::CreateCollider(Circle(d.p1)));
+            break;
+        case ObsType::Rect:
+            obs.collider.reset(ColliderFactory::CreateCollider(Rectangle(d.p1, d.p2)));
+            break;
+        case ObsType::Poly: {
+            std::vector<Vector2> verts = {
+                {-1.2f, -0.8f}, {0.8f, -1.2f}, {1.3f, 0.2f}, {0.5f, 1.0f}, {-1.0f, 0.8f}
+            };
+            obs.collider.reset(ColliderFactory::CreateCollider(Polygon(verts)));
+            break;
+        }
+        case ObsType::Capsule:
+            obs.collider.reset(ColliderFactory::CreateCollider(Capsule(d.p1, d.p2)));
+            break;
+        case ObsType::Pie:
+            obs.collider.reset(ColliderFactory::CreateCollider(Pie(d.p1, d.p2)));
+            break;
+        case ObsType::Segment:
+            obs.collider.reset(ColliderFactory::CreateCollider(Segment(d.p1, Vector2(0,1))));
+            break;
+        }
+        gObstacles.push_back(std::move(obs));
     }
 }
 
 // ============================================================================
-// 旋转碰撞
+// 绘制
 // ============================================================================
-void test_rotation() {
-    std::cout << "\n--- Rotation tests ---" << std::endl;
+static void draw_grid(SDL_Renderer* r) {
+    SDL_SetRenderDrawColor(r, 20, 20, 30, 255); SDL_RenderClear(r);
+    SDL_SetRenderDrawColor(r, 35, 35, 45, 255);
+    for (int x = CX % GS; x < WW; x += GS) SDL_RenderLine(r, (float)x, 0, (float)x, (float)WH);
+    for (int y = CY % GS; y < WH; y += GS) SDL_RenderLine(r, 0, (float)y, (float)WW, (float)y);
+    SDL_SetRenderDrawColor(r, 50, 200, 50, 200);
+    SDL_RenderLine(r, (float)CX, 0, (float)CX, (float)WH);
+    SDL_RenderLine(r, 0, (float)CY, (float)WW, (float)CY);
+}
 
-    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2, 4))); // tall
-    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(4, 2))); // wide
+static void draw_circle_shape(SDL_Renderer* r, float cx, float cy, float rad,
+                               uint8_t r_, uint8_t g, uint8_t b, uint8_t a) {
+    float sr = rad * GS; int segs = (int)(sr * 2); if (segs < 20) segs = 20;
+    std::vector<SDL_FPoint> pts(segs + 1);
+    for (int i = 0; i <= segs; i++) {
+        float ang = (float)i / segs * 6.2831853f;
+        pts[i] = { cx + cosf(ang) * sr, cy + sinf(ang) * sr };
+    }
+    SDL_SetRenderDrawColor(r, r_, g, b, a); SDL_RenderLines(r, pts.data(), segs + 1);
+}
 
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-    t2.position = Vector2(2, 0);
+static void draw_poly_shape(SDL_Renderer* r, const std::vector<Vector2>& verts,
+                             uint8_t r_, uint8_t g, uint8_t b, uint8_t a) {
+    if (verts.size() < 2) return;
+    int n = (int)verts.size();
+    std::vector<SDL_FPoint> pts(n + 1);
+    for (int i = 0; i < n; i++) pts[i] = { wx(verts[i].x), wy(verts[i].y) };
+    pts[n] = pts[0];
+    SDL_SetRenderDrawColor(r, r_, g, b, a); SDL_RenderLines(r, pts.data(), n + 1);
+}
 
-    // Unrotated: tall rect x=[-1,1], wide rect at x=2 => x=[0,4], overlap in x=[0,1]
-    Penetration pen;
-    bool hit = GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("rect(2x4) vs rect(4x2) offset x=2", true, hit);
+static std::vector<Vector2> get_world_verts(const ICollider* c, const Transform& t) {
+    std::vector<Vector2> res;
+    auto rot = Matrix::CreateRotationMatrix(t.rotation * MathX::DEG2RAD);
+    auto mat = rot * Matrix::CreateTranslationMatrix(t.position);
+    auto xf = [&](const Vector2& v) { return Matrix::Transform(v, mat); };
+    switch (c->geometryType()) {
+    case GeometryType::Rectangle: {
+        float w = static_cast<const BaseCollider<Rectangle>*>(c)->geometry.width * 0.5f;
+        float h = static_cast<const BaseCollider<Rectangle>*>(c)->geometry.height * 0.5f;
+        res = { xf({-w,-h}), xf({w,-h}), xf({w,h}), xf({-w,h}) }; break;
+    }
+    case GeometryType::Polygon:
+        for (auto& v : static_cast<const BaseCollider<Polygon>*>(c)->geometry.verts) res.push_back(xf(v));
+        break;
+    case GeometryType::Capsule: {
+        float hl = static_cast<const BaseCollider<Capsule>*>(c)->geometry.length * 0.5f;
+        res = { xf({hl,0}), xf({-hl,0}) }; break;
+    }
+    case GeometryType::Segment: {
+        float hl = static_cast<const BaseCollider<Segment>*>(c)->geometry.length * 0.5f;
+        res = { xf({hl,0}), xf({-hl,0}) }; break;
+    }
+    default: break;
+    }
+    return res;
+}
 
-    // Rotate tall rect 90 deg: becomes wide, x=[-2,2], wide rect at x=2 => x=[0,4], still overlapping
-    t1.rotation = 90.0f;
-    hit = GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("tall rect rotated 90 deg", true, hit);
+static void draw_obstacle(SDL_Renderer* r, const Obstacle& obs, bool hit) {
+    uint8_t mul = hit ? 255 : 180;
+    uint8_t red   = (uint8_t)(obs.cr * mul);
+    uint8_t grn   = (uint8_t)(obs.cg * mul);
+    uint8_t blu   = (uint8_t)(obs.cb * mul);
 
-    // Move further, now separated
-    t2.position = Vector2(4, 0);
-    hit = GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("separated after rotation", false, hit);
+    switch (obs.type) {
+    case ObsType::Circle: {
+        float rad = static_cast<const BaseCollider<Circle>*>(obs.collider.get())->geometry.radius;
+        float sx = wx(obs.transform.position.x), sy = wy(obs.transform.position.y);
+        draw_circle_shape(r, sx, sy, rad, red/2, grn/2, blu/2, 80);
+        draw_circle_shape(r, sx, sy, rad, red, grn, blu, 220);
+        break;
+    }
+    case ObsType::Rect:
+    case ObsType::Poly: {
+        auto verts = get_world_verts(obs.collider.get(), obs.transform);
+        draw_poly_shape(r, verts, red/2, grn/2, blu/2, 80);
+        draw_poly_shape(r, verts, red, grn, blu, 220);
+        break;
+    }
+    case ObsType::Capsule: {
+        auto v = get_world_verts(obs.collider.get(), obs.transform);
+        if (v.size() >= 2) {
+            float rad = static_cast<const BaseCollider<Capsule>*>(obs.collider.get())->geometry.radius;
+            float rad_px = rad * GS;
+            float x1 = wx(v[0].x), y1 = wy(v[0].y);
+            float x2 = wx(v[1].x), y2 = wy(v[1].y);
+            float angle = atan2f(y2 - y1, x2 - x1);
+            int segs = (int)(rad_px * 2); if (segs < 24) segs = 24;
+            int n = segs * 2 + 3; // +3: 2 arcs + 1 closing point
+            std::vector<SDL_FPoint> pts(n);
+            // 上半弧: 端1 → 端2 (右侧半圆, 从下到上)
+            for (int i = 0; i <= segs; i++) {
+                float a = angle + MathX::PI * 0.5f + (float)i / segs * MathX::PI;
+                pts[i] = { x1 + cosf(a) * rad_px, y1 + sinf(a) * rad_px };
+            }
+            // 下半弧: 端2 → 端1 (左侧半圆, 从上到下)
+            for (int i = 0; i <= segs; i++) {
+                float a = angle - MathX::PI * 0.5f + (float)i / segs * MathX::PI;
+                pts[segs + 1 + i] = { x2 + cosf(a) * rad_px, y2 + sinf(a) * rad_px };
+            }
+            // 闭合: 连接回起点 (画底边)
+            pts[n - 1] = pts[0];
+            SDL_SetRenderDrawColor(r, red/2, grn/2, blu/2, 80);
+            SDL_RenderLines(r, pts.data(), n);
+            SDL_SetRenderDrawColor(r, red, grn, blu, 255);
+            SDL_RenderLines(r, pts.data(), n);
+        }
+        break;
+    }
+    case ObsType::Pie: {
+        auto& pie = static_cast<const BaseCollider<Pie>*>(obs.collider.get())->geometry;
+        float sx = wx(obs.transform.position.x), sy = wy(obs.transform.position.y);
+        float sr = pie.radius * GS;
+        float sweep_rad = pie.sweep * MathX::DEG2RAD;
+        float rot_rad = obs.transform.rotation * MathX::DEG2RAD;
+        float cr = cosf(rot_rad), sr_rot = sinf(rot_rad);
+        int segs = (int)(sr * 2); if (segs < 20) segs = 20;
+        std::vector<SDL_FPoint> pts(segs + 3);
+        pts[0] = { sx, sy };
+        int n = 1;
+        for (int i = 0; i <= segs; i++) {
+            float t = -sweep_rad * 0.5f + (float)i / segs * sweep_rad;
+            // 局部坐标: Pie 几何体朝向 +X
+            float lx = cosf(t) * sr, ly = sinf(t) * sr;
+            // 应用旋转 (匹配 collision 的 helper::GetFarthestProjectionPoint)
+            float rx = lx * cr - ly * sr_rot;
+            float ry = lx * sr_rot + ly * cr;
+            pts[n++] = { sx + rx, sy - ry };  // Y 取反转屏幕坐标
+        }
+        pts[n++] = pts[1];
+        SDL_SetRenderDrawColor(r, red/2, grn/2, blu/2, 80);
+        SDL_RenderLines(r, pts.data(), n);
+        SDL_SetRenderDrawColor(r, red, grn, blu, 220);
+        SDL_RenderLines(r, pts.data(), n);
+        break;
+    }
+    case ObsType::Segment: {
+        auto v = get_world_verts(obs.collider.get(), obs.transform);
+        if (v.size() >= 2) {
+            SDL_SetRenderDrawColor(r, red, grn, blu, 220);
+            SDL_RenderLine(r, wx(v[0].x), wy(v[0].y), wx(v[1].x), wy(v[1].y));
+            draw_circle_shape(r, wx(v[0].x), wy(v[0].y), 0.15f, red, grn, blu, 220);
+            draw_circle_shape(r, wx(v[1].x), wy(v[1].y), 0.15f, red, grn, blu, 220);
+        }
+        break;
+    }
+    }
 }
 
 // ============================================================================
-// Ellipse 测试
+// 玩家碰撞 / 移动
 // ============================================================================
-void test_ellipse() {
-    std::cout << "\n--- Ellipse ---" << std::endl;
-
-    auto e = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Ellipse(4, 2)));
-    auto c = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
-
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-
-    // Circle inside ellipse
-    t2.position = Vector2(0, 0);
-    Penetration pen;
-    bool hit = GJK::Detect(e.get(), t1, c.get(), t2, pen);
-    check("circle inside ellipse", true, hit);
-
-    // Circle far away
-    t2.position = Vector2(5, 0);
-    hit = GJK::Detect(e.get(), t1, c.get(), t2, pen);
-    check("circle far from ellipse", false, hit);
+static bool check_collision(const Obstacle& obs, const Vector2& player_pos) {
+    Transform pt; pt.position = player_pos;
+    auto* playerCol = ColliderFactory::CreateCollider(Circle(PLAYER_RADIUS));
+    bool result = GJK::Detect(obs.collider.get(), obs.transform, playerCol, pt);
+    delete playerCol;
+    return result;
 }
 
 // ============================================================================
-// Segment 测试 (碰撞器层面)
+// SDL 回调
 // ============================================================================
-void test_segment() {
-    std::cout << "\n--- Segment ---" << std::endl;
+static SDL_Window* gWin = nullptr;
+static SDL_Renderer* gRen = nullptr;
+static bool gReady = false;
 
-    auto s = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Segment(2.0f, Vector2(0, 1))));
-    auto c = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
+SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
+    run_all_tests();
 
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-    t2.position = Vector2(0, 0);
+    SDL_SetAppMetadata("GJK2D Demo", "1.0", "joy2d");
+    if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
+    gWin = SDL_CreateWindow("GJK2D Scene Demo (like main8.cpp)", WW, WH, 0);
+    if (!gWin) return SDL_APP_FAILURE;
+    gRen = SDL_CreateRenderer(gWin, NULL);
+    if (!gRen) return SDL_APP_FAILURE;
 
-    Penetration pen;
-    bool hit = GJK::Detect(s.get(), t1, c.get(), t2, pen);
-    check("segment-circle center", true, hit);
-
-    t2.position = Vector2(3, 0);
-    hit = GJK::Detect(s.get(), t1, c.get(), t2, pen);
-    check("segment-circle far", false, hit);
+    create_scene();
+    gReady = true;
+    SDL_Log("Tests done. Move player with Arrow keys.");
+    return SDL_APP_CONTINUE;
 }
 
-// ============================================================================
-// Polygon 方向验证
-// ============================================================================
-void test_polygon_directions() {
-    std::cout << "\n--- Polygon direction support ---" << std::endl;
+SDL_AppResult SDL_AppIterate(void* appstate) {
+    if (!gReady) return SDL_APP_CONTINUE;
 
-    std::vector<Vector2> verts = {
-        Vector2(-2, -1), Vector2(2, -1), Vector2(2, 1), Vector2(-2, 1)
-    };
-    Polygon poly(verts);
+    // 玩家移动（类似 main8.cpp 的子步进 + GJK 碰撞检测）
+    const float MOVE_SPEED = 1.5f;
+    const float MAX_STEP = 0.05f;
+    const bool* k = SDL_GetKeyboardState(NULL);
+    Vector2 moveDir = {0, 0};
+    if (k[SDL_SCANCODE_A] || k[SDL_SCANCODE_LEFT])  moveDir.x -= 1;
+    if (k[SDL_SCANCODE_D] || k[SDL_SCANCODE_RIGHT]) moveDir.x += 1;
+    if (k[SDL_SCANCODE_W] || k[SDL_SCANCODE_UP])    moveDir.y += 1;
+    if (k[SDL_SCANCODE_S] || k[SDL_SCANCODE_DOWN])  moveDir.y -= 1;
 
-    // 多边形 x=[-2,2], y=[-1,1]
-    auto sup_x = poly.GetFarthestProjectionPoint(Vector2(1, 0));
-    check("poly support +x", std::abs(sup_x.x - 2.0f) < 0.01f, true);
+    // 只检测玩家与所有障碍物的碰撞（不移动障碍物）
+    bool any_hit = false;
+    for (auto& obs : gObstacles) {
+        if (check_collision(obs, gPlayerPos)) { any_hit = true; break; }
+    }
 
-    auto sup_negx = poly.GetFarthestProjectionPoint(Vector2(-1, 0));
-    check("poly support -x", std::abs(sup_negx.x + 2.0f) < 0.01f, true);
+    // 子步进移动
+    if (moveDir.x != 0 || moveDir.y != 0) {
+        float len = sqrtf(moveDir.x * moveDir.x + moveDir.y * moveDir.y);
+        moveDir.x /= len; moveDir.y /= len;
+        float total = MOVE_SPEED * 0.016f;
+        while (total > 0.0001f) {
+            float step = (total > MAX_STEP) ? MAX_STEP : total;
+            total -= step;
+            Vector2 newPos = { gPlayerPos.x + moveDir.x * step, gPlayerPos.y + moveDir.y * step };
 
-    auto sup_y = poly.GetFarthestProjectionPoint(Vector2(0, 1));
-    check("poly support +y", std::abs(sup_y.y - 1.0f) < 0.01f, true);
+            bool blocked = false;
+            for (auto& obs : gObstacles) {
+                // 临时 collider 用于 GJK 检测
+                auto player = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(PLAYER_RADIUS)));
+                Transform pt; pt.position = newPos;
+                if (GJK::Detect(player.get(), pt, obs.collider.get(), obs.transform)) {
+                    blocked = true; break;
+                }
+            }
+            if (!blocked) { gPlayerPos = newPos; any_hit = false; }
+            else break;
+        }
+    }
+
+    // 边界
+    if (gPlayerPos.x > 12) gPlayerPos.x = 12;
+    if (gPlayerPos.x < -12) gPlayerPos.x = -12;
+    if (gPlayerPos.y > 8) gPlayerPos.y = 8;
+    if (gPlayerPos.y < -8) gPlayerPos.y = -8;
+
+    // ====== 渲染 ======
+    draw_grid(gRen);
+
+    // 绘制障碍物
+    for (auto& obs : gObstacles) {
+        bool hit = check_collision(obs, gPlayerPos);
+        draw_obstacle(gRen, obs, hit);
+    }
+
+    // 绘制玩家
+    float px = wx(gPlayerPos.x), py = wy(gPlayerPos.y);
+    draw_circle_shape(gRen, px, py, PLAYER_RADIUS, 255, 255, 255, 80);
+    draw_circle_shape(gRen, px, py, PLAYER_RADIUS, any_hit ? 255 : 100, any_hit ? 80 : 255, 80, 255);
+
+    // 标题信息
+    char ti[256];
+    snprintf(ti, sizeof(ti), "GJK2D Scene - Player(%.1f,%.1f) %s | Arrows=move",
+        gPlayerPos.x, gPlayerPos.y, any_hit ? "HIT!" : "---");
+    SDL_SetWindowTitle(gWin, ti);
+
+    SDL_RenderPresent(gRen);
+    return SDL_APP_CONTINUE;
 }
 
-// ============================================================================
-// Minkowski Support 验证
-// ============================================================================
-void test_minkowski_support() {
-    std::cout << "\n--- Minkowski Support ---" << std::endl;
-
-    auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1.0f)));
-    auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1.0f)));
-
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-    t2.position = Vector2(3, 0);
-
-    Minkowski minkowski(c1.get(), t1, c2.get(), t2);
-
-    // Support(+x): A在+x最远(世界坐标)=(1,0), B在-x最远(世界坐标)=(2,0), 差=(1,0)-(2,0)=(-1,0)
-    auto s = minkowski.Support(Vector2(1, 0));
-    check("minkowski support +x", std::abs(s.x + 1.0f) < 0.01f && std::abs(s.y) < 0.01f, true);
-
-    // 往右移，使得原点在外面: B在(5,0), 则A最远在(1,0), B最远在(6,0)(对-x方向是(-1,0)但在世界空间)... 
-    // Support(+x) = A(+x最远) - B(-x最远)
-    // A最远(+x方向) = (1,0) [世界坐标 (1,0)]
-    // B最远(-x方向) = (-1,0) [世界坐标 (-1+5, 0) = (4,0)]
-    // 结果 = (1,0) - (4,0) = (-3,0)
-    // 这说明原点在闵可夫斯基差之外（在-x侧），符合预期（两圆分离）
+SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
+    if (event->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_ESCAPE)
+        return SDL_APP_SUCCESS;
+    return SDL_APP_CONTINUE;
 }
 
-void test_simplex_operations() {
-    std::cout << "\n--- Simplex operations ---" << std::endl;
-
-    Simplex s(3);
-    check("empty simplex", s.count() == 0, true);
-
-    s.Add(Vector2(1, 0));
-    check("1 point", s.count() == 1, true);
-
-    s.Add(Vector2(0, 1));
-    check("2 points", s.count() == 2, true);
-
-    s.Add(Vector2(-1, 0));
-    check("3 points", s.count() == 3, true);
-
-    // 验证a,b,c
-    check("a = newest", s.a().x == -1.0f && s.a().y == 0.0f, true);
-    check("b = middle", s.b().x == 0.0f && s.b().y == 1.0f, true);
-    check("c = oldest", s.c().x == 1.0f && s.c().y == 0.0f, true);
-}
-
-// ============================================================================
-// 负坐标和浮点精度
-// ============================================================================
-void test_negative_coordinates() {
-    std::cout << "\n--- Negative coordinates ---" << std::endl;
-
-    auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1.0f)));
-    auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(1.0f)));
-
-    Transform t1, t2;
-    t1.position = Vector2(-5, -5);
-    // dist=sqrt(0.5^2+0.5^2)=0.707 < 2, 重叠
-    t2.position = Vector2(-4.5f, -4.5f);
-
-    Penetration pen;
-    bool hit = GJK::Detect(c1.get(), t1, c2.get(), t2, pen);
-    check("negative coords overlapping", true, hit);
-
-    t2.position = Vector2(-2, -5);
-    hit = GJK::Detect(c1.get(), t1, c2.get(), t2, pen);
-    check("negative coords separated x", false, hit);
-}
-
-// ============================================================================
-// EPA 穿透法线方向验证
-// ============================================================================
-void test_epa_normal_direction() {
-    std::cout << "\n--- EPA normal direction ---" << std::endl;
-
-    auto r1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2, 2)));
-    auto r2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Rectangle(2, 2)));
-
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-
-    // B从+x方向挤入, 法线应为 (1, 0)
-    t2.position = Vector2(1.5f, 0);
-    Penetration pen;
-    GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("epa normal +x", pen.normal.x > 0.9f && std::abs(pen.normal.y) < 0.1f, true);
-
-    // B从+y方向挤入, 法线应为 (0, 1)
-    t2.position = Vector2(0, 1.5f);
-    GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("epa normal +y", pen.normal.y > 0.9f && std::abs(pen.normal.x) < 0.1f, true);
-
-    // B从-x方向挤入, 法线应为 (-1, 0)
-    t2.position = Vector2(-1.5f, 0);
-    GJK::Detect(r1.get(), t1, r2.get(), t2, pen);
-    check("epa normal -x", pen.normal.x < -0.9f && std::abs(pen.normal.y) < 0.1f, true);
-}
-
-// ============================================================================
-// 大位移
-// ============================================================================
-void test_large_separation() {
-    std::cout << "\n--- Large separation ---" << std::endl;
-
-    auto c1 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
-    auto c2 = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(0.5f)));
-
-    Transform t1, t2;
-    t1.position = Vector2(0, 0);
-    t2.position = Vector2(10000, 0);
-    check("very far apart", false, GJK::Detect(c1.get(), t1, c2.get(), t2));
-
-    t2.position = Vector2(10000, 10000);
-    check("very far diagonal", false, GJK::Detect(c1.get(), t1, c2.get(), t2));
-}
-
-// ============================================================================
-// 全部验证
-// ============================================================================
-int main() {
-    std::cout << "========== GJK2D C++ Comprehensive Tests ==========" << std::endl;
-    std::cout << "MathX::EPSILON = " << MathX::EPSILON << std::endl;
-
-    test_circle_math();
-    test_rectangle_math();
-    test_exhaustive_rect_rect();
-    test_rotation();
-    test_ellipse();
-    test_segment();
-    test_polygon_directions();
-    test_minkowski_support();
-    test_simplex_operations();
-    test_negative_coordinates();
-    test_epa_normal_direction();
-    test_large_separation();
-
-    std::cout << "\n========== Results: " << tests_passed << " passed, "
-              << tests_failed << " failed ==========" << std::endl;
-    return tests_failed > 0 ? 1 : 0;
+void SDL_AppQuit(void* appstate, SDL_AppResult result) {
+    SDL_DestroyRenderer(gRen);
+    SDL_DestroyWindow(gWin);
+    SDL_Quit();
 }

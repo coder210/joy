@@ -226,21 +226,27 @@ struct Pie : IGeometry {
     }
 
     Vector2 GetFarthestProjectionPoint(const Vector2& dir) const override {
-        int s = MathX::Sign(dir.y);
-        auto d = dir;
-        d.y = MathX::Abs(d.y);
-        float a0 = d.Angle() * MathX::RAD2DEG;
-        float a1 = MathX::Clamp360(sweep * 0.5f);
+        // Pie 是朝向 +X 的扇形(锥体+弧)。最远点可能是: 弧上点 / 角点 / 原点
+        float half = (sweep * 0.5f) * MathX::DEG2RAD;
+        float c = cosf(half), s = sinf(half);
+        Vector2 best = {0, 0};  // 原点
+        float maxDot = 0;
 
-        Vector2 pt = Vector2::zero();
-        if (a0 <= a1) {
-            pt = d.normalized() * radius;
-        } else if (a0 <= 90.0f + a1) {
-            auto mt = Matrix::CreateRotationMatrix(a1 * MathX::DEG2RAD);
-            pt = Matrix::Transform(Vector2::right(), mt) * radius;
+        // 检查弧上点: 方向在锥角范围内 (dir.x>0 且 |dir.y| <= dir.x * tan(half))
+        if (dir.x > 0 && fabsf(dir.y) <= dir.x * tanf(half)) {
+            float len = sqrtf(dir.x*dir.x + dir.y*dir.y);
+            Vector2 arcPt = {radius * dir.x / len, radius * dir.y / len};
+            float d = Vector2::Dot(arcPt, dir);
+            if (d > maxDot) { maxDot = d; best = arcPt; }
         }
-        pt.y *= s;
-        return pt;
+
+        // 检查两个角点
+        Vector2 corners[2] = {{radius * c, radius * s}, {radius * c, -radius * s}};
+        for (int i = 0; i < 2; i++) {
+            float d = Vector2::Dot(corners[i], dir);
+            if (d > maxDot) { maxDot = d; best = corners[i]; }
+        }
+        return best;
     }
 };
 
