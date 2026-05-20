@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include "gjk2d.h"
+#include <joy2d/jgjk.h>
 #include <cstdio>
 #include <cmath>
 #include <memory>
@@ -159,16 +160,21 @@ static Vector2 gPlayerVel = {0, 0};
 enum class ObsType { Circle, Rect, Poly, Capsule, Pie, Segment };
 
 struct Obstacle {
-    std::unique_ptr<ICollider> collider;
+    std::unique_ptr<ICollider> collider;  // 仅用于渲染
     Transform transform;
     float cr, cg, cb; // color RGB
     ObsType type;
+    gjk2d_collider_t gjkShape;            // 定点数碰撞体(C API用)
+    vec2f_t gjkVerts[12];                 // 预分配顶点存储(多边形/矩形)
 };
+
+static vec2f_t toV2f(const Vector2& v) { return { fp_from_float(v.x), fp_from_float(v.y) }; }
 
 static std::vector<Obstacle> gObstacles;
 
 static void create_scene() {
     gObstacles.clear();
+    gObstacles.reserve(32);  // 预分配,避免push_back时重分配导致gjkShape.vertices指针悬空
     gPlayerPos = {-8, 0};
 
     // 类似 main8.cpp 的障碍物布局，多个形状分布在地图各处
@@ -199,32 +205,75 @@ static void create_scene() {
         obs.transform.rotation = float(rand() % 360); // 随机旋转
         obs.cr = d.cr; obs.cg = d.cg; obs.cb = d.cb;
         obs.type = d.t;
+        memset(&obs.gjkShape, 0, sizeof(obs.gjkShape));
+
+        // 旋转辅助: 局部点 → 世界坐标
+        float rad = obs.transform.rotation * MathX::DEG2RAD;
+        float cr_ = cosf(rad), sr_ = sinf(rad);
+        vec2f_t pos_v2f = toV2f(obs.transform.position);
+        auto rot_v2f = [&](float lx, float ly) -> vec2f_t {
+            return { fp_from_float(lx * cr_ - ly * sr_ + obs.transform.position.x),
+                     fp_from_float(lx * sr_ + ly * cr_ + obs.transform.position.y) };
+        };
 
         switch (d.t) {
-        case ObsType::Circle:
+        case ObsType::Circle: {
             obs.collider.reset(ColliderFactory::CreateCollider(Circle(d.p1)));
+            gjk2d_init_circle(&obs.gjkShape, pos_v2f, fp_from_float(d.p1));
             break;
-        case ObsType::Rect:
+        }
+        case ObsType::Rect: {
             obs.collider.reset(ColliderFactory::CreateCollider(Rectangle(d.p1, d.p2)));
+            float hw = d.p1 * 0.5f, hh = d.p2 * 0.5f;
+            obs.gjkVerts[0] = rot_v2f(-hw, -hh);
+            obs.gjkVerts[1] = rot_v2f( hw, -hh);
+            obs.gjkVerts[2] = rot_v2f( hw,  hh);
+            obs.gjkVerts[3] = rot_v2f(-hw,  hh);
+            gjk2d_init_polygon(&obs.gjkShape, obs.gjkVerts, 4);
             break;
+        }
         case ObsType::Poly: {
             std::vector<Vector2> verts = {
                 {-1.2f, -0.8f}, {0.8f, -1.2f}, {1.3f, 0.2f}, {0.5f, 1.0f}, {-1.0f, 0.8f}
             };
             obs.collider.reset(ColliderFactory::CreateCollider(Polygon(verts)));
+            int nv = (int)verts.size() < 12 ? (int)verts.size() : 12;
+            for (int i = 0; i < nv; i++) obs.gjkVerts[i] = rot_v2f(verts[i].x, verts[i].y);
+            gjk2d_init_polygon(&obs.gjkShape, obs.gjkVerts, nv);
             break;
         }
-        case ObsType::Capsule:
+        case ObsType::Capsule: {
             obs.collider.reset(ColliderFactory::CreateCollider(Capsule(d.p1, d.p2)));
+            vec2f_t axis = {fp_from_float(cr_), fp_from_float(sr_)};
+            gjk2d_init_capsule(&obs.gjkShape, pos_v2f, axis, fp_from_float(d.p1), fp_from_float(d.p2));
             break;
-        case ObsType::Pie:
+        }
+        case ObsType::Pie: {
             obs.collider.reset(ColliderFactory::CreateCollider(Pie(d.p1, d.p2)));
+            // Pie 作为多边形近似(最多11个顶点: 10弧点+原点)
+            int np = 10, vi = 0;
+            float sweep_r = d.p2 * MathX::DEG2RAD;
+            for (int i = 0; i < np && vi < 11; i++) {
+                float t = -sweep_r * 0.5f + (float)i / (np - 1) * sweep_r;
+                obs.gjkVerts[vi++] = rot_v2f(cosf(t) * d.p1, sinf(t) * d.p1);
+            }
+            obs.gjkVerts[vi++] = rot_v2f(0, 0);
+            gjk2d_init_polygon(&obs.gjkShape, obs.gjkVerts, vi);
             break;
+        }
         case ObsType::Segment:
             obs.collider.reset(ColliderFactory::CreateCollider(Segment(d.p1, Vector2(0,1))));
+            // 线段视为薄胶囊
+            {
+                vec2f_t axis = {fp_from_float(cr_), fp_from_float(sr_)};
+                gjk2d_init_capsule(&obs.gjkShape, pos_v2f, axis, fp_from_float(d.p1), fp_from_float(0.05f));
+            }
             break;
         }
         gObstacles.push_back(std::move(obs));
+        // 修复: push_back 后 gjkShape.vertices 可能指向原栈 obs.gjkVerts
+        // 重定向到 vector 中实际存储的 gjkVerts
+        gObstacles.back().gjkShape.vertices = gObstacles.back().gjkVerts;
     }
 }
 
@@ -383,12 +432,13 @@ static void draw_obstacle(SDL_Renderer* r, const Obstacle& obs, bool hit) {
 // ============================================================================
 // 玩家碰撞 / 移动
 // ============================================================================
-static bool check_collision(const Obstacle& obs, const Vector2& player_pos) {
-    Transform pt; pt.position = player_pos;
-    auto* playerCol = ColliderFactory::CreateCollider(Circle(PLAYER_RADIUS));
-    bool result = GJK::Detect(obs.collider.get(), obs.transform, playerCol, pt);
-    delete playerCol;
-    return result;
+// 用 gjk2d C API 检测碰撞
+static bool check_collision_gjk2d(Obstacle& obs, const Vector2& player_pos) {
+    gjk2d_collider_t playerCol;
+    gjk2d_init_circle(&playerCol, toV2f(player_pos), fp_from_float(PLAYER_RADIUS));
+    vec2f_t init_dir = vec2f_sub(obs.gjkShape.position, playerCol.position);
+    gjk2d_contact_t c;
+    return gjk2d_collide(&obs.gjkShape, &playerCol, init_dir, &c);
 }
 
 // ============================================================================
@@ -430,7 +480,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     // 只检测玩家与所有障碍物的碰撞（不移动障碍物）
     bool any_hit = false;
     for (auto& obs : gObstacles) {
-        if (check_collision(obs, gPlayerPos)) { any_hit = true; break; }
+        if (check_collision_gjk2d(obs, gPlayerPos)) { any_hit = true; break; }
     }
 
     // 子步进移动
@@ -445,10 +495,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
             bool blocked = false;
             for (auto& obs : gObstacles) {
-                // 临时 collider 用于 GJK 检测
-                auto player = std::unique_ptr<ICollider>(ColliderFactory::CreateCollider(Circle(PLAYER_RADIUS)));
-                Transform pt; pt.position = newPos;
-                if (GJK::Detect(player.get(), pt, obs.collider.get(), obs.transform)) {
+                gjk2d_collider_t playerCol;
+                gjk2d_init_circle(&playerCol, toV2f(newPos), fp_from_float(PLAYER_RADIUS));
+                vec2f_t init_dir = vec2f_sub(obs.gjkShape.position, playerCol.position);
+                gjk2d_contact_t c;
+                if (gjk2d_collide(&obs.gjkShape, &playerCol, init_dir, &c)) {
                     blocked = true; break;
                 }
             }
@@ -468,7 +519,7 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
 
     // 绘制障碍物
     for (auto& obs : gObstacles) {
-        bool hit = check_collision(obs, gPlayerPos);
+        bool hit = check_collision_gjk2d(obs, gPlayerPos);
         draw_obstacle(gRen, obs, hit);
     }
 

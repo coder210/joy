@@ -58,6 +58,45 @@ JOY_API void gjk3d_init_cylinder(gjk3d_collider_t *c, vec3f_t pos, fp_t radius, 
 JOY_API void gjk3d_init_cone(gjk3d_collider_t *c, vec3f_t pos, fp_t radius, fp_t height);
 JOY_API void gjk3d_init_mesh(gjk3d_collider_t *c, vec3f_t *vertices, int num);
 
+/* ======================================================================== */
+/*                             GJK 2D 碰撞检测                                */
+/* ======================================================================== */
+
+typedef uint8_t gjk2d_ctype_k;
+#define GJK2D_CTYPE_CIRCLE   0  /* 圆: position + radius */
+#define GJK2D_CTYPE_BOX      1  /* AABB盒: position + half_size */
+#define GJK2D_CTYPE_CAPSULE  2  /* 胶囊: position(中心) + radius + height + axis */
+#define GJK2D_CTYPE_POLYGON  3  /* 凸多边形: vertices数组(预变换到世界坐标) */
+#define GJK2D_CTYPE_PIE      4  /* 扇形: position + radius + sweep(弧度) */
+
+typedef struct gjk2d_collider {
+	gjk2d_ctype_k type;
+	vec2f_t position;       /* 中心位置 */
+	fp_t radius;            /* 圆/胶囊/扇形半径 */
+	vec2f_t half_size;      /* BOX半边长 */
+	fp_t height;            /* 胶囊线段长度 */
+	vec2f_t axis;           /* 胶囊朝向(单位向量) */
+	vec2f_t *vertices;      /* POLYGON顶点数组(借用的指针,不释放) */
+	int vertices_num;
+	fp_t sweep;             /* 扇形张角(弧度) */
+} gjk2d_collider_t, *gjk2d_collider_p;
+
+typedef struct gjk2d_contact {
+	vec2f_t normal;
+	fp_t depth;
+} gjk2d_contact_t, *gjk2d_contact_p;
+
+/* 主碰撞检测: GJK + EPA, 返回是否碰撞, contact填充法线和深度 */
+JOY_API bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
+	vec2f_t init_dir, gjk2d_contact_p contact);
+
+/* 快捷初始化函数 */
+JOY_API void gjk2d_init_circle(gjk2d_collider_t *c, vec2f_t pos, fp_t radius);
+JOY_API void gjk2d_init_box(gjk2d_collider_t *c, vec2f_t pos, vec2f_t half_size);
+JOY_API void gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius);
+JOY_API void gjk2d_init_polygon(gjk2d_collider_t *c, vec2f_t *vertices, int num);
+JOY_API void gjk2d_init_pie(gjk2d_collider_t *c, vec2f_t pos, fp_t radius, fp_t sweep);
+
 #ifdef __cplusplus
 }
 #endif

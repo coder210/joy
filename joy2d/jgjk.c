@@ -475,3 +475,388 @@ void gjk3d_init_mesh(gjk3d_collider_t *c, vec3f_t *vertices, int num) {
 	c->vertices = vertices;
 	c->vertices_num = num;
 }
+
+/* ======================================================================== */
+/*                             GJK 2D 实现                                   */
+/* ======================================================================== */
+
+/* ---------- 内部类型 ---------- */
+
+typedef struct {
+	vec2f_t points[3];
+	int points_num;
+} simplex2d_t;
+
+static void simplex2d_push(simplex2d_t *s, vec2f_t p) {
+	s->points[2] = s->points[1];
+	s->points[1] = s->points[0];
+	s->points[0] = p;
+	if (s->points_num < 3) s->points_num++;
+}
+
+static vec2f_t simplex2d_a(const simplex2d_t *s) { return s->points[0]; }
+static vec2f_t simplex2d_b(const simplex2d_t *s) { return s->points[1]; }
+static vec2f_t simplex2d_c(const simplex2d_t *s) { return s->points[2]; }
+
+/* 2D向量三重积: b*(a·c) - a*(b·c) */
+static vec2f_t vec2f_triple(vec2f_t a, vec2f_t b, vec2f_t c) {
+	fp_t ac = vec2f_dot(a, c);
+	fp_t bc = vec2f_dot(b, c);
+	return vec2f_sub(vec2f_scale(b, ac), vec2f_scale(a, bc));
+}
+
+static vec2f_t perp_cw(vec2f_t v) {
+	vec2f_t r;
+	r.x = v.y;
+	r.y = -v.x;
+	return r;
+}
+
+/* ---------- 各碰撞体的最远点计算 ---------- */
+
+static vec2f_t find_furthest_point_2d(gjk2d_collider_p c, vec2f_t dir) {
+	vec2f_t result = { fp_zero(), fp_zero() };
+
+	switch (c->type) {
+	case GJK2D_CTYPE_CIRCLE: {
+		fp_t len = vec2f_length(dir);
+		if (len < fp_from_float(1e-8f)) { result = c->position; break; }
+		vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+		result = vec2f_add(c->position, vec2f_scale(ndir, c->radius));
+		break;
+	}
+	case GJK2D_CTYPE_BOX: {
+		fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
+		fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
+		result.x = fp_add(c->position.x, sx);
+		result.y = fp_add(c->position.y, sy);
+		break;
+	}
+	case GJK2D_CTYPE_CAPSULE: {
+		fp_t len = vec2f_length(dir);
+		if (len == fp_zero()) { result = c->position; break; }
+		vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+		fp_t dot = vec2f_dot(ndir, c->axis);
+		fp_t half_h = dot > fp_zero() ? fp_mul(fp_half(), c->height) : fp_mul(-fp_half(), c->height);
+		vec2f_t center = vec2f_add(c->position, vec2f_scale(c->axis, half_h));
+		result = vec2f_add(center, vec2f_scale(ndir, c->radius));
+		break;
+	}
+	case GJK2D_CTYPE_POLYGON: {
+		fp_t max_dot = fp_min_value();
+		for (int i = 0; i < c->vertices_num; i++) {
+			fp_t d = vec2f_dot(c->vertices[i], dir);
+			if (d > max_dot) { max_dot = d; result = c->vertices[i]; }
+		}
+		break;
+	}
+	case GJK2D_CTYPE_PIE: {
+		/* 扇形: 朝向 +X, 半角 sweep/2 */
+		fp_t h = fp_mul(c->sweep, fp_half());
+		fp_t ch = fp_cos(h), sh = fp_sin(h);
+		fp_t zero = fp_zero();
+		vec2f_t best = c->position;
+		fp_t max_dot = vec2f_dot(best, dir);
+
+		/* 检查弧上点 */
+		fp_t len = vec2f_length(dir);
+		if (len > zero) {
+			vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+			/* 方向在锥内: dir.x>0 且 |dir.y| <= dir.x * tan(h) = dir.x * sh/ch */
+			fp_t dy_abs = fp_abs(ndir.y);
+			fp_t dx_tan = fp_mul(ndir.x, fp_div(sh, ch));
+			if (ndir.x > zero && dy_abs <= dx_tan) {
+				vec2f_t arcPt = vec2f_add(c->position, vec2f_scale(ndir, c->radius));
+				fp_t d = vec2f_dot(arcPt, dir);
+				if (d > max_dot) { max_dot = d; best = arcPt; }
+			}
+		}
+
+		/* 检查两个角点 */
+		vec2f_t corners[2] = {
+			{ fp_add(c->position.x, fp_mul(c->radius, ch)), fp_add(c->position.y, fp_mul(c->radius, sh)) },
+			{ fp_add(c->position.x, fp_mul(c->radius, ch)), fp_sub(c->position.y, fp_mul(c->radius, sh)) }
+		};
+		for (int i = 0; i < 2; i++) {
+			fp_t d = vec2f_dot(corners[i], dir);
+			if (d > max_dot) { max_dot = d; best = corners[i]; }
+		}
+		result = best;
+		break;
+	}
+	}
+	return result;
+}
+
+/* ---------- Minkowski差支持函数 ---------- */
+
+static vec2f_t get_support_point_2d(gjk2d_collider_p ca, gjk2d_collider_p cb, vec2f_t dir) {
+	vec2f_t a = find_furthest_point_2d(ca, dir);
+	vec2f_t b = find_furthest_point_2d(cb, vec2f_negate(dir));
+	return vec2f_sub(a, b);
+}
+
+/* ---------- 2D单纯形检测 ---------- */
+
+static bool simplex2d_check(simplex2d_t *s, vec2f_t *dir) {
+	vec2f_t a = simplex2d_a(s);
+	vec2f_t ao = vec2f_negate(a);    /* 从a指向原点 */
+	vec2f_t ab = vec2f_sub(simplex2d_b(s), a);
+
+	if (s->points_num == 2) {
+		*dir = vec2f_triple(ab, ao, ab);
+		fp_t m2 = vec2f_dot(*dir, *dir);
+		if (m2 < fp_from_float(1.2e-7f)) {  /* C# MathX.EPSILON≈1.19e-7 */
+			*dir = perp_cw(ab);
+		}
+		*dir = vec2f_normalize(*dir);
+	} else if (s->points_num == 3) {
+		vec2f_t ac = vec2f_sub(simplex2d_c(s), a);
+
+		/* v = triple(ab, ac, ac): 垂直于ac的向量,指向ab侧 */
+		vec2f_t v = vec2f_triple(ab, ac, ac);
+		if (vec2f_dot(v, ao) >= fp_zero()) {
+			/* 原点在ac外侧, 丢弃b, 保留 {a, c} */
+			s->points[1] = s->points[2];
+			*dir = vec2f_normalize(v);
+		} else {
+			/* u = triple(ac, ab, ab): 垂直于ab的向量,指向ac侧 */
+			vec2f_t u = vec2f_triple(ac, ab, ab);
+			if (vec2f_dot(u, ao) < fp_zero()) {
+				/* 原点在三角形内部 → 碰撞！ */
+				return true;
+			}
+			/* 原点在ab外侧, 丢弃c, 保留 {a, b} */
+			*dir = vec2f_normalize(u);
+		}
+		/* 单纯形: points[0]=a(最新), points[1]=b, points[2]=c(最旧) */
+		/* pn-- 后, [0]和[1]即为所需保留的两个点 */
+		s->points_num--;
+	}
+	return false;
+}
+
+/* ---------- EPA (2D版 - 边扩展) ---------- */
+
+typedef struct {
+	vec2f_t p1, p2;
+	vec2f_t normal;
+	fp_t distance;
+} epa2d_edge_t;
+
+/* 确定缠绕方向 */
+static int get_winding_2d(const simplex2d_t *s) {
+	fp_t total = fp_zero();
+	for (int i = 0; i < s->points_num; i++) {
+		vec2f_t p1 = s->points[i];
+		vec2f_t p2 = s->points[(i + 1) % s->points_num];
+		total = fp_add(total, vec2f_cross(p1, p2));
+	}
+	return total > fp_zero() ? 1 : -1;
+}
+
+static void build_edges_2d(epa2d_edge_t *edges, int *n, const simplex2d_t *s, int winding) {
+	for (int i = 0; i < s->points_num; i++) {
+		vec2f_t p1 = s->points[i];
+		vec2f_t p2 = s->points[(i + 1) % s->points_num];
+		/* 外向法线 */
+		vec2f_t d = vec2f_sub(p2, p1);
+		vec2f_t nml;
+		if (winding > 0) {
+			/* 顺时针: CW90 (x,y)->(y,-x) */
+			nml.x = d.y;
+			nml.y = -d.x;
+		} else {
+			/* 逆时针: CCW90 (x,y)->(-y,x) */
+			nml.x = -d.y;
+			nml.y = d.x;
+		}
+		fp_t nl = vec2f_length(nml);
+		if (nl > fp_zero()) {
+			nml = vec2f_scale(nml, fp_div(fp_one(), nl));
+		}
+		fp_t dist = fp_abs(vec2f_dot(p1, nml));
+		edges[*n].p1 = p1;
+		edges[*n].p2 = p2;
+		edges[*n].normal = nml;
+		edges[*n].distance = dist;
+		(*n)++;
+	}
+}
+
+/* 按距离排序 */
+static void sort_edges_2d(epa2d_edge_t *edges, int n) {
+	for (int i = 0; i < n - 1; i++) {
+		for (int j = 0; j < n - 1 - i; j++) {
+			if (edges[j].distance > edges[j + 1].distance) {
+				epa2d_edge_t tmp = edges[j];
+				edges[j] = edges[j + 1];
+				edges[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+static bool epa2d(simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb, gjk2d_contact_p contact) {
+	if (simplex->points_num < 3) return false;
+
+	int winding = get_winding_2d(simplex);
+
+	epa2d_edge_t edges[3 * 64]; /* 最多64次迭代,每次最多增加2条边 */
+	int edge_count = 0;
+	build_edges_2d(edges, &edge_count, simplex, winding);
+	sort_edges_2d(edges, edge_count);
+
+	vec2f_t best_normal = edges[0].normal;
+	fp_t best_dist = edges[0].distance;
+	fp_t eps = fp_from_float(0.001f);
+
+	for (int iter = 0; iter < 64; iter++) {
+		vec2f_t support = get_support_point_2d(ca, cb, edges[0].normal);
+		fp_t s_dist = vec2f_dot(support, edges[0].normal);
+
+		if (fp_abs(fp_sub(s_dist, edges[0].distance)) <= eps) {
+			best_normal = edges[0].normal;
+			best_dist = s_dist;
+			break;
+		}
+
+		/* 用新点扩展: 将最近的边替换为两条新边 */
+		vec2f_t p1 = edges[0].p1;
+		vec2f_t p2 = edges[0].p2;
+		edges[0] = edges[edge_count - 1];
+		edge_count--;
+
+		/* 添加边 p1→support */
+		{
+			vec2f_t d = vec2f_sub(support, p1);
+			vec2f_t nml;
+			if (winding > 0) {
+				nml.x = d.y; nml.y = -d.x;
+			} else {
+				nml.x = -d.y; nml.y = d.x;
+			}
+			fp_t nl = vec2f_length(nml);
+			if (nl > fp_zero()) nml = vec2f_scale(nml, fp_div(fp_one(), nl));
+			edges[edge_count].p1 = p1;
+			edges[edge_count].p2 = support;
+			edges[edge_count].normal = nml;
+			edges[edge_count].distance = fp_abs(vec2f_dot(p1, nml));
+			edge_count++;
+		}
+
+		/* 添加边 support→p2 */
+		{
+			vec2f_t d = vec2f_sub(p2, support);
+			vec2f_t nml;
+			if (winding > 0) {
+				nml.x = d.y; nml.y = -d.x;
+			} else {
+				nml.x = -d.y; nml.y = d.x;
+			}
+			fp_t nl = vec2f_length(nml);
+			if (nl > fp_zero()) nml = vec2f_scale(nml, fp_div(fp_one(), nl));
+			edges[edge_count].p1 = support;
+			edges[edge_count].p2 = p2;
+			edges[edge_count].normal = nml;
+			edges[edge_count].distance = fp_abs(vec2f_dot(support, nml));
+			edge_count++;
+		}
+
+		sort_edges_2d(edges, edge_count);
+	}
+
+	contact->normal = best_normal;
+	contact->depth = fp_add(best_dist, eps);
+	return true;
+}
+
+/* ============ 公开API实现 ============ */
+
+bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
+	vec2f_t init_dir, gjk2d_contact_p contact)
+{
+	simplex2d_t simplex;
+	memset(&simplex, 0, sizeof(simplex));
+
+	vec2f_t dir = init_dir;
+	if (vec2f_length_squared(dir) < fp_from_float(1.2e-7f)) {
+		dir.x = fp_one();
+	}
+
+	vec2f_t support = get_support_point_2d(c1, c2, dir);
+	simplex2d_push(&simplex, support);
+
+	if (vec2f_dot(support, dir) <= fp_zero()) {
+		contact->normal.x = fp_zero();
+		contact->normal.y = fp_zero();
+		contact->depth = fp_zero();
+		return false;
+	}
+
+	dir = vec2f_negate(dir);
+
+	for (int i = 0; i < 128; i++) {
+		/* 确保方向为单位向量,防止极小方向导致数值问题 */
+		fp_t dlen = vec2f_length(dir);
+		if (dlen < fp_from_float(1e-8f)) { dir.x = fp_one(); dir.y = fp_zero(); }
+		else dir = vec2f_scale(dir, fp_div(fp_one(), dlen));
+
+		support = get_support_point_2d(c1, c2, dir);
+		simplex2d_push(&simplex, support);
+
+		if (vec2f_dot(support, dir) <= fp_zero()) {
+			contact->normal.x = fp_zero();
+			contact->normal.y = fp_zero();
+			contact->depth = fp_zero();
+			return false;
+		}
+
+		if (simplex2d_check(&simplex, &dir)) {
+			return epa2d(&simplex, c1, c2, contact);
+		}
+	}
+
+	contact->normal.x = fp_zero();
+	contact->normal.y = fp_zero();
+	contact->depth = fp_zero();
+	return false;
+}
+
+void gjk2d_init_circle(gjk2d_collider_t *c, vec2f_t pos, fp_t radius) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK2D_CTYPE_CIRCLE;
+	c->position = pos;
+	c->radius = radius;
+}
+
+void gjk2d_init_box(gjk2d_collider_t *c, vec2f_t pos, vec2f_t half_size) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK2D_CTYPE_BOX;
+	c->position = pos;
+	c->half_size = half_size;
+}
+
+void gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK2D_CTYPE_CAPSULE;
+	c->position = pos;
+	c->axis = vec2f_normalize(axis);
+	c->height = height;
+	c->radius = radius;
+}
+
+void gjk2d_init_polygon(gjk2d_collider_t *c, vec2f_t *vertices, int num) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK2D_CTYPE_POLYGON;
+	c->vertices = vertices;
+	c->vertices_num = num;
+}
+
+void gjk2d_init_pie(gjk2d_collider_t *c, vec2f_t pos, fp_t radius, fp_t sweep) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK2D_CTYPE_PIE;
+	c->position = pos;
+	c->radius = radius;
+	c->sweep = sweep;
+}
