@@ -1,6 +1,6 @@
 #ifndef TRANSFORM_COMPONENT_H
 #define TRANSFORM_COMPONENT_H
-#include <joy2d/jmath.h>
+#include <joy/jmath.h>
 
 struct TransformComponent
 {

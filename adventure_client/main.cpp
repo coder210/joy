@@ -3,10 +3,10 @@
 #include <SDL3/SDL_main.h>
 #include <string.h>
 #include <stdlib.h>
-#include <joy2d/jconfig.h>
-#include <joy2d/jscene.h>
-#include <joy2d/jcore.h>
-#include <joy2d/jsys.h>
+#include <joy/jconfig.h>
+#include <joy/jscene.h>
+#include <joy/jcore.h>
+#include <joy/jsys.h>
 #include "context.h"
 #include "asset_manager.h"
 #include "scenes/loading_scene.h"

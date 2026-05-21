@@ -1,7 +1,7 @@
 #ifndef GAMEPLAYER_CONTROLS_LAYER_H
 #define GAMEPLAYER_CONTROLS_LAYER_H
-#include <joy2d/jui.h>
-#include <joy2d/jscene.h>
+#include <joy/jui.h>
+#include <joy/jscene.h>
 #include "../context.h"
 
 #define GAMEPLAY_CONTROL_EVENT (SDL_EVENT_USER + 0x1)

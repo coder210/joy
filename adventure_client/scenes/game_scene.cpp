@@ -3,11 +3,11 @@
 #include "game_scene.h"
 #include <SDL3/SDL.h>
 #include <stdlib.h>
-#include <joy2d/jmath.h>
-#include <joy2d/jcore.h>
-#include <joy2d/jtext.h>
-#include <joy2d/jcollision.h>
-#include <joy2d/jnetwork.h>
+#include <joy/jmath.h>
+#include <joy/jcore.h>
+#include <joy/jtext.h>
+#include <joy/jcollision.h>
+#include <joy/jnetwork.h>
 #include "../asset_manager.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"

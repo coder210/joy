@@ -1,4 +1,4 @@
-name: Build joy2d
+name: Build joy
 on: [pull_request]
 
 jobs:
@@ -10,10 +10,10 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [joy2d_editor, adventure_server, adventure_client]
+        project: [joy_editor, adventure_server, adventure_client]
         include:
-          - project: joy2d_editor
-            build_macro: "BUILD_JOY2D_EDITOR"
+          - project: joy_editor
+            build_macro: "BUILD_JOY_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client

@@ -1,17 +1,17 @@
-name: Build joy2d For Web
+name: Build joy For Web
 on: [pull_request]
 
 jobs:
   build-web:
-    name: Build joy2d for Web (${{ matrix.project }})
+    name: Build joy for Web (${{ matrix.project }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        project: [joy2d_editor, adventure_server, adventure_client]
+        project: [joy_editor, adventure_server, adventure_client]
         include:
-          - project: joy2d_editor
-            build_macro: "BUILD_JOY2D_EDITOR"
+          - project: joy_editor
+            build_macro: "BUILD_JOY_EDITOR"
           - project: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - project: adventure_client
