@@ -7,11 +7,11 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
-#include <joy2d/jgjk.h>
-#include <joy2d/jrender.h>
+#include <joy/jgjk.h>
+#include <joy/jrender.h>
 #include <cfloat>
-#include "joy2d/external/cgltf.h"
-#include "joy2d/external/stb_image.h"
+#include "joy/external/cgltf.h"
+#include "joy/external/stb_image.h"
 
 
 static vec3f_t toV3f(vec3_t v) { return { fp_from_float(v.x), fp_from_float(v.y), fp_from_float(v.z) }; }
@@ -200,8 +200,8 @@ bool initSDL() {
 
 GPUShaderBundle createSDLGPUShaderBundle() {
    GPUShaderBundle bundle;
-   bundle.vertex = render_load_shader(gDevice, "joy2d_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-   bundle.fragment = render_load_shader(gDevice, "joy2d_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+    bundle.vertex = render_load_shader(gDevice, "joy_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+    bundle.fragment = render_load_shader(gDevice, "joy_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
    return bundle;
 }
 
@@ -1004,8 +1004,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
    gSampler = render_create_sampler(gDevice);
    createBulletMesh();
 
-   // 加载 glTF 模型（将 .glb/.gltf 文件放到 joy2d_editor/ 目录下）
-   loadGLTFModel("joy2d_editor_models/air.glb", &gGLTFVertexBuffer, &gGLTFVertexCount);
+   // 加载 glTF 模型（将 .glb/.gltf 文件放到 joy_editor/ 目录下）
+   loadGLTFModel("joy_editor_models/air.glb", &gGLTFVertexBuffer, &gGLTFVertexCount);
 
    /* 敌人已屏蔽
    {

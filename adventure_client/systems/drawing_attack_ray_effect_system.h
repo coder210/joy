@@ -1,7 +1,7 @@
 #ifndef DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #include "../flecs.h"
-#include <joy2d/jshapes.h>
+#include <joy/jshapes.h>
 #include "../context.h"
 #include "../components/attack_ray_effect_component.h"
 

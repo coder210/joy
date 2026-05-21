@@ -9,10 +9,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # 项目声明
-project(joy2d C CXX)
+project(joy C CXX)
 
 
-option(BUILD_JOY2D_EDITOR "Build joy2d_editor" OFF)
+option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 
@@ -36,16 +36,16 @@ endif()
 # 添加子目录
 add_subdirectory(protobuf)   # protobuf 库
 add_subdirectory(SDL)          # SDL3 库
-add_subdirectory(joy2d)   # joy2d 核心库
+add_subdirectory(joy)   # joy 核心库
 
 if (WIN32)
-	add_subdirectory(joy2d_cslib)
+	add_subdirectory(joy_cslib)
 elseif (ANDROID)
 	 message(STATUS "Root MOBILE_MAIN_DIR = '${MOBILE_MAIN_DIR}'")
 endif()
 
-if(BUILD_JOY2D_EDITOR)
-    add_subdirectory(joy2d_editor)
+if(BUILD_JOY_EDITOR)
+    add_subdirectory(joy_editor)
 endif()
 
 # examples

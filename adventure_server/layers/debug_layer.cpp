@@ -1,6 +1,6 @@
 #include "debug_layer.h"
 #include <stdio.h>
-#include <joy2d/jcore.h>
+#include <joy/jcore.h>
 #include "../asset_manager.h"
 
 struct debug_layer {

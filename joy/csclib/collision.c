@@ -1,5 +1,5 @@
 //#include "../mono.h"
-//#include "joy2d/collision.h"
+//#include "joy/collision.h"
 //#include "csclib.h"
 //
 //void csopen_collision()

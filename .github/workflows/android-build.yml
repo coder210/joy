@@ -1,4 +1,4 @@
-name: Build joy2d for Android
+name: Build joy for Android
 
 on: [pull_request]
 
@@ -6,10 +6,10 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [joy2d_editor, adventure_server, adventure_client]      # 并行构建两个目标
+        target: [joy_editor, adventure_server, adventure_client]      # 并行构建两个目标
         include:
-          - target: joy2d_editor
-            build_macro: "BUILD_JOY2D_EDITOR"
+          - target: joy_editor
+            build_macro: "BUILD_JOY_EDITOR"
           - target: adventure_server
             build_macro: "BUILD_ADVENTURE_SERVER"
           - target: adventure_client

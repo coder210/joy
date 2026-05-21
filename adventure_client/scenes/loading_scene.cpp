@@ -1,6 +1,6 @@
 #include "loading_scene.h"
 #include <SDL3/SDL.h>
-#include <joy2d/jcore.h>
+#include <joy/jcore.h>
 #include <stdlib.h>
 #include <math.h>
 #include "../layers/menu_layer.h"

@@ -1,7 +1,7 @@
 #ifndef APP_CONTEXT_H
 #define APP_CONTEXT_H
 #include <SDL3/SDL.h>
-#include <joy2d/jcore.h>
+#include <joy/jcore.h>
 
 
 struct Context {

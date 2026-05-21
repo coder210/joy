@@ -1,5 +1,5 @@
 #include "GJK.h"
-#include "../joy2d/jlut.h"
+#include "../joy/jlut.h"
 
 #define FP_NUM_BITS 64
 #define FP_FRACTIONAL_PLACES 32

@@ -7,12 +7,81 @@
 //#include <iostream>
 //#include <vector>
 //#include <cstdio>
-//#include <joy2d/jgjk.h>
-//#include <joy2d/jrender.h>
-//#include <cfloat>
 //
+//// -------------------- 自定义数学库 --------------------
+//struct Vec3 {
+//    float x, y, z;
+//    Vec3() : x(0), y(0), z(0) {}
+//    Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+//    Vec3 operator+(const Vec3& v) const { return Vec3(x + v.x, y + v.y, z + v.z); }
+//    Vec3 operator-(const Vec3& v) const { return Vec3(x - v.x, y - v.y, z - v.z); }
+//    Vec3 operator*(float s) const { return Vec3(x * s, y * s, z * s); }
+//    Vec3 operator/(float s) const { return Vec3(x / s, y / s, z / s); }
+//    Vec3& operator+=(const Vec3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+//    Vec3& operator-=(const Vec3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+//    Vec3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+//    Vec3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
+//};
 //
-//static vec3f_t toV3f(vec3_t v) { return { fp_from_float(v.x), fp_from_float(v.y), fp_from_float(v.z) }; }
+//inline float dot(const Vec3& a, const Vec3& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+//inline Vec3 cross(const Vec3& a, const Vec3& b) { return Vec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
+//inline float length(const Vec3& v) { return sqrtf(dot(v, v)); }
+//inline Vec3 normalize(const Vec3& v) { float len = length(v); return (len > 0) ? v / len : Vec3(0, 0, 0); }
+//
+//struct Mat4 {
+//    float m[16];
+//    Mat4() { for (int i = 0; i < 16; ++i) m[i] = 0; m[0] = m[5] = m[10] = m[15] = 1.0f; }
+//    Mat4(const float* data) { memcpy(m, data, sizeof(m)); }
+//    Mat4 operator*(const Mat4& other) const {
+//        Mat4 res;
+//        for (int col = 0; col < 4; ++col)
+//            for (int row = 0; row < 4; ++row) {
+//                float sum = 0;
+//                for (int k = 0; k < 4; ++k) sum += m[col * 4 + k] * other.m[k * 4 + row];
+//                res.m[col * 4 + row] = sum;
+//            }
+//        return res;
+//    }
+//    float& operator()(int col, int row) { return m[col * 4 + row]; }
+//    const float& operator()(int col, int row) const { return m[col * 4 + row]; }
+//
+//    static Mat4 identity() { return Mat4(); }
+//    static Mat4 translate(const Vec3& t) {
+//        Mat4 mat; mat.m[12] = t.x; mat.m[13] = t.y; mat.m[14] = t.z; return mat;
+//    }
+//    static Mat4 scale(const Vec3& s) {
+//        Mat4 mat; mat.m[0] = s.x; mat.m[5] = s.y; mat.m[10] = s.z; return mat;
+//    }
+//    static Mat4 rotateX(float angle) {
+//        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+//        mat.m[5] = c; mat.m[6] = s; mat.m[9] = -s; mat.m[10] = c; return mat;
+//    }
+//    static Mat4 rotateY(float angle) {
+//        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+//        mat.m[0] = c; mat.m[2] = -s; mat.m[8] = s; mat.m[10] = c; return mat;
+//    }
+//    static Mat4 rotateZ(float angle) {
+//        Mat4 mat; float c = cosf(angle), s = sinf(angle);
+//        mat.m[0] = c; mat.m[1] = s; mat.m[4] = -s; mat.m[5] = c; return mat;
+//    }
+//    static Mat4 perspective(float fov, float aspect, float near, float far) {
+//        float tanHalf = tanf(fov / 2.0f);
+//        Mat4 mat; mat.m[0] = 1.0f / (aspect * tanHalf); mat.m[5] = 1.0f / tanHalf;
+//        mat.m[10] = far / (near - far); mat.m[11] = -1.0f;
+//        mat.m[14] = (near * far) / (near - far); mat.m[15] = 0.0f; return mat;
+//    }
+//    static Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up) {
+//        Vec3 f = normalize(center - eye); Vec3 s = normalize(cross(f, up)); Vec3 u = cross(s, f);
+//        Mat4 mat;
+//        mat.m[0] = s.x; mat.m[1] = s.y; mat.m[2] = s.z; mat.m[3] = 0;
+//        mat.m[4] = u.x; mat.m[5] = u.y; mat.m[6] = u.z; mat.m[7] = 0;
+//        mat.m[8] = -f.x; mat.m[9] = -f.y; mat.m[10] = -f.z; mat.m[11] = 0;
+//        mat.m[12] = -dot(s, eye); mat.m[13] = -dot(u, eye); mat.m[14] = dot(f, eye); mat.m[15] = 1.0f;
+//        return mat;
+//    }
+//};
+//
+//inline float radians(float degrees) { return degrees * (3.14159265358979323846f / 180.0f); }
 //
 //// -------------------- GPU 资源 --------------------
 //struct GPUShaderBundle {
@@ -38,7 +107,7 @@
 //#define WINDOW_HEIGHT 720
 //
 //// 玩家
-//vec3_t gPlayerPos = {0.0f, 0.6f, 0.0f};
+//Vec3 gPlayerPos = Vec3(0.0f, 0.6f, 0.0f);
 //float gPlayerYaw = 0.0f;       // 玩家/相机水平朝向
 //float gPitch = 25.0f;          // 相机俯角
 //static const float CAM_DIST = 6.0f;
@@ -60,7 +129,11 @@
 //float gVerticalVelocity = 0.0f;
 //bool gOnGround = true;
 //
-//render_mvp_t gMVP;
+//// MVP 数据
+//struct MVPData {
+//    Mat4 viewProj;
+//    Mat4 model;
+//};
 //
 //struct DrawMesh {
 //    SDL_GPUBuffer* vertexBuffer;
@@ -68,70 +141,51 @@
 //};
 //
 //std::vector<DrawMesh> gDrawMeshes;
-//std::vector<mat44_t> gModelMatrices;
+//std::vector<Mat4> gModelMatrices;
+//
+//// AABB 碰撞体
+//struct AABB {
+//    Vec3 min, max;
+//};
 //
 //struct BoxObstacle {
-//    vec3_t pos;
-//    vec3_t size;
-//    gjk3d_collider_t gjkShape;
-//    BoxObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
+//    Vec3 pos;
+//    Vec3 size;
+//    AABB aabb;
 //};
 //
 //std::vector<BoxObstacle> gBoxes;
 //
-//// GJK 测试球体
-//struct BallObstacle {
-//    vec3_t pos;
-//    float radius;
-//    gjk3d_collider_t gjkShape;
-//    BallObstacle() { memset(&gjkShape, 0, sizeof(gjkShape)); }
-//};
-//std::vector<BallObstacle> gBalls;
-//SDL_GPUTexture* gTextureBall = nullptr;
+//// 斜坡
+//struct Ramp {
+//    Vec3 basePos;      // 底边中心位置
+//    float width;       // X 方向宽度
+//    float length;      // Z 方向长度
+//    float height;      // Y 方向高度
 //
-//// 旋转箱子（OBB，GJK 支持但 AABB 不支持）
-//struct OBBObstacle {
-//    vec3_t pos;
-//    vec3_t size;
-//    float angle;
-//    gjk3d_collider_t gjkShape;
-//    vec3f_t worldVerts[8];
-//};
-//std::vector<OBBObstacle> gOBBs;
-//SDL_GPUTexture* gTextureOBB = nullptr;
-//
-//// 斜坡（长方体斜放作为斜坡）
-//struct RampObstacle {
-//    vec3_t basePos;
-//    float width, length, height;
-//    float angle;  // 绕X轴旋转角度
-//    gjk3d_collider_t gjkShape;
-//    vec3f_t worldVerts[8];
-//
+//    // 斜坡沿 +Z 方向上升，从 basePos.y 升到 basePos.y + height
+//    // basePos.z - length/2 = 地面端, basePos.z + length/2 = 高端
 //    float getHeight(float x, float z) const {
-//        float cs = cosf(angle), sn = sinf(angle);
-//        float hh = height * 0.5f, hl = length * 0.5f;
-//        // 局部Z坐标
-//        float z_local = (z - basePos.z - hh * sn) / cs;
-//        if (z_local < -hl) z_local = -hl;
-//        if (z_local > hl) z_local = hl;
-//        return basePos.y + hh * cs - z_local * sn + hh;
+//        float localZ = z - basePos.z;
+//        float halfLen = length * 0.5f;
+//        float t = (localZ + halfLen) / length;  // 0 = 底端, 1 = 顶端
+//        if (t < 0.0f) t = 0.0f;
+//        if (t > 1.0f) t = 1.0f;
+//        return basePos.y + t * height;
 //    }
 //
 //    bool isInXZ(float x, float z) const {
-//        float cs = cosf(angle), sn = sinf(angle);
-//        float hw = width * 0.5f, hl = length * 0.5f, hh = height * 0.5f;
-//        float x_local = x - basePos.x;
-//        float z_local = (z - basePos.z - hh * sn) / cs;
-//        return fabsf(x_local) <= hw + 0.2f && fabsf(z_local) <= hl + 0.2f;
+//        float hw = width * 0.5f;
+//        float hl = length * 0.5f;
+//        return fabsf(x - basePos.x) <= hw && fabsf(z - basePos.z) <= hl;
 //    }
 //};
 //
-//std::vector<RampObstacle> gRamps;
+//std::vector<Ramp> gRamps;
 //
 //// 敌人
 //struct Enemy {
-//    vec3_t pos;
+//    Vec3 pos;
 //    float hp = 3.0f;
 //    float speed = 2.0f;
 //    float aggroRange = 8.0f;      // 发现玩家距离
@@ -148,8 +202,8 @@
 //
 //// 子弹
 //struct Bullet {
-//    vec3_t pos;
-//    vec3_t dir;
+//    Vec3 pos;
+//    Vec3 dir;
 //    float speed = 15.0f;
 //    float lifetime = 2.0f;
 //    float age = 0.0f;
@@ -161,9 +215,17 @@
 //float gShootCooldown = 0.25f;
 //float gShootTimer = 0.0f;
 //
-//static const vec3_t PLAYER_HALF_SIZE = {0.3f, 0.6f, 0.3f};
+//static const Vec3 PLAYER_HALF_SIZE = Vec3(0.3f, 0.6f, 0.3f);
 //
+//AABB makeAABB(const Vec3& center, const Vec3& halfSize) {
+//    return { center - halfSize, center + halfSize };
+//}
 //
+//bool aabbOverlap(const AABB& a, const AABB& b) {
+//    return (a.min.x < b.max.x && a.max.x > b.min.x &&
+//            a.min.y < b.max.y && a.max.y > b.min.y &&
+//            a.min.z < b.max.z && a.max.z > b.min.z);
+//}
 //
 //// -------------------- 初始化 --------------------
 //bool initSDL() {
@@ -190,18 +252,140 @@
 //    return true;
 //}
 //
+//// -------------------- shader 加载 --------------------
+//SDL_GPUShader* loadSDLGPUShader(const char* filename, SDL_GPUShaderStage stage,
+//    uint32_t sampler_num, uint32_t uniform_buffer_num) {
+//    size_t file_size;
+//    Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
+//    if (!data) {
+//        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "load file %s failed: %s", filename, SDL_GetError());
+//        return nullptr;
+//    }
+//    SDL_GPUShaderCreateInfo ci{};
+//    ci.code = data;
+//    ci.code_size = file_size;
+//    ci.entrypoint = "main";
+//    ci.format = SDL_GPU_SHADERFORMAT_SPIRV;
+//    ci.num_samplers = sampler_num;
+//    ci.num_uniform_buffers = uniform_buffer_num;
+//    ci.num_storage_buffers = 0;
+//    ci.num_storage_textures = 0;
+//    ci.stage = stage;
+//    SDL_GPUShader* shader = SDL_CreateGPUShader(gDevice, &ci);
+//    SDL_free(data);
+//    if (!shader)
+//        SDL_LogError(SDL_LOG_CATEGORY_GPU, "create shader from %s failed: %s", filename, SDL_GetError());
+//    return shader;
+//}
+//
 //GPUShaderBundle createSDLGPUShaderBundle() {
 //    GPUShaderBundle bundle;
-//    bundle.vertex = render_load_shader(gDevice, "joy2d_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-//    bundle.fragment = render_load_shader(gDevice, "joy2d_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+//    bundle.vertex = loadSDLGPUShader("joy_editor_shaders/vert.spv", SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+//    bundle.fragment = loadSDLGPUShader("joy_editor_shaders/frag.spv", SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
 //    return bundle;
 //}
 //
-//// 顶点格式
+//// -------------------- 图形管线 --------------------
+//SDL_GPUGraphicsPipeline* createGraphicsPipeline() {
+//    SDL_GPUGraphicsPipelineCreateInfo ci{};
+//    SDL_GPUVertexAttribute attributes[2];
+//    attributes[0].location = 0;
+//    attributes[0].buffer_slot = 0;
+//    attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+//    attributes[0].offset = 0;
+//    attributes[1].location = 1;
+//    attributes[1].buffer_slot = 0;
+//    attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+//    attributes[1].offset = sizeof(float) * 3;
+//
+//    ci.vertex_input_state.vertex_attributes = attributes;
+//    ci.vertex_input_state.num_vertex_attributes = 2;
+//
+//    SDL_GPUVertexBufferDescription buffer_desc{};
+//    buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+//    buffer_desc.instance_step_rate = 0;
+//    buffer_desc.slot = 0;
+//    buffer_desc.pitch = sizeof(float) * 5;
+//
+//    ci.vertex_input_state.num_vertex_buffers = 1;
+//    ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
+//    ci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+//    ci.vertex_shader = gShaders.vertex;
+//    ci.fragment_shader = gShaders.fragment;
+//    ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+//    ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+//    ci.multisample_state.enable_mask = false;
+//    ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+//    ci.target_info.num_color_targets = 1;
+//    ci.target_info.has_depth_stencil_target = true;
+//    ci.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+//
+//    SDL_GPUDepthStencilState ds{};
+//    ds.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
+//    ds.back_stencil_state.pass_op = SDL_GPU_STENCILOP_ZERO;
+//    ds.back_stencil_state.fail_op = SDL_GPU_STENCILOP_ZERO;
+//    ds.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
+//    ds.compare_op = SDL_GPU_COMPAREOP_LESS;
+//    ds.enable_depth_test = true;
+//    ds.enable_depth_write = true;
+//    ds.enable_stencil_test = false;
+//    ds.compare_mask = 0xFF;
+//    ds.write_mask = 0xFF;
+//    ci.depth_stencil_state = ds;
+//
+//    SDL_GPUColorTargetDescription desc{};
+//    desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+//    desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+//    desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_A | SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B;
+//    desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+//    desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+//    desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+//    desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+//    desc.blend_state.enable_blend = true;
+//    desc.blend_state.enable_color_write_mask = false;
+//    desc.format = SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow);
+//    ci.target_info.color_target_descriptions = &desc;
+//
+//    return SDL_CreateGPUGraphicsPipeline(gDevice, &ci);
+//}
+//
+//// -------------------- 顶点数据 --------------------
 //struct Vertex {
 //    float x, y, z;
 //    float u, v;
 //};
+//
+//SDL_GPUBuffer* createAndUploadBuffer(const Vertex* vertices, int count) {
+//    size_t size = count * sizeof(Vertex);
+//
+//    SDL_GPUTransferBufferCreateInfo tb_ci{};
+//    tb_ci.size = size;
+//    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+//    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
+//    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
+//    memcpy(ptr, vertices, size);
+//    SDL_UnmapGPUTransferBuffer(gDevice, tb);
+//
+//    SDL_GPUBufferCreateInfo buf_ci{};
+//    buf_ci.size = size;
+//    buf_ci.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+//    SDL_GPUBuffer* buf = SDL_CreateGPUBuffer(gDevice, &buf_ci);
+//
+//    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
+//    SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(cmd);
+//    SDL_GPUTransferBufferLocation loc{};
+//    loc.offset = 0;
+//    loc.transfer_buffer = tb;
+//    SDL_GPUBufferRegion region{};
+//    region.buffer = buf;
+//    region.offset = 0;
+//    region.size = size;
+//    SDL_UploadToGPUBuffer(copy_pass, &loc, &region, false);
+//    SDL_EndGPUCopyPass(copy_pass);
+//    SDL_SubmitGPUCommandBuffer(cmd);
+//    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+//    return buf;
+//}
 //
 //// 生成地板顶点
 //void createFloorMesh() {
@@ -231,9 +415,9 @@
 //        }
 //    }
 //
-//    gFloorVertexBuffer = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
+//    gFloorVertexBuffer = createAndUploadBuffer(verts.data(), (int)verts.size());
 //    gDrawMeshes.push_back({ gFloorVertexBuffer, (int)verts.size() });
-//    gModelMatrices.push_back(mat44_identity());
+//    gModelMatrices.push_back(Mat4::identity());
 //}
 //
 //// 生成立方体（玩家用）
@@ -259,7 +443,7 @@
 //        {-hw, -hh, -hw, 0,0}, { hw, -hh, -hw, 1,0}, { hw, -hh,  hw, 1,1},
 //        { hw, -hh,  hw, 1,1}, {-hw, -hh,  hw, 0,1}, {-hw, -hh, -hw, 0,0},
 //    };
-//    gCubeVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
+//    gCubeVertexBuffer = createAndUploadBuffer(verts, 36);
 //}
 //
 //// 生成立方体（障碍物箱子用）
@@ -285,43 +469,11 @@
 //        {-hw, -hw, -hw, 0,0}, { hw, -hw, -hw, 1,0}, { hw, -hw,  hw, 1,1},
 //        { hw, -hw,  hw, 1,1}, {-hw, -hw,  hw, 0,1}, {-hw, -hw, -hw, 0,0},
 //    };
-//    gUnitCubeVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
+//    gUnitCubeVertexBuffer = createAndUploadBuffer(verts, 36);
 //}
 //
 //// 生成子弹网格（小立方体）
 //SDL_GPUBuffer* gBulletVertexBuffer = nullptr;
-//SDL_GPUBuffer* gSphereVertexBuffer = nullptr;
-//
-//// 生成球体网格（UV 球体）
-//void createSphereMesh() {
-//    std::vector<Vertex> verts;
-//    const int slices = 16, stacks = 12;
-//    for (int j = 0; j < stacks; j++) {
-//        float phi1 = (float)j / stacks * 3.14159265f;
-//        float phi2 = (float)(j + 1) / stacks * 3.14159265f;
-//        for (int i = 0; i < slices; i++) {
-//            float theta1 = (float)i / slices * 2.0f * 3.14159265f;
-//            float theta2 = (float)(i + 1) / slices * 2.0f * 3.14159265f;
-//
-//            float x1 = sinf(phi1) * cosf(theta1), y1 = cosf(phi1), z1 = sinf(phi1) * sinf(theta1);
-//            float x2 = sinf(phi1) * cosf(theta2), y2 = cosf(phi1), z2 = sinf(phi1) * sinf(theta2);
-//            float x3 = sinf(phi2) * cosf(theta2), y3 = cosf(phi2), z3 = sinf(phi2) * sinf(theta2);
-//            float x4 = sinf(phi2) * cosf(theta1), y4 = cosf(phi2), z4 = sinf(phi2) * sinf(theta1);
-//
-//            float u1 = (float)i / slices, u2 = (float)(i + 1) / slices;
-//            float v1 = (float)j / stacks, v2 = (float)(j + 1) / stacks;
-//
-//            verts.push_back({ x1, y1, z1, u1, v1 });
-//            verts.push_back({ x2, y2, z2, u2, v1 });
-//            verts.push_back({ x3, y3, z3, u2, v2 });
-//            verts.push_back({ x1, y1, z1, u1, v1 });
-//            verts.push_back({ x3, y3, z3, u2, v2 });
-//            verts.push_back({ x4, y4, z4, u1, v2 });
-//        }
-//    }
-//    gSphereVertexBuffer = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
-//}
-//
 //void createBulletMesh() {
 //    float hs = 0.1f;
 //    Vertex verts[] = {
@@ -338,7 +490,7 @@
 //        {-hs, -hs, -hs, 0,0}, { hs, -hs, -hs, 1,0}, { hs, -hs,  hs, 1,1},
 //        { hs, -hs,  hs, 1,1}, {-hs, -hs,  hs, 0,1}, {-hs, -hs, -hs, 0,0},
 //    };
-//    gBulletVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
+//    gBulletVertexBuffer = createAndUploadBuffer(verts, 36);
 //}
 //
 //// 生成斜坡网格
@@ -363,7 +515,7 @@
 //        {-hw, 0, -hl, 0,0}, { hw, 0, -hl, 1,0}, { hw, 0,  hl, 1,1},
 //        {-hw, 0, -hl, 0,0}, { hw, 0,  hl, 1,1}, {-hw, 0,  hl, 0,1},
 //    };
-//    gRampVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
+//    gRampVertexBuffer = createAndUploadBuffer(verts, sizeof(verts)/sizeof(Vertex));
 //}
 //
 //// 创建纹理（科幻金属网格）
@@ -425,12 +577,92 @@
 //    delete[] pixels;
 //}
 //
-//void createEnemyBulletTextures() {
-//    gTextureEnemy = render_create_solid_texture(gDevice, 220, 40, 40);    // 红色敌人
-//    gTextureBullet = render_create_solid_texture(gDevice, 255, 200, 50);  // 黄色子弹
-//    gTextureBall = render_create_solid_texture(gDevice, 40, 220, 40);     // 绿色球体
-//    gTextureOBB = render_create_solid_texture(gDevice, 255, 165, 0);      // 橙色旋转箱子
+//SDL_GPUTexture* createSolidTexture(unsigned char r, unsigned char g, unsigned char b) {
+//    const int tw = 16, th = 16;
+//    size_t image_size = tw * th * 4;
+//    unsigned char* pixels = new unsigned char[image_size];
+//    for (int i = 0; i < tw * th; i++) {
+//        pixels[i * 4 + 0] = r;
+//        pixels[i * 4 + 1] = g;
+//        pixels[i * 4 + 2] = b;
+//        pixels[i * 4 + 3] = 255;
+//    }
+//
+//    SDL_GPUTransferBufferCreateInfo tb_ci{};
+//    tb_ci.size = image_size;
+//    tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+//    SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tb_ci);
+//    void* ptr = SDL_MapGPUTransferBuffer(gDevice, tb, false);
+//    memcpy(ptr, pixels, image_size);
+//    SDL_UnmapGPUTransferBuffer(gDevice, tb);
+//
+//    SDL_GPUTextureCreateInfo tex_ci{};
+//    tex_ci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+//    tex_ci.height = th;
+//    tex_ci.width = tw;
+//    tex_ci.layer_count_or_depth = 1;
+//    tex_ci.num_levels = 1;
+//    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+//    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+//    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+//    SDL_GPUTexture* tex = SDL_CreateGPUTexture(gDevice, &tex_ci);
+//
+//    SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(gDevice);
+//    SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(cmd);
+//    SDL_GPUTextureTransferInfo ti{};
+//    ti.offset = 0;
+//    ti.pixels_per_row = tw;
+//    ti.rows_per_layer = th;
+//    ti.transfer_buffer = tb;
+//    SDL_GPUTextureRegion region{};
+//    region.w = tw; region.h = th; region.x = 0; region.y = 0;
+//    region.layer = 0; region.mip_level = 0; region.z = 0; region.d = 1;
+//    region.texture = tex;
+//    SDL_UploadToGPUTexture(copy, &ti, &region, false);
+//    SDL_EndGPUCopyPass(copy);
+//    SDL_SubmitGPUCommandBuffer(cmd);
+//    SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+//    delete[] pixels;
+//    return tex;
 //}
+//
+//void createEnemyBulletTextures() {
+//    gTextureEnemy = createSolidTexture(220, 40, 40);    // 红色敌人
+//    gTextureBullet = createSolidTexture(255, 200, 50);  // 黄色子弹
+//}
+//
+//void createDepthTexture(int w, int h) {
+//    SDL_GPUTextureCreateInfo tex_ci{};
+//    tex_ci.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+//    tex_ci.height = h;
+//    tex_ci.width = w;
+//    tex_ci.layer_count_or_depth = 1;
+//    tex_ci.num_levels = 1;
+//    tex_ci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+//    tex_ci.type = SDL_GPU_TEXTURETYPE_2D;
+//    tex_ci.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+//    gDepthTexture = SDL_CreateGPUTexture(gDevice, &tex_ci);
+//}
+//
+//void createSampler() {
+//    SDL_GPUSamplerCreateInfo ci{};
+//    ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+//    ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+//    ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+//    ci.enable_anisotropy = true;
+//    ci.max_anisotropy = 4.0f;
+//    ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS;
+//    ci.enable_compare = false;
+//    ci.mag_filter = SDL_GPU_FILTER_LINEAR;
+//    ci.min_filter = SDL_GPU_FILTER_LINEAR;
+//    ci.max_lod = 10.0f;
+//    ci.min_lod = 0.0f;
+//    ci.mip_lod_bias = 0.0f;
+//    ci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
+//    gSampler = SDL_CreateGPUSampler(gDevice, &ci);
+//}
+//
+//MVPData gMVP;
 //
 //// -------------------- 输入处理 --------------------
 //void processInput() {
@@ -442,18 +674,18 @@
 //    gKeys.jump     = kb[SDL_SCANCODE_SPACE];
 //    gKeys.shoot    = kb[SDL_SCANCODE_F];
 //
-//    float yawRad = ft_radians(gPlayerYaw);
-//    vec3_t forward = {sinf(yawRad), 0, cosf(yawRad)};
-//    vec3_t right   = {cosf(yawRad), 0, -sinf(yawRad)};
+//    float yawRad = radians(gPlayerYaw);
+//    Vec3 forward = Vec3(sinf(yawRad), 0, cosf(yawRad));
+//    Vec3 right   = Vec3(cosf(yawRad), 0, -sinf(yawRad));
 //
-//    vec3_t moveDir = {0,0,0};
-//    if (gKeys.forward)  moveDir = vec3_add(moveDir, forward);
-//    if (gKeys.backward) moveDir = vec3_sub(moveDir, forward);
-//    if (gKeys.left)     moveDir = vec3_add(moveDir, right);
-//    if (gKeys.right)    moveDir = vec3_sub(moveDir, right);
+//    Vec3 moveDir(0,0,0);
+//    if (gKeys.forward)  moveDir += forward;
+//    if (gKeys.backward) moveDir -= forward;
+//    if (gKeys.left)     moveDir += right;
+//    if (gKeys.right)    moveDir -= right;
 //
-//    if (vec3_length(moveDir) > 0.001f) {
-//        moveDir = vec3_normalize(moveDir);
+//    if (length(moveDir) > 0.001f) {
+//        moveDir = normalize(moveDir);
 //
 //        float totalDist = 5.0f * gDeltaTime;
 //        const float MAX_STEP = 0.02f;
@@ -461,68 +693,11 @@
 //            float step = (totalDist > MAX_STEP) ? MAX_STEP : totalDist;
 //            totalDist -= step;
 //
-//            vec3_t newPos = vec3_add(gPlayerPos, vec3_scale(moveDir, step));
-//
-//            // 爬坡：新位置在斜坡 XZ 范围内时自动贴合坡面
-//            for (auto& ramp : gRamps) {
-//                if (ramp.isInXZ(newPos.x, newPos.z)) {
-//                    float rampY = ramp.getHeight(newPos.x, newPos.z);
-//                    float playerBottom = newPos.y - PLAYER_HALF_SIZE.y;
-//                    if (playerBottom <= rampY + 0.2f) {
-//                        newPos.y = rampY + PLAYER_HALF_SIZE.y + 0.01f;
-//                    }
-//                    break;
-//                }
-//            }
-//
-//            gjk3d_collider_t playerShape;
-//            gjk3d_init_box(&playerShape, toV3f(newPos), toV3f(PLAYER_HALF_SIZE));
-//            vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
+//            Vec3 newPos = gPlayerPos + moveDir * step;
+//            AABB playerBox = makeAABB(newPos, PLAYER_HALF_SIZE);
 //            bool blocked = false;
 //            for (auto& box : gBoxes) {
-//                // 玩家站在箱子顶部时跳过碰撞（仅当脚底几乎贴住箱顶表面）
-//                float boxTop = box.pos.y + box.size.y * 0.5f;
-//                float playerBottom = newPos.y - PLAYER_HALF_SIZE.y;
-//                bool onBox = playerBottom >= boxTop - 0.01f && playerBottom <= boxTop + 0.05f &&
-//                    fabsf(newPos.x - box.pos.x) <= box.size.x * 0.5f + PLAYER_HALF_SIZE.x * 0.5f &&
-//                    fabsf(newPos.z - box.pos.z) <= box.size.z * 0.5f + PLAYER_HALF_SIZE.z * 0.5f;
-//                // 往边缘走时 newPos 可能略微超出, 但当前位置还在箱子上
-//                if (!onBox) {
-//                    float curBottom = gPlayerPos.y - PLAYER_HALF_SIZE.y;
-//                    onBox = curBottom >= boxTop - 0.01f && curBottom <= boxTop + 0.05f &&
-//                        fabsf(gPlayerPos.x - box.pos.x) <= box.size.x * 0.5f + PLAYER_HALF_SIZE.x * 0.5f &&
-//                        fabsf(gPlayerPos.z - box.pos.z) <= box.size.z * 0.5f + PLAYER_HALF_SIZE.z * 0.5f;
-//                }
-//                if (onBox) continue;
-//                gjk3d_contact_t c;
-//                if (gjk3d_collide(&playerShape, &box.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
-//            }
-//            if (!blocked) {
-//                for (auto& ball : gBalls) {
-//                    gjk3d_contact_t c;
-//                    if (gjk3d_collide(&playerShape, &ball.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
-//                }
-//            }
-//            if (!blocked) {
-//                for (auto& obb : gOBBs) {
-//                    gjk3d_contact_t c;
-//                    if (gjk3d_collide(&playerShape, &obb.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
-//                }
-//            }
-//            if (!blocked) {
-//                for (auto& ramp : gRamps) {
-//                    // 玩家站在斜坡上时跳过碰撞
-//                    bool onRamp = ramp.isInXZ(newPos.x, newPos.z) &&
-//                        fabsf(newPos.y - PLAYER_HALF_SIZE.y - ramp.getHeight(newPos.x, newPos.z)) < 0.3f;
-//                    // 从斜坡顶往边缘走时, isInXZ(newPos) 会 false, 但当前位置还在坡上
-//                    if (!onRamp) {
-//                        onRamp = ramp.isInXZ(gPlayerPos.x, gPlayerPos.z) &&
-//                            fabsf(gPlayerPos.y - PLAYER_HALF_SIZE.y - ramp.getHeight(gPlayerPos.x, gPlayerPos.z)) < 0.3f;
-//                    }
-//                    if (onRamp) continue;
-//                    gjk3d_contact_t c;
-//                    if (gjk3d_collide(&playerShape, &ramp.gjkShape, gjkInitDir, &c)) { blocked = true; break; }
-//                }
+//                if (aabbOverlap(playerBox, box.aabb)) { blocked = true; break; }
 //            }
 //
 //            if (!blocked) {
@@ -541,7 +716,7 @@
 //    // 计算地面高度（斜坡、箱子顶部、地面中取最高值）
 //    float groundY = 0.0f;  // 默认地面 y = 0
 //
-//    // 斜坡（高度 + GJK 侧向碰撞已在移动检测中处理）
+//    // 斜坡
 //    for (auto& ramp : gRamps) {
 //        if (ramp.isInXZ(gPlayerPos.x, gPlayerPos.z)) {
 //            float sy = ramp.getHeight(gPlayerPos.x, gPlayerPos.z);
@@ -552,12 +727,10 @@
 //    for (auto& box : gBoxes) {
 //        float boxTop = box.pos.y + box.size.y * 0.5f;
 //        float boxBottom = box.pos.y - box.size.y * 0.5f;
-//        // 使用 GJK 做 XZ 平面重叠检测
-//        gjk3d_collider_t playerFeetShape;
-//        gjk3d_init_box(&playerFeetShape, toV3f({gPlayerPos.x, boxTop, gPlayerPos.z}), toV3f({PLAYER_HALF_SIZE.x * 0.8f, 0.01f, PLAYER_HALF_SIZE.z * 0.8f}));
-//        vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
-//        gjk3d_contact_t c;
-//        if (gjk3d_collide(&playerFeetShape, &box.gjkShape, gjkInitDir, &c)) {
+//        float hw = box.size.x * 0.5f;
+//        float hd = box.size.z * 0.5f;
+//        if (fabsf(gPlayerPos.x - box.pos.x) < hw + PLAYER_HALF_SIZE.x * 0.8f &&
+//            fabsf(gPlayerPos.z - box.pos.z) < hd + PLAYER_HALF_SIZE.z * 0.8f) {
 //            float playerFeet = gPlayerPos.y - PLAYER_HALF_SIZE.y;
 //            float playerHead = gPlayerPos.y + PLAYER_HALF_SIZE.y;
 //
@@ -601,63 +774,49 @@
 //
 //// -------------------- 更新 MVP --------------------
 //void updateMVPData() {
-//    float yawRad = ft_radians(gPlayerYaw);
-//    float pitchRad = ft_radians(gPitch);
-//    vec3_t camOffset = {-sinf(yawRad) * cosf(pitchRad) * CAM_DIST,
+//    float yawRad = radians(gPlayerYaw);
+//    float pitchRad = radians(gPitch);
+//    Vec3 camOffset = Vec3(-sinf(yawRad) * cosf(pitchRad) * CAM_DIST,
 //                           sinf(pitchRad) * CAM_DIST,
-//                           -cosf(yawRad) * cosf(pitchRad) * CAM_DIST};
-//    vec3_t eye = vec3_add(gPlayerPos, camOffset);
-//    vec3_t center = vec3_add(gPlayerPos, {0, 1.0f, 0});
+//                           -cosf(yawRad) * cosf(pitchRad) * CAM_DIST);
+//    Vec3 eye = gPlayerPos + camOffset;
+//    Vec3 center = gPlayerPos + Vec3(0, 1.0f, 0);
 //
-//    mat44_t view = mat44_lookAt(eye, center, {0,1,0});
-//    mat44_t proj = mat44_perspective(ft_radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-//    mat44_t viewProj = mat44_mul(view, proj);
+//    Mat4 view = Mat4::lookAt(eye, center, Vec3(0,1,0));
+//    Mat4 proj = Mat4::perspective(radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+//    Mat4 viewProj = view * proj;
 //
-//    render_mat44_to_float16(&viewProj, gMVP.viewProj);
+//    gMVP.viewProj = viewProj;
 //
 //    // 地板
-//    gModelMatrices[0] = mat44_identity();
+//    gModelMatrices[0] = Mat4::identity();
 //
 //    // 玩家立方体（手动构建矩阵，避免 rotateY 错误）
 //    {
-//        mat44_t m = mat44_identity();
-//        float y = ft_radians(gPlayerYaw), c = cosf(y), s = sinf(y);
-//        m.m0 = c;  m.m2  = -s;
-//        m.m8 = s;  m.m10 = c;
-//        m.m12 = gPlayerPos.x;
-//        m.m13 = gPlayerPos.y;
-//        m.m14 = gPlayerPos.z;
+//        Mat4 m;
+//        float y = radians(gPlayerYaw), c = cosf(y), s = sinf(y);
+//        m.m[0] = c;  m.m[2]  = -s;
+//        m.m[8] = s;  m.m[10] = c;
+//        m.m[12] = gPlayerPos.x;
+//        m.m[13] = gPlayerPos.y;
+//        m.m[14] = gPlayerPos.z;
 //        gModelMatrices[1] = m;
 //    }
 //
-//    // 旧斜坡（三角棱柱，index 2）
-//    gModelMatrices[2] = mat44_translate(gRamps[0].basePos.x, gRamps[0].basePos.y, gRamps[0].basePos.z);
+//    // 斜坡（固定位置）
+//    gModelMatrices[2] = Mat4::translate(gRamps[0].basePos);
 //
-//    // 新斜坡（斜放长方体，index 3）
-//    {
-//        mat44_t m = mat44_identity();
-//        auto& ramp = gRamps[1];
-//        float cs = cosf(ramp.angle), sn = sinf(ramp.angle);
-//        m.m0  = ramp.width;
-//        m.m5  = ramp.height * cs;  m.m6  = ramp.height * sn;
-//        m.m9  = ramp.length * -sn; m.m10 = ramp.length * cs;
-//        m.m12 = ramp.basePos.x;
-//        m.m13 = ramp.basePos.y + ramp.height * 0.5f;
-//        m.m14 = ramp.basePos.z;
-//        gModelMatrices[3] = m;
-//    }
-//
-//    // 障碍物箱子（斜坡 index 2/3，箱子从 4 开始）
+//    // 障碍物箱子（斜坡占 index 2，箱子从 3 开始）
 //    for (size_t i = 0; i < gBoxes.size(); i++) {
 //        auto& box = gBoxes[i];
-//        mat44_t m = mat44_identity();
-//        m.m0  = box.size.x;
-//        m.m5  = box.size.y;
-//        m.m10 = box.size.z;
-//        m.m12 = box.pos.x;
-//        m.m13 = box.pos.y;
-//        m.m14 = box.pos.z;
-//        gModelMatrices[4 + i] = m;
+//        Mat4 m;
+//        m.m[0]  = box.size.x;
+//        m.m[5]  = box.size.y;
+//        m.m[10] = box.size.z;
+//        m.m[12] = box.pos.x;
+//        m.m[13] = box.pos.y;
+//        m.m[14] = box.pos.z;
+//        gModelMatrices[3 + i] = m;
 //    }
 //}
 //
@@ -671,7 +830,7 @@
 //        return SDL_APP_FAILURE;
 //    }
 //
-//    gGraphicsPipeline = render_create_pipeline(gDevice, gShaders.vertex, gShaders.fragment, SDL_GetGPUSwapchainTextureFormat(gDevice, gWindow), SDL_GPU_TEXTUREFORMAT_D16_UNORM);
+//    gGraphicsPipeline = createGraphicsPipeline();
 //    if (!gGraphicsPipeline) {
 //        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Graphics pipeline load failed!");
 //        return SDL_APP_FAILURE;
@@ -680,71 +839,24 @@
 //    createFloorMesh();
 //
 //    createCubeMesh();
-//    gModelMatrices.push_back(mat44_identity());
+//    gModelMatrices.push_back(Mat4::identity());
 //    gDrawMeshes.push_back({ gCubeVertexBuffer, 36 });
 //
 //    createUnitCubeMesh();
 //    createRampMesh();
-//    gRamps.reserve(8);  // 预分配,避免 push_back 时重分配导致 gjkShape.vertices 指针悬空
 //
-//    // 旧斜坡（三角棱柱）
+//    // 创建斜坡
 //    {
-//        gRamps.emplace_back();
-//        auto& ramp = gRamps.back();
-//        ramp.basePos = {-6, 0, 0};
+//        Ramp ramp;
+//        ramp.basePos = Vec3(-6, 0, 0);
 //        ramp.width = 2.0f;
 //        ramp.length = 3.0f;
 //        ramp.height = 1.5f;
-//        ramp.angle = 0;
-//        {
-//            ramp.worldVerts[0] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f});
-//            ramp.worldVerts[1] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z - ramp.length * 0.5f});
-//            ramp.worldVerts[2] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f});
-//            ramp.worldVerts[3] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y + ramp.height, ramp.basePos.z + ramp.length * 0.5f});
-//            ramp.worldVerts[4] = toV3f({ramp.basePos.x - ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f});
-//            ramp.worldVerts[5] = toV3f({ramp.basePos.x + ramp.width * 0.5f, ramp.basePos.y, ramp.basePos.z + ramp.length * 0.5f});
-//            gjk3d_init_mesh(&ramp.gjkShape, ramp.worldVerts, 6);
-//        }
-//        mat44_t m = mat44_translate(ramp.basePos.x, ramp.basePos.y, ramp.basePos.z);
+//        gRamps.push_back(ramp);
+//
+//        Mat4 m = Mat4::translate(ramp.basePos);
 //        gModelMatrices.push_back(m);
 //        gDrawMeshes.push_back({ gRampVertexBuffer, 24 });
-//    }
-//
-//    // 新斜坡（长方体斜放，放地图另一侧）
-//    {
-//        gRamps.emplace_back();
-//        auto& ramp = gRamps.back();
-//        ramp.basePos = {6, 0, 0};
-//        ramp.width = 2.0f;
-//        ramp.length = 3.0f;
-//        ramp.height = 1.0f;
-//        ramp.angle = -atan2f(ramp.height, ramp.length);  // 与三角斜坡同向（+Z 方向升高）
-//        {
-//            float cs = cosf(ramp.angle), sn = sinf(ramp.angle);
-//            float hw = ramp.width * 0.5f, hh = ramp.height * 0.5f, hl = ramp.length * 0.5f;
-//            float cx = ramp.basePos.x, cy = ramp.basePos.y + hh, cz = ramp.basePos.z;
-//            int vi = 0;
-//            for (int ix = -1; ix <= 1; ix += 2)
-//                for (int iy = -1; iy <= 1; iy += 2)
-//                    for (int iz = -1; iz <= 1; iz += 2) {
-//                        float lx = ix * hw, ly = iy * hh, lz = iz * hl;
-//                        float wx = lx + cx, wy = ly * cs - lz * sn + cy, wz = ly * sn + lz * cs + cz;
-//                        ramp.worldVerts[vi++] = toV3f({wx, wy, wz});
-//                    }
-//            gjk3d_init_mesh(&ramp.gjkShape, ramp.worldVerts, 8);
-//        }
-//        {
-//            mat44_t m = mat44_identity();
-//            float cs = cosf(ramp.angle), sn = sinf(ramp.angle);
-//            m.m0  = ramp.width;
-//            m.m5  = ramp.height * cs;  m.m6  = ramp.height * sn;
-//            m.m9  = ramp.length * -sn; m.m10 = ramp.length * cs;
-//            m.m12 = ramp.basePos.x;
-//            m.m13 = ramp.basePos.y + ramp.height * 0.5f;
-//            m.m14 = ramp.basePos.z;
-//            gModelMatrices.push_back(m);
-//            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
-//        }
 //    }
 //
 //    // 创建障碍物箱子
@@ -761,72 +873,18 @@
 //        };
 //        for (auto& def : boxDefs) {
 //            BoxObstacle box;
-//            box.pos = {def.x, def.sy * 0.5f, def.z};
-//            box.size = {def.sx, def.sy, def.sz};
-//            gjk3d_init_box(&box.gjkShape, toV3f(box.pos), toV3f({box.size.x * 0.5f, box.size.y * 0.5f, box.size.z * 0.5f}));
+//            box.pos = Vec3(def.x, def.sy * 0.5f, def.z);
+//            box.size = Vec3(def.sx, def.sy, def.sz);
+//            box.aabb = makeAABB(box.pos, box.size * 0.5f);
 //            gBoxes.push_back(box);
 //
-//            mat44_t m = mat44_identity();
-//            m.m0  = box.size.x;
-//            m.m5  = box.size.y;
-//            m.m10 = box.size.z;
-//            m.m12 = box.pos.x;
-//            m.m13 = box.pos.y;
-//            m.m14 = box.pos.z;
-//            gModelMatrices.push_back(m);
-//            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
-//        }
-//    }
-//
-//    // 创建 GJK 测试球体
-//    {
-//        BallObstacle ball;
-//        ball.pos = {2, 0.5f, 2};
-//        ball.radius = 0.5f;
-//        gjk3d_init_sphere(&ball.gjkShape, toV3f(ball.pos), fp_from_float(ball.radius));
-//        gBalls.push_back(ball);
-//        {
-//            mat44_t m = mat44_identity();
-//            m.m0 = ball.radius * 2; m.m5 = ball.radius * 2; m.m10 = ball.radius * 2;
-//            m.m12 = ball.pos.x; m.m13 = ball.pos.y; m.m14 = ball.pos.z;
-//            gModelMatrices.push_back(m);
-//            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
-//        }
-//    }
-//
-//    // 创建 GJK 测试 OBB（旋转 45° 的箱子，AABB 无法精确处理）
-//    {
-//        gOBBs.emplace_back();
-//        auto& obb = gOBBs.back();
-//        obb.pos = {-2, 0.5f, 2};
-//        obb.size = {0.8f, 0.8f, 0.8f};
-//        obb.angle = 45.0f;
-//        {
-//            vec3f_t half = toV3f({obb.size.x * 0.5f, obb.size.y * 0.5f, obb.size.z * 0.5f});
-//            vec3f_t localVerts[8] = {
-//                { -half.x,  half.y, -half.z }, {  half.x,  half.y, -half.z },
-//                {  half.x,  half.y,  half.z }, { -half.x,  half.y,  half.z },
-//                { -half.x, -half.y, -half.z }, {  half.x, -half.y, -half.z },
-//                {  half.x, -half.y,  half.z }, { -half.x, -half.y,  half.z },
-//            };
-//            float rad = ft_radians(obb.angle);
-//            mat44f_t t = mat44f_translate(fp_from_float(obb.pos.x), fp_from_float(obb.pos.y), fp_from_float(obb.pos.z));
-//            mat44f_t r = mat44f_rotate_y(fp_from_float(rad));
-//            mat44f_t transform = mat44f_mul(r, t);
-//            for (int i = 0; i < 8; i++) {
-//                vec4f_t v = { localVerts[i].x, localVerts[i].y, localVerts[i].z, fp_one() };
-//                vec4f_t res = mat44f_mul_vec4f(transform, v);
-//                obb.worldVerts[i] = { res.x, res.y, res.z };
-//            }
-//            gjk3d_init_mesh(&obb.gjkShape, obb.worldVerts, 8);
-//        }
-//        {
-//            float y = ft_radians(obb.angle), c = cosf(y), s = sinf(y);
-//            mat44_t m = mat44_identity();
-//            m.m0 = obb.size.x * c;  m.m2  = obb.size.x * -s;
-//            m.m5 = obb.size.y;
-//            m.m8 = obb.size.z * s;  m.m10 = obb.size.z * c;
-//            m.m12 = obb.pos.x; m.m13 = obb.pos.y; m.m14 = obb.pos.z;
+//            Mat4 m;
+//            m.m[0]  = box.size.x;
+//            m.m[5]  = box.size.y;
+//            m.m[10] = box.size.z;
+//            m.m[12] = box.pos.x;
+//            m.m[13] = box.pos.y;
+//            m.m[14] = box.pos.z;
 //            gModelMatrices.push_back(m);
 //            gDrawMeshes.push_back({ gUnitCubeVertexBuffer, 36 });
 //        }
@@ -834,21 +892,21 @@
 //
 //    createFloorTexture();
 //    createEnemyBulletTextures();
-//    gDepthTexture = render_create_depth_texture(gDevice, WINDOW_WIDTH, WINDOW_HEIGHT);
-//    gSampler = render_create_sampler(gDevice);
+//    createDepthTexture(WINDOW_WIDTH, WINDOW_HEIGHT);
+//    createSampler();
 //    createBulletMesh();
 //
-//    /* 敌人已屏蔽
+//    // 创建敌人
 //    {
 //        struct { float x, z; } enemyPos[] = {
 //            { 4, 4 }, { -4, -3 }, { 6, -5 }, { -5, 5 }, { 0, -6 },
 //        };
 //        for (auto& ep : enemyPos) {
 //            Enemy e;
-//            e.pos = {ep.x, 0.6f, ep.z};
+//            e.pos = Vec3(ep.x, 0.6f, ep.z);
 //            gEnemies.push_back(e);
 //        }
-//    }*/
+//    }
 //
 //    gPlayerHP = gPlayerMaxHP;
 //
@@ -867,10 +925,10 @@
 //    gShootTimer += gDeltaTime;
 //    if (gKeys.shoot && gShootTimer >= gShootCooldown) {
 //        gShootTimer = 0.0f;
-//        float yawRad = ft_radians(gPlayerYaw);
-//        vec3_t dir = {sinf(yawRad), 0, cosf(yawRad)};
+//        float yawRad = radians(gPlayerYaw);
+//        Vec3 dir = Vec3(sinf(yawRad), 0, cosf(yawRad));
 //        Bullet b;
-//        b.pos = vec3_add(vec3_add(gPlayerPos, {0, 0.4f, 0}), vec3_scale(dir, 0.6f));
+//        b.pos = gPlayerPos + Vec3(0, 0.4f, 0) + dir * 0.6f;
 //        b.dir = dir;
 //        gBullets.push_back(b);
 //    }
@@ -878,7 +936,7 @@
 //    for (int i = (int)gBullets.size() - 1; i >= 0; i--) {
 //        auto& b = gBullets[i];
 //        b.age += gDeltaTime;
-//        b.pos = vec3_add(b.pos, vec3_scale(b.dir, b.speed * gDeltaTime));
+//        b.pos = b.pos + b.dir * b.speed * gDeltaTime;
 //
 //        // 子弹超出边界 → 销毁
 //        if (fabsf(b.pos.x) > 10.5f || fabsf(b.pos.z) > 10.5f) { gBullets.erase(gBullets.begin() + i); continue; }
@@ -886,11 +944,8 @@
 //        // 子弹击中箱子 → 销毁
 //        bool hitBox = false;
 //        for (auto& box : gBoxes) {
-//            gjk3d_collider_t bulShape;
-//            gjk3d_init_box(&bulShape, toV3f(b.pos), toV3f({0.15f, 0.15f, 0.15f}));
-//            vec3f_t gjkInitDir = { fp_one(), fp_zero(), fp_zero() };
-//            gjk3d_contact_t c;
-//            if (gjk3d_collide(&bulShape, &box.gjkShape, gjkInitDir, &c)) { hitBox = true; break; }
+//            AABB bulBox = makeAABB(b.pos, Vec3(0.15f, 0.15f, 0.15f));
+//            if (aabbOverlap(bulBox, box.aabb)) { hitBox = true; break; }
 //        }
 //        if (hitBox) { gBullets.erase(gBullets.begin() + i); continue; }
 //
@@ -898,9 +953,9 @@
 //        bool hitEnemy = false;
 //        for (auto& e : gEnemies) {
 //            if (!e.alive) continue;
-//            vec3_t diff = vec3_sub(b.pos, e.pos);
+//            Vec3 diff = b.pos - e.pos;
 //            diff.y = 0;
-//            if (vec3_length(diff) < 0.6f) {
+//            if (length(diff) < 0.6f) {
 //                e.hp -= b.damage;
 //                if (e.hp <= 0) e.alive = false;
 //                hitEnemy = true;
@@ -913,11 +968,62 @@
 //        if (b.age > b.lifetime) { gBullets.erase(gBullets.begin() + i); continue; }
 //    }
 //
-//    /* 敌人已屏蔽
-//    float yawRad = ft_radians(gPlayerYaw);
-//    vec3_t playerForward = {sinf(yawRad), 0, cosf(yawRad)};
-//    for (auto& e : gEnemies) { }
-//    */
+//    // ----- 敌人更新 -----
+//    float yawRad = radians(gPlayerYaw);
+//    Vec3 playerForward = Vec3(sinf(yawRad), 0, cosf(yawRad));
+//    for (auto& e : gEnemies) {
+//        if (!e.alive) continue;
+//        e.attackTimer += gDeltaTime;
+//
+//        Vec3 toPlayer = gPlayerPos - e.pos;
+//        float dist = length(toPlayer);
+//        toPlayer = normalize(toPlayer);
+//
+//        // 追击玩家
+//        if (dist < e.aggroRange) {
+//            Vec3 moveDir = toPlayer;
+//            moveDir.y = 0;
+//            moveDir = normalize(moveDir);
+//
+//            float totalDist = e.speed * gDeltaTime;
+//            const float MAX_STEP = 0.02f;
+//            while (totalDist > 0.0001f) {
+//                float step = (totalDist > MAX_STEP) ? MAX_STEP : totalDist;
+//                totalDist -= step;
+//
+//                Vec3 newPos = e.pos + moveDir * step;
+//                AABB enemyBox = makeAABB(newPos, Vec3(0.25f, 0.25f, 0.25f));
+//                bool blocked = false;
+//                for (auto& box : gBoxes) {
+//                    if (aabbOverlap(enemyBox, box.aabb)) { blocked = true; break; }
+//                }
+//                if (!blocked) {
+//                    e.pos = newPos;
+//                } else {
+//                    break;
+//                }
+//            }
+//
+//            // 空气墙
+//            if (e.pos.x > 9.0f) e.pos.x = 9.0f;
+//            if (e.pos.x < -9.0f) e.pos.x = -9.0f;
+//            if (e.pos.z > 9.0f) e.pos.z = 9.0f;
+//            if (e.pos.z < -9.0f) e.pos.z = -9.0f;
+//            e.pos.y = 0.6f;
+//        }
+//
+//        // 攻击玩家
+//        if (dist < e.attackRange && e.attackTimer >= e.attackCooldown) {
+//            e.attackTimer = 0.0f;
+//            gPlayerHP -= e.damage;
+//            SDL_Log("玩家受到伤害! HP: %d/%d", gPlayerHP, gPlayerMaxHP);
+//            if (gPlayerHP <= 0) {
+//                SDL_Log("玩家死亡! 重新开始...");
+//                gPlayerHP = gPlayerMaxHP;
+//                gPlayerPos = Vec3(0, 0.6f, 0);
+//            }
+//        }
+//    }
 //
 //    bool minimized = SDL_GetWindowFlags(gWindow) & SDL_WINDOW_MINIMIZED;
 //    if (minimized) return SDL_APP_CONTINUE;
@@ -964,7 +1070,7 @@
 //    // 绘制静态物体（地板、箱子等）
 //    for (size_t i = 0; i < gDrawMeshes.size(); i++) {
 //        auto& mesh = gDrawMeshes[i];
-//        render_mat44_to_float16(&gModelMatrices[i], gMVP.model);
+//        gMVP.model = gModelMatrices[i];
 //        SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 //
 //        SDL_GPUTextureSamplerBinding samp{};
@@ -980,13 +1086,13 @@
 //        SDL_DrawGPUPrimitives(rp, mesh.vertexCount, 1, 0, 0);
 //    }
 //
-//    /* 敌人已屏蔽*/
+//    // 绘制敌人（红色立方体）
 //    for (auto& e : gEnemies) {
 //        if (!e.alive) continue;
-//        mat44_t m = mat44_identity();
-//        m.m0 = 0.5f; m.m5 = 0.5f; m.m10 = 0.5f;
-//        m.m12 = e.pos.x; m.m13 = e.pos.y; m.m14 = e.pos.z;
-//        render_mat44_to_float16(&m, gMVP.model);
+//        Mat4 m;
+//        m.m[0] = 0.5f; m.m[5] = 0.5f; m.m[10] = 0.5f;
+//        m.m[12] = e.pos.x; m.m[13] = e.pos.y; m.m[14] = e.pos.z;
+//        gMVP.model = m;
 //        SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 //
 //        SDL_GPUTextureSamplerBinding samp{};
@@ -1000,14 +1106,13 @@
 //        SDL_BindGPUVertexBuffers(rp, 0, &bind, 1);
 //        SDL_DrawGPUPrimitives(rp, 36, 1, 0, 0);
 //    }
-//    
 //
 //    // 绘制子弹（黄色小立方体）
 //    for (auto& b : gBullets) {
-//        mat44_t m = mat44_identity();
-//        m.m0 = 0.08f; m.m5 = 0.08f; m.m10 = 0.08f;
-//        m.m12 = b.pos.x; m.m13 = b.pos.y; m.m14 = b.pos.z;
-//        render_mat44_to_float16(&m, gMVP.model);
+//        Mat4 m;
+//        m.m[0] = 0.08f; m.m[5] = 0.08f; m.m[10] = 0.08f;
+//        m.m[12] = b.pos.x; m.m[13] = b.pos.y; m.m[14] = b.pos.z;
+//        gMVP.model = m;
 //        SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 //
 //        SDL_GPUTextureSamplerBinding samp{};
@@ -1038,11 +1143,6 @@
 //        return SDL_APP_SUCCESS;
 //    }
 //
-//    // 鼠标移动 → 水平旋转玩家朝向（绕 Y 轴）
-//    if (event->type == SDL_EVENT_MOUSE_MOTION) {
-//        gPlayerYaw += event->motion.xrel * 0.05f;
-//    }
-//
 //    return SDL_APP_CONTINUE;
 //}
 //
@@ -1052,19 +1152,17 @@
 //    SDL_ReleaseGPUTexture(gDevice, gTexture);
 //    SDL_ReleaseGPUTexture(gDevice, gTextureEnemy);
 //    SDL_ReleaseGPUTexture(gDevice, gTextureBullet);
-//    if (gTextureBall) SDL_ReleaseGPUTexture(gDevice, gTextureBall);
-//    if (gTextureOBB) SDL_ReleaseGPUTexture(gDevice, gTextureOBB);
 //    SDL_ReleaseGPUTexture(gDevice, gDepthTexture);
 //    SDL_ReleaseGPUBuffer(gDevice, gFloorVertexBuffer);
 //    SDL_ReleaseGPUBuffer(gDevice, gCubeVertexBuffer);
 //    if (gUnitCubeVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gUnitCubeVertexBuffer);
 //    if (gRampVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gRampVertexBuffer);
 //    if (gBulletVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gBulletVertexBuffer);
-//    if (gSphereVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gSphereVertexBuffer);
 //    SDL_ReleaseGPUGraphicsPipeline(gDevice, gGraphicsPipeline);
 //    SDL_ReleaseGPUShader(gDevice, gShaders.vertex);
 //    SDL_ReleaseGPUShader(gDevice, gShaders.fragment);
 //    SDL_ReleaseWindowFromGPUDevice(gDevice, gWindow);
 //    SDL_DestroyGPUDevice(gDevice);
 //    SDL_DestroyWindow(gWindow);
+//    SDL_Quit();
 //}

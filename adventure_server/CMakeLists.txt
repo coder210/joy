@@ -48,7 +48,7 @@ endif()
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
     protobuf::libprotobuf
-    joy2d
+    joy
 )
 
 # ------------------- 资产处理 -------------------

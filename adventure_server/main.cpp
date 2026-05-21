@@ -1,8 +1,8 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
-#include <joy2d/jcore.h>
-#include <joy2d/jsys.h>
-#include <joy2d/jscene.h>
+#include <joy/jcore.h>
+#include <joy/jsys.h>
+#include <joy/jscene.h>
 #include "scenes/game_scene.h"
 #include "asset_manager.h"
 #include "context.h"

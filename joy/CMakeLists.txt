@@ -16,7 +16,7 @@ else()
 	set(ENABLED_CSHARP_SCRIPT OFF)
 endif()
 
-set(LIB_NAME joy2d)
+set(LIB_NAME joy)
 
 # 默认隐藏符号，只导出 API 标记的函数（GCC/Clang）
 if(NOT MSVC)

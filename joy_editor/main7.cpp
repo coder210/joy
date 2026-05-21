@@ -4,9 +4,9 @@
 //#include <string.h>
 //#include <stdlib.h>
 //#include <math.h>
-//#include <joy2d/jconfig.h>
-//#include <joy2d/jscene.h>
-//#include <joy2d/jcore.h>
+//#include <joy/jconfig.h>
+//#include <joy/jscene.h>
+//#include <joy/jcore.h>
 //
 //static SDL_Window*   g_win = NULL;
 //static SDL_Renderer* g_ren = NULL;

@@ -2,7 +2,7 @@
 // #include <SDL3/SDL.h>
 // #include <SDL3/SDL_main.h>
 // #include "gjk2d.h"
-// #include <joy2d/jgjk.h>
+// #include <joy/jgjk.h>
 // #include <cstdio>
 // #include <cmath>
 // #include <memory>
@@ -454,7 +454,7 @@
 // SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
 //     run_all_tests();
 
-//     SDL_SetAppMetadata("GJK2D Demo", "1.0", "joy2d");
+//     SDL_SetAppMetadata("GJK2D Demo", "1.0", "joy");
 //     if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
 //     gWin = SDL_CreateWindow("GJK2D Scene Demo (like main8.cpp)", WW, WH, 0);
 //     if (!gWin) return SDL_APP_FAILURE;

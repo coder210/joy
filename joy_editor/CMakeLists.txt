@@ -1,5 +1,5 @@
 # 可执行文件名（保持不变）
-set(EXECUTABLE_NAME "joy2d_editor")
+set(EXECUTABLE_NAME "joy_editor")
 message(STATUS "EXECUTABLE_NAME = '${EXECUTABLE_NAME}'")
 
 # 如果是 Android，必须命名为 main
@@ -152,7 +152,7 @@ message(STATUS "Loader source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Loader binary dir: ${CMAKE_BINARY_DIR}")
 
 # ------------------- 链接 SDL3 -------------------
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3 joy2d)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC SDL3::SDL3 joy)
 
 # ------------------- 平台特定链接（仅需链接运行时库） -------------------
 if(ANDROID)
