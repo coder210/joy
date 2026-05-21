@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "jmath.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #define ACCUMULATE_IMPULSES 1
 #define WARM_STARTING 1
@@ -70,17 +74,20 @@ typedef struct box2d_arbiter_t {
 typedef struct box2d_world_t box2d_world_t;
 
 
-box2d_world_t* box2d_create_world(vec2f_t gravity, int iterations);
-void box2d_clear_world(box2d_world_t* world);
-void box2d_destroy_world(box2d_world_t* world);
-void box2d_step(box2d_world_t* world, fp_t dt);
-box2d_body_t* box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by);
-void box2d_destroy_body(box2d_world_t* world, int id);
-box2d_joint_t* box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor);
-void box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint);
-void box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*));
-void box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
-void box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
+JOY_API box2d_world_t* box2d_create_world(vec2f_t gravity, int iterations);
+JOY_API void box2d_clear_world(box2d_world_t* world);
+JOY_API void box2d_destroy_world(box2d_world_t* world);
+JOY_API void box2d_step(box2d_world_t* world, fp_t dt);
+JOY_API box2d_body_t* box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by);
+JOY_API void box2d_destroy_body(box2d_world_t* world, int id);
+JOY_API box2d_joint_t* box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor);
+JOY_API void box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint);
+JOY_API void box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*));
+JOY_API void box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
+JOY_API void box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
