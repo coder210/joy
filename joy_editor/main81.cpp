@@ -5,8 +5,11 @@
  #include <cmath>
  #include <cstring>
  #include <iostream>
- #include <vector>
- #include <cstdio>
+#include <vector>
+#include <string>
+#include <cstdio>
+#include <algorithm>
+#include <map>
  #include <joy/jgjk.h>
  #include <joy/jrender.h>
  #include <cfloat>
@@ -91,11 +94,27 @@
  std::vector<BallObstacle> gBalls;
  SDL_GPUTexture* gTextureBall = nullptr;
 
- // glTF 模型
- SDL_GPUBuffer* gGLTFVertexBuffer = nullptr;
- int gGLTFVertexCount = 0;
- SDL_GPUTexture* gGLTFTexture = nullptr;
- bool gGLTFValid = false;
+// glTF 模型
+SDL_GPUBuffer* gGLTFVertexBuffer = nullptr;
+int gGLTFVertexCount = 0;
+SDL_GPUTexture* gGLTFTexture = nullptr;
+bool gGLTFValid = false;
+cgltf_data* gGLTFData = nullptr;
+float gGLTFAnimTime = 0.0f;
+bool gGLTFAnimPlaying = false;
+int gGLTFAnimIndex = 0;
+
+// 顶点格式（move forward for global refs）
+struct Vertex { float x, y, z; float u, v; };
+
+// 逐网格部件信息（用于动画）
+struct MeshPart {
+    int vertexOffset;
+    int vertexCount;
+    cgltf_node* node; // 该网格所属的节点（用于计算世界矩阵）
+};
+std::vector<MeshPart> gMeshParts;
+std::vector<Vertex> gRestPoseVerts; // 原始顶点（rest pose）
 
  // 旋转箱子（OBB，GJK 支持但 AABB 不支持）
  struct OBBObstacle {
@@ -205,13 +224,7 @@
     return bundle;
  }
 
- // 顶点格式
- struct Vertex {
-    float x, y, z;
-    float u, v;
- };
-
- // 生成地板顶点
+// 生成地板顶点
  void createFloorMesh() {
     std::vector<Vertex> verts;
     float half = 10.0f;
@@ -349,163 +362,208 @@
     gBulletVertexBuffer = render_upload_buffer(gDevice, verts, sizeof(verts));
  }
 
- // 加载 glTF 模型并上传到 GPU
- static bool loadGLTFModel(const char* path, SDL_GPUBuffer** outBuf, int* outCount) {
-     *outBuf = nullptr;
-     *outCount = 0;
-     gGLTFTexture = nullptr;
-     gGLTFValid = false;
+// 提取目录路径（包含末尾分隔符）
+static std::string getDir(const char* path) {
+    std::string s(path);
+    auto pos = s.find_last_of("/\\");
+    return (pos != std::string::npos) ? s.substr(0, pos + 1) : "";
+}
 
-     cgltf_options opts = {};
-     cgltf_data* data = nullptr;
-     cgltf_result res = cgltf_parse_file(&opts, path, &data);
-     if (res != cgltf_result_success) {
-         SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "cgltf_parse_file failed: %s", path);
-         return false;
-     }
+// 加载 glTF 模型并上传到 GPU
+static bool loadGLTFModel(const char* path, SDL_GPUBuffer** outBuf, int* outCount) {
+    *outBuf = nullptr;
+    *outCount = 0;
+    gGLTFTexture = nullptr;
+    gGLTFValid = false;
+    gGLTFData = nullptr;
 
-     res = cgltf_load_buffers(&opts, data, path);
-     if (res != cgltf_result_success) {
-         SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "cgltf_load_buffers failed: %s", path);
-         cgltf_free(data);
-         return false;
-     }
+    cgltf_options opts = {};
+        gMeshParts.clear();
+    gRestPoseVerts.clear();
+    cgltf_result res = cgltf_parse_file(&opts, path, &gGLTFData);
+    if (res != cgltf_result_success) {
+        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "cgltf_parse_file failed: %s", path);
+        return false;
+    }
 
-     // ---- 加载第一个 base color texture ----
-     for (cgltf_size m = 0; m < data->materials_count; m++) {
-         cgltf_material* mat = &data->materials[m];
-         cgltf_texture_view* pbr = &mat->pbr_metallic_roughness.base_color_texture;
-         if (pbr->texture && pbr->texture->image) {
-             cgltf_image* img = pbr->texture->image;
-             const uint8_t* imgData = nullptr;
-             cgltf_size imgSize = 0;
-             if (img->buffer_view) {
-                 imgData = (const uint8_t*)img->buffer_view->buffer->data + img->buffer_view->offset;
-                 imgSize = img->buffer_view->size;
-             } else if (img->uri) {
-                 // 外部图片文件，cgltf_load_buffers 已加载
-                 SDL_Log("GLTF: external texture %s not handled", img->uri);
-                 continue;
-             }
-             if (imgData && imgSize > 0) {
-                 int w, h, n;
-                 unsigned char* pixels = stbi_load_from_memory(imgData, (int)imgSize, &w, &h, &n, 4);
-                 if (pixels) {
-                     SDL_GPUTextureCreateInfo tci{};
-                     tci.type = SDL_GPU_TEXTURETYPE_2D;
-                     tci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-                     tci.width = w;
-                     tci.height = h;
-                     tci.layer_count_or_depth = 1;
-                     tci.num_levels = 1;
-                     tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-                     tci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
-                     gGLTFTexture = SDL_CreateGPUTexture(gDevice, &tci);
-                     if (gGLTFTexture) {
-                         SDL_GPUTransferBufferCreateInfo tbci{};
-                         tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
-                         tbci.size = (Uint32)(w * h * 4);
-                         SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tbci);
-                         memcpy(SDL_MapGPUTransferBuffer(gDevice, tb, false), pixels, w * h * 4);
-                         SDL_UnmapGPUTransferBuffer(gDevice, tb);
-                         SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(gDevice);
-                         SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
-                         SDL_GPUTextureTransferInfo src{};
-                         src.transfer_buffer = tb;
-                         src.offset = 0;
-                         src.pixels_per_row = w;
-                         src.rows_per_layer = h;
-                         SDL_GPUTextureRegion dst{};
-                         dst.texture = gGLTFTexture;
-                         dst.w = w; dst.h = h; dst.d = 1;
-                         SDL_UploadToGPUTexture(cp, &src, &dst, false);
-                         SDL_EndGPUCopyPass(cp);
-                         SDL_SubmitGPUCommandBuffer(cb);
-                         SDL_ReleaseGPUTransferBuffer(gDevice, tb);
-                         SDL_Log("GLTF texture loaded: %dx%d", w, h);
-                     }
-                     stbi_image_free(pixels);
-                     break; // 只加载第一个纹理
-                 }
-             }
-         }
-     }
+    res = cgltf_load_buffers(&opts, gGLTFData, path);
+    if (res != cgltf_result_success) {
+        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "cgltf_load_buffers failed: %s", path);
+        cgltf_free(gGLTFData); gGLTFData = nullptr;
+        return false;
+    }
 
-     // ---- 收集顶点 ----
-     std::vector<Vertex> verts;
-     for (cgltf_size m = 0; m < data->meshes_count; m++) {
-         cgltf_mesh* mesh = &data->meshes[m];
-         for (cgltf_size p = 0; p < mesh->primitives_count; p++) {
-             cgltf_primitive* prim = &mesh->primitives[p];
-             const float* posData = nullptr;
-             cgltf_size posCount = 0;
-             for (cgltf_size a = 0; a < prim->attributes_count; a++) {
-                 cgltf_attribute* at = &prim->attributes[a];
-                 if (at->type == cgltf_attribute_type_position) {
-                     cgltf_accessor* acc = at->data;
-                     posData = (const float*)((const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset);
-                     posCount = acc->count;
-                     break;
-                 }
-             }
-             if (!posData || posCount == 0) continue;
+    std::string baseDir = getDir(path);
 
-             const float* uvData = nullptr;
-             for (cgltf_size a = 0; a < prim->attributes_count; a++) {
-                 cgltf_attribute* at = &prim->attributes[a];
-                 if (at->type == cgltf_attribute_type_texcoord) {
-                     cgltf_accessor* acc = at->data;
-                     uvData = (const float*)((const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset);
-                     break;
-                 }
-             }
+    // ---- 加载纹理：直接枚举所有图片 ----
+    auto loadTexture = [&](cgltf_image* img, int idx) -> bool {
+        if (!img) { SDL_Log("image[%d]: null", idx); return false; }
+        const uint8_t* imgData = nullptr;
+        cgltf_size imgSize = 0;
+        int w, h, n;
+        unsigned char* pixels = nullptr;
 
-             auto readIdx = [](cgltf_accessor* acc, cgltf_size i) -> uint32_t {
-                 const uint8_t* base = (const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset;
-                 if (acc->component_type == cgltf_component_type_r_16u) return ((uint16_t*)base)[i];
-                 if (acc->component_type == cgltf_component_type_r_32u) return ((uint32_t*)base)[i];
-                 return ((uint8_t*)base)[i];
-             };
+        SDL_Log("image[%d]: name=%s buffer_view=%p uri=%s", idx,
+            img->name ? img->name : "(null)",
+            (void*)img->buffer_view,
+            img->uri ? img->uri : "(null)");
 
-             if (prim->indices) {
-                 cgltf_accessor* idxAcc = prim->indices;
-                 for (cgltf_size i = 0; i < idxAcc->count; i++) {
-                     uint32_t idx = readIdx(idxAcc, i);
-                     if (idx >= posCount) continue;
-                     float x = posData[idx * 3 + 0];
-                     float y = posData[idx * 3 + 1];
-                     float z = posData[idx * 3 + 2];
-                     float u = uvData ? uvData[idx * 2 + 0] : (x * 0.5f + 0.5f);
-                     float v = uvData ? uvData[idx * 2 + 1] : (z * 0.5f + 0.5f);
-                     verts.push_back({x, y, z, u, v});
-                 }
-             } else {
-                 for (cgltf_size i = 0; i < posCount; i++) {
-                     float x = posData[i * 3 + 0];
-                     float y = posData[i * 3 + 1];
-                     float z = posData[i * 3 + 2];
-                     float u = uvData ? uvData[i * 2 + 0] : (x * 0.5f + 0.5f);
-                     float v = uvData ? uvData[i * 2 + 1] : (z * 0.5f + 0.5f);
-                     verts.push_back({x, y, z, u, v});
-                 }
-             }
-         }
-     }
+        if (img->buffer_view && img->buffer_view->buffer && img->buffer_view->buffer->data) {
+            imgData = (const uint8_t*)img->buffer_view->buffer->data + img->buffer_view->offset;
+            imgSize = img->buffer_view->size;
+            SDL_Log("  -> embedded %zu bytes", imgSize);
+            pixels = stbi_load_from_memory(imgData, (int)imgSize, &w, &h, &n, 4);
+        } else if (img->uri) {
+            std::string texPath = baseDir + img->uri;
+            SDL_Log("  -> external %s", texPath.c_str());
+            pixels = stbi_load(texPath.c_str(), &w, &h, &n, 4);
+        } else {
+            SDL_Log("  -> no data source");
+        }
+        if (!pixels) { SDL_Log("  -> stbi_load FAILED"); return false; }
 
-     cgltf_free(data);
+        SDL_Log("  -> decoded %dx%d (%d channels)", w, h, n);
+        SDL_GPUTextureCreateInfo tci{};
+        tci.type = SDL_GPU_TEXTURETYPE_2D;
+        tci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        tci.width = w; tci.height = h;
+        tci.layer_count_or_depth = 1;
+        tci.num_levels = 1;
+        tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+        tci.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
+        gGLTFTexture = SDL_CreateGPUTexture(gDevice, &tci);
+        if (!gGLTFTexture) { stbi_image_free(pixels); SDL_Log("  -> CreateGPUTexture FAILED"); return false; }
 
-     if (verts.empty()) {
-         SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "No vertices found in %s", path);
-         return false;
-     }
+        SDL_GPUTransferBufferCreateInfo tbci{};
+        tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+        tbci.size = (Uint32)(w * h * 4);
+        SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tbci);
+        memcpy(SDL_MapGPUTransferBuffer(gDevice, tb, false), pixels, w * h * 4);
+        SDL_UnmapGPUTransferBuffer(gDevice, tb);
+        SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(gDevice);
+        SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+        SDL_GPUTextureTransferInfo src{};
+        src.transfer_buffer = tb; src.offset = 0;
+        src.pixels_per_row = w; src.rows_per_layer = h;
+        SDL_GPUTextureRegion dst{};
+        dst.texture = gGLTFTexture; dst.w = w; dst.h = h; dst.d = 1;
+        SDL_UploadToGPUTexture(cp, &src, &dst, false);
+        SDL_EndGPUCopyPass(cp);
+        SDL_SubmitGPUCommandBuffer(cb);
+        SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+        stbi_image_free(pixels);
+        SDL_Log("  -> texture loaded OK");
+        return true;
+    };
 
-     *outBuf = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
-     *outCount = (int)verts.size();
-     gGLTFValid = *outBuf != nullptr;
-     SDL_Log("GLTF loaded: %s - %zu vertices, texture=%s", path, verts.size(),
-         gGLTFTexture ? "YES" : "NO");
-     return gGLTFValid;
- }
+    SDL_Log("GLTF: %zu images, %zu textures, %zu materials",
+        gGLTFData->images_count, gGLTFData->textures_count, gGLTFData->materials_count);
+    for (cgltf_size i = 0; i < gGLTFData->images_count && !gGLTFTexture; i++) {
+        loadTexture(&gGLTFData->images[i], (int)i);
+    }
+    if (!gGLTFTexture)
+        SDL_Log("WARNING: no texture loaded (model may use vertex colors or solid materials)");
+
+    // ---- 建立 mesh → node 映射 ----
+    std::map<cgltf_mesh*, cgltf_node*> meshToNode;
+    for (cgltf_size n = 0; n < gGLTFData->nodes_count; n++) {
+        cgltf_node* node = &gGLTFData->nodes[n];
+        if (node->mesh)
+            meshToNode[node->mesh] = node;
+    }
+
+    // ---- 收集顶点（逐 mesh 存储）----
+    std::vector<Vertex> verts;
+    gMeshParts.clear();
+    gRestPoseVerts.clear();
+    cgltf_data* data = gGLTFData;
+
+    for (cgltf_size m = 0; m < data->meshes_count; m++) {
+        cgltf_mesh* mesh = &data->meshes[m];
+        cgltf_node* node = meshToNode[mesh]; // 可能为 NULL
+
+        for (cgltf_size p = 0; p < mesh->primitives_count; p++) {
+            cgltf_primitive* prim = &mesh->primitives[p];
+            const float* posData = nullptr;
+            cgltf_size posCount = 0;
+            for (cgltf_size a = 0; a < prim->attributes_count; a++) {
+                cgltf_attribute* at = &prim->attributes[a];
+                if (at->type == cgltf_attribute_type_position) {
+                    cgltf_accessor* acc = at->data;
+                    if (acc->buffer_view && acc->buffer_view->buffer && acc->buffer_view->buffer->data) {
+                        posData = (const float*)((const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset);
+                        posCount = acc->count;
+                    }
+                    break;
+                }
+            }
+            if (!posData || posCount == 0) continue;
+
+            const float* uvData = nullptr;
+            for (cgltf_size a = 0; a < prim->attributes_count; a++) {
+                cgltf_attribute* at = &prim->attributes[a];
+                if (at->type == cgltf_attribute_type_texcoord) {
+                    cgltf_accessor* acc = at->data;
+                    if (acc->buffer_view && acc->buffer_view->buffer && acc->buffer_view->buffer->data) {
+                        uvData = (const float*)((const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset);
+                    }
+                    break;
+                }
+            }
+
+            auto readIdx = [](cgltf_accessor* acc, cgltf_size i) -> uint32_t {
+                const uint8_t* base = (const uint8_t*)acc->buffer_view->buffer->data + acc->offset + acc->buffer_view->offset;
+                if (acc->component_type == cgltf_component_type_r_16u) return ((uint16_t*)base)[i];
+                if (acc->component_type == cgltf_component_type_r_32u) return ((uint32_t*)base)[i];
+                return ((uint8_t*)base)[i];
+            };
+
+            int partStart = (int)verts.size();
+            if (prim->indices) {
+                cgltf_accessor* idxAcc = prim->indices;
+                for (cgltf_size i = 0; i < idxAcc->count; i++) {
+                    uint32_t idx = readIdx(idxAcc, i);
+                    if (idx >= posCount) continue;
+                    float x = posData[idx * 3 + 0];
+                    float y = posData[idx * 3 + 1];
+                    float z = posData[idx * 3 + 2];
+                    float u = uvData ? uvData[idx * 2 + 0] : 0.5f;
+                    float v = uvData ? uvData[idx * 2 + 1] : 0.5f;
+                    verts.push_back({x, y, z, u, v});
+                }
+            } else {
+                for (cgltf_size i = 0; i < posCount; i++) {
+                    float x = posData[i * 3 + 0];
+                    float y = posData[i * 3 + 1];
+                    float z = posData[i * 3 + 2];
+                    float u = uvData ? uvData[i * 2 + 0] : 0.5f;
+                    float v = uvData ? uvData[i * 2 + 1] : 0.5f;
+                    verts.push_back({x, y, z, u, v});
+                }
+            }
+            int partCount = (int)verts.size() - partStart;
+            if (partCount > 0)
+                gMeshParts.push_back({ partStart, partCount, node });
+        }
+    }
+
+    if (verts.empty()) {
+        SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "No vertices found in %s", path);
+        cgltf_free(gGLTFData); gGLTFData = nullptr;
+        return false;
+    }
+
+    // 保存 rest pose
+    gRestPoseVerts = verts;
+
+    *outBuf = render_upload_buffer(gDevice, verts.data(), verts.size() * sizeof(Vertex));
+    *outCount = (int)verts.size();
+    gGLTFVertexBuffer = *outBuf;
+    gGLTFValid = *outBuf != nullptr;
+    SDL_Log("GLTF loaded: %s - %zu vertices in %zu parts, texture=%s, animations=%zu",
+        path, verts.size(), gMeshParts.size(), gGLTFTexture ? "YES" : "NO", data->animations_count);
+    return gGLTFValid;
+}
 
  // 生成斜坡网格
  SDL_GPUBuffer* gRampVertexBuffer = nullptr;
@@ -1022,8 +1080,18 @@
 
     gPlayerHP = gPlayerMaxHP;
 
+    // 在标题栏显示当前动画
+    if (gGLTFValid && gGLTFData) {
+        char title[256];
+        if (gGLTFData->animations_count > 0)
+            snprintf(title, sizeof(title), "Robot (%zu animations) - Press K to cycle", gGLTFData->animations_count);
+        else
+            snprintf(title, sizeof(title), "Robot (no animations)");
+        SDL_SetWindowTitle(gWindow, title);
+    }
+
     return SDL_APP_CONTINUE;
- }
+}
 
  SDL_AppResult SDL_AppIterate(void* appstate) {
     auto now = std::chrono::high_resolution_clock::now();
@@ -1032,6 +1100,167 @@
 
     processInput();
     updateMVPData();
+
+    // ----- glTF 动画更新 -----
+    if (gGLTFValid && gGLTFAnimPlaying && gGLTFData && gGLTFData->animations_count > 0) {
+        gGLTFAnimTime += gDeltaTime;
+
+        // 计算动画持续时间并循环
+        cgltf_animation* anim = &gGLTFData->animations[gGLTFAnimIndex];
+        float maxTime = 0.0f;
+        for (cgltf_size ci = 0; ci < anim->channels_count; ci++) {
+            cgltf_animation_sampler* samp = anim->channels[ci].sampler;
+            if (samp && samp->input && samp->input->buffer_view && samp->input->count > 0) {
+                float* times = (float*)((const uint8_t*)samp->input->buffer_view->buffer->data
+                    + samp->input->offset + samp->input->buffer_view->offset);
+                float last = times[samp->input->count - 1];
+                if (last > maxTime) maxTime = last;
+            }
+        }
+        if (maxTime > 0.0f) gGLTFAnimTime = fmodf(gGLTFAnimTime, maxTime);
+
+        // 1. 重置所有节点到 rest pose
+        for (cgltf_size n = 0; n < gGLTFData->nodes_count; n++) {
+            cgltf_node* node = &gGLTFData->nodes[n];
+            node->translation[0] = 0; node->translation[1] = 0; node->translation[2] = 0;
+            node->rotation[0] = 0; node->rotation[1] = 0; node->rotation[2] = 0; node->rotation[3] = 1;
+            node->scale[0] = 1; node->scale[1] = 1; node->scale[2] = 1;
+            if (node->has_translation) { node->translation[0]=node->translation[1]=node->translation[2]=0; }
+            if (node->has_rotation) { node->rotation[0]=node->rotation[1]=node->rotation[2]=0; node->rotation[3]=1; }
+            if (node->has_scale) { node->scale[0]=node->scale[1]=node->scale[2]=1; }
+        }
+
+        // 2. 应用动画通道
+        float t = gGLTFAnimTime;
+        for (cgltf_size ci = 0; ci < anim->channels_count; ci++) {
+            cgltf_animation_channel* ch = &anim->channels[ci];
+            cgltf_animation_sampler* samp = ch->sampler;
+            if (!samp || !samp->input || !samp->output) continue;
+            cgltf_node* target = ch->target_node;
+            if (!target) continue;
+
+            float* times = (float*)((const uint8_t*)samp->input->buffer_view->buffer->data
+                + samp->input->offset + samp->input->buffer_view->offset);
+            cgltf_size numFrames = samp->input->count;
+
+            // 查找当前帧
+            cgltf_size idx = 0;
+            for (cgltf_size fi = 0; fi < numFrames - 1; fi++) {
+                if (t >= times[fi] && t < times[fi + 1]) { idx = fi; break; }
+                if (fi == numFrames - 2 && t >= times[fi + 1]) idx = fi;
+            }
+            float lerp = (times[idx + 1] - times[idx] > 0.0001f)
+                ? (t - times[idx]) / (times[idx + 1] - times[idx]) : 0.0f;
+
+            if (ch->target_path == cgltf_animation_path_type_translation) {
+                float* va = (float*)((const uint8_t*)samp->output->buffer_view->buffer->data
+                    + samp->output->offset + samp->output->buffer_view->offset);
+                int stride = (samp->output->type == cgltf_type_vec3) ? 3 : 3;
+                target->translation[0] = va[idx * stride + 0] + (va[(idx + 1) * stride + 0] - va[idx * stride + 0]) * lerp;
+                target->translation[1] = va[idx * stride + 1] + (va[(idx + 1) * stride + 1] - va[idx * stride + 1]) * lerp;
+                target->translation[2] = va[idx * stride + 2] + (va[(idx + 1) * stride + 2] - va[idx * stride + 2]) * lerp;
+            } else if (ch->target_path == cgltf_animation_path_type_rotation) {
+                float* qa = (float*)((const uint8_t*)samp->output->buffer_view->buffer->data
+                    + samp->output->offset + samp->output->buffer_view->offset);
+                int stride = (samp->output->type == cgltf_type_vec4) ? 4 : 4;
+                // 简单 lerp 四元数（省略规范化）
+                target->rotation[0] = qa[idx * stride + 0] + (qa[(idx + 1) * stride + 0] - qa[idx * stride + 0]) * lerp;
+                target->rotation[1] = qa[idx * stride + 1] + (qa[(idx + 1) * stride + 1] - qa[idx * stride + 1]) * lerp;
+                target->rotation[2] = qa[idx * stride + 2] + (qa[(idx + 1) * stride + 2] - qa[idx * stride + 2]) * lerp;
+                target->rotation[3] = qa[idx * stride + 3] + (qa[(idx + 1) * stride + 3] - qa[idx * stride + 3]) * lerp;
+            } else if (ch->target_path == cgltf_animation_path_type_scale) {
+                float* va = (float*)((const uint8_t*)samp->output->buffer_view->buffer->data
+                    + samp->output->offset + samp->output->buffer_view->offset);
+                int stride = (samp->output->type == cgltf_type_vec3) ? 3 : 3;
+                target->scale[0] = va[idx * stride + 0] + (va[(idx + 1) * stride + 0] - va[idx * stride + 0]) * lerp;
+                target->scale[1] = va[idx * stride + 1] + (va[(idx + 1) * stride + 1] - va[idx * stride + 1]) * lerp;
+                target->scale[2] = va[idx * stride + 2] + (va[(idx + 1) * stride + 2] - va[idx * stride + 2]) * lerp;
+            }
+        }
+
+        // 3. 更新顶点缓冲区
+        if (!gMeshParts.empty() && gGLTFVertexBuffer) {
+            std::vector<Vertex> animatedVerts = gRestPoseVerts;
+            for (auto& part : gMeshParts) {
+                if (!part.node) continue;
+                // 计算节点世界矩阵（从根到该节点的链）
+                mat44_t worldMatrix = mat44_identity();
+                cgltf_node* n = part.node;
+                while (n) {
+                    mat44_t local = mat44_identity();
+                    float q[4] = { n->rotation[0], n->rotation[1], n->rotation[2], n->rotation[3] };
+                    float len = sqrtf(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3]);
+                    if (len > 0.0001f) { q[0]/=len; q[1]/=len; q[2]/=len; q[3]/=len; }
+                    // 四元数 → 旋转矩阵
+                    float xx = q[0]*q[0], yy = q[1]*q[1], zz = q[2]*q[2];
+                    float xy = q[0]*q[1], xz = q[0]*q[2], xw = q[0]*q[3];
+                    float yz = q[1]*q[2], yw = q[1]*q[3], zw = q[2]*q[3];
+                    local.m0 = (1 - 2*(yy+zz)) * n->scale[0];
+                    local.m1 = (2*(xy+zw)) * n->scale[0];
+                    local.m2 = (2*(xz-yw)) * n->scale[0];
+                    local.m4 = (2*(xy-zw)) * n->scale[1];
+                    local.m5 = (1 - 2*(xx+zz)) * n->scale[1];
+                    local.m6 = (2*(yz+xw)) * n->scale[1];
+                    local.m8 = (2*(xz+yw)) * n->scale[2];
+                    local.m9 = (2*(yz-xw)) * n->scale[2];
+                    local.m10 = (1 - 2*(xx+yy)) * n->scale[2];
+                    local.m12 = n->translation[0];
+                    local.m13 = n->translation[1];
+                    local.m14 = n->translation[2];
+                    local.m15 = 1.0f;
+                    // 累乘 world = local * world（左手系）
+                    // [row * col convention: m[row][col]]
+                    // local * world 表示先应用父级变换再应用本地变换
+                    mat44_t tmp;
+                    for (int r = 0; r < 4; r++)
+                        for (int c = 0; c < 4; c++)
+                            ((float*)&tmp)[r*4+c] = ((float*)&local)[r*4+0]*((float*)&worldMatrix)[0*4+c]
+                                                  + ((float*)&local)[r*4+1]*((float*)&worldMatrix)[1*4+c]
+                                                  + ((float*)&local)[r*4+2]*((float*)&worldMatrix)[2*4+c]
+                                                  + ((float*)&local)[r*4+3]*((float*)&worldMatrix)[3*4+c];
+                    worldMatrix = tmp;
+                    n = n->parent;
+                }
+
+                // 应用世界矩阵到顶点
+                for (int vi = part.vertexOffset; vi < part.vertexOffset + part.vertexCount; vi++) {
+                    Vertex& v = animatedVerts[vi];
+                    Vertex& rest = gRestPoseVerts[vi];
+                    // rest pose 位置是模型空间下的原始位置
+                    // 如果动画改变了节点变换，相对 worldMatrix 就是节点从 rest → animated 的变化
+                    // 实际上 worldMatrix 已经是节点当前的变换，而 rest pose 的顶点是在该节点局部空间下
+                    // 所以直接应用 worldMatrix
+                    float ix = rest.x, iy = rest.y, iz = rest.z;
+                    v.x = worldMatrix.m0 * ix + worldMatrix.m4 * iy + worldMatrix.m8 * iz + worldMatrix.m12;
+                    v.y = worldMatrix.m1 * ix + worldMatrix.m5 * iy + worldMatrix.m9 * iz + worldMatrix.m13;
+                    v.z = worldMatrix.m2 * ix + worldMatrix.m6 * iy + worldMatrix.m10 * iz + worldMatrix.m14;
+                    v.u = rest.u; v.v = rest.v; // 保留 UV
+                }
+            }
+
+            // 上传到 GPU（用临时 transfer buffer）
+            size_t uploadSize = animatedVerts.size() * sizeof(Vertex);
+            SDL_GPUTransferBufferCreateInfo tbci{};
+            tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+            tbci.size = (Uint32)uploadSize;
+            SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(gDevice, &tbci);
+            memcpy(SDL_MapGPUTransferBuffer(gDevice, tb, false), animatedVerts.data(), uploadSize);
+            SDL_UnmapGPUTransferBuffer(gDevice, tb);
+
+            SDL_GPUCommandBuffer* cb = SDL_AcquireGPUCommandBuffer(gDevice);
+            SDL_GPUCopyPass* cp = SDL_BeginGPUCopyPass(cb);
+            SDL_GPUTransferBufferLocation src{};
+            src.transfer_buffer = tb; src.offset = 0;
+            SDL_GPUBufferRegion dst{};
+            dst.buffer = gGLTFVertexBuffer;
+            dst.offset = 0;
+            dst.size = (Uint32)uploadSize;
+            SDL_UploadToGPUBuffer(cp, &src, &dst, false);
+            SDL_EndGPUCopyPass(cp);
+            SDL_SubmitGPUCommandBuffer(cb);
+            SDL_ReleaseGPUTransferBuffer(gDevice, tb);
+        }
+    }
 
     // ----- 子弹更新 -----
     gShootTimer += gDeltaTime;
@@ -1150,11 +1379,12 @@
         SDL_DrawGPUPrimitives(rp, mesh.vertexCount, 1, 0, 0);
     }
 
-    // 绘制 glTF 模型
+    // 绘制 glTF 模型（ANIMATED - 动画每帧修改顶点）
     if (gGLTFValid) {
         mat44_t gltfM = mat44_identity();
+        // 模型位于原点，放缩至合适大小
         gltfM.m0 = 0.5f; gltfM.m5 = 0.5f; gltfM.m10 = 0.5f;
-        gltfM.m12 = 0; gltfM.m13 = 1.0f; gltfM.m14 = -3;
+        gltfM.m12 = 0; gltfM.m13 = 0.0f; gltfM.m14 = -3;
         render_mat44_to_float16(&gltfM, gMVP.model);
         SDL_PushGPUVertexUniformData(cmd, 0, &gMVP, sizeof(gMVP));
 
@@ -1218,6 +1448,18 @@
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Submit command buffer failed! %s", SDL_GetError());
     }
 
+    // 窗口标题显示当前动画
+    if (gGLTFValid && gGLTFData && gGLTFData->animations_count > 0) {
+        char title[256];
+        const char* name = gGLTFData->animations[gGLTFAnimIndex].name;
+        float fps = gGLTFAnimPlaying ? (1.0f / std::max(gDeltaTime, 0.0001f)) : 0.0f;
+        snprintf(title, sizeof(title), "Robot - Anim %d/%zu: %s  |  %d verts %zu parts",
+            gGLTFAnimIndex + 1, gGLTFData->animations_count,
+            name ? name : "(unnamed)",
+            gGLTFVertexCount, gMeshParts.size());
+        SDL_SetWindowTitle(gWindow, title);
+    }
+
     return SDL_APP_CONTINUE;
  }
 
@@ -1226,6 +1468,17 @@
 
     if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_ESCAPE) {
         return SDL_APP_SUCCESS;
+    }
+
+    // 键盘 K → 切换下一个 glTF 动画
+    if (event->type == SDL_EVENT_KEY_DOWN && event->key.key == SDLK_K) {
+        if (gGLTFData && gGLTFData->animations_count > 0) {
+            gGLTFAnimIndex = (gGLTFAnimIndex + 1) % (int)gGLTFData->animations_count;
+            gGLTFAnimTime = 0.0f;
+            gGLTFAnimPlaying = true;
+            SDL_Log("Animation %d/%zu: %s", gGLTFAnimIndex + 1, gGLTFData->animations_count,
+                gGLTFData->animations[gGLTFAnimIndex].name ? gGLTFData->animations[gGLTFAnimIndex].name : "(unnamed)");
+        }
     }
 
     // 鼠标移动 → 水平旋转玩家朝向（绕 Y 轴）
@@ -1253,6 +1506,7 @@
     if (gSphereVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gSphereVertexBuffer);
     if (gGLTFVertexBuffer) SDL_ReleaseGPUBuffer(gDevice, gGLTFVertexBuffer);
     if (gGLTFTexture) SDL_ReleaseGPUTexture(gDevice, gGLTFTexture);
+    if (gGLTFData) { cgltf_free(gGLTFData); gGLTFData = nullptr; }
     SDL_ReleaseGPUGraphicsPipeline(gDevice, gGraphicsPipeline);
     SDL_ReleaseGPUShader(gDevice, gShaders.vertex);
     SDL_ReleaseGPUShader(gDevice, gShaders.fragment);
