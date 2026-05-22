@@ -21,6 +21,14 @@ else()
     list(REMOVE_ITEM SRC_FILES "main9.cpp")
 endif()
 
+# 开启 BUILD_COLLISION2D_TEST 则编译 collision2d_test.cpp (替换编辑器)
+option(BUILD_COLLISION2D_TEST "Build collision2d test instead of editor" OFF)
+if(BUILD_COLLISION2D_TEST)
+    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp")
+else()
+    list(REMOVE_ITEM SRC_FILES "collision2d_test.cpp")
+endif()
+
 # 合并所有源文件
 set(PROJECT_FILES
     ${SRC_FILES}
