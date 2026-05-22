@@ -201,6 +201,10 @@ JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid
 /* 获取 columns=0 的 tileset 中指定局部瓦片的独立图片路径，返回 NULL 表示无独立图片 */
 JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
 
+/* 获取 columns=0 的 tileset 中指定局部瓦片的独立图片尺寸，返回 false 表示无独立图片 */
+JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
+                                          int* out_w, int* out_h);
+
 /* ==================== 纹理坐标计算 ==================== */
 
 /* 

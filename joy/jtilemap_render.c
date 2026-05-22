@@ -148,7 +148,10 @@ static void render_tile_layer_internal(jtilemap_p tm, const jtilemap_tile_layer_
                 SDL_Texture* tex = load_texture_internal(mapped);
                 if (!tex) continue;
                 SDL_SetTextureAlphaMod(tex, alpha);
-                SDL_FRect dst = { dst_x, dst_y, dst_w, dst_h };
+                // 使用 tile_def 实际尺寸（而非 tileset->tilewidth，那是给网格用的）
+                int dw = (int)dst_w, dh = (int)dst_h;
+                jtilemap_get_tile_def_size(res.tileset, res.local_id, &dw, &dh);
+                SDL_FRect dst = { dst_x, dst_y, (float)dw, (float)dh };
                 SDL_RenderTexture(gRenderer, tex, NULL, &dst);
                 continue;
             }

@@ -487,6 +487,20 @@ JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int loc
     return NULL;
 }
 
+JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
+                                          int* out_w, int* out_h)
+{
+    if (!ts) return false;
+    for (size_t i = 0; i < kv_size(ts->tile_defs); i++) {
+        if (kv_A(ts->tile_defs, i).id == local_id) {
+            if (out_w) *out_w = kv_A(ts->tile_defs, i).width;
+            if (out_h) *out_h = kv_A(ts->tile_defs, i).height;
+            return true;
+        }
+    }
+    return false;
+}
+
 /* ==================== 释放 ==================== */
 
 static void destroy_anim(jtilemap_anim_t* anim)
