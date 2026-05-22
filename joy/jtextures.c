@@ -106,7 +106,6 @@ void image_draw1(image_p image,
 void image_draw_ex(image_p image, const SDL_FRect* srcrect, SDL_FPoint position,
 	float rotation, SDL_FPoint scale, SDL_FPoint origin)
 {
-	SDL_FColor color;
 	SDL_Renderer* renderer;
 	float w, h;
 	SDL_FRect dest_rect;
@@ -114,20 +113,24 @@ void image_draw_ex(image_p image, const SDL_FRect* srcrect, SDL_FPoint position,
 	w = srcrect->w;
 	h = srcrect->h;
 	renderer = SDL_GetRendererFromTexture(image->texture);
-	SDL_GetRenderDrawColorFloat(renderer, &color.r, &color.g, &color.b, &color.a);
-	dest_rect.x = (position.x - origin.x * scale.x);
-	dest_rect.y = (position.y - origin.y * scale.y);
-	dest_rect.w = w * scale.x;
-	dest_rect.h = h * scale.y;
-	center.x = origin.x * scale.x;
-	center.y = origin.y * scale.y;
-	//SDL_SetTextureColorModFloat(image->texture, color.r, color.g, color.b);
-	//SDL_SetTextureAlphaModFloat(image->texture, color.a);
+
+	// 负 scale → 转换为正宽度 + 翻转标志
+	SDL_FlipMode flip = SDL_FLIP_NONE;
+	float sx = scale.x, sy = scale.y;
+	if (sx < 0) { flip = (SDL_FlipMode)(flip | SDL_FLIP_HORIZONTAL); sx = -sx; }
+	if (sy < 0) { flip = (SDL_FlipMode)(flip | SDL_FLIP_VERTICAL);   sy = -sy; }
+
+	dest_rect.x = (position.x - origin.x * sx);
+	dest_rect.y = (position.y - origin.y * sy);
+	dest_rect.w = w * sx;
+	dest_rect.h = h * sy;
+	center.x = origin.x * sx;
+	center.y = origin.y * sy;
+
 	SDL_RenderTextureRotated(renderer, image->texture,
 		srcrect, &dest_rect,
 		rotation * 180.0f / 3.1415926f,
-		&center, SDL_FLIP_NONE);
-	//SDL_SetTextureColorMod(image->texture, 255, 255, 255);
+		&center, flip);
 	//SDL_SetTextureAlphaMod(image->texture, 255);
 }
 
