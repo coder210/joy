@@ -1,7 +1,6 @@
 // main11.cpp — Tilemap 测试（jtilemap_render 渲染封装）
 #include <cstdio>
 #include <cstdlib>
-#include <string>
 #include "SDL3/SDL.h"
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>

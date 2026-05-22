@@ -107,6 +107,7 @@ static bool parse_tileset(struct lua_State* L, int idx, jtilemap_tileset_t* ts)
 {
     memset(ts, 0, sizeof(*ts));
     kv_init(ts->anims);
+    kv_init(ts->tile_defs);
     ts->tile_anim_map = NULL;
     ts->tile_anim_map_alloced = 0;
 
@@ -122,18 +123,33 @@ static bool parse_tileset(struct lua_State* L, int idx, jtilemap_tileset_t* ts)
     ts->imagewidth  = lua_get_integer(L, idx, "imagewidth", 0);
     ts->imageheight = lua_get_integer(L, idx, "imageheight", 0);
 
-    /* 解析 tiles 数组（单个瓦片属性，含动画） */
+    /* 解析 tiles 数组（单个瓦片属性，含动画 + 独立图片） */
     int tiles_type = lua_getfield(L, idx, "tiles");
     if (tiles_type == LUA_TTABLE) {
         lua_pushnil(L);
         while (lua_next(L, -2) != 0) {
             /* value 在 -1，应当是每个瓦片属性的 table */
             if (lua_istable(L, -1)) {
+                int tile_id = lua_get_integer(L, -1, "id", -1);
+
+                /* 检查是否有动画 */
                 int anim_type = lua_getfield(L, -1, "animation");
                 if (anim_type == LUA_TTABLE) {
                     jtilemap_anim_t anim;
                     parse_animation(L, lua_gettop(L), &anim);
                     kv_push(jtilemap_anim_t, ts->anims, anim);
+                }
+                lua_pop(L, 1);
+
+                /* 检查是否有独立图片（用于 columns=0 的 deco 类 tileset） */
+                int img_type = lua_getfield(L, -1, "image");
+                if (img_type == LUA_TSTRING) {
+                    jtilemap_tile_def_t def;
+                    def.id = tile_id;
+                    def.image = utils_strdup(lua_tostring(L, -1), NULL);
+                    def.width  = lua_get_integer(L, -2, "width", 64);
+                    def.height = lua_get_integer(L, -2, "height", 64);
+                    kv_push(jtilemap_tile_def_t, ts->tile_defs, def);
                 }
                 lua_pop(L, 1);
             }
@@ -459,6 +475,18 @@ JOY_API jtilemap_p jtilemap_load_file(const char* filename)
     return tm;
 }
 
+/* ==================== 获取 deco 独立瓦片图片路径 ==================== */
+
+JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id)
+{
+    if (!ts) return NULL;
+    for (size_t i = 0; i < kv_size(ts->tile_defs); i++) {
+        if (kv_A(ts->tile_defs, i).id == local_id)
+            return kv_A(ts->tile_defs, i).image;
+    }
+    return NULL;
+}
+
 /* ==================== 释放 ==================== */
 
 static void destroy_anim(jtilemap_anim_t* anim)
@@ -473,6 +501,9 @@ static void destroy_tileset(jtilemap_tileset_t* ts)
     for (size_t i = 0; i < kv_size(ts->anims); i++)
         destroy_anim(&kv_A(ts->anims, i));
     kv_destroy(ts->anims);
+    for (size_t i = 0; i < kv_size(ts->tile_defs); i++)
+        free(kv_A(ts->tile_defs, i).image);
+    kv_destroy(ts->tile_defs);
     free(ts->tile_anim_map);
 }
 

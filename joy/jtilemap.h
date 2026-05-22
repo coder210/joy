@@ -33,6 +33,17 @@ extern "C" {
 #define JTILEMAP_SHAPE_ELLIPSE  3
 #define JTILEMAP_SHAPE_POINT    4
 
+/* ---------- GID 翻转标志（Tiled 规范，编码在 GID 高位） ---------- */
+#define JTILEMAP_FLIP_H       0x80000000
+#define JTILEMAP_FLIP_V       0x40000000
+#define JTILEMAP_FLIP_D       0x20000000
+#define JTILEMAP_GID_MASK     0x1FFFFFFF
+
+/* 提取干净 GID（去掉翻转标志） */
+JOY_INLINE int jtilemap_clean_gid(int raw_gid) { return raw_gid & JTILEMAP_GID_MASK; }
+/* 提取翻转标志 */
+JOY_INLINE int jtilemap_gid_flags(int raw_gid)  { return raw_gid & ~JTILEMAP_GID_MASK; }
+
 /* ---------- 动画帧 ---------- */
 typedef struct {
     int tileid;         /* tileset 内局部瓦片 ID */
@@ -46,6 +57,15 @@ typedef struct {
     int total_duration;          /* 所有帧总时长（毫秒），缓存加速 */
 } jtilemap_anim_t;
 typedef jtilemap_anim_t* jtilemap_anim_p;
+
+/* ---------- 独立瓦片定义（用于 columns=0 的 tileset，如 deco） ---------- */
+typedef struct {
+    int    id;            /* tileset 内局部 ID */
+    char*  image;         /* 独立图片路径 */
+    int    width;
+    int    height;
+} jtilemap_tile_def_t;
+typedef jtilemap_tile_def_t* jtilemap_tile_def_p;
 
 /* ---------- 图块集 ---------- */
 typedef struct {
@@ -63,6 +83,9 @@ typedef struct {
 
     /* 动画：anims[n] 对应 tileset 内部局部瓦片 id = anims[n].frames[0].tileid（首个帧的 id） */
     kvec_t(jtilemap_anim_t) anims;
+
+    /* 独立瓦片定义（用于 columns=0 的 tileset） */
+    kvec_t(jtilemap_tile_def_t) tile_defs;
 
     /* 运行时加速：局部瓦片 id -> anims[] 下标，-1 表示无动画 */
     int* tile_anim_map;   /* 数组长度 = tilecount，仅在加载后有效 */
@@ -174,6 +197,9 @@ JOY_API void jtilemap_destroy(jtilemap_p tm);
 
 /* 解析全局 GID → 对应 tileset + 局部 ID */
 JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
+
+/* 获取 columns=0 的 tileset 中指定局部瓦片的独立图片路径，返回 NULL 表示无独立图片 */
+JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
 
 /* ==================== 纹理坐标计算 ==================== */
 
