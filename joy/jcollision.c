@@ -256,53 +256,151 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
 ray2d_collisionf_t 
 collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
 {
-        ray2d_collisionf_t result;
+        ray2d_collisionf_t result = {0};
+        vec2f_t edge_start, edge_end, edge_vec, diff;
+        fp_t denom, t, u;
+        fp_t closest_t = fp_max_value();
+        vec2f_t hit_edge = {0, 0};
+
+        if (polygon.num_vertices < 3)
+                return result;
+
+        /* 1. Normalize ray direction */
+        ray.direction = vec2f_normalize(ray.direction);
+
+        /* 2. Test each edge for intersection */
+        for (int i = 0; i < polygon.num_vertices; i++) {
+                edge_start = polygon.vertices[i];
+                edge_end = polygon.vertices[(i + 1) % polygon.num_vertices];
+                edge_vec = vec2f_sub(edge_end, edge_start);
+
+                /* Cross product: if zero, ray is parallel to this edge */
+                denom = vec2f_cross(ray.direction, edge_vec);
+                if (denom == fp_zero())
+                        continue;
+
+                diff = vec2f_sub(edge_start, ray.origin);
+                t = fp_div(vec2f_cross(diff, edge_vec), denom);
+                u = fp_div(vec2f_cross(diff, ray.direction), denom);
+
+                /* Valid intersection: ray forward (t>=0), on segment (0<=u<=1) */
+                if (t >= fp_zero() && u >= fp_zero() && u <= fp_one() && t < closest_t) {
+                        closest_t = t;
+                        hit_edge = edge_vec;
+                }
+        }
+
+        /* 3. Build result if hit found */
+        if (closest_t < fp_max_value()) {
+                result.hit = true;
+                result.distance = closest_t;
+                result.point = vec2f_add(ray.origin,
+                        vec2f_scale(ray.direction, closest_t));
+                /* Normal: perpendicular to edge, always faces against ray */
+                result.normal = vec2f_normal(hit_edge);
+                if (vec2f_dot(result.normal, ray.direction) > fp_zero()) {
+                        result.normal = vec2f_negate(result.normal);
+                }
+        }
+
         return result;
 }
 
 bool 
 collision2df_check_point_rectangle(vec2f_t point, rectanglef_t rect)
 {
-        return false;
+        return (point.x >= rect.x && point.x <= fp_add(rect.x, rect.width)
+             && point.y >= rect.y && point.y <= fp_add(rect.y, rect.height));
 }
 
 bool 
 collision2df_check_point_circle(vec2f_t point, circlef_t circle)
 {
-        return false;
+        vec2f_t diff = vec2f_sub(point, circle.center);
+        return vec2f_length_squared(diff) <= fp_pow2(circle.radius);
 }
 
 bool 
 collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t p3)
 {
-        return false;
+        /* Barycentric coordinate method */
+        vec2f_t v0 = vec2f_sub(p3, p1);
+        vec2f_t v1 = vec2f_sub(p2, p1);
+        vec2f_t v2 = vec2f_sub(point, p1);
+
+        fp_t dot00 = vec2f_dot(v0, v0);
+        fp_t dot01 = vec2f_dot(v0, v1);
+        fp_t dot02 = vec2f_dot(v0, v2);
+        fp_t dot11 = vec2f_dot(v1, v1);
+        fp_t dot12 = vec2f_dot(v1, v2);
+
+        fp_t denom = fp_sub(fp_mul(dot00, dot11), fp_mul(dot01, dot01));
+        if (denom == fp_zero())
+                return false;
+
+        fp_t inv_denom = fp_div(fp_one(), denom);
+        fp_t u = fp_mul(fp_sub(fp_mul(dot11, dot02), fp_mul(dot01, dot12)), inv_denom);
+        fp_t v = fp_mul(fp_sub(fp_mul(dot00, dot12), fp_mul(dot01, dot02)), inv_denom);
+
+        return (u >= fp_zero() && v >= fp_zero()
+             && fp_add(u, v) <= fp_one());
 }
 
 bool 
 collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2, vec2f_t*cp)
 {
+        vec2f_t r = vec2f_sub(b1, a1);
+        vec2f_t s = vec2f_sub(b2, a2);
+        fp_t denom = vec2f_cross(r, s);
+
+        if (denom == fp_zero())
+                return false; /* parallel */
+
+        vec2f_t diff = vec2f_sub(a2, a1);
+        fp_t t = fp_div(vec2f_cross(diff, s), denom);
+        fp_t u = fp_div(vec2f_cross(diff, r), denom);
+
+        if (t >= fp_zero() && t <= fp_one()
+         && u >= fp_zero() && u <= fp_one()) {
+                if (cp) {
+                        cp->x = fp_add(a1.x, fp_mul(r.x, t));
+                        cp->y = fp_add(a1.y, fp_mul(r.y, t));
+                }
+                return true;
+        }
         return false;
 }
 
 bool 
 collision2df_check_point_line(vec2f_t point, vec2f_t p1, vec2f_t p2, fp_t threshold)
 {
-        return false;
+        vec2f_t ab = vec2f_sub(p2, p1);
+        vec2f_t ap = vec2f_sub(point, p1);
+        fp_t ab_len_sq = vec2f_length_squared(ab);
+
+        if (ab_len_sq == fp_zero())
+                return vec2f_length_squared(ap) <= fp_pow2(threshold);
+
+        fp_t proj = fp_div(vec2f_dot(ap, ab), ab_len_sq);
+        proj = fp_clamp(proj, fp_zero(), fp_one());
+
+        vec2f_t closest = vec2f_add(p1, vec2f_scale(ab, proj));
+        vec2f_t diff = vec2f_sub(point, closest);
+
+        return vec2f_length_squared(diff) <= fp_pow2(threshold);
 }
 
 bool 
 collision2df_check_circles(circlef_t a, circlef_t b)
 {
-        bool collision;
         vec2f_t distance;
         fp_t distance_squared, radius_sum;
 
         distance = vec2f_sub(b.center, a.center);
         distance_squared = vec2f_length_squared(distance);
         radius_sum = fp_add(b.radius, a.radius);
-        collision = distance_squared <= fp_pow2(radius_sum);
 
-        return collision;
+        return distance_squared <= fp_pow2(radius_sum);
 }
 
 /* aabb */
@@ -320,21 +418,84 @@ collision2df_check_rectangles(rectanglef_t a, rectanglef_t b)
         return true;
 }
 
+/* SAT-based polygon-polygon overlap test */
 bool 
 collision2df_check_polygons(polygonf_t a, polygonf_t b)
 {
-        return false;
+        vec2f_t axis, point;
+        fp_t ab_sep = find_min_separation(a, b, &axis, &point);
+        if (ab_sep >= fp_zero())
+                return false;
+        fp_t ba_sep = find_min_separation(b, a, &axis, &point);
+        if (ba_sep >= fp_zero())
+                return false;
+        return true;
 }
 
+/* Circle vs AABB: find closest point on rect to circle center */
 bool 
 collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
 {
-        return false;
+        vec2f_t closest;
+        closest.x = fp_clamp(a.center.x, b.x, fp_add(b.x, b.width));
+        closest.y = fp_clamp(a.center.y, b.y, fp_add(b.y, b.height));
+
+        vec2f_t diff = vec2f_sub(a.center, closest);
+        return vec2f_length_squared(diff) <= fp_pow2(a.radius);
 }
 
+/* Circle vs convex polygon: SAT-based */
 bool 
 collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
 {
+        if (b.num_vertices < 3)
+                return false;
+
+        /* 1. Check if circle center is inside polygon */
+        vec2f_t axis, point;
+        if (find_min_separation(b, b, &axis, &point) == fp_min_value()) {
+                /* degenerate polygon, skip */
+        }
+
+        /* 2. Check distance from center to each edge */
+        for (int i = 0; i < b.num_vertices; i++) {
+                vec2f_t e1 = b.vertices[i];
+                vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                vec2f_t edge = vec2f_sub(e2, e1);
+                vec2f_t to_center = vec2f_sub(a.center, e1);
+
+                fp_t edge_len_sq = vec2f_length_squared(edge);
+                if (edge_len_sq == fp_zero())
+                        continue;
+
+                fp_t t = fp_div(vec2f_dot(to_center, edge), edge_len_sq);
+                t = fp_clamp(t, fp_zero(), fp_one());
+
+                vec2f_t closest = vec2f_add(e1, vec2f_scale(edge, t));
+                vec2f_t diff = vec2f_sub(a.center, closest);
+
+                if (vec2f_length_squared(diff) <= fp_pow2(a.radius))
+                        return true;
+        }
+
+        /* 3. Point-in-polygon test for circle center */
+        {
+                bool inside = true;
+                for (int i = 0; i < b.num_vertices; i++) {
+                        vec2f_t e1 = b.vertices[i];
+                        vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                        vec2f_t edge = vec2f_sub(e2, e1);
+                        vec2f_t normal = vec2f_normal(edge); /* inward normal */
+                        vec2f_t to_center = vec2f_sub(a.center, e1);
+                        if (vec2f_dot(to_center, normal) < fp_zero()) {
+                                inside = false;
+                                break;
+                        }
+                }
+                if (inside)
+                        return true;
+        }
+
         return false;
 }
 
@@ -488,7 +649,7 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 }
 
 
-JOY_INLINE vec2f_t edge_at(polygonf_t poly, int index)
+static vec2f_t edge_at(polygonf_t poly, int index)
 {
         vec2f_t next_vertex, curr_vertex;
         curr_vertex = poly.vertices[index];
@@ -625,32 +786,130 @@ collision3df_get_ray_quad(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3
 ray3d_collisionf_t 
 collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
 {
-        ray3d_collisionf_t result;
+        ray3d_collisionf_t result = {0};
+        vec3f_t ray_sphere_pos = vec3f_sub(ray.position, sphere.position);
+        fp_t dist_sq = vec3f_square_length(ray_sphere_pos);
+        fp_t a = vec3f_dot(ray_sphere_pos, ray.direction);
+        fp_t b = fp_sub(dist_sq, fp_pow2(sphere.radius));
+        fp_t c = fp_sub(fp_pow2(a), b);
+
+        /* Ray origin inside sphere */
+        if (b < fp_zero() && a < fp_zero())
+                return result;
+
+        if (c >= fp_zero()) {
+                fp_t d = fp_sqrt(c);
+                fp_t t = fp_sub(-a, d);
+                if (t < fp_zero())
+                        t = fp_add(-a, d);
+                if (t >= fp_zero()) {
+                        result.hit = true;
+                        result.distance = t;
+                        result.point = vec3f_add(ray.position,
+                                vec3f_scale(ray.direction, t));
+                        result.normal = vec3f_normalize(
+                                vec3f_sub(result.point, sphere.position));
+                }
+        }
+
         return result;
 }
 
 ray3d_collisionf_t
 collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
 {
-        ray3d_collisionf_t result;
+        /* Slabs method (ray-AABB) */
+        ray3d_collisionf_t result = {0};
+        vec3f_t dirfrac;
+        fp_t t1, t2, tmin, tmax;
+        const fp_t EPSILON = fp_from_float(0.00001f);
+
+        ray.direction = vec3f_normalize(ray.direction);
+
+        dirfrac.x = fp_div(fp_one(), ray.direction.x);
+        dirfrac.y = fp_div(fp_one(), ray.direction.y);
+        dirfrac.z = fp_div(fp_one(), ray.direction.z);
+
+        /* X slab */
+        t1 = fp_mul(fp_sub(box.min.x, ray.position.x), dirfrac.x);
+        t2 = fp_mul(fp_sub(box.max.x, ray.position.x), dirfrac.x);
+        if (t1 > t2) { SWAP(t1, t2); }
+        tmin = t1; tmax = t2;
+
+        /* Y slab */
+        t1 = fp_mul(fp_sub(box.min.y, ray.position.y), dirfrac.y);
+        t2 = fp_mul(fp_sub(box.max.y, ray.position.y), dirfrac.y);
+        if (t1 > t2) { SWAP(t1, t2); }
+        if (t1 > tmin) tmin = t1;
+        if (t2 < tmax) tmax = t2;
+        if (tmin > tmax) return result;
+
+        /* Z slab */
+        t1 = fp_mul(fp_sub(box.min.z, ray.position.z), dirfrac.z);
+        t2 = fp_mul(fp_sub(box.max.z, ray.position.z), dirfrac.z);
+        if (t1 > t2) { SWAP(t1, t2); }
+        if (t1 > tmin) tmin = t1;
+        if (t2 < tmax) tmax = t2;
+        if (tmin > tmax) return result;
+
+        if (tmax < fp_zero())
+                return result;
+
+        fp_t t = tmin >= fp_zero() ? tmin : tmax;
+        if (t < EPSILON)
+                return result;
+
+        result.hit = true;
+        result.distance = t;
+        result.point = vec3f_add(ray.position,
+                vec3f_scale(ray.direction, t));
+
+        /* Compute normal from which slab was hit */
+        vec3f_t center = vec3f_scale(vec3f_add(box.min, box.max), fp_half());
+        vec3f_t hit_to_center = vec3f_sub(center, result.point);
+        vec3f_t half = vec3f_scale(vec3f_sub(box.max, box.min), fp_half());
+        vec3f_t abs_hit = vec3f_abs(hit_to_center);
+
+        result.normal.x = (fp_abs(fp_sub(abs_hit.x, half.x)) < EPSILON)
+                ? (hit_to_center.x > fp_zero() ? fp_one() : fp_from_float(-1))
+                : fp_zero();
+        result.normal.y = (fp_abs(fp_sub(abs_hit.y, half.y)) < EPSILON)
+                ? (hit_to_center.y > fp_zero() ? fp_one() : fp_from_float(-1))
+                : fp_zero();
+        result.normal.z = (fp_abs(fp_sub(abs_hit.z, half.z)) < EPSILON)
+                ? (hit_to_center.z > fp_zero() ? fp_one() : fp_from_float(-1))
+                : fp_zero();
+        result.normal = vec3f_normalize(result.normal);
+
         return result;
 }
 
 bool 
 collision3df_check_spheres(spheref_t a, spheref_t b)
 {
-        return false;
+        vec3f_t diff = vec3f_sub(b.position, a.position);
+        fp_t dist_sq = vec3f_square_length(diff);
+        fp_t radius_sum = fp_add(a.radius, b.radius);
+        return dist_sq <= fp_pow2(radius_sum);
 }
 
 bool 
 collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
 {
-        return false;
+        return (a.min.x <= b.max.x && a.max.x >= b.min.x
+             && a.min.y <= b.max.y && a.max.y >= b.min.y
+             && a.min.z <= b.max.z && a.max.z >= b.min.z);
 }
 
 bool 
 collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
 {
-        return false;
+        vec3f_t closest;
+        closest.x = fp_clamp(b.position.x, a.min.x, a.max.x);
+        closest.y = fp_clamp(b.position.y, a.min.y, a.max.y);
+        closest.z = fp_clamp(b.position.z, a.min.z, a.max.z);
+
+        vec3f_t diff = vec3f_sub(b.position, closest);
+        return vec3f_square_length(diff) <= fp_pow2(b.radius);
 }
 
