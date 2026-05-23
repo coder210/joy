@@ -482,6 +482,7 @@ static void on_load(scene_p s)
 
 static void fixedupdate(game_scene_p self, float dt)
 {
+        if (!self->netclient) return;
         net_message_t msg;
         if (netclient_poll_message(self->netclient, &msg)) {
                 on_message(&msg, self);
@@ -522,6 +523,7 @@ static void fixedupdate(game_scene_p self, float dt)
 
 static void send_heartbeat(game_scene_p self, float dt)
 {
+        if (!self->netclient) return;
         self->heartbeatTimer += dt;
         if (self->heartbeatTimer >= 3.f) {
                 self->heartbeatTimer = 0.f;
@@ -587,6 +589,7 @@ static void on_handle_event(scene_p s, const void* ev)
 
 static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
+        if (!self->netclient) return;
         netclient_update(self->netclient);
         self->accumulator += dt;
         if (self->accumulator >= self->FIXED_TIMESTEP) {
@@ -596,10 +599,22 @@ static void on_update(scene_p s, float dt) {
 
         self->ecs_world.progress(dt);
 
-        // ---------- 心跳发送（1Hz，可保留原样或也独立） ----------
-        // // 原 SendHeartbeat 内部已使用 heartbeat_timer 做1秒限制，可以继续在 iterate 中调用，
-        // 但为了避免依赖 FixedLogicUpdate，现在直接调用即可（内部计时器决定是否真正发送）
+        // ---------- 心跳 ----------
         send_heartbeat(self, dt);
+
+        // ---------- 摄像机跟随本地玩家 ----------
+        self->player_query.each([&](PlayerComponent& p, IdComponent&,
+                LogicRectComponent&, LogicPositionComponent& pos) {
+                if (p.conv == (int)self->local_conv) {
+                        float target_cam_x = fp_to_float(pos.x) - 6.4f;
+                        float target_cam_y = fp_to_float(pos.y) - 4.8f;
+                        // 平滑跟随
+                        float lerp = dt * 5.0f;
+                        if (lerp > 1.0f) lerp = 1.0f;
+                        self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
+                        self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
+                }
+        });
 
 
 
@@ -627,6 +642,9 @@ game_scene_p game_scene_create(context* ctx) {
         self->ctx = ctx;
         self->accumulator = 0;
         self->ecs_world.set_ctx(ctx);
+        // 初始化摄像机
+        ctx->camera_x = 0.0f;
+        ctx->camera_y = 0.0f;
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);
         scene_set_event_callback(self->scene, on_handle_event);

@@ -16,8 +16,9 @@ static void DrawingEntitySystem(flecs::entity e,
         Context* ctx = (Context*)e.world().get_ctx();
         SDL_FRect body = { 0 };
         SDL_FRect header = { 0 };
-        body.x = t.position_x * PIXELS_PER_METER;
-        body.y = t.position_y * PIXELS_PER_METER;
+        // 摄像机偏移：世界坐标 - 摄像机坐标 → 屏幕像素
+        body.x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
+        body.y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
         body.w = fp_to_float(rect.width) * PIXELS_PER_METER;
         body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
         if (e.has<PlayerComponent>()) {

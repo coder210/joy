@@ -52,21 +52,23 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
         if (e->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
         if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
                 bool d = (e->type == SDL_EVENT_KEY_DOWN);
+                if (!d) return SDL_APP_CONTINUE; // 只处理按下事件
                 switch (e->key.scancode) {
                 case SDL_SCANCODE_SPACE:
-                        if (d) { scene_manager_replace(g_mgr, game_scene_get_scene(game_scene_create(ctx))); }
+                case SDL_SCANCODE_RETURN:
+                        // 仅在加载/菜单场景下才启动游戏
+                        { scene_p cur = scene_manager_get_current(g_mgr);
+                        if (cur && strcmp(scene_get_name(cur), "Loading") == 0) {
+                                scene_manager_replace(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
+                        } }
                         break;
                 case SDL_SCANCODE_ESCAPE:
-                        if (d) {
-                                scene_manager_replace(g_mgr, loading_scene_get_scene(loading_scene_create(ctx)));
-                        }
+                        scene_manager_replace(g_mgr, loading_scene_get_scene(loading_scene_create(ctx)));
                         break;
                 case SDL_SCANCODE_R:
-                        if (d) {
-                                scene_manager_destroy(g_mgr);
-                                g_mgr = scene_manager_create();
-                                scene_manager_push(g_mgr, loading_scene_get_scene(loading_scene_create(ctx)));
-                        }
+                        scene_manager_destroy(g_mgr);
+                        g_mgr = scene_manager_create();
+                        scene_manager_push(g_mgr, loading_scene_get_scene(loading_scene_create(ctx)));
                         break;
                 }
         }

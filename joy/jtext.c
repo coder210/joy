@@ -331,3 +331,9 @@ int text_get_height(text_texture_p text_tex)
 {
 	return text_tex->real_height;
 }
+
+SDL_Texture* text_get_texture(text_texture_p text_tex)
+{
+	return text_tex ? text_tex->texture : NULL;
+}
+

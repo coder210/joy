@@ -29,6 +29,30 @@ else()
     list(REMOVE_ITEM SRC_FILES "collision2d_test.cpp")
 endif()
 
+# 开启 BUILD_UI_TEST 则编译 ui_test.cpp (替换编辑器)
+option(BUILD_UI_TEST "Build ui test instead of editor" OFF)
+if(BUILD_UI_TEST)
+    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp")
+else()
+    list(REMOVE_ITEM SRC_FILES "ui_test.cpp")
+endif()
+
+# 开启 BUILD_PARTICLE_TEST 则编译 particle_test.cpp
+option(BUILD_PARTICLE_TEST "Build particle test instead of editor" OFF)
+if(BUILD_PARTICLE_TEST)
+    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp" "ui_test.cpp")
+else()
+    list(REMOVE_ITEM SRC_FILES "particle_test.cpp")
+endif()
+
+# 开启 BUILD_LIGHT_TEST 则编译 light_test.cpp
+option(BUILD_LIGHT_TEST "Build light test instead of editor" OFF)
+if(BUILD_LIGHT_TEST)
+    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp" "ui_test.cpp" "particle_test.cpp")
+else()
+    list(REMOVE_ITEM SRC_FILES "light_test.cpp")
+endif()
+
 # 合并所有源文件
 set(PROJECT_FILES
     ${SRC_FILES}
