@@ -102,11 +102,15 @@ static int l_button_create(lua_State* L)
 	SDL_FRect rect;
 	button_p btn;
 	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
-	rect.x = luaL_checknumber(L, 2);
-	rect.y = luaL_checknumber(L, 3);
-	rect.w = luaL_checknumber(L, 4);
-	rect.h = luaL_checknumber(L, 5);
-	//btn = button_create(renderer, rect);
+	rect.x = (float)luaL_checknumber(L, 2);
+	rect.y = (float)luaL_checknumber(L, 3);
+	rect.w = (float)luaL_checknumber(L, 4);
+	rect.h = (float)luaL_checknumber(L, 5);
+	btn = button_create(renderer, rect.w, rect.h);
+	if (btn) {
+		btn->position.x = rect.x;
+		btn->position.y = rect.y;
+	}
 	lua_pushlightuserdata(L, btn);
 	return 1;
 }
@@ -282,10 +286,10 @@ static int lcombobox_create(lua_State* L)
 	combobox_p combobox;
 	SDL_FRect rect;
 	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
-	rect.x = luaL_checknumber(L, 1);
-	rect.y = luaL_checknumber(L, 2);
-	rect.w = luaL_checknumber(L, 3);
-	rect.h = luaL_checknumber(L, 4);
+	rect.x = (float)luaL_checknumber(L, 2);
+	rect.y = (float)luaL_checknumber(L, 3);
+	rect.w = (float)luaL_checknumber(L, 4);
+	rect.h = (float)luaL_checknumber(L, 5);
 	combobox = combobox_create(renderer, rect);
 	lua_pushlightuserdata(L, combobox);
 	return 1;
@@ -309,12 +313,18 @@ static int lcombobox_destroy(lua_State* L)
 
 static int lcombobox_additem(lua_State* L)
 {
-	combobox_p combobox;
-	SDL_Color f;
-	const char* text;
-	combobox = (combobox_p)lua_touserdata(L, 1);
-	text = luaL_checkstring(L, 2);
-	//combobox_add_item(combobox, "resources/fonts/simhei.ttf", 20, NULL, 0, f);
+	combobox_p combobox = (combobox_p)lua_touserdata(L, 1);
+	const char* text = luaL_checkstring(L, 2);
+	if (!text) return 0;
+	combobox_item_p item;
+	if (combobox->item_count >= 20) return 0;
+	item = &combobox->items[combobox->item_count];
+	// item->text = text_createx(...) but currently combobox_item uses SDL_Texture*
+	// ç®€å•å¤„ç†: ç”¨ç¬¬ä¸€ä¸ªå­—ç¬¦çš„codepointä½œä¸ºå ä½
+	item->text = NULL;
+	item->is_selected = false;
+	combobox->item_count++;
+	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
 	return 0;
 }
 
@@ -365,7 +375,6 @@ static int l_checkbox_handle_event(lua_State* L)
 static int l_checkbox_draw(lua_State* L)
 {
 	checkbox_p checkbox;
-	SDL_Event* event;
 	SDL_Renderer* renderer;
 	checkbox = (checkbox_p)lua_touserdata(L, 1);
 	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
@@ -425,44 +434,57 @@ static int ldatagrid_create(lua_State* L)
 
 	col_count = luaL_checkinteger(L, 3);
 	has_header = lua_toboolean(L, 4);
+	font_p dgfont = (font_p)lua_touserdata(L, 5);
 
-	datagrid = datagrid_create(renderer, rect, col_count, has_header, NULL);
+	datagrid = datagrid_create(renderer, rect, col_count, has_header, dgfont);
 	lua_pushlightuserdata(L, datagrid);
 	return 1;
 }
 
 static int ldatagrid_setheaders(lua_State* L)
 {
-	//datagrid_p datagrid;
+	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
 	//char** headers;
 	//codepoint_array_p codepoints[128];
 	//int i, j, rows, cols, codepoint;
 	//datagrid = (datagrid_p)lua_touserdata(L, 1);
 	//rows = (int)luaL_len(L, 2);
 	//for (i = 1; i <= rows; i++) {
-	//	// »ñÈ¡µÚ i ÐÐ
+	//	// èŽ·å–ç¬¬ i è¡Œ
 	//	lua_geti(L, 2, i);
 
-	//	// »ñÈ¡ÄÚ²ãÊý×éµÄ³¤¶È£¨ÁÐÊý£©
+	//	// èŽ·å–å†…å±‚æ•°ç»„çš„é•¿åº¦ï¼ˆåˆ—æ•°ï¼‰
 	//	cols = (int)luaL_len(L, -1);
 
-	//	// ·ÖÅäÄÚ´æ´æ´¢¸ÃÐÐµÄÕûÊý
+	//	// åˆ†é…å†…å­˜å­˜å‚¨è¯¥è¡Œçš„æ•´æ•°
 	//	codepoints[i - 1] = (codepoint_array_p)SDL_malloc(sizeof(codepoint_array_t));
 	//	codepoints[i - 1]->length = cols;
 	//	codepoints[i - 1]->array = (int*)SDL_malloc(sizeof(int) * cols);
 
 	//	for (j = 1; j <= cols; j++) {
-	//		// »ñÈ¡µÚ j ÁÐµÄÖµ
+	//		// èŽ·å–ç¬¬ j åˆ—çš„å€¼
 	//		lua_geti(L, -1, j);
 	//		codepoints[i - 1]->array[j - 1] = luaL_checkinteger(L, -1);
 	//		lua_pop(L, 1);
 	//	}
 
-	//	// µ¯³öÄÚ²ã±í
+	//	// å¼¹å‡ºå†…å±‚è¡¨
 	//	lua_pop(L, 1);
 	//}
 
-	//datagrid_setheaders(datagrid, codepoints);
+	font_p fontinfo = (font_p)lua_touserdata(L, 2);
+	SDL_Color color = { 0, 0, 0, 255 };
+	luaL_checktype(L, 3, LUA_TTABLE);
+	int n = (int)luaL_len(L, 3);
+	for (int i = 1; i <= n && (i-1) < dg->col_count; i++) {
+		lua_geti(L, 3, i);
+		if (lua_isstring(L, -1)) {
+			const char* text = lua_tostring(L, -1);
+			if (dg->headers[i-1]) text_destroy(dg->headers[i-1]);
+			dg->headers[i-1] = text_createx(fontinfo, text, (int)SDL_strlen(text), color);
+		}
+		lua_pop(L, 1);
+	}
 	return 0;
 }
 
@@ -486,23 +508,21 @@ static int ldatagrid_destroy(lua_State* L)
 
 static int ldatagrid_addrow(lua_State* L)
 {
-	/* datagrid_p datagrid;
-	 char** row_data;
-	 int i, len;
-	 datagrid = (datagrid_p)lua_touserdata(L, 1);
-	 len = (int)luaL_len(L, 2);
-	 row_data = (char**)SDL_malloc(sizeof(char *) * len);
-
-	 for (i = 1; i <= len; i++) {
-		 lua_geti(L, 2, i);
-		 if (lua_isstring(L, -1)) {
-			 const char* str = lua_tostring(L, -1);
-			 row_data[i - 1] = SDL_strdup(str);
-		 }
-		 lua_pop(L, 1);
-	 }
-
-	 datagrid_addrow(datagrid, row_data);*/
+	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+	int cols = (int)luaL_len(L, 2);
+	if (cols > dg->col_count) cols = dg->col_count;
+	dg->row_count++;
+	dg->data = (int***)SDL_realloc(dg->data, dg->row_count * sizeof(int**));
+	dg->data[dg->row_count-1] = (int**)SDL_malloc(dg->col_count * sizeof(int*));
+	for (int i = 0; i < dg->col_count; i++)
+		dg->data[dg->row_count-1][i] = NULL;
+	for (int j = 1; j <= cols; j++) {
+		lua_geti(L, 2, j);
+		if (lua_isstring(L, -1))
+			dg->data[dg->row_count-1][j-1] = (int*)SDL_strdup(lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
 	return 0;
 }
 

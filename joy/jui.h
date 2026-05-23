@@ -74,7 +74,7 @@ typedef struct datagrid {
 	int visible_rows;      // 可见行数
 	int scroll_offset;     // 滚动偏移
 	int selected_row;      // 选中的行
-	SDL_Texture* headers[512];        // 表头
+	text_texture_p headers[512];        // 表头
 	int*** data;          // 表格数据
 	int* col_widths;       // 列宽
 	bool has_header;   // 是否有表头

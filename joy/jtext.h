@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: text.h
-Description: ◊÷ÃÂ¥¶¿Ì
+Description: Â≠ó‰ΩìÂ§ÑÁêÜ
 Author: ydlc
 Version: 1.0
 Date: 2024.7.15
@@ -29,6 +29,7 @@ extern "C" {
 	JOY_API void text_print(SDL_Renderer* renderer, text_texture_p text_tex, float x, float y);
 	JOY_API int text_get_width(text_texture_p text_tex);
 	JOY_API int text_get_height(text_texture_p text_tex);
+	JOY_API SDL_Texture* text_get_texture(text_texture_p text_tex);
 #ifdef __cplusplus
 }
 #endif

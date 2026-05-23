@@ -467,7 +467,7 @@ datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_h
 	grid->scroll_offset = 0;
 	grid->selected_row = -1;
 	grid->has_header = has_header;
-	//grid->font = font_new(renderer, "resources/fonts/simhei.ttf", 20);
+	grid->font = (font_p)font;
 	grid->data = NULL;
 	grid->col_widths = (int*)SDL_malloc(col_count * sizeof(int));
 	grid->bg_color = (SDL_Color){ 0xFF, 0xFF, 0xFF, 0xFF };
@@ -561,9 +561,8 @@ void datagrid_destroy(datagrid_p grid)
 
 	if (grid->has_header) {
 		for (int i = 0; i < grid->col_count; i++) {
-			if (grid->headers[i]) SDL_free(grid->headers[i]);
+			if (grid->headers[i]) text_destroy(grid->headers[i]);
 		}
-		SDL_free(grid->headers);
 	}
 
 	// �ͷ�����
@@ -603,12 +602,15 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 		int y = grid->y;
 		for (int col = 0; col < grid->col_count; col++) {
 			SDL_FRect rect;
+			float tw, th;
 			rect.x = x;
 			rect.y = y;
-			rect.w = grid->headers[col]->w;
-			rect.h = grid->headers[col]->h;
-			SDL_RenderTexture(grid->renderer, grid->headers[col], NULL, &rect);
-			//render_text(grid->font, 18, text, SDL_strlen(text), point, renderer);
+			SDL_Texture* tex = grid->headers[col] ? text_get_texture(grid->headers[col]) : NULL;
+			if (tex && SDL_GetTextureSize(tex, &tw, &th)) {
+				rect.w = tw;
+				rect.h = th;
+				SDL_RenderTexture(grid->renderer, tex, NULL, &rect);
+			}
 
 			// ���ƴ�ֱ��
 			SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);

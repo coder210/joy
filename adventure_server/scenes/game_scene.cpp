@@ -489,26 +489,34 @@ static void on_load(scene_p s)
 		.set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
 		.set<TransformComponent>({ 5,5,0,1,1 });
 
+	// 围墙：从原先 12x9 扩大到 30x20 游戏单位（1500x1000 像素）
+	const fp_t MAP_W = fp_from_float(30.0f);
+	const fp_t MAP_H = fp_from_float(20.0f);
+	const fp_t WALL_T = fp_from_float(0.5f); // 墙厚度
+	// 下墙 (0,0) 宽30 厚0.5
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.5f) })
-		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(0) })
+		.set<LogicRectComponent>({ MAP_W, WALL_T })
+		.set<LogicPositionComponent>({ fp_zero(), fp_zero() })
 		.set<TransformComponent>({ 0,0,0,1,1 });
+	// 左墙 (0,0) 厚0.5 高20.5(上下盖住墙头)
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.5f), fp_from_float(12) })
-		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(0) })
+		.set<LogicRectComponent>({ WALL_T, fp_add(MAP_H, WALL_T) })
+		.set<LogicPositionComponent>({ fp_zero(), fp_zero() })
 		.set<TransformComponent>({ 0,0,0,1,1 });
+	// 右墙 (30,0) 厚0.5 高20.5
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(.5f), fp_from_float(12) })
-		.set<LogicPositionComponent>({ fp_from_float(12), fp_from_float(0) })
-		.set<TransformComponent>({ 12,0,0,1,1 });
+		.set<LogicRectComponent>({ WALL_T, fp_add(MAP_H, WALL_T) })
+		.set<LogicPositionComponent>({ MAP_W, fp_zero() })
+		.set<TransformComponent>({ 30,0,0,1,1 });
+	// 上墙 (0,20) 宽30.5 厚0.5
 	self->world.entity()
 		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_from_float(12), fp_from_float(0.5f) })
-		.set<LogicPositionComponent>({ fp_from_float(0), fp_from_float(9) })
-		.set<TransformComponent>({ 0,9, 0,1,1 });
+		.set<LogicRectComponent>({ fp_add(MAP_W, WALL_T), WALL_T })
+		.set<LogicPositionComponent>({ fp_zero(), MAP_H })
+		.set<TransformComponent>({ 0,20,0,1,1 });
 
 
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
@@ -589,6 +597,18 @@ static void on_update(scene_p s, float dt)
 		HandleCommandSystem(self);
 		NotifySystem(self);
 	}
+
+	// ---------- 摄像机跟随第一个玩家 ----------
+	self->player_query.each([&](PlayerComponent&, IdComponent&,
+			LogicRectComponent&, LogicPositionComponent& pos) {
+			float target_cam_x = fp_to_float(pos.x) - 6.4f;
+			float target_cam_y = fp_to_float(pos.y) - 4.8f;
+			float lerp = dt * 5.0f;
+			if (lerp > 1.0f) lerp = 1.0f;
+			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
+			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
+			return; // 只跟第一个玩家
+	});
 }
 
 static void on_render(scene_p s)
@@ -611,6 +631,9 @@ game_scene_p game_scene_create(Context* ctx)
 	game_scene_p self = new game_scene();
 	self->scene = scene_create("game_server");
 	self->ctx = ctx;
+	// 初始化摄像机
+	ctx->camera_x = 0.0f;
+	ctx->camera_y = 0.0f;
 	self->world.component<ConnectionComponent>();
 	self->world.component<LogicRectComponent>();
 	self->world.component<LogicPositionComponent>();
