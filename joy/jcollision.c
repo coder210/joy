@@ -5,10 +5,8 @@ collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
 {
         vec2f_t seg;
         fp_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
-        ray2d_collisionf_t result;
+        ray2d_collisionf_t result = {0};
         vec2f_t distance;
-
-        result.hit = false;
 
         r_sq = fp_pow2(circle.radius);
         seg = vec2f_sub(circle.center, ray.origin);
@@ -17,44 +15,53 @@ collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
         ray.direction = vec2f_normalize(ray.direction);
         seg_proj = vec2f_dot(seg, ray.direction);
 
-        /* ��Բ��, �����ֽǶ� */
+        /* 射线起点在圆上 */
         if (seg_len_sq == r_sq) {
                 result.hit = true;
+                result.distance = fp_zero();
                 result.point = ray.origin;
+                result.normal = vec2f_normalize(seg);
                 return result;
         }
 
-        /* ��Բ�� */
+        /* 射线起点在圆内：找远端的出口交点 */
         if (seg_len_sq < r_sq) {
-                fp_t t = fp_sqrt(fp_sub(r_sq, fp_sub(seg_len_sq, fp_pow2(seg_proj))));
-                distance = vec2f_scale(ray.direction, fp_add(t, seg_proj));
+                dx = fp_sqrt(fp_sub(r_sq, fp_sub(seg_len_sq, fp_pow2(seg_proj))));
+                distance = vec2f_scale(ray.direction, fp_add(seg_proj, dx));
                 result.hit = true;
+                result.distance = vec2f_length(distance);
                 result.point = vec2f_add(ray.origin, distance);
+                result.normal = vec2f_normalize(
+                        vec2f_sub(result.point, circle.center));
                 return result;
         }
 
-        /* ��Բ��, �����߼нǴ���90, û���ཻ */
-        if (seg_proj < fp_zero()) {
+        /* 射线起点在圆外，射线背向圆 */
+        if (seg_proj < fp_zero())
                 return result;
-        }
 
-        /* ��Բ��, �����߼н�С��90 */
-        /* ��Բ�������ߵĴ��߳���(d) */
+        /* 射线起点在圆外，射线朝向圆 */
         d_sq = fp_sub(seg_len_sq, fp_pow2(seg_proj));
-        if (d_sq > r_sq) {
+        if (d_sq > r_sq)
                 return result;
-        }
-        else if (d_sq == r_sq) {
+
+        if (d_sq == r_sq) {
                 result.hit = true;
+                result.distance = seg_proj;
                 result.point = vec2f_add(ray.origin,
                          vec2f_scale(ray.direction, seg_proj));
+                result.normal = vec2f_normalize(
+                        vec2f_sub(result.point, circle.center));
                 return result;
         }
         else {
                 dx = fp_sqrt(fp_sub(r_sq, d_sq));
                 result.hit = true;
+                result.distance = fp_sub(seg_proj, dx);
                 result.point = vec2f_add(ray.origin,
-                         vec2f_scale(ray.direction, fp_sub(seg_proj, dx)));
+                         vec2f_scale(ray.direction, result.distance));
+                result.normal = vec2f_normalize(
+                        vec2f_sub(result.point, circle.center));
                 return result;
         }
 }
@@ -63,7 +70,7 @@ collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
 static vec2f_t collision2df_calculate_rect_normal(vec2f_t point, vec2f_t min, vec2f_t max)
 {
         vec2f_t normal = { fp_zero(), fp_zero() };
-        const fp_t epsilon = fp_from_float(1); // 极小值，避免浮点误差
+        const fp_t epsilon = fp_from_float(0.001f); // 极小值，避免浮点误差
 
         // 左边界
         if (fp_abs(fp_sub(point.x, min.x)) < epsilon) {
@@ -186,17 +193,17 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
         center.y = fp_add(rect.y, half_extents.y);
         rotation = fp_div(fp_mul(angle, fp_pi()), fp_from_float(180));
 
-        /* ������ת����OBB�ľֲ�����ϵ(������ת)*/
+        /* 将射线变换到 OBB 局部坐标系 */
         local_origin = vec2f_sub(ray.origin, center);
-        local_origin = vec2f_rotate(local_origin, -rotation); // ����ת
+        local_origin = vec2f_rotate(local_origin, -rotation);
         local_dir = vec2f_rotate(ray.direction, -rotation);
 
         t_min = fp_zero();
         t_max = fp_max_value();
 
-        /* check y axis */
+        /* 局部 X 轴 (local x 对应世界 Y? 注意: slabs 法中 local_dir.x 是水平轴) */
         if (fp_abs(local_dir.x) < EPSILON){
-                if (local_origin.x < -half_extents.x 
+                if (local_origin.x < -half_extents.x
                         || local_origin.x > half_extents.x)
                         return result;
         }
@@ -204,20 +211,16 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
                 inv_dir = fp_div(fp_one(), local_dir.x);
                 t1 = fp_mul(fp_sub(-half_extents.x, local_origin.x), inv_dir);
                 t2 = fp_mul(fp_sub(half_extents.x, local_origin.x), inv_dir);
-                if (t1 > t2) {
-                        tmp = t1;
-                        t1 = t2;
-                        t2 = tmp;
-                }
+                if (t1 > t2) { tmp = t1; t1 = t2; t2 = tmp; }
                 t_min = fp_max(t_min, t1);
                 t_max = fp_min(t_max, t2);
                 if (t_min > t_max)
                         return result;
         }
 
-        /* check x axis */
+        /* 局部 Y 轴 */
         if (fp_abs(local_dir.y) < EPSILON){
-                if (local_origin.y < -half_extents.y 
+                if (local_origin.y < -half_extents.y
                         || local_origin.y > half_extents.y)
                         return result;
         }
@@ -225,18 +228,14 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
                 inv_dir = fp_div(fp_one(), local_dir.y);
                 t1 = fp_mul(fp_sub(-half_extents.y, local_origin.y), inv_dir);
                 t2 = fp_mul(fp_sub(half_extents.y, local_origin.y), inv_dir);
-                if (t1 > t2) {
-                        tmp = t1;
-                        t1 = t2;
-                        t2 = tmp;
-                }
+                if (t1 > t2) { tmp = t1; t1 = t2; t2 = tmp; }
                 t_min = fp_max(t_min, t1);
                 t_max = fp_min(t_max, t2);
                 if (t_min > t_max)
                         return result;
         }
 
-        if (t_max < 0) 
+        if (t_max < 0)
                 return result;
 
         t = t_min >= 0 ? t_min : t_max;
@@ -249,7 +248,26 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
         result.hit = true;
         result.point = vec2f_add(vec2f_rotate(local_hit, rotation), center);
         result.distance = vec2f_length(vec2f_sub(result.point, ray.origin));
-        result.normal = vec2f_normalize(vec2f_sub(result.point, ray.origin));
+
+        /* 正确计算法线：确定被撞击的 OBB 面，然后旋回世界空间 */
+        {
+                vec2f_t local_normal = {0, 0};
+                if (fp_abs(fp_sub(fp_abs(local_hit.x), half_extents.x)) < fp_mul(half_extents.x, fp_from_float(0.01f))) {
+                        local_normal.x = local_hit.x > fp_zero() ? fp_one() : fp_from_float(-1);
+                }
+                if (fp_abs(fp_sub(fp_abs(local_hit.y), half_extents.y)) < fp_mul(half_extents.y, fp_from_float(0.01f))) {
+                        local_normal.y = local_hit.y > fp_zero() ? fp_one() : fp_from_float(-1);
+                }
+                /* 若同时命中角点，只取一个轴向（离边缘更近的那个） */
+                if (local_normal.x != fp_zero() && local_normal.y != fp_zero()) {
+                        fp_t dx = fp_abs(fp_sub(fp_abs(local_hit.x), half_extents.x));
+                        fp_t dy = fp_abs(fp_sub(fp_abs(local_hit.y), half_extents.y));
+                        if (dx < dy) local_normal.y = 0;
+                        else         local_normal.x = 0;
+                }
+                result.normal = vec2f_rotate(local_normal, rotation);
+                result.normal = vec2f_normalize(result.normal);
+        }
         return result;
 }
 
@@ -444,20 +462,14 @@ collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
         return vec2f_length_squared(diff) <= fp_pow2(a.radius);
 }
 
-/* Circle vs convex polygon: SAT-based */
+/* Circle vs convex polygon */
 bool 
 collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
 {
         if (b.num_vertices < 3)
                 return false;
 
-        /* 1. Check if circle center is inside polygon */
-        vec2f_t axis, point;
-        if (find_min_separation(b, b, &axis, &point) == fp_min_value()) {
-                /* degenerate polygon, skip */
-        }
-
-        /* 2. Check distance from center to each edge */
+        /* 1. Check distance from center to each edge */
         for (int i = 0; i < b.num_vertices; i++) {
                 vec2f_t e1 = b.vertices[i];
                 vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
@@ -793,23 +805,22 @@ collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
         fp_t b = fp_sub(dist_sq, fp_pow2(sphere.radius));
         fp_t c = fp_sub(fp_pow2(a), b);
 
-        /* Ray origin inside sphere */
-        if (b < fp_zero() && a < fp_zero())
+        /* 判别式 < 0: 无交点 */
+        if (c < fp_zero())
                 return result;
 
-        if (c >= fp_zero()) {
-                fp_t d = fp_sqrt(c);
-                fp_t t = fp_sub(-a, d);
-                if (t < fp_zero())
-                        t = fp_add(-a, d);
-                if (t >= fp_zero()) {
-                        result.hit = true;
-                        result.distance = t;
-                        result.point = vec3f_add(ray.position,
-                                vec3f_scale(ray.direction, t));
-                        result.normal = vec3f_normalize(
-                                vec3f_sub(result.point, sphere.position));
-                }
+        fp_t d = fp_sqrt(c);
+        fp_t t = fp_sub(-a, d);
+        /* 若第一个交点在射线后方, 取第二个 */
+        if (t < fp_zero())
+                t = fp_add(-a, d);
+        if (t >= fp_zero()) {
+                result.hit = true;
+                result.distance = t;
+                result.point = vec3f_add(ray.position,
+                        vec3f_scale(ray.direction, t));
+                result.normal = vec3f_normalize(
+                        vec3f_sub(result.point, sphere.position));
         }
 
         return result;
