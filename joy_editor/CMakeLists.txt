@@ -14,44 +14,16 @@ endif()
 
 file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp")
 
-# 默认编 main8.cpp (编辑器); 开启 BUILD_GJK2D_TEST 则编 main9.cpp (GJK2D 图形测试)
-if(BUILD_GJK2D_TEST)
+# 默认编 main8.cpp (编辑器); 开启 BUILD_ANIMATION_TEST 则编动画测试
+option(BUILD_ANIMATION_TEST "Build animation test instead of editor" OFF)
+if(BUILD_ANIMATION_TEST)
     list(REMOVE_ITEM SRC_FILES "main8.cpp")
 else()
-    list(REMOVE_ITEM SRC_FILES "main9.cpp")
+    list(REMOVE_ITEM SRC_FILES "animation_test.cpp")
 endif()
 
-# 开启 BUILD_COLLISION2D_TEST 则编译 collision2d_test.cpp (替换编辑器)
-option(BUILD_COLLISION2D_TEST "Build collision2d test instead of editor" OFF)
-if(BUILD_COLLISION2D_TEST)
-    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp")
-else()
-    list(REMOVE_ITEM SRC_FILES "collision2d_test.cpp")
-endif()
-
-# 开启 BUILD_UI_TEST 则编译 ui_test.cpp (替换编辑器)
-option(BUILD_UI_TEST "Build ui test instead of editor" OFF)
-if(BUILD_UI_TEST)
-    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp")
-else()
-    list(REMOVE_ITEM SRC_FILES "ui_test.cpp")
-endif()
-
-# 开启 BUILD_PARTICLE_TEST 则编译 particle_test.cpp
-option(BUILD_PARTICLE_TEST "Build particle test instead of editor" OFF)
-if(BUILD_PARTICLE_TEST)
-    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp" "ui_test.cpp")
-else()
-    list(REMOVE_ITEM SRC_FILES "particle_test.cpp")
-endif()
-
-# 开启 BUILD_LIGHT_TEST 则编译 light_test.cpp
-option(BUILD_LIGHT_TEST "Build light test instead of editor" OFF)
-if(BUILD_LIGHT_TEST)
-    list(REMOVE_ITEM SRC_FILES "main8.cpp" "main9.cpp" "collision2d_test.cpp" "ui_test.cpp" "particle_test.cpp")
-else()
-    list(REMOVE_ITEM SRC_FILES "light_test.cpp")
-endif()
+# 去掉其它测试文件
+list(REMOVE_ITEM SRC_FILES "main9.cpp" "collision2d_test.cpp" "ui_test.cpp" "particle_test.cpp" "light_test.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
