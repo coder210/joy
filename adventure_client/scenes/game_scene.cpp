@@ -59,6 +59,7 @@ struct game_scene {
         // 远程玩家方向追踪（上次位置 → 当前方向）
         std::map<flecs::entity_t, fp_t> last_px, last_py;
         std::map<flecs::entity_t, int>  remote_dirs;
+        std::map<flecs::entity_t, Uint64> last_move_time;
         std::map<int, int>              conv_dirs; // conv → 方向
 
         std::map<int, int> server_inputs;
@@ -497,8 +498,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
 
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
         self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
@@ -656,55 +657,41 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳 ----------
         send_heartbeat(self, dt);
 
-        // ---------- 摄像机跟随本地玩家 + 动画更新 + 脚步音效 ----------
-        self->player_query.each([&](PlayerComponent& p, IdComponent&,
-                LogicRectComponent&, LogicPositionComponent& pos) {
-                if (p.conv == (int)self->local_conv) {
-                        float target_cam_x = fp_to_float(pos.x) - 6.4f;
-                        float target_cam_y = fp_to_float(pos.y) - 4.8f;
-                        float lerp = dt * 5.0f;
-                        if (lerp > 1.0f) lerp = 1.0f;
-                        self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
-                        self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
+	// ---------- 摄像机跟随本地玩家 + 动画选择 + 脚步音效 ----------
+	self->player_query.each([&](PlayerComponent& p, IdComponent&,
+		LogicRectComponent&, LogicPositionComponent& pos) {
+		if (p.conv == (int)self->local_conv) {
+			float target_cam_x = fp_to_float(pos.x) - 6.4f;
+			float target_cam_y = fp_to_float(pos.y) - 4.8f;
+			float lerp = dt * 5.0f;
+			if (lerp > 1.0f) lerp = 1.0f;
+			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
+			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 
-                        // ---- 动画朝向 ----
-                        if (self->current_input_mask & INPUT_RIGHT)      self->player_dir = 2;
-                        else if (self->current_input_mask & INPUT_LEFT)  self->player_dir = 1;
-                        else if (self->current_input_mask & INPUT_UP)     self->player_dir = 3;
-                        else if (self->current_input_mask & INPUT_DOWN)   self->player_dir = 0;
+			// ---- 动画朝向 ----
+			if (self->current_input_mask & INPUT_RIGHT)      self->player_dir = 2;
+			else if (self->current_input_mask & INPUT_LEFT)  self->player_dir = 1;
+			else if (self->current_input_mask & INPUT_UP)     self->player_dir = 3;
+			else if (self->current_input_mask & INPUT_DOWN)   self->player_dir = 0;
 
-                        // ---- 攻击计时 ----
-                        if (self->attacking) {
-                                self->atk_timer += dt;
-                                if (self->atk_timer >= 0.6f) self->attacking = false;
-                        }
-                        if (self->attack_triggered) { self->attacking = true; self->atk_timer = 0; }
+			// ---- 攻击计时 ----
+			if (self->attacking) {
+				self->atk_timer += dt;
+				if (self->atk_timer >= 0.6f) self->attacking = false;
+			}
+			if (self->attack_triggered) { self->attacking = true; self->atk_timer = 0; }
 
-                        // ---- 动画更新 ----
-                        bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
-                        sprite_animation_p cur;
-                        float sx = 1;
-                        if (self->attacking) {
-                                cur = self->anim_atk[self->player_dir];
-                                sx = (self->player_dir == 1) ? -1.0f : 1.0f;
-                        } else {
-                                cur = moving ? self->anim_walk : self->anim_idle;
-                                sx = (self->player_dir == 1) ? -1.0f : 1.0f;
-                        }
-                        sprite_animation_set_scale(cur, sx, 1.0f);
-                        sprite_animation_update(cur, dt);
-                        // 精灵位置在 on_render 中统一设置
-
-                        // ---- 脚步音效 ----
-                        if (moving && !self->attacking) {
-                                self->step_timer += dt;
-                                if (self->step_timer >= 0.30f) {
-                                        audio_shot_play(self->step_sound);
-                                        self->step_timer = 0;
-                                }
-                        } else { self->step_timer = 0; }
-                }
-        });
+			// ---- 脚步音效 ----
+			bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+			if (moving && !self->attacking) {
+				self->step_timer += dt;
+				if (self->step_timer >= 0.30f) {
+					audio_shot_play(self->step_sound);
+					self->step_timer = 0;
+				}
+			} else { self->step_timer = 0; }
+		}
+	});
 
 
 
@@ -738,36 +725,46 @@ static void on_render(scene_p s) {
 
                 // 方向计算
                 int dir = 0;
+                bool moving = false;
+                Uint64 now_t = SDL_GetTicks();
                 if (p.conv == (int)self->local_conv) {
                         // 本地玩家：输入方向
                         dir = self->player_dir;
+                        moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
                 } else {
-                        // 远程玩家：位置差推算
-                        auto& lx = self->last_px[eid];
-                        auto& ly = self->last_py[eid];
-                        if (lx != 0 || ly != 0) {
-                                fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
-                                if (dx > fp_zero()) dir = 2;       // 右
-                                else if (dx < fp_zero()) dir = 1;  // 左
-                                else if (dy < fp_zero()) dir = 3;  // 上
-                                else if (dy > fp_zero()) dir = 0;  // 下
-                        }
-                        lx = pos.x; ly = pos.y;
+                        // 远程玩家：位置差推算，用时间戳保持 moving
+                        auto& lx  = self->last_px[eid];
+                        auto& ly  = self->last_py[eid];
+                        auto& lm  = self->last_move_time[eid];
+                        auto& ldi = self->remote_dirs[eid];
+                        dir = ldi;
+                        if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
+                        fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
+                        fp_t th = fp_from_float(0.001f);
+                        if (dx > th)        { dir = 2; moving = true; }
+                        else if (dx < -th)  { dir = 1; moving = true; }
+                        if (!moving && dy < -th)  { dir = 3; moving = true; }
+                        if (!moving && dy > th)   { dir = 0; moving = true; }
+                        if (moving) { lx = pos.x; ly = pos.y; ldi = dir; lm = now_t; }
+                        if (!moving && lm != 0 && (now_t - lm) < 200)
+                            moving = true;
                 }
 
-                // 选择精灵（本地玩家用动画，远程用 idle）
+                // 选择精灵
                 sprite_animation_p cur;
                 if (p.conv == (int)self->local_conv) {
-                        bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
                         cur = self->attacking ? self->anim_atk[dir]
                              : moving ? self->anim_walk : self->anim_idle;
                 } else {
-                        cur = self->anim_idle; // 远程玩家只显示待机
+                        cur = moving ? self->anim_walk : self->anim_idle;
                 }
 
                 // 翻转 + 定位（碰撞盒居中在精灵中，与 main11 一致）
                 float sx = (dir == 1) ? -1.0f : 1.0f;
                 sprite_animation_set_scale(cur, sx, 1.0f);
+                // 先 update 再 draw，与 main11.cpp 一致
+                float ren_dt = game_timer_get_unscaled_delta_time(&ctx->game_timer);
+                sprite_animation_update(cur, ren_dt);
                 // sprite 192×192，碰撞盒 30×30
                 // 碰撞盒水平垂直都居中在精灵中
                 sprite_animation_set_position(cur,
