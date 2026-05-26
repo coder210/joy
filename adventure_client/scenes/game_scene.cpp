@@ -32,9 +32,18 @@ const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
 
-// 状态快照（用于回滚）
+// 状态快照（用于预测回滚）
 struct state_snapshot {
-        fp_t position_x, position_y; // 本地玩家的逻辑位置
+        fp_t position_x, position_y;
+};
+
+// 玩家状态机
+struct PlayerFSM {
+    enum State : int { IDLE = 0, WALK = 1, ATTACK = 2 };
+    State state = IDLE;
+    int   dir  = 0;
+    float timer = 0;
+    float step_timer = 0;
 };
 
 struct game_scene {
@@ -51,10 +60,7 @@ struct game_scene {
         uint32_t            audio_dev = 0;
         audio_shot_p        step_sound = NULL;
         audio_bgm_p         bgm = NULL;
-        float               step_timer = 0;
-        int                 player_dir = 0;
-        bool                attacking = false;
-        float               atk_timer = 0;
+        PlayerFSM           fsm;  // 玩家状态机 (替代 player_dir/attacking/atk_timer/step_timer)
 
         // 远程玩家方向追踪（上次位置 → 当前方向）
         std::map<flecs::entity_t, fp_t> last_px, last_py;
@@ -528,7 +534,7 @@ static void on_load(scene_p s)
         // ---- 音频 ----
         self->audio_dev = audio_open_device();
         self->step_sound = audio_shot_create("joy2d_editor_sounds/ak47.wav", self->audio_dev);
-        audio_shot_set_gain(self->step_sound, 0.2f);
+        audio_shot_set_gain(self->step_sound, 1.0f);
         self->bgm = audio_bgm_create("joy2d_editor_sounds/bgm.wav", self->audio_dev);
         audio_bgm_set_gain(self->bgm, 0.5f);
 
@@ -537,43 +543,51 @@ static void on_load(scene_p s)
 
 static void fixedupdate(game_scene_p self, float dt)
 {
-        if (!self->netclient) return;
-        net_message_t msg;
-        if (netclient_poll_message(self->netclient, &msg)) {
-                on_message(&msg, self);
-        }
+	if (!self->netclient) return;
+	net_message_t msg;
+	if (netclient_poll_message(self->netclient, &msg)) {
+		on_message(&msg, self);
+	}
 
-        if (self->ready) {
-                int send_mask = self->current_input_mask;
-                if (self->attack_triggered) {
-                        send_mask |= INPUT_ATTACK;
-                        self->attack_triggered = false;
-                }
-                if (send_mask != 0) {
-                        // 记录待确认输入
-                        self->pending_inputs.push_back(send_mask);
+	if (!self->ready) return;
 
-                        // 立即应用输入（预测移动）
-                        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
-                                LogicRectComponent& r, LogicPositionComponent& pos) {
-                                        if (p.conv == self->local_conv) {
-                                                if (send_mask & INPUT_ATTACK) {
-                                                        attack_effect_only(self, &pos, r, id, self->local_conv, send_mask);
-                                                }
-                                                movement(self, &pos, r, id, self->local_conv, send_mask);
-                                                return;
-                                        }
-                                });
+	// ---- FSM 状态转移 ----
+	if (self->attack_triggered) {
+		self->attack_triggered = false;
+		self->fsm.state = PlayerFSM::ATTACK;
+		self->fsm.timer = 0.6f;
+		self->pending_inputs.push_back(INPUT_ATTACK);
+		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+			LogicRectComponent& r, LogicPositionComponent& pos) {
+			if (p.conv == self->local_conv)
+				attack_effect_only(self, &pos, r, id, self->local_conv, INPUT_ATTACK);
+		});
+		adventure::C2S c2s;
+		c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
+		c2s.mutable_player_input()->set_keycode(INPUT_ATTACK);
+		std::string data = c2s.SerializeAsString();
+		netclient_send(self->netclient, data.c_str(), data.size());
+		return; // 攻击期间跳过移动
+	}
 
-                        // 发送输入到服务器
-                        adventure::C2S c2s;
-                        c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
-                        auto* pi = c2s.mutable_player_input();
-                        pi->set_keycode(send_mask);
-                        std::string data = c2s.SerializeAsString();
-                        netclient_send(self->netclient, data.c_str(), data.size());
-                }
-        }
+	if (self->fsm.state == PlayerFSM::ATTACK) return; // 攻击中不处理移动
+
+	bool has_dir = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+	self->fsm.state = has_dir ? PlayerFSM::WALK : PlayerFSM::IDLE;
+
+	if (has_dir) {
+		self->pending_inputs.push_back(self->current_input_mask);
+		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+			LogicRectComponent& r, LogicPositionComponent& pos) {
+			if (p.conv == self->local_conv)
+				movement(self, &pos, r, id, self->local_conv, self->current_input_mask);
+		});
+		adventure::C2S c2s;
+		c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
+		c2s.mutable_player_input()->set_keycode(self->current_input_mask);
+		std::string data = c2s.SerializeAsString();
+		netclient_send(self->netclient, data.c_str(), data.size());
+	}
 }
 
 static void send_heartbeat(game_scene_p self, float dt)
@@ -602,15 +616,18 @@ static void on_handle_event(scene_p s, const void* ev)
                 case SDLK_S: key_mask = INPUT_DOWN; break;
                 case SDLK_A: key_mask = INPUT_LEFT; break;
                 case SDLK_D: key_mask = INPUT_RIGHT; break;
-                case SDLK_J: key_mask = INPUT_ATTACK; break;
+                case SDLK_SPACE: key_mask = INPUT_ATTACK; break;
                 default: break;
                 }
                 if (key_mask) {
                         if (is_down) {
                                 self->current_input_mask |= key_mask;
-                                if (key_mask == INPUT_ATTACK) {
-                                        self->attack_triggered = true;
-                                }
+                                if (key_mask == INPUT_ATTACK) self->attack_triggered = true;
+                                // 更新 FSM 朝向
+                                if (key_mask & INPUT_RIGHT) self->fsm.dir = 2;
+                                else if (key_mask & INPUT_LEFT) self->fsm.dir = 1;
+                                else if (key_mask & INPUT_UP) self->fsm.dir = 3;
+                                else if (key_mask & INPUT_DOWN) self->fsm.dir = 0;
                         }
                         else {
                                 self->current_input_mask &= ~key_mask;
@@ -657,7 +674,7 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳 ----------
         send_heartbeat(self, dt);
 
-	// ---------- 摄像机跟随本地玩家 + 动画选择 + 脚步音效 ----------
+	// ---------- 摄像机跟随本地玩家 + FSM 状态更新 ----------
 	self->player_query.each([&](PlayerComponent& p, IdComponent&,
 		LogicRectComponent&, LogicPositionComponent& pos) {
 		if (p.conv == (int)self->local_conv) {
@@ -668,28 +685,28 @@ static void on_update(scene_p s, float dt) {
 			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
 			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 
-			// ---- 动画朝向 ----
-			if (self->current_input_mask & INPUT_RIGHT)      self->player_dir = 2;
-			else if (self->current_input_mask & INPUT_LEFT)  self->player_dir = 1;
-			else if (self->current_input_mask & INPUT_UP)     self->player_dir = 3;
-			else if (self->current_input_mask & INPUT_DOWN)   self->player_dir = 0;
-
-			// ---- 攻击计时 ----
-			if (self->attacking) {
-				self->atk_timer += dt;
-				if (self->atk_timer >= 0.6f) self->attacking = false;
-			}
-			if (self->attack_triggered) { self->attacking = true; self->atk_timer = 0; }
-
-			// ---- 脚步音效 ----
-			bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
-			if (moving && !self->attacking) {
-				self->step_timer += dt;
-				if (self->step_timer >= 0.30f) {
-					audio_shot_play(self->step_sound);
-					self->step_timer = 0;
+			// ---- FSM 计时器 ----
+			if (self->fsm.state == PlayerFSM::ATTACK) {
+				self->fsm.timer -= dt;
+				if (self->fsm.timer <= 0) {
+					self->fsm.timer = 0;
+					// 攻击结束，回到 IDLE/WALK
+					bool m = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+					self->fsm.state = m ? PlayerFSM::WALK : PlayerFSM::IDLE;
 				}
-			} else { self->step_timer = 0; }
+			}
+
+			// ---- 脚步音效 (仅 WALK 状态) ----
+			if (self->fsm.state == PlayerFSM::WALK) {
+				self->fsm.step_timer += dt;
+				if (self->fsm.step_timer >= 0.30f) {
+					static int dbg_snd = 0;
+					if (++dbg_snd < 3)
+						SDL_Log("step sound! dev=%u", self->audio_dev);
+					if (self->step_sound) audio_shot_play(self->step_sound);
+					self->fsm.step_timer = 0;
+				}
+			} else { self->fsm.step_timer = 0; }
 		}
 	});
 
@@ -723,16 +740,16 @@ static void on_render(scene_p s) {
                 float scr_x = (fp_to_float(pos.x) - ctx->camera_x) * PIXELS_PER_METER;
                 float scr_y = (fp_to_float(pos.y) - ctx->camera_y) * PIXELS_PER_METER;
 
-                // 方向计算
+                // 方向计算 + 动画选择
                 int dir = 0;
                 bool moving = false;
+                bool atking = false;
                 Uint64 now_t = SDL_GetTicks();
                 if (p.conv == (int)self->local_conv) {
-                        // 本地玩家：输入方向
-                        dir = self->player_dir;
-                        moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+                        dir = self->fsm.dir;
+                        moving = (self->fsm.state == PlayerFSM::WALK);
+                        atking = (self->fsm.state == PlayerFSM::ATTACK);
                 } else {
-                        // 远程玩家：位置差推算，用时间戳保持 moving
                         auto& lx  = self->last_px[eid];
                         auto& ly  = self->last_py[eid];
                         auto& lm  = self->last_move_time[eid];
@@ -750,10 +767,9 @@ static void on_render(scene_p s) {
                             moving = true;
                 }
 
-                // 选择精灵
                 sprite_animation_p cur;
                 if (p.conv == (int)self->local_conv) {
-                        cur = self->attacking ? self->anim_atk[dir]
+                        cur = atking ? self->anim_atk[dir]
                              : moving ? self->anim_walk : self->anim_idle;
                 } else {
                         cur = moving ? self->anim_walk : self->anim_idle;

@@ -20,7 +20,7 @@ static context* ctx;
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
         sys_init_netenv();
-        if (!SDL_Init(SDL_INIT_VIDEO)) {
+        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
                 SDL_Log("SDL init failed: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
         }
