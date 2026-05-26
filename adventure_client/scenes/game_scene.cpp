@@ -8,6 +8,10 @@
 #include <joy/jtext.h>
 #include <joy/jcollision.h>
 #include <joy/jnetwork.h>
+#include <joy/jtilemap.h>
+#include <joy/jtilemap_render.h>
+#include <joy/janimations.h>
+#include <joy/jaudio.h>
 #include "../asset_manager.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
@@ -38,6 +42,24 @@ struct game_scene {
         context* ctx;
         netclient_p netclient;
         flecs::world ecs_world;
+
+        // ---- tilemap + 动画 + 音频 ----
+        jtilemap_p          tilemap = NULL;
+        sprite_animation_p  anim_idle = NULL;
+        sprite_animation_p  anim_walk = NULL;
+        sprite_animation_p  anim_atk[4] = {};
+        uint32_t            audio_dev = 0;
+        audio_shot_p        step_sound = NULL;
+        audio_bgm_p         bgm = NULL;
+        float               step_timer = 0;
+        int                 player_dir = 0;
+        bool                attacking = false;
+        float               atk_timer = 0;
+
+        // 远程玩家方向追踪（上次位置 → 当前方向）
+        std::map<flecs::entity_t, fp_t> last_px, last_py;
+        std::map<flecs::entity_t, int>  remote_dirs;
+        std::map<int, int>              conv_dirs; // conv → 方向
 
         std::map<int, int> server_inputs;
         bool ready = false;
@@ -447,6 +469,16 @@ static void on_message(net_message_p msg, void* arg)
         if (msg->data) SDL_free(msg->data);
 }
 
+// ======================== 动画辅助 ========================
+static sprite_animation_p make_anim(SDL_Renderer* r, int row, int nframes, float sx) {
+    auto a = sprite_animation_create(r);
+    for (int c = 0; c < nframes; c++)
+        sprite_animation_add_clip(a, "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png",
+                                   0.15f, { (float)(c*192), (float)(row*192), 192,192 });
+    sprite_animation_set_scale(a, sx, 1.0f);
+    return a;
+}
+
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -465,8 +497,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
 
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
         self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
@@ -476,6 +508,28 @@ static void on_load(scene_p s)
         self->attack_ray_effect_query = self->ecs_world.query<AttackRayEffectComponent>();
         self->player_query = self->ecs_world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
         self->body_query = self->ecs_world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
+
+        // ---- tilemap 渲染 ----
+        self->tilemap = jtilemap_load_file("joy2d_editor_tilemap/map.lua");
+        if (self->tilemap) {
+                jtilemap_render_init(self->ctx->renderer, NULL, NULL);
+                log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
+        } else log_error("[tilemap] failed to load");
+
+        // ---- 玩家动画 ----
+        self->anim_idle = make_anim(self->ctx->renderer, 0, 6, 1);
+        self->anim_walk = make_anim(self->ctx->renderer, 1, 6, 1);
+        self->anim_atk[0] = make_anim(self->ctx->renderer, 4, 6, 1);  // 下
+        self->anim_atk[1] = make_anim(self->ctx->renderer, 2, 6, -1); // 左
+        self->anim_atk[2] = make_anim(self->ctx->renderer, 2, 6, 1);  // 右
+        self->anim_atk[3] = make_anim(self->ctx->renderer, 6, 6, 1);  // 上
+
+        // ---- 音频 ----
+        self->audio_dev = audio_open_device();
+        self->step_sound = audio_shot_create("joy2d_editor_sounds/ak47.wav", self->audio_dev);
+        audio_shot_set_gain(self->step_sound, 0.2f);
+        self->bgm = audio_bgm_create("joy2d_editor_sounds/bgm.wav", self->audio_dev);
+        audio_bgm_set_gain(self->bgm, 0.5f);
 
 }
 
@@ -602,19 +656,57 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳 ----------
         send_heartbeat(self, dt);
 
-        // ---------- 摄像机跟随本地玩家 ----------
+        // ---------- 摄像机跟随本地玩家 + 动画更新 + 脚步音效 ----------
         self->player_query.each([&](PlayerComponent& p, IdComponent&,
                 LogicRectComponent&, LogicPositionComponent& pos) {
                 if (p.conv == (int)self->local_conv) {
                         float target_cam_x = fp_to_float(pos.x) - 6.4f;
                         float target_cam_y = fp_to_float(pos.y) - 4.8f;
-                        // 平滑跟随
                         float lerp = dt * 5.0f;
                         if (lerp > 1.0f) lerp = 1.0f;
                         self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
                         self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
+
+                        // ---- 动画朝向 ----
+                        if (self->current_input_mask & INPUT_RIGHT)      self->player_dir = 2;
+                        else if (self->current_input_mask & INPUT_LEFT)  self->player_dir = 1;
+                        else if (self->current_input_mask & INPUT_UP)     self->player_dir = 3;
+                        else if (self->current_input_mask & INPUT_DOWN)   self->player_dir = 0;
+
+                        // ---- 攻击计时 ----
+                        if (self->attacking) {
+                                self->atk_timer += dt;
+                                if (self->atk_timer >= 0.6f) self->attacking = false;
+                        }
+                        if (self->attack_triggered) { self->attacking = true; self->atk_timer = 0; }
+
+                        // ---- 动画更新 ----
+                        bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+                        sprite_animation_p cur;
+                        float sx = 1;
+                        if (self->attacking) {
+                                cur = self->anim_atk[self->player_dir];
+                                sx = (self->player_dir == 1) ? -1.0f : 1.0f;
+                        } else {
+                                cur = moving ? self->anim_walk : self->anim_idle;
+                                sx = (self->player_dir == 1) ? -1.0f : 1.0f;
+                        }
+                        sprite_animation_set_scale(cur, sx, 1.0f);
+                        sprite_animation_update(cur, dt);
+                        // 精灵位置在 on_render 中统一设置
+
+                        // ---- 脚步音效 ----
+                        if (moving && !self->attacking) {
+                                self->step_timer += dt;
+                                if (self->step_timer >= 0.30f) {
+                                        audio_shot_play(self->step_sound);
+                                        self->step_timer = 0;
+                                }
+                        } else { self->step_timer = 0; }
                 }
         });
+
+
 
 
 
@@ -623,16 +715,79 @@ static void on_update(scene_p s, float dt) {
 static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         SDL_SetRenderDrawColor(self->ctx->renderer, 100, 100, 100, 255);
+
+        // ---- tilemap 背景 ----
+        if (self->tilemap) {
+                float cam_x_px = self->ctx->camera_x * (float)PIXELS_PER_METER;
+                float cam_y_px = self->ctx->camera_y * (float)PIXELS_PER_METER;
+                jtilemap_render_all(self->tilemap, cam_x_px, cam_y_px, SDL_GetTicks());
+        }
+
+        // ---- ECS 实体（碰撞体，不含玩家） ----
         self->drawing_entity_query.each(drawing_entity_system);
         self->attack_ray_effect_query.each(drawing_attack_ray_effect_system);
+
+        // ---- 所有玩家——剑客精灵渲染 ----
+        auto* ctx = self->ctx;
+        self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
+                LogicRectComponent&, LogicPositionComponent& pos) {
+
+                flecs::entity_t eid = e;
+                float scr_x = (fp_to_float(pos.x) - ctx->camera_x) * PIXELS_PER_METER;
+                float scr_y = (fp_to_float(pos.y) - ctx->camera_y) * PIXELS_PER_METER;
+
+                // 方向计算
+                int dir = 0;
+                if (p.conv == (int)self->local_conv) {
+                        // 本地玩家：输入方向
+                        dir = self->player_dir;
+                } else {
+                        // 远程玩家：位置差推算
+                        auto& lx = self->last_px[eid];
+                        auto& ly = self->last_py[eid];
+                        if (lx != 0 || ly != 0) {
+                                fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
+                                if (dx > fp_zero()) dir = 2;       // 右
+                                else if (dx < fp_zero()) dir = 1;  // 左
+                                else if (dy < fp_zero()) dir = 3;  // 上
+                                else if (dy > fp_zero()) dir = 0;  // 下
+                        }
+                        lx = pos.x; ly = pos.y;
+                }
+
+                // 选择精灵（本地玩家用动画，远程用 idle）
+                sprite_animation_p cur;
+                if (p.conv == (int)self->local_conv) {
+                        bool moving = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+                        cur = self->attacking ? self->anim_atk[dir]
+                             : moving ? self->anim_walk : self->anim_idle;
+                } else {
+                        cur = self->anim_idle; // 远程玩家只显示待机
+                }
+
+                // 翻转 + 定位（碰撞盒居中在精灵中，与 main11 一致）
+                float sx = (dir == 1) ? -1.0f : 1.0f;
+                sprite_animation_set_scale(cur, sx, 1.0f);
+                // sprite 192×192，碰撞盒 30×30
+                // 碰撞盒水平垂直都居中在精灵中
+                sprite_animation_set_position(cur,
+                        scr_x - (192.0f - 30.0f) / 2.0f,
+                        scr_y - (192.0f - 30.0f) / 2.0f);
+                sprite_animation_draw(cur, nullptr);
+        });
 }
 
 static void on_destroy(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        if (self->netclient) {
-                netclient_destroy(self->netclient);
-                self->netclient = NULL;
-        }
+        if (self->netclient) { netclient_destroy(self->netclient); self->netclient = NULL; }
+        auto d = [](auto p) { if(p) sprite_animation_destroy(p); };
+        d(self->anim_idle); d(self->anim_walk);
+        for (int i=0;i<4;i++) d(self->anim_atk[i]);
+        audio_shot_destroy(self->step_sound);
+        audio_bgm_destroy(self->bgm);
+        if (self->audio_dev) audio_close_device(self->audio_dev);
+        jtilemap_render_destroy();
+        if (self->tilemap) jtilemap_destroy(self->tilemap);
         delete self;
 }
 

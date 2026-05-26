@@ -21,13 +21,8 @@ static void drawing_entity_system(flecs::entity e,
         body.w = fp_to_float(rect.width) * PIXELS_PER_METER;
         body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
         if (e.has<PlayerComponent>()) {
-                SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 255, 255);
-                SDL_RenderFillRect(ctx->renderer, &body);
-                header.w = 0.1f * PIXELS_PER_METER;
-                header.h = 0.1f * PIXELS_PER_METER;
-                header.x = body.x + (body.w - header.w) * 0.5f;
-                header.y = body.y - header.h;
-                SDL_RenderFillRect(ctx->renderer, &header);
+                // 玩家由 game_scene 的 on_render 用精灵绘制，不画方块
+                return;
         }
         else {
                 SDL_SetRenderDrawColor(ctx->renderer, 160, 140, 110, 255);

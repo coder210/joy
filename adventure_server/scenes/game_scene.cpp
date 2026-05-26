@@ -11,6 +11,11 @@
 #include <joy/jcollision.h>
 #include <joy/jshapes.h>
 #include <joy/jnetwork.h>
+#include <joy/jtilemap.h>
+#include <joy/jtilemap_render.h>
+#include <joy/janimations.h>
+
+enum { SERVER_PPM = 50 };
 #include "../layers/debug_layer.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
@@ -36,6 +41,9 @@ static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 struct game_scene {
 	scene_p scene;
 	flecs::world world;
+	jtilemap_p tilemap = NULL;
+	sprite_animation_p anim_idle = NULL;
+	sprite_animation_p anim_walk = NULL;
 
 	int g_id = 1;
 	int g_frameid = 1;
@@ -473,8 +481,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -489,34 +497,38 @@ static void on_load(scene_p s)
 		.set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
 		.set<TransformComponent>({ 5,5,0,1,1 });
 
-	// 围墙：从原先 12x9 扩大到 30x20 游戏单位（1500x1000 像素）
-	const fp_t MAP_W = fp_from_float(30.0f);
-	const fp_t MAP_H = fp_from_float(20.0f);
-	const fp_t WALL_T = fp_from_float(0.5f); // 墙厚度
-	// 下墙 (0,0) 宽30 厚0.5
-	self->world.entity()
-		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ MAP_W, WALL_T })
-		.set<LogicPositionComponent>({ fp_zero(), fp_zero() })
-		.set<TransformComponent>({ 0,0,0,1,1 });
-	// 左墙 (0,0) 厚0.5 高20.5(上下盖住墙头)
-	self->world.entity()
-		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ WALL_T, fp_add(MAP_H, WALL_T) })
-		.set<LogicPositionComponent>({ fp_zero(), fp_zero() })
-		.set<TransformComponent>({ 0,0,0,1,1 });
-	// 右墙 (30,0) 厚0.5 高20.5
-	self->world.entity()
-		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ WALL_T, fp_add(MAP_H, WALL_T) })
-		.set<LogicPositionComponent>({ MAP_W, fp_zero() })
-		.set<TransformComponent>({ 30,0,0,1,1 });
-	// 上墙 (0,20) 宽30.5 厚0.5
-	self->world.entity()
-		.set<IdComponent>({ GenId(self), 100 })
-		.set<LogicRectComponent>({ fp_add(MAP_W, WALL_T), WALL_T })
-		.set<LogicPositionComponent>({ fp_zero(), MAP_H })
-		.set<TransformComponent>({ 0,20,0,1,1 });
+	// 加载 tilemap 碰撞墙体（替代硬编码围墙）
+	self->tilemap = jtilemap_load_file("joy2d_editor_tilemap/map.lua");
+	if (self->tilemap) {
+		jtilemap_object_layer_p ol = jtilemap_find_object_layer(self->tilemap, "collision");
+		if (ol) {
+			for (size_t i = 0; i < kv_size(ol->objects); i++) {
+				jtilemap_object_t* obj = &kv_A(ol->objects, i);
+				if (obj->shape != JTILEMAP_SHAPE_RECT) continue;
+				fp_t px = fp_from_float(obj->x / (float)SERVER_PPM);
+				fp_t py = fp_from_float(obj->y / (float)SERVER_PPM);
+				fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
+				fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
+				self->world.entity()
+					.set<IdComponent>({ GenId(self), 100 })
+					.set<LogicRectComponent>({ pw, ph })
+					.set<LogicPositionComponent>({ px, py })
+					.set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
+			}
+			log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
+		}
+	} else {
+		log_error("[tilemap] failed to load - using fixed walls");
+		// 回退：简单三面墙
+		fp_t WALL_T = fp_from_float(0.5f);
+		for (int i = 0; i < 3; i++) {
+			self->world.entity()
+				.set<IdComponent>({ GenId(self), 100 })
+				.set<LogicRectComponent>({ WALL_T, fp_from_float(15.0f) })
+				.set<LogicPositionComponent>({ fp_from_float(i * 15.0f), fp_zero() })
+				.set<TransformComponent>({ (float)(i*15), 0,0,1,1 });
+		}
+	}
 
 
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
@@ -527,6 +539,22 @@ static void on_load(scene_p s)
 	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->connection_query = self->world.query<ConnectionComponent>();
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+
+	// ---- tilemap + 精灵渲染初始化 ----
+	if (self->tilemap)
+		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
+
+	// idle (行0) + walk (行1)
+	auto mk = [&](int row) {
+		auto a = sprite_animation_create(self->ctx->renderer);
+		for (int c = 0; c < 6; c++)
+			sprite_animation_add_clip(a, "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png",
+			                           0.15f, { (float)(c*192), (float)(row*192), 192,192 });
+		sprite_animation_set_scale(a, 1.0f, 1.0f);
+		return a;
+	};
+	self->anim_idle = mk(0);
+	self->anim_walk = mk(1);
 
 	adventure::S2CWorld s2c_world;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -598,6 +626,9 @@ static void on_update(scene_p s, float dt)
 		NotifySystem(self);
 	}
 
+	// 更新行走动画
+	if (self->anim_walk) sprite_animation_update(self->anim_walk, dt);
+
 	// ---------- 摄像机跟随第一个玩家 ----------
 	self->player_query.each([&](PlayerComponent&, IdComponent&,
 			LogicRectComponent&, LogicPositionComponent& pos) {
@@ -614,8 +645,47 @@ static void on_update(scene_p s, float dt)
 static void on_render(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
+	auto* ctx = self->ctx;
+
+	// ---- tilemap 背景 ----
+	if (self->tilemap) {
+		float cx = ctx->camera_x * (float)SERVER_PPM;
+		float cy = ctx->camera_y * (float)SERVER_PPM;
+		jtilemap_render_all(self->tilemap, cx, cy, SDL_GetTicks());
+	}
+
+	// ---- ECS 实体（碰撞体，不含玩家） ----
 	self->drawing_entity_query.each(DrawingEntitySystem);
 	self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
+
+	// ---- 所有玩家——剑客精灵 ----
+	self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
+			LogicRectComponent&, LogicPositionComponent& pos) {
+		float scr_x = (fp_to_float(pos.x) - ctx->camera_x) * SERVER_PPM;
+		float scr_y = (fp_to_float(pos.y) - ctx->camera_y) * SERVER_PPM;
+		// 方向+移动：用位置差推算
+		flecs::entity_t eid = e;
+		int dir = 0;
+		bool moving = false;
+		static std::map<flecs::entity_t, fp_t> lx, ly;
+		auto& plx = lx[eid], &ply = ly[eid];
+		if (plx != 0 || ply != 0) {
+			fp_t dx = fp_sub(pos.x, plx), dy = fp_sub(pos.y, ply);
+			if (dx > fp_zero()) { dir = 2; moving = true; }
+			else if (dx < fp_zero()) { dir = 1; moving = true; }
+			else if (dy < fp_zero()) { dir = 3; moving = true; }
+			else if (dy > fp_zero()) { dir = 0; moving = true; }
+		}
+		plx = pos.x; ply = pos.y;
+
+		auto cur = moving ? self->anim_walk : self->anim_idle;
+		float sx = (dir == 1) ? -1.0f : 1.0f;
+		sprite_animation_set_scale(cur, sx, 1.0f);
+		sprite_animation_set_position(cur,
+			scr_x - (192.0f - 30.0f) / 2.0f,
+			scr_y - (192.0f - 30.0f) / 2.0f);
+		sprite_animation_draw(cur, nullptr);
+	});
 }
 
 static void on_destroy(scene_p s)
@@ -623,7 +693,10 @@ static void on_destroy(scene_p s)
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->netserver);
-	
+	if (self->anim_idle) sprite_animation_destroy(self->anim_idle);
+	if (self->anim_walk) sprite_animation_destroy(self->anim_walk);
+	jtilemap_render_destroy();
+	if (self->tilemap) { jtilemap_destroy(self->tilemap); self->tilemap = NULL; }
 }
 
 game_scene_p game_scene_create(Context* ctx)
