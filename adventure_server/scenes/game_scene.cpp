@@ -66,6 +66,10 @@ struct game_scene {
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 	flecs::query<ConnectionComponent> connection_query;
 	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent, TransformComponent> render_player_query;
+	std::map<flecs::entity_t, fp_t> last_px, last_py;
+	std::map<flecs::entity_t, Uint64> last_move_time;
+	std::map<flecs::entity_t, int> last_dir;
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
@@ -481,8 +485,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -539,6 +543,7 @@ static void on_load(scene_p s)
 	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->connection_query = self->world.query<ConnectionComponent>();
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+	self->render_player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent, TransformComponent>();
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
@@ -626,8 +631,7 @@ static void on_update(scene_p s, float dt)
 		NotifySystem(self);
 	}
 
-	// 更新行走动画
-	if (self->anim_walk) sprite_animation_update(self->anim_walk, dt);
+	// 动画更新移到 on_render 中，与 main11.cpp 一致
 
 	// ---------- 摄像机跟随第一个玩家 ----------
 	self->player_query.each([&](PlayerComponent&, IdComponent&,
@@ -658,29 +662,41 @@ static void on_render(scene_p s)
 	self->drawing_entity_query.each(DrawingEntitySystem);
 	self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
 
-	// ---- 所有玩家——剑客精灵 ----
-	self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
-			LogicRectComponent&, LogicPositionComponent& pos) {
-		float scr_x = (fp_to_float(pos.x) - ctx->camera_x) * SERVER_PPM;
-		float scr_y = (fp_to_float(pos.y) - ctx->camera_y) * SERVER_PPM;
-		// 方向+移动：用位置差推算
+	// ---- 所有玩家——剑客精灵（渲染用 TransformComponent 插值，方向用逻辑位置）----
+	float ren_dt = game_timer_get_unscaled_delta_time(&ctx->game_timer);
+	self->render_player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
+			LogicRectComponent&, LogicPositionComponent& pos, TransformComponent& t) {
+		float scr_x = (t.position_x - ctx->camera_x) * SERVER_PPM;
+		float scr_y = (t.position_y - ctx->camera_y) * SERVER_PPM;
+		// 方向+移动：用时间戳保持 moving 状态
 		flecs::entity_t eid = e;
-		int dir = 0;
+		auto& plx = self->last_px[eid], &ply = self->last_py[eid];
+		auto& lm  = self->last_move_time[eid];
+		auto& ldir = self->last_dir[eid];
+		int dir = ldir;
 		bool moving = false;
-		static std::map<flecs::entity_t, fp_t> lx, ly;
-		auto& plx = lx[eid], &ply = ly[eid];
-		if (plx != 0 || ply != 0) {
-			fp_t dx = fp_sub(pos.x, plx), dy = fp_sub(pos.y, ply);
-			if (dx > fp_zero()) { dir = 2; moving = true; }
-			else if (dx < fp_zero()) { dir = 1; moving = true; }
-			else if (dy < fp_zero()) { dir = 3; moving = true; }
-			else if (dy > fp_zero()) { dir = 0; moving = true; }
-		}
-		plx = pos.x; ply = pos.y;
+		Uint64 now_t = SDL_GetTicks();
+
+		// 首次遇到该实体：记录初始位置
+		if (plx == 0 && ply == 0) { plx = pos.x; ply = pos.y; }
+
+		fp_t dx = fp_sub(pos.x, plx), dy = fp_sub(pos.y, ply);
+		fp_t threshold = fp_from_float(0.001f);
+		if (dx > threshold)        { dir = 2; moving = true; }
+		else if (dx < -threshold)  { dir = 1; moving = true; }
+		if (!moving && dy < -threshold)  { dir = 3; moving = true; }
+		if (!moving && dy > threshold)   { dir = 0; moving = true; }
+		if (moving) { plx = pos.x; ply = pos.y; ldir = dir; lm = now_t; }
+
+		// 200ms 内有移动 → 保持 moving
+		if (!moving && lm != 0 && (now_t - lm) < 200)
+			moving = true;
 
 		auto cur = moving ? self->anim_walk : self->anim_idle;
 		float sx = (dir == 1) ? -1.0f : 1.0f;
 		sprite_animation_set_scale(cur, sx, 1.0f);
+		// 先 update 再 draw，与 main11.cpp 一致
+		sprite_animation_update(cur, ren_dt);
 		sprite_animation_set_position(cur,
 			scr_x - (192.0f - 30.0f) / 2.0f,
 			scr_y - (192.0f - 30.0f) / 2.0f);
