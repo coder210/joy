@@ -44,6 +44,8 @@ struct game_scene {
 	jtilemap_p tilemap = NULL;
 	sprite_animation_p anim_idle = NULL;
 	sprite_animation_p anim_walk = NULL;
+	sprite_animation_p anim_atk[4] = {};
+	std::map<flecs::entity_t, float> atk_timers;
 
 	int g_id = 1;
 	int g_frameid = 1;
@@ -432,9 +434,12 @@ static void HandleCommandSystem(game_scene_p self)
 
 	// 应用输入
 	for (auto& input : s2c.command().player_inputs()) {
-		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv != input.conv()) return;
+			// 检测攻击，记录计时器
+			if (input.keycode() & INPUT_ATTACK)
+				self->atk_timers[e] = 0.6f;
 			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
 		});
 	}
@@ -549,17 +554,21 @@ static void on_load(scene_p s)
 	if (self->tilemap)
 		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
 
-	// idle (行0) + walk (行1)
-	auto mk = [&](int row) {
+	// idle + walk + attack
+	auto mk = [&](int row, float sx) {
 		auto a = sprite_animation_create(self->ctx->renderer);
 		for (int c = 0; c < 6; c++)
 			sprite_animation_add_clip(a, "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png",
 			                           0.15f, { (float)(c*192), (float)(row*192), 192,192 });
-		sprite_animation_set_scale(a, 1.0f, 1.0f);
+		sprite_animation_set_scale(a, sx, 1.0f);
 		return a;
 	};
-	self->anim_idle = mk(0);
-	self->anim_walk = mk(1);
+	self->anim_idle   = mk(0, 1);
+	self->anim_walk   = mk(1, 1);
+	self->anim_atk[0] = mk(4, 1);   // down
+	self->anim_atk[1] = mk(2, -1);  // left
+	self->anim_atk[2] = mk(2, 1);   // right
+	self->anim_atk[3] = mk(6, 1);   // up
 
 	adventure::S2CWorld s2c_world;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -631,6 +640,13 @@ static void on_update(scene_p s, float dt)
 		NotifySystem(self);
 	}
 
+	// 攻击计时器更新 + 清理过期的
+	for (auto it = self->atk_timers.begin(); it != self->atk_timers.end(); ) {
+		it->second -= dt;
+		if (it->second <= 0) { it = self->atk_timers.erase(it); }
+		else ++it;
+	}
+
 	// 动画更新移到 on_render 中，与 main11.cpp 一致
 
 	// ---------- 摄像机跟随第一个玩家 ----------
@@ -692,7 +708,10 @@ static void on_render(scene_p s)
 		if (!moving && lm != 0 && (now_t - lm) < 200)
 			moving = true;
 
-		auto cur = moving ? self->anim_walk : self->anim_idle;
+		// 攻击中？(过期的定时器已经被移除)
+		bool atking = self->atk_timers.count(eid) > 0;
+
+		auto cur = atking ? self->anim_atk[dir] : (moving ? self->anim_walk : self->anim_idle);
 		float sx = (dir == 1) ? -1.0f : 1.0f;
 		sprite_animation_set_scale(cur, sx, 1.0f);
 		// 先 update 再 draw，与 main11.cpp 一致
@@ -711,6 +730,7 @@ static void on_destroy(scene_p s)
 	netserver_destroy(self->netserver);
 	if (self->anim_idle) sprite_animation_destroy(self->anim_idle);
 	if (self->anim_walk) sprite_animation_destroy(self->anim_walk);
+	for (int i=0;i<4;i++) if (self->anim_atk[i]) sprite_animation_destroy(self->anim_atk[i]);
 	jtilemap_render_destroy();
 	if (self->tilemap) { jtilemap_destroy(self->tilemap); self->tilemap = NULL; }
 }
