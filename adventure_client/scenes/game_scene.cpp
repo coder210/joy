@@ -120,6 +120,8 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
         self->server_frameid = s2c->map().frame_id();
         self->server_entity_id = s2c->map().world().entity_id();
 
+        // 使用defer操作避免LOCKED_STORAGE错误
+        self->ecs_world.defer_begin();
         for (auto& entity : s2c->map().world().entities()) {
                 auto e = self->ecs_world.entity()
                         .set<IdComponent>({ entity.id(), entity.hp() })
@@ -142,6 +144,7 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
                         e.set<PlayerComponent>({ entity.player_conv() });
                 }
         }
+        self->ecs_world.defer_end();
 
         // 保存当前快照（预测前的状态）
         std::map<int, state_snapshot> snapshots;
@@ -419,6 +422,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
         self->ecs_world.defer_end();
 
         // 5. 应用所有玩家的输入
+        self->ecs_world.defer_begin();
         for (auto& input : s2c.command().player_inputs()) {
                 self->player_query.each([&](PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
@@ -462,6 +466,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                                 }
                         });
         }
+        self->ecs_world.defer_end();
 
         // 保存当前服务帧权威快照
         {
@@ -474,6 +479,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
         }
 
         // 执行后面的预测
+        self->ecs_world.defer_begin();
         {
                 // 重放未确认的输入
                 for (auto& input : self->pending_inputs) {
@@ -485,6 +491,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                                 });
                 }
         }
+        self->ecs_world.defer_end();
 
 }
 
@@ -534,8 +541,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<AnimationFrameComponent>();
         self->ecs_world.component<PlayerActionComponent>();
 
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
         self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
@@ -579,6 +586,9 @@ static void fixedupdate(game_scene_p self, float dt)
 	if (self->attack_triggered) {
 		self->attack_triggered = false;
 		self->pending_inputs.push_back(INPUT_ATTACK);
+		
+		// 使用defer操作避免LOCKED_STORAGE错误
+		self->ecs_world.defer_begin();
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv == self->local_conv) {
@@ -586,6 +596,8 @@ static void fixedupdate(game_scene_p self, float dt)
 				e.set<PlayerActionComponent>({PlayerActionComponent::ATTACK, self->local_dir, 0, 0});
 			}
 		});
+		self->ecs_world.defer_end();
+		
 		adventure::C2S c2s;
 		c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
 		c2s.mutable_player_input()->set_keycode(INPUT_ATTACK);
@@ -607,11 +619,16 @@ static void fixedupdate(game_scene_p self, float dt)
 
 	if (has_dir) {
 		self->pending_inputs.push_back(self->current_input_mask);
+		
+		// 使用defer操作避免LOCKED_STORAGE错误
+		self->ecs_world.defer_begin();
 		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv == self->local_conv)
 				movement(self, &pos, r, id, self->local_conv, self->current_input_mask);
 		});
+		self->ecs_world.defer_end();
+		
 		adventure::C2S c2s;
 		c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
 		c2s.mutable_player_input()->set_keycode(self->current_input_mask);

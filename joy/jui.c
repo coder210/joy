@@ -97,6 +97,7 @@ button_create(SDL_Renderer* renderer, float width, float height)
 	btn->hover_color = (SDL_Color){ 150, 150, 250, 255 };
 	btn->pressed_color = (SDL_Color){ 50, 50, 150, 255 };
 	btn->image = NULL;
+	btn->pressed_image = NULL;
 	btn->text = NULL;
 	btn->is_hovered = btn->is_pressed = false;
 	btn->on_press = btn->on_release = NULL;
@@ -160,6 +161,7 @@ void button_destroy(button_p btn)
 	if (!btn) return;
 	if (btn->text) text_destroy(btn->text);
 	if (btn->image) image_destroy(btn->image);
+	if (btn->pressed_image) image_destroy(btn->pressed_image);
 	SDL_free(btn);
 }
 
@@ -190,7 +192,9 @@ void button_draw(button_p btn)
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderRect(renderer, &rect);
 
-	if (btn->image) {
+	if (btn->is_pressed && btn->pressed_image) {
+		image_draw1(btn->pressed_image, NULL, &rect);
+	} else if (btn->image) {
 		image_draw1(btn->image, NULL, &rect);
 	}
 
