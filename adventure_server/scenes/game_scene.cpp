@@ -7,6 +7,7 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <cstdlib>
 #include <joy/jcore.h>
 #include <joy/jsys.h>
 #include <joy/jmath.h>
@@ -25,6 +26,8 @@ enum { SERVER_PPM = 50 };
 #include "../components/local_only_component.h"
 #include "../components/player_action_component.h"
 #include "../components/sprite_sheet_component.h"
+#include "../components/ai_component.h"
+#include "../components/enemy_component.h"
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
@@ -66,6 +69,7 @@ struct game_scene {
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 	flecs::query<ConnectionComponent> connection_query;
 	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+	flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
@@ -386,6 +390,9 @@ static void CollectCommandSystem(game_scene_p self)
 			ent->set_type(adventure::S2C_TYPE_PLAYER);
 			ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
 		}
+		else if (e.has<EnemyComponent>()) {
+			ent->set_type(adventure::S2C_TYPE_ENEMY);
+		}
 		else {
 			ent->set_type(adventure::S2C_TYPE_NORMAL);
 		}
@@ -580,8 +587,39 @@ static void on_load(scene_p s)
 		}
 	}
 
-
-	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
+	// ---- 创建敌人 ----
+	const int ENEMY_COUNT = 6;
+	fp_t map_w = self->tilemap ? fp_from_float((float)self->tilemap->width * self->tilemap->tilewidth / SERVER_PPM)
+		: fp_from_float(25.0f);
+	fp_t map_h = self->tilemap ? fp_from_float((float)self->tilemap->height * self->tilemap->tileheight / SERVER_PPM)
+		: fp_from_float(15.0f);
+	srand((unsigned int)SDL_GetTicks());
+	for (int i = 0; i < ENEMY_COUNT; i++) {
+		fp_t ex = fp_from_float((float)(rand() % ((int)fp_to_float(map_w) - 4) + 2));
+		fp_t ey = fp_from_float((float)(rand() % ((int)fp_to_float(map_h) - 4) + 2));
+		fp_t cx = ex;
+		fp_t cy = ey;
+		self->world.entity()
+			.add<EnemyComponent>()
+			.set<AIComponent>({
+				cx, cy,                                     // 巡逻中心
+				fp_from_float(3.0f),                        // 巡逻半径 3m
+				fp_from_float(6.0f),                        // 检测范围 6m
+				fp_from_float(1.0f),                        // 攻击范围 1m
+				0, 0,                                       // 初始状态巡逻
+				fp_add(cx, fp_from_float((float)(rand() % 100 - 50) * 0.05f)),
+				fp_add(cy, fp_from_float((float)(rand() % 100 - 50) * 0.05f))
+			})
+			.set<IdComponent>({ GenId(self), 5 })
+			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
+			.set<LogicPositionComponent>({ ex, ey })
+			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
+			.set<TransformComponent>({ fp_to_float(ex), fp_to_float(ey), 0, 1, 1 })
+			.set<SpriteSheetComponent>({ "", 192, 192, 0, 1, {4,2,2,6}, 6, 0.15f })
+			.set<PlayerActionComponent>({})
+			.set<AnimationFrameComponent>({});
+	}
+	log_info("[AI] created %d enemies", ENEMY_COUNT);
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
 	self->world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
 		.each(animation_update_system);
@@ -593,6 +631,7 @@ static void on_load(scene_p s)
 	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->connection_query = self->world.query<ConnectionComponent>();
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+	self->enemy_query = self->world.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
@@ -606,6 +645,9 @@ static void on_load(scene_p s)
 			if (e.has<PlayerComponent>()) {
 				ent->set_type(adventure::S2C_TYPE_PLAYER);
 				ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+			}
+			else if (e.has<EnemyComponent>()) {
+				ent->set_type(adventure::S2C_TYPE_ENEMY);
 			}
 			else {
 				ent->set_type(adventure::S2C_TYPE_NORMAL);
@@ -638,6 +680,75 @@ static void on_handle_event(scene_p s, const void* ev)
 	}
 }
 
+static void UpdateAI(game_scene_p self)
+{
+	self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
+			IdComponent& id, LogicRectComponent& rect, LogicPositionComponent& pos) {
+
+		// 查找最近玩家
+		fp_t nearest_dist_sq = fp_mul(ai.detect_radius, ai.detect_radius);
+		fp_t nearest_player_x = 0, nearest_player_y = 0;
+		bool found_player = false;
+
+		self->player_query.each([&](PlayerComponent&, IdComponent&,
+				LogicRectComponent&, LogicPositionComponent& pp) {
+			fp_t dx = fp_sub(pp.x, pos.x);
+			fp_t dy = fp_sub(pp.y, pos.y);
+			fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+			if (dist_sq < nearest_dist_sq) {
+				nearest_dist_sq = dist_sq;
+				nearest_player_x = pp.x;
+				nearest_player_y = pp.y;
+				found_player = true;
+			}
+		});
+
+		fp_t speed = fp_from_float(2.0f);
+		fp_t step = fp_mul(speed, fp_from_float(self->ctx->FIXED_TIMESTEP));
+
+		if (found_player) {
+			fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
+			if (nearest_dist_sq < attack_sq) {
+				// 攻击
+				ai.state = 2;
+				Attack(self, &pos, rect, id);
+			} else {
+				// 追击
+				ai.state = 1;
+				fp_t dx = fp_sub(nearest_player_x, pos.x);
+				fp_t dy = fp_sub(nearest_player_y, pos.y);
+				fp_t dist = fp_sqrt(fp_add(fp_mul(dx, dx), fp_mul(dy, dy)));
+				if (dist > fp_zero()) {
+					pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
+					pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
+					resolve_collision(self, &pos, rect, id);
+				}
+			}
+		} else {
+			// 巡逻
+			ai.state = 0;
+			fp_t dx = fp_sub(ai.target_x, pos.x);
+			fp_t dy = fp_sub(ai.target_y, pos.y);
+			fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+			fp_t arrived = fp_from_float(0.5f);
+			if (dist_sq < fp_mul(arrived, arrived)) {
+				fp_t range = ai.patrol_radius;
+				ai.target_x = fp_add(ai.patrol_center_x,
+					fp_mul(fp_from_float((float)(rand() % 100 - 50)),
+						fp_div(range, fp_from_float(50.0f))));
+				ai.target_y = fp_add(ai.patrol_center_y,
+					fp_mul(fp_from_float((float)(rand() % 100 - 50)),
+						fp_div(range, fp_from_float(50.0f))));
+			} else {
+				fp_t dist = fp_sqrt(dist_sq);
+				pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
+				pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
+				resolve_collision(self, &pos, rect, id);
+			}
+		}
+	});
+}
+
 static void on_update(scene_p s, float dt)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -654,10 +765,11 @@ static void on_update(scene_p s, float dt)
 
 	self->world.progress(dt);
 
-	// 独立的帧同步 Tick（20Hz）
+	// AI 更新 + 独立的帧同步 Tick（20Hz）
 	self->serverTickTimer += dt;
 	if (self->serverTickTimer >= self->SERVER_TICK_INTERVAL) {
 		self->serverTickTimer -= self->SERVER_TICK_INTERVAL;
+		UpdateAI(self);
 		CollectCommandSystem(self);
 		HandleCommandSystem(self);
 		NotifySystem(self);
@@ -733,6 +845,9 @@ game_scene_p game_scene_create(Context* ctx)
 	self->world.component<SpriteSheetComponent>();
 	self->world.component<AnimationFrameComponent>();
 	self->world.component<PlayerActionComponent>();
+
+	self->world.component<AIComponent>();
+	self->world.component<EnemyComponent>();
 
 	scene_set_userdata(self->scene, self);
 	scene_set_load_callback(self->scene, on_load);
