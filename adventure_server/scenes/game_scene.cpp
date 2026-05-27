@@ -1,3 +1,7 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include <joy/external/stb_image.h>
+#include <unordered_map>
+
 #include "../flecs.h"
 #include "../protocol/adventure.pb.h"
 #include <string>
@@ -13,16 +17,19 @@
 #include <joy/jnetwork.h>
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
-#include <joy/janimations.h>
 
 enum { SERVER_PPM = 50 };
 #include "../layers/debug_layer.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
 #include "../components/local_only_component.h"
+#include "../components/player_action_component.h"
+#include "../components/sprite_sheet_component.h"
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
+#include "../systems/animation_update_system.h"
+#include "../systems/sprite_render_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../context.h"
@@ -42,10 +49,6 @@ struct game_scene {
 	scene_p scene;
 	flecs::world world;
 	jtilemap_p tilemap = NULL;
-	sprite_animation_p anim_idle = NULL;
-	sprite_animation_p anim_walk = NULL;
-	sprite_animation_p anim_atk[4] = {};
-	std::map<flecs::entity_t, float> atk_timers;
 
 	int g_id = 1;
 	int g_frameid = 1;
@@ -68,10 +71,6 @@ struct game_scene {
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 	flecs::query<ConnectionComponent> connection_query;
 	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
-	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent, TransformComponent> render_player_query;
-	std::map<flecs::entity_t, fp_t> last_px, last_py;
-	std::map<flecs::entity_t, Uint64> last_move_time;
-	std::map<flecs::entity_t, int> last_dir;
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
@@ -85,6 +84,30 @@ struct game_scene {
 
 };
 
+// 纹理缓存
+static std::unordered_map<std::string, SDL_Texture*> g_tex_cache;
+
+SDL_Texture* tex_cache_get(SDL_Renderer* r, const char* path) {
+    std::string k(path);
+    auto it = g_tex_cache.find(k);
+    if (it != g_tex_cache.end()) return it->second;
+    int w, h, ch;
+    auto* d = stbi_load(path, &w, &h, &ch, 4);
+    if (!d) return nullptr;
+    auto* s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, d, w * 4);
+    if (!s) { stbi_image_free(d); return nullptr; }
+    auto* t = SDL_CreateTextureFromSurface(r, s);
+    SDL_DestroySurface(s);
+    stbi_image_free(d);
+    g_tex_cache[k] = t;
+    return t;
+}
+
+void tex_cache_clear() {
+    for (auto& kv : g_tex_cache)
+        if (kv.second) SDL_DestroyTexture(kv.second);
+    g_tex_cache.clear();
+}
 
 static int GenId(game_scene_p game_scene)
 {
@@ -410,13 +433,23 @@ static void HandleCommandSystem(game_scene_p self)
 		fp_t x = player_join.position_x();
 		fp_t y = player_join.position_y();
 
+		SpriteSheetComponent ss{};
+		snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+		ss.frame_w = 192; ss.frame_h = 192;
+		ss.idle_row = 0; ss.walk_row = 1;
+		ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
+		ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
+		ss.frame_count = 6; ss.frame_duration = 0.15f;
 		self->world.entity()
 			.set<IdComponent>({ GenId(self), 10 })
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
 			.set<LogicPositionComponent>({ x, y })
 			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
 			.set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
-			.set<PlayerComponent>({ player_join.conv() });
+			.set<PlayerComponent>({ player_join.conv() })
+			.set<PlayerActionComponent>({})
+			.set<SpriteSheetComponent>(ss)
+			.set<AnimationFrameComponent>({});
 	}
 
 	// 玩家离开
@@ -437,9 +470,12 @@ static void HandleCommandSystem(game_scene_p self)
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv != input.conv()) return;
-			// 检测攻击，记录计时器
-			if (input.keycode() & INPUT_ATTACK)
-				self->atk_timers[e] = 0.6f;
+			// 攻击状态记录到 PlayerActionComponent（timer 从 0 累加）
+			if (input.keycode() & INPUT_ATTACK) {
+				e.set<PlayerActionComponent>({ PlayerActionComponent::ATTACK,
+					e.has<PlayerActionComponent>() ? e.get<PlayerActionComponent>()->dir : 0,
+					0, 0 });
+			}
 			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
 		});
 	}
@@ -490,8 +526,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -542,33 +578,20 @@ static void on_load(scene_p s)
 
 	self->world.system<LogicPositionComponent, TransformComponent>().each(LerpSystem);
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
+	self->world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
+		.each(animation_update_system);
+
+
 
 	self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
 	self->drawing_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
 	self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->connection_query = self->world.query<ConnectionComponent>();
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-	self->render_player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent, TransformComponent>();
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
 		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
-
-	// idle + walk + attack
-	auto mk = [&](int row, float sx) {
-		auto a = sprite_animation_create(self->ctx->renderer);
-		for (int c = 0; c < 6; c++)
-			sprite_animation_add_clip(a, "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png",
-			                           0.15f, { (float)(c*192), (float)(row*192), 192,192 });
-		sprite_animation_set_scale(a, sx, 1.0f);
-		return a;
-	};
-	self->anim_idle   = mk(0, 1);
-	self->anim_walk   = mk(1, 1);
-	self->anim_atk[0] = mk(4, 1);   // down
-	self->anim_atk[1] = mk(2, -1);  // left
-	self->anim_atk[2] = mk(2, 1);   // right
-	self->anim_atk[3] = mk(6, 1);   // up
 
 	adventure::S2CWorld s2c_world;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -640,14 +663,7 @@ static void on_update(scene_p s, float dt)
 		NotifySystem(self);
 	}
 
-	// 攻击计时器更新 + 清理过期的
-	for (auto it = self->atk_timers.begin(); it != self->atk_timers.end(); ) {
-		it->second -= dt;
-		if (it->second <= 0) { it = self->atk_timers.erase(it); }
-		else ++it;
-	}
-
-	// 动画更新移到 on_render 中，与 main11.cpp 一致
+	// 动画状态由 ECS animation_update_system 处理
 
 	// ---------- 摄像机跟随第一个玩家 ----------
 	self->player_query.each([&](PlayerComponent&, IdComponent&,
@@ -674,53 +690,18 @@ static void on_render(scene_p s)
 		jtilemap_render_all(self->tilemap, cx, cy, SDL_GetTicks());
 	}
 
-	// ---- ECS 实体（碰撞体，不含玩家） ----
+	// ---- ECS 实体（碰撞体） ----
 	self->drawing_entity_query.each(DrawingEntitySystem);
 	self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
 
-	// ---- 所有玩家——剑客精灵（渲染用 TransformComponent 插值，方向用逻辑位置）----
-	float ren_dt = game_timer_get_unscaled_delta_time(&ctx->game_timer);
-	self->render_player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
-			LogicRectComponent&, LogicPositionComponent& pos, TransformComponent& t) {
-		float scr_x = (t.position_x - ctx->camera_x) * SERVER_PPM;
-		float scr_y = (t.position_y - ctx->camera_y) * SERVER_PPM;
-		// 方向+移动：用时间戳保持 moving 状态
-		flecs::entity_t eid = e;
-		auto& plx = self->last_px[eid], &ply = self->last_py[eid];
-		auto& lm  = self->last_move_time[eid];
-		auto& ldir = self->last_dir[eid];
-		int dir = ldir;
-		bool moving = false;
-		Uint64 now_t = SDL_GetTicks();
-
-		// 首次遇到该实体：记录初始位置
-		if (plx == 0 && ply == 0) { plx = pos.x; ply = pos.y; }
-
-		fp_t dx = fp_sub(pos.x, plx), dy = fp_sub(pos.y, ply);
-		fp_t threshold = fp_from_float(0.001f);
-		if (dx > threshold)        { dir = 2; moving = true; }
-		else if (dx < -threshold)  { dir = 1; moving = true; }
-		if (!moving && dy < -threshold)  { dir = 3; moving = true; }
-		if (!moving && dy > threshold)   { dir = 0; moving = true; }
-		if (moving) { plx = pos.x; ply = pos.y; ldir = dir; lm = now_t; }
-
-		// 200ms 内有移动 → 保持 moving
-		if (!moving && lm != 0 && (now_t - lm) < 200)
-			moving = true;
-
-		// 攻击中？(过期的定时器已经被移除)
-		bool atking = self->atk_timers.count(eid) > 0;
-
-		auto cur = atking ? self->anim_atk[dir] : (moving ? self->anim_walk : self->anim_idle);
-		float sx = (dir == 1) ? -1.0f : 1.0f;
-		sprite_animation_set_scale(cur, sx, 1.0f);
-		// 先 update 再 draw，与 main11.cpp 一致
-		sprite_animation_update(cur, ren_dt);
-		sprite_animation_set_position(cur,
-			scr_x - (192.0f - 30.0f) / 2.0f,
-			scr_y - (192.0f - 30.0f) / 2.0f);
-		sprite_animation_draw(cur, nullptr);
-	});
+	// ---- ECS 精灵渲染（玩家） ----
+	self->world.filter_builder<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>()
+		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+				SpriteSheetComponent& ss, AnimationFrameComponent& af,
+				PlayerActionComponent& act, PlayerComponent&) {
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
 }
 
 static void on_destroy(scene_p s)
@@ -728,9 +709,7 @@ static void on_destroy(scene_p s)
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->netserver);
-	if (self->anim_idle) sprite_animation_destroy(self->anim_idle);
-	if (self->anim_walk) sprite_animation_destroy(self->anim_walk);
-	for (int i=0;i<4;i++) if (self->anim_atk[i]) sprite_animation_destroy(self->anim_atk[i]);
+	tex_cache_clear();
 	jtilemap_render_destroy();
 	if (self->tilemap) { jtilemap_destroy(self->tilemap); self->tilemap = NULL; }
 }
@@ -744,11 +723,16 @@ game_scene_p game_scene_create(Context* ctx)
 	ctx->camera_x = 0.0f;
 	ctx->camera_y = 0.0f;
 	self->world.component<ConnectionComponent>();
+	self->world.component<IdComponent>();
 	self->world.component<LogicRectComponent>();
 	self->world.component<LogicPositionComponent>();
 	self->world.component<LogicVelocityComponent>();
 	self->world.component<TransformComponent>();
 	self->world.component<PlayerComponent>();
+	self->world.component<AttackRayEffectComponent>();
+	self->world.component<SpriteSheetComponent>();
+	self->world.component<AnimationFrameComponent>();
+	self->world.component<PlayerActionComponent>();
 
 	scene_set_userdata(self->scene, self);
 	scene_set_load_callback(self->scene, on_load);
