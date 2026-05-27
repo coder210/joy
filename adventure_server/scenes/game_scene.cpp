@@ -55,11 +55,6 @@ struct game_scene {
 
 	simple_fps_counter_p sample_fps;
 
-	bool upPressed = false;
-	bool downPressed = false;
-	bool leftPressed = false;
-	bool rightPressed = false;
-
 	float accumulator = 0.0f;
 
 	float serverTickTimer = 0.0f;
@@ -466,19 +461,29 @@ static void HandleCommandSystem(game_scene_p self)
 	self->world.defer_end();
 
 	// 应用输入
+	self->world.defer_begin();
 	for (auto& input : s2c.command().player_inputs()) {
+		int dir = 0;
+		if (input.keycode() & INPUT_DOWN)       dir = 0;
+		else if (input.keycode() & INPUT_LEFT)  dir = 1;
+		else if (input.keycode() & INPUT_RIGHT) dir = 2;
+		else if (input.keycode() & INPUT_UP)    dir = 3;
+		bool moving = (input.keycode() & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv != input.conv()) return;
-			// 攻击状态记录到 PlayerActionComponent（timer 从 0 累加）
 			if (input.keycode() & INPUT_ATTACK) {
-				e.set<PlayerActionComponent>({ PlayerActionComponent::ATTACK,
-					e.has<PlayerActionComponent>() ? e.get<PlayerActionComponent>()->dir : 0,
-					0, 0 });
+				e.set<PlayerActionComponent>({ PlayerActionComponent::ATTACK, dir, 0, 0 });
+			} else {
+				e.set<PlayerActionComponent>({
+					moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE,
+					dir, 0, 0 });
 			}
 			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
 		});
 	}
+	self->world.defer_end();
 
 	self->command_queue.pop();
 }
@@ -620,12 +625,7 @@ static void on_handle_event(scene_p s, const void* ev)
 	SDL_Event* event = (SDL_Event*)ev;
 
 	if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
-		bool isDown = event->type == SDL_EVENT_KEY_DOWN;
 		switch (event->key.key) {
-		case SDLK_W: self->upPressed = isDown; break;
-		case SDLK_S: self->downPressed = isDown; break;
-		case SDLK_A: self->leftPressed = isDown; break;
-		case SDLK_D: self->rightPressed = isDown; break;
 		case SDLK_Q: {
 			SDL_Event quit_event;
 			SDL_zero(quit_event);
