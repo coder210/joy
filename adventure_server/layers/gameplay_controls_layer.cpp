@@ -6,7 +6,7 @@
 static void setup_button_texture(button_p btn, SDL_Renderer* renderer) {
 	btn->image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides.png");
 	btn->pressed_image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides_pressed.png");
-	// 设置透明背景色，只显示纹理
+	// 有纹理后去掉纯色背景
 	SDL_Color transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);

@@ -3,8 +3,9 @@
 #include "../asset_manager.h"
 
 static void setup_button_texture(button_p btn, SDL_Renderer* renderer) {
-	btn->image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_3slides.png");
-	btn->pressed_image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_3slides_pressed.png");
+	btn->image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides.png");
+	btn->pressed_image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides_pressed.png");
+	// 有纹理后去掉纯色背景
 	SDL_Color transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
@@ -61,6 +62,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         // 开始按钮
         button_p start_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
         setup_button_texture(start_btn, ctx->renderer);
+        start_btn->text_pos.y = 3.0f;
         button_set_textx(start_btn, simhei_font, "Start", (int)strlen("Start"), { 220, 200, 160, 255 });
         button_set_callback(start_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_START); },
@@ -89,6 +91,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         int settings_y = start_y + btn_height + 20;
         button_p settings_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
         setup_button_texture(settings_btn, ctx->renderer);
+        settings_btn->text_pos.y = 3.0f;
         button_set_textx(settings_btn, simhei_font, "Settings", (int)strlen("Settings"), { 220, 200, 160, 255 });
         button_set_callback(settings_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_SETTINGS); },
@@ -117,6 +120,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         int exit_y = settings_y + btn_height + 20;
         button_p exit_btn = button_create(ctx->renderer, (float)btn_width, (float)btn_height);
         setup_button_texture(exit_btn, ctx->renderer);
+        exit_btn->text_pos.y = 3.0f;
         button_set_textx(exit_btn, simhei_font, "Exit", (int)strlen("Exit"), { 220, 200, 160, 255 });
         button_set_callback(exit_btn,
                 [](button_p, void*) { send_menu_event(MENU_EVENT_EXIT); },

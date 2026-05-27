@@ -1,58 +1,23 @@
 #include "loading_scene.h"
 #include <SDL3/SDL.h>
 #include <joy/jcore.h>
+#include <joy/jtextures.h>
 #include <stdlib.h>
 #include <math.h>
 #include "../layers/menu_layer.h"
+
+struct logo_data {
+    image_p image;
+};
+
+struct deco_data {
+    image_p image;
+};
 
 struct loading_scene {
     scene_p scene;
     context* ctx;
 };
-
-static void menu_box_render(scene_node_p n, const void* arg) {
-    float x, y;
-    SDL_Renderer* renderer = (SDL_Renderer*)arg;
-    scene_node_get_world_position(n, &x, &y);
-    int z = scene_node_get_zorder(n);
-    SDL_Color c;
-    if (z >= 30)      c = { 80, 160, 255, 255 };
-    else if (z >= 20) c = { 80, 255, 120, 255 };
-    else              c = { 255, 80, 80, 255 };
-    SDL_FRect r = { x - 30, y - 30, 60, 60 };
-    SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-    SDL_RenderFillRect(renderer, &r);
-}
-
-static void menu_box_update(scene_node_p n, float dt) {
-    float bx, by;
-    float* ptr = (float*)scene_node_get_userdata(n);
-    if (!ptr) return;
-    float phase = ptr[0];
-    ptr[1] += dt;
-    scene_node_get_scale(n, &bx, &by);
-    scene_node_set_position(n, bx + sinf(ptr[1] * 1.5f + phase) * 30.0f,
-            by + cosf(ptr[1] * 1.2f + phase) * 20.0f);
-}
-
-static void menu_box_destroy(scene_node_p n) {
-    float* p = (float*)scene_node_get_userdata(n);
-    delete[] p;
-}
-
-static void menu_box_event(scene_node_p n, const void* e) {
-    (void)n;
-    (void)e;
-}
-
-static void on_update(scene_p s, float dt) {
-    (void)s;
-    (void)dt;
-}
-
-static void on_render(scene_p s) {
-    (void)s;
-}
 
 static void on_load(scene_p s) {
     loading_scene_p self = (loading_scene_p)scene_get_userdata(s);
@@ -62,27 +27,92 @@ static void on_load(scene_p s) {
     menu_layer_p menu = create_menu_layer(self->ctx);
     scene_add_root_node(self->scene, menu_layer_get_node(menu));
 
-    float bases[3][2] = { {200,150}, {500,200}, {350,400} };
-    int zs[3] = { 10, 20, 30 };
-    float phases[3] = { 0.0f, 1.5f, 3.0f };
+    int logical_w, logical_h;
+    SDL_GetRenderLogicalPresentation(self->ctx->renderer, &logical_w, &logical_h, NULL);
 
-    for (int i = 0; i < 3; i++) {
-        scene_node_p n = scene_node_create();
-        scene_node_set_position(n, bases[i][0], bases[i][1]);
-        scene_node_set_zorder(n, zs[i]);
-        scene_node_set_scale(n, bases[i][0], bases[i][1]);
-        scene_node_set_update_callback(n, menu_box_update);
-        scene_node_set_event_callback(n, menu_box_event);
-        scene_node_set_render_callback(n, menu_box_render);
-        scene_node_set_destroy_callback(n, menu_box_destroy);
+    // ---- Logo ----
+    logo_data* ld = new logo_data{};
+    ld->image = image_create(self->ctx->renderer, "joy2d_editor_textures/logo.png");
+    scene_node_p logo_node = scene_node_create();
+    scene_node_set_position(logo_node, 0, 0);
+    scene_node_set_zorder(logo_node, 50);
+    scene_node_set_userdata(logo_node, ld);
+    scene_node_set_render_callback(logo_node, [](scene_node_p n, const void* arg) {
+        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        logo_data* ld = (logo_data*)scene_node_get_userdata(n);
+        if (!ld || !ld->image) return;
+        int w, h;
+        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
+        SDL_FRect dest = { (w - 400) / 2.0f, 40, 400, 100 };
+        image_draw1(ld->image, NULL, &dest);
+    });
+    scene_node_set_destroy_callback(logo_node, [](scene_node_p n) {
+        logo_data* ld = (logo_data*)scene_node_get_userdata(n);
+        if (ld) {
+            if (ld->image) image_destroy(ld->image);
+            delete ld;
+        }
+    });
+    scene_add_root_node(self->scene, logo_node);
 
-        float* ph = new float[2];
-        ph[0] = phases[i];
-        ph[1] = 0.0f;
-        scene_node_set_userdata(n, ph);
+    // ---- 左侧装饰 ----
+    deco_data* dd_l = new deco_data{};
+    dd_l->image = image_create(self->ctx->renderer, "joy2d_editor_textures/deco/01.png");
+    scene_node_p deco_left = scene_node_create();
+    scene_node_set_position(deco_left, 0, 0);
+    scene_node_set_zorder(deco_left, 40);
+    scene_node_set_userdata(deco_left, dd_l);
+    scene_node_set_render_callback(deco_left, [](scene_node_p n, const void* arg) {
+        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        deco_data* dd = (deco_data*)scene_node_get_userdata(n);
+        if (!dd || !dd->image) return;
+        int w, h;
+        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
+        SDL_FRect dest = { 20, (h - 200) / 2.0f, 80, 200 };
+        image_draw1(dd->image, NULL, &dest);
+    });
+    scene_node_set_destroy_callback(deco_left, [](scene_node_p n) {
+        deco_data* dd = (deco_data*)scene_node_get_userdata(n);
+        if (dd) {
+            if (dd->image) image_destroy(dd->image);
+            delete dd;
+        }
+    });
+    scene_add_root_node(self->scene, deco_left);
 
-        scene_add_root_node(self->scene, n);
-    }
+    // ---- 右侧装饰 ----
+    deco_data* dd_r = new deco_data{};
+    dd_r->image = image_create(self->ctx->renderer, "joy2d_editor_textures/deco/02.png");
+    scene_node_p deco_right = scene_node_create();
+    scene_node_set_position(deco_right, 0, 0);
+    scene_node_set_zorder(deco_right, 40);
+    scene_node_set_userdata(deco_right, dd_r);
+    scene_node_set_render_callback(deco_right, [](scene_node_p n, const void* arg) {
+        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        deco_data* dd = (deco_data*)scene_node_get_userdata(n);
+        if (!dd || !dd->image) return;
+        int w, h;
+        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
+        SDL_FRect dest = { w - 100, (h - 200) / 2.0f, 80, 200 };
+        image_draw1(dd->image, NULL, &dest);
+    });
+    scene_node_set_destroy_callback(deco_right, [](scene_node_p n) {
+        deco_data* dd = (deco_data*)scene_node_get_userdata(n);
+        if (dd) {
+            if (dd->image) image_destroy(dd->image);
+            delete dd;
+        }
+    });
+    scene_add_root_node(self->scene, deco_right);
+}
+
+static void on_update(scene_p s, float dt) {
+    (void)s;
+    (void)dt;
+}
+
+static void on_render(scene_p s) {
+    (void)s;
 }
 
 static void on_destroy(scene_p s) {
