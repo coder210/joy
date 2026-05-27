@@ -17,6 +17,8 @@
 #include <joy/jaudio.h>
 #include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
+#include "../components/ai_component.h"
+#include "../components/enemy_component.h"
 #include "../systems/animation_update_system.h"
 #include "../systems/sprite_render_system.h"
 #include "../layers/debug_layer.h"
@@ -142,6 +144,19 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
                         e.set<AnimationFrameComponent>({});
                         e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
                         e.set<PlayerComponent>({ entity.player_conv() });
+                } else if (entity.type() == adventure::S2C_TYPE_ENEMY) {
+                        SpriteSheetComponent ss{};
+                        snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_red.png");
+                        ss.frame_w = 192; ss.frame_h = 192;
+                        ss.idle_row = 0; ss.walk_row = 1;
+                        ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
+                        ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
+                        ss.frame_count = 6; ss.frame_duration = 0.15f;
+                        e.add<EnemyComponent>();
+                        e.set<PlayerActionComponent>({});
+                        e.set<SpriteSheetComponent>(ss);
+                        e.set<AnimationFrameComponent>({});
+                        e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
                 }
         }
         self->ecs_world.defer_end();
@@ -368,7 +383,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                 // 先回滚到上一个快照状态（如果有的话），再应用服务器命令
                 auto iter = self->snapshots.find(self->server_frameid);
                 if (iter != self->snapshots.end()) {
-                        auto snapshots = iter->second;
+                        const auto& snapshots = iter->second;
                         self->player_query.each([&](PlayerComponent& p, IdComponent& id,
                                 LogicRectComponent& r, LogicPositionComponent& pos) {
                                         auto it = snapshots.find(id.id);
@@ -540,6 +555,8 @@ static void on_load(scene_p s)
         self->ecs_world.component<SpriteSheetComponent>();
         self->ecs_world.component<AnimationFrameComponent>();
         self->ecs_world.component<PlayerActionComponent>();
+        self->ecs_world.component<AIComponent>();
+        self->ecs_world.component<EnemyComponent>();
 
         self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
@@ -815,6 +832,15 @@ static void on_render(scene_p s) {
             .build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
                     SpriteSheetComponent& ss, AnimationFrameComponent& af,
                     PlayerActionComponent& act, PlayerComponent&) {
+                sprite_render_system(it.entity(i), t, r, ss, af, act);
+            });
+
+        // ---- ECS 精灵渲染（敌人） ----
+        self->ecs_world.filter_builder<TransformComponent, LogicRectComponent,
+            SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>()
+            .build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+                    SpriteSheetComponent& ss, AnimationFrameComponent& af,
+                    PlayerActionComponent& act, EnemyComponent&) {
                 sprite_render_system(it.entity(i), t, r, ss, af, act);
             });
 }
