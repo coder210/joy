@@ -33,7 +33,8 @@ struct button {
 	SDL_Color hover_color;    // 悬停状态颜色
 	SDL_Color pressed_color;  // 按下状态颜色
 	SDL_FPoint text_pos; // 文本相对位置
-	image_p image;     // 按钮纹理（可选）
+	image_p image;     // 按钮正常纹理（可选）
+	image_p pressed_image; // 按钮按下纹理（可选）
 	text_texture_p text;	// 按钮文件纹理
 	bool is_hovered;          // 鼠标悬停状态
 	bool is_pressed;          // 按钮按下状态

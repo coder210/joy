@@ -3,6 +3,16 @@
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
+static void setup_button_texture(button_p btn, SDL_Renderer* renderer) {
+	btn->image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides.png");
+	btn->pressed_image = image_create(renderer, "joy2d_editor_ui/buttons/button_blue_9slides_pressed.png");
+	// 设置透明背景色，只显示纹理
+	SDL_Color transparent = {0, 0, 0, 0};
+	button_set_normal_color(btn, transparent);
+	button_set_hover_color(btn, transparent);
+	button_set_pressed_color(btn, transparent);
+}
+
 struct gameplay_controls_layer {
 	scene_node_p scene_node;
 };
@@ -55,6 +65,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_add_child(self->scene_node, root_node);
 
 	button_p up_button = button_create(ctx->renderer, 50, 50);
+	setup_button_texture(up_button, ctx->renderer);
 	button_set_textx(up_button, simhei_font, "U", (int)strlen("U"), { 220, 200, 160, 255 });
 	button_set_callback(up_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_UP); },
@@ -85,6 +96,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// down
 	button_p down_button = button_create(ctx->renderer, 50, 50);
+	setup_button_texture(down_button, ctx->renderer);
 	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 220, 200, 160, 255 });
 	button_set_callback(down_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN); },
@@ -115,6 +127,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// left
 	button_p left_button = button_create(ctx->renderer, 50, 50);
+	setup_button_texture(left_button, ctx->renderer);
 	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 220, 200, 160, 255 });
 	button_set_callback(left_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT); },
@@ -145,6 +158,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// right
 	button_p right_button = button_create(ctx->renderer, 50, 50);
+	setup_button_texture(right_button, ctx->renderer);
 	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 220, 200, 160, 255 });
 	button_set_callback(right_button,
 		[](button_p, void*) { send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT); },
@@ -188,6 +202,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 
 	// attack
 	button_p attack_button = button_create(ctx->renderer, 50, 50);
+	setup_button_texture(attack_button, ctx->renderer);
 	button_set_textx(attack_button, simhei_font, "A", (int)strlen("A"), { 220, 200, 160, 255 });
 	button_set_callback(attack_button,
 		nullptr,
