@@ -96,6 +96,7 @@ button_create(SDL_Renderer* renderer, float width, float height)
 	btn->normal_color = (SDL_Color){ 100, 100, 200, 255 };
 	btn->hover_color = (SDL_Color){ 150, 150, 250, 255 };
 	btn->pressed_color = (SDL_Color){ 50, 50, 150, 255 };
+	btn->text_pos = (SDL_FPoint){0, 0};
 	btn->image = NULL;
 	btn->pressed_image = NULL;
 	btn->text = NULL;
@@ -201,8 +202,8 @@ void button_draw(button_p btn)
 	if (btn->text) {
 		float widht = text_get_width(btn->text);
 		float height = text_get_height(btn->text);
-		dest_rect.x = rect.x + (rect.w - widht) / 2.0f;
-		dest_rect.y = rect.y + (rect.h - height) / 2.0f;
+		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
+		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
 		text_print(renderer, btn->text, dest_rect.x, dest_rect.y);
 	}
 }
