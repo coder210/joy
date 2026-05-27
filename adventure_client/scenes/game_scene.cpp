@@ -44,7 +44,6 @@ struct state_snapshot {
 };
 
 // 玩家状态机（使用 ECS PlayerActionComponent）
-typedef PlayerActionComponent PlayerFSM;
 
 // 纹理缓存
 static std::unordered_map<std::string, SDL_Texture*> g_tex_cache;
@@ -82,8 +81,7 @@ struct game_scene {
         uint32_t            audio_dev = 0;
         audio_shot_p        step_sound = NULL;
         audio_bgm_p         bgm = NULL;
-        PlayerFSM           fsm;  // 玩家状态机
-
+        int local_dir = 0; // 本地玩家方向
         // 远程玩家方向追踪
         std::map<flecs::entity_t, int>  remote_dirs;
 
@@ -577,29 +575,35 @@ static void fixedupdate(game_scene_p self, float dt)
 
 	if (!self->ready) return;
 
-	// ---- FSM 状态转移 ----
+	// 攻击触发：直接设置 ECS 状态 + 发送输入
 	if (self->attack_triggered) {
 		self->attack_triggered = false;
-		self->fsm.state = PlayerFSM::ATTACK;
-		self->fsm.timer = 0.6f;
 		self->pending_inputs.push_back(INPUT_ATTACK);
-		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-			if (p.conv == self->local_conv)
+			if (p.conv == self->local_conv) {
 				attack_effect_only(self, &pos, r, id, self->local_conv, INPUT_ATTACK);
+				e.set<PlayerActionComponent>({PlayerActionComponent::ATTACK, self->local_dir, 0, 0});
+			}
 		});
 		adventure::C2S c2s;
 		c2s.set_cmd(adventure::CMD_PLAYER_INPUT);
 		c2s.mutable_player_input()->set_keycode(INPUT_ATTACK);
 		std::string data = c2s.SerializeAsString();
 		netclient_send(self->netclient, data.c_str(), data.size());
-		return; // 攻击期间跳过移动
+		return;
 	}
 
-	if (self->fsm.state == PlayerFSM::ATTACK) return; // 攻击中不处理移动
+	// 攻击中不处理移动（从 ECS 组件状态判断）
+	bool attacking = false;
+	self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
+		LogicRectComponent&, LogicPositionComponent&) {
+		if (p.conv == self->local_conv && e.has<PlayerActionComponent>())
+			attacking = (e.get<PlayerActionComponent>()->state == PlayerActionComponent::ATTACK);
+	});
+	if (attacking) return;
 
 	bool has_dir = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
-	self->fsm.state = has_dir ? PlayerFSM::WALK : PlayerFSM::IDLE;
 
 	if (has_dir) {
 		self->pending_inputs.push_back(self->current_input_mask);
@@ -649,11 +653,11 @@ static void on_handle_event(scene_p s, const void* ev)
                         if (is_down) {
                                 self->current_input_mask |= key_mask;
                                 if (key_mask == INPUT_ATTACK) self->attack_triggered = true;
-                                // 更新 FSM 朝向
-                                if (key_mask & INPUT_RIGHT) self->fsm.dir = 2;
-                                else if (key_mask & INPUT_LEFT) self->fsm.dir = 1;
-                                else if (key_mask & INPUT_UP) self->fsm.dir = 3;
-                                else if (key_mask & INPUT_DOWN) self->fsm.dir = 0;
+                                // 更新本地玩家朝向
+                                if (key_mask & INPUT_RIGHT) self->local_dir = 2;
+                                else if (key_mask & INPUT_LEFT) self->local_dir = 1;
+                                else if (key_mask & INPUT_UP) self->local_dir = 3;
+                                else if (key_mask & INPUT_DOWN) self->local_dir = 0;
                         }
                         else {
                                 self->current_input_mask &= ~key_mask;
@@ -700,62 +704,67 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳 ----------
         send_heartbeat(self, dt);
 
-	// ---------- 摄像机跟随本地玩家 + FSM → ECS 同步 + 脚步音效 ----------
+	// ---------- 摄像机跟随 + 远程状态同步 + 脚步音效 ----------
 	self->ecs_world.defer_begin();
-	self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
-		LogicRectComponent&, LogicPositionComponent& pos) {
-		if (p.conv == (int)self->local_conv) {
-			float target_cam_x = fp_to_float(pos.x) - 6.4f;
-			float target_cam_y = fp_to_float(pos.y) - 4.8f;
-			float lerp = dt * 5.0f;
-			if (lerp > 1.0f) lerp = 1.0f;
-			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
-			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
+	{
+		static float step_timer = 0;
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
+			LogicRectComponent&, LogicPositionComponent& pos) {
+			if (p.conv == (int)self->local_conv) {
+				// 摄像机跟随
+				float target_cam_x = fp_to_float(pos.x) - 6.4f;
+				float target_cam_y = fp_to_float(pos.y) - 4.8f;
+				float lerp = dt * 5.0f;
+				if (lerp > 1.0f) lerp = 1.0f;
+				self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
+				self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 
-			// FSM 计时器由 animation_update_system 处理
-
-			// ---- 脚步音效 (仅 WALK 状态) ----
-			if (self->fsm.state == PlayerFSM::WALK) {
-				self->fsm.step_timer += dt;
-				if (self->fsm.step_timer >= 0.30f) {
-					if (self->step_sound) audio_shot_play(self->step_sound);
-					self->fsm.step_timer = 0;
+				// 本地玩家状态同步(不覆盖 ATTACK, ATTACK 由 fixedupdate + animation_update_system 管理)
+				if (e.has<PlayerActionComponent>()) {
+					auto* act = e.get_mut<PlayerActionComponent>();
+					if (act->state != PlayerActionComponent::ATTACK) {
+						bool has_dir = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+						act->state = has_dir ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+						act->dir = self->local_dir;
+					}
 				}
-			} else { self->fsm.step_timer = 0; }
 
-			// FSM → ECS PlayerActionComponent 同步（defer 内允许结构性变更）
-			e.set<PlayerActionComponent>({
-				(PlayerActionComponent::State)self->fsm.state,
-				self->fsm.dir, 0, 0
-			});
-		} else {
-			// 远程玩家方向追踪
-			flecs::entity_t eid = e;
-			auto& ldi = self->remote_dirs[eid];
-			static std::map<flecs::entity_t, fp_t> last_px, last_py;
-			auto& lx = last_px[eid]; auto& ly = last_py[eid];
-			if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
-			fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
-			fp_t th = fp_from_float(0.001f);
-			int new_dir = ldi;
-			if (dx > th)        new_dir = 2;
-			else if (dx < -th)  new_dir = 1;
-			if (dy < -th)       new_dir = 3;
-			else if (dy > th)   new_dir = 0;
-			if (dx > th || dx < -th || dy > th || dy < -th) {
-				lx = pos.x; ly = pos.y; ldi = new_dir;
-			}
-			// 远程玩家方向/状态同步到 PlayerActionComponent（defer 内安全）
-			if (e.has<PlayerActionComponent>()) {
-				auto* act = e.get_mut<PlayerActionComponent>();
-				act->dir = new_dir;
-				if (act->state != PlayerActionComponent::ATTACK) {
-					act->state = (dx > th || dx < -th || dy > th || dy < -th)
-						? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+				// 脚步音效
+				if (e.has<PlayerActionComponent>() && e.get<PlayerActionComponent>()->state == PlayerActionComponent::WALK) {
+					step_timer += dt;
+					if (step_timer >= 0.30f) {
+						if (self->step_sound) audio_shot_play(self->step_sound);
+						step_timer = 0;
+					}
+				} else { step_timer = 0; }
+			} else {
+				// 远程玩家方向追踪
+				flecs::entity_t eid = e;
+				auto& ldi = self->remote_dirs[eid];
+				static std::map<flecs::entity_t, fp_t> last_px, last_py;
+				auto& lx = last_px[eid]; auto& ly = last_py[eid];
+				if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
+				fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
+				fp_t th = fp_from_float(0.001f);
+				int new_dir = ldi;
+				if (dx > th)        new_dir = 2;
+				else if (dx < -th)  new_dir = 1;
+				if (dy < -th)       new_dir = 3;
+				else if (dy > th)   new_dir = 0;
+				if (dx > th || dx < -th || dy > th || dy < -th) {
+					lx = pos.x; ly = pos.y; ldi = new_dir;
+				}
+				if (e.has<PlayerActionComponent>()) {
+					auto* act = e.get_mut<PlayerActionComponent>();
+					act->dir = new_dir;
+					if (act->state != PlayerActionComponent::ATTACK) {
+						act->state = (dx > th || dx < -th || dy > th || dy < -th)
+							? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+					}
 				}
 			}
-		}
-	});
+		});
+	}
 	self->ecs_world.defer_end();
 
 
