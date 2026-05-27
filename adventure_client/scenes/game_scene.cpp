@@ -1,8 +1,12 @@
+#define STB_IMAGE_IMPLEMENTATION
+#include <joy/external/stb_image.h>
+#include <unordered_map>
+#include <string>
+
 #include "../protocol/adventure.pb.h"
 #include "../flecs.h"
 #include "game_scene.h"
 #include <SDL3/SDL.h>
-#include <stdlib.h>
 #include <joy/jmath.h>
 #include <joy/jcore.h>
 #include <joy/jtext.h>
@@ -10,9 +14,11 @@
 #include <joy/jnetwork.h>
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
-#include <joy/janimations.h>
 #include <joy/jaudio.h>
-#include "../asset_manager.h"
+#include "../components/sprite_sheet_component.h"
+#include "../components/player_action_component.h"
+#include "../systems/animation_update_system.h"
+#include "../systems/sprite_render_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../components/connection_component.h"
@@ -37,14 +43,33 @@ struct state_snapshot {
         fp_t position_x, position_y;
 };
 
-// 玩家状态机
-struct PlayerFSM {
-    enum State : int { IDLE = 0, WALK = 1, ATTACK = 2 };
-    State state = IDLE;
-    int   dir  = 0;
-    float timer = 0;
-    float step_timer = 0;
-};
+// 玩家状态机（使用 ECS PlayerActionComponent）
+typedef PlayerActionComponent PlayerFSM;
+
+// 纹理缓存
+static std::unordered_map<std::string, SDL_Texture*> g_tex_cache;
+
+SDL_Texture* tex_cache_get(SDL_Renderer* r, const char* path) {
+    std::string k(path);
+    auto it = g_tex_cache.find(k);
+    if (it != g_tex_cache.end()) return it->second;
+    int w, h, ch;
+    auto* d = stbi_load(path, &w, &h, &ch, 4);
+    if (!d) return nullptr;
+    auto* s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, d, w * 4);
+    if (!s) { stbi_image_free(d); return nullptr; }
+    auto* t = SDL_CreateTextureFromSurface(r, s);
+    SDL_DestroySurface(s);
+    stbi_image_free(d);
+    g_tex_cache[k] = t;
+    return t;
+}
+
+void tex_cache_clear() {
+    for (auto& kv : g_tex_cache)
+        if (kv.second) SDL_DestroyTexture(kv.second);
+    g_tex_cache.clear();
+}
 
 struct game_scene {
         scene_p scene;
@@ -52,21 +77,15 @@ struct game_scene {
         netclient_p netclient;
         flecs::world ecs_world;
 
-        // ---- tilemap + 动画 + 音频 ----
+        // ---- tilemap + 音频 ----
         jtilemap_p          tilemap = NULL;
-        sprite_animation_p  anim_idle = NULL;
-        sprite_animation_p  anim_walk = NULL;
-        sprite_animation_p  anim_atk[4] = {};
         uint32_t            audio_dev = 0;
         audio_shot_p        step_sound = NULL;
         audio_bgm_p         bgm = NULL;
-        PlayerFSM           fsm;  // 玩家状态机 (替代 player_dir/attacking/atk_timer/step_timer)
+        PlayerFSM           fsm;  // 玩家状态机
 
-        // 远程玩家方向追踪（上次位置 → 当前方向）
-        std::map<flecs::entity_t, fp_t> last_px, last_py;
+        // 远程玩家方向追踪
         std::map<flecs::entity_t, int>  remote_dirs;
-        std::map<flecs::entity_t, Uint64> last_move_time;
-        std::map<int, int>              conv_dirs; // conv → 方向
 
         std::map<int, int> server_inputs;
         bool ready = false;
@@ -111,7 +130,16 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
                         .set<TransformComponent>({ fp_to_float(entity.position_x()),
                                                    fp_to_float(entity.position_y()), 0, 1, 1 });
                 if (entity.type() == adventure::S2C_TYPE_PLAYER) {
-                        
+                        SpriteSheetComponent ss{};
+                        snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+                        ss.frame_w = 192; ss.frame_h = 192;
+                        ss.idle_row = 0; ss.walk_row = 1;
+                        ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
+                        ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
+                        ss.frame_count = 6; ss.frame_duration = 0.15f;
+                        e.set<PlayerActionComponent>({});
+                        e.set<SpriteSheetComponent>(ss);
+                        e.set<AnimationFrameComponent>({});
                         e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
                         e.set<PlayerComponent>({ entity.player_conv() });
                 }
@@ -358,13 +386,23 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
                 log_info("%d:CMD_PLAYER_JOIN", player_join.conv());
                 fp_t x = player_join.position_x();
                 fp_t y = player_join.position_y();
+                SpriteSheetComponent ss{};
+                snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+                ss.frame_w = 192; ss.frame_h = 192;
+                ss.idle_row = 0; ss.walk_row = 1;
+                ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
+                ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
+                ss.frame_count = 6; ss.frame_duration = 0.15f;
                 self->ecs_world.entity()
                         .set<IdComponent>({ self->server_entity_id++, 10 })
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                         .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
-                        .set<PlayerComponent>({ player_join.conv() });
+                        .set<PlayerComponent>({ player_join.conv() })
+                        .set<PlayerActionComponent>({})
+                        .set<SpriteSheetComponent>(ss)
+                        .set<AnimationFrameComponent>({});
         }
 
         // 2. 处理玩家离开
@@ -476,16 +514,6 @@ static void on_message(net_message_p msg, void* arg)
         if (msg->data) SDL_free(msg->data);
 }
 
-// ======================== 动画辅助 ========================
-static sprite_animation_p make_anim(SDL_Renderer* r, int row, int nframes, float sx) {
-    auto a = sprite_animation_create(r);
-    for (int c = 0; c < nframes; c++)
-        sprite_animation_add_clip(a, "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png",
-                                   0.15f, { (float)(c*192), (float)(row*192), 192,192 });
-    sprite_animation_set_scale(a, sx, 1.0f);
-    return a;
-}
-
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -497,19 +525,25 @@ static void on_load(scene_p s)
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
 
         self->ecs_world.component<ConnectionComponent>();
+        self->ecs_world.component<IdComponent>();
         self->ecs_world.component<LogicRectComponent>();
         self->ecs_world.component<LogicPositionComponent>();
         self->ecs_world.component<LogicVelocityComponent>();
         self->ecs_world.component<TransformComponent>();
         self->ecs_world.component<PlayerComponent>();
         self->ecs_world.component<AttackRayEffectComponent>();
+        self->ecs_world.component<SpriteSheetComponent>();
+        self->ecs_world.component<AnimationFrameComponent>();
+        self->ecs_world.component<PlayerActionComponent>();
 
-        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+        //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+        self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
         //self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
         self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
         self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
+        self->ecs_world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
+                .each(animation_update_system);
         self->sync_query = self->ecs_world.query<IdComponent, LogicPositionComponent, TransformComponent>();
         self->drawing_entity_query = self->ecs_world.query<IdComponent, LogicRectComponent, TransformComponent>();
         self->attack_ray_effect_query = self->ecs_world.query<AttackRayEffectComponent>();
@@ -522,14 +556,6 @@ static void on_load(scene_p s)
                 jtilemap_render_init(self->ctx->renderer, NULL, NULL);
                 log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
         } else log_error("[tilemap] failed to load");
-
-        // ---- 玩家动画 ----
-        self->anim_idle = make_anim(self->ctx->renderer, 0, 6, 1);
-        self->anim_walk = make_anim(self->ctx->renderer, 1, 6, 1);
-        self->anim_atk[0] = make_anim(self->ctx->renderer, 4, 6, 1);  // 下
-        self->anim_atk[1] = make_anim(self->ctx->renderer, 2, 6, -1); // 左
-        self->anim_atk[2] = make_anim(self->ctx->renderer, 2, 6, 1);  // 右
-        self->anim_atk[3] = make_anim(self->ctx->renderer, 6, 6, 1);  // 上
 
         // ---- 音频 ----
         self->audio_dev = audio_open_device();
@@ -674,8 +700,9 @@ static void on_update(scene_p s, float dt) {
         // ---------- 心跳 ----------
         send_heartbeat(self, dt);
 
-	// ---------- 摄像机跟随本地玩家 + FSM 状态更新 ----------
-	self->player_query.each([&](PlayerComponent& p, IdComponent&,
+	// ---------- 摄像机跟随本地玩家 + FSM → ECS 同步 + 脚步音效 ----------
+	self->ecs_world.defer_begin();
+	self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
 		LogicRectComponent&, LogicPositionComponent& pos) {
 		if (p.conv == (int)self->local_conv) {
 			float target_cam_x = fp_to_float(pos.x) - 6.4f;
@@ -685,30 +712,55 @@ static void on_update(scene_p s, float dt) {
 			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
 			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 
-			// ---- FSM 计时器 ----
-			if (self->fsm.state == PlayerFSM::ATTACK) {
-				self->fsm.timer -= dt;
-				if (self->fsm.timer <= 0) {
-					self->fsm.timer = 0;
-					// 攻击结束，回到 IDLE/WALK
-					bool m = (self->current_input_mask & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
-					self->fsm.state = m ? PlayerFSM::WALK : PlayerFSM::IDLE;
-				}
-			}
+			// FSM 计时器由 animation_update_system 处理
 
 			// ---- 脚步音效 (仅 WALK 状态) ----
 			if (self->fsm.state == PlayerFSM::WALK) {
 				self->fsm.step_timer += dt;
 				if (self->fsm.step_timer >= 0.30f) {
-					static int dbg_snd = 0;
-					if (++dbg_snd < 3)
-						SDL_Log("step sound! dev=%u", self->audio_dev);
 					if (self->step_sound) audio_shot_play(self->step_sound);
 					self->fsm.step_timer = 0;
 				}
 			} else { self->fsm.step_timer = 0; }
+
+			// FSM → ECS PlayerActionComponent 同步（defer 内允许结构性变更）
+			e.set<PlayerActionComponent>({
+				(PlayerActionComponent::State)self->fsm.state,
+				self->fsm.dir, 0, 0
+			});
+		} else {
+			// 远程玩家方向追踪
+			flecs::entity_t eid = e;
+			auto& ldi = self->remote_dirs[eid];
+			static std::map<flecs::entity_t, fp_t> last_px, last_py;
+			auto& lx = last_px[eid]; auto& ly = last_py[eid];
+			if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
+			fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
+			fp_t th = fp_from_float(0.001f);
+			int new_dir = ldi;
+			if (dx > th)        new_dir = 2;
+			else if (dx < -th)  new_dir = 1;
+			if (dy < -th)       new_dir = 3;
+			else if (dy > th)   new_dir = 0;
+			if (dx > th || dx < -th || dy > th || dy < -th) {
+				lx = pos.x; ly = pos.y; ldi = new_dir;
+			}
+			// 远程玩家方向/状态同步到 PlayerActionComponent（defer 内安全）
+			if (e.has<PlayerActionComponent>()) {
+				auto* act = e.get_mut<PlayerActionComponent>();
+				act->dir = new_dir;
+				if (act->state != PlayerActionComponent::ATTACK) {
+					act->state = (dx > th || dx < -th || dy > th || dy < -th)
+						? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+				}
+			}
 		}
 	});
+	self->ecs_world.defer_end();
+
+
+
+
 
 
 
@@ -727,75 +779,24 @@ static void on_render(scene_p s) {
                 jtilemap_render_all(self->tilemap, cam_x_px, cam_y_px, SDL_GetTicks());
         }
 
-        // ---- ECS 实体（碰撞体，不含玩家） ----
+        // ---- ECS 实体（碰撞体） ----
         self->drawing_entity_query.each(drawing_entity_system);
         self->attack_ray_effect_query.each(drawing_attack_ray_effect_system);
 
-        // ---- 所有玩家——剑客精灵渲染 ----
-        auto* ctx = self->ctx;
-        self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
-                LogicRectComponent&, LogicPositionComponent& pos) {
-
-                flecs::entity_t eid = e;
-                float scr_x = (fp_to_float(pos.x) - ctx->camera_x) * PIXELS_PER_METER;
-                float scr_y = (fp_to_float(pos.y) - ctx->camera_y) * PIXELS_PER_METER;
-
-                // 方向计算 + 动画选择
-                int dir = 0;
-                bool moving = false;
-                bool atking = false;
-                Uint64 now_t = SDL_GetTicks();
-                if (p.conv == (int)self->local_conv) {
-                        dir = self->fsm.dir;
-                        moving = (self->fsm.state == PlayerFSM::WALK);
-                        atking = (self->fsm.state == PlayerFSM::ATTACK);
-                } else {
-                        auto& lx  = self->last_px[eid];
-                        auto& ly  = self->last_py[eid];
-                        auto& lm  = self->last_move_time[eid];
-                        auto& ldi = self->remote_dirs[eid];
-                        dir = ldi;
-                        if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
-                        fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
-                        fp_t th = fp_from_float(0.001f);
-                        if (dx > th)        { dir = 2; moving = true; }
-                        else if (dx < -th)  { dir = 1; moving = true; }
-                        if (!moving && dy < -th)  { dir = 3; moving = true; }
-                        if (!moving && dy > th)   { dir = 0; moving = true; }
-                        if (moving) { lx = pos.x; ly = pos.y; ldi = dir; lm = now_t; }
-                        if (!moving && lm != 0 && (now_t - lm) < 200)
-                            moving = true;
-                }
-
-                sprite_animation_p cur;
-                if (p.conv == (int)self->local_conv) {
-                        cur = atking ? self->anim_atk[dir]
-                             : moving ? self->anim_walk : self->anim_idle;
-                } else {
-                        cur = moving ? self->anim_walk : self->anim_idle;
-                }
-
-                // 翻转 + 定位（碰撞盒居中在精灵中，与 main11 一致）
-                float sx = (dir == 1) ? -1.0f : 1.0f;
-                sprite_animation_set_scale(cur, sx, 1.0f);
-                // 先 update 再 draw，与 main11.cpp 一致
-                float ren_dt = game_timer_get_unscaled_delta_time(&ctx->game_timer);
-                sprite_animation_update(cur, ren_dt);
-                // sprite 192×192，碰撞盒 30×30
-                // 碰撞盒水平垂直都居中在精灵中
-                sprite_animation_set_position(cur,
-                        scr_x - (192.0f - 30.0f) / 2.0f,
-                        scr_y - (192.0f - 30.0f) / 2.0f);
-                sprite_animation_draw(cur, nullptr);
-        });
+        // ---- ECS 精灵渲染（玩家） ----
+        self->ecs_world.filter_builder<TransformComponent, LogicRectComponent,
+            SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>()
+            .build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+                    SpriteSheetComponent& ss, AnimationFrameComponent& af,
+                    PlayerActionComponent& act, PlayerComponent&) {
+                sprite_render_system(it.entity(i), t, r, ss, af, act);
+            });
 }
 
 static void on_destroy(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         if (self->netclient) { netclient_destroy(self->netclient); self->netclient = NULL; }
-        auto d = [](auto p) { if(p) sprite_animation_destroy(p); };
-        d(self->anim_idle); d(self->anim_walk);
-        for (int i=0;i<4;i++) d(self->anim_atk[i]);
+        tex_cache_clear();
         audio_shot_destroy(self->step_sound);
         audio_bgm_destroy(self->bgm);
         if (self->audio_dev) audio_close_device(self->audio_dev);
