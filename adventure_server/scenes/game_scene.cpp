@@ -45,6 +45,16 @@ const int INPUT_DOWN = 1 << 1;
 const int INPUT_LEFT = 1 << 2;
 const int INPUT_RIGHT = 1 << 3;
 const int INPUT_ATTACK = 1 << 4;
+const int INPUT_DIR_MASK = INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT;
+
+static int input_to_dir(int keycode) {
+    if (keycode & INPUT_DOWN)  return 0;
+    if (keycode & INPUT_LEFT)  return 1;
+    if (keycode & INPUT_RIGHT) return 2;
+    if (keycode & INPUT_UP)    return 3;
+    return 0;
+}
+static bool has_dir(int keycode) { return (keycode & INPUT_DIR_MASK) != 0; }
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
@@ -178,56 +188,28 @@ static void HandleHeartbeat(game_scene_p g, int conv, adventure::C2S* c2s)
 	});
 }
 
-static void Attack(game_scene_p self, LogicPositionComponent* p,
-	LogicRectComponent& currRect,
-	IdComponent& currId)
+static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
+	LogicRectComponent& currRect, IdComponent& currId)
 {
-	ray2df_t ray;
-	ray.origin.x = fp_add(p->x, fp_mul(currRect.width, fp_half()));
-	ray.origin.y = p->y;
-	ray.direction.x = fp_from_float(.0f);
-	ray.direction.y = fp_from_float(-1.0f);
-
-	ray2d_collisionf_t nearest_hit = { 0 };
-	IdComponent* nearest_id = nullptr;
-	float nearest_dist = 999999.0f;
+	// 碰撞盒相交：检查敌人碰撞盒是否与任何目标重叠
+	rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
 
 	self->body_query.each([&](IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
 		if (currId.id == id.id) return;
-
-		rectanglef_t rect = { 0 };
-		rect.x = pos.x;
-		rect.y = pos.y;
-		rect.width = r.width;
-		rect.height = r.height;
-		ray2d_collisionf_t result = collision2df_get_ray_rectangle(ray, rect);
-
-		if (result.hit) {
-			float current_dist = fp_to_float(fp_sub(ray.origin.y, result.point.y));
-			if (current_dist < nearest_dist) {
-				nearest_dist = current_dist;
-				nearest_hit = result;
-				nearest_id = &id;
-			}
+		rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
+		contact2df_t contact;
+		if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
+			id.hp--;
 		}
 	});
-
-	if (nearest_id != nullptr) {
-		nearest_id->hp--;
-		if (nearest_id->hp <= 0) {}
-
-		SDL_FRect line;
-		float end_x = fp_to_float(ray.origin.x);
-		float end_y = fp_to_float(ray.origin.y);
-		float start_x = fp_to_float(nearest_hit.point.x);
-		float start_y = fp_to_float(nearest_hit.point.y);
-		line.w = 0.05f;
-		line.h = (end_y - start_y);
-		line.x = start_x - line.w * 0.5f;
-		line.y = start_y;
-		self->world.entity().set<AttackRayEffectComponent>({ line.x, line.y, line.w, line.h, 0.1f });
-	}
+	// 射线攻击已注释
+	/*
+	ray2df_t ray;
+	...
+	collision2df_get_ray_rectangle(ray, rect);
+	...
+	*/
 }
 
 static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int input)
@@ -275,7 +257,21 @@ static void ApplyInput(game_scene_p self,
 	IdComponent& currId, int conv, int input)
 {
 	if (input & INPUT_ATTACK) {
-		Attack(self, p, currRect, currId);
+		// 碰撞盒相交攻击
+		rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
+		self->body_query.each([&](IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
+			if (currId.id == id.id) return;
+			rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
+			contact2df_t contact;
+			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
+				id.hp--;
+			}
+		});
+		// 射线攻击已注释
+		/*
+		ray2df_t ray;
+		...
+		*/
 	}
 
 	fp_t move_x, move_y;
@@ -415,6 +411,80 @@ static void CollectCommandSystem(game_scene_p self)
 	}
 }
 
+
+static void UpdateAI(game_scene_p self)
+{
+	self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
+		IdComponent& id, LogicRectComponent& rect, LogicPositionComponent& pos) {
+
+			fp_t speed = fp_from_float(2.0f);
+			fp_t step = fp_mul(speed, fp_from_float(self->ctx->FIXED_TIMESTEP));
+
+			// 查找检测范围内最近玩家
+			fp_t detect_sq = fp_mul(ai.detect_radius, ai.detect_radius);
+			fp_t nearest_dist_sq = detect_sq;
+			fp_t nearest_player_x = 0, nearest_player_y = 0;
+			bool found = false;
+
+			self->player_query.each([&](PlayerComponent&, IdComponent&,
+				LogicRectComponent&, LogicPositionComponent& pp) {
+					fp_t dx = fp_sub(pp.x, pos.x);
+					fp_t dy = fp_sub(pp.y, pos.y);
+					fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+					if (dist_sq < nearest_dist_sq) {
+						nearest_dist_sq = dist_sq;
+						nearest_player_x = pp.x;
+						nearest_player_y = pp.y;
+						found = true;
+					}
+				});
+
+			if (found) {
+				// 检测到玩家
+				fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
+				if (nearest_dist_sq < attack_sq) {
+					ai.state = 2; // 攻击
+					AttackTarget(self, &pos, rect, id);
+				}
+				else {
+					ai.state = 1; // 追击
+					fp_t dx = fp_sub(nearest_player_x, pos.x);
+					fp_t dy = fp_sub(nearest_player_y, pos.y);
+					fp_t dist = fp_sqrt(fp_add(fp_mul(dx, dx), fp_mul(dy, dy)));
+					if (dist > fp_zero()) {
+						pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
+						pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
+						resolve_collision(self, &pos, rect, id);
+					}
+				}
+			}
+			else {
+				// 巡逻
+				ai.state = 0;
+				fp_t dx = fp_sub(ai.target_x, pos.x);
+				fp_t dy = fp_sub(ai.target_y, pos.y);
+				fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+				fp_t arrived = fp_from_float(0.5f);
+				if (dist_sq < fp_mul(arrived, arrived)) {
+					fp_t range = ai.patrol_radius;
+					ai.target_x = fp_add(ai.patrol_center_x,
+						fp_mul(fp_from_float((float)(rand() % 100 - 50)),
+							fp_div(range, fp_from_float(50.0f))));
+					ai.target_y = fp_add(ai.patrol_center_y,
+						fp_mul(fp_from_float((float)(rand() % 100 - 50)),
+							fp_div(range, fp_from_float(50.0f))));
+				}
+				else {
+					fp_t dist = fp_sqrt(dist_sq);
+					pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
+					pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
+					resolve_collision(self, &pos, rect, id);
+				}
+			}
+		});
+}
+
+
 // 帧同步：执行命令
 static void HandleCommandSystem(game_scene_p self)
 {
@@ -467,30 +537,31 @@ static void HandleCommandSystem(game_scene_p self)
 	}
 	self->world.defer_end();
 
-	// 应用输入
-	self->world.defer_begin();
+	// 应用输入（位置修改在外，状态同步用直接字段赋值）
 	for (auto& input : s2c.command().player_inputs()) {
-		int dir = 0;
-		if (input.keycode() & INPUT_DOWN)       dir = 0;
-		else if (input.keycode() & INPUT_LEFT)  dir = 1;
-		else if (input.keycode() & INPUT_RIGHT) dir = 2;
-		else if (input.keycode() & INPUT_UP)    dir = 3;
-		bool moving = (input.keycode() & (INPUT_UP|INPUT_DOWN|INPUT_LEFT|INPUT_RIGHT)) != 0;
+		int dir = input_to_dir(input.keycode());
+		bool moving = has_dir(input.keycode());
 
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (p.conv != input.conv()) return;
-			if (input.keycode() & INPUT_ATTACK) {
-				e.set<PlayerActionComponent>({ PlayerActionComponent::ATTACK, dir, 0, 0 });
-			} else {
-				e.set<PlayerActionComponent>({
-					moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE,
-					dir, 0, 0 });
+			// 直接字段赋值，不触发 LOCKED_STORAGE
+			if (e.has<PlayerActionComponent>()) {
+				auto* act = e.get_mut<PlayerActionComponent>();
+				if (input.keycode() & INPUT_ATTACK) {
+					act->state = PlayerActionComponent::ATTACK;
+					act->dir = dir;
+				} else {
+					act->state = moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+					act->dir = dir;
+				}
 			}
 			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
 		});
 	}
-	self->world.defer_end();
+
+	// ai移动
+	UpdateAI(self);
 
 	self->command_queue.pop();
 }
@@ -538,8 +609,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -588,43 +659,42 @@ static void on_load(scene_p s)
 	}
 
 	// ---- 创建敌人 ----
-	const int ENEMY_COUNT = 6;
-	fp_t map_w = self->tilemap ? fp_from_float((float)self->tilemap->width * self->tilemap->tilewidth / SERVER_PPM)
-		: fp_from_float(25.0f);
-	fp_t map_h = self->tilemap ? fp_from_float((float)self->tilemap->height * self->tilemap->tileheight / SERVER_PPM)
-		: fp_from_float(15.0f);
+	const int ENEMY_COUNT = 1;
 	srand((unsigned int)SDL_GetTicks());
 	for (int i = 0; i < ENEMY_COUNT; i++) {
-		fp_t ex = fp_from_float((float)(rand() % ((int)fp_to_float(map_w) - 4) + 2));
-		fp_t ey = fp_from_float((float)(rand() % ((int)fp_to_float(map_h) - 4) + 2));
+		fp_t ex = fp_from_float(3);
+		fp_t ey = fp_from_float(3);
 		fp_t cx = ex;
 		fp_t cy = ey;
+		SpriteSheetComponent ess{};
+		snprintf(ess.path, sizeof(ess.path), "joy2d_editor_textures/knights/troops/warrior/warrior_red.png");
+		ess.frame_w = 192; ess.frame_h = 192;
+		ess.idle_row = 0; ess.walk_row = 1;
+		ess.atk_rows[0] = 4; ess.atk_rows[1] = 2;
+		ess.atk_rows[2] = 2; ess.atk_rows[3] = 6;
+		ess.frame_count = 6; ess.frame_duration = 0.15f;
 		self->world.entity()
 			.add<EnemyComponent>()
 			.set<AIComponent>({
-				cx, cy,                                     // 巡逻中心
-				fp_from_float(3.0f),                        // 巡逻半径 3m
-				fp_from_float(6.0f),                        // 检测范围 6m
-				fp_from_float(1.0f),                        // 攻击范围 1m
-				0, 0,                                       // 初始状态巡逻
-				fp_add(cx, fp_from_float((float)(rand() % 100 - 50) * 0.05f)),
-				fp_add(cy, fp_from_float((float)(rand() % 100 - 50) * 0.05f))
+				cx, cy,
+				fp_from_float(4.0f), fp_from_float(15.0f), fp_from_float(1.5f),
+				0, 0,
+				0, 0
 			})
 			.set<IdComponent>({ GenId(self), 5 })
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
 			.set<LogicPositionComponent>({ ex, ey })
 			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
 			.set<TransformComponent>({ fp_to_float(ex), fp_to_float(ey), 0, 1, 1 })
-			.set<SpriteSheetComponent>({ "", 192, 192, 0, 1, {4,2,2,6}, 6, 0.15f })
+			.set<SpriteSheetComponent>(ess)
 			.set<PlayerActionComponent>({})
 			.set<AnimationFrameComponent>({});
 	}
 	log_info("[AI] created %d enemies", ENEMY_COUNT);
+
 	self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
 	self->world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
 		.each(animation_update_system);
-
-
 
 	self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
 	self->drawing_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
@@ -680,75 +750,6 @@ static void on_handle_event(scene_p s, const void* ev)
 	}
 }
 
-static void UpdateAI(game_scene_p self)
-{
-	self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
-			IdComponent& id, LogicRectComponent& rect, LogicPositionComponent& pos) {
-
-		// 查找最近玩家
-		fp_t nearest_dist_sq = fp_mul(ai.detect_radius, ai.detect_radius);
-		fp_t nearest_player_x = 0, nearest_player_y = 0;
-		bool found_player = false;
-
-		self->player_query.each([&](PlayerComponent&, IdComponent&,
-				LogicRectComponent&, LogicPositionComponent& pp) {
-			fp_t dx = fp_sub(pp.x, pos.x);
-			fp_t dy = fp_sub(pp.y, pos.y);
-			fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
-			if (dist_sq < nearest_dist_sq) {
-				nearest_dist_sq = dist_sq;
-				nearest_player_x = pp.x;
-				nearest_player_y = pp.y;
-				found_player = true;
-			}
-		});
-
-		fp_t speed = fp_from_float(2.0f);
-		fp_t step = fp_mul(speed, fp_from_float(self->ctx->FIXED_TIMESTEP));
-
-		if (found_player) {
-			fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
-			if (nearest_dist_sq < attack_sq) {
-				// 攻击
-				ai.state = 2;
-				Attack(self, &pos, rect, id);
-			} else {
-				// 追击
-				ai.state = 1;
-				fp_t dx = fp_sub(nearest_player_x, pos.x);
-				fp_t dy = fp_sub(nearest_player_y, pos.y);
-				fp_t dist = fp_sqrt(fp_add(fp_mul(dx, dx), fp_mul(dy, dy)));
-				if (dist > fp_zero()) {
-					pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
-					pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
-					resolve_collision(self, &pos, rect, id);
-				}
-			}
-		} else {
-			// 巡逻
-			ai.state = 0;
-			fp_t dx = fp_sub(ai.target_x, pos.x);
-			fp_t dy = fp_sub(ai.target_y, pos.y);
-			fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
-			fp_t arrived = fp_from_float(0.5f);
-			if (dist_sq < fp_mul(arrived, arrived)) {
-				fp_t range = ai.patrol_radius;
-				ai.target_x = fp_add(ai.patrol_center_x,
-					fp_mul(fp_from_float((float)(rand() % 100 - 50)),
-						fp_div(range, fp_from_float(50.0f))));
-				ai.target_y = fp_add(ai.patrol_center_y,
-					fp_mul(fp_from_float((float)(rand() % 100 - 50)),
-						fp_div(range, fp_from_float(50.0f))));
-			} else {
-				fp_t dist = fp_sqrt(dist_sq);
-				pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
-				pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
-				resolve_collision(self, &pos, rect, id);
-			}
-		}
-	});
-}
-
 static void on_update(scene_p s, float dt)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -769,13 +770,30 @@ static void on_update(scene_p s, float dt)
 	self->serverTickTimer += dt;
 	if (self->serverTickTimer >= self->SERVER_TICK_INTERVAL) {
 		self->serverTickTimer -= self->SERVER_TICK_INTERVAL;
-		UpdateAI(self);
 		CollectCommandSystem(self);
 		HandleCommandSystem(self);
 		NotifySystem(self);
-	}
+		
 
-	// 动画状态由 ECS animation_update_system 处理
+		// 位置同步：HandleCommandSystem/UpdateAI 更新了 LogicPositionComponent，
+		// 手动同步 TransformComponent 确保渲染正确
+		self->player_query.each([&](flecs::entity e, PlayerComponent&, IdComponent&,
+				LogicRectComponent&, LogicPositionComponent& pos) {
+			if (e.has<TransformComponent>()) {
+				auto* t = e.get_mut<TransformComponent>();
+				t->position_x = fp_to_float(pos.x);
+				t->position_y = fp_to_float(pos.y);
+			}
+		});
+		self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent&,
+				IdComponent&, LogicRectComponent&, LogicPositionComponent& pos) {
+			if (e.has<TransformComponent>()) {
+				auto* t = e.get_mut<TransformComponent>();
+				t->position_x = fp_to_float(pos.x);
+				t->position_y = fp_to_float(pos.y);
+			}
+		});
+	}
 
 	// ---------- 摄像机跟随第一个玩家 ----------
 	self->player_query.each([&](PlayerComponent&, IdComponent&,
@@ -812,6 +830,15 @@ static void on_render(scene_p s)
 		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
 				SpriteSheetComponent& ss, AnimationFrameComponent& af,
 				PlayerActionComponent& act, PlayerComponent&) {
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
+
+	// ---- ECS 精灵渲染（敌人） ----
+	self->world.filter_builder<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>()
+		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+				SpriteSheetComponent& ss, AnimationFrameComponent& af,
+				PlayerActionComponent& act, EnemyComponent&) {
 			sprite_render_system(it.entity(i), t, r, ss, af, act);
 		});
 }
