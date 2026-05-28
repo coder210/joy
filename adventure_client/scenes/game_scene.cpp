@@ -167,27 +167,17 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 			ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
 			ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
 			ss.frame_count = 6; ss.frame_duration = 0.15f;
-			e.add<EnemyComponent>();
-			e.set<PlayerActionComponent>({});
-			e.set<SpriteSheetComponent>(ss);
-			e.set<AnimationFrameComponent>({});
-			e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
 			e.add<EnemyComponent>()
-			.set<AIComponent>({
-				0, 0,
-				fp_from_float(4.0f), fp_from_float(15.0f), fp_from_float(1.5f),
-				0, 0,
-				0, 0
-				})
-			.set<IdComponent>({ entity.id(), entity.hp() })
-			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
-			.set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
-			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-			.set<TransformComponent>({ fp_to_float(entity.position_x()),
-					   fp_to_float(entity.position_y()), 0, 1, 1 })
-			.set<SpriteSheetComponent>({})
-			.set<PlayerActionComponent>({})
-			.set<AnimationFrameComponent>({});
+				.set<IdComponent>({ entity.id(), entity.hp() })
+				.set<AIComponent>({ 0, 0, fp_from_float(4.0f), fp_from_float(15.0f), fp_from_float(1.5f), 0, 0, 0, 0 })
+				.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
+				.set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
+				.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
+				.set<TransformComponent>({ fp_to_float(entity.position_x()),
+						   fp_to_float(entity.position_y()), 0, 1, 1 })
+				.set<SpriteSheetComponent>(ss)
+				.set<PlayerActionComponent>({})
+				.set<AnimationFrameComponent>({});
 		}
 	}
 	self->ecs_world.defer_end();
@@ -618,8 +608,8 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
 	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
