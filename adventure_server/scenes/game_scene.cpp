@@ -609,8 +609,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -645,22 +645,10 @@ static void on_load(scene_p s)
 			}
 			log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
 		}
-	} else {
-		log_error("[tilemap] failed to load - using fixed walls");
-		// 回退：简单三面墙
-		fp_t WALL_T = fp_from_float(0.5f);
-		for (int i = 0; i < 3; i++) {
-			self->world.entity()
-				.set<IdComponent>({ GenId(self), 100 })
-				.set<LogicRectComponent>({ WALL_T, fp_from_float(15.0f) })
-				.set<LogicPositionComponent>({ fp_from_float(i * 15.0f), fp_zero() })
-				.set<TransformComponent>({ (float)(i*15), 0,0,1,1 });
-		}
 	}
 
 	// ---- 创建敌人 ----
 	const int ENEMY_COUNT = 1;
-	srand((unsigned int)SDL_GetTicks());
 	for (int i = 0; i < ENEMY_COUNT; i++) {
 		fp_t ex = fp_from_float(3);
 		fp_t ey = fp_from_float(3);

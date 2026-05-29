@@ -43,7 +43,10 @@ typedef struct tcp_connection
 KHASH_INIT(kconn, int, kcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(ktcp_conn, int, tcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
-KLIST_INIT(kmq, net_message_t, free)
+// no-op: free 作为 KMEMPOOL_INIT 析构函数会导致宏内建 free 之后 double-free
+// 消息内部 data 由 kl_begin/kl_end 循环中的 SDL_free(msg->data) 负责释放
+static void kmq_free_nop(void* p) {}
+KLIST_INIT(kmq, net_message_t, kmq_free_nop)
 
 struct kcpserver
 {
@@ -1076,7 +1079,9 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
         if (c == NULL) {
                 log_error("wsnetserver: failed to listen on %s", addr);
                 mg_mgr_free(&ws->mgr);
-                kl_destroy(kmq, ws->mq);
+                if (ws->mq) {
+                        kl_destroy(kmq, ws->mq);
+                }
                 SDL_free(ws);
                 return NULL;
         }
