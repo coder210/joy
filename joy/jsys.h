@@ -39,11 +39,13 @@ extern "C" {
                 int len, const char* ip, int port);
         JOY_API int64_t sys_current_time();
         JOY_API void sys_sleep(int ms);
+        JOY_API void sys_install_crash_handlers();
 
         JOY_API iocp_server_p iocp_server_create(const char* bind_ip, int bind_port);
         JOY_API void iocp_server_destroy(iocp_server_p server);
         JOY_API void iocp_process_events(iocp_server_p server, int timeout_ms);
 
+      
 
 #ifdef __cplusplus
 }

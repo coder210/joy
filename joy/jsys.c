@@ -10,21 +10,169 @@
 #	include <mswsock.h>
 #	include <Windows.h>
 #	include <ws2tcpip.h>
+#       include <DbgHelp.h>
 #	pragma comment(lib, "ws2_32.lib")
+#       pragma comment(lib, "DbgHelp.lib")
+
+
+
+static LONG WINAPI crashHandler(EXCEPTION_POINTERS* ep) 
+{
+        char dumpPath[MAX_PATH];
+        SYSTEMTIME st;
+        GetLocalTime(&st);
+        snprintf(dumpPath, sizeof(dumpPath), "crash_%04d%02d%02d_%02d%02d%02d.dmp",
+                st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+
+        HANDLE hFile = CreateFileA(dumpPath, GENERIC_WRITE, 0, NULL,
+                CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+                MINIDUMP_EXCEPTION_INFORMATION ei = { GetCurrentThreadId(), ep, FALSE };
+                MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+                        hFile, MiniDumpWithDataSegs, &ei, NULL, NULL);
+                CloseHandle(hFile);
+        }
+        return EXCEPTION_CONTINUE_SEARCH;
+}
+
+
 #elif defined(JOY_LINUX)
 #	include<unistd.h>
 #	include<sys/time.h>
 #	include<sys/socket.h>
 #	include<arpa/inet.h>
-#	include<unistd.h>
 #	include<errno.h>
 #	include<sys/ioctl.h>
 #	include<sys/fcntl.h>
+#       include<signal.h>
+#       include<execinfo.h>
+#       include <fcntl.h>
+#       include <time.h>
+
+
+static void crashHandler(int sig) 
+{
+        // 打印信号信息
+        char msg[128];
+        snprintf(msg, sizeof(msg), "\n======== CRASH ======== signal=%d (%s)\n",
+                sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
+        write(STDERR_FILENO, msg, strlen(msg));
+
+        // 采集调用堆栈
+        void* buffer[128];
+        int frames = backtrace(buffer, 128);
+        backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+
+        // 写入日志文件
+        time_t t = time(nullptr);
+        struct tm* lt = localtime(&t);
+        char logPath[256];
+        snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
+                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+                lt->tm_hour, lt->tm_min, lt->tm_sec);
+
+        int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
+        if (fd >= 0) {
+                write(fd, msg, strlen(msg));
+                backtrace_symbols_fd(buffer, frames, fd);
+                close(fd);
+        }
+
+        // 恢复默认信号处理并重新触发，让系统生成 core dump
+        signal(sig, SIG_DFL);
+        raise(sig);
+}
+
 #elif defined(JOY_MACOS)
+#   include <unistd.h>
+#   include <sys/time.h>
+#   include <sys/socket.h>
+#   include <arpa/inet.h>
+#   include <errno.h>
+#   include <sys/ioctl.h>
+#   include <sys/fcntl.h>
+#   include <signal.h>
+#   include <execinfo.h>
+#   include <fcntl.h>
+#   include <time.h>
+
+static void crashHandler(int sig)
+{
+        char msg[128];
+        snprintf(msg, sizeof(msg), "\n======== CRASH ======== signal=%d (%s)\n",
+                sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
+        write(STDERR_FILENO, msg, strlen(msg));
+
+        void* buffer[128];
+        int frames = backtrace(buffer, 128);
+        backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+
+        time_t t = time(nullptr);
+        struct tm* lt = localtime(&t);
+        char logPath[256];
+        snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
+                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+                lt->tm_hour, lt->tm_min, lt->tm_sec);
+
+        int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
+        if (fd >= 0) {
+                write(fd, msg, strlen(msg));
+                backtrace_symbols_fd(buffer, frames, fd);
+                close(fd);
+        }
+
+        signal(sig, SIG_DFL);
+        raise(sig);
+}
 
 #elif defined(JOY_UNIX)
+// 适用于 FreeBSD, Solaris 等支持 execinfo.h 的 Unix 系统
+#   include <unistd.h>
+#   include <sys/time.h>
+#   include <sys/socket.h>
+#   include <arpa/inet.h>
+#   include <errno.h>
+#   include <sys/ioctl.h>
+#   include <sys/fcntl.h>
+#   include <signal.h>
+#   include <execinfo.h>
+#   include <fcntl.h>
+#   include <time.h>
 
+static void crashHandler(int sig)
+{
+        char msg[128];
+        snprintf(msg, sizeof(msg), "\n======== CRASH ======== signal=%d (%s)\n",
+                sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
+        write(STDERR_FILENO, msg, strlen(msg));
+
+        void* buffer[128];
+        int frames = backtrace(buffer, 128);
+        backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+
+        time_t t = time(nullptr);
+        struct tm* lt = localtime(&t);
+        char logPath[256];
+        snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
+                lt->tm_year + 1900, lt->tm_mon + 1, lt->tm_mday,
+                lt->tm_hour, lt->tm_min, lt->tm_sec);
+
+        int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
+        if (fd >= 0) {
+                write(fd, msg, strlen(msg));
+                backtrace_symbols_fd(buffer, frames, fd);
+                close(fd);
+        }
+
+        signal(sig, SIG_DFL);
+        raise(sig);
+}
 #else
+
+static void crashHandler(int sig)
+{
+       // unkonwn 
+}
 
 #endif
 
@@ -337,6 +485,32 @@ void sys_sleep(int ms)
 #else
 #endif
 }
+
+
+void sys_install_crash_handlers()
+{
+#if defined(JOY_WIN)
+        SetUnhandledExceptionFilter(crashHandler);
+#elif defined(JOY_LINUX)
+        signal(SIGSEGV, crashHandler);
+        signal(SIGABRT, crashHandler);
+        signal(SIGFPE, crashHandler);
+        signal(SIGILL, crashHandler);
+#elif defined(JOY_MACOS)
+        signal(SIGSEGV, crashHandler);
+        signal(SIGABRT, crashHandler);
+        signal(SIGFPE, crashHandler);
+        signal(SIGILL, crashHandler);
+#elif defined(JOY_UNIX)
+        signal(SIGSEGV, crashHandler);
+        signal(SIGABRT, crashHandler);
+        signal(SIGFPE, crashHandler);
+        signal(SIGILL, crashHandler);
+#else
+	printf("unknown platform, crash handlers not installed");
+#endif
+}
+
 
 #ifdef JOY_WIN
 
