@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: luaclib.h
-Description: lua�ű��Ľӿ�
+Description: lua脚本的接口
 Author: ydlc
 Version: 1.0
 Date: 2021.3.18
@@ -14,7 +14,6 @@ History:
 
 int luaopen_window(lua_State* L);
 int luaopen_sdl(lua_State *L);
-int luaopen_graphics(lua_State* L);
 int luaopen_audio(lua_State* L);
 int luaopen_net(lua_State* L);
 int luaopen_utils(lua_State *L);
@@ -36,6 +35,5 @@ int luaopen_timer(lua_State* L);
 int luaopen_keyboard(lua_State* L);
 int luaopen_animation(lua_State* L);
 int luaopen_joystick(lua_State* L);
-int luaopen_profiler(lua_State* L);
 
 #endif // !LUACLIB_H

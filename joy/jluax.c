@@ -168,12 +168,13 @@ bool luax_dofile(luax_p luax, const char* filename)
                         log_info("%s", error_msg);
                         return false;
                 }
-                if (lua_pcall(luax->L, 0, LUA_MULTRET, 1) != LUA_OK) {
+                if (lua_pcall(luax->L, 0, LUA_MULTRET, 0) != LUA_OK) {
                         const char* error_msg = lua_tostring(luax->L, -1);
                         log_info("%s", error_msg);
+                        SDL_free(data);
                         return false;
                 }
-                free(data);
+                SDL_free(data);
                 return true;
         }
         return false;
@@ -183,6 +184,88 @@ void luax_release(luax_p luax)
 {
         lua_close(luax->L);
         free(luax);
+}
+
+#define STATE_KEY ((void*)0x1)
+
+void luax_init_state(luax_p luax)
+{
+        lua_State* L = luax->L;
+        lua_newtable(L);
+        lua_setglobal(L, "state");
+        // 立即持久化
+        lua_getglobal(L, "state");
+        lua_pushlightuserdata(L, STATE_KEY);
+        lua_pushvalue(L, -2);
+        lua_settable(L, LUA_REGISTRYINDEX);
+        lua_pop(L, 1);
+
+        // 创建 joy 空表，脚本只需 function joy.load() {} 即可
+        lua_newtable(L);
+        lua_setglobal(L, "joy");
+}
+
+void luax_save_state(luax_p luax)
+{
+        lua_State* L = luax->L;
+        lua_getglobal(L, "state");
+        lua_pushlightuserdata(L, STATE_KEY);
+        lua_pushvalue(L, -2);
+        lua_settable(L, LUA_REGISTRYINDEX);
+        lua_pop(L, 1);
+}
+
+static void luax_restore_state(luax_p luax)
+{
+        lua_State* L = luax->L;
+        lua_pushlightuserdata(L, STATE_KEY);
+        lua_gettable(L, LUA_REGISTRYINDEX);
+        if (!lua_isnil(L, -1)) {
+                lua_setglobal(L, "state");
+        } else {
+                lua_pop(L, 1);
+                luax_init_state(luax);
+        }
+}
+
+bool luax_call_joy(luax_p luax, const char* func, int argc, float dt)
+{
+        lua_State* L = luax->L;
+        lua_getglobal(L, "joy");
+        if (lua_isnil(L, -1)) { lua_pop(L, 1); return false; }
+        lua_getfield(L, -1, func);
+        if (lua_isnil(L, -1)) { lua_pop(L, 2); return false; }
+
+        if (argc > 0)
+                lua_pushnumber(L, dt);
+
+        int ret = lua_pcall(L, argc, 0, 0);
+        if (ret != LUA_OK) {
+                log_error("joy.%s error: %s", func, lua_tostring(L, -1));
+                lua_pop(L, 1);
+                lua_pop(L, 1);
+                return false;
+        }
+        lua_pop(L, 1);
+        return true;
+}
+
+bool luax_reload(luax_p luax, const char* filename)
+{
+        // 1. 备份当前 state
+        luax_save_state(luax);
+
+        // 2. 执行脚本（复用 dofile 逻辑）
+        bool ok = luax_dofile(luax, filename);
+
+        // 3. 恢复 state（即使失败也恢复）
+        luax_restore_state(luax);
+
+        // 4. 热重载后调用 joy.hotfix()
+        if (ok)
+                luax_call_joy(luax, "hotfix", 0, 0);
+
+        return ok;
 }
 
 //static void 

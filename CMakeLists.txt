@@ -13,6 +13,7 @@ project(joy C CXX)
 
 
 option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
+option(BUILD_JOY_BEAT "Build joy_beat" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 
@@ -46,6 +47,10 @@ endif()
 
 if(BUILD_JOY_EDITOR)
     add_subdirectory(joy_editor)
+endif()
+
+if(BUILD_JOY_BEAT)
+    add_subdirectory(joy_beat)
 endif()
 
 # examples
