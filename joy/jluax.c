@@ -10,6 +10,7 @@ History:
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <SDL3/SDL.h>
 #include "external/lua/lapi.h"
 #include "external/lua/lualib.h"
 #include "external/lua/lauxlib.h"
@@ -126,32 +127,42 @@ luax_p luax_create(void)
         luaL_openlibs(luax->L);
         lua_pushlightuserdata(luax->L, luax);
         lua_setfield(luax->L, LUA_REGISTRYINDEX, "__this");
-        luaL_requiref(luax->L, "window", luaopen_window, 1);
-        luaL_requiref(luax->L, "sdl", luaopen_sdl, 1);
-        luaL_requiref(luax->L, "audio", luaopen_audio, 1);
-        //luaL_requiref(luax->L, "graphics", luaopen_graphics, 1);
-        luaL_requiref(luax->L, "keyboard", luaopen_keyboard, 1);
-        luaL_requiref(luax->L, "net", luaopen_net, 1);
-        luaL_requiref(luax->L, "utils", luaopen_utils, 1);
-        luaL_requiref(luax->L, "mathx", luaopen_mathx, 1);
-        luaL_requiref(luax->L, "vec2", luaopen_vec2, 1);
-        luaL_requiref(luax->L, "vec3", luaopen_vec3, 1);
-        luaL_requiref(luax->L, "collision2d", luaopen_collision2d, 1);
-        luaL_requiref(luax->L, "collision3d", luaopen_collision3d, 1);
-        luaL_requiref(luax->L, "cjson", luaopen_cjson_safe, 1);
-        luaL_requiref(luax->L, "packagex", luaopen_packagex, 1);
-        luaL_requiref(luax->L, "ui", luaopen_ui, 1);
-        luaL_requiref(luax->L, "c2s", luaopen_c2s, 1);
-        luaL_requiref(luax->L, "s2c", luaopen_s2c, 1);
-        luaL_requiref(luax->L, "ecs", luaopen_ecs, 1);
-        luaL_requiref(luax->L, "rigidbody", luaopen_rigidbody, 1);
-        luaL_requiref(luax->L, "world2df", luaopen_world2df, 1);
-        luaL_requiref(luax->L, "server", luaopen_server, 1);
-        luaL_requiref(luax->L, "client", luaopen_client, 1);
-        luaL_requiref(luax->L, "timer", luaopen_timer, 1);
-        luaL_requiref(luax->L, "animation", luaopen_animation, 1);
-        luaL_requiref(luax->L, "joystick", luaopen_joystick, 1);
-        //luaL_requiref(luax->L, "profiler", luaopen_profiler, 1);
+
+        // 创建 joy 表，所有模块注册在 joy.* 下
+        lua_newtable(luax->L);
+
+#define JOY_MOD(name, open) \
+        luaL_requiref(luax->L, name, open, 0); \
+        lua_setfield(luax->L, -2, name)
+
+        JOY_MOD("window", luaopen_window);
+        JOY_MOD("graphics", luaopen_graphics);
+        JOY_MOD("sdl", luaopen_sdl);
+        JOY_MOD("audio", luaopen_audio);
+        JOY_MOD("keyboard", luaopen_keyboard);
+        JOY_MOD("net", luaopen_net);
+        JOY_MOD("utils", luaopen_utils);
+        JOY_MOD("mathx", luaopen_mathx);
+        JOY_MOD("vec2", luaopen_vec2);
+        JOY_MOD("vec3", luaopen_vec3);
+        JOY_MOD("collision2d", luaopen_collision2d);
+        JOY_MOD("collision3d", luaopen_collision3d);
+        JOY_MOD("cjson", luaopen_cjson_safe);
+        JOY_MOD("packagex", luaopen_packagex);
+        JOY_MOD("ui", luaopen_ui);
+        JOY_MOD("c2s", luaopen_c2s);
+        JOY_MOD("s2c", luaopen_s2c);
+        JOY_MOD("ecs", luaopen_ecs);
+        JOY_MOD("rigidbody", luaopen_rigidbody);
+        JOY_MOD("world2df", luaopen_world2df);
+        JOY_MOD("server", luaopen_server);
+        JOY_MOD("client", luaopen_client);
+        JOY_MOD("timer", luaopen_timer);
+        JOY_MOD("animation", luaopen_animation);
+        JOY_MOD("joystick", luaopen_joystick);
+
+#undef JOY_MOD
+        lua_setglobal(luax->L, "joy");
         return luax;
 }
 
@@ -186,23 +197,147 @@ void luax_release(luax_p luax)
         free(luax);
 }
 
+lua_State* luax_get_state(luax_p luax)
+{
+        return luax->L;
+}
+
+/* =================================================================
+ * 事件分发
+ * ================================================================= */
+
+/* 查表并调用 joy.func(args...)，调用者已把 arg 推入栈 */
+static bool call_joy_n(lua_State* L, const char* func, int nargs)
+{
+        lua_getglobal(L, "joy");
+        if (lua_isnil(L, -1)) { lua_pop(L, 1); return false; }
+        lua_getfield(L, -1, func);     /* [args..., joy, func] */
+        if (lua_isnil(L, -1)) {
+                lua_pop(L, 2);  /* pop nil + joy */
+                /* 清除之前推入的 arg */
+                lua_pop(L, nargs);
+                return false;
+        }
+
+        /* 把 func 移到栈底，再弹出 joy，变成 [func, args...] */
+        lua_rotate(L, 1, 1);           /* [func, args..., joy] */
+        lua_pop(L, 1);                  /* [func, args...] */
+
+        if (lua_pcall(L, nargs, 0, 0) != LUA_OK) {
+                log_error("joy.%s: %s", func, lua_tostring(L, -1));
+                lua_pop(L, 1);
+                return false;
+        }
+        return true;
+}
+
+/* 按键名映射 */
+static const char* key_name(SDL_Keycode k)
+{
+        static char buf[2];
+        switch (k) {
+        case SDLK_RETURN:    return "return";
+        case SDLK_ESCAPE:    return "escape";
+        case SDLK_BACKSPACE: return "backspace";
+        case SDLK_TAB:       return "tab";
+        case SDLK_SPACE:     return "space";
+        case SDLK_DELETE:    return "delete";
+        case SDLK_UP:        return "up";
+        case SDLK_DOWN:      return "down";
+        case SDLK_LEFT:      return "left";
+        case SDLK_RIGHT:     return "right";
+        case SDLK_HOME:      return "home";
+        case SDLK_END:       return "end";
+        case SDLK_PAGEUP:    return "pageup";
+        case SDLK_PAGEDOWN:  return "pagedown";
+        case SDLK_INSERT:    return "insert";
+        case SDLK_LSHIFT:    return "lshift";
+        case SDLK_RSHIFT:    return "rshift";
+        case SDLK_LCTRL:     return "lctrl";
+        case SDLK_RCTRL:     return "rctrl";
+        case SDLK_LALT:      return "lalt";
+        case SDLK_RALT:      return "ralt";
+        default:
+                if (k >= SDLK_A && k <= SDLK_Z) { buf[0] = (char)('a' + (k - SDLK_A)); buf[1] = 0; return buf; }
+                if (k >= SDLK_0 && k <= SDLK_9) { buf[0] = (char)('0' + (k - SDLK_0)); buf[1] = 0; return buf; }
+                return NULL;
+        }
+}
+
+void luax_dispatch_event(luax_p luax, const SDL_Event* event)
+{
+        lua_State* L = luax->L;
+
+        switch (event->type) {
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                lua_pushnumber(L, event->button.x);
+                lua_pushnumber(L, event->button.y);
+                lua_pushinteger(L, event->button.button);
+                call_joy_n(L, "mousepressed", 3);
+                break;
+
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+                lua_pushnumber(L, event->button.x);
+                lua_pushnumber(L, event->button.y);
+                lua_pushinteger(L, event->button.button);
+                call_joy_n(L, "mousereleased", 3);
+                break;
+
+        case SDL_EVENT_MOUSE_MOTION:
+                lua_pushnumber(L, event->motion.x);
+                lua_pushnumber(L, event->motion.y);
+                lua_pushnumber(L, event->motion.xrel);
+                lua_pushnumber(L, event->motion.yrel);
+                call_joy_n(L, "mousemoved", 4);
+                break;
+
+        case SDL_EVENT_KEY_DOWN: {
+                const char* name = key_name(event->key.key);
+                if (!name) break;
+                lua_pushstring(L, name);
+                lua_pushinteger(L, event->key.scancode);
+                lua_pushboolean(L, event->key.repeat);
+                call_joy_n(L, "keypressed", 3);
+                break;
+        }
+
+        case SDL_EVENT_KEY_UP: {
+                const char* name = key_name(event->key.key);
+                if (!name) break;
+                lua_pushstring(L, name);
+                lua_pushinteger(L, event->key.scancode);
+                call_joy_n(L, "keyreleased", 2);
+                break;
+        }
+
+        case SDL_EVENT_WINDOW_RESIZED:
+                lua_pushinteger(L, event->window.data1);
+                lua_pushinteger(L, event->window.data2);
+                call_joy_n(L, "resize", 2);
+                break;
+        }
+}
+
 #define STATE_KEY ((void*)0x1)
 
 void luax_init_state(luax_p luax)
 {
         lua_State* L = luax->L;
-        lua_newtable(L);
-        lua_setglobal(L, "state");
+        // state 表（如果已存在则不覆盖）
+        lua_getglobal(L, "state");
+        if (lua_isnil(L, -1)) {
+                lua_pop(L, 1);
+                lua_newtable(L);
+                lua_setglobal(L, "state");
+        } else {
+                lua_pop(L, 1);
+        }
         // 立即持久化
         lua_getglobal(L, "state");
         lua_pushlightuserdata(L, STATE_KEY);
         lua_pushvalue(L, -2);
         lua_settable(L, LUA_REGISTRYINDEX);
         lua_pop(L, 1);
-
-        // 创建 joy 空表，脚本只需 function joy.load() {} 即可
-        lua_newtable(L);
-        lua_setglobal(L, "joy");
 }
 
 void luax_save_state(luax_p luax)
@@ -252,19 +387,10 @@ bool luax_call_joy(luax_p luax, const char* func, int argc, float dt)
 
 bool luax_reload(luax_p luax, const char* filename)
 {
-        // 1. 备份当前 state
+        // 备份当前 state → 执行脚本 → 恢复 state
         luax_save_state(luax);
-
-        // 2. 执行脚本（复用 dofile 逻辑）
         bool ok = luax_dofile(luax, filename);
-
-        // 3. 恢复 state（即使失败也恢复）
         luax_restore_state(luax);
-
-        // 4. 热重载后调用 joy.hotfix()
-        if (ok)
-                luax_call_joy(luax, "hotfix", 0, 0);
-
         return ok;
 }
 

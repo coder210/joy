@@ -13,6 +13,7 @@ History:
 
 
 int luaopen_window(lua_State* L);
+int luaopen_graphics(lua_State* L);
 int luaopen_sdl(lua_State *L);
 int luaopen_audio(lua_State* L);
 int luaopen_net(lua_State* L);
