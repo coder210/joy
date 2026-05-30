@@ -23,6 +23,7 @@ extern "C" {
 	JOY_API void luax_init_state(luax_p luax);            // 创建初始 state 表
 	JOY_API bool luax_reload(luax_p luax, const char* filename); // 加载/重载脚本，保留 state
 	JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt); // 调用 joy.func(dt)
+	JOY_API void luax_dispatch_event(luax_p luax, const SDL_Event* event); // 向 Joy.Lua 派发 SDL 事件
 #ifdef __cplusplus
 }
 #endif

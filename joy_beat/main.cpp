@@ -27,13 +27,15 @@ static bool load_script(app_state_t* s) {
 
 static bool check_reload(app_state_t* s) {
     SDL_PathInfo info;
-    if (!SDL_GetPathInfo(s->file_path, &info))
-        return false;
-    if (info.modify_time == s->last_mtime)
-        return false;
+    if (!SDL_GetPathInfo(s->file_path, &info)) return false;
+    if (info.modify_time == s->last_mtime) return false;
     s->last_mtime = info.modify_time;
     SDL_Log("[CHANGED] %s", s->file_path);
-    return load_script(s);
+    if (load_script(s)) {
+        luax_call_joy(s->lua, "hotfix", 0, 0);
+        return true;
+    }
+    return false;
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
@@ -43,23 +45,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     {
         char cwd[1024];
-        if (getcwd(cwd, sizeof(cwd)))
-            SDL_Log("cwd: %s", cwd);
+        if (getcwd(cwd, sizeof(cwd))) SDL_Log("cwd: %s", cwd);
     }
 
     s->lua = luax_create();
-    if (!s->lua) {
-        SDL_Log("luax_create() failed");
-        return SDL_APP_FAILURE;
-    }
+    if (!s->lua) { SDL_Log("luax_create() failed"); return SDL_APP_FAILURE; }
     luax_init_state(s->lua);
 
     SDL_PathInfo info;
-    if (SDL_GetPathInfo(s->file_path, &info))
-        s->last_mtime = info.modify_time;
+    if (SDL_GetPathInfo(s->file_path, &info)) s->last_mtime = info.modify_time;
 
     load_script(s);
-    luax_call_joy(s->lua, "load", 0, 0);  // 仅启动时调用一次
+    luax_call_joy(s->lua, "load", 0, 0);
 
     s->last_poll = SDL_GetTicks();
     s->prev_ticks = SDL_GetTicks();
@@ -69,7 +66,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
 SDL_AppResult SDL_AppIterate(void* appstate) {
     app_state_t* s = (app_state_t*)appstate;
-
     Uint64 now = SDL_GetTicks();
     float dt = (now - s->prev_ticks) / 1000.0f;
     s->prev_ticks = now;
@@ -81,14 +77,13 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         s->last_poll = now;
         check_reload(s);
     }
-
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
-    (void)appstate;
-    if (event->type == SDL_EVENT_QUIT)
-        return SDL_APP_SUCCESS;
+    app_state_t* s = (app_state_t*)appstate;
+    if (event->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
+    luax_dispatch_event(s->lua, event);
     return SDL_APP_CONTINUE;
 }
 

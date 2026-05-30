@@ -11,15 +11,13 @@ History:
 #define TEXT_H
 #include "SDL3/SDL.h"
 #include "jconfig.h"
+#include "jfont.h"
 
-typedef struct font_t  font_t, *font_p;
 typedef struct text_texture text_texture_t, *text_texture_p;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-	JOY_API font_p font_create(SDL_Renderer* renderer, const char* filename, int fontsize);
-	JOY_API void font_destroy(font_p font);
 	JOY_API text_texture_p text_createx(font_p font, const char* str, int len, SDL_Color color);
 	JOY_API text_texture_p text_create(font_p font, const int* codepoints, int num_codepoints, SDL_Color color);
 	JOY_API void text_updatex(text_texture_p text, font_p font,const char* str, int len, SDL_Color color);
