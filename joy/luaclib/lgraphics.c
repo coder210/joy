@@ -394,6 +394,22 @@ static int lt_print(lua_State* L) {
     return 0;
 }
 
+/* print(font, text, x, y [, r, g, b, a]) — 一站式 */
+static int l_print(lua_State* L) {
+    font_p* f = (font_p*)luaL_checkudata(L, 1, FONT_MT);
+    const char* str = luaL_checkstring(L, 2);
+    SDL_Color c = {
+        (Uint8)luaL_optinteger(L, 5, 255),
+        (Uint8)luaL_optinteger(L, 6, 255),
+        (Uint8)luaL_optinteger(L, 7, 255),
+        (Uint8)luaL_optinteger(L, 8, 255)
+    };
+    text_printx(cur_ren(L), *f, str, (int)SDL_strlen(str), c,
+        (float)luaL_checknumber(L, 3),
+        (float)luaL_checknumber(L, 4));
+    return 0;
+}
+
 /* =================================================================
  * SpriteBatch
  * ================================================================= */
@@ -513,6 +529,7 @@ int luaopen_graphics(lua_State* L) {
         {"update_text", lt_update},
         {"destroy_text", lt_destroy},
         {"print_text",  lt_print},
+        {"print",       l_print},
         {"new_spritebatch", lb_new},
         {"free_spritebatch", lb_free},
         {"get_spritebatch_width", lb_get_width},

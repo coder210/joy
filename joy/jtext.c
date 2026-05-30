@@ -183,6 +183,16 @@ void text_print(SDL_Renderer* renderer,
 	SDL_RenderTexture(renderer, text->texture, NULL, &dst_rect);
 }
 
+void text_printx(SDL_Renderer* renderer, font_p font,
+	const char* str, int len, SDL_Color color, float x, float y)
+{
+	text_texture_p t = text_createx(font, str, len, color);
+	if (t) {
+		text_print(renderer, t, x, y);
+		text_destroy(t);
+	}
+}
+
 int text_get_width(text_texture_p text_tex)
 {
 	return text_tex->real_width;

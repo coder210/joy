@@ -25,6 +25,7 @@ extern "C" {
 		const int* codepoints, int num_codepoints, SDL_Color color);
 	JOY_API void text_destroy(text_texture_p text_tex);
 	JOY_API void text_print(SDL_Renderer* renderer, text_texture_p text_tex, float x, float y);
+	JOY_API void text_printx(SDL_Renderer* renderer, font_p font, const char* str, int len, SDL_Color color, float x, float y);
 	JOY_API int text_get_width(text_texture_p text_tex);
 	JOY_API int text_get_height(text_texture_p text_tex);
 	JOY_API SDL_Texture* text_get_texture(text_texture_p text_tex);
