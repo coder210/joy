@@ -14,16 +14,8 @@ endif()
 
 file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp")
 
-# 默认编 main8.cpp (编辑器); 开启 BUILD_ANIMATION_TEST 则编动画测试
-option(BUILD_ANIMATION_TEST "Build animation test instead of editor" OFF)
-if(BUILD_ANIMATION_TEST)
-    list(REMOVE_ITEM SRC_FILES "main8.cpp")
-else()
-    list(REMOVE_ITEM SRC_FILES "animation_test.cpp")
-endif()
-
-# 去掉其它测试文件
-list(REMOVE_ITEM SRC_FILES "main9.cpp" "collision2d_test.cpp" "ui_test.cpp" "particle_test.cpp" "light_test.cpp")
+# 默认编 main8.cpp (编辑器); 去掉其它测试文件
+list(REMOVE_ITEM SRC_FILES "animation_test.cpp" "collision2d_test.cpp" "ui_test.cpp" "particle_test.cpp" "light_test.cpp" "main.cpp" "main9.cpp" "main10.cpp" "main11.cpp" "main2.cpp" "main3.cpp" "main4.cpp" "main42.cpp" "main5.cpp" "main6.cpp" "main7.cpp" "main81.cpp")
 
 # 合并所有源文件
 set(PROJECT_FILES
