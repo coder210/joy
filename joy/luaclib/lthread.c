@@ -23,17 +23,21 @@ static int thread_worker(void* ud) {
     thread_obj_t* to = (thread_obj_t*)ud;
     lua_State* L = luax_get_state(to->worker);
 
+    /* 初始加载完成后调用 joy.load() */
+    luax_call_joy(to->worker, "load", 0, 0);
+
     /* 进入主循环：类似主线程，持续调用 joy.update() + 热更检查 */
     while (!SDL_GetAtomicInt(&to->quit_requested)) {
         luax_call_joy(to->worker, "update", 1, 1.0f / 60.0f);
         luax_poll_reload(to->worker);
-        SDL_Delay(1);
+        SDL_Delay(10);
     }
 
     /* 退出时调用 joy.quit() */
     luax_call_joy(to->worker, "quit", 0, 0);
 
-    SDL_LockMutex(to->mutex); to->done = 1; SDL_UnlockMutex(to->mutex);
+    SDL_LockMutex(to->mutex); to->done = 1;
+    SDL_UnlockMutex(to->mutex);
     luax_release(to->worker);
     return 0;
 }
@@ -65,7 +69,7 @@ static int th_start(lua_State* L) {
     lua_pushboolean(L, true); return 1;
 }
 
-static int th_getError(lua_State* L) {
+static int th_get_error(lua_State* L) {
     thread_obj_t* to = (thread_obj_t*)luaL_checkudata(L, 1, THREAD_MT);
     SDL_LockMutex(to->mutex);
     if (to->error) lua_pushstring(L, to->error); else lua_pushnil(L);
@@ -78,18 +82,21 @@ static int th_quit(lua_State* L) {
     return 0;
 }
 
-static int th_isRunning(lua_State* L) {
+static int th_running(lua_State* L) {
     thread_obj_t* to = (thread_obj_t*)luaL_checkudata(L, 1, THREAD_MT);
-    SDL_LockMutex(to->mutex); int done = to->done; SDL_UnlockMutex(to->mutex);
-    lua_pushboolean(L, !done); return 1;
+    SDL_LockMutex(to->mutex);
+    int done = to->done; 
+    SDL_UnlockMutex(to->mutex);
+    lua_pushboolean(L, !done); 
+    return 1;
 }
 
 static const luaL_Reg th_methods[] = {
     {"start", th_start},
     {"quit", th_quit},
     {"release", th_release},
-    {"getError", th_getError},
-    {"isRunning", th_isRunning},
+    {"get_error", th_get_error},
+    {"is_running", th_running},
     {NULL, NULL}
 };
 
@@ -114,8 +121,6 @@ static int l_newThread(lua_State* L) {
 
     /* 设置文件监控（worker 也可以热更新） */
     luax_set_watch(w, filename);
-    /* 初始加载完成后调用 joy.load() */
-    luax_call_joy(w, "load", 0, 0);
 
     thread_obj_t* to = (thread_obj_t*)lua_newuserdata(L, sizeof(thread_obj_t));
     SDL_zero(*to);

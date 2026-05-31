@@ -79,9 +79,8 @@ void label_draw(label_p label)
 
 void label_handle_event(label_p label, SDL_Event* event)
 {
-	SDL_Renderer* renderer;
-	SDL_FPoint logic_motion_pos;
-	renderer = label->renderer;
+	(void)label;
+	(void)event;
 }
 
 button_p
@@ -101,8 +100,6 @@ button_create(SDL_Renderer* renderer, float width, float height)
 	btn->pressed_image = NULL;
 	btn->text = NULL;
 	btn->is_hovered = btn->is_pressed = false;
-	btn->on_press = btn->on_release = NULL;
-	btn->cb_userdata = NULL;
 	return btn;
 }
 
@@ -149,12 +146,43 @@ button_set_text(button_p btn, font_p fontinfo,
 	}
 }
 
-void button_set_callback(button_p btn, button_callback_fn press, button_callback_fn release, void* userdata)
+void button_set_position(button_p btn, float x, float y)
 {
 	if (!btn) return;
-	btn->on_press = press;
-	btn->on_release = release;
-	btn->cb_userdata = userdata;
+	btn->position.x = x;
+	btn->position.y = y;
+}
+
+static bool button_hit_test(button_p btn, float x, float y)
+{
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(btn->renderer, x, y, &logic.x, &logic.y);
+	return logic.x >= btn->position.x && logic.x <= btn->position.x + btn->width
+	    && logic.y >= btn->position.y && logic.y <= btn->position.y + btn->height;
+}
+
+bool button_is_hovered(button_p btn, float x, float y)
+{
+	if (!btn) return false;
+	btn->is_hovered = button_hit_test(btn, x, y);
+	return btn->is_hovered;
+}
+
+bool button_is_pressed(button_p btn, float x, float y)
+{
+	if (!btn) return false;
+	btn->is_pressed = button_hit_test(btn, x, y);
+	return btn->is_pressed;
+}
+
+void button_set_hovered(button_p btn, bool v)
+{
+	if (btn) btn->is_hovered = v;
+}
+
+void button_set_pressed(button_p btn, bool v)
+{
+	if (btn) btn->is_pressed = v;
 }
 
 void button_destroy(button_p btn)
@@ -208,74 +236,7 @@ void button_draw(button_p btn)
 	}
 }
 
-void button_handle_event(button_p btn, SDL_Event* event)
-{
-	SDL_Renderer* renderer;
-	SDL_FPoint logic_pos;
-	SDL_FRect rect;
-	int window_width, window_height;
-	if (!btn || !event) return;
-
-	bool was_pressed = btn->is_pressed;
-
-	renderer = btn->renderer;
-	SDL_GetRenderOutputSize(renderer, &window_width, &window_height);
-
-	rect.x = btn->position.x;
-	rect.y = btn->position.y;
-	rect.w = btn->width;
-	rect.h = btn->height;
-
-	if (event->type == SDL_EVENT_FINGER_MOTION) {
-		SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * window_width, event->tfinger.y * window_height, &logic_pos.x, &logic_pos.y);
-		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &rect);
-	}
-	else if (event->type == SDL_EVENT_FINGER_DOWN) {
-		SDL_RenderCoordinatesFromWindow(renderer, event->tfinger.x * window_width, event->tfinger.y * window_height, &logic_pos.x, &logic_pos.y);
-		if (SDL_PointInRectFloat(&logic_pos, &rect)) {
-			btn->is_pressed = true;
-		}
-	}
-	else if (event->type == SDL_EVENT_FINGER_UP) {
-		if (btn->is_pressed) {
-			btn->is_pressed = false;
-		}
-	}
-	else if (event->type == SDL_EVENT_MOUSE_MOTION) {
-		if (event->motion.which == SDL_TOUCH_MOUSEID) {
-			return;
-		}
-		SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &logic_pos.x, &logic_pos.y);
-		btn->is_hovered = SDL_PointInRectFloat(&logic_pos, &rect);
-	}
-	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		if (event->button.which == SDL_TOUCH_MOUSEID) {
-			return;
-		}
-		if (event->button.button == SDL_BUTTON_LEFT) {
-			SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &logic_pos.x, &logic_pos.y);
-			if (SDL_PointInRectFloat(&logic_pos, &rect)) {
-				btn->is_pressed = true;
-			}
-		}
-	}
-	else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
-		if (event->button.which == SDL_TOUCH_MOUSEID) {
-			return;
-		}
-		if (event->button.button == SDL_BUTTON_LEFT && btn->is_pressed) {
-			btn->is_pressed = false;
-		}
-	}
-
-	// 检测状态变化并触发回调
-	if (!was_pressed && btn->is_pressed && btn->on_press) {
-		btn->on_press(btn, btn->cb_userdata);
-	}
-	else if (was_pressed && !btn->is_pressed && btn->on_release) {
-		btn->on_release(btn, btn->cb_userdata);
-	}
-}
+/* 事件处理已移至 Lua 层，见 joy.lua 中的 joy.mousepressed/mousereleased/mousemoved */
 
 combobox_p combobox_create(SDL_Renderer* renderer, SDL_FRect rect)
 {
@@ -330,47 +291,49 @@ void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, 
 	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
 }
 
-bool combobox_handle_event(combobox_p combobox, SDL_Event* event)
+bool combobox_is_pressed(combobox_p combobox, float x, float y)
 {
-	SDL_Renderer* renderer;
-	SDL_FPoint logic_button_pos;
+	if (!combobox) return false;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(combobox->renderer, x, y, &logic.x, &logic.y);
+	return SDL_PointInRectFloat(&logic, &combobox->main_rect);
+}
 
-	renderer = combobox->renderer;
-	if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &logic_button_pos.x, &logic_button_pos.y);
+bool combobox_is_open(combobox_p combobox)
+{
+	return combobox ? combobox->is_open : false;
+}
 
-		// ����Ƿ���������������
-		if (SDL_PointInRectFloat(&logic_button_pos, &combobox->main_rect)) {
-			combobox->is_open = !combobox->is_open;
-			return true;
-		}
+void combobox_set_open(combobox_p combobox, bool v)
+{
+	if (combobox) combobox->is_open = v;
+}
 
-		// ����������Ǵ򿪵ģ�����Ƿ�����ѡ��
-		if (combobox->is_open) {
-			for (int i = 0; i < combobox->item_count; i++) {
-				SDL_FRect item_rect = {
-				    combobox->dropdown_rect.x,
-				    combobox->dropdown_rect.y + i * combobox->item_height,
-				    combobox->dropdown_rect.w,
-				    combobox->item_height
-				};
-
-				if (SDL_PointInRectFloat(&logic_button_pos, &item_rect)) {
-					combobox->selected_index = i;
-					combobox->is_open = false;
-					return true;
-				}
-			}
-
-			// ���������������ⲿ���ر�������
-			if (!SDL_PointInRectFloat(&logic_button_pos, &combobox->dropdown_rect)) {
-				combobox->is_open = false;
-				return true;
-			}
-		}
+int combobox_hit_item(combobox_p combobox, float x, float y)
+{
+	if (!combobox || !combobox->is_open) return -1;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(combobox->renderer, x, y, &logic.x, &logic.y);
+	for (int i = 0; i < combobox->item_count; i++) {
+		SDL_FRect item_rect = {
+		    combobox->dropdown_rect.x,
+		    combobox->dropdown_rect.y + i * combobox->item_height,
+		    combobox->dropdown_rect.w,
+		    combobox->item_height
+		};
+		if (SDL_PointInRectFloat(&logic, &item_rect)) return i;
 	}
+	return -1;
+}
 
-	return false;
+void combobox_set_selected(combobox_p combobox, int index)
+{
+	if (combobox) combobox->selected_index = index;
+}
+
+int combobox_get_selected(combobox_p combobox)
+{
+	return combobox ? combobox->selected_index : -1;
 }
 
 void combobox_draw(combobox_p combobox)
@@ -670,48 +633,31 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 	SDL_RenderRect(renderer, &bg_rect);
 }
 
-void datagrid_handle_event(datagrid_p grid, SDL_Event* event, SDL_Renderer* renderer)
+int datagrid_hit_row(datagrid_p grid, float x, float y)
 {
-	SDL_FPoint logic_button_pos;
-	SDL_FRect rect;
-	if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		//logic_button_pos.x = event->button.x;
-		//logic_button_pos.y = event->button.y;
+	if (!grid) return -1;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(grid->renderer, x, y, &logic.x, &logic.y);
+	SDL_FRect rect = { (float)grid->x, (float)(grid->y + grid->row_height), (float)grid->width, (float)grid->height };
+	if (!SDL_PointInRectFloat(&logic, &rect)) return -1;
+	int clicked_row = grid->scroll_offset + ((int)(logic.y - rect.y)) / grid->row_height;
+	if (clicked_row < grid->row_count) return clicked_row;
+	return -1;
+}
 
-		SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &logic_button_pos.x, &logic_button_pos.y);
+void datagrid_scroll(datagrid_p grid, int lines)
+{
+	if (!grid) return;
+	grid->scroll_offset -= lines;
+	int max_scroll = grid->row_count - grid->visible_rows;
+	if (max_scroll < 0) max_scroll = 0;
+	if (grid->scroll_offset < 0) grid->scroll_offset = 0;
+	if (grid->scroll_offset > max_scroll) grid->scroll_offset = max_scroll;
+}
 
-
-		rect.x = grid->x;
-		rect.y = grid->y + grid->row_height;
-		rect.w = grid->width;
-		rect.h = grid->height;
-
-		// ������Ƿ���DataGrid��Χ��
-		if (SDL_PointInRectFloat(&logic_button_pos, &rect)) {
-			// ����������
-			int relative_y = logic_button_pos.y - rect.y;
-			int clicked_row = grid->scroll_offset + relative_y / grid->row_height;
-
-			if (clicked_row < grid->row_count) {
-				grid->selected_row = clicked_row;
-			}
-		}
-	}
-	else if (event->type == SDL_EVENT_MOUSE_WHEEL) {
-		// ���������¼�
-		int scroll_amount = event->wheel.y * 3; // ���������ٶ�
-
-		grid->scroll_offset -= scroll_amount;
-
-		// ���ƹ�����Χ
-		int max_scroll = grid->row_count - grid->visible_rows;
-		if (max_scroll < 0) max_scroll = 0;
-
-		if (grid->scroll_offset < 0)
-			grid->scroll_offset = 0;
-		if (grid->scroll_offset > max_scroll)
-			grid->scroll_offset = max_scroll;
-	}
+void datagrid_set_selected_row(datagrid_p grid, int row)
+{
+	if (grid) grid->selected_row = row;
 }
 
 radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id)
@@ -925,67 +871,20 @@ void radio_button_group_draw(radio_button_group_p group, SDL_Renderer* renderer)
 	}
 }
 
-// ������ѡ���¼�
-bool radio_button_handle_event(radio_button_p radio, SDL_Event* event, radio_button_group_p group, SDL_Renderer* renderer)
+bool radio_button_is_pressed(radio_button_p radio, float x, float y)
 {
-	SDL_FPoint mouse_pos;
-
-	if (!radio || !event) return false;
-
-	if (event->type == SDL_EVENT_MOUSE_MOTION) {
-		// ��������ͣ
-	       /* int mouse_x = event->motion.x;
-		int mouse_y = event->motion.y;*/
-		SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &mouse_pos.x, &mouse_pos.y);
-
-
-		bool was_hover = radio->hover;
-		/*radio->hover = (mouse_x >= radio->hit_area.x &&
-			mouse_x <= radio->hit_area.x + radio->hit_area.w &&
-			mouse_y >= radio->hit_area.y &&
-			mouse_y <= radio->hit_area.y + radio->hit_area.h);*/
-		radio->hover = SDL_PointInRectFloat(&mouse_pos, &radio->hit_area);
-
-		return (was_hover != radio->hover); // ������ͣ״̬�Ƿ�ı�
+	if (!radio) return false;
+	SDL_FPoint pt = { x, y };
+	if (SDL_PointInRectFloat(&pt, &radio->hit_area)) {
+		radio->checked = !radio->checked;
+		return true;
 	}
-	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		// ��������
-	       /* int mouse_x = event->button.x;
-		int mouse_y = event->button.y;*/
-		SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &mouse_pos.x, &mouse_pos.y);
-
-
-		if (SDL_PointInRectFloat(&mouse_pos, &radio->hit_area)) {
-			// ����ǵ�ѡ�飬ͨ��������ѡ��״̬
-			if (group) {
-				radio_button_group_set_selected_by_button(group, radio);
-			}
-			else {
-				// ���û���飬�����л�״̬
-				radio->checked = !radio->checked;
-			}
-
-			return true;
-		}
-	}
-
 	return false;
 }
 
-// ������ѡ��ť���¼�
-bool radio_button_group_handle_event(radio_button_group_p group, SDL_Event* event, SDL_Renderer* renderer)
+void radio_button_set_hovered(radio_button_p radio, bool v)
 {
-	if (!group || !event) return false;
-
-	bool handled = false;
-
-	for (int i = 0; i < group->count; i++) {
-		if (radio_button_handle_event(group->buttons[i], event, group, renderer)) {
-			handled = true;
-		}
-	}
-
-	return handled;
+	if (radio) radio->hover = v;
 }
 
 
@@ -1054,26 +953,20 @@ void checkbox_toggle(checkbox_p checkbox)
 
 
 // ������ѡ���¼�
-bool checkbox_handle_event(checkbox_p checkbox, SDL_Event* event, SDL_Renderer* renderer)
+bool checkbox_is_pressed(checkbox_p cb, float x, float y)
 {
-	SDL_FPoint logic_mouse_pos;
-	if (!checkbox || !checkbox->enabled) return false;
-
-	if (event->type == SDL_EVENT_MOUSE_MOTION) {
-		bool was_hover = checkbox->hover;
-		SDL_RenderCoordinatesFromWindow(renderer, event->motion.x, event->motion.y, &logic_mouse_pos.x, &logic_mouse_pos.y);
-		checkbox->hover = SDL_PointInRectFloat(&logic_mouse_pos, &checkbox->hit_area);
-		return (was_hover != checkbox->hover);
+	if (!cb || !cb->enabled) return false;
+	SDL_FPoint pt = { x, y };
+	if (SDL_PointInRectFloat(&pt, &cb->hit_area)) {
+		checkbox_toggle(cb);
+		return true;
 	}
-	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		SDL_RenderCoordinatesFromWindow(renderer, event->button.x, event->button.y, &logic_mouse_pos.x, &logic_mouse_pos.y);
-		if (SDL_PointInRectFloat(&logic_mouse_pos, &checkbox->hit_area)) {
-			checkbox_toggle(checkbox);
-			return true;
-		}
-	}
-
 	return false;
+}
+
+void checkbox_set_hovered(checkbox_p cb, bool v)
+{
+	if (cb) cb->hover = v;
 }
 
 void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
@@ -1267,108 +1160,37 @@ static void joystick_update_drag(joystick_p joystick, float touch_x, float touch
 }
 
 // �����¼�������Ӧ�߼��ֱ��ʣ�
-void joystick_handle_event(joystick_p joystick, SDL_Event* event)
+bool joystick_is_dragging(joystick_p j)
 {
-	SDL_FPoint logic_pos;
-	int window_width, window_height;
+	return j ? j->is_dragging : false;
+}
 
-	// ��ȡ��Ⱦ������ߴ�
-	SDL_GetRenderOutputSize(joystick->renderer, &window_width, &window_height);
-
-	switch (event->type) {
-	case SDL_EVENT_FINGER_DOWN: {
-		// ת�����굽�߼��ռ�
-		SDL_RenderCoordinatesFromWindow(joystick->renderer,
-			event->tfinger.x * window_width,
-			event->tfinger.y * window_height,
-			&logic_pos.x, &logic_pos.y);
-
-		// ����Ƿ���ҡ��������
-		float dist_sq = distance_squared(logic_pos.x, logic_pos.y,
-			joystick->center.x, joystick->center.y);
-		if (dist_sq <= (joystick->radius * joystick->radius)) {
-			joystick->is_dragging = true;
-			joystick->is_touch_active = true;
-			joystick->touch_id = (int)event->tfinger.fingerID;
-			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
-		}
-		break;
+void joystick_touch_down(joystick_p j, float x, float y)
+{
+	if (!j) return;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(j->renderer, x, y, &logic.x, &logic.y);
+	float dist_sq = distance_squared(logic.x, logic.y, j->center.x, j->center.y);
+	if (dist_sq <= (j->radius * j->radius)) {
+		j->is_dragging = true;
+		j->is_touch_active = true;
+		j->touch_id = -1;
+		joystick_update_drag(j, logic.x, logic.y);
 	}
+}
 
-	case SDL_EVENT_FINGER_MOTION: {
-		if (joystick->is_touch_active && joystick->touch_id == (int)event->tfinger.fingerID) {
-			// ת�����굽�߼��ռ�
-			SDL_RenderCoordinatesFromWindow(joystick->renderer,
-				event->tfinger.x * window_width,
-				event->tfinger.y * window_height,
-				&logic_pos.x, &logic_pos.y);
+void joystick_touch_move(joystick_p j, float x, float y)
+{
+	if (!j || !j->is_dragging) return;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(j->renderer, x, y, &logic.x, &logic.y);
+	joystick_update_drag(j, logic.x, logic.y);
+}
 
-			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
-		}
-		break;
-	}
-
-	case SDL_EVENT_FINGER_UP: {
-		if (joystick->is_touch_active && joystick->touch_id == (int)event->tfinger.fingerID) {
-			joystick_reset(joystick);
-		}
-		break;
-	}
-
-	case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-		if (event->button.which == SDL_TOUCH_MOUSEID) {
-			return; // ���Դ���ģ�������¼�
-		}
-
-		if (event->button.button == SDL_BUTTON_LEFT) {
-			// ת�����굽�߼��ռ�
-			SDL_RenderCoordinatesFromWindow(joystick->renderer,
-				event->button.x, event->button.y,
-				&logic_pos.x, &logic_pos.y);
-
-			// ����Ƿ���ҡ��������
-			float dist_sq = distance_squared(logic_pos.x, logic_pos.y,
-				joystick->center.x, joystick->center.y);
-			if (dist_sq <= (joystick->radius * joystick->radius)) {
-				joystick->is_dragging = true;
-				joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
-			}
-		}
-		break;
-	}
-
-	case SDL_EVENT_MOUSE_MOTION: {
-		if (event->motion.which == SDL_TOUCH_MOUSEID) {
-			return; // ���Դ���ģ�������¼�
-		}
-
-		if (joystick->is_dragging && !joystick->is_touch_active) {
-			// ת�����굽�߼��ռ�
-			SDL_RenderCoordinatesFromWindow(joystick->renderer,
-				event->motion.x, event->motion.y,
-				&logic_pos.x, &logic_pos.y);
-
-			joystick_update_drag(joystick, logic_pos.x, logic_pos.y);
-		}
-		break;
-	}
-
-	case SDL_EVENT_MOUSE_BUTTON_UP: {
-		if (event->button.which == SDL_TOUCH_MOUSEID) {
-			return; // ���Դ���ģ�������¼�
-		}
-
-		if (event->button.button == SDL_BUTTON_LEFT && joystick->is_dragging && !joystick->is_touch_active) {
-			joystick_reset(joystick);
-		}
-		break;
-	}
-
-	case SDL_EVENT_WINDOW_RESIZED: {
-		// ����������µ���ҡ��λ�ã������Ҫ�������λ�ã�
-		break;
-	}
-	}
+void joystick_touch_up(joystick_p j)
+{
+	if (!j) return;
+	joystick_reset(j);
 }
 
 // ����ҡ��
@@ -1464,4 +1286,313 @@ SDL_FPoint joystick_get_direction(joystick_p joystick)
 float joystick_get_magnitude(joystick_p joystick)
 {
 	return joystick->magnitude;
+}
+
+/* =================================================================
+ * TextInput
+ * ================================================================= */
+
+#define TEXTINPUT_BUF_INIT 256
+
+textinput_p textinput_create(SDL_Renderer* renderer, SDL_FRect rect, font_p font)
+{
+	textinput_p ti = (textinput_p)SDL_calloc(1, sizeof(textinput_t));
+	if (!ti) return NULL;
+	ti->renderer   = renderer;
+	ti->rect       = rect;
+	ti->font       = font;
+	ti->bg_color   = (SDL_Color){255, 255, 255, 255};
+	ti->border_color = (SDL_Color){180, 180, 180, 255};
+	ti->focus_border_color = (SDL_Color){66, 133, 244, 255};
+	ti->text_color = (SDL_Color){0, 0, 0, 255};
+	ti->cursor_color = (SDL_Color){0, 0, 0, 255};
+	ti->buf_len    = TEXTINPUT_BUF_INIT;
+	ti->buffer     = (char*)SDL_calloc(1, ti->buf_len);
+	ti->text_len   = 0;
+	ti->cursor_pos = 0;
+	ti->focused    = false;
+	ti->cursor_timer = SDL_GetTicks();
+	ti->cursor_visible = true;
+	return ti;
+}
+
+void textinput_destroy(textinput_p ti)
+{
+	if (!ti) return;
+	SDL_free(ti->buffer);
+	SDL_free(ti);
+}
+
+void textinput_set_text(textinput_p ti, const char* text)
+{
+	if (!ti || !text) return;
+	int len = (int)SDL_strlen(text);
+	if (len >= ti->buf_len) {
+		ti->buf_len = len + 64;
+		ti->buffer = (char*)SDL_realloc(ti->buffer, ti->buf_len);
+	}
+	SDL_memcpy(ti->buffer, text, len);
+	ti->buffer[len] = '\0';
+	ti->text_len = len;
+	ti->cursor_pos = len;
+	ti->scroll_offset = 0;
+	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+}
+
+const char* textinput_get_text(textinput_p ti)
+{
+	return ti ? ti->buffer : "";
+}
+
+void textinput_set_callback(textinput_p ti,
+	void (*submit)(textinput_p, void*),
+	void (*change)(textinput_p, void*),
+	void* userdata)
+{
+	if (!ti) return;
+	ti->on_submit  = submit;
+	ti->on_change  = change;
+	ti->cb_userdata = userdata;
+}
+
+/* 在 buffer 的 cursor_pos 处插入 len 字节 */
+void textinput_insert(textinput_p ti, const char* s, int len)
+{
+	if (ti->text_len + len >= ti->buf_len) {
+		while (ti->text_len + len >= ti->buf_len)
+			ti->buf_len *= 2;
+		ti->buffer = (char*)SDL_realloc(ti->buffer, ti->buf_len);
+	}
+	/* 移位 */
+	SDL_memmove(ti->buffer + ti->cursor_pos + len,
+	            ti->buffer + ti->cursor_pos,
+	            ti->text_len - ti->cursor_pos);
+	SDL_memcpy(ti->buffer + ti->cursor_pos, s, len);
+	ti->text_len += len;
+	ti->cursor_pos += len;
+	ti->buffer[ti->text_len] = '\0';
+	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+}
+
+/* 删除光标前一个 UTF-8 字符（退格） */
+void textinput_backspace(textinput_p ti)
+{
+	if (ti->cursor_pos <= 0) return;
+	/* 定位到上一个 UTF-8 字符起始 */
+	int pos = ti->cursor_pos - 1;
+	while (pos > 0 && ((unsigned char)ti->buffer[pos] & 0xC0) == 0x80)
+		pos--;
+	int ch_len = ti->cursor_pos - pos;
+	SDL_memmove(ti->buffer + pos, ti->buffer + ti->cursor_pos,
+	            ti->text_len - ti->cursor_pos);
+	ti->text_len -= ch_len;
+	ti->cursor_pos = pos;
+	ti->buffer[ti->text_len] = '\0';
+	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+}
+
+/* 删除光标后一个 UTF-8 字符（Delete） */
+void textinput_delete(textinput_p ti)
+{
+	if (ti->cursor_pos >= ti->text_len) return;
+	int pos = ti->cursor_pos;
+	int ch_len = 1;
+	while (pos + ch_len < ti->text_len && ((unsigned char)ti->buffer[pos + ch_len] & 0xC0) == 0x80)
+		ch_len++;
+	SDL_memmove(ti->buffer + pos, ti->buffer + pos + ch_len,
+	            ti->text_len - pos - ch_len);
+	ti->text_len -= ch_len;
+	ti->buffer[ti->text_len] = '\0';
+	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+}
+
+/* 获取光标之前的文本宽度（像素） */
+static int textinput_cursor_x(textinput_p ti)
+{
+	if (ti->cursor_pos <= 0 || !ti->font) return 0;
+	/* 用 text_createx 生成光标前的子串，量宽度 */
+	SDL_Color c = {0,0,0,255};
+	text_texture_p tex = text_createx(ti->font, ti->buffer, ti->cursor_pos, c);
+	if (!tex) return 0;
+	int w = text_get_width(tex);
+	text_destroy(tex);
+	return w;
+}
+
+void textinput_focus(textinput_p ti)
+{
+	if (!ti || ti->focused) return;
+	ti->focused = true;
+	ti->cursor_timer = SDL_GetTicks();
+	ti->cursor_visible = true;
+	/* 从 renderer 获取 window 并启用文本输入 */
+	SDL_Window* win = SDL_GetRenderWindow(ti->renderer);
+	if (win) SDL_StartTextInput(win);
+}
+
+void textinput_defocus(textinput_p ti)
+{
+	if (!ti || !ti->focused) return;
+	ti->focused = false;
+	SDL_Window* win = SDL_GetRenderWindow(ti->renderer);
+	if (win) SDL_StopTextInput(win);
+}
+
+void textinput_draw(textinput_p ti)
+{
+	if (!ti) return;
+	SDL_Renderer* r = ti->renderer;
+	SDL_FRect rect = ti->rect;
+
+	/* 背景 */
+	SDL_SetRenderDrawColor(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
+	SDL_RenderFillRect(r, &rect);
+
+	/* 边框（聚焦时高亮） */
+	SDL_Color border = ti->focused ? ti->focus_border_color : ti->border_color;
+	SDL_SetRenderDrawColor(r, border.r, border.g, border.b, border.a);
+	SDL_RenderRect(r, &rect);
+
+	/* 文字 */
+	if (ti->text_len > 0 && ti->font) {
+		float text_x = rect.x + 4;
+		float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
+		text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, text_x - (float)ti->scroll_offset, text_y);
+	}
+
+	/* 光标（聚焦时绘制） */
+	if (ti->focused) {
+		Uint64 now = SDL_GetTicks();
+		if (now - ti->cursor_timer >= 530) {
+			ti->cursor_visible = !ti->cursor_visible;
+			ti->cursor_timer = now;
+		}
+		if (ti->cursor_visible) {
+			int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
+			float cy = rect.y + 3;
+			float ch = rect.h - 6;
+			SDL_SetRenderDrawColor(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
+			SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+		}
+	}
+}
+
+void textinput_handle_event(textinput_p ti, SDL_Event* event)
+{
+	if (!ti || !event) return;
+	SDL_Renderer* r = ti->renderer;
+	SDL_FPoint logic_pos;
+	SDL_FRect rect = ti->rect;
+
+	if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		if (event->button.which == SDL_TOUCH_MOUSEID) return;
+		if (event->button.button == SDL_BUTTON_LEFT) {
+			SDL_RenderCoordinatesFromWindow(r, event->button.x, event->button.y, &logic_pos.x, &logic_pos.y);
+			if (SDL_PointInRectFloat(&logic_pos, &rect)) {
+				textinput_focus(ti);
+			} else {
+				textinput_defocus(ti);
+			}
+		}
+	}
+	else if (event->type == SDL_EVENT_FINGER_DOWN) {
+		int ww, wh;
+		SDL_GetRenderOutputSize(r, &ww, &wh);
+		SDL_RenderCoordinatesFromWindow(r, event->tfinger.x * ww, event->tfinger.y * wh, &logic_pos.x, &logic_pos.y);
+		if (SDL_PointInRectFloat(&logic_pos, &rect)) {
+			textinput_focus(ti);
+		} else {
+			textinput_defocus(ti);
+		}
+	}
+	else if (event->type == SDL_EVENT_MOUSE_MOTION) {
+		if (event->motion.which == SDL_TOUCH_MOUSEID) return;
+		SDL_RenderCoordinatesFromWindow(r, event->motion.x, event->motion.y, &logic_pos.x, &logic_pos.y);
+		ti->hovered = SDL_PointInRectFloat(&logic_pos, &rect);
+	}
+	else if (event->type == SDL_EVENT_FINGER_MOTION) {
+		int ww, wh;
+		SDL_GetRenderOutputSize(r, &ww, &wh);
+		SDL_RenderCoordinatesFromWindow(r, event->tfinger.x * ww, event->tfinger.y * wh, &logic_pos.x, &logic_pos.y);
+		ti->hovered = SDL_PointInRectFloat(&logic_pos, &rect);
+	}
+
+	if (!ti->focused) return;
+
+	if (event->type == SDL_EVENT_TEXT_INPUT) {
+		const char* text = event->text.text;
+		int len = (int)SDL_strlen(text);
+		if (len > 0 && text[0] >= ' ') {
+			textinput_insert(ti, text, len);
+			/* 自动滚动到光标处 */
+			int cw = textinput_cursor_x(ti);
+			int visible_w = (int)ti->rect.w - 8;
+			if (cw - ti->scroll_offset > visible_w)
+				ti->scroll_offset = cw - visible_w;
+			else if (cw - ti->scroll_offset < 0)
+				ti->scroll_offset = cw;
+		}
+	}
+	else if (event->type == SDL_EVENT_KEY_DOWN) {
+		switch (event->key.key) {
+		case SDLK_BACKSPACE:
+			textinput_backspace(ti);
+			break;
+		case SDLK_DELETE:
+			textinput_delete(ti);
+			break;
+		case SDLK_LEFT:
+			if (ti->cursor_pos > 0) {
+				ti->cursor_pos--;
+				while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+					ti->cursor_pos--;
+			}
+			break;
+		case SDLK_RIGHT:
+			if (ti->cursor_pos < ti->text_len) {
+				ti->cursor_pos++;
+				while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+					ti->cursor_pos++;
+			}
+			break;
+		case SDLK_HOME:
+			ti->cursor_pos = 0;
+			ti->scroll_offset = 0;
+			break;
+		case SDLK_END:
+			ti->cursor_pos = ti->text_len;
+			break;
+		case SDLK_RETURN:
+			if (ti->on_submit) ti->on_submit(ti, ti->cb_userdata);
+			break;
+		case SDLK_V:
+			if (event->key.mod & SDL_KMOD_CTRL) {
+				const char* clip = SDL_GetClipboardText();
+				if (clip) {
+					textinput_insert(ti, clip, (int)SDL_strlen(clip));
+				}
+			}
+			break;
+		case SDLK_C:
+			if (event->key.mod & SDL_KMOD_CTRL) {
+				SDL_SetClipboardText(ti->buffer);
+			}
+			break;
+		case SDLK_X:
+			if (event->key.mod & SDL_KMOD_CTRL) {
+				SDL_SetClipboardText(ti->buffer);
+				ti->text_len = 0;
+				ti->cursor_pos = 0;
+				ti->buffer[0] = '\0';
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+bool textinput_is_focused(textinput_p ti)
+{
+	return ti ? ti->focused : false;
 }

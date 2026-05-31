@@ -269,33 +269,31 @@ static const char* key_name(SDL_Keycode k)
         }
 }
 
+
 void luax_dispatch_event(luax_p luax, const SDL_Event* event)
 {
         lua_State* L = luax->L;
 
         switch (event->type) {
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                lua_pushnumber(L, event->button.x);
-                lua_pushnumber(L, event->button.y);
+                lua_pushnumber(L, (float)event->button.x);
+                lua_pushnumber(L, (float)event->button.y);
                 lua_pushinteger(L, event->button.button);
                 call_joy_n(L, "mousepressed", 3);
                 break;
-
         case SDL_EVENT_MOUSE_BUTTON_UP:
-                lua_pushnumber(L, event->button.x);
-                lua_pushnumber(L, event->button.y);
+                lua_pushnumber(L, (float)event->button.x);
+                lua_pushnumber(L, (float)event->button.y);
                 lua_pushinteger(L, event->button.button);
                 call_joy_n(L, "mousereleased", 3);
                 break;
-
         case SDL_EVENT_MOUSE_MOTION:
-                lua_pushnumber(L, event->motion.x);
-                lua_pushnumber(L, event->motion.y);
+                lua_pushnumber(L, (float)event->motion.x);
+                lua_pushnumber(L, (float)event->motion.y);
                 lua_pushnumber(L, event->motion.xrel);
                 lua_pushnumber(L, event->motion.yrel);
                 call_joy_n(L, "mousemoved", 4);
                 break;
-
         case SDL_EVENT_KEY_DOWN: {
                 const char* name = key_name(event->key.key);
                 if (!name) break;
@@ -305,7 +303,6 @@ void luax_dispatch_event(luax_p luax, const SDL_Event* event)
                 call_joy_n(L, "keypressed", 3);
                 break;
         }
-
         case SDL_EVENT_KEY_UP: {
                 const char* name = key_name(event->key.key);
                 if (!name) break;
@@ -314,7 +311,6 @@ void luax_dispatch_event(luax_p luax, const SDL_Event* event)
                 call_joy_n(L, "keyreleased", 2);
                 break;
         }
-
         case SDL_EVENT_WINDOW_RESIZED:
                 lua_pushinteger(L, event->window.data1);
                 lua_pushinteger(L, event->window.data2);

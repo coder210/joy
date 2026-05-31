@@ -478,6 +478,17 @@ static int lb_set_image(lua_State* L) {
     return 0;
 }
 
+static int l_get_renderer(lua_State* L) {
+    lua_getfield(L, LUA_REGISTRYINDEX, CUR_REN_KEY);
+    SDL_Renderer** ren = (SDL_Renderer**)lua_touserdata(L, -1);
+    if (!ren || !*ren) {
+        lua_pop(L, 1);
+        return luaL_error(L, "no current renderer");
+    }
+    lua_pushlightuserdata(L, *ren);
+    return 1;
+}
+
 /* =================================================================
  * Module registration
  * ================================================================= */
@@ -537,6 +548,7 @@ int luaopen_graphics(lua_State* L) {
         {"add_sprite",  lb_add},
         {"draw_spritebatch", lb_draw},
         {"set_spritebatch_image", lb_set_image},
+        {"get_renderer", l_get_renderer},
         {NULL, NULL}
     };
     luaL_newlib(L, l);

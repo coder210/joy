@@ -12,7 +12,7 @@ static int l_label_create(lua_State* L)
 	SDL_Renderer* renderer;
 	label_p label;
 	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
-	fontinfo = (font_p)lua_touserdata(L, 2);
+	fontinfo = *(font_p*)lua_touserdata(L, 2);
 	num_codepoints = (int)luaL_len(L, 3);
 	codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
 	for (int i = 1; i <= num_codepoints; i++) {
@@ -48,7 +48,7 @@ static int l_label_set_text(lua_State* L)
 	luaL_checktype(L, 3, LUA_TTABLE);
 
 	label = (label_p)lua_touserdata(L, 1);
-	fontinfo = (font_p)lua_touserdata(L, 2);
+	fontinfo = *(font_p*)lua_touserdata(L, 2);
 	codepoints_len = (int)luaL_len(L, 3);
 	codepoints = (int*)SDL_malloc(sizeof(int) * codepoints_len);
 	for (i = 1; i <= codepoints_len; i++) {
@@ -85,32 +85,15 @@ static int l_label_draw(lua_State* L)
 	return 0;
 }
 
-static int l_label_handle_event(lua_State* L)
-{
-	label_p label;
-	SDL_Event* event;
-	label = (label_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	label_handle_event(label, event);
-	return 0;
-}
-
 
 static int l_button_create(lua_State* L)
 {
 	SDL_Renderer* renderer;
-	SDL_FRect rect;
 	button_p btn;
 	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
-	rect.x = (float)luaL_checknumber(L, 2);
-	rect.y = (float)luaL_checknumber(L, 3);
-	rect.w = (float)luaL_checknumber(L, 4);
-	rect.h = (float)luaL_checknumber(L, 5);
-	btn = button_create(renderer, rect.w, rect.h);
-	if (btn) {
-		btn->position.x = rect.x;
-		btn->position.y = rect.y;
-	}
+	float w = (float)luaL_checknumber(L, 2);
+	float h = (float)luaL_checknumber(L, 3);
+	btn = button_create(renderer, w, h);
 	lua_pushlightuserdata(L, btn);
 	return 1;
 }
@@ -135,7 +118,7 @@ static int l_button_set_text(lua_State* L)
 	luaL_checktype(L, 3, LUA_TTABLE);
 
 	btn = (button_p)lua_touserdata(L, 1);
-	fontinfo = (font_p)lua_touserdata(L, 2);
+	fontinfo = *(font_p*)lua_touserdata(L, 2);
 	num_codepoints = (int)luaL_len(L, 3);
 	codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
 	for (i = 1; i <= num_codepoints; i++) {
@@ -192,32 +175,54 @@ static int l_button_set_pressed_color(lua_State* L)
 	return 0;
 }
 
-static int l_button_is_clicked(lua_State* L)
+static int l_button_is_hovered(lua_State* L)
 {
-	bool result;
-	button_p btn;
-	btn = (button_p)lua_touserdata(L, 1);
-	result = btn->is_pressed;
-	lua_pushboolean(L, result);
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, button_is_hovered(btn, x, y));
 	return 1;
 }
 
+static int l_button_is_pressed(lua_State* L)
+{
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, button_is_pressed(btn, x, y));
+	return 1;
+}
+
+static int l_button_set_hovered(lua_State* L)
+{
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	button_set_hovered(btn, lua_toboolean(L, 2));
+	return 0;
+}
+
+static int l_button_set_pressed(lua_State* L)
+{
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	button_set_pressed(btn, lua_toboolean(L, 2));
+	return 0;
+}
+
+static int l_button_get_rect(lua_State* L)
+{
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	lua_newtable(L);
+	lua_pushnumber(L, btn->position.x); lua_setfield(L, -2, "x");
+	lua_pushnumber(L, btn->position.y); lua_setfield(L, -2, "y");
+	lua_pushnumber(L, btn->width);      lua_setfield(L, -2, "w");
+	lua_pushnumber(L, btn->height);     lua_setfield(L, -2, "h");
+	return 1;
+}
 
 static int l_button_draw(lua_State* L)
 {
 	button_p btn;
 	btn = (button_p)lua_touserdata(L, 1);
 	button_draw(btn);
-	return 0;
-}
-
-static int l_button_listen_event(lua_State* L)
-{
-	button_p btn;
-	SDL_Event* event;
-	btn = (button_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	button_handle_event(btn, event);
 	return 0;
 }
 
@@ -255,18 +260,6 @@ static int l_button_group_set_selected(lua_State* L)
 	btn_group = (radio_button_group_p)lua_touserdata(L, 1);
 	index = luaL_checkinteger(L, 2);
 	radio_button_group_set_selected(btn_group, index);
-	return 0;
-}
-
-static int l_button_group_handle_event(lua_State* L)
-{
-	radio_button_group_p btn_group;
-	SDL_Event* event;
-	SDL_Renderer* renderer;
-	btn_group = (radio_button_group_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 3);
-	radio_button_group_handle_event(btn_group, event, renderer);
 	return 0;
 }
 
@@ -328,14 +321,33 @@ static int lcombobox_additem(lua_State* L)
 	return 0;
 }
 
-static int lcombobox_handle_event(lua_State* L)
-{
-	combobox_p combobox;
-	SDL_Event* event;
-	combobox = (combobox_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	combobox_handle_event(combobox, event);
+static int l_combobox_is_pressed(lua_State* L) {
+	combobox_p cb = (combobox_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, combobox_is_pressed(cb, x, y));
+	return 1;
+}
+static int l_combobox_is_open(lua_State* L) {
+	lua_pushboolean(L, combobox_is_open((combobox_p)lua_touserdata(L, 1)));
+	return 1;
+}
+static int l_combobox_set_open(lua_State* L) {
+	combobox_set_open((combobox_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
 	return 0;
+}
+static int l_combobox_hit_item(lua_State* L) {
+	combobox_p cb = (combobox_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushinteger(L, combobox_hit_item(cb, x, y));
+	return 1;
+}
+static int l_combobox_set_selected(lua_State* L) {
+	combobox_set_selected((combobox_p)lua_touserdata(L, 1), (int)luaL_checkinteger(L, 2));
+	return 0;
+}
+static int l_combobox_get_selected(lua_State* L) {
+	lua_pushinteger(L, combobox_get_selected((combobox_p)lua_touserdata(L, 1)));
+	return 1;
 }
 
 static int l_checkbox_create(lua_State* L)
@@ -360,15 +372,14 @@ static int l_checkbox_destroy(lua_State* L)
 	return 0;
 }
 
-static int l_checkbox_handle_event(lua_State* L)
-{
-	checkbox_p checkbox;
-	SDL_Event* event;
-	SDL_Renderer* renderer;
-	checkbox = (checkbox_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 3);
-	checkbox_handle_event(checkbox, event, renderer);
+static int l_checkbox_is_pressed(lua_State* L) {
+	checkbox_p cb = (checkbox_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, checkbox_is_pressed(cb, x, y));
+	return 1;
+}
+static int l_checkbox_set_hovered(lua_State* L) {
+	checkbox_set_hovered((checkbox_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
 	return 0;
 }
 
@@ -405,6 +416,16 @@ static int lradiobutton_destroy(lua_State* L)
 	return 0;
 }
 
+static int l_radio_button_is_pressed(lua_State* L) {
+	radio_button_p r = (radio_button_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, radio_button_is_pressed(r, x, y));
+	return 1;
+}
+static int l_radio_button_set_hovered(lua_State* L) {
+	radio_button_set_hovered((radio_button_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
 
 static int ldatagrid_create(lua_State* L)
 {
@@ -434,7 +455,7 @@ static int ldatagrid_create(lua_State* L)
 
 	col_count = luaL_checkinteger(L, 3);
 	has_header = lua_toboolean(L, 4);
-	font_p dgfont = (font_p)lua_touserdata(L, 5);
+	font_p dgfont = *(font_p*)lua_touserdata(L, 5);
 
 	datagrid = datagrid_create(renderer, rect, col_count, has_header, dgfont);
 	lua_pushlightuserdata(L, datagrid);
@@ -472,7 +493,7 @@ static int ldatagrid_setheaders(lua_State* L)
 	//	lua_pop(L, 1);
 	//}
 
-	font_p fontinfo = (font_p)lua_touserdata(L, 2);
+	font_p fontinfo = *(font_p*)lua_touserdata(L, 2);
 	SDL_Color color = { 0, 0, 0, 255 };
 	luaL_checktype(L, 3, LUA_TTABLE);
 	int n = (int)luaL_len(L, 3);
@@ -526,19 +547,192 @@ static int ldatagrid_addrow(lua_State* L)
 	return 0;
 }
 
-static int ldatagrid_handle_event(lua_State* L)
-{
-	datagrid_p datagrid;
-	SDL_Event* event;
-	SDL_Renderer* renderer;
-	datagrid = (datagrid_p)lua_touserdata(L, 1);
-	event = (SDL_Event*)lua_touserdata(L, 2);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 3);
-	datagrid_handle_event(datagrid, event, renderer);
+static int l_datagrid_hit_row(lua_State* L) {
+	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushinteger(L, datagrid_hit_row(dg, x, y));
+	return 1;
+}
+static int l_datagrid_scroll(lua_State* L) {
+	datagrid_scroll((datagrid_p)lua_touserdata(L, 1), (int)luaL_checkinteger(L, 2));
+	return 0;
+}
+static int l_datagrid_set_selected_row(lua_State* L) {
+	datagrid_set_selected_row((datagrid_p)lua_touserdata(L, 1), (int)luaL_checkinteger(L, 2));
 	return 0;
 }
 
 
+
+
+
+
+/* ---- TextInput Lua bindings ---- */
+static int l_textinput_create(lua_State* L) {
+	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
+	font_p font = *(font_p*)lua_touserdata(L, 2);
+	SDL_FRect rect;
+	rect.x = (float)luaL_checknumber(L, 3);
+	rect.y = (float)luaL_checknumber(L, 4);
+	rect.w = (float)luaL_checknumber(L, 5);
+	rect.h = (float)luaL_checknumber(L, 6);
+	textinput_p ti = textinput_create(r, rect, font);
+	lua_pushlightuserdata(L, ti);
+	return 1;
+}
+
+static int l_textinput_destroy(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_destroy(ti);
+	return 0;
+}
+
+static int l_textinput_set_text(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	const char* text = luaL_checkstring(L, 2);
+	textinput_set_text(ti, text);
+	return 0;
+}
+
+static int l_textinput_get_text(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	lua_pushstring(L, textinput_get_text(ti));
+	return 1;
+}
+
+static int l_textinput_draw(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_draw(ti);
+	return 0;
+}
+
+static int l_textinput_handle_event(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	luaL_checktype(L, 2, LUA_TTABLE);
+
+	lua_getfield(L, 2, "type");
+	const char* type = lua_tostring(L, -1);
+	if (!type) { lua_pop(L, 1); return 0; }
+
+	if (SDL_strcmp(type, "mousepressed") == 0 || SDL_strcmp(type, "fingerdown") == 0) {
+		lua_getfield(L, 2, "x"); float ex = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+		lua_getfield(L, 2, "y"); float ey = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+		SDL_FPoint pt = {ex, ey};
+		if (SDL_PointInRectFloat(&pt, &ti->rect)) {
+			textinput_focus(ti);
+		} else {
+			textinput_defocus(ti);
+		}
+	}
+	else if (SDL_strcmp(type, "mousemoved") == 0 || SDL_strcmp(type, "fingermotion") == 0) {
+		lua_getfield(L, 2, "x"); float ex = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+		lua_getfield(L, 2, "y"); float ey = (float)lua_tonumber(L, -1); lua_pop(L, 1);
+		SDL_FPoint pt = {ex, ey};
+		ti->hovered = SDL_PointInRectFloat(&pt, &ti->rect);
+	}
+	else if (SDL_strcmp(type, "textinput") == 0 && ti->focused) {
+		lua_getfield(L, 2, "text");
+		const char* text = lua_tostring(L, -1);
+		if (text) textinput_insert(ti, text, (int)SDL_strlen(text));
+		lua_pop(L, 1);
+	}
+	else if (SDL_strcmp(type, "keypressed") == 0 && ti->focused) {
+		lua_getfield(L, 2, "key");
+		const char* key = lua_tostring(L, -1);
+		if (!key) { lua_pop(L, 2); return 0; }
+
+		lua_getfield(L, 2, "mod");
+		int ctrl = 0;
+		if (lua_istable(L, -1)) {
+			lua_getfield(L, -1, "ctrl"); ctrl = lua_toboolean(L, -1); lua_pop(L, 1);
+		}
+		lua_pop(L, 1); /* mod */
+
+		if (SDL_strcmp(key, "backspace") == 0) {
+			textinput_backspace(ti);
+		} else if (SDL_strcmp(key, "delete") == 0) {
+			textinput_delete(ti);
+		} else if (SDL_strcmp(key, "left") == 0) {
+			if (ti->cursor_pos > 0) {
+				ti->cursor_pos--;
+				while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+					ti->cursor_pos--;
+			}
+		} else if (SDL_strcmp(key, "right") == 0) {
+			if (ti->cursor_pos < ti->text_len) {
+				ti->cursor_pos++;
+				while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+					ti->cursor_pos++;
+			}
+		} else if (SDL_strcmp(key, "home") == 0) {
+			ti->cursor_pos = 0;
+			ti->scroll_offset = 0;
+		} else if (SDL_strcmp(key, "end") == 0) {
+			ti->cursor_pos = ti->text_len;
+		} else if (SDL_strcmp(key, "return") == 0) {
+			if (ti->on_submit) ti->on_submit(ti, ti->cb_userdata);
+		} else if (SDL_strcmp(key, "v") == 0 && ctrl) {
+			const char* clip = SDL_GetClipboardText();
+			if (clip) textinput_insert(ti, clip, (int)SDL_strlen(clip));
+		} else if (SDL_strcmp(key, "c") == 0 && ctrl) {
+			SDL_SetClipboardText(ti->buffer);
+		} else if (SDL_strcmp(key, "x") == 0 && ctrl) {
+			SDL_SetClipboardText(ti->buffer);
+			ti->text_len = 0;
+			ti->cursor_pos = 0;
+			ti->buffer[0] = '\0';
+		}
+		lua_pop(L, 1); /* key */
+	}
+	lua_pop(L, 1); /* type */
+	return 0;
+}
+
+static int l_textinput_focus(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_focus(ti);
+	return 0;
+}
+
+static int l_textinput_defocus(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_defocus(ti);
+	return 0;
+}
+
+static int l_textinput_insert(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	const char* text = luaL_checkstring(L, 2);
+	textinput_insert(ti, text, (int)SDL_strlen(text));
+	return 0;
+}
+
+static int l_textinput_backspace(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_backspace(ti);
+	return 0;
+}
+
+static int l_textinput_delete(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	textinput_delete(ti);
+	return 0;
+}
+
+static int l_textinput_is_focused(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	lua_pushboolean(L, textinput_is_focused(ti));
+	return 1;
+}
+
+/* ---- Button helper (事件路由在 Lua 侧完成) ---- */
+static int l_button_set_position(lua_State* L) {
+	button_p btn = (button_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	button_set_position(btn, x, y);
+	return 0;
+}
 
 int luaopen_ui(lua_State* L)
 {
@@ -550,7 +744,6 @@ int luaopen_ui(lua_State* L)
 	    {"set_text", l_label_set_text},
 	    {"set_position", l_label_set_position},
 	    {"draw", l_label_draw},
-	    {"handle_event", l_label_handle_event},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, label_lib);
@@ -560,12 +753,16 @@ int luaopen_ui(lua_State* L)
 	    {"create", l_button_create},
 	    {"destroy", l_button_destroy},
 	    {"set_text", l_button_set_text},
+	    {"set_position", l_button_set_position},
 	    {"set_normal_color", l_button_set_normal_color},
 	    {"set_hover_color", l_button_set_hover_color},
 	    {"set_pressed_color", l_button_set_pressed_color},
-	    {"is_clicked", l_button_is_clicked},
+	    {"is_hovered", l_button_is_hovered},
+	    {"is_pressed", l_button_is_pressed},
+	    {"set_hovered", l_button_set_hovered},
+	    {"set_pressed", l_button_set_pressed},
+	    {"get_rect", l_button_get_rect},
 	    {"draw", l_button_draw},
-	    {"listen", l_button_listen_event},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, button_lib);
@@ -576,7 +773,6 @@ int luaopen_ui(lua_State* L)
 	    {"destroy", l_button_group_destroy},
 	    {"add_button", l_button_group_add_button},
 	    {"set_selected", l_button_group_set_selected},
-	    {"handle_event", l_button_group_handle_event},
 	    {"draw", l_button_group_draw},
 	    {NULL, NULL},
 	};
@@ -588,7 +784,12 @@ int luaopen_ui(lua_State* L)
 	    {"draw", lcombobox_draw},
 	    {"additem", lcombobox_additem},
 	    {"destroy", lcombobox_destroy},
-	    {"handle_event", lcombobox_handle_event},
+	    {"is_pressed", l_combobox_is_pressed},
+	    {"is_open", l_combobox_is_open},
+	    {"set_open", l_combobox_set_open},
+	    {"hit_item", l_combobox_hit_item},
+	    {"set_selected", l_combobox_set_selected},
+	    {"get_selected", l_combobox_get_selected},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, combobox_lib);
@@ -597,8 +798,9 @@ int luaopen_ui(lua_State* L)
 	luaL_Reg checkbox_lib[] = {
 		{"create", l_checkbox_create},
 		{"destroy", l_checkbox_destroy},
-		{"handle_event", l_checkbox_handle_event},
 		{"draw", l_checkbox_draw},
+		{"is_pressed", l_checkbox_is_pressed},
+		{"set_hovered", l_checkbox_set_hovered},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, checkbox_lib);
@@ -607,6 +809,8 @@ int luaopen_ui(lua_State* L)
 	luaL_Reg radiobutton_lib[] = {
 		{"create", lradiobutton_create},
 		{"destroy", lradiobutton_destroy},
+		{"is_pressed", l_radio_button_is_pressed},
+		{"set_hovered", l_radio_button_set_hovered},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, radiobutton_lib);
@@ -618,11 +822,31 @@ int luaopen_ui(lua_State* L)
 	    {"setheaders", ldatagrid_setheaders},
 	    {"addrow", ldatagrid_addrow},
 	    {"destroy", ldatagrid_destroy},
-	    {"handle_event", ldatagrid_handle_event},
+	    {"hit_row", l_datagrid_hit_row},
+	    {"scroll", l_datagrid_scroll},
+	    {"set_selected_row", l_datagrid_set_selected_row},
 	{NULL, NULL},
 	};
 	luaL_newlib(L, datagrid_lib);
 	lua_setfield(L, -2, "datagrid");
+
+	luaL_Reg textinput_lib[] = {
+		{"create", l_textinput_create},
+		{"destroy", l_textinput_destroy},
+		{"set_text", l_textinput_set_text},
+		{"get_text", l_textinput_get_text},
+		{"draw", l_textinput_draw},
+		{"handle_event", l_textinput_handle_event},
+		{"focus", l_textinput_focus},
+		{"defocus", l_textinput_defocus},
+		{"insert", l_textinput_insert},
+		{"backspace", l_textinput_backspace},
+		{"delete", l_textinput_delete},
+		{"is_focused", l_textinput_is_focused},
+		{NULL, NULL},
+	};
+	luaL_newlib(L, textinput_lib);
+	lua_setfield(L, -2, "textinput");
 
 	return 1;
 }

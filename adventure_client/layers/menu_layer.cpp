@@ -64,9 +64,6 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         setup_button_texture(start_btn, ctx->renderer);
         start_btn->text_pos.y = 3.0f;
         button_set_textx(start_btn, simhei_font, "Start", (int)strlen("Start"), { 220, 200, 160, 255 });
-        button_set_callback(start_btn,
-                [](button_p, void*) { send_menu_event(MENU_EVENT_START); },
-                nullptr, nullptr);
         scene_node_p start_node = scene_node_create();
         scene_node_set_position(start_node, (float)btn_x, (float)start_y);
         scene_node_set_userdata(start_node, start_btn);
@@ -77,8 +74,15 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(start_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Event* event = (SDL_Event*)e;
-                button_handle_event(self, event);
+                SDL_Event* ev = (SDL_Event*)e;
+                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                        send_menu_event(MENU_EVENT_START);
+                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                    button_set_pressed(self, false);
+                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
+                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
+                }
         });
         scene_node_set_render_callback(start_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
@@ -93,9 +97,6 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         setup_button_texture(settings_btn, ctx->renderer);
         settings_btn->text_pos.y = 3.0f;
         button_set_textx(settings_btn, simhei_font, "Settings", (int)strlen("Settings"), { 220, 200, 160, 255 });
-        button_set_callback(settings_btn,
-                [](button_p, void*) { send_menu_event(MENU_EVENT_SETTINGS); },
-                nullptr, nullptr);
         scene_node_p settings_node = scene_node_create();
         scene_node_set_position(settings_node, (float)btn_x, (float)settings_y);
         scene_node_set_userdata(settings_node, settings_btn);
@@ -106,8 +107,15 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(settings_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Event* event = (SDL_Event*)e;
-                button_handle_event(self, event);
+                SDL_Event* ev = (SDL_Event*)e;
+                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                        send_menu_event(MENU_EVENT_SETTINGS);
+                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                    button_set_pressed(self, false);
+                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
+                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
+                }
         });
         scene_node_set_render_callback(settings_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
@@ -122,9 +130,6 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         setup_button_texture(exit_btn, ctx->renderer);
         exit_btn->text_pos.y = 3.0f;
         button_set_textx(exit_btn, simhei_font, "Exit", (int)strlen("Exit"), { 220, 200, 160, 255 });
-        button_set_callback(exit_btn,
-                [](button_p, void*) { send_menu_event(MENU_EVENT_EXIT); },
-                nullptr, nullptr);
         scene_node_p exit_node = scene_node_create();
         scene_node_set_position(exit_node, (float)btn_x, (float)exit_y);
         scene_node_set_userdata(exit_node, exit_btn);
@@ -135,8 +140,15 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(exit_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Event* event = (SDL_Event*)e;
-                button_handle_event(self, event);
+                SDL_Event* ev = (SDL_Event*)e;
+                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                        send_menu_event(MENU_EVENT_EXIT);
+                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                    button_set_pressed(self, false);
+                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
+                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
+                }
         });
         scene_node_set_render_callback(exit_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);

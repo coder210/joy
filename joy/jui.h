@@ -22,26 +22,20 @@ typedef struct label {
 
 typedef struct button button_t, * button_p;
 
-typedef void (*button_callback_fn)(button_p btn, void* userdata);
-
 struct button {
-	SDL_Renderer* renderer;  // 渲染器
-	SDL_FPoint position;           // 按钮的位置和大小
-	float width;
-	float height;
+	SDL_Renderer* renderer;   // 渲染器
+	SDL_FPoint position;      // 位置
+	float width;              // 宽度
+	float height;             // 高度
 	SDL_Color normal_color;   // 正常状态颜色
 	SDL_Color hover_color;    // 悬停状态颜色
 	SDL_Color pressed_color;  // 按下状态颜色
-	SDL_FPoint text_pos; // 文本相对位置
-	image_p image;     // 按钮正常纹理（可选）
-	image_p pressed_image; // 按钮按下纹理（可选）
-	text_texture_p text;	// 按钮文件纹理
-	bool is_hovered;          // 鼠标悬停状态
-	bool is_pressed;          // 按钮按下状态
-
-	button_callback_fn on_press;    // 按下回调
-	button_callback_fn on_release;  // 松开回调
-	void* cb_userdata;              // 回调用户数据
+	SDL_FPoint text_pos;      // 文本相对位置
+	image_p image;            // 按钮正常纹理（可选）
+	image_p pressed_image;    // 按钮按下纹理（可选）
+	text_texture_p text;      // 按钮文件纹理
+	bool is_hovered;          // 内部状态：由 is_hovered() / is_pressed() 设置
+	bool is_pressed;
 };
 
 typedef struct combobox_item {
@@ -131,6 +125,29 @@ typedef struct checkbox {
 
 typedef struct joystick joystick_t, * joystick_p;
 
+typedef struct textinput {
+	SDL_Renderer* renderer;
+	SDL_FRect rect;               // 位置和大小
+	SDL_Color bg_color;           // 背景色
+	SDL_Color border_color;       // 边框色
+	SDL_Color text_color;         // 文字色
+	SDL_Color cursor_color;       // 光标色
+	SDL_Color focus_border_color; // 聚焦时边框色
+	font_p font;                  // 字体
+	char* buffer;                 // 文本缓冲区
+	int buf_len;                  // 缓冲区大小
+	int text_len;                 // 当前文本长度
+	int cursor_pos;               // 光标位置（字节偏移）
+	int scroll_offset;            // 文本滚动偏移（像素）
+	bool focused;                 // 是否聚焦
+	bool hovered;                 // 鼠标悬停
+	Uint64 cursor_timer;          // 光标闪烁计时
+	bool cursor_visible;          // 光标是否可见
+	void (*on_submit)(struct textinput* ti, void* userdata);
+	void (*on_change)(struct textinput* ti, void* userdata);
+	void* cb_userdata;
+} textinput_t, * textinput_p;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -139,18 +156,20 @@ extern "C" {
 	JOY_API void label_destroy(label_p label);
 	JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, SDL_Color color);
 	JOY_API void label_draw(label_p label);
-	JOY_API void label_handle_event(label_p label, SDL_Event* event);
 
 	JOY_API button_p button_create(SDL_Renderer* renderer, float width, float height);
 	JOY_API void button_destroy(button_p btn);
+	JOY_API void button_set_position(button_p btn, float x, float y);
 	JOY_API void button_set_normal_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_hover_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_pressed_color(button_p btn, SDL_Color color);
 	JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, SDL_Color color);
 	JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, SDL_Color color);
-	JOY_API void button_set_callback(button_p btn, button_callback_fn press, button_callback_fn release, void* userdata);
+	JOY_API bool button_is_hovered(button_p btn, float x, float y);
+	JOY_API bool button_is_pressed(button_p btn, float x, float y);
+	JOY_API void button_set_hovered(button_p btn, bool v);
+	JOY_API void button_set_pressed(button_p btn, bool v);
 	JOY_API void button_draw(button_p btn);
-	JOY_API void button_handle_event(button_p btn, SDL_Event* event);
 
 	JOY_API combobox_p combobox_create(SDL_Renderer* renderer, SDL_FRect rect);
 	JOY_API void combobox_destroy(combobox_p combobox);
@@ -158,7 +177,12 @@ extern "C" {
 		const int* codepoints, int len, SDL_Color color);
 	JOY_API void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, 
 		const int* codepoints, int len, SDL_Color color);
-	JOY_API bool combobox_handle_event(combobox_p combobox, SDL_Event* event);
+	JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
+	JOY_API bool combobox_is_open(combobox_p combobox);
+	JOY_API void combobox_set_open(combobox_p combobox, bool v);
+	JOY_API int combobox_hit_item(combobox_p combobox, float x, float y);
+	JOY_API void combobox_set_selected(combobox_p combobox, int index);
+	JOY_API int combobox_get_selected(combobox_p combobox);
 	JOY_API void combobox_draw(combobox_p combobox);
 
 	JOY_API datagrid_p datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_header, void* font);
@@ -168,7 +192,9 @@ extern "C" {
 	JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
 	JOY_API void datagrid_destroy(datagrid_p grid);
 	JOY_API void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer);
-	JOY_API void datagrid_handle_event(datagrid_p grid, SDL_Event* event, SDL_Renderer* renderer);
+	JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
+	JOY_API void datagrid_scroll(datagrid_p grid, int lines);
+	JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
 
 	JOY_API radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id);
 	JOY_API void radio_button_destroy(radio_button_p radio);
@@ -177,24 +203,43 @@ extern "C" {
 	JOY_API void radio_button_group_destroy(radio_button_group_p group);
 	JOY_API void radio_button_group_add_button(radio_button_group_p group, radio_button_p radio);
 	JOY_API void radio_button_group_set_selected(radio_button_group_p group, int index);
+	JOY_API bool radio_button_is_pressed(radio_button_p radio, float x, float y);
+	JOY_API void radio_button_set_hovered(radio_button_p radio, bool v);
 	JOY_API void radio_button_group_draw(radio_button_group_p group, SDL_Renderer* renderer);
-	JOY_API bool radio_button_group_handle_event(radio_button_group_p group, SDL_Event* event, SDL_Renderer* renderer);
 
 	JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
 	JOY_API void checkbox_destroy(checkbox_p checkbox);
 	JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
 	JOY_API void checkbox_toggle(checkbox_p checkbox);
-	JOY_API bool checkbox_handle_event(checkbox_p checkbox, SDL_Event* event, SDL_Renderer* renderer);
-	JOY_API void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font);
+	JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
+	JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
+	JOY_API void checkbox_draw(checkbox_p cb, SDL_Renderer* renderer, void* font);
 
 	JOY_API joystick_p joystick_create(SDL_Renderer* renderer, float x, float y, float radius);
 	JOY_API void joystick_destroy(joystick_p joystick);
 	JOY_API void joystick_draw(joystick_p joystick);
-	JOY_API void joystick_handle_event(joystick_p joystick, SDL_Event* event);
 	JOY_API void joystick_reset(joystick_p joystick);
 	JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
+	JOY_API bool joystick_is_dragging(joystick_p joystick);
+	JOY_API void joystick_touch_down(joystick_p joystick, float x, float y);
+	JOY_API void joystick_touch_move(joystick_p joystick, float x, float y);
+	JOY_API void joystick_touch_up(joystick_p joystick);
 	JOY_API SDL_FPoint joystick_get_direction(joystick_p joystick);
 	JOY_API float joystick_get_magnitude(joystick_p joystick);
+
+	JOY_API textinput_p textinput_create(SDL_Renderer* renderer, SDL_FRect rect, font_p font);
+	JOY_API void textinput_destroy(textinput_p ti);
+	JOY_API void textinput_set_text(textinput_p ti, const char* text);
+	JOY_API const char* textinput_get_text(textinput_p ti);
+	JOY_API void textinput_set_callback(textinput_p ti, void (*submit)(textinput_p, void*), void (*change)(textinput_p, void*), void* userdata);
+	JOY_API void textinput_draw(textinput_p ti);
+	JOY_API void textinput_handle_event(textinput_p ti, SDL_Event* event);
+	JOY_API void textinput_focus(textinput_p ti);
+	JOY_API void textinput_defocus(textinput_p ti);
+	JOY_API void textinput_insert(textinput_p ti, const char* s, int len);
+	JOY_API void textinput_backspace(textinput_p ti);
+	JOY_API void textinput_delete(textinput_p ti);
+	JOY_API bool textinput_is_focused(textinput_p ti);
 
 #ifdef __cplusplus
 }
