@@ -160,6 +160,7 @@ luax_p luax_create(void)
         JOY_MOD("timer", luaopen_timer);
         JOY_MOD("animation", luaopen_animation);
         JOY_MOD("joystick", luaopen_joystick);
+        JOY_MOD("event", luaopen_event);
 
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");
