@@ -23,6 +23,8 @@ History:
 struct luax {
         lua_State* L;
         void* userdata;
+        char* watch_file;
+        SDL_Time last_mtime;
 };
 
 
@@ -120,7 +122,7 @@ struct luax {
 luax_p luax_create(void)
 {
         luax_p luax;
-        luax = (luax_p)malloc(sizeof(luax_t));
+        luax = (luax_p)SDL_calloc(1, sizeof(luax_t));
         assert(luax);
         luax->L = luaL_newstate();
         assert(luax->L);
@@ -161,6 +163,7 @@ luax_p luax_create(void)
         JOY_MOD("animation", luaopen_animation);
         JOY_MOD("joystick", luaopen_joystick);
         JOY_MOD("event", luaopen_event);
+        JOY_MOD("thread", luaopen_thread);
 
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");
@@ -194,11 +197,12 @@ bool luax_dofile(luax_p luax, const char* filename)
 
 void luax_release(luax_p luax)
 {
+        if (luax->watch_file) SDL_free(luax->watch_file);
         lua_close(luax->L);
         free(luax);
 }
 
-lua_State* luax_get_state(luax_p luax)
+void* luax_get_state(luax_p luax)
 {
         return luax->L;
 }
@@ -395,83 +399,37 @@ bool luax_reload(luax_p luax, const char* filename)
         return ok;
 }
 
-//static void 
-//_append_luapath(lua_State* L, const char* new_path)
-//{
-//        const char* current_path;
-//        char combined_path[JOY_MAX_PATH];
-//
-//        lua_getglobal(L, "packagex");
-//        lua_getfield(L, -1, "path");
-//        current_path = lua_tostring(L, -1);
-//        SDL_strlcpy(combined_path, current_path, JOY_MAX_PATH);
-//        SDL_strlcat(combined_path, ";", JOY_MAX_PATH);
-//        SDL_strlcat(combined_path, new_path, JOY_MAX_PATH);
-//        lua_pushstring(L, combined_path);
-//        lua_setfield(L, -3, "path");
-//        lua_pop(L, 2);
-//}
-//
-//static char*
-//_read_file(const char* filename, uint32_t* out_sz)
-//{
-//        size_t data_size;
-//        char* data, * decrypt_data;
-//        const char* key;
-//
-//        key = "com.livnet.liwei";
-//        data = SDL_LoadFile(filename, &data_size);
-//        if (!data) {
-//                *out_sz = 0;
-//                return data;
-//        }
-//
-//        if (SDL_strstr(filename, ".luas")) {
-//                decrypt_data = utils_des_decrypt(key, data, data_size, &data_size);
-//                if (data) {
-//                        decrypt_data[data_size] = 0;
-//                        *out_sz = data_size;
-//                        SDL_free(data);
-//                }
-//                return decrypt_data;
-//        }
-//        else {
-//                *out_sz = data_size;
-//                data[*out_sz] = 0;
-//                return data;
-//        }
-//}
-//
-//
-//static int ldofilex(lua_State* L)
-//{
-//        const char* filename, * error_msg;
-//        char chunkname[JOY_MAX_PATH] = { 0 };
-//        char* data;
-//        uint32_t data_size;
-//
-//        filename = luaL_checkstring(L, 1);
-//        SDL_strlcat(chunkname, "@", JOY_MAX_PATH);
-//        SDL_strlcat(chunkname, filename, JOY_MAX_PATH);
-//
-//        data = _read_file(filename, &data_size);
-//        if (!data) {
-//                error_msg = "filename is not exists.";
-//                goto failure;
-//        }
-//        if (luaL_loadbuffer(L, data, data_size, chunkname) != LUA_OK) {
-//                error_msg = lua_tostring(L, -1);
-//                SDL_free(data);
-//                goto failure;
-//        }
-//        if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
-//                error_msg = lua_tostring(L, -1);
-//                SDL_free(data);
-//                goto failure;
-//        }
-//        return 1;
-//failure:
-//        luaL_error(L, "%s", error_msg);
-//        return 0;
-//}
+/* ===== 文件监控 ===== */
+
+void luax_set_watch(luax_p luax, const char* filename)
+{
+        if (luax->watch_file) SDL_free(luax->watch_file);
+        luax->watch_file = filename ? SDL_strdup(filename) : NULL;
+        if (filename) {
+                SDL_PathInfo info;
+                if (SDL_GetPathInfo(filename, &info))
+                        luax->last_mtime = info.modify_time;
+        }
+}
+
+bool luax_poll_reload(luax_p luax)
+{
+        if (!luax->watch_file) return false;
+        SDL_PathInfo info;
+        if (!SDL_GetPathInfo(luax->watch_file, &info))
+                return false;
+        if (info.modify_time == luax->last_mtime)
+                return false;
+        luax->last_mtime = info.modify_time;
+        log_info("[CHANGED] %s", luax->watch_file);
+        if (!luax_reload(luax, luax->watch_file))
+                return false;
+        luax_call_joy(luax, "hotfix", 0, 0);
+        return true;
+}
+
+const char* luax_get_watch(luax_p luax)
+{
+        return luax->watch_file;
+}
 

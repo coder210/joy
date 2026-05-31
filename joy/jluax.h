@@ -10,20 +10,32 @@ History:
 #ifndef JLUAX_H
 #define JLUAX_H
 #include "jconfig.h"
+#include <SDL3/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 	typedef struct luax luax_t, *luax_p;
+
+	/* --- 基础 --- */
 	JOY_API luax_p luax_create(void);
 	JOY_API bool luax_dofile(luax_p luax, const char* filename);
 	JOY_API void luax_release(luax_p luax);
+	void* luax_get_state(luax_p luax);
 
-	/* --- 热重载支持 --- */
-	JOY_API void luax_init_state(luax_p luax);            // 创建初始 state 表
-	JOY_API bool luax_reload(luax_p luax, const char* filename); // 加载/重载脚本，保留 state
-	JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt); // 调用 joy.func(dt)
-	JOY_API void luax_dispatch_event(luax_p luax, const SDL_Event* event); // 向 Joy.Lua 派发 SDL 事件
+	/* --- state 持久化 --- */
+	JOY_API void luax_init_state(luax_p luax);
+	JOY_API bool luax_reload(luax_p luax, const char* filename);
+	JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt);
+
+	/* --- 事件派发 --- */
+	JOY_API void luax_dispatch_event(luax_p luax, const SDL_Event* event);
+
+	/* --- 文件监控 --- */
+	JOY_API void luax_set_watch(luax_p luax, const char* filename);
+	JOY_API bool luax_poll_reload(luax_p luax);
+	JOY_API const char* luax_get_watch(luax_p luax);
+
 #ifdef __cplusplus
 }
 #endif
