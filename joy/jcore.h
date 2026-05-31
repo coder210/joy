@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: jcore.h
-Description: ´°¿Ú´´½¨,ÈÕÖ¾´òÓ¡µÈ
+Description: çª—å£åˆ›å»º,æ—¥å¿—æ‰“å°ç­‰
 Author: ydlc
 Version: 1.0
 Date: 2021.3.28
@@ -10,23 +10,48 @@ History:
 #ifndef CORE_H
 #define CORE_H
 #include <stdint.h>
+#include <stdbool.h>
 #include "jconfig.h"
+#include <SDL3/SDL_events.h>
+
+/* ---- C å±‚äº‹ä»¶å›è°ƒå‡½æ•°ç±»å‹ï¼ˆæœ«å‚ä¸º void* argï¼Œç”±è®¾ç½®è€…ä¼ å…¥ï¼‰ ---- */
+
+typedef void (*event_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
+typedef void (*event_keyreleased_fn)(const char* key, int scancode, void* arg);
+typedef void (*event_mousepressed_fn)(float x, float y, int button, void* arg);
+typedef void (*event_mousereleased_fn)(float x, float y, int button, void* arg);
+typedef void (*event_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
+typedef void (*event_textinput_fn)(const char* text, void* arg);
+typedef void (*event_resize_fn)(int w, int h, void* arg);
+
+/* äº‹ä»¶å›è°ƒé›†åˆ */
+typedef struct event_callbacks {
+	event_keypressed_fn on_keypressed;
+	event_keyreleased_fn on_keyreleased;
+	event_mousepressed_fn on_mousepressed;
+	event_mousereleased_fn on_mousereleased;
+	event_mousemoved_fn on_mousemoved;
+	event_textinput_fn on_textinput;
+	event_resize_fn on_resize;
+} event_callbacks_t;
 
 typedef struct env env_t, * env_p;
 typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
 typedef struct game_timer {
-	int64_t last_time;          // ÉÏÒ»Ö¡½áÊøÊ±µÄÄÉÃëÊ±¼ä´Á
-	int64_t frame_start_time;   // µ±Ç°Ö¡¿ªÊ¼Ê±µÄÄÉÃëÊ±¼ä´Á
-	double delta_time;         // Î´Ëõ·ÅµÄÖ¡¼ä¸ôÊ±¼ä£¨Ãë£©
-	double time_scale;         // Ê±¼äËõ·ÅÒò×Ó
-	int target_fps;            // Ä¿±ê FPS£¨0 ±íÊ¾²»ÏŞÖÆ£©
-	double target_frame_time;  // Ä¿±êÃ¿Ö¡Ê±¼ä£¨Ãë£©
+	int64_t last_time;          // ä¸Šä¸€å¸§ç»“æŸæ—¶çš„çº³ç§’æ—¶é—´æˆ³
+	int64_t frame_start_time;   // å½“å‰å¸§å¼€å§‹æ—¶çš„çº³ç§’æ—¶é—´æˆ³
+	double delta_time;         // æœªç¼©æ”¾çš„å¸§é—´éš”æ—¶é—´ï¼ˆç§’ï¼‰
+	double time_scale;         // æ—¶é—´ç¼©æ”¾å› å­
+	int target_fps;            // ç›®æ ‡ FPSï¼ˆ0 è¡¨ç¤ºä¸é™åˆ¶ï¼‰
+	double target_frame_time;  // ç›®æ ‡æ¯å¸§æ—¶é—´ï¼ˆç§’ï¼‰
 } game_timer_t, * game_timer_p;
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+	JOY_API void dispatch_event(event_callbacks_t cbs, const SDL_Event* event, void* arg);
+
 	JOY_API int log_info(const char* format, ...);
 	JOY_API int log_debug(const char* format, ...);
 	JOY_API int log_error(const char* format, ...);

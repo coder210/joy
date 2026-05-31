@@ -25,6 +25,8 @@ struct luax {
         void* userdata;
         char* watch_file;
         SDL_Time last_mtime;
+
+        event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
 
@@ -119,6 +121,84 @@ struct luax {
 //        return 1;
 //}
 
+/* 查表并调用 joy.func(args...)，调用者已把 arg 推入栈 */
+static bool call_joy_n(lua_State* L, const char* func, int nargs)
+{
+        lua_getglobal(L, "joy");
+        if (lua_isnil(L, -1)) { lua_pop(L, 1); return false; }
+        lua_getfield(L, -1, func);     /* [args..., joy, func] */
+        if (lua_isnil(L, -1)) {
+                lua_pop(L, 2);  /* pop nil + joy */
+                /* 清除之前推入的 arg */
+                lua_pop(L, nargs);
+                return false;
+        }
+
+        /* 把 func 移到栈底，再弹出 joy，变成 [func, args...] */
+        lua_rotate(L, 1, 1);           /* [func, args..., joy] */
+        lua_pop(L, 1);                  /* [func, args...] */
+
+        if (lua_pcall(L, nargs, 0, 0) != LUA_OK) {
+                log_error("joy.%s: %s", func, lua_tostring(L, -1));
+                lua_pop(L, 1);
+                return false;
+        }
+        return true;
+}
+
+
+static void default_mousepressed(float x, float y, int b, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushnumber(L, x); lua_pushnumber(L, y); lua_pushinteger(L, b);
+        call_joy_n(L, "mousepressed", 3);
+}
+static void default_mousereleased(float x, float y, int b, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushnumber(L, x); lua_pushnumber(L, y); lua_pushinteger(L, b);
+        call_joy_n(L, "mousereleased", 3);
+}
+static void default_mousemoved(float x, float y, float dx, float dy, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushnumber(L, x); lua_pushnumber(L, y); lua_pushnumber(L, dx); lua_pushnumber(L, dy);
+        call_joy_n(L, "mousemoved", 4);
+}
+static void default_keypressed(const char* key, int sc, bool rep, bool ctrl, bool shift, bool alt, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushstring(L, key); lua_pushinteger(L, sc);
+        lua_pushboolean(L, rep); lua_pushboolean(L, ctrl);
+        lua_pushboolean(L, shift); lua_pushboolean(L, alt);
+        call_joy_n(L, "keypressed", 6);
+}
+static void default_keyreleased(const char* key, int sc, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushstring(L, key); lua_pushinteger(L, sc);
+        call_joy_n(L, "keyreleased", 2);
+}
+static void default_textinput(const char* text, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushstring(L, text);
+        call_joy_n(L, "textinput", 1);
+}
+static void default_resize(int w, int h, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushinteger(L, w); lua_pushinteger(L, h);
+        call_joy_n(L, "resize", 2);
+}
+
 luax_p luax_create(void)
 {
         luax_p luax;
@@ -129,6 +209,15 @@ luax_p luax_create(void)
         luaL_openlibs(luax->L);
         lua_pushlightuserdata(luax->L, luax);
         lua_setfield(luax->L, LUA_REGISTRYINDEX, "__this");
+
+        /* 设置默认回调，自动转发到 Lua */
+        luax->cbs.on_mousepressed   = default_mousepressed;
+        luax->cbs.on_mousereleased  = default_mousereleased;
+        luax->cbs.on_mousemoved     = default_mousemoved;
+        luax->cbs.on_keypressed     = default_keypressed;
+        luax->cbs.on_keyreleased    = default_keyreleased;
+        luax->cbs.on_textinput      = default_textinput;
+        luax->cbs.on_resize         = default_resize;
 
         // 创建 joy 表，所有模块注册在 joy.* 下
         lua_newtable(luax->L);
@@ -207,123 +296,9 @@ void* luax_get_state(luax_p luax)
         return luax->L;
 }
 
-/* =================================================================
- * 事件分发
- * ================================================================= */
-
-/* 查表并调用 joy.func(args...)，调用者已把 arg 推入栈 */
-static bool call_joy_n(lua_State* L, const char* func, int nargs)
-{
-        lua_getglobal(L, "joy");
-        if (lua_isnil(L, -1)) { lua_pop(L, 1); return false; }
-        lua_getfield(L, -1, func);     /* [args..., joy, func] */
-        if (lua_isnil(L, -1)) {
-                lua_pop(L, 2);  /* pop nil + joy */
-                /* 清除之前推入的 arg */
-                lua_pop(L, nargs);
-                return false;
-        }
-
-        /* 把 func 移到栈底，再弹出 joy，变成 [func, args...] */
-        lua_rotate(L, 1, 1);           /* [func, args..., joy] */
-        lua_pop(L, 1);                  /* [func, args...] */
-
-        if (lua_pcall(L, nargs, 0, 0) != LUA_OK) {
-                log_error("joy.%s: %s", func, lua_tostring(L, -1));
-                lua_pop(L, 1);
-                return false;
-        }
-        return true;
-}
-
-/* 按键名映射 */
-static const char* key_name(SDL_Keycode k)
-{
-        static char buf[2];
-        switch (k) {
-        case SDLK_RETURN:    return "return";
-        case SDLK_ESCAPE:    return "escape";
-        case SDLK_BACKSPACE: return "backspace";
-        case SDLK_TAB:       return "tab";
-        case SDLK_SPACE:     return "space";
-        case SDLK_DELETE:    return "delete";
-        case SDLK_UP:        return "up";
-        case SDLK_DOWN:      return "down";
-        case SDLK_LEFT:      return "left";
-        case SDLK_RIGHT:     return "right";
-        case SDLK_HOME:      return "home";
-        case SDLK_END:       return "end";
-        case SDLK_PAGEUP:    return "pageup";
-        case SDLK_PAGEDOWN:  return "pagedown";
-        case SDLK_INSERT:    return "insert";
-        case SDLK_LSHIFT:    return "lshift";
-        case SDLK_RSHIFT:    return "rshift";
-        case SDLK_LCTRL:     return "lctrl";
-        case SDLK_RCTRL:     return "rctrl";
-        case SDLK_LALT:      return "lalt";
-        case SDLK_RALT:      return "ralt";
-        default:
-                if (k >= SDLK_A && k <= SDLK_Z) { buf[0] = (char)('a' + (k - SDLK_A)); buf[1] = 0; return buf; }
-                if (k >= SDLK_0 && k <= SDLK_9) { buf[0] = (char)('0' + (k - SDLK_0)); buf[1] = 0; return buf; }
-                return NULL;
-        }
-}
-
-
 void luax_dispatch_event(luax_p luax, const SDL_Event* event)
 {
-        lua_State* L = luax->L;
-
-        switch (event->type) {
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                lua_pushnumber(L, (float)event->button.x);
-                lua_pushnumber(L, (float)event->button.y);
-                lua_pushinteger(L, event->button.button);
-                call_joy_n(L, "mousepressed", 3);
-                break;
-        case SDL_EVENT_MOUSE_BUTTON_UP:
-                lua_pushnumber(L, (float)event->button.x);
-                lua_pushnumber(L, (float)event->button.y);
-                lua_pushinteger(L, event->button.button);
-                call_joy_n(L, "mousereleased", 3);
-                break;
-        case SDL_EVENT_MOUSE_MOTION:
-                lua_pushnumber(L, (float)event->motion.x);
-                lua_pushnumber(L, (float)event->motion.y);
-                lua_pushnumber(L, event->motion.xrel);
-                lua_pushnumber(L, event->motion.yrel);
-                call_joy_n(L, "mousemoved", 4);
-                break;
-        case SDL_EVENT_KEY_DOWN: {
-                const char* name = key_name(event->key.key);
-                if (!name) break;
-                lua_pushstring(L, name);
-                lua_pushinteger(L, event->key.scancode);
-                lua_pushboolean(L, event->key.repeat);
-                lua_pushboolean(L, event->key.mod & SDL_KMOD_CTRL);
-                lua_pushboolean(L, event->key.mod & SDL_KMOD_SHIFT);
-                lua_pushboolean(L, event->key.mod & SDL_KMOD_ALT);
-                call_joy_n(L, "keypressed", 6);
-                break;
-        }
-        case SDL_EVENT_KEY_UP: {
-                const char* name = key_name(event->key.key);
-                if (!name) break;
-                lua_pushstring(L, name);
-                lua_pushinteger(L, event->key.scancode);
-                call_joy_n(L, "keyreleased", 2);
-                break;
-        }
-        case SDL_EVENT_TEXT_INPUT:
-                lua_pushstring(L, event->text.text);
-                call_joy_n(L, "textinput", 1);
-                break;
-        case SDL_EVENT_WINDOW_RESIZED:
-                lua_pushinteger(L, event->window.data1);
-                lua_pushinteger(L, event->window.data2);
-                call_joy_n(L, "resize", 2);
-                break;
-        }
+        dispatch_event(luax->cbs, event, luax);
 }
 
 #define STATE_KEY ((void*)0x1)

@@ -10,11 +10,13 @@ History:
 #ifndef JLUAX_H
 #define JLUAX_H
 #include "jconfig.h"
+#include "jcore.h"
 #include <SDL3/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 	typedef struct luax luax_t, *luax_p;
 
 	/* --- 基础 --- */
