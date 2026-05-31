@@ -606,86 +606,18 @@ static int l_textinput_draw(lua_State* L) {
 	return 0;
 }
 
-static int l_textinput_handle_event(lua_State* L) {
+static int l_textinput_is_pressed(lua_State* L) {
 	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
-	luaL_checktype(L, 2, LUA_TTABLE);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, textinput_is_pressed(ti, x, y));
+	return 1;
+}
 
-	lua_getfield(L, 2, "type");
-	const char* type = lua_tostring(L, -1);
-	if (!type) { lua_pop(L, 1); return 0; }
-
-	if (SDL_strcmp(type, "mousepressed") == 0 || SDL_strcmp(type, "fingerdown") == 0) {
-		lua_getfield(L, 2, "x"); float ex = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-		lua_getfield(L, 2, "y"); float ey = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-		SDL_FPoint pt = {ex, ey};
-		if (SDL_PointInRectFloat(&pt, &ti->rect)) {
-			textinput_focus(ti);
-		} else {
-			textinput_defocus(ti);
-		}
-	}
-	else if (SDL_strcmp(type, "mousemoved") == 0 || SDL_strcmp(type, "fingermotion") == 0) {
-		lua_getfield(L, 2, "x"); float ex = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-		lua_getfield(L, 2, "y"); float ey = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-		SDL_FPoint pt = {ex, ey};
-		ti->hovered = SDL_PointInRectFloat(&pt, &ti->rect);
-	}
-	else if (SDL_strcmp(type, "textinput") == 0 && ti->focused) {
-		lua_getfield(L, 2, "text");
-		const char* text = lua_tostring(L, -1);
-		if (text) textinput_insert(ti, text, (int)SDL_strlen(text));
-		lua_pop(L, 1);
-	}
-	else if (SDL_strcmp(type, "keypressed") == 0 && ti->focused) {
-		lua_getfield(L, 2, "key");
-		const char* key = lua_tostring(L, -1);
-		if (!key) { lua_pop(L, 2); return 0; }
-
-		lua_getfield(L, 2, "mod");
-		int ctrl = 0;
-		if (lua_istable(L, -1)) {
-			lua_getfield(L, -1, "ctrl"); ctrl = lua_toboolean(L, -1); lua_pop(L, 1);
-		}
-		lua_pop(L, 1); /* mod */
-
-		if (SDL_strcmp(key, "backspace") == 0) {
-			textinput_backspace(ti);
-		} else if (SDL_strcmp(key, "delete") == 0) {
-			textinput_delete(ti);
-		} else if (SDL_strcmp(key, "left") == 0) {
-			if (ti->cursor_pos > 0) {
-				ti->cursor_pos--;
-				while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-					ti->cursor_pos--;
-			}
-		} else if (SDL_strcmp(key, "right") == 0) {
-			if (ti->cursor_pos < ti->text_len) {
-				ti->cursor_pos++;
-				while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-					ti->cursor_pos++;
-			}
-		} else if (SDL_strcmp(key, "home") == 0) {
-			ti->cursor_pos = 0;
-			ti->scroll_offset = 0;
-		} else if (SDL_strcmp(key, "end") == 0) {
-			ti->cursor_pos = ti->text_len;
-		} else if (SDL_strcmp(key, "return") == 0) {
-			if (ti->on_submit) ti->on_submit(ti, ti->cb_userdata);
-		} else if (SDL_strcmp(key, "v") == 0 && ctrl) {
-			const char* clip = SDL_GetClipboardText();
-			if (clip) textinput_insert(ti, clip, (int)SDL_strlen(clip));
-		} else if (SDL_strcmp(key, "c") == 0 && ctrl) {
-			SDL_SetClipboardText(ti->buffer);
-		} else if (SDL_strcmp(key, "x") == 0 && ctrl) {
-			SDL_SetClipboardText(ti->buffer);
-			ti->text_len = 0;
-			ti->cursor_pos = 0;
-			ti->buffer[0] = '\0';
-		}
-		lua_pop(L, 1); /* key */
-	}
-	lua_pop(L, 1); /* type */
-	return 0;
+static int l_textinput_is_hovered(lua_State* L) {
+	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, textinput_is_hovered(ti, x, y));
+	return 1;
 }
 
 static int l_textinput_focus(lua_State* L) {
@@ -836,7 +768,8 @@ int luaopen_ui(lua_State* L)
 		{"set_text", l_textinput_set_text},
 		{"get_text", l_textinput_get_text},
 		{"draw", l_textinput_draw},
-		{"handle_event", l_textinput_handle_event},
+		{"is_pressed", l_textinput_is_pressed},
+		{"is_hovered", l_textinput_is_hovered},
 		{"focus", l_textinput_focus},
 		{"defocus", l_textinput_defocus},
 		{"insert", l_textinput_insert},

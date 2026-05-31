@@ -1477,119 +1477,26 @@ void textinput_draw(textinput_p ti)
 	}
 }
 
-void textinput_handle_event(textinput_p ti, SDL_Event* event)
+bool textinput_is_pressed(textinput_p ti, float x, float y)
 {
-	if (!ti || !event) return;
-	SDL_Renderer* r = ti->renderer;
-	SDL_FPoint logic_pos;
-	SDL_FRect rect = ti->rect;
+	if (!ti) return false;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(ti->renderer, x, y, &logic.x, &logic.y);
+	if (SDL_PointInRectFloat(&logic, &ti->rect)) {
+		textinput_focus(ti);
+		return true;
+	}
+	textinput_defocus(ti);
+	return false;
+}
 
-	if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		if (event->button.which == SDL_TOUCH_MOUSEID) return;
-		if (event->button.button == SDL_BUTTON_LEFT) {
-			SDL_RenderCoordinatesFromWindow(r, event->button.x, event->button.y, &logic_pos.x, &logic_pos.y);
-			if (SDL_PointInRectFloat(&logic_pos, &rect)) {
-				textinput_focus(ti);
-			} else {
-				textinput_defocus(ti);
-			}
-		}
-	}
-	else if (event->type == SDL_EVENT_FINGER_DOWN) {
-		int ww, wh;
-		SDL_GetRenderOutputSize(r, &ww, &wh);
-		SDL_RenderCoordinatesFromWindow(r, event->tfinger.x * ww, event->tfinger.y * wh, &logic_pos.x, &logic_pos.y);
-		if (SDL_PointInRectFloat(&logic_pos, &rect)) {
-			textinput_focus(ti);
-		} else {
-			textinput_defocus(ti);
-		}
-	}
-	else if (event->type == SDL_EVENT_MOUSE_MOTION) {
-		if (event->motion.which == SDL_TOUCH_MOUSEID) return;
-		SDL_RenderCoordinatesFromWindow(r, event->motion.x, event->motion.y, &logic_pos.x, &logic_pos.y);
-		ti->hovered = SDL_PointInRectFloat(&logic_pos, &rect);
-	}
-	else if (event->type == SDL_EVENT_FINGER_MOTION) {
-		int ww, wh;
-		SDL_GetRenderOutputSize(r, &ww, &wh);
-		SDL_RenderCoordinatesFromWindow(r, event->tfinger.x * ww, event->tfinger.y * wh, &logic_pos.x, &logic_pos.y);
-		ti->hovered = SDL_PointInRectFloat(&logic_pos, &rect);
-	}
-
-	if (!ti->focused) return;
-
-	if (event->type == SDL_EVENT_TEXT_INPUT) {
-		const char* text = event->text.text;
-		int len = (int)SDL_strlen(text);
-		if (len > 0 && text[0] >= ' ') {
-			textinput_insert(ti, text, len);
-			/* 自动滚动到光标处 */
-			int cw = textinput_cursor_x(ti);
-			int visible_w = (int)ti->rect.w - 8;
-			if (cw - ti->scroll_offset > visible_w)
-				ti->scroll_offset = cw - visible_w;
-			else if (cw - ti->scroll_offset < 0)
-				ti->scroll_offset = cw;
-		}
-	}
-	else if (event->type == SDL_EVENT_KEY_DOWN) {
-		switch (event->key.key) {
-		case SDLK_BACKSPACE:
-			textinput_backspace(ti);
-			break;
-		case SDLK_DELETE:
-			textinput_delete(ti);
-			break;
-		case SDLK_LEFT:
-			if (ti->cursor_pos > 0) {
-				ti->cursor_pos--;
-				while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-					ti->cursor_pos--;
-			}
-			break;
-		case SDLK_RIGHT:
-			if (ti->cursor_pos < ti->text_len) {
-				ti->cursor_pos++;
-				while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-					ti->cursor_pos++;
-			}
-			break;
-		case SDLK_HOME:
-			ti->cursor_pos = 0;
-			ti->scroll_offset = 0;
-			break;
-		case SDLK_END:
-			ti->cursor_pos = ti->text_len;
-			break;
-		case SDLK_RETURN:
-			if (ti->on_submit) ti->on_submit(ti, ti->cb_userdata);
-			break;
-		case SDLK_V:
-			if (event->key.mod & SDL_KMOD_CTRL) {
-				const char* clip = SDL_GetClipboardText();
-				if (clip) {
-					textinput_insert(ti, clip, (int)SDL_strlen(clip));
-				}
-			}
-			break;
-		case SDLK_C:
-			if (event->key.mod & SDL_KMOD_CTRL) {
-				SDL_SetClipboardText(ti->buffer);
-			}
-			break;
-		case SDLK_X:
-			if (event->key.mod & SDL_KMOD_CTRL) {
-				SDL_SetClipboardText(ti->buffer);
-				ti->text_len = 0;
-				ti->cursor_pos = 0;
-				ti->buffer[0] = '\0';
-			}
-			break;
-		default:
-			break;
-		}
-	}
+bool textinput_is_hovered(textinput_p ti, float x, float y)
+{
+	if (!ti) return false;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(ti->renderer, x, y, &logic.x, &logic.y);
+	ti->hovered = SDL_PointInRectFloat(&logic, &ti->rect);
+	return ti->hovered;
 }
 
 bool textinput_is_focused(textinput_p ti)

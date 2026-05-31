@@ -311,6 +311,10 @@ void luax_dispatch_event(luax_p luax, const SDL_Event* event)
                 call_joy_n(L, "keyreleased", 2);
                 break;
         }
+        case SDL_EVENT_TEXT_INPUT:
+                lua_pushstring(L, event->text.text);
+                call_joy_n(L, "textinput", 1);
+                break;
         case SDL_EVENT_WINDOW_RESIZED:
                 lua_pushinteger(L, event->window.data1);
                 lua_pushinteger(L, event->window.data2);

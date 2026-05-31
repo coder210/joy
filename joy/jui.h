@@ -233,7 +233,8 @@ extern "C" {
 	JOY_API const char* textinput_get_text(textinput_p ti);
 	JOY_API void textinput_set_callback(textinput_p ti, void (*submit)(textinput_p, void*), void (*change)(textinput_p, void*), void* userdata);
 	JOY_API void textinput_draw(textinput_p ti);
-	JOY_API void textinput_handle_event(textinput_p ti, SDL_Event* event);
+	JOY_API bool textinput_is_pressed(textinput_p ti, float x, float y);
+	JOY_API bool textinput_is_hovered(textinput_p ti, float x, float y);
 	JOY_API void textinput_focus(textinput_p ti);
 	JOY_API void textinput_defocus(textinput_p ti);
 	JOY_API void textinput_insert(textinput_p ti, const char* s, int len);
