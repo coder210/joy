@@ -40,7 +40,7 @@ struct button {
 
 typedef struct combobox_item {
 	SDL_FRect rect;
-	SDL_Texture* text;
+	text_texture_p text;
 	bool is_selected;
 } combobox_item_t, * combobox_item_p;
 

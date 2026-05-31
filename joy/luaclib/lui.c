@@ -309,12 +309,11 @@ static int lcombobox_additem(lua_State* L)
 	combobox_p combobox = (combobox_p)lua_touserdata(L, 1);
 	const char* text = luaL_checkstring(L, 2);
 	if (!text) return 0;
-	combobox_item_p item;
 	if (combobox->item_count >= 20) return 0;
-	item = &combobox->items[combobox->item_count];
-	// item->text = text_createx(...) but currently combobox_item uses SDL_Texture*
-	// 简单处理: 用第一个字符的codepoint作为占位
-	item->text = NULL;
+	font_p font = *(font_p*)lua_touserdata(L, 3);
+	SDL_Color c = {0, 0, 0, 255};
+	combobox_item_p item = &combobox->items[combobox->item_count];
+	item->text = text_createx(font, text, (int)SDL_strlen(text), c);
 	item->is_selected = false;
 	combobox->item_count++;
 	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;

@@ -262,6 +262,8 @@ combobox_p combobox_create(SDL_Renderer* renderer, SDL_FRect rect)
 void combobox_destroy(combobox_p combobox)
 {
 	if (combobox) {
+		for (int i = 0; i < combobox->item_count; i++)
+			if (combobox->items[i].text) text_destroy(combobox->items[i].text);
 		SDL_free(combobox);
 	}
 }
@@ -347,13 +349,9 @@ void combobox_draw(combobox_p combobox)
 	SDL_RenderRect(renderer, &combobox->main_rect);
 
 	// ��Ⱦ��ǰѡ�е��ı�
-	if (combobox->selected_index >= 0) {
-		SDL_Point point;
-		//char* text;
-		point.x = combobox->main_rect.x;
-		point.y = combobox->main_rect.y;
-		//text = combobox->items[combobox->selected_index].text;
-		//render_text(combobox->font_info, 18, text, SDL_strlen(text), point, renderer);
+	if (combobox->selected_index >= 0 && combobox->items[combobox->selected_index].text) {
+		text_print(renderer, combobox->items[combobox->selected_index].text,
+			combobox->main_rect.x + 5, combobox->main_rect.y);
 	}
 
 
@@ -395,11 +393,9 @@ void combobox_draw(combobox_p combobox)
 			SDL_RenderRect(renderer, &item_rect);
 
 			item = combobox->items + i;
-			SDL_Point point;
-			point.x = item_rect.x + 5;
-			point.y = item_rect.y;
-
-			//render_text(combobox->font_info, 18, item->text, SDL_strlen(item->text), point, renderer);
+			if (item->text) {
+				text_print(renderer, item->text, item_rect.x + 5, item_rect.y);
+			}
 		}
 	}
 	else {
