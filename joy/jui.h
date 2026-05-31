@@ -11,6 +11,8 @@ History:
 #define UI_H
 #include "jtextures.h"
 #include "jtext.h"
+#include "external/klib/kvec.h"
+typedef kvec_t(char*) dg_row_t;
 
 typedef struct label {
 	SDL_Renderer* renderer;
@@ -70,7 +72,7 @@ typedef struct datagrid {
 	int scroll_offset;     // 滚动偏移
 	int selected_row;      // 选中的行
 	text_texture_p headers[512];        // 表头
-	int*** data;          // 表格数据
+	kvec_t(dg_row_t) data;              // 表格数据（klib 动态数组 of dg_row_t）
 	int* col_widths;       // 列宽
 	bool has_header;   // 是否有表头
 	font_p font;        // 字体
@@ -256,6 +258,32 @@ extern "C" {
 	JOY_API void textinput_copy(textinput_p ti);
 	JOY_API void textinput_cut(textinput_p ti);
 	JOY_API bool textinput_is_focused(textinput_p ti);
+
+typedef struct slider {
+	SDL_Renderer* renderer;
+	SDL_FRect track;             // 滑轨区域
+	float min, max;              // 取值范围
+	float value;                 // 当前值
+	float thumb_width;           // 滑块宽度（高度 = track.h）
+	bool is_dragging;            // 是否在拖动
+	SDL_Color track_color;       // 滑轨背景色
+	SDL_Color fill_color;        // 已填充部分颜色
+	SDL_Color thumb_color;       // 滑块颜色
+	SDL_Color thumb_hover_color; // 滑块悬停颜色
+	bool hovered;                // 滑块是否悬停
+} slider_t, * slider_p;
+
+JOY_API slider_p slider_create(SDL_Renderer* renderer, float x, float y, float w, float h, float min, float max, float initial);
+JOY_API void slider_destroy(slider_p s);
+JOY_API void slider_set_value(slider_p s, float v);
+JOY_API float slider_get_value(slider_p s);
+JOY_API void slider_set_range(slider_p s, float min, float max);
+JOY_API void slider_draw(slider_p s);
+JOY_API bool slider_is_pressed(slider_p s, float x, float y);
+JOY_API void slider_set_pressed(slider_p s, bool v);
+JOY_API void slider_drag_move(slider_p s, float x, float y);
+JOY_API bool slider_is_hovered(slider_p s, float x, float y);
+JOY_API void slider_set_hovered(slider_p s, bool v);
 
 #ifdef __cplusplus
 }

@@ -432,7 +432,7 @@ datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_h
 	grid->selected_row = -1;
 	grid->has_header = has_header;
 	grid->font = (font_p)font;
-	grid->data = NULL;
+	kv_init(grid->data);
 	grid->col_widths = (int*)SDL_malloc(col_count * sizeof(int));
 	grid->bg_color = (SDL_Color){ 0xFF, 0xFF, 0xFF, 0xFF };
 	grid->grid_color = (SDL_Color){ 0xCC, 0xCC, 0xCC, 0xFF };
@@ -480,41 +480,35 @@ void datagrid_setheader(datagrid_p grid, int index, const char* header)
 
 void datagrid_addrow(datagrid_p grid, const char** row_data)
 {
-	/*
-	grid->row_count++;
-	grid->data = SDL_realloc(grid->data, grid->row_count * sizeof(char**));
-	grid->data[grid->row_count - 1] = SDL_malloc(grid->col_count * sizeof(char*));
+	if (!grid) return;
+	dg_row_t row;
+	kv_init(row);
 	for (int i = 0; i < grid->col_count; i++) {
-		grid->data[grid->row_count - 1][i] = row_data[i] ? SDL_strdup(row_data[i]) : NULL;
-	}*/
+		kv_push(char*, row, row_data && row_data[i] ? SDL_strdup(row_data[i]) : NULL);
+	}
+	kv_push(dg_row_t, grid->data, row);
+	grid->row_count = (int)kv_size(grid->data);
 }
 
 void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data)
 {
-	/*
-	if (!grid->has_header) return;
-	if (row_index < grid->row_count && col_index < grid->col_count) {
-		if (grid->data[row_index][col_index]) {
-			SDL_free(grid->data[row_index][col_index]);
-		}
-		grid->data[row_index][col_index] = SDL_strdup(data);
-	}*/
+	if (!grid) return;
+	if (row_index < (int)kv_size(grid->data) && col_index < grid->col_count) {
+		dg_row_t *row = &kv_A(grid->data, row_index);
+		if (kv_A(*row, col_index)) SDL_free(kv_A(*row, col_index));
+		kv_A(*row, col_index) = data ? SDL_strdup(data) : NULL;
+	}
 }
 
 static void datagrid_cleardata(datagrid_p grid)
 {
-	for (int i = (grid->has_header ? 1 : 0); i < grid->row_count; i++) {
-		for (int j = 0; j < grid->col_count; j++) {
-			if (grid->data[i][j]) SDL_free(grid->data[i][j]);
-		}
-		SDL_free(grid->data[i]);
+	for (size_t i = 0; i < kv_size(grid->data); i++) {
+		dg_row_t *row = &kv_A(grid->data, i);
+		for (size_t j = 0; j < kv_size(*row); j++)
+			if (kv_A(*row, j)) { SDL_free(kv_A(*row, j)); kv_A(*row, j) = NULL; }
+		kv_destroy(*row);
 	}
-
-	if (grid->row_count > (grid->has_header ? 1 : 0)) {
-		SDL_free(grid->data);
-		grid->data = NULL;
-	}
-
+	kv_destroy(grid->data);
 	grid->row_count = grid->has_header ? 1 : 0;
 }
 
@@ -522,17 +516,11 @@ static void datagrid_cleardata(datagrid_p grid)
 void datagrid_destroy(datagrid_p grid)
 {
 	if (!grid) return;
-
 	if (grid->has_header) {
-		for (int i = 0; i < grid->col_count; i++) {
+		for (int i = 0; i < grid->col_count; i++)
 			if (grid->headers[i]) text_destroy(grid->headers[i]);
-		}
 	}
-
-	// �ͷ�����
 	datagrid_cleardata(grid);
-
-	// �ͷ�������Դ
 	SDL_free(grid->col_widths);
 	SDL_free(grid);
 }
@@ -600,17 +588,16 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 			 SDL_RenderFillRect(renderer, &header_rect);*/
 		}
 
-		// ���Ƶ�Ԫ�����ݺ�������
+		// ���Ƶ�Ԫ�����ݺ�����
 		int x = grid->x;
 		for (int col = 0; col < grid->col_count; col++) {
-			//text = grid->data[row][col];
-			//if (text) {
-			//        SDL_Point point;
-			//        point.x = x;
-			//        point.y = y;
-			//        // grid->col_widths[col], grid->row_height
-			//        //render_text(grid->font, 18, text, SDL_strlen(text), point, renderer);
-			//}
+			if ((size_t)row < kv_size(grid->data) && (size_t)col < kv_size(kv_A(grid->data, row))) {
+				char* text = kv_A(kv_A(grid->data, row), col);
+				if (text) {
+					SDL_Color c = {0,0,0,255};
+					text_printx(renderer, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
+				}
+			}
 
 			// ���ƴ�ֱ��
 			SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
@@ -1506,7 +1493,12 @@ void textinput_select_all(textinput_p ti)
 /* 删除光标前一个 UTF-8 字符（退格） */
 void textinput_backspace(textinput_p ti)
 {
-	if (textinput_has_sel(ti)) { textinput_delete_sel(ti); return; }
+	if (textinput_has_sel(ti)) {
+		textinput_delete_sel(ti);
+		textinput_scroll_to_cursor(ti);
+		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+		return;
+	}
 	if (ti->cursor_pos <= 0) return;
 	int pos = ti->cursor_pos - 1;
 	while (pos > 0 && ((unsigned char)ti->buffer[pos] & 0xC0) == 0x80)
@@ -1524,7 +1516,12 @@ void textinput_backspace(textinput_p ti)
 /* 删除光标后一个 UTF-8 字符（Delete） */
 void textinput_delete(textinput_p ti)
 {
-	if (textinput_has_sel(ti)) { textinput_delete_sel(ti); return; }
+	if (textinput_has_sel(ti)) {
+		textinput_delete_sel(ti);
+		textinput_scroll_to_cursor(ti);
+		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+		return;
+	}
 	if (ti->cursor_pos >= ti->text_len) return;
 	int pos = ti->cursor_pos;
 	int ch_len = 1;
@@ -1661,7 +1658,28 @@ void textinput_draw(textinput_p ti)
 		SDL_SetRenderClipRect(r, &clip);
 		float text_x = rect.x + 4;
 		float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
-		text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, text_x - (float)ti->scroll_offset, text_y);
+		float ox = text_x - (float)ti->scroll_offset;
+
+		if (textinput_has_sel(ti)) {
+			int a = ti->sel_start, b = ti->sel_end;
+			if (a > b) { int t = a; a = b; b = t; }
+			SDL_Color white = {255, 255, 255, 255};
+			/* 选中前部分 */
+			if (a > 0)
+				text_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+			/* 选中部分（白色） */
+			if (b > a) {
+				float offset_before = (float)text_get_width(text_createx(ti->font, ti->buffer, a, ti->text_color));
+				text_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+			}
+			/* 选中后部分 */
+			if (b < ti->text_len) {
+				float offset_sel = (float)text_get_width(text_createx(ti->font, ti->buffer, b, ti->text_color));
+				text_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+			}
+		} else {
+			text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+		}
 		SDL_SetRenderClipRect(r, NULL);
 	}
 
@@ -1710,4 +1728,167 @@ bool textinput_is_hovered(textinput_p ti, float x, float y)
 bool textinput_is_focused(textinput_p ti)
 {
 	return ti ? ti->focused : false;
+}
+
+/* =================================================================
+ * Slider
+ * ================================================================= */
+
+static float slider_thumb_x(slider_p s)
+{
+	float range = s->max - s->min;
+	if (range <= 0) return s->track.x;
+	float ratio = (s->value - s->min) / range;
+	return s->track.x + ratio * s->track.w;
+}
+
+static SDL_FRect slider_thumb_rect(slider_p s)
+{
+	float tx = slider_thumb_x(s);
+	SDL_FRect r;
+	r.x = tx - s->thumb_width * 0.5f;
+	r.y = s->track.y;
+	r.w = s->thumb_width;
+	r.h = s->track.h;
+	return r;
+}
+
+static void slider_update_value_from_x(slider_p s, float logic_x)
+{
+	float ratio = (logic_x - s->track.x) / s->track.w;
+	float v = s->min + ratio * (s->max - s->min);
+	if (v < s->min) v = s->min;
+	if (v > s->max) v = s->max;
+	s->value = v;
+}
+
+static bool slider_thumb_hit(slider_p s, float logic_x, float logic_y)
+{
+	SDL_FRect tr = slider_thumb_rect(s);
+	return logic_x >= tr.x && logic_x <= tr.x + tr.w
+	    && logic_y >= tr.y && logic_y <= tr.y + tr.h;
+}
+
+slider_p slider_create(SDL_Renderer* renderer, float x, float y, float w, float h, float min, float max, float initial)
+{
+	slider_p s = (slider_p)SDL_calloc(1, sizeof(slider_t));
+	if (!s) return NULL;
+	s->renderer = renderer;
+	s->track.x = x;
+	s->track.y = y;
+	s->track.w = w;
+	s->track.h = h;
+	s->min = min;
+	s->max = max;
+	s->value = initial;
+	if (s->value < min) s->value = min;
+	if (s->value > max) s->value = max;
+	s->thumb_width = h;
+	s->is_dragging = false;
+	s->hovered = false;
+	s->track_color   = (SDL_Color){ 80,  80,  80,  255 };
+	s->fill_color    = (SDL_Color){ 66,  133, 244, 255 };
+	s->thumb_color   = (SDL_Color){ 200, 200, 200, 255 };
+	s->thumb_hover_color = (SDL_Color){ 240, 240, 240, 255 };
+	return s;
+}
+
+void slider_destroy(slider_p s)
+{
+	SDL_free(s);
+}
+
+void slider_set_value(slider_p s, float v)
+{
+	if (!s) return;
+	if (v < s->min) v = s->min;
+	if (v > s->max) v = s->max;
+	s->value = v;
+}
+
+float slider_get_value(slider_p s)
+{
+	return s ? s->value : 0;
+}
+
+void slider_set_range(slider_p s, float min, float max)
+{
+	if (!s) return;
+	s->min = min;
+	s->max = max;
+	if (s->value < min) s->value = min;
+	if (s->value > max) s->value = max;
+}
+
+void slider_draw(slider_p s)
+{
+	if (!s) return;
+	SDL_Renderer* r = s->renderer;
+
+	/* 滑轨背景 */
+	SDL_SetRenderDrawColor(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
+	SDL_RenderFillRect(r, &s->track);
+
+	/* 已填充部分（从 track.x 到 thumb 中心） */
+	float tx = slider_thumb_x(s);
+	float fill_w = tx - s->track.x;
+	if (fill_w > 0) {
+		SDL_SetRenderDrawColor(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
+		SDL_FRect fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
+		SDL_RenderFillRect(r, &fill_rect);
+	}
+
+	/* 滑块 */
+	SDL_FRect tr = slider_thumb_rect(s);
+	SDL_Color tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
+	SDL_SetRenderDrawColor(r, tc.r, tc.g, tc.b, tc.a);
+	SDL_RenderFillRect(r, &tr);
+	SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
+	SDL_RenderRect(r, &tr);
+}
+
+bool slider_is_pressed(slider_p s, float x, float y)
+{
+	if (!s) return false;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	if (slider_thumb_hit(s, logic.x, logic.y)) {
+		s->is_dragging = true;
+		return true;
+	}
+	/* 点击滑轨时跳转到该位置 */
+	if (logic.x >= s->track.x && logic.x <= s->track.x + s->track.w
+	    && logic.y >= s->track.y && logic.y <= s->track.y + s->track.h) {
+		slider_update_value_from_x(s, logic.x);
+		s->is_dragging = true;
+		return true;
+	}
+	return false;
+}
+
+void slider_set_pressed(slider_p s, bool v)
+{
+	if (s) s->is_dragging = v;
+}
+
+void slider_drag_move(slider_p s, float x, float y)
+{
+	if (!s || !s->is_dragging) return;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	slider_update_value_from_x(s, logic.x);
+}
+
+bool slider_is_hovered(slider_p s, float x, float y)
+{
+	if (!s) return false;
+	SDL_FPoint logic;
+	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	s->hovered = slider_thumb_hit(s, logic.x, logic.y);
+	return s->hovered;
+}
+
+void slider_set_hovered(slider_p s, bool v)
+{
+	if (s) s->hovered = v;
 }

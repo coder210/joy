@@ -532,18 +532,31 @@ static int ldatagrid_addrow(lua_State* L)
 	luaL_checktype(L, 2, LUA_TTABLE);
 	int cols = (int)luaL_len(L, 2);
 	if (cols > dg->col_count) cols = dg->col_count;
-	dg->row_count++;
-	dg->data = (int***)SDL_realloc(dg->data, dg->row_count * sizeof(int**));
-	dg->data[dg->row_count-1] = (int**)SDL_malloc(dg->col_count * sizeof(int*));
-	for (int i = 0; i < dg->col_count; i++)
-		dg->data[dg->row_count-1][i] = NULL;
-	for (int j = 1; j <= cols; j++) {
-		lua_geti(L, 2, j);
-		if (lua_isstring(L, -1))
-			dg->data[dg->row_count-1][j-1] = (int*)SDL_strdup(lua_tostring(L, -1));
+	const char** row = (const char**)SDL_malloc(cols * sizeof(char*));
+	for (int j = 0; j < cols; j++) {
+		lua_geti(L, 2, j + 1);
+		row[j] = lua_tostring(L, -1);
 		lua_pop(L, 1);
 	}
+	datagrid_addrow(dg, row);
+	SDL_free(row);
 	return 0;
+}
+
+static int ldatagrid_get_row_count(lua_State* L) {
+	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
+	lua_pushinteger(L, dg->row_count);
+	return 1;
+}
+
+static int ldatagrid_get_cell(lua_State* L) {
+	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
+	int r = (int)luaL_checkinteger(L, 2), c = (int)luaL_checkinteger(L, 3);
+	if (r >= 0 && r < (int)kv_size(dg->data) && c >= 0 && c < dg->col_count) {
+		char* val = kv_A(kv_A(dg->data, r), c);
+		if (val) lua_pushstring(L, val); else lua_pushnil(L);
+	} else lua_pushnil(L);
+	return 1;
 }
 
 static int l_datagrid_hit_row(lua_State* L) {
@@ -711,6 +724,70 @@ static int l_button_set_position(lua_State* L) {
 	return 0;
 }
 
+/* ---- Slider Lua bindings ---- */
+static int l_slider_create(lua_State* L) {
+	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2);
+	float y = (float)luaL_checknumber(L, 3);
+	float w = (float)luaL_checknumber(L, 4);
+	float h = (float)luaL_checknumber(L, 5);
+	float min = (float)luaL_checknumber(L, 6);
+	float max = (float)luaL_checknumber(L, 7);
+	float init = (float)luaL_checknumber(L, 8);
+	slider_p s = slider_create(r, x, y, w, h, min, max, init);
+	lua_pushlightuserdata(L, s);
+	return 1;
+}
+static int l_slider_destroy(lua_State* L) {
+	slider_destroy((slider_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_slider_set_value(lua_State* L) {
+	slider_set_value((slider_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2));
+	return 0;
+}
+static int l_slider_get_value(lua_State* L) {
+	lua_pushnumber(L, slider_get_value((slider_p)lua_touserdata(L, 1)));
+	return 1;
+}
+static int l_slider_set_range(lua_State* L) {
+	slider_p s = (slider_p)lua_touserdata(L, 1);
+	float min = (float)luaL_checknumber(L, 2);
+	float max = (float)luaL_checknumber(L, 3);
+	slider_set_range(s, min, max);
+	return 0;
+}
+static int l_slider_draw(lua_State* L) {
+	slider_draw((slider_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_slider_is_pressed(lua_State* L) {
+	slider_p s = (slider_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, slider_is_pressed(s, x, y));
+	return 1;
+}
+static int l_slider_set_pressed(lua_State* L) {
+	slider_set_pressed((slider_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
+static int l_slider_drag_move(lua_State* L) {
+	slider_p s = (slider_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	slider_drag_move(s, x, y);
+	return 0;
+}
+static int l_slider_is_hovered(lua_State* L) {
+	slider_p s = (slider_p)lua_touserdata(L, 1);
+	float x = (float)luaL_checknumber(L, 2), y = (float)luaL_checknumber(L, 3);
+	lua_pushboolean(L, slider_is_hovered(s, x, y));
+	return 1;
+}
+static int l_slider_set_hovered(lua_State* L) {
+	slider_set_hovered((slider_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
+
 int luaopen_ui(lua_State* L)
 {
 	lua_newtable(L);
@@ -802,6 +879,8 @@ int luaopen_ui(lua_State* L)
 	    {"hit_row", l_datagrid_hit_row},
 	    {"scroll", l_datagrid_scroll},
 	    {"set_selected_row", l_datagrid_set_selected_row},
+	    {"get_row_count", ldatagrid_get_row_count},
+	    {"get_cell", ldatagrid_get_cell},
 	{NULL, NULL},
 	};
 	luaL_newlib(L, datagrid_lib);
@@ -837,6 +916,23 @@ int luaopen_ui(lua_State* L)
 	};
 	luaL_newlib(L, textinput_lib);
 	lua_setfield(L, -2, "textinput");
+
+	luaL_Reg slider_lib[] = {
+		{"create", l_slider_create},
+		{"destroy", l_slider_destroy},
+		{"set_value", l_slider_set_value},
+		{"get_value", l_slider_get_value},
+		{"set_range", l_slider_set_range},
+		{"draw", l_slider_draw},
+		{"is_pressed", l_slider_is_pressed},
+		{"set_pressed", l_slider_set_pressed},
+		{"drag_move", l_slider_drag_move},
+		{"is_hovered", l_slider_is_hovered},
+		{"set_hovered", l_slider_set_hovered},
+		{NULL, NULL},
+	};
+	luaL_newlib(L, slider_lib);
+	lua_setfield(L, -2, "slider");
 
 	return 1;
 }
