@@ -132,12 +132,15 @@ typedef struct textinput {
 	SDL_Color border_color;       // 边框色
 	SDL_Color text_color;         // 文字色
 	SDL_Color cursor_color;       // 光标色
+	SDL_Color sel_color;          // 选中背景色
 	SDL_Color focus_border_color; // 聚焦时边框色
 	font_p font;                  // 字体
 	char* buffer;                 // 文本缓冲区
 	int buf_len;                  // 缓冲区大小
 	int text_len;                 // 当前文本长度
 	int cursor_pos;               // 光标位置（字节偏移）
+	int sel_start;                // 选中起始（-1 表示无选中）
+	int sel_end;                  // 选中结束
 	int scroll_offset;            // 文本滚动偏移（像素）
 	bool focused;                 // 是否聚焦
 	bool hovered;                 // 鼠标悬停
@@ -244,6 +247,14 @@ extern "C" {
 	JOY_API void textinput_cursor_right(textinput_p ti);
 	JOY_API void textinput_cursor_home(textinput_p ti);
 	JOY_API void textinput_cursor_end(textinput_p ti);
+	JOY_API void textinput_select_left(textinput_p ti);
+	JOY_API void textinput_select_right(textinput_p ti);
+	JOY_API void textinput_select_home(textinput_p ti);
+	JOY_API void textinput_select_end(textinput_p ti);
+	JOY_API void textinput_select_all(textinput_p ti);
+	JOY_API void textinput_paste(textinput_p ti);
+	JOY_API void textinput_copy(textinput_p ti);
+	JOY_API void textinput_cut(textinput_p ti);
 	JOY_API bool textinput_is_focused(textinput_p ti);
 
 #ifdef __cplusplus

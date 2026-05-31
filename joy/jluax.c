@@ -300,7 +300,10 @@ void luax_dispatch_event(luax_p luax, const SDL_Event* event)
                 lua_pushstring(L, name);
                 lua_pushinteger(L, event->key.scancode);
                 lua_pushboolean(L, event->key.repeat);
-                call_joy_n(L, "keypressed", 3);
+                lua_pushboolean(L, event->key.mod & SDL_KMOD_CTRL);
+                lua_pushboolean(L, event->key.mod & SDL_KMOD_SHIFT);
+                lua_pushboolean(L, event->key.mod & SDL_KMOD_ALT);
+                call_joy_n(L, "keypressed", 6);
                 break;
         }
         case SDL_EVENT_KEY_UP: {

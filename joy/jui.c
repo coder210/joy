@@ -1302,10 +1302,13 @@ textinput_p textinput_create(SDL_Renderer* renderer, SDL_FRect rect, font_p font
 	ti->focus_border_color = (SDL_Color){66, 133, 244, 255};
 	ti->text_color = (SDL_Color){0, 0, 0, 255};
 	ti->cursor_color = (SDL_Color){0, 0, 0, 255};
+	ti->sel_color    = (SDL_Color){100, 150, 255, 255};
 	ti->buf_len    = TEXTINPUT_BUF_INIT;
 	ti->buffer     = (char*)SDL_calloc(1, ti->buf_len);
 	ti->text_len   = 0;
 	ti->cursor_pos = 0;
+	ti->sel_start  = -1;
+	ti->sel_end    = -1;
 	ti->focused    = false;
 	ti->cursor_timer = SDL_GetTicks();
 	ti->cursor_visible = true;
@@ -1319,6 +1322,33 @@ void textinput_destroy(textinput_p ti)
 	SDL_free(ti);
 }
 
+
+/* ---- 选中支持 ---- */
+
+static void textinput_clear_sel(textinput_p ti)
+{
+	ti->sel_start = ti->sel_end = -1;
+}
+
+static bool textinput_has_sel(textinput_p ti)
+{
+	return ti->sel_start >= 0 && ti->sel_end >= 0 && ti->sel_start != ti->sel_end;
+}
+
+/* 删除选中文本，将光标置于选中起始 */
+static void textinput_delete_sel(textinput_p ti)
+{
+	if (!textinput_has_sel(ti)) return;
+	int a = ti->sel_start, b = ti->sel_end;
+	if (a > b) { int t = a; a = b; b = t; }
+	SDL_memmove(ti->buffer + a, ti->buffer + b, ti->text_len - b);
+	ti->text_len -= (b - a);
+	ti->cursor_pos = a;
+	textinput_clear_sel(ti);
+	ti->buffer[ti->text_len] = '\0';
+}
+
+
 void textinput_set_text(textinput_p ti, const char* text)
 {
 	if (!ti || !text) return;
@@ -1331,6 +1361,7 @@ void textinput_set_text(textinput_p ti, const char* text)
 	ti->buffer[len] = '\0';
 	ti->text_len = len;
 	ti->cursor_pos = len;
+	textinput_clear_sel(ti);
 	ti->scroll_offset = 0;
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 }
@@ -1367,12 +1398,14 @@ static void textinput_scroll_to_cursor(textinput_p ti)
 /* 在 buffer 的 cursor_pos 处插入 len 字节 */
 void textinput_insert(textinput_p ti, const char* s, int len)
 {
+	/* 有选中时先删除选中文本 */
+	if (textinput_has_sel(ti)) textinput_delete_sel(ti);
+
 	if (ti->text_len + len >= ti->buf_len) {
 		while (ti->text_len + len >= ti->buf_len)
 			ti->buf_len *= 2;
 		ti->buffer = (char*)SDL_realloc(ti->buffer, ti->buf_len);
 	}
-	/* 移位 */
 	SDL_memmove(ti->buffer + ti->cursor_pos + len,
 	            ti->buffer + ti->cursor_pos,
 	            ti->text_len - ti->cursor_pos);
@@ -1384,11 +1417,97 @@ void textinput_insert(textinput_p ti, const char* s, int len)
 	textinput_scroll_to_cursor(ti);
 }
 
+/* 移动光标并清除选中 */
+static void textinput_move_cursor(textinput_p ti, int pos)
+{
+	ti->cursor_pos = pos;
+	textinput_clear_sel(ti);
+	textinput_scroll_to_cursor(ti);
+}
+
+/* 扩展选中到光标位置 */
+static void textinput_update_sel(textinput_p ti)
+{
+	if (ti->sel_start < 0) ti->sel_start = ti->cursor_pos;
+	ti->sel_end = ti->cursor_pos;
+}
+
+/* ---- end 选中支持 ---- */
+
+void textinput_cursor_left(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos <= 0) return;
+	textinput_move_cursor(ti, ti->cursor_pos - 1);
+}
+
+void textinput_cursor_right(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos >= ti->text_len) return;
+	textinput_move_cursor(ti, ti->cursor_pos + 1);
+}
+
+void textinput_cursor_home(textinput_p ti)
+{
+	if (!ti) return;
+	textinput_move_cursor(ti, 0);
+	ti->scroll_offset = 0;
+}
+
+void textinput_cursor_end(textinput_p ti)
+{
+	if (!ti) return;
+	textinput_move_cursor(ti, ti->text_len);
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_select_left(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos <= 0) return;
+	ti->cursor_pos--;
+	textinput_update_sel(ti);
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_select_right(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos >= ti->text_len) return;
+	ti->cursor_pos++;
+	textinput_update_sel(ti);
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_select_home(textinput_p ti)
+{
+	if (!ti) return;
+	textinput_update_sel(ti);
+	ti->cursor_pos = 0;
+	ti->scroll_offset = 0;
+	ti->sel_end = 0;
+}
+
+void textinput_select_end(textinput_p ti)
+{
+	if (!ti) return;
+	textinput_update_sel(ti);
+	ti->cursor_pos = ti->text_len;
+	ti->sel_end = ti->text_len;
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_select_all(textinput_p ti)
+{
+	if (!ti) return;
+	ti->sel_start = 0;
+	ti->sel_end = ti->text_len;
+	ti->cursor_pos = ti->text_len;
+	textinput_scroll_to_cursor(ti);
+}
+
 /* 删除光标前一个 UTF-8 字符（退格） */
 void textinput_backspace(textinput_p ti)
 {
+	if (textinput_has_sel(ti)) { textinput_delete_sel(ti); return; }
 	if (ti->cursor_pos <= 0) return;
-	/* 定位到上一个 UTF-8 字符起始 */
 	int pos = ti->cursor_pos - 1;
 	while (pos > 0 && ((unsigned char)ti->buffer[pos] & 0xC0) == 0x80)
 		pos--;
@@ -1405,6 +1524,7 @@ void textinput_backspace(textinput_p ti)
 /* 删除光标后一个 UTF-8 字符（Delete） */
 void textinput_delete(textinput_p ti)
 {
+	if (textinput_has_sel(ti)) { textinput_delete_sel(ti); return; }
 	if (ti->cursor_pos >= ti->text_len) return;
 	int pos = ti->cursor_pos;
 	int ch_len = 1;
@@ -1418,36 +1538,52 @@ void textinput_delete(textinput_p ti)
 	textinput_scroll_to_cursor(ti);
 }
 
-void textinput_cursor_left(textinput_p ti)
-{
-	if (!ti || ti->cursor_pos <= 0) return;
-	ti->cursor_pos--;
-	while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-		ti->cursor_pos--;
-	textinput_scroll_to_cursor(ti);
-}
-
-void textinput_cursor_right(textinput_p ti)
-{
-	if (!ti || ti->cursor_pos >= ti->text_len) return;
-	ti->cursor_pos++;
-	while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
-		ti->cursor_pos++;
-	textinput_scroll_to_cursor(ti);
-}
-
-void textinput_cursor_home(textinput_p ti)
+void textinput_paste(textinput_p ti)
 {
 	if (!ti) return;
-	ti->cursor_pos = 0;
-	ti->scroll_offset = 0;
+	const char* clip = SDL_GetClipboardText();
+	if (clip) textinput_insert(ti, clip, (int)SDL_strlen(clip));
 }
 
-void textinput_cursor_end(textinput_p ti)
+void textinput_copy(textinput_p ti)
 {
-	if (!ti) return;
-	ti->cursor_pos = ti->text_len;
-	textinput_scroll_to_cursor(ti);
+	if (!ti || ti->text_len <= 0) return;
+	if (textinput_has_sel(ti)) {
+		int a = ti->sel_start, b = ti->sel_end;
+		if (a > b) { int t = a; a = b; b = t; }
+		int len = b - a;
+		char* buf = (char*)SDL_malloc(len + 1);
+		SDL_memcpy(buf, ti->buffer + a, len);
+		buf[len] = '\0';
+		SDL_SetClipboardText(buf);
+		SDL_free(buf);
+	} else {
+		SDL_SetClipboardText(ti->buffer);
+	}
+}
+
+void textinput_cut(textinput_p ti)
+{
+	if (!ti || ti->text_len <= 0) return;
+	if (textinput_has_sel(ti)) {
+		int a = ti->sel_start, b = ti->sel_end;
+		if (a > b) { int t = a; a = b; b = t; }
+		int len = b - a;
+		char* buf = (char*)SDL_malloc(len + 1);
+		SDL_memcpy(buf, ti->buffer + a, len);
+		buf[len] = '\0';
+		SDL_SetClipboardText(buf);
+		SDL_free(buf);
+		textinput_delete_sel(ti);
+		ti->buffer[ti->text_len] = '\0';
+		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+	} else {
+		SDL_SetClipboardText(ti->buffer);
+		ti->text_len = 0;
+		ti->cursor_pos = 0;
+		ti->buffer[0] = '\0';
+		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+	}
 }
 
 /* 获取光标之前的文本宽度（像素） */
@@ -1478,6 +1614,7 @@ void textinput_defocus(textinput_p ti)
 {
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
+	textinput_clear_sel(ti);
 	SDL_Window* win = SDL_GetRenderWindow(ti->renderer);
 	if (win) SDL_StopTextInput(win);
 }
@@ -1496,6 +1633,27 @@ void textinput_draw(textinput_p ti)
 	SDL_Color border = ti->focused ? ti->focus_border_color : ti->border_color;
 	SDL_SetRenderDrawColor(r, border.r, border.g, border.b, border.a);
 	SDL_RenderRect(r, &rect);
+
+	/* 选中高亮（绘制在文字下方） */
+	if (textinput_has_sel(ti) && ti->font) {
+		SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
+		SDL_SetRenderClipRect(r, &clip);
+		int a = ti->sel_start, b = ti->sel_end;
+		if (a > b) { int t = a; a = b; b = t; }
+		SDL_Color c = {0,0,0,255};
+		text_texture_p ta = text_createx(ti->font, ti->buffer, a, c);
+		text_texture_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
+		if (ta && tb) {
+			float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
+			float sw = (float)text_get_width(tb);
+			SDL_FRect sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
+			SDL_SetRenderDrawColor(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
+			SDL_RenderFillRect(r, &sel_rect);
+		}
+		if (ta) text_destroy(ta);
+		if (tb) text_destroy(tb);
+		SDL_SetRenderClipRect(r, NULL);
+	}
 
 	/* 文字（设裁剪区域防止溢出） */
 	if (ti->text_len > 0 && ti->font) {

@@ -667,6 +667,35 @@ static int l_textinput_cursor_end(lua_State* L) {
 	return 0;
 }
 
+static int l_textinput_select_left(lua_State* L) {
+	textinput_select_left((textinput_p)lua_touserdata(L, 1)); return 0;
+}
+static int l_textinput_select_right(lua_State* L) {
+	textinput_select_right((textinput_p)lua_touserdata(L, 1)); return 0;
+}
+static int l_textinput_select_home(lua_State* L) {
+	textinput_select_home((textinput_p)lua_touserdata(L, 1)); return 0;
+}
+static int l_textinput_select_end(lua_State* L) {
+	textinput_select_end((textinput_p)lua_touserdata(L, 1)); return 0;
+}
+static int l_textinput_select_all(lua_State* L) {
+	textinput_select_all((textinput_p)lua_touserdata(L, 1)); return 0;
+}
+
+static int l_textinput_paste(lua_State* L) {
+	textinput_paste((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_textinput_copy(lua_State* L) {
+	textinput_copy((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_textinput_cut(lua_State* L) {
+	textinput_cut((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+
 static int l_textinput_is_focused(lua_State* L) {
 	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
 	lua_pushboolean(L, textinput_is_focused(ti));
@@ -795,6 +824,14 @@ int luaopen_ui(lua_State* L)
 		{"cursor_right", l_textinput_cursor_right},
 		{"cursor_home", l_textinput_cursor_home},
 		{"cursor_end", l_textinput_cursor_end},
+		{"select_left", l_textinput_select_left},
+		{"select_right", l_textinput_select_right},
+		{"select_home", l_textinput_select_home},
+		{"select_end", l_textinput_select_end},
+		{"select_all", l_textinput_select_all},
+		{"paste", l_textinput_paste},
+		{"copy", l_textinput_copy},
+		{"cut", l_textinput_cut},
 		{"is_focused", l_textinput_is_focused},
 		{NULL, NULL},
 	};
