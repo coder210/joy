@@ -1351,6 +1351,19 @@ void textinput_set_callback(textinput_p ti,
 	ti->cb_userdata = userdata;
 }
 
+static int textinput_cursor_x(textinput_p ti);
+
+/* 滚动到光标可见 */
+static void textinput_scroll_to_cursor(textinput_p ti)
+{
+	int cw = textinput_cursor_x(ti);
+	int visible_w = (int)ti->rect.w - 8;
+	if (cw - ti->scroll_offset > visible_w)
+		ti->scroll_offset = cw - visible_w;
+	else if (cw - ti->scroll_offset < 0)
+		ti->scroll_offset = cw;
+}
+
 /* 在 buffer 的 cursor_pos 处插入 len 字节 */
 void textinput_insert(textinput_p ti, const char* s, int len)
 {
@@ -1368,6 +1381,7 @@ void textinput_insert(textinput_p ti, const char* s, int len)
 	ti->cursor_pos += len;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+	textinput_scroll_to_cursor(ti);
 }
 
 /* 删除光标前一个 UTF-8 字符（退格） */
@@ -1385,6 +1399,7 @@ void textinput_backspace(textinput_p ti)
 	ti->cursor_pos = pos;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+	textinput_scroll_to_cursor(ti);
 }
 
 /* 删除光标后一个 UTF-8 字符（Delete） */
@@ -1400,6 +1415,39 @@ void textinput_delete(textinput_p ti)
 	ti->text_len -= ch_len;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_cursor_left(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos <= 0) return;
+	ti->cursor_pos--;
+	while (ti->cursor_pos > 0 && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+		ti->cursor_pos--;
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_cursor_right(textinput_p ti)
+{
+	if (!ti || ti->cursor_pos >= ti->text_len) return;
+	ti->cursor_pos++;
+	while (ti->cursor_pos < ti->text_len && ((unsigned char)ti->buffer[ti->cursor_pos] & 0xC0) == 0x80)
+		ti->cursor_pos++;
+	textinput_scroll_to_cursor(ti);
+}
+
+void textinput_cursor_home(textinput_p ti)
+{
+	if (!ti) return;
+	ti->cursor_pos = 0;
+	ti->scroll_offset = 0;
+}
+
+void textinput_cursor_end(textinput_p ti)
+{
+	if (!ti) return;
+	ti->cursor_pos = ti->text_len;
+	textinput_scroll_to_cursor(ti);
 }
 
 /* 获取光标之前的文本宽度（像素） */
@@ -1449,11 +1497,14 @@ void textinput_draw(textinput_p ti)
 	SDL_SetRenderDrawColor(r, border.r, border.g, border.b, border.a);
 	SDL_RenderRect(r, &rect);
 
-	/* 文字 */
+	/* 文字（设裁剪区域防止溢出） */
 	if (ti->text_len > 0 && ti->font) {
+		SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
+		SDL_SetRenderClipRect(r, &clip);
 		float text_x = rect.x + 4;
 		float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
 		text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, text_x - (float)ti->scroll_offset, text_y);
+		SDL_SetRenderClipRect(r, NULL);
 	}
 
 	/* 光标（聚焦时绘制） */
@@ -1465,10 +1516,13 @@ void textinput_draw(textinput_p ti)
 		}
 		if (ti->cursor_visible) {
 			int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
-			float cy = rect.y + 3;
-			float ch = rect.h - 6;
-			SDL_SetRenderDrawColor(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
-			SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+			/* 光标在可视区域内时才绘制 */
+			if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
+				float cy = rect.y + 3;
+				float ch = rect.h - 6;
+				SDL_SetRenderDrawColor(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
+				SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+			}
 		}
 	}
 }

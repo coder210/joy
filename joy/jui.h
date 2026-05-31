@@ -240,6 +240,10 @@ extern "C" {
 	JOY_API void textinput_insert(textinput_p ti, const char* s, int len);
 	JOY_API void textinput_backspace(textinput_p ti);
 	JOY_API void textinput_delete(textinput_p ti);
+	JOY_API void textinput_cursor_left(textinput_p ti);
+	JOY_API void textinput_cursor_right(textinput_p ti);
+	JOY_API void textinput_cursor_home(textinput_p ti);
+	JOY_API void textinput_cursor_end(textinput_p ti);
 	JOY_API bool textinput_is_focused(textinput_p ti);
 
 #ifdef __cplusplus

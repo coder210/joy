@@ -650,6 +650,23 @@ static int l_textinput_delete(lua_State* L) {
 	return 0;
 }
 
+static int l_textinput_cursor_left(lua_State* L) {
+	textinput_cursor_left((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_textinput_cursor_right(lua_State* L) {
+	textinput_cursor_right((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_textinput_cursor_home(lua_State* L) {
+	textinput_cursor_home((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+static int l_textinput_cursor_end(lua_State* L) {
+	textinput_cursor_end((textinput_p)lua_touserdata(L, 1));
+	return 0;
+}
+
 static int l_textinput_is_focused(lua_State* L) {
 	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
 	lua_pushboolean(L, textinput_is_focused(ti));
@@ -774,6 +791,10 @@ int luaopen_ui(lua_State* L)
 		{"insert", l_textinput_insert},
 		{"backspace", l_textinput_backspace},
 		{"delete", l_textinput_delete},
+		{"cursor_left", l_textinput_cursor_left},
+		{"cursor_right", l_textinput_cursor_right},
+		{"cursor_home", l_textinput_cursor_home},
+		{"cursor_end", l_textinput_cursor_end},
 		{"is_focused", l_textinput_is_focused},
 		{NULL, NULL},
 	};
