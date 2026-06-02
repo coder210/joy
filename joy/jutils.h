@@ -50,6 +50,8 @@ extern "C" {
         JOY_API void utils_int2bit(uint8_t* buf, int value);
         JOY_API bool utils_wait_delay(delay_t* delay, uint64_t current_time);
         JOY_API short utils_md5x(const char* input, size_t len, char* output);
+        JOY_API char* utils_des_crypt(const char* key, const char* text, size_t textsz, size_t* out_len);
+        JOY_API char* utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len);
 
         JOY_API unsigned long sdbm_hash(const char* str, int size);
         JOY_API unsigned long fnv1a_hash(const char* str, int size);

@@ -87,6 +87,7 @@ extern "C" {
         JOY_API bool collision2df_check_point_rectangle(vec2f_t point,
                 rectanglef_t rect);
         JOY_API bool collision2df_check_point_circle(vec2f_t point, circlef_t circle);
+        JOY_API fp_t collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle);
         JOY_API bool collision2df_check_point_triangle(vec2f_t point,
                 vec2f_t p1, vec2f_t p2, vec2f_t p3);
         JOY_API bool collision2df_check_lines(vec2f_t a1, vec2f_t b1,

@@ -382,183 +382,165 @@
 ////        lua_pushinteger(L, r);
 ////        return 1;
 ////}
-//
-//
-//
-//static int l_kcpserver_create(lua_State* L)
-//{
-//        const char* ip;
-//        int port;
-//        uint64_t sockfd;
-//        kcpserver_p kcpserver;
-//        ip = luaL_checkstring(L, 1);
-//        port = luaL_checkinteger(L, 2);
-//        kcpserver = kcpserver_create(ip, port);
-//        lua_pushlightuserdata(L, kcpserver);
-//        return 1;
-//}
-//
-//static int l_kcpserver_destroy(lua_State* L)
-//{
-//        kcpserver_p kcpserver;
-//        kcpserver = lua_touserdata(L, 1);
-//        kcpserver_destroy(kcpserver);
-//        return 0;
-//}
-//
-//static int l_kcpserver_send(lua_State* L)
-//{
-//        kcpserver_p kcpserver;
-//        const char* data;
-//        int conv;
-//        size_t len;
-//        kcpserver = lua_touserdata(L, 1);
-//        conv = luaL_checkinteger(L, 2);
-//        data = luaL_checklstring(L, 3, &len);
-//        kcpserver_send(kcpserver, conv, data, len);
-//        return 0;
-//}
-//
-//static int l_kcpserver_broadcast(lua_State* L)
-//{
-//        kcpserver_p kcpserver;
-//        const char* data;
-//        size_t len;
-//        int result;
-//        kcpserver = lua_touserdata(L, 1);
-//        data = luaL_checklstring(L, 2, &len);
-//        kcpserver_broadcast(kcpserver, data, len);
-//        return 0;
-//}
-//
-//static int l_kcpserver_offline(lua_State* L)
-//{
-//        kcpserver_p kcpserver;
-//        int conv;
-//        size_t len;
-//        kcpserver = lua_touserdata(L, 1);
-//        conv = luaL_checkinteger(L, 2);
-//        kcpserver_offline(kcpserver, conv);
-//        return 0;
-//}
-//
-//static int l_kcpserver_update(lua_State* L)
-//{
-//        kcpserver_p kcpserver;
-//        kcpserver = lua_touserdata(L, 1);
-//        kcpserver_update(kcpserver);
-//        return 0;
-//}
-//
-//static int l_kcpserver_poll(lua_State* L)
-//{
-//        net_message_t msg = { 0 };
-//        kcpserver_p kcpserver;
-//        kcpserver = lua_touserdata(L, 1);
-//        if (kcpserver_poll_message(kcpserver, &msg)) {
-//                lua_pushboolean(L, 1);
-//                lua_newtable(L);
-//                lua_pushinteger(L, msg.type);
-//                lua_setfield(L, -2, "type");
-//                lua_pushinteger(L, msg.conv);
-//                lua_setfield(L, -2, "conv");
-//                lua_pushlstring(L, msg.data, msg.len);
-//                lua_setfield(L, -2, "data");
-//                SDL_free(msg.data);
-//        }
-//        else {
-//                lua_pushboolean(L, false);
-//                lua_pushnil(L);
-//        }
-//        return 2;
-//}
-//
-//
-//
-//static int l_kcpclient_create(lua_State* L)
-//{
-//        const char* ip;
-//        int port;
-//        kcpclient_p kc;
-//        ip = luaL_checkstring(L, 1);
-//        port = luaL_checkinteger(L, 2);
-//        kc = kcpclient_create(ip, port);
-//        lua_pushlightuserdata(L, kc);
-//        return 1;
-//}
-//
-//static int l_kcpclient_destroy(lua_State* L)
-//{
-//        kcpclient_p kc;
-//        kc = lua_touserdata(L, 1);
-//        kcpclient_destroy(kc);
-//        return 0;
-//}
-//
-//static int l_kcpclient_getconv(lua_State* L)
-//{
-//        kcpclient_p kc;
-//        bool result;
-//        int conv;
-//        kc = lua_touserdata(L, 1);
-//        result = kcpclient_getconv(kc, &conv);
-//        lua_pushboolean(L, result);
-//        lua_pushinteger(L, conv);
-//        return 2;
-//}
-//
-//static int l_kcpclient_send(lua_State* L)
-//{
-//        kcpclient_p kc;
-//        const char* data;
-//        size_t len;
-//        int result;
-//        kc = lua_touserdata(L, 1);
-//        data = luaL_checklstring(L, 2, &len);
-//        result = kcpclient_send(kc, data, len);
-//        lua_pushinteger(L, result);
-//        return 1;
-//}
-//
-//static int l_kcpclient_update(lua_State* L)
-//{
-//        kcpclient_p kc;
-//        kc = lua_touserdata(L, 1);
-//        kcpclient_update(kc);
-//        return 0;
-//}
-//
-//static int l_kcpclient_poll(lua_State* L)
-//{
-//        net_message_t msg = { 0 };
-//        kcpclient_p kc;
-//        kc = lua_touserdata(L, 1);
-//        if (kcpclient_poll_message(kc, &msg)) {
-//                lua_pushboolean(L, 1);
-//                lua_newtable(L);
-//                lua_pushinteger(L, msg.type);
-//                lua_setfield(L, -2, "type");
-//                lua_pushinteger(L, msg.conv);
-//                lua_setfield(L, -2, "conv");
-//                lua_pushlstring(L, msg.data, msg.len);
-//                lua_setfield(L, -2, "data");
-//                SDL_free(msg.data);
-//        }
-//        else {
-//                lua_pushboolean(L, 0);
-//                lua_pushnil(L);
-//        }
-//        return 2;
-//}
-//
-//
-//
-//static int l_tcpserver_create(lua_State* L)
-//{
-//        const char* ip;
-//        int port;
-//        uint64_t sockfd;
-//        tcpserver_p tcpserver;
+
+
+static int l_kcpserver_create(lua_State* L)
+{
+        const char* ip;
+        int port;
+        uint64_t sockfd;
+        kcpserver_p kcpserver;
+        ip = luaL_checkstring(L, 1);
+        port = luaL_checkinteger(L, 2);
+        kcpserver = kcpserver_create(ip, port);
+        lua_pushlightuserdata(L, kcpserver);
+        return 1;
+}
+
+static int l_kcpserver_destroy(lua_State* L)
+{
+        kcpserver_p kcpserver;
+        kcpserver = lua_touserdata(L, 1);
+        kcpserver_destroy(kcpserver);
+        return 0;
+}
+
+static int l_kcpserver_send(lua_State* L)
+{
+        kcpserver_p kcpserver;
+        const char* data;
+        int conv;
+        size_t len;
+        kcpserver = lua_touserdata(L, 1);
+        conv = luaL_checkinteger(L, 2);
+        data = luaL_checklstring(L, 3, &len);
+        kcpserver_send(kcpserver, conv, data, len);
+        return 0;
+}
+
+static int l_kcpserver_broadcast(lua_State* L)
+{
+        kcpserver_p kcpserver;
+        const char* data;
+        size_t len;
+        int result;
+        kcpserver = lua_touserdata(L, 1);
+        data = luaL_checklstring(L, 2, &len);
+        kcpserver_broadcast(kcpserver, data, len);
+        return 0;
+}
+
+static int l_kcpserver_offline(lua_State* L)
+{
+        kcpserver_p kcpserver;
+        int conv;
+        size_t len;
+        kcpserver = lua_touserdata(L, 1);
+        conv = luaL_checkinteger(L, 2);
+        kcpserver_offline(kcpserver, conv);
+        return 0;
+}
+
+static int l_kcpserver_update(lua_State* L)
+{
+        kcpserver_p kcpserver;
+        kcpserver = lua_touserdata(L, 1);
+        kcpserver_update(kcpserver);
+        return 0;
+}
+
+static int l_kcpserver_poll(lua_State* L)
+{
+        net_message_t msg = { 0 };
+        kcpserver_p kcpserver;
+        kcpserver = lua_touserdata(L, 1);
+        if (kcpserver_poll_message(kcpserver, &msg)) {
+                lua_pushboolean(L, 1);
+                lua_newtable(L);
+                lua_pushinteger(L, msg.type);
+                lua_setfield(L, -2, "type");
+                lua_pushinteger(L, msg.conv);
+                lua_setfield(L, -2, "conv");
+                lua_pushlstring(L, msg.data, msg.len);
+                lua_setfield(L, -2, "data");
+                SDL_free(msg.data);
+        }
+        else {
+                lua_pushboolean(L, false);
+                lua_pushnil(L);
+        }
+        return 2;
+}
+
+
+static int l_kcpclient_create(lua_State* L)
+{
+        const char* ip;
+        int port;
+        kcpclient_p kc;
+        ip = luaL_checkstring(L, 1);
+        port = luaL_checkinteger(L, 2);
+        kc = kcpclient_create(ip, port);
+        lua_pushlightuserdata(L, kc);
+        return 1;
+}
+
+static int l_kcpclient_destroy(lua_State* L)
+{
+        kcpclient_p kc;
+        kc = lua_touserdata(L, 1);
+        kcpclient_destroy(kc);
+        return 0;
+}
+
+// getconv not available in jnetwork API
+
+static int l_kcpclient_send(lua_State* L)
+{
+        kcpclient_p kc;
+        const char* data;
+        size_t len;
+        int result;
+        kc = lua_touserdata(L, 1);
+        data = luaL_checklstring(L, 2, &len);
+        result = kcpclient_send(kc, data, len);
+        lua_pushinteger(L, result);
+        return 1;
+}
+
+static int l_kcpclient_update(lua_State* L)
+{
+        kcpclient_p kc;
+        kc = lua_touserdata(L, 1);
+        kcpclient_update(kc);
+        return 0;
+}
+
+static int l_kcpclient_poll(lua_State* L)
+{
+        net_message_t msg = { 0 };
+        kcpclient_p kc;
+        kc = lua_touserdata(L, 1);
+        if (kcpclient_poll_message(kc, &msg)) {
+                lua_pushboolean(L, 1);
+                lua_newtable(L);
+                lua_pushinteger(L, msg.type);
+                lua_setfield(L, -2, "type");
+                lua_pushinteger(L, msg.conv);
+                lua_setfield(L, -2, "conv");
+                lua_pushlstring(L, msg.data, msg.len);
+                lua_setfield(L, -2, "data");
+                SDL_free(msg.data);
+        }
+        else {
+                lua_pushboolean(L, 0);
+                lua_pushnil(L);
+        }
+        return 2;
+}
+
+// tcpserver/tcpclient functions - preserved but not exposed to Lua
+/*
 //        ip = luaL_checkstring(L, 1);
 //        port = luaL_checkinteger(L, 2);
 //        tcpserver = tcpserver_create(ip, port);
@@ -718,8 +700,8 @@
 //        }
 //        return 2;
 //}
-//
-
+////
+*/
 
 int luaopen_net(lua_State *L)
 {
@@ -763,29 +745,28 @@ int luaopen_net(lua_State *L)
  //       luaL_newlib(L, kcp_lib);
  //       lua_setfield(L, -2, "kcp");
 
- //       luaL_Reg kcpserver_lib[] = {
- //           {"create", l_kcpserver_create},
- //           {"destroy", l_kcpserver_destroy},
- //           {"send", l_kcpserver_send},
- //           {"broadcast", l_kcpserver_broadcast},
- //           {"update", l_kcpserver_update},
- //           {"poll", l_kcpserver_poll},
- //           {NULL, NULL}
- //       };
- //       luaL_newlib(L, kcpserver_lib);
- //       lua_setfield(L, -2, "kcpserver");
+        luaL_Reg kcpserver_lib[] = {
+            {"create", l_kcpserver_create},
+            {"destroy", l_kcpserver_destroy},
+            {"send", l_kcpserver_send},
+            {"broadcast", l_kcpserver_broadcast},
+            {"update", l_kcpserver_update},
+            {"poll", l_kcpserver_poll},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, kcpserver_lib);
+        lua_setfield(L, -2, "kcpserver");
 
- //       luaL_Reg kcpclient_lib[] = {
- //           {"create", l_kcpclient_create},
- //           {"destroy", l_kcpclient_destroy},
- //           {"get_conv", l_kcpclient_getconv},
- //           {"send", l_kcpclient_send},
- //           {"update", l_kcpclient_update},
- //           {"poll", l_kcpclient_poll},
- //           {NULL, NULL}
- //       };
- //       luaL_newlib(L, kcpclient_lib);
- //       lua_setfield(L, -2, "kcpclient");
+        luaL_Reg kcpclient_lib[] = {
+            {"create", l_kcpclient_create},
+            {"destroy", l_kcpclient_destroy},
+            {"send", l_kcpclient_send},
+            {"update", l_kcpclient_update},
+            {"poll", l_kcpclient_poll},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, kcpclient_lib);
+        lua_setfield(L, -2, "kcpclient");
 
  //       luaL_Reg tcpserver_lib[] = {
  //           {"create", l_tcpserver_create},

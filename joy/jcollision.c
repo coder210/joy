@@ -338,6 +338,13 @@ collision2df_check_point_circle(vec2f_t point, circlef_t circle)
         return vec2f_length_squared(diff) <= fp_pow2(circle.radius);
 }
 
+fp_t
+collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle)
+{
+        vec2f_t diff = vec2f_sub(point, circle.center);
+        return vec2f_length_squared(diff);
+}
+
 bool 
 collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t p3)
 {

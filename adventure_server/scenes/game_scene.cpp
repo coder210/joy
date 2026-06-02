@@ -189,18 +189,30 @@ static void HandleHeartbeat(game_scene_p g, int conv, adventure::C2S* c2s)
 }
 
 static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
-	LogicRectComponent& currRect, IdComponent& currId)
+	LogicRectComponent& currRect, IdComponent& currId, int dir)
 {
-	// 碰撞盒相交：检查敌人碰撞盒是否与任何目标重叠
-	rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
+	// 攻击判定：向攻击方向偏移的碰撞盒（0.6m → 偏移 0.7m）
+	fp_t atk_range = fp_from_float(0.7f);
+	fp_t ox = 0, oy = 0;
+	if (dir == 0)      oy = atk_range;
+	else if (dir == 1) ox = -atk_range;
+	else if (dir == 2) ox = atk_range;
+	else if (dir == 3) oy = -atk_range;
+	rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
 
-	self->body_query.each([&](IdComponent& id,
+	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (currId.id == id.id) return;
+			if (!e.has<PlayerComponent>()) return; // 只攻击玩家
 			rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
 			contact2df_t contact;
 			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
-				id.hp--;
+				if (id.hp <= 1) {
+					id.hp = 1;
+				}
+				else{
+					id.hp--;
+				}
 			}
 		});
 	// 射线攻击已注释
@@ -257,10 +269,18 @@ static void ApplyInput(game_scene_p self,
 	IdComponent& currId, int conv, int input)
 {
 	if (input & INPUT_ATTACK) {
-		// 碰撞盒相交攻击
-		rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
-		self->body_query.each([&](IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
+		// 攻击判定：向攻击方向偏移的碰撞盒
+		int dir = input_to_dir(input);
+		fp_t atk_range = fp_from_float(0.7f);
+		fp_t ox = 0, oy = 0;
+		if (dir == 0)      oy = atk_range;
+		else if (dir == 1) ox = -atk_range;
+		else if (dir == 2) ox = atk_range;
+		else if (dir == 3) oy = -atk_range;
+		rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
+		self->body_query.each([&](flecs::entity e, IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
 			if (currId.id == id.id) return;
+			if (!e.has<EnemyComponent>()) return; // 玩家攻击只伤敌人
 			rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
 			contact2df_t contact;
 			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
@@ -428,9 +448,8 @@ static void UpdateAI(game_scene_p self)
 
 			self->player_query.each([&](PlayerComponent&, IdComponent&,
 				LogicRectComponent&, LogicPositionComponent& pp) {
-					fp_t dx = fp_sub(pp.x, pos.x);
-					fp_t dy = fp_sub(pp.y, pos.y);
-					fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+					fp_t dist_sq = collision2df_get_squared_distance_point_circle(
+						vec2f_t{pp.x, pp.y}, circlef_t{ {pos.x, pos.y}, ai.detect_radius });
 					if (dist_sq < nearest_dist_sq) {
 						nearest_dist_sq = dist_sq;
 						nearest_player_x = pp.x;
@@ -441,10 +460,15 @@ static void UpdateAI(game_scene_p self)
 
 			if (found) {
 				// 检测到玩家
+				int atk_dir = 0;
+				fp_t dx = fp_sub(nearest_player_x, pos.x);
+				fp_t dy = fp_sub(nearest_player_y, pos.y);
+				bool h = (dx > 0 ? dx : -dx) > (dy > 0 ? dy : -dy);
+				atk_dir = h ? (dx > 0 ? 2 : 1) : (dy > 0 ? 0 : 3);
 				fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
 				if (nearest_dist_sq < attack_sq) {
 					ai.state = 2; // 攻击
-					AttackTarget(self, &pos, rect, id);
+					AttackTarget(self, &pos, rect, id, atk_dir);
 				}
 				else {
 					ai.state = 1; // 追击

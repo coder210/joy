@@ -303,11 +303,17 @@ static nearest_attack_target find_nearest_target_in_attack_ray(
 	return result;
 }
 
-// 通用碰撞盒攻击辅助
+// 通用碰撞盒攻击辅助（dir: 0=下 1=左 2=右 3=上）
 static void attack_by_hitbox(game_scene_p self,
-	LogicPositionComponent* p, LogicRectComponent& currRect, IdComponent& currId)
+	LogicPositionComponent* p, LogicRectComponent& currRect, IdComponent& currId, int dir)
 {
-	rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
+	fp_t atk_range = fp_from_float(0.7f);
+	fp_t ox = 0, oy = 0;
+	if (dir == 0)      oy = atk_range;
+	else if (dir == 1) ox = -atk_range;
+	else if (dir == 2) ox = atk_range;
+	else if (dir == 3) oy = -atk_range;
+	rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
 	self->body_query.each([&](IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
 		if (currId.id == id.id) return;
 		rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
@@ -323,8 +329,7 @@ static void attack_with_damage_and_effect(game_scene_p self,
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
-	attack_by_hitbox(self, p, currRect, currId);
-	// 射线特效已注释
+	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input));
 }
 
 // 仅攻击（减血，无特效）
@@ -332,7 +337,7 @@ static void attack_damage_only(game_scene_p self,
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
-	attack_by_hitbox(self, p, currRect, currId);
+	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input));
 }
 
 // 仅显示特效（不减血）
@@ -360,7 +365,7 @@ static void movement(game_scene_p self, LogicPositionComponent* p,
 }
 
 // AI 更新：巡逻 → 追击 → 攻击
-static void UpdateAI(game_scene_p self)
+static void update_ai(game_scene_p self)
 {
 	self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
 		IdComponent& id, LogicRectComponent& rect, LogicPositionComponent& pos) {
@@ -376,9 +381,8 @@ static void UpdateAI(game_scene_p self)
 
 			self->player_query.each([&](PlayerComponent&, IdComponent&,
 				LogicRectComponent&, LogicPositionComponent& pp) {
-					fp_t dx = fp_sub(pp.x, pos.x);
-					fp_t dy = fp_sub(pp.y, pos.y);
-					fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+					fp_t dist_sq = collision2df_get_squared_distance_point_circle(
+						vec2f_t{pp.x, pp.y}, circlef_t{ {pos.x, pos.y}, ai.detect_radius });
 					if (dist_sq < nearest_dist_sq) {
 						nearest_dist_sq = dist_sq;
 						nearest_player_x = pp.x;
@@ -389,10 +393,15 @@ static void UpdateAI(game_scene_p self)
 
 			if (found) {
 				// 检测到玩家
+				int atk_dir = 0;
+				fp_t dx = fp_sub(nearest_player_x, pos.x);
+				fp_t dy = fp_sub(nearest_player_y, pos.y);
+				bool h = (dx > 0 ? dx : -dx) > (dy > 0 ? dy : -dy);
+				atk_dir = h ? (dx > 0 ? 2 : 1) : (dy > 0 ? 0 : 3);
 				fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
 				if (nearest_dist_sq < attack_sq) {
 					ai.state = 2; // 攻击
-					//attack_target(self, &pos, rect, id);
+					attack_by_hitbox(self, &pos, rect, id, atk_dir);
 				}
 				else {
 					ai.state = 1; // 追击
@@ -555,7 +564,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
 	}
 
 	// AI 更新（客户端预测敌人移动）
-	UpdateAI(self);
+	update_ai(self);
 }
 
 
@@ -904,9 +913,10 @@ static void on_render(scene_p s) {
 		context* ctx = self->ctx;
 		self->ecs_world.filter_builder<IdComponent, TransformComponent>()
 			.build().each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
-			if (id.hp <= 0) return;
 			flecs::entity e = it.entity(i);
 			if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
+			if (id.hp <= 0) return;
+
 			float sx = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
 			float sy = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
 			// 精灵 192px, 碰撞盒 ~30px, 精灵顶部 = sy - (192-30)/2 = sy - 81
