@@ -16,6 +16,7 @@ History:
 #include "external/lua/lauxlib.h"
 #include "external/lua_cjson/lua_cjson.h"
 #include "jcore.h"
+#include "jevent.h"
 #include "jutils.h"
 #include "luaclib/luaclib.h"
 #include "jluax.h"

@@ -20,6 +20,7 @@ static context* ctx;
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
         sys_init_netenv();
+        SDL_SetAppMetadata("client", "1.0", "com.example.adventure-client");
         if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
                 SDL_Log("SDL init failed: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
@@ -31,6 +32,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         game_timer_set_target_fps(&ctx->game_timer, 60);  // 锁定 60 FPS
 
         SDL_CreateWindowAndRenderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
+        SDL_SetWindowTitle(ctx->window, "client");
         SDL_SetRenderLogicalPresentation(ctx->renderer, 640, 480, SDL_RendererLogicalPresentation::SDL_LOGICAL_PRESENTATION_STRETCH);
         AssetManager::Init(ctx->renderer);
 

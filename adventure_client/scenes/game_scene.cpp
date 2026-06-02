@@ -139,8 +139,9 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 	// 使用defer操作避免LOCKED_STORAGE错误
 	self->ecs_world.defer_begin();
 	for (auto& entity : s2c->map().world().entities()) {
+		int64_t hp = entity.hp();
 		auto e = self->ecs_world.entity()
-			.set<IdComponent>({ entity.id(), entity.hp() })
+			.set<IdComponent>({ entity.id(), hp })
 			.set<LogicRectComponent>({ entity.width(), entity.height() })
 			.set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
 			.set<TransformComponent>({ fp_to_float(entity.position_x()),
@@ -168,16 +169,13 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 			ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
 			ss.frame_count = 6; ss.frame_duration = 0.15f;
 			e.add<EnemyComponent>()
-				.set<IdComponent>({ entity.id(), entity.hp() })
-				.set<AIComponent>({ 0, 0, fp_from_float(4.0f), fp_from_float(15.0f), fp_from_float(1.5f), 0, 0, 0, 0 })
-				.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
-				.set<LogicPositionComponent>({ entity.position_x(), entity.position_y() })
-				.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
-				.set<TransformComponent>({ fp_to_float(entity.position_x()),
-						   fp_to_float(entity.position_y()), 0, 1, 1 })
-				.set<SpriteSheetComponent>(ss)
+				.set<AIComponent>({ 0, 0,
+					fp_from_float(4.0f), fp_from_float(15.0f),
+					fp_from_float(1.5f), 0, 0, 0, 0 })
 				.set<PlayerActionComponent>({})
-				.set<AnimationFrameComponent>({});
+				.set<SpriteSheetComponent>(ss)
+				.set<AnimationFrameComponent>({})
+				.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
 		}
 	}
 	self->ecs_world.defer_end();
@@ -608,8 +606,8 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
 	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
@@ -898,8 +896,42 @@ static void on_render(scene_p s) {
 		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
 			SpriteSheetComponent& ss, AnimationFrameComponent& af,
 			PlayerActionComponent& act, EnemyComponent&) {
-				sprite_render_system(it.entity(i), t, r, ss, af, act);
-			});
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
+
+	// ---- 血条渲染（所有有血量实体头顶） ----
+	{
+		context* ctx = self->ctx;
+		self->ecs_world.filter_builder<IdComponent, TransformComponent>()
+			.build().each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
+			if (id.hp <= 0) return;
+			flecs::entity e = it.entity(i);
+			if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
+			float sx = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
+			float sy = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
+			// 精灵 192px, 碰撞盒 ~30px, 精灵顶部 = sy - (192-30)/2 = sy - 81
+			const float SPRITE_OFF = 81.0f;
+			float bar_w = 48.0f, bar_h = 8.0f;
+			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
+			// 黑色边框
+			SDL_FRect bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
+			SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, 255);
+			SDL_RenderFillRect(ctx->renderer, &bg);
+			// 深灰背景
+			SDL_FRect base = { bar_x, bar_y, bar_w, bar_h };
+			SDL_SetRenderDrawColor(ctx->renderer, 40, 40, 40, 255);
+			SDL_RenderFillRect(ctx->renderer, &base);
+			// 彩色填充
+			float ratio = (float)id.hp / 10.0f;
+			if (ratio > 1.0f) ratio = 1.0f;
+			if (ratio < 0) ratio = 0;
+			SDL_FRect fill = { bar_x, bar_y, bar_w * ratio, bar_h };
+			if (ratio > 0.6f)      SDL_SetRenderDrawColor(ctx->renderer, 60, 210, 60, 255);
+			else if (ratio > 0.3f) SDL_SetRenderDrawColor(ctx->renderer, 210, 210, 60, 255);
+			else                   SDL_SetRenderDrawColor(ctx->renderer, 220, 60, 60, 255);
+			SDL_RenderFillRect(ctx->renderer, &fill);
+		});
+	}
 }
 
 static void on_destroy(scene_p s) {

@@ -48,11 +48,11 @@ const int INPUT_ATTACK = 1 << 4;
 const int INPUT_DIR_MASK = INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT;
 
 static int input_to_dir(int keycode) {
-    if (keycode & INPUT_DOWN)  return 0;
-    if (keycode & INPUT_LEFT)  return 1;
-    if (keycode & INPUT_RIGHT) return 2;
-    if (keycode & INPUT_UP)    return 3;
-    return 0;
+	if (keycode & INPUT_DOWN)  return 0;
+	if (keycode & INPUT_LEFT)  return 1;
+	if (keycode & INPUT_RIGHT) return 2;
+	if (keycode & INPUT_UP)    return 3;
+	return 0;
 }
 static bool has_dir(int keycode) { return (keycode & INPUT_DIR_MASK) != 0; }
 
@@ -97,25 +97,25 @@ struct game_scene {
 static std::unordered_map<std::string, SDL_Texture*> g_tex_cache;
 
 SDL_Texture* tex_cache_get(SDL_Renderer* r, const char* path) {
-    std::string k(path);
-    auto it = g_tex_cache.find(k);
-    if (it != g_tex_cache.end()) return it->second;
-    int w, h, ch;
-    auto* d = stbi_load(path, &w, &h, &ch, 4);
-    if (!d) return nullptr;
-    auto* s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, d, w * 4);
-    if (!s) { stbi_image_free(d); return nullptr; }
-    auto* t = SDL_CreateTextureFromSurface(r, s);
-    SDL_DestroySurface(s);
-    stbi_image_free(d);
-    g_tex_cache[k] = t;
-    return t;
+	std::string k(path);
+	auto it = g_tex_cache.find(k);
+	if (it != g_tex_cache.end()) return it->second;
+	int w, h, ch;
+	auto* d = stbi_load(path, &w, &h, &ch, 4);
+	if (!d) return nullptr;
+	auto* s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, d, w * 4);
+	if (!s) { stbi_image_free(d); return nullptr; }
+	auto* t = SDL_CreateTextureFromSurface(r, s);
+	SDL_DestroySurface(s);
+	stbi_image_free(d);
+	g_tex_cache[k] = t;
+	return t;
 }
 
 void tex_cache_clear() {
-    for (auto& kv : g_tex_cache)
-        if (kv.second) SDL_DestroyTexture(kv.second);
-    g_tex_cache.clear();
+	for (auto& kv : g_tex_cache)
+		if (kv.second) SDL_DestroyTexture(kv.second);
+	g_tex_cache.clear();
 }
 
 static int GenId(game_scene_p game_scene)
@@ -185,7 +185,7 @@ static void HandleHeartbeat(game_scene_p g, int conv, adventure::C2S* c2s)
 			return false;
 		}
 		return true;
-	});
+		});
 }
 
 static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
@@ -196,13 +196,13 @@ static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
 
 	self->body_query.each([&](IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
-		if (currId.id == id.id) return;
-		rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
-		contact2df_t contact;
-		if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
-			id.hp--;
-		}
-	});
+			if (currId.id == id.id) return;
+			rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
+			contact2df_t contact;
+			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
+				id.hp--;
+			}
+		});
 	// 射线攻击已注释
 	/*
 	ray2df_t ray;
@@ -232,27 +232,27 @@ static void resolve_collision(game_scene_p self, LogicPositionComponent* p,
 	self->body_query.each([&](IdComponent& other_id,
 		LogicRectComponent& r,
 		LogicPositionComponent& other_pos) {
-		if (other_id.id == currId.id) return;
+			if (other_id.id == currId.id) return;
 
-		rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
-		rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
+			rectanglef_t curr_rect = { p->x, p->y, currRect.width, currRect.height };
+			rectanglef_t other_rect = { other_pos.x, other_pos.y, r.width, r.height };
 
-		contact2df_t contact;
-		if (collision2df_get_rectangles(curr_rect, fp_zero(),
-			other_rect, fp_zero(), &contact)) {
-			fp_t depth = contact.depth;
-			if (depth < fp_zero()) {
-				depth = fp_sub(fp_zero(), depth);
+			contact2df_t contact;
+			if (collision2df_get_rectangles(curr_rect, fp_zero(),
+				other_rect, fp_zero(), &contact)) {
+				fp_t depth = contact.depth;
+				if (depth < fp_zero()) {
+					depth = fp_sub(fp_zero(), depth);
+				}
+				fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+				fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+				p->x = fp_add(p->x, fp_mul(nx, depth));
+				p->y = fp_add(p->y, fp_mul(ny, depth));
 			}
-			fp_t nx = fp_sub(fp_zero(), contact.normal.x);
-			fp_t ny = fp_sub(fp_zero(), contact.normal.y);
-			p->x = fp_add(p->x, fp_mul(nx, depth));
-			p->y = fp_add(p->y, fp_mul(ny, depth));
-		}
-	});
+		});
 }
 
-static void ApplyInput(game_scene_p self, 
+static void ApplyInput(game_scene_p self,
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
@@ -266,7 +266,7 @@ static void ApplyInput(game_scene_p self,
 			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
 				id.hp--;
 			}
-		});
+			});
 		// 射线攻击已注释
 		/*
 		ray2df_t ray;
@@ -379,25 +379,25 @@ static void CollectCommandSystem(game_scene_p self)
 	s2c_world.set_entity_id(self->g_id);
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
-		if (e.has<LocalOnlyComponent>()) return; // 本地实体不同步到客户端
-		adventure::S2CEntity* ent = s2c_world.add_entities();
-		ent->set_id(id.id);
-		if (e.has<PlayerComponent>()) {
-			ent->set_type(adventure::S2C_TYPE_PLAYER);
-			ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-		}
-		else if (e.has<EnemyComponent>()) {
-			ent->set_type(adventure::S2C_TYPE_ENEMY);
-		}
-		else {
-			ent->set_type(adventure::S2C_TYPE_NORMAL);
-		}
-		ent->set_hp(id.hp);
-		ent->set_position_x(pos.x);
-		ent->set_position_y(pos.y);
-		ent->set_width(r.width);
-		ent->set_height(r.height);
-	});
+			if (e.has<LocalOnlyComponent>()) return; // 本地实体不同步到客户端
+			adventure::S2CEntity* ent = s2c_world.add_entities();
+			ent->set_id(id.id);
+			if (e.has<PlayerComponent>()) {
+				ent->set_type(adventure::S2C_TYPE_PLAYER);
+				ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
+			}
+			else if (e.has<EnemyComponent>()) {
+				ent->set_type(adventure::S2C_TYPE_ENEMY);
+			}
+			else {
+				ent->set_type(adventure::S2C_TYPE_NORMAL);
+			}
+			ent->set_hp(id.hp);
+			ent->set_position_x(pos.x);
+			ent->set_position_y(pos.y);
+			ent->set_width(r.width);
+			ent->set_height(r.height);
+		});
 
 	self->worlds[command->frame_id()] = s2c_world.SerializeAsString();
 
@@ -530,10 +530,10 @@ static void HandleCommandSystem(game_scene_p self)
 		int conv = player_leave.conv();
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-			if (p.conv == conv) {
-				e.destruct();
-			}
-		});
+				if (p.conv == conv) {
+					e.destruct();
+				}
+			});
 	}
 	self->world.defer_end();
 
@@ -544,20 +544,21 @@ static void HandleCommandSystem(game_scene_p self)
 
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-			if (p.conv != input.conv()) return;
-			// 直接字段赋值，不触发 LOCKED_STORAGE
-			if (e.has<PlayerActionComponent>()) {
-				auto* act = e.get_mut<PlayerActionComponent>();
-				if (input.keycode() & INPUT_ATTACK) {
-					act->state = PlayerActionComponent::ATTACK;
-					act->dir = dir;
-				} else {
-					act->state = moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
-					act->dir = dir;
+				if (p.conv != input.conv()) return;
+				// 直接字段赋值，不触发 LOCKED_STORAGE
+				if (e.has<PlayerActionComponent>()) {
+					auto* act = e.get_mut<PlayerActionComponent>();
+					if (input.keycode() & INPUT_ATTACK) {
+						act->state = PlayerActionComponent::ATTACK;
+						act->dir = dir;
+					}
+					else {
+						act->state = moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+						act->dir = dir;
+					}
 				}
-			}
-			ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
-		});
+				ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
+			});
 	}
 
 	// ai移动
@@ -593,7 +594,7 @@ static void NotifySystem(game_scene_p self)
 			}
 		}
 		conn.frameid = taget_frameid;
-	});
+		});
 }
 
 // 固定逻辑帧更新
@@ -609,8 +610,8 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.42", 10000);
+	//self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.28", 10000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -668,7 +669,7 @@ static void on_load(scene_p s)
 				fp_from_float(4.0f), fp_from_float(15.0f), fp_from_float(1.5f),
 				0, 0,
 				0, 0
-			})
+				})
 			.set<IdComponent>({ GenId(self), 5 })
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
 			.set<LogicPositionComponent>({ ex, ey })
@@ -761,31 +762,31 @@ static void on_update(scene_p s, float dt)
 		CollectCommandSystem(self);
 		HandleCommandSystem(self);
 		NotifySystem(self);
-		
+
 
 		// 位置同步：HandleCommandSystem/UpdateAI 更新了 LogicPositionComponent，
 		// 手动同步 TransformComponent 确保渲染正确
 		self->player_query.each([&](flecs::entity e, PlayerComponent&, IdComponent&,
-				LogicRectComponent&, LogicPositionComponent& pos) {
-			if (e.has<TransformComponent>()) {
-				auto* t = e.get_mut<TransformComponent>();
-				t->position_x = fp_to_float(pos.x);
-				t->position_y = fp_to_float(pos.y);
-			}
-		});
+			LogicRectComponent&, LogicPositionComponent& pos) {
+				if (e.has<TransformComponent>()) {
+					auto* t = e.get_mut<TransformComponent>();
+					t->position_x = fp_to_float(pos.x);
+					t->position_y = fp_to_float(pos.y);
+				}
+			});
 		self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent&,
-				IdComponent&, LogicRectComponent&, LogicPositionComponent& pos) {
-			if (e.has<TransformComponent>()) {
-				auto* t = e.get_mut<TransformComponent>();
-				t->position_x = fp_to_float(pos.x);
-				t->position_y = fp_to_float(pos.y);
-			}
-		});
+			IdComponent&, LogicRectComponent&, LogicPositionComponent& pos) {
+				if (e.has<TransformComponent>()) {
+					auto* t = e.get_mut<TransformComponent>();
+					t->position_x = fp_to_float(pos.x);
+					t->position_y = fp_to_float(pos.y);
+				}
+			});
 	}
 
 	// ---------- 摄像机跟随第一个玩家 ----------
 	self->player_query.each([&](PlayerComponent&, IdComponent&,
-			LogicRectComponent&, LogicPositionComponent& pos) {
+		LogicRectComponent&, LogicPositionComponent& pos) {
 			float target_cam_x = fp_to_float(pos.x) - 6.4f;
 			float target_cam_y = fp_to_float(pos.y) - 4.8f;
 			float lerp = dt * 5.0f;
@@ -793,7 +794,7 @@ static void on_update(scene_p s, float dt)
 			self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
 			self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 			return; // 只跟第一个玩家
-	});
+		});
 }
 
 static void on_render(scene_p s)
@@ -816,19 +817,49 @@ static void on_render(scene_p s)
 	self->world.filter_builder<TransformComponent, LogicRectComponent,
 		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>()
 		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-				SpriteSheetComponent& ss, AnimationFrameComponent& af,
-				PlayerActionComponent& act, PlayerComponent&) {
-			sprite_render_system(it.entity(i), t, r, ss, af, act);
-		});
+			SpriteSheetComponent& ss, AnimationFrameComponent& af,
+			PlayerActionComponent& act, PlayerComponent&) {
+				sprite_render_system(it.entity(i), t, r, ss, af, act);
+			});
 
 	// ---- ECS 精灵渲染（敌人） ----
 	self->world.filter_builder<TransformComponent, LogicRectComponent,
 		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>()
 		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-				SpriteSheetComponent& ss, AnimationFrameComponent& af,
-				PlayerActionComponent& act, EnemyComponent&) {
-			sprite_render_system(it.entity(i), t, r, ss, af, act);
+			SpriteSheetComponent& ss, AnimationFrameComponent& af,
+			PlayerActionComponent& act, EnemyComponent&) {
+				sprite_render_system(it.entity(i), t, r, ss, af, act);
+			});
+
+	// ---- 血条渲染（所有有血量实体头顶） ----
+	{
+		auto* ctx = self->ctx;
+		self->world.filter_builder<IdComponent, TransformComponent>()
+			.build().each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
+			if (id.hp <= 0) return;
+			flecs::entity e = it.entity(i);
+			if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
+			float sx = (t.position_x - ctx->camera_x) * SERVER_PPM;
+			float sy = (t.position_y - ctx->camera_y) * SERVER_PPM;
+			const float SPRITE_OFF = 81.0f;
+			float bar_w = 48.0f, bar_h = 8.0f;
+			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
+			SDL_FRect bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
+			SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, 255);
+			SDL_RenderFillRect(ctx->renderer, &bg);
+			SDL_FRect base = { bar_x, bar_y, bar_w, bar_h };
+			SDL_SetRenderDrawColor(ctx->renderer, 40, 40, 40, 255);
+			SDL_RenderFillRect(ctx->renderer, &base);
+			float ratio = (float)id.hp / 10.0f;
+			if (ratio > 1.0f) ratio = 1.0f;
+			if (ratio < 0) ratio = 0;
+			SDL_FRect fill = { bar_x, bar_y, bar_w * ratio, bar_h };
+			if (ratio > 0.6f)      SDL_SetRenderDrawColor(ctx->renderer, 60, 210, 60, 255);
+			else if (ratio > 0.3f) SDL_SetRenderDrawColor(ctx->renderer, 210, 210, 60, 255);
+			else                   SDL_SetRenderDrawColor(ctx->renderer, 220, 60, 60, 255);
+			SDL_RenderFillRect(ctx->renderer, &fill);
 		});
+	}
 }
 
 static void on_destroy(scene_p s)
