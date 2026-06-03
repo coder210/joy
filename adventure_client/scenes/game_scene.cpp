@@ -400,8 +400,12 @@ static void update_ai(game_scene_p self)
 				atk_dir = h ? (dx > 0 ? 2 : 1) : (dy > 0 ? 0 : 3);
 				fp_t attack_sq = fp_mul(ai.attack_radius, ai.attack_radius);
 				if (nearest_dist_sq < attack_sq) {
-					ai.state = 2; // 攻击
-					attack_by_hitbox(self, &pos, rect, id, atk_dir);
+					ai.timer++;
+					if (ai.timer >= 60) {
+						ai.timer = 0;
+						ai.state = 2; // 攻击
+						attack_by_hitbox(self, &pos, rect, id, atk_dir);
+					}
 				}
 				else {
 					ai.state = 1; // 追击
@@ -615,8 +619,8 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.28", 10000);
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.21", 10000);
+	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
 	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
