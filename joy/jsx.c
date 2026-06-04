@@ -126,9 +126,22 @@ jsx_p jsx_create(void)
         assert(jsx->j);
         jsopen_base(jsx->j);
         jsopen_fp(jsx->j);
-        jsopen_fp(jsx->j);
+        jsopen_ft(jsx->j);
         jsopen_vec2f(jsx->j);
         jsopen_vec2(jsx->j);
+        jsopen_vec3f(jsx->j);
+        jsopen_vec3(jsx->j);
+        jsopen_mat22f(jsx->j);
+        jsopen_mat22(jsx->j);
+        jsopen_collision2d(jsx->j);
+        jsopen_collision2df(jsx->j);
+        jsopen_collision3d(jsx->j);
+        jsopen_utils(jsx->j);
+        jsopen_event(jsx->j);
+        jsopen_sdl(jsx->j);
+        jsopen_keyboard(jsx->j);
+        jsopen_audio(jsx->j);
+        jsopen_animation(jsx->j);
         js_setcontext(jsx->j, jsx);
         return jsx;
 }
