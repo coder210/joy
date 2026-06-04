@@ -236,7 +236,9 @@ luax_p luax_create(void)
         JOY_MOD("utils", luaopen_utils);
         JOY_MOD("fp", luaopen_fp);
         JOY_MOD("ft", luaopen_ft);
+        JOY_MOD("vec2f", luaopen_vec2f);
         JOY_MOD("vec2", luaopen_vec2);
+        JOY_MOD("vec3f", luaopen_vec3f);
         JOY_MOD("vec3", luaopen_vec3);
         JOY_MOD("collision2df", luaopen_collision2df);
         JOY_MOD("collision2d", luaopen_collision2d);
@@ -247,7 +249,8 @@ luax_p luax_create(void)
         JOY_MOD("c2s", luaopen_c2s);
         JOY_MOD("s2c", luaopen_s2c);
         JOY_MOD("ecs", luaopen_ecs);
-        JOY_MOD("rigidbody", luaopen_rigidbody);
+        JOY_MOD("mat22f", luaopen_mat22f);
+        JOY_MOD("mat22", luaopen_mat22);
         JOY_MOD("world2df", luaopen_world2df);
         JOY_MOD("server", luaopen_server);
         JOY_MOD("client", luaopen_client);
