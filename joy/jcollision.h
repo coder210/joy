@@ -72,9 +72,90 @@ typedef struct bounding_boxf {
         vec3f_t max;            // Maximum vertex box-corner
 } bounding_boxf_t;
 
+/* ---- 浮点版本结构体 ---- */
+
+typedef struct ray2d {
+        vec2_t origin, direction;
+}ray2d_t;
+
+typedef struct ray2d_collision {
+        bool hit;
+        ft_t distance;
+        vec2_t point;
+        vec2_t normal;
+}ray2d_collision_t;
+
+typedef struct rectangle {
+        ft_t x, y, width, height;
+}rectangle_t;
+
+typedef struct circle {
+        vec2_t center;
+        ft_t radius;
+}circle_t;
+
+typedef struct polygon {
+        vec2_t* vertices;
+        int num_vertices;
+}polygon_t;
+
+typedef struct contact2d {
+        vec2_t sp;
+        vec2_t ep;
+        vec2_t normal;
+        ft_t depth;
+}contact2d_t;
+
+typedef struct ray3d {
+        vec3_t position, direction;
+}ray3d_t;
+
+typedef struct ray3d_collision {
+        bool hit;
+        ft_t distance;
+        vec3_t point;
+        vec3_t normal;
+}ray3d_collision_t;
+
+typedef struct sphere {
+        vec3_t position;
+        ft_t radius;
+}sphere_t;
+
+typedef struct bounding_box {
+        vec3_t min;
+        vec3_t max;
+} bounding_box_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+        JOY_API ray2d_collision_t collision2d_get_ray_circle(ray2d_t ray, circle_t circle);
+        JOY_API ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect);
+        JOY_API ray2d_collision_t collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle);
+        JOY_API ray2d_collision_t collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon);
+        JOY_API bool collision2d_check_point_rectangle(vec2_t point, rectangle_t rect);
+        JOY_API bool collision2d_check_point_circle(vec2_t point, circle_t circle);
+        JOY_API ft_t collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle);
+        JOY_API bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3);
+        JOY_API bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp);
+        JOY_API bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold);
+        JOY_API bool collision2d_check_circles(circle_t a, circle_t b);
+        JOY_API bool collision2d_check_rectangles(rectangle_t a, rectangle_t b);
+        JOY_API bool collision2d_check_polygons(polygon_t a, polygon_t b);
+        JOY_API bool collision2d_check_circle_rectangle(circle_t a, rectangle_t b);
+        JOY_API bool collision2d_check_circle_polygon(circle_t a, polygon_t b);
+        JOY_API int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact);
+        JOY_API int collision2d_get_rectangles(rectangle_t a, ft_t a_angle, rectangle_t b, ft_t b_angle, contact2d_t* contact);
+        JOY_API int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact);
+        JOY_API ray3d_collision_t collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3);
+        JOY_API ray3d_collision_t collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4);
+        JOY_API ray3d_collision_t collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere);
+        JOY_API ray3d_collision_t collision3d_get_ray_box(ray3d_t ray, bounding_box_t box);
+        JOY_API bool collision3d_check_spheres(sphere_t a, sphere_t b);
+        JOY_API bool collision3d_check_boxes(bounding_box_t a, bounding_box_t b);
+        JOY_API bool collision3d_check_box_sphere(bounding_box_t a, sphere_t b);
 
         JOY_API ray2d_collisionf_t collision2df_get_ray_circle(ray2df_t ray,
                 circlef_t circle);

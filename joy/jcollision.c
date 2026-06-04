@@ -931,3 +931,610 @@ collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
         return vec3f_square_length(diff) <= fp_pow2(b.radius);
 }
 
+/* =================================================================
+ * 浮点版本（ft_t = float）
+ * ================================================================= */
+
+ray2d_collision_t 
+collision2d_get_ray_circle(ray2d_t ray, circle_t circle)
+{
+        vec2_t seg;
+        ft_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
+        ray2d_collision_t result = {0};
+        vec2_t distance;
+
+        r_sq = circle.radius * circle.radius;
+        seg = vec2_sub(circle.center, ray.origin);
+        seg_len_sq = vec2_length_squared(seg);
+        ray.direction = vec2_normalize(ray.direction);
+        seg_proj = vec2_dot(seg, ray.direction);
+
+        if (seg_len_sq == r_sq) {
+                result.hit = true;
+                result.distance = 0.0f;
+                result.point = ray.origin;
+                result.normal = vec2_normalize(seg);
+                return result;
+        }
+        if (seg_len_sq < r_sq) {
+                dx = sqrtf(r_sq - (seg_len_sq - seg_proj * seg_proj));
+                distance = vec2_scale(ray.direction, seg_proj + dx);
+                result.hit = true;
+                result.distance = vec2_length(distance);
+                result.point = vec2_add(ray.origin, distance);
+                result.normal = vec2_normalize(vec2_sub(result.point, circle.center));
+                return result;
+        }
+        if (seg_proj < 0.0f)
+                return result;
+
+        d_sq = seg_len_sq - seg_proj * seg_proj;
+        if (d_sq > r_sq)
+                return result;
+        if (d_sq == r_sq) {
+                result.hit = true;
+                result.distance = seg_proj;
+                result.point = vec2_add(ray.origin, vec2_scale(ray.direction, seg_proj));
+                result.normal = vec2_normalize(vec2_sub(result.point, circle.center));
+                return result;
+        } else {
+                dx = sqrtf(r_sq - d_sq);
+                result.hit = true;
+                result.distance = seg_proj - dx;
+                result.point = vec2_add(ray.origin, vec2_scale(ray.direction, result.distance));
+                result.normal = vec2_normalize(vec2_sub(result.point, circle.center));
+                return result;
+        }
+}
+
+static vec2_t collision2d_calculate_rect_normal(vec2_t point, vec2_t min, vec2_t max)
+{
+        vec2_t normal = { 0, 0 };
+        const ft_t epsilon = 0.001f;
+        if (fabsf(point.x - min.x) < epsilon)
+                normal.x = -1.0f;
+        else if (fabsf(point.x - max.x) < epsilon)
+                normal.x = 1.0f;
+        else if (fabsf(point.y - min.y) < epsilon)
+                normal.y = -1.0f;
+        else if (fabsf(point.y - max.y) < epsilon)
+                normal.y = 1.0f;
+        return vec2_normalize(normal);
+}
+
+#define SWAP_FT(a, b)  do { ft_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
+
+ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect)
+{
+        ray2d_collision_t result = { 0 };
+        vec2_t min, max;
+        ft_t t_min, t_max, inv_dir, t1, t2;
+
+        ray.direction = vec2_normalize(ray.direction);
+        min.x = rect.x; min.y = rect.y;
+        max.x = rect.x + rect.width; max.y = rect.y + rect.height;
+        t_min = 0.0f; t_max = FLT_MAX;
+
+        if (ray.direction.x == 0.0f) {
+                if (ray.origin.x < min.x || ray.origin.x > max.x) return result;
+        } else {
+                inv_dir = 1.0f / ray.direction.x;
+                t1 = (min.x - ray.origin.x) * inv_dir;
+                t2 = (max.x - ray.origin.x) * inv_dir;
+                if (t1 > t2) SWAP_FT(t1, t2);
+                t_min = fmaxf(t_min, t1);
+                t_max = fminf(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+        if (ray.direction.y == 0.0f) {
+                if (ray.origin.y < min.y || ray.origin.y > max.y) return result;
+        } else {
+                inv_dir = 1.0f / ray.direction.y;
+                t1 = (min.y - ray.origin.y) * inv_dir;
+                t2 = (max.y - ray.origin.y) * inv_dir;
+                if (t1 > t2) SWAP_FT(t1, t2);
+                t_min = fmaxf(t_min, t1);
+                t_max = fminf(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+        result.hit = true;
+        result.distance = t_min;
+        vec2_t delta = { t_min * ray.direction.x, t_min * ray.direction.y };
+        result.point = vec2_add(ray.origin, delta);
+        result.normal = collision2d_calculate_rect_normal(result.point, min, max);
+        return result;
+}
+
+ray2d_collision_t 
+collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle)
+{
+        ray2d_collision_t result = {0};
+        vec2_t half_extents, center, local_origin, local_dir;
+        ft_t rotation, t_min, t_max, t1, t2, tmp, inv_dir, t;
+        vec2_t local_hit;
+        const ft_t EPSILON = 0.0001f;
+
+        half_extents.x = rect.width * 0.5f;
+        half_extents.y = rect.height * 0.5f;
+        center.x = rect.x + half_extents.x;
+        center.y = rect.y + half_extents.y;
+        rotation = angle * 3.14159265f / 180.0f;
+
+        local_origin = vec2_sub(ray.origin, center);
+        local_origin = vec2_rotate(local_origin, -rotation);
+        local_dir = vec2_rotate(ray.direction, -rotation);
+        t_min = 0.0f; t_max = FLT_MAX;
+
+        if (fabsf(local_dir.x) < EPSILON) {
+                if (local_origin.x < -half_extents.x || local_origin.x > half_extents.x) return result;
+        } else {
+                inv_dir = 1.0f / local_dir.x;
+                t1 = (-half_extents.x - local_origin.x) * inv_dir;
+                t2 = (half_extents.x - local_origin.x) * inv_dir;
+                if (t1 > t2) { tmp = t1; t1 = t2; t2 = tmp; }
+                t_min = fmaxf(t_min, t1);
+                t_max = fminf(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+        if (fabsf(local_dir.y) < EPSILON) {
+                if (local_origin.y < -half_extents.y || local_origin.y > half_extents.y) return result;
+        } else {
+                inv_dir = 1.0f / local_dir.y;
+                t1 = (-half_extents.y - local_origin.y) * inv_dir;
+                t2 = (half_extents.y - local_origin.y) * inv_dir;
+                if (t1 > t2) { tmp = t1; t1 = t2; t2 = tmp; }
+                t_min = fmaxf(t_min, t1);
+                t_max = fminf(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+        if (t_max < 0) return result;
+        t = t_min >= 0 ? t_min : t_max;
+        if (t < 0) return result;
+
+        local_hit.x = local_origin.x + local_dir.x * t;
+        local_hit.y = local_origin.y + local_dir.y * t;
+        result.hit = true;
+        result.point = vec2_add(vec2_rotate(local_hit, rotation), center);
+        result.distance = vec2_length(vec2_sub(result.point, ray.origin));
+        {
+                vec2_t ln = {0, 0};
+                ft_t dx = fabsf(fabsf(local_hit.x) - half_extents.x);
+                ft_t dy = fabsf(fabsf(local_hit.y) - half_extents.y);
+                if (dx < half_extents.x * 0.01f) ln.x = local_hit.x > 0 ? 1.0f : -1.0f;
+                if (dy < half_extents.y * 0.01f) ln.y = local_hit.y > 0 ? 1.0f : -1.0f;
+                if (ln.x != 0 && ln.y != 0) { if (dx < dy) ln.y = 0; else ln.x = 0; }
+                result.normal = vec2_normalize(vec2_rotate(ln, rotation));
+        }
+        return result;
+}
+
+ray2d_collision_t 
+collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
+{
+        ray2d_collision_t result = {0};
+        vec2_t edge_start, edge_end, edge_vec, diff;
+        ft_t denom, t, u;
+        ft_t closest_t = FLT_MAX;
+        vec2_t hit_edge = {0, 0};
+
+        if (polygon.num_vertices < 3) return result;
+        ray.direction = vec2_normalize(ray.direction);
+
+        for (int i = 0; i < polygon.num_vertices; i++) {
+                edge_start = polygon.vertices[i];
+                edge_end = polygon.vertices[(i + 1) % polygon.num_vertices];
+                edge_vec = vec2_sub(edge_end, edge_start);
+                denom = vec2_cross(ray.direction, edge_vec);
+                if (denom == 0.0f) continue;
+                diff = vec2_sub(edge_start, ray.origin);
+                t = vec2_cross(diff, edge_vec) / denom;
+                u = vec2_cross(diff, ray.direction) / denom;
+                if (t >= 0.0f && u >= 0.0f && u <= 1.0f && t < closest_t) {
+                        closest_t = t;
+                        hit_edge = edge_vec;
+                }
+        }
+        if (closest_t < FLT_MAX) {
+                result.hit = true;
+                result.distance = closest_t;
+                result.point = vec2_add(ray.origin, vec2_scale(ray.direction, closest_t));
+                result.normal = vec2_normal(hit_edge);
+                if (vec2_dot(result.normal, ray.direction) > 0.0f)
+                        result.normal = vec2_negate(result.normal);
+        }
+        return result;
+}
+
+bool collision2d_check_point_rectangle(vec2_t point, rectangle_t rect)
+{
+        return point.x >= rect.x && point.x <= rect.x + rect.width
+            && point.y >= rect.y && point.y <= rect.y + rect.height;
+}
+
+bool collision2d_check_point_circle(vec2_t point, circle_t circle)
+{
+        vec2_t diff = vec2_sub(point, circle.center);
+        return vec2_length_squared(diff) <= circle.radius * circle.radius;
+}
+
+ft_t collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle)
+{
+        vec2_t diff = vec2_sub(point, circle.center);
+        return vec2_length_squared(diff);
+}
+
+bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3)
+{
+        vec2_t v0 = vec2_sub(p3, p1);
+        vec2_t v1 = vec2_sub(p2, p1);
+        vec2_t v2 = vec2_sub(point, p1);
+        ft_t dot00 = vec2_dot(v0, v0);
+        ft_t dot01 = vec2_dot(v0, v1);
+        ft_t dot02 = vec2_dot(v0, v2);
+        ft_t dot11 = vec2_dot(v1, v1);
+        ft_t dot12 = vec2_dot(v1, v2);
+        ft_t denom = dot00 * dot11 - dot01 * dot01;
+        if (denom == 0.0f) return false;
+        ft_t inv_denom = 1.0f / denom;
+        ft_t u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
+        ft_t v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
+        return u >= 0 && v >= 0 && u + v <= 1.0f;
+}
+
+bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp)
+{
+        vec2_t r = vec2_sub(b1, a1);
+        vec2_t s = vec2_sub(b2, a2);
+        ft_t denom = vec2_cross(r, s);
+        if (denom == 0.0f) return false;
+        vec2_t diff = vec2_sub(a2, a1);
+        ft_t t = vec2_cross(diff, s) / denom;
+        ft_t u = vec2_cross(diff, r) / denom;
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+                if (cp) { cp->x = a1.x + r.x * t; cp->y = a1.y + r.y * t; }
+                return true;
+        }
+        return false;
+}
+
+bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold)
+{
+        vec2_t ab = vec2_sub(p2, p1);
+        vec2_t ap = vec2_sub(point, p1);
+        ft_t ab_len_sq = vec2_length_squared(ab);
+        if (ab_len_sq == 0)
+                return vec2_length_squared(ap) <= threshold * threshold;
+        ft_t proj = vec2_dot(ap, ab) / ab_len_sq;
+        proj = fminf(fmaxf(proj, 0), 1);
+        vec2_t closest = vec2_add(p1, vec2_scale(ab, proj));
+        vec2_t diff = vec2_sub(point, closest);
+        return vec2_length_squared(diff) <= threshold * threshold;
+}
+
+bool collision2d_check_circles(circle_t a, circle_t b)
+{
+        vec2_t distance = vec2_sub(b.center, a.center);
+        ft_t dist_sq = vec2_length_squared(distance);
+        ft_t radius_sum = a.radius + b.radius;
+        return dist_sq <= radius_sum * radius_sum;
+}
+
+bool collision2d_check_rectangles(rectangle_t a, rectangle_t b)
+{
+        if (a.x > b.x + b.width) return false;
+        if (a.x + a.width < b.x) return false;
+        if (a.y > b.y + b.height) return false;
+        if (a.y + a.height < b.y) return false;
+        return true;
+}
+
+bool collision2d_check_circle_rectangle(circle_t a, rectangle_t b)
+{
+        vec2_t closest;
+        closest.x = fminf(fmaxf(a.center.x, b.x), b.x + b.width);
+        closest.y = fminf(fmaxf(a.center.y, b.y), b.y + b.height);
+        vec2_t diff = vec2_sub(a.center, closest);
+        return vec2_length_squared(diff) <= a.radius * a.radius;
+}
+
+/* ---- 辅助：获取多边形某条边 ---- */
+static vec2_t poly_edge(polygon_t poly, int index)
+{
+        vec2_t curr = poly.vertices[index];
+        vec2_t next = poly.vertices[(index + 1) % poly.num_vertices];
+        return vec2_sub(next, curr);
+}
+
+/* ---- 辅助：计算多边形间最小分离 ---- */
+static ft_t poly_min_sep(polygon_t a, polygon_t b, vec2_t* axis, vec2_t* point)
+{
+        ft_t separation = -FLT_MAX;
+        for (int i = 0; i < a.num_vertices; i++) {
+                vec2_t va = a.vertices[i];
+                vec2_t normal = vec2_normal(poly_edge(a, i));
+                ft_t min_sep = FLT_MAX;
+                vec2_t min_vertex = {0,0};
+                for (int j = 0; j < b.num_vertices; j++) {
+                        vec2_t vb = b.vertices[j];
+                        ft_t proj = vec2_dot(vec2_sub(vb, va), normal);
+                        if (proj < min_sep) { min_sep = proj; min_vertex = vb; }
+                }
+                if (min_sep > separation) {
+                        separation = min_sep;
+                        *axis = poly_edge(a, i);
+                        *point = min_vertex;
+                }
+        }
+        return separation;
+}
+
+bool collision2d_check_polygons(polygon_t a, polygon_t b)
+{
+        vec2_t axis, point;
+        ft_t ab_sep = poly_min_sep(a, b, &axis, &point);
+        if (ab_sep >= 0) return false;
+        ft_t ba_sep = poly_min_sep(b, a, &axis, &point);
+        if (ba_sep >= 0) return false;
+        return true;
+}
+
+bool collision2d_check_circle_polygon(circle_t a, polygon_t b)
+{
+        if (b.num_vertices < 3) return false;
+        for (int i = 0; i < b.num_vertices; i++) {
+                vec2_t e1 = b.vertices[i];
+                vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                vec2_t edge = vec2_sub(e2, e1);
+                vec2_t to_center = vec2_sub(a.center, e1);
+                ft_t edge_len_sq = vec2_length_squared(edge);
+                if (edge_len_sq == 0) continue;
+                ft_t t = vec2_dot(to_center, edge) / edge_len_sq;
+                t = fminf(fmaxf(t, 0), 1);
+                vec2_t closest = vec2_add(e1, vec2_scale(edge, t));
+                vec2_t diff = vec2_sub(a.center, closest);
+                if (vec2_length_squared(diff) <= a.radius * a.radius) return true;
+        }
+        {
+                bool inside = true;
+                for (int i = 0; i < b.num_vertices; i++) {
+                        vec2_t e1 = b.vertices[i];
+                        vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                        vec2_t edge = vec2_sub(e2, e1);
+                        vec2_t normal = vec2_normal(edge);
+                        vec2_t to_center = vec2_sub(a.center, e1);
+                        if (vec2_dot(to_center, normal) < 0) { inside = false; break; }
+                }
+                if (inside) return true;
+        }
+        return false;
+}
+
+int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact)
+{
+        vec2_t distance = vec2_sub(b.center, a.center);
+        ft_t dist_sq = vec2_length_squared(distance);
+        ft_t radius_sum = a.radius + b.radius;
+        if (dist_sq > radius_sum * radius_sum) return 0;
+        contact->normal = vec2_normalize(distance);
+        contact->sp = vec2_sub(b.center, vec2_scale(contact->normal, b.radius));
+        contact->ep = vec2_add(a.center, vec2_scale(contact->normal, a.radius));
+        contact->depth = vec2_length(vec2_sub(contact->ep, contact->sp));
+        return 1;
+}
+
+int collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
+        rectangle_t b, ft_t b_angle, contact2d_t* contact)
+{
+        vec2_t a_bounds, b_bounds, a_h, b_h, a_pos, b_pos;
+        mat22_t a_rot, b_rot, a_rotT, b_rotT, c, abs_c, abs_ct;
+        vec2_t dp, a_d, b_d, abs_a_d, abs_b_d, a_face, b_face;
+        vec2_t normal;
+        ft_t separation, r_separation;
+
+        a_bounds.x = a.width; a_bounds.y = a.height;
+        b_bounds.x = b.width; b_bounds.y = b.height;
+        a_h = vec2_scale(a_bounds, 0.5f);
+        b_h = vec2_scale(b_bounds, 0.5f);
+        a_pos.x = a.x + a_h.x; a_pos.y = a.y + a_h.y;
+        b_pos.x = b.x + b_h.x; b_pos.y = b.y + b_h.y;
+
+        ft_t a_res = a_angle * 3.14159265f / 180.0f;
+        ft_t b_res = b_angle * 3.14159265f / 180.0f;
+        a_rot = mat22_rotate(a_res);
+        b_rot = mat22_rotate(b_res);
+        a_rotT = mat22_transpose(a_rot);
+        b_rotT = mat22_transpose(b_rot);
+        dp = vec2_sub(b_pos, a_pos);
+        a_d = mat22_mul_vec2(a_rotT, dp);
+        b_d = mat22_mul_vec2(b_rotT, dp);
+        c = mat22_mul(a_rotT, b_rot);
+        abs_c = mat22_abs(c);
+        abs_ct = mat22_transpose(abs_c);
+        abs_a_d = vec2_abs(a_d);
+        a_face = vec2_sub(vec2_sub(abs_a_d, a_h), mat22_mul_vec2(abs_c, b_h));
+        if (a_face.x > 0 || a_face.y > 0) return 0;
+        abs_b_d = vec2_abs(b_d);
+        b_face = vec2_sub(vec2_sub(abs_b_d, mat22_mul_vec2(abs_ct, a_h)), b_h);
+        if (b_face.x > 0 || b_face.y > 0) return 0;
+
+        separation = a_face.x;
+        r_separation = 0.95f * separation;
+        normal = a_d.x > 0 ? a_rot.col1 : vec2_negate(a_rot.col1);
+        if (a_face.y > r_separation + 0.01f * a_h.y) {
+                separation = a_face.y;
+                normal = a_d.y > 0 ? a_rot.col2 : vec2_negate(a_rot.col2);
+        }
+        if (b_face.x > r_separation + 0.01f * b_h.x) {
+                separation = b_face.x;
+                normal = b_d.x > 0 ? b_rot.col1 : vec2_negate(b_rot.col1);
+        }
+        if (b_face.y > r_separation + 0.01f * b_h.y) {
+                separation = b_face.y;
+                normal = b_d.y > 0 ? b_rot.col2 : vec2_negate(b_rot.col2);
+        }
+        contact->depth = separation;
+        contact->normal = normal;
+        return 1;
+}
+
+int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact)
+{
+        vec2_t a_axis, b_axis, a_point, b_point, distance;
+        ft_t ab_sep = poly_min_sep(a, b, &a_axis, &a_point);
+        if (ab_sep >= 0) return 0;
+        ft_t ba_sep = poly_min_sep(b, a, &b_axis, &b_point);
+        if (ba_sep >= 0) return 0;
+        if (ab_sep > ba_sep) {
+                contact->depth = -ab_sep;
+                contact->normal = vec2_normal(a_axis);
+                contact->sp = a_point;
+                distance = vec2_scale(contact->normal, contact->depth);
+                contact->ep = vec2_add(a_point, distance);
+        } else {
+                contact->depth = -ba_sep;
+                contact->normal = vec2_negate(vec2_normal(b_axis));
+                distance = vec2_scale(contact->normal, contact->depth);
+                contact->sp = vec2_sub(b_point, distance);
+                contact->ep = b_point;
+        }
+        return 1;
+}
+
+ray3d_collision_t
+collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3)
+{
+        const ft_t EPSILON = 0.000001f;
+        ray3d_collision_t result = {0};
+        vec3_t edge1, edge2, p, q, tv;
+        ft_t det, inv_det, u, v, t;
+
+        ray.direction = vec3_normalize(ray.direction);
+        edge1 = vec3_sub(p2, p1);
+        edge2 = vec3_sub(p3, p1);
+        p = vec3_cross(ray.direction, edge2);
+        det = vec3_dot(edge1, p);
+        if (det > -EPSILON && det < EPSILON) return result;
+        inv_det = 1.0f / det;
+        tv = vec3_sub(ray.position, p1);
+        u = vec3_dot(tv, p) * inv_det;
+        if (u < 0 || u > 1) return result;
+        q = vec3_cross(tv, edge1);
+        v = vec3_dot(ray.direction, q) * inv_det;
+        if (v < 0 || u + v > 1) return result;
+        t = vec3_dot(edge2, q) * inv_det;
+        if (t > EPSILON) {
+                result.hit = true;
+                result.distance = t;
+                result.normal = vec3_normalize(vec3_cross(edge1, edge2));
+                result.point = vec3_add(ray.position, vec3_scale(ray.direction, t));
+        }
+        return result;
+}
+
+ray3d_collision_t 
+collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4)
+{
+        ray3d_collision_t result = collision3d_get_ray_triangle(ray, p1, p2, p4);
+        if (!result.hit) result = collision3d_get_ray_triangle(ray, p2, p3, p4);
+        return result;
+}
+
+ray3d_collision_t 
+collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
+{
+        ray3d_collision_t result = {0};
+        vec3_t rs = vec3_sub(ray.position, sphere.position);
+        ft_t dist_sq = vec3_square_length(rs);
+        ft_t a = vec3_dot(rs, ray.direction);
+        ft_t b = dist_sq - sphere.radius * sphere.radius;
+        ft_t c = a * a - b;
+        if (c < 0) return result;
+        ft_t d = sqrtf(c);
+        ft_t t = -a - d;
+        if (t < 0) t = -a + d;
+        if (t >= 0) {
+                result.hit = true;
+                result.distance = t;
+                result.point = vec3_add(ray.position, vec3_scale(ray.direction, t));
+                result.normal = vec3_normalize(vec3_sub(result.point, sphere.position));
+        }
+        return result;
+}
+
+ray3d_collision_t
+collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
+{
+        ray3d_collision_t result = {0};
+        vec3_t dirfrac;
+        ft_t t1, t2, tmin, tmax;
+        const ft_t EPSILON = 0.00001f;
+
+        ray.direction = vec3_normalize(ray.direction);
+        dirfrac.x = 1.0f / ray.direction.x;
+        dirfrac.y = 1.0f / ray.direction.y;
+        dirfrac.z = 1.0f / ray.direction.z;
+
+        t1 = (box.min.x - ray.position.x) * dirfrac.x;
+        t2 = (box.max.x - ray.position.x) * dirfrac.x;
+        if (t1 > t2) SWAP_FT(t1, t2);
+        tmin = t1; tmax = t2;
+
+        t1 = (box.min.y - ray.position.y) * dirfrac.y;
+        t2 = (box.max.y - ray.position.y) * dirfrac.y;
+        if (t1 > t2) SWAP_FT(t1, t2);
+        if (t1 > tmin) tmin = t1;
+        if (t2 < tmax) tmax = t2;
+        if (tmin > tmax) return result;
+
+        t1 = (box.min.z - ray.position.z) * dirfrac.z;
+        t2 = (box.max.z - ray.position.z) * dirfrac.z;
+        if (t1 > t2) SWAP_FT(t1, t2);
+        if (t1 > tmin) tmin = t1;
+        if (t2 < tmax) tmax = t2;
+        if (tmin > tmax) return result;
+        if (tmax < 0) return result;
+
+        ft_t t = tmin >= 0 ? tmin : tmax;
+        if (t < EPSILON) return result;
+
+        result.hit = true;
+        result.distance = t;
+        result.point = vec3_add(ray.position, vec3_scale(ray.direction, t));
+
+        vec3_t center = vec3_scale(vec3_add(box.min, box.max), 0.5f);
+        vec3_t htc = vec3_sub(center, result.point);
+        vec3_t half = vec3_scale(vec3_sub(box.max, box.min), 0.5f);
+        vec3_t abs_hit = vec3_abs(htc);
+
+        result.normal.x = (fabsf(abs_hit.x - half.x) < EPSILON) ? (htc.x > 0 ? 1 : -1) : 0;
+        result.normal.y = (fabsf(abs_hit.y - half.y) < EPSILON) ? (htc.y > 0 ? 1 : -1) : 0;
+        result.normal.z = (fabsf(abs_hit.z - half.z) < EPSILON) ? (htc.z > 0 ? 1 : -1) : 0;
+        result.normal = vec3_normalize(result.normal);
+        return result;
+}
+
+bool collision3d_check_spheres(sphere_t a, sphere_t b)
+{
+        vec3_t diff = vec3_sub(b.position, a.position);
+        ft_t dist_sq = vec3_square_length(diff);
+        ft_t radius_sum = a.radius + b.radius;
+        return dist_sq <= radius_sum * radius_sum;
+}
+
+bool collision3d_check_boxes(bounding_box_t a, bounding_box_t b)
+{
+        return a.min.x <= b.max.x && a.max.x >= b.min.x
+            && a.min.y <= b.max.y && a.max.y >= b.min.y
+            && a.min.z <= b.max.z && a.max.z >= b.min.z;
+}
+
+bool collision3d_check_box_sphere(bounding_box_t a, sphere_t b)
+{
+        vec3_t closest;
+        closest.x = fminf(fmaxf(b.position.x, a.min.x), a.max.x);
+        closest.y = fminf(fmaxf(b.position.y, a.min.y), a.max.y);
+        closest.z = fminf(fmaxf(b.position.z, a.min.z), a.max.z);
+        vec3_t diff = vec3_sub(b.position, closest);
+        return vec3_square_length(diff) <= b.radius * b.radius;
+}
+

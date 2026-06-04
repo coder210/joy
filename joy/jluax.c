@@ -234,9 +234,11 @@ luax_p luax_create(void)
         JOY_MOD("keyboard", luaopen_keyboard);
         JOY_MOD("net", luaopen_net);
         JOY_MOD("utils", luaopen_utils);
-        JOY_MOD("mathx", luaopen_mathx);
+        JOY_MOD("fp", luaopen_fp);
+        JOY_MOD("ft", luaopen_ft);
         JOY_MOD("vec2", luaopen_vec2);
         JOY_MOD("vec3", luaopen_vec3);
+        JOY_MOD("collision2df", luaopen_collision2df);
         JOY_MOD("collision2d", luaopen_collision2d);
         JOY_MOD("collision3d", luaopen_collision3d);
         JOY_MOD("cjson", luaopen_cjson_safe);

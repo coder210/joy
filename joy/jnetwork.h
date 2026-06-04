@@ -14,9 +14,9 @@ History:
 #include "jconfig.h"
 
 typedef enum {
-	NET_TYPE_CONNECTED,
-	NET_TYPE_DISCONNECTED,
-	NET_TYPE_MESSAGE,
+	NET_TYPE_CONNECTED = 0x1,
+	NET_TYPE_DISCONNECTED = 0x2,
+	NET_TYPE_MESSAGE = 0x3,
 } net_event_type_k;
 
 typedef struct net_message {
