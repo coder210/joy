@@ -76,8 +76,11 @@ static void jg_create(js_State* J)
 		win = (SDL_Window*)js_touserdata(J, 1, "SDL_Window*");
 	}
 	else {
-		js_error(J, "graphics.create() expects an SDL_Window* userdata");
-		return;
+		win = jsclib_get_cur_window();
+		if (!win) {
+			js_error(J, "graphics.create() expects an SDL_Window* userdata, or call window.create() first");
+			return;
+		}
 	}
 	SDL_Renderer* ren = SDL_CreateRenderer(win, NULL);
 	if (!ren) {

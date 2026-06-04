@@ -304,7 +304,18 @@ void* luax_get_state(luax_p luax)
 
 void luax_dispatch_event(luax_p luax, const SDL_Event* event)
 {
-        dispatch_event(luax->cbs, event, luax);
+	dispatch_event(luax->cbs, event, luax);
+}
+
+void luax_set_args(luax_p luax, int argc, char* argv[])
+{
+	lua_State* L = luax->L;
+	lua_newtable(L);
+	for (int i = 0; i < argc; i++) {
+		lua_pushstring(L, argv[i]);
+		lua_rawseti(L, -2, i);
+	}
+	lua_setglobal(L, "arg");
 }
 
 #define STATE_KEY ((void*)0x1)

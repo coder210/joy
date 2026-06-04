@@ -1,5 +1,6 @@
 #ifndef JSCLIB_H
 #define JSCLIB_H
+#include <SDL3/SDL.h>
 #include "../external/mujs/mujs.h"
 
 void jsopen_base(js_State* J);
@@ -25,5 +26,7 @@ void jsopen_timer(js_State* J);
 void jsopen_joystick(js_State* J);
 void jsopen_ui(js_State* J);
 void jsopen_graphics(js_State* J);
+void jsopen_window(js_State* J);
+SDL_Window* jsclib_get_cur_window(void);
 
 #endif // !JSCLIB_H

@@ -38,6 +38,9 @@ extern "C" {
 	JOY_API bool luax_poll_reload(luax_p luax);
 	JOY_API const char* luax_get_watch(luax_p luax);
 
+	/* --- 命令行参数 --- */
+	JOY_API void luax_set_args(luax_p luax, int argc, char* argv[]);
+
 #ifdef __cplusplus
 }
 #endif
