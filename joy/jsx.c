@@ -142,6 +142,11 @@ jsx_p jsx_create(void)
         jsopen_keyboard(jsx->j);
         jsopen_audio(jsx->j);
         jsopen_animation(jsx->j);
+        jsopen_network(jsx->j);
+        jsopen_timer(jsx->j);
+        jsopen_joystick(jsx->j);
+        jsopen_ui(jsx->j);
+        jsopen_graphics(jsx->j);
         js_setcontext(jsx->j, jsx);
         return jsx;
 }

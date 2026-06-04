@@ -20,5 +20,10 @@ void jsopen_sdl(js_State* J);
 void jsopen_keyboard(js_State* J);
 void jsopen_audio(js_State* J);
 void jsopen_animation(js_State* J);
+void jsopen_network(js_State* J);
+void jsopen_timer(js_State* J);
+void jsopen_joystick(js_State* J);
+void jsopen_ui(js_State* J);
+void jsopen_graphics(js_State* J);
 
 #endif // !JSCLIB_H
