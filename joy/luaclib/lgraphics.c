@@ -208,7 +208,7 @@ static int lr_draw_polygon(lua_State* L) {
     const char* mode = luaL_checkstring(L, 1);
     int n = (lua_gettop(L) - 1) / 2;
     if (n < 3) return luaL_error(L, "polygon needs >= 3 vertices");
-    SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc(n * sizeof(SDL_FPoint));
+    SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc((n + 1) * sizeof(SDL_FPoint));
     for (int i = 0; i < n; i++) {
         pts[i].x = (float)luaL_checknumber(L, 2 + i * 2);
         pts[i].y = (float)luaL_checknumber(L, 3 + i * 2);

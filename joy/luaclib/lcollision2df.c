@@ -259,6 +259,9 @@ static int l_collision2df_circlesx(lua_State *L)
                 lua_pushinteger(L, contact.depth);
                 lua_setfield(L, -2, "depth");
         }
+        else {
+                luaL_pushfail(L);
+        }
 
         return 2;
 }
