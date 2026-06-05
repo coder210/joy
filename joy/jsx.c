@@ -43,6 +43,7 @@ static bool call_joy_js(duk_context* ctx, const char* func, int nargs)
 		duk_pop(ctx);
 		return false;
 	}
+	duk_pop(ctx);  /* 弹出返回值 */
 	return true;
 }
 

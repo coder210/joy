@@ -11,7 +11,7 @@ static int l_label_create(lua_State* L)
 	font_p fontinfo;
 	SDL_Renderer* renderer;
 	label_p label;
-	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
 	fontinfo = *(font_p*)lua_touserdata(L, 2);
 	num_codepoints = (int)luaL_len(L, 3);
 	codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
@@ -90,7 +90,7 @@ static int l_button_create(lua_State* L)
 {
 	SDL_Renderer* renderer;
 	button_p btn;
-	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
 	float w = (float)luaL_checknumber(L, 2);
 	float h = (float)luaL_checknumber(L, 3);
 	btn = button_create(renderer, w, h);
@@ -268,7 +268,7 @@ static int l_button_group_draw(lua_State* L)
 	radio_button_group_p btn_group;
 	SDL_Renderer* renderer;
 	btn_group = (radio_button_group_p)lua_touserdata(L, 1);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
 	radio_button_group_draw(btn_group, renderer);
 	return 0;
 }
@@ -278,7 +278,7 @@ static int lcombobox_create(lua_State* L)
 	SDL_Renderer* renderer;
 	combobox_p combobox;
 	SDL_FRect rect;
-	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
 	rect.x = (float)luaL_checknumber(L, 2);
 	rect.y = (float)luaL_checknumber(L, 3);
 	rect.w = (float)luaL_checknumber(L, 4);
@@ -387,7 +387,7 @@ static int l_checkbox_draw(lua_State* L)
 	checkbox_p checkbox;
 	SDL_Renderer* renderer;
 	checkbox = (checkbox_p)lua_touserdata(L, 1);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
 	checkbox_draw(checkbox, renderer, NULL);
 	return 0;
 }
@@ -437,7 +437,7 @@ static int ldatagrid_create(lua_State* L)
 
 	luaL_checktype(L, 2, LUA_TTABLE);
 
-	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
 
 	lua_getfield(L, 2, "x");
 	rect.x = luaL_checkinteger(L, -1);
@@ -464,33 +464,6 @@ static int ldatagrid_create(lua_State* L)
 static int ldatagrid_setheaders(lua_State* L)
 {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
-	//char** headers;
-	//codepoint_array_p codepoints[128];
-	//int i, j, rows, cols, codepoint;
-	//datagrid = (datagrid_p)lua_touserdata(L, 1);
-	//rows = (int)luaL_len(L, 2);
-	//for (i = 1; i <= rows; i++) {
-	//	// 获取第 i 行
-	//	lua_geti(L, 2, i);
-
-	//	// 获取内层数组的长度（列数）
-	//	cols = (int)luaL_len(L, -1);
-
-	//	// 分配内存存储该行的整数
-	//	codepoints[i - 1] = (codepoint_array_p)SDL_malloc(sizeof(codepoint_array_t));
-	//	codepoints[i - 1]->length = cols;
-	//	codepoints[i - 1]->array = (int*)SDL_malloc(sizeof(int) * cols);
-
-	//	for (j = 1; j <= cols; j++) {
-	//		// 获取第 j 列的值
-	//		lua_geti(L, -1, j);
-	//		codepoints[i - 1]->array[j - 1] = luaL_checkinteger(L, -1);
-	//		lua_pop(L, 1);
-	//	}
-
-	//	// 弹出内层表
-	//	lua_pop(L, 1);
-	//}
 
 	font_p fontinfo = *(font_p*)lua_touserdata(L, 2);
 	SDL_Color color = { 0, 0, 0, 255 };
@@ -513,7 +486,7 @@ static int ldatagrid_draw(lua_State* L)
 	datagrid_p datagrid;
 	SDL_Renderer* renderer;
 	datagrid = (datagrid_p)lua_touserdata(L, 1);
-	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
+	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
 	datagrid_draw(datagrid, renderer);
 	return 0;
 }
@@ -578,10 +551,9 @@ static int l_datagrid_set_selected_row(lua_State* L) {
 
 
 
-
 /* ---- TextInput Lua bindings ---- */
 static int l_textinput_create(lua_State* L) {
-	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
+	SDL_Renderer* r = *(SDL_Renderer**)lua_touserdata(L, 1);
 	font_p font = *(font_p*)lua_touserdata(L, 2);
 	SDL_FRect rect;
 	rect.x = (float)luaL_checknumber(L, 3);
@@ -726,7 +698,7 @@ static int l_button_set_position(lua_State* L) {
 
 /* ---- Slider Lua bindings ---- */
 static int l_slider_create(lua_State* L) {
-	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
+	SDL_Renderer* r = *(SDL_Renderer**)lua_touserdata(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float w = (float)luaL_checknumber(L, 4);
