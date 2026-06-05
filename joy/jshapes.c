@@ -28,10 +28,9 @@ static bool
 draw_polygon_outline(SDL_Renderer* renderer, SDL_FPoint* points, int point_count)
 {
 	bool result;
-	int vertex_count = point_count - 1;
-	points[vertex_count].x = points[0].x;
-	points[vertex_count].y = points[0].y;
-	result = SDL_RenderLines(renderer, points, point_count);
+	points[point_count].x = points[0].x;
+	points[point_count].y = points[0].y;
+	result = SDL_RenderLines(renderer, points, point_count + 1);
 	return result;
 }
 

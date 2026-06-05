@@ -30,6 +30,24 @@ static duk_ret_t jg_get_renderer(duk_context* ctx) { duk_push_pointer(ctx,JG_REN
 static duk_ret_t jg_create_font(duk_context* ctx) { duk_push_pointer(ctx,font_create(JG_REN(),duk_to_string(ctx,1),(int)duk_to_number(ctx,2))); return 1; }
 static duk_ret_t jg_print(duk_context* ctx) { font_p f=(font_p)duk_get_pointer(ctx,1); const char* str=duk_to_string(ctx,2); SDL_Color c={255,255,255,255}; if(duk_is_object(ctx,5)) c=read_color(ctx,5); text_printx(JG_REN(),f,str,(int)SDL_strlen(str),c,(float)duk_to_number(ctx,3),(float)duk_to_number(ctx,4)); return 0; }
 
+/* polygon: (ren, mode, x1,y1, x2,y2, ...) */
+static duk_ret_t jg_polygon(duk_context* ctx) {
+	SDL_Renderer* ren = JG_REN();
+	const char* mode = duk_to_string(ctx, 1);
+	int n = (duk_get_top(ctx) - 2) / 2;
+	if (n < 3) { duk_error(ctx, DUK_ERR_ERROR, "polygon needs >= 3 vertices"); return 0; }
+	SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc((n + 1) * sizeof(SDL_FPoint));
+	for (int i = 0; i < n; i++) {
+		pts[i].x = (float)duk_to_number(ctx, 2 + i * 2);
+		pts[i].y = (float)duk_to_number(ctx, 3 + i * 2);
+	}
+	SDL_FColor c;
+	SDL_GetRenderDrawColorFloat(ren, &c.r, &c.g, &c.b, &c.a);
+	duk_push_boolean(ctx, shape_draw_polygon(ren, mode, pts, n, c));
+	SDL_free(pts);
+	return 1;
+}
+
 void jsopen_graphics(duk_context* ctx)
 {
 	duk_push_object(ctx);
@@ -47,6 +65,7 @@ void jsopen_graphics(duk_context* ctx)
 	duk_push_c_function(ctx, jg_line, 5); duk_put_prop_string(ctx, -2, "line");
 	duk_push_c_function(ctx, jg_rectangle, 6); duk_put_prop_string(ctx, -2, "rectangle");
 	duk_push_c_function(ctx, jg_circle, 6); duk_put_prop_string(ctx, -2, "circle");
+	duk_push_c_function(ctx, jg_polygon, DUK_VARARGS); duk_put_prop_string(ctx, -2, "polygon");
 	duk_push_c_function(ctx, jg_create_font, 3); duk_put_prop_string(ctx, -2, "create_font");
 	duk_push_c_function(ctx, jg_print, 6); duk_put_prop_string(ctx, -2, "print");
 	duk_push_c_function(ctx, jg_get_renderer, 1); duk_put_prop_string(ctx, -2, "get_renderer");
