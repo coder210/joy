@@ -3,17 +3,10 @@
 #include "../external/lua/lauxlib.h"
 
 #define WINDOW_MT  "SDL_Window*"
-#define CUR_WIN_KEY "joy.window.cur_win"
 
-static SDL_Window* cur_win(lua_State* L) {
-    lua_getfield(L, LUA_REGISTRYINDEX, CUR_WIN_KEY);
-    SDL_Window** win = (SDL_Window**)lua_touserdata(L, -1);
-    if (!win || !*win) {
-        lua_pop(L, 1);
-        luaL_error(L, "no current window");
-        return NULL;
-    }
-    lua_pop(L, 1);
+static SDL_Window* check_win(lua_State* L, int idx) {
+    SDL_Window** win = (SDL_Window**)luaL_checkudata(L, idx, WINDOW_MT);
+    if (!win || !*win) luaL_error(L, "invalid window");
     return *win;
 }
 
@@ -32,30 +25,22 @@ static int l_create(lua_State* L) {
     *win = SDL_CreateWindow(title, w, h, flags);
     luaL_getmetatable(L, WINDOW_MT);
     lua_setmetatable(L, -2);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, LUA_REGISTRYINDEX, CUR_WIN_KEY);
     return 1;
 }
 
 static int l_select(lua_State* L) {
-    SDL_Window** win = (SDL_Window**)luaL_checkudata(L, 1, WINDOW_MT);
-    lua_pushvalue(L, 1);
-    lua_setfield(L, LUA_REGISTRYINDEX, CUR_WIN_KEY);
+    check_win(L, 1);  /* 验证窗口有效 */
     return 0;
 }
 
 static int l_destroy(lua_State* L) {
-    SDL_Window** win = (SDL_Window**)lua_touserdata(L, 1);
-    if (!win || !*win) { win = (SDL_Window**)lua_touserdata(L, -1); }
-    // 不传参数则销毁当前窗口
-    SDL_Window** target = (SDL_Window**)luaL_checkudata(L, 1, WINDOW_MT);
-    if (target && *target) { SDL_DestroyWindow(*target); *target = NULL; }
+    SDL_Window** win = (SDL_Window**)luaL_checkudata(L, 1, WINDOW_MT);
+    if (win && *win) { SDL_DestroyWindow(*win); *win = NULL; }
     return 0;
 }
 
-/* 以下函数不再需要传 win，使用当前窗口 */
 static int l_get_size(lua_State* L) {
-    SDL_Window* win = cur_win(L);
+    SDL_Window* win = check_win(L, 1);
     int w, h;
     lua_pushboolean(L, SDL_GetWindowSize(win, &w, &h));
     lua_pushinteger(L, w);
@@ -64,8 +49,8 @@ static int l_get_size(lua_State* L) {
 }
 
 static int l_set_icon(lua_State* L) {
-    SDL_Window* win = cur_win(L);
-    const char* filepath = luaL_checkstring(L, 1);
+    SDL_Window* win = check_win(L, 1);
+    const char* filepath = luaL_checkstring(L, 2);
     SDL_Surface* icon = SDL_LoadBMP(filepath);
     if (icon) {
         Uint32 key = SDL_MapSurfaceRGB(icon, 255, 255, 255);
@@ -80,7 +65,7 @@ static int l_set_icon(lua_State* L) {
 }
 
 static int l_set_fullscreen(lua_State* L) {
-    lua_pushboolean(L, SDL_SetWindowFullscreen(cur_win(L), SDL_WINDOW_FULLSCREEN));
+    lua_pushboolean(L, SDL_SetWindowFullscreen(check_win(L, 1), SDL_WINDOW_FULLSCREEN));
     return 1;
 }
 
