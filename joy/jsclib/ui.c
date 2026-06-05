@@ -15,11 +15,13 @@
 
 static SDL_Color read_color(duk_context* ctx, int idx)
 {
-	SDL_Color c;
-	duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-	duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-	duk_get_prop_string(ctx, idx, "b"); c.b = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-	duk_get_prop_string(ctx, idx, "a"); c.a = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	SDL_Color c = { 255, 255, 255, 255 };
+	if (duk_is_object(ctx, idx)) {
+		duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "b"); c.b = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "a"); c.a = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	}
 	return c;
 }
 
@@ -233,13 +235,14 @@ static duk_ret_t jui_slider_is_hovered(duk_context* ctx) { duk_push_boolean(ctx,
 static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((slider_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
 
 /* ===== Registration ===== */
-static void reg_sub(duk_context* ctx, const char* name, const duk_c_function* pairs)
+typedef struct { duk_c_function func; const char* name; } reg_pair_t;
+
+static void reg_sub(duk_context* ctx, const char* name, const reg_pair_t* pairs)
 {
 	duk_push_object(ctx);
-	while (pairs[0]) {
-		duk_push_c_function(ctx, pairs[0], 0);
-		duk_put_prop_string(ctx, -2, pairs[1]);
-		pairs += 2;
+	for (; pairs->func; pairs++) {
+		duk_push_c_function(ctx, pairs->func, 0);
+		duk_put_prop_string(ctx, -2, pairs->name);
 	}
 	duk_put_prop_string(ctx, -2, name);
 }
@@ -248,121 +251,121 @@ void jsopen_ui(duk_context* ctx)
 {
 	duk_push_object(ctx);
 
-	static duk_c_function label_fns[] = {
-		(duk_c_function)jui_label_create, "create",
-		(duk_c_function)jui_label_destroy, "destroy",
-		(duk_c_function)jui_label_set_position, "set_position",
-		(duk_c_function)jui_label_draw, "draw",
-		NULL, NULL
+	static const reg_pair_t label_fns[] = {
+		{jui_label_create, "create"},
+		{jui_label_destroy, "destroy"},
+		{jui_label_set_position, "set_position"},
+		{jui_label_draw, "draw"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "label", label_fns);
 
-	static duk_c_function button_fns[] = {
-		(duk_c_function)jui_button_create, "create",
-		(duk_c_function)jui_button_destroy, "destroy",
-		(duk_c_function)jui_button_set_position, "set_position",
-		(duk_c_function)jui_button_set_text, "set_text",
-		(duk_c_function)jui_button_is_hovered, "is_hovered",
-		(duk_c_function)jui_button_is_pressed, "is_pressed",
-		(duk_c_function)jui_button_set_hovered, "set_hovered",
-		(duk_c_function)jui_button_set_pressed, "set_pressed",
-		(duk_c_function)jui_button_draw, "draw",
-		NULL, NULL
+	static const reg_pair_t button_fns[] = {
+		{jui_button_create, "create"},
+		{jui_button_destroy, "destroy"},
+		{jui_button_set_position, "set_position"},
+		{jui_button_set_text, "set_text"},
+		{jui_button_is_hovered, "is_hovered"},
+		{jui_button_is_pressed, "is_pressed"},
+		{jui_button_set_hovered, "set_hovered"},
+		{jui_button_set_pressed, "set_pressed"},
+		{jui_button_draw, "draw"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "button", button_fns);
 
-	static duk_c_function combobox_fns[] = {
-		(duk_c_function)jui_combobox_create, "create",
-		(duk_c_function)jui_combobox_destroy, "destroy",
-		(duk_c_function)jui_combobox_additem, "additem",
-		(duk_c_function)jui_combobox_draw, "draw",
-		(duk_c_function)jui_combobox_is_pressed, "is_pressed",
-		(duk_c_function)jui_combobox_is_open, "is_open",
-		(duk_c_function)jui_combobox_set_open, "set_open",
-		(duk_c_function)jui_combobox_hit_item, "hit_item",
-		(duk_c_function)jui_combobox_set_selected, "set_selected",
-		(duk_c_function)jui_combobox_get_selected, "get_selected",
-		NULL, NULL
+	static const reg_pair_t combobox_fns[] = {
+		{jui_combobox_create, "create"},
+		{jui_combobox_destroy, "destroy"},
+		{jui_combobox_additem, "additem"},
+		{jui_combobox_draw, "draw"},
+		{jui_combobox_is_pressed, "is_pressed"},
+		{jui_combobox_is_open, "is_open"},
+		{jui_combobox_set_open, "set_open"},
+		{jui_combobox_hit_item, "hit_item"},
+		{jui_combobox_set_selected, "set_selected"},
+		{jui_combobox_get_selected, "get_selected"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "combobox", combobox_fns);
 
-	static duk_c_function checkbox_fns[] = {
-		(duk_c_function)jui_checkbox_create, "create",
-		(duk_c_function)jui_checkbox_destroy, "destroy",
-		(duk_c_function)jui_checkbox_draw, "draw",
-		(duk_c_function)jui_checkbox_is_pressed, "is_pressed",
-		(duk_c_function)jui_checkbox_set_hovered, "set_hovered",
-		NULL, NULL
+	static const reg_pair_t checkbox_fns[] = {
+		{jui_checkbox_create, "create"},
+		{jui_checkbox_destroy, "destroy"},
+		{jui_checkbox_draw, "draw"},
+		{jui_checkbox_is_pressed, "is_pressed"},
+		{jui_checkbox_set_hovered, "set_hovered"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "checkbox", checkbox_fns);
 
-	static duk_c_function radio_fns[] = {
-		(duk_c_function)jui_radiobutton_create, "create",
-		(duk_c_function)jui_radiobutton_destroy, "destroy",
-		(duk_c_function)jui_radiobutton_is_pressed, "is_pressed",
-		(duk_c_function)jui_radiobutton_set_hovered, "set_hovered",
-		NULL, NULL
+	static const reg_pair_t radio_fns[] = {
+		{jui_radiobutton_create, "create"},
+		{jui_radiobutton_destroy, "destroy"},
+		{jui_radiobutton_is_pressed, "is_pressed"},
+		{jui_radiobutton_set_hovered, "set_hovered"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "radiobutton", radio_fns);
 
-	static duk_c_function radiog_fns[] = {
-		(duk_c_function)jui_radiogroup_create, "create",
-		(duk_c_function)jui_radiogroup_destroy, "destroy",
-		(duk_c_function)jui_radiogroup_add_button, "add_button",
-		(duk_c_function)jui_radiogroup_set_selected, "set_selected",
-		(duk_c_function)jui_radiogroup_draw, "draw",
-		NULL, NULL
+	static const reg_pair_t radiog_fns[] = {
+		{jui_radiogroup_create, "create"},
+		{jui_radiogroup_destroy, "destroy"},
+		{jui_radiogroup_add_button, "add_button"},
+		{jui_radiogroup_set_selected, "set_selected"},
+		{jui_radiogroup_draw, "draw"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "button_group", radiog_fns);
 
-	static duk_c_function grid_fns[] = {
-		(duk_c_function)jui_datagrid_create, "create",
-		(duk_c_function)jui_datagrid_destroy, "destroy",
-		(duk_c_function)jui_datagrid_draw, "draw",
-		(duk_c_function)jui_datagrid_setheaders, "setheaders",
-		(duk_c_function)jui_datagrid_addrow, "addrow",
-		(duk_c_function)jui_datagrid_hit_row, "hit_row",
-		(duk_c_function)jui_datagrid_scroll, "scroll",
-		(duk_c_function)jui_datagrid_set_selected_row, "set_selected_row",
-		(duk_c_function)jui_datagrid_get_row_count, "get_row_count",
-		(duk_c_function)jui_datagrid_get_cell, "get_cell",
-		NULL, NULL
+	static const reg_pair_t grid_fns[] = {
+		{jui_datagrid_create, "create"},
+		{jui_datagrid_destroy, "destroy"},
+		{jui_datagrid_draw, "draw"},
+		{jui_datagrid_setheaders, "setheaders"},
+		{jui_datagrid_addrow, "addrow"},
+		{jui_datagrid_hit_row, "hit_row"},
+		{jui_datagrid_scroll, "scroll"},
+		{jui_datagrid_set_selected_row, "set_selected_row"},
+		{jui_datagrid_get_row_count, "get_row_count"},
+		{jui_datagrid_get_cell, "get_cell"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "datagrid", grid_fns);
 
-	static duk_c_function texti_fns[] = {
-		(duk_c_function)jui_textinput_create, "create",
-		(duk_c_function)jui_textinput_destroy, "destroy",
-		(duk_c_function)jui_textinput_set_text, "set_text",
-		(duk_c_function)jui_textinput_get_text, "get_text",
-		(duk_c_function)jui_textinput_draw, "draw",
-		(duk_c_function)jui_textinput_is_pressed, "is_pressed",
-		(duk_c_function)jui_textinput_is_hovered, "is_hovered",
-		(duk_c_function)jui_textinput_focus, "focus",
-		(duk_c_function)jui_textinput_defocus, "defocus",
-		(duk_c_function)jui_textinput_insert, "insert",
-		(duk_c_function)jui_textinput_backspace, "backspace",
-		(duk_c_function)jui_textinput_delete, "delete",
-		(duk_c_function)jui_textinput_cursor_left, "cursor_left",
-		(duk_c_function)jui_textinput_cursor_right, "cursor_right",
-		(duk_c_function)jui_textinput_cursor_home, "cursor_home",
-		(duk_c_function)jui_textinput_cursor_end, "cursor_end",
-		(duk_c_function)jui_textinput_select_left, "select_left",
-		(duk_c_function)jui_textinput_select_right, "select_right",
-		(duk_c_function)jui_textinput_select_all, "select_all",
-		(duk_c_function)jui_textinput_paste, "paste",
-		(duk_c_function)jui_textinput_copy, "copy",
-		(duk_c_function)jui_textinput_cut, "cut",
-		(duk_c_function)jui_textinput_is_focused, "is_focused",
-		NULL, NULL
+	static const reg_pair_t texti_fns[] = {
+		{jui_textinput_create, "create"},
+		{jui_textinput_destroy, "destroy"},
+		{jui_textinput_set_text, "set_text"},
+		{jui_textinput_get_text, "get_text"},
+		{jui_textinput_draw, "draw"},
+		{jui_textinput_is_pressed, "is_pressed"},
+		{jui_textinput_is_hovered, "is_hovered"},
+		{jui_textinput_focus, "focus"},
+		{jui_textinput_defocus, "defocus"},
+		{jui_textinput_insert, "insert"},
+		{jui_textinput_backspace, "backspace"},
+		{jui_textinput_delete, "delete"},
+		{jui_textinput_cursor_left, "cursor_left"},
+		{jui_textinput_cursor_right, "cursor_right"},
+		{jui_textinput_cursor_home, "cursor_home"},
+		{jui_textinput_cursor_end, "cursor_end"},
+		{jui_textinput_select_left, "select_left"},
+		{jui_textinput_select_right, "select_right"},
+		{jui_textinput_select_all, "select_all"},
+		{jui_textinput_paste, "paste"},
+		{jui_textinput_copy, "copy"},
+		{jui_textinput_cut, "cut"},
+		{jui_textinput_is_focused, "is_focused"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "textinput", texti_fns);
 
-	static duk_c_function slider_fns[] = {
-		(duk_c_function)jui_slider_create, "create",
-		(duk_c_function)jui_slider_destroy, "destroy",
-		(duk_c_function)jui_slider_set_value, "set_value",
-		(duk_c_function)jui_slider_get_value, "get_value",
-		(duk_c_function)jui_slider_set_range, "set_range",
-		(duk_c_function)jui_slider_draw, "draw",
-		(duk_c_function)jui_slider_is_pressed, "is_pressed",
-		(duk_c_function)jui_slider_set_pressed, "set_pressed",
-		(duk_c_function)jui_slider_drag_move, "drag_move",
-		(duk_c_function)jui_slider_is_hovered, "is_hovered",
-		(duk_c_function)jui_slider_set_hovered, "set_hovered",
-		NULL, NULL
+	static const reg_pair_t slider_fns[] = {
+		{jui_slider_create, "create"},
+		{jui_slider_destroy, "destroy"},
+		{jui_slider_set_value, "set_value"},
+		{jui_slider_get_value, "get_value"},
+		{jui_slider_set_range, "set_range"},
+		{jui_slider_draw, "draw"},
+		{jui_slider_is_pressed, "is_pressed"},
+		{jui_slider_set_pressed, "set_pressed"},
+		{jui_slider_drag_move, "drag_move"},
+		{jui_slider_is_hovered, "is_hovered"},
+		{jui_slider_set_hovered, "set_hovered"},
+		{NULL, NULL}
 	}; reg_sub(ctx, "slider", slider_fns);
 
 	duk_put_global_string(ctx, "ui");

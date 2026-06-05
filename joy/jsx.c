@@ -177,7 +177,8 @@ bool jsx_dofile(jsx_p jsx, const char* filename)
 	char* data;
 	data = utils_read_file(filename, &data_size);
 	if (data) {
-		if (duk_peval_string(jsx->ctx, data) != 0) {
+		duk_push_lstring(jsx->ctx, data, data_size);
+		if (duk_peval(jsx->ctx) != 0) {
 			/* 执行错误，错误消息在栈顶 */
 			SDL_free(data);
 			log_info("%s", duk_to_string(jsx->ctx, -1));
