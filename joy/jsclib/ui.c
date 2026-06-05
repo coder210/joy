@@ -13,356 +13,357 @@
 #define SLIDER_TAG   "ui_slider"
 #define RADIOG_TAG   "ui_radiogroup"
 
-static void free_ud(js_State *J, void *p) { (void)J; if (p) SDL_free(p); }
-
-static SDL_Color read_color(js_State *J, int idx)
+static SDL_Color read_color(duk_context* ctx, int idx)
 {
-        SDL_Color c;
-        js_getproperty(J, idx, "r"); c.r = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "g"); c.g = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "b"); c.b = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "a"); c.a = js_tonumber(J, -1); js_pop(J, 1);
-        return c;
-}
-
-static void push_ud(js_State *J, const char *tag, void *p)
-{
-        js_newuserdata(J, tag, p, free_ud);
+	SDL_Color c;
+	duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "b"); c.b = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "a"); c.a = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+	return c;
 }
 
 /* ===== Label ===== */
-static void jui_label_create(js_State *J)
+static duk_ret_t jui_label_create(duk_context* ctx)
 {
-        SDL_Renderer *r = js_touserdata(J, 1, "SDL_Renderer*");
-        void *f = js_touserdata(J, 2, NULL);
-        font_p *fp = (font_p*)f;
-        label_p lb = label_create(r, fp ? *fp : NULL, NULL, 0);
-        push_ud(J, LABEL_TAG, lb);
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx, 1);
+	font_p* fp = (font_p*)duk_get_pointer(ctx, 2);
+	duk_push_pointer(ctx, label_create(r, fp ? *fp : NULL, NULL, 0));
+	return 1;
 }
-static void jui_label_destroy(js_State *J) { label_destroy(js_touserdata(J, 1, LABEL_TAG)); }
-static void jui_label_set_position(js_State *J) {
-        label_p lb = js_touserdata(J, 1, LABEL_TAG);
-        lb->position.x = js_tonumber(J, 2); lb->position.y = js_tonumber(J, 3);
+static duk_ret_t jui_label_destroy(duk_context* ctx) { label_destroy((label_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_label_set_position(duk_context* ctx) {
+	label_p lb = (label_p)duk_get_pointer(ctx,1);
+	lb->position.x = (float)duk_to_number(ctx,2); lb->position.y = (float)duk_to_number(ctx,3);
+	return 0;
 }
-static void jui_label_draw(js_State *J) { label_draw(js_touserdata(J, 1, LABEL_TAG)); }
+static duk_ret_t jui_label_draw(duk_context* ctx) { label_draw((label_p)duk_get_pointer(ctx,1)); return 0; }
 
 /* ===== Button ===== */
-static void jui_button_create(js_State *J) {
-        SDL_Renderer *r = js_touserdata(J, 1, "SDL_Renderer*");
-        button_p b = button_create(r, js_tonumber(J, 2), js_tonumber(J, 3));
-        push_ud(J, BUTTON_TAG, b);
+static duk_ret_t jui_button_create(duk_context* ctx) {
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx,1);
+	duk_push_pointer(ctx, button_create(r, (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3)));
+	return 1;
 }
-static void jui_button_destroy(js_State *J) { button_destroy(js_touserdata(J, 1, BUTTON_TAG)); }
-static void jui_button_set_position(js_State *J) {
-        button_set_position(js_touserdata(J, 1, BUTTON_TAG), js_tonumber(J, 2), js_tonumber(J, 3));
+static duk_ret_t jui_button_destroy(duk_context* ctx) { button_destroy((button_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_button_set_position(duk_context* ctx) {
+	button_set_position((button_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3));
+	return 0;
 }
-static void jui_button_set_text(js_State *J) {
-        button_p b = js_touserdata(J, 1, BUTTON_TAG);
-        void *f = js_touserdata(J, 2, NULL);
-        font_p *fp = (font_p*)f;
-        const char *s = js_tostring(J, 3);
-        SDL_Color c = {255,255,255,255};
-        if (js_isobject(J, 4)) c = read_color(J, 4);
-        button_set_textx(b, fp ? *fp : NULL, s, strlen(s), c);
+static duk_ret_t jui_button_set_text(duk_context* ctx) {
+	button_p b = (button_p)duk_get_pointer(ctx,1);
+	font_p* fp = (font_p*)duk_get_pointer(ctx,2);
+	const char* s = duk_to_string(ctx,3);
+	SDL_Color c = {255,255,255,255};
+	if (duk_is_object(ctx,4)) c = read_color(ctx,4);
+	button_set_textx(b, fp ? *fp : NULL, s, strlen(s), c);
+	return 0;
 }
-static void jui_button_is_hovered(js_State *J) {
-        js_pushboolean(J, button_is_hovered(js_touserdata(J, 1, BUTTON_TAG), js_tonumber(J, 2), js_tonumber(J, 3)));
+static duk_ret_t jui_button_is_hovered(duk_context* ctx) {
+	duk_push_boolean(ctx, button_is_hovered((button_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3)));
+	return 1;
 }
-static void jui_button_is_pressed(js_State *J) {
-        js_pushboolean(J, button_is_pressed(js_touserdata(J, 1, BUTTON_TAG), js_tonumber(J, 2), js_tonumber(J, 3)));
+static duk_ret_t jui_button_is_pressed(duk_context* ctx) {
+	duk_push_boolean(ctx, button_is_pressed((button_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3)));
+	return 1;
 }
-static void jui_button_set_hovered(js_State *J) { button_set_hovered(js_touserdata(J, 1, BUTTON_TAG), js_toboolean(J, 2)); }
-static void jui_button_set_pressed(js_State *J) { button_set_pressed(js_touserdata(J, 1, BUTTON_TAG), js_toboolean(J, 2)); }
-static void jui_button_draw(js_State *J) { button_draw(js_touserdata(J, 1, BUTTON_TAG)); }
+static duk_ret_t jui_button_set_hovered(duk_context* ctx) { button_set_hovered((button_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
+static duk_ret_t jui_button_set_pressed(duk_context* ctx) { button_set_pressed((button_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
+static duk_ret_t jui_button_draw(duk_context* ctx) { button_draw((button_p)duk_get_pointer(ctx,1)); return 0; }
 
 /* ===== Combobox ===== */
-static void jui_combobox_create(js_State *J) {
-        SDL_Renderer *r = js_touserdata(J, 1, "SDL_Renderer*");
-        SDL_FRect rect = {js_tonumber(J,2), js_tonumber(J,3), js_tonumber(J,4), js_tonumber(J,5)};
-        push_ud(J, COMBO_TAG, combobox_create(r, rect));
+static duk_ret_t jui_combobox_create(duk_context* ctx) {
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx,1);
+	SDL_FRect rect = {(float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3), (float)duk_to_number(ctx,4), (float)duk_to_number(ctx,5)};
+	duk_push_pointer(ctx, combobox_create(r, rect));
+	return 1;
 }
-static void jui_combobox_destroy(js_State *J) { combobox_destroy(js_touserdata(J, 1, COMBO_TAG)); }
-static void jui_combobox_additem(js_State *J) {
-        combobox_p c = js_touserdata(J, 1, COMBO_TAG);
-        if (c->item_count >= 20) return;
-        const char *text = js_tostring(J, 2);
-        void *f = js_touserdata(J, 3, NULL);
-        font_p *fp = (font_p*)f;
-        SDL_Color col = {0,0,0,255};
-        combobox_item_p item = &c->items[c->item_count];
-        item->text = text_createx(fp ? *fp : NULL, text, strlen(text), col);
-        item->is_selected = false;
-        c->item_count++;
-        c->dropdown_rect.h = c->item_count * c->item_height;
+static duk_ret_t jui_combobox_destroy(duk_context* ctx) { combobox_destroy((combobox_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_combobox_additem(duk_context* ctx) {
+	combobox_p c = (combobox_p)duk_get_pointer(ctx,1);
+	if (c->item_count >= 20) return 0;
+	const char* text = duk_to_string(ctx,2);
+	font_p* fp = (font_p*)duk_get_pointer(ctx,3);
+	SDL_Color col = {0,0,0,255};
+	combobox_item_p item = &c->items[c->item_count];
+	item->text = text_createx(fp ? *fp : NULL, text, strlen(text), col);
+	item->is_selected = false;
+	c->item_count++;
+	c->dropdown_rect.h = c->item_count * c->item_height;
+	return 0;
 }
-static void jui_combobox_draw(js_State *J) { combobox_draw(js_touserdata(J, 1, COMBO_TAG)); }
-static void jui_combobox_is_pressed(js_State *J) { js_pushboolean(J, combobox_is_pressed(js_touserdata(J,1,COMBO_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_combobox_is_open(js_State *J) { js_pushboolean(J, combobox_is_open(js_touserdata(J,1,COMBO_TAG))); }
-static void jui_combobox_set_open(js_State *J) { combobox_set_open(js_touserdata(J,1,COMBO_TAG), js_toboolean(J,2)); }
-static void jui_combobox_hit_item(js_State *J) { js_pushnumber(J, combobox_hit_item(js_touserdata(J,1,COMBO_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_combobox_set_selected(js_State *J) { combobox_set_selected(js_touserdata(J,1,COMBO_TAG), js_tonumber(J,2)); }
-static void jui_combobox_get_selected(js_State *J) { js_pushnumber(J, combobox_get_selected(js_touserdata(J,1,COMBO_TAG))); }
+static duk_ret_t jui_combobox_draw(duk_context* ctx) { combobox_draw((combobox_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_combobox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, combobox_is_pressed((combobox_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_combobox_is_open(duk_context* ctx) { duk_push_boolean(ctx, combobox_is_open((combobox_p)duk_get_pointer(ctx,1))); return 1; }
+static duk_ret_t jui_combobox_set_open(duk_context* ctx) { combobox_set_open((combobox_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
+static duk_ret_t jui_combobox_hit_item(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)combobox_hit_item((combobox_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_combobox_set_selected(duk_context* ctx) { combobox_set_selected((combobox_p)duk_get_pointer(ctx,1), (int)duk_to_number(ctx,2)); return 0; }
+static duk_ret_t jui_combobox_get_selected(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)combobox_get_selected((combobox_p)duk_get_pointer(ctx,1))); return 1; }
 
 /* ===== Checkbox ===== */
-static void jui_checkbox_create(js_State *J) {
-        checkbox_p cb = checkbox_create(js_tonumber(J,1), js_tonumber(J,2), js_tonumber(J,3), js_tostring(J,4));
-        push_ud(J, CHECK_TAG, cb);
+static duk_ret_t jui_checkbox_create(duk_context* ctx) {
+	duk_push_pointer(ctx, checkbox_create((float)duk_to_number(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3), duk_to_string(ctx,4)));
+	return 1;
 }
-static void jui_checkbox_destroy(js_State *J) { checkbox_destroy(js_touserdata(J, 1, CHECK_TAG)); }
-static void jui_checkbox_draw(js_State *J) {
-        checkbox_draw(js_touserdata(J,1,CHECK_TAG), js_touserdata(J,2,"SDL_Renderer*"), NULL);
+static duk_ret_t jui_checkbox_destroy(duk_context* ctx) { checkbox_destroy((checkbox_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_checkbox_draw(duk_context* ctx) {
+	checkbox_draw((checkbox_p)duk_get_pointer(ctx,1), (SDL_Renderer*)duk_get_pointer(ctx,2), NULL);
+	return 0;
 }
-static void jui_checkbox_is_pressed(js_State *J) { js_pushboolean(J, checkbox_is_pressed(js_touserdata(J,1,CHECK_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_checkbox_set_hovered(js_State *J) { checkbox_set_hovered(js_touserdata(J,1,CHECK_TAG), js_toboolean(J,2)); }
+static duk_ret_t jui_checkbox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, checkbox_is_pressed((checkbox_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_checkbox_set_hovered(duk_context* ctx) { checkbox_set_hovered((checkbox_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
 
 /* ===== Radio Button ===== */
-static void jui_radiobutton_create(js_State *J) {
-        radio_button_p r = radio_button_create(js_tonumber(J,1), js_tonumber(J,2), js_tonumber(J,3), js_tostring(J,4), js_tonumber(J,5));
-        push_ud(J, RADIO_TAG, r);
+static duk_ret_t jui_radiobutton_create(duk_context* ctx) {
+	duk_push_pointer(ctx, radio_button_create((float)duk_to_number(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3), duk_to_string(ctx,4), (int)duk_to_number(ctx,5)));
+	return 1;
 }
-static void jui_radiobutton_destroy(js_State *J) { radio_button_destroy(js_touserdata(J,1,RADIO_TAG)); }
-static void jui_radiobutton_is_pressed(js_State *J) { js_pushboolean(J, radio_button_is_pressed(js_touserdata(J,1,RADIO_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_radiobutton_set_hovered(js_State *J) { radio_button_set_hovered(js_touserdata(J,1,RADIO_TAG), js_toboolean(J,2)); }
+static duk_ret_t jui_radiobutton_destroy(duk_context* ctx) { radio_button_destroy((radio_button_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_radiobutton_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, radio_button_is_pressed((radio_button_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_radiobutton_set_hovered(duk_context* ctx) { radio_button_set_hovered((radio_button_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
 
 /* ===== Radio Group ===== */
-static void jui_radiogroup_create(js_State *J) { push_ud(J, RADIOG_TAG, radio_button_group_create()); }
-static void jui_radiogroup_destroy(js_State *J) { radio_button_group_destroy(js_touserdata(J,1,RADIOG_TAG)); }
-static void jui_radiogroup_add_button(js_State *J) { radio_button_group_add_button(js_touserdata(J,1,RADIOG_TAG), js_touserdata(J,2,RADIO_TAG)); }
-static void jui_radiogroup_set_selected(js_State *J) { radio_button_group_set_selected(js_touserdata(J,1,RADIOG_TAG), js_tonumber(J,2)); }
-static void jui_radiogroup_draw(js_State *J) { radio_button_group_draw(js_touserdata(J,1,RADIOG_TAG), js_touserdata(J,2,"SDL_Renderer*")); }
+static duk_ret_t jui_radiogroup_create(duk_context* ctx) { duk_push_pointer(ctx, radio_button_group_create()); return 1; }
+static duk_ret_t jui_radiogroup_destroy(duk_context* ctx) { radio_button_group_destroy((radio_button_group_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_radiogroup_add_button(duk_context* ctx) { radio_button_group_add_button((radio_button_group_p)duk_get_pointer(ctx,1), (radio_button_p)duk_get_pointer(ctx,2)); return 0; }
+static duk_ret_t jui_radiogroup_set_selected(duk_context* ctx) { radio_button_group_set_selected((radio_button_group_p)duk_get_pointer(ctx,1), (int)duk_to_number(ctx,2)); return 0; }
+static duk_ret_t jui_radiogroup_draw(duk_context* ctx) { radio_button_group_draw((radio_button_group_p)duk_get_pointer(ctx,1), (SDL_Renderer*)duk_get_pointer(ctx,2)); return 0; }
 
 /* ===== Datagrid ===== */
-static void jui_datagrid_create(js_State *J) {
-        SDL_Renderer *r = js_touserdata(J, 1, "SDL_Renderer*");
-        SDL_Rect rect = {(int)js_tonumber(J,2),(int)js_tonumber(J,3),(int)js_tonumber(J,4),(int)js_tonumber(J,5)};
-        int cols = js_tonumber(J, 6);
-        int has_hdr = js_toboolean(J, 7);
-        void *f = js_touserdata(J, 8, NULL);
-        font_p *fp = (font_p*)f;
-        push_ud(J, GRID_TAG, datagrid_create(r, rect, cols, has_hdr, fp ? *fp : NULL));
+static duk_ret_t jui_datagrid_create(duk_context* ctx) {
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx,1);
+	SDL_Rect rect = {(int)duk_to_number(ctx,2), (int)duk_to_number(ctx,3), (int)duk_to_number(ctx,4), (int)duk_to_number(ctx,5)};
+	int cols = (int)duk_to_number(ctx,6);
+	int has_hdr = duk_get_boolean(ctx,7);
+	font_p* fp = (font_p*)duk_get_pointer(ctx,8);
+	duk_push_pointer(ctx, datagrid_create(r, rect, cols, has_hdr, fp ? *fp : NULL));
+	return 1;
 }
-static void jui_datagrid_destroy(js_State *J) { datagrid_destroy(js_touserdata(J,1,GRID_TAG)); }
-static void jui_datagrid_draw(js_State *J) { datagrid_draw(js_touserdata(J,1,GRID_TAG), js_touserdata(J,2,"SDL_Renderer*")); }
-static void jui_datagrid_setheaders(js_State *J) {
-        datagrid_p g = js_touserdata(J,1,GRID_TAG);
-        void *f = js_touserdata(J,2,NULL);
-        font_p *fp = (font_p*)f;
-        SDL_Color col = {0,0,0,255};
-        int n = js_getlength(J, 3);
-        for (int i = 0; i < n && i < g->col_count; i++) {
-                js_getindex(J, 3, i);
-                const char *text = js_tostring(J, -1);
-                if (g->headers[i]) text_destroy(g->headers[i]);
-                g->headers[i] = text_createx(fp ? *fp : NULL, text, strlen(text), col);
-                js_pop(J, 1);
-        }
+static duk_ret_t jui_datagrid_destroy(duk_context* ctx) { datagrid_destroy((datagrid_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_datagrid_draw(duk_context* ctx) { datagrid_draw((datagrid_p)duk_get_pointer(ctx,1), (SDL_Renderer*)duk_get_pointer(ctx,2)); return 0; }
+static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) {
+	datagrid_p g = (datagrid_p)duk_get_pointer(ctx,1);
+	font_p* fp = (font_p*)duk_get_pointer(ctx,2);
+	SDL_Color col = {0,0,0,255};
+	int n = (int)duk_get_length(ctx,3);
+	for (int i = 0; i < n && i < g->col_count; i++) {
+		duk_get_prop_index(ctx, 3, (duk_uarridx_t)i);
+		const char* text = duk_to_string(ctx, -1);
+		if (g->headers[i]) text_destroy(g->headers[i]);
+		g->headers[i] = text_createx(fp ? *fp : NULL, text, strlen(text), col);
+		duk_pop(ctx);
+	}
+	return 0;
 }
-static void jui_datagrid_addrow(js_State *J) {
-        datagrid_p g = js_touserdata(J,1,GRID_TAG);
-        int n = js_getlength(J, 2);
-        if (n > g->col_count) n = g->col_count;
-        const char **row = malloc(n * sizeof(char*));
-        for (int i = 0; i < n; i++) {
-                js_getindex(J, 2, i);
-                row[i] = js_tostring(J, -1);
-                js_pop(J, 1);
-        }
-        datagrid_addrow(g, row);
-        free(row);
+static duk_ret_t jui_datagrid_addrow(duk_context* ctx) {
+	datagrid_p g = (datagrid_p)duk_get_pointer(ctx,1);
+	int n = (int)duk_get_length(ctx,2);
+	if (n > g->col_count) n = g->col_count;
+	const char** row = (const char**)malloc(n * sizeof(char*));
+	for (int i = 0; i < n; i++) {
+		duk_get_prop_index(ctx, 2, (duk_uarridx_t)i);
+		row[i] = duk_to_string(ctx, -1);
+		duk_pop(ctx);
+	}
+	datagrid_addrow(g, row);
+	free(row);
+	return 0;
 }
-static void jui_datagrid_hit_row(js_State *J) { js_pushnumber(J, datagrid_hit_row(js_touserdata(J,1,GRID_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_datagrid_scroll(js_State *J) { datagrid_scroll(js_touserdata(J,1,GRID_TAG), js_tonumber(J,2)); }
-static void jui_datagrid_set_selected_row(js_State *J) { datagrid_set_selected_row(js_touserdata(J,1,GRID_TAG), js_tonumber(J,2)); }
-static void jui_datagrid_get_row_count(js_State *J) { js_pushnumber(J, ((datagrid_p)js_touserdata(J,1,GRID_TAG))->row_count); }
-static void jui_datagrid_get_cell(js_State *J) {
-        datagrid_p g = js_touserdata(J,1,GRID_TAG);
-        int r = js_tonumber(J,2), c = js_tonumber(J,3);
-        if (r >= 0 && (size_t)r < kv_size(g->data) && c >= 0 && c < g->col_count) {
-                char *v = kv_A(kv_A(g->data, r), c);
-                if (v) { js_pushstring(J, v); return; }
-        }
-        js_pushundefined(J);
+static duk_ret_t jui_datagrid_hit_row(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)datagrid_hit_row((datagrid_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_datagrid_scroll(duk_context* ctx) { datagrid_scroll((datagrid_p)duk_get_pointer(ctx,1), (int)duk_to_number(ctx,2)); return 0; }
+static duk_ret_t jui_datagrid_set_selected_row(duk_context* ctx) { datagrid_set_selected_row((datagrid_p)duk_get_pointer(ctx,1), (int)duk_to_number(ctx,2)); return 0; }
+static duk_ret_t jui_datagrid_get_row_count(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)((datagrid_p)duk_get_pointer(ctx,1))->row_count); return 1; }
+static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) {
+	datagrid_p g = (datagrid_p)duk_get_pointer(ctx,1);
+	int r = (int)duk_to_number(ctx,2), c = (int)duk_to_number(ctx,3);
+	if (r >= 0 && (size_t)r < kv_size(g->data) && c >= 0 && c < g->col_count) {
+		char* v = kv_A(kv_A(g->data, r), c);
+		if (v) { duk_push_string(ctx, v); return 1; }
+	}
+	duk_push_undefined(ctx);
+	return 1;
 }
 
 /* ===== TextInput ===== */
-static void jui_textinput_create(js_State *J) {
-        SDL_Renderer *r = js_touserdata(J,1,"SDL_Renderer*");
-        void *f = js_touserdata(J,2,NULL);
-        font_p *fp = (font_p*)f;
-        SDL_FRect rect = {js_tonumber(J,3), js_tonumber(J,4), js_tonumber(J,5), js_tonumber(J,6)};
-        push_ud(J, TEXTI_TAG, textinput_create(r, rect, fp ? *fp : NULL));
+static duk_ret_t jui_textinput_create(duk_context* ctx) {
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx,1);
+	font_p* fp = (font_p*)duk_get_pointer(ctx,2);
+	SDL_FRect rect = {(float)duk_to_number(ctx,3), (float)duk_to_number(ctx,4), (float)duk_to_number(ctx,5), (float)duk_to_number(ctx,6)};
+	duk_push_pointer(ctx, textinput_create(r, rect, fp ? *fp : NULL));
+	return 1;
 }
-static void jui_textinput_destroy(js_State *J) { textinput_destroy(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_set_text(js_State *J) { textinput_set_text(js_touserdata(J,1,TEXTI_TAG), js_tostring(J,2)); }
-static void jui_textinput_get_text(js_State *J) { js_pushstring(J, textinput_get_text(js_touserdata(J,1,TEXTI_TAG))); }
-static void jui_textinput_draw(js_State *J) { textinput_draw(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_is_pressed(js_State *J) { js_pushboolean(J, textinput_is_pressed(js_touserdata(J,1,TEXTI_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_textinput_is_hovered(js_State *J) { js_pushboolean(J, textinput_is_hovered(js_touserdata(J,1,TEXTI_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_textinput_focus(js_State *J) { textinput_focus(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_defocus(js_State *J) { textinput_defocus(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_insert(js_State *J) { const char *t = js_tostring(J,2); textinput_insert(js_touserdata(J,1,TEXTI_TAG), t, strlen(t)); }
-static void jui_textinput_backspace(js_State *J) { textinput_backspace(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_delete(js_State *J) { textinput_delete(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_cursor_left(js_State *J) { textinput_cursor_left(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_cursor_right(js_State *J) { textinput_cursor_right(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_cursor_home(js_State *J) { textinput_cursor_home(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_cursor_end(js_State *J) { textinput_cursor_end(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_select_left(js_State *J) { textinput_select_left(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_select_right(js_State *J) { textinput_select_right(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_select_all(js_State *J) { textinput_select_all(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_paste(js_State *J) { textinput_paste(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_copy(js_State *J) { textinput_copy(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_cut(js_State *J) { textinput_cut(js_touserdata(J,1,TEXTI_TAG)); }
-static void jui_textinput_is_focused(js_State *J) { js_pushboolean(J, textinput_is_focused(js_touserdata(J,1,TEXTI_TAG))); }
+static duk_ret_t jui_textinput_destroy(duk_context* ctx) { textinput_destroy((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_set_text(duk_context* ctx) { textinput_set_text((textinput_p)duk_get_pointer(ctx,1), duk_to_string(ctx,2)); return 0; }
+static duk_ret_t jui_textinput_get_text(duk_context* ctx) { duk_push_string(ctx, textinput_get_text((textinput_p)duk_get_pointer(ctx,1))); return 1; }
+static duk_ret_t jui_textinput_draw(duk_context* ctx) { textinput_draw((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_pressed((textinput_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_textinput_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_hovered((textinput_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_textinput_focus(duk_context* ctx) { textinput_focus((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_defocus(duk_context* ctx) { textinput_defocus((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_insert(duk_context* ctx) { const char* t = duk_to_string(ctx,2); textinput_insert((textinput_p)duk_get_pointer(ctx,1), t, strlen(t)); return 0; }
+static duk_ret_t jui_textinput_backspace(duk_context* ctx) { textinput_backspace((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_delete(duk_context* ctx) { textinput_delete((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_cursor_left(duk_context* ctx) { textinput_cursor_left((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_cursor_right(duk_context* ctx) { textinput_cursor_right((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_cursor_home(duk_context* ctx) { textinput_cursor_home((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_cursor_end(duk_context* ctx) { textinput_cursor_end((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_select_left(duk_context* ctx) { textinput_select_left((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_select_right(duk_context* ctx) { textinput_select_right((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_select_all(duk_context* ctx) { textinput_select_all((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_paste(duk_context* ctx) { textinput_paste((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_copy(duk_context* ctx) { textinput_copy((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_cut(duk_context* ctx) { textinput_cut((textinput_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_textinput_is_focused(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_focused((textinput_p)duk_get_pointer(ctx,1))); return 1; }
 
 /* ===== Slider ===== */
-static void jui_slider_create(js_State *J) {
-        SDL_Renderer *r = js_touserdata(J,1,"SDL_Renderer*");
-        push_ud(J, SLIDER_TAG, slider_create(r, js_tonumber(J,2), js_tonumber(J,3), js_tonumber(J,4), js_tonumber(J,5), js_tonumber(J,6), js_tonumber(J,7), js_tonumber(J,8)));
+static duk_ret_t jui_slider_create(duk_context* ctx) {
+	SDL_Renderer* r = (SDL_Renderer*)duk_get_pointer(ctx,1);
+	duk_push_pointer(ctx, slider_create(r, (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3), (float)duk_to_number(ctx,4), (float)duk_to_number(ctx,5), (float)duk_to_number(ctx,6), (float)duk_to_number(ctx,7), (float)duk_to_number(ctx,8)));
+	return 1;
 }
-static void jui_slider_destroy(js_State *J) { slider_destroy(js_touserdata(J,1,SLIDER_TAG)); }
-static void jui_slider_set_value(js_State *J) { slider_set_value(js_touserdata(J,1,SLIDER_TAG), js_tonumber(J,2)); }
-static void jui_slider_get_value(js_State *J) { js_pushnumber(J, slider_get_value(js_touserdata(J,1,SLIDER_TAG))); }
-static void jui_slider_set_range(js_State *J) { slider_set_range(js_touserdata(J,1,SLIDER_TAG), js_tonumber(J,2), js_tonumber(J,3)); }
-static void jui_slider_draw(js_State *J) { slider_draw(js_touserdata(J,1,SLIDER_TAG)); }
-static void jui_slider_is_pressed(js_State *J) { js_pushboolean(J, slider_is_pressed(js_touserdata(J,1,SLIDER_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_slider_set_pressed(js_State *J) { slider_set_pressed(js_touserdata(J,1,SLIDER_TAG), js_toboolean(J,2)); }
-static void jui_slider_drag_move(js_State *J) { slider_drag_move(js_touserdata(J,1,SLIDER_TAG), js_tonumber(J,2), js_tonumber(J,3)); }
-static void jui_slider_is_hovered(js_State *J) { js_pushboolean(J, slider_is_hovered(js_touserdata(J,1,SLIDER_TAG), js_tonumber(J,2), js_tonumber(J,3))); }
-static void jui_slider_set_hovered(js_State *J) { slider_set_hovered(js_touserdata(J,1,SLIDER_TAG), js_toboolean(J,2)); }
+static duk_ret_t jui_slider_destroy(duk_context* ctx) { slider_destroy((slider_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_slider_set_value(duk_context* ctx) { slider_set_value((slider_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2)); return 0; }
+static duk_ret_t jui_slider_get_value(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)slider_get_value((slider_p)duk_get_pointer(ctx,1))); return 1; }
+static duk_ret_t jui_slider_set_range(duk_context* ctx) { slider_set_range((slider_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3)); return 0; }
+static duk_ret_t jui_slider_draw(duk_context* ctx) { slider_draw((slider_p)duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jui_slider_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, slider_is_pressed((slider_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_slider_set_pressed(duk_context* ctx) { slider_set_pressed((slider_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
+static duk_ret_t jui_slider_drag_move(duk_context* ctx) { slider_drag_move((slider_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3)); return 0; }
+static duk_ret_t jui_slider_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, slider_is_hovered((slider_p)duk_get_pointer(ctx,1), (float)duk_to_number(ctx,2), (float)duk_to_number(ctx,3))); return 1; }
+static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((slider_p)duk_get_pointer(ctx,1), duk_get_boolean(ctx,2)); return 0; }
 
 /* ===== Registration ===== */
-static void reg_sub(js_State *J, const char *name, const js_CFunction *pairs)
+static void reg_sub(duk_context* ctx, const char* name, const duk_c_function* pairs)
 {
-        js_newobject(J);
-        while (pairs[0]) {
-                js_newcfunction(J, pairs[0], pairs[1] ? pairs[1] : "", 0);
-                js_setproperty(J, -2, pairs[1]);
-                pairs += 2;
-        }
-        js_setproperty(J, -2, name);
+	duk_push_object(ctx);
+	while (pairs[0]) {
+		duk_push_c_function(ctx, pairs[0], 0);
+		duk_put_prop_string(ctx, -2, pairs[1]);
+		pairs += 2;
+	}
+	duk_put_prop_string(ctx, -2, name);
 }
 
-void jsopen_ui(js_State *J)
+void jsopen_ui(duk_context* ctx)
 {
-        js_newobject(J);
+	duk_push_object(ctx);
 
-        static js_CFunction label_fns[] = {
-                (js_CFunction)jui_label_create, "create",
-                (js_CFunction)jui_label_destroy, "destroy",
-                (js_CFunction)jui_label_set_position, "set_position",
-                (js_CFunction)jui_label_draw, "draw",
-                NULL, NULL
-        }; reg_sub(J, "label", label_fns);
+	static duk_c_function label_fns[] = {
+		(duk_c_function)jui_label_create, "create",
+		(duk_c_function)jui_label_destroy, "destroy",
+		(duk_c_function)jui_label_set_position, "set_position",
+		(duk_c_function)jui_label_draw, "draw",
+		NULL, NULL
+	}; reg_sub(ctx, "label", label_fns);
 
-        static js_CFunction button_fns[] = {
-                (js_CFunction)jui_button_create, "create",
-                (js_CFunction)jui_button_destroy, "destroy",
-                (js_CFunction)jui_button_set_position, "set_position",
-                (js_CFunction)jui_button_set_text, "set_text",
-                (js_CFunction)jui_button_is_hovered, "is_hovered",
-                (js_CFunction)jui_button_is_pressed, "is_pressed",
-                (js_CFunction)jui_button_set_hovered, "set_hovered",
-                (js_CFunction)jui_button_set_pressed, "set_pressed",
-                (js_CFunction)jui_button_draw, "draw",
-                NULL, NULL
-        }; reg_sub(J, "button", button_fns);
+	static duk_c_function button_fns[] = {
+		(duk_c_function)jui_button_create, "create",
+		(duk_c_function)jui_button_destroy, "destroy",
+		(duk_c_function)jui_button_set_position, "set_position",
+		(duk_c_function)jui_button_set_text, "set_text",
+		(duk_c_function)jui_button_is_hovered, "is_hovered",
+		(duk_c_function)jui_button_is_pressed, "is_pressed",
+		(duk_c_function)jui_button_set_hovered, "set_hovered",
+		(duk_c_function)jui_button_set_pressed, "set_pressed",
+		(duk_c_function)jui_button_draw, "draw",
+		NULL, NULL
+	}; reg_sub(ctx, "button", button_fns);
 
-        static js_CFunction combobox_fns[] = {
-                (js_CFunction)jui_combobox_create, "create",
-                (js_CFunction)jui_combobox_destroy, "destroy",
-                (js_CFunction)jui_combobox_additem, "additem",
-                (js_CFunction)jui_combobox_draw, "draw",
-                (js_CFunction)jui_combobox_is_pressed, "is_pressed",
-                (js_CFunction)jui_combobox_is_open, "is_open",
-                (js_CFunction)jui_combobox_set_open, "set_open",
-                (js_CFunction)jui_combobox_hit_item, "hit_item",
-                (js_CFunction)jui_combobox_set_selected, "set_selected",
-                (js_CFunction)jui_combobox_get_selected, "get_selected",
-                NULL, NULL
-        }; reg_sub(J, "combobox", combobox_fns);
+	static duk_c_function combobox_fns[] = {
+		(duk_c_function)jui_combobox_create, "create",
+		(duk_c_function)jui_combobox_destroy, "destroy",
+		(duk_c_function)jui_combobox_additem, "additem",
+		(duk_c_function)jui_combobox_draw, "draw",
+		(duk_c_function)jui_combobox_is_pressed, "is_pressed",
+		(duk_c_function)jui_combobox_is_open, "is_open",
+		(duk_c_function)jui_combobox_set_open, "set_open",
+		(duk_c_function)jui_combobox_hit_item, "hit_item",
+		(duk_c_function)jui_combobox_set_selected, "set_selected",
+		(duk_c_function)jui_combobox_get_selected, "get_selected",
+		NULL, NULL
+	}; reg_sub(ctx, "combobox", combobox_fns);
 
-        static js_CFunction checkbox_fns[] = {
-                (js_CFunction)jui_checkbox_create, "create",
-                (js_CFunction)jui_checkbox_destroy, "destroy",
-                (js_CFunction)jui_checkbox_draw, "draw",
-                (js_CFunction)jui_checkbox_is_pressed, "is_pressed",
-                (js_CFunction)jui_checkbox_set_hovered, "set_hovered",
-                NULL, NULL
-        }; reg_sub(J, "checkbox", checkbox_fns);
+	static duk_c_function checkbox_fns[] = {
+		(duk_c_function)jui_checkbox_create, "create",
+		(duk_c_function)jui_checkbox_destroy, "destroy",
+		(duk_c_function)jui_checkbox_draw, "draw",
+		(duk_c_function)jui_checkbox_is_pressed, "is_pressed",
+		(duk_c_function)jui_checkbox_set_hovered, "set_hovered",
+		NULL, NULL
+	}; reg_sub(ctx, "checkbox", checkbox_fns);
 
-        static js_CFunction radio_fns[] = {
-                (js_CFunction)jui_radiobutton_create, "create",
-                (js_CFunction)jui_radiobutton_destroy, "destroy",
-                (js_CFunction)jui_radiobutton_is_pressed, "is_pressed",
-                (js_CFunction)jui_radiobutton_set_hovered, "set_hovered",
-                NULL, NULL
-        }; reg_sub(J, "radiobutton", radio_fns);
+	static duk_c_function radio_fns[] = {
+		(duk_c_function)jui_radiobutton_create, "create",
+		(duk_c_function)jui_radiobutton_destroy, "destroy",
+		(duk_c_function)jui_radiobutton_is_pressed, "is_pressed",
+		(duk_c_function)jui_radiobutton_set_hovered, "set_hovered",
+		NULL, NULL
+	}; reg_sub(ctx, "radiobutton", radio_fns);
 
-        static js_CFunction radiog_fns[] = {
-                (js_CFunction)jui_radiogroup_create, "create",
-                (js_CFunction)jui_radiogroup_destroy, "destroy",
-                (js_CFunction)jui_radiogroup_add_button, "add_button",
-                (js_CFunction)jui_radiogroup_set_selected, "set_selected",
-                (js_CFunction)jui_radiogroup_draw, "draw",
-                NULL, NULL
-        }; reg_sub(J, "button_group", radiog_fns);
+	static duk_c_function radiog_fns[] = {
+		(duk_c_function)jui_radiogroup_create, "create",
+		(duk_c_function)jui_radiogroup_destroy, "destroy",
+		(duk_c_function)jui_radiogroup_add_button, "add_button",
+		(duk_c_function)jui_radiogroup_set_selected, "set_selected",
+		(duk_c_function)jui_radiogroup_draw, "draw",
+		NULL, NULL
+	}; reg_sub(ctx, "button_group", radiog_fns);
 
-        static js_CFunction grid_fns[] = {
-                (js_CFunction)jui_datagrid_create, "create",
-                (js_CFunction)jui_datagrid_destroy, "destroy",
-                (js_CFunction)jui_datagrid_draw, "draw",
-                (js_CFunction)jui_datagrid_setheaders, "setheaders",
-                (js_CFunction)jui_datagrid_addrow, "addrow",
-                (js_CFunction)jui_datagrid_hit_row, "hit_row",
-                (js_CFunction)jui_datagrid_scroll, "scroll",
-                (js_CFunction)jui_datagrid_set_selected_row, "set_selected_row",
-                (js_CFunction)jui_datagrid_get_row_count, "get_row_count",
-                (js_CFunction)jui_datagrid_get_cell, "get_cell",
-                NULL, NULL
-        }; reg_sub(J, "datagrid", grid_fns);
+	static duk_c_function grid_fns[] = {
+		(duk_c_function)jui_datagrid_create, "create",
+		(duk_c_function)jui_datagrid_destroy, "destroy",
+		(duk_c_function)jui_datagrid_draw, "draw",
+		(duk_c_function)jui_datagrid_setheaders, "setheaders",
+		(duk_c_function)jui_datagrid_addrow, "addrow",
+		(duk_c_function)jui_datagrid_hit_row, "hit_row",
+		(duk_c_function)jui_datagrid_scroll, "scroll",
+		(duk_c_function)jui_datagrid_set_selected_row, "set_selected_row",
+		(duk_c_function)jui_datagrid_get_row_count, "get_row_count",
+		(duk_c_function)jui_datagrid_get_cell, "get_cell",
+		NULL, NULL
+	}; reg_sub(ctx, "datagrid", grid_fns);
 
-        static js_CFunction texti_fns[] = {
-                (js_CFunction)jui_textinput_create, "create",
-                (js_CFunction)jui_textinput_destroy, "destroy",
-                (js_CFunction)jui_textinput_set_text, "set_text",
-                (js_CFunction)jui_textinput_get_text, "get_text",
-                (js_CFunction)jui_textinput_draw, "draw",
-                (js_CFunction)jui_textinput_is_pressed, "is_pressed",
-                (js_CFunction)jui_textinput_is_hovered, "is_hovered",
-                (js_CFunction)jui_textinput_focus, "focus",
-                (js_CFunction)jui_textinput_defocus, "defocus",
-                (js_CFunction)jui_textinput_insert, "insert",
-                (js_CFunction)jui_textinput_backspace, "backspace",
-                (js_CFunction)jui_textinput_delete, "delete",
-                (js_CFunction)jui_textinput_cursor_left, "cursor_left",
-                (js_CFunction)jui_textinput_cursor_right, "cursor_right",
-                (js_CFunction)jui_textinput_cursor_home, "cursor_home",
-                (js_CFunction)jui_textinput_cursor_end, "cursor_end",
-                (js_CFunction)jui_textinput_select_left, "select_left",
-                (js_CFunction)jui_textinput_select_right, "select_right",
-                (js_CFunction)jui_textinput_select_all, "select_all",
-                (js_CFunction)jui_textinput_paste, "paste",
-                (js_CFunction)jui_textinput_copy, "copy",
-                (js_CFunction)jui_textinput_cut, "cut",
-                (js_CFunction)jui_textinput_is_focused, "is_focused",
-                NULL, NULL
-        }; reg_sub(J, "textinput", texti_fns);
+	static duk_c_function texti_fns[] = {
+		(duk_c_function)jui_textinput_create, "create",
+		(duk_c_function)jui_textinput_destroy, "destroy",
+		(duk_c_function)jui_textinput_set_text, "set_text",
+		(duk_c_function)jui_textinput_get_text, "get_text",
+		(duk_c_function)jui_textinput_draw, "draw",
+		(duk_c_function)jui_textinput_is_pressed, "is_pressed",
+		(duk_c_function)jui_textinput_is_hovered, "is_hovered",
+		(duk_c_function)jui_textinput_focus, "focus",
+		(duk_c_function)jui_textinput_defocus, "defocus",
+		(duk_c_function)jui_textinput_insert, "insert",
+		(duk_c_function)jui_textinput_backspace, "backspace",
+		(duk_c_function)jui_textinput_delete, "delete",
+		(duk_c_function)jui_textinput_cursor_left, "cursor_left",
+		(duk_c_function)jui_textinput_cursor_right, "cursor_right",
+		(duk_c_function)jui_textinput_cursor_home, "cursor_home",
+		(duk_c_function)jui_textinput_cursor_end, "cursor_end",
+		(duk_c_function)jui_textinput_select_left, "select_left",
+		(duk_c_function)jui_textinput_select_right, "select_right",
+		(duk_c_function)jui_textinput_select_all, "select_all",
+		(duk_c_function)jui_textinput_paste, "paste",
+		(duk_c_function)jui_textinput_copy, "copy",
+		(duk_c_function)jui_textinput_cut, "cut",
+		(duk_c_function)jui_textinput_is_focused, "is_focused",
+		NULL, NULL
+	}; reg_sub(ctx, "textinput", texti_fns);
 
-        static js_CFunction slider_fns[] = {
-                (js_CFunction)jui_slider_create, "create",
-                (js_CFunction)jui_slider_destroy, "destroy",
-                (js_CFunction)jui_slider_set_value, "set_value",
-                (js_CFunction)jui_slider_get_value, "get_value",
-                (js_CFunction)jui_slider_set_range, "set_range",
-                (js_CFunction)jui_slider_draw, "draw",
-                (js_CFunction)jui_slider_is_pressed, "is_pressed",
-                (js_CFunction)jui_slider_set_pressed, "set_pressed",
-                (js_CFunction)jui_slider_drag_move, "drag_move",
-                (js_CFunction)jui_slider_is_hovered, "is_hovered",
-                (js_CFunction)jui_slider_set_hovered, "set_hovered",
-                NULL, NULL
-        }; reg_sub(J, "slider", slider_fns);
+	static duk_c_function slider_fns[] = {
+		(duk_c_function)jui_slider_create, "create",
+		(duk_c_function)jui_slider_destroy, "destroy",
+		(duk_c_function)jui_slider_set_value, "set_value",
+		(duk_c_function)jui_slider_get_value, "get_value",
+		(duk_c_function)jui_slider_set_range, "set_range",
+		(duk_c_function)jui_slider_draw, "draw",
+		(duk_c_function)jui_slider_is_pressed, "is_pressed",
+		(duk_c_function)jui_slider_set_pressed, "set_pressed",
+		(duk_c_function)jui_slider_drag_move, "drag_move",
+		(duk_c_function)jui_slider_is_hovered, "is_hovered",
+		(duk_c_function)jui_slider_set_hovered, "set_hovered",
+		NULL, NULL
+	}; reg_sub(ctx, "slider", slider_fns);
 
-        js_setglobal(J, "ui");
+	duk_put_global_string(ctx, "ui");
 }

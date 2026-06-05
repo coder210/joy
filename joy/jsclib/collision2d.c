@@ -3,109 +3,119 @@
 #include "jsclib.h"
 #include "../jcollision.h"
 
-static circle_t read_circle(js_State *J, int idx)
+static circle_t read_circle(duk_context* ctx, int idx)
 {
-        circle_t c;
-        js_getproperty(J, idx, "x"); c.center.x = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "y"); c.center.y = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "r"); c.radius = js_tonumber(J, -1); js_pop(J, 1);
-        return c;
+	circle_t c;
+	duk_get_prop_string(ctx, idx, "x"); c.center.x = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "y"); c.center.y = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "r"); c.radius = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	return c;
 }
 
-static rectangle_t read_rect(js_State *J, int idx)
+static rectangle_t read_rect(duk_context* ctx, int idx)
 {
-        rectangle_t r;
-        js_getproperty(J, idx, "x"); r.x = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "y"); r.y = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "w"); r.width = js_tonumber(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "h"); r.height = js_tonumber(J, -1); js_pop(J, 1);
-        return r;
+	rectangle_t r;
+	duk_get_prop_string(ctx, idx, "x"); r.x = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "y"); r.y = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "w"); r.width = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "h"); r.height = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+	return r;
 }
 
-static polygon_t read_poly(js_State *J, int idx)
+static polygon_t read_poly(duk_context* ctx, int idx)
 {
-        polygon_t p;
-        p.num_vertices = js_getlength(J, idx);
-        p.vertices = (vec2_t*)malloc(sizeof(vec2_t) * p.num_vertices);
-        assert(p.vertices);
-        for (int i = 0; i < p.num_vertices; i++) {
-                js_getindex(J, idx, i);
-                js_getproperty(J, -1, "x"); p.vertices[i].x = js_tonumber(J, -1); js_pop(J, 1);
-                js_getproperty(J, -1, "y"); p.vertices[i].y = js_tonumber(J, -1); js_pop(J, 1);
-                js_pop(J, 1);
-        }
-        return p;
+	polygon_t p;
+	p.num_vertices = (int)duk_get_length(ctx, idx);
+	p.vertices = (vec2_t*)malloc(sizeof(vec2_t) * p.num_vertices);
+	assert(p.vertices);
+	for (int i = 0; i < p.num_vertices; i++) {
+		duk_get_prop_index(ctx, idx, (duk_uarridx_t)i);
+		duk_get_prop_string(ctx, -1, "x"); p.vertices[i].x = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, -1, "y"); p.vertices[i].y = (int)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_pop(ctx);
+	}
+	return p;
 }
 
 static void free_poly(polygon_t p) { if (p.vertices) free(p.vertices); }
 
-static void push_contact(js_State *J, contact2d_t *c)
+static void push_contact(duk_context* ctx, contact2d_t* c)
 {
-        js_newobject(J);
-        js_newobject(J); js_pushnumber(J, c->sp.x); js_setproperty(J, -2, "x");
-                          js_pushnumber(J, c->sp.y); js_setproperty(J, -2, "y"); js_setproperty(J, -2, "sp");
-        js_newobject(J); js_pushnumber(J, c->ep.x); js_setproperty(J, -2, "x");
-                          js_pushnumber(J, c->ep.y); js_setproperty(J, -2, "y"); js_setproperty(J, -2, "ep");
-        js_newobject(J); js_pushnumber(J, c->normal.x); js_setproperty(J, -2, "x");
-                          js_pushnumber(J, c->normal.y); js_setproperty(J, -2, "y"); js_setproperty(J, -2, "normal");
-        js_pushnumber(J, c->depth); js_setproperty(J, -2, "depth");
+	duk_push_object(ctx);
+	duk_push_object(ctx); duk_push_number(ctx, (duk_double_t)c->sp.x); duk_put_prop_string(ctx, -2, "x");
+	                      duk_push_number(ctx, (duk_double_t)c->sp.y); duk_put_prop_string(ctx, -2, "y"); duk_put_prop_string(ctx, -2, "sp");
+	duk_push_object(ctx); duk_push_number(ctx, (duk_double_t)c->ep.x); duk_put_prop_string(ctx, -2, "x");
+	                      duk_push_number(ctx, (duk_double_t)c->ep.y); duk_put_prop_string(ctx, -2, "y"); duk_put_prop_string(ctx, -2, "ep");
+	duk_push_object(ctx); duk_push_number(ctx, (duk_double_t)c->normal.x); duk_put_prop_string(ctx, -2, "x");
+	                      duk_push_number(ctx, (duk_double_t)c->normal.y); duk_put_prop_string(ctx, -2, "y"); duk_put_prop_string(ctx, -2, "normal");
+	duk_push_number(ctx, (duk_double_t)c->depth); duk_put_prop_string(ctx, -2, "depth");
 }
 
-static void jc2d_circles(js_State *J)
+static duk_ret_t jc2d_circles(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        circle_t a = read_circle(J, 1), b = read_circle(J, 2);
-        js_pushboolean(J, collision2d_check_circles(a, b));
+	circle_t a = read_circle(ctx, 1), b = read_circle(ctx, 2);
+	duk_push_boolean(ctx, collision2d_check_circles(a, b));
+	return 1;
 }
 
-static void jc2d_rectangles(js_State *J)
+static duk_ret_t jc2d_rectangles(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        rectangle_t a = read_rect(J, 1), b = read_rect(J, 2);
-        js_pushboolean(J, collision2d_check_rectangles(a, b));
+	rectangle_t a = read_rect(ctx, 1), b = read_rect(ctx, 2);
+	duk_push_boolean(ctx, collision2d_check_rectangles(a, b));
+	return 1;
 }
 
-static void jc2d_circlesx(js_State *J)
+static duk_ret_t jc2d_circlesx(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        circle_t a = read_circle(J, 1), b = read_circle(J, 2);
-        contact2d_t contact;
-        int ok = collision2d_get_circles(a, b, &contact);
-        js_pushboolean(J, ok != 0);
-        if (ok) push_contact(J, &contact); else js_pushundefined(J);
+	circle_t a = read_circle(ctx, 1), b = read_circle(ctx, 2);
+	contact2d_t contact;
+	int ok = collision2d_get_circles(a, b, &contact);
+	duk_push_boolean(ctx, ok);
+	if (ok) push_contact(ctx, &contact); else duk_push_undefined(ctx);
+	return 2;
 }
 
-static void jc2d_rectanglesx(js_State *J)
+static duk_ret_t jc2d_rectanglesx(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 3));
-        rectangle_t a = read_rect(J, 1);
-        ft_t a_angle = js_tonumber(J, 2);
-        rectangle_t b = read_rect(J, 3);
-        ft_t b_angle = js_tonumber(J, 4);
-        contact2d_t contact;
-        int ok = collision2d_get_rectangles(a, a_angle, b, b_angle, &contact);
-        js_pushboolean(J, ok != 0);
-        if (ok) push_contact(J, &contact); else js_pushundefined(J);
+	rectangle_t a = read_rect(ctx, 1);
+	int a_angle = (int)duk_to_number(ctx, 3);
+	rectangle_t b = read_rect(ctx, 4);
+	int b_angle = (int)duk_to_number(ctx, 6);
+	contact2d_t contact;
+	int ok = collision2d_get_rectangles(a, a_angle, b, b_angle, &contact);
+	duk_push_boolean(ctx, ok);
+	if (ok) push_contact(ctx, &contact); else duk_push_undefined(ctx);
+	return 2;
 }
 
-static void jc2d_polygons(js_State *J)
+static duk_ret_t jc2d_polygons(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        polygon_t a = read_poly(J, 1), b = read_poly(J, 2);
-        contact2d_t contact;
-        int ok = collision2d_get_polygons(a, b, &contact);
-        free_poly(a); free_poly(b);
-        js_pushboolean(J, ok != 0);
-        if (ok) push_contact(J, &contact); else js_pushundefined(J);
+	polygon_t a = read_poly(ctx, 1), b = read_poly(ctx, 2);
+	int ok = collision2d_check_polygons(a, b);
+	free_poly(a); free_poly(b);
+	duk_push_boolean(ctx, ok);
+	return 1;
 }
 
-void jsopen_collision2d(js_State *J)
+static duk_ret_t jc2d_polygonsx(duk_context* ctx)
 {
-        js_newobject(J);
-        js_newcfunction(J, jc2d_circles, "circles", 2);         js_setproperty(J, -2, "circles");
-        js_newcfunction(J, jc2d_rectangles, "rectangles", 2);   js_setproperty(J, -2, "rectangles");
-        js_newcfunction(J, jc2d_circlesx, "circlesx", 2);       js_setproperty(J, -2, "circlesx");
-        js_newcfunction(J, jc2d_rectanglesx, "rectanglesx", 4); js_setproperty(J, -2, "rectanglesx");
-        js_newcfunction(J, jc2d_polygons, "polygons", 2);       js_setproperty(J, -2, "polygons");
-        js_setglobal(J, "collision2d");
+	polygon_t a = read_poly(ctx, 1), b = read_poly(ctx, 2);
+	contact2d_t contact;
+	int ok = collision2d_get_polygons(a, b, &contact);
+	free_poly(a); free_poly(b);
+	duk_push_boolean(ctx, ok);
+	if (ok) push_contact(ctx, &contact); else duk_push_undefined(ctx);
+	return 2;
+}
+
+void jsopen_collision2d(duk_context* ctx)
+{
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jc2d_circles, 2);      duk_put_prop_string(ctx, -2, "circles");
+	duk_push_c_function(ctx, jc2d_rectangles, 2);    duk_put_prop_string(ctx, -2, "rectangles");
+	duk_push_c_function(ctx, jc2d_circlesx, 2);      duk_put_prop_string(ctx, -2, "circlesx");
+	duk_push_c_function(ctx, jc2d_rectanglesx, 6);   duk_put_prop_string(ctx, -2, "rectanglesx");
+	duk_push_c_function(ctx, jc2d_polygons, 2);      duk_put_prop_string(ctx, -2, "polygons");
+	duk_push_c_function(ctx, jc2d_polygonsx, 2);     duk_put_prop_string(ctx, -2, "polygonsx");
+	duk_put_global_string(ctx, "collision2d");
 }

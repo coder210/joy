@@ -2,47 +2,32 @@
 #include "jsclib.h"
 #include "../jcollision.h"
 
-static vec3f_t read_vec3f(js_State *J, int idx)
+static vec3f_t read_vec3f(duk_context* ctx, int idx)
 {
-        vec3f_t v;
-        js_getproperty(J, idx, "x"); v.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "y"); v.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, idx, "z"); v.z = js_toint64(J, -1); js_pop(J, 1);
-        return v;
+	vec3f_t v;
+	duk_get_prop_string(ctx, idx, "x"); v.x = (fp_t)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "y"); v.y = (fp_t)duk_to_number(ctx, -1); duk_pop(ctx);
+	duk_get_prop_string(ctx, idx, "z"); v.z = (fp_t)duk_to_number(ctx, -1); duk_pop(ctx);
+	return v;
 }
 
-static void push_result(js_State *J, ray3d_collisionf_t r)
+static duk_ret_t jc3d_ray_quad_int(duk_context* ctx)
 {
-        js_newobject(J);
-        js_pushboolean(J, r.hit);            js_setproperty(J, -2, "hit");
-        js_pushint64(J, r.distance);         js_setproperty(J, -2, "distance");
-        js_newobject(J); js_pushint64(J, r.normal.x); js_setproperty(J, -2, "x");
-                          js_pushint64(J, r.normal.y); js_setproperty(J, -2, "y");
-                          js_pushint64(J, r.normal.z); js_setproperty(J, -2, "z");
-                          js_setproperty(J, -2, "normal");
-        js_newobject(J); js_pushint64(J, r.point.x); js_setproperty(J, -2, "x");
-                          js_pushint64(J, r.point.y); js_setproperty(J, -2, "y");
-                          js_pushint64(J, r.point.z); js_setproperty(J, -2, "z");
-                          js_setproperty(J, -2, "point");
+	ray3df_t ray;
+	ray.position = read_vec3f(ctx, 1);
+	ray.direction = read_vec3f(ctx, 2);
+	vec3f_t v0 = read_vec3f(ctx, 3), v1 = read_vec3f(ctx, 4);
+	vec3f_t v2 = read_vec3f(ctx, 5), v3 = read_vec3f(ctx, 6);
+	ray3d_collisionf_t result = collision3df_get_ray_quad(ray, v0, v1, v2, v3);
+	duk_push_boolean(ctx, result.hit);
+	duk_push_number(ctx, (duk_double_t)result.distance);
+	return 2;
 }
 
-static void jc3d_ray_quad_int(js_State *J)
+void jsopen_collision3d(duk_context* ctx)
 {
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        assert(js_isobject(J, 3)); assert(js_isobject(J, 4));
-        assert(js_isobject(J, 5)); assert(js_isobject(J, 6));
-        ray3df_t ray;
-        ray.position  = read_vec3f(J, 1);
-        ray.direction = read_vec3f(J, 2);
-        vec3f_t p1 = read_vec3f(J, 3), p2 = read_vec3f(J, 4);
-        vec3f_t p3 = read_vec3f(J, 5), p4 = read_vec3f(J, 6);
-        push_result(J, collision3df_get_ray_quad(ray, p1, p2, p3, p4));
-}
-
-void jsopen_collision3d(js_State *J)
-{
-        js_newobject(J);
-        js_newcfunction(J, jc3d_ray_quad_int, "ray_quad_int", 6);
-        js_setproperty(J, -2, "ray_quad_int");
-        js_setglobal(J, "collision3d");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jc3d_ray_quad_int, 6);
+	duk_put_prop_string(ctx, -2, "ray_quad_int");
+	duk_put_global_string(ctx, "collision3d");
 }

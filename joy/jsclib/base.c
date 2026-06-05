@@ -1,18 +1,16 @@
 #include "jsclib.h"
 #include "../jcore.h"
 
-static void jconsole_log(js_State* J)
+static duk_ret_t jconsole_log(duk_context* ctx)
 {
-        const char* str;
-        str = js_tostring(J, 1);
-        log_info("%s", str);
-        js_pushundefined(J);
+	log_info("%s", duk_to_string(ctx, 1));
+	return 0;
 }
 
-void jsopen_base(js_State* J)
+void jsopen_base(duk_context* ctx)
 {
-        js_newobject(J);
-        js_newcfunction(J, jconsole_log, "log", 1);
-        js_setproperty(J, -2, "log");
-        js_setglobal(J, "console");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jconsole_log, 1);
+	duk_put_prop_string(ctx, -2, "log");
+	duk_put_global_string(ctx, "console");
 }

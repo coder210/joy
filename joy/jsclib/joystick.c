@@ -2,97 +2,99 @@
 #include "jsclib.h"
 #include "../jui.h"
 
-#define JOYSTICK_TAG "joystick"
-
-static void joystick_finalize(js_State *J, void *p)
+static duk_ret_t jjoy_create(duk_context* ctx)
 {
-        (void)J; if (p) joystick_destroy((joystick_p)p);
+	SDL_Renderer* ren = (SDL_Renderer*)duk_get_pointer(ctx, 1);
+	float x = (float)duk_to_number(ctx, 2), y = (float)duk_to_number(ctx, 3), radius = (float)duk_to_number(ctx, 4);
+	duk_push_pointer(ctx, joystick_create(ren, x, y, radius));
+	return 1;
 }
 
-static void jjoy_create(js_State *J)
+static duk_ret_t jjoy_destroy(duk_context* ctx)
 {
-        SDL_Renderer *ren = (SDL_Renderer*)js_touserdata(J, 1, "SDL_Renderer*");
-        float x = js_tonumber(J, 2), y = js_tonumber(J, 3), radius = js_tonumber(J, 4);
-        joystick_p joy = joystick_create(ren, x, y, radius);
-        js_newuserdata(J, JOYSTICK_TAG, joy, joystick_finalize);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_destroy(joy);
+	return 0;
 }
 
-static void jjoy_destroy(js_State *J)
+static duk_ret_t jjoy_draw(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) { joystick_destroy(joy); }
-        js_pushnull(J);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_draw(joy);
+	return 0;
 }
 
-static void jjoy_draw(js_State *J)
+static duk_ret_t jjoy_is_dragging(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_draw(joy);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	duk_push_boolean(ctx, joy && joystick_is_dragging(joy));
+	return 1;
 }
 
-static void jjoy_is_dragging(js_State *J)
+static duk_ret_t jjoy_touch_down(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        js_pushboolean(J, joy && joystick_is_dragging(joy));
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_touch_down(joy, (float)duk_to_number(ctx, 2), (float)duk_to_number(ctx, 3));
+	return 0;
 }
 
-static void jjoy_touch_down(js_State *J)
+static duk_ret_t jjoy_touch_move(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_touch_down(joy, js_tonumber(J, 2), js_tonumber(J, 3));
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_touch_move(joy, (float)duk_to_number(ctx, 2), (float)duk_to_number(ctx, 3));
+	return 0;
 }
 
-static void jjoy_touch_move(js_State *J)
+static duk_ret_t jjoy_touch_up(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_touch_move(joy, js_tonumber(J, 2), js_tonumber(J, 3));
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_touch_up(joy);
+	return 0;
 }
 
-static void jjoy_touch_up(js_State *J)
+static duk_ret_t jjoy_reset(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_touch_up(joy);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_reset(joy);
+	return 0;
 }
 
-static void jjoy_reset(js_State *J)
+static duk_ret_t jjoy_set_position(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_reset(joy);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	if (joy) joystick_set_position(joy, (float)duk_to_number(ctx, 2), (float)duk_to_number(ctx, 3));
+	return 0;
 }
 
-static void jjoy_set_position(js_State *J)
+static duk_ret_t jjoy_get_direction(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        if (joy) joystick_set_position(joy, js_tonumber(J, 2), js_tonumber(J, 3));
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	SDL_FPoint pt = joystick_get_direction(joy);
+	duk_push_number(ctx, (duk_double_t)pt.x);
+	duk_push_number(ctx, (duk_double_t)pt.y);
+	return 2;
 }
 
-static void jjoy_get_direction(js_State *J)
+static duk_ret_t jjoy_get_magnitude(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        SDL_FPoint pt = joystick_get_direction(joy);
-        js_pushnumber(J, pt.x);
-        js_pushnumber(J, pt.y);
+	joystick_p joy = (joystick_p)duk_get_pointer(ctx, 1);
+	duk_push_number(ctx, (duk_double_t)joystick_get_magnitude(joy));
+	return 1;
 }
 
-static void jjoy_get_magnitude(js_State *J)
+void jsopen_joystick(duk_context* ctx)
 {
-        joystick_p joy = js_touserdata(J, 1, JOYSTICK_TAG);
-        js_pushnumber(J, joystick_get_magnitude(joy));
-}
-
-void jsopen_joystick(js_State *J)
-{
-        js_newobject(J);
-        js_newcfunction(J, jjoy_create, "create", 4);          js_setproperty(J, -2, "create");
-        js_newcfunction(J, jjoy_destroy, "destroy", 1);        js_setproperty(J, -2, "destroy");
-        js_newcfunction(J, jjoy_draw, "draw", 1);              js_setproperty(J, -2, "draw");
-        js_newcfunction(J, jjoy_is_dragging, "is_dragging", 1); js_setproperty(J, -2, "is_dragging");
-        js_newcfunction(J, jjoy_touch_down, "touch_down", 3);  js_setproperty(J, -2, "touch_down");
-        js_newcfunction(J, jjoy_touch_move, "touch_move", 3);  js_setproperty(J, -2, "touch_move");
-        js_newcfunction(J, jjoy_touch_up, "touch_up", 1);      js_setproperty(J, -2, "touch_up");
-        js_newcfunction(J, jjoy_reset, "reset", 1);            js_setproperty(J, -2, "reset");
-        js_newcfunction(J, jjoy_set_position, "set_position", 3); js_setproperty(J, -2, "set_position");
-        js_newcfunction(J, jjoy_get_direction, "get_direction", 1); js_setproperty(J, -2, "get_direction");
-        js_newcfunction(J, jjoy_get_magnitude, "get_magnitude", 1); js_setproperty(J, -2, "get_magnitude");
-        js_setglobal(J, "joystick");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jjoy_create, 4);          duk_put_prop_string(ctx, -2, "create");
+	duk_push_c_function(ctx, jjoy_destroy, 1);         duk_put_prop_string(ctx, -2, "destroy");
+	duk_push_c_function(ctx, jjoy_draw, 1);             duk_put_prop_string(ctx, -2, "draw");
+	duk_push_c_function(ctx, jjoy_is_dragging, 1);     duk_put_prop_string(ctx, -2, "is_dragging");
+	duk_push_c_function(ctx, jjoy_touch_down, 3);      duk_put_prop_string(ctx, -2, "touch_down");
+	duk_push_c_function(ctx, jjoy_touch_move, 3);      duk_put_prop_string(ctx, -2, "touch_move");
+	duk_push_c_function(ctx, jjoy_touch_up, 1);        duk_put_prop_string(ctx, -2, "touch_up");
+	duk_push_c_function(ctx, jjoy_reset, 1);           duk_put_prop_string(ctx, -2, "reset");
+	duk_push_c_function(ctx, jjoy_set_position, 3);    duk_put_prop_string(ctx, -2, "set_position");
+	duk_push_c_function(ctx, jjoy_get_direction, 1);   duk_put_prop_string(ctx, -2, "get_direction");
+	duk_push_c_function(ctx, jjoy_get_magnitude, 1);   duk_put_prop_string(ctx, -2, "get_magnitude");
+	duk_put_global_string(ctx, "joystick");
 }

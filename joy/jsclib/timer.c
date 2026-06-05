@@ -1,81 +1,48 @@
-#include <assert.h>
 #include "jsclib.h"
-#include "../jconfig.h"
-#include <SDL3/SDL.h>
+#include "../jutils.h"
 
-#define TIMER_TAG "timer"
-
-typedef struct js_timer {
-        uint64_t last_time;
-        int interval;
-        bool active;
-} js_timer_t;
-
-static void timer_finalize(js_State *J, void *p)
+static duk_ret_t jtimer_create(duk_context* ctx)
 {
-        (void)J; SDL_free(p);
+	int interval = (int)duk_to_number(ctx, 1);
+	duk_push_pointer(ctx, timerx_create(interval, NULL, NULL));
+	return 1;
 }
 
-static void jtimer_create(js_State *J)
+static duk_ret_t jtimer_destroy(duk_context* ctx)
 {
-        int interval = (int)js_tonumber(J, 1);
-        js_timer_t *t = (js_timer_t*)SDL_malloc(sizeof(js_timer_t));
-        assert(t);
-        t->last_time = SDL_GetTicks();
-        t->interval = interval;
-        t->active = true;
-        js_newuserdata(J, TIMER_TAG, t, timer_finalize);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	if (t) timerx_destroy(t);
+	return 0;
 }
 
-static void jtimer_set_interval(js_State *J)
+static duk_ret_t jtimer_trigger(duk_context* ctx)
 {
-        js_timer_t *t = js_touserdata(J, 1, TIMER_TAG);
-        t->interval = (int)js_tonumber(J, 2);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	if (t) timerx_trigger(t);
+	return 0;
 }
 
-static void jtimer_set_active(js_State *J)
+static duk_ret_t jtimer_get_elapsed(duk_context* ctx)
 {
-        js_timer_t *t = js_touserdata(J, 1, TIMER_TAG);
-        t->active = js_toboolean(J, 2);
-        if (t->active) t->last_time = SDL_GetTicks();
+	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	duk_push_number(ctx, (duk_double_t)(t ? timerx_get_elapsed(t) : 0));
+	return 1;
 }
 
-static void jtimer_reset(js_State *J)
+static duk_ret_t jtimer_reset(duk_context* ctx)
 {
-        js_timer_t *t = js_touserdata(J, 1, TIMER_TAG);
-        t->last_time = SDL_GetTicks();
+	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	if (t) timerx_reset(t);
+	return 0;
 }
 
-static void jtimer_get_elapsed(js_State *J)
+void jsopen_timer(duk_context* ctx)
 {
-        js_timer_t *t = js_touserdata(J, 1, TIMER_TAG);
-        js_pushnumber(J, (double)(SDL_GetTicks() - t->last_time));
-}
-
-static void jtimer_trigger(js_State *J)
-{
-        js_timer_t *t = js_touserdata(J, 1, TIMER_TAG);
-        if (!t || !t->active) { js_pushboolean(J, 0); return; }
-        uint64_t now = SDL_GetTicks();
-        if (now - t->last_time >= (uint64_t)t->interval) {
-                js_pushnumber(J, (double)(now - t->last_time));
-                js_pushnumber(J, t->interval);
-                t->last_time += t->interval;
-                while (now - t->last_time >= (uint64_t)t->interval)
-                        t->last_time += t->interval;
-        } else {
-                js_pushundefined(J);
-        }
-}
-
-void jsopen_timer(js_State *J)
-{
-        js_newobject(J);
-        js_newcfunction(J, jtimer_create, "create", 1);            js_setproperty(J, -2, "create");
-        js_newcfunction(J, jtimer_set_interval, "setInterval", 2); js_setproperty(J, -2, "setInterval");
-        js_newcfunction(J, jtimer_set_active, "setActive", 2);     js_setproperty(J, -2, "setActive");
-        js_newcfunction(J, jtimer_reset, "reset", 1);              js_setproperty(J, -2, "reset");
-        js_newcfunction(J, jtimer_get_elapsed, "getElapsed", 1);   js_setproperty(J, -2, "getElapsed");
-        js_newcfunction(J, jtimer_trigger, "trigger", 1);          js_setproperty(J, -2, "trigger");
-        js_setglobal(J, "timer");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jtimer_create, 1);    duk_put_prop_string(ctx, -2, "create");
+	duk_push_c_function(ctx, jtimer_destroy, 1);   duk_put_prop_string(ctx, -2, "destroy");
+	duk_push_c_function(ctx, jtimer_trigger, 1);   duk_put_prop_string(ctx, -2, "trigger");
+	duk_push_c_function(ctx, jtimer_get_elapsed, 1); duk_put_prop_string(ctx, -2, "get_elapsed");
+	duk_push_c_function(ctx, jtimer_reset, 1);     duk_put_prop_string(ctx, -2, "reset");
+	duk_put_global_string(ctx, "timer");
 }

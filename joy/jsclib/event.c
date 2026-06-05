@@ -1,19 +1,18 @@
 #include "jsclib.h"
-#include "SDL3/SDL.h"
+#include "../jevent.h"
 
-static void jevent_quit(js_State *J)
+static duk_ret_t jevent_quit(duk_context* ctx)
 {
-        (void)J;
-        SDL_Event quit;
-        SDL_zero(quit);
-        quit.type = SDL_EVENT_QUIT;
-        SDL_PushEvent(&quit);
+	(void)ctx;
+	SDL_Event e = { .type = SDL_EVENT_QUIT };
+	SDL_PushEvent(&e);
+	return 0;
 }
 
-void jsopen_event(js_State *J)
+void jsopen_event(duk_context* ctx)
 {
-        js_newobject(J);
-        js_newcfunction(J, jevent_quit, "quit", 0);
-        js_setproperty(J, -2, "quit");
-        js_setglobal(J, "event");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jevent_quit, 0);
+	duk_put_prop_string(ctx, -2, "quit");
+	duk_put_global_string(ctx, "event");
 }

@@ -1,178 +1,25 @@
-#include <assert.h>
 #include "jsclib.h"
 #include "../jmath.h"
 
-static void jvec3f_negate(js_State *J)
-{
-        vec3f_t a, r;
-        assert(js_isobject(J, 1));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        r = vec3f_negate(a);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
+static duk_ret_t jv3f_new(duk_context* ctx) { vec3f_t* v=(vec3f_t*)malloc(sizeof(vec3f_t)); v->x=(fp_t)duk_to_number(ctx,1); v->y=(fp_t)duk_to_number(ctx,2); v->z=(fp_t)duk_to_number(ctx,3); duk_push_pointer(ctx,v); return 1; }
+static duk_ret_t jv3f_destroy(duk_context* ctx) { free(duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jv3f_get_x(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); duk_push_number(ctx,(duk_double_t)v->x); return 1; }
+static duk_ret_t jv3f_get_y(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); duk_push_number(ctx,(duk_double_t)v->y); return 1; }
+static duk_ret_t jv3f_get_z(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); duk_push_number(ctx,(duk_double_t)v->z); return 1; }
+static duk_ret_t jv3f_set_x(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); v->x=(fp_t)duk_to_number(ctx,2); return 0; }
+static duk_ret_t jv3f_set_y(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); v->y=(fp_t)duk_to_number(ctx,2); return 0; }
+static duk_ret_t jv3f_set_z(duk_context* ctx) { vec3f_t* v=(vec3f_t*)duk_get_pointer(ctx,1); v->z=(fp_t)duk_to_number(ctx,2); return 0; }
 
-static void jvec3f_add(js_State *J)
+void jsopen_vec3f(duk_context* ctx)
 {
-        vec3f_t a, b, r;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        r = vec3f_add(a, b);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_sub(js_State *J)
-{
-        vec3f_t a, b, r;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        r = vec3f_sub(a, b);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_scale(js_State *J)
-{
-        vec3f_t a, r; fp_t s;
-        assert(js_isobject(J, 1));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        s = js_toint64(J, 2);
-        r = vec3f_scale(a, s);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_dot(js_State *J)
-{
-        vec3f_t a, b;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        js_pushint64(J, vec3f_dot(a, b));
-}
-
-static void jvec3f_cross(js_State *J)
-{
-        vec3f_t a, b, r;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        r = vec3f_cross(a, b);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_length_squared(js_State *J)
-{
-        vec3f_t a;
-        assert(js_isobject(J, 1));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_pushint64(J, vec3f_square_length(a));
-}
-
-static void jvec3f_length(js_State *J)
-{
-        vec3f_t a;
-        assert(js_isobject(J, 1));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_pushint64(J, vec3f_length(a));
-}
-
-static void jvec3f_normalize(js_State *J)
-{
-        vec3f_t a, r;
-        assert(js_isobject(J, 1));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        r = vec3f_normalize(a);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_lerp(js_State *J)
-{
-        vec3f_t a, b, r; fp_t t;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        t = js_toint64(J, 3);
-        r = vec3f_lerp(a, b, t);
-        js_newobject(J);
-        js_pushint64(J, r.x); js_setproperty(J, -2, "x");
-        js_pushint64(J, r.y); js_setproperty(J, -2, "y");
-        js_pushint64(J, r.z); js_setproperty(J, -2, "z");
-}
-
-static void jvec3f_distance(js_State *J)
-{
-        vec3f_t a, b;
-        assert(js_isobject(J, 1)); assert(js_isobject(J, 2));
-        js_getproperty(J, 1, "x"); a.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "y"); a.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 1, "z"); a.z = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "x"); b.x = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "y"); b.y = js_toint64(J, -1); js_pop(J, 1);
-        js_getproperty(J, 2, "z"); b.z = js_toint64(J, -1); js_pop(J, 1);
-        js_pushint64(J, vec3f_distance(a, b));
-}
-
-void jsopen_vec3f(js_State *J)
-{
-        js_newobject(J);
-        js_newcfunction(J, jvec3f_negate, "negate", 1);        js_setproperty(J, -2, "negate");
-        js_newcfunction(J, jvec3f_add, "add", 2);              js_setproperty(J, -2, "add");
-        js_newcfunction(J, jvec3f_sub, "sub", 2);              js_setproperty(J, -2, "sub");
-        js_newcfunction(J, jvec3f_scale, "scale", 2);          js_setproperty(J, -2, "scale");
-        js_newcfunction(J, jvec3f_dot, "dot", 2);              js_setproperty(J, -2, "dot");
-        js_newcfunction(J, jvec3f_cross, "cross", 2);          js_setproperty(J, -2, "cross");
-        js_newcfunction(J, jvec3f_length_squared, "length_squared", 1); js_setproperty(J, -2, "length_squared");
-        js_newcfunction(J, jvec3f_length, "length", 1);        js_setproperty(J, -2, "length");
-        js_newcfunction(J, jvec3f_normalize, "normalize", 1);  js_setproperty(J, -2, "normalize");
-        js_newcfunction(J, jvec3f_lerp, "lerp", 3);            js_setproperty(J, -2, "lerp");
-        js_newcfunction(J, jvec3f_distance, "distance", 2);    js_setproperty(J, -2, "distance");
-        js_setglobal(J, "vec3f");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jv3f_new,3); duk_put_prop_string(ctx,-2,"new");
+	duk_push_c_function(ctx, jv3f_destroy,1); duk_put_prop_string(ctx,-2,"destroy");
+	duk_push_c_function(ctx, jv3f_get_x,1); duk_put_prop_string(ctx,-2,"get_x");
+	duk_push_c_function(ctx, jv3f_get_y,1); duk_put_prop_string(ctx,-2,"get_y");
+	duk_push_c_function(ctx, jv3f_get_z,1); duk_put_prop_string(ctx,-2,"get_z");
+	duk_push_c_function(ctx, jv3f_set_x,2); duk_put_prop_string(ctx,-2,"set_x");
+	duk_push_c_function(ctx, jv3f_set_y,2); duk_put_prop_string(ctx,-2,"set_y");
+	duk_push_c_function(ctx, jv3f_set_z,2); duk_put_prop_string(ctx,-2,"set_z");
+	duk_put_global_string(ctx, "vec3f");
 }

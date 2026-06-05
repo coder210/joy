@@ -7,565 +7,133 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* ---- tags for userdata ---- */
 #define TAG_RENDERER "SDL_Renderer*"
 #define TAG_IMAGE    "image_t*"
 #define TAG_FONT     "font_t*"
 #define TAG_TEXT     "text_texture_t*"
 #define TAG_BATCH    "sprite_batch_t*"
 
-/* ---- current renderer global ---- */
-static SDL_Renderer* cur_ren = NULL;
-
-/* ---- helpers ---- */
-static SDL_Renderer* get_ren(js_State* J)
+static SDL_Renderer* check_ren(duk_context* ctx, int idx)
 {
-	if (!cur_ren) js_error(J, "graphics: no current renderer, call create() first");
-	return cur_ren;
+	void* p = duk_get_pointer(ctx, idx);
+	if (!p) duk_error(ctx, DUK_ERR_ERROR, "graphics: invalid renderer");
+	return (SDL_Renderer*)p;
 }
 
-static void push_ud(js_State* J, const char* tag, void* p)
-{
-	js_newuserdata(J, tag, p, NULL);
-}
-
-static void reg_sub(js_State* J, const char* name, const js_CFunction* pairs)
-{
-	js_newobject(J);
-	while (pairs[0]) {
-		js_newcfunction(J, pairs[0], pairs[1] ? pairs[1] : "", 0);
-		js_setproperty(J, -2, pairs[1]);
-		pairs += 2;
-	}
-	js_setproperty(J, -2, name);
-}
-
-static SDL_Color read_color(js_State* J, int idx)
+static SDL_Color read_color(duk_context* ctx, int idx)
 {
 	SDL_Color c = { 255, 255, 255, 255 };
-	if (js_isobject(J, idx)) {
-		js_getproperty(J, idx, "r"); c.r = (Uint8)js_tonumber(J, -1); js_pop(J, 1);
-		js_getproperty(J, idx, "g"); c.g = (Uint8)js_tonumber(J, -1); js_pop(J, 1);
-		js_getproperty(J, idx, "b"); c.b = (Uint8)js_tonumber(J, -1); js_pop(J, 1);
-		js_getproperty(J, idx, "a"); c.a = (Uint8)js_tonumber(J, -1); js_pop(J, 1);
+	if (duk_is_object(ctx, idx)) {
+		duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "b"); c.b = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+		duk_get_prop_string(ctx, idx, "a"); c.a = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
 	}
 	return c;
 }
 
-/* ---- finalizers ---- */
-static void ren_finalize(js_State* J, void* p)
+/* ---- renderer ---- */
+static duk_ret_t jg_create(duk_context* ctx)
 {
-	(void)J;
-	if (p) {
-		if (p == cur_ren) cur_ren = NULL;
-		SDL_DestroyRenderer((SDL_Renderer*)p);
-	}
-}
-static void image_finalize(js_State* J, void* p) { (void)J; if (p) image_destroy((image_p)p); }
-static void font_finalize(js_State* J, void* p) { (void)J; if (p) font_destroy((font_p)p); }
-static void text_finalize(js_State* J, void* p) { (void)J; if (p) text_destroy((text_texture_p)p); }
-static void batch_finalize(js_State* J, void* p) { (void)J; if (p) sprite_batch_destroy((sprite_batch_p)p); }
-
-/* =================================================================
- * Renderer
- * ================================================================= */
-static void jg_create(js_State* J)
-{
-	SDL_Window* win;
-	if (js_isuserdata(J, 1, "SDL_Window*")) {
-		win = (SDL_Window*)js_touserdata(J, 1, "SDL_Window*");
-	}
-	else {
-		win = jsclib_get_cur_window();
-		if (!win) {
-			js_error(J, "graphics.create() expects an SDL_Window* userdata, or call window.create() first");
-			return;
-		}
-	}
+	SDL_Window* win = (SDL_Window*)duk_get_pointer(ctx, 1);
+	if (!win) { duk_error(ctx, DUK_ERR_ERROR, "graphics.create() expects a window pointer"); return 0; }
 	SDL_Renderer* ren = SDL_CreateRenderer(win, NULL);
-	if (!ren) {
-		js_pushundefined(J);
-		return;
-	}
-	cur_ren = ren;
-	js_newuserdata(J, TAG_RENDERER, ren, ren_finalize);
+	if (!ren) { duk_push_undefined(ctx); return 1; }
+	duk_push_pointer(ctx, ren);
+	return 1;
 }
 
-static void jg_select(js_State* J)
+static duk_ret_t jg_select(duk_context* ctx)
+{ check_ren(ctx, 1); duk_push_undefined(ctx); return 1; }
+
+static duk_ret_t jg_destroy(duk_context* ctx)
 {
-	cur_ren = (SDL_Renderer*)js_touserdata(J, 1, TAG_RENDERER);
-	js_pushundefined(J);
+	SDL_Renderer* ren = (SDL_Renderer*)duk_get_pointer(ctx, 1);
+	if (ren) SDL_DestroyRenderer(ren);
+	return 0;
 }
 
-static void jg_destroy(js_State* J)
-{
-	SDL_Renderer* ren = (SDL_Renderer*)js_touserdata(J, 1, TAG_RENDERER);
-	if (ren) {
-		if (ren == cur_ren) cur_ren = NULL;
-		SDL_DestroyRenderer(ren);
-	}
-	js_pushundefined(J);
-}
+#define JG_REN() check_ren(ctx, 1)
 
-static void jg_clear(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	Uint8 r = (Uint8)js_tonumber(J, 1);
-	Uint8 g = (Uint8)js_tonumber(J, 2);
-	Uint8 b = (Uint8)js_tonumber(J, 3);
-	Uint8 a = (Uint8)js_tonumber(J, 4);
-	if (js_isundefined(J, 4)) a = 255;
-	SDL_SetRenderDrawColor(ren, r, g, b, a);
+static duk_ret_t jg_clear(duk_context* ctx) {
+	SDL_Renderer* ren = JG_REN();
+	SDL_SetRenderDrawColor(ren, (Uint8)duk_to_number(ctx,2), (Uint8)duk_to_number(ctx,3), (Uint8)duk_to_number(ctx,4), (Uint8)(duk_is_undefined(ctx,5)?255:duk_to_number(ctx,5)));
 	SDL_RenderClear(ren);
-	js_pushundefined(J);
+	return 0;
 }
 
-static void jg_present(js_State* J)
-{
-	SDL_RenderPresent(get_ren(J));
-	js_pushundefined(J);
+static duk_ret_t jg_present(duk_context* ctx) { SDL_RenderPresent(JG_REN()); return 0; }
+
+static duk_ret_t jg_get_size(duk_context* ctx) { int w,h; SDL_GetRenderOutputSize(JG_REN(),&w,&h); duk_push_number(ctx,(duk_double_t)w); duk_push_number(ctx,(duk_double_t)h); return 2; }
+
+static duk_ret_t jg_set_vsync(duk_context* ctx) { duk_push_boolean(ctx,SDL_SetRenderVSync(JG_REN(),(int)duk_to_number(ctx,2))); return 1; }
+
+static duk_ret_t jg_set_scale(duk_context* ctx) { duk_push_boolean(ctx,SDL_SetRenderScale(JG_REN(),(float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3))); return 1; }
+
+static duk_ret_t jg_set_colorf(duk_context* ctx) {
+	SDL_Renderer* ren = JG_REN();
+	duk_push_boolean(ctx,SDL_SetRenderDrawColorFloat(ren,(float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3),(float)duk_to_number(ctx,4),(float)(duk_is_undefined(ctx,5)?1.0f:duk_to_number(ctx,5))));
+	return 1;
 }
 
-static void jg_get_size(js_State* J)
-{
-	int w, h;
-	SDL_GetRenderOutputSize(get_ren(J), &w, &h);
-	js_pushnumber(J, w);
-	js_pushnumber(J, h);
+static duk_ret_t jg_set_color(duk_context* ctx) {
+	SDL_Renderer* ren = JG_REN();
+	duk_push_boolean(ctx,SDL_SetRenderDrawColor(ren,(Uint8)duk_to_number(ctx,2),(Uint8)duk_to_number(ctx,3),(Uint8)duk_to_number(ctx,4),(Uint8)(duk_is_undefined(ctx,5)?255:duk_to_number(ctx,5))));
+	return 1;
 }
 
-static void jg_set_vsync(js_State* J)
-{
-	js_pushboolean(J, SDL_SetRenderVSync(get_ren(J), (int)js_tonumber(J, 1)));
+static duk_ret_t jg_point(duk_context* ctx) { duk_push_boolean(ctx,SDL_RenderPoint(JG_REN(),(float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3))); return 1; }
+
+static duk_ret_t jg_line(duk_context* ctx) { duk_push_boolean(ctx,shape_draw_line(JG_REN(),(float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3),(float)duk_to_number(ctx,4),(float)duk_to_number(ctx,5))); return 1; }
+
+static duk_ret_t jg_rectangle(duk_context* ctx) {
+	SDL_FRect r; r.x=(float)duk_to_number(ctx,3); r.y=(float)duk_to_number(ctx,4); r.w=(float)duk_to_number(ctx,5); r.h=(float)duk_to_number(ctx,6);
+	duk_push_boolean(ctx,shape_draw_rectangle(JG_REN(),duk_to_string(ctx,2),r)); return 1;
 }
 
-static void jg_set_scale(js_State* J)
-{
-	js_pushboolean(J, SDL_SetRenderScale(get_ren(J),
-		(float)js_tonumber(J, 1), (float)js_tonumber(J, 2)));
+static duk_ret_t jg_circle(duk_context* ctx) {
+	SDL_Renderer* ren = JG_REN();
+	SDL_FPoint c = { (float)duk_to_number(ctx,3), (float)duk_to_number(ctx,4) };
+	duk_push_boolean(ctx,shape_draw_circle(ren,duk_to_string(ctx,2),c,(float)duk_to_number(ctx,5),(int)(duk_is_undefined(ctx,6)?32:duk_to_number(ctx,6))));
+	return 1;
 }
 
-static void jg_set_colorf(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	float r = (float)js_tonumber(J, 1);
-	float g = (float)js_tonumber(J, 2);
-	float b = (float)js_tonumber(J, 3);
-	float a = (float)js_tonumber(J, 4);
-	if (js_isundefined(J, 4)) a = 1.0f;
-	js_pushboolean(J, SDL_SetRenderDrawColorFloat(ren, r, g, b, a));
+static duk_ret_t jg_get_renderer(duk_context* ctx) { duk_push_pointer(ctx, JG_REN()); return 1; }
+
+static duk_ret_t jg_create_font(duk_context* ctx) {
+	font_p f = font_create(JG_REN(), duk_to_string(ctx,2), (int)duk_to_number(ctx,3));
+	duk_push_pointer(ctx, f);
+	return 1;
 }
 
-static void jg_set_color(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	Uint8 r = (Uint8)js_tonumber(J, 1);
-	Uint8 g = (Uint8)js_tonumber(J, 2);
-	Uint8 b = (Uint8)js_tonumber(J, 3);
-	Uint8 a = (Uint8)js_tonumber(J, 4);
-	if (js_isundefined(J, 4)) a = 255;
-	js_pushboolean(J, SDL_SetRenderDrawColor(ren, r, g, b, a));
+static duk_ret_t jg_print(duk_context* ctx) {
+	font_p f = (font_p)duk_get_pointer(ctx, 2);
+	const char* str = duk_to_string(ctx, 3);
+	SDL_Color c = { 255,255,255,255 };
+	if (duk_is_object(ctx, 6)) c = read_color(ctx, 6);
+	text_printx(JG_REN(), f, str, (int)SDL_strlen(str), c, (float)duk_to_number(ctx,4), (float)duk_to_number(ctx,5));
+	return 0;
 }
 
-static void jg_set_logical_presentation(js_State* J)
+void jsopen_graphics(duk_context* ctx)
 {
-	SDL_SetRenderLogicalPresentation(get_ren(J),
-		(int)js_tonumber(J, 1),
-		(int)js_tonumber(J, 2),
-		(SDL_RendererLogicalPresentation)(int)js_tonumber(J, 3));
-	js_pushundefined(J);
-}
-
-static void jg_get_logical_presentation(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	int w, h;
-	SDL_RendererLogicalPresentation mode;
-	js_pushboolean(J, SDL_GetRenderLogicalPresentation(ren, &w, &h, &mode));
-	js_pushnumber(J, w);
-	js_pushnumber(J, h);
-	js_pushnumber(J, (int)mode);
-}
-
-static void jg_get_logical_presentation_rect(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	SDL_FRect rect;
-	js_pushboolean(J, SDL_GetRenderLogicalPresentationRect(ren, &rect));
-	js_pushnumber(J, rect.x);
-	js_pushnumber(J, rect.y);
-	js_pushnumber(J, rect.w);
-	js_pushnumber(J, rect.h);
-}
-
-static void jg_debug_text(js_State* J)
-{
-	js_pushboolean(J, SDL_RenderDebugText(get_ren(J),
-		(float)js_tonumber(J, 1),
-		(float)js_tonumber(J, 2),
-		js_tostring(J, 3)));
-}
-
-/* =================================================================
- * Drawing
- * ================================================================= */
-static void jg_point(js_State* J)
-{
-	js_pushboolean(J, SDL_RenderPoint(get_ren(J),
-		(float)js_tonumber(J, 1), (float)js_tonumber(J, 2)));
-}
-
-static void jg_points(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	int n = js_getlength(J, 1);
-	SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc(n * sizeof(SDL_FPoint));
-	for (int i = 0; i < n; i++) {
-		js_getindex(J, 1, i);
-		js_getproperty(J, -1, "x"); pts[i].x = (float)js_tonumber(J, -1); js_pop(J, 1);
-		js_getproperty(J, -1, "y"); pts[i].y = (float)js_tonumber(J, -1); js_pop(J, 1);
-		js_pop(J, 1);
-	}
-	js_pushboolean(J, SDL_RenderPoints(ren, pts, n));
-	SDL_free(pts);
-}
-
-static void jg_line(js_State* J)
-{
-	js_pushboolean(J, shape_draw_line(get_ren(J),
-		(float)js_tonumber(J, 1), (float)js_tonumber(J, 2),
-		(float)js_tonumber(J, 3), (float)js_tonumber(J, 4)));
-}
-
-static void jg_rectangle(js_State* J)
-{
-	SDL_FRect rect;
-	rect.x = (float)js_tonumber(J, 2);
-	rect.y = (float)js_tonumber(J, 3);
-	rect.w = (float)js_tonumber(J, 4);
-	rect.h = (float)js_tonumber(J, 5);
-	js_pushboolean(J, shape_draw_rectangle(get_ren(J), js_tostring(J, 1), rect));
-}
-
-static void jg_polygon(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	const char* mode = js_tostring(J, 1);
-	int top = js_gettop(J);
-	int n = (top - 1) / 2;
-	if (n < 3) { js_error(J, "polygon needs >= 3 vertices"); return; }
-	SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc((n + 1) * sizeof(SDL_FPoint));
-	for (int i = 0; i < n; i++) {
-		pts[i].x = (float)js_tonumber(J, 2 + i * 2);
-		pts[i].y = (float)js_tonumber(J, 3 + i * 2);
-	}
-	SDL_FColor c;
-	SDL_GetRenderDrawColorFloat(ren, &c.r, &c.g, &c.b, &c.a);
-	js_pushboolean(J, shape_draw_polygon(ren, mode, pts, n, c));
-	SDL_free(pts);
-}
-
-static void jg_circle(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	SDL_FPoint center = {
-		(float)js_tonumber(J, 2),
-		(float)js_tonumber(J, 3)
-	};
-	int segs = 32;
-	if (!js_isundefined(J, 5)) segs = (int)js_tonumber(J, 5);
-	js_pushboolean(J, shape_draw_circle(ren, js_tostring(J, 1), center,
-		(float)js_tonumber(J, 4), segs));
-}
-
-static void jg_grid(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	js_getproperty(J, 1, "x"); float sx = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 1, "y"); float sy = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "x"); float ex = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "y"); float ey = (float)js_tonumber(J, -1); js_pop(J, 1);
-	SDL_FPoint start = { sx, sy }, end = { ex, ey };
-	shape_draw_grid(ren, start, end, (float)js_tonumber(J, 3));
-	js_pushundefined(J);
-}
-
-static void jg_gridx(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	js_getproperty(J, 1, "x"); float px = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 1, "y"); float py = (float)js_tonumber(J, -1); js_pop(J, 1);
-	SDL_FPoint pos = { px, py };
-	shape_draw_gridx(ren, pos, (int)js_tonumber(J, 2), (int)js_tonumber(J, 3), (float)js_tonumber(J, 4));
-	js_pushundefined(J);
-}
-
-/* =================================================================
- * Image
- * ================================================================= */
-static void jg_new_image(js_State* J)
-{
-	image_p img = image_create(get_ren(J), js_tostring(J, 1));
-	if (img)
-		js_newuserdata(J, TAG_IMAGE, img, image_finalize);
-	else
-		js_pushundefined(J);
-}
-
-static void jg_free_image(js_State* J)
-{
-	image_p img = (image_p)js_touserdata(J, 1, TAG_IMAGE);
-	if (img) image_destroy(img);
-	js_pushundefined(J);
-}
-
-static void jg_draw_image(js_State* J)
-{
-	image_p img = (image_p)js_touserdata(J, 1, TAG_IMAGE);
-	image_draw(img, (SDL_FPoint){ (float)js_tonumber(J, 2), (float)js_tonumber(J, 3) });
-	js_pushundefined(J);
-}
-
-static void jg_draw_image_ex(js_State* J)
-{
-	image_p img = (image_p)js_touserdata(J, 1, TAG_IMAGE);
-	SDL_FRect src;
-	js_getproperty(J, 2, "x"); src.x = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "y"); src.y = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "w"); src.w = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "h"); src.h = (float)js_tonumber(J, -1); js_pop(J, 1);
-	SDL_FPoint pos = { (float)js_tonumber(J, 3), (float)js_tonumber(J, 4) };
-	float rot = js_isundefined(J, 5) ? 0 : (float)js_tonumber(J, 5);
-	SDL_FPoint scale = { 1, 1 };
-	if (!js_isundefined(J, 6)) scale.x = (float)js_tonumber(J, 6);
-	if (!js_isundefined(J, 7)) scale.y = (float)js_tonumber(J, 7);
-	SDL_FPoint origin = { 0, 0 };
-	if (!js_isundefined(J, 8)) origin.x = (float)js_tonumber(J, 8);
-	if (!js_isundefined(J, 9)) origin.y = (float)js_tonumber(J, 9);
-	image_draw_ex(img, &src, pos, rot, scale, origin);
-	js_pushundefined(J);
-}
-
-/* =================================================================
- * Font
- * ================================================================= */
-static void jg_create_font(js_State* J)
-{
-	font_p f = font_create(get_ren(J), js_tostring(J, 1), (int)js_tonumber(J, 2));
-	if (f)
-		js_newuserdata(J, TAG_FONT, f, font_finalize);
-	else
-		js_pushundefined(J);
-}
-
-static void jg_destroy_font(js_State* J)
-{
-	font_p f = (font_p)js_touserdata(J, 1, TAG_FONT);
-	if (f) font_destroy(f);
-	js_pushundefined(J);
-}
-
-/* =================================================================
- * Text
- * ================================================================= */
-static void jg_create_text(js_State* J)
-{
-	font_p f = (font_p)js_touserdata(J, 1, TAG_FONT);
-	int n = js_getlength(J, 2);
-	int* cps = (int*)SDL_malloc(n * sizeof(int));
-	for (int i = 0; i < n; i++) {
-		js_getindex(J, 2, i);
-		cps[i] = (int)js_tonumber(J, -1);
-		js_pop(J, 1);
-	}
-	SDL_Color color = { 255, 255, 255, 255 };
-	if (js_isobject(J, 3)) color = read_color(J, 3);
-	text_texture_p t = text_create(f, cps, n, color);
-	SDL_free(cps);
-	if (t)
-		js_newuserdata(J, TAG_TEXT, t, text_finalize);
-	else
-		js_pushundefined(J);
-}
-
-static void jg_update_text(js_State* J)
-{
-	text_texture_p t = (text_texture_p)js_touserdata(J, 1, TAG_TEXT);
-	font_p f = (font_p)js_touserdata(J, 2, TAG_FONT);
-	int n = js_getlength(J, 3);
-	int* cps = (int*)SDL_malloc(n * sizeof(int));
-	for (int i = 0; i < n; i++) {
-		js_getindex(J, 3, i);
-		cps[i] = (int)js_tonumber(J, -1);
-		js_pop(J, 1);
-	}
-	SDL_Color color = { 255, 255, 255, 255 };
-	if (js_isobject(J, 4)) color = read_color(J, 4);
-	text_update(t, f, cps, n, color);
-	SDL_free(cps);
-	js_pushundefined(J);
-}
-
-static void jg_destroy_text(js_State* J)
-{
-	text_texture_p t = (text_texture_p)js_touserdata(J, 1, TAG_TEXT);
-	if (t) text_destroy(t);
-	js_pushundefined(J);
-}
-
-static void jg_print_text(js_State* J)
-{
-	text_texture_p t = (text_texture_p)js_touserdata(J, 1, TAG_TEXT);
-	text_print(get_ren(J), t, (float)js_tonumber(J, 2), (float)js_tonumber(J, 3));
-	js_pushundefined(J);
-}
-
-static void jg_print(js_State* J)
-{
-	font_p f = (font_p)js_touserdata(J, 1, TAG_FONT);
-	const char* str = js_tostring(J, 2);
-	float x = (float)js_tonumber(J, 3);
-	float y = (float)js_tonumber(J, 4);
-	SDL_Color c = { 255, 255, 255, 255 };
-	if (js_isobject(J, 5)) c = read_color(J, 5);
-	text_printx(get_ren(J), f, str, (int)SDL_strlen(str), c, x, y);
-	js_pushundefined(J);
-}
-
-/* =================================================================
- * SpriteBatch
- * ================================================================= */
-static void jg_new_spritebatch(js_State* J)
-{
-	sprite_batch_p b = sprite_batch_create(get_ren(J), js_tostring(J, 1));
-	if (b)
-		js_newuserdata(J, TAG_BATCH, b, batch_finalize);
-	else
-		js_pushundefined(J);
-}
-
-static void jg_free_spritebatch(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	if (b) sprite_batch_destroy(b);
-	js_pushundefined(J);
-}
-
-static void jg_sb_get_width(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	js_pushnumber(J, sprite_batch_get_width(b));
-}
-
-static void jg_sb_get_height(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	js_pushnumber(J, sprite_batch_get_height(b));
-}
-
-static void jg_add_sprite(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	SDL_FRect src, dst;
-	js_getproperty(J, 2, "x"); src.x = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "y"); src.y = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "w"); src.w = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 2, "h"); src.h = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 3, "x"); dst.x = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 3, "y"); dst.y = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 3, "w"); dst.w = (float)js_tonumber(J, -1); js_pop(J, 1);
-	js_getproperty(J, 3, "h"); dst.h = (float)js_tonumber(J, -1); js_pop(J, 1);
-	float rot = js_isundefined(J, 4) ? 0 : (float)js_tonumber(J, 4);
-	SDL_FPoint origin = { 0, 0 };
-	if (!js_isundefined(J, 5)) origin.x = (float)js_tonumber(J, 5);
-	if (!js_isundefined(J, 6)) origin.y = (float)js_tonumber(J, 6);
-	sprite_batch_add_ex(b, src, dst, rot, origin);
-	js_pushundefined(J);
-}
-
-static void jg_draw_spritebatch(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	sprite_batch_draw(b);
-	js_pushundefined(J);
-}
-
-static void jg_set_sb_image(js_State* J)
-{
-	sprite_batch_p b = (sprite_batch_p)js_touserdata(J, 1, TAG_BATCH);
-	sprite_batch_set_image(b, js_tostring(J, 2));
-	js_pushundefined(J);
-}
-
-static void jg_get_renderer(js_State* J)
-{
-	SDL_Renderer* ren = get_ren(J);
-	js_newuserdata(J, TAG_RENDERER, ren, NULL);
-}
-
-/* =================================================================
- * Module registration
- * ================================================================= */
-void jsopen_graphics(js_State* J)
-{
-	js_newobject(J);
-
-	static const js_CFunction renderer_fns[] = {
-		(js_CFunction)jg_create, "create",
-		(js_CFunction)jg_select, "select",
-		(js_CFunction)jg_destroy, "destroy",
-		(js_CFunction)jg_clear, "clear",
-		(js_CFunction)jg_present, "present",
-		(js_CFunction)jg_get_size, "get_size",
-		(js_CFunction)jg_set_vsync, "set_vsync",
-		(js_CFunction)jg_set_scale, "set_scale",
-		(js_CFunction)jg_set_colorf, "set_colorf",
-		(js_CFunction)jg_set_color, "set_color",
-		(js_CFunction)jg_set_logical_presentation, "set_logical_presentation",
-		(js_CFunction)jg_get_logical_presentation, "get_logical_presentation",
-		(js_CFunction)jg_get_logical_presentation_rect, "get_logical_presentation_rect",
-		(js_CFunction)jg_debug_text, "debug_text",
-		NULL, NULL
-	}; reg_sub(J, "renderer", renderer_fns);
-
-	/* ---- drawing functions directly on graphics object ---- */
-	js_newcfunction(J, jg_point, "point", 2); js_setproperty(J, -2, "point");
-	js_newcfunction(J, jg_points, "points", 1); js_setproperty(J, -2, "points");
-	js_newcfunction(J, jg_line, "line", 4); js_setproperty(J, -2, "line");
-	js_newcfunction(J, jg_rectangle, "rectangle", 5); js_setproperty(J, -2, "rectangle");
-	js_newcfunction(J, jg_polygon, "polygon", 0); js_setproperty(J, -2, "polygon");
-	js_newcfunction(J, jg_circle, "circle", 5); js_setproperty(J, -2, "circle");
-	js_newcfunction(J, jg_grid, "grid", 3); js_setproperty(J, -2, "grid");
-	js_newcfunction(J, jg_gridx, "gridx", 4); js_setproperty(J, -2, "gridx");
-
-	/* image */
-	js_newcfunction(J, jg_new_image, "new_image", 1); js_setproperty(J, -2, "new_image");
-	js_newcfunction(J, jg_free_image, "free_image", 1); js_setproperty(J, -2, "free_image");
-	js_newcfunction(J, jg_draw_image, "draw_image", 3); js_setproperty(J, -2, "draw_image");
-	js_newcfunction(J, jg_draw_image_ex, "draw_image_ex", 9); js_setproperty(J, -2, "draw_image_ex");
-
-	/* font */
-	js_newcfunction(J, jg_create_font, "create_font", 2); js_setproperty(J, -2, "create_font");
-	js_newcfunction(J, jg_destroy_font, "destroy_font", 1); js_setproperty(J, -2, "destroy_font");
-
-	/* text */
-	js_newcfunction(J, jg_create_text, "create_text", 3); js_setproperty(J, -2, "create_text");
-	js_newcfunction(J, jg_update_text, "update_text", 4); js_setproperty(J, -2, "update_text");
-	js_newcfunction(J, jg_destroy_text, "destroy_text", 1); js_setproperty(J, -2, "destroy_text");
-	js_newcfunction(J, jg_print_text, "print_text", 3); js_setproperty(J, -2, "print_text");
-	js_newcfunction(J, jg_print, "print", 5); js_setproperty(J, -2, "print");
-
-	/* sprite batch */
-	js_newcfunction(J, jg_new_spritebatch, "new_spritebatch", 1); js_setproperty(J, -2, "new_spritebatch");
-	js_newcfunction(J, jg_free_spritebatch, "free_spritebatch", 1); js_setproperty(J, -2, "free_spritebatch");
-	js_newcfunction(J, jg_sb_get_width, "get_spritebatch_width", 1); js_setproperty(J, -2, "get_spritebatch_width");
-	js_newcfunction(J, jg_sb_get_height, "get_spritebatch_height", 1); js_setproperty(J, -2, "get_spritebatch_height");
-	js_newcfunction(J, jg_add_sprite, "add_sprite", 6); js_setproperty(J, -2, "add_sprite");
-	js_newcfunction(J, jg_draw_spritebatch, "draw_spritebatch", 1); js_setproperty(J, -2, "draw_spritebatch");
-	js_newcfunction(J, jg_set_sb_image, "set_spritebatch_image", 2); js_setproperty(J, -2, "set_spritebatch_image");
-
-	/* get_renderer */
-	js_newcfunction(J, jg_get_renderer, "get_renderer", 0); js_setproperty(J, -2, "get_renderer");
-
-	js_setglobal(J, "graphics");
+	duk_push_object(ctx);
+	duk_push_c_function(ctx, jg_create, 1); duk_put_prop_string(ctx, -2, "create");
+	duk_push_c_function(ctx, jg_select, 1); duk_put_prop_string(ctx, -2, "select");
+	duk_push_c_function(ctx, jg_destroy, 1); duk_put_prop_string(ctx, -2, "destroy");
+	duk_push_c_function(ctx, jg_clear, 5); duk_put_prop_string(ctx, -2, "clear");
+	duk_push_c_function(ctx, jg_present, 1); duk_put_prop_string(ctx, -2, "present");
+	duk_push_c_function(ctx, jg_get_size, 1); duk_put_prop_string(ctx, -2, "get_size");
+	duk_push_c_function(ctx, jg_set_vsync, 2); duk_put_prop_string(ctx, -2, "set_vsync");
+	duk_push_c_function(ctx, jg_set_scale, 3); duk_put_prop_string(ctx, -2, "set_scale");
+	duk_push_c_function(ctx, jg_set_colorf, 5); duk_put_prop_string(ctx, -2, "set_colorf");
+	duk_push_c_function(ctx, jg_set_color, 5); duk_put_prop_string(ctx, -2, "set_color");
+	duk_push_c_function(ctx, jg_point, 3); duk_put_prop_string(ctx, -2, "point");
+	duk_push_c_function(ctx, jg_line, 5); duk_put_prop_string(ctx, -2, "line");
+	duk_push_c_function(ctx, jg_rectangle, 6); duk_put_prop_string(ctx, -2, "rectangle");
+	duk_push_c_function(ctx, jg_circle, 6); duk_put_prop_string(ctx, -2, "circle");
+	duk_push_c_function(ctx, jg_create_font, 3); duk_put_prop_string(ctx, -2, "create_font");
+	duk_push_c_function(ctx, jg_print, 6); duk_put_prop_string(ctx, -2, "print");
+	duk_push_c_function(ctx, jg_get_renderer, 1); duk_put_prop_string(ctx, -2, "get_renderer");
+	duk_put_global_string(ctx, "graphics");
 }

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <assert.h>
 #include <SDL3/SDL.h>
-#include "external/mujs/mujs.h"
+#include "external/duktape/duktape.h"
 #include "jsx.h"
 #include "jutils.h"
 #include "jcore.h"
@@ -10,7 +10,7 @@
 #include "jsclib/jsclib.h"
 
 struct jsx {
-	js_State* j;
+	duk_context* ctx;
 	void* userdata;
 	char* watch_file;
 	SDL_Time last_mtime;
@@ -19,30 +19,28 @@ struct jsx {
 };
 
 /* 查找 joy.func 并调用 args… */
-static bool call_joy_js(js_State* J, const char* func, int nargs)
+static bool call_joy_js(duk_context* ctx, const char* func, int nargs)
 {
-	/* 栈上已推入 nargs 个参数:
-	 *   [arg1, arg2, ..., argN]
-	 */
-	js_getglobal(J, "joy");
-	if (js_isundefined(J, -1)) {
-		js_pop(J, nargs + 1);  /* pop joy + 所有 arg */
+	/* 栈上已推入 nargs 个参数: [arg1, arg2, ..., argN] */
+	duk_get_global_string(ctx, "joy");
+	if (duk_is_undefined(ctx, -1)) {
+		duk_pop_n(ctx, nargs + 1);  /* pop joy + 所有 arg */
 		return false;
 	}
-	js_getproperty(J, -1, func);
-	if (js_isundefined(J, -1)) {
-		js_pop(J, nargs + 2);  /* pop func + joy + 所有 arg */
+	duk_get_prop_string(ctx, -1, func);
+	if (duk_is_undefined(ctx, -1)) {
+		duk_pop_n(ctx, nargs + 2);  /* pop func + joy + 所有 arg */
 		return false;
 	}
 	/* 栈: [args..., joy, func] */
-	js_remove(J, -2);           /* 去掉 joy → [args..., func] */
+	duk_remove(ctx, -2);           /* 去掉 joy → [args..., func] */
 
-	/* 旋转使 func 放到 args 之下 */
-	js_rot(J, nargs + 1);       /* [func, args...] */
+	/* 移动 func 到 args 之下: [func, args...] */
+	duk_insert(ctx, -(nargs + 1));
 
-	if (js_pcall(J, nargs)) {
-		log_error("joy.%s: %s", func, js_tostring(J, -1));
-		js_pop(J, 1);
+	if (duk_pcall(ctx, nargs)) {
+		log_error("joy.%s: %s", func, duk_to_string(ctx, -1));
+		duk_pop(ctx);
 		return false;
 	}
 	return true;
@@ -53,71 +51,71 @@ static bool call_joy_js(js_State* J, const char* func, int nargs)
 static void default_mousepressed(float x, float y, int b, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushnumber(J, x);
-	js_pushnumber(J, y);
-	js_pushnumber(J, (double)b);
-	call_joy_js(J, "mousepressed", 3);
+	duk_context* ctx = jsx->ctx;
+	duk_push_number(ctx, (duk_double_t)x);
+	duk_push_number(ctx, (duk_double_t)y);
+	duk_push_number(ctx, (duk_double_t)b);
+	call_joy_js(ctx, "mousepressed", 3);
 }
 
 static void default_mousereleased(float x, float y, int b, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushnumber(J, x);
-	js_pushnumber(J, y);
-	js_pushnumber(J, (double)b);
-	call_joy_js(J, "mousereleased", 3);
+	duk_context* ctx = jsx->ctx;
+	duk_push_number(ctx, (duk_double_t)x);
+	duk_push_number(ctx, (duk_double_t)y);
+	duk_push_number(ctx, (duk_double_t)b);
+	call_joy_js(ctx, "mousereleased", 3);
 }
 
 static void default_mousemoved(float x, float y, float dx, float dy, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushnumber(J, x);
-	js_pushnumber(J, y);
-	js_pushnumber(J, dx);
-	js_pushnumber(J, dy);
-	call_joy_js(J, "mousemoved", 4);
+	duk_context* ctx = jsx->ctx;
+	duk_push_number(ctx, (duk_double_t)x);
+	duk_push_number(ctx, (duk_double_t)y);
+	duk_push_number(ctx, (duk_double_t)dx);
+	duk_push_number(ctx, (duk_double_t)dy);
+	call_joy_js(ctx, "mousemoved", 4);
 }
 
 static void default_keypressed(const char* key, int sc, bool rep, bool ctrl, bool shift, bool alt, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushstring(J, key);
-	js_pushnumber(J, (double)sc);
-	js_pushboolean(J, rep ? 1 : 0);
-	js_pushboolean(J, ctrl ? 1 : 0);
-	js_pushboolean(J, shift ? 1 : 0);
-	js_pushboolean(J, alt ? 1 : 0);
-	call_joy_js(J, "keypressed", 6);
+	duk_context* ctx = jsx->ctx;
+	duk_push_string(ctx, key);
+	duk_push_number(ctx, (duk_double_t)sc);
+	duk_push_boolean(ctx, rep ? 1 : 0);
+	duk_push_boolean(ctx, ctrl ? 1 : 0);
+	duk_push_boolean(ctx, shift ? 1 : 0);
+	duk_push_boolean(ctx, alt ? 1 : 0);
+	call_joy_js(ctx, "keypressed", 6);
 }
 
 static void default_keyreleased(const char* key, int sc, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushstring(J, key);
-	js_pushnumber(J, (double)sc);
-	call_joy_js(J, "keyreleased", 2);
+	duk_context* ctx = jsx->ctx;
+	duk_push_string(ctx, key);
+	duk_push_number(ctx, (duk_double_t)sc);
+	call_joy_js(ctx, "keyreleased", 2);
 }
 
 static void default_textinput(const char* text, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushstring(J, text);
-	call_joy_js(J, "textinput", 1);
+	duk_context* ctx = jsx->ctx;
+	duk_push_string(ctx, text);
+	call_joy_js(ctx, "textinput", 1);
 }
 
 static void default_resize(int w, int h, void* arg)
 {
 	jsx_p jsx = (jsx_p)arg;
-	js_State* J = jsx->j;
-	js_pushnumber(J, (double)w);
-	js_pushnumber(J, (double)h);
-	call_joy_js(J, "resize", 2);
+	duk_context* ctx = jsx->ctx;
+	duk_push_number(ctx, (duk_double_t)w);
+	duk_push_number(ctx, (duk_double_t)h);
+	call_joy_js(ctx, "resize", 2);
 }
 
 
@@ -127,8 +125,8 @@ jsx_p jsx_create(void)
 	jsx = (jsx_p)malloc(sizeof(jsx_t));
 	assert(jsx);
 	memset(jsx, 0, sizeof(jsx_t));
-	jsx->j = js_newstate(NULL, jsx, JS_STRICT);
-	assert(jsx->j);
+	jsx->ctx = duk_create_heap(NULL, NULL, NULL, jsx, NULL);
+	assert(jsx->ctx);
 
 	/* 设置默认回调，自动转发到 JS */
 	jsx->cbs.on_mousepressed   = default_mousepressed;
@@ -140,36 +138,35 @@ jsx_p jsx_create(void)
 	jsx->cbs.on_resize         = default_resize;
 
 	/* 注册 jsclib 模块 */
-	jsopen_base(jsx->j);
-	jsopen_fp(jsx->j);
-	jsopen_ft(jsx->j);
-	jsopen_vec2f(jsx->j);
-	jsopen_vec2(jsx->j);
-	jsopen_vec3f(jsx->j);
-	jsopen_vec3(jsx->j);
-	jsopen_mat22f(jsx->j);
-	jsopen_mat22(jsx->j);
-	jsopen_collision2d(jsx->j);
-	jsopen_collision2df(jsx->j);
-	jsopen_collision3d(jsx->j);
-	jsopen_utils(jsx->j);
-	jsopen_event(jsx->j);
-	jsopen_sdl(jsx->j);
-	jsopen_keyboard(jsx->j);
-	jsopen_audio(jsx->j);
-	jsopen_animation(jsx->j);
-	jsopen_network(jsx->j);
-	jsopen_timer(jsx->j);
-	jsopen_joystick(jsx->j);
-	jsopen_ui(jsx->j);
-	jsopen_graphics(jsx->j);
-	jsopen_window(jsx->j);
+	jsopen_base(jsx->ctx);
+	jsopen_fp(jsx->ctx);
+	jsopen_ft(jsx->ctx);
+	jsopen_vec2f(jsx->ctx);
+	jsopen_vec2(jsx->ctx);
+	jsopen_vec3f(jsx->ctx);
+	jsopen_vec3(jsx->ctx);
+	jsopen_mat22f(jsx->ctx);
+	jsopen_mat22(jsx->ctx);
+	jsopen_collision2d(jsx->ctx);
+	jsopen_collision2df(jsx->ctx);
+	jsopen_collision3d(jsx->ctx);
+	jsopen_utils(jsx->ctx);
+	jsopen_event(jsx->ctx);
+	jsopen_sdl(jsx->ctx);
+	jsopen_keyboard(jsx->ctx);
+	jsopen_audio(jsx->ctx);
+	jsopen_animation(jsx->ctx);
+	jsopen_network(jsx->ctx);
+	jsopen_timer(jsx->ctx);
+	jsopen_joystick(jsx->ctx);
+	jsopen_ui(jsx->ctx);
+	jsopen_graphics(jsx->ctx);
+	jsopen_window(jsx->ctx);
 
 	/* 创建全局 joy 对象 */
-	js_newobject(jsx->j);
-	js_setglobal(jsx->j, "joy");
+	duk_push_object(jsx->ctx);
+	duk_put_global_string(jsx->ctx, "joy");
 
-	js_setcontext(jsx->j, jsx);
 	return jsx;
 }
 
@@ -180,15 +177,16 @@ bool jsx_dofile(jsx_p jsx, const char* filename)
 	char* data;
 	data = utils_read_file(filename, &data_size);
 	if (data) {
-		if (js_dostring(jsx->j, data)) {
-			free(data);
-			log_info("%s", js_tostring(jsx->j, -1));
-			return true;
-		}
-		else {
-			free(data);
+		if (duk_peval_string(jsx->ctx, data) != 0) {
+			/* 执行错误，错误消息在栈顶 */
+			SDL_free(data);
+			log_info("%s", duk_to_string(jsx->ctx, -1));
+			duk_pop(jsx->ctx);
 			return false;
 		}
+		duk_pop(jsx->ctx);  /* 弹出执行结果 */
+		SDL_free(data);
+		return true;
 	}
 	return false;
 }
@@ -197,7 +195,7 @@ bool jsx_dofile(jsx_p jsx, const char* filename)
 void jsx_release(jsx_p jsx)
 {
 	if (jsx->watch_file) SDL_free(jsx->watch_file);
-	js_freestate(jsx->j);
+	duk_destroy_heap(jsx->ctx);
 	free(jsx);
 }
 
@@ -210,23 +208,26 @@ void jsx_dispatch_event(jsx_p jsx, const SDL_Event* event)
 
 bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt)
 {
-	js_State* J = jsx->j;
+	duk_context* ctx = jsx->ctx;
+	int top = duk_get_top(ctx);
 
-	js_getglobal(J, "joy");
-	if (js_isundefined(J, -1)) { js_pop(J, 1); return false; }
-	js_getproperty(J, -1, func);
-	if (js_isundefined(J, -1)) { js_pop(J, 2); return false; }
+	duk_get_global_string(ctx, "joy");
+	if (duk_is_undefined(ctx, -1)) { duk_pop(ctx); return false; }
+	duk_get_prop_string(ctx, -1, func);
+	if (duk_is_undefined(ctx, -1)) { duk_pop_n(ctx, 2); return false; }
 
-	js_remove(J, -2);  /* 移除 joy，留下 func */
+	duk_remove(ctx, -2);  /* 移除 joy，留下 func */
 
 	if (argc > 0)
-		js_pushnumber(J, (double)dt);
+		duk_push_number(ctx, (duk_double_t)dt);
 
-	if (js_pcall(J, argc)) {
-		log_error("joy.%s error: %s", func, js_tostring(J, -1));
-		js_pop(J, 1);
+	if (duk_pcall(ctx, argc)) {
+		log_error("joy.%s error: %s", func, duk_to_string(ctx, -1));
+		duk_pop(ctx);
+		duk_set_top(ctx, top);
 		return false;
 	}
+	duk_set_top(ctx, top);
 	return true;
 }
 
@@ -235,50 +236,57 @@ bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt)
 
 void jsx_init_state(jsx_p jsx)
 {
-	js_State* J = jsx->j;
-	js_getglobal(J, "state");
-	if (js_isundefined(J, -1)) {
-		js_pop(J, 1);
-		js_newobject(J);
-		js_setglobal(J, "state");
+	duk_context* ctx = jsx->ctx;
+	duk_get_global_string(ctx, "state");
+	if (duk_is_undefined(ctx, -1)) {
+		duk_pop(ctx);
+		duk_push_object(ctx);
+		duk_put_global_string(ctx, "state");
 	}
 	else {
-		js_pop(J, 1);
+		duk_pop(ctx);
 	}
-	/* 备份到 registry */
-	js_getglobal(J, "state");
-	js_setregistry(J, "jsx_state");
+	/* 备份到全局对象的隐藏属性 */
+	duk_push_global_object(ctx);
+	duk_get_global_string(ctx, "state");
+	duk_put_prop_string(ctx, -2, "\xffjsx_state");
+	duk_pop(ctx);
 }
 
 void jsx_set_args(jsx_p jsx, int argc, char* argv[])
 {
-	js_State* J = jsx->j;
-	js_newarray(J);
+	duk_context* ctx = jsx->ctx;
+	duk_push_array(ctx);
 	for (int i = 0; i < argc; i++) {
-		js_pushstring(J, argv[i]);
-		js_setindex(J, -2, i);
+		duk_push_string(ctx, argv[i]);
+		duk_put_prop_index(ctx, -2, (duk_uarridx_t)i);
 	}
-	js_setglobal(J, "args");
+	duk_put_global_string(ctx, "args");
 }
 
 static void jsx_restore_state(jsx_p jsx)
 {
-	js_State* J = jsx->j;
-	js_getregistry(J, "jsx_state");
-	if (!js_isundefined(J, -1)) {
-		js_setglobal(J, "state");
+	duk_context* ctx = jsx->ctx;
+	duk_push_global_object(ctx);
+	duk_get_prop_string(ctx, -1, "\xffjsx_state");
+	if (!duk_is_undefined(ctx, -1)) {
+		duk_put_global_string(ctx, "state");
 	}
 	else {
-		js_pop(J, 1);
+		duk_pop(ctx);
 		jsx_init_state(jsx);
 	}
+	duk_pop(ctx);  /* pop global object */
 }
 
 bool jsx_reload(jsx_p jsx, const char* filename)
 {
+	duk_context* ctx = jsx->ctx;
 	/* 备份当前 state → 执行脚本 → 恢复 state */
-	js_getglobal(jsx->j, "state");
-	js_setregistry(jsx->j, "jsx_state");
+	duk_push_global_object(ctx);
+	duk_get_global_string(ctx, "state");
+	duk_put_prop_string(ctx, -2, "\xffjsx_state");
+	duk_pop(ctx);
 
 	bool ok = jsx_dofile(jsx, filename);
 	jsx_restore_state(jsx);

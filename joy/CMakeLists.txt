@@ -37,7 +37,7 @@ endif()
 file(GLOB EXTERNAL_FILES
     "external/*.h" "external/*.c"
     "external/lua/*.h" "external/lua/*.c"
-    "external/mujs/*.h" "external/mujs/*.c"
+    "external/duktape/*.h" "external/duktape/*.c"
     "external/lua_cjson/*.h" "external/lua_cjson/*.c"
 )
 
