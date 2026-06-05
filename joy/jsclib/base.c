@@ -3,7 +3,7 @@
 
 static duk_ret_t jconsole_log(duk_context* ctx)
 {
-	log_info("%s", duk_to_string(ctx, 1));
+	log_info("%s", duk_to_string(ctx, 0));
 	return 0;
 }
 

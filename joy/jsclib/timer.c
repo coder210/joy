@@ -3,35 +3,35 @@
 
 static duk_ret_t jtimer_create(duk_context* ctx)
 {
-	int interval = (int)duk_to_number(ctx, 1);
+	int interval = (int)duk_to_number(ctx, 0);
 	duk_push_pointer(ctx, timerx_create(interval, NULL, NULL));
 	return 1;
 }
 
 static duk_ret_t jtimer_destroy(duk_context* ctx)
 {
-	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 0);
 	if (t) timerx_destroy(t);
 	return 0;
 }
 
 static duk_ret_t jtimer_trigger(duk_context* ctx)
 {
-	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 0);
 	if (t) timerx_trigger(t);
 	return 0;
 }
 
 static duk_ret_t jtimer_get_elapsed(duk_context* ctx)
 {
-	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 0);
 	duk_push_number(ctx, (duk_double_t)(t ? timerx_get_elapsed(t) : 0));
 	return 1;
 }
 
 static duk_ret_t jtimer_reset(duk_context* ctx)
 {
-	timer_p t = (timer_p)duk_get_pointer(ctx, 1);
+	timer_p t = (timer_p)duk_get_pointer(ctx, 0);
 	if (t) timerx_reset(t);
 	return 0;
 }

@@ -9,22 +9,22 @@ static duk_ret_t jaudio_open_device(duk_context* ctx)
 
 static duk_ret_t jaudio_close_device(duk_context* ctx)
 {
-	audio_close_device((uint32_t)duk_to_number(ctx, 1));
+	audio_close_device((uint32_t)duk_to_number(ctx, 0));
 	return 0;
 }
 
 static duk_ret_t jaudio_create_wav(duk_context* ctx)
 {
-	const char* filepath = duk_to_string(ctx, 1);
-	uint32_t device_id = (uint32_t)duk_to_number(ctx, 2);
+	const char* filepath = duk_to_string(ctx, 0);
+	uint32_t device_id = (uint32_t)duk_to_number(ctx, 1);
 	duk_push_boolean(ctx, audio_create_wav(filepath, device_id));
 	return 1;
 }
 
 static duk_ret_t jaudio_create_ogg(duk_context* ctx)
 {
-	const char* filepath = duk_to_string(ctx, 1);
-	uint32_t device_id = (uint32_t)duk_to_number(ctx, 2);
+	const char* filepath = duk_to_string(ctx, 0);
+	uint32_t device_id = (uint32_t)duk_to_number(ctx, 1);
 	(void)device_id;
 	duk_push_boolean(ctx, 1);
 	return 1;

@@ -4,7 +4,7 @@
 static duk_ret_t jk_is_key_down(duk_context* ctx)
 {
 	const bool* state = SDL_GetKeyboardState(NULL);
-	int scancode = (int)duk_to_number(ctx, 1);
+	int scancode = (int)duk_to_number(ctx, 0);
 	duk_push_boolean(ctx, state && state[scancode]);
 	return 1;
 }

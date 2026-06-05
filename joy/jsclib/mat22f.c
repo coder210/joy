@@ -1,8 +1,8 @@
 #include "jsclib.h"
 #include "../jmath.h"
 
-static duk_ret_t jm22f_new(duk_context* ctx) { mat22f_t* m=(mat22f_t*)malloc(sizeof(mat22f_t)); m->col1.x=(fp_t)duk_to_number(ctx,1); m->col2.x=(fp_t)duk_to_number(ctx,2); m->col1.y=(fp_t)duk_to_number(ctx,3); m->col2.y=(fp_t)duk_to_number(ctx,4); duk_push_pointer(ctx,m); return 1; }
-static duk_ret_t jm22f_destroy(duk_context* ctx) { free(duk_get_pointer(ctx,1)); return 0; }
+static duk_ret_t jm22f_new(duk_context* ctx) { mat22f_t* m=(mat22f_t*)malloc(sizeof(mat22f_t)); m->col1.x=(fp_t)duk_to_number(ctx,0); m->col2.x=(fp_t)duk_to_number(ctx,1); m->col1.y=(fp_t)duk_to_number(ctx,2); m->col2.y=(fp_t)duk_to_number(ctx,3); duk_push_pointer(ctx,m); return 1; }
+static duk_ret_t jm22f_destroy(duk_context* ctx) { free(duk_get_pointer(ctx,0)); return 0; }
 
 void jsopen_mat22f(duk_context* ctx)
 {

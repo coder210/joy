@@ -12,20 +12,20 @@ static duk_ret_t jutils_milliseconds(duk_context* ctx)
 { duk_push_number(ctx, (duk_double_t)SDL_GetTicks()); return 1; }
 
 static duk_ret_t jutils_rand(duk_context* ctx)
-{ float min=(float)duk_to_number(ctx,1),max=(float)duk_to_number(ctx,2); duk_push_number(ctx,(duk_double_t)(min+((float)rand()/(float)RAND_MAX)*(max-min))); return 1; }
+{ float min=(float)duk_to_number(ctx,0),max=(float)duk_to_number(ctx,1); duk_push_number(ctx,(duk_double_t)(min+((float)rand()/(float)RAND_MAX)*(max-min))); return 1; }
 
 static duk_ret_t jutils_rand_int(duk_context* ctx)
-{ int min=(int)duk_to_number(ctx,1),max=(int)duk_to_number(ctx,2); duk_push_number(ctx,(duk_double_t)(min+rand()%(max-min+1))); return 1; }
+{ int min=(int)duk_to_number(ctx,0),max=(int)duk_to_number(ctx,1); duk_push_number(ctx,(duk_double_t)(min+rand()%(max-min+1))); return 1; }
 
 static duk_ret_t jutils_clamp(duk_context* ctx)
-{ float v=(float)duk_to_number(ctx,1),min=(float)duk_to_number(ctx,2),max=(float)duk_to_number(ctx,3); duk_push_number(ctx,(duk_double_t)(v<min?min:v>max?max:v)); return 1; }
+{ float v=(float)duk_to_number(ctx,0),min=(float)duk_to_number(ctx,1),max=(float)duk_to_number(ctx,2); duk_push_number(ctx,(duk_double_t)(v<min?min:v>max?max:v)); return 1; }
 
 static duk_ret_t jutils_lerp(duk_context* ctx)
-{ float a=(float)duk_to_number(ctx,1),b=(float)duk_to_number(ctx,2),t=(float)duk_to_number(ctx,3); duk_push_number(ctx,(duk_double_t)(a+(b-a)*t)); return 1; }
+{ float a=(float)duk_to_number(ctx,0),b=(float)duk_to_number(ctx,1),t=(float)duk_to_number(ctx,2); duk_push_number(ctx,(duk_double_t)(a+(b-a)*t)); return 1; }
 
 static duk_ret_t jutils_read_file(duk_context* ctx)
 {
-	const char* path = duk_to_string(ctx, 1);
+	const char* path = duk_to_string(ctx, 0);
 	size_t sz;
 	char* data = utils_read_file(path, &sz);
 	if (data) { duk_push_string(ctx, data); SDL_free(data); }
