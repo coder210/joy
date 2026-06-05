@@ -259,18 +259,20 @@ static int lencrypt_file(lua_State *L)
                 new_file[path_len + 1] = 0;
                 result = utils_des_crypt(key, data, datasz, &out_len);
                 ok = SDL_SaveFile(new_file, result, out_len);
-                lua_pushboolean(L, ok);
-                lua_pushlstring(L, new_file, new_file_sz);
+                lua_newtable(L);
+                lua_pushboolean(L, ok); lua_setfield(L, -2, "ok");
+                lua_pushlstring(L, new_file, new_file_sz); lua_setfield(L, -2, "file");
                 SDL_free(result);
                 SDL_free(data);
                 SDL_free(new_file);
         }
         else{
-                lua_pushboolean(L, false);
-                lua_pushstring(L, "");
+                lua_newtable(L);
+                lua_pushboolean(L, false); lua_setfield(L, -2, "ok");
+                lua_pushstring(L, ""); lua_setfield(L, -2, "file");
         }
 
-	return 2;
+	return 1;
 }
 
 static int ldecrypt_file(lua_State *L)
@@ -291,18 +293,20 @@ static int ldecrypt_file(lua_State *L)
                 SDL_strlcat(new_file, "x", new_file_sz);
                 result = utils_des_decrypt(key, data, datasz, &out_len);
                 ok = SDL_SaveFile(new_file, result, out_len);
-                lua_pushboolean(L, ok);
-                lua_pushlstring(L, new_file, new_file_sz);
+                lua_newtable(L);
+                lua_pushboolean(L, ok); lua_setfield(L, -2, "ok");
+                lua_pushlstring(L, new_file, new_file_sz); lua_setfield(L, -2, "file");
                 SDL_free(result);
                 SDL_free(data);
                 SDL_free(new_file);
         }
         else {
-                lua_pushboolean(L, false);
-                lua_pushstring(L, "");
+                lua_newtable(L);
+                lua_pushboolean(L, false); lua_setfield(L, -2, "ok");
+                lua_pushstring(L, ""); lua_setfield(L, -2, "file");
         }
 
-        return 2;
+        return 1;
 }
 //
 

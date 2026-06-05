@@ -111,8 +111,15 @@ void dispatch_event(event_callbacks_t cbs, const SDL_Event* event, void* arg)
 			log_error("unhandled SDL_EVENT_WINDOW_RESIZED");
 		break;
 	}
+	case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
+		SDL_Event quit;
+		SDL_zero(quit);
+		quit.type = SDL_EVENT_QUIT;
+		SDL_PushEvent(&quit);
+		break;
+	}
 	default:
-		log_error("unhandled SDL event type: 0x%x", event->type);
+		log_debug("unhandled SDL event type: 0x%x", event->type);
 		break;
 	}
 }

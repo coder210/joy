@@ -454,8 +454,9 @@ static int l_kcpserver_poll(lua_State* L)
         net_message_t msg = { 0 };
         kcpserver_p kcpserver;
         kcpserver = lua_touserdata(L, 1);
+        lua_newtable(L);
         if (kcpserver_poll_message(kcpserver, &msg)) {
-                lua_pushboolean(L, 1);
+                lua_pushboolean(L, 1); lua_setfield(L, -2, "ok");
                 lua_newtable(L);
                 lua_pushinteger(L, msg.type);
                 lua_setfield(L, -2, "type");
@@ -464,12 +465,13 @@ static int l_kcpserver_poll(lua_State* L)
                 lua_pushlstring(L, msg.data, msg.len);
                 lua_setfield(L, -2, "data");
                 SDL_free(msg.data);
+                lua_setfield(L, -2, "msg");
         }
         else {
-                lua_pushboolean(L, false);
-                lua_pushnil(L);
+                lua_pushboolean(L, false); lua_setfield(L, -2, "ok");
+                lua_pushnil(L); lua_setfield(L, -2, "msg");
         }
-        return 2;
+        return 1;
 }
 
 
@@ -521,8 +523,9 @@ static int l_kcpclient_poll(lua_State* L)
         net_message_t msg = { 0 };
         kcpclient_p kc;
         kc = lua_touserdata(L, 1);
+        lua_newtable(L);
         if (kcpclient_poll_message(kc, &msg)) {
-                lua_pushboolean(L, 1);
+                lua_pushboolean(L, 1); lua_setfield(L, -2, "ok");
                 lua_newtable(L);
                 lua_pushinteger(L, msg.type);
                 lua_setfield(L, -2, "type");
@@ -531,12 +534,13 @@ static int l_kcpclient_poll(lua_State* L)
                 lua_pushlstring(L, msg.data, msg.len);
                 lua_setfield(L, -2, "data");
                 SDL_free(msg.data);
+                lua_setfield(L, -2, "msg");
         }
         else {
-                lua_pushboolean(L, 0);
-                lua_pushnil(L);
+                lua_pushboolean(L, 0); lua_setfield(L, -2, "ok");
+                lua_pushnil(L); lua_setfield(L, -2, "msg");
         }
-        return 2;
+        return 1;
 }
 
 // tcpserver/tcpclient functions - preserved but not exposed to Lua

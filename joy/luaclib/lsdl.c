@@ -176,19 +176,20 @@ static int lload_file(lua_State *L)
 
         file = luaL_checkstring(L, 1);
         data = (char*)SDL_LoadFile(file, &data_size);
+        lua_newtable(L);
         if (data_size)
         {
-                lua_pushboolean(L, true);
-                lua_pushlstring(L, data, data_size);
+                lua_pushboolean(L, true); lua_setfield(L, -2, "ok");
+                lua_pushlstring(L, data, data_size); lua_setfield(L, -2, "data");
                 SDL_free(data);
         }
         else
         {
-                lua_pushboolean(L, false);
-                lua_pushnil(L);
+                lua_pushboolean(L, false); lua_setfield(L, -2, "ok");
+                lua_pushnil(L); lua_setfield(L, -2, "data");
         }
 
-        return 2;
+        return 1;
 }
 
 static int lget_gpu_devices(lua_State *L)
@@ -788,9 +789,10 @@ static int lget_mouse_state(lua_State *L)
 {
         float x, y;
         SDL_GetMouseState(&x, &y);
-        lua_pushnumber(L, x);
-        lua_pushnumber(L, y);
-        return 2;
+        lua_newtable(L);
+        lua_pushnumber(L, x); lua_setfield(L, -2, "x");
+        lua_pushnumber(L, y); lua_setfield(L, -2, "y");
+        return 1;
 }
 
 int luaopen_sdl(lua_State *L)

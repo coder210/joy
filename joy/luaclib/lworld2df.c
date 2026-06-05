@@ -219,7 +219,9 @@ static int l_world2df_collide(lua_State* L)
         b_id = luaL_checkinteger(L, 3);
         result = world2df_collide(world, a_id, b_id, &contact);
 
+        lua_newtable(L);
         lua_pushinteger(L, result);
+        lua_setfield(L, -2, "result");
         if (result) {
                 lua_newtable(L);
 
@@ -246,12 +248,10 @@ static int l_world2df_collide(lua_State* L)
 
                 lua_pushinteger(L, contact.depth);
                 lua_setfield(L, -2, "depth");
-        }
-        else {
-                lua_pushnil(L);
+                lua_setfield(L, -2, "contact");
         }
 
-        return 2;
+        return 1;
 }
 
 static void _foreach_body(rigidbody_p body, void* userdata)
@@ -263,7 +263,7 @@ static void _foreach_body(rigidbody_p body, void* userdata)
 
         if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
                 log_error("Error in body callback: %s", lua_tostring(L, -1));
-                lua_pop(L, 1); // µ¯³ö´íÎóĞÅÏ¢
+                lua_pop(L, 1); // å¼¹å‡ºé”™è¯¯ä¿¡æ¯
         }
 }
 
@@ -272,16 +272,16 @@ static int l_world2df_foreach_body(lua_State* L)
         world2df_p world = (world2df_p)lua_touserdata(L, 1);
         luaL_checktype(L, 2, LUA_TFUNCTION);
 
-        // ´´½¨Î¨Ò»µÄÒıÓÃ
-        lua_pushvalue(L, 2); // ¸´ÖÆº¯Êıµ½Õ»¶¥
+        // åˆ›å»ºå”¯ä¸€çš„å¼•ç”¨
+        lua_pushvalue(L, 2); // å¤åˆ¶å‡½æ•°åˆ°æ ˆé¡¶
         int callback_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        // ½«ÒıÓÃ×÷Îªuserdata´«µİ¸ø»Øµ÷
+        // å°†å¼•ç”¨ä½œä¸ºuserdataä¼ é€’ç»™å›è°ƒ
         lua_pushinteger(L, callback_ref);
 
         world2df_foreach_body(world, _foreach_body, L);
 
-        // ÇåÀíÒıÓÃ
+        // æ¸…ç†å¼•ç”¨
         luaL_unref(L, LUA_REGISTRYINDEX, callback_ref);
 
         return 0;

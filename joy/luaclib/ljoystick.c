@@ -97,9 +97,10 @@ static int l_joystick_get_direction(lua_State* L)
         SDL_assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         point = joystick_get_direction(joystick);
-        lua_pushnumber(L, point.x);
-        lua_pushnumber(L, point.y);
-        return 2;
+        lua_newtable(L);
+        lua_pushnumber(L, point.x); lua_setfield(L, -2, "x");
+        lua_pushnumber(L, point.y); lua_setfield(L, -2, "y");
+        return 1;
 }
 
 static int l_joystick_get_magnitude(lua_State* L)
