@@ -13,7 +13,8 @@ static duk_ret_t jjoy_touch_move(duk_context* ctx) { joystick_p joy=(joystick_p)
 static duk_ret_t jjoy_touch_up(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); if(joy) joystick_touch_up(joy); return 0; }
 static duk_ret_t jjoy_reset(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); if(joy) joystick_reset(joy); return 0; }
 static duk_ret_t jjoy_set_position(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); if(joy) joystick_set_position(joy,NUM(1),NUM(2)); return 0; }
-static duk_ret_t jjoy_get_direction(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); SDL_FPoint pt=joystick_get_direction(joy); duk_push_number(ctx,(duk_double_t)pt.x); duk_push_number(ctx,(duk_double_t)pt.y); return 2; }
+/* get_direction: 返回 {x:n, y:n} */
+static duk_ret_t jjoy_get_direction(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); SDL_FPoint pt=joystick_get_direction(joy); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)pt.x); duk_put_prop_string(ctx,-2,"x"); duk_push_number(ctx,(duk_double_t)pt.y); duk_put_prop_string(ctx,-2,"y"); return 1; }
 static duk_ret_t jjoy_get_magnitude(duk_context* ctx) { joystick_p joy=(joystick_p)PTR(0); duk_push_number(ctx,(duk_double_t)joystick_get_magnitude(joy)); return 1; }
 
 void jsopen_joystick(duk_context* ctx)

@@ -31,97 +31,6 @@ struct luax {
 };
 
 
-//static int l_core_traceback(lua_State* L)
-//{
-//        const char* msg = lua_tostring(L, 1);
-//        if (msg) {
-//                luaL_traceback(L, L, msg, 1);
-//                lua_remove(L, 1);
-//                const char* trace = lua_tostring(L, -1);
-//                log_error("c:%s", trace);
-//        }
-//        else {
-//                lua_pushliteral(L, "(no error message)");
-//        }
-//        return 1;
-//}
-//
-//static int l_core_quit(lua_State* L)
-//{
-//        luax_t* luax;
-//        luax = (luax_t*)lua_touserdata(L, 1);
-//        joy_quit(luax->app);
-//        return 0;
-//}
-//
-//static int l_core_log(lua_State* L)
-//{
-//        luax_t* luax;
-//        const char* str;
-//        luax = lua_touserdata(L, 1);
-//        str = luaL_checkstring(L, 2);
-//        log_info("luax:%s", str);
-//        return 1;
-//}
-//
-//static int l_core_debug(lua_State* L)
-//{
-//        luax_t* luax;
-//        const char* str;
-//        luax = lua_touserdata(L, 1);
-//        str = luaL_checkstring(L, 2);
-//        log_debug("luax:%s", str);
-//        return 1;
-//}
-//
-//static int l_core_error(lua_State* L)
-//{
-//        luax_t* luax;
-//        const char* str;
-//        luax = lua_touserdata(L, 1);
-//        str = luaL_checkstring(L, 2);
-//        log_error("luax:%s", str);
-//        return 1;
-//}
-//
-//static int l_core_get_env(lua_State* L)
-//{
-//        luax_t* luax;
-//        const char* name, * value;
-//        luax = (luax_t*)lua_touserdata(L, 1);
-//        name = luaL_checkstring(L, 2);
-//        value = joy_getenv(luax->app, name);
-//        lua_pushstring(L, value);
-//        return 1;
-//}
-//
-//static int l_core_set_env(lua_State* L)
-//{
-//        luax_t* luax;
-//        const char* name, * value;
-//        luax = (luax_t*)lua_touserdata(L, 1);
-//        name = luaL_checkstring(L, 2);
-//        value = luaL_checkstring(L, 3);
-//        joy_setenv(luax->app, name, value);
-//        return 0;
-//}
-//
-//static int luaopen_core(lua_State* L)
-//{
-//        luaL_checkversion(L);
-//        luaL_Reg l[] = {
-//        {"quit", l_core_quit},
-//        {"log", l_core_log},
-//        {"debug", l_core_debug},
-//        {"error", l_core_error},
-//        {"get_env", l_core_get_env},
-//        {"set_env", l_core_set_env},
-//        {NULL, NULL},
-//        };
-//        luaL_newlib(L, l);
-//        return 1;
-//}
-
 /* 查表并调用 joy.func(args...)，调用者已把 arg 推入栈 */
 static bool call_joy_n(lua_State* L, const char* func, int nargs)
 {
@@ -259,6 +168,9 @@ luax_p luax_create(void)
         JOY_MOD("joystick", luaopen_joystick);
         JOY_MOD("event", luaopen_event);
         JOY_MOD("thread", luaopen_thread);
+        JOY_MOD("console", luaopen_console);
+        lua_getfield(luax->L, -1, "console");   /* 从 joy 表取出 console */
+        lua_setglobal(luax->L, "console");       /* 注册为全局 console */
 
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");

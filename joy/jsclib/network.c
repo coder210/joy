@@ -13,13 +13,15 @@ static duk_ret_t jnet_kcpserver_destroy(duk_context* ctx) { kcpserver_p s=(kcpse
 static duk_ret_t jnet_kcpserver_send(duk_context* ctx) { kcpserver_p s=(kcpserver_p)PTR(0); int conv=INT(1); const char* data=STR(2); kcpserver_send(s,conv,data,strlen(data)); return 0; }
 static duk_ret_t jnet_kcpserver_broadcast(duk_context* ctx) { kcpserver_p s=(kcpserver_p)PTR(0); const char* data=STR(1); kcpserver_broadcast(s,data,strlen(data)); return 0; }
 static duk_ret_t jnet_kcpserver_update(duk_context* ctx) { kcpserver_p s=(kcpserver_p)PTR(0); kcpserver_update(s); return 0; }
-static duk_ret_t jnet_kcpserver_poll(duk_context* ctx) { kcpserver_p s=(kcpserver_p)PTR(0); net_message_t msg={0}; if(kcpserver_poll_message(s,&msg)){ duk_push_boolean(ctx,1); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)msg.type); duk_put_prop_string(ctx,-2,"type"); duk_push_number(ctx,(duk_double_t)msg.conv); duk_put_prop_string(ctx,-2,"conv"); duk_push_lstring(ctx,msg.data,msg.len); duk_put_prop_string(ctx,-2,"data"); SDL_free(msg.data); }else{ duk_push_boolean(ctx,0); duk_push_undefined(ctx); } return 2; }
+/* poll: 返回消息对象 {type, conv, data} 或 undefined（无消息） */
+static duk_ret_t jnet_kcpserver_poll(duk_context* ctx) { kcpserver_p s=(kcpserver_p)PTR(0); net_message_t msg={0}; if(kcpserver_poll_message(s,&msg)){ duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)msg.type); duk_put_prop_string(ctx,-2,"type"); duk_push_number(ctx,(duk_double_t)msg.conv); duk_put_prop_string(ctx,-2,"conv"); duk_push_lstring(ctx,msg.data,msg.len); duk_put_prop_string(ctx,-2,"data"); SDL_free(msg.data); }else{ duk_push_undefined(ctx); } return 1; }
 
 static duk_ret_t jnet_kcpclient_create(duk_context* ctx) { duk_push_pointer(ctx, kcpclient_create(STR(0), INT(1))); return 1; }
 static duk_ret_t jnet_kcpclient_destroy(duk_context* ctx) { kcpclient_p c=(kcpclient_p)PTR(0); if(c) kcpclient_destroy(c); return 0; }
 static duk_ret_t jnet_kcpclient_send(duk_context* ctx) { kcpclient_p c=(kcpclient_p)PTR(0); const char* data=STR(1); kcpclient_send(c,data,strlen(data)); return 0; }
 static duk_ret_t jnet_kcpclient_update(duk_context* ctx) { kcpclient_p c=(kcpclient_p)PTR(0); kcpclient_update(c); return 0; }
-static duk_ret_t jnet_kcpclient_poll(duk_context* ctx) { kcpclient_p c=(kcpclient_p)PTR(0); net_message_t msg={0}; if(kcpclient_poll_message(c,&msg)){ duk_push_boolean(ctx,1); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)msg.type); duk_put_prop_string(ctx,-2,"type"); duk_push_number(ctx,(duk_double_t)msg.conv); duk_put_prop_string(ctx,-2,"conv"); duk_push_lstring(ctx,msg.data,msg.len); duk_put_prop_string(ctx,-2,"data"); SDL_free(msg.data); }else{ duk_push_boolean(ctx,0); duk_push_undefined(ctx); } return 2; }
+/* poll: 返回消息对象 {type, conv, data} 或 undefined（无消息） */
+static duk_ret_t jnet_kcpclient_poll(duk_context* ctx) { kcpclient_p c=(kcpclient_p)PTR(0); net_message_t msg={0}; if(kcpclient_poll_message(c,&msg)){ duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)msg.type); duk_put_prop_string(ctx,-2,"type"); duk_push_number(ctx,(duk_double_t)msg.conv); duk_put_prop_string(ctx,-2,"conv"); duk_push_lstring(ctx,msg.data,msg.len); duk_put_prop_string(ctx,-2,"data"); SDL_free(msg.data); }else{ duk_push_undefined(ctx); } return 1; }
 
 void jsopen_network(duk_context* ctx)
 {

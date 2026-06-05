@@ -16,7 +16,8 @@ static duk_ret_t jg_destroy(duk_context* ctx) { SDL_Renderer* ren=(SDL_Renderer*
 #define JG_REN() check_ren(ctx, 0)
 static duk_ret_t jg_clear(duk_context* ctx) { SDL_Renderer* ren=JG_REN(); SDL_SetRenderDrawColor(ren,(Uint8)duk_to_number(ctx,1),(Uint8)duk_to_number(ctx,2),(Uint8)duk_to_number(ctx,3),(Uint8)(duk_is_undefined(ctx,4)?255:duk_to_number(ctx,4))); SDL_RenderClear(ren); return 0; }
 static duk_ret_t jg_present(duk_context* ctx) { SDL_RenderPresent(JG_REN()); return 0; }
-static duk_ret_t jg_get_size(duk_context* ctx) { int w,h; SDL_GetRenderOutputSize(JG_REN(),&w,&h); duk_push_number(ctx,(duk_double_t)w); duk_push_number(ctx,(duk_double_t)h); return 2; }
+/* get_size: 返回 {w:n, h:n} */
+static duk_ret_t jg_get_size(duk_context* ctx) { int w,h; SDL_GetRenderOutputSize(JG_REN(),&w,&h); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)w); duk_put_prop_string(ctx,-2,"w"); duk_push_number(ctx,(duk_double_t)h); duk_put_prop_string(ctx,-2,"h"); return 1; }
 static duk_ret_t jg_set_vsync(duk_context* ctx) { duk_push_boolean(ctx,SDL_SetRenderVSync(JG_REN(),(int)duk_to_number(ctx,1))); return 1; }
 static duk_ret_t jg_set_scale(duk_context* ctx) { duk_push_boolean(ctx,SDL_SetRenderScale(JG_REN(),(float)duk_to_number(ctx,1),(float)duk_to_number(ctx,2))); return 1; }
 static duk_ret_t jg_set_colorf(duk_context* ctx) { SDL_Renderer* ren=JG_REN(); duk_push_boolean(ctx,SDL_SetRenderDrawColorFloat(ren,(float)duk_to_number(ctx,1),(float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3),(float)(duk_is_undefined(ctx,4)?1.0f:duk_to_number(ctx,4)))); return 1; }

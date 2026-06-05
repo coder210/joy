@@ -11,11 +11,16 @@ static duk_ret_t jc2df_rectangles(duk_context* ctx) { rectanglef_t a=read_rectf(
 
 static void push_contact2df(duk_context* ctx, contact2df_t* c) { duk_push_object(ctx); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)c->sp.x); duk_put_prop_string(ctx,-2,"x"); duk_push_number(ctx,(duk_double_t)c->sp.y); duk_put_prop_string(ctx,-2,"y"); duk_put_prop_string(ctx,-2,"sp"); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)c->ep.x); duk_put_prop_string(ctx,-2,"x"); duk_push_number(ctx,(duk_double_t)c->ep.y); duk_put_prop_string(ctx,-2,"y"); duk_put_prop_string(ctx,-2,"ep"); duk_push_number(ctx,(duk_double_t)c->depth); duk_put_prop_string(ctx,-2,"depth"); }
 
+/* get_ray_rectangle: 返回 {hit:bool, point:{x,y}, distance:n} */
 static duk_ret_t jc2df_get_ray_rectangle(duk_context* ctx) {
 	ray2df_t ray; duk_get_prop_string(ctx,0,"x"); ray.origin.x=(fp_t)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,0,"y"); ray.origin.y=(fp_t)duk_to_number(ctx,-1); duk_pop(ctx);
 	duk_get_prop_string(ctx,1,"x"); ray.direction.x=(fp_t)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,1,"y"); ray.direction.y=(fp_t)duk_to_number(ctx,-1); duk_pop(ctx);
 	rectanglef_t rect=read_rectf(ctx,2); ray2d_collisionf_t result=collision2df_get_ray_rectangle(ray,rect);
-	duk_push_boolean(ctx,result.hit); if(result.hit){ duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)result.point.x); duk_put_prop_string(ctx,-2,"x"); duk_push_number(ctx,(duk_double_t)result.point.y); duk_put_prop_string(ctx,-2,"y"); duk_push_number(ctx,(duk_double_t)result.distance); duk_put_prop_string(ctx,-2,"distance"); } else { duk_push_undefined(ctx); } return 2;
+	duk_push_object(ctx);
+	duk_push_boolean(ctx,result.hit); duk_put_prop_string(ctx,-2,"hit");
+	if(result.hit){ duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)result.point.x); duk_put_prop_string(ctx,-2,"x"); duk_push_number(ctx,(duk_double_t)result.point.y); duk_put_prop_string(ctx,-2,"y"); duk_put_prop_string(ctx,-2,"point"); }
+	duk_push_number(ctx,(duk_double_t)result.distance); duk_put_prop_string(ctx,-2,"distance");
+	return 1;
 }
 static duk_ret_t jc2df_polygons(duk_context* ctx) { duk_push_boolean(ctx,0); return 1; }
 

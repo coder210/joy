@@ -11,10 +11,11 @@ static void push_contact(duk_context* ctx, contact2d_t* c) { duk_push_object(ctx
 
 static duk_ret_t jc2d_circles(duk_context* ctx) { circle_t a=read_circle(ctx,0),b=read_circle(ctx,1); duk_push_boolean(ctx,collision2d_check_circles(a,b)); return 1; }
 static duk_ret_t jc2d_rectangles(duk_context* ctx) { rectangle_t a=read_rect(ctx,0),b=read_rect(ctx,1); duk_push_boolean(ctx,collision2d_check_rectangles(a,b)); return 1; }
-static duk_ret_t jc2d_circlesx(duk_context* ctx) { circle_t a=read_circle(ctx,0),b=read_circle(ctx,1); contact2d_t contact; int ok=collision2d_get_circles(a,b,&contact); duk_push_boolean(ctx,ok); if(ok) push_contact(ctx,&contact); else duk_push_undefined(ctx); return 2; }
-static duk_ret_t jc2d_rectanglesx(duk_context* ctx) { rectangle_t a=read_rect(ctx,0); int a_angle=(int)duk_to_number(ctx,2); rectangle_t b=read_rect(ctx,3); int b_angle=(int)duk_to_number(ctx,5); contact2d_t contact; int ok=collision2d_get_rectangles(a,a_angle,b,b_angle,&contact); duk_push_boolean(ctx,ok); if(ok) push_contact(ctx,&contact); else duk_push_undefined(ctx); return 2; }
+/* circlesx/rectanglesx/polygonsx: 返回 {hit:bool, sp:{x,y}, ep:{x,y}, depth:n} 或 undefined */
+static duk_ret_t jc2d_circlesx(duk_context* ctx) { circle_t a=read_circle(ctx,0),b=read_circle(ctx,1); contact2d_t contact; int ok=collision2d_get_circles(a,b,&contact); if(ok){ duk_push_object(ctx); push_contact(ctx,&contact); } else { duk_push_undefined(ctx); } return 1; }
+static duk_ret_t jc2d_rectanglesx(duk_context* ctx) { rectangle_t a=read_rect(ctx,0); int a_angle=(int)duk_to_number(ctx,2); rectangle_t b=read_rect(ctx,3); int b_angle=(int)duk_to_number(ctx,5); contact2d_t contact; int ok=collision2d_get_rectangles(a,a_angle,b,b_angle,&contact); if(ok){ duk_push_object(ctx); push_contact(ctx,&contact); } else { duk_push_undefined(ctx); } return 1; }
 static duk_ret_t jc2d_polygons(duk_context* ctx) { polygon_t a=read_poly(ctx,0),b=read_poly(ctx,1); int ok=collision2d_check_polygons(a,b); free_poly(a); free_poly(b); duk_push_boolean(ctx,ok); return 1; }
-static duk_ret_t jc2d_polygonsx(duk_context* ctx) { polygon_t a=read_poly(ctx,0),b=read_poly(ctx,1); contact2d_t contact; int ok=collision2d_get_polygons(a,b,&contact); free_poly(a); free_poly(b); duk_push_boolean(ctx,ok); if(ok) push_contact(ctx,&contact); else duk_push_undefined(ctx); return 2; }
+static duk_ret_t jc2d_polygonsx(duk_context* ctx) { polygon_t a=read_poly(ctx,0),b=read_poly(ctx,1); contact2d_t contact; int ok=collision2d_get_polygons(a,b,&contact); free_poly(a); free_poly(b); if(ok){ duk_push_object(ctx); push_contact(ctx,&contact); } else { duk_push_undefined(ctx); } return 1; }
 
 void jsopen_collision2d(duk_context* ctx) {
 	duk_push_object(ctx);
