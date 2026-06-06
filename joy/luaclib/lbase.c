@@ -5,9 +5,8 @@
 
 static int l_console_log(lua_State* L) {
 	int n = lua_gettop(L);
-	lua_getglobal(L, "tostring");
 	for (int i = 1; i <= n; i++) {
-		lua_pushvalue(L, -1);  /* tostring */
+		lua_getglobal(L, "tostring");
 		lua_pushvalue(L, i);   /* arg */
 		lua_call(L, 1, 1);     /* tostring(arg) */
 	}

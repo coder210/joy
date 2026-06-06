@@ -15,7 +15,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 	sys_init_netenv();
 	SDL_SetAppMetadata("adventure server", "1.0", "com.example.adventure-server");
 
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_VIDEO)) {
 		log_info("SDL init failed: %s", SDL_GetError());
 		return SDL_APP_FAILURE;
 	}
