@@ -1,12 +1,20 @@
 #define DR_MP3_IMPLEMENTATION
 #define DR_FLAC_IMPLEMENTATION
 #define DR_WAV_IMPLEMENTATION
-#define STB_VORBIS_HEADER_ONLY
 #include "SDL3/SDL.h"
 #include "external/dr_mp3.h"
 #include "external/dr_flac.h"
 #include "external/dr_wav.h"
+
+/* OGG 支持（stb_vorbis.h 已在 external/ 中） */
+#define STB_VORBIS_IMPLEMENTATION
+#include "external/stb_vorbis.h"
+#define HAVE_OGG 1
+
 #include "jaudio.h"
+#include <string.h>
+
+/* ==================== 内部辅助 ==================== */
 
 typedef struct {
         Uint8* data;
@@ -14,6 +22,8 @@ typedef struct {
         Uint32 pos;
         bool loop;
 } AudioData;
+
+/* ==================== 设备管理 ==================== */
 
 uint32_t audio_open_device()
 {
@@ -27,25 +37,114 @@ void audio_close_device(uint32_t device_id)
         SDL_CloseAudioDevice(device_id);
 }
 
+/* ==================== 流回调（循环播放） ==================== */
+
 static void SDLCALL FeedTheAudioStreamMore(void* userdata, SDL_AudioStream* astream, int additional_amount, int total_amount)
 {
         AudioData* audio = (AudioData*)userdata;
-
+        (void)total_amount;
         if (audio->loop && additional_amount > 0) {
-                // 计算剩余可用的数据
                 Uint32 remaining = audio->data_len - audio->pos;
-                Uint32 to_copy = (additional_amount < remaining) ? additional_amount : remaining;
-
+                Uint32 to_copy = (additional_amount < remaining) ? (Uint32)additional_amount : remaining;
                 if (to_copy > 0) {
                         SDL_PutAudioStreamData(astream, audio->data + audio->pos, to_copy);
                         audio->pos += to_copy;
                 }
-
-                // 如果到达末尾，回到开头实现循环
-                if (audio->pos >= audio->data_len) {
+                if (audio->pos >= audio->data_len)
                         audio->pos = 0;
-                }
         }
+}
+
+/* ==================== 格式解码器 ==================== */
+
+/* 用 dr_mp3 解码 MP3 → F32 PCM，返回 malloc 的 buffer，caller 负责 SDL_free */
+static Uint8* decode_mp3(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
+{
+        drmp3 mp3;
+        if (!drmp3_init_file(&mp3, path, NULL))
+                return NULL;
+
+        drmp3_uint64 total_frames = drmp3_get_pcm_frame_count(&mp3);
+        Uint32 channels = mp3.channels;
+        Uint32 total_samples = (Uint32)(total_frames * channels);
+        Uint32 byte_len = total_samples * sizeof(float);
+
+        float* buf = (float*)SDL_malloc(byte_len);
+        if (!buf) { drmp3_uninit(&mp3); return NULL; }
+        drmp3_read_pcm_frames_f32(&mp3, total_frames, buf);
+        drmp3_uninit(&mp3);
+
+        spec->format   = SDL_AUDIO_F32;
+        spec->channels = (Uint8)channels;
+        spec->freq     = mp3.sampleRate;
+        *out_len       = byte_len;
+        return (Uint8*)buf;
+}
+
+/* 用 dr_flac 解码 FLAC → F32 PCM */
+static Uint8* decode_flac(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
+{
+        unsigned int channels, sampleRate;
+        drflac_uint64 totalPCMFrameCount;
+        float* samples = drflac_open_file_and_read_pcm_frames_f32(path, &channels, &sampleRate, &totalPCMFrameCount, NULL);
+        if (!samples) return NULL;
+
+        Uint32 total_samples = (Uint32)(totalPCMFrameCount * channels);
+        Uint32 byte_len = total_samples * sizeof(float);
+
+        spec->format   = SDL_AUDIO_F32;
+        spec->channels = (Uint8)channels;
+        spec->freq     = (int)sampleRate;
+        *out_len       = byte_len;
+        return (Uint8*)samples; /* drflac 用 drflac_free() 释放，但 SDL_free 也能用 */
+}
+
+#if HAVE_OGG
+/* 用 stb_vorbis 解码 OGG → F32 PCM */
+static Uint8* decode_ogg(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
+{
+        int channels, sampleRate;
+        short* s16 = NULL;
+        int frames = stb_vorbis_decode_filename(path, &channels, &sampleRate, &s16);
+        if (frames == 0) return NULL;
+
+        /* frames = 每声道帧数，总样本数 = frames * channels */
+        Uint32 total = (Uint32)(frames * channels);
+        Uint32 byte_len = total * sizeof(float);
+
+        float* buf = (float*)SDL_malloc(byte_len);
+        if (!buf) { free(s16); return NULL; }
+        for (Uint32 i = 0; i < total; i++)
+                buf[i] = s16[i] / 32768.0f;
+        free(s16);
+
+        spec->format   = SDL_AUDIO_F32;
+        spec->channels = (Uint8)channels;
+        spec->freq     = sampleRate;
+        *out_len       = byte_len;
+        return (Uint8*)buf;
+}
+#endif
+
+/* ==================== 简易播放（创建循环流，自动播放） ==================== */
+
+/* 内部：从已解码的 PCM 创建循环播放流 */
+static bool stream_from_pcm(uint32_t device_id, SDL_AudioSpec* spec, Uint8* data, Uint32 len)
+{
+        SDL_AudioStream* stream = SDL_CreateAudioStream(spec, NULL);
+        if (!stream) { SDL_free(data); return false; }
+
+        AudioData* ad = (AudioData*)SDL_malloc(sizeof(AudioData));
+        if (!ad) { SDL_DestroyAudioStream(stream); SDL_free(data); return false; }
+        ad->data     = data;
+        ad->data_len = len;
+        ad->pos      = 0;
+        ad->loop     = true;
+
+        SDL_SetAudioStreamGetCallback(stream, FeedTheAudioStreamMore, ad);
+        SDL_BindAudioStream(device_id, stream);
+        SDL_PutAudioStreamData(stream, data, len);
+        return true;
 }
 
 bool audio_create_wav(const char* filepath, uint32_t device_id)
@@ -53,31 +152,45 @@ bool audio_create_wav(const char* filepath, uint32_t device_id)
         SDL_AudioSpec spec;
         Uint8* data;
         Uint32 data_len;
-        SDL_AudioStream* stream;
-        if (SDL_LoadWAV(filepath, &spec, &data, &data_len)) {
-                stream = SDL_CreateAudioStream(&spec, NULL);
-
-                // 创建音频数据上下文
-                AudioData* audio_data = (AudioData*)SDL_malloc(sizeof(AudioData));
-                audio_data->data = data;
-                audio_data->data_len = data_len;
-                audio_data->pos = 0;
-                audio_data->loop = true;
-
-                
-                SDL_SetAudioStreamGetCallback(stream, FeedTheAudioStreamMore, audio_data);
-                if (SDL_BindAudioStream(device_id, stream)) {
-                        SDL_PutAudioStreamData(stream, data, data_len);
-                }
-                return true;
-        }
-        else {
-                SDL_free(data);
+        if (!SDL_LoadWAV(filepath, &spec, &data, &data_len))
                 return false;
-        }
+        return stream_from_pcm(device_id, &spec, data, data_len);
+}
+
+bool audio_create_mp3(const char* filepath, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_mp3(filepath, &spec, &len);
+        if (!data) return false;
+        return stream_from_pcm(device_id, &spec, data, len);
+}
+
+bool audio_create_flac(const char* filepath, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_flac(filepath, &spec, &len);
+        if (!data) return false;
+        return stream_from_pcm(device_id, &spec, data, len);
+}
+
+bool audio_create_ogg(const char* filepath, uint32_t device_id)
+{
+#if HAVE_OGG
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_ogg(filepath, &spec, &len);
+        if (!data) return false;
+        return stream_from_pcm(device_id, &spec, data, len);
+#else
+        (void)filepath; (void)device_id;
+        return false;
+#endif
 }
 
 /* ==================== 背景音乐 ==================== */
+
 struct audio_bgm {
         SDL_AudioSpec    spec;
         Uint8*           data;
@@ -88,28 +201,33 @@ struct audio_bgm {
         float            gain;
 };
 
-audio_bgm_p audio_bgm_create(const char* wav_path, uint32_t device_id)
+/* 内部：从已解码 PCM 创建 BGM */
+static audio_bgm_p bgm_from_pcm(const char* path, uint32_t device_id)
 {
-        SDL_AudioSpec spec;
-        Uint8* data;
-        Uint32 len;
-        if (!SDL_LoadWAV(wav_path, &spec, &data, &len))
-                return NULL;
+        (void)path;
+        /* 由各格式函数负责解码，本函数仅创建 bgm 对象 */
+        return NULL;
+}
 
+static audio_bgm_p bgm_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
+{
         audio_bgm_p bgm = (audio_bgm_p)SDL_malloc(sizeof(audio_bgm_t));
-        bgm->spec      = spec;
+        if (!bgm) { SDL_free(data); return NULL; }
+
+        bgm->spec      = *spec;
         bgm->data      = data;
         bgm->len       = len;
         bgm->device_id = device_id;
         bgm->gain      = 1.0f;
 
         bgm->audio_data = (AudioData*)SDL_malloc(sizeof(AudioData));
+        if (!bgm->audio_data) { SDL_free(data); SDL_free(bgm); return NULL; }
         bgm->audio_data->data     = data;
         bgm->audio_data->data_len = len;
         bgm->audio_data->pos      = 0;
         bgm->audio_data->loop     = true;
 
-        bgm->stream = SDL_CreateAudioStream(&spec, NULL);
+        bgm->stream = SDL_CreateAudioStream(spec, NULL);
         if (!bgm->stream) { SDL_free(bgm->audio_data); SDL_free(data); SDL_free(bgm); return NULL; }
 
         SDL_SetAudioStreamGetCallback(bgm->stream, FeedTheAudioStreamMore, bgm->audio_data);
@@ -117,6 +235,48 @@ audio_bgm_p audio_bgm_create(const char* wav_path, uint32_t device_id)
         SDL_BindAudioStream(device_id, bgm->stream);
         SDL_PutAudioStreamData(bgm->stream, data, len);
         return bgm;
+}
+
+audio_bgm_p audio_bgm_create(const char* wav_path, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint8* data;
+        Uint32 len;
+        if (!SDL_LoadWAV(wav_path, &spec, &data, &len))
+                return NULL;
+        return bgm_create_from_pcm(&spec, data, len, device_id);
+}
+
+audio_bgm_p audio_bgm_create_mp3(const char* path, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_mp3(path, &spec, &len);
+        if (!data) return NULL;
+        return bgm_create_from_pcm(&spec, data, len, device_id);
+}
+
+audio_bgm_p audio_bgm_create_flac(const char* path, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_flac(path, &spec, &len);
+        if (!data) return NULL;
+        return bgm_create_from_pcm(&spec, data, len, device_id);
+}
+
+audio_bgm_p audio_bgm_create_ogg(const char* path, uint32_t device_id)
+{
+#if HAVE_OGG
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_ogg(path, &spec, &len);
+        if (!data) return NULL;
+        return bgm_create_from_pcm(&spec, data, len, device_id);
+#else
+        (void)path; (void)device_id;
+        return NULL;
+#endif
 }
 
 void audio_bgm_stop(audio_bgm_p bgm)
@@ -139,6 +299,7 @@ void audio_bgm_destroy(audio_bgm_p bgm)
         if (!bgm) return;
         if (bgm->stream) {
                 SDL_UnbindAudioStream(bgm->stream);
+                SDL_ClearAudioStream(bgm->stream);
                 SDL_DestroyAudioStream(bgm->stream);
         }
         if (bgm->audio_data) SDL_free(bgm->audio_data);
@@ -147,13 +308,28 @@ void audio_bgm_destroy(audio_bgm_p bgm)
 }
 
 /* ==================== 一次性音效 ==================== */
+
 struct audio_shot {
-        SDL_AudioSpec spec;
-        Uint8*        data;
-        Uint32        len;
-        uint32_t      device_id;
-        float         gain;
+        SDL_AudioSpec    spec;
+        Uint8*           data;
+        Uint32           len;
+        uint32_t         device_id;
+        float            gain;
+        SDL_AudioStream* stream;   /* 当前播放流，NULL 表示未播放 */
 };
+
+static audio_shot_p shot_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
+{
+        audio_shot_p s = (audio_shot_p)SDL_malloc(sizeof(audio_shot_t));
+        if (!s) { SDL_free(data); return NULL; }
+        s->spec      = *spec;
+        s->data      = data;
+        s->len       = len;
+        s->device_id = device_id;
+        s->gain      = 1.0f;
+        s->stream    = NULL;
+        return s;
+}
 
 audio_shot_p audio_shot_create(const char* wav_path, uint32_t device_id)
 {
@@ -162,27 +338,58 @@ audio_shot_p audio_shot_create(const char* wav_path, uint32_t device_id)
         Uint32 len;
         if (!SDL_LoadWAV(wav_path, &spec, &data, &len))
                 return NULL;
+        return shot_create_from_pcm(&spec, data, len, device_id);
+}
 
-        audio_shot_p s = (audio_shot_p)SDL_malloc(sizeof(audio_shot_t));
-        s->spec      = spec;
-        s->data      = data;
-        s->len       = len;
-        s->device_id = device_id;
-        s->gain      = 1.0f;
-        return s;
+audio_shot_p audio_shot_create_mp3(const char* path, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_mp3(path, &spec, &len);
+        if (!data) return NULL;
+        return shot_create_from_pcm(&spec, data, len, device_id);
+}
+
+audio_shot_p audio_shot_create_flac(const char* path, uint32_t device_id)
+{
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_flac(path, &spec, &len);
+        if (!data) return NULL;
+        return shot_create_from_pcm(&spec, data, len, device_id);
+}
+
+audio_shot_p audio_shot_create_ogg(const char* path, uint32_t device_id)
+{
+#if HAVE_OGG
+        SDL_AudioSpec spec;
+        Uint32 len;
+        Uint8* data = decode_ogg(path, &spec, &len);
+        if (!data) return NULL;
+        return shot_create_from_pcm(&spec, data, len, device_id);
+#else
+        (void)path; (void)device_id;
+        return NULL;
+#endif
 }
 
 void audio_shot_play(audio_shot_p shot)
 {
         if (!shot || !shot->data) return;
+
+        /* 清理上一轮播放流（如果有） */
+        if (shot->stream) {
+                SDL_UnbindAudioStream(shot->stream);
+                SDL_ClearAudioStream(shot->stream);
+                SDL_DestroyAudioStream(shot->stream);
+        }
+
         SDL_AudioStream* stream = SDL_CreateAudioStream(&shot->spec, NULL);
         if (!stream) return;
         SDL_SetAudioStreamGain(stream, shot->gain);
         SDL_BindAudioStream(shot->device_id, stream);
         SDL_PutAudioStreamData(stream, shot->data, shot->len);
-        // 数据播放完后流会自动销毁（无人绑定时）
-        SDL_UnbindAudioStream(stream);
-        SDL_DestroyAudioStream(stream);
+        shot->stream = stream;  /* 保持流存活到播放完成 */
 }
 
 void audio_shot_set_gain(audio_shot_p shot, float gain)
@@ -193,6 +400,10 @@ void audio_shot_set_gain(audio_shot_p shot, float gain)
 void audio_shot_destroy(audio_shot_p shot)
 {
         if (!shot) return;
+        if (shot->stream) {
+                SDL_UnbindAudioStream(shot->stream);
+                SDL_DestroyAudioStream(shot->stream);
+        }
         if (shot->data) SDL_free(shot->data);
         SDL_free(shot);
 }
