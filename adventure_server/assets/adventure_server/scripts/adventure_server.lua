@@ -35,9 +35,9 @@ livnet.start(function()
         assert(ok);
         ok, width, height = sdl.get_window_size(window);
 
-        local zombie = sdl.create_audio_stream_from_ogg("resources/sounds/zombie.ogg");
-        local helicopter = sdl.create_audio_stream_from_wav("resources/sounds/helicopter.wav");
-        local ak47 = sdl.create_audio_stream_from_wav("resources/sounds/ak47.wav");
+	local zombie = sdl.create_audio_stream_from_ogg("adventure_server/sounds/zombie.ogg");
+	local helicopter = sdl.create_audio_stream_from_wav("adventure_server/sounds/helicopter.wav");
+	local ak47 = sdl.create_audio_stream_from_wav("adventure_server/sounds/ak47.wav");
 
         local audio_device_id = sdl.open_audio_device();
         sdl.bind_audio_stream(audio_device_id, zombie.stream);

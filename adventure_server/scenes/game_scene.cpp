@@ -534,7 +534,7 @@ static void HandleCommandSystem(game_scene_p self)
 		fp_t y = player_join.position_y();
 
 		SpriteSheetComponent ss{};
-		snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+		snprintf(ss.path, sizeof(ss.path), "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
 		ss.frame_w = 192; ss.frame_h = 192;
 		ss.idle_row = 0; ss.walk_row = 1;
 		ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
@@ -655,7 +655,7 @@ static void on_load(scene_p s)
 		.set<TransformComponent>({ 5,5,0,1,1 });
 
 	// 加载 tilemap 碰撞墙体（替代硬编码围墙）
-	self->tilemap = jtilemap_load_file("joy2d_editor_tilemap/map.lua");
+	self->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
 	if (self->tilemap) {
 		jtilemap_object_layer_p ol = jtilemap_find_object_layer(self->tilemap, "collision");
 		if (ol) {
@@ -684,7 +684,7 @@ static void on_load(scene_p s)
 		fp_t cx = ex;
 		fp_t cy = ey;
 		SpriteSheetComponent ess{};
-		snprintf(ess.path, sizeof(ess.path), "joy2d_editor_textures/knights/troops/warrior/warrior_red.png");
+		snprintf(ess.path, sizeof(ess.path), "adventure_server/textures/knights/troops/warrior/warrior_red.png");
 		ess.frame_w = 192; ess.frame_h = 192;
 		ess.idle_row = 0; ess.walk_row = 1;
 		ess.atk_rows[0] = 4; ess.atk_rows[1] = 2;

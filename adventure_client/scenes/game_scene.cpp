@@ -148,7 +148,7 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 						   fp_to_float(entity.position_y()), 0, 1, 1 });
 		if (entity.type() == adventure::S2C_TYPE_PLAYER) {
 			SpriteSheetComponent ss{};
-			snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+			snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
 			ss.frame_w = 192; ss.frame_h = 192;
 			ss.idle_row = 0; ss.walk_row = 1;
 			ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
@@ -162,7 +162,7 @@ static void handle_loading(game_scene_p self, adventure::S2C* s2c)
 		}
 		else if (entity.type() == adventure::S2C_TYPE_ENEMY) {
 			SpriteSheetComponent ss{};
-			snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_red.png");
+			snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_red.png");
 			ss.frame_w = 192; ss.frame_h = 192;
 			ss.idle_row = 0; ss.walk_row = 1;
 			ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
@@ -472,7 +472,7 @@ static void handle_command(game_scene_p self, adventure::S2C& s2c)
 		fp_t x = player_join.position_x();
 		fp_t y = player_join.position_y();
 		SpriteSheetComponent ss{};
-		snprintf(ss.path, sizeof(ss.path), "joy2d_editor_textures/knights/troops/warrior/warrior_blue.png");
+		snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
 		ss.frame_w = 192; ss.frame_h = 192;
 		ss.idle_row = 0; ss.walk_row = 1;
 		ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
@@ -635,7 +635,7 @@ static void on_load(scene_p s)
 	self->enemy_query = self->ecs_world.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
 	// ---- tilemap 渲染 ----
-	self->tilemap = jtilemap_load_file("joy2d_editor_tilemap/map.lua");
+	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
 	if (self->tilemap) {
 		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
 		log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
@@ -644,9 +644,9 @@ static void on_load(scene_p s)
 
 	// ---- 音频 ----
 	self->audio_dev = audio_open_device();
-	self->step_sound = audio_shot_create("joy2d_editor_sounds/ak47.wav", self->audio_dev);
+	self->step_sound = audio_shot_create("adventure_client/sounds/ak47.wav", self->audio_dev);
 	audio_shot_set_gain(self->step_sound, 1.0f);
-	self->bgm = audio_bgm_create("joy2d_editor_sounds/bgm.wav", self->audio_dev);
+	self->bgm = audio_bgm_create("adventure_client/sounds/bgm.wav", self->audio_dev);
 	audio_bgm_set_gain(self->bgm, 0.5f);
 
 }

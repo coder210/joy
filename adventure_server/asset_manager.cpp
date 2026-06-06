@@ -1,11 +1,11 @@
 #include "asset_manager.h"
 
-// ¾²Ì¬³ÉÔ±³õÊ¼»¯
+// é™æ€æˆå‘˜åˆå§‹åŒ–
 AssetManager* AssetManager::instance_ = nullptr;
 
 AssetManager::AssetManager(SDL_Renderer* renderer)
 {
-        simheiFont24_ = font_create(renderer, "adventure_server_fonts/simhei.ttf", 24);
+        simheiFont24_ = font_create(renderer, "adventure_server/fonts/simhei.ttf", 24);
 }
 
 AssetManager::~AssetManager()
@@ -19,12 +19,12 @@ void AssetManager::Init(SDL_Renderer* renderer)
         if (instance_ == nullptr) {
                 instance_ = new AssetManager(renderer);
         }
-        // ÈôÒÑ¾­³õÊ¼»¯£¬¿É¸ù¾İĞèÒªÌí¼ÓÈÕÖ¾»ò¶ÏÑÔ
+        // è‹¥å·²ç»åˆå§‹åŒ–ï¼Œå¯æ ¹æ®éœ€è¦æ·»åŠ æ—¥å¿—æˆ–æ–­è¨€
 }
 
 AssetManager* AssetManager::GetInstance()
 {
-        // µ÷ÓÃÇ°±ØĞëÈ·±£ÒÑµ÷ÓÃ Init£¬·ñÔò·µ»Ø nullptr
+        // è°ƒç”¨å‰å¿…é¡»ç¡®ä¿å·²è°ƒç”¨ Initï¼Œå¦åˆ™è¿”å› nullptr
         return instance_;
 }
 

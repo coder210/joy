@@ -32,7 +32,7 @@ static void on_load(scene_p s) {
 
     // ---- Logo ----
     logo_data* ld = new logo_data{};
-    ld->image = image_create(self->ctx->renderer, "joy2d_editor_textures/logo.png");
+    ld->image = image_create(self->ctx->renderer, "adventure_client/textures/logo.png");
     scene_node_p logo_node = scene_node_create();
     scene_node_set_position(logo_node, 0, 0);
     scene_node_set_zorder(logo_node, 50);
@@ -57,7 +57,7 @@ static void on_load(scene_p s) {
 
     // ---- 左侧装饰 ----
     deco_data* dd_l = new deco_data{};
-    dd_l->image = image_create(self->ctx->renderer, "joy2d_editor_textures/deco/01.png");
+    dd_l->image = image_create(self->ctx->renderer, "adventure_client/textures/deco/01.png");
     scene_node_p deco_left = scene_node_create();
     scene_node_set_position(deco_left, 0, 0);
     scene_node_set_zorder(deco_left, 40);
@@ -82,7 +82,7 @@ static void on_load(scene_p s) {
 
     // ---- 右侧装饰 ----
     deco_data* dd_r = new deco_data{};
-    dd_r->image = image_create(self->ctx->renderer, "joy2d_editor_textures/deco/02.png");
+    dd_r->image = image_create(self->ctx->renderer, "adventure_client/textures/deco/02.png");
     scene_node_p deco_right = scene_node_create();
     scene_node_set_position(deco_right, 0, 0);
     scene_node_set_zorder(deco_right, 40);
