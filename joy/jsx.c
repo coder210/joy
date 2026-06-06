@@ -163,6 +163,7 @@ jsx_p jsx_create(void)
 	jsopen_ui(jsx->ctx);
 	jsopen_graphics(jsx->ctx);
 	jsopen_window(jsx->ctx);
+	jsopen_render3d(jsx->ctx);
 
 	/* 创建全局 joy 对象 */
 	duk_push_object(jsx->ctx);

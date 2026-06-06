@@ -27,5 +27,6 @@ void jsopen_joystick(duk_context* J);
 void jsopen_ui(duk_context* J);
 void jsopen_graphics(duk_context* J);
 void jsopen_window(duk_context* J);
+void jsopen_render3d(duk_context* J);
 
 #endif // !JSCLIB_H
