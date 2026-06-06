@@ -140,6 +140,15 @@ static int l_mesh_cube(lua_State* L)
 	return push_mesh(L, render3d_mesh_cube(r, w, h, d));
 }
 
+static int l_mesh_plane(lua_State* L)
+{
+	render3d_p r = check_r3d(L, 1);
+	float w = (float)luaL_checknumber(L, 2);
+	float d = (float)luaL_checknumber(L, 3);
+	int   segs = (int)luaL_checkinteger(L, 4);
+	return push_mesh(L, render3d_mesh_plane(r, w, d, segs));
+}
+
 static int l_mesh_sphere(lua_State* L)
 {
 	render3d_p r = check_r3d(L, 1);
@@ -201,6 +210,7 @@ int luaopen_render3d(lua_State* L)
 		{"camera_fps",    l_camera_fps},
 		{"mesh_cube",     l_mesh_cube},
 		{"mesh_sphere",   l_mesh_sphere},
+		{"mesh_plane",    l_mesh_plane},
 		{"mesh_destroy",  l_mesh_destroy},
 		{"draw_mesh",     l_draw_mesh},
 		{"draw_grid",     l_draw_grid},

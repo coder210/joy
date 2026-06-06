@@ -474,6 +474,35 @@ render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int s
 	return m;
 }
 
+render_mesh_p render3d_mesh_plane(render3d_p r, float w, float d, int segs)
+{
+	float hw = w * 0.5f, hd = d * 0.5f;
+	float step_x = w / segs, step_z = d / segs;
+	/* 每个格子 2 个三角形 = 6 个顶点 */
+	int total = segs * segs * 6;
+	float* verts = (float*)SDL_malloc((size_t)total * 5 * sizeof(float));
+	if (!verts) return NULL;
+	int idx = 0;
+	for (int iz = 0; iz < segs; iz++) {
+		for (int ix = 0; ix < segs; ix++) {
+			float x0 = -hw + ix * step_x, z0 = -hd + iz * step_z;
+			float x1 = x0 + step_x, z1 = z0 + step_z;
+			float u0 = (float)ix / segs, v0 = (float)iz / segs;
+			float u1 = (float)(ix + 1) / segs, v1 = (float)(iz + 1) / segs;
+			int o = idx * 5;
+			verts[o]=x0; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u0; verts[o+4]=v0; idx++;
+			o = idx * 5; verts[o]=x1; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u1; verts[o+4]=v0; idx++;
+			o = idx * 5; verts[o]=x1; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; idx++;
+			o = idx * 5; verts[o]=x0; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u0; verts[o+4]=v0; idx++;
+			o = idx * 5; verts[o]=x1; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; idx++;
+			o = idx * 5; verts[o]=x0; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u0; verts[o+4]=v1; idx++;
+		}
+	}
+	render_mesh_p m = render3d_mesh_custom(r, verts, total);
+	SDL_free(verts);
+	return m;
+}
+
 render_mesh_p render3d_mesh_custom(render3d_p r, const void* verts, int vertex_count)
 {
 	(void)r;

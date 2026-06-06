@@ -90,6 +90,15 @@ static duk_ret_t jr3d_mesh_cube(duk_context* ctx)
 	return 1;
 }
 
+static duk_ret_t jr3d_mesh_plane(duk_context* ctx)
+{
+	render3d_p r = R3D_PTR(0);
+	float w = NUM(1), d = NUM(2);
+	int segs = INT(3);
+	duk_push_pointer(ctx, render3d_mesh_plane(r, w, d, segs));
+	return 1;
+}
+
 static duk_ret_t jr3d_mesh_sphere(duk_context* ctx)
 {
 	render3d_p r = R3D_PTR(0);
@@ -135,6 +144,7 @@ void jsopen_render3d(duk_context* ctx)
 	duk_push_c_function(ctx, jr3d_camera_fps, 5);    duk_put_prop_string(ctx, -2, "camera_fps");
 	duk_push_c_function(ctx, jr3d_mesh_cube, 4);     duk_put_prop_string(ctx, -2, "mesh_cube");
 	duk_push_c_function(ctx, jr3d_mesh_sphere, 4);   duk_put_prop_string(ctx, -2, "mesh_sphere");
+	duk_push_c_function(ctx, jr3d_mesh_plane, 4);    duk_put_prop_string(ctx, -2, "mesh_plane");
 	duk_push_c_function(ctx, jr3d_mesh_destroy, 2);  duk_put_prop_string(ctx, -2, "mesh_destroy");
 	duk_push_c_function(ctx, jr3d_draw_mesh, 5);     duk_put_prop_string(ctx, -2, "draw_mesh");
 	duk_push_c_function(ctx, jr3d_draw_grid, 3);     duk_put_prop_string(ctx, -2, "draw_grid");

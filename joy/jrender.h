@@ -69,6 +69,7 @@ JOY_API void render3d_camera_fps(render3d_p r, vec3_t pos, float yaw, float pitc
 /* ---------- 网格 ---------- */
 JOY_API render_mesh_p render3d_mesh_cube(render3d_p r, float w, float h, float d);
 JOY_API render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int stacks);
+JOY_API render_mesh_p render3d_mesh_plane(render3d_p r, float w, float d, int segs);
 JOY_API render_mesh_p render3d_mesh_custom(render3d_p r, const void* verts, int vertex_count);
 JOY_API void         render3d_mesh_destroy(render3d_p r, render_mesh_p m);
 

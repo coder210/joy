@@ -170,6 +170,7 @@ luax_p luax_create(void)
         JOY_MOD("thread", luaopen_thread);
         JOY_MOD("console", luaopen_console);
         JOY_MOD("render3d", luaopen_render3d);
+        JOY_MOD("gjk3d", luaopen_gjk3d);
         lua_getfield(luax->L, -1, "console");   /* 从 joy 表取出 console */
         lua_setglobal(luax->L, "console");       /* 注册为全局 console */
 
