@@ -161,7 +161,7 @@ jsx_p jsx_create(void)
 	jsopen_timer(jsx->ctx);
 	jsopen_joystick(jsx->ctx);
 	jsopen_ui(jsx->ctx);
-	jsopen_graphics(jsx->ctx);
+	jsopen_render2d(jsx->ctx);
 	jsopen_window(jsx->ctx);
 	jsopen_render3d(jsx->ctx);
 	jsopen_gjk3d(jsx->ctx);

@@ -15,6 +15,8 @@ static duk_ret_t jg_select(duk_context* ctx) { check_ren(ctx,0); duk_push_undefi
 static duk_ret_t jg_destroy(duk_context* ctx) { SDL_Renderer* ren=(SDL_Renderer*)duk_get_pointer(ctx,0); if(ren) SDL_DestroyRenderer(ren); return 0; }
 #define JG_REN() check_ren(ctx, 0)
 static duk_ret_t jg_clear(duk_context* ctx) { SDL_Renderer* ren=JG_REN(); SDL_SetRenderDrawColor(ren,(Uint8)duk_to_number(ctx,1),(Uint8)duk_to_number(ctx,2),(Uint8)duk_to_number(ctx,3),(Uint8)(duk_is_undefined(ctx,4)?255:duk_to_number(ctx,4))); SDL_RenderClear(ren); return 0; }
+static duk_ret_t jg_begin(duk_context* ctx) { SDL_Renderer* ren=JG_REN(); SDL_SetRenderDrawColor(ren,(Uint8)duk_to_number(ctx,1),(Uint8)duk_to_number(ctx,2),(Uint8)duk_to_number(ctx,3),(Uint8)(duk_is_undefined(ctx,4)?255:duk_to_number(ctx,4))); SDL_RenderClear(ren); return 0; }
+static duk_ret_t jg_end_frame(duk_context* ctx) { SDL_RenderPresent(JG_REN()); return 0; }
 static duk_ret_t jg_present(duk_context* ctx) { SDL_RenderPresent(JG_REN()); return 0; }
 /* get_size: 返回 {w:n, h:n} */
 static duk_ret_t jg_get_size(duk_context* ctx) { int w,h; SDL_GetRenderOutputSize(JG_REN(),&w,&h); duk_push_object(ctx); duk_push_number(ctx,(duk_double_t)w); duk_put_prop_string(ctx,-2,"w"); duk_push_number(ctx,(duk_double_t)h); duk_put_prop_string(ctx,-2,"h"); return 1; }
@@ -48,12 +50,14 @@ static duk_ret_t jg_polygon(duk_context* ctx) {
 	return 1;
 }
 
-void jsopen_graphics(duk_context* ctx)
+void jsopen_render2d(duk_context* ctx)
 {
 	duk_push_object(ctx);
 	duk_push_c_function(ctx, jg_create, 1); duk_put_prop_string(ctx, -2, "create");
 	duk_push_c_function(ctx, jg_select, 1); duk_put_prop_string(ctx, -2, "select");
 	duk_push_c_function(ctx, jg_destroy, 1); duk_put_prop_string(ctx, -2, "destroy");
+	duk_push_c_function(ctx, jg_begin, 5); duk_put_prop_string(ctx, -2, "begin");
+	duk_push_c_function(ctx, jg_end_frame, 1); duk_put_prop_string(ctx, -2, "end_frame");
 	duk_push_c_function(ctx, jg_clear, 5); duk_put_prop_string(ctx, -2, "clear");
 	duk_push_c_function(ctx, jg_present, 1); duk_put_prop_string(ctx, -2, "present");
 	duk_push_c_function(ctx, jg_get_size, 1); duk_put_prop_string(ctx, -2, "get_size");
@@ -69,5 +73,5 @@ void jsopen_graphics(duk_context* ctx)
 	duk_push_c_function(ctx, jg_create_font, 3); duk_put_prop_string(ctx, -2, "create_font");
 	duk_push_c_function(ctx, jg_print, 6); duk_put_prop_string(ctx, -2, "print");
 	duk_push_c_function(ctx, jg_get_renderer, 1); duk_put_prop_string(ctx, -2, "get_renderer");
-	duk_put_global_string(ctx, "graphics");
+	duk_put_global_string(ctx, "render2d");
 }

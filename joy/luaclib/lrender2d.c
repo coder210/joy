@@ -59,6 +59,22 @@ static int lr_clear(lua_State* L) {
     return 0;
 }
 
+static int lr_begin(lua_State* L) {
+    SDL_Renderer* ren = check_ren(L, 1);
+    SDL_SetRenderDrawColor(ren,
+        (Uint8)luaL_optinteger(L, 2, 0),
+        (Uint8)luaL_optinteger(L, 3, 0),
+        (Uint8)luaL_optinteger(L, 4, 0),
+        (Uint8)luaL_optinteger(L, 5, 255));
+    SDL_RenderClear(ren);
+    return 0;
+}
+
+static int lr_end_frame(lua_State* L) {
+    SDL_RenderPresent(check_ren(L, 1));
+    return 0;
+}
+
 static int lr_present(lua_State* L) {
     SDL_RenderPresent(check_ren(L, 1));
     return 0;
@@ -466,7 +482,7 @@ static int l_get_renderer(lua_State* L) {
 /* =================================================================
  * Module registration
  * ================================================================= */
-int luaopen_graphics(lua_State* L) {
+int luaopen_render2d(lua_State* L) {
 #define REG_MT(name, gcfunc) do { \
     luaL_newmetatable(L, name); \
     lua_pushcfunction(L, gcfunc); \
@@ -485,6 +501,8 @@ int luaopen_graphics(lua_State* L) {
         {"create",    lr_create},
         {"select",    l_select},
         {"destroy",   lr_destroy},
+        {"begin",     lr_begin},
+        {"end_frame", lr_end_frame},
         {"clear",     lr_clear},
         {"present",   lr_present},
         {"get_size",  lr_get_size},

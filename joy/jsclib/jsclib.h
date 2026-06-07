@@ -25,7 +25,7 @@ void jsopen_network(duk_context* J);
 void jsopen_timer(duk_context* J);
 void jsopen_joystick(duk_context* J);
 void jsopen_ui(duk_context* J);
-void jsopen_graphics(duk_context* J);
+void jsopen_render2d(duk_context* J);
 void jsopen_window(duk_context* J);
 void jsopen_render3d(duk_context* J);
 void jsopen_gjk3d(duk_context* J);

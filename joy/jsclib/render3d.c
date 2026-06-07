@@ -137,7 +137,7 @@ static duk_ret_t jr3d_gen_checkerboard(duk_context* ctx)
 {
 	render3d_p r = R3D_PTR(0);
 	int ts = INT(1), tc = INT(2);
-	duk_push_pointer(ctx, render3d_gen_checkerboard(r, ts, tc));
+	duk_push_pointer(ctx, (void*)render3d_gen_checkerboard(r, ts, tc));
 	return 1;
 }
 
