@@ -53,16 +53,36 @@ static image_p load_png(SDL_Renderer* renderer, const char* filename)
 		return NULL;
 	}
 
-	image = (image_p)SDL_malloc(sizeof(image_t));
-	SDL_assert(image);
-	//SDL_strlcat(filepath, SDL_GetBasePath(), JOY_MAX_PATH);
 	SDL_strlcat(filepath, filename, JOY_MAX_PATH);
 	pixels = stbi_load_from_memory(filedata, sz, &w, &h, &channels, STBI_rgb_alpha);
+	if (!pixels) {
+		SDL_free(filedata);
+		SDL_Log("Failed to decode PNG: %s", filename);
+		return NULL;
+	}
+
 	surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, pixels, w * 4);
+	if (!surface) {
+		stbi_image_free(pixels);
+		SDL_free(filedata);
+		SDL_Log("Failed to create surface from PNG: %s", filename);
+		return NULL;
+	}
+
+	image = (image_p)SDL_malloc(sizeof(image_t));
+	if (!image) { stbi_image_free(pixels); SDL_DestroySurface(surface); SDL_free(filedata); return NULL; }
+
 	image->texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_DestroySurface(surface);
+	stbi_image_free(pixels);
 	SDL_free(filedata);
 	SDL_strlcpy(image->filepath, filepath, JOY_MAX_PATH);
+
+	if (!image->texture) {
+		SDL_Log("Failed to create texture from PNG: %s", filename);
+		SDL_free(image);
+		return NULL;
+	}
 	return image;
 }
 
@@ -74,6 +94,21 @@ image_p image_create(SDL_Renderer* renderer, const char* filename)
 	}
 	else if (SDL_strstr(filename, ".png")) {
 		image = load_png(renderer, filename);
+	}
+	return image;
+}
+
+image_p image_create_from_surface(SDL_Renderer* renderer, SDL_Surface* surface, const char* label)
+{
+	image_p image;
+	if (!surface) return NULL;
+	image = (image_p)SDL_malloc(sizeof(image_t));
+	if (!image) return NULL;
+	image->texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_strlcpy(image->filepath, label ? label : "(surface)", JOY_MAX_PATH);
+	if (!image->texture) {
+		SDL_free(image);
+		return NULL;
 	}
 	return image;
 }

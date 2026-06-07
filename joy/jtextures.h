@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: textures.h
-Description: Í¼Æ¬´¦Àí
+Description: å›¾ç‰‡å¤„ç†
 Author: ydlc
 Version: 1.0
 Date: 2024.7.15
@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 	JOY_API image_p image_create(SDL_Renderer* renderer, const char* filename);
+	JOY_API image_p image_create_from_surface(SDL_Renderer* renderer, SDL_Surface* surface, const char* label);
 	JOY_API void image_destroy(image_p image);
 	JOY_API void image_draw(image_p image, SDL_FPoint position);
 	JOY_API void image_draw1(image_p image,
