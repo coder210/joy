@@ -1,7 +1,7 @@
 #include "luaclib.h"
 #include <SDL3/SDL.h>
 #include "../external/lua/lauxlib.h"
-#include "../jrender.h"
+#include "../jr3d.h"
 
 #define R3D_MT  "render3d_t*"
 #define MESH_MT "render_mesh_t*"
@@ -179,12 +179,43 @@ static int l_draw_mesh(lua_State* L)
 	return 0;
 }
 
+static int l_mesh_ramp(lua_State* L)
+{
+	render3d_p r = check_r3d(L, 1);
+	float w = (float)luaL_checknumber(L, 2);
+	float l = (float)luaL_checknumber(L, 3);
+	float h = (float)luaL_checknumber(L, 4);
+	return push_mesh(L, render3d_mesh_ramp(r, w, l, h));
+}
+
+static int l_gen_checkerboard(lua_State* L)
+{
+	render3d_p r = check_r3d(L, 1);
+	int tile_size = (int)luaL_checkinteger(L, 2);
+	int tile_cnt  = (int)luaL_checkinteger(L, 3);
+	SDL_GPUTexture* tex = render3d_gen_checkerboard(r, tile_size, tile_cnt);
+	lua_pushlightuserdata(L, tex);
+	return 1;
+}
+
+static int l_draw_mesh_tex(lua_State* L)
+{
+	render3d_p r = check_r3d(L, 1);
+	render_mesh_p m = check_mesh(L, 2);
+	vec3_t pos   = read_vec3(L, 3);
+	vec3_t scale = read_vec3(L, 4);
+	SDL_GPUTexture* tex = (SDL_GPUTexture*)lua_touserdata(L, 5);
+	render3d_draw_mesh_tex(r, m, pos, scale, tex);
+	return 0;
+}
+
 static int l_draw_grid(lua_State* L)
 {
 	render3d_p r = check_r3d(L, 1);
-	int slices  = (int)luaL_checkinteger(L, 2);
+	int slices    = (int)luaL_checkinteger(L, 2);
 	float spacing = (float)luaL_checknumber(L, 3);
-	render3d_draw_grid(r, slices, spacing);
+	float lw      = (float)luaL_optnumber(L, 4, spacing * 0.01f);
+	render3d_draw_grid(r, slices, spacing, lw);
 	return 0;
 }
 
@@ -211,6 +242,9 @@ int luaopen_render3d(lua_State* L)
 		{"mesh_cube",     l_mesh_cube},
 		{"mesh_sphere",   l_mesh_sphere},
 		{"mesh_plane",    l_mesh_plane},
+		{"mesh_ramp",     l_mesh_ramp},
+		{"gen_checkerboard", l_gen_checkerboard},
+		{"draw_mesh_tex", l_draw_mesh_tex},
 		{"mesh_destroy",  l_mesh_destroy},
 		{"draw_mesh",     l_draw_mesh},
 		{"draw_grid",     l_draw_grid},

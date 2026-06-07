@@ -1,4 +1,4 @@
-#include "jrender.h"
+#include "jr3d.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -400,58 +400,94 @@ void render3d_end(render3d_p r)
 
 void render3d_camera_lookat(render3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fovy)
 {
+	mat44_t view;
+	mat44_t proj;
 	if (!r) return;
 	r->fovy = fovy;
-	mat44_t view = mat44_lookAt(eye, target, up);
-	mat44_t proj = mat44_perspective(ft_radians(r->fovy), r->aspect, r->near_, r->far_);
+	view = mat44_lookAt(eye, target, up);
+	proj = mat44_perspective(ft_radians(r->fovy), r->aspect, r->near_, r->far_);
 	r->viewProj = mat44_mul(view, proj);
 }
 
 void render3d_camera_fps(render3d_p r, vec3_t pos, float yaw, float pitch, float fovy)
 {
+	float yr, pr;
+	vec3_t camOffset;
+	vec3_t target;
+	vec3_t eye;
+	vec3_t upv;
 	if (!r) return;
-	float yr = ft_radians(yaw), pr = ft_radians(pitch);
-	vec3_t camOffset = {
-		-sinf(yr) * cosf(pr) * 6.0f,
-		 sinf(pr) * 6.0f,
-		-cosf(yr) * cosf(pr) * 6.0f
-	};
-	vec3_t target = vec3_add(pos, (vec3_t){0, 1.0f, 0});
-	vec3_t eye = vec3_add(pos, camOffset);
-	render3d_camera_lookat(r, eye, target, (vec3_t){0, 1, 0}, fovy);
+	yr = ft_radians(yaw); pr = ft_radians(pitch);
+	camOffset.x = -sinf(yr) * cosf(pr) * 6.0f;
+	camOffset.y =  sinf(pr) * 6.0f;
+	camOffset.z = -cosf(yr) * cosf(pr) * 6.0f;
+	upv.x = 0; upv.y = 1; upv.z = 0;
+	target.x = pos.x; target.y = pos.y + 1.0f; target.z = pos.z;
+	eye = vec3_add(pos, camOffset);
+	render3d_camera_lookat(r, eye, target, upv, fovy);
 }
 
 /* ---- 网格 ---- */
 
 render_mesh_p render3d_mesh_cube(render3d_p r, float w, float h, float d)
 {
-	float hw = w * 0.5f, hh = h * 0.5f, hd = d * 0.5f;
-	float verts[] = {
-		-hw, -hh,  hd, 0,0,   hw, -hh,  hd, 1,0,   hw,  hh,  hd, 1,1,
-		 hw,  hh,  hd, 1,1,  -hw,  hh,  hd, 0,1,  -hw, -hh,  hd, 0,0,
-		 hw, -hh, -hd, 0,0,  -hw, -hh, -hd, 1,0,  -hw,  hh, -hd, 1,1,
-		-hw,  hh, -hd, 1,1,   hw,  hh, -hd, 0,1,   hw, -hh, -hd, 0,0,
-		-hw, -hh, -hd, 0,0,  -hw, -hh,  hd, 1,0,  -hw,  hh,  hd, 1,1,
-		-hw,  hh,  hd, 1,1,  -hw,  hh, -hd, 0,1,  -hw, -hh, -hd, 0,0,
-		 hw, -hh,  hd, 0,0,   hw, -hh, -hd, 1,0,   hw,  hh, -hd, 1,1,
-		 hw,  hh, -hd, 1,1,   hw,  hh,  hd, 0,1,   hw, -hh,  hd, 0,0,
-		-hw,  hh,  hd, 0,0,   hw,  hh,  hd, 1,0,   hw,  hh, -hd, 1,1,
-		 hw,  hh, -hd, 1,1,  -hw,  hh, -hd, 0,1,  -hw,  hh,  hd, 0,0,
-		-hw, -hh, -hd, 0,0,   hw, -hh, -hd, 1,0,   hw, -hh,  hd, 1,1,
-		 hw, -hh,  hd, 1,1,  -hw, -hh,  hd, 0,1,  -hw, -hh, -hd, 0,0,
-	};
+	float hw, hh, hd;
+	float* verts;
+	int vi;
+	hw = w * 0.5f; hh = h * 0.5f; hd = d * 0.5f;
+	verts = SDL_malloc(36 * 5 * sizeof(float));
+	vi = 0;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]= hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
 	return render3d_mesh_custom(r, verts, 36);
 }
 
 render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int stacks)
 {
-#define MAX_VERTS (32*24*6)
-	float verts[MAX_VERTS * 5];
-	int count = 0;
-	for (int j = 0; j < stacks; j++) {
+	float* verts;
+	int count, j, i, o;
+	render_mesh_p m;
+	verts = SDL_malloc((32*24*6) * 5 * sizeof(float));
+	if (!verts) return NULL;
+	count = 0;
+	for (j = 0; j < stacks; j++) {
 		float phi1 = (float)j / stacks * 3.14159265f;
 		float phi2 = (float)(j + 1) / stacks * 3.14159265f;
-		for (int i = 0; i < slices; i++) {
+		for (i = 0; i < slices; i++) {
 			float theta1 = (float)i / slices * 2.0f * 3.14159265f;
 			float theta2 = (float)(i + 1) / slices * 2.0f * 3.14159265f;
 			float x1 = radius * sinf(phi1) * cosf(theta1), y1 = radius * cosf(phi1), z1 = radius * sinf(phi1) * sinf(theta1);
@@ -460,8 +496,8 @@ render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int s
 			float x4 = radius * sinf(phi2) * cosf(theta1), y4 = radius * cosf(phi2), z4 = radius * sinf(phi2) * sinf(theta1);
 			float u1 = (float)i / slices, u2 = (float)(i + 1) / slices;
 			float v1 = (float)j / stacks, v2 = (float)(j + 1) / stacks;
-			if (count + 6 > MAX_VERTS) break;
-			int o; o = count * 5; verts[o]=x1; verts[o+1]=y1; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; count++;
+			if (count + 6 > 32*24*6) break;
+			o = count * 5; verts[o]=x1; verts[o+1]=y1; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; count++;
 			o = count * 5; verts[o]=x2; verts[o+1]=y2; verts[o+2]=z2; verts[o+3]=u2; verts[o+4]=v1; count++;
 			o = count * 5; verts[o]=x3; verts[o+1]=y3; verts[o+2]=z3; verts[o+3]=u2; verts[o+4]=v2; count++;
 			o = count * 5; verts[o]=x1; verts[o+1]=y1; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; count++;
@@ -469,27 +505,30 @@ render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int s
 			o = count * 5; verts[o]=x4; verts[o+1]=y4; verts[o+2]=z4; verts[o+3]=u1; verts[o+4]=v2; count++;
 		}
 	}
-	render_mesh_p m = render3d_mesh_custom(r, verts, count);
-#undef MAX_VERTS
+	m = render3d_mesh_custom(r, verts, count);
+	SDL_free(verts);
 	return m;
 }
 
 render_mesh_p render3d_mesh_plane(render3d_p r, float w, float d, int segs)
 {
-	float hw = w * 0.5f, hd = d * 0.5f;
-	float step_x = w / segs, step_z = d / segs;
-	/* 每个格子 2 个三角形 = 6 个顶点 */
-	int total = segs * segs * 6;
-	float* verts = (float*)SDL_malloc((size_t)total * 5 * sizeof(float));
+	float hw, hd, step_x, step_z, x0, z0, x1, z1, u0, v0, u1, v1;
+	int total, iz, ix, idx, o;
+	float* verts;
+	render_mesh_p m;
+	hw = w * 0.5f; hd = d * 0.5f;
+	step_x = w / segs; step_z = d / segs;
+	total = segs * segs * 6;
+	verts = SDL_malloc(total * 5 * sizeof(float));
 	if (!verts) return NULL;
-	int idx = 0;
-	for (int iz = 0; iz < segs; iz++) {
-		for (int ix = 0; ix < segs; ix++) {
-			float x0 = -hw + ix * step_x, z0 = -hd + iz * step_z;
-			float x1 = x0 + step_x, z1 = z0 + step_z;
-			float u0 = (float)ix / segs, v0 = (float)iz / segs;
-			float u1 = (float)(ix + 1) / segs, v1 = (float)(iz + 1) / segs;
-			int o = idx * 5;
+	idx = 0;
+	for (iz = 0; iz < segs; iz++) {
+		for (ix = 0; ix < segs; ix++) {
+			x0 = -hw + ix * step_x; z0 = -hd + iz * step_z;
+			x1 = x0 + step_x; z1 = z0 + step_z;
+			u0 = (float)ix / segs; v0 = (float)iz / segs;
+			u1 = (float)(ix + 1) / segs; v1 = (float)(iz + 1) / segs;
+			o = idx * 5;
 			verts[o]=x0; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u0; verts[o+4]=v0; idx++;
 			o = idx * 5; verts[o]=x1; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u1; verts[o+4]=v0; idx++;
 			o = idx * 5; verts[o]=x1; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; idx++;
@@ -498,15 +537,60 @@ render_mesh_p render3d_mesh_plane(render3d_p r, float w, float d, int segs)
 			o = idx * 5; verts[o]=x0; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u0; verts[o+4]=v1; idx++;
 		}
 	}
-	render_mesh_p m = render3d_mesh_custom(r, verts, total);
+	m = render3d_mesh_custom(r, verts, total);
+	SDL_free(verts);
+	return m;
+}
+
+render_mesh_p render3d_mesh_ramp(render3d_p r, float w, float l, float h)
+{
+	float hw, hl;
+	float* verts;
+	render_mesh_p m;
+	int vi;
+	hw = w * 0.5f; hl = l * 0.5f;
+	verts = SDL_malloc(24 * 5 * sizeof(float));
+	vi = 0;
+	/* 坡面 */
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
+	/* 左侧 */
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]=-hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=0;
+	/* 右侧 */
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
+	verts[vi++]= hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	/* 背面 */
+	verts[vi++]=-hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=h; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
+	/* 底面 */
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=1; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]=-hl; verts[vi++]=0; verts[vi++]=0;
+	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
+	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
+
+	m = render3d_mesh_custom(r, verts, 24);
 	SDL_free(verts);
 	return m;
 }
 
 render_mesh_p render3d_mesh_custom(render3d_p r, const void* verts, int vertex_count)
 {
+	render_mesh_p m;
 	(void)r;
-	render_mesh_p m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = SDL_malloc(sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = render_upload_buffer(r->dev, verts, (size_t)vertex_count * 5 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -523,24 +607,25 @@ void render3d_mesh_destroy(render3d_p r, render_mesh_p m)
 
 /* ---- 内部：用 model 矩阵和颜色绘制一个网格 ---- */
 
-static void draw_mesh_internal(render3d_p r, render_mesh_p m, mat44_t* model, SDL_Color color)
+static void draw_mesh_internal(render3d_p r, render_mesh_p m, mat44_t* model, SDL_GPUTexture* tex)
 {
+	render_mvp_t mvp;
+	SDL_GPUTextureSamplerBinding samp;
+	SDL_GPUBufferBinding bind;
 	if (!r->rp || !m || !m->buffer) return;
 
-	render_mvp_t mvp;
 	memset(&mvp, 0, sizeof(mvp));
 	render_mat44_to_float16(&r->viewProj, mvp.viewProj);
 	render_mat44_to_float16(model, mvp.model);
 	SDL_PushGPUVertexUniformData(r->cmd, 0, &mvp, sizeof(mvp));
 
-	SDL_GPUTexture* tex = get_color_texture(r, color.r, color.g, color.b);
 	if (tex) {
-		SDL_GPUTextureSamplerBinding samp = { 0 };
+		memset(&samp, 0, sizeof(samp));
 		samp.texture = tex; samp.sampler = r->sampler;
 		SDL_BindGPUFragmentSamplers(r->rp, 0, &samp, 1);
 	}
 
-	SDL_GPUBufferBinding bind = { 0 };
+	memset(&bind, 0, sizeof(bind));
 	bind.buffer = m->buffer; bind.offset = 0;
 	SDL_BindGPUVertexBuffers(r->rp, 0, &bind, 1);
 	SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
@@ -550,39 +635,114 @@ static void draw_mesh_internal(render3d_p r, render_mesh_p m, mat44_t* model, SD
 
 void render3d_draw_mesh(render3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, SDL_Color color)
 {
+	mat44_t model;
+	SDL_GPUTexture* tex;
+	memset(&model, 0, sizeof(model));
+	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
+	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
+	model.m15 = 1;
+	tex = get_color_texture(r, color.r, color.g, color.b);
+	draw_mesh_internal(r, m, &model, tex);
+}
+
+void render3d_draw_mesh_tex(render3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, SDL_GPUTexture* tex)
+{
 	mat44_t model = { 0 };
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
 	model.m15 = 1;
-	draw_mesh_internal(r, m, &model, color);
+	draw_mesh_internal(r, m, &model, tex);
 }
 
-void render3d_draw_grid(render3d_p r, int slices, float spacing)
+/* ---- 棋盘格纹理（科幻金属网格，main8.cpp 样式）---- */
+
+SDL_GPUTexture* render3d_gen_checkerboard(render3d_p r, int tile_size, int tile_count)
 {
-	float half = slices * spacing * 0.5f;
-	SDL_Color gray = { 100, 100, 120, 255 };
-	float hw = spacing * 0.01f;
+	int w = tile_size * tile_count;
+	int h = w;
+	int y, x, idx, tile_x, tile_y, light, gx, gy;
+	size_t image_size = (size_t)w * h * 4;
+	unsigned char* pixels = (unsigned char*)SDL_malloc(image_size);
+	SDL_GPUTexture* tex;
+	if (!pixels) return NULL;
 
-	for (int i = 0; i <= slices; i++) {
-		float p = -half + i * spacing;
+	for (y = 0; y < h; y++) {
+		for (x = 0; x < w; x++) {
+			idx = (y * w + x) * 4;
+			tile_x = x / tile_size;
+			tile_y = y / tile_size;
+			light = ((tile_x + tile_y) % 2) == 0;
+			if (light) {
+				pixels[idx+0] = 60;  pixels[idx+1] = 68;  pixels[idx+2] = 80;
+			} else {
+				pixels[idx+0] = 28;  pixels[idx+1] = 32;  pixels[idx+2] = 40;
+			}
+			gx = x % tile_size;
+			gy = y % tile_size;
+			if (gx < 1 || gy < 1 || gx > tile_size-2 || gy > tile_size-2) {
+				pixels[idx+0] = 30;  pixels[idx+1] = 180; pixels[idx+2] = 255;
+			}
+			pixels[idx+3] = 255;
+		}
+	}
 
-		float verts_x[] = { p, 0, -half, 0,0,  p+hw, 0, -half, 1,0,  p+hw, 0, half, 1,1,
-		                    p, 0, -half, 0,0,  p+hw, 0, half, 1,1,  p, 0, half, 0,1 };
-		SDL_GPUBuffer* bx = render_upload_buffer(r->dev, verts_x, sizeof(verts_x));
+	tex = upload_pixels_to_texture(r->dev, pixels, w, h,
+		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER);
+	SDL_free(pixels);
+	return tex;
+}
+
+void render3d_draw_grid(render3d_p r, int slices, float spacing, float line_width)
+{
+	float half, hw, p;
+	int i;
+	SDL_GPUTexture* gray_tex;
+	SDL_GPUBuffer* bx;
+	SDL_GPUBuffer* bz;
+	render_mesh_t mx;
+	render_mesh_t mz;
+	mat44_t id;
+	half = slices * spacing * 0.5f;
+	gray_tex = get_color_texture(r, 100, 100, 120);
+	hw = line_width;
+
+	for (i = 0; i <= slices; i++) {
+		p = -half + i * spacing;
+
+		/* 使用堆分配避免非 const 初始值 */
+		{
+			float verts_x[6 * 5];
+			int vi = 0;
+			verts_x[vi++]=p; verts_x[vi++]=0; verts_x[vi++]=-half; verts_x[vi++]=0; verts_x[vi++]=0;
+			verts_x[vi++]=p+hw; verts_x[vi++]=0; verts_x[vi++]=-half; verts_x[vi++]=1; verts_x[vi++]=0;
+			verts_x[vi++]=p+hw; verts_x[vi++]=0; verts_x[vi++]=half; verts_x[vi++]=1; verts_x[vi++]=1;
+			verts_x[vi++]=p; verts_x[vi++]=0; verts_x[vi++]=-half; verts_x[vi++]=0; verts_x[vi++]=0;
+			verts_x[vi++]=p+hw; verts_x[vi++]=0; verts_x[vi++]=half; verts_x[vi++]=1; verts_x[vi++]=1;
+			verts_x[vi++]=p; verts_x[vi++]=0; verts_x[vi++]=half; verts_x[vi++]=0; verts_x[vi++]=1;
+			bx = render_upload_buffer(r->dev, verts_x, sizeof(verts_x));
+		}
 		if (bx) {
-			render_mesh_t mx = { bx, 6 };
-			mat44_t id = { 0 }; id.m15 = 1;
-			draw_mesh_internal(r, &mx, &id, gray);
+			memset(&id, 0, sizeof(id)); id.m15 = 1;
+			mx.buffer = bx; mx.vertex_count = 6;
+			draw_mesh_internal(r, &mx, &id, gray_tex);
 			SDL_ReleaseGPUBuffer(r->dev, bx);
 		}
 
-		float verts_z[] = { -half, 0, p, 0,0,  half, 0, p, 1,0,  half, 0, p+hw, 1,1,
-		                    -half, 0, p, 0,0,  half, 0, p+hw, 1,1,  -half, 0, p+hw, 0,1 };
-		SDL_GPUBuffer* bz = render_upload_buffer(r->dev, verts_z, sizeof(verts_z));
+		{
+			float verts_z[6 * 5];
+			int vi = 0;
+			verts_z[vi++]=-half; verts_z[vi++]=0; verts_z[vi++]=p; verts_z[vi++]=0; verts_z[vi++]=0;
+			verts_z[vi++]= half; verts_z[vi++]=0; verts_z[vi++]=p; verts_z[vi++]=1; verts_z[vi++]=0;
+			verts_z[vi++]= half; verts_z[vi++]=0; verts_z[vi++]=p+hw; verts_z[vi++]=1; verts_z[vi++]=1;
+			verts_z[vi++]=-half; verts_z[vi++]=0; verts_z[vi++]=p; verts_z[vi++]=0; verts_z[vi++]=0;
+			verts_z[vi++]= half; verts_z[vi++]=0; verts_z[vi++]=p+hw; verts_z[vi++]=1; verts_z[vi++]=1;
+			verts_z[vi++]=-half; verts_z[vi++]=0; verts_z[vi++]=p+hw; verts_z[vi++]=0; verts_z[vi++]=1;
+			bz = render_upload_buffer(r->dev, verts_z, sizeof(verts_z));
+		}
 		if (bz) {
-			render_mesh_t mz = { bz, 6 };
-			mat44_t id = { 0 }; id.m15 = 1;
-			draw_mesh_internal(r, &mz, &id, gray);
+			memset(&id, 0, sizeof(id)); id.m15 = 1;
+			mz.buffer = bz; mz.vertex_count = 6;
+			draw_mesh_internal(r, &mz, &id, gray_tex);
 			SDL_ReleaseGPUBuffer(r->dev, bz);
 		}
 	}

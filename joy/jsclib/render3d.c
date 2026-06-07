@@ -1,5 +1,5 @@
 #include "jsclib.h"
-#include "../jrender.h"
+#include "../jr3d.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -125,9 +125,37 @@ static duk_ret_t jr3d_draw_mesh(duk_context* ctx)
 	return 0;
 }
 
+static duk_ret_t jr3d_mesh_ramp(duk_context* ctx)
+{
+	render3d_p r = R3D_PTR(0);
+	float w = NUM(1), l = NUM(2), h = NUM(3);
+	duk_push_pointer(ctx, render3d_mesh_ramp(r, w, l, h));
+	return 1;
+}
+
+static duk_ret_t jr3d_gen_checkerboard(duk_context* ctx)
+{
+	render3d_p r = R3D_PTR(0);
+	int ts = INT(1), tc = INT(2);
+	duk_push_pointer(ctx, render3d_gen_checkerboard(r, ts, tc));
+	return 1;
+}
+
+static duk_ret_t jr3d_draw_mesh_tex(duk_context* ctx)
+{
+	render3d_p r = R3D_PTR(0);
+	render_mesh_p m = MSH_PTR(1);
+	vec3_t pos   = read_vec3(ctx, 2);
+	vec3_t scale = read_vec3(ctx, 3);
+	SDL_GPUTexture* tex = (SDL_GPUTexture*)duk_get_pointer(ctx, 4);
+	render3d_draw_mesh_tex(r, m, pos, scale, tex);
+	return 0;
+}
+
 static duk_ret_t jr3d_draw_grid(duk_context* ctx)
 {
-	render3d_draw_grid(R3D_PTR(0), INT(1), NUM(2));
+	float lw = duk_is_number(ctx, 3) ? NUM(3) : NUM(2) * 0.01f;
+	render3d_draw_grid(R3D_PTR(0), INT(1), NUM(2), lw);
 	return 0;
 }
 
@@ -145,6 +173,9 @@ void jsopen_render3d(duk_context* ctx)
 	duk_push_c_function(ctx, jr3d_mesh_cube, 4);     duk_put_prop_string(ctx, -2, "mesh_cube");
 	duk_push_c_function(ctx, jr3d_mesh_sphere, 4);   duk_put_prop_string(ctx, -2, "mesh_sphere");
 	duk_push_c_function(ctx, jr3d_mesh_plane, 4);    duk_put_prop_string(ctx, -2, "mesh_plane");
+	duk_push_c_function(ctx, jr3d_mesh_ramp, 4);     duk_put_prop_string(ctx, -2, "mesh_ramp");
+	duk_push_c_function(ctx, jr3d_gen_checkerboard, 3); duk_put_prop_string(ctx, -2, "gen_checkerboard");
+	duk_push_c_function(ctx, jr3d_draw_mesh_tex, 5); duk_put_prop_string(ctx, -2, "draw_mesh_tex");
 	duk_push_c_function(ctx, jr3d_mesh_destroy, 2);  duk_put_prop_string(ctx, -2, "mesh_destroy");
 	duk_push_c_function(ctx, jr3d_draw_mesh, 5);     duk_put_prop_string(ctx, -2, "draw_mesh");
 	duk_push_c_function(ctx, jr3d_draw_grid, 3);     duk_put_prop_string(ctx, -2, "draw_grid");

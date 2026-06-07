@@ -5,8 +5,8 @@ Description: SDL_GPU 3D 渲染 — raylib 风格可重入 API + 底层工具
 Author: ydlc
 Version: 2.0
 *************************************************/
-#ifndef JRENDER_H
-#define JRENDER_H
+#ifndef JR3D_H
+#define JR3D_H
 #include "jconfig.h"
 #include "jmath.h"
 #include <SDL3/SDL.h>
@@ -70,15 +70,21 @@ JOY_API void render3d_camera_fps(render3d_p r, vec3_t pos, float yaw, float pitc
 JOY_API render_mesh_p render3d_mesh_cube(render3d_p r, float w, float h, float d);
 JOY_API render_mesh_p render3d_mesh_sphere(render3d_p r, float radius, int slices, int stacks);
 JOY_API render_mesh_p render3d_mesh_plane(render3d_p r, float w, float d, int segs);
+JOY_API render_mesh_p render3d_mesh_ramp(render3d_p r, float w, float l, float h);
 JOY_API render_mesh_p render3d_mesh_custom(render3d_p r, const void* verts, int vertex_count);
 JOY_API void         render3d_mesh_destroy(render3d_p r, render_mesh_p m);
 
+/* ---------- 纹理 ---------- */
+/* 生成棋盘格纹理并缓存（16×16 tile, tile_count x tile_count, RGB 各 tile 交替明暗+蓝边）*/
+JOY_API SDL_GPUTexture* render3d_gen_checkerboard(render3d_p r, int tile_size, int tile_count);
+
 /* ---------- 绘制 ---------- */
 JOY_API void render3d_draw_mesh(render3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, SDL_Color color);
-JOY_API void render3d_draw_grid(render3d_p r, int slices, float spacing);
+JOY_API void render3d_draw_mesh_tex(render3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, SDL_GPUTexture* tex);
+JOY_API void render3d_draw_grid(render3d_p r, int slices, float spacing, float line_width);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // !JRENDER_H
+#endif // !JR3D_H
