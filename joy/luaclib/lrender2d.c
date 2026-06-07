@@ -70,7 +70,7 @@ static int lr_begin(lua_State* L) {
     return 0;
 }
 
-static int lr_end_frame(lua_State* L) {
+static int lr_end(lua_State* L) {
     SDL_RenderPresent(check_ren(L, 1));
     return 0;
 }
@@ -502,9 +502,7 @@ int luaopen_render2d(lua_State* L) {
         {"select",    l_select},
         {"destroy",   lr_destroy},
         {"begin",     lr_begin},
-        {"end_frame", lr_end_frame},
-        {"clear",     lr_clear},
-        {"present",   lr_present},
+        {"end", lr_end},
         {"get_size",  lr_get_size},
         {"set_vsync", lr_set_vsync},
         {"set_scale", lr_set_scale},
