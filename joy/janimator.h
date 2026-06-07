@@ -76,10 +76,13 @@ JOY_API int janimator_add_any_transition(janimator_p anim, const char* to);
 /* Add condition to a transition by index */
 JOY_API void janimator_transition_add_cond(janimator_p anim, int trans_idx,
     const char* param_name, int mode, float threshold);
+/* Set exit time: minimum seconds the source state must play before transition (0 = immediate) */
+JOY_API void janimator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds);
 
 /* ========== Update / Draw ========== */
 JOY_API void janimator_update(janimator_p anim, float dt);
 JOY_API void janimator_draw(janimator_p anim, float x, float y);
+JOY_API void janimator_set_flip_h(janimator_p anim, bool flip);
 JOY_API const char* janimator_current_state(janimator_p anim);
 
 /* ========== Callbacks ========== */

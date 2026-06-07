@@ -208,6 +208,20 @@ static int l_janimator_transition_add_cond(lua_State* L)
     return 0;
 }
 
+static int l_janimator_set_exit_time(lua_State* L)
+{
+    janimator_p anim = (janimator_p)lua_touserdata(L, 1);
+    if (anim) janimator_transition_set_exit_time(anim, (int)luaL_checkinteger(L, 2), (float)luaL_checknumber(L, 3));
+    return 0;
+}
+
+static int l_janimator_set_flip_h(lua_State* L)
+{
+    janimator_p anim = (janimator_p)lua_touserdata(L, 1);
+    if (anim) janimator_set_flip_h(anim, lua_toboolean(L, 2));
+    return 0;
+}
+
 static int l_janimator_update(lua_State* L)
 {
     janimator_p anim = (janimator_p)lua_touserdata(L, 1);
@@ -253,8 +267,10 @@ int luaopen_janimator(lua_State* L)
         {"add_transition", l_janimator_add_transition},
         {"add_any_transition", l_janimator_add_any_transition},
         {"transition_add_cond", l_janimator_transition_add_cond},
+        {"transition_set_exit_time", l_janimator_set_exit_time},
         {"update", l_janimator_update},
         {"draw", l_janimator_draw},
+        {"set_flip_h", l_janimator_set_flip_h},
         {"current_state", l_janimator_current_state},
         {NULL, NULL}
     };

@@ -154,7 +154,14 @@ static duk_ret_t j_janim_add_any_transition(duk_context* ctx)
 static duk_ret_t j_janim_transition_add_cond(duk_context* ctx)
 {
     janimator_p anim = (janimator_p)PTR(0);
-    if (anim) janimator_transition_add_cond(anim, INT(1), STR(2), INT(3), NUM(4));
+    if (anim)     janimator_transition_add_cond(anim, INT(1), STR(2), INT(3), NUM(4));
+    return 0;
+}
+
+static duk_ret_t j_janim_transition_set_exit_time(duk_context* ctx)
+{
+    janimator_p anim = (janimator_p)PTR(0);
+    if (anim) janimator_transition_set_exit_time(anim, INT(1), NUM(2));
     return 0;
 }
 
@@ -162,6 +169,13 @@ static duk_ret_t j_janim_update(duk_context* ctx)
 {
     janimator_p anim = (janimator_p)PTR(0);
     if (anim) janimator_update(anim, NUM(1));
+    return 0;
+}
+
+static duk_ret_t j_janim_set_flip_h(duk_context* ctx)
+{
+    janimator_p anim = (janimator_p)PTR(0);
+    if (anim) janimator_set_flip_h(anim, BOOL(1));
     return 0;
 }
 
@@ -202,8 +216,10 @@ void jsopen_janimator(duk_context* ctx)
     duk_push_c_function(ctx, j_janim_add_transition, 3); duk_put_prop_string(ctx, -2, "add_transition");
     duk_push_c_function(ctx, j_janim_add_any_transition, 2); duk_put_prop_string(ctx, -2, "add_any_transition");
     duk_push_c_function(ctx, j_janim_transition_add_cond, 5); duk_put_prop_string(ctx, -2, "transition_add_cond");
+    duk_push_c_function(ctx, j_janim_transition_set_exit_time, 3); duk_put_prop_string(ctx, -2, "transition_set_exit_time");
     duk_push_c_function(ctx, j_janim_update, 2); duk_put_prop_string(ctx, -2, "update");
     duk_push_c_function(ctx, j_janim_draw, 3); duk_put_prop_string(ctx, -2, "draw");
+    duk_push_c_function(ctx, j_janim_set_flip_h, 2); duk_put_prop_string(ctx, -2, "set_flip_h");
     duk_push_c_function(ctx, j_janim_current_state, 1); duk_put_prop_string(ctx, -2, "current_state");
     duk_put_global_string(ctx, "animator");
 }

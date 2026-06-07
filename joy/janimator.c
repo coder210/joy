@@ -19,6 +19,7 @@ typedef struct {
     int from_state;   /* -1 for Any State */
     int to_state;
     kvec_t(janim_condition_t) conditions;
+    float exit_time;  /* min seconds source state must play before allowing transition */
 } janim_transition_t;
 
 typedef struct {
@@ -43,7 +44,8 @@ typedef struct {
 
     /* runtime */
     int frame;
-    float elapsed;
+    float elapsed;      /* time within current clip */
+    float state_time;   /* total time since entering this state */
     bool just_entered;
 } janim_state_t;
 
@@ -70,6 +72,7 @@ struct janimator {
     janim_state_cb on_enter;
     janim_state_cb on_exit;
     void* cb_userdata;
+    bool flip_h;  /* horizontal flip */
 };
 
 /* ========== Helpers ========== */
@@ -124,6 +127,7 @@ static void enter_state(janimator_p anim, int idx)
     anim->current_state = idx;
     kv_A(anim->states, idx).frame = 0;
     kv_A(anim->states, idx).elapsed = 0.0f;
+    kv_A(anim->states, idx).state_time = 0.0f;
     kv_A(anim->states, idx).just_entered = true;
 
     if (anim->on_enter) {
@@ -146,6 +150,7 @@ janimator_p janimator_create(SDL_Renderer* renderer)
     anim->on_enter = NULL;
     anim->on_exit = NULL;
     anim->cb_userdata = NULL;
+    anim->flip_h = false;
     return anim;
 }
 
@@ -158,10 +163,12 @@ void janimator_destroy(janimator_p anim)
     for (i = 0; i < kv_size(anim->states); i++) {
         janim_state_t* s = &kv_A(anim->states, i);
         for (j = 0; j < kv_size(s->clips); j++)
-            image_destroy(kv_A(s->clips, j).image);
+            if (kv_A(s->clips, j).image)
+                image_destroy(kv_A(s->clips, j).image);
         kv_destroy(s->clips);
         for (j = 0; j < kv_size(s->motions); j++)
-            image_destroy(kv_A(s->motions, j).image);
+            if (kv_A(s->motions, j).image)
+                image_destroy(kv_A(s->motions, j).image);
         kv_destroy(s->motions);
         kv_destroy(s->thresholds);
     }
@@ -238,6 +245,7 @@ void janimator_add_state(janimator_p anim, const char* name)
     kv_init(s.thresholds);
     s.frame = 0;
     s.elapsed = 0.0f;
+    s.state_time = 0.0f;
     s.just_entered = false;
     kv_push(janim_state_t, anim->states, s);
 
@@ -337,6 +345,7 @@ int janimator_add_transition(janimator_p anim, const char* from, const char* to)
     janim_transition_t t;
     t.from_state = from_idx;
     t.to_state = to_idx;
+    t.exit_time = 0.0f;
     kv_init(t.conditions);
     kv_push(janim_transition_t, anim->transitions, t);
     return (int)(kv_size(anim->transitions) - 1);
@@ -349,6 +358,7 @@ int janimator_add_any_transition(janimator_p anim, const char* to)
     janim_transition_t t;
     t.from_state = -1;  /* Any State */
     t.to_state = to_idx;
+    t.exit_time = 0.0f;
     kv_init(t.conditions);
     kv_push(janim_transition_t, anim->transitions, t);
     return (int)(kv_size(anim->transitions) - 1);
@@ -364,6 +374,13 @@ void janimator_transition_add_cond(janimator_p anim, int trans_idx,
     c.mode = (janim_cond_mode_t)mode;
     c.threshold = threshold;
     kv_push(janim_condition_t, kv_A(anim->transitions, trans_idx).conditions, c);
+}
+
+void janimator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds)
+{
+    if (trans_idx < 0 || (unsigned)trans_idx >= kv_size(anim->transitions))
+        return;
+    kv_A(anim->transitions, trans_idx).exit_time = seconds;
 }
 
 /* ========== Transition checking ========== */
@@ -400,11 +417,8 @@ static bool check_condition(janimator_p anim, const janim_condition_t* c)
     case JANIM_COND_IF_FALSE:
         return (p->type == JANIM_PARAM_BOOL) && (p->v.b == 0);
     case JANIM_COND_TRIGGER: {
-        if (p->type == JANIM_PARAM_TRIGGER && !p->trigger_consumed) {
-            p->trigger_consumed = true;
-            return true;
-        }
-        return false;
+        /* don't consume here; check_transition will consume after all conditions pass */
+        return (p->type == JANIM_PARAM_TRIGGER && !p->trigger_consumed);
     }
     default:
         return false;
@@ -419,6 +433,15 @@ static bool check_transition(janimator_p anim, const janim_transition_t* t)
     for (i = 0; i < kv_size(t->conditions); i++) {
         if (!check_condition(anim, &kv_A(t->conditions, i)))
             return false;
+    }
+    /* all conditions passed → now consume triggers */
+    for (i = 0; i < kv_size(t->conditions); i++) {
+        const janim_condition_t* c = &kv_A(t->conditions, i);
+        if (c->mode == JANIM_COND_TRIGGER) {
+            int pidx = find_param(anim, c->param_name);
+            if (pidx >= 0)
+                kv_A(anim->params, pidx).trigger_consumed = true;
+        }
     }
     return true;
 }
@@ -447,6 +470,7 @@ void janimator_update(janimator_p anim, float dt)
     }
 
     cs = &kv_A(anim->states, cur);
+    cs->state_time += dt;
     cs->just_entered = false;
 
     /* Check Any State transitions first */
@@ -461,9 +485,11 @@ void janimator_update(janimator_p anim, float dt)
         }
     }
 
+    /* Normal transitions: only if exit_time has elapsed */
     for (i = 0; i < kv_size(anim->transitions); i++) {
         janim_transition_t* t = &kv_A(anim->transitions, i);
         if (t->from_state == cur && t->to_state != cur) {
+            if (cs->state_time < t->exit_time) continue;  /* exit time not met */
             if (check_transition(anim, t)) {
                 enter_state(anim, t->to_state);
                 cs = &kv_A(anim->states, anim->current_state);
@@ -531,9 +557,21 @@ void janimator_draw(janimator_p anim, float x, float y)
         SDL_SetRenderDrawColor(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
         SDL_RenderFillRect(anim->renderer, &r);
     } else if (m->image) {
+        float sx = anim->flip_h ? -1.0f : 1.0f;
         image_draw_ex(m->image, &m->src_rect, (SDL_FPoint){x, y}, 0.0f,
-            (SDL_FPoint){1.0f, 1.0f}, (SDL_FPoint){0.0f, 0.0f});
+            (SDL_FPoint){sx, 1.0f}, (SDL_FPoint){0.0f, 0.0f});
+    } else {
+        SDL_FRect r = { x, y, m->src_rect.w, m->src_rect.h };
+        SDL_SetRenderDrawColor(anim->renderer, 80, 80, 80, 255);
+        SDL_RenderFillRect(anim->renderer, &r);
+        SDL_SetRenderDrawColor(anim->renderer, 120, 120, 120, 255);
+        SDL_RenderRect(anim->renderer, &r);
     }
+}
+
+void janimator_set_flip_h(janimator_p anim, bool flip)
+{
+    if (anim) anim->flip_h = flip;
 }
 
 /* ========== Query ========== */
