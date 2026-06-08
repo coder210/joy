@@ -385,7 +385,10 @@ void scene_manager_replace(scene_manager_p mgr, scene_p scene)
 {
     if (!mgr || !scene) return;
     if (mgr->scene_count > 0) {
-        scene_destroy(mgr->scenes[mgr->scene_count - 1]);
+        scene_p old = mgr->scenes[mgr->scene_count - 1];
+        if (old != scene) {
+            scene_destroy(old);
+        }
         mgr->scenes[mgr->scene_count - 1] = scene;
     } else {
         if (mgr->scene_capacity < 1) {
