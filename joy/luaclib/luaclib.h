@@ -47,5 +47,6 @@ int luaopen_console(lua_State* L);
 int luaopen_render3d(lua_State* L);
 int luaopen_gjk3d(lua_State* L);
 int luaopen_janimator(lua_State* L);
+int luaopen_behavior(lua_State* L);
 
 #endif // !LUACLIB_H
