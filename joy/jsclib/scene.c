@@ -98,6 +98,28 @@ static duk_ret_t jnode_get_count(duk_context* ctx) {
     duk_push_number(ctx, (duk_double_t)scene_node_get_child_count((scene_node_p)PTR(0)));
     return 1;
 }
+static duk_ret_t jnode_get_child(duk_context* ctx) {
+    scene_node_p c = scene_node_get_first_child((scene_node_p)PTR(0));
+    if (c) duk_push_pointer(ctx, c); else duk_push_null(ctx);
+    return 1;
+}
+static duk_ret_t jnode_get_sibling(duk_context* ctx) {
+    scene_node_p s = scene_node_get_next_sibling((scene_node_p)PTR(0));
+    if (s) duk_push_pointer(ctx, s); else duk_push_null(ctx);
+    return 1;
+}
+static duk_ret_t jnode_set_name(duk_context* ctx) {
+    scene_node_set_name((scene_node_p)PTR(0), STR(1)); return 0;
+}
+static duk_ret_t jnode_get_name(duk_context* ctx) {
+    duk_push_string(ctx, scene_node_get_name((scene_node_p)PTR(0))); return 1;
+}
+static duk_ret_t jnode_set_tag(duk_context* ctx) {
+    scene_node_set_tag((scene_node_p)PTR(0), STR(1)); return 0;
+}
+static duk_ret_t jnode_get_tag(duk_context* ctx) {
+    duk_push_string(ctx, scene_node_get_tag((scene_node_p)PTR(0))); return 1;
+}
 
 /* ===== Manager ===== */
 static duk_ret_t jmgr_create(duk_context* ctx) {
@@ -130,6 +152,61 @@ static duk_ret_t jmgr_current(duk_context* ctx) {
     return 1;
 }
 
+/* ===== Scene-level search ===== */
+static duk_ret_t jscene_root_count(duk_context* ctx) {
+    duk_push_number(ctx, (duk_double_t)scene_get_root_count((scene_p)PTR(0)));
+    return 1;
+}
+static duk_ret_t jscene_root_at(duk_context* ctx) {
+    scene_node_p n = scene_get_root_at((scene_p)PTR(0), INT(1));
+    if (n) duk_push_pointer(ctx, n); else duk_push_null(ctx);
+    return 1;
+}
+static duk_ret_t jscene_find_by_name(duk_context* ctx) {
+    scene_node_p n = scene_find_node_by_name_deep((scene_p)PTR(0), STR(1));
+    if (n) duk_push_pointer(ctx, n); else duk_push_null(ctx);
+    return 1;
+}
+static duk_ret_t jscene_find_by_tag(duk_context* ctx) {
+    scene_node_p buf[128];
+    int n = scene_find_nodes_by_tag_deep((scene_p)PTR(0), STR(1), buf, 128);
+    duk_idx_t arr = duk_push_array(ctx);
+    for (int i = 0; i < n; i++) {
+        duk_push_pointer(ctx, buf[i]);
+        duk_put_prop_index(ctx, arr, (duk_uarridx_t)i);
+    }
+    return 1;
+}
+static duk_ret_t jmgr_find_node(duk_context* ctx) {
+    scene_p s = scene_manager_get_current((scene_manager_p)PTR(0));
+    if (!s) { duk_push_null(ctx); return 1; }
+    scene_node_p n = scene_find_node_by_name_deep(s, STR(1));
+    if (n) {
+        duk_push_object(ctx);
+        duk_push_string(ctx, scene_node_get_name(n)); duk_put_prop_string(ctx, -2, "name");
+        duk_push_string(ctx, scene_node_get_tag(n));  duk_put_prop_string(ctx, -2, "tag");
+        float x, y; scene_node_get_position(n, &x, &y);
+        duk_push_number(ctx, (duk_double_t)x); duk_put_prop_string(ctx, -2, "x");
+        duk_push_number(ctx, (duk_double_t)y); duk_put_prop_string(ctx, -2, "y");
+        duk_push_number(ctx, (duk_double_t)scene_node_get_child_count(n)); duk_put_prop_string(ctx, -2, "children");
+    } else {
+        duk_push_null(ctx);
+    }
+    return 1;
+}
+static duk_ret_t jmgr_find_nodes(duk_context* ctx) {
+    scene_p s = scene_manager_get_current((scene_manager_p)PTR(0));
+    if (!s) { duk_push_array(ctx); return 1; }
+    scene_node_p buf[128];
+    int n = scene_find_nodes_by_tag_deep(s, STR(1), buf, 128);
+    duk_idx_t arr = duk_push_array(ctx);
+    for (int i = 0; i < n; i++) {
+        duk_push_pointer(ctx, buf[i]);
+        duk_put_prop_index(ctx, arr, (duk_uarridx_t)i);
+    }
+    return 1;
+}
+
 void jsopen_scene(duk_context* ctx) {
     duk_push_object(ctx);
     #define REG(n,a) duk_push_c_function(ctx, j##n, a); duk_put_prop_string(ctx, -2, #n)
@@ -137,17 +214,23 @@ void jsopen_scene(duk_context* ctx) {
     REG(scene_create, 1);      REG(scene_destroy, 1);
     REG(scene_add_root, 2);    REG(scene_remove_root, 2);
     REG(scene_update, 2);      REG(scene_get_name, 1);
+    REG(scene_root_count, 1);  REG(scene_root_at, 2);
+    REG(scene_find_by_name, 2); REG(scene_find_by_tag, 2);
     /* Node */
     REG(node_create, 0);       REG(node_destroy, 1);
     REG(node_add_child, 2);    REG(node_set_position, 3);
     REG(node_get_position_v2, 1); REG(node_get_world, 1);
     REG(node_set_rotation, 2); REG(node_set_scale, 3);
     REG(node_set_zorder, 2);   REG(node_get_count, 1);
+    REG(node_get_child, 1);    REG(node_get_sibling, 1);
+    REG(node_set_name, 2);     REG(node_get_name, 1);
+    REG(node_set_tag, 2);      REG(node_get_tag, 1);
     /* Manager */
     REG(mgr_create, 0);        REG(mgr_destroy, 1);
     REG(mgr_push, 2);          REG(mgr_pop, 1);
     REG(mgr_replace, 2);       REG(mgr_update, 2);
     REG(mgr_current, 1);
+    REG(mgr_find_node, 2);     REG(mgr_find_nodes, 2);
     #undef REG
     duk_put_global_string(ctx, "scene");
 }

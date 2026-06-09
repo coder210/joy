@@ -1,29 +1,46 @@
 #include "luaclib.h"
 #include "../jui.h"
+#include "../jutils.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
+
+/* ===== UTF-8 字符串 → 码点数组（使用 jutils.h 的 utf8_decode_all） ===== */
+static int* str_to_codepoints(lua_State* L, int idx, int* out_len) {
+    size_t len;
+    const char* s = lua_tolstring(L, idx, &len);
+    size_t count = utf8_decode_all(s, len, NULL, 0);
+    if (count == 0) { *out_len = 0; return NULL; }
+    int* cps = (int*)SDL_malloc(sizeof(int) * count);
+    utf8_decode_all(s, len, (int32_t*)cps, count);
+    *out_len = (int)count;
+    return cps;
+}
 
 
 static int l_label_create(lua_State* L)
 {
-	int* codepoints;
-	int codepoint, num_codepoints;
 	font_p fontinfo;
 	SDL_Renderer* renderer;
 	label_p label;
 	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
 	fontinfo = *(font_p*)lua_touserdata(L, 2);
-	num_codepoints = (int)luaL_len(L, 3);
-	codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
-	for (int i = 1; i <= num_codepoints; i++) {
-		lua_geti(L, 3, i);
-		codepoint = luaL_checkinteger(L, -1);
-		codepoints[i - 1] = codepoint;
-		lua_pop(L, 1);
+	if (lua_type(L, 3) == LUA_TSTRING) {
+		int num_codepoints;
+		int* codepoints = str_to_codepoints(L, 3, &num_codepoints);
+		label = label_create(renderer, fontinfo, codepoints, num_codepoints);
+		SDL_free(codepoints);
+	} else {
+		int num_codepoints = (int)luaL_len(L, 3);
+		int* codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
+		for (int i = 1; i <= num_codepoints; i++) {
+			lua_geti(L, 3, i);
+			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
+			lua_pop(L, 1);
+		}
+		label = label_create(renderer, fontinfo, codepoints, num_codepoints);
+		SDL_free(codepoints);
 	}
-	label = label_create(renderer, fontinfo, codepoints, num_codepoints);
 	lua_pushlightuserdata(L, label);
-	SDL_free(codepoints);
 	return 1;
 }
 
@@ -38,31 +55,29 @@ static int l_label_destroy(lua_State* L)
 static int l_label_set_text(lua_State* L)
 {
 	label_p label;
-	button_p btn;
-	int i, pixels, codepoint;
-	int* codepoints;
-	int codepoints_len;
 	font_p fontinfo;
 	SDL_Color color;
-
-	luaL_checktype(L, 3, LUA_TTABLE);
+	color.r = 255; color.g = 255; color.b = 255; color.a = 255;
 
 	label = (label_p)lua_touserdata(L, 1);
 	fontinfo = *(font_p*)lua_touserdata(L, 2);
-	codepoints_len = (int)luaL_len(L, 3);
-	codepoints = (int*)SDL_malloc(sizeof(int) * codepoints_len);
-	for (i = 1; i <= codepoints_len; i++) {
-		lua_geti(L, 3, i);
-		codepoint = luaL_checkinteger(L, -1);
-		codepoints[i - 1] = codepoint;
-		lua_pop(L, 1);
+
+	if (lua_type(L, 3) == LUA_TSTRING) {
+		int len;
+		int* cps = str_to_codepoints(L, 3, &len);
+		label_set_text(label, fontinfo, cps, len, color);
+		SDL_free(cps);
+	} else {
+		int codepoints_len = (int)luaL_len(L, 3);
+		int* codepoints = (int*)SDL_malloc(sizeof(int) * codepoints_len);
+		for (int i = 1; i <= codepoints_len; i++) {
+			lua_geti(L, 3, i);
+			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
+			lua_pop(L, 1);
+		}
+		label_set_text(label, fontinfo, codepoints, codepoints_len, color);
+		SDL_free(codepoints);
 	}
-	color.r = 255;
-	color.g = 255;
-	color.b = 255;
-	color.a = 255;
-	label_set_text(label, fontinfo, codepoints, codepoints_len, color);
-	SDL_free(codepoints);
 	return 0;
 }
 
@@ -109,30 +124,51 @@ static int l_button_destroy(lua_State* L)
 static int l_button_set_text(lua_State* L)
 {
 	button_p btn;
-	int i, pixels, codepoint;
-	int* codepoints;
-	int num_codepoints;
 	font_p fontinfo;
 	SDL_Color color;
 
-	luaL_checktype(L, 3, LUA_TTABLE);
-
 	btn = (button_p)lua_touserdata(L, 1);
 	fontinfo = *(font_p*)lua_touserdata(L, 2);
-	num_codepoints = (int)luaL_len(L, 3);
-	codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
-	for (i = 1; i <= num_codepoints; i++) {
-		lua_geti(L, 3, i);
-		codepoint = luaL_checkinteger(L, -1);
-		codepoints[i - 1] = codepoint;
-		lua_pop(L, 1);
+
+	if (lua_type(L, 3) == LUA_TSTRING) {
+		/* 字符串版 → button_set_textx */
+		size_t slen;
+		const char* s = lua_tolstring(L, 3, &slen);
+		if (lua_type(L, 4) == LUA_TTABLE) {
+			color.r = (int)luaL_checkinteger(L, lua_getfield(L, 4, "r") ? 4 : 0 ? 0 : 0); /* 简化：若颜色是 table */
+			/* 更好的方式： */
+		}
+		/* 兼容：arg4=table(颜色对象) 或 arg4=r,arg5=g,arg6=b,arg7=a */
+		if (lua_type(L, 4) == LUA_TTABLE) {
+			/* {r,g,b,a} 对象 */
+			lua_getfield(L, 4, "r"); color.r = (int)luaL_optinteger(L, -1, 255); lua_pop(L,1);
+			lua_getfield(L, 4, "g"); color.g = (int)luaL_optinteger(L, -1, 255); lua_pop(L,1);
+			lua_getfield(L, 4, "b"); color.b = (int)luaL_optinteger(L, -1, 255); lua_pop(L,1);
+			lua_getfield(L, 4, "a"); color.a = (int)luaL_optinteger(L, -1, 255); lua_pop(L,1);
+		} else {
+			/* r,g,b,a 四个独立参数 */
+			color.r = (int)luaL_optinteger(L, 4, 255);
+			color.g = (int)luaL_optinteger(L, 5, 255);
+			color.b = (int)luaL_optinteger(L, 6, 255);
+			color.a = (int)luaL_optinteger(L, 7, 255);
+		}
+		button_set_textx(btn, fontinfo, s, (int)slen, color);
+	} else {
+		/* 码点数组版 */
+		int num_codepoints = (int)luaL_len(L, 3);
+		int* codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
+		for (int i = 1; i <= num_codepoints; i++) {
+			lua_geti(L, 3, i);
+			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
+			lua_pop(L, 1);
+		}
+		color.r = luaL_checkinteger(L, 4);
+		color.g = luaL_checkinteger(L, 5);
+		color.b = luaL_checkinteger(L, 6);
+		color.a = luaL_checkinteger(L, 7);
+		button_set_text(btn, fontinfo, codepoints, num_codepoints, color);
+		SDL_free(codepoints);
 	}
-	color.r = luaL_checkinteger(L, 4);
-	color.g = luaL_checkinteger(L, 5);
-	color.b = luaL_checkinteger(L, 6);
-	color.a = luaL_checkinteger(L, 7);
-	button_set_text(btn, fontinfo, codepoints, num_codepoints, color);
-	SDL_free(codepoints);
 	return 0;
 }
 

@@ -186,11 +186,21 @@ static int l_find_nodes_by_tag(lua_State* L) {
 }
 /* manager 级快捷查找：在当前场景中查找 */
 static int l_mgr_find_node(lua_State* L) {
-    init_g(L);
     scene_p s = scene_manager_get_current(*check_m(L,1));
     if (!s) { lua_pushnil(L); return 1; }
     scene_node_p n = scene_find_node_by_name_deep(s, luaL_checkstring(L,2));
-    if (n) PUSH(scene_node_p, NODE_MT, n); else lua_pushnil(L);
+    if (n) {
+        /* 返回节点信息的 table，避免创建独立 userdata */
+        lua_createtable(L, 0, 4);
+        lua_pushstring(L, scene_node_get_name(n));  lua_setfield(L, -2, "name");
+        lua_pushstring(L, scene_node_get_tag(n));   lua_setfield(L, -2, "tag");
+        float x, y; scene_node_get_position(n, &x, &y);
+        lua_pushnumber(L, x); lua_setfield(L, -2, "x");
+        lua_pushnumber(L, y); lua_setfield(L, -2, "y");
+        lua_pushinteger(L, scene_node_get_child_count(n)); lua_setfield(L, -2, "children");
+    } else {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int l_mgr_find_nodes(lua_State* L) {
