@@ -54,6 +54,17 @@ extern "C" {
         JOY_API void scene_node_set_userdata(scene_node_p node, void* userdata);
         JOY_API void* scene_node_get_userdata(scene_node_p node);
 
+        JOY_API void scene_node_set_name(scene_node_p node, const char* name);
+        JOY_API const char* scene_node_get_name(scene_node_p node);
+        JOY_API void scene_node_set_tag(scene_node_p node, const char* tag);
+        JOY_API const char* scene_node_get_tag(scene_node_p node);
+
+        /* 递归查找：按 name 找第一个匹配节点；返回数量或填充数组 */
+        JOY_API scene_node_p scene_find_node_by_name(scene_node_p root, const char* name);
+        JOY_API scene_node_p scene_find_node_by_name_deep(scene_p scene, const char* name);
+        JOY_API int  scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max);
+        JOY_API int  scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max);
+
         JOY_API void scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb);
         JOY_API void scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb);
         JOY_API void scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb);

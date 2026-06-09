@@ -35,6 +35,9 @@ struct scene_node {
     void* userdata;
     int zorder;
     bool is_root;
+
+    char name[JOY_MIN_BUFFER];   /* 节点名称，用于查找 */
+    char tag[JOY_MIN_BUFFER];    /* 节点标签，用于分组查找 */
 };
 
 // ============================================================
@@ -165,6 +168,56 @@ int scene_node_get_zorder(scene_node_p node) { return node ? node->zorder : 0; }
 void scene_node_set_userdata(scene_node_p node, void* ud) { if (node) node->userdata = ud; }
 void* scene_node_get_userdata(scene_node_p node) { return node ? node->userdata : NULL; }
 
+/* ===== name / tag ===== */
+void scene_node_set_name(scene_node_p node, const char* name) {
+    if (node && name) SDL_strlcpy(node->name, name, sizeof(node->name));
+}
+const char* scene_node_get_name(scene_node_p node) { return node ? node->name : ""; }
+
+void scene_node_set_tag(scene_node_p node, const char* tag) {
+    if (node && tag) SDL_strlcpy(node->tag, tag, sizeof(node->tag));
+}
+const char* scene_node_get_tag(scene_node_p node) { return node ? node->tag : ""; }
+
+
+/* ===== 递归查找 ===== */
+
+/* 从 root 开始向下 DFS，找 name 匹配的第一个节点 */
+static scene_node_p find_name_r(scene_node_p root, const char* name) {
+    if (!root || !name) return NULL;
+    if (SDL_strcmp(root->name, name) == 0) return root;
+    scene_node_p child = root->first_child;
+    while (child) {
+        scene_node_p found = find_name_r(child, name);
+        if (found) return found;
+        child = child->next_sibling;
+    }
+    return NULL;
+}
+
+scene_node_p scene_find_node_by_name(scene_node_p root, const char* name) {
+    return find_name_r(root, name);
+}
+
+/* 从 root 开始 DFS，收集所有 tag 匹配的节点到 out 数组 */
+static int find_tag_r(scene_node_p root, const char* tag, scene_node_p* out, int max, int count) {
+    if (!root || !tag) return count;
+    if (SDL_strcmp(root->tag, tag) == 0 && count < max) {
+        out[count++] = root;
+    }
+    scene_node_p child = root->first_child;
+    while (child) {
+        count = find_tag_r(child, tag, out, max, count);
+        child = child->next_sibling;
+    }
+    return count;
+}
+
+int scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max) {
+    if (!root || !tag) return 0;
+    return find_tag_r(root, tag, out, max, 0);
+}
+
 void scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb) { if (node) node->on_update = cb; }
 void scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb) { if (node) node->on_render = cb; }
 void scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb) { if (node) node->on_destroy = cb; }
@@ -293,6 +346,25 @@ scene_node_p scene_get_root_at(scene_p scene, int index)
 {
     if (!scene || index < 0 || index >= scene->root_count) return NULL;
     return scene->root_nodes[index];
+}
+
+/* ===== 场景级递归查找（依赖 struct scene 定义） ===== */
+scene_node_p scene_find_node_by_name_deep(scene_p scene, const char* name) {
+    if (!scene || !name) return NULL;
+    for (int i = 0; i < scene->root_count; i++) {
+        scene_node_p found = find_name_r(scene->root_nodes[i], name);
+        if (found) return found;
+    }
+    return NULL;
+}
+
+int scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max) {
+    if (!scene || !tag || !out || max <= 0) return 0;
+    int count = 0;
+    for (int i = 0; i < scene->root_count && count < max; i++) {
+        count = find_tag_r(scene->root_nodes[i], tag, out, max, count);
+    }
+    return count;
 }
 
 void scene_update(scene_p scene, float delta_time)

@@ -150,6 +150,63 @@ static int l_node_count(lua_State* L) { lua_pushinteger(L, scene_node_get_child_
 static int l_node_set_render(lua_State* L) { node_cbs_t* c = get_node_cbs(L,1); if(c&&lua_isfunction(L,2)) set_ref(L,&c->render_ref,2); return 0; }
 static int l_node_set_update(lua_State* L) { node_cbs_t* c = get_node_cbs(L,1); if(c&&lua_isfunction(L,2)) set_ref(L,&c->update_ref,2); return 0; }
 
+/* ===== Node name / tag ===== */
+static int l_node_set_name(lua_State* L) {
+    scene_node_set_name(*check_n(L,1), luaL_checkstring(L,2)); return 0;
+}
+static int l_node_get_name(lua_State* L) {
+    lua_pushstring(L, scene_node_get_name(*check_n(L,1))); return 1;
+}
+static int l_node_set_tag(lua_State* L) {
+    scene_node_set_tag(*check_n(L,1), luaL_checkstring(L,2)); return 0;
+}
+static int l_node_get_tag(lua_State* L) {
+    lua_pushstring(L, scene_node_get_tag(*check_n(L,1))); return 1;
+}
+
+/* ===== 递归查找 ===== */
+static int l_find_node_by_name(lua_State* L) {
+    init_g(L);
+    scene_node_p n = scene_find_node_by_name_deep(*check_s(L,1), luaL_checkstring(L,2));
+    if (n) PUSH(scene_node_p, NODE_MT, n); else lua_pushnil(L);
+    return 1;
+}
+static int l_find_nodes_by_tag(lua_State* L) {
+    scene_p s = *check_s(L,1);
+    const char* tag = luaL_checkstring(L,2);
+    /* 先数数量 */
+    scene_node_p buf[128];
+    int n = scene_find_nodes_by_tag_deep(s, tag, buf, 128);
+    lua_createtable(L, n, 0);
+    for (int i = 0; i < n; i++) {
+        PUSH(scene_node_p, NODE_MT, buf[i]);
+        lua_seti(L, -2, i + 1);
+    }
+    return 1;
+}
+/* manager 级快捷查找：在当前场景中查找 */
+static int l_mgr_find_node(lua_State* L) {
+    init_g(L);
+    scene_p s = scene_manager_get_current(*check_m(L,1));
+    if (!s) { lua_pushnil(L); return 1; }
+    scene_node_p n = scene_find_node_by_name_deep(s, luaL_checkstring(L,2));
+    if (n) PUSH(scene_node_p, NODE_MT, n); else lua_pushnil(L);
+    return 1;
+}
+static int l_mgr_find_nodes(lua_State* L) {
+    scene_p s = scene_manager_get_current(*check_m(L,1));
+    if (!s) { lua_createtable(L,0,0); return 1; }
+    const char* tag = luaL_checkstring(L,2);
+    scene_node_p buf[128];
+    int n = scene_find_nodes_by_tag_deep(s, tag, buf, 128);
+    lua_createtable(L, n, 0);
+    for (int i = 0; i < n; i++) {
+        PUSH(scene_node_p, NODE_MT, buf[i]);
+        lua_seti(L, -2, i + 1);
+    }
+    return 1;
+}
+
 /* ===== Manager API ===== */
 static int l_mgr_create(lua_State* L) { PUSH(scene_manager_p, MANAGER_MT, scene_manager_create()); return 1; }
 static int l_mgr_destroy(lua_State* L) { scene_manager_destroy(*check_m(L,1)); return 0; }
@@ -213,6 +270,12 @@ int luaopen_scene(lua_State* L) {
         {"node_get_count",      l_node_count},
         {"node_set_render",     l_node_set_render},
         {"node_set_update",     l_node_set_update},
+        {"node_set_name",       l_node_set_name},
+        {"node_get_name",       l_node_get_name},
+        {"node_set_tag",        l_node_set_tag},
+        {"node_get_tag",        l_node_get_tag},
+        {"find_node_by_name",   l_find_node_by_name},
+        {"find_nodes_by_tag",   l_find_nodes_by_tag},
         {"mgr_create",   l_mgr_create},
         {"mgr_destroy",  l_mgr_destroy},
         {"mgr_push",     l_mgr_push},
@@ -221,6 +284,8 @@ int luaopen_scene(lua_State* L) {
         {"mgr_update",   l_mgr_update},
         {"mgr_render",   l_mgr_render},
         {"mgr_current",  l_mgr_current},
+        {"mgr_find_node",  l_mgr_find_node},
+        {"mgr_find_nodes", l_mgr_find_nodes},
         {NULL, NULL}
     };
     luaL_newlib(L, lib);

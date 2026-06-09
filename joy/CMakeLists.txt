@@ -122,11 +122,13 @@ endif()
 if (ENABLED_CSHARP_SCRIPT)
 	target_link_libraries(${LIB_NAME} PUBLIC
 		SDL3::SDL3
+        msgpack-c-static
         coreclr.import
 	)
 else() 
 	target_link_libraries(${LIB_NAME} PUBLIC
 		SDL3::SDL3
+        msgpack-c-static
 	)
 endif()
 

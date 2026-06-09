@@ -32,5 +32,6 @@ void jsopen_gjk3d(duk_context* J);
 void jsopen_janimator(duk_context* J);
 void jsopen_behavior(duk_context* J);
 void jsopen_scene(duk_context* J);
+void jsopen_msgpack(duk_context* J);
 
 #endif // !JSCLIB_H
