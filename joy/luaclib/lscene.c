@@ -113,6 +113,12 @@ static int l_scene_add_root(lua_State* L) { scene_add_root_node(*check_s(L,1), *
 static int l_scene_remove_root(lua_State* L) { scene_remove_root_node(*check_s(L,1), *check_n(L,2)); return 0; }
 static int l_scene_update(lua_State* L) { scene_update(*check_s(L,1), (float)luaL_optnumber(L,2,0)); return 0; }
 static int l_scene_get_name(lua_State* L) { lua_pushstring(L, scene_get_name(*check_s(L,1))); return 1; }
+static int l_scene_root_count(lua_State* L) { lua_pushinteger(L, scene_get_root_count(*check_s(L,1))); return 1; }
+static int l_scene_root_at(lua_State* L) {
+    scene_node_p n = scene_get_root_at(*check_s(L,1), (int)luaL_checkinteger(L,2));
+    if (n) PUSH(scene_node_p, NODE_MT, n); else lua_pushnil(L);
+    return 1;
+}
 static int l_scene_get_root_count(lua_State* L) { lua_pushinteger(L, scene_get_root_count(*check_s(L,1))); return 1; }
 static int l_scene_get_root_at(lua_State* L) { scene_node_p n = scene_get_root_at(*check_s(L,1), (int)luaL_checkinteger(L,2)); if(n) PUSH(scene_node_p,NODE_MT,n); else lua_pushnil(L); return 1; }
 
@@ -166,12 +172,12 @@ int luaopen_scene(lua_State* L) {
     /* 场景元表 */
     luaL_newmetatable(L, SCENE_MT);
     lua_pushvalue(L, -1); lua_setfield(L, -2, "__index");
-    lua_pushcfunction(L, l_scene_gc); lua_setfield(L, -2, "__gc");
+    /* 不注册 __gc — manager_replace/pop 负责销毁，避免双重释放 */
     lua_pop(L, 1);
 
     luaL_newmetatable(L, NODE_MT);
     lua_pushvalue(L, -1); lua_setfield(L, -2, "__index");
-    lua_pushcfunction(L, l_node_gc); lua_setfield(L, -2, "__gc");
+    /* 不注册 __gc — scene_destroy 会递归清理整棵树，避免双重释放 */
     lua_pop(L, 1);
 
     luaL_newmetatable(L, MANAGER_MT);
@@ -187,6 +193,8 @@ int luaopen_scene(lua_State* L) {
         {"remove_root",  l_scene_remove_root},
         {"update",       l_scene_update},
         {"get_name",     l_scene_get_name},
+        {"root_count",   l_scene_root_count},
+        {"root_at",      l_scene_root_at},
         {"get_root_count", l_scene_get_root_count},
         {"get_root_at",    l_scene_get_root_at},
         {"node_create",       l_node_create},
