@@ -172,6 +172,7 @@ luax_p luax_create(void)
         JOY_MOD("render3d", luaopen_render3d);
         JOY_MOD("gjk3d", luaopen_gjk3d);
         JOY_MOD("animator", luaopen_janimator);
+        JOY_MOD("tilemap", luaopen_tilemap);
         JOY_MOD("behavior", luaopen_behavior);
         JOY_MOD("scene", luaopen_scene);
         JOY_MOD("msgpack", luaopen_msgpack);

@@ -34,10 +34,13 @@ static const char* default_remap(const char* path)
 {
     if (!path || !*path) return path;
 
+    /* if base path is set, caller handles directory layout */
+    if (gAssetBase) return path;
+
     const char* p = path;
     while (*p == '.' || *p == '/' || *p == '\\') p++;
 
-    // 分配足够大的缓冲区
+    /* editor默认映射到 joy2d_editor_ 目录 */
     static char buf[1024];
     if (strncmp(p, "terrain/", 8) == 0)
         snprintf(buf, sizeof(buf), "joy2d_editor_terrain/%s", p + 8);
@@ -200,6 +203,7 @@ static void render_object_layer_internal(const jtilemap_object_layer_p layer,
     for (size_t i = 0; i < kv_size(layer->objects); i++) {
         jtilemap_object_t* obj = &kv_A(layer->objects, i);
         if (!obj->visible || obj->shape != JTILEMAP_SHAPE_RECT) continue;
+        if (obj->width <= 0.0f || obj->height <= 0.0f || obj->width > 10000.0f || obj->height > 10000.0f) continue;
         SDL_FRect r = { obj->x - cam_x, obj->y - cam_y, obj->width, obj->height };
         SDL_RenderRect(gRenderer, &r);
     }

@@ -42,6 +42,7 @@ int luaopen_keyboard(lua_State* L);
 int luaopen_animation(lua_State* L);
 int luaopen_joystick(lua_State* L);
 int luaopen_event(lua_State* L);
+int luaopen_tilemap(lua_State* L);
 int luaopen_thread(lua_State* L);
 int luaopen_console(lua_State* L);
 int luaopen_render3d(lua_State* L);
