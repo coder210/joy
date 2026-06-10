@@ -975,6 +975,11 @@ JOY_INLINE ft_t ft_cos(ft_t x)
 	return cosf(x);
 }
 
+JOY_INLINE ft_t ft_atan2(ft_t y, ft_t x)
+{
+	return atan2f(y, x);
+}
+
 JOY_INLINE ft_t ft_zero()
 {
 	return 0;

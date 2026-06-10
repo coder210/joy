@@ -543,6 +543,81 @@ static int l_kcpclient_poll(lua_State* L)
         return 1;
 }
 
+/* ===== netserver（统一 API：KCP / TCP / WebSocket） ===== */
+static int l_netserver_create(lua_State* L) {
+    const char* typestr = luaL_checkstring(L, 1);
+    const char* ip = luaL_checkstring(L, 2);
+    int port = (int)luaL_checkinteger(L, 3);
+    net_server_type type;
+    if (strcmp(typestr, "kcp") == 0) type = NET_SERVER_KCP;
+    else if (strcmp(typestr, "tcp") == 0) type = NET_SERVER_TCP;
+    else if (strcmp(typestr, "ws") == 0) type = NET_SERVER_WEBSOCKET;
+    else return luaL_error(L, "unknown server type: %s (kcp/tcp/ws)", typestr);
+    netserver_p ns = netserver_create(type, ip, port);
+    lua_pushlightuserdata(L, ns);
+    return 1;
+}
+static int l_netserver_destroy(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); if (ns) netserver_destroy(ns); return 0; }
+static int l_netserver_send(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); int conv = (int)luaL_checkinteger(L, 2); size_t len; const char* d = luaL_checklstring(L, 3, &len); netserver_send(ns, conv, d, (int)len); return 0; }
+static int l_netserver_broadcast(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); size_t len; const char* d = luaL_checklstring(L, 2, &len); netserver_broadcast(ns, d, (int)len); return 0; }
+static int l_netserver_offline(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); int conv = (int)luaL_checkinteger(L, 2); netserver_offline(ns, conv); return 0; }
+static int l_netserver_update(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); netserver_update(ns); return 0; }
+static int l_netserver_conn_count(lua_State* L) { netserver_p ns = lua_touserdata(L, 1); lua_pushinteger(L, netserver_connection_count(ns)); return 1; }
+static int l_netserver_poll(lua_State* L) {
+    net_message_t msg = { 0 };
+    netserver_p ns = lua_touserdata(L, 1);
+    lua_newtable(L);
+    if (netserver_poll_message(ns, &msg)) {
+        lua_pushboolean(L, 1); lua_setfield(L, -2, "ok");
+        lua_newtable(L);
+        lua_pushinteger(L, msg.type); lua_setfield(L, -2, "type");
+        lua_pushinteger(L, msg.conv); lua_setfield(L, -2, "conv");
+        lua_pushlstring(L, msg.data, msg.len); lua_setfield(L, -2, "data");
+        SDL_free(msg.data);
+        lua_setfield(L, -2, "msg");
+    } else {
+        lua_pushboolean(L, 0); lua_setfield(L, -2, "ok");
+        lua_pushnil(L); lua_setfield(L, -2, "msg");
+    }
+    return 1;
+}
+
+/* ===== netclient（统一 API） ===== */
+static int l_netclient_create(lua_State* L) {
+    const char* typestr = luaL_checkstring(L, 1);
+    const char* host = luaL_checkstring(L, 2);
+    int port = (int)luaL_checkinteger(L, 3);
+    net_client_type type;
+    if (strcmp(typestr, "kcp") == 0) type = NET_CLIENT_KCP;
+    else if (strcmp(typestr, "tcp") == 0) type = NET_CLIENT_TCP;
+    else if (strcmp(typestr, "ws") == 0) type = NET_CLIENT_WEBSOCKET;
+    else return luaL_error(L, "unknown client type: %s (kcp/tcp/ws)", typestr);
+    netclient_p nc = netclient_create(type, host, port);
+    lua_pushlightuserdata(L, nc);
+    return 1;
+}
+static int l_netclient_destroy(lua_State* L) { netclient_p nc = lua_touserdata(L, 1); if (nc) netclient_destroy(nc); return 0; }
+static int l_netclient_send(lua_State* L) { netclient_p nc = lua_touserdata(L, 1); size_t len; const char* d = luaL_checklstring(L, 2, &len); netclient_send(nc, d, (int)len); return 0; }
+static int l_netclient_update(lua_State* L) { netclient_p nc = lua_touserdata(L, 1); netclient_update(nc); return 0; }
+static int l_netclient_poll(lua_State* L) {
+    net_message_t msg = { 0 };
+    netclient_p nc = lua_touserdata(L, 1);
+    lua_newtable(L);
+    if (netclient_poll_message(nc, &msg)) {
+        lua_pushboolean(L, 1); lua_setfield(L, -2, "ok");
+        lua_newtable(L);
+        lua_pushinteger(L, msg.type); lua_setfield(L, -2, "type");
+        lua_pushinteger(L, msg.conv); lua_setfield(L, -2, "conv");
+        lua_pushlstring(L, msg.data, msg.len); lua_setfield(L, -2, "data");
+        SDL_free(msg.data);
+        lua_setfield(L, -2, "msg");
+    } else {
+        lua_pushboolean(L, 0); lua_setfield(L, -2, "ok");
+        lua_pushnil(L); lua_setfield(L, -2, "msg");
+    }
+    return 1;
+}
+
 // tcpserver/tcpclient functions - preserved but not exposed to Lua
 /*
 //        ip = luaL_checkstring(L, 1);
@@ -711,6 +786,31 @@ int luaopen_net(lua_State *L)
 {
         luaL_checkversion(L);
         lua_newtable(L);
+
+        luaL_Reg netserver_lib[] = {
+            {"create", l_netserver_create},
+            {"destroy", l_netserver_destroy},
+            {"send", l_netserver_send},
+            {"broadcast", l_netserver_broadcast},
+            {"offline", l_netserver_offline},
+            {"update", l_netserver_update},
+            {"poll", l_netserver_poll},
+            {"connection_count", l_netserver_conn_count},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, netserver_lib);
+        lua_setfield(L, -2, "netserver");
+
+        luaL_Reg netclient_lib[] = {
+            {"create", l_netclient_create},
+            {"destroy", l_netclient_destroy},
+            {"send", l_netclient_send},
+            {"update", l_netclient_update},
+            {"poll", l_netclient_poll},
+            {NULL, NULL}
+        };
+        luaL_newlib(L, netclient_lib);
+        lua_setfield(L, -2, "netclient");
  //       luaL_Reg top_level[] = {
  //               {"init_netenv", l_sys_init_netenv},
  //               {"release_netenv", l_sys_release_netenv},

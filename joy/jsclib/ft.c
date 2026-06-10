@@ -14,6 +14,7 @@ static duk_ret_t jft_get_x(duk_context* ctx) { ft_t* v = (ft_t*)duk_get_pointer(
 static duk_ret_t jft_get_y(duk_context* ctx) { ft_t* v = (ft_t*)duk_get_pointer(ctx, 0); duk_push_number(ctx, (duk_double_t)v[1]); return 1; }
 static duk_ret_t jft_set_x(duk_context* ctx) { ft_t* v = (ft_t*)duk_get_pointer(ctx, 0); v[0] = (ft_t)duk_to_number(ctx, 1); return 0; }
 static duk_ret_t jft_set_y(duk_context* ctx) { ft_t* v = (ft_t*)duk_get_pointer(ctx, 0); v[1] = (ft_t)duk_to_number(ctx, 1); return 0; }
+static duk_ret_t jft_atan2(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)ft_atan2((ft_t)duk_to_number(ctx,0), (ft_t)duk_to_number(ctx,1))); return 1; }
 
 void jsopen_ft(duk_context* ctx)
 {
@@ -24,5 +25,6 @@ void jsopen_ft(duk_context* ctx)
 	duk_push_c_function(ctx, jft_get_y,1); duk_put_prop_string(ctx,-2,"get_y");
 	duk_push_c_function(ctx, jft_set_x,2); duk_put_prop_string(ctx,-2,"set_x");
 	duk_push_c_function(ctx, jft_set_y,2); duk_put_prop_string(ctx,-2,"set_y");
+	duk_push_c_function(ctx, jft_atan2,2); duk_put_prop_string(ctx,-2,"atan2");
 	duk_put_global_string(ctx, "ft");
 }
