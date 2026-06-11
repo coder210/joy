@@ -1698,7 +1698,7 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
                         if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
                                 SDL_strlcpy(url, host, sizeof(url));
                         } else {
-                                SDL_snprintf(url, sizeof(url), "ws://%s:%d", host, port);
+                                SDL_snprintf(url, sizeof(url), "ws://%s:%d/", host, port);
                         }
                         nc->client.ws = wsnetclient_create(url);
                         if (!nc->client.ws) {
