@@ -1060,9 +1060,3 @@ int luaopen_ui(lua_State* L)
 
 	return 1;
 }
-	};
-	luaL_newlib(L, popup_lib);
-	lua_setfield(L, -2, "popup");
-
-	return 1;
-}
