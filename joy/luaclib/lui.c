@@ -852,6 +852,34 @@ static int l_popup_is_inside(lua_State* L) {
 	return 1;
 }
 
+/* ===== Tooltip ===== */
+static int l_tooltip_create(lua_State* L) {
+	SDL_Renderer* ren = *(SDL_Renderer**)lua_touserdata(L, 1);
+	size_t len; const char* s = lua_tolstring(L, 2, &len);
+	lua_pushlightuserdata(L, tooltip_create(ren, s, (int)len));
+	return 1;
+}
+static int l_tooltip_destroy(lua_State* L) { tooltip_destroy((tooltip_p)lua_touserdata(L, 1)); return 0; }
+static int l_tooltip_set_text(lua_State* L) {
+	tooltip_p t = (tooltip_p)lua_touserdata(L, 1);
+	size_t len; const char* s = lua_tolstring(L, 2, &len);
+	tooltip_set_text(t, s, (int)len); return 0;
+}
+static int l_tooltip_set_position(lua_State* L) {
+	tooltip_set_position((tooltip_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3));
+	return 0;
+}
+static int l_tooltip_set_visible(lua_State* L) {
+	tooltip_set_visible((tooltip_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
+static int l_tooltip_draw(lua_State* L) {
+	tooltip_p t = (tooltip_p)lua_touserdata(L, 1);
+	font_p font = *(font_p*)lua_touserdata(L, 2);
+	tooltip_draw(t, font);
+	return 0;
+}
+
 int luaopen_ui(lua_State* L)
 {
 	lua_newtable(L);
@@ -1013,6 +1041,25 @@ int luaopen_ui(lua_State* L)
 		{"drag_move", l_popup_drag_move},
 		{"is_inside", l_popup_is_inside},
 		{NULL, NULL},
+	};
+	luaL_newlib(L, popup_lib);
+	lua_setfield(L, -2, "popup");
+
+	/* Tooltip */
+	luaL_Reg tooltip_lib[] = {
+		{"create", l_tooltip_create},
+		{"destroy", l_tooltip_destroy},
+		{"set_text", l_tooltip_set_text},
+		{"set_position", l_tooltip_set_position},
+		{"set_visible", l_tooltip_set_visible},
+		{"draw", l_tooltip_draw},
+		{NULL, NULL},
+	};
+	luaL_newlib(L, tooltip_lib);
+	lua_setfield(L, -2, "tooltip");
+
+	return 1;
+}
 	};
 	luaL_newlib(L, popup_lib);
 	lua_setfield(L, -2, "popup");

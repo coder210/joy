@@ -2070,3 +2070,69 @@ bool popup_is_inside(popup_p p, float mx, float my)
 	return mx >= p->x && mx <= p->x + p->w &&
 		my >= p->y && my <= p->y + p->h;
 }
+
+/* ===== Tooltip ===== */
+tooltip_p tooltip_create(SDL_Renderer* renderer, const char* text, int len)
+{
+	tooltip_p t = (tooltip_p)SDL_calloc(1, sizeof(tooltip_t));
+	if (!t) return NULL;
+	t->renderer = renderer;
+	t->x = 0; t->y = 0;
+	t->padding = 8;
+	t->visible = true;
+	t->bg_color = (SDL_Color){ 40, 40, 55, 220 };
+	t->border_color = (SDL_Color){ 100, 100, 130, 255 };
+	t->text_color = (SDL_Color){ 255, 255, 255, 255 };
+	tooltip_set_text(t, text, len);
+	return t;
+}
+
+void tooltip_destroy(tooltip_p t)
+{
+	SDL_free(t);
+}
+
+void tooltip_set_text(tooltip_p t, const char* text, int len)
+{
+	if (!t || !text) return;
+	if (len < 0) len = (int)SDL_strlen(text);
+	if (len >= TOOLTIP_MAX_TEXT) len = TOOLTIP_MAX_TEXT - 1;
+	SDL_memcpy(t->text, text, len);
+	t->text[len] = '\0';
+	t->text_len = len;
+}
+
+void tooltip_set_position(tooltip_p t, float x, float y)
+{
+	if (t) { t->x = x; t->y = y; }
+}
+
+void tooltip_set_visible(tooltip_p t, bool v)
+{
+	if (t) t->visible = v;
+}
+
+void tooltip_draw(tooltip_p t, font_p font)
+{
+	if (!t || !t->visible || !t->text_len) return;
+	SDL_Renderer* ren = t->renderer;
+
+	/* 估算宽高：按字符数 * fontsize/2 粗略估算 */
+	float fh = (float)font->fontsize;
+	float tw = t->text_len * fh * 0.55f + t->padding * 2;
+	float th = fh + t->padding;
+
+	/* 背景 */
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(ren, t->bg_color.r, t->bg_color.g, t->bg_color.b, t->bg_color.a);
+	SDL_RenderFillRect(ren, &(SDL_FRect){ t->x, t->y, tw, th });
+
+	/* 边框 */
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+	SDL_SetRenderDrawColor(ren, t->border_color.r, t->border_color.g, t->border_color.b, t->border_color.a);
+	SDL_RenderRect(ren, &(SDL_FRect){ t->x, t->y, tw, th });
+
+	/* 文字 */
+	text_printx(ren, font, t->text, t->text_len, t->text_color,
+		t->x + t->padding, t->y + t->padding / 2);
+}

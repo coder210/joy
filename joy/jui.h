@@ -323,6 +323,27 @@ JOY_API bool popup_is_title_clicked(popup_p p, float mx, float my);
 JOY_API void popup_drag_move(popup_p p, float mx, float my);
 JOY_API bool popup_is_inside(popup_p p, float mx, float my);
 
+#define TOOLTIP_MAX_TEXT 256
+
+typedef struct tooltip {
+	SDL_Renderer* renderer;
+	float x, y;
+	char text[TOOLTIP_MAX_TEXT];
+	int text_len;
+	SDL_Color bg_color;
+	SDL_Color border_color;
+	SDL_Color text_color;
+	float padding;
+	bool visible;
+} tooltip_t, * tooltip_p;
+
+JOY_API tooltip_p tooltip_create(SDL_Renderer* renderer, const char* text, int len);
+JOY_API void tooltip_destroy(tooltip_p t);
+JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
+JOY_API void tooltip_set_position(tooltip_p t, float x, float y);
+JOY_API void tooltip_set_visible(tooltip_p t, bool v);
+JOY_API void tooltip_draw(tooltip_p t, font_p font);
+
 #ifdef __cplusplus
 }
 #endif
