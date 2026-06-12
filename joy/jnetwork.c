@@ -435,8 +435,8 @@ kcpclient_p kcpclient_create(const char* ip, int port)
         kc->server_port = port;
         kc->updating_delay.time = sys_current_time();
         kc->updating_delay.timeout = 1000;
-        kc->connection_delay.time = sys_current_time();
-        kc->connection_delay.timeout = 3000;
+        kc->connection_delay.time = 0;  // 立即触发首次连接
+        kc->connection_delay.timeout = 100;
         kc->timeout = 1200;
         kc->mq = kl_init(kmq);
         kc->cb = NULL;
@@ -843,8 +843,8 @@ tcpclient_p tcpclient_create(const char *ip, int port)
         tcpclient->server_port = port;
         tcpclient->updating_delay.time = sys_current_time();
         tcpclient->updating_delay.timeout = 1000;
-        tcpclient->connection_delay.time = sys_current_time();
-        tcpclient->connection_delay.timeout = 3000;
+        tcpclient->connection_delay.time = 0;
+        tcpclient->connection_delay.timeout = 100;
         tcpclient->timeout = 1200;
         tcpclient->mq = kl_init(kmq);
         log_debug("tcpclient_create ip=%s,port=%d", ip, port);

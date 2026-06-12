@@ -112,6 +112,30 @@ static duk_ret_t jui_slider_drag_move(duk_context* ctx) { slider_drag_move((slid
 static duk_ret_t jui_slider_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, slider_is_hovered((slider_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((slider_p)PTR(0), BOOL(1)); return 0; }
 
+/* ===== Popup ===== */
+static duk_ret_t jui_popup_create(duk_context* ctx) {
+	SDL_Renderer* ren = *(SDL_Renderer**)duk_get_pointer(ctx, 0);
+	duk_push_pointer(ctx, popup_create(ren, (float)duk_to_number(ctx, 1), (float)duk_to_number(ctx, 2)));
+	return 1;
+}
+static duk_ret_t jui_popup_destroy(duk_context* ctx) { popup_destroy((popup_p)PTR(0)); return 0; }
+static duk_ret_t jui_popup_set_title(duk_context* ctx) { popup_set_title((popup_p)PTR(0), STR(1), -1); return 0; }
+static duk_ret_t jui_popup_set_content(duk_context* ctx) { popup_set_content((popup_p)PTR(0), STR(1), -1); return 0; }
+static duk_ret_t jui_popup_set_position(duk_context* ctx) { popup_set_position((popup_p)PTR(0), NUM(1), NUM(2)); return 0; }
+static duk_ret_t jui_popup_set_visible(duk_context* ctx) { popup_set_visible((popup_p)PTR(0), BOOL(1)); return 0; }
+static duk_ret_t jui_popup_set_closeable(duk_context* ctx) { popup_set_closeable((popup_p)PTR(0), BOOL(1)); return 0; }
+static duk_ret_t jui_popup_draw(duk_context* ctx) {
+	popup_p p = (popup_p)PTR(0);
+	font_p tf = *(font_p*)duk_get_pointer(ctx, 1);
+	font_p cf = *(font_p*)duk_get_pointer(ctx, 2);
+	popup_draw(p, tf, cf);
+	return 0;
+}
+static duk_ret_t jui_popup_is_close_clicked(duk_context* ctx) { duk_push_boolean(ctx, popup_is_close_clicked((popup_p)PTR(0), NUM(1), NUM(2))); return 1; }
+static duk_ret_t jui_popup_is_title_clicked(duk_context* ctx) { duk_push_boolean(ctx, popup_is_title_clicked((popup_p)PTR(0), NUM(1), NUM(2))); return 1; }
+static duk_ret_t jui_popup_drag_move(duk_context* ctx) { popup_drag_move((popup_p)PTR(0), NUM(1), NUM(2)); return 0; }
+static duk_ret_t jui_popup_is_inside(duk_context* ctx) { duk_push_boolean(ctx, popup_is_inside((popup_p)PTR(0), NUM(1), NUM(2))); return 1; }
+
 typedef struct { duk_c_function func; const char* name; } reg_pair_t;
 static void reg_sub(duk_context* ctx, const char* name, const reg_pair_t* pairs) { duk_push_object(ctx); for(;pairs->func;pairs++){ duk_push_c_function(ctx,pairs->func,DUK_VARARGS); duk_put_prop_string(ctx,-2,pairs->name); } duk_put_prop_string(ctx,-2,name); }
 
@@ -130,7 +154,8 @@ P(radiobutton){{jui_radiobutton_create,"create"},{jui_radiobutton_destroy,"destr
 P(button_group){{jui_radiogroup_create,"create"},{jui_radiogroup_destroy,"destroy"},{jui_radiogroup_add_button,"add_button"},{jui_radiogroup_set_selected,"set_selected"},{jui_radiogroup_draw,"draw"},E};R(button_group);
 P(datagrid){{jui_datagrid_create,"create"},{jui_datagrid_destroy,"destroy"},{jui_datagrid_draw,"draw"},{jui_datagrid_setheaders,"setheaders"},{jui_datagrid_addrow,"addrow"},{jui_datagrid_hit_row,"hit_row"},{jui_datagrid_scroll,"scroll"},{jui_datagrid_set_selected_row,"set_selected_row"},{jui_datagrid_get_row_count,"get_row_count"},{jui_datagrid_get_cell,"get_cell"},E};R(datagrid);
 P(textinput){{jui_textinput_create,"create"},{jui_textinput_destroy,"destroy"},{jui_textinput_set_text,"set_text"},{jui_textinput_get_text,"get_text"},{jui_textinput_draw,"draw"},{jui_textinput_is_pressed,"is_pressed"},{jui_textinput_is_hovered,"is_hovered"},{jui_textinput_focus,"focus"},{jui_textinput_defocus,"defocus"},{jui_textinput_insert,"insert"},{jui_textinput_backspace,"backspace"},{jui_textinput_delete,"delete"},{jui_textinput_cursor_left,"cursor_left"},{jui_textinput_cursor_right,"cursor_right"},{jui_textinput_cursor_home,"cursor_home"},{jui_textinput_cursor_end,"cursor_end"},{jui_textinput_select_left,"select_left"},{jui_textinput_select_right,"select_right"},{jui_textinput_select_all,"select_all"},{jui_textinput_paste,"paste"},{jui_textinput_copy,"copy"},{jui_textinput_cut,"cut"},{jui_textinput_is_focused,"is_focused"},E};R(textinput);
-P(slider){{jui_slider_create,"create"},{jui_slider_destroy,"destroy"},{jui_slider_set_value,"set_value"},{jui_slider_get_value,"get_value"},{jui_slider_set_range,"set_range"},{jui_slider_draw,"draw"},{jui_slider_is_pressed,"is_pressed"},{jui_slider_set_pressed,"set_pressed"},{jui_slider_drag_move,"drag_move"},{jui_slider_is_hovered,"is_hovered"},{jui_slider_set_hovered,"set_hovered"},E};R(slider);
+    P(slider){{jui_slider_create,"create"},{jui_slider_destroy,"destroy"},{jui_slider_set_value,"set_value"},{jui_slider_get_value,"get_value"},{jui_slider_set_range,"set_range"},{jui_slider_draw,"draw"},{jui_slider_is_pressed,"is_pressed"},{jui_slider_set_pressed,"set_pressed"},{jui_slider_drag_move,"drag_move"},{jui_slider_is_hovered,"is_hovered"},{jui_slider_set_hovered,"set_hovered"},E};R(slider);
+    P(popup){{jui_popup_create,"create"},{jui_popup_destroy,"destroy"},{jui_popup_set_title,"set_title"},{jui_popup_set_content,"set_content"},{jui_popup_set_position,"set_position"},{jui_popup_set_visible,"set_visible"},{jui_popup_set_closeable,"set_closeable"},{jui_popup_draw,"draw"},{jui_popup_is_close_clicked,"is_close_clicked"},{jui_popup_is_title_clicked,"is_title_clicked"},{jui_popup_drag_move,"drag_move"},{jui_popup_is_inside,"is_inside"},E};R(popup);
 
 	duk_put_global_string(ctx, "ui");
 }

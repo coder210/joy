@@ -285,6 +285,44 @@ JOY_API void slider_drag_move(slider_p s, float x, float y);
 JOY_API bool slider_is_hovered(slider_p s, float x, float y);
 JOY_API void slider_set_hovered(slider_p s, bool v);
 
+#define POPUP_MAX_TITLE 128
+#define POPUP_MAX_CONTENT 2048
+
+typedef struct popup {
+	SDL_Renderer* renderer;
+	float x, y, w, h;
+	float title_height;         // title bar height (set in draw)
+	float padding;
+	float close_size;
+	SDL_Color bg_color;
+	SDL_Color border_color;
+	SDL_Color title_bg_color;
+	SDL_Color content_color;
+	SDL_Color close_color;
+	SDL_Color close_hover_color;
+	SDL_Color title_text_color;
+	bool visible;
+	bool closeable;
+	char title[POPUP_MAX_TITLE];
+	char content[POPUP_MAX_CONTENT];
+	bool close_hovered;
+	bool is_dragging;
+	float drag_off_x, drag_off_y;
+} popup_t, * popup_p;
+
+JOY_API popup_p popup_create(SDL_Renderer* renderer, float w, float h);
+JOY_API void popup_destroy(popup_p p);
+JOY_API void popup_set_title(popup_p p, const char* text, int len);
+JOY_API void popup_set_content(popup_p p, const char* text, int len);
+JOY_API void popup_set_position(popup_p p, float x, float y);
+JOY_API void popup_set_visible(popup_p p, bool v);
+JOY_API void popup_set_closeable(popup_p p, bool v);
+JOY_API void popup_draw(popup_p p, font_p title_font, font_p content_font);
+JOY_API bool popup_is_close_clicked(popup_p p, float mx, float my);
+JOY_API bool popup_is_title_clicked(popup_p p, float mx, float my);
+JOY_API void popup_drag_move(popup_p p, float mx, float my);
+JOY_API bool popup_is_inside(popup_p p, float mx, float my);
+
 #ifdef __cplusplus
 }
 #endif

@@ -796,6 +796,62 @@ static int l_slider_set_hovered(lua_State* L) {
 	return 0;
 }
 
+/* ===== Popup ===== */
+static int l_popup_create(lua_State* L) {
+	SDL_Renderer* ren = *(SDL_Renderer**)lua_touserdata(L, 1);
+	float w = (float)luaL_checknumber(L, 2), h = (float)luaL_checknumber(L, 3);
+	lua_pushlightuserdata(L, popup_create(ren, w, h));
+	return 1;
+}
+static int l_popup_destroy(lua_State* L) { popup_destroy((popup_p)lua_touserdata(L, 1)); return 0; }
+static int l_popup_set_title(lua_State* L) {
+	popup_p p = (popup_p)lua_touserdata(L, 1);
+	size_t len; const char* s = lua_tolstring(L, 2, &len);
+	popup_set_title(p, s, (int)len);
+	return 0;
+}
+static int l_popup_set_content(lua_State* L) {
+	popup_p p = (popup_p)lua_touserdata(L, 1);
+	size_t len; const char* s = lua_tolstring(L, 2, &len);
+	popup_set_content(p, s, (int)len);
+	return 0;
+}
+static int l_popup_set_position(lua_State* L) {
+	popup_set_position((popup_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3));
+	return 0;
+}
+static int l_popup_set_visible(lua_State* L) {
+	popup_set_visible((popup_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
+static int l_popup_set_closeable(lua_State* L) {
+	popup_set_closeable((popup_p)lua_touserdata(L, 1), lua_toboolean(L, 2));
+	return 0;
+}
+static int l_popup_draw(lua_State* L) {
+	popup_p p = (popup_p)lua_touserdata(L, 1);
+	font_p tf = *(font_p*)lua_touserdata(L, 2);
+	font_p cf = *(font_p*)lua_touserdata(L, 3);
+	popup_draw(p, tf, cf);
+	return 0;
+}
+static int l_popup_is_close_clicked(lua_State* L) {
+	lua_pushboolean(L, popup_is_close_clicked((popup_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3)));
+	return 1;
+}
+static int l_popup_is_title_clicked(lua_State* L) {
+	lua_pushboolean(L, popup_is_title_clicked((popup_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3)));
+	return 1;
+}
+static int l_popup_drag_move(lua_State* L) {
+	popup_drag_move((popup_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3));
+	return 0;
+}
+static int l_popup_is_inside(lua_State* L) {
+	lua_pushboolean(L, popup_is_inside((popup_p)lua_touserdata(L, 1), (float)luaL_checknumber(L, 2), (float)luaL_checknumber(L, 3)));
+	return 1;
+}
+
 int luaopen_ui(lua_State* L)
 {
 	lua_newtable(L);
@@ -941,6 +997,25 @@ int luaopen_ui(lua_State* L)
 	};
 	luaL_newlib(L, slider_lib);
 	lua_setfield(L, -2, "slider");
+
+	/* Popup */
+	luaL_Reg popup_lib[] = {
+		{"create", l_popup_create},
+		{"destroy", l_popup_destroy},
+		{"set_title", l_popup_set_title},
+		{"set_content", l_popup_set_content},
+		{"set_position", l_popup_set_position},
+		{"set_visible", l_popup_set_visible},
+		{"set_closeable", l_popup_set_closeable},
+		{"draw", l_popup_draw},
+		{"is_close_clicked", l_popup_is_close_clicked},
+		{"is_title_clicked", l_popup_is_title_clicked},
+		{"drag_move", l_popup_drag_move},
+		{"is_inside", l_popup_is_inside},
+		{NULL, NULL},
+	};
+	luaL_newlib(L, popup_lib);
+	lua_setfield(L, -2, "popup");
 
 	return 1;
 }

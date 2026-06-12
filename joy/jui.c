@@ -1892,3 +1892,181 @@ void slider_set_hovered(slider_p s, bool v)
 {
 	if (s) s->hovered = v;
 }
+
+/* ===== Popup ===== */
+#define POPUP_CLOSE_SIZE 24
+#define POPUP_PADDING 12
+#define POPUP_TITLE_HEIGHT 32
+
+popup_p popup_create(SDL_Renderer* renderer, float w, float h)
+{
+	popup_p p = (popup_p)SDL_calloc(1, sizeof(popup_t));
+	if (!p) return NULL;
+	p->renderer = renderer;
+	p->w = w; p->h = h;
+	p->x = 0; p->y = 0;
+	p->title_height = POPUP_TITLE_HEIGHT;
+	p->padding = POPUP_PADDING;
+	p->close_size = POPUP_CLOSE_SIZE;
+	p->visible = true;
+	p->closeable = true;
+	/* Default colors */
+	p->bg_color = (SDL_Color){ 45, 45, 55, 240 };
+	p->border_color = (SDL_Color){ 80, 80, 100, 255 };
+	p->title_bg_color = (SDL_Color){ 55, 55, 70, 240 };
+	p->content_color = (SDL_Color){ 220, 220, 230, 255 };
+	p->close_color = (SDL_Color){ 200, 60, 60, 255 };
+	p->close_hover_color = (SDL_Color){ 255, 80, 80, 255 };
+	p->title_text_color = (SDL_Color){ 255, 255, 255, 255 };
+	p->title[0] = '\0';
+	p->content[0] = '\0';
+	return p;
+}
+
+void popup_destroy(popup_p p)
+{
+	SDL_free(p);
+}
+
+void popup_set_title(popup_p p, const char* text, int len)
+{
+	if (!p || !text) return;
+	if (len < 0) len = (int)SDL_strlen(text);
+	if (len >= POPUP_MAX_TITLE) len = POPUP_MAX_TITLE - 1;
+	SDL_memcpy(p->title, text, len);
+	p->title[len] = '\0';
+}
+
+void popup_set_content(popup_p p, const char* text, int len)
+{
+	if (!p || !text) return;
+	if (len < 0) len = (int)SDL_strlen(text);
+	if (len >= POPUP_MAX_CONTENT) len = POPUP_MAX_CONTENT - 1;
+	SDL_memcpy(p->content, text, len);
+	p->content[len] = '\0';
+}
+
+void popup_set_position(popup_p p, float x, float y)
+{
+	if (p) { p->x = x; p->y = y; }
+}
+
+void popup_set_visible(popup_p p, bool v)
+{
+	if (p) p->visible = v;
+}
+
+void popup_set_closeable(popup_p p, bool v)
+{
+	if (p) p->closeable = v;
+}
+
+static void popup_draw_text_lines(SDL_Renderer* ren, font_p font, const char* text, float x, float y, float max_w, SDL_Color color)
+{
+	if (!text || text[0] == '\0') return;
+	/* 按行分割渲染 */
+	const char* start = text;
+	while (*start) {
+		const char* end = SDL_strchr(start, '\n');
+		if (!end) end = start + SDL_strlen(start);
+		int line_len = (int)(end - start);
+		if (line_len > 0) {
+			text_printx(ren, font, start, line_len, color, x, y);
+			y += (float)font->fontsize + 4;
+		}
+		if (*end == '\n') end++;
+		start = end;
+	}
+}
+
+void popup_draw(popup_p p, font_p title_font, font_p content_font)
+{
+	if (!p || !p->visible) return;
+	SDL_Renderer* ren = p->renderer;
+	float x = p->x, y = p->y, w = p->w, h = p->h;
+
+	/* 半透明背景遮罩 */
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(ren, 0, 0, 0, 120);
+	SDL_FRect full = { 0, 0, 1920, 1080 }; /* 覆盖全屏 */
+	SDL_RenderFillRect(ren, &full);
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+
+	/* 边框 */
+	SDL_SetRenderDrawColor(ren, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+	SDL_RenderRect(ren, &(SDL_FRect){ x - 1, y - 1, w + 2, h + 2 });
+
+	/* 背景 */
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(ren, p->bg_color.r, p->bg_color.g, p->bg_color.b, p->bg_color.a);
+	SDL_RenderFillRect(ren, &(SDL_FRect){ x, y, w, h });
+
+	/* 标题栏背景 */
+	SDL_SetRenderDrawColor(ren, p->title_bg_color.r, p->title_bg_color.g, p->title_bg_color.b, p->title_bg_color.a);
+	SDL_RenderFillRect(ren, &(SDL_FRect){ x, y, w, p->title_height });
+
+	/* 标题栏分隔线 */
+	SDL_SetRenderDrawColor(ren, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+	SDL_RenderLine(ren, x, y + p->title_height, x + w, y + p->title_height);
+
+	/* 标题文字 */
+	if (p->title[0] && title_font) {
+		text_printx(ren, title_font, p->title, (int)SDL_strlen(p->title), p->title_text_color,
+			x + p->padding, y + (p->title_height - (float)title_font->fontsize) / 2);
+	}
+
+	/* 关闭按钮 */
+	if (p->closeable) {
+		float cx = x + w - p->close_size - 4;
+		float cy = y + (p->title_height - p->close_size) / 2;
+		if (p->close_hovered)
+			SDL_SetRenderDrawColor(ren, p->close_hover_color.r, p->close_hover_color.g, p->close_hover_color.b, p->close_hover_color.a);
+		else
+			SDL_SetRenderDrawColor(ren, p->close_color.r, p->close_color.g, p->close_color.b, p->close_color.a);
+		SDL_RenderFillRect(ren, &(SDL_FRect){ cx, cy, p->close_size, p->close_size });
+		/* X 标记 */
+		SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+		SDL_RenderLine(ren, cx + 6, cy + 6, cx + p->close_size - 6, cy + p->close_size - 6);
+		SDL_RenderLine(ren, cx + p->close_size - 6, cy + 6, cx + 6, cy + p->close_size - 6);
+	}
+
+	/* 内容文字 */
+	if (p->content[0] && content_font) {
+		SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+		popup_draw_text_lines(ren, content_font, p->content,
+			x + p->padding, y + p->title_height + p->padding,
+			w - p->padding * 2, p->content_color);
+	}
+	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+}
+
+bool popup_is_close_clicked(popup_p p, float mx, float my)
+{
+	if (!p || !p->visible || !p->closeable) return false;
+	float cx = p->x + p->w - p->close_size - 4;
+	float cy = p->y + (p->title_height - p->close_size) / 2;
+	return mx >= cx && mx <= cx + p->close_size &&
+		my >= cy && my <= cy + p->close_size;
+}
+
+bool popup_is_title_clicked(popup_p p, float mx, float my)
+{
+	if (!p || !p->visible) return false;
+	return mx >= p->x && mx <= p->x + p->w &&
+		my >= p->y && my <= p->y + p->title_height;
+		/* 关闭按钮区域单独处理，但 title 区域也包含它 */
+}
+
+void popup_drag_move(popup_p p, float mx, float my)
+{
+	if (!p || !p->is_dragging) return;
+	p->x = mx - p->drag_off_x;
+	p->y = my - p->drag_off_y;
+}
+
+bool popup_is_inside(popup_p p, float mx, float my)
+{
+	if (!p || !p->visible) return false;
+	return mx >= p->x && mx <= p->x + p->w &&
+		my >= p->y && my <= p->y + p->h;
+}
