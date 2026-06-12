@@ -265,9 +265,12 @@ JOY_API void jtilemap_render_all(jtilemap_p tm,
     if (!tm || !gRenderer) return;
 
     // 缓存视口尺寸（用于裁剪）
+    // 优先使用逻辑分辨率（如果设置了 SDL_SetRenderLogicalPresentation）
     {
         int vp_w = 0, vp_h = 0;
-        SDL_GetCurrentRenderOutputSize(gRenderer, &vp_w, &vp_h);
+        SDL_GetRenderLogicalPresentation(gRenderer, &vp_w, &vp_h, NULL);
+        if (vp_w <= 0 || vp_h <= 0)
+            SDL_GetCurrentRenderOutputSize(gRenderer, &vp_w, &vp_h);
         gViewW = (float)vp_w;
         gViewH = (float)vp_h;
     }
