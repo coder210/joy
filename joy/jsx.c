@@ -271,7 +271,7 @@ void jsx_set_args(jsx_p jsx, int argc, char* argv[])
 	duk_put_global_string(ctx, "args");
 }
 
-/* ===== set_env / get_env (独立 env heap，类似 Lua) ===== */
+/* ===== set_env / get_env (用 duk_xmove_top 跨 heap 传递，类似 Lua 的 lua_xmove) ===== */
 static duk_ret_t js_set_env(duk_context* ctx)
 {
 	/* 从主 ctx heap stash 获取 jsx 指针 */
@@ -282,13 +282,11 @@ static duk_ret_t js_set_env(duk_context* ctx)
 	if (!jsx || !jsx->env) return 0;
 
 	duk_context* E = jsx->env;
-	const char* key = duk_to_string(ctx, 0);
-	/* JSON stringify value → 存到 env heap */
-	duk_dup(ctx, 1);
-	const char* json = duk_json_encode(ctx, -1);
-	duk_pop(ctx);
-	duk_push_string(E, json);
-	duk_put_global_string(E, key);
+	/* 把 key, value 用 duk_xmove_top 转移到 env heap，类似 Lua 的 lua_xmove */
+	duk_dup(ctx, 0);                       /* dup key */
+	duk_dup(ctx, 1);                       /* dup value */
+	duk_xmove_top(E, ctx, 2);              /* move key, value → env stack */
+	{ const char* k = duk_to_string(E, -2); duk_put_global_string(E, k); duk_pop(E); }
 	return 0;
 }
 static duk_ret_t js_get_env(duk_context* ctx)
@@ -301,12 +299,9 @@ static duk_ret_t js_get_env(duk_context* ctx)
 
 	duk_context* E = jsx->env;
 	const char* key = duk_to_string(ctx, 0);
-	/* 从 env heap 读取 JSON，反序列化回主 ctx */
-	duk_get_global_string(E, key);
+	duk_get_global_string(E, key);         /* get value from env heap */
 	if (duk_is_undefined(E, -1)) { duk_pop(E); return 0; }
-	duk_push_string(ctx, duk_to_string(E, -1));  /* push json string to main ctx */
-	duk_pop(E);                                   /* pop from env */
-	duk_json_decode(ctx, -1);                     /* decode on main ctx */
+	duk_xmove_top(ctx, E, 1);              /* move value → main ctx */
 	return 1;
 }
 
