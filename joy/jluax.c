@@ -21,11 +21,20 @@ History:
 #include "luaclib/luaclib.h"
 #include "jluax.h"
 
+/* set_env / get_env 前向声明 */
+static int l_set_env(lua_State* L);
+static int l_get_env(lua_State* L);
+
+#define STATE_KEY ((void*)0x1)
+
 struct luax {
         lua_State* L;
         void* userdata;
         char* watch_file;
         SDL_Time last_mtime;
+
+        
+        lua_State* env;
 
         event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
@@ -120,6 +129,11 @@ luax_p luax_create(void)
         lua_pushlightuserdata(luax->L, luax);
         lua_setfield(luax->L, LUA_REGISTRYINDEX, "__this");
 
+        /* 创建独立的 env lua_State （热更新不重置）*/
+        luax->env = luaL_newstate();
+        assert(luax->env);
+        luaL_openlibs(luax->env);  /* 提供基础库 */
+
         /* 设置默认回调，自动转发到 Lua */
         luax->cbs.on_mousepressed   = default_mousepressed;
         luax->cbs.on_mousereleased  = default_mousereleased;
@@ -181,7 +195,47 @@ luax_p luax_create(void)
 
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");
+
+        /* 注册 set_env / get_env 为全局函数 */
+        lua_pushcfunction(luax->L, l_set_env);
+        lua_setglobal(luax->L, "set_env");
+        lua_pushcfunction(luax->L, l_get_env);
+        lua_setglobal(luax->L, "get_env");
         return luax;
+}
+
+/* ===== set_env / get_env (跨 lua_State 持久化) ===== */
+static int l_set_env(lua_State* L)
+{
+        lua_getfield(L, LUA_REGISTRYINDEX, "__this");
+        luax_p luax = (luax_p)lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        if (!luax || !luax->env) return 0;
+
+        lua_State* E = luax->env;
+        /* 用 lua_xmove 把 key, value 从主 L 复制到 env L */
+        lua_pushvalue(L, 1);                /* key on main L */
+        lua_pushvalue(L, 2);                /* value on main L */
+        lua_xmove(L, E, 2);                 /* move 2 values: key, value → env stack */
+        lua_settable(E, LUA_REGISTRYINDEX);  /* registry[key] = value on env L */
+        return 0;
+}
+
+static int l_get_env(lua_State* L)
+{
+        lua_getfield(L, LUA_REGISTRYINDEX, "__this");
+        luax_p luax = (luax_p)lua_touserdata(L, -1);
+        lua_pop(L, 1);
+        if (!luax || !luax->env) return 0;
+
+        lua_State* E = luax->env;
+        lua_pushvalue(L, 1);                /* key on main L */
+        lua_xmove(L, E, 1);                 /* move key → env stack */
+        lua_pushvalue(E, -1);               /* dup key for gettable */
+        lua_gettable(E, LUA_REGISTRYINDEX);  /* registry[key] → value on env stack */
+        lua_xmove(E, L, 1);                 /* move value back → main stack */
+        lua_pop(E, 1);                      /* pop key from env */
+        return 1;
 }
 
 bool luax_dofile(luax_p luax, const char* filename)
@@ -236,8 +290,6 @@ void luax_set_args(luax_p luax, int argc, char* argv[])
 	}
 	lua_setglobal(L, "arg");
 }
-
-#define STATE_KEY ((void*)0x1)
 
 void luax_init_state(luax_p luax)
 {

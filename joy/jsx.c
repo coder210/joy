@@ -9,6 +9,10 @@
 #include "jevent.h"
 #include "jsclib/jsclib.h"
 
+/* setEnv / getEnv 前向声明 */
+static duk_ret_t js_set_env(duk_context* ctx);
+static duk_ret_t js_get_env(duk_context* ctx);
+
 struct jsx {
 	duk_context* ctx;
 	void* userdata;
@@ -174,6 +178,12 @@ jsx_p jsx_create(void)
 	duk_push_object(jsx->ctx);
 	duk_put_global_string(jsx->ctx, "joy");
 
+	/* 注册全局 setEnv / getEnv */
+	duk_push_c_function(jsx->ctx, js_set_env, 2);
+	duk_put_global_string(jsx->ctx, "setEnv");
+	duk_push_c_function(jsx->ctx, js_get_env, 1);
+	duk_put_global_string(jsx->ctx, "getEnv");
+
 	return jsx;
 }
 
@@ -287,10 +297,44 @@ static void jsx_restore_state(jsx_p jsx)
 	duk_pop(ctx);  /* pop global object */
 }
 
+/* ===== setEnv / getEnv (heap stash 持久化) ===== */
+static void ensure_env_obj(duk_context* ctx)
+{
+	duk_push_heap_stash(ctx);
+	duk_get_prop_string(ctx, -1, "\xff" "env");
+	if (duk_is_undefined(ctx, -1)) {
+		duk_pop(ctx);
+		duk_push_object(ctx);
+		duk_dup_top(ctx);
+		duk_put_prop_string(ctx, -3, "\xff" "env");
+	}
+	/* stack: stash, env_obj */
+	duk_remove(ctx, -2);  /* remove stash */
+}
+static duk_ret_t js_set_env(duk_context* ctx)
+{
+	ensure_env_obj(ctx);
+	/* stack: env_obj */
+	duk_dup(ctx, 0);  /* key */
+	duk_dup(ctx, 1);  /* value */
+	duk_put_prop(ctx, -3);
+	duk_pop(ctx);  /* env_obj */
+	return 0;
+}
+static duk_ret_t js_get_env(duk_context* ctx)
+{
+	ensure_env_obj(ctx);
+	/* stack: env_obj */
+	duk_dup(ctx, 0);       /* key */
+	duk_get_prop(ctx, -2);  /* env_obj[key] */
+	duk_remove(ctx, -2);   /* remove env_obj */
+	return 1;
+}
+
 bool jsx_reload(jsx_p jsx, const char* filename)
 {
 	duk_context* ctx = jsx->ctx;
-	/* 备份当前 state → 执行脚本 → 恢复 state */
+	/* 备份 state → 执行脚本 → 恢复 (env 用 heap stash, 自动持久) */
 	duk_push_global_object(ctx);
 	duk_get_global_string(ctx, "state");
 	duk_put_prop_string(ctx, -2, "\xffjsx_state");
