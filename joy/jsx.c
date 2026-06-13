@@ -19,6 +19,8 @@ struct jsx {
 	char* watch_file;
 	SDL_Time last_mtime;
 
+	duk_context* env;
+
 	event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
@@ -132,6 +134,14 @@ jsx_p jsx_create(void)
 	memset(jsx, 0, sizeof(jsx_t));
 	jsx->ctx = duk_create_heap(NULL, NULL, NULL, jsx, NULL);
 	assert(jsx->ctx);
+	/* 独立的 env heap（类似 Lua 的 lua_State* env，热更新不重置）*/
+	jsx->env = duk_create_heap(NULL, NULL, NULL, NULL, NULL);
+	assert(jsx->env);
+	/* 把 jsx 指针存入主 ctx heap stash，供 set_env/get_env 查找 */
+	duk_push_heap_stash(jsx->ctx);
+	duk_push_pointer(jsx->ctx, jsx);
+	duk_put_prop_string(jsx->ctx, -2, "\xff" "jsx_ptr");
+	duk_pop(jsx->ctx);
 
 	/* 设置默认回调，自动转发到 JS */
 	jsx->cbs.on_mousepressed   = default_mousepressed;
@@ -178,11 +188,11 @@ jsx_p jsx_create(void)
 	duk_push_object(jsx->ctx);
 	duk_put_global_string(jsx->ctx, "joy");
 
-	/* 注册全局 setEnv / getEnv */
+	/* 注册全局 set_env / get_env（与 Lua API 一致）*/
 	duk_push_c_function(jsx->ctx, js_set_env, 2);
-	duk_put_global_string(jsx->ctx, "setEnv");
+	duk_put_global_string(jsx->ctx, "set_env");
 	duk_push_c_function(jsx->ctx, js_get_env, 1);
-	duk_put_global_string(jsx->ctx, "getEnv");
+	duk_put_global_string(jsx->ctx, "get_env");
 
 	return jsx;
 }
@@ -250,27 +260,6 @@ bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt)
 }
 
 
-/* ===== state 持久化 ===== */
-
-void jsx_init_state(jsx_p jsx)
-{
-	duk_context* ctx = jsx->ctx;
-	duk_get_global_string(ctx, "state");
-	if (duk_is_undefined(ctx, -1)) {
-		duk_pop(ctx);
-		duk_push_object(ctx);
-		duk_put_global_string(ctx, "state");
-	}
-	else {
-		duk_pop(ctx);
-	}
-	/* 备份到全局对象的隐藏属性 */
-	duk_push_global_object(ctx);
-	duk_get_global_string(ctx, "state");
-	duk_put_prop_string(ctx, -2, "\xffjsx_state");
-	duk_pop(ctx);
-}
-
 void jsx_set_args(jsx_p jsx, int argc, char* argv[])
 {
 	duk_context* ctx = jsx->ctx;
@@ -282,67 +271,48 @@ void jsx_set_args(jsx_p jsx, int argc, char* argv[])
 	duk_put_global_string(ctx, "args");
 }
 
-static void jsx_restore_state(jsx_p jsx)
-{
-	duk_context* ctx = jsx->ctx;
-	duk_push_global_object(ctx);
-	duk_get_prop_string(ctx, -1, "\xffjsx_state");
-	if (!duk_is_undefined(ctx, -1)) {
-		duk_put_global_string(ctx, "state");
-	}
-	else {
-		duk_pop(ctx);
-		jsx_init_state(jsx);
-	}
-	duk_pop(ctx);  /* pop global object */
-}
-
-/* ===== setEnv / getEnv (heap stash 持久化) ===== */
-static void ensure_env_obj(duk_context* ctx)
-{
-	duk_push_heap_stash(ctx);
-	duk_get_prop_string(ctx, -1, "\xff" "env");
-	if (duk_is_undefined(ctx, -1)) {
-		duk_pop(ctx);
-		duk_push_object(ctx);
-		duk_dup_top(ctx);
-		duk_put_prop_string(ctx, -3, "\xff" "env");
-	}
-	/* stack: stash, env_obj */
-	duk_remove(ctx, -2);  /* remove stash */
-}
+/* ===== set_env / get_env (独立 env heap，类似 Lua) ===== */
 static duk_ret_t js_set_env(duk_context* ctx)
 {
-	ensure_env_obj(ctx);
-	/* stack: env_obj */
-	duk_dup(ctx, 0);  /* key */
-	duk_dup(ctx, 1);  /* value */
-	duk_put_prop(ctx, -3);
-	duk_pop(ctx);  /* env_obj */
+	/* 从主 ctx heap stash 获取 jsx 指针 */
+	duk_push_heap_stash(ctx);
+	duk_get_prop_string(ctx, -1, "\xff" "jsx_ptr");
+	jsx_p jsx = (jsx_p)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx);
+	if (!jsx || !jsx->env) return 0;
+
+	duk_context* E = jsx->env;
+	const char* key = duk_to_string(ctx, 0);
+	/* JSON stringify value → 存到 env heap */
+	duk_dup(ctx, 1);
+	const char* json = duk_json_encode(ctx, -1);
+	duk_pop(ctx);
+	duk_push_string(E, json);
+	duk_put_global_string(E, key);
 	return 0;
 }
 static duk_ret_t js_get_env(duk_context* ctx)
 {
-	ensure_env_obj(ctx);
-	/* stack: env_obj */
-	duk_dup(ctx, 0);       /* key */
-	duk_get_prop(ctx, -2);  /* env_obj[key] */
-	duk_remove(ctx, -2);   /* remove env_obj */
+	duk_push_heap_stash(ctx);
+	duk_get_prop_string(ctx, -1, "\xff" "jsx_ptr");
+	jsx_p jsx = (jsx_p)duk_to_pointer(ctx, -1);
+	duk_pop_2(ctx);
+	if (!jsx || !jsx->env) return 0;
+
+	duk_context* E = jsx->env;
+	const char* key = duk_to_string(ctx, 0);
+	/* 从 env heap 读取 JSON，反序列化回主 ctx */
+	duk_get_global_string(E, key);
+	if (duk_is_undefined(E, -1)) { duk_pop(E); return 0; }
+	duk_push_string(ctx, duk_to_string(E, -1));  /* push json string to main ctx */
+	duk_pop(E);                                   /* pop from env */
+	duk_json_decode(ctx, -1);                     /* decode on main ctx */
 	return 1;
 }
 
 bool jsx_reload(jsx_p jsx, const char* filename)
 {
-	duk_context* ctx = jsx->ctx;
-	/* 备份 state → 执行脚本 → 恢复 (env 用 heap stash, 自动持久) */
-	duk_push_global_object(ctx);
-	duk_get_global_string(ctx, "state");
-	duk_put_prop_string(ctx, -2, "\xffjsx_state");
-	duk_pop(ctx);
-
-	bool ok = jsx_dofile(jsx, filename);
-	jsx_restore_state(jsx);
-	return ok;
+	return jsx_dofile(jsx, filename);
 }
 
 

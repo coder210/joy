@@ -25,17 +25,12 @@ History:
 static int l_set_env(lua_State* L);
 static int l_get_env(lua_State* L);
 
-#define STATE_KEY ((void*)0x1)
-
 struct luax {
         lua_State* L;
         void* userdata;
         char* watch_file;
         SDL_Time last_mtime;
-
-        
         lua_State* env;
-
         event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
@@ -291,49 +286,6 @@ void luax_set_args(luax_p luax, int argc, char* argv[])
 	lua_setglobal(L, "arg");
 }
 
-void luax_init_state(luax_p luax)
-{
-        lua_State* L = luax->L;
-        // state 表（如果已存在则不覆盖）
-        lua_getglobal(L, "state");
-        if (lua_isnil(L, -1)) {
-                lua_pop(L, 1);
-                lua_newtable(L);
-                lua_setglobal(L, "state");
-        } else {
-                lua_pop(L, 1);
-        }
-        // 立即持久化
-        lua_getglobal(L, "state");
-        lua_pushlightuserdata(L, STATE_KEY);
-        lua_pushvalue(L, -2);
-        lua_settable(L, LUA_REGISTRYINDEX);
-        lua_pop(L, 1);
-}
-
-void luax_save_state(luax_p luax)
-{
-        lua_State* L = luax->L;
-        lua_getglobal(L, "state");
-        lua_pushlightuserdata(L, STATE_KEY);
-        lua_pushvalue(L, -2);
-        lua_settable(L, LUA_REGISTRYINDEX);
-        lua_pop(L, 1);
-}
-
-static void luax_restore_state(luax_p luax)
-{
-        lua_State* L = luax->L;
-        lua_pushlightuserdata(L, STATE_KEY);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        if (!lua_isnil(L, -1)) {
-                lua_setglobal(L, "state");
-        } else {
-                lua_pop(L, 1);
-                luax_init_state(luax);
-        }
-}
-
 bool luax_call_joy(luax_p luax, const char* func, int argc, float dt)
 {
         lua_State* L = luax->L;
@@ -358,11 +310,7 @@ bool luax_call_joy(luax_p luax, const char* func, int argc, float dt)
 
 bool luax_reload(luax_p luax, const char* filename)
 {
-        // 备份当前 state → 执行脚本 → 恢复 state
-        luax_save_state(luax);
-        bool ok = luax_dofile(luax, filename);
-        luax_restore_state(luax);
-        return ok;
+        return luax_dofile(luax, filename);
 }
 
 /* ===== 文件监控 ===== */

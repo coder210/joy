@@ -110,9 +110,7 @@ static int l_newThread(lua_State* L) {
     luax_p w = luax_create();
     if (!w) return luaL_error(L, "luax_create failed");
 
-    /* 用 luax_reload 加载 worker 文件（保留 state，支持热更新） */
-    luax_init_state(w);
-        if (!luax_reload(w, filename)) {
+    if (!luax_reload(w, filename)) {
                 luax_release(w);
                 lua_newtable(L);
                 lua_pushnil(L); lua_setfield(L, -2, "thread");

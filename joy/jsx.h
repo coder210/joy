@@ -29,8 +29,7 @@ extern "C" {
 	/* --- 脚本调用 --- */
 	JOY_API bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt);
 
-	/* --- state 持久化 --- */
-	JOY_API void jsx_init_state(jsx_p jsx);
+	/* --- 热更新 --- */
 	JOY_API bool jsx_reload(jsx_p jsx, const char* filename);
 
 	/* --- 文件监控 --- */

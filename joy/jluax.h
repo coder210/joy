@@ -25,8 +25,7 @@ extern "C" {
 	JOY_API void luax_release(luax_p luax);
 	void* luax_get_state(luax_p luax);
 
-	/* --- state 持久化 --- */
-	JOY_API void luax_init_state(luax_p luax);
+	/* --- 热更新 --- */
 	JOY_API bool luax_reload(luax_p luax, const char* filename);
 	JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt);
 
