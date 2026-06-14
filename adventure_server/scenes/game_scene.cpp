@@ -1,4 +1,4 @@
-#define STB_IMAGE_IMPLEMENTATION
+﻿#define STB_IMAGE_IMPLEMENTATION
 #include <joy/external/stb_image.h>
 #include <unordered_map>
 
@@ -289,19 +289,19 @@ struct game_scene {
 };
 
 // 纹理缓存
-static std::unordered_map<std::string, SDL_Texture*> g_tex_cache;
+static std::unordered_map<std::string, jsdl_texture_t*> g_tex_cache;
 
-SDL_Texture* tex_cache_get(SDL_Renderer* r, const char* path) {
+jsdl_texture_t* tex_cache_get(jsdl_renderer_t* r, const char* path) {
 	std::string k(path);
 	auto it = g_tex_cache.find(k);
 	if (it != g_tex_cache.end()) return it->second;
 	int w, h, ch;
 	auto* d = stbi_load(path, &w, &h, &ch, 4);
 	if (!d) return nullptr;
-	auto* s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, d, w * 4);
+	auto* s = jsdl_create_surface_from(w, h, JSDL_PIXELFORMAT_RGBA32, d, w * 4);
 	if (!s) { stbi_image_free(d); return nullptr; }
-	auto* t = SDL_CreateTextureFromSurface(r, s);
-	SDL_DestroySurface(s);
+	auto* t = jsdl_create_texture_from_surface(r, s);
+	jsdl_destroy_surface(s);
 	stbi_image_free(d);
 	g_tex_cache[k] = t;
 	return t;
@@ -309,7 +309,7 @@ SDL_Texture* tex_cache_get(SDL_Renderer* r, const char* path) {
 
 void tex_cache_clear() {
 	for (auto& kv : g_tex_cache)
-		if (kv.second) SDL_DestroyTexture(kv.second);
+		if (kv.second) jsdl_destroy_texture(kv.second);
 	g_tex_cache.clear();
 }
 
@@ -882,7 +882,7 @@ static void server_on_keypressed(const char* key, int scancode, bool repeat, boo
 		SDL_Event quit_event;
 		SDL_zero(quit_event);
 		quit_event.type = SDL_EVENT_QUIT;
-		SDL_PushEvent(&quit_event);
+		jsdl_push_quit_event();
 	}
 }
 
@@ -960,7 +960,7 @@ static void on_render(scene_p s)
 	if (self->tilemap) {
 		float cx = ctx->camera_x * (float)SERVER_PPM;
 		float cy = ctx->camera_y * (float)SERVER_PPM;
-		jtilemap_render_all(self->tilemap, cx, cy, SDL_GetTicks());
+		jtilemap_render_all(self->tilemap, cx, cy, jsdl_get_ticks());
 	}
 
 	// ---- ECS 实体（碰撞体） ----
@@ -998,20 +998,20 @@ static void on_render(scene_p s)
 			const float SPRITE_OFF = 81.0f;
 			float bar_w = 48.0f, bar_h = 8.0f;
 			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
-			SDL_FRect bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
-			SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, 255);
-			SDL_RenderFillRect(ctx->renderer, &bg);
-			SDL_FRect base = { bar_x, bar_y, bar_w, bar_h };
-			SDL_SetRenderDrawColor(ctx->renderer, 40, 40, 40, 255);
-			SDL_RenderFillRect(ctx->renderer, &base);
+			jsdl_rect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
+			jsdl_set_render_draw_color(ctx->renderer, 0, 0, 0, 255);
+			jsdl_render_fill_rect(ctx->renderer, &bg);
+			jsdl_rect_t base = { bar_x, bar_y, bar_w, bar_h };
+			jsdl_set_render_draw_color(ctx->renderer, 40, 40, 40, 255);
+			jsdl_render_fill_rect(ctx->renderer, &base);
 			float ratio = (float)id.hp / 10.0f;
 			if (ratio > 1.0f) ratio = 1.0f;
 			if (ratio < 0) ratio = 0;
-			SDL_FRect fill = { bar_x, bar_y, bar_w * ratio, bar_h };
-			if (ratio > 0.6f)      SDL_SetRenderDrawColor(ctx->renderer, 60, 210, 60, 255);
-			else if (ratio > 0.3f) SDL_SetRenderDrawColor(ctx->renderer, 210, 210, 60, 255);
-			else                   SDL_SetRenderDrawColor(ctx->renderer, 220, 60, 60, 255);
-			SDL_RenderFillRect(ctx->renderer, &fill);
+			jsdl_rect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
+			if (ratio > 0.6f)      jsdl_set_render_draw_color(ctx->renderer, 60, 210, 60, 255);
+			else if (ratio > 0.3f) jsdl_set_render_draw_color(ctx->renderer, 210, 210, 60, 255);
+			else                   jsdl_set_render_draw_color(ctx->renderer, 220, 60, 60, 255);
+			jsdl_render_fill_rect(ctx->renderer, &fill);
 		});
 	}
 }

@@ -1,5 +1,5 @@
-#include "loading_scene.h"
-#include <SDL3/SDL.h>
+﻿#include "loading_scene.h"
+// SDL types via jsdl
 #include <joy/jcore.h>
 #include <joy/jtextures.h>
 #include <stdlib.h>
@@ -28,7 +28,7 @@ static void on_load(scene_p s) {
     scene_add_root_node(self->scene, menu_layer_get_node(menu));
 
     int logical_w, logical_h;
-    SDL_GetRenderLogicalPresentation(self->ctx->renderer, &logical_w, &logical_h, NULL);
+    jsdl_get_logical_presentation(self->ctx->renderer, &logical_w, &logical_h, NULL);
 
     // ---- Logo ----
     logo_data* ld = new logo_data{};
@@ -38,12 +38,12 @@ static void on_load(scene_p s) {
     scene_node_set_zorder(logo_node, 50);
     scene_node_set_userdata(logo_node, ld);
     scene_node_set_render_callback(logo_node, [](scene_node_p n, const void* arg) {
-        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
         logo_data* ld = (logo_data*)scene_node_get_userdata(n);
         if (!ld || !ld->image) return;
         int w, h;
-        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
-        SDL_FRect dest = { (w - 400) / 2.0f, 40, 400, 100 };
+        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
+        jsdl_rect_t dest = { (w - 400) / 2.0f, 40, 400, 100 };
         image_draw1(ld->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(logo_node, [](scene_node_p n) {
@@ -63,12 +63,12 @@ static void on_load(scene_p s) {
     scene_node_set_zorder(deco_left, 40);
     scene_node_set_userdata(deco_left, dd_l);
     scene_node_set_render_callback(deco_left, [](scene_node_p n, const void* arg) {
-        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
         deco_data* dd = (deco_data*)scene_node_get_userdata(n);
         if (!dd || !dd->image) return;
         int w, h;
-        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
-        SDL_FRect dest = { 20, (h - 200) / 2.0f, 80, 200 };
+        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
+        jsdl_rect_t dest = { 20, (h - 200) / 2.0f, 80, 200 };
         image_draw1(dd->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(deco_left, [](scene_node_p n) {
@@ -88,12 +88,12 @@ static void on_load(scene_p s) {
     scene_node_set_zorder(deco_right, 40);
     scene_node_set_userdata(deco_right, dd_r);
     scene_node_set_render_callback(deco_right, [](scene_node_p n, const void* arg) {
-        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
         deco_data* dd = (deco_data*)scene_node_get_userdata(n);
         if (!dd || !dd->image) return;
         int w, h;
-        SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
-        SDL_FRect dest = { w - 100, (h - 200) / 2.0f, 80, 200 };
+        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
+        jsdl_rect_t dest = { w - 100, (h - 200) / 2.0f, 80, 200 };
         image_draw1(dd->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(deco_right, [](scene_node_p n) {

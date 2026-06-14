@@ -1,8 +1,8 @@
-#ifndef ASSET_MANAGER_H
+﻿#ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 
 #include <joy/jui.h>
-#include <SDL3/SDL.h>
+#include <joy/jsdl.h>
 
 class AssetManager
 {
@@ -11,7 +11,7 @@ public:
 	static AssetManager* GetInstance();
 
 	// 初始化单例，传入 SDL_Renderer，必须在使用前调用一次
-	static void Init(SDL_Renderer* renderer);
+	static void Init(jsdl_renderer_t* renderer);
 
 	// 禁止拷贝和赋值
 	AssetManager(const AssetManager&) = delete;
@@ -23,7 +23,7 @@ public:
 
 private:
 	// 私有构造，只能通过 Init 内部调用
-	explicit AssetManager(SDL_Renderer* renderer);
+	explicit AssetManager(jsdl_renderer_t* renderer);
 
 	static AssetManager* instance_;
 	font_p simheiFont24_;

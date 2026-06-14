@@ -1,4 +1,4 @@
-#ifndef DRAWING_ENTITY_SYSTEM_H
+﻿#ifndef DRAWING_ENTITY_SYSTEM_H
 #define DRAWING_ENTITY_SYSTEM_H
 #include "../flecs.h"
 #include "../context.h"
@@ -13,8 +13,8 @@ static void drawing_entity_system(flecs::entity e,
         TransformComponent& t)
 {
         struct context* ctx = (struct context*)e.world().get_ctx();
-        SDL_FRect body = { 0 };
-        SDL_FRect header = { 0 };
+        jsdl_rect_t body = { 0 };
+        jsdl_rect_t header = { 0 };
         // 摄像机偏移：世界坐标 - 摄像机坐标 → 屏幕像素
         body.x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
         body.y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
@@ -25,11 +25,11 @@ static void drawing_entity_system(flecs::entity e,
                 return;
         }
         else {
-                SDL_SetRenderDrawColor(ctx->renderer, 160, 140, 110, 255);
-                SDL_RenderFillRect(ctx->renderer, &body);
+                jsdl_set_render_draw_color(ctx->renderer, 160, 140, 110, 255);
+                jsdl_render_fill_rect(ctx->renderer, &body);
         }
 
-        SDL_SetRenderDrawColor(ctx->renderer, 0, 0, 0, 255);
+        jsdl_set_render_draw_color(ctx->renderer, 0, 0, 0, 255);
         //SDL_RenderDebugText(ctx->renderer, body.x, body.y + body.h * 0.5f, std::to_string(id.hp).c_str());
 }
 

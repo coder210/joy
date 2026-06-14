@@ -1,10 +1,10 @@
-#ifndef MENU_LAYER_H
+﻿#ifndef MENU_LAYER_H
 #define MENU_LAYER_H
 #include <joy/jui.h>
 #include <joy/jscene.h>
 #include "../context.h"
 
-#define MENU_EVENT (SDL_EVENT_USER + 0x2)
+#define MENU_EVENT (JSDL_EVENT_USER + 0x2)
 
 enum menu_event_code {
         MENU_EVENT_START = 1,

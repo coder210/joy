@@ -1,9 +1,9 @@
-#include "asset_manager.h"
+﻿#include "asset_manager.h"
 
 // 静态成员初始化
 AssetManager* AssetManager::instance_ = nullptr;
 
-AssetManager::AssetManager(SDL_Renderer* renderer)
+AssetManager::AssetManager(jsdl_renderer_t* renderer)
 {
         simheiFont24_ = font_create(renderer, "adventure_server/fonts/simhei.ttf", 24);
 }
@@ -14,7 +14,7 @@ AssetManager::~AssetManager()
                 font_destroy(simheiFont24_);
 }
 
-void AssetManager::Init(SDL_Renderer* renderer)
+void AssetManager::Init(jsdl_renderer_t* renderer)
 {
         if (instance_ == nullptr) {
                 instance_ = new AssetManager(renderer);

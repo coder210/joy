@@ -1,12 +1,12 @@
-#include <SDL3/SDL.h>
+﻿// SDL types via jsdl
 #include "menu_layer.h"
 #include "../asset_manager.h"
 
-static void setup_button_texture(button_p btn, SDL_Renderer* renderer) {
+static void setup_button_texture(button_p btn, jsdl_renderer_t* renderer) {
 	btn->image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides.png");
 	btn->pressed_image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides_pressed.png");
 	// 有纹理后去掉纯色背景
-	SDL_Color transparent = {0, 0, 0, 0};
+	jsdl_color_t transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
 	button_set_pressed_color(btn, transparent);
@@ -38,7 +38,7 @@ static void on_update(scene_node_p n, float dt)
 
 static void on_render(scene_node_p n, const void* arg)
 {
-        SDL_Renderer* renderer = (SDL_Renderer*)arg;
+        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
         menu_layer_p self = (menu_layer_p)scene_node_get_userdata(n);
 }
 
@@ -51,7 +51,7 @@ static void on_destroy(scene_node_p n)
 static void load_menu_buttons(menu_layer_p self, context* ctx)
 {
         int logical_width, logical_height;
-        SDL_GetRenderLogicalPresentation(ctx->renderer, &logical_width, &logical_height, NULL);
+        jsdl_get_logical_presentation(ctx->renderer, &logical_width, &logical_height, NULL);
         font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 
         int btn_width = 120;
@@ -86,7 +86,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_render_callback(start_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Renderer* renderer = (SDL_Renderer*)arg;
+                jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
                 button_draw(self);
         });
         scene_node_add_child(self->scene_node, start_node);
@@ -119,7 +119,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_render_callback(settings_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Renderer* renderer = (SDL_Renderer*)arg;
+                jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
                 button_draw(self);
         });
         scene_node_add_child(self->scene_node, settings_node);
@@ -152,7 +152,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_render_callback(exit_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                SDL_Renderer* renderer = (SDL_Renderer*)arg;
+                jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
                 button_draw(self);
         });
         scene_node_add_child(self->scene_node, exit_node);
@@ -160,10 +160,10 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
 
 menu_layer_p create_menu_layer(context* ctx)
 {
-        menu_layer_p self = (menu_layer_p)SDL_malloc(sizeof(menu_layer_t));
-        SDL_assert(self);
+        menu_layer_p self = (menu_layer_p)malloc(sizeof(menu_layer_t));
+        // jsdl_assert(self);
         self->scene_node = scene_node_create();
-        SDL_assert(self->scene_node);
+        // jsdl_assert(self->scene_node);
         scene_node_set_userdata(self->scene_node, self);
         scene_node_set_event_callback(self->scene_node, on_event);
         scene_node_set_update_callback(self->scene_node, on_update);

@@ -1,13 +1,13 @@
-#include <SDL3/SDL.h>
+﻿// SDL types via jsdl
 #include <string.h>
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
-static void setup_button_texture(button_p btn, SDL_Renderer* renderer) {
+static void setup_button_texture(button_p btn, jsdl_renderer_t* renderer) {
 	btn->image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides.png");
 	btn->pressed_image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides_pressed.png");
 	// 有纹理后去掉纯色背景
-	SDL_Color transparent = {0, 0, 0, 0};
+	jsdl_color_t transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
 	button_set_pressed_color(btn, transparent);
@@ -42,7 +42,7 @@ static void on_update(scene_node_p n, float dt)
 
 static void on_render(scene_node_p n, const void* arg)
 {
-	SDL_Renderer* renderer = (SDL_Renderer*)arg;
+	jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 }
@@ -56,7 +56,7 @@ static void on_destroy(scene_node_p n)
 static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 {
 	int logical_width, logical_height;
-	SDL_GetRenderLogicalPresentation(ctx->renderer, &logical_width, &logical_height, NULL);
+	jsdl_get_logical_presentation(ctx->renderer, &logical_width, &logical_height, NULL);
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 
 	scene_node_p root_node = scene_node_create();
@@ -92,7 +92,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	scene_node_set_render_callback(up_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 		button_draw(self);
 	});
 
@@ -127,7 +127,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	scene_node_set_render_callback(down_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 		button_draw(self);
 	});
 
@@ -162,7 +162,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	scene_node_set_render_callback(left_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 		button_draw(self);
 	});
 
@@ -197,7 +197,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 
 	scene_node_set_render_callback(right_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 		button_draw(self);
 	});
 
@@ -209,7 +209,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 {
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 	int logical_width, logical_height;
-	SDL_GetRenderLogicalPresentation(ctx->renderer, &logical_width, &logical_height, NULL);
+	jsdl_get_logical_presentation(ctx->renderer, &logical_width, &logical_height, NULL);
 
 	scene_node_p root_node = scene_node_create();
 	scene_node_set_position(root_node, logical_width - 100, logical_height - 100);
@@ -244,7 +244,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 
 	scene_node_set_render_callback(attack_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Renderer* renderer = (SDL_Renderer*)arg;
+		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
 		button_draw(self);
 	});
 
@@ -254,10 +254,10 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
 {
 	gameplay_controls_layer_p self;
-	self = (gameplay_controls_layer_p)SDL_malloc(sizeof(gameplay_controls_layer_t));
-	SDL_assert(self);
+	self = (gameplay_controls_layer_p)malloc(sizeof(gameplay_controls_layer_t));
+	// jsdl_assert(self);
 	self->scene_node = scene_node_create();
-	SDL_assert(self->scene_node);
+	// jsdl_assert(self->scene_node);
 	scene_node_set_userdata(self->scene_node, self);
 	scene_node_set_event_callback(self->scene_node, on_event);
 	scene_node_set_update_callback(self->scene_node, on_update);
