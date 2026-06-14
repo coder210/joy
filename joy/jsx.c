@@ -6,7 +6,6 @@
 #include "jsx.h"
 #include "jutils.h"
 #include "jcore.h"
-#include "jevent.h"
 #include "jsclib/jsclib.h"
 
 /* setEnv / getEnv 前向声明 */
@@ -18,10 +17,8 @@ struct jsx {
 	void* userdata;
 	char* watch_file;
 	SDL_Time last_mtime;
-
 	duk_context* env;
-
-	event_callbacks_t cbs;   /* C 层事件回调集合 */
+	jevent_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
 /* 查找 joy.func 并调用 args… */

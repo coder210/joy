@@ -38,23 +38,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
 {
-        scene_manager_handle_event(g_mgr, e);
-
-        if (e->type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
-        if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
-                bool d = (e->type == SDL_EVENT_KEY_DOWN);
-                switch (e->key.scancode) {
-                case SDL_SCANCODE_SPACE:
-                        break;
-                case SDL_SCANCODE_ESCAPE:
-                        if (d) { }
-                        break;
-                case SDL_SCANCODE_R:
-                        break;
-                }
+        if (jsdl_should_close(e)) {
+                return SDL_APP_SUCCESS;
         }
-
-        return SDL_APP_CONTINUE;
+        else {
+                scene_manager_handle_event(g_mgr, e);
+                return SDL_APP_CONTINUE;
+        }
 }
 
 SDL_AppResult SDL_AppIterate(void* appstate)

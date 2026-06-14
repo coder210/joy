@@ -16,7 +16,6 @@ History:
 #include "external/lua/lauxlib.h"
 #include "external/lua_cjson/lua_cjson.h"
 #include "jcore.h"
-#include "jevent.h"
 #include "jutils.h"
 #include "luaclib/luaclib.h"
 #include "jluax.h"
@@ -31,7 +30,7 @@ struct luax {
         char* watch_file;
         SDL_Time last_mtime;
         lua_State* env;
-        event_callbacks_t cbs;   /* C 层事件回调集合 */
+        jevent_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
 

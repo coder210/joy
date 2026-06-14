@@ -13,21 +13,60 @@ History:
 #include <stdbool.h>
 #include "jconfig.h"
 
-typedef struct env env_t, * env_p;
-typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
-typedef struct game_timer {
-	int64_t last_time;          // 上一帧结束时的纳秒时间戳
-	int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
-	double delta_time;         // 未缩放的帧间隔时间（秒）
-	double time_scale;         // 时间缩放因子
-	int target_fps;            // 目标 FPS（0 表示不限制）
-	double target_frame_time;  // 目标每帧时间（秒）
-} game_timer_t, * game_timer_p;
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+	typedef union jwindow jwindow_t, * jwindow_p;
+
+
+	typedef void (*jevent_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
+	typedef void (*jevent_keyreleased_fn)(const char* key, int scancode, void* arg);
+	typedef void (*jevent_mousepressed_fn)(float x, float y, int button, void* arg);
+	typedef void (*jevent_mousereleased_fn)(float x, float y, int button, void* arg);
+	typedef void (*jevent_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
+	typedef void (*jevent_textinput_fn)(const char* text, void* arg);
+	typedef void (*jevent_resize_fn)(int w, int h, void* arg);
+
+	typedef struct jevent_callbacks {
+		jevent_keypressed_fn on_keypressed;
+		jevent_keyreleased_fn on_keyreleased;
+		jevent_mousepressed_fn on_mousepressed;
+		jevent_mousereleased_fn on_mousereleased;
+		jevent_mousemoved_fn on_mousemoved;
+		jevent_textinput_fn on_textinput;
+		jevent_resize_fn on_resize;
+	} jevent_callbacks_t;
+
+
+	typedef struct env env_t, * env_p;
+	typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
+	typedef struct game_timer {
+		int64_t last_time;          // 上一帧结束时的纳秒时间戳
+		int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
+		double delta_time;         // 未缩放的帧间隔时间（秒）
+		double time_scale;         // 时间缩放因子
+		int target_fps;            // 目标 FPS（0 表示不限制）
+		double target_frame_time;  // 目标每帧时间（秒）
+	} game_timer_t, * game_timer_p;
+
+
+
+	JOY_API bool init_env();
+	JOY_API void quit_env(void);
+
+	JOY_API jwindow_p create_window(const char* title, int w, int h);
+	JOY_API void destroy_window(jwindow_p win);
+	JOY_API void* get_raw_window(jwindow_p win);
+
+
+	JOY_API void dispatch_event(jevent_callbacks_t cbs,
+		const void* event, void* arg);
+	JOY_API bool push_quit_event(void);
+	JOY_API bool should_close(void* ev);
+
+
+
 	JOY_API int log_info(const char* format, ...);
 	JOY_API int log_debug(const char* format, ...);
 	JOY_API int log_error(const char* format, ...);

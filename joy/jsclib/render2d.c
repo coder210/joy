@@ -1,5 +1,5 @@
 #include "jsclib.h"
-#include "../jshapes.h"
+#include "../jr2d.h"
 #include "../jtextures.h"
 #include "../jfont.h"
 #include "../jtext.h"
