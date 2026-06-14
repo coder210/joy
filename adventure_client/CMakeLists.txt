@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "*.h" "protocol/*.h" "protocol/*.cc")
+file(GLOB SRC_FILES  "*.h"  "*.c" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -47,9 +47,10 @@ endif()
 # 链接依赖库（由根目录的 add_subdirectory 引入）
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     SDL3::SDL3
-    protobuf::libprotobuf
     joy
 )
+
+# 协议完全由 joy 库的 jprotocol.h 提供，无需额外 include 路径
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位

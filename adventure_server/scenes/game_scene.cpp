@@ -3,10 +3,11 @@
 #include <unordered_map>
 
 #include "../flecs.h"
-#include "../protocol/adventure.pb.h"
+#include <joy/jmsgpack.h>
 #include <string>
 #include <map>
 #include <queue>
+#include <algorithm>
 #include <cstdlib>
 #include <joy/jcore.h>
 #include <joy/jsys.h>
@@ -38,6 +39,199 @@ enum { SERVER_PPM = 50 };
 #include "../systems/drawing_entity_system.h"
 #include "../context.h"
 #include "game_scene.h"
+
+// ===== 协议结构体定义（基于 jmsgpack 二次封装） =====
+enum C2SCmd_ {
+    CMD_UNKNOWN       = 0, CMD_PLAYER_JOIN  = 1, CMD_PLAYER_LEAVE = 2,
+    CMD_PLAYER_INPUT  = 3, CMD_PLAYER_HEART = 4, CMD_LOADING      = 5,
+};
+enum S2CCmd_  { S2C_CMD_NONE = 0, S2C_CMD_LOADING = 1, S2C_CMD_COMMAND = 2, };
+enum S2CType_ { S2C_TYPE_NORMAL = 0, S2C_TYPE_PLAYER = 1, S2C_TYPE_ENEMY = 2, };
+
+struct S2CPlayerJoin { int32_t conv; int64_t position_x, position_y; };
+struct S2CPlayerLeave { int32_t conv; };
+struct S2CPlayerInput { int32_t conv, keycode; };
+struct S2CEntity { int32_t id, type; int64_t position_x, position_y, width, height, hp; int32_t player_conv; };
+
+// ===== jmsgpack 回写入器（写入 std::string） =====
+static int mp_write_cb(void* data, const char* buf, size_t len) {
+    ((std::string*)data)->append(buf, len); return 0;
+}
+
+// ===== 打包辅助（C++ 内联包装 jmsgpack C API） =====
+static void pack_entity(jmsgpack_packer_t* pk, const S2CEntity& e) {
+    jmsgpack_pack_array(pk, 8);
+    jmsgpack_pack_int(pk, e.id); jmsgpack_pack_int(pk, e.type);
+    jmsgpack_pack_int64(pk, e.position_x); jmsgpack_pack_int64(pk, e.position_y);
+    jmsgpack_pack_int64(pk, e.width); jmsgpack_pack_int64(pk, e.height);
+    jmsgpack_pack_int64(pk, e.hp); jmsgpack_pack_int(pk, e.player_conv);
+}
+static void pack_join(jmsgpack_packer_t* pk, const S2CPlayerJoin& j) {
+    jmsgpack_pack_array(pk, 3);
+    jmsgpack_pack_int(pk, j.conv); jmsgpack_pack_int64(pk, j.position_x); jmsgpack_pack_int64(pk, j.position_y);
+}
+static void pack_leave(jmsgpack_packer_t* pk, const S2CPlayerLeave& l) {
+    jmsgpack_pack_array(pk, 1); jmsgpack_pack_int(pk, l.conv);
+}
+static void pack_input(jmsgpack_packer_t* pk, const S2CPlayerInput& i) {
+    jmsgpack_pack_array(pk, 2); jmsgpack_pack_int(pk, i.conv); jmsgpack_pack_int(pk, i.keycode);
+}
+
+// C2S 打包: [cmd, payload]
+static std::string pack_c2s(int cmd, int64_t join_x, int64_t join_y, int input_kc) {
+    char buf[256]; jmsgpack_packer_t pk; jmsgpack_packer_init(&pk, (std::string*)buf, mp_write_cb);
+    // FIXME: 简化实现，直接用 std::string
+    std::string out;
+    jmsgpack_packer_t pk2; jmsgpack_packer_init(&pk2, &out, mp_write_cb);
+    if (cmd == CMD_PLAYER_JOIN) {
+        jmsgpack_pack_array(&pk2, 2); jmsgpack_pack_int(&pk2, cmd);
+        jmsgpack_pack_array(&pk2, 2); jmsgpack_pack_int64(&pk2, join_x); jmsgpack_pack_int64(&pk2, join_y);
+    } else if (cmd == CMD_PLAYER_INPUT) {
+        jmsgpack_pack_array(&pk2, 2); jmsgpack_pack_int(&pk2, cmd);
+        jmsgpack_pack_array(&pk2, 1); jmsgpack_pack_int(&pk2, input_kc);
+    } else {
+        jmsgpack_pack_array(&pk2, 2); jmsgpack_pack_int(&pk2, cmd); jmsgpack_pack_nil(&pk2);
+    }
+    return out;
+}
+
+// S2C 世界打包
+static std::string pack_world(int entity_id, const S2CEntity* entities, int count) {
+    std::string out; jmsgpack_packer_t pk; jmsgpack_packer_init(&pk, &out, mp_write_cb);
+    jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int(&pk, entity_id);
+    jmsgpack_pack_array(&pk, count);
+    for (int i = 0; i < count; i++) pack_entity(&pk, entities[i]);
+    return out;
+}
+
+// S2C 打包: [cmd, payload]
+static std::string pack_s2c(int16_t cmd, int32_t frame_id,
+    const S2CPlayerJoin* joins, int jn, const S2CPlayerLeave* leaves, int ln,
+    const S2CPlayerInput* inputs, int in, const char* checksum)
+{
+    std::string out; jmsgpack_packer_t pk; jmsgpack_packer_init(&pk, &out, mp_write_cb);
+    jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int(&pk, cmd);
+    if (cmd == S2C_CMD_COMMAND) {
+        jmsgpack_pack_array(&pk, 5);
+        jmsgpack_pack_int(&pk, frame_id);
+        jmsgpack_pack_array(&pk, jn); for (int i = 0; i < jn; i++) pack_join(&pk, joins[i]);
+        jmsgpack_pack_array(&pk, ln); for (int i = 0; i < ln; i++) pack_leave(&pk, leaves[i]);
+        jmsgpack_pack_array(&pk, in); for (int i = 0; i < in; i++) pack_input(&pk, inputs[i]);
+        jmsgpack_pack_str(&pk, checksum ? strlen(checksum) : 0);
+        if (checksum) jmsgpack_pack_str_body(&pk, checksum, strlen(checksum));
+    } else {
+        jmsgpack_pack_nil(&pk);
+    }
+    return out;
+}
+
+// S2C 加载打包
+static std::string pack_s2c_loading(int32_t conv, int32_t frame_id, int32_t world_eid,
+    const S2CEntity* entities, int ec)
+{
+    std::string out; jmsgpack_packer_t pk; jmsgpack_packer_init(&pk, &out, mp_write_cb);
+    jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int(&pk, S2C_CMD_LOADING);
+    jmsgpack_pack_array(&pk, 3);
+    jmsgpack_pack_int(&pk, conv); jmsgpack_pack_int(&pk, frame_id);
+    jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int(&pk, world_eid);
+    jmsgpack_pack_array(&pk, ec);
+    for (int i = 0; i < ec; i++) pack_entity(&pk, entities[i]);
+    return out;
+}
+
+// ===== 解包辅助 =====
+static int64_t jmp_int(const jmsgpack_object_t* o) {
+    if (o->type == JMSGPACK_OBJECT_POSITIVE_INTEGER) return (int64_t)o->via.u64;
+    if (o->type == JMSGPACK_OBJECT_NEGATIVE_INTEGER) return o->via.i64;
+    return 0;
+}
+
+// 解包 C2S
+static int unpack_c2s(const char* data, int len, int* cmd, int64_t* join_x, int64_t* join_y, int* input_kc) {
+    jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
+    size_t off = 0;
+    if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return 0; }
+    if (r.data.type != JMSGPACK_OBJECT_ARRAY || r.data.via.array.size < 2) { jmsgpack_unpacked_destroy(&r); return 0; }
+    *cmd = (int)jmp_int(&r.data.via.array.ptr[0]);
+    auto* payload = &r.data.via.array.ptr[1];
+    if (payload->type == JMSGPACK_OBJECT_ARRAY) {
+        switch (*cmd) {
+        case CMD_PLAYER_JOIN:
+            if (payload->via.array.size >= 2) { *join_x = jmp_int(&payload->via.array.ptr[0]); *join_y = jmp_int(&payload->via.array.ptr[1]); }
+            break;
+        case CMD_PLAYER_INPUT:
+            if (payload->via.array.size >= 1) *input_kc = (int)jmp_int(&payload->via.array.ptr[0]);
+            break;
+        }
+    }
+    jmsgpack_unpacked_destroy(&r);
+    return 1;
+}
+
+// 解包 S2C 世界
+static int unpack_world(const char* data, int len, int* eid, S2CEntity* entities, int max_ec) {
+    jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
+    size_t off = 0;
+    if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return 0; }
+    if (r.data.type != JMSGPACK_OBJECT_ARRAY || r.data.via.array.size < 2) { jmsgpack_unpacked_destroy(&r); return 0; }
+    *eid = (int)jmp_int(&r.data.via.array.ptr[0]);
+    auto* arr = &r.data.via.array.ptr[1];
+    int n = (int)arr->via.array.size;
+    if (n > max_ec) n = max_ec;
+    for (int i = 0; i < n; i++) {
+        auto* o = &arr->via.array.ptr[i];
+        if (o->type != JMSGPACK_OBJECT_ARRAY || o->via.array.size < 8) continue;
+        auto& e = entities[i]; memset(&e, 0, sizeof(e));
+        e.id = (int)jmp_int(&o->via.array.ptr[0]); e.type = (int)jmp_int(&o->via.array.ptr[1]);
+        e.position_x = jmp_int(&o->via.array.ptr[2]); e.position_y = jmp_int(&o->via.array.ptr[3]);
+        e.width = jmp_int(&o->via.array.ptr[4]); e.height = jmp_int(&o->via.array.ptr[5]);
+        e.hp = jmp_int(&o->via.array.ptr[6]); e.player_conv = (int)jmp_int(&o->via.array.ptr[7]);
+    }
+    jmsgpack_unpacked_destroy(&r);
+    return n;
+}
+
+// 解包 S2C（获取 cmd + 命令数据）
+static int unpack_s2c_cmd(const char* data, int len, int* cmd, int* frame_id,
+    S2CPlayerJoin* joins, int max_jn, int* jn,
+    S2CPlayerLeave* leaves, int max_ln, int* ln,
+    S2CPlayerInput* inputs, int max_in, int* in)
+{
+    jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
+    size_t off = 0;
+    if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return 0; }
+    if (r.data.type != JMSGPACK_OBJECT_ARRAY || r.data.via.array.size < 2) { jmsgpack_unpacked_destroy(&r); return 0; }
+    *cmd = (int)jmp_int(&r.data.via.array.ptr[0]);
+    auto* pl = &r.data.via.array.ptr[1];
+    if (pl->type != JMSGPACK_OBJECT_ARRAY || pl->via.array.size < 5) { jmsgpack_unpacked_destroy(&r); return 1; }
+    if (pl->via.array.size >= 1) *frame_id = (int)jmp_int(&pl->via.array.ptr[0]);
+    auto xarr = [&](int idx, auto* out, int max, int& cnt) {
+        cnt = 0;
+        if (idx >= (int)pl->via.array.size) return;
+        auto* a = &pl->via.array.ptr[idx];
+        if (a->type != JMSGPACK_OBJECT_ARRAY) return;
+        int n = (int)a->via.array.size; if (n > max) n = max;
+        for (int i = 0; i < n; i++) {
+            auto* o = &a->via.array.ptr[i]; auto& d = out[cnt]; memset(&d, 0, sizeof(d));
+            using T = std::decay_t<decltype(d)>;
+            if constexpr (std::is_same_v<T, S2CPlayerJoin>) {
+                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 3) {
+                    d.conv = (int)jmp_int(&o->via.array.ptr[0]); d.position_x = jmp_int(&o->via.array.ptr[1]); d.position_y = jmp_int(&o->via.array.ptr[2]);
+                    cnt++;
+                }
+            } else if constexpr (std::is_same_v<T, S2CPlayerLeave>) {
+                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 1) { d.conv = (int)jmp_int(&o->via.array.ptr[0]); cnt++; }
+            } else if constexpr (std::is_same_v<T, S2CPlayerInput>) {
+                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 2) { d.conv = (int)jmp_int(&o->via.array.ptr[0]); d.keycode = (int)jmp_int(&o->via.array.ptr[1]); cnt++; }
+            }
+        }
+    };
+    xarr(1, joins, max_jn, *jn);
+    xarr(2, leaves, max_ln, *ln);
+    xarr(3, inputs, max_in, *in);
+    jmsgpack_unpacked_destroy(&r);
+    return 1;
+}
 
 
 // 位掩码定义
@@ -84,9 +278,9 @@ struct game_scene {
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
-	std::vector<adventure::S2CPlayerJoin> player_joins;
-	std::vector<adventure::S2CPlayerLeave> player_leaves;
-	std::vector<adventure::S2CPlayerInput> player_inputs;
+	std::vector<S2CPlayerJoin> player_joins;
+	std::vector<S2CPlayerLeave> player_leaves;
+	std::vector<S2CPlayerInput> player_inputs;
 
 	std::map<int, std::string> commands;
 	std::queue<std::string> command_queue;
@@ -124,7 +318,7 @@ static int GenId(game_scene_p game_scene)
 	return game_scene->g_id++;
 }
 
-static void HandleLoading(game_scene_p g, int conv, adventure::C2S* c2s)
+static void HandleLoading(game_scene_p g, int conv)
 {
 	log_info("C2S_CMD_LOADING");
 	flecs::entity entity = g->world.entity().add<ConnectionComponent>();
@@ -133,51 +327,27 @@ static void HandleLoading(game_scene_p g, int conv, adventure::C2S* c2s)
 	conn->frameid = std::max(g->g_frameid - 1, 1);
 	conn->health = 10;
 
-	adventure::S2C s2c;
-	s2c.set_cmd(adventure::S2C_CMD_LOADING);
-
-	adventure::S2CMap* map = s2c.mutable_map();
-	map->set_conv(conn->conv);
-	map->set_frame_id(conn->frameid);
-	adventure::S2CWorld* s2c_world = map->mutable_world();
 	auto it = g->worlds.find(conn->frameid);
-	if (it == g->worlds.end()) {
-		log_info("没有world");
-		return;
-	}
-	if (!s2c_world->ParseFromArray(it->second.c_str(), it->second.length())) {
-		log_info("解析失败");
-		return;
-	}
-	auto data = s2c.SerializeAsString();
-	netserver_send(g->netserver, conn->conv, data.c_str(), data.length());
+	if (it == g->worlds.end()) { log_info("没有world"); return; }
+
+	S2CEntity entities[512];
+	int ec = 0, eid = 0;
+	ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
+	auto data = pack_s2c_loading(conn->conv, conn->frameid, eid, entities, ec);
+	netserver_send(g->netserver, conn->conv, data.c_str(), (int)data.size());
 }
 
-static void AddPlayerJoin(game_scene_p g, int conv, adventure::C2S* c2s)
-{
-	adventure::S2CPlayerJoin player_join;
-	player_join.set_conv(conv);
-	player_join.set_position_x(c2s->player_join().position_x());
-	player_join.set_position_y(c2s->player_join().position_y());
-	g->player_joins.push_back(player_join);
+static void AddPlayerJoin(game_scene_p g, int conv, int64_t x, int64_t y) {
+	S2CPlayerJoin j = { conv, x, y }; g->player_joins.push_back(j);
+}
+static void AddPlayerLeave(game_scene_p g, int conv) {
+	S2CPlayerLeave l = { conv }; g->player_leaves.push_back(l);
+}
+static void AddPlayerInput(game_scene_p g, int conv, int keycode) {
+	S2CPlayerInput i = { conv, keycode }; g->player_inputs.push_back(i);
 }
 
-static void AddPlayerLeave(game_scene_p g, int conv, adventure::C2S* c2s)
-{
-	adventure::S2CPlayerLeave player_leave;
-	player_leave.set_conv(conv);
-	g->player_leaves.push_back(player_leave);
-}
-
-static void AddPlayerInput(game_scene_p g, int conv, adventure::C2S* c2s)
-{
-	adventure::S2CPlayerInput player_input;
-	player_input.set_conv(conv);
-	player_input.set_keycode(c2s->player_input().keycode());
-	g->player_inputs.push_back(player_input);
-}
-
-static void HandleHeartbeat(game_scene_p g, int conv, adventure::C2S* c2s)
+static void HandleHeartbeat(game_scene_p g, int conv)
 {
 	log_info("%d: C2S_CMD_HEARTBEAT", conv);
 	g->connection_query.each([&](ConnectionComponent& conn) {
@@ -314,31 +484,21 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 	}
 	else if (msg->type == NET_TYPE_DISCONNECTED) {
 		log_info("disconnected=%d", msg->conv);
-		adventure::S2CPlayerLeave playerLeave;
-		playerLeave.set_conv(msg->conv);
-		self->player_leaves.push_back(playerLeave);
+		S2CPlayerLeave l = { msg->conv };
+		self->player_leaves.push_back(l);
 	}
 	else if (msg->type == NET_TYPE_MESSAGE) {
-		adventure::C2S c2s;
-		if (c2s.ParseFromArray(msg_data, msg_len)) {
-			if (c2s.cmd() == adventure::CMD_LOADING) {
-				HandleLoading(self, msg->conv, &c2s);
+		int cmd, input_kc = 0; int64_t join_x = 0, join_y = 0;
+		if (unpack_c2s((const char*)msg_data, (int)msg_len, &cmd, &join_x, &join_y, &input_kc)) {
+			switch (cmd) {
+			case CMD_LOADING:      HandleLoading(self, msg->conv); break;
+			case CMD_PLAYER_JOIN:  AddPlayerJoin(self, msg->conv, join_x, join_y); break;
+			case CMD_PLAYER_LEAVE: AddPlayerLeave(self, msg->conv); break;
+			case CMD_PLAYER_INPUT: AddPlayerInput(self, msg->conv, input_kc); break;
+			case CMD_PLAYER_HEART: HandleHeartbeat(self, msg->conv); break;
 			}
-			else if (c2s.cmd() == adventure::CMD_PLAYER_JOIN) {
-				AddPlayerJoin(self, msg->conv, &c2s);
-			}
-			else if (c2s.cmd() == adventure::CMD_PLAYER_LEAVE) {
-				AddPlayerLeave(self, msg->conv, &c2s);
-			}
-			else if (c2s.cmd() == adventure::CMD_PLAYER_INPUT) {
-				AddPlayerInput(self, msg->conv, &c2s);
-			}
-			else if (c2s.cmd() == adventure::CMD_PLAYER_HEART) {
-				HandleHeartbeat(self, msg->conv, &c2s);
-			}
-		}
-		else {
-			log_info("Failed to parse message from conv=%d, %s", msg->conv, msg_data);
+		} else {
+			log_info("Failed to parse message from conv=%d", msg->conv);
 		}
 	}
 	if (msg_data) {
@@ -349,21 +509,14 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 // 帧同步：收集命令
 static void CollectCommandSystem(game_scene_p self)
 {
-	adventure::S2C s2c;
-	s2c.set_cmd(adventure::S2C_CMD_COMMAND);
+	int frame_id = self->g_frameid++;
 
-	adventure::S2CCommand* command = s2c.mutable_command();
-	command->set_frame_id(self->g_frameid++);
-
-	for (auto& pj : self->player_joins) {
-		*command->add_player_joins() = pj;
-	}
-	for (auto& pl : self->player_leaves) {
-		*command->add_player_leaves() = pl;
-	}
-	for (auto& pi : self->player_inputs) {
-		*command->add_player_inputs() = pi;
-	}
+	S2CPlayerJoin joins[32]; int jn = 0;
+	for (auto& j : self->player_joins) if (jn < 32) joins[jn++] = j;
+	S2CPlayerLeave leaves[32]; int ln = 0;
+	for (auto& l : self->player_leaves) if (ln < 32) leaves[ln++] = l;
+	S2CPlayerInput inputs[64]; int in = 0;
+	for (auto& i : self->player_inputs) if (in < 64) inputs[in++] = i;
 
 	// 只收集玩家实体，按 id 排序确保顺序一致
 	std::vector<std::pair<int, std::pair<fp_t, fp_t>>> positions;
@@ -383,12 +536,10 @@ static void CollectCommandSystem(game_scene_p self)
 	}
 	char md5_out[64] = { 0 };
 	utils_md5x(pos_data.c_str(), pos_data.size(), md5_out);
-	command->set_checksum(md5_out);
-	log_info("[checksum] frame=%d md5=%s", s2c.command().frame_id(), md5_out);
 
-
-	auto command_data = s2c.SerializeAsString();
-	self->commands[command->frame_id()] = command_data;
+	log_info("[checksum] frame=%d md5=%s", frame_id, md5_out);
+	auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, jn, leaves, ln, inputs, in, md5_out);
+	self->commands[frame_id] = command_data;
 	self->command_queue.push(command_data);
 
 	self->player_joins.clear();
@@ -396,31 +547,19 @@ static void CollectCommandSystem(game_scene_p self)
 	self->player_inputs.clear();
 
 	// 收集世界实体状态
-	adventure::S2CWorld s2c_world;
-	s2c_world.set_entity_id(self->g_id);
+	S2CEntity entities[512]; int ec = 0;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
-			if (e.has<LocalOnlyComponent>()) return; // 本地实体不同步到客户端
-			adventure::S2CEntity* ent = s2c_world.add_entities();
-			ent->set_id(id.id);
-			if (e.has<PlayerComponent>()) {
-				ent->set_type(adventure::S2C_TYPE_PLAYER);
-				ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-			}
-			else if (e.has<EnemyComponent>()) {
-				ent->set_type(adventure::S2C_TYPE_ENEMY);
-			}
-			else {
-				ent->set_type(adventure::S2C_TYPE_NORMAL);
-			}
-			ent->set_hp(id.hp);
-			ent->set_position_x(pos.x);
-			ent->set_position_y(pos.y);
-			ent->set_width(r.width);
-			ent->set_height(r.height);
+			if (e.has<LocalOnlyComponent>() || ec >= 512) return;
+			auto& ent = entities[ec++]; memset(&ent, 0, sizeof(ent));
+			ent.id = id.id;
+			if (e.has<PlayerComponent>()) { ent.type = S2C_TYPE_PLAYER; ent.player_conv = e.get_mut<PlayerComponent>()->conv; }
+			else if (e.has<EnemyComponent>()) { ent.type = S2C_TYPE_ENEMY; }
+			else { ent.type = S2C_TYPE_NORMAL; }
+			ent.hp = id.hp; ent.position_x = pos.x; ent.position_y = pos.y;
+			ent.width = r.width; ent.height = r.height;
 		});
-
-	self->worlds[command->frame_id()] = s2c_world.SerializeAsString();
+	self->worlds[frame_id] = pack_world(self->g_id, entities, ec);
 
 	// 限制 worlds 和 commands 最多保留 1000 帧
 	const size_t MAX_FRAMES = 1000;
@@ -520,19 +659,19 @@ static void HandleCommandSystem(game_scene_p self)
 	if (self->command_queue.empty()) return;
 
 	std::string command_data = self->command_queue.front();
-	adventure::S2C s2c;
-
-	if (!s2c.ParseFromString(command_data)) {
+	int cmd, frame_id, jn = 0, ln = 0, in = 0;
+	S2CPlayerJoin joins[32]; S2CPlayerLeave leaves[32]; S2CPlayerInput inputs[64];
+	if (!unpack_s2c_cmd(command_data.c_str(), (int)command_data.size(), &cmd, &frame_id,
+		joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in) || cmd != S2C_CMD_COMMAND) {
 		log_info("Failed to parse command");
-		self->command_queue.pop();
-		return;
+		self->command_queue.pop(); return;
 	}
 
-	// 创建玩家
-	for (auto& player_join : s2c.command().player_joins()) {
-		log_info("%d:CMD_PLAYER_JOIN", player_join.conv());
-		fp_t x = player_join.position_x();
-		fp_t y = player_join.position_y();
+	for (int i = 0; i < jn; i++) {
+		auto& pj = joins[i];
+		log_info("%d:CMD_PLAYER_JOIN", pj.conv);
+		fp_t x = pj.position_x;
+		fp_t y = pj.position_y;
 
 		SpriteSheetComponent ss{};
 		snprintf(ss.path, sizeof(ss.path), "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
@@ -547,7 +686,7 @@ static void HandleCommandSystem(game_scene_p self)
 			.set<LogicPositionComponent>({ x, y })
 			.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
 			.set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
-			.set<PlayerComponent>({ player_join.conv() })
+			.set<PlayerComponent>({ pj.conv })
 			.set<PlayerActionComponent>({})
 			.set<SpriteSheetComponent>(ss)
 			.set<AnimationFrameComponent>({});
@@ -555,29 +694,27 @@ static void HandleCommandSystem(game_scene_p self)
 
 	// 玩家离开
 	self->world.defer_begin();
-	for (auto& player_leave : s2c.command().player_leaves()) {
-		int conv = player_leave.conv();
+	for (int i = 0; i < ln; i++) {
+		int conv = leaves[i].conv;
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-				if (p.conv == conv) {
-					e.destruct();
-				}
+				if (p.conv == conv) e.destruct();
 			});
 	}
 	self->world.defer_end();
 
-	// 应用输入（位置修改在外，状态同步用直接字段赋值）
-	for (auto& input : s2c.command().player_inputs()) {
-		int dir = input_to_dir(input.keycode());
-		bool moving = has_dir(input.keycode());
+	// 应用输入
+	for (int i = 0; i < in; i++) {
+		auto& input = inputs[i];
+		int dir = input_to_dir(input.keycode);
+		bool moving = has_dir(input.keycode);
 
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-				if (p.conv != input.conv()) return;
-				// 直接字段赋值，不触发 LOCKED_STORAGE
+				if (p.conv != input.conv) return;
 				if (e.has<PlayerActionComponent>()) {
 					auto* act = e.get_mut<PlayerActionComponent>();
-					if (input.keycode() & INPUT_ATTACK) {
+					if (input.keycode & INPUT_ATTACK) {
 						act->state = PlayerActionComponent::ATTACK;
 						act->dir = dir;
 					}
@@ -586,13 +723,11 @@ static void HandleCommandSystem(game_scene_p self)
 						act->dir = dir;
 					}
 				}
-				ApplyInput(self, &pos, r, id, input.conv(), input.keycode());
+				ApplyInput(self, &pos, r, id, input.conv, input.keycode);
 			});
 	}
 
-	// ai移动
 	UpdateAI(self);
-
 	self->command_queue.pop();
 }
 
@@ -725,28 +860,19 @@ static void on_load(scene_p s)
 	if (self->tilemap)
 		jtilemap_render_init(self->ctx->renderer, "adventure_server/", NULL);
 
-	adventure::S2CWorld s2c_world;
+	S2CEntity entities[512]; int ec = 0;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
 		LogicRectComponent& r, LogicPositionComponent& pos) {
-			adventure::S2CEntity* ent = s2c_world.add_entities();
-			ent->set_id(id.id);
-			if (e.has<PlayerComponent>()) {
-				ent->set_type(adventure::S2C_TYPE_PLAYER);
-				ent->set_player_conv(e.get_mut<PlayerComponent>()->conv);
-			}
-			else if (e.has<EnemyComponent>()) {
-				ent->set_type(adventure::S2C_TYPE_ENEMY);
-			}
-			else {
-				ent->set_type(adventure::S2C_TYPE_NORMAL);
-			}
-			ent->set_hp(id.hp);
-			ent->set_width(r.width);
-			ent->set_height(r.height);
-			ent->set_position_x(pos.x);
-			ent->set_position_y(pos.y);
+			if (ec >= 512) return;
+			auto& ent = entities[ec++]; memset(&ent, 0, sizeof(ent));
+			ent.id = id.id;
+			if (e.has<PlayerComponent>()) { ent.type = S2C_TYPE_PLAYER; ent.player_conv = e.get_mut<PlayerComponent>()->conv; }
+			else if (e.has<EnemyComponent>()) { ent.type = S2C_TYPE_ENEMY; }
+			else { ent.type = S2C_TYPE_NORMAL; }
+			ent.hp = id.hp; ent.width = r.width; ent.height = r.height;
+			ent.position_x = pos.x; ent.position_y = pos.y;
 		});
-	self->worlds[self->g_frameid] = s2c_world.SerializeAsString();
+	self->worlds[self->g_frameid] = pack_world(self->g_id, entities, ec);
 }
 
 static void server_on_keypressed(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg)

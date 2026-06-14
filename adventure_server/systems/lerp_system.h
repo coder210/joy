@@ -1,5 +1,6 @@
 #ifndef LERP_SYSTEM_H
 #define LERP_SYSTEM_H
+#include <algorithm>
 #include "../flecs.h"
 #include "../components/logic_position_component.h"
 #include "../components/transform_component.h"
