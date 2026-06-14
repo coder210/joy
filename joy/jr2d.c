@@ -2,8 +2,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
-#include "jmath.h"
+#include "external/klib/kvec.h"
 #include "jr2d.h"
+#include "jutils.h"
 
 union jr2d {
         SDL_Renderer* sdl;
@@ -14,6 +15,34 @@ struct image {
         char filepath[JOY_MAX_PATH];
 };
 
+struct text_texture {
+        SDL_Texture* texture;
+        int real_width;
+        int real_height;
+};
+
+
+typedef struct animation_clip {
+        image_p image;
+        float duration;
+        jrect_t src_rect;
+}animation_clip_t, * animation_clip_p;
+
+
+struct animation {
+        jr2d_p r2d;
+        kvec_t(animation_clip_t) clips;
+        bool is_loop;
+        int idx_frame;
+        float total_time;
+        float last_time;
+        vec2_t position;
+        float rotation;
+        vec2_t scale;
+        vec2_t origin;
+};
+
+
 jr2d_p r2d_create(jwindow_p win)
 {
         jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
@@ -21,9 +50,21 @@ jr2d_p r2d_create(jwindow_p win)
         return r2d;
 }
 
+jr2d_p r2d_wrap(void* sdl_renderer)
+{
+        jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
+        r2d->sdl = (SDL_Renderer*)sdl_renderer;
+        return r2d;
+}
+
+void* r2d_unwrap(jr2d_p r2d)
+{
+        return r2d ? (void*)r2d->sdl : NULL;
+}
+
 void r2d_destroy(jr2d_p r2d)
 {
-        SDL_DestroyRenderer(r2d->sdl);
+        if (r2d) { SDL_DestroyRenderer(r2d->sdl); SDL_free(r2d); }
 }
 
 
@@ -34,13 +75,46 @@ void r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
 void r2d_begin(jr2d_p r2d) { SDL_RenderClear(r2d->sdl); }
 void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
-void r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode) {
+void r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode)
+{
         SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
 }
-void r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode) {
+
+void r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode) 
+{
         SDL_RendererLogicalPresentation m;
         SDL_GetRenderLogicalPresentation(r2d->sdl, w, h, &m);
         if (mode) *mode = (int)m;
+}
+
+void r2d_get_size(jr2d_p r2d, int* w, int* h)
+{
+        SDL_GetRenderOutputSize(r2d->sdl, w, h);
+}
+
+bool r2d_set_vsync(jr2d_p r2d, int vsync)
+{
+        return SDL_SetRenderVSync(r2d->sdl, vsync);
+}
+
+bool r2d_set_scale(jr2d_p r2d, float sx, float sy)
+{
+        return SDL_SetRenderScale(r2d->sdl, sx, sy);
+}
+
+void r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a)
+{
+        SDL_SetRenderDrawColorFloat(r2d->sdl, r, g, b, a);
+}
+
+void r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a)
+{
+        SDL_GetRenderDrawColorFloat(r2d->sdl, r, g, b, a);
+}
+
+bool r2d_draw_point(jr2d_p r2d, float x, float y)
+{
+        return SDL_RenderPoint(r2d->sdl, x, y);
 }
 
 bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2)
@@ -384,7 +458,7 @@ void image_draw(image_p image, vec2_t position)
 void image_draw1(image_p image,
 	const jrect_t* srcrect, const jrect_t* destrect)
 {
-	SDL_Renderer* renderer;
+	SDL_Renderer *renderer;
 	renderer = SDL_GetRendererFromTexture(image->texture);
 	SDL_RenderTexture(renderer, image->texture, srcrect, destrect);
 }
@@ -392,7 +466,7 @@ void image_draw1(image_p image,
 void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	float rotation, vec2_t scale, vec2_t origin)
 {
-	SDL_Renderer* renderer;
+	SDL_Renderer *renderer;
 	float w, h;
 	jrect_t dest_rect;
 	vec2_t center;
@@ -418,4 +492,318 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 		rotation * 180.0f / 3.1415926f,
 		&center, flip);
 	//SDL_SetTextureAlphaMod(image->texture, 255);
+}
+
+
+
+text_texture_p text_createx(font_p font,
+        const char* str, int len, jcolor_t color) {
+        text_texture_p texture;
+        int capacity_codepoints = len * 4;
+        int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
+        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        texture = text_create(font, codepoints, num_codepoints, color);
+        SDL_free(codepoints);
+        return texture;
+}
+
+text_texture_p text_create(font_p font,
+        const int* codepoints, int num_codepoints,
+        jcolor_t color)
+{
+        int x, y;
+        float scale;
+        int bitmap_index, pixel_index;
+        unsigned char* bitmap;
+        int advance_width, left_side_bearing;
+        int c_x1, c_y1, c_x2, c_y2;
+        SDL_Surface* surface;
+        unsigned char* surface_pixels;
+        Uint8 pixel;
+        text_texture_p text;
+        int kern;
+
+        x = 0;
+        advance_width = left_side_bearing = 0;
+        scale = font->scale;
+
+        text = (text_texture_p)SDL_malloc(sizeof(text_texture_t));
+        text->real_width = font->fontsize * num_codepoints;
+        text->real_height = font->fontsize;
+        bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
+
+        for (int i = 0; i < num_codepoints; ++i) {
+                stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                y = font->ascent + c_y1;
+
+                int byte_offset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
+                stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
+                x += roundf(advance_width * scale);
+                kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
+                x += roundf(kern * scale);
+        }
+
+        int bitmap_width = text->real_width;
+        text->real_width = x > 0 ? x : 1;
+        surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
+        if (!surface) { SDL_free(bitmap); return NULL; }
+
+        surface_pixels = (Uint8*)surface->pixels;
+        int pitch = surface->pitch / sizeof(Uint8);
+
+        for (y = 0; y < text->real_height; ++y) {
+                for (x = 0; x < text->real_width; ++x) {
+                        bitmap_index = y * bitmap_width + x;
+                        pixel_index = y * (pitch / 4) + x;
+                        pixel = bitmap[bitmap_index];
+                        surface_pixels[pixel_index * 4 + 0] = color.r;
+                        surface_pixels[pixel_index * 4 + 1] = color.g;
+                        surface_pixels[pixel_index * 4 + 2] = color.b;
+                        surface_pixels[pixel_index * 4 + 3] = pixel & color.a;
+                }
+        }
+        text->texture = SDL_CreateTextureFromSurface(font->renderer, surface);
+        SDL_free(bitmap);
+        SDL_DestroySurface(surface);
+        return text;
+}
+
+void text_updatex(text_texture_p text, font_p font,
+        const char* str, int len, jcolor_t color) {
+        text_texture_p texture;
+        int capacity_codepoints = len * 4;
+        int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
+        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        text_update(text, font, codepoints, num_codepoints, color);
+        SDL_free(codepoints);
+}
+
+void text_update(text_texture_p text, font_p font,
+        const int* codepoints, int num_codepoints,
+        jcolor_t color)
+{
+        int x, y;
+        float scale;
+        float w, h;
+        int bitmap_index, pixel_index;
+        unsigned char* bitmap;
+        int advance_width, left_side_bearing;
+        int c_x1, c_y1, c_x2, c_y2;
+        Uint8 pixel;
+        int kern;
+        unsigned char* pixels;
+        SDL_Renderer *renderer;
+
+        x = 0;
+        advance_width = left_side_bearing = 0;
+        scale = font->scale;
+
+        text->real_width = font->fontsize * num_codepoints;
+        text->real_height = font->fontsize;
+
+        bitmap = (unsigned char*)SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
+
+        for (int i = 0; i < num_codepoints; ++i) {
+                stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                y = font->ascent + c_y1;
+
+                int byteOffset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
+                stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
+                x += roundf(advance_width * scale);
+                kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
+                x += roundf(kern * scale);
+        }
+
+        int old_bitmap_width = text->real_width;
+        text->real_width = x > 0 ? x : 1;
+
+        SDL_Surface* surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
+        if (!surface) return;
+
+        Uint8* surface_pixels = (Uint8*)surface->pixels;
+        int pitch = surface->pitch / sizeof(Uint8);
+
+        for (y = 0; y < text->real_height; ++y) {
+                for (x = 0; x < text->real_width; ++x) {
+                        bitmap_index = y * old_bitmap_width + x;
+                        pixel_index = y * (pitch / 4) + x;
+                        pixel = bitmap[bitmap_index];
+                        surface_pixels[pixel_index * 4 + 0] = color.r;
+                        surface_pixels[pixel_index * 4 + 1] = color.g;
+                        surface_pixels[pixel_index * 4 + 2] = color.b;
+                        surface_pixels[pixel_index * 4 + 3] = pixel & color.a;
+                }
+        }
+
+        SDL_GetTextureSize(text->texture, &w, &h);
+
+        if ((text->real_width > w || text->real_height > h) && false) {
+                renderer = SDL_GetRendererFromTexture(text->texture);
+                SDL_DestroyTexture(text->texture);
+                text->texture = SDL_CreateTextureFromSurface(renderer, surface);
+        }
+        else {
+                SDL_Rect rect;
+                rect.x = 0;
+                rect.y = 0;
+                rect.w = text->real_width;
+                rect.h = text->real_height;
+                SDL_UpdateTexture(text->texture, &rect, surface_pixels, pitch);
+        }
+
+        SDL_free(bitmap);
+        SDL_DestroySurface(surface);
+}
+
+void text_destroy(text_texture_p text)
+{
+        if (!text) return;
+        SDL_DestroyTexture(text->texture);
+        SDL_free(text);
+}
+
+void text_print(jr2d_p r2d,
+        text_texture_p text,
+        float x, float y)
+{
+        jrect_t dst_rect = { x, y, (float)text->real_width, (float)text->real_height };
+        SDL_RenderTexture(r2d->sdl, text->texture, NULL, &dst_rect);
+}
+
+void text_printx(jr2d_p r2d, font_p font,
+        const char* str, int len, jcolor_t color, float x, float y)
+{
+        text_texture_p t = text_createx(font, str, len, color);
+        if (t) {
+                text_print(r2d, t, x, y);
+                text_destroy(t);
+        }
+}
+
+int text_get_width(text_texture_p text_tex)
+{
+        return text_tex->real_width;
+}
+
+int text_get_height(text_texture_p text_tex)
+{
+        return text_tex->real_height;
+}
+
+static SDL_Texture* text_get_texture(text_texture_p text_tex)
+{
+        return text_tex ? text_tex->texture : NULL;
+}
+
+
+animation_p animation_create(jr2d_p r2d)
+{
+        animation_p animation;
+        animation = (animation_p)SDL_malloc(sizeof(animation_t));
+        animation->r2d = r2d;
+        animation->is_loop = true;
+        kv_init(animation->clips);
+        animation->position = (vec2_t){ 0, 0 };
+        animation->rotation = 0;
+        animation->scale = (vec2_t){ 1.0f, 1.0f };
+        animation->origin = (vec2_t){ 0.0f, 0.0f };
+        animation->total_time = animation->last_time = animation->idx_frame = 0;
+        return animation;
+}
+
+void animation_destroy(animation_p animation)
+{
+        kv_destroy(animation->clips);
+        SDL_free(animation);
+}
+
+void animation_reset(animation_p animation)
+{
+        uint64_t ticks;
+        animation->idx_frame = 0;
+        animation->total_time = 0;
+        if (utils_get_current_time(&ticks)) {
+                animation->last_time = ticks;
+        }
+        else {
+                animation->last_time = 0;
+        }
+}
+
+void animation_add_clip(animation_p animation,
+        const char* image_path, float duration,
+        jrect_t src_rect)
+{
+        animation_clip_t animation_clip;
+        animation_clip.image = image_create(animation->r2d, image_path);
+        animation_clip.duration = duration;
+        animation_clip.src_rect = src_rect;
+        kv_push(animation_clip_t, animation->clips, animation_clip);
+}
+
+bool animation_is_finished(animation_p animation)
+{
+        if (animation->is_loop) {
+                return false;
+        }
+        else {
+                return (animation->idx_frame == kv_size(animation->clips));
+        }
+}
+
+void animation_set_position(animation_p animation, float x, float y)
+{
+        animation->position.x = x;
+        animation->position.y = y;
+}
+
+void animation_set_scale(animation_p animation, float x, float y)
+{
+        animation->scale.x = x;
+        animation->scale.y = y;
+}
+
+void animation_set_rotation(animation_p animation, float rotation)
+{
+        animation->rotation = rotation;
+}
+
+void animation_update(animation_p animation, float dt)
+{
+        animation_clip_p animation_clip;
+        if (kv_size(animation->clips) <= 0) {
+                return;
+        }
+
+        animation_clip = &kv_A(animation->clips, animation->idx_frame);
+        animation->total_time += dt;
+        if (animation->total_time >= animation_clip->duration) {
+                if (animation->idx_frame >= kv_size(animation->clips) - 1) {
+                        if (animation->is_loop)
+                                animation->idx_frame = 0;
+                        else
+                                animation->idx_frame = kv_size(animation->clips) - 1;
+                }
+                else {
+                        animation->idx_frame += 1;
+                }
+                animation->total_time -= animation_clip->duration;
+        }
+}
+
+void animation_draw(animation_p animation, jrect_t* camera)
+{
+        animation_clip_p animation_clip;
+        float r_x, r_y;
+        jrect_t dest_rect;
+        vec2_t center = { 0 };
+
+        if (kv_size(animation->clips) <= 0) {
+                return;
+        }
+
+        animation_clip = &kv_A(animation->clips, animation->idx_frame);
+        image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
 }

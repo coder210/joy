@@ -3,9 +3,9 @@
 #include "jsclib.h"
 #include "../jui.h"
 
-static SDL_Color read_color(duk_context* ctx, int idx)
+static jcolor_t read_color(duk_context* ctx, int idx)
 {
-	SDL_Color c = { 255, 255, 255, 255 };
+	jcolor_t c = { 255, 255, 255, 255 };
 	if (duk_is_object(ctx, idx)) {
 		duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
 		duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
@@ -15,7 +15,7 @@ static SDL_Color read_color(duk_context* ctx, int idx)
 	return c;
 }
 
-#define REN(n) ((SDL_Renderer*)duk_get_pointer(ctx, n))
+#define REN(n) ((jr2d_p)duk_get_pointer(ctx, n))
 #define PTR(n) duk_get_pointer(ctx, n)
 #define NUM(n) ((float)duk_to_number(ctx, n))
 #define INT(n) ((int)duk_to_number(ctx, n))
@@ -30,16 +30,16 @@ static duk_ret_t jui_label_draw(duk_context* ctx) { label_draw((label_p)PTR(0));
 static duk_ret_t jui_button_create(duk_context* ctx) { duk_push_pointer(ctx, button_create(REN(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_button_destroy(duk_context* ctx) { button_destroy((button_p)PTR(0)); return 0; }
 static duk_ret_t jui_button_set_position(duk_context* ctx) { button_set_position((button_p)PTR(0), NUM(1), NUM(2)); return 0; }
-static duk_ret_t jui_button_set_text(duk_context* ctx) { button_p b=(button_p)PTR(0); font_p fp=(font_p)PTR(1); const char* s=STR(2); SDL_Color c={255,255,255,255}; if(duk_is_object(ctx,3)) c=read_color(ctx,3); button_set_textx(b, fp, s, strlen(s), c); return 0; }
+static duk_ret_t jui_button_set_text(duk_context* ctx) { button_p b=(button_p)PTR(0); font_p fp=(font_p)PTR(1); const char* s=STR(2); jcolor_t c={255,255,255,255}; if(duk_is_object(ctx,3)) c=read_color(ctx,3); button_set_textx(b, fp, s, strlen(s), c); return 0; }
 static duk_ret_t jui_button_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, button_is_hovered((button_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_button_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, button_is_pressed((button_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_button_set_hovered(duk_context* ctx) { button_set_hovered((button_p)PTR(0), BOOL(1)); return 0; }
 static duk_ret_t jui_button_set_pressed(duk_context* ctx) { button_set_pressed((button_p)PTR(0), BOOL(1)); return 0; }
 static duk_ret_t jui_button_draw(duk_context* ctx) { button_draw((button_p)PTR(0)); return 0; }
 
-static duk_ret_t jui_combobox_create(duk_context* ctx) { SDL_Renderer* r=REN(0); SDL_FRect rect={NUM(1),NUM(2),NUM(3),NUM(4)}; duk_push_pointer(ctx, combobox_create(r, rect)); return 1; }
+static duk_ret_t jui_combobox_create(duk_context* ctx) { jr2d_p r=REN(0); jrect_t rect={NUM(1),NUM(2),NUM(3),NUM(4)}; duk_push_pointer(ctx, combobox_create(r, rect)); return 1; }
 static duk_ret_t jui_combobox_destroy(duk_context* ctx) { combobox_destroy((combobox_p)PTR(0)); return 0; }
-static duk_ret_t jui_combobox_additem(duk_context* ctx) { combobox_p c=(combobox_p)PTR(0); if(c->item_count>=20) return 0; const char* text=STR(1); font_p fp=(font_p)PTR(2); SDL_Color col={0,0,0,255}; combobox_item_p item=&c->items[c->item_count]; item->text=text_createx(fp,text,strlen(text),col); item->is_selected=false; c->item_count++; c->dropdown_rect.h=c->item_count*c->item_height; return 0; }
+static duk_ret_t jui_combobox_additem(duk_context* ctx) { combobox_p c=(combobox_p)PTR(0); if(c->item_count>=20) return 0; const char* text=STR(1); font_p fp=(font_p)PTR(2); jcolor_t col={0,0,0,255}; combobox_item_p item=&c->items[c->item_count]; item->text=text_createx(fp,text,strlen(text),col); item->is_selected=false; c->item_count++; c->dropdown_rect.h=c->item_count*c->item_height; return 0; }
 static duk_ret_t jui_combobox_draw(duk_context* ctx) { combobox_draw((combobox_p)PTR(0)); return 0; }
 static duk_ret_t jui_combobox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, combobox_is_pressed((combobox_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_combobox_is_open(duk_context* ctx) { duk_push_boolean(ctx, combobox_is_open((combobox_p)PTR(0))); return 1; }
@@ -65,10 +65,10 @@ static duk_ret_t jui_radiogroup_add_button(duk_context* ctx) { radio_button_grou
 static duk_ret_t jui_radiogroup_set_selected(duk_context* ctx) { radio_button_group_set_selected((radio_button_group_p)PTR(0), INT(1)); return 0; }
 static duk_ret_t jui_radiogroup_draw(duk_context* ctx) { radio_button_group_draw((radio_button_group_p)PTR(0), REN(1)); return 0; }
 
-static duk_ret_t jui_datagrid_create(duk_context* ctx) { SDL_Renderer* r=REN(0); SDL_Rect rect={INT(1),INT(2),INT(3),INT(4)}; duk_push_pointer(ctx, datagrid_create(r, rect, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
+static duk_ret_t jui_datagrid_create(duk_context* ctx) { jr2d_p r=REN(0); SDL_Rect rect={INT(1),INT(2),INT(3),INT(4)}; duk_push_pointer(ctx, datagrid_create(r, rect, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
 static duk_ret_t jui_datagrid_destroy(duk_context* ctx) { datagrid_destroy((datagrid_p)PTR(0)); return 0; }
 static duk_ret_t jui_datagrid_draw(duk_context* ctx) { datagrid_draw((datagrid_p)PTR(0), REN(1)); return 0; }
-static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) { datagrid_p g=(datagrid_p)PTR(0); font_p fp=(font_p)PTR(1); SDL_Color col={0,0,0,255}; int n=(int)duk_get_length(ctx,2); for(int i=0;i<n&&i<g->col_count;i++){ duk_get_prop_index(ctx,2,(duk_uarridx_t)i); const char* text=duk_to_string(ctx,-1); if(g->headers[i]) text_destroy(g->headers[i]); g->headers[i]=text_createx(fp,text,strlen(text),col); duk_pop(ctx); } return 0; }
+static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) { datagrid_p g=(datagrid_p)PTR(0); font_p fp=(font_p)PTR(1); jcolor_t col={0,0,0,255}; int n=(int)duk_get_length(ctx,2); for(int i=0;i<n&&i<g->col_count;i++){ duk_get_prop_index(ctx,2,(duk_uarridx_t)i); const char* text=duk_to_string(ctx,-1); if(g->headers[i]) text_destroy(g->headers[i]); g->headers[i]=text_createx(fp,text,strlen(text),col); duk_pop(ctx); } return 0; }
 static duk_ret_t jui_datagrid_addrow(duk_context* ctx) { datagrid_p g=(datagrid_p)PTR(0); int n=(int)duk_get_length(ctx,1); if(n>g->col_count) n=g->col_count; const char** row=(const char**)malloc(n*sizeof(char*)); for(int i=0;i<n;i++){ duk_get_prop_index(ctx,1,(duk_uarridx_t)i); row[i]=duk_to_string(ctx,-1); duk_pop(ctx); } datagrid_addrow(g,row); free(row); return 0; }
 static duk_ret_t jui_datagrid_hit_row(duk_context* ctx) { duk_push_number(ctx,(duk_double_t)datagrid_hit_row((datagrid_p)PTR(0),NUM(1),NUM(2))); return 1; }
 static duk_ret_t jui_datagrid_scroll(duk_context* ctx) { datagrid_scroll((datagrid_p)PTR(0),INT(1)); return 0; }
@@ -76,7 +76,7 @@ static duk_ret_t jui_datagrid_set_selected_row(duk_context* ctx) { datagrid_set_
 static duk_ret_t jui_datagrid_get_row_count(duk_context* ctx) { duk_push_number(ctx,(duk_double_t)((datagrid_p)PTR(0))->row_count); return 1; }
 static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) { datagrid_p g=(datagrid_p)PTR(0); int r=INT(1),c=INT(2); if(r>=0&&(size_t)r<kv_size(g->data)&&c>=0&&c<g->col_count){ char* v=kv_A(kv_A(g->data,r),c); if(v){ duk_push_string(ctx,v); return 1; } } duk_push_undefined(ctx); return 1; }
 
-static duk_ret_t jui_textinput_create(duk_context* ctx) { SDL_Renderer* r=REN(0); font_p fp=(font_p)PTR(1); SDL_FRect rect={NUM(2),NUM(3),NUM(4),NUM(5)}; duk_push_pointer(ctx, textinput_create(r, rect, fp)); return 1; }
+static duk_ret_t jui_textinput_create(duk_context* ctx) { jr2d_p r=REN(0); font_p fp=(font_p)PTR(1); jrect_t rect={NUM(2),NUM(3),NUM(4),NUM(5)}; duk_push_pointer(ctx, textinput_create(r, rect, fp)); return 1; }
 static duk_ret_t jui_textinput_destroy(duk_context* ctx) { textinput_destroy((textinput_p)PTR(0)); return 0; }
 static duk_ret_t jui_textinput_set_text(duk_context* ctx) { textinput_set_text((textinput_p)PTR(0), STR(1)); return 0; }
 static duk_ret_t jui_textinput_get_text(duk_context* ctx) { duk_push_string(ctx, textinput_get_text((textinput_p)PTR(0))); return 1; }
@@ -114,7 +114,7 @@ static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((
 
 /* ===== Popup ===== */
 static duk_ret_t jui_popup_create(duk_context* ctx) {
-	SDL_Renderer* ren = *(SDL_Renderer**)duk_get_pointer(ctx, 0);
+	jr2d_p ren = *(jr2d_p*)duk_get_pointer(ctx, 0);
 	duk_push_pointer(ctx, popup_create(ren, (float)duk_to_number(ctx, 1), (float)duk_to_number(ctx, 2)));
 	return 1;
 }
@@ -138,7 +138,7 @@ static duk_ret_t jui_popup_is_inside(duk_context* ctx) { duk_push_boolean(ctx, p
 
 /* ===== Tooltip ===== */
 static duk_ret_t jui_tooltip_create(duk_context* ctx) {
-	SDL_Renderer* ren = *(SDL_Renderer**)duk_get_pointer(ctx, 0);
+	jr2d_p ren = *(jr2d_p*)duk_get_pointer(ctx, 0);
 	duk_push_pointer(ctx, tooltip_create(ren, STR(1), -1));
 	return 1;
 }

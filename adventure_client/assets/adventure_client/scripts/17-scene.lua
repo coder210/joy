@@ -1,4 +1,4 @@
--- 场景系统 + UI 控件演示
+﻿-- 场景系统 + UI 控件演示
 local win, ren, font
 local mgr, menu_scene, menu_root_node
 local btn_start, btn_quit, label_title
@@ -7,8 +7,8 @@ local search_result = ""   -- 查找测试结果显示
 
 function joy.load()
     win = joy.window.create("scene-demo", 800, 600, 0)
-    ren = joy.render2d.create(win)
-    font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24)
+    ren = joy.r2d.create(win)
+    font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24)
     local s = joy.scene
     mgr = s.mgr_create()
     set_env("sc_win", win)
@@ -49,11 +49,11 @@ local function draw_node(n, ox, oy)
     local x, y = s.node_get_position(n)
     local wx, wy = ox + x, oy + y
     if ox ~= 0 or oy ~= 0 then
-        joy.render2d.set_color(ren, 80, 80, 120, 180)
-        joy.render2d.line(ren, ox, oy, wx, wy)
+        joy.r2d.set_color(ren, 80, 80, 120, 180)
+        joy.r2d.line(ren, ox, oy, wx, wy)
     end
-    joy.render2d.set_color(ren, 120, 200, 255, 220)
-    joy.render2d.circle(ren, "fill", wx, wy, 6, 10)
+    joy.r2d.set_color(ren, 120, 200, 255, 220)
+    joy.r2d.circle(ren, "fill", wx, wy, 6, 10)
     local child = s.node_get_child(n)
     while child do draw_node(child, wx, wy); child = s.node_get_sibling(child) end
 end
@@ -65,7 +65,7 @@ function joy.hotfix()
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 40, 45, 60, 255)
+    joy.r2d.begin(ren, 40, 45, 60, 255)
     local s = joy.scene
     local cur = s.mgr_current(mgr)
     local name = cur and s.get_name(cur) or "none"
@@ -76,20 +76,20 @@ function joy.draw()
         joy.ui.button.draw(btn_quit)
         if menu_root_node then draw_node(menu_root_node, 400, 460) end
     elseif name == "game" then
-        joy.render2d.set_color(ren, 100, 200, 255, 255)
-        joy.render2d.circle(ren, "fill", 400, 300, 60, 32)
-        joy.render2d.set_color(ren, 255, 255, 255, 255)
-        joy.render2d.print(ren, font, "Game Scene", 340, 280, 255, 255, 255, 255)
+        joy.r2d.set_color(ren, 100, 200, 255, 255)
+        joy.r2d.circle(ren, "fill", 400, 300, 60, 32)
+        joy.r2d.set_color(ren, 255, 255, 255, 255)
+        joy.r2d.print(ren, font, "Game Scene", 340, 280, 255, 255, 255, 255)
         if game_btn_back then joy.ui.button.draw(game_btn_back) end
     end
 
-    joy.render2d.set_color(ren, 200, 200, 200, 255)
-    joy.render2d.print(ren, font, "scene: " .. name, 10, 550, 200, 200, 200, 255)
+    joy.r2d.set_color(ren, 200, 200, 200, 255)
+    joy.r2d.print(ren, font, "scene: " .. name, 10, 550, 200, 200, 200, 255)
     if #search_result > 0 then
-        joy.render2d.set_color(ren, 255, 255, 100, 255)
-        joy.render2d.print(ren, font, search_result, 10, 515, 255, 255, 100, 255)
+        joy.r2d.set_color(ren, 255, 255, 100, 255)
+        joy.r2d.print(ren, font, search_result, 10, 515, 255, 255, 100, 255)
     end
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.mousepressed(x, y, button)
@@ -162,7 +162,7 @@ function joy.keypressed(key)
 end
 
 function joy.quit()
-    if font then joy.render2d.destroy_font(font) end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if font then joy.r2d.destroy_font(font) end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

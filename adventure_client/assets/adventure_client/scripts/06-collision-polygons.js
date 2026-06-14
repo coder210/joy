@@ -10,7 +10,7 @@ joy.load = function()
     ren = get_env("c06_ren");
     if (!ren) {
         win = window.create("polygons", 720, 480, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
     }
 
     poly_a = [
@@ -39,17 +39,17 @@ joy.hotfix = function() {
 
 joy.draw = function()
 {
-    render2d.begin(ren, 0, 0, 0, 255);
+    r2d.begin(ren, 0, 0, 0, 255);
 
     // 碰撞对（poly_a vs poly_b，红色）
     var hit = collision2df.polygons(poly_a, poly_b);
     if (hit.ok)
-        render2d.set_color(ren, 200, 50, 50, 255);
+        r2d.set_color(ren, 200, 50, 50, 255);
     else
-        render2d.set_color(ren, 50, 200, 50, 255);
+        r2d.set_color(ren, 50, 200, 50, 255);
 
     // draw poly_a
-    render2d.polygon(ren, "line",
+    r2d.polygon(ren, "line",
         fp.to_float(poly_a[0].x) * PIXELS_PER_METER,
         fp.to_float(poly_a[0].y) * PIXELS_PER_METER,
         fp.to_float(poly_a[1].x) * PIXELS_PER_METER,
@@ -60,7 +60,7 @@ joy.draw = function()
         fp.to_float(poly_a[3].y) * PIXELS_PER_METER);
 
     // draw poly_b
-    render2d.polygon(ren, "line",
+    r2d.polygon(ren, "line",
         fp.to_float(poly_b[0].x) * PIXELS_PER_METER,
         fp.to_float(poly_b[0].y) * PIXELS_PER_METER,
         fp.to_float(poly_b[1].x) * PIXELS_PER_METER,
@@ -73,11 +73,11 @@ joy.draw = function()
     // 无碰撞对（poly_c vs poly_a，绿色）
     var nohit = collision2df.polygons(poly_a, poly_c);
     if (nohit.ok)
-        render2d.set_color(ren, 200, 50, 50, 255);
+        r2d.set_color(ren, 200, 50, 50, 255);
     else
-        render2d.set_color(ren, 50, 200, 50, 255);
+        r2d.set_color(ren, 50, 200, 50, 255);
 
-    render2d.polygon(ren, "line",
+    r2d.polygon(ren, "line",
         fp.to_float(poly_c[0].x) * PIXELS_PER_METER,
         fp.to_float(poly_c[0].y) * PIXELS_PER_METER,
         fp.to_float(poly_c[1].x) * PIXELS_PER_METER,
@@ -85,7 +85,7 @@ joy.draw = function()
         fp.to_float(poly_c[2].x) * PIXELS_PER_METER,
         fp.to_float(poly_c[2].y) * PIXELS_PER_METER);
 
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.keypressed = function(key, scancode, repeat_, ctrl, shift, alt) {
@@ -102,6 +102,6 @@ joy.mousemoved = function(x, y, dx, dy) {
 };
 
 joy.quit = function() {
-    if (ren) { render2d.destroy(ren); ren = null; }
+    if (ren) { r2d.destroy(ren); ren = null; }
     if (win) { window.destroy(win); win = null; }
 };

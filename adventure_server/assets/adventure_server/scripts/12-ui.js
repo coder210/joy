@@ -4,8 +4,8 @@ var win, ren, font;
 joy.load = function()
 {
     win = window.create("test", 800, 600, 0);
-    ren = render2d.create(win);
-    font = render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24);
+    ren = r2d.create(win);
+    font = r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24);
 
     // label
     state.label = ui.label.create(ren, font);
@@ -71,7 +71,7 @@ joy.update = function(dt)
 
 joy.draw = function()
 {
-    render2d.begin(ren, 50, 50, 50, 255);
+    r2d.begin(ren, 50, 50, 50, 255);
 
     ui.label.draw(state.label);
     ui.textinput.draw(state.input);
@@ -82,11 +82,11 @@ joy.draw = function()
     ui.datagrid.draw(state.dg, ren);
     ui.slider.draw(state.slider);
 
-    render2d.set_color(ren, 255, 255, 255, 255);
-    render2d.print(ren, font, state.log, 10, 420, {r:255, g:255, b:255, a:255});
-    render2d.print(ren, font, "text: " + ui.textinput.get_text(state.input), 10, 450, {r:255, g:255, b:255, a:200});
-    render2d.print(ren, font, "rows: " + ui.datagrid.get_row_count(state.dg), 10, 480, {r:200, g:255, b:255, a:255});
-    render2d.print(ren, font, "slider: " + Math.floor(ui.slider.get_value(state.slider) + 0.5), 10, 510, {r:255, g:255, b:200, a:255});
+    r2d.set_color(ren, 255, 255, 255, 255);
+    r2d.print(ren, font, state.log, 10, 420, {r:255, g:255, b:255, a:255});
+    r2d.print(ren, font, "text: " + ui.textinput.get_text(state.input), 10, 450, {r:255, g:255, b:255, a:200});
+    r2d.print(ren, font, "rows: " + ui.datagrid.get_row_count(state.dg), 10, 480, {r:200, g:255, b:255, a:255});
+    r2d.print(ren, font, "slider: " + Math.floor(ui.slider.get_value(state.slider) + 0.5), 10, 510, {r:255, g:255, b:200, a:255});
 
     ui.combobox.draw(state.cb2);
 
@@ -101,7 +101,7 @@ joy.draw = function()
         ui.tooltip.draw(state.tip, font);
     }
 
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.mousepressed = function(x, y, button)
@@ -237,6 +237,6 @@ joy.keypressed = function(key, scancode, repeat_, ctrl, shift, alt)
 
 joy.quit = function()
 {
-    if (ren) { render2d.destroy(ren); ren = null; }
+    if (ren) { r2d.destroy(ren); ren = null; }
     if (win) { window.destroy(win); win = null; }
 };

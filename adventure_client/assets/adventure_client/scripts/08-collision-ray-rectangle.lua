@@ -9,7 +9,7 @@ local win
 
 function joy.load()
     win = joy.window.create("ray-rect", 720, 480, 0)
-    ren = joy.render2d.create(win)
+    ren = joy.r2d.create(win)
     set_env("c08_win", win)
     set_env("c08_ren", ren)
 end
@@ -20,26 +20,26 @@ function joy.hotfix()
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 0, 0, 0, 255)
+    joy.r2d.begin(ren, 0, 0, 0, 255)
     local result = joy.collision2df.get_ray_rectangle(ray.origin, ray.dir, rect)
     if result.hit then
-        joy.render2d.set_color(ren, 255, 0, 0, 255)
+        joy.r2d.set_color(ren, 255, 0, 0, 255)
         local px = joy.fp.to_float(result.point.x) * PIXELS_PER_METER
         local py = joy.fp.to_float(result.point.y) * PIXELS_PER_METER
-        joy.render2d.circle(ren, "fill", px, py, 5, 16)
+        joy.r2d.circle(ren, "fill", px, py, 5, 16)
     else
-        joy.render2d.set_color(ren, 0, 255, 0, 255)
+        joy.r2d.set_color(ren, 0, 255, 0, 255)
     end
     local rx = joy.fp.to_float(rect.x) * PIXELS_PER_METER
     local ry = joy.fp.to_float(rect.y) * PIXELS_PER_METER
     local rw = joy.fp.to_float(rect.w) * PIXELS_PER_METER
     local rh = joy.fp.to_float(rect.h) * PIXELS_PER_METER
-    joy.render2d.rectangle(ren, "line", rx, ry, rw, rh)
-    joy.render2d.set_color(ren, 255, 255, 255, 255)
-    joy.render2d.line(ren, 0, 0,
+    joy.r2d.rectangle(ren, "line", rx, ry, rw, rh)
+    joy.r2d.set_color(ren, 255, 255, 255, 255)
+    joy.r2d.line(ren, 0, 0,
         joy.fp.to_float(ray.origin.x + ray.dir.x * 5) * PIXELS_PER_METER,
         joy.fp.to_float(ray.origin.y + ray.dir.y * 5) * PIXELS_PER_METER)
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key, scancode, repeat_, ctrl, shift, alt)
@@ -47,6 +47,6 @@ function joy.keypressed(key, scancode, repeat_, ctrl, shift, alt)
 end
 
 function joy.quit()
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

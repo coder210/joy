@@ -1,4 +1,4 @@
--- adventure 游戏客户端
+﻿-- adventure 游戏客户端
 -- 服务端权威移动 + 客户端预测/回滚 + lerp 插值
 local win, ren, font
 local PPM = 50
@@ -364,8 +364,8 @@ local function draw_sprite(e)
         local sx, sy = to_screen(px, py)
         local sw, sh = e.size.w * PPM, e.size.h * PPM
         local r, g = (e.type=="player") and 80 or 220, (e.type=="player") and 130 or 80
-        joy.render2d.set_color(ren, r, g, (e.type=="player") and 255 or 80, 255)
-        joy.render2d.rectangle(ren, "fill", sx-sw/2, sy-sh/2, sw, sh)
+        joy.r2d.set_color(ren, r, g, (e.type=="player") and 255 or 80, 255)
+        joy.r2d.rectangle(ren, "fill", sx-sw/2, sy-sh/2, sw, sh)
     else
         local sx, sy = to_screen(px, py)
         joy.animator.draw(e.anim, sx - FW/2, sy - FH/2)
@@ -374,8 +374,8 @@ local function draw_sprite(e)
         local sx, sy = to_screen(px, py)
         local bw, ratio = 40, e.hp/e.max_hp
         local hp_color = (ratio > 0.6) and {60,200,60,255} or (ratio > 0.3) and {200,200,60,255} or {200,60,60,255}
-        joy.render2d.set_color(ren, 60,60,60,200); joy.render2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw, 4)
-        joy.render2d.set_color(ren, hp_color[1],hp_color[2],hp_color[3],hp_color[4]); joy.render2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw*ratio, 4)
+        joy.r2d.set_color(ren, 60,60,60,200); joy.r2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw, 4)
+        joy.r2d.set_color(ren, hp_color[1],hp_color[2],hp_color[3],hp_color[4]); joy.r2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw*ratio, 4)
     end
 end
 
@@ -387,9 +387,9 @@ end
 
 function joy.load()
     win = joy.window.create("adventure-client", 400, 300, 0)
-    ren = joy.render2d.create(win)
-    joy.render2d.set_logical_presentation(ren, 960, 720, 2)
-    font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
+    ren = joy.r2d.create(win)
+    joy.r2d.set_logical_presentation(ren, 960, 720, 2)
+    font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
     init_tilemap(); init_walls()
 
     local nc = joy.net.netclient
@@ -496,7 +496,7 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 30, 35, 45, 255)
+    joy.r2d.begin(ren, 30, 35, 45, 255)
     local ms = joy.sdl.get_ticks()
     if tilemap then joy.tilemap.render_all(tilemap, camera.x*PPM-480, camera.y*PPM-360, ms) end
 
@@ -508,14 +508,14 @@ function joy.draw()
     local status = "disconnected"
     if connected and not joined then status = "loading..."
     elseif joined then status = ("frame="..server_frame_id.." pending="..#pending_inputs) end
-    joy.render2d.set_color(ren, 40, 40, 50, 200)
-    joy.render2d.rectangle(ren, "fill", 10, 10, 300, 55)
-    joy.render2d.set_color(ren, 200, 200, 200, 255)
-    joy.render2d.print(ren, font, status, 15, 15, 200, 200, 200, 255)
-    joy.render2d.print(ren, font, "FPS:"..fps_display.." players:"..#enetity_list.player.." enemies:"..#enetity_list.enemy, 15, 35, 180, 180, 200, 255)
-    joy.render2d.set_color(ren, 150, 150, 150, 255)
-    joy.render2d.print(ren, font, "WASD=move SPACE=attack Q=quit", 15, 695, 150, 150, 150, 255)
-    joy.render2d.end_frame(ren)
+    joy.r2d.set_color(ren, 40, 40, 50, 200)
+    joy.r2d.rectangle(ren, "fill", 10, 10, 300, 55)
+    joy.r2d.set_color(ren, 200, 200, 200, 255)
+    joy.r2d.print(ren, font, status, 15, 15, 200, 200, 200, 255)
+    joy.r2d.print(ren, font, "FPS:"..fps_display.." players:"..#enetity_list.player.." enemies:"..#enetity_list.enemy, 15, 35, 180, 180, 200, 255)
+    joy.r2d.set_color(ren, 150, 150, 150, 255)
+    joy.r2d.print(ren, font, "WASD=move SPACE=attack Q=quit", 15, 695, 150, 150, 150, 255)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key)

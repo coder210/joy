@@ -19,8 +19,8 @@ joy.load = function()
     font = get_env("bt_font");
     if (!font) {
         win = window.create("behavior-tree", 800, 600, 0);
-        ren = render2d.create(win);
-        font = render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18);
+        ren = r2d.create(win);
+        font = r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18);
 
     var bt = behavior;
 
@@ -77,19 +77,19 @@ joy.update = function(dt) { if (bt_root) behavior.run(bt_root, dt); };
 
 joy.draw = function()
 {
-    render2d.begin(ren, 30, 30, 40, 255);
-    render2d.set_color(ren, 100, 200, 255, 255);
-    render2d.circle(ren, "fill", ai.my_x, ai.my_y, 20, 32);
-    render2d.set_color(ren, 255, 100, 100, 255);
-    render2d.circle(ren, "fill", ai.target_x, ai.target_y, 10, 32);
-    render2d.set_color(ren, 200, 200, 80, 60);
-    render2d.circle(ren, "line", ai.my_x, ai.my_y, 200, 48);
+    r2d.begin(ren, 30, 30, 40, 255);
+    r2d.set_color(ren, 100, 200, 255, 255);
+    r2d.circle(ren, "fill", ai.my_x, ai.my_y, 20, 32);
+    r2d.set_color(ren, 255, 100, 100, 255);
+    r2d.circle(ren, "fill", ai.target_x, ai.target_y, 10, 32);
+    r2d.set_color(ren, 200, 200, 80, 60);
+    r2d.circle(ren, "line", ai.my_x, ai.my_y, 200, 48);
     var dx = ai.target_x - ai.my_x, dy = ai.target_y - ai.my_y, dist = Math.sqrt(dx*dx + dy*dy);
-    render2d.set_color(ren, 255, 255, 255, 255);
-    render2d.print(ren, font, "hp: " + Math.floor(ai.hp), 10, 20, {r:255,g:255,b:255,a:255});
-    render2d.print(ren, font, "dist: " + Math.floor(dist), 10, 45, {r:200,g:200,b:255,a:255});
-    render2d.print(ren, font, "WASD=move  SPACE=attack  Q=quit", 10, 550, {r:180,g:180,b:180,a:255});
-    render2d.end_frame(ren);
+    r2d.set_color(ren, 255, 255, 255, 255);
+    r2d.print(ren, font, "hp: " + Math.floor(ai.hp), 10, 20, {r:255,g:255,b:255,a:255});
+    r2d.print(ren, font, "dist: " + Math.floor(dist), 10, 45, {r:200,g:200,b:255,a:255});
+    r2d.print(ren, font, "WASD=move  SPACE=attack  Q=quit", 10, 550, {r:180,g:180,b:180,a:255});
+    r2d.end_frame(ren);
 };
 
 joy.keypressed = function(key)

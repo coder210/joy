@@ -1,4 +1,4 @@
--- 行为树 demo（完整功能展示）
+﻿-- 行为树 demo（完整功能展示）
 -- 演示：Sequence / Selector / Condition / Action /
 --        Wait / Repeater / Inverter / Succeeder / Parallel
 local win, ren, font
@@ -15,8 +15,8 @@ local ai = {
 
 function joy.load()
     win = joy.window.create("behavior-tree", 800, 600, 0)
-    ren = joy.render2d.create(win)
-    font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18)
+    ren = joy.r2d.create(win)
+    font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18)
     set_env("bt_win", win)
     set_env("bt_ren", ren)
     set_env("bt_font", font)
@@ -91,32 +91,32 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 30, 30, 40, 255)
+    joy.r2d.begin(ren, 30, 30, 40, 255)
 
     -- AI 蓝色
-    joy.render2d.set_color(ren, 100, 200, 255, 255)
-    joy.render2d.circle(ren, "fill", ai.my_x, ai.my_y, 20, 32)
+    joy.r2d.set_color(ren, 100, 200, 255, 255)
+    joy.r2d.circle(ren, "fill", ai.my_x, ai.my_y, 20, 32)
 
     -- 目标红色
-    joy.render2d.set_color(ren, 255, 100, 100, 255)
-    joy.render2d.circle(ren, "fill", ai.target_x, ai.target_y, 10, 32)
+    joy.r2d.set_color(ren, 255, 100, 100, 255)
+    joy.r2d.circle(ren, "fill", ai.target_x, ai.target_y, 10, 32)
 
     -- 检测圈
-    joy.render2d.set_color(ren, 200, 200, 80, 60)
-    joy.render2d.circle(ren, "line", ai.my_x, ai.my_y, 200, 48)
+    joy.r2d.set_color(ren, 200, 200, 80, 60)
+    joy.r2d.circle(ren, "line", ai.my_x, ai.my_y, 200, 48)
 
     local dx = ai.target_x - ai.my_x
     local dy = ai.target_y - ai.my_y
     local dist = math.sqrt(dx * dx + dy * dy)
 
     -- 信息
-    joy.render2d.set_color(ren, 255, 255, 255, 255)
-    joy.render2d.print(ren, font, "state: " .. bt_state, 10, 20, 255, 255, 255, 255)
-    joy.render2d.print(ren, font, "hp: " .. math.floor(ai.hp), 10, 45, 255, 255, 255, 255)
-    joy.render2d.print(ren, font, "dist: " .. math.floor(dist), 10, 70, 200, 200, 255, 255)
-    joy.render2d.print(ren, font, "WASD=移动目标  SPACE=攻击  Q=退出", 10, 550, 180, 180, 180, 255)
+    joy.r2d.set_color(ren, 255, 255, 255, 255)
+    joy.r2d.print(ren, font, "state: " .. bt_state, 10, 20, 255, 255, 255, 255)
+    joy.r2d.print(ren, font, "hp: " .. math.floor(ai.hp), 10, 45, 255, 255, 255, 255)
+    joy.r2d.print(ren, font, "dist: " .. math.floor(dist), 10, 70, 200, 200, 255, 255)
+    joy.r2d.print(ren, font, "WASD=移动目标  SPACE=攻击  Q=退出", 10, 550, 180, 180, 180, 255)
 
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key)
@@ -132,7 +132,7 @@ function joy.keypressed(key)
 end
 
 function joy.quit()
-    if font then joy.render2d.destroy_font(font); font = nil end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if font then joy.r2d.destroy_font(font); font = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

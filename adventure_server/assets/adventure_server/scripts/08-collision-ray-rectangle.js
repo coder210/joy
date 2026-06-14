@@ -11,7 +11,7 @@ joy.load = function()
     ren = get_env("c08_ren");
     if (!ren) {
         var win = window.create("ray-rect", 720, 480, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
         set_env("c08_ren", ren);
     }
 };

@@ -7,7 +7,7 @@ joy.load = function()
     ren = get_env("gfx_ren");
     if (!ren) {
         var win = window.create("graphics", 800, 600, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
         set_env("gfx_ren", ren);
     }
 };

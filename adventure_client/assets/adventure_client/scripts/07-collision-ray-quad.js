@@ -11,7 +11,7 @@ joy.load = function()
     ren = get_env("c07_ren");
     if (!ren) {
         win = window.create("ray-quad", 720, 480, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
     }
 
     ray_pos = { x: fp.from_float(0), y: fp.from_float(0), z: fp.from_float(10) };
@@ -31,15 +31,15 @@ joy.hotfix = function() {
 
 joy.draw = function()
 {
-    render2d.set_color(ren, 0, 0, 0, 255);
-    render2d.begin(ren);
+    r2d.set_color(ren, 0, 0, 0, 255);
+    r2d.begin(ren);
 
     var result = collision3d.ray_quad_int(ray_pos, ray_dir,
         quad[0], quad[1], quad[2], quad[3]);
     if (result.hit) {
-        render2d.set_color(ren, 0, 255, 0, 255);
+        r2d.set_color(ren, 0, 255, 0, 255);
     } else {
-        render2d.set_color(ren, 255, 0, 0, 255);
+        r2d.set_color(ren, 255, 0, 0, 255);
     }
 
     // draw quad (top-down 2D projection)
@@ -51,12 +51,12 @@ joy.draw = function()
     var y3 = fp.to_float(quad[2].y) * PIXELS_PER_METER + 240;
     var x4 = fp.to_float(quad[3].x) * PIXELS_PER_METER + 360;
     var y4 = fp.to_float(quad[3].y) * PIXELS_PER_METER + 240;
-    render2d.line(ren, x1, y1, x2, y2);
-    render2d.line(ren, x2, y2, x3, y3);
-    render2d.line(ren, x3, y3, x4, y4);
-    render2d.line(ren, x4, y4, x1, y1);
+    r2d.line(ren, x1, y1, x2, y2);
+    r2d.line(ren, x2, y2, x3, y3);
+    r2d.line(ren, x3, y3, x4, y4);
+    r2d.line(ren, x4, y4, x1, y1);
 
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.keypressed = function(key, scancode, repeat_, ctrl, shift, alt)
@@ -66,6 +66,6 @@ joy.keypressed = function(key, scancode, repeat_, ctrl, shift, alt)
 
 joy.quit = function()
 {
-    if (ren) { render2d.destroy(ren); ren = null; }
+    if (ren) { r2d.destroy(ren); ren = null; }
     if (win) { window.destroy(win); win = null; }
 };

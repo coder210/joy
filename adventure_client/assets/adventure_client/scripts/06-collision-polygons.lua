@@ -1,4 +1,4 @@
--- Polygon vs Polygon collision detection demo
+﻿-- Polygon vs Polygon collision detection demo
 local PIXELS_PER_METER = 100
 local poly_a, poly_b, poly_c
 
@@ -10,7 +10,7 @@ function joy.load()
     ren = get_env("c06_ren")
     if not ren then
         win = joy.window.create("polygons", 720, 480, 0)
-        ren = joy.render2d.create(win)
+        ren = joy.r2d.create(win)
     end
 
     poly_a = {
@@ -38,14 +38,14 @@ function joy.hotfix()
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 0, 0, 0, 255)
+    joy.r2d.begin(ren, 0, 0, 0, 255)
 
     -- 碰撞对（poly_a vs poly_b，红色）
     local hit = joy.collision2df.polygons(poly_a, poly_b)
     if hit.ok then
-        joy.render2d.set_color(ren, 200, 50, 50, 255)
+        joy.r2d.set_color(ren, 200, 50, 50, 255)
     else
-        joy.render2d.set_color(ren, 50, 200, 50, 255)
+        joy.r2d.set_color(ren, 50, 200, 50, 255)
     end
 
     -- draw poly_a
@@ -54,7 +54,7 @@ function joy.draw()
         table.insert(pts, joy.fp.to_float(v.x) * PIXELS_PER_METER)
         table.insert(pts, joy.fp.to_float(v.y) * PIXELS_PER_METER)
     end
-    joy.render2d.polygon(ren, "line", table.unpack(pts))
+    joy.r2d.polygon(ren, "line", table.unpack(pts))
 
     -- draw poly_b
     pts = {}
@@ -62,23 +62,23 @@ function joy.draw()
         table.insert(pts, joy.fp.to_float(v.x) * PIXELS_PER_METER)
         table.insert(pts, joy.fp.to_float(v.y) * PIXELS_PER_METER)
     end
-    joy.render2d.polygon(ren, "line", table.unpack(pts))
+    joy.r2d.polygon(ren, "line", table.unpack(pts))
 
     -- 无碰撞对（poly_c vs poly_a，绿色）
     local nohit = joy.collision2df.polygons(poly_a, poly_c)
     if nohit.ok then
-        joy.render2d.set_color(ren, 200, 50, 50, 255)
+        joy.r2d.set_color(ren, 200, 50, 50, 255)
     else
-        joy.render2d.set_color(ren, 50, 200, 50, 255)
+        joy.r2d.set_color(ren, 50, 200, 50, 255)
     end
     pts = {}
     for _, v in ipairs(poly_c) do
         table.insert(pts, joy.fp.to_float(v.x) * PIXELS_PER_METER)
         table.insert(pts, joy.fp.to_float(v.y) * PIXELS_PER_METER)
     end
-    joy.render2d.polygon(ren, "line", table.unpack(pts))
+    joy.r2d.polygon(ren, "line", table.unpack(pts))
 
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key, scancode, repeat_, ctrl, shift, alt)

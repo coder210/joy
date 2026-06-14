@@ -1,9 +1,9 @@
-local win
+﻿local win
 
 function joy.load()
     win = joy.window.create("test", 800, 600, 0)
-    local ren = joy.render2d.create(win)
-    local font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24)
+    local ren = joy.r2d.create(win)
+    local font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24)
     local state = {}
 
     set_env("joy_win", win)
@@ -57,7 +57,7 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 50, 50, 50, 255)
+    joy.r2d.begin(ren, 50, 50, 50, 255)
 
     joy.ui.label.draw(state.label)
     joy.ui.textinput.draw(state.input)
@@ -68,14 +68,14 @@ function joy.draw()
     joy.ui.datagrid.draw(state.dg, ren)
     joy.ui.slider.draw(state.slider)
 
-    joy.render2d.set_color(ren, 255, 255, 255, 255)
-    joy.render2d.print(ren, font, state.log, 10, 420, 255, 255, 255, 255)
-    joy.render2d.print(ren, font, "text: " .. joy.ui.textinput.get_text(state.input), 10, 450, 255, 255, 255, 200)
-    joy.render2d.print(ren, font, "rows: " .. joy.ui.datagrid.get_row_count(state.dg), 10, 480, 200, 255, 255, 255)
-    joy.render2d.print(ren, font, "slider: " .. math.floor(joy.ui.slider.get_value(state.slider) + 0.5), 10, 510, 255, 255, 200, 255)
+    joy.r2d.set_color(ren, 255, 255, 255, 255)
+    joy.r2d.print(ren, font, state.log, 10, 420, 255, 255, 255, 255)
+    joy.r2d.print(ren, font, "text: " .. joy.ui.textinput.get_text(state.input), 10, 450, 255, 255, 255, 200)
+    joy.r2d.print(ren, font, "rows: " .. joy.ui.datagrid.get_row_count(state.dg), 10, 480, 200, 255, 255, 255)
+    joy.r2d.print(ren, font, "slider: " .. math.floor(joy.ui.slider.get_value(state.slider) + 0.5), 10, 510, 255, 255, 200, 255)
 
     joy.ui.combobox.draw(state.cb2)
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.mousepressed(x, y, button)
@@ -163,7 +163,7 @@ function joy.keypressed(key, scancode, repeat_, ctrl, shift)
 end
 
 function joy.quit()
-    if font then joy.render2d.destroy_font(font); font = nil end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if font then joy.r2d.destroy_font(font); font = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

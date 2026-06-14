@@ -11,8 +11,8 @@ joy.load = function() {
     mgr = get_env("sc_mgr");
     if (!mgr) {
         win = window.create("scene-demo-js", 800, 600, 0);
-        ren = render2d.create(win);
-        font = render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24);
+        ren = r2d.create(win);
+        font = r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 24);
 
     var s = scene;
     mgr = s.mgr_create();
@@ -55,17 +55,17 @@ function draw_node(n, ox, oy) {
     var pos = s.node_get_position_v2(n);
     var wx = ox + pos.x, wy = oy + pos.y;
     if (ox !== 0 || oy !== 0) {
-        render2d.set_color(ren, 80, 80, 120, 180);
-        render2d.line(ren, ox, oy, wx, wy);
+        r2d.set_color(ren, 80, 80, 120, 180);
+        r2d.line(ren, ox, oy, wx, wy);
     }
-    render2d.set_color(ren, 120, 200, 255, 220);
-    render2d.circle(ren, "fill", wx, wy, 6, 10);
+    r2d.set_color(ren, 120, 200, 255, 220);
+    r2d.circle(ren, "fill", wx, wy, 6, 10);
     var child = s.node_get_child(n);
     while (child) { draw_node(child, wx, wy); child = s.node_get_sibling(child); }
 }
 
 joy.draw = function() {
-    render2d.begin(ren, 40, 45, 60, 255);
+    r2d.begin(ren, 40, 45, 60, 255);
     var s = scene;
     var cur = s.mgr_current(mgr);
     var name = cur ? s.scene_get_name(cur) : "none";
@@ -75,19 +75,19 @@ joy.draw = function() {
         ui.button.draw(btn_quit);
         if (menu_root_node) draw_node(menu_root_node, 400, 460);
     } else if (name === "game") {
-        render2d.set_color(ren, 100, 200, 255, 255);
-        render2d.circle(ren, "fill", 400, 300, 60, 32);
-        render2d.set_color(ren, 255, 255, 255, 255);
-        render2d.print(ren, font, "Game Scene", 340, 280, {r:255,g:255,b:255,a:255});
+        r2d.set_color(ren, 100, 200, 255, 255);
+        r2d.circle(ren, "fill", 400, 300, 60, 32);
+        r2d.set_color(ren, 255, 255, 255, 255);
+        r2d.print(ren, font, "Game Scene", 340, 280, {r:255,g:255,b:255,a:255});
         if (game_btn_back) ui.button.draw(game_btn_back);
     }
 
-    render2d.set_color(ren, 200, 200, 200, 255);
-    render2d.print(ren, font, "scene: " + name, 10, 550, {r:200,g:200,b:200,a:255});
+    r2d.set_color(ren, 200, 200, 200, 255);
+    r2d.print(ren, font, "scene: " + name, 10, 550, {r:200,g:200,b:200,a:255});
     if (search_result.length > 0) {
-        render2d.print(ren, font, search_result, 10, 515, {r:255,g:255,b:100,a:255});
+        r2d.print(ren, font, search_result, 10, 515, {r:255,g:255,b:100,a:255});
     }
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.mousepressed = function(x, y, button) {

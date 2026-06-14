@@ -1,4 +1,4 @@
-/************************************************
+﻿/************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: ui.h
 Description: ui库
@@ -9,30 +9,32 @@ History:
 *************************************************/
 #ifndef UI_H
 #define UI_H
-#include "jtextures.h"
-#include "jtext.h"
 #include "external/klib/kvec.h"
+#include "jr2d.h"
+#include "jmath.h"
+#include "joy.h"
+
 typedef kvec_t(char*) dg_row_t;
 
 typedef struct label {
-	SDL_Renderer* renderer;
-	SDL_FPoint position;
+	jr2d_p renderer;
+	vec2_t position;
 	text_texture_p text;
-	SDL_Color color;
+	jcolor_t color;
 }label_t, * label_p;
 
 
 typedef struct button button_t, * button_p;
 
 struct button {
-	SDL_Renderer* renderer;   // 渲染器
-	SDL_FPoint position;      // 位置
+	jr2d_p renderer;   // 渲染器
+	vec2_t position;      // 位置
 	float width;              // 宽度
 	float height;             // 高度
-	SDL_Color normal_color;   // 正常状态颜色
-	SDL_Color hover_color;    // 悬停状态颜色
-	SDL_Color pressed_color;  // 按下状态颜色
-	SDL_FPoint text_pos;      // 文本相对位置
+	jcolor_t normal_color;   // 正常状态颜色
+	jcolor_t hover_color;    // 悬停状态颜色
+	jcolor_t pressed_color;  // 按下状态颜色
+	vec2_t text_pos;      // 文本相对位置
 	image_p image;            // 按钮正常纹理（可选）
 	image_p pressed_image;    // 按钮按下纹理（可选）
 	text_texture_p text;      // 按钮文件纹理
@@ -41,28 +43,28 @@ struct button {
 };
 
 typedef struct combobox_item {
-	SDL_FRect rect;
+	jrect_t rect;
 	text_texture_p text;
 	bool is_selected;
 } combobox_item_t, * combobox_item_p;
 
 typedef struct combobox {
-	SDL_FRect main_rect;
-	SDL_FRect dropdown_rect;
+	jrect_t main_rect;
+	jrect_t dropdown_rect;
 	combobox_item_t items[20];
 	int item_count;
 	int item_height;
 	int selected_index;
 	bool is_open;
 	SDL_Texture* text;
-	SDL_Color bg_color;
-	SDL_Color text_color;
-	SDL_Color hover_color;
-	SDL_Renderer* renderer;
+	jcolor_t bg_color;
+	jcolor_t text_color;
+	jcolor_t hover_color;
+	jr2d_p renderer;
 } combobox_t, * combobox_p;
 
 typedef struct datagrid {
-	SDL_Renderer* renderer;
+	jr2d_p renderer;
 	int x, y;              // 位置
 	int width, height;     // 尺寸
 	int row_height;        // 行高
@@ -76,11 +78,11 @@ typedef struct datagrid {
 	int* col_widths;       // 列宽
 	bool has_header;   // 是否有表头
 	font_p font;        // 字体
-	SDL_Color grid_color;
-	SDL_Color bg_color;
-	SDL_Color text_color;
-	SDL_Color header_bg_color;
-	SDL_Color selected_color;
+	jcolor_t grid_color;
+	jcolor_t bg_color;
+	jcolor_t text_color;
+	jcolor_t header_bg_color;
+	jcolor_t selected_color;
 } datagrid_t, * datagrid_p;
 
 typedef struct radio_button {
@@ -89,7 +91,7 @@ typedef struct radio_button {
 	bool checked;              // 是否选中
 	char* label;               // 标签文本
 	int group_id;              // 所属组ID
-	SDL_FRect hit_area;         // 点击区域
+	jrect_t hit_area;         // 点击区域
 	bool hover;                // 鼠标悬停状态
 	SDL_FColor r1_color;
 	SDL_FColor r2_color;
@@ -116,26 +118,26 @@ typedef struct checkbox {
 	int size;                   // 大小
 	checkbox_state_t state;     // 当前状态
 	char* label;                // 标签文本
-	SDL_Color box_color;         // 框的颜色
-	SDL_Color check_color;       // 勾选标记的颜色
-	SDL_Color text_color;        // 文本颜色
-	SDL_Color hover_color;       // 悬停颜色
+	jcolor_t box_color;         // 框的颜色
+	jcolor_t check_color;       // 勾选标记的颜色
+	jcolor_t text_color;        // 文本颜色
+	jcolor_t hover_color;       // 悬停颜色
 	bool hover;                 // 悬停状态
 	bool enabled;               // 是否启用
-	SDL_FRect hit_area;           // 点击区域
+	jrect_t hit_area;           // 点击区域
 } checkbox_t, * checkbox_p;
 
 typedef struct joystick joystick_t, * joystick_p;
 
 typedef struct textinput {
-	SDL_Renderer* renderer;
-	SDL_FRect rect;               // 位置和大小
-	SDL_Color bg_color;           // 背景色
-	SDL_Color border_color;       // 边框色
-	SDL_Color text_color;         // 文字色
-	SDL_Color cursor_color;       // 光标色
-	SDL_Color sel_color;          // 选中背景色
-	SDL_Color focus_border_color; // 聚焦时边框色
+	jr2d_p renderer;
+	jrect_t rect;               // 位置和大小
+	jcolor_t bg_color;           // 背景色
+	jcolor_t border_color;       // 边框色
+	jcolor_t text_color;         // 文字色
+	jcolor_t cursor_color;       // 光标色
+	jcolor_t sel_color;          // 选中背景色
+	jcolor_t focus_border_color; // 聚焦时边框色
 	font_p font;                  // 字体
 	char* buffer;                 // 文本缓冲区
 	int buf_len;                  // 缓冲区大小
@@ -157,31 +159,31 @@ typedef struct textinput {
 extern "C" {
 #endif
 
-	JOY_API label_p label_create(SDL_Renderer* renderer, font_p fontinfo, const int* codepoints, int len);
+	JOY_API label_p label_create(jr2d_p renderer, font_p fontinfo, const int* codepoints, int len);
 	JOY_API void label_destroy(label_p label);
-	JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, SDL_Color color);
+	JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
 	JOY_API void label_draw(label_p label);
 
-	JOY_API button_p button_create(SDL_Renderer* renderer, float width, float height);
+	JOY_API button_p button_create(jr2d_p renderer, float width, float height);
 	JOY_API void button_destroy(button_p btn);
 	JOY_API void button_set_position(button_p btn, float x, float y);
-	JOY_API void button_set_normal_color(button_p btn, SDL_Color color);
-	JOY_API void button_set_hover_color(button_p btn, SDL_Color color);
-	JOY_API void button_set_pressed_color(button_p btn, SDL_Color color);
-	JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, SDL_Color color);
-	JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, SDL_Color color);
+	JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
+	JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
+	JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
+	JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, jcolor_t color);
+	JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
 	JOY_API bool button_is_hovered(button_p btn, float x, float y);
 	JOY_API bool button_is_pressed(button_p btn, float x, float y);
 	JOY_API void button_set_hovered(button_p btn, bool v);
 	JOY_API void button_set_pressed(button_p btn, bool v);
 	JOY_API void button_draw(button_p btn);
 
-	JOY_API combobox_p combobox_create(SDL_Renderer* renderer, SDL_FRect rect);
+	JOY_API combobox_p combobox_create(jr2d_p renderer, jrect_t rect);
 	JOY_API void combobox_destroy(combobox_p combobox);
 	JOY_API void combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
-		const int* codepoints, int len, SDL_Color color);
+		const int* codepoints, int len, jcolor_t color);
 	JOY_API void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, 
-		const int* codepoints, int len, SDL_Color color);
+		const int* codepoints, int len, jcolor_t color);
 	JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
 	JOY_API bool combobox_is_open(combobox_p combobox);
 	JOY_API void combobox_set_open(combobox_p combobox, bool v);
@@ -190,13 +192,13 @@ extern "C" {
 	JOY_API int combobox_get_selected(combobox_p combobox);
 	JOY_API void combobox_draw(combobox_p combobox);
 
-	JOY_API datagrid_p datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_header, void* font);
+	JOY_API datagrid_p datagrid_create(jr2d_p renderer, SDL_Rect rect, int col_count, bool has_header, void* font);
 	JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
 	JOY_API void datagrid_setheader(datagrid_p grid, int index, const char *header);
 	JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
 	JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
 	JOY_API void datagrid_destroy(datagrid_p grid);
-	JOY_API void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer);
+	JOY_API void datagrid_draw(datagrid_p grid, jr2d_p renderer);
 	JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
 	JOY_API void datagrid_scroll(datagrid_p grid, int lines);
 	JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
@@ -210,7 +212,7 @@ extern "C" {
 	JOY_API void radio_button_group_set_selected(radio_button_group_p group, int index);
 	JOY_API bool radio_button_is_pressed(radio_button_p radio, float x, float y);
 	JOY_API void radio_button_set_hovered(radio_button_p radio, bool v);
-	JOY_API void radio_button_group_draw(radio_button_group_p group, SDL_Renderer* renderer);
+	JOY_API void radio_button_group_draw(radio_button_group_p group, jr2d_p renderer);
 
 	JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
 	JOY_API void checkbox_destroy(checkbox_p checkbox);
@@ -218,9 +220,9 @@ extern "C" {
 	JOY_API void checkbox_toggle(checkbox_p checkbox);
 	JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
 	JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
-	JOY_API void checkbox_draw(checkbox_p cb, SDL_Renderer* renderer, void* font);
+	JOY_API void checkbox_draw(checkbox_p cb, jr2d_p renderer, void* font);
 
-	JOY_API joystick_p joystick_create(SDL_Renderer* renderer, float x, float y, float radius);
+	JOY_API joystick_p joystick_create(jr2d_p renderer, float x, float y, float radius);
 	JOY_API void joystick_destroy(joystick_p joystick);
 	JOY_API void joystick_draw(joystick_p joystick);
 	JOY_API void joystick_reset(joystick_p joystick);
@@ -229,10 +231,10 @@ extern "C" {
 	JOY_API void joystick_touch_down(joystick_p joystick, float x, float y);
 	JOY_API void joystick_touch_move(joystick_p joystick, float x, float y);
 	JOY_API void joystick_touch_up(joystick_p joystick);
-	JOY_API SDL_FPoint joystick_get_direction(joystick_p joystick);
+	JOY_API vec2_t joystick_get_direction(joystick_p joystick);
 	JOY_API float joystick_get_magnitude(joystick_p joystick);
 
-	JOY_API textinput_p textinput_create(SDL_Renderer* renderer, SDL_FRect rect, font_p font);
+	JOY_API textinput_p textinput_create(jr2d_p renderer, jrect_t rect, font_p font);
 	JOY_API void textinput_destroy(textinput_p ti);
 	JOY_API void textinput_set_text(textinput_p ti, const char* text);
 	JOY_API const char* textinput_get_text(textinput_p ti);
@@ -260,20 +262,20 @@ extern "C" {
 	JOY_API bool textinput_is_focused(textinput_p ti);
 
 typedef struct slider {
-	SDL_Renderer* renderer;
-	SDL_FRect track;             // 滑轨区域
+	jr2d_p renderer;
+	jrect_t track;             // 滑轨区域
 	float min, max;              // 取值范围
 	float value;                 // 当前值
 	float thumb_width;           // 滑块宽度（高度 = track.h）
 	bool is_dragging;            // 是否在拖动
-	SDL_Color track_color;       // 滑轨背景色
-	SDL_Color fill_color;        // 已填充部分颜色
-	SDL_Color thumb_color;       // 滑块颜色
-	SDL_Color thumb_hover_color; // 滑块悬停颜色
+	jcolor_t track_color;       // 滑轨背景色
+	jcolor_t fill_color;        // 已填充部分颜色
+	jcolor_t thumb_color;       // 滑块颜色
+	jcolor_t thumb_hover_color; // 滑块悬停颜色
 	bool hovered;                // 滑块是否悬停
 } slider_t, * slider_p;
 
-JOY_API slider_p slider_create(SDL_Renderer* renderer, float x, float y, float w, float h, float min, float max, float initial);
+JOY_API slider_p slider_create(jr2d_p renderer, float x, float y, float w, float h, float min, float max, float initial);
 JOY_API void slider_destroy(slider_p s);
 JOY_API void slider_set_value(slider_p s, float v);
 JOY_API float slider_get_value(slider_p s);
@@ -289,18 +291,18 @@ JOY_API void slider_set_hovered(slider_p s, bool v);
 #define POPUP_MAX_CONTENT 2048
 
 typedef struct popup {
-	SDL_Renderer* renderer;
+	jr2d_p renderer;
 	float x, y, w, h;
 	float title_height;         // title bar height (set in draw)
 	float padding;
 	float close_size;
-	SDL_Color bg_color;
-	SDL_Color border_color;
-	SDL_Color title_bg_color;
-	SDL_Color content_color;
-	SDL_Color close_color;
-	SDL_Color close_hover_color;
-	SDL_Color title_text_color;
+	jcolor_t bg_color;
+	jcolor_t border_color;
+	jcolor_t title_bg_color;
+	jcolor_t content_color;
+	jcolor_t close_color;
+	jcolor_t close_hover_color;
+	jcolor_t title_text_color;
 	bool visible;
 	bool closeable;
 	char title[POPUP_MAX_TITLE];
@@ -310,7 +312,7 @@ typedef struct popup {
 	float drag_off_x, drag_off_y;
 } popup_t, * popup_p;
 
-JOY_API popup_p popup_create(SDL_Renderer* renderer, float w, float h);
+JOY_API popup_p popup_create(jr2d_p renderer, float w, float h);
 JOY_API void popup_destroy(popup_p p);
 JOY_API void popup_set_title(popup_p p, const char* text, int len);
 JOY_API void popup_set_content(popup_p p, const char* text, int len);
@@ -326,18 +328,18 @@ JOY_API bool popup_is_inside(popup_p p, float mx, float my);
 #define TOOLTIP_MAX_TEXT 256
 
 typedef struct tooltip {
-	SDL_Renderer* renderer;
+	jr2d_p renderer;
 	float x, y;
 	char text[TOOLTIP_MAX_TEXT];
 	int text_len;
-	SDL_Color bg_color;
-	SDL_Color border_color;
-	SDL_Color text_color;
+	jcolor_t bg_color;
+	jcolor_t border_color;
+	jcolor_t text_color;
 	float padding;
 	bool visible;
 } tooltip_t, * tooltip_p;
 
-JOY_API tooltip_p tooltip_create(SDL_Renderer* renderer, const char* text, int len);
+JOY_API tooltip_p tooltip_create(jr2d_p renderer, const char* text, int len);
 JOY_API void tooltip_destroy(tooltip_p t);
 JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
 JOY_API void tooltip_set_position(tooltip_p t, float x, float y);

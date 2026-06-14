@@ -14,8 +14,8 @@ joy.load = function() {
     font = get_env("msg_font");
     if (!font) {
         win = window.create("msgpack-js-test", 800, 600, 0);
-        ren = render2d.create(win);
-        font = render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18);
+        ren = r2d.create(win);
+        font = r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18);
 
     // ====== 测试开始 ======
     add("=== msgpack JS test ===");
@@ -66,13 +66,13 @@ joy.hotfix = function() {
 };
 
 joy.draw = function() {
-    render2d.begin(ren, 25, 30, 40, 255);
+    r2d.begin(ren, 25, 30, 40, 255);
     var y = 20;
     for (var i = 0; i < results.length; i++) {
-        render2d.print(ren, font, results[i], 15, y, 200, 220, 255, 255);
+        r2d.print(ren, font, results[i], 15, y, 200, 220, 255, 255);
         y = y + 22;
     }
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.keypressed = function(key) {

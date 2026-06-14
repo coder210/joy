@@ -1,6 +1,4 @@
-#include "jmath.h"
-#include "jshapes.h"
-#include "jui.h"
+﻿#include "jui.h"
 
 
 // ��ɫ���
@@ -10,7 +8,7 @@
 
 // ҡ�˽ṹ��
 struct joystick {
-	SDL_Renderer* renderer;      // ��Ⱦ��
+	jr2d_p r2d;      // ��Ⱦ��
 	SDL_FRect background;        // ��������
 	SDL_FRect handle;           // �ֱ�����
 	SDL_FPoint center;          // ҡ�����ĵ�
@@ -32,10 +30,10 @@ static float distance_squared(float x1, float y1, float x2, float y2) {
 }
 
 label_p
-label_create(SDL_Renderer* renderer, font_p fontinfo, const int* codepoints, int num_codepoints)
+label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int num_codepoints)
 {
 	label_p label = (label_p)SDL_malloc(sizeof(label_t));
-	label->renderer = renderer;
+	label->r2d = r2d;
 	label->position = (SDL_FPoint){ 0, 0 };
 	label->color = (SDL_Color){ 255, 255,255, 255 };
 	label->text = text_create(fontinfo, codepoints, num_codepoints, label->color);
@@ -68,13 +66,13 @@ void label_draw(label_p label)
 	//SDL_FRect dest_rect;
 	if (!label) return;
 
-	//renderer = label->renderer;
+	//r2d = label->r2d;
 	//dest_rect.x = label->position.x;
 	//dest_rect.y = label->position.y;
 	//dest_rect.w = label->text->w;
 	//dest_rect.h = label->text->h;
-	//SDL_RenderTexture(renderer, label->text, NULL, &dest_rect);
-	text_print(label->renderer, label->text, label->position.x, label->position.y);
+	//SDL_RenderTexture(r2d, label->text, NULL, &dest_rect);
+	text_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
 void label_handle_event(label_p label, SDL_Event* event)
@@ -84,11 +82,11 @@ void label_handle_event(label_p label, SDL_Event* event)
 }
 
 button_p
-button_create(SDL_Renderer* renderer, float width, float height)
+button_create(jr2d_p r2d, float width, float height)
 {
 	button_p btn = (button_p)SDL_malloc(sizeof(button_t));
 	if (!btn) return NULL;
-	btn->renderer = renderer;
+	btn->r2d = r2d;
 	btn->position = (SDL_FPoint){0, 0};
 	btn->width = width;
 	btn->height = height;
@@ -156,7 +154,7 @@ void button_set_position(button_p btn, float x, float y)
 static bool button_hit_test(button_p btn, float x, float y)
 {
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(btn->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(btn->r2d, x, y, &logic.x, &logic.y);
 	return logic.x >= btn->position.x && logic.x <= btn->position.x + btn->width
 	    && logic.y >= btn->position.y && logic.y <= btn->position.y + btn->height;
 }
@@ -197,7 +195,7 @@ void button_destroy(button_p btn)
 
 void button_draw(button_p btn)
 {
-	SDL_Renderer* renderer;
+	jr2d_p r2d;
 	SDL_FRect dest_rect, rect;
 	SDL_Color color;
 	if (!btn) return;
@@ -215,11 +213,11 @@ void button_draw(button_p btn)
 	rect.w = btn->width;
 	rect.h = btn->height;
 
-	renderer = btn->renderer;
-	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-	SDL_RenderFillRect(renderer, &rect);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderRect(renderer, &rect);
+	r2d = btn->r2d;
+	SDL_SetRenderDrawColor(r2d, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(r2d, &rect);
+	SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
+	SDL_RenderRect(r2d, &rect);
 
 	if (btn->is_pressed && btn->pressed_image) {
 		image_draw1(btn->pressed_image, NULL, &rect);
@@ -232,17 +230,17 @@ void button_draw(button_p btn)
 		float height = text_get_height(btn->text);
 		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
 		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
-		text_print(renderer, btn->text, dest_rect.x, dest_rect.y);
+		text_print(r2d, btn->text, dest_rect.x, dest_rect.y);
 	}
 }
 
 /* 事件处理已移至 Lua 层，见 joy.lua 中的 joy.mousepressed/mousereleased/mousemoved */
 
-combobox_p combobox_create(SDL_Renderer* renderer, SDL_FRect rect)
+combobox_p combobox_create(jr2d_p r2d, SDL_FRect rect)
 {
 	combobox_p combobox;
 	combobox = (combobox_p)SDL_malloc(sizeof(combobox_t));
-	combobox->renderer = renderer;
+	combobox->r2d = r2d;
 	combobox->text = NULL;
 	combobox->main_rect = rect;
 	combobox->dropdown_rect.x = rect.x;
@@ -275,19 +273,19 @@ combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
 	if (combobox->text) {
 		SDL_DestroyTexture(combobox->text);
 	}
-	//combobox->text = create_text_texture(combobox->renderer, filename, fontsize, codepoints, len, color);
+	//combobox->text = create_text_texture(combobox->r2d, filename, fontsize, codepoints, len, color);
 }
 
 void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, const int* codepoints, int len, SDL_Color color)
 {
 	combobox_item_p item;
-	SDL_Renderer* renderer;
+	jr2d_p r2d;
 	if (combobox->item_count > 20) {
 		return;
 	}
-	renderer = combobox->renderer;
+	r2d = combobox->r2d;
 	item = combobox->items + combobox->item_count;
-	//item->text = create_text_texture(renderer, filename, fontsize, codepoints, len, color);
+	//item->text = create_text_texture(r2d, filename, fontsize, codepoints, len, color);
 	item->is_selected = false;
 	combobox->item_count++;
 	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
@@ -297,7 +295,7 @@ bool combobox_is_pressed(combobox_p combobox, float x, float y)
 {
 	if (!combobox) return false;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(combobox->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(combobox->r2d, x, y, &logic.x, &logic.y);
 	return SDL_PointInRectFloat(&logic, &combobox->main_rect);
 }
 
@@ -315,7 +313,7 @@ int combobox_hit_item(combobox_p combobox, float x, float y)
 {
 	if (!combobox || !combobox->is_open) return -1;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(combobox->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(combobox->r2d, x, y, &logic.x, &logic.y);
 	for (int i = 0; i < combobox->item_count; i++) {
 		SDL_FRect item_rect = {
 		    combobox->dropdown_rect.x,
@@ -340,17 +338,17 @@ int combobox_get_selected(combobox_p combobox)
 
 void combobox_draw(combobox_p combobox)
 {
-	SDL_Renderer* renderer;
-	renderer = combobox->renderer;
-	SDL_SetRenderDrawColor(renderer, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
-	SDL_RenderFillRect(renderer, &combobox->main_rect);
+	jr2d_p r2d;
+	r2d = combobox->r2d;
+	SDL_SetRenderDrawColor(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
+	SDL_RenderFillRect(r2d, &combobox->main_rect);
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderRect(renderer, &combobox->main_rect);
+	SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
+	SDL_RenderRect(r2d, &combobox->main_rect);
 
 	// ��Ⱦ��ǰѡ�е��ı�
 	if (combobox->selected_index >= 0 && combobox->items[combobox->selected_index].text) {
-		text_print(renderer, combobox->items[combobox->selected_index].text,
+		text_print(r2d, combobox->items[combobox->selected_index].text,
 			combobox->main_rect.x + 5, combobox->main_rect.y);
 	}
 
@@ -358,20 +356,20 @@ void combobox_draw(combobox_p combobox)
 	// ����������Ǵ򿪵ģ���Ⱦѡ���б�
 	if (combobox->is_open) {
 		// ��Ⱦ������ͷ
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
 		SDL_Vertex arrowPoints[3] = {
 		    {combobox->main_rect.x + combobox->main_rect.w - 25, combobox->main_rect.y + 10},
 		    {combobox->main_rect.x + combobox->main_rect.w - 5, combobox->main_rect.y + 10},
 		    {combobox->main_rect.x + combobox->main_rect.w - 15, combobox->main_rect.y + 20}
 		};
-		SDL_RenderGeometry(renderer, NULL, arrowPoints, 3, NULL, 0);
+		SDL_RenderGeometry(r2d, NULL, arrowPoints, 3, NULL, 0);
 
 
-		SDL_SetRenderDrawColor(renderer, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
-		SDL_RenderFillRect(renderer, &combobox->dropdown_rect);
+		SDL_SetRenderDrawColor(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
+		SDL_RenderFillRect(r2d, &combobox->dropdown_rect);
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderRect(renderer, &combobox->dropdown_rect);
+		SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
+		SDL_RenderRect(r2d, &combobox->dropdown_rect);
 
 		combobox_item_p item;
 
@@ -385,41 +383,41 @@ void combobox_draw(combobox_p combobox)
 
 			// ����ǵ�ǰѡ�е��ʹ����ͣ��ɫ
 			if (i == combobox->selected_index) {
-				SDL_SetRenderDrawColor(renderer, combobox->hover_color.r, combobox->hover_color.g, combobox->hover_color.b, combobox->hover_color.a);
-				SDL_RenderFillRect(renderer, &item_rect);
+				SDL_SetRenderDrawColor(r2d, combobox->hover_color.r, combobox->hover_color.g, combobox->hover_color.b, combobox->hover_color.a);
+				SDL_RenderFillRect(r2d, &item_rect);
 			}
 
-			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-			SDL_RenderRect(renderer, &item_rect);
+			SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
+			SDL_RenderRect(r2d, &item_rect);
 
 			item = combobox->items + i;
 			if (item->text) {
-				text_print(renderer, item->text, item_rect.x + 5, item_rect.y);
+				text_print(r2d, item->text, item_rect.x + 5, item_rect.y);
 			}
 		}
 	}
 	else {
 		// ��Ⱦ������ͷ
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(r2d, 0, 0, 0, 255);
 		SDL_Vertex arrowPoints[3] = {
 		    {combobox->main_rect.x + combobox->main_rect.w - 15, combobox->main_rect.y + 10},
 		    {combobox->main_rect.x + combobox->main_rect.w - 25, combobox->main_rect.y + 20},
 		    {combobox->main_rect.x + combobox->main_rect.w - 5, combobox->main_rect.y + 20}
 		};
-		SDL_RenderGeometry(renderer, NULL, arrowPoints, 3, NULL, 0);
+		SDL_RenderGeometry(r2d, NULL, arrowPoints, 3, NULL, 0);
 	}
 }
 
 
 datagrid_p
-datagrid_create(SDL_Renderer* renderer, SDL_Rect rect, int col_count, bool has_header, void* font)
+datagrid_create(jr2d_p r2d, SDL_Rect rect, int col_count, bool has_header, void* font)
 {
 	datagrid_p grid;
 	grid = (datagrid_p)SDL_malloc(sizeof(datagrid_t));
 	if (!grid) return NULL;
 	SDL_memset(grid, 0, sizeof(datagrid_t));
 
-	grid->renderer = renderer;
+	grid->r2d = r2d;
 	grid->x = rect.x;
 	grid->y = rect.y;
 	grid->width = rect.w;
@@ -456,7 +454,7 @@ void datagrid_setheaders(datagrid_p grid, const char* headers)
 	if (!grid->has_header) return;
 	fontinfo = grid->font;
 	for (int i = 0; i < grid->col_count; i++) {
-		//grid->headers[i] = create_text_texture(grid->renderer, fontinfo, headers[i]->array, headers[i]->length, color);
+		//grid->headers[i] = create_text_texture(grid->r2d, fontinfo, headers[i]->array, headers[i]->length, color);
 	}
 }
 
@@ -474,7 +472,7 @@ void datagrid_setheader(datagrid_p grid, int index, const char* header)
 		//update_text_texture(grid->headers[index], fontinfo, header->array, header->length, color);
 	}
 	else {
-		//grid->headers[index] = create_text_texture(grid->renderer, fontinfo, header->array, header->length, color);
+		//grid->headers[index] = create_text_texture(grid->r2d, fontinfo, header->array, header->length, color);
 	}
 }
 
@@ -525,7 +523,7 @@ void datagrid_destroy(datagrid_p grid)
 	SDL_free(grid);
 }
 
-void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
+void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 {
 	// ����ɼ��з�Χ
 	int start_row = grid->scroll_offset;
@@ -534,9 +532,9 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 
 	// ���Ʊ���
 	SDL_Color bg_color = grid->bg_color;
-	SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+	SDL_SetRenderDrawColor(r2d, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
 	SDL_FRect bg_rect = { grid->x, grid->y, grid->width, grid->height };
-	SDL_RenderFillRect(renderer, &bg_rect);
+	SDL_RenderFillRect(r2d, &bg_rect);
 
 	// ���������ߺ�����
 	SDL_Color grid_color = grid->grid_color;
@@ -545,9 +543,9 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 	SDL_Color selected_color = grid->selected_color;
 
 	// ���Ʊ���
-	SDL_SetRenderDrawColor(renderer, header_bg_color.r, header_bg_color.g, header_bg_color.b, header_bg_color.a);
+	SDL_SetRenderDrawColor(r2d, header_bg_color.r, header_bg_color.g, header_bg_color.b, header_bg_color.a);
 	SDL_FRect header_rect = { grid->x, grid->y, grid->width, grid->row_height };
-	SDL_RenderFillRect(renderer, &header_rect);
+	SDL_RenderFillRect(r2d, &header_rect);
 
 	{
 		int x = grid->x;
@@ -561,12 +559,12 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 			if (tex && SDL_GetTextureSize(tex, &tw, &th)) {
 				rect.w = tw;
 				rect.h = th;
-				SDL_RenderTexture(grid->renderer, tex, NULL, &rect);
+				SDL_RenderTexture(grid->r2d, tex, NULL, &rect);
 			}
 
 			// ���ƴ�ֱ��
-			SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-			SDL_RenderLine(renderer, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
+			SDL_SetRenderDrawColor(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+			SDL_RenderLine(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
 			x += grid->col_widths[col];
 		}
@@ -578,14 +576,14 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 
 		// �����б���
 		if (row == grid->selected_row) {
-			SDL_SetRenderDrawColor(renderer, selected_color.r, selected_color.g, selected_color.b, selected_color.a);
+			SDL_SetRenderDrawColor(r2d, selected_color.r, selected_color.g, selected_color.b, selected_color.a);
 			SDL_FRect selected_rect = { grid->x, y, grid->width, grid->row_height };
-			SDL_RenderFillRect(renderer, &selected_rect);
+			SDL_RenderFillRect(r2d, &selected_rect);
 		}
 		else {
-			/* SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+			/* SDL_SetRenderDrawColor(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
 			 SDL_FRect header_rect = { grid->x, y, grid->width, grid->row_height };
-			 SDL_RenderFillRect(renderer, &header_rect);*/
+			 SDL_RenderFillRect(r2d, &header_rect);*/
 		}
 
 		// ���Ƶ�Ԫ�����ݺ�����
@@ -595,32 +593,32 @@ void datagrid_draw(datagrid_p grid, SDL_Renderer* renderer)
 				char* text = kv_A(kv_A(grid->data, row), col);
 				if (text) {
 					SDL_Color c = {0,0,0,255};
-					text_printx(renderer, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
+					text_printx(r2d, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
 				}
 			}
 
 			// ���ƴ�ֱ��
-			SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-			SDL_RenderLine(renderer, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
+			SDL_SetRenderDrawColor(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+			SDL_RenderLine(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
 			x += grid->col_widths[col];
 		}
 
 		// ����ˮƽ��
-		SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-		SDL_RenderLine(renderer, grid->x, y + grid->row_height, grid->x + grid->width, y + grid->row_height);
+		SDL_SetRenderDrawColor(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+		SDL_RenderLine(r2d, grid->x, y + grid->row_height, grid->x + grid->width, y + grid->row_height);
 	}
 
 	// ������߿�
-	SDL_SetRenderDrawColor(renderer, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-	SDL_RenderRect(renderer, &bg_rect);
+	SDL_SetRenderDrawColor(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+	SDL_RenderRect(r2d, &bg_rect);
 }
 
 int datagrid_hit_row(datagrid_p grid, float x, float y)
 {
 	if (!grid) return -1;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(grid->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(grid->r2d, x, y, &logic.x, &logic.y);
 	SDL_FRect rect = { (float)grid->x, (float)(grid->y + grid->row_height), (float)grid->width, (float)grid->height };
 	if (!SDL_PointInRectFloat(&logic, &rect)) return -1;
 	int clicked_row = grid->scroll_offset + ((int)(logic.y - rect.y)) / grid->row_height;
@@ -761,7 +759,7 @@ void radio_button_group_destroy(radio_button_group_p group)
 	SDL_free(group);
 }
 
-void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
+void radio_button_render(radio_button_p radio, jr2d_p r2d)
 {
 	if (!radio) return;
 
@@ -799,7 +797,7 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 		triangle[1].color = radio->r1_color;
 		triangle[2].position = (SDL_FPoint){ center_x + cosf(angle2) * r1, center_y + sinf(angle2) * r1 };
 		triangle[2].color = radio->r1_color;
-		SDL_RenderGeometry(renderer, NULL, triangle, 3, NULL, 0);
+		SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
 
 		triangle[0].position = (SDL_FPoint){ center_x, center_y };
 		triangle[0].color = radio->r2_color;
@@ -807,7 +805,7 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 		triangle[1].color = radio->r2_color;
 		triangle[2].position = (SDL_FPoint){ center_x + cosf(angle2) * r2, center_y + sinf(angle2) * r2 };
 		triangle[2].color = radio->r2_color;
-		SDL_RenderGeometry(renderer, NULL, triangle, 3, NULL, 0);
+		SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
 
 		if (radio->checked) {
 			triangle[0].position = (SDL_FPoint){ center_x, center_y };
@@ -816,7 +814,7 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 			triangle[1].color = radio->r3_color;
 			triangle[2].position = (SDL_FPoint){ center_x + cosf(angle2) * r3, center_y + sinf(angle2) * r3 };
 			triangle[2].color = radio->r3_color;
-			SDL_RenderGeometry(renderer, NULL, triangle, 3, NULL, 0);
+			SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
 		}
 	}
 
@@ -826,7 +824,7 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 		 SDL_Surface* text_surface = TTF_RenderText_Blended(font, radio->label, text_color);
 
 		 if (text_surface) {
-			 SDL_Texture* text_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
+			 SDL_Texture* text_texture = SDL_CreateTextureFromSurface(r2d, text_surface);
 
 			 if (text_texture) {
 				 SDL_FRect text_rect = {
@@ -836,7 +834,7 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 				     text_surface->h
 				 };
 
-				 SDL_RenderTexture(renderer, text_texture, NULL, &text_rect);
+				 SDL_RenderTexture(r2d, text_texture, NULL, &text_rect);
 				 SDL_DestroyTexture(text_texture);
 			 }
 
@@ -845,12 +843,12 @@ void radio_button_render(radio_button_p radio, SDL_Renderer* renderer)
 	}
 }
 
-void radio_button_group_draw(radio_button_group_p group, SDL_Renderer* renderer)
+void radio_button_group_draw(radio_button_group_p group, jr2d_p r2d)
 {
 	if (!group) return;
 
 	for (int i = 0; i < group->count; i++) {
-		radio_button_render(group->buttons[i], renderer);
+		radio_button_render(group->buttons[i], r2d);
 	}
 }
 
@@ -952,13 +950,13 @@ void checkbox_set_hovered(checkbox_p cb, bool v)
 	if (cb) cb->hover = v;
 }
 
-void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
+void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 {
 	if (!checkbox) return;
 
 	// ���Ƹ�ѡ�򱳾��������ͣ��
 	if (checkbox->hover && checkbox->enabled) {
-		SDL_SetRenderDrawColor(renderer,
+		SDL_SetRenderDrawColor(r2d,
 			checkbox->hover_color.r,
 			checkbox->hover_color.g,
 			checkbox->hover_color.b,
@@ -969,11 +967,11 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 		    checkbox->size + 4,
 		    checkbox->size + 4
 		};
-		SDL_RenderFillRect(renderer, &bgRect);
+		SDL_RenderFillRect(r2d, &bgRect);
 	}
 
 	// ���Ƹ�ѡ�����
-	SDL_SetRenderDrawColor(renderer,
+	SDL_SetRenderDrawColor(r2d,
 		checkbox->box_color.r,
 		checkbox->box_color.g,
 		checkbox->box_color.b,
@@ -984,11 +982,11 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 	    checkbox->size,
 	    checkbox->size
 	};
-	SDL_RenderRect(renderer, &boxRect);
+	SDL_RenderRect(r2d, &boxRect);
 
 	// �����ѡ�У����ƹ�ѡ���
 	if (checkbox->state != JOY_CHECKBOX_UNCHECKED && checkbox->enabled) {
-		SDL_SetRenderDrawColor(renderer,
+		SDL_SetRenderDrawColor(r2d,
 			checkbox->check_color.r,
 			checkbox->check_color.g,
 			checkbox->check_color.b,
@@ -1002,7 +1000,7 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 			    {checkbox->x + checkbox->size * 0.4f, checkbox->y + checkbox->size - padding},
 			    {checkbox->x + checkbox->size - padding, checkbox->y + padding}
 			};
-			SDL_RenderLines(renderer, points, 3);
+			SDL_RenderLines(r2d, points, 3);
 		}
 		else {
 			// ���Ʋ�ȷ��״̬�����ߣ�
@@ -1011,14 +1009,14 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 			    {checkbox->x + padding, checkbox->y + checkbox->size * 0.5f},
 			    {checkbox->x + checkbox->size - padding, checkbox->y + checkbox->size * 0.5f}
 			};
-			SDL_RenderLine(renderer, points[0].x, points[0].y, points[1].x, points[1].y);
+			SDL_RenderLine(r2d, points[0].x, points[0].y, points[1].x, points[1].y);
 		}
 	}
 
 	// ������ã����ư�͸��Ч��
 	if (!checkbox->enabled) {
-		SDL_SetRenderDrawColor(renderer, 200, 200, 200, 128);
-		SDL_RenderFillRect(renderer, &boxRect);
+		SDL_SetRenderDrawColor(r2d, 200, 200, 200, 128);
+		SDL_RenderFillRect(r2d, &boxRect);
 	}
 
 	// ���Ʊ�ǩ�ı�
@@ -1027,7 +1025,7 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 		SDL_Surface* textSurface = TTF_RenderText_Blended(font, checkbox->label, textColor);
 
 		if (textSurface) {
-			SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+			SDL_Texture* textTexture = SDL_CreateTextureFromSurface(r2d, textSurface);
 
 			if (textTexture) {
 				SDL_FRect textRect = {
@@ -1037,7 +1035,7 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 				    textSurface->h
 				};
 
-				SDL_RenderTexture(renderer, textTexture, NULL, &textRect);
+				SDL_RenderTexture(r2d, textTexture, NULL, &textRect);
 				SDL_DestroyTexture(textTexture);
 			}
 
@@ -1050,12 +1048,12 @@ void checkbox_draw(checkbox_p checkbox, SDL_Renderer* renderer, void* font)
 
 
 // ��ʼ��ҡ��
-joystick_p joystick_create(SDL_Renderer* renderer, float x, float y, float radius)
+joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius)
 {
 	joystick_p joystick;
 	joystick = (joystick_p)SDL_malloc(sizeof(joystick_t));
 
-	joystick->renderer = renderer;
+	joystick->r2d = r2d;
 	joystick->center.x = x;
 	joystick->center.y = y;
 	joystick->radius = radius;
@@ -1152,7 +1150,7 @@ void joystick_touch_down(joystick_p j, float x, float y)
 {
 	if (!j) return;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(j->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(j->r2d, x, y, &logic.x, &logic.y);
 	float dist_sq = distance_squared(logic.x, logic.y, j->center.x, j->center.y);
 	if (dist_sq <= (j->radius * j->radius)) {
 		j->is_dragging = true;
@@ -1166,7 +1164,7 @@ void joystick_touch_move(joystick_p j, float x, float y)
 {
 	if (!j || !j->is_dragging) return;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(j->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(j->r2d, x, y, &logic.x, &logic.y);
 	joystick_update_drag(j, logic.x, logic.y);
 }
 
@@ -1194,23 +1192,23 @@ void joystick_reset(joystick_p joystick)
 // ����ҡ��
 void joystick_draw(joystick_p joystick)
 {
-	SDL_Renderer* renderer = joystick->renderer;
+	jr2d_p r2d = joystick->r2d;
 
 	// ���Ʊ���Բ��
-	SDL_SetRenderDrawColor(renderer,
+	SDL_SetRenderDrawColor(r2d,
 		(JOYSTICK_BG_COLOR >> 24) & 0xFF,
 		(JOYSTICK_BG_COLOR >> 16) & 0xFF,
 		(JOYSTICK_BG_COLOR >> 8) & 0xFF,
 		JOYSTICK_BG_COLOR & 0xFF);
 	// ����Բ�α�����ʹ�ö����ģ��Բ�Σ�
-	shape_draw_circle(renderer, "line", joystick->center, joystick->radius, 32);
+	shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
 
 	// ����ʮ����
-	SDL_SetRenderDrawColor(renderer, 0x66, 0x66, 0x66, 0xFF);
-	SDL_RenderLine(renderer,
+	SDL_SetRenderDrawColor(r2d, 0x66, 0x66, 0x66, 0xFF);
+	SDL_RenderLine(r2d,
 		joystick->center.x - joystick->radius, joystick->center.y,
 		joystick->center.x + joystick->radius, joystick->center.y);
-	SDL_RenderLine(renderer,
+	SDL_RenderLine(r2d,
 		joystick->center.x, joystick->center.y - joystick->radius,
 		joystick->center.x, joystick->center.y + joystick->radius);
 
@@ -1223,7 +1221,7 @@ void joystick_draw(joystick_p joystick)
 		0x88, 0x88, 0x88, 0xFF
 	};
 
-		SDL_SetRenderDrawColor(renderer, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
+		SDL_SetRenderDrawColor(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
 
 		// ����Բ���ֱ�
 
@@ -1231,10 +1229,10 @@ void joystick_draw(joystick_p joystick)
 		joystick->handle.x + joystick->handle_radius,
 		joystick->handle.y + joystick->handle_radius
 		};
-		shape_draw_circle(renderer, "fill", handle_center, joystick->radius * 0.5f, 24);
+		shape_draw_circle(r2d, "fill", handle_center, joystick->radius * 0.5f, 24);
 
 		// ����ֱ�
-		SDL_SetRenderDrawColor(renderer, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
+		SDL_SetRenderDrawColor(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
 
 		SDL_FRect handle_fill = {
 		    joystick->handle.x + 2,
@@ -1242,16 +1240,16 @@ void joystick_draw(joystick_p joystick)
 		    joystick->handle.w - 4,
 		    joystick->handle.h - 4
 		};
-		//shape_draw_rectangle(renderer, "fill", handle_fill);
+		//shape_draw_rectangle(r2d, "fill", handle_fill);
 
 
 
-		SDL_RenderFillRect(renderer, &handle_fill);
+		SDL_RenderFillRect(r2d, &handle_fill);
 
 
 		/*	if (joystick_get_magnitude(joystick) > 0) {
 				SDL_FPoint dir = joystick_get_direction(joystick);
-				SDL_RenderLine(renderer,
+				SDL_RenderLine(r2d,
 					joystick->center.x,
 					joystick->center.y,
 					joystick->center.x + dir.x * joystick->radius,
@@ -1277,11 +1275,11 @@ float joystick_get_magnitude(joystick_p joystick)
 
 #define TEXTINPUT_BUF_INIT 256
 
-textinput_p textinput_create(SDL_Renderer* renderer, SDL_FRect rect, font_p font)
+textinput_p textinput_create(jr2d_p r2d, SDL_FRect rect, font_p font)
 {
 	textinput_p ti = (textinput_p)SDL_calloc(1, sizeof(textinput_t));
 	if (!ti) return NULL;
-	ti->renderer   = renderer;
+	ti->r2d   = r2d;
 	ti->rect       = rect;
 	ti->font       = font;
 	ti->bg_color   = (SDL_Color){255, 255, 255, 255};
@@ -1602,8 +1600,8 @@ void textinput_focus(textinput_p ti)
 	ti->focused = true;
 	ti->cursor_timer = SDL_GetTicks();
 	ti->cursor_visible = true;
-	/* 从 renderer 获取 window 并启用文本输入 */
-	SDL_Window* win = SDL_GetRenderWindow(ti->renderer);
+	/* 从 r2d 获取 window 并启用文本输入 */
+	SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
 	if (win) SDL_StartTextInput(win);
 }
 
@@ -1612,14 +1610,14 @@ void textinput_defocus(textinput_p ti)
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
 	textinput_clear_sel(ti);
-	SDL_Window* win = SDL_GetRenderWindow(ti->renderer);
+	SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
 	if (win) SDL_StopTextInput(win);
 }
 
 void textinput_draw(textinput_p ti)
 {
 	if (!ti) return;
-	SDL_Renderer* r = ti->renderer;
+	jr2d_p r = ti->r2d;
 	SDL_FRect rect = ti->rect;
 
 	/* 背景 */
@@ -1707,7 +1705,7 @@ bool textinput_is_pressed(textinput_p ti, float x, float y)
 {
 	if (!ti) return false;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(ti->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(ti->r2d, x, y, &logic.x, &logic.y);
 	if (SDL_PointInRectFloat(&logic, &ti->rect)) {
 		textinput_focus(ti);
 		return true;
@@ -1720,7 +1718,7 @@ bool textinput_is_hovered(textinput_p ti, float x, float y)
 {
 	if (!ti) return false;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(ti->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(ti->r2d, x, y, &logic.x, &logic.y);
 	ti->hovered = SDL_PointInRectFloat(&logic, &ti->rect);
 	return ti->hovered;
 }
@@ -1769,11 +1767,11 @@ static bool slider_thumb_hit(slider_p s, float logic_x, float logic_y)
 	    && logic_y >= tr.y && logic_y <= tr.y + tr.h;
 }
 
-slider_p slider_create(SDL_Renderer* renderer, float x, float y, float w, float h, float min, float max, float initial)
+slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial)
 {
 	slider_p s = (slider_p)SDL_calloc(1, sizeof(slider_t));
 	if (!s) return NULL;
-	s->renderer = renderer;
+	s->r2d = r2d;
 	s->track.x = x;
 	s->track.y = y;
 	s->track.w = w;
@@ -1823,7 +1821,7 @@ void slider_set_range(slider_p s, float min, float max)
 void slider_draw(slider_p s)
 {
 	if (!s) return;
-	SDL_Renderer* r = s->renderer;
+	jr2d_p r = s->r2d;
 
 	/* 滑轨背景 */
 	SDL_SetRenderDrawColor(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
@@ -1851,7 +1849,7 @@ bool slider_is_pressed(slider_p s, float x, float y)
 {
 	if (!s) return false;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(s->r2d, x, y, &logic.x, &logic.y);
 	if (slider_thumb_hit(s, logic.x, logic.y)) {
 		s->is_dragging = true;
 		return true;
@@ -1875,7 +1873,7 @@ void slider_drag_move(slider_p s, float x, float y)
 {
 	if (!s || !s->is_dragging) return;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(s->r2d, x, y, &logic.x, &logic.y);
 	slider_update_value_from_x(s, logic.x);
 }
 
@@ -1883,7 +1881,7 @@ bool slider_is_hovered(slider_p s, float x, float y)
 {
 	if (!s) return false;
 	SDL_FPoint logic;
-	SDL_RenderCoordinatesFromWindow(s->renderer, x, y, &logic.x, &logic.y);
+	SDL_RenderCoordinatesFromWindow(s->r2d, x, y, &logic.x, &logic.y);
 	s->hovered = slider_thumb_hit(s, logic.x, logic.y);
 	return s->hovered;
 }
@@ -1898,11 +1896,11 @@ void slider_set_hovered(slider_p s, bool v)
 #define POPUP_PADDING 12
 #define POPUP_TITLE_HEIGHT 32
 
-popup_p popup_create(SDL_Renderer* renderer, float w, float h)
+popup_p popup_create(jr2d_p r2d, float w, float h)
 {
 	popup_p p = (popup_p)SDL_calloc(1, sizeof(popup_t));
 	if (!p) return NULL;
-	p->renderer = renderer;
+	p->r2d = r2d;
 	p->w = w; p->h = h;
 	p->x = 0; p->y = 0;
 	p->title_height = POPUP_TITLE_HEIGHT;
@@ -1961,7 +1959,7 @@ void popup_set_closeable(popup_p p, bool v)
 	if (p) p->closeable = v;
 }
 
-static void popup_draw_text_lines(SDL_Renderer* ren, font_p font, const char* text, float x, float y, float max_w, SDL_Color color)
+static void popup_draw_text_lines(jr2d_p ren, font_p font, const char* text, float x, float y, float max_w, SDL_Color color)
 {
 	if (!text || text[0] == '\0') return;
 	/* 按行分割渲染 */
@@ -1982,7 +1980,7 @@ static void popup_draw_text_lines(SDL_Renderer* ren, font_p font, const char* te
 void popup_draw(popup_p p, font_p title_font, font_p content_font)
 {
 	if (!p || !p->visible) return;
-	SDL_Renderer* ren = p->renderer;
+	jr2d_p ren = p->r2d;
 	float x = p->x, y = p->y, w = p->w, h = p->h;
 
 	/* 半透明背景遮罩 */
@@ -2072,11 +2070,11 @@ bool popup_is_inside(popup_p p, float mx, float my)
 }
 
 /* ===== Tooltip ===== */
-tooltip_p tooltip_create(SDL_Renderer* renderer, const char* text, int len)
+tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len)
 {
 	tooltip_p t = (tooltip_p)SDL_calloc(1, sizeof(tooltip_t));
 	if (!t) return NULL;
-	t->renderer = renderer;
+	t->r2d = r2d;
 	t->x = 0; t->y = 0;
 	t->padding = 8;
 	t->visible = true;
@@ -2115,7 +2113,7 @@ void tooltip_set_visible(tooltip_p t, bool v)
 void tooltip_draw(tooltip_p t, font_p font)
 {
 	if (!t || !t->visible || !t->text_len) return;
-	SDL_Renderer* ren = t->renderer;
+	jr2d_p ren = t->r2d;
 
 	/* 估算宽高：按字符数 * fontsize/2 粗略估算 */
 	float fh = (float)font->fontsize;

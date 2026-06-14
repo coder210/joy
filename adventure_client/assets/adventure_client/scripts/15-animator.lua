@@ -1,4 +1,4 @@
--- 骑士动画状态机演示 (warrior_blue.png)
+﻿-- 骑士动画状态机演示 (warrior_blue.png)
 -- WASD=移动  Space=攻击  Q=退出
 local win, ren, anim
 
@@ -16,7 +16,7 @@ end
 
 function joy.load()
     win = joy.window.create("animator", 800, 600, 0)
-    ren = joy.render2d.create(win)
+    ren = joy.r2d.create(win)
     anim = joy.animator.create(ren)
     set_env("anim_win", win)
     set_env("anim_ren", ren)
@@ -89,9 +89,9 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 40, 40, 50, 255)
+    joy.r2d.begin(ren, 40, 40, 50, 255)
     joy.animator.draw(anim, 280, 180)
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key)
@@ -126,6 +126,6 @@ end
 
 function joy.quit()
     if anim then joy.animator.destroy(anim) end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

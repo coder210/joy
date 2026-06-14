@@ -145,7 +145,7 @@ luax_p luax_create(void)
         lua_setfield(luax->L, -2, name)
 
         JOY_MOD("window", luaopen_window);
-        JOY_MOD("render2d", luaopen_render2d);
+        JOY_MOD("r2d", luaopen_render2d);
         JOY_MOD("sdl", luaopen_sdl);
         JOY_MOD("audio", luaopen_audio);
         JOY_MOD("keyboard", luaopen_keyboard);

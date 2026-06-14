@@ -1,9 +1,9 @@
--- audio test
+﻿-- audio test
 local win, ren, device, shot, bgm
 
 function joy.load()
     win = joy.window.create("audio", 640, 480, 0)
-    ren = joy.render2d.create(win)
+    ren = joy.r2d.create(win)
     device = joy.audio.open_device()
     shot = joy.audio.create_shot(device, "joy_beat/effects/explosions.wav")
     bgm = joy.audio.create_bgm("joy_beat/effects/forest.ogg")
@@ -20,10 +20,10 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 40, 40, 40, 255)
-    joy.render2d.set_color(ren, 255, 255, 255, 255)
-    joy.render2d.print(ren, nil, "F1=play shot  F2=toggle bgm  Q=quit", 20, 20, 255, 255, 255, 255)
-    joy.render2d.end_frame(ren)
+    joy.r2d.begin(ren, 40, 40, 40, 255)
+    joy.r2d.set_color(ren, 255, 255, 255, 255)
+    joy.r2d.print(ren, nil, "F1=play shot  F2=toggle bgm  Q=quit", 20, 20, 255, 255, 255, 255)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.hotfix()
@@ -49,6 +49,6 @@ function joy.quit()
         joy.audio.bgm_destroy(bgm)
         joy.audio.close_device(device)
     end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

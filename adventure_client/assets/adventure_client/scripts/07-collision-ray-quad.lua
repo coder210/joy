@@ -1,4 +1,4 @@
--- 3D Ray vs Quad collision detection demo
+﻿-- 3D Ray vs Quad collision detection demo
 local PIXELS_PER_METER = 100
 local ray_pos, ray_dir
 local quad = {}
@@ -7,7 +7,7 @@ local win
 
 function joy.load()
     win = joy.window.create("ray-quad", 720, 480, 0)
-    ren = joy.render2d.create(win)
+    ren = joy.r2d.create(win)
     set_env("c07_win", win)
     set_env("c07_ren", ren)
 
@@ -27,14 +27,14 @@ function joy.hotfix()
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 0, 0, 0, 255)
+    joy.r2d.begin(ren, 0, 0, 0, 255)
 
     local result = joy.collision3d.ray_quad_int(ray_pos, ray_dir,
         quad[1], quad[2], quad[3], quad[4])
     if result.hit then
-        joy.render2d.set_color(ren, 0, 255, 0, 255)
+        joy.r2d.set_color(ren, 0, 255, 0, 255)
     else
-        joy.render2d.set_color(ren, 255, 0, 0, 255)
+        joy.r2d.set_color(ren, 255, 0, 0, 255)
     end
 
     -- draw quad (top-down 2D projection)
@@ -46,12 +46,12 @@ function joy.draw()
     local y3 = joy.fp.to_float(quad[3].y) * PIXELS_PER_METER + 240
     local x4 = joy.fp.to_float(quad[4].x) * PIXELS_PER_METER + 360
     local y4 = joy.fp.to_float(quad[4].y) * PIXELS_PER_METER + 240
-    joy.render2d.line(ren, x1, y1, x2, y2)
-    joy.render2d.line(ren, x2, y2, x3, y3)
-    joy.render2d.line(ren, x3, y3, x4, y4)
-    joy.render2d.line(ren, x4, y4, x1, y1)
+    joy.r2d.line(ren, x1, y1, x2, y2)
+    joy.r2d.line(ren, x2, y2, x3, y3)
+    joy.r2d.line(ren, x3, y3, x4, y4)
+    joy.r2d.line(ren, x4, y4, x1, y1)
 
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key, scancode, repeat_, ctrl, shift, alt)
@@ -59,6 +59,6 @@ function joy.keypressed(key, scancode, repeat_, ctrl, shift, alt)
 end
 
 function joy.quit()
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

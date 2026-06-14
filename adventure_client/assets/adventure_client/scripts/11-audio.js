@@ -12,7 +12,7 @@ joy.load = function()
     device_id = get_env("audio_dev");
     if (!device_id) {
         win = window.create("audio", 960, 720, 0);
-    ren = render2d.create(win);
+    ren = r2d.create(win);
     device_id = audio.open_device();
     console.log("audio device: " + device_id);
 
@@ -59,18 +59,18 @@ joy.hotfix = function() {
 
 joy.draw = function()
 {
-    render2d.set_color(ren, 40, 40, 40, 255);
-    render2d.begin(ren);
+    r2d.set_color(ren, 40, 40, 40, 255);
+    r2d.begin(ren);
 
     for (var i = 0; i < buttons.length; i++) {
         var btn = buttons[i];
-        render2d.set_color(ren, btn.r, btn.g, btn.b, 255);
-        render2d.rectangle(ren, "fill", btn.x, btn.y, btn.w, btn.h);
-        render2d.set_color(ren, 255, 255, 255, 80);
-        render2d.rectangle(ren, "line", btn.x, btn.y, btn.w, btn.h);
+        r2d.set_color(ren, btn.r, btn.g, btn.b, 255);
+        r2d.rectangle(ren, "fill", btn.x, btn.y, btn.w, btn.h);
+        r2d.set_color(ren, 255, 255, 255, 80);
+        r2d.rectangle(ren, "line", btn.x, btn.y, btn.w, btn.h);
     }
 
-    render2d.end_frame(ren);
+    r2d.end_frame(ren);
 };
 
 joy.mousepressed = function(x, y, button)
@@ -94,7 +94,7 @@ joy.quit = function()
     if (shot) audio.shot_destroy(shot);
     if (bgm) audio.bgm_destroy(bgm);
     if (device_id) audio.close_device(device_id);
-    if (ren) { render2d.destroy(ren); ren = null; }
+    if (ren) { r2d.destroy(ren); ren = null; }
     if (win) { window.destroy(win); win = null; }
     console.log("audio demo exit");
 };

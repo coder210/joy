@@ -8,7 +8,7 @@ joy.load = function()
     ren = get_env("c09_ren");
     if (!ren) {
         var win = window.create("rectangles", 720, 480, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
         set_env("c09_ren", ren);
     }
 };

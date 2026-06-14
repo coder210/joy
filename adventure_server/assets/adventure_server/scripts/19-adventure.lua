@@ -1,4 +1,4 @@
--- adventure 游戏（tilemap地图 + 精灵动画 + 网络同步）
+﻿-- adventure 游戏（tilemap地图 + 精灵动画 + 网络同步）
 -- 碰撞推出 + 帧同步命令历史 + AI攻击对齐
 local win, ren, font
 local PPM = 50
@@ -438,9 +438,9 @@ local function to_screen(wx, wy) return (wx-camera.x)*PPM+480, (wy-camera.y)*PPM
 
 function joy.load()
     win = joy.window.create("adventure", 400, 300, 0)
-    ren = joy.render2d.create(win)
-    joy.render2d.set_logical_presentation(ren, 960, 720, 2)
-    font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
+    ren = joy.r2d.create(win)
+    joy.r2d.set_logical_presentation(ren, 960, 720, 2)
+    font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
 
     local ok, tm = pcall(joy.tilemap.load_file, "joy_beat/tilemap/map.lua")
     if ok and tm then tilemap = tm; joy.tilemap.render_init_base(ren, "joy_beat/") end
@@ -503,15 +503,15 @@ function joy.update(dt)
 end
 
 function joy.draw()
-    joy.render2d.begin(ren, 30, 35, 45, 255)
+    joy.r2d.begin(ren, 30, 35, 45, 255)
     local ms = joy.sdl.get_ticks()
     if tilemap then joy.tilemap.render_all(tilemap, camera.x*PPM-480, camera.y*PPM-360, ms) end
 
     for _, ray in ipairs(attack_rays) do
         local sx, sy = to_screen(ray.x, ray.y)
         local a = math.floor(ray.lifetime/0.15*200)
-        joy.render2d.set_color(ren, 255, 220, 80, a)
-        joy.render2d.rectangle(ren, "fill", sx-ray.w/2*PPM, sy-ray.h/2*PPM, ray.w*PPM, ray.h*PPM)
+        joy.r2d.set_color(ren, 255, 220, 80, a)
+        joy.r2d.rectangle(ren, "fill", sx-ray.w/2*PPM, sy-ray.h/2*PPM, ray.w*PPM, ray.h*PPM)
     end
 
     local function draw_sprite(e)
@@ -520,8 +520,8 @@ function joy.draw()
             local sx, sy = to_screen(e.pos.x, e.pos.y); local sw, sh = e.size.w*PPM, e.size.h*PPM
             local r, g = (e.type=="player") and 80 or 220, (e.type=="player") and 130 or 80
             if e.action=="attack" then r,g=255,200 end
-            joy.render2d.set_color(ren, r, g, (e.type=="player") and 255 or 80, 255)
-            joy.render2d.rectangle(ren, "fill", sx-sw/2, sy-sh/2, sw, sh)
+            joy.r2d.set_color(ren, r, g, (e.type=="player") and 255 or 80, 255)
+            joy.r2d.rectangle(ren, "fill", sx-sw/2, sy-sh/2, sw, sh)
         else
             local sx, sy = to_screen(e.pos.x, e.pos.y)
             -- janimator 内部已经根据 flip_h 处理镜像, 绘制时不需要再翻转
@@ -530,8 +530,8 @@ function joy.draw()
         if e.max_hp and e.hp then
             local sx, sy = to_screen(e.pos.x, e.pos.y)
             local bw, ratio = 40, e.hp/e.max_hp
-            joy.render2d.set_color(ren, 60,60,60,200); joy.render2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw, 4)
-            joy.render2d.set_color(ren, 60,200,60,255); joy.render2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw*ratio, 4)
+            joy.r2d.set_color(ren, 60,60,60,200); joy.r2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw, 4)
+            joy.r2d.set_color(ren, 60,200,60,255); joy.r2d.rectangle(ren, "fill", sx-bw/2, sy-FH/2-10, bw*ratio, 4)
         end
     end
 
@@ -539,34 +539,34 @@ function joy.draw()
     for _, e in ipairs(entity_list.player) do draw_sprite(e) end
 
     -- 调试：绘制墙壁碰撞体（半透明蓝色边框）
-    joy.render2d.set_color(ren, 50, 100, 255, 60)
+    joy.r2d.set_color(ren, 50, 100, 255, 60)
     for _, w in ipairs(entity_list.wall) do
         local sx, sy = to_screen(w.pos.x, w.pos.y)
-        joy.render2d.rectangle(ren, "line", sx-w.size.w/2*PPM, sy-w.size.h/2*PPM, w.size.w*PPM, w.size.h*PPM)
+        joy.r2d.rectangle(ren, "line", sx-w.size.w/2*PPM, sy-w.size.h/2*PPM, w.size.w*PPM, w.size.h*PPM)
     end
 
     local hpp = entity_list.player and entity_list.player[1]
     -- 服务端 IP 信息
     local status = server and ("ws://" .. server_ip .. ":" .. server_port) or "server offline"
-    joy.render2d.set_color(ren, 30, 30, 40, 200)
-    joy.render2d.rectangle(ren, "fill", 10, 10, 340, 20)
-    joy.render2d.set_color(ren, 150, 150, 180, 255)
-    joy.render2d.print(ren, font, status, 15, 12, 150, 150, 180, 255)
+    joy.r2d.set_color(ren, 30, 30, 40, 200)
+    joy.r2d.rectangle(ren, "fill", 10, 10, 340, 20)
+    joy.r2d.set_color(ren, 150, 150, 180, 255)
+    joy.r2d.print(ren, font, status, 15, 12, 150, 150, 180, 255)
     if hpp then
-        joy.render2d.set_color(ren, 40, 40, 50, 200)
-        joy.render2d.rectangle(ren, "fill", 10, 35, 320, 35)
+        joy.r2d.set_color(ren, 40, 40, 50, 200)
+        joy.r2d.rectangle(ren, "fill", 10, 35, 320, 35)
         -- 用彩色矩形条指示 HP
-        joy.render2d.set_color(ren, 60, 60, 60, 200)
-        joy.render2d.rectangle(ren, "fill", 15, 40, 200, 10)
-        joy.render2d.set_color(ren, 60, 200, 60, 255)
-        joy.render2d.rectangle(ren, "fill", 15, 40, 200 * hpp.hp / hpp.max_hp, 10)
+        joy.r2d.set_color(ren, 60, 60, 60, 200)
+        joy.r2d.rectangle(ren, "fill", 15, 40, 200, 10)
+        joy.r2d.set_color(ren, 60, 200, 60, 255)
+        joy.r2d.rectangle(ren, "fill", 15, 40, 200 * hpp.hp / hpp.max_hp, 10)
         -- 用圆点表示玩家数量
         for i = 1, #entity_list.player do
-            joy.render2d.set_color(ren, 80, 130, 255, 255)
-            joy.render2d.circle(ren, "fill", 15 + i * 25, 65, 6, 12)
+            joy.r2d.set_color(ren, 80, 130, 255, 255)
+            joy.r2d.circle(ren, "fill", 15 + i * 25, 65, 6, 12)
         end
     end
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key)

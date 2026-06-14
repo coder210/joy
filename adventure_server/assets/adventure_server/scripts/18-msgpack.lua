@@ -1,11 +1,11 @@
--- msgpack 测试
+﻿-- msgpack 测试
 -- 演示 joy.msgpack.pack / unpack 的基本用法
 local win, ren, font
 
 function joy.load()
     win = joy.window.create("msgpack-test", 800, 600, 0)
-    ren = joy.render2d.create(win)
-    font = joy.render2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18)
+    ren = joy.r2d.create(win)
+    font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 18)
     set_env("msg_win", win)
     set_env("msg_ren", ren)
     set_env("msg_font", font)
@@ -66,14 +66,14 @@ add("   bad: " .. tostring(bad))
 add("=== done ===")
 
 function joy.draw()
-    joy.render2d.begin(ren, 25, 30, 40, 255)
-    joy.render2d.set_color(ren, 200, 220, 255, 255)
+    joy.r2d.begin(ren, 25, 30, 40, 255)
+    joy.r2d.set_color(ren, 200, 220, 255, 255)
     local y = 20
     for i = 1, #results do
-        joy.render2d.print(ren, font, results[i], 15, y, 200, 220, 255, 255)
+        joy.r2d.print(ren, font, results[i], 15, y, 200, 220, 255, 255)
         y = y + 22
     end
-    joy.render2d.end_frame(ren)
+    joy.r2d.end_frame(ren)
 end
 
 function joy.keypressed(key)
@@ -81,7 +81,7 @@ function joy.keypressed(key)
 end
 
 function joy.quit()
-    if font then joy.render2d.destroy_font(font); font = nil end
-    if ren then joy.render2d.destroy(ren); ren = nil end
+    if font then joy.r2d.destroy_font(font); font = nil end
+    if ren then joy.r2d.destroy(ren); ren = nil end
     if win then joy.window.destroy(win); win = nil end
 end

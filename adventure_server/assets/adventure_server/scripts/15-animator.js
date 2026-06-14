@@ -8,7 +8,7 @@ joy.load = function()
     anim = get_env("anim_anim");
     if (!anim) {
         win = window.create("animator", 800, 600, 0);
-        ren = render2d.create(win);
+        ren = r2d.create(win);
         anim = animator.create(ren);
     }
     if (anim) {
@@ -30,9 +30,9 @@ joy.update = function(dt)
 joy.draw = function()
 {
     if (anim) {
-        render2d.begin(ren, 40, 40, 50, 255);
+        r2d.begin(ren, 40, 40, 50, 255);
         animator.draw(anim, 280, 180);
-        render2d.end_frame(ren);
+        r2d.end_frame(ren);
     }
 };
 
@@ -46,6 +46,6 @@ joy.hotfix = function()
 joy.quit = function()
 {
     if (anim) animator.destroy(anim);
-    if (ren) { render2d.destroy(ren); ren = null; }
+    if (ren) { r2d.destroy(ren); ren = null; }
     if (win) { window.destroy(win); win = null; }
 };
