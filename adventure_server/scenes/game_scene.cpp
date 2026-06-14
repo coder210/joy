@@ -18,6 +18,7 @@
 #include <joy/jnetwork.h>
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
+#include <joy/jevent.h>
 
 enum { SERVER_PPM = 50 };
 #include "../layers/debug_layer.h"
@@ -722,7 +723,7 @@ static void on_load(scene_p s)
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
-		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
+		jtilemap_render_init(self->ctx->renderer, "adventure_server/", NULL);
 
 	adventure::S2CWorld s2c_world;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -748,23 +749,22 @@ static void on_load(scene_p s)
 	self->worlds[self->g_frameid] = s2c_world.SerializeAsString();
 }
 
+static void server_on_keypressed(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg)
+{
+	(void)arg;
+	if (SDL_strcmp(key, "q") == 0 || SDL_strcmp(key, "Q") == 0) {
+		SDL_Event quit_event;
+		SDL_zero(quit_event);
+		quit_event.type = SDL_EVENT_QUIT;
+		SDL_PushEvent(&quit_event);
+	}
+}
+
 static void on_handle_event(scene_p s, const void* ev)
 {
-	game_scene_p self = (game_scene_p)scene_get_userdata(s);
-	SDL_Event* event = (SDL_Event*)ev;
-
-	if (event->type == SDL_EVENT_KEY_DOWN || event->type == SDL_EVENT_KEY_UP) {
-		switch (event->key.key) {
-		case SDLK_Q: {
-			SDL_Event quit_event;
-			SDL_zero(quit_event);
-			quit_event.type = SDL_EVENT_QUIT;
-			SDL_PushEvent(&quit_event);
-			break;
-		}
-		default: break;
-		}
-	}
+	event_callbacks_t cbs = {};
+	cbs.on_keypressed = server_on_keypressed;
+	dispatch_event(cbs, (const SDL_Event*)ev, NULL);
 }
 
 static void on_update(scene_p s, float dt)

@@ -104,11 +104,11 @@ static int l_scene_get_name(lua_State* L) { scene_p s = (scene_p)lua_touserdata(
 static int l_scene_root_count(lua_State* L) { scene_p s = (scene_p)lua_touserdata(L,1); lua_pushinteger(L, s ? scene_get_root_count(s) : 0); return 1; }
 static int l_scene_root_at(lua_State* L) {
     scene_node_p n = scene_get_root_at((scene_p)lua_touserdata(L,1), (int)luaL_checkinteger(L,2));
-    lua_pushlightuserdata(L, n);
+    if(n) lua_pushlightuserdata(L, n); else lua_pushnil(L);
     return 1;
 }
 static int l_scene_get_root_count(lua_State* L) { scene_p s = (scene_p)lua_touserdata(L,1); lua_pushinteger(L, s ? scene_get_root_count(s) : 0); return 1; }
-static int l_scene_get_root_at(lua_State* L) { scene_node_p n = scene_get_root_at((scene_p)lua_touserdata(L,1), (int)luaL_checkinteger(L,2)); lua_pushlightuserdata(L, n); return 1; }
+static int l_scene_get_root_at(lua_State* L) { scene_node_p n = scene_get_root_at((scene_p)lua_touserdata(L,1), (int)luaL_checkinteger(L,2)); if(n) lua_pushlightuserdata(L, n); else lua_pushnil(L); return 1; }
 
 /* ===== Node API ===== */
 static int l_node_create(lua_State* L) {
@@ -131,9 +131,9 @@ static int l_node_get_world(lua_State* L) { scene_node_p n = (scene_node_p)lua_t
 static int l_node_set_rotation(lua_State* L) { scene_node_set_rotation((scene_node_p)lua_touserdata(L,1), (float)luaL_checknumber(L,2)); return 0; }
 static int l_node_set_scale(lua_State* L) { scene_node_set_scale((scene_node_p)lua_touserdata(L,1), (float)luaL_checknumber(L,2), (float)luaL_checknumber(L,3)); return 0; }
 static int l_node_set_zorder(lua_State* L) { scene_node_set_zorder((scene_node_p)lua_touserdata(L,1), (int)luaL_checkinteger(L,2)); return 0; }
-static int l_node_get_parent(lua_State* L) { scene_node_p p = scene_node_get_parent((scene_node_p)lua_touserdata(L,1)); lua_pushlightuserdata(L, p); return 1; }
-static int l_node_get_child(lua_State* L) { scene_node_p c = scene_node_get_first_child((scene_node_p)lua_touserdata(L,1)); lua_pushlightuserdata(L, c); return 1; }
-static int l_node_get_sibling(lua_State* L) { scene_node_p s = scene_node_get_next_sibling((scene_node_p)lua_touserdata(L,1)); lua_pushlightuserdata(L, s); return 1; }
+static int l_node_get_parent(lua_State* L) { scene_node_p p = scene_node_get_parent((scene_node_p)lua_touserdata(L,1)); if(p) lua_pushlightuserdata(L,p); else lua_pushnil(L); return 1; }
+static int l_node_get_child(lua_State* L) { scene_node_p c = scene_node_get_first_child((scene_node_p)lua_touserdata(L,1)); if(c) lua_pushlightuserdata(L,c); else lua_pushnil(L); return 1; }
+static int l_node_get_sibling(lua_State* L) { scene_node_p s = scene_node_get_next_sibling((scene_node_p)lua_touserdata(L,1)); if(s) lua_pushlightuserdata(L,s); else lua_pushnil(L); return 1; }
 static int l_node_count(lua_State* L) { lua_pushinteger(L, scene_node_get_child_count((scene_node_p)lua_touserdata(L,1))); return 1; }
 static int l_node_set_render(lua_State* L) { node_cbs_t* c = get_node_cbs(L,1); if(c&&lua_isfunction(L,2)) set_ref(L,&c->render_ref,2); return 0; }
 static int l_node_set_update(lua_State* L) { node_cbs_t* c = get_node_cbs(L,1); if(c&&lua_isfunction(L,2)) set_ref(L,&c->update_ref,2); return 0; }
@@ -156,7 +156,7 @@ static int l_node_get_tag(lua_State* L) {
 static int l_find_node_by_name(lua_State* L) {
     init_g(L);
     scene_node_p n = scene_find_node_by_name_deep((scene_p)lua_touserdata(L,1), luaL_checkstring(L,2));
-    lua_pushlightuserdata(L, n);
+    if(n) lua_pushlightuserdata(L, n); else lua_pushnil(L);
     return 1;
 }
 static int l_find_nodes_by_tag(lua_State* L) {
@@ -211,7 +211,7 @@ static int l_mgr_pop(lua_State* L) { scene_manager_pop((scene_manager_p)lua_tous
 static int l_mgr_replace(lua_State* L) { scene_manager_replace((scene_manager_p)lua_touserdata(L,1), (scene_p)lua_touserdata(L,2)); return 0; }
 static int l_mgr_update(lua_State* L) { scene_manager_update((scene_manager_p)lua_touserdata(L,1), (float)luaL_optnumber(L,2,0)); return 0; }
 static int l_mgr_render(lua_State* L) { scene_manager_render((scene_manager_p)lua_touserdata(L,1), lua_touserdata(L,2)); return 0; }
-static int l_mgr_current(lua_State* L) { scene_p s = scene_manager_get_current((scene_manager_p)lua_touserdata(L,1)); lua_pushlightuserdata(L, s); return 1; }
+static int l_mgr_current(lua_State* L) { scene_p s = scene_manager_get_current((scene_manager_p)lua_touserdata(L,1)); if(s) lua_pushlightuserdata(L,s); else lua_pushnil(L); return 1; }
 
 /* ===== 注册 ===== */
 int luaopen_scene(lua_State* L) {

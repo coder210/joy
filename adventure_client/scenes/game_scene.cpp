@@ -15,6 +15,7 @@
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
 #include <joy/jaudio.h>
+#include <joy/jevent.h>
 #include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
 #include "../components/ai_component.h"
@@ -637,7 +638,7 @@ static void on_load(scene_p s)
 	// ---- tilemap 渲染 ----
 	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
 	if (self->tilemap) {
-		jtilemap_render_init(self->ctx->renderer, NULL, NULL);
+		jtilemap_render_init(self->ctx->renderer, "adventure_client/", NULL);
 		log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
 	}
 	else log_error("[tilemap] failed to load");
@@ -722,36 +723,50 @@ static void send_heartbeat(game_scene_p self, float dt)
 	}
 }
 
+static void client_on_keypressed(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg)
+{
+	game_scene_p self = (game_scene_p)arg;
+	int key_mask = 0;
+	if (SDL_strcmp(key, "w") == 0) key_mask = INPUT_UP;
+	else if (SDL_strcmp(key, "W") == 0) key_mask = INPUT_UP;
+	else if (SDL_strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
+	else if (SDL_strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
+	else if (SDL_strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
+	else if (SDL_strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
+	else if (SDL_strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
+	else if (SDL_strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
+	else if (SDL_strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+	if (key_mask) {
+		self->current_input_mask |= key_mask;
+		if (key_mask == INPUT_ATTACK) self->attack_triggered = true;
+		if (key_mask & INPUT_DIR_MASK)
+			self->local_dir = input_to_dir(key_mask);
+	}
+}
+
+static void client_on_keyreleased(const char* key, int scancode, void* arg)
+{
+	game_scene_p self = (game_scene_p)arg;
+	int key_mask = 0;
+	if (SDL_strcmp(key, "w") == 0) key_mask = INPUT_UP;
+	else if (SDL_strcmp(key, "W") == 0) key_mask = INPUT_UP;
+	else if (SDL_strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
+	else if (SDL_strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
+	else if (SDL_strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
+	else if (SDL_strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
+	else if (SDL_strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
+	else if (SDL_strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
+	else if (SDL_strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+	if (key_mask) self->current_input_mask &= ~key_mask;
+}
+
 static void on_handle_event(scene_p s, const void* ev)
 {
-	SDL_Event* e = (SDL_Event*)ev;
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
+	const SDL_Event* e = (const SDL_Event*)ev;
 
-	if (e->type == SDL_EVENT_KEY_DOWN || e->type == SDL_EVENT_KEY_UP) {
-		bool is_down = (e->type == SDL_EVENT_KEY_DOWN);
-		int key_mask = 0;
-		switch (e->key.key) {
-		case SDLK_W: key_mask = INPUT_UP; break;
-		case SDLK_S: key_mask = INPUT_DOWN; break;
-		case SDLK_A: key_mask = INPUT_LEFT; break;
-		case SDLK_D: key_mask = INPUT_RIGHT; break;
-		case SDLK_SPACE: key_mask = INPUT_ATTACK; break;
-		default: break;
-		}
-		if (key_mask) {
-			if (is_down) {
-				self->current_input_mask |= key_mask;
-				if (key_mask == INPUT_ATTACK) self->attack_triggered = true;
-				if (key_mask & INPUT_DIR_MASK)
-					self->local_dir = input_to_dir(key_mask);
-			}
-			else {
-				self->current_input_mask &= ~key_mask;
-			}
-		}
-	}
-	// 移动输入事件（触屏）
-	else if (e->type == GAMEPLAY_CONTROL_EVENT) {
+	// 自定义触屏/UI 事件（非标准 SDL 事件）
+	if (e->type == GAMEPLAY_CONTROL_EVENT) {
 		int new_mask = self->current_input_mask;
 		switch (e->user.code) {
 		case GAMEPLAY_CONTROL_UP:    new_mask |= INPUT_UP; break;
@@ -772,7 +787,14 @@ static void on_handle_event(scene_p s, const void* ev)
 		if (new_mask != self->current_input_mask) {
 			self->current_input_mask = new_mask;
 		}
+		return;
 	}
+
+	// 标准 SDL 键盘/鼠标事件 → 通过 dispatch_event 分发
+	event_callbacks_t cbs = {};
+	cbs.on_keypressed = client_on_keypressed;
+	cbs.on_keyreleased = client_on_keyreleased;
+	dispatch_event(cbs, e, self);
 }
 
 // ========== AI 系统 ==========
