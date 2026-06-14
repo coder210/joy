@@ -7,68 +7,68 @@
 
 /* ===== Packer ===== */
 
-JOY_API void jmsgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb) {
+void jmsgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb) {
     msgpack_packer p;
     msgpack_packer_init(&p, data, (msgpack_packer_write)cb);
     pk->data = p.data;
     pk->callback = p.callback;
 }
 
-JOY_API int jmsgpack_pack_int(jmsgpack_packer_t* pk, int d) {
+int jmsgpack_pack_int(jmsgpack_packer_t* pk, int d) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_int(&p, d);
 }
 
-JOY_API int jmsgpack_pack_int64(jmsgpack_packer_t* pk, int64_t d) {
+int jmsgpack_pack_int64(jmsgpack_packer_t* pk, int64_t d) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_int64(&p, d);
 }
 
-JOY_API int jmsgpack_pack_uint(jmsgpack_packer_t* pk, unsigned int d) {
+int jmsgpack_pack_uint(jmsgpack_packer_t* pk, unsigned int d) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_unsigned_int(&p, d);
 }
 
-JOY_API int jmsgpack_pack_uint64(jmsgpack_packer_t* pk, uint64_t d) {
+int jmsgpack_pack_uint64(jmsgpack_packer_t* pk, uint64_t d) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_uint64(&p, d);
 }
 
-JOY_API int jmsgpack_pack_nil(jmsgpack_packer_t* pk) {
+int jmsgpack_pack_nil(jmsgpack_packer_t* pk) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_nil(&p);
 }
 
-JOY_API int jmsgpack_pack_array(jmsgpack_packer_t* pk, size_t n) {
+int jmsgpack_pack_array(jmsgpack_packer_t* pk, size_t n) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_array(&p, n);
 }
 
-JOY_API int jmsgpack_pack_str(jmsgpack_packer_t* pk, size_t l) {
+int jmsgpack_pack_str(jmsgpack_packer_t* pk, size_t l) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_str(&p, l);
 }
 
-JOY_API int jmsgpack_pack_str_body(jmsgpack_packer_t* pk, const void* b, size_t l) {
+int jmsgpack_pack_str_body(jmsgpack_packer_t* pk, const void* b, size_t l) {
     msgpack_packer p = { pk->data, (msgpack_packer_write)pk->callback };
     return msgpack_pack_str_body(&p, b, l);
 }
 
 /* ===== Unpacker ===== */
 
-JOY_API void jmsgpack_unpacked_init(jmsgpack_unpacked_t* result) {
+void jmsgpack_unpacked_init(jmsgpack_unpacked_t* result) {
     result->zone = NULL;
     memset(&result->data, 0, sizeof(result->data));
 }
 
-JOY_API void jmsgpack_unpacked_destroy(jmsgpack_unpacked_t* result) {
+void jmsgpack_unpacked_destroy(jmsgpack_unpacked_t* result) {
     if (result->zone) {
         msgpack_zone_free((msgpack_zone*)result->zone);
         result->zone = NULL;
     }
 }
 
-JOY_API int jmsgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off) {
+int jmsgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off) {
     msgpack_unpacked inner;
     msgpack_unpacked_init(&inner);
     int ret = msgpack_unpack_next(&inner, data, len, off);

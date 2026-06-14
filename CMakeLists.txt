@@ -36,7 +36,6 @@ endif()
 
 # 添加子目录
 add_subdirectory(msgpack)   # msgpack 库
-add_subdirectory(protobuf)   # protobuf 库
 add_subdirectory(SDL)          # SDL3 库
 add_subdirectory(joy)   # joy 核心库
 
