@@ -79,6 +79,7 @@ static image_p load_png(SDL_Renderer* renderer, const char* filename)
 	SDL_strlcpy(image->filepath, filepath, JOY_MAX_PATH);
 
 	if (!image->texture) {
+		SDL_Log("SDL error: %s", SDL_GetError());
 		SDL_Log("Failed to create texture from PNG: %s", filename);
 		SDL_free(image);
 		return NULL;

@@ -8,10 +8,9 @@
 
 static int l_janimator_create(lua_State* L)
 {
-    /* render2d.create returns full userdata: SDL_Renderer** */
-    SDL_Renderer** renp = (SDL_Renderer**)lua_touserdata(L, 1);
-    if (!renp || !*renp) { lua_pushnil(L); return 1; }
-    janimator_p anim = janimator_create(*renp);
+    SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
+    if (!ren) { lua_pushnil(L); return 1; }
+    janimator_p anim = janimator_create(ren);
     lua_pushlightuserdata(L, anim);
     return 1;
 }

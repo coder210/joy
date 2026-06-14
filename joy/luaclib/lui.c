@@ -1,4 +1,4 @@
-#include "luaclib.h"
+﻿#include "luaclib.h"
 #include "../jui.h"
 #include "../jutils.h"
 #include "../external/lua/lauxlib.h"
@@ -22,8 +22,8 @@ static int l_label_create(lua_State* L)
 	font_p fontinfo;
 	SDL_Renderer* renderer;
 	label_p label;
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
-	fontinfo = *(font_p*)lua_touserdata(L, 2);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+	fontinfo = (font_p)lua_touserdata(L, 2);
 	if (lua_type(L, 3) == LUA_TSTRING) {
 		int num_codepoints;
 		int* codepoints = str_to_codepoints(L, 3, &num_codepoints);
@@ -60,7 +60,7 @@ static int l_label_set_text(lua_State* L)
 	color.r = 255; color.g = 255; color.b = 255; color.a = 255;
 
 	label = (label_p)lua_touserdata(L, 1);
-	fontinfo = *(font_p*)lua_touserdata(L, 2);
+	fontinfo = (font_p)lua_touserdata(L, 2);
 
 	if (lua_type(L, 3) == LUA_TSTRING) {
 		int len;
@@ -105,7 +105,7 @@ static int l_button_create(lua_State* L)
 {
 	SDL_Renderer* renderer;
 	button_p btn;
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
 	float w = (float)luaL_checknumber(L, 2);
 	float h = (float)luaL_checknumber(L, 3);
 	btn = button_create(renderer, w, h);
@@ -128,7 +128,7 @@ static int l_button_set_text(lua_State* L)
 	SDL_Color color;
 
 	btn = (button_p)lua_touserdata(L, 1);
-	fontinfo = *(font_p*)lua_touserdata(L, 2);
+	fontinfo = (font_p)lua_touserdata(L, 2);
 
 	if (lua_type(L, 3) == LUA_TSTRING) {
 		/* 字符串版 → button_set_textx */
@@ -304,7 +304,7 @@ static int l_button_group_draw(lua_State* L)
 	radio_button_group_p btn_group;
 	SDL_Renderer* renderer;
 	btn_group = (radio_button_group_p)lua_touserdata(L, 1);
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
 	radio_button_group_draw(btn_group, renderer);
 	return 0;
 }
@@ -314,7 +314,7 @@ static int lcombobox_create(lua_State* L)
 	SDL_Renderer* renderer;
 	combobox_p combobox;
 	SDL_FRect rect;
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
 	rect.x = (float)luaL_checknumber(L, 2);
 	rect.y = (float)luaL_checknumber(L, 3);
 	rect.w = (float)luaL_checknumber(L, 4);
@@ -346,7 +346,7 @@ static int lcombobox_additem(lua_State* L)
 	const char* text = luaL_checkstring(L, 2);
 	if (!text) return 0;
 	if (combobox->item_count >= 20) return 0;
-	font_p font = *(font_p*)lua_touserdata(L, 3);
+	font_p font = (font_p)lua_touserdata(L, 3);
 	SDL_Color c = {0, 0, 0, 255};
 	combobox_item_p item = &combobox->items[combobox->item_count];
 	item->text = text_createx(font, text, (int)SDL_strlen(text), c);
@@ -423,7 +423,7 @@ static int l_checkbox_draw(lua_State* L)
 	checkbox_p checkbox;
 	SDL_Renderer* renderer;
 	checkbox = (checkbox_p)lua_touserdata(L, 1);
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
 	checkbox_draw(checkbox, renderer, NULL);
 	return 0;
 }
@@ -473,7 +473,7 @@ static int ldatagrid_create(lua_State* L)
 
 	luaL_checktype(L, 2, LUA_TTABLE);
 
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 1);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 1);
 
 	lua_getfield(L, 2, "x");
 	rect.x = luaL_checkinteger(L, -1);
@@ -490,7 +490,7 @@ static int ldatagrid_create(lua_State* L)
 
 	col_count = luaL_checkinteger(L, 3);
 	has_header = lua_toboolean(L, 4);
-	font_p dgfont = *(font_p*)lua_touserdata(L, 5);
+	font_p dgfont = (font_p)lua_touserdata(L, 5);
 
 	datagrid = datagrid_create(renderer, rect, col_count, has_header, dgfont);
 	lua_pushlightuserdata(L, datagrid);
@@ -501,7 +501,7 @@ static int ldatagrid_setheaders(lua_State* L)
 {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
 
-	font_p fontinfo = *(font_p*)lua_touserdata(L, 2);
+	font_p fontinfo = (font_p)lua_touserdata(L, 2);
 	SDL_Color color = { 0, 0, 0, 255 };
 	luaL_checktype(L, 3, LUA_TTABLE);
 	int n = (int)luaL_len(L, 3);
@@ -522,7 +522,7 @@ static int ldatagrid_draw(lua_State* L)
 	datagrid_p datagrid;
 	SDL_Renderer* renderer;
 	datagrid = (datagrid_p)lua_touserdata(L, 1);
-	renderer = *(SDL_Renderer**)lua_touserdata(L, 2);
+	renderer = (SDL_Renderer*)lua_touserdata(L, 2);
 	datagrid_draw(datagrid, renderer);
 	return 0;
 }
@@ -589,8 +589,8 @@ static int l_datagrid_set_selected_row(lua_State* L) {
 
 /* ---- TextInput Lua bindings ---- */
 static int l_textinput_create(lua_State* L) {
-	SDL_Renderer* r = *(SDL_Renderer**)lua_touserdata(L, 1);
-	font_p font = *(font_p*)lua_touserdata(L, 2);
+	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
+	font_p font = (font_p)lua_touserdata(L, 2);
 	SDL_FRect rect;
 	rect.x = (float)luaL_checknumber(L, 3);
 	rect.y = (float)luaL_checknumber(L, 4);
@@ -734,7 +734,7 @@ static int l_button_set_position(lua_State* L) {
 
 /* ---- Slider Lua bindings ---- */
 static int l_slider_create(lua_State* L) {
-	SDL_Renderer* r = *(SDL_Renderer**)lua_touserdata(L, 1);
+	SDL_Renderer* r = (SDL_Renderer*)lua_touserdata(L, 1);
 	float x = (float)luaL_checknumber(L, 2);
 	float y = (float)luaL_checknumber(L, 3);
 	float w = (float)luaL_checknumber(L, 4);
@@ -798,7 +798,7 @@ static int l_slider_set_hovered(lua_State* L) {
 
 /* ===== Popup ===== */
 static int l_popup_create(lua_State* L) {
-	SDL_Renderer* ren = *(SDL_Renderer**)lua_touserdata(L, 1);
+	SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
 	float w = (float)luaL_checknumber(L, 2), h = (float)luaL_checknumber(L, 3);
 	lua_pushlightuserdata(L, popup_create(ren, w, h));
 	return 1;
@@ -830,8 +830,8 @@ static int l_popup_set_closeable(lua_State* L) {
 }
 static int l_popup_draw(lua_State* L) {
 	popup_p p = (popup_p)lua_touserdata(L, 1);
-	font_p tf = *(font_p*)lua_touserdata(L, 2);
-	font_p cf = *(font_p*)lua_touserdata(L, 3);
+	font_p tf = (font_p)lua_touserdata(L, 2);
+	font_p cf = (font_p)lua_touserdata(L, 3);
 	popup_draw(p, tf, cf);
 	return 0;
 }
@@ -854,7 +854,7 @@ static int l_popup_is_inside(lua_State* L) {
 
 /* ===== Tooltip ===== */
 static int l_tooltip_create(lua_State* L) {
-	SDL_Renderer* ren = *(SDL_Renderer**)lua_touserdata(L, 1);
+	SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
 	size_t len; const char* s = lua_tolstring(L, 2, &len);
 	lua_pushlightuserdata(L, tooltip_create(ren, s, (int)len));
 	return 1;
@@ -875,7 +875,7 @@ static int l_tooltip_set_visible(lua_State* L) {
 }
 static int l_tooltip_draw(lua_State* L) {
 	tooltip_p t = (tooltip_p)lua_touserdata(L, 1);
-	font_p font = *(font_p*)lua_touserdata(L, 2);
+	font_p font = (font_p)lua_touserdata(L, 2);
 	tooltip_draw(t, font);
 	return 0;
 }
@@ -1060,3 +1060,4 @@ int luaopen_ui(lua_State* L)
 
 	return 1;
 }
+
