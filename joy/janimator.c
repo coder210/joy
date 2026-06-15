@@ -1,9 +1,9 @@
-#include "janimator.h"
-#include "jtextures.h"
-#include "external/klib/kvec.h"
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include "janimator.h"
+#include "jr2d.h"
+#include "external/klib/kvec.h"
 
 /* ========== Internal Types ========== */
 
@@ -558,8 +558,8 @@ void janimator_draw(janimator_p anim, float x, float y)
         SDL_RenderFillRect(anim->renderer, &r);
     } else if (m->image) {
         float sx = anim->flip_h ? -1.0f : 1.0f;
-        image_draw_ex(m->image, &m->src_rect, (SDL_FPoint){x, y}, 0.0f,
-            (SDL_FPoint){sx, 1.0f}, (SDL_FPoint){0.0f, 0.0f});
+        image_draw_ex(m->image, &m->src_rect, (vec2_t){x, y}, 0.0f,
+            (vec2_t){sx, 1.0f}, (vec2_t){0.0f, 0.0f});
     } else {
         SDL_FRect r = { x, y, m->src_rect.w, m->src_rect.h };
         SDL_SetRenderDrawColor(anim->renderer, 80, 80, 80, 255);

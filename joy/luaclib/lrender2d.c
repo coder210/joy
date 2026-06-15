@@ -1,23 +1,21 @@
 #include "luaclib.h"
 #include <SDL3/SDL.h>
 #include "../external/lua/lauxlib.h"
-#include "../jtextures.h"
-#include "../jtext.h"
-#include "../jshapes.h"
+#include "../jr2d.h"
 
 /* ---- helper: get renderer from stack ---- */
-static SDL_Renderer* get_ren(lua_State* L, int idx) {
-    return (SDL_Renderer*)lua_touserdata(L, idx);
+static jr2d_p get_ren(lua_State* L, int idx) {
+    return (jr2d_p)lua_touserdata(L, idx);
 }
 
 /* =================================================================
  * Renderer
  * ================================================================= */
 static int lr_create(lua_State* L) {
-    SDL_Window* win = (SDL_Window*)lua_touserdata(L, 1);
+    jwindow_p win = (jwindow_p)lua_touserdata(L, 1);
     if (!win) { lua_pushnil(L); return 1; }
-    SDL_Renderer* ren = SDL_CreateRenderer(win, NULL);
-    lua_pushlightuserdata(L, ren);
+    jr2d_p r2d = r2d_create(win);
+    lua_pushlightuserdata(L, r2d);
     return 1;
 }
 
@@ -26,74 +24,50 @@ static int l_select(lua_State* L) {
 }
 
 static int lr_destroy(lua_State* L) {
-    SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
-    if (ren) SDL_DestroyRenderer(ren);
-    return 0;
-}
-
-static int lr_clear(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    SDL_SetRenderDrawColor(ren,
-        (Uint8)luaL_optinteger(L, 2, 0),
-        (Uint8)luaL_optinteger(L, 3, 0),
-        (Uint8)luaL_optinteger(L, 4, 0),
-        (Uint8)luaL_optinteger(L, 5, 255));
-    SDL_RenderClear(ren);
+    jr2d_p r2d = (jr2d_p)lua_touserdata(L, 1);
+    if (r2d) r2d_destroy(r2d);
     return 0;
 }
 
 static int lr_begin(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    SDL_SetRenderDrawColor(ren,
+    jr2d_p r2d = get_ren(L, 1);
+    r2d_set_color(r2d,
         (Uint8)luaL_optinteger(L, 2, 0),
         (Uint8)luaL_optinteger(L, 3, 0),
         (Uint8)luaL_optinteger(L, 4, 0),
         (Uint8)luaL_optinteger(L, 5, 255));
-    SDL_RenderClear(ren);
+    r2d_begin(r2d);
     return 0;
 }
 
 static int lr_end_frame(lua_State* L) {
-    SDL_RenderPresent(get_ren(L, 1));
-    return 0;
-}
-
-static int lr_present(lua_State* L) {
-    SDL_RenderPresent(get_ren(L, 1));
+    r2d_end(get_ren(L, 1));
     return 0;
 }
 
 static int lr_get_size(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     int w, h;
-    SDL_GetRenderOutputSize(ren, &w, &h);
+    //SDL_GetRenderOutputSize(r2d->sdl, &w, &h);
+
     lua_pushinteger(L, w); lua_pushinteger(L, h);
     return 2;
 }
 
 static int lr_set_vsync(lua_State* L) {
-    lua_pushboolean(L, SDL_SetRenderVSync(get_ren(L, 1), (int)luaL_checkinteger(L, 2)));
+    lua_pushboolean(L, r2d_set_vsync(get_ren(L, 1), (int)luaL_checkinteger(L, 2)));
     return 1;
 }
 
 static int lr_set_scale(lua_State* L) {
-    lua_pushboolean(L, SDL_SetRenderScale(get_ren(L, 1),
+    lua_pushboolean(L, r2d_set_scale(get_ren(L, 1),
         (float)luaL_checknumber(L, 2),
         (float)luaL_checknumber(L, 3)));
     return 1;
 }
 
-static int lr_set_colorf(lua_State* L) {
-    lua_pushboolean(L, SDL_SetRenderDrawColorFloat(get_ren(L, 1),
-        (float)luaL_checknumber(L, 2),
-        (float)luaL_checknumber(L, 3),
-        (float)luaL_checknumber(L, 4),
-        (float)luaL_optnumber(L, 5, 1)));
-    return 1;
-}
-
 static int lr_set_color(lua_State* L) {
-    lua_pushboolean(L, SDL_SetRenderDrawColor(get_ren(L, 1),
+    lua_pushboolean(L, r2d_set_color(get_ren(L, 1),
         (Uint8)luaL_checkinteger(L, 2),
         (Uint8)luaL_checkinteger(L, 3),
         (Uint8)luaL_checkinteger(L, 4),
@@ -102,7 +76,7 @@ static int lr_set_color(lua_State* L) {
 }
 
 static int lr_set_logical_presentation(lua_State* L) {
-    SDL_SetRenderLogicalPresentation(get_ren(L, 1),
+    r2d_set_logical_presentation(get_ren(L, 1),
         (int)luaL_checkinteger(L, 2),
         (int)luaL_checkinteger(L, 3),
         (SDL_RendererLogicalPresentation)luaL_checkinteger(L, 4));
@@ -110,54 +84,47 @@ static int lr_set_logical_presentation(lua_State* L) {
 }
 
 static int lr_get_logical_presentation(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     int w, h;
-    SDL_RendererLogicalPresentation mode;
-    lua_pushboolean(L, SDL_GetRenderLogicalPresentation(ren, &w, &h, &mode));
+    int mode;
+    lua_pushboolean(L, r2d_get_logical_presentation(r2d, &w, &h, &mode));
     lua_pushinteger(L, w);
     lua_pushinteger(L, h);
     lua_pushinteger(L, (int)mode);
     return 4;
 }
 
-static int lr_get_logical_presentation_rect(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    SDL_FRect rect;
-    lua_pushboolean(L, SDL_GetRenderLogicalPresentationRect(ren, &rect));
-    lua_pushnumber(L, rect.x);
-    lua_pushnumber(L, rect.y);
-    lua_pushnumber(L, rect.w);
-    lua_pushnumber(L, rect.h);
-    return 5;
-}
+//static int lr_get_logical_presentation_rect(lua_State* L) {
+//    jr2d_p r2d = get_ren(L, 1);
+//    jrect_t rect;
+//    lua_pushboolean(L, SDL_GetRenderLogicalPresentationRect(r2d, &rect));
+//    lua_pushnumber(L, rect.x);
+//    lua_pushnumber(L, rect.y);
+//    lua_pushnumber(L, rect.w);
+//    lua_pushnumber(L, rect.h);
+//    return 5;
+//}
 
-static int lr_debug_text(lua_State* L) {
-    lua_pushboolean(L, SDL_RenderDebugText(get_ren(L, 1),
-        (float)luaL_checknumber(L, 2),
-        (float)luaL_checknumber(L, 3),
-        luaL_checkstring(L, 4)));
-    return 1;
-}
 
 /* ---- draw ---- */
 static int lr_draw_point(lua_State* L) {
-    lua_pushboolean(L, SDL_RenderPoint(get_ren(L, 1),
+    lua_pushboolean(L, r2d_draw_point(get_ren(L, 1),
         (float)luaL_checknumber(L, 2),
         (float)luaL_checknumber(L, 3)));
     return 1;
 }
 
 static int lr_draw_points(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     int n = (int)luaL_len(L, 2);
-    SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc(n * sizeof(SDL_FPoint));
+    vec2_t* pts = (vec2_t*)SDL_malloc(n * sizeof(vec2_t));
     for (int i = 1; i <= n; i++) {
         lua_rawgeti(L, 2, i);
         lua_getfield(L, -1, "x"); pts[i-1].x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
         lua_getfield(L, -1, "y"); pts[i-1].y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
         lua_pop(L, 1);
     }
-    lua_pushboolean(L, SDL_RenderPoints(ren, pts, n));
+    lua_pushboolean(L, r2d_draw_points(r2d, pts, n));
     SDL_free(pts);
     return 1;
 }
@@ -172,7 +139,7 @@ static int lr_draw_line(lua_State* L) {
 }
 
 static int lr_draw_rectangle(lua_State* L) {
-    SDL_FRect rect;
+    jrect_t rect;
     rect.x = (float)luaL_checknumber(L, 3);
     rect.y = (float)luaL_checknumber(L, 4);
     rect.w = (float)luaL_checknumber(L, 5);
@@ -182,29 +149,29 @@ static int lr_draw_rectangle(lua_State* L) {
 }
 
 static int lr_draw_polygon(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     const char* mode = luaL_checkstring(L, 2);
     int n = (lua_gettop(L) - 2) / 2;
     if (n < 3) return luaL_error(L, "polygon needs >= 3 vertices");
-    SDL_FPoint* pts = (SDL_FPoint*)SDL_malloc((n + 1) * sizeof(SDL_FPoint));
+    vec2_t* pts = (vec2_t*)SDL_malloc((n + 1) * sizeof(vec2_t));
     for (int i = 0; i < n; i++) {
         pts[i].x = (float)luaL_checknumber(L, 3 + i * 2);
         pts[i].y = (float)luaL_checknumber(L, 4 + i * 2);
     }
-    SDL_FColor c;
-    SDL_GetRenderDrawColorFloat(ren, &c.r, &c.g, &c.b, &c.a);
-    lua_pushboolean(L, shape_draw_polygon(ren, mode, pts, n, c));
+    jcolor_t c;
+    r2d_get_color(r2d, &c.r, &c.g, &c.b, &c.a);
+    lua_pushboolean(L, shape_draw_polygon(r2d, mode, pts, n, c));
     SDL_free(pts);
     return 1;
 }
 
 static int lr_draw_circle(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    SDL_FPoint center = {
+    jr2d_p r2d = get_ren(L, 1);
+    vec2_t center = {
         (float)luaL_checknumber(L, 3),
         (float)luaL_checknumber(L, 4)
     };
-    lua_pushboolean(L, shape_draw_circle(ren,
+    lua_pushboolean(L, shape_draw_circle(r2d,
         luaL_checkstring(L, 2), center,
         (float)luaL_checknumber(L, 5),
         (int)luaL_optinteger(L, 6, 32)));
@@ -212,25 +179,25 @@ static int lr_draw_circle(lua_State* L) {
 }
 
 static int lr_draw_grid(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     luaL_checktype(L, 2, LUA_TTABLE);
     luaL_checktype(L, 3, LUA_TTABLE);
-    SDL_FPoint start, end;
+    vec2_t start, end;
     lua_getfield(L, 2, "x"); start.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 2, "y"); start.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 3, "x"); end.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 3, "y"); end.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    shape_draw_grid(ren, start, end, (float)luaL_checknumber(L, 4));
+    shape_draw_grid(r2d, start, end, (float)luaL_checknumber(L, 4));
     return 0;
 }
 
 static int lr_draw_gridx(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
+    jr2d_p r2d = get_ren(L, 1);
     luaL_checktype(L, 2, LUA_TTABLE);
-    SDL_FPoint pos;
+    vec2_t pos;
     lua_getfield(L, 2, "x"); pos.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 2, "y"); pos.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    shape_draw_gridx(ren, pos,
+    shape_draw_gridx(r2d, pos,
         (int)luaL_checkinteger(L, 3),
         (int)luaL_checkinteger(L, 4),
         (float)luaL_checknumber(L, 5));
@@ -254,7 +221,7 @@ static int li_free(lua_State* L) {
 
 static int li_draw(lua_State* L) {
     image_p img = (image_p)lua_touserdata(L, 1);
-    if (img) image_draw(img, (SDL_FPoint){
+    if (img) image_draw(img, (vec2_t){
         (float)luaL_checknumber(L, 2),
         (float)luaL_checknumber(L, 3) });
     return 0;
@@ -264,16 +231,16 @@ static int li_draw_ex(lua_State* L) {
     image_p img = (image_p)lua_touserdata(L, 1);
     if (!img) return 0;
     luaL_checktype(L, 2, LUA_TTABLE);
-    SDL_FRect src, dst;
+    jrect_t src, dst;
     lua_getfield(L, 2, "x"); src.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 2, "y"); src.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 2, "w"); src.w = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     lua_getfield(L, 2, "h"); src.h = (float)lua_tonumber(L, -1); lua_pop(L, 1);
     image_draw_ex(img, &src,
-        (SDL_FPoint){(float)luaL_checknumber(L, 3), (float)luaL_checknumber(L, 4)},
+        (vec2_t){(float)luaL_checknumber(L, 3), (float)luaL_checknumber(L, 4)},
         (float)luaL_optnumber(L, 5, 0),
-        (SDL_FPoint){(float)luaL_optnumber(L, 6, 1), (float)luaL_optnumber(L, 7, 1)},
-        (SDL_FPoint){(float)luaL_optnumber(L, 8, 0), (float)luaL_optnumber(L, 9, 0)});
+        (vec2_t){(float)luaL_optnumber(L, 6, 1), (float)luaL_optnumber(L, 7, 1)},
+        (vec2_t){(float)luaL_optnumber(L, 8, 0), (float)luaL_optnumber(L, 9, 0)});
     return 0;
 }
 
@@ -303,20 +270,20 @@ static int lt_create(lua_State* L) {
     for (int i = 1; i <= n; i++) {
         lua_geti(L, 2, i); cps[i-1] = (int)luaL_checkinteger(L, -1); lua_pop(L, 1);
     }
-    SDL_Color color = {
+    jcolor_t color = {
         (Uint8)luaL_optinteger(L, 3, 255),
         (Uint8)luaL_optinteger(L, 4, 255),
         (Uint8)luaL_optinteger(L, 5, 255),
         (Uint8)luaL_optinteger(L, 6, 255)
     };
-    text_texture_p t = text_create(f, cps, n, color);
+    text_p t = text_create(f, cps, n, color);
     SDL_free(cps);
     lua_pushlightuserdata(L, t);
     return 1;
 }
 
 static int lt_update(lua_State* L) {
-    text_texture_p t = (text_texture_p)lua_touserdata(L, 1);
+    text_p t = (text_p)lua_touserdata(L, 1);
     font_p f = (font_p)lua_touserdata(L, 2);
     if (!t || !f) return luaL_error(L, "invalid text or font");
     int n = (int)luaL_len(L, 3);
@@ -324,7 +291,7 @@ static int lt_update(lua_State* L) {
     for (int i = 1; i <= n; i++) {
         lua_geti(L, 3, i); cps[i-1] = (int)luaL_checkinteger(L, -1); lua_pop(L, 1);
     }
-    SDL_Color color = {
+    jcolor_t color = {
         (Uint8)luaL_optinteger(L, 4, 255),
         (Uint8)luaL_optinteger(L, 5, 255),
         (Uint8)luaL_optinteger(L, 6, 255),
@@ -336,15 +303,15 @@ static int lt_update(lua_State* L) {
 }
 
 static int lt_destroy(lua_State* L) {
-    text_texture_p t = (text_texture_p)lua_touserdata(L, 1);
+    text_p t = (text_p)lua_touserdata(L, 1);
     if (t) text_destroy(t);
     return 0;
 }
 
 static int lt_print(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    text_texture_p t = (text_texture_p)lua_touserdata(L, 2);
-    if (t) text_print(ren, t,
+    jr2d_p r2d = get_ren(L, 1);
+    text_p t = (text_p)lua_touserdata(L, 2);
+    if (t) text_print(r2d, t,
         (float)luaL_checknumber(L, 3),
         (float)luaL_checknumber(L, 4));
     return 0;
@@ -355,7 +322,7 @@ static int l_print(lua_State* L) {
     font_p f = (font_p)lua_touserdata(L, 2);
     if (!f) return luaL_error(L, "invalid font");
     const char* str = luaL_checkstring(L, 3);
-    SDL_Color c = {
+    jcolor_t c = {
         (Uint8)luaL_optinteger(L, 6, 255),
         (Uint8)luaL_optinteger(L, 7, 255),
         (Uint8)luaL_optinteger(L, 8, 255),
@@ -367,68 +334,9 @@ static int l_print(lua_State* L) {
     return 0;
 }
 
-/* =================================================================
- * SpriteBatch
- * ================================================================= */
-static int lb_new(lua_State* L) {
-    sprite_batch_p b = sprite_batch_create(get_ren(L, 1), luaL_checkstring(L, 2));
-    lua_pushlightuserdata(L, b);
-    return 1;
-}
-
-static int lb_free(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    if (b) sprite_batch_destroy(b);
-    return 0;
-}
-
-static int lb_get_width(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    lua_pushnumber(L, b ? sprite_batch_get_width(b) : 0);
-    return 1;
-}
-
-static int lb_get_height(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    lua_pushnumber(L, b ? sprite_batch_get_height(b) : 0);
-    return 1;
-}
-
-static int lb_add(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    if (!b) return 0;
-    luaL_checktype(L, 2, LUA_TTABLE);
-    luaL_checktype(L, 3, LUA_TTABLE);
-    SDL_FRect src, dst;
-    lua_getfield(L, 2, "x"); src.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 2, "y"); src.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 2, "w"); src.w = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 2, "h"); src.h = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 3, "x"); dst.x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 3, "y"); dst.y = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 3, "w"); dst.w = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    lua_getfield(L, 3, "h"); dst.h = (float)lua_tonumber(L, -1); lua_pop(L, 1);
-    sprite_batch_add_ex(b, src, dst,
-        (float)luaL_optnumber(L, 4, 0),
-        (SDL_FPoint){(float)luaL_optnumber(L, 5, 0), (float)luaL_optnumber(L, 6, 0)});
-    return 0;
-}
-
-static int lb_draw(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    if (b) sprite_batch_draw(b);
-    return 0;
-}
-
-static int lb_set_image(lua_State* L) {
-    sprite_batch_p b = (sprite_batch_p)lua_touserdata(L, 1);
-    if (b) sprite_batch_set_image(b, luaL_checkstring(L, 2));
-    return 0;
-}
-
 static int l_get_renderer(lua_State* L) {
-    SDL_Renderer* ren = get_ren(L, 1);
-    lua_pushlightuserdata(L, ren);
+    jr2d_p r2d = get_ren(L, 1);
+    lua_pushlightuserdata(L, r2d);
     return 1;
 }
 
@@ -446,12 +354,9 @@ int luaopen_render2d(lua_State* L) {
         {"get_size",  lr_get_size},
         {"set_vsync", lr_set_vsync},
         {"set_scale", lr_set_scale},
-        {"set_colorf", lr_set_colorf},
         {"set_color", lr_set_color},
         {"set_logical_presentation", lr_set_logical_presentation},
         {"get_logical_presentation", lr_get_logical_presentation},
-        {"get_logical_presentation_rect", lr_get_logical_presentation_rect},
-        {"debug_text", lr_debug_text},
         {"point",      lr_draw_point},
         {"points",     lr_draw_points},
         {"line",       lr_draw_line},
@@ -471,13 +376,6 @@ int luaopen_render2d(lua_State* L) {
         {"destroy_text", lt_destroy},
         {"print_text",  lt_print},
         {"print",       l_print},
-        {"new_spritebatch", lb_new},
-        {"free_spritebatch", lb_free},
-        {"get_spritebatch_width", lb_get_width},
-        {"get_spritebatch_height", lb_get_height},
-        {"add_sprite",  lb_add},
-        {"draw_spritebatch", lb_draw},
-        {"set_spritebatch_image", lb_set_image},
         {"get_renderer", l_get_renderer},
         {NULL, NULL}
     };

@@ -1108,7 +1108,7 @@ JOY_INLINE ft_t vec2_length(vec2_t a)
 
 JOY_INLINE vec2_t vec2_normalize(vec2_t a)
 {
-	vec2_t r;
+	vec2_t r = { 0 };
 	ft_t length, inv_length;
 	length = vec2_length(a);
 	if (length != ft_zero()) {
@@ -1240,7 +1240,7 @@ JOY_INLINE ft_t vec3_length(vec3_t a)
 
 JOY_INLINE vec3_t vec3_normalize(vec3_t a)
 {
-	vec3_t r;
+	vec3_t r = { 0 };
 	ft_t length, inv_length;
 	length = vec3_length(a);
 	if (length != ft_zero()) {

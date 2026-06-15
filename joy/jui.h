@@ -17,9 +17,9 @@ History:
 typedef kvec_t(char*) dg_row_t;
 
 typedef struct label {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	vec2_t position;
-	text_texture_p text;
+	text_p text;
 	jcolor_t color;
 }label_t, * label_p;
 
@@ -27,7 +27,7 @@ typedef struct label {
 typedef struct button button_t, * button_p;
 
 struct button {
-	jr2d_p renderer;   // 渲染器
+	jr2d_p r2d;   // 渲染器
 	vec2_t position;      // 位置
 	float width;              // 宽度
 	float height;             // 高度
@@ -37,14 +37,14 @@ struct button {
 	vec2_t text_pos;      // 文本相对位置
 	image_p image;            // 按钮正常纹理（可选）
 	image_p pressed_image;    // 按钮按下纹理（可选）
-	text_texture_p text;      // 按钮文件纹理
+	text_p text;      // 按钮文件纹理
 	bool is_hovered;          // 内部状态：由 is_hovered() / is_pressed() 设置
 	bool is_pressed;
 };
 
 typedef struct combobox_item {
 	jrect_t rect;
-	text_texture_p text;
+	text_p text;
 	bool is_selected;
 } combobox_item_t, * combobox_item_p;
 
@@ -60,11 +60,11 @@ typedef struct combobox {
 	jcolor_t bg_color;
 	jcolor_t text_color;
 	jcolor_t hover_color;
-	jr2d_p renderer;
+	jr2d_p r2d;
 } combobox_t, * combobox_p;
 
 typedef struct datagrid {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	int x, y;              // 位置
 	int width, height;     // 尺寸
 	int row_height;        // 行高
@@ -73,7 +73,7 @@ typedef struct datagrid {
 	int visible_rows;      // 可见行数
 	int scroll_offset;     // 滚动偏移
 	int selected_row;      // 选中的行
-	text_texture_p headers[512];        // 表头
+	text_p headers[512];        // 表头
 	kvec_t(dg_row_t) data;              // 表格数据（klib 动态数组 of dg_row_t）
 	int* col_widths;       // 列宽
 	bool has_header;   // 是否有表头
@@ -93,9 +93,9 @@ typedef struct radio_button {
 	int group_id;              // 所属组ID
 	jrect_t hit_area;         // 点击区域
 	bool hover;                // 鼠标悬停状态
-	SDL_FColor r1_color;
-	SDL_FColor r2_color;
-	SDL_FColor r3_color;
+	jcolor_t r1_color;
+	jcolor_t r2_color;
+	jcolor_t r3_color;
 } radio_button_t, * radio_button_p;
 
 typedef struct radio_button_group {
@@ -130,7 +130,7 @@ typedef struct checkbox {
 typedef struct joystick joystick_t, * joystick_p;
 
 typedef struct textinput {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	jrect_t rect;               // 位置和大小
 	jcolor_t bg_color;           // 背景色
 	jcolor_t border_color;       // 边框色
@@ -159,12 +159,12 @@ typedef struct textinput {
 extern "C" {
 #endif
 
-	JOY_API label_p label_create(jr2d_p renderer, font_p fontinfo, const int* codepoints, int len);
+	JOY_API label_p label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
 	JOY_API void label_destroy(label_p label);
 	JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
 	JOY_API void label_draw(label_p label);
 
-	JOY_API button_p button_create(jr2d_p renderer, float width, float height);
+	JOY_API button_p button_create(jr2d_p r2d, float width, float height);
 	JOY_API void button_destroy(button_p btn);
 	JOY_API void button_set_position(button_p btn, float x, float y);
 	JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
@@ -178,7 +178,7 @@ extern "C" {
 	JOY_API void button_set_pressed(button_p btn, bool v);
 	JOY_API void button_draw(button_p btn);
 
-	JOY_API combobox_p combobox_create(jr2d_p renderer, jrect_t rect);
+	JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
 	JOY_API void combobox_destroy(combobox_p combobox);
 	JOY_API void combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
 		const int* codepoints, int len, jcolor_t color);
@@ -192,13 +192,13 @@ extern "C" {
 	JOY_API int combobox_get_selected(combobox_p combobox);
 	JOY_API void combobox_draw(combobox_p combobox);
 
-	JOY_API datagrid_p datagrid_create(jr2d_p renderer, SDL_Rect rect, int col_count, bool has_header, void* font);
+	JOY_API datagrid_p datagrid_create(jr2d_p r2d, SDL_Rect rect, int col_count, bool has_header, void* font);
 	JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
 	JOY_API void datagrid_setheader(datagrid_p grid, int index, const char *header);
 	JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
 	JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
 	JOY_API void datagrid_destroy(datagrid_p grid);
-	JOY_API void datagrid_draw(datagrid_p grid, jr2d_p renderer);
+	JOY_API void datagrid_draw(datagrid_p grid, jr2d_p r2d);
 	JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
 	JOY_API void datagrid_scroll(datagrid_p grid, int lines);
 	JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
@@ -212,7 +212,7 @@ extern "C" {
 	JOY_API void radio_button_group_set_selected(radio_button_group_p group, int index);
 	JOY_API bool radio_button_is_pressed(radio_button_p radio, float x, float y);
 	JOY_API void radio_button_set_hovered(radio_button_p radio, bool v);
-	JOY_API void radio_button_group_draw(radio_button_group_p group, jr2d_p renderer);
+	JOY_API void radio_button_group_draw(radio_button_group_p group, jr2d_p r2d);
 
 	JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
 	JOY_API void checkbox_destroy(checkbox_p checkbox);
@@ -220,9 +220,9 @@ extern "C" {
 	JOY_API void checkbox_toggle(checkbox_p checkbox);
 	JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
 	JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
-	JOY_API void checkbox_draw(checkbox_p cb, jr2d_p renderer, void* font);
+	JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
 
-	JOY_API joystick_p joystick_create(jr2d_p renderer, float x, float y, float radius);
+	JOY_API joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius);
 	JOY_API void joystick_destroy(joystick_p joystick);
 	JOY_API void joystick_draw(joystick_p joystick);
 	JOY_API void joystick_reset(joystick_p joystick);
@@ -234,7 +234,7 @@ extern "C" {
 	JOY_API vec2_t joystick_get_direction(joystick_p joystick);
 	JOY_API float joystick_get_magnitude(joystick_p joystick);
 
-	JOY_API textinput_p textinput_create(jr2d_p renderer, jrect_t rect, font_p font);
+	JOY_API textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font);
 	JOY_API void textinput_destroy(textinput_p ti);
 	JOY_API void textinput_set_text(textinput_p ti, const char* text);
 	JOY_API const char* textinput_get_text(textinput_p ti);
@@ -262,7 +262,7 @@ extern "C" {
 	JOY_API bool textinput_is_focused(textinput_p ti);
 
 typedef struct slider {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	jrect_t track;             // 滑轨区域
 	float min, max;              // 取值范围
 	float value;                 // 当前值
@@ -275,7 +275,7 @@ typedef struct slider {
 	bool hovered;                // 滑块是否悬停
 } slider_t, * slider_p;
 
-JOY_API slider_p slider_create(jr2d_p renderer, float x, float y, float w, float h, float min, float max, float initial);
+JOY_API slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial);
 JOY_API void slider_destroy(slider_p s);
 JOY_API void slider_set_value(slider_p s, float v);
 JOY_API float slider_get_value(slider_p s);
@@ -291,7 +291,7 @@ JOY_API void slider_set_hovered(slider_p s, bool v);
 #define POPUP_MAX_CONTENT 2048
 
 typedef struct popup {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	float x, y, w, h;
 	float title_height;         // title bar height (set in draw)
 	float padding;
@@ -312,7 +312,7 @@ typedef struct popup {
 	float drag_off_x, drag_off_y;
 } popup_t, * popup_p;
 
-JOY_API popup_p popup_create(jr2d_p renderer, float w, float h);
+JOY_API popup_p popup_create(jr2d_p r2d, float w, float h);
 JOY_API void popup_destroy(popup_p p);
 JOY_API void popup_set_title(popup_p p, const char* text, int len);
 JOY_API void popup_set_content(popup_p p, const char* text, int len);
@@ -328,7 +328,7 @@ JOY_API bool popup_is_inside(popup_p p, float mx, float my);
 #define TOOLTIP_MAX_TEXT 256
 
 typedef struct tooltip {
-	jr2d_p renderer;
+	jr2d_p r2d;
 	float x, y;
 	char text[TOOLTIP_MAX_TEXT];
 	int text_len;
@@ -339,7 +339,7 @@ typedef struct tooltip {
 	bool visible;
 } tooltip_t, * tooltip_p;
 
-JOY_API tooltip_p tooltip_create(jr2d_p renderer, const char* text, int len);
+JOY_API tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len);
 JOY_API void tooltip_destroy(tooltip_p t);
 JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
 JOY_API void tooltip_set_position(tooltip_p t, float x, float y);

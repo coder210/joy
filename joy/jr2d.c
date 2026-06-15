@@ -62,29 +62,43 @@ void* r2d_unwrap(jr2d_p r2d)
         return r2d ? (void*)r2d->sdl : NULL;
 }
 
+
+vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y)
+{
+    vec2_t logic;
+    SDL_RenderCoordinatesFromWindow(r2d->sdl, x, y, &logic.x, &logic.y);
+    return logic;
+}
+
 void r2d_destroy(jr2d_p r2d)
 {
         if (r2d) { SDL_DestroyRenderer(r2d->sdl); SDL_free(r2d); }
 }
 
-
-
-void r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-        SDL_SetRenderDrawColor(r2d->sdl, r, g, b, a);
+bool r2d_get_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+        return SDL_GetRenderDrawColor(r2d->sdl, &r, &g, &b, &a);
 }
+
+bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+        return SDL_SetRenderDrawColor(r2d->sdl, r, g, b, a);
+}
+
 void r2d_begin(jr2d_p r2d) { SDL_RenderClear(r2d->sdl); }
 void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
-void r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode)
+bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode)
 {
-        SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
+        return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
 }
 
-void r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode) 
+bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)
 {
         SDL_RendererLogicalPresentation m;
-        SDL_GetRenderLogicalPresentation(r2d->sdl, w, h, &m);
+        bool r = SDL_GetRenderLogicalPresentation(r2d->sdl, w, h, &m);
         if (mode) *mode = (int)m;
+        return r;
 }
 
 void r2d_get_size(jr2d_p r2d, int* w, int* h)
@@ -117,21 +131,66 @@ bool r2d_draw_point(jr2d_p r2d, float x, float y)
         return SDL_RenderPoint(r2d->sdl, x, y);
 }
 
+bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count)
+{
+    if (count >= 512) {
+        SDL_FPoint *raw_points = SDL_malloc(sizeof(SDL_FPoint) * count);
+        for (int i = 0; i < count; i++) {
+            raw_points[i].x = points[i].x;
+            raw_points[i].y = points[i].y;
+        }
+        bool result = SDL_RenderPoints(r2d->sdl, raw_points, count);
+        SDL_free(raw_points);
+        return result;
+    }
+    else {
+        SDL_FPoint raw_points[512];
+        for (int i = 0; i < count; i++) {
+            raw_points[i].x = points[i].x;
+            raw_points[i].y = points[i].y;
+        }
+        return SDL_RenderPoints(r2d->sdl, raw_points, count);
+    }
+}
+
+bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count)
+{
+        if (count >= 512) {
+            SDL_FPoint* raw_points = SDL_malloc(sizeof(SDL_FPoint) * count);
+            for (int i = 0; i < count; i++) {
+                raw_points[i].x = points[i].x;
+                raw_points[i].y = points[i].y;
+            }
+            bool result = SDL_RenderLines(r2d->sdl, raw_points, count);
+            SDL_free(raw_points);
+            return result;
+        }
+        else {
+            SDL_FPoint raw_points[512];
+            for (int i = 0; i < count; i++) {
+                raw_points[i].x = points[i].x;
+                raw_points[i].y = points[i].y;
+            }
+            return SDL_RenderLines(r2d->sdl, raw_points, count);
+        }
+}
+
 bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2)
 {
-        bool result;
-        result = SDL_RenderLine(r2d->sdl, x1, y1, x2, y2);
-        return result;
+    bool result;
+    result = SDL_RenderLine(r2d->sdl, x1, y1, x2, y2);
+    return result;
 }
 
 bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect)
 {
+        SDL_FRect raw_rect = { .x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
         bool result;
         if (SDL_strcmp(mode, "line") == 0) {
-                result = SDL_RenderRect(r2d->sdl, &rect);
+                result = SDL_RenderRect(r2d->sdl, &raw_rect);
         }
         else if (SDL_strcmp(mode, "fill") == 0) {
-                result = SDL_RenderFillRect(r2d->sdl, &rect);
+                result = SDL_RenderFillRect(r2d->sdl, &raw_rect);
         }
         else {
                 result = false;
@@ -140,18 +199,35 @@ bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect)
 }
 
 static bool
-draw_polygon_outline(jr2d_p r2d, vec2_t* points, int point_count)
+draw_polygon_outline(jr2d_p r2d, vec2_t* points, int count)
 {
-        bool result;
-        points[point_count].x = points[0].x;
-        points[point_count].y = points[0].y;
-        result = SDL_RenderLines(r2d->sdl, points, point_count + 1);
-        return result;
+        if (count >= 512) {
+            SDL_FPoint* raw_points = SDL_malloc(sizeof(SDL_FPoint) * (count + 1));
+            for (int i = 0; i < count; i++) {
+                raw_points[i].x = points[i].x;
+                raw_points[i].y = points[i].y;
+            }
+            raw_points[count].x = raw_points[0].x;
+            raw_points[count].y = raw_points[0].y;
+            bool result = SDL_RenderLines(r2d->sdl, raw_points, count + 1);
+            SDL_free(raw_points);
+            return result;
+        }
+        else {
+            SDL_FPoint raw_points[513];
+            for (int i = 0; i < count; i++) {
+                raw_points[i].x = points[i].x;
+                raw_points[i].y = points[i].y;
+            }
+            raw_points[count].x = raw_points[0].x;
+            raw_points[count].y = raw_points[0].y;
+            return SDL_RenderLines(r2d->sdl, raw_points, count + 1);
+        }
 }
 
 static bool
 draw_polygon_filled(jr2d_p r2d,
-        vec2_t* points, int point_count, SDL_FColor color)
+        vec2_t* points, int point_count, jcolor_t color)
 {
         bool result;
         SDL_Vertex* vertices;
@@ -177,7 +253,10 @@ draw_polygon_filled(jr2d_p r2d,
         for (int i = 0; i < vertex_count; i++) {
                 vertices[i].position.x = points[i].x;
                 vertices[i].position.y = points[i].y;
-                vertices[i].color = color;
+                vertices[i].color.r = color.r;
+                vertices[i].color.g = color.g;
+                vertices[i].color.b = color.b;
+                vertices[i].color.a = color.a;
                 vertices[i].tex_coord.x = 0.0f;
                 vertices[i].tex_coord.y = 0.0f;
         }
@@ -197,14 +276,14 @@ draw_polygon_filled(jr2d_p r2d,
 
 bool
 shape_draw_polygon(jr2d_p r2d, const char* mode,
-        vec2_t* points, int point_count, SDL_FColor color)
+        vec2_t* points, int point_count, jcolor_t color)
 {
         bool result;
         if (SDL_strcmp(mode, "line") == 0) {
-                result = draw_polygon_outline(r2d->sdl, points, point_count);
+                result = draw_polygon_outline(r2d, points, point_count);
         }
         else if (SDL_strcmp(mode, "fill") == 0) {
-                result = draw_polygon_filled(r2d->sdl, points, point_count, color);
+                result = draw_polygon_filled(r2d, points, point_count, color);
         }
         else {
                 result = false;
@@ -232,7 +311,7 @@ draw_circle_outline(jr2d_p r2d, vec2_t center, float radius, int segments)
 }
 
 static bool
-draw_circle_filled(jr2d_p r2d, vec2_t center, float radius, int segments, SDL_FColor color)
+draw_circle_filled(jr2d_p r2d, vec2_t center, float radius, int segments, jcolor_t color)
 {
         bool result;
         SDL_Vertex* vertices;
@@ -251,7 +330,10 @@ draw_circle_filled(jr2d_p r2d, vec2_t center, float radius, int segments, SDL_FC
 
         vertices[0].position.x = center.x;
         vertices[0].position.y = center.y;
-        vertices[0].color = color;
+        vertices[0].color.r = color.r;
+        vertices[0].color.g = color.g;
+        vertices[0].color.b = color.b;
+        vertices[0].color.a = color.a;
         vertices[0].tex_coord.x = 0.0f;
         vertices[0].tex_coord.y = 0.0f;
 
@@ -259,7 +341,7 @@ draw_circle_filled(jr2d_p r2d, vec2_t center, float radius, int segments, SDL_FC
                 float angle = (float)i / (float)segments * 2.0f * 3.1415926535f;
                 vertices[i + 1].position.x = center.x + cosf(angle) * radius;
                 vertices[i + 1].position.y = center.y + sinf(angle) * radius;
-                vertices[i + 1].color = color;
+                vertices[i + 1].color = vertices[0].color;
                 vertices[i + 1].tex_coord.x = 0.0f;
                 vertices[i + 1].tex_coord.y = 0.0f;
 
@@ -280,7 +362,7 @@ bool
 shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments)
 {
         bool result;
-        SDL_FColor color;
+        jcolor_t color;
         if (segments < 8) segments = 8;
         if (segments > 360) segments = 360;
         if (SDL_strcmp(mode, "line") == 0) {
@@ -494,11 +576,9 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	//SDL_SetTextureAlphaMod(image->texture, 255);
 }
 
-
-
-text_texture_p text_createx(font_p font,
+text_p text_createx(font_p font,
         const char* str, int len, jcolor_t color) {
-        text_texture_p texture;
+        text_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
         int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
@@ -507,7 +587,7 @@ text_texture_p text_createx(font_p font,
         return texture;
 }
 
-text_texture_p text_create(font_p font,
+text_p text_create(font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
@@ -520,14 +600,14 @@ text_texture_p text_create(font_p font,
         SDL_Surface* surface;
         unsigned char* surface_pixels;
         Uint8 pixel;
-        text_texture_p text;
+        text_p text;
         int kern;
 
         x = 0;
         advance_width = left_side_bearing = 0;
         scale = font->scale;
 
-        text = (text_texture_p)SDL_malloc(sizeof(text_texture_t));
+        text = (text_p)SDL_malloc(sizeof(text_texture_t));
         text->real_width = font->fontsize * num_codepoints;
         text->real_height = font->fontsize;
         bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
@@ -569,9 +649,9 @@ text_texture_p text_create(font_p font,
         return text;
 }
 
-void text_updatex(text_texture_p text, font_p font,
+void text_updatex(text_p text, font_p font,
         const char* str, int len, jcolor_t color) {
-        text_texture_p texture;
+        text_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
         int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
@@ -579,7 +659,7 @@ void text_updatex(text_texture_p text, font_p font,
         SDL_free(codepoints);
 }
 
-void text_update(text_texture_p text, font_p font,
+void text_update(text_p text, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
@@ -657,7 +737,7 @@ void text_update(text_texture_p text, font_p font,
         SDL_DestroySurface(surface);
 }
 
-void text_destroy(text_texture_p text)
+void text_destroy(text_p text)
 {
         if (!text) return;
         SDL_DestroyTexture(text->texture);
@@ -665,7 +745,7 @@ void text_destroy(text_texture_p text)
 }
 
 void text_print(jr2d_p r2d,
-        text_texture_p text,
+        text_p text,
         float x, float y)
 {
         jrect_t dst_rect = { x, y, (float)text->real_width, (float)text->real_height };
@@ -675,24 +755,24 @@ void text_print(jr2d_p r2d,
 void text_printx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color, float x, float y)
 {
-        text_texture_p t = text_createx(font, str, len, color);
+        text_p t = text_createx(font, str, len, color);
         if (t) {
                 text_print(r2d, t, x, y);
                 text_destroy(t);
         }
 }
 
-int text_get_width(text_texture_p text_tex)
+int text_get_width(text_p text_tex)
 {
         return text_tex->real_width;
 }
 
-int text_get_height(text_texture_p text_tex)
+int text_get_height(text_p text_tex)
 {
         return text_tex->real_height;
 }
 
-static SDL_Texture* text_get_texture(text_texture_p text_tex)
+static SDL_Texture* text_get_texture(text_p text_tex)
 {
         return text_tex ? text_tex->texture : NULL;
 }

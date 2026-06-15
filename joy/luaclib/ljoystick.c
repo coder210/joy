@@ -7,14 +7,14 @@
 static int l_joystick_create(lua_State* L)
 {
         float x, y, radius;
-        SDL_Renderer* renderer;
+        jr2d_p r2d;
         joystick_p joystick;
         SDL_assert(lua_islightuserdata(L, 1));
-        renderer = (SDL_Renderer*)lua_touserdata(L, 1);
+        r2d = (jr2d_p)lua_touserdata(L, 1);
         x = (float)luaL_checknumber(L, 2);
         y = (float)luaL_checknumber(L, 3);
         radius = (float)luaL_checknumber(L, 4);
-        joystick = joystick_create(renderer, x, y, radius);
+        joystick = joystick_create(r2d, x, y, radius);
         lua_pushlightuserdata(L, joystick);
         return 1;
 }
@@ -92,7 +92,7 @@ static int l_joystick_set_position(lua_State* L)
 
 static int l_joystick_get_direction(lua_State* L)
 {
-        SDL_FPoint point;
+        vec2_t point;
         joystick_p joystick;
         SDL_assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);

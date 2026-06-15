@@ -114,8 +114,8 @@ static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((
 
 /* ===== Popup ===== */
 static duk_ret_t jui_popup_create(duk_context* ctx) {
-	jr2d_p ren = *(jr2d_p*)duk_get_pointer(ctx, 0);
-	duk_push_pointer(ctx, popup_create(ren, (float)duk_to_number(ctx, 1), (float)duk_to_number(ctx, 2)));
+	jr2d_p r2d = *(jr2d_p*)duk_get_pointer(ctx, 0);
+	duk_push_pointer(ctx, popup_create(r2d, (float)duk_to_number(ctx, 1), (float)duk_to_number(ctx, 2)));
 	return 1;
 }
 static duk_ret_t jui_popup_destroy(duk_context* ctx) { popup_destroy((popup_p)PTR(0)); return 0; }
@@ -138,8 +138,8 @@ static duk_ret_t jui_popup_is_inside(duk_context* ctx) { duk_push_boolean(ctx, p
 
 /* ===== Tooltip ===== */
 static duk_ret_t jui_tooltip_create(duk_context* ctx) {
-	jr2d_p ren = *(jr2d_p*)duk_get_pointer(ctx, 0);
-	duk_push_pointer(ctx, tooltip_create(ren, STR(1), -1));
+	jr2d_p r2d = *(jr2d_p*)duk_get_pointer(ctx, 0);
+	duk_push_pointer(ctx, tooltip_create(r2d, STR(1), -1));
 	return 1;
 }
 static duk_ret_t jui_tooltip_destroy(duk_context* ctx) { tooltip_destroy((tooltip_p)PTR(0)); return 0; }
