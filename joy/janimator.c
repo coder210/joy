@@ -61,7 +61,7 @@ typedef struct {
 } janim_param_t;
 
 struct janimator {
-    SDL_Renderer* renderer;
+    jr2d_p renderer;
     kvec_t(janim_state_t) states;
     kvec_t(janim_transition_t) transitions;
     kvec_t(janim_param_t) params;
@@ -137,7 +137,7 @@ static void enter_state(janimator_p anim, int idx)
 
 /* ========== Lifecycle ========== */
 
-janimator_p janimator_create(SDL_Renderer* renderer)
+janimator_p janimator_create(jr2d_p renderer)
 {
     janimator_p anim = (janimator_p)SDL_calloc(1, sizeof(janimator_t));
     if (!anim) return NULL;

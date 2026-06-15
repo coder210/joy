@@ -214,7 +214,7 @@ draw_polygon_outline(jr2d_p r2d, vec2_t* points, int count)
             return result;
         }
         else {
-            SDL_FPoint raw_points[513];
+            SDL_FPoint raw_points[513] = { 0 };
             for (int i = 0; i < count; i++) {
                 raw_points[i].x = points[i].x;
                 raw_points[i].y = points[i].y;

@@ -1166,8 +1166,7 @@ bool joystick_is_dragging(joystick_p j)
 void joystick_touch_down(joystick_p j, float x, float y)
 {
 	if (!j) return;
-	vec2_t logic;
-	r2d_coordinates_from_window(j->r2d, x, y, &logic.x, &logic.y);
+	vec2_t logic = r2d_coordinates_from_window(j->r2d, x, y);
 	float dist_sq = distance_squared(logic.x, logic.y, j->center.x, j->center.y);
 	if (dist_sq <= (j->radius * j->radius)) {
 		j->is_dragging = true;
@@ -1180,8 +1179,7 @@ void joystick_touch_down(joystick_p j, float x, float y)
 void joystick_touch_move(joystick_p j, float x, float y)
 {
 	if (!j || !j->is_dragging) return;
-	vec2_t logic;
-	r2d_coordinates_from_window(j->r2d, x, y, &logic.x, &logic.y);
+	vec2_t logic = r2d_coordinates_from_window(j->r2d, x, y);
 	joystick_update_drag(j, logic.x, logic.y);
 }
 
@@ -1222,10 +1220,11 @@ void joystick_draw(joystick_p joystick)
 
 	// ����ʮ����
 	r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
-	SDL_RenderLine(r2d,
+	
+	shape_draw_line(r2d,
 		joystick->center.x - joystick->radius, joystick->center.y,
 		joystick->center.x + joystick->radius, joystick->center.y);
-	SDL_RenderLine(r2d,
+	shape_draw_line(r2d,
 		joystick->center.x, joystick->center.y - joystick->radius,
 		joystick->center.x, joystick->center.y + joystick->radius);
 
@@ -1257,11 +1256,7 @@ void joystick_draw(joystick_p joystick)
 		    joystick->handle.w - 4,
 		    joystick->handle.h - 4
 		};
-		//shape_draw_rectangle(r2d, "fill", handle_fill);
-
-
-
-		SDL_RenderFillRect(r2d, &handle_fill);
+		shape_draw_rectangle(r2d, "fill", handle_fill);
 
 
 		/*	if (joystick_get_magnitude(joystick) > 0) {
@@ -1618,8 +1613,8 @@ void textinput_focus(textinput_p ti)
 	ti->cursor_timer = SDL_GetTicks();
 	ti->cursor_visible = true;
 	/* 从 r2d 获取 window 并启用文本输入 */
-	SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
-	if (win) SDL_StartTextInput(win);
+	//SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
+	//if (win) SDL_StartTextInput(win);
 }
 
 void textinput_defocus(textinput_p ti)
@@ -1627,8 +1622,8 @@ void textinput_defocus(textinput_p ti)
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
 	textinput_clear_sel(ti);
-	SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
-	if (win) SDL_StopTextInput(win);
+	//SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
+	//if (win) SDL_StopTextInput(win);
 }
 
 void textinput_draw(textinput_p ti)
@@ -1638,84 +1633,84 @@ void textinput_draw(textinput_p ti)
 	jrect_t rect = ti->rect;
 
 	/* 背景 */
-	r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
-	SDL_RenderFillRect(r, &rect);
+	//r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
+	//SDL_RenderFillRect(r, &rect);
 
-	/* 边框（聚焦时高亮） */
-	jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
-	r2d_set_color(r, border.r, border.g, border.b, border.a);
-	SDL_RenderRect(r, &rect);
+	///* 边框（聚焦时高亮） */
+	//jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
+	//r2d_set_color(r, border.r, border.g, border.b, border.a);
+	//SDL_RenderRect(r, &rect);
 
-	/* 选中高亮（绘制在文字下方） */
-	if (textinput_has_sel(ti) && ti->font) {
-		SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
-		SDL_SetRenderClipRect(r, &clip);
-		int a = ti->sel_start, b = ti->sel_end;
-		if (a > b) { int t = a; a = b; b = t; }
-		jcolor_t c = {0,0,0,255};
-		text_p ta = text_createx(ti->font, ti->buffer, a, c);
-		text_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
-		if (ta && tb) {
-			float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
-			float sw = (float)text_get_width(tb);
-			jrect_t sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
-			r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
-			SDL_RenderFillRect(r, &sel_rect);
-		}
-		if (ta) text_destroy(ta);
-		if (tb) text_destroy(tb);
-		SDL_SetRenderClipRect(r, NULL);
-	}
+	///* 选中高亮（绘制在文字下方） */
+	//if (textinput_has_sel(ti) && ti->font) {
+	//	SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
+	//	SDL_SetRenderClipRect(r, &clip);
+	//	int a = ti->sel_start, b = ti->sel_end;
+	//	if (a > b) { int t = a; a = b; b = t; }
+	//	jcolor_t c = {0,0,0,255};
+	//	text_p ta = text_createx(ti->font, ti->buffer, a, c);
+	//	text_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
+	//	if (ta && tb) {
+	//		float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
+	//		float sw = (float)text_get_width(tb);
+	//		jrect_t sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
+	//		r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
+	//		SDL_RenderFillRect(r, &sel_rect);
+	//	}
+	//	if (ta) text_destroy(ta);
+	//	if (tb) text_destroy(tb);
+	//	SDL_SetRenderClipRect(r, NULL);
+	//}
 
-	/* 文字（设裁剪区域防止溢出） */
-	if (ti->text_len > 0 && ti->font) {
-		SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
-		SDL_SetRenderClipRect(r, &clip);
-		float text_x = rect.x + 4;
-		float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
-		float ox = text_x - (float)ti->scroll_offset;
+	///* 文字（设裁剪区域防止溢出） */
+	//if (ti->text_len > 0 && ti->font) {
+	//	SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
+	//	SDL_SetRenderClipRect(r, &clip);
+	//	float text_x = rect.x + 4;
+	//	float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
+	//	float ox = text_x - (float)ti->scroll_offset;
 
-		if (textinput_has_sel(ti)) {
-			int a = ti->sel_start, b = ti->sel_end;
-			if (a > b) { int t = a; a = b; b = t; }
-			jcolor_t white = {255, 255, 255, 255};
-			/* 选中前部分 */
-			if (a > 0)
-				text_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
-			/* 选中部分（白色） */
-			if (b > a) {
-				float offset_before = (float)text_get_width(text_createx(ti->font, ti->buffer, a, ti->text_color));
-				text_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
-			}
-			/* 选中后部分 */
-			if (b < ti->text_len) {
-				float offset_sel = (float)text_get_width(text_createx(ti->font, ti->buffer, b, ti->text_color));
-				text_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
-			}
-		} else {
-			text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
-		}
-		SDL_SetRenderClipRect(r, NULL);
-	}
+	//	if (textinput_has_sel(ti)) {
+	//		int a = ti->sel_start, b = ti->sel_end;
+	//		if (a > b) { int t = a; a = b; b = t; }
+	//		jcolor_t white = {255, 255, 255, 255};
+	//		/* 选中前部分 */
+	//		if (a > 0)
+	//			text_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+	//		/* 选中部分（白色） */
+	//		if (b > a) {
+	//			float offset_before = (float)text_get_width(text_createx(ti->font, ti->buffer, a, ti->text_color));
+	//			text_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+	//		}
+	//		/* 选中后部分 */
+	//		if (b < ti->text_len) {
+	//			float offset_sel = (float)text_get_width(text_createx(ti->font, ti->buffer, b, ti->text_color));
+	//			text_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+	//		}
+	//	} else {
+	//		text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+	//	}
+	//	SDL_SetRenderClipRect(r, NULL);
+	//}
 
-	/* 光标（聚焦时绘制） */
-	if (ti->focused) {
-		Uint64 now = SDL_GetTicks();
-		if (now - ti->cursor_timer >= 530) {
-			ti->cursor_visible = !ti->cursor_visible;
-			ti->cursor_timer = now;
-		}
-		if (ti->cursor_visible) {
-			int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
-			/* 光标在可视区域内时才绘制 */
-			if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
-				float cy = rect.y + 3;
-				float ch = rect.h - 6;
-				r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
-				SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
-			}
-		}
-	}
+	///* 光标（聚焦时绘制） */
+	//if (ti->focused) {
+	//	Uint64 now = SDL_GetTicks();
+	//	if (now - ti->cursor_timer >= 530) {
+	//		ti->cursor_visible = !ti->cursor_visible;
+	//		ti->cursor_timer = now;
+	//	}
+	//	if (ti->cursor_visible) {
+	//		int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
+	//		/* 光标在可视区域内时才绘制 */
+	//		if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
+	//			float cy = rect.y + 3;
+	//			float ch = rect.h - 6;
+	//			r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
+	//			SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+	//		}
+	//	}
+	//}
 }
 
 bool textinput_is_pressed(textinput_p ti, float x, float y)
@@ -1727,7 +1722,7 @@ bool textinput_is_pressed(textinput_p ti, float x, float y)
 	rect.y = ti->rect.y;
 	rect.width = ti->rect.w;
 	rect.height = ti->rect.h;
-	r2d_coordinates_from_window(ti->r2d, x, y, &logic.x, &logic.y);
+	logic = r2d_coordinates_from_window(ti->r2d, x, y);
 	if (collision2d_check_point_rectangle(logic, rect)) {
 		textinput_focus(ti);
 		return true;
@@ -1745,7 +1740,7 @@ bool textinput_is_hovered(textinput_p ti, float x, float y)
 	rect.y = ti->rect.y;
 	rect.width = ti->rect.w;
 	rect.height = ti->rect.h;
-	r2d_coordinates_from_window(ti->r2d, x, y, &logic.x, &logic.y);
+	logic = r2d_coordinates_from_window(ti->r2d, x, y);
 	ti->hovered = collision2d_check_point_rectangle(logic, rect);
 	return ti->hovered;
 }
@@ -1851,32 +1846,31 @@ void slider_draw(slider_p s)
 	jr2d_p r = s->r2d;
 
 	/* 滑轨背景 */
-	r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
-	SDL_RenderFillRect(r, &s->track);
+	//r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
+	//SDL_RenderFillRect(r, &s->track);
 
-	/* 已填充部分（从 track.x 到 thumb 中心） */
-	float tx = slider_thumb_x(s);
-	float fill_w = tx - s->track.x;
-	if (fill_w > 0) {
-		r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
-		jrect_t fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
-		SDL_RenderFillRect(r, &fill_rect);
-	}
+	///* 已填充部分（从 track.x 到 thumb 中心） */
+	//float tx = slider_thumb_x(s);
+	//float fill_w = tx - s->track.x;
+	//if (fill_w > 0) {
+	//	r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
+	//	jrect_t fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
+	//	SDL_RenderFillRect(r, &fill_rect);
+	//}
 
-	/* 滑块 */
-	jrect_t tr = slider_thumb_rect(s);
-	jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
-	r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
-	SDL_RenderFillRect(r, &tr);
-	r2d_set_color(r, 0, 0, 0, 255);
-	SDL_RenderRect(r, &tr);
+	///* 滑块 */
+	//jrect_t tr = slider_thumb_rect(s);
+	//jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
+	//r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
+	//SDL_RenderFillRect(r, &tr);
+	//r2d_set_color(r, 0, 0, 0, 255);
+	//SDL_RenderRect(r, &tr);
 }
 
 bool slider_is_pressed(slider_p s, float x, float y)
 {
 	if (!s) return false;
-	vec2_t logic;
-	r2d_coordinates_from_window(s->r2d, x, y, &logic.x, &logic.y);
+	vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
 	if (slider_thumb_hit(s, logic.x, logic.y)) {
 		s->is_dragging = true;
 		return true;
@@ -1899,16 +1893,14 @@ void slider_set_pressed(slider_p s, bool v)
 void slider_drag_move(slider_p s, float x, float y)
 {
 	if (!s || !s->is_dragging) return;
-	vec2_t logic;
-	r2d_coordinates_from_window(s->r2d, x, y, &logic.x, &logic.y);
+	vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
 	slider_update_value_from_x(s, logic.x);
 }
 
 bool slider_is_hovered(slider_p s, float x, float y)
 {
 	if (!s) return false;
-	vec2_t logic;
-	r2d_coordinates_from_window(s->r2d, x, y, &logic.x, &logic.y);
+	vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
 	s->hovered = slider_thumb_hit(s, logic.x, logic.y);
 	return s->hovered;
 }

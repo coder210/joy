@@ -35,7 +35,7 @@ typedef enum {
 typedef void (*janim_state_cb)(const char* state_name, void* userdata);
 
 /* ========== Lifecycle ========== */
-JOY_API janimator_p janimator_create(SDL_Renderer* renderer);
+JOY_API janimator_p janimator_create(jr2d_p renderer);
 JOY_API void janimator_destroy(janimator_p anim);
 
 /* ========== Parameters ========== */
