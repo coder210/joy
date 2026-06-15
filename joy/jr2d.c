@@ -1,7 +1,10 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
+#include "external/stb_truetype.h"
+#include <SDL3/SDL.h>
 #include "external/klib/kvec.h"
 #include "jr2d.h"
 #include "jutils.h"
@@ -15,7 +18,7 @@ struct image {
         char filepath[JOY_MAX_PATH];
 };
 
-struct text_texture {
+struct jtext {
         SDL_Texture* texture;
         int real_width;
         int real_height;
@@ -576,22 +579,22 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	//SDL_SetTextureAlphaMod(image->texture, 255);
 }
 
-text_p text_createx(font_p font,
+jtext_p text_createx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color) {
-        text_p texture;
+        jtext_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
         int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
-        texture = text_create(font, codepoints, num_codepoints, color);
+        texture = text_create(r2d, font, codepoints, num_codepoints, color);
         SDL_free(codepoints);
         return texture;
 }
 
-text_p text_create(font_p font,
+jtext_p text_create(jr2d_p r2d, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
-        int x, y;
+        int x, y, font_size, font_ascent;
         float scale;
         int bitmap_index, pixel_index;
         unsigned char* bitmap;
@@ -600,27 +603,29 @@ text_p text_create(font_p font,
         SDL_Surface* surface;
         unsigned char* surface_pixels;
         Uint8 pixel;
-        text_p text;
+        jtext_p text;
         int kern;
 
         x = 0;
         advance_width = left_side_bearing = 0;
-        scale = font->scale;
+        scale = font_get_scale(font);
+        font_size = font_get_size(font);
+        font_ascent = font_get_ascent(font);
 
-        text = (text_p)SDL_malloc(sizeof(text_texture_t));
-        text->real_width = font->fontsize * num_codepoints;
-        text->real_height = font->fontsize;
+        text = (jtext_p)SDL_malloc(sizeof(jtext_t));
+        text->real_width = font_size * num_codepoints;
+        text->real_height = font_size;
         bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
 
         for (int i = 0; i < num_codepoints; ++i) {
-                stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
-                stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-                y = font->ascent + c_y1;
+                stbtt_GetCodepointHMetrics(&font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox(&font, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                y = font_ascent + c_y1;
 
                 int byte_offset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
+                stbtt_MakeCodepointBitmap(&font, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
                 x += roundf(advance_width * scale);
-                kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
+                kern = stbtt_GetCodepointKernAdvance(&font, codepoints[i], codepoints[i + 1]);
                 x += roundf(kern * scale);
         }
 
@@ -643,15 +648,15 @@ text_p text_create(font_p font,
                         surface_pixels[pixel_index * 4 + 3] = pixel & color.a;
                 }
         }
-        text->texture = SDL_CreateTextureFromSurface(font->renderer, surface);
+        text->texture = SDL_CreateTextureFromSurface(r2d->sdl, surface);
         SDL_free(bitmap);
         SDL_DestroySurface(surface);
         return text;
 }
 
-void text_updatex(text_p text, font_p font,
+void text_updatex(jtext_p text, font_p font,
         const char* str, int len, jcolor_t color) {
-        text_p texture;
+        jtext_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
         int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
@@ -659,12 +664,12 @@ void text_updatex(text_p text, font_p font,
         SDL_free(codepoints);
 }
 
-void text_update(text_p text, font_p font,
+void text_update(jtext_p text, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
-        int x, y;
-        float scale;
+        int x, y, font_size, font_ascent;
+        float font_scale;
         float w, h;
         int bitmap_index, pixel_index;
         unsigned char* bitmap;
@@ -677,23 +682,25 @@ void text_update(text_p text, font_p font,
 
         x = 0;
         advance_width = left_side_bearing = 0;
-        scale = font->scale;
+        font_scale = font_get_scale(font);
+        font_size = font_get_size(font);
+        font_ascent = font_get_ascent(font);
 
-        text->real_width = font->fontsize * num_codepoints;
-        text->real_height = font->fontsize;
+        text->real_width = font_size * num_codepoints;
+        text->real_height = font_size;
 
         bitmap = (unsigned char*)SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
 
         for (int i = 0; i < num_codepoints; ++i) {
-                stbtt_GetCodepointHMetrics(&font->fontinfo, codepoints[i], &advance_width, &left_side_bearing);
-                stbtt_GetCodepointBitmapBox(&font->fontinfo, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-                y = font->ascent + c_y1;
+                stbtt_GetCodepointHMetrics(&font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox(&font, codepoints[i], font_scale, font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                y = font_ascent + c_y1;
 
-                int byteOffset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap(&font->fontinfo, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
-                x += roundf(advance_width * scale);
-                kern = stbtt_GetCodepointKernAdvance(&font->fontinfo, codepoints[i], codepoints[i + 1]);
-                x += roundf(kern * scale);
+                int byteOffset = x + roundf(left_side_bearing * font_scale) + (y * text->real_width);
+                stbtt_MakeCodepointBitmap(&font, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, font_scale, font_scale, codepoints[i]);
+                x += roundf(advance_width * font_scale);
+                kern = stbtt_GetCodepointKernAdvance(&font, codepoints[i], codepoints[i + 1]);
+                x += roundf(kern * font_scale);
         }
 
         int old_bitmap_width = text->real_width;
@@ -737,44 +744,39 @@ void text_update(text_p text, font_p font,
         SDL_DestroySurface(surface);
 }
 
-void text_destroy(text_p text)
+void text_destroy(jtext_p text)
 {
         if (!text) return;
         SDL_DestroyTexture(text->texture);
         SDL_free(text);
 }
 
-void text_print(jr2d_p r2d,
-        text_p text,
+void jtext_print(jr2d_p r2d,
+        jtext_p text,
         float x, float y)
 {
         jrect_t dst_rect = { x, y, (float)text->real_width, (float)text->real_height };
         SDL_RenderTexture(r2d->sdl, text->texture, NULL, &dst_rect);
 }
 
-void text_printx(jr2d_p r2d, font_p font,
+void jtext_printx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color, float x, float y)
 {
-        text_p t = text_createx(font, str, len, color);
+        jtext_p t = text_createx(r2d, font, str, len, color);
         if (t) {
-                text_print(r2d, t, x, y);
+                jtext_print(r2d, t, x, y);
                 text_destroy(t);
         }
 }
 
-int text_get_width(text_p text_tex)
+int text_get_width(jtext_p jtext_tex)
 {
-        return text_tex->real_width;
+        return jtext_tex->real_width;
 }
 
-int text_get_height(text_p text_tex)
+int text_get_height(jtext_p jtext_tex)
 {
-        return text_tex->real_height;
-}
-
-static SDL_Texture* text_get_texture(text_p text_tex)
-{
-        return text_tex ? text_tex->texture : NULL;
+        return jtext_tex->real_height;
 }
 
 

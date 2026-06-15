@@ -1,6 +1,6 @@
 #ifndef DEBUG_LAYER_H
 #define DEBUG_LAYER_H
-#include <joy/jtext.h>
+#include <joy/jr2d.h>
 #include <joy/jscene.h>
 
 typedef struct debug_layer debug_layer_t, *debug_layer_p;

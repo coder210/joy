@@ -13,13 +13,11 @@
 #include <joy/jsys.h>
 #include <joy/jmath.h>
 #include <joy/jutils.h>
-#include <joy/jtext.h>
+#include <joy/jr2d.h>
 #include <joy/jcollision.h>
-#include <joy/jshapes.h>
 #include <joy/jnetwork.h>
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
-#include <joy/jevent.h>
 
 enum { SERVER_PPM = 50 };
 #include "../layers/debug_layer.h"
@@ -998,20 +996,20 @@ static void on_render(scene_p s)
 			const float SPRITE_OFF = 81.0f;
 			float bar_w = 48.0f, bar_h = 8.0f;
 			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
-			jsdl_rect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
-			jsdl_set_render_draw_color(ctx->renderer, 0, 0, 0, 255);
-			jsdl_render_fill_rect(ctx->renderer, &bg);
-			jsdl_rect_t base = { bar_x, bar_y, bar_w, bar_h };
+			jrect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
+			set_color(ctx->renderer, 0, 0, 0, 255);
+			shape_fill_rect(ctx->renderer, &bg);
+			jrect_t base = { bar_x, bar_y, bar_w, bar_h };
 			jsdl_set_render_draw_color(ctx->renderer, 40, 40, 40, 255);
 			jsdl_render_fill_rect(ctx->renderer, &base);
 			float ratio = (float)id.hp / 10.0f;
 			if (ratio > 1.0f) ratio = 1.0f;
 			if (ratio < 0) ratio = 0;
-			jsdl_rect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
+			jrect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
 			if (ratio > 0.6f)      jsdl_set_render_draw_color(ctx->renderer, 60, 210, 60, 255);
 			else if (ratio > 0.3f) jsdl_set_render_draw_color(ctx->renderer, 210, 210, 60, 255);
 			else                   jsdl_set_render_draw_color(ctx->renderer, 220, 60, 60, 255);
-			jsdl_render_fill_rect(ctx->renderer, &fill);
+			shape_draw_rect(ctx->rendere, "fill", fill);
 		});
 	}
 }

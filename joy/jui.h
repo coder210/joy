@@ -19,7 +19,7 @@ typedef kvec_t(char*) dg_row_t;
 typedef struct label {
 	jr2d_p r2d;
 	vec2_t position;
-	text_p text;
+	jtext_p text;
 	jcolor_t color;
 }label_t, * label_p;
 
@@ -34,17 +34,17 @@ struct button {
 	jcolor_t normal_color;   // 正常状态颜色
 	jcolor_t hover_color;    // 悬停状态颜色
 	jcolor_t pressed_color;  // 按下状态颜色
-	vec2_t text_pos;      // 文本相对位置
+	vec2_t jtext_pos;      // 文本相对位置
 	image_p image;            // 按钮正常纹理（可选）
 	image_p pressed_image;    // 按钮按下纹理（可选）
-	text_p text;      // 按钮文件纹理
+	jtext_p text;      // 按钮文件纹理
 	bool is_hovered;          // 内部状态：由 is_hovered() / is_pressed() 设置
 	bool is_pressed;
 };
 
 typedef struct combobox_item {
 	jrect_t rect;
-	text_p text;
+	jtext_p text;
 	bool is_selected;
 } combobox_item_t, * combobox_item_p;
 
@@ -56,7 +56,7 @@ typedef struct combobox {
 	int item_height;
 	int selected_index;
 	bool is_open;
-	SDL_Texture* text;
+	jtext_p text;
 	jcolor_t bg_color;
 	jcolor_t text_color;
 	jcolor_t hover_color;
@@ -73,7 +73,7 @@ typedef struct datagrid {
 	int visible_rows;      // 可见行数
 	int scroll_offset;     // 滚动偏移
 	int selected_row;      // 选中的行
-	text_p headers[512];        // 表头
+	jtext_p headers[512];        // 表头
 	kvec_t(dg_row_t) data;              // 表格数据（klib 动态数组 of dg_row_t）
 	int* col_widths;       // 列宽
 	bool has_header;   // 是否有表头
@@ -148,7 +148,7 @@ typedef struct textinput {
 	int scroll_offset;            // 文本滚动偏移（像素）
 	bool focused;                 // 是否聚焦
 	bool hovered;                 // 鼠标悬停
-	Uint64 cursor_timer;          // 光标闪烁计时
+	uint64_t cursor_timer;          // 光标闪烁计时
 	bool cursor_visible;          // 光标是否可见
 	void (*on_submit)(struct textinput* ti, void* userdata);
 	void (*on_change)(struct textinput* ti, void* userdata);
@@ -192,7 +192,7 @@ extern "C" {
 	JOY_API int combobox_get_selected(combobox_p combobox);
 	JOY_API void combobox_draw(combobox_p combobox);
 
-	JOY_API datagrid_p datagrid_create(jr2d_p r2d, SDL_Rect rect, int col_count, bool has_header, void* font);
+	JOY_API datagrid_p datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font);
 	JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
 	JOY_API void datagrid_setheader(datagrid_p grid, int index, const char *header);
 	JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);

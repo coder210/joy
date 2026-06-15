@@ -9,7 +9,7 @@
 
 static duk_ret_t j_janim_create(duk_context* ctx)
 {
-    SDL_Renderer* ren = (SDL_Renderer*)PTR(0);
+    jr2d_p ren = (jr2d_p)PTR(0);
     if (!ren) { duk_error(ctx, DUK_ERR_ERROR, "animator.create: invalid renderer"); return 0; }
     duk_push_pointer(ctx, janimator_create(ren));
     return 1;
@@ -89,7 +89,7 @@ static duk_ret_t j_janim_state_add_clip(duk_context* ctx)
 {
     janimator_p anim = (janimator_p)PTR(0);
     if (!anim) return 0;
-    SDL_FRect src;
+    jrect_t src;
     src.x = NUM(4); src.y = NUM(5); src.w = NUM(6); src.h = NUM(7);
     janimator_state_add_clip(anim, STR(1), STR(2), NUM(3), src);
     return 0;
@@ -129,7 +129,7 @@ static duk_ret_t j_janim_state_add_motion(duk_context* ctx)
 {
     janimator_p anim = (janimator_p)PTR(0);
     if (!anim) return 0;
-    SDL_FRect src;
+    jrect_t src;
     src.x = NUM(4); src.y = NUM(5); src.w = NUM(6); src.h = NUM(7);
     janimator_state_add_motion(anim, STR(1), STR(2), NUM(3), src, NUM(8));
     return 0;

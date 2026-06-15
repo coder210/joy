@@ -20,7 +20,7 @@ extern "C" {
 #endif
         typedef union jr2d jr2d_t, * jr2d_p;
         typedef struct image image_t, * image_p;
-        typedef struct text_texture text_texture_t, * text_p;
+        typedef struct jtext jtext_t, * jtext_p;
         typedef struct animation animation_t, * animation_p;
 
 
@@ -69,16 +69,16 @@ extern "C" {
                 const jrect_t* srcrect, vec2_t position,
                 float rotation, vec2_t scale, vec2_t origin);
 
-        JOY_API text_p text_createx(font_p font, const char* str, int len, jcolor_t color);
-        JOY_API text_p text_create(font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
-        JOY_API void text_updatex(text_p text, font_p font, const char* str, int len, jcolor_t color);
-        JOY_API void text_update(text_p text, font_p font,
+        JOY_API jtext_p text_createx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API jtext_p text_create(jr2d_p r2d, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
+        JOY_API void text_updatex(jtext_p text, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API void text_update(jtext_p text, font_p font,
                 const int* codepoints, int num_codepoints, jcolor_t color);
-        JOY_API void text_destroy(text_p text_tex);
-        JOY_API void text_print(jr2d_p r2d, text_p text_tex, float x, float y);
-        JOY_API void text_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
-        JOY_API int text_get_width(text_p text_tex);
-        JOY_API int text_get_height(text_p text_tex);
+        JOY_API void text_destroy(jtext_p jtext_tex);
+        JOY_API void jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
+        JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
+        JOY_API int text_get_width(jtext_p jtext_tex);
+        JOY_API int text_get_height(jtext_p jtext_tex);
 
         JOY_API animation_p animation_create(jr2d_p r2d);
         JOY_API void animation_destroy(animation_p animation);

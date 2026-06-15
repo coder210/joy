@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <SDL3/SDL.h>
 #include <math.h>
 #include "janimator.h"
 #include "jr2d.h"
@@ -25,9 +26,9 @@ typedef struct {
 typedef struct {
     image_p image;
     float duration;
-    SDL_FRect src_rect;
+    jrect_t src_rect;
     bool is_color;     /* true = solid color, no image */
-    Uint8 color_r, color_g, color_b, color_a;
+    uint8_t color_r, color_g, color_b, color_a;
 } janim_motion_t;
 
 typedef struct {
@@ -137,11 +138,11 @@ static void enter_state(janimator_p anim, int idx)
 
 /* ========== Lifecycle ========== */
 
-janimator_p janimator_create(jr2d_p renderer)
+janimator_p janimator_create(jr2d_p r2d)
 {
     janimator_p anim = (janimator_p)SDL_calloc(1, sizeof(janimator_t));
     if (!anim) return NULL;
-    anim->renderer = renderer;
+    anim->renderer = r2d;
     kv_init(anim->states);
     kv_init(anim->transitions);
     kv_init(anim->params);
@@ -266,7 +267,7 @@ void janimator_set_default_state(janimator_p anim, const char* name)
 }
 
 void janimator_state_add_clip(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, SDL_FRect src_rect)
+    const char* image_path, float duration, jrect_t src_rect)
 {
     int sidx = find_state(anim, state_name);
     if (sidx < 0) return;
@@ -280,7 +281,7 @@ void janimator_state_add_clip(janimator_p anim, const char* state_name,
 }
 
 void janimator_state_add_color(janimator_p anim, const char* state_name,
-    float duration, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+    float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     int sidx = find_state(anim, state_name);
     if (sidx < 0) return;
@@ -288,7 +289,7 @@ void janimator_state_add_color(janimator_p anim, const char* state_name,
     janim_motion_t m;
     m.image = NULL;
     m.duration = duration;
-    m.src_rect = (SDL_FRect){ 0, 0, (float)w, (float)h };
+    m.src_rect = (jrect_t){ 0, 0, (float)w, (float)h };
     m.is_color = true;
     m.color_r = r; m.color_g = g; m.color_b = b; m.color_a = a;
     kv_push(janim_motion_t, s->clips, m);
@@ -321,7 +322,7 @@ void janimator_state_set_blend(janimator_p anim, const char* state_name,
 }
 
 void janimator_state_add_motion(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, SDL_FRect src_rect, float threshold)
+    const char* image_path, float duration, jrect_t src_rect, float threshold)
 {
     int sidx = find_state(anim, state_name);
     if (sidx < 0) return;
@@ -553,7 +554,7 @@ void janimator_draw(janimator_p anim, float x, float y)
     }
 
     if (m->is_color) {
-        SDL_FRect r = { x, y, m->src_rect.w, m->src_rect.h };
+        jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         SDL_SetRenderDrawColor(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
         SDL_RenderFillRect(anim->renderer, &r);
     } else if (m->image) {
@@ -561,7 +562,7 @@ void janimator_draw(janimator_p anim, float x, float y)
         image_draw_ex(m->image, &m->src_rect, (vec2_t){x, y}, 0.0f,
             (vec2_t){sx, 1.0f}, (vec2_t){0.0f, 0.0f});
     } else {
-        SDL_FRect r = { x, y, m->src_rect.w, m->src_rect.h };
+        jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         SDL_SetRenderDrawColor(anim->renderer, 80, 80, 80, 255);
         SDL_RenderFillRect(anim->renderer, &r);
         SDL_SetRenderDrawColor(anim->renderer, 120, 120, 120, 255);

@@ -108,8 +108,14 @@ static duk_ret_t jg_line(duk_context* ctx) { duk_push_boolean(ctx, shape_draw_li
 static duk_ret_t jg_rectangle(duk_context* ctx) { jrect_t r; r.x = (float)duk_to_number(ctx, 2); r.y = (float)duk_to_number(ctx, 3); r.w = (float)duk_to_number(ctx, 4); r.h = (float)duk_to_number(ctx, 5); duk_push_boolean(ctx, shape_draw_rectangle(JG_REN(), duk_to_string(ctx, 1), r)); return 1; }
 static duk_ret_t jg_circle(duk_context* ctx) { jr2d_p r2d = JG_REN(); vec2_t c = { (float)duk_to_number(ctx,2),(float)duk_to_number(ctx,3) }; duk_push_boolean(ctx, shape_draw_circle(r2d, duk_to_string(ctx, 1), c, (float)duk_to_number(ctx, 4), (int)(duk_is_undefined(ctx, 5) ? 32 : duk_to_number(ctx, 5)))); return 1; }
 static duk_ret_t jg_get_renderer(duk_context* ctx) { duk_push_pointer(ctx, JG_REN()); return 1; }
-static duk_ret_t jg_create_font(duk_context* ctx) { duk_push_pointer(ctx, font_create(JG_REN(), duk_to_string(ctx, 1), (int)duk_to_number(ctx, 2))); return 1; }
-static duk_ret_t jg_print(duk_context* ctx) { font_p f = (font_p)duk_get_pointer(ctx, 1); const char* str = duk_to_string(ctx, 2); jcolor_t c = { 255,255,255,255 }; if (duk_is_object(ctx, 5)) c = read_color(ctx, 5); text_printx(JG_REN(), f, str, (int)SDL_strlen(str), c, (float)duk_to_number(ctx, 3), (float)duk_to_number(ctx, 4)); return 0; }
+
+static duk_ret_t jg_create_font(duk_context* ctx)
+{ 
+        duk_push_pointer(ctx, font_create(duk_to_string(ctx, 1), (int)duk_to_number(ctx, 2)));
+        return 1;
+}
+
+static duk_ret_t jg_print(duk_context* ctx) { font_p f = (font_p)duk_get_pointer(ctx, 1); const char* str = duk_to_string(ctx, 2); jcolor_t c = { 255,255,255,255 }; if (duk_is_object(ctx, 5)) c = read_color(ctx, 5); jtext_printx(JG_REN(), f, str, (int)SDL_strlen(str), c, (float)duk_to_number(ctx, 3), (float)duk_to_number(ctx, 4)); return 0; }
 
 /* polygon: (ren, mode, x1,y1, x2,y2, ...) */
 static duk_ret_t jg_polygon(duk_context* ctx) {

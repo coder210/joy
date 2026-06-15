@@ -1,9 +1,8 @@
 #ifndef JANIMATOR_H
 #define JANIMATOR_H
 
-#include "SDL3/SDL.h"
 #include "jconfig.h"
-#include <stdbool.h>
+#include "jr2d.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +34,7 @@ typedef enum {
 typedef void (*janim_state_cb)(const char* state_name, void* userdata);
 
 /* ========== Lifecycle ========== */
-JOY_API janimator_p janimator_create(jr2d_p renderer);
+JOY_API janimator_p janimator_create(jr2d_p r2d);
 JOY_API void janimator_destroy(janimator_p anim);
 
 /* ========== Parameters ========== */
@@ -53,11 +52,11 @@ JOY_API void janimator_set_default_state(janimator_p anim, const char* name);
 
 /* Add a clip (frame) to a state from an image file */
 JOY_API void janimator_state_add_clip(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, SDL_FRect src_rect);
+    const char* image_path, float duration, jrect_t src_rect);
 
 /* Add a solid color clip (no image file needed) */
 JOY_API void janimator_state_add_color(janimator_p anim, const char* state_name,
-    float duration, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+    float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
 JOY_API void janimator_state_set_loop(janimator_p anim, const char* state_name, bool loop);
 JOY_API void janimator_state_set_speed(janimator_p anim, const char* state_name, float speed);
@@ -66,7 +65,7 @@ JOY_API void janimator_state_set_speed(janimator_p anim, const char* state_name,
 JOY_API void janimator_state_set_blend(janimator_p anim, const char* state_name,
     const char* param_name);
 JOY_API void janimator_state_add_motion(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, SDL_FRect src_rect, float threshold);
+    const char* image_path, float duration, jrect_t src_rect, float threshold);
 
 /* ========== Transitions ========== */
 /* Returns transition index (for adding conditions) */

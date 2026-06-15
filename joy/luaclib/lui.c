@@ -1,4 +1,5 @@
-﻿#include "luaclib.h"
+﻿#include <SDL3/SDL.h>
+#include "luaclib.h"
 #include "../jui.h"
 #include "../jutils.h"
 #include "../external/lua/lauxlib.h"
@@ -349,7 +350,7 @@ static int lcombobox_additem(lua_State* L)
 	font_p font = (font_p)lua_touserdata(L, 3);
 	jcolor_t c = {0, 0, 0, 255};
 	combobox_item_p item = &combobox->items[combobox->item_count];
-	item->text = text_createx(font, text, (int)SDL_strlen(text), c);
+	item->text = text_createx(combobox->r2d, font, text, (int)strlen(text), c);
 	item->is_selected = false;
 	combobox->item_count++;
 	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
@@ -466,7 +467,7 @@ static int ldatagrid_create(lua_State* L)
 {
 	datagrid_p datagrid;
 	jr2d_p r2d;
-	SDL_Rect rect;
+	jrect_t rect;
 	int col_count;
 	bool has_header;
 	void* font;
@@ -500,7 +501,6 @@ static int ldatagrid_create(lua_State* L)
 static int ldatagrid_setheaders(lua_State* L)
 {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
-
 	font_p fontinfo = (font_p)lua_touserdata(L, 2);
 	jcolor_t color = { 0, 0, 0, 255 };
 	luaL_checktype(L, 3, LUA_TTABLE);
@@ -510,7 +510,7 @@ static int ldatagrid_setheaders(lua_State* L)
 		if (lua_isstring(L, -1)) {
 			const char* text = lua_tostring(L, -1);
 			if (dg->headers[i-1]) text_destroy(dg->headers[i-1]);
-			dg->headers[i-1] = text_createx(fontinfo, text, (int)SDL_strlen(text), color);
+			dg->headers[i-1] = text_createx(dg->r2d, fontinfo, text, (int)SDL_strlen(text), color);
 		}
 		lua_pop(L, 1);
 	}

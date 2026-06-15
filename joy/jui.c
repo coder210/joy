@@ -1,4 +1,5 @@
-﻿#include "jui.h"
+﻿#include <SDL3/SDL.h>
+#include "jui.h"
 #include "jcollision.h"
 
 #define JOYSTICK_BG_COLOR 0x555555FF
@@ -33,7 +34,7 @@ label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int num_codepoi
 	label->r2d = r2d;
 	label->position = (vec2_t){ 0, 0 };
 	label->color = (jcolor_t){ 255, 255,255, 255 };
-	label->text = text_create(fontinfo, codepoints, num_codepoints, label->color);
+	label->text = text_create(r2d, fontinfo, codepoints, num_codepoints, label->color);
 	return label;
 }
 
@@ -46,15 +47,15 @@ label_destroy(label_p label)
 }
 
 void
-label_set_text(label_p label, font_p fontinfo,
+label_set_text(label_p label, font_p font,
 	const int* codepoints, int num_codepoints,
 	jcolor_t color)
 {
 	if (label->text) {
-		text_update(label->text, fontinfo, codepoints, num_codepoints, color);
+		text_update(label->text, font, codepoints, num_codepoints, color);
 	}
 	else {
-		label->text = text_create(fontinfo, codepoints, num_codepoints, color);
+		label->text = text_create(label->r2d, font, codepoints, num_codepoints, color);
 	}
 }
 
@@ -69,7 +70,7 @@ void label_draw(label_p label)
 	//dest_rect.w = label->text->w;
 	//dest_rect.h = label->text->h;
 	//SDL_RenderTexture(r2d, label->text, NULL, &dest_rect);
-	text_print(label->r2d, label->text, label->position.x, label->position.y);
+	jtext_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
 void label_handle_event(label_p label, SDL_Event* event)
@@ -90,7 +91,7 @@ button_create(jr2d_p r2d, float width, float height)
 	btn->normal_color = (jcolor_t){ 100, 100, 200, 255 };
 	btn->hover_color = (jcolor_t){ 150, 150, 250, 255 };
 	btn->pressed_color = (jcolor_t){ 50, 50, 150, 255 };
-	btn->text_pos = (vec2_t){0, 0};
+	btn->jtext_pos = (vec2_t){0, 0};
 	btn->image = NULL;
 	btn->pressed_image = NULL;
 	btn->text = NULL;
@@ -116,28 +117,28 @@ void button_set_pressed_color(button_p btn, jcolor_t color)
 	btn->pressed_color = color;
 }
 
-void button_set_textx(button_p btn, font_p fontinfo,
+void button_set_textx(button_p btn, font_p font,
 	const char* str, int len, jcolor_t color)
 {
 	if (!btn) return;
 	if (btn->text) {
-		text_updatex(btn->text, fontinfo, str, len, color);
+		text_updatex(btn->text, font, str, len, color);
 	}
 	else {
-		btn->text = text_createx(fontinfo, str, len, color);
+		btn->text = text_createx(btn->r2d, font, str, len, color);
 	}
 }
 
 void
-button_set_text(button_p btn, font_p fontinfo,
+button_set_text(button_p btn, font_p font,
 	const int* codepoints, int num_codepoints, jcolor_t color)
 {
 	if (!btn) return;
 	if (btn->text) {
-		text_update(btn->text, fontinfo, codepoints, num_codepoints, color);
+		text_update(btn->text, font, codepoints, num_codepoints, color);
 	}
 	else {
-		btn->text = text_create(fontinfo, codepoints, num_codepoints, color);
+		btn->text = text_create(btn->r2d, font, codepoints, num_codepoints, color);
 	}
 }
 
@@ -224,9 +225,9 @@ void button_draw(button_p btn)
 	if (btn->text) {
 		float widht = text_get_width(btn->text);
 		float height = text_get_height(btn->text);
-		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
-		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
-		text_print(r2d, btn->text, dest_rect.x, dest_rect.y);
+		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->jtext_pos.x;
+		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->jtext_pos.y;
+		jtext_print(r2d, btn->text, dest_rect.x, dest_rect.y);
 	}
 }
 
@@ -269,7 +270,7 @@ combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
 	if (combobox->text) {
 		SDL_DestroyTexture(combobox->text);
 	}
-	//combobox->text = create_text_texture(combobox->r2d, filename, fontsize, codepoints, len, color);
+	//combobox->text = create_jtext(combobox->r2d, filename, fontsize, codepoints, len, color);
 }
 
 void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, const int* codepoints, int len, jcolor_t color)
@@ -281,7 +282,7 @@ void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, 
 	}
 	r2d = combobox->r2d;
 	item = combobox->items + combobox->item_count;
-	//item->text = create_text_texture(r2d, filename, fontsize, codepoints, len, color);
+	//item->text = create_jtext(r2d, filename, fontsize, codepoints, len, color);
 	item->is_selected = false;
 	combobox->item_count++;
 	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
@@ -348,7 +349,7 @@ void combobox_draw(combobox_p combobox)
 
 	// ��Ⱦ��ǰѡ�е��ı�
 	if (combobox->selected_index >= 0 && combobox->items[combobox->selected_index].text) {
-		text_print(r2d, combobox->items[combobox->selected_index].text,
+		jtext_print(r2d, combobox->items[combobox->selected_index].text,
 			combobox->main_rect.x + 5, combobox->main_rect.y);
 	}
 
@@ -393,7 +394,7 @@ void combobox_draw(combobox_p combobox)
 
 			item = combobox->items + i;
 			if (item->text) {
-				text_print(r2d, item->text, item_rect.x + 5, item_rect.y);
+				jtext_print(r2d, item->text, item_rect.x + 5, item_rect.y);
 			}
 		}
 	}
@@ -411,7 +412,7 @@ void combobox_draw(combobox_p combobox)
 
 
 datagrid_p
-datagrid_create(jr2d_p r2d, SDL_Rect rect, int col_count, bool has_header, void* font)
+datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font)
 {
 	datagrid_p grid;
 	grid = (datagrid_p)SDL_malloc(sizeof(datagrid_t));
@@ -455,7 +456,7 @@ void datagrid_setheaders(datagrid_p grid, const char* headers)
 	if (!grid->has_header) return;
 	fontinfo = grid->font;
 	for (int i = 0; i < grid->col_count; i++) {
-		//grid->headers[i] = create_text_texture(grid->r2d, fontinfo, headers[i]->array, headers[i]->length, color);
+		//grid->headers[i] = create_jtext(grid->r2d, fontinfo, headers[i]->array, headers[i]->length, color);
 	}
 }
 
@@ -470,10 +471,10 @@ void datagrid_setheader(datagrid_p grid, int index, const char* header)
 	if (grid->headers[index]) {
 		//SDL_DestroyTexture(grid->headers[index]);
 		//SDL_UpdateTexture(grid->headers[index], NULL, NULL, 0);
-		//update_text_texture(grid->headers[index], fontinfo, header->array, header->length, color);
+		//update_jtext(grid->headers[index], fontinfo, header->array, header->length, color);
 	}
 	else {
-		//grid->headers[index] = create_text_texture(grid->r2d, fontinfo, header->array, header->length, color);
+		//grid->headers[index] = create_jtext(grid->r2d, fontinfo, header->array, header->length, color);
 	}
 }
 
@@ -557,13 +558,13 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 			float tw, th;*/
 			/*rect.x = x;
 			rect.y = y;*/
-			text_p tex = grid->headers[col];
+			jtext_p tex = grid->headers[col];
 			/*if (tex && SDL_GetTextureSize(tex, &tw, &th)) {
 				rect.w = tw;
 				rect.h = th;
 				SDL_RenderTexture(grid->r2d, tex, NULL, &rect);
 			}*/
-			text_print(r2d, tex, x, y);
+			jtext_print(r2d, tex, x, y);
 
 			// ���ƴ�ֱ��
 			r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
@@ -596,7 +597,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 				char* text = kv_A(kv_A(grid->data, row), col);
 				if (text) {
 					jcolor_t c = {0,0,0,255};
-					text_printx(r2d, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
+					jtext_printx(r2d, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
 				}
 			}
 
@@ -827,9 +828,9 @@ void radio_button_render(radio_button_p radio, jr2d_p r2d)
 		 SDL_Surface* text_surface = TTF_RenderText_Blended(font, radio->label, text_color);
 
 		 if (text_surface) {
-			 SDL_Texture* text_texture = SDL_CreateTextureFromSurface(r2d, text_surface);
+			 SDL_Texture* jtext = SDL_CreateTextureFromSurface(r2d, text_surface);
 
-			 if (text_texture) {
+			 if (jtext) {
 				 jrect_t text_rect = {
 				     radio->x + radio->size + 5,
 				     radio->y + (radio->size - text_surface->h) / 2,
@@ -837,8 +838,8 @@ void radio_button_render(radio_button_p radio, jr2d_p r2d)
 				     text_surface->h
 				 };
 
-				 SDL_RenderTexture(r2d, text_texture, NULL, &text_rect);
-				 SDL_DestroyTexture(text_texture);
+				 SDL_RenderTexture(r2d, jtext, NULL, &text_rect);
+				 SDL_DestroyTexture(jtext);
 			 }
 
 			 SDL_DestroySurface(text_surface);
@@ -1599,7 +1600,7 @@ static int textinput_cursor_x(textinput_p ti)
 	if (ti->cursor_pos <= 0 || !ti->font) return 0;
 	/* 用 text_createx 生成光标前的子串，量宽度 */
 	jcolor_t c = {0,0,0,255};
-	text_p tex = text_createx(ti->font, ti->buffer, ti->cursor_pos, c);
+	jtext_p tex = text_createx(ti->r2d, ti->font, ti->buffer, ti->cursor_pos, c);
 	if (!tex) return 0;
 	int w = text_get_width(tex);
 	text_destroy(tex);
@@ -1648,8 +1649,8 @@ void textinput_draw(textinput_p ti)
 	//	int a = ti->sel_start, b = ti->sel_end;
 	//	if (a > b) { int t = a; a = b; b = t; }
 	//	jcolor_t c = {0,0,0,255};
-	//	text_p ta = text_createx(ti->font, ti->buffer, a, c);
-	//	text_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
+	//	jtext_p ta = text_createx(ti->font, ti->buffer, a, c);
+	//	jtext_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
 	//	if (ta && tb) {
 	//		float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
 	//		float sw = (float)text_get_width(tb);
@@ -1676,19 +1677,19 @@ void textinput_draw(textinput_p ti)
 	//		jcolor_t white = {255, 255, 255, 255};
 	//		/* 选中前部分 */
 	//		if (a > 0)
-	//			text_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+	//			jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
 	//		/* 选中部分（白色） */
 	//		if (b > a) {
 	//			float offset_before = (float)text_get_width(text_createx(ti->font, ti->buffer, a, ti->text_color));
-	//			text_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+	//			jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
 	//		}
 	//		/* 选中后部分 */
 	//		if (b < ti->text_len) {
 	//			float offset_sel = (float)text_get_width(text_createx(ti->font, ti->buffer, b, ti->text_color));
-	//			text_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+	//			jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
 	//		}
 	//	} else {
-	//		text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+	//		jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
 	//	}
 	//	SDL_SetRenderClipRect(r, NULL);
 	//}
@@ -1988,8 +1989,8 @@ static void popup_draw_text_lines(jr2d_p r2d, font_p font, const char* text, flo
 		if (!end) end = start + SDL_strlen(start);
 		int line_len = (int)(end - start);
 		if (line_len > 0) {
-			text_printx(r2d, font, start, line_len, color, x, y);
-			y += (float)font->fontsize + 4;
+			jtext_printx(r2d, font, start, line_len, color, x, y);
+			y += (float)font_get_size(font) + 4;
 		}
 		if (*end == '\n') end++;
 		start = end;
@@ -2028,7 +2029,7 @@ void popup_draw(popup_p p, font_p title_font, font_p content_font)
 
 	///* 标题文字 */
 	//if (p->title[0] && title_font) {
-	//	text_printx(ren, title_font, p->title, (int)SDL_strlen(p->title), p->title_text_color,
+	//	jtext_printx(ren, title_font, p->title, (int)SDL_strlen(p->title), p->title_text_color,
 	//		x + p->padding, y + (p->title_height - (float)title_font->fontsize) / 2);
 	//}
 
@@ -2150,6 +2151,6 @@ void tooltip_draw(tooltip_p t, font_p font)
 	//SDL_RenderRect(ren, &(jrect_t){ t->x, t->y, tw, th });
 
 	///* 文字 */
-	//text_printx(ren, font, t->text, t->text_len, t->text_color,
+	//jtext_printx(ren, font, t->text, t->text_len, t->text_color,
 	//	t->x + t->padding, t->y + t->padding / 2);
 }

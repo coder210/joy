@@ -1,11 +1,9 @@
 #include "jsclib.h"
-#include "../jevent.h"
+#include "../jcore.h"
 
 static duk_ret_t jevent_quit(duk_context* ctx)
 {
-	(void)ctx;
-	SDL_Event e = { .type = SDL_EVENT_QUIT };
-	SDL_PushEvent(&e);
+	push_quit_event();
 	return 0;
 }
 
