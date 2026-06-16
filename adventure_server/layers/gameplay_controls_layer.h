@@ -4,7 +4,7 @@
 #include <joy/jscene.h>
 #include "../context.h"
 
-#define GAMEPLAY_CONTROL_EVENT (JSDL_EVENT_USER + 0x1)
+#define GAMEPLAY_CONTROL_EVENT (0x1)
 
 enum gameplay_control_event_k {
         GAMEPLAY_CONTROL_NONE = 1 << 0,

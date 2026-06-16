@@ -1,7 +1,6 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #include <joy/external/stb_image.h>
 #include <unordered_map>
-
 #include "../flecs.h"
 #include <joy/jmsgpack.h>
 #include <string>
@@ -287,27 +286,20 @@ struct game_scene {
 };
 
 // 纹理缓存
-static std::unordered_map<std::string, jsdl_texture_t*> g_tex_cache;
+static std::unordered_map<std::string, image_p> g_tex_cache;
 
-jsdl_texture_t* tex_cache_get(jsdl_renderer_t* r, const char* path) {
+image_p tex_cache_get(jr2d_p r, const char* path) {
 	std::string k(path);
 	auto it = g_tex_cache.find(k);
-	if (it != g_tex_cache.end()) return it->second;
-	int w, h, ch;
-	auto* d = stbi_load(path, &w, &h, &ch, 4);
-	if (!d) return nullptr;
-	auto* s = jsdl_create_surface_from(w, h, JSDL_PIXELFORMAT_RGBA32, d, w * 4);
-	if (!s) { stbi_image_free(d); return nullptr; }
-	auto* t = jsdl_create_texture_from_surface(r, s);
-	jsdl_destroy_surface(s);
-	stbi_image_free(d);
-	g_tex_cache[k] = t;
-	return t;
+	if (it != g_tex_cache.end()) 
+		return it->second;
+	return NULL;
 }
 
 void tex_cache_clear() {
 	for (auto& kv : g_tex_cache)
-		if (kv.second) jsdl_destroy_texture(kv.second);
+		if (kv.second) 
+			image_destroy(kv.second);
 	g_tex_cache.clear();
 }
 
@@ -856,7 +848,7 @@ static void on_load(scene_p s)
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
-		jtilemap_render_init(self->ctx->renderer, "adventure_server/", NULL);
+		jtilemap_render_init(self->ctx->r2d, "adventure_server/", NULL);
 
 	S2CEntity entities[512]; int ec = 0;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -880,13 +872,13 @@ static void server_on_keypressed(const char* key, int scancode, bool repeat, boo
 		SDL_Event quit_event;
 		SDL_zero(quit_event);
 		quit_event.type = SDL_EVENT_QUIT;
-		jsdl_push_quit_event();
+		push_quit_event();
 	}
 }
 
 static void on_handle_event(scene_p s, const void* ev)
 {
-	event_callbacks_t cbs = {};
+	jevent_callbacks_t cbs = {};
 	cbs.on_keypressed = server_on_keypressed;
 	dispatch_event(cbs, (const SDL_Event*)ev, NULL);
 }
@@ -958,7 +950,7 @@ static void on_render(scene_p s)
 	if (self->tilemap) {
 		float cx = ctx->camera_x * (float)SERVER_PPM;
 		float cy = ctx->camera_y * (float)SERVER_PPM;
-		jtilemap_render_all(self->tilemap, cx, cy, jsdl_get_ticks());
+		//jtilemap_render_all(self->tilemap, cx, cy, jsdl_get_ticks());
 	}
 
 	// ---- ECS 实体（碰撞体） ----
@@ -997,19 +989,20 @@ static void on_render(scene_p s)
 			float bar_w = 48.0f, bar_h = 8.0f;
 			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
 			jrect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
-			set_color(ctx->renderer, 0, 0, 0, 255);
-			shape_fill_rect(ctx->renderer, &bg);
+			
+			r2d_set_color(ctx->r2d, 0, 0, 0, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", bg);
 			jrect_t base = { bar_x, bar_y, bar_w, bar_h };
-			jsdl_set_render_draw_color(ctx->renderer, 40, 40, 40, 255);
-			jsdl_render_fill_rect(ctx->renderer, &base);
+			r2d_set_color(ctx->r2d, 40, 40, 40, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", base);
 			float ratio = (float)id.hp / 10.0f;
 			if (ratio > 1.0f) ratio = 1.0f;
 			if (ratio < 0) ratio = 0;
 			jrect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
-			if (ratio > 0.6f)      jsdl_set_render_draw_color(ctx->renderer, 60, 210, 60, 255);
-			else if (ratio > 0.3f) jsdl_set_render_draw_color(ctx->renderer, 210, 210, 60, 255);
-			else                   jsdl_set_render_draw_color(ctx->renderer, 220, 60, 60, 255);
-			shape_draw_rect(ctx->rendere, "fill", fill);
+			if (ratio > 0.6f)      r2d_set_color(ctx->r2d, 60, 210, 60, 255);
+			else if (ratio > 0.3f) r2d_set_color(ctx->r2d, 210, 210, 60, 255);
+			else                   r2d_set_color(ctx->r2d, 220, 60, 60, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", fill);
 		});
 	}
 }

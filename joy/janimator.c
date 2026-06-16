@@ -555,18 +555,18 @@ void janimator_draw(janimator_p anim, float x, float y)
 
     if (m->is_color) {
         jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
-        SDL_SetRenderDrawColor(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
-        SDL_RenderFillRect(anim->renderer, &r);
+        r2d_set_color(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
+        shape_draw_rectangle(anim->renderer, "fill", r);
     } else if (m->image) {
         float sx = anim->flip_h ? -1.0f : 1.0f;
         image_draw_ex(m->image, &m->src_rect, (vec2_t){x, y}, 0.0f,
             (vec2_t){sx, 1.0f}, (vec2_t){0.0f, 0.0f});
     } else {
         jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
-        SDL_SetRenderDrawColor(anim->renderer, 80, 80, 80, 255);
-        SDL_RenderFillRect(anim->renderer, &r);
-        SDL_SetRenderDrawColor(anim->renderer, 120, 120, 120, 255);
-        SDL_RenderRect(anim->renderer, &r);
+        r2d_set_color(anim->renderer, 80, 80, 80, 255);
+        shape_draw_rectangle(anim->renderer, "fill", r);
+        r2d_set_color(anim->renderer, 120, 120, 120, 255);
+        shape_draw_rectangle(anim->renderer, "line", r);
     }
 }
 

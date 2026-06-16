@@ -1,11 +1,11 @@
 #ifndef APP_CONTEXT_H
 #define APP_CONTEXT_H
-#include <joy/jsdl.h>
 #include <joy/jcore.h>
+#include <joy/jr2d.h>
 
 struct Context {
-        jsdl_window_t* window;
-        jsdl_renderer_t* renderer;
+        jwindow_p window;
+        jr2d_p r2d;
         game_timer_t game_timer;
         float FIXED_TIMESTEP;
         float camera_x, camera_y; // 摄像机世界坐标(米)

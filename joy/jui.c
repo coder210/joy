@@ -268,7 +268,7 @@ combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
 	const int* codepoints, int len, jcolor_t color)
 {
 	if (combobox->text) {
-		SDL_DestroyTexture(combobox->text);
+		text_destroy(combobox->text);
 	}
 	//combobox->text = create_jtext(combobox->r2d, filename, fontsize, codepoints, len, color);
 }

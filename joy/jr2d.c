@@ -75,9 +75,9 @@ void r2d_destroy(jr2d_p r2d)
         if (r2d) { SDL_DestroyRenderer(r2d->sdl); SDL_free(r2d); }
 }
 
-bool r2d_get_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+bool r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a)
 {
-        return SDL_GetRenderDrawColor(r2d->sdl, &r, &g, &b, &a);
+        return SDL_GetRenderDrawColor(r2d->sdl, r, g, b, a);
 }
 
 bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
@@ -88,9 +88,9 @@ bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 void r2d_begin(jr2d_p r2d) { SDL_RenderClear(r2d->sdl); }
 void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
-bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode)
+bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h)
 {
-        return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
+        return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, SDL_LOGICAL_PRESENTATION_STRETCH);
 }
 
 bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)

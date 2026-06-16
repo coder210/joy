@@ -13,7 +13,7 @@ History:
 #include <stdint.h>
 #include "jconfig.h"
 #include "jtilemap.h"
-#include "SDL3/SDL.h"
+#include "jr2d.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ typedef const char* (*jtilemap_path_remap_t)(const char* original_path);
 
 /* 初始化渲染模块，asset_base_path 会拼在所有图片路径前 */
 /* renderer: SDL 渲染器, remap: 路径映射回调（NULL 用默认） */
-JOY_API void jtilemap_render_init(SDL_Renderer* renderer,
+JOY_API void jtilemap_render_init(jr2d_p renderer,
                                    const char* asset_base_path,
                                    jtilemap_path_remap_t remap);
 

@@ -15,6 +15,7 @@ History:
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <SDL3/SDL.h>
 
 // ======================== 静态状态 ========================
 static SDL_Renderer*          gRenderer   = NULL;
@@ -243,7 +244,7 @@ static void render_image_layer_internal(const jtilemap_image_layer_p layer,
 
 // ======================== 公共 API ========================
 
-JOY_API void jtilemap_render_init(SDL_Renderer* renderer,
+JOY_API void jtilemap_render_init(jr2d_p renderer,
                                    const char* asset_base_path,
                                    jtilemap_path_remap_t remap)
 {

@@ -143,7 +143,7 @@ static int l_gen_checkerboard(lua_State* L)
 	render3d_p r = (render3d_p)lua_touserdata(L, 1);
 	int tile_size = (int)luaL_checkinteger(L, 2);
 	int tile_cnt  = (int)luaL_checkinteger(L, 3);
-	SDL_GPUTexture* tex = render3d_gen_checkerboard(r, tile_size, tile_cnt);
+	SDL_GPUTexture* tex = (SDL_GPUTexture*)render3d_gen_checkerboard(r, tile_size, tile_cnt);
 	lua_pushlightuserdata(L, tex);
 	return 1;
 }

@@ -129,7 +129,7 @@ static duk_ret_t jg_polygon(duk_context* ctx) {
                 pts[i].y = (float)duk_to_number(ctx, 3 + i * 2);
         }
         jcolor_t c;
-        r2d_get_colorf(r2d, &c.r, &c.g, &c.b, &c.a);
+        r2d_get_color(r2d, &c.r, &c.g, &c.b, &c.a);
         duk_push_boolean(ctx, shape_draw_polygon(r2d, mode, pts, n, c));
         SDL_free(pts);
         return 1;

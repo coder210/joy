@@ -48,9 +48,9 @@ static int lr_end_frame(lua_State* L) {
 static int lr_get_size(lua_State* L) {
         jr2d_p r2d = get_ren(L, 1);
         int w, h;
-        //SDL_GetRenderOutputSize(r2d->sdl, &w, &h);
-
-        lua_pushinteger(L, w); lua_pushinteger(L, h);
+        r2d_get_size(r2d, &w, &h);
+        lua_pushinteger(L, w);
+        lua_pushinteger(L, h);
         return 2;
 }
 
@@ -78,8 +78,7 @@ static int lr_set_color(lua_State* L) {
 static int lr_set_logical_presentation(lua_State* L) {
         r2d_set_logical_presentation(get_ren(L, 1),
                 (int)luaL_checkinteger(L, 2),
-                (int)luaL_checkinteger(L, 3),
-                (SDL_RendererLogicalPresentation)luaL_checkinteger(L, 4));
+                (int)luaL_checkinteger(L, 3));
         return 0;
 }
 
@@ -269,7 +268,7 @@ static int lf_destroy(lua_State* L) {
 
 
 static int lt_create(lua_State* L) {
-        jr2d_p r2d = (font_p)lua_touserdata(L, 1);
+        jr2d_p r2d = (jr2d_p)lua_touserdata(L, 1);
         font_p f = (font_p)lua_touserdata(L, 2);
         if (!f) return luaL_error(L, "invalid font");
         int n = (int)luaL_len(L, 2);

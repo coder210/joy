@@ -48,6 +48,11 @@ void quit_env(void)
 	SDL_Quit();
 }
 
+const char* get_error(void)
+{
+	return SDL_GetError();
+}
+
 jwindow_p create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
@@ -189,6 +194,15 @@ void dispatch_event(jevent_callbacks_t cbs,
 		log_debug("unhandled SDL event type: 0x%x", event->type);
 		break;
 	}
+}
+
+bool push_user_event(int type, int code)
+{
+	SDL_Event event;
+	SDL_zero(event);
+	event.type = SDL_EVENT_USER + type;
+	event.user.code = code;
+	return SDL_PushEvent(&event);
 }
 
 bool push_quit_event(void) 

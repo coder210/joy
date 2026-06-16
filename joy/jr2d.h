@@ -30,11 +30,11 @@ extern "C" {
         JOY_API void* r2d_unwrap(jr2d_p r2d);
         JOY_API vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y);
 
-        JOY_API bool r2d_get_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+        JOY_API bool r2d_get_color(jr2d_p r2d, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
         JOY_API bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
         JOY_API void r2d_begin(jr2d_p r2d);
         JOY_API void r2d_end(jr2d_p r2d);
-        JOY_API bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h, int mode);
+        JOY_API bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h);
         JOY_API bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode);
         JOY_API void r2d_get_size(jr2d_p r2d, int *w, int *h);
         JOY_API bool r2d_set_vsync(jr2d_p r2d, int vsync);

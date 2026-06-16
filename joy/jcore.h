@@ -54,6 +54,7 @@ extern "C" {
 
 	JOY_API bool init_env();
 	JOY_API void quit_env(void);
+	JOY_API const char *get_error(void);
 
 	JOY_API jwindow_p create_window(const char* title, int w, int h);
 	JOY_API void destroy_window(jwindow_p win);
@@ -62,10 +63,9 @@ extern "C" {
 
 	JOY_API void dispatch_event(jevent_callbacks_t cbs,
 		const void* event, void* arg);
+	JOY_API bool push_user_event(int type, int code);
 	JOY_API bool push_quit_event(void);
 	JOY_API bool should_close(void* ev);
-
-
 
 	JOY_API int log_info(const char* format, ...);
 	JOY_API int log_debug(const char* format, ...);

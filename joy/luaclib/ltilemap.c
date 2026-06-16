@@ -51,7 +51,7 @@ static int l_tilemap_get_tileheight(lua_State* L)
 /* ---- rendering ---- */
 static int l_tilemap_render_init(lua_State* L)
 {
-    SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
+    jr2d_p ren = (jr2d_p)lua_touserdata(L, 1);
     if (!ren) { lua_pushboolean(L, 0); return 1; }
     jtilemap_render_init(ren, luaL_optstring(L, 2, NULL), NULL);
     lua_pushboolean(L, 1);
@@ -60,7 +60,7 @@ static int l_tilemap_render_init(lua_State* L)
 
 static int l_tilemap_render_init_base(lua_State* L)
 {
-    SDL_Renderer* ren = (SDL_Renderer*)lua_touserdata(L, 1);
+    jr2d_p ren = (jr2d_p)lua_touserdata(L, 1);
     if (!ren) { lua_pushboolean(L, 0); return 1; }
     jtilemap_render_init(ren, luaL_checkstring(L, 2), NULL);
     lua_pushboolean(L, 1);

@@ -9,7 +9,7 @@ static int l_joystick_create(lua_State* L)
         float x, y, radius;
         jr2d_p r2d;
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         r2d = (jr2d_p)lua_touserdata(L, 1);
         x = (float)luaL_checknumber(L, 2);
         y = (float)luaL_checknumber(L, 3);
@@ -22,7 +22,7 @@ static int l_joystick_create(lua_State* L)
 static int l_joystick_destroy(lua_State* L)
 {
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         joystick_destroy(joystick);
         return 0;
@@ -31,7 +31,7 @@ static int l_joystick_destroy(lua_State* L)
 static int l_joystick_draw(lua_State* L)
 {
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         joystick_draw(joystick);
         return 0;
@@ -72,7 +72,7 @@ static int l_joystick_touch_up(lua_State* L)
 static int l_joystick_reset(lua_State* L)
 {
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         joystick_reset(joystick);
         return 0;
@@ -82,7 +82,7 @@ static int l_joystick_set_position(lua_State* L)
 {
         float x, y;
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         x = (float)luaL_checknumber(L, 2);
         y = (float)luaL_checknumber(L, 3);
@@ -94,7 +94,7 @@ static int l_joystick_get_direction(lua_State* L)
 {
         vec2_t point;
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         point = joystick_get_direction(joystick);
         lua_newtable(L);
@@ -107,7 +107,7 @@ static int l_joystick_get_magnitude(lua_State* L)
 {
         float magnitude;
         joystick_p joystick;
-        SDL_assert(lua_islightuserdata(L, 1));
+        assert(lua_islightuserdata(L, 1));
         joystick = (joystick_p)lua_touserdata(L, 1);
         magnitude = joystick_get_magnitude(joystick);
         lua_pushnumber(L, magnitude);

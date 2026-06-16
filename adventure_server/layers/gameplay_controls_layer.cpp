@@ -3,11 +3,11 @@
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
-static void setup_button_texture(button_p btn, jsdl_renderer_t* renderer) {
+static void setup_button_texture(button_p btn, jr2d_p renderer) {
 	btn->image = image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides.png");
 	btn->pressed_image = image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides_pressed.png");
 	// 有纹理后去掉纯色背景
-	jsdl_color_t transparent = {0, 0, 0, 0};
+	jcolor_t transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
 	button_set_pressed_color(btn, transparent);
@@ -20,18 +20,14 @@ struct gameplay_controls_layer {
 
 static void send_gameplay_control_event(int event_code)
 {
-	SDL_Event event;
-	SDL_zero(event);
-	event.type = GAMEPLAY_CONTROL_EVENT;
-	event.user.code = event_code;
-	SDL_PushEvent(&event);
+	push_user_event(GAMEPLAY_CONTROL_EVENT, event_code);
 }
 
 static void on_event(scene_node_p n, const void* e)
 {
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
-	SDL_Event* event = (SDL_Event*)e;
+
 }
 
 static void on_update(scene_node_p n, float dt)
@@ -42,7 +38,7 @@ static void on_update(scene_node_p n, float dt)
 
 static void on_render(scene_node_p n, const void* arg)
 {
-	jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+	jr2d_p renderer = (jr2d_p)arg;
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 }
@@ -56,7 +52,7 @@ static void on_destroy(scene_node_p n)
 static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	int logical_width, logical_height;
-	jsdl_get_logical_presentation(ctx->renderer, &logical_width, &logical_height, NULL);
+	r2d_get_logical_presentation(ctx->r2d, &logical_width, &logical_height, NULL);
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 
 	scene_node_p root_node = scene_node_create();
@@ -64,8 +60,8 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 	scene_node_set_zorder(root_node, 100);
 	scene_node_add_child(self->scene_node, root_node);
 
-	button_p up_button = button_create(ctx->renderer, 50, 50);
-	setup_button_texture(up_button, ctx->renderer);
+	button_p up_button = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(up_button, ctx->r2d);
 	button_set_textx(up_button, simhei_font, "U", (int)strlen("U"), { 255, 255, 255, 255 });
 	scene_node_p up_button_node = scene_node_create();
 	scene_node_set_position(up_button_node, 50, 0);
@@ -78,7 +74,10 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(up_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Event* ev = (SDL_Event*)e;
+		jevent_callbacks cb;
+		
+
+		/*SDL_Event* ev = (SDL_Event*)e;
 		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_UP);
@@ -87,20 +86,20 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP);
 		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}
+		}*/
 	});
 
 	scene_node_set_render_callback(up_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+		jr2d_p renderer = (jr2d_p)arg;
 		button_draw(self);
 	});
 
 	scene_node_add_child(root_node, up_button_node);
 
 	// down
-	button_p down_button = button_create(ctx->renderer, 50, 50);
-	setup_button_texture(down_button, ctx->renderer);
+	button_p down_button = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(down_button, ctx->r2d);
 	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 255, 255, 255, 255 });
 	scene_node_p down_button_node = scene_node_create();
 	scene_node_set_position(down_button_node, 50, 100);
@@ -113,7 +112,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(down_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Event* ev = (SDL_Event*)e;
+		/*SDL_Event* ev = (SDL_Event*)e;
 		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN);
@@ -122,20 +121,20 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_DOWN);
 		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}
+		}*/
 	});
 
 	scene_node_set_render_callback(down_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+		jr2d_p renderer = (jr2d_p)arg;
 		button_draw(self);
 	});
 
 	scene_node_add_child(root_node, down_button_node);
 
 	// left
-	button_p left_button = button_create(ctx->renderer, 50, 50);
-	setup_button_texture(left_button, ctx->renderer);
+	button_p left_button = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(left_button, ctx->r2d);
 	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 255, 255, 255, 255 });
 	scene_node_p left_button_node = scene_node_create();
 	scene_node_set_position(left_button_node, 0, 50);
@@ -148,7 +147,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(left_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Event* ev = (SDL_Event*)e;
+		/*SDL_Event* ev = (SDL_Event*)e;
 		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT);
@@ -157,20 +156,20 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_LEFT);
 		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}
+		}*/
 	});
 
 	scene_node_set_render_callback(left_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+		jr2d_p renderer = (jr2d_p)arg;
 		button_draw(self);
 	});
 
 	scene_node_add_child(root_node, left_button_node);
 
 	// right
-	button_p right_button = button_create(ctx->renderer, 50, 50);
-	setup_button_texture(right_button, ctx->renderer);
+	button_p right_button = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(right_button, ctx->r2d);
 	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 255, 255, 255, 255 });
 	scene_node_p right_button_node = scene_node_create();
 	scene_node_set_position(right_button_node, 100, 50);
@@ -183,7 +182,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(right_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Event* ev = (SDL_Event*)e;
+		/*SDL_Event* ev = (SDL_Event*)e;
 		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT);
@@ -192,12 +191,12 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_RIGHT);
 		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}
+		}*/
 	});
 
 	scene_node_set_render_callback(right_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+		jr2d_p renderer = (jr2d_p)arg;
 		button_draw(self);
 	});
 
@@ -209,7 +208,7 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 	int logical_width, logical_height;
-	jsdl_get_logical_presentation(ctx->renderer, &logical_width, &logical_height, NULL);
+	r2d_get_logical_presentation(ctx->r2d, &logical_width, &logical_height, NULL);
 
 	scene_node_p root_node = scene_node_create();
 	scene_node_set_position(root_node, logical_width - 100, logical_height - 100);
@@ -217,8 +216,8 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 	scene_node_add_child(self->scene_node, root_node);
 
 	// attack
-	button_p attack_button = button_create(ctx->renderer, 50, 50);
-	setup_button_texture(attack_button, ctx->renderer);
+	button_p attack_button = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(attack_button, ctx->r2d);
 	button_set_textx(attack_button, simhei_font, "A", (int)strlen("A"), { 255, 255, 255, 255 });
 	scene_node_p attack_button_node = scene_node_create();
 	scene_node_set_position(attack_button_node, 0, 0);
@@ -231,7 +230,7 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(attack_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		SDL_Event* ev = (SDL_Event*)e;
+		/*SDL_Event* ev = (SDL_Event*)e;
 		if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK);
@@ -239,12 +238,12 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 			button_is_pressed(self, (float)ev->button.x, (float)ev->button.y);
 		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
 			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}
+		}*/
 	});
 
 	scene_node_set_render_callback(attack_button_node, [](scene_node_p n, const void* arg) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+		jr2d_p renderer = (jr2d_p)arg;
 		button_draw(self);
 	});
 
