@@ -273,7 +273,7 @@ combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
 	if (combobox->text) {
 		text_destroy(combobox->text);
 	}
-	//combobox->text = create_jtext(combobox->r2d, filename, fontsize, codepoints, len, color);
+	combobox->text = text_create(combobox->r2d, fontsize, codepoints, len, color);
 }
 
 void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, const int* codepoints, int len, jcolor_t color)
@@ -472,12 +472,10 @@ void datagrid_setheader(datagrid_p grid, int index, const char* header)
 	color = (jcolor_t){ 0x0, 0x0, 0x0, 0xFF };
 	fontinfo = grid->font;
 	if (grid->headers[index]) {
-		//SDL_DestroyTexture(grid->headers[index]);
-		//SDL_UpdateTexture(grid->headers[index], NULL, NULL, 0);
-		//update_jtext(grid->headers[index], fontinfo, header->array, header->length, color);
+		/* 由外部管理 text 更新 */
 	}
 	else {
-		//grid->headers[index] = create_jtext(grid->r2d, fontinfo, header->array, header->length, color);
+		/* 由外部设置 header text */
 	}
 }
 
@@ -557,16 +555,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 		int x = grid->x;
 		int y = grid->y;
 		for (int col = 0; col < grid->col_count; col++) {
-			/*jrect_t rect;
-			float tw, th;*/
-			/*rect.x = x;
-			rect.y = y;*/
 			jtext_p tex = grid->headers[col];
-			/*if (tex && SDL_GetTextureSize(tex, &tw, &th)) {
-				rect.w = tw;
-				rect.h = th;
-				SDL_RenderTexture(grid->r2d, tex, NULL, &rect);
-			}*/
 			jtext_print(r2d, tex, x, y);
 
 			// ���ƴ�ֱ��
@@ -588,9 +577,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 			shape_draw_rectangle(r2d, "fill", selected_rect);
 		}
 		else {
-			/* r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-			 jrect_t header_rect = { grid->x, y, grid->width, grid->row_height };
-			 SDL_RenderFillRect(r2d, &header_rect);*/
+			/* 非选中行默认无背景 */
 		}
 
 		// ���Ƶ�Ԫ�����ݺ�����
@@ -794,59 +781,23 @@ void radio_button_render(radio_button_p radio, jr2d_p r2d)
 	radio->r3_color.a = 255;
 
 
-	/*SDL_Vertex triangle[3];
-	for (int i = 0; i < segments; i++) {
-		float angle1 = (float)i / (float)segments * 2.0f * 3.14159f;
-		float angle2 = (float)(i + 1) / (float)segments * 2.0f * 3.14159f;
-		triangle[0].position = { center_x, center_y };
-		triangle[0].color = radio->r1_color;
-		triangle[1].position = (vec2_t){ center_x + cosf(angle1) * r1, center_y + sinf(angle1) * r1 };
-		triangle[1].color = radio->r1_color;
-		triangle[2].position = (vec2_t){ center_x + cosf(angle2) * r1, center_y + sinf(angle2) * r1 };
-		triangle[2].color = radio->r1_color;
-		SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
+	/* 外圈 */
+	r2d_set_color(r2d, radio->r1_color.r, radio->r1_color.g, radio->r1_color.b, radio->r1_color.a);
+	shape_draw_circle(r2d, "fill", (vec2_t){ center_x, center_y }, r1, 32);
 
-		triangle[0].position = (vec2_t){ center_x, center_y };
-		triangle[0].color = radio->r2_color;
-		triangle[1].position = (vec2_t){ center_x + cosf(angle1) * r2, center_y + sinf(angle1) * r2 };
-		triangle[1].color = radio->r2_color;
-		triangle[2].position = (vec2_t){ center_x + cosf(angle2) * r2, center_y + sinf(angle2) * r2 };
-		triangle[2].color = radio->r2_color;
-		SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
+	/* 内圈 */
+	r2d_set_color(r2d, radio->r2_color.r, radio->r2_color.g, radio->r2_color.b, radio->r2_color.a);
+	shape_draw_circle(r2d, "fill", (vec2_t){ center_x, center_y }, r2, 32);
 
-		if (radio->checked) {
-			triangle[0].position = (vec2_t){ center_x, center_y };
-			triangle[0].color = radio->r3_color;
-			triangle[1].position = (vec2_t){ center_x + cosf(angle1) * r3, center_y + sinf(angle1) * r3 };
-			triangle[1].color = radio->r3_color;
-			triangle[2].position = (vec2_t){ center_x + cosf(angle2) * r3, center_y + sinf(angle2) * r3 };
-			triangle[2].color = radio->r3_color;
-			SDL_RenderGeometry(r2d, NULL, triangle, 3, NULL, 0);
-		}
-	}*/
+	/* 选中标记 */
+	if (radio->checked) {
+		r2d_set_color(r2d, radio->r3_color.r, radio->r3_color.g, radio->r3_color.b, radio->r3_color.a);
+		shape_draw_circle(r2d, "fill", (vec2_t){ center_x, center_y }, r3, 32);
+	}
 
 	// ���Ʊ�ǩ�ı�
 	if (radio->label) {
-		/* jcolor_t text_color = { 0, 0, 0, 255 };
-		 SDL_Surface* text_surface = TTF_RenderText_Blended(font, radio->label, text_color);
-
-		 if (text_surface) {
-			 SDL_Texture* jtext = SDL_CreateTextureFromSurface(r2d, text_surface);
-
-			 if (jtext) {
-				 jrect_t text_rect = {
-				     radio->x + radio->size + 5,
-				     radio->y + (radio->size - text_surface->h) / 2,
-				     text_surface->w,
-				     text_surface->h
-				 };
-
-				 SDL_RenderTexture(r2d, jtext, NULL, &text_rect);
-				 SDL_DestroyTexture(jtext);
-			 }
-
-			 SDL_DestroySurface(text_surface);
-		 }*/
+		/* 标签文本 — 由外部传入 font 后使用 jtext_printx 渲染 */
 	}
 }
 
@@ -1042,26 +993,11 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 
 	// ���Ʊ�ǩ�ı�
 	if (checkbox->label && font) {
-		/*jcolor_t textColor = checkbox->enabled ? checkbox->textColor : (jcolor_t) { 128, 128, 128, 255 };
-		SDL_Surface* textSurface = TTF_RenderText_Blended(font, checkbox->label, textColor);
-
-		if (textSurface) {
-			SDL_Texture* textTexture = SDL_CreateTextureFromSurface(r2d, textSurface);
-
-			if (textTexture) {
-				jrect_t textRect = {
-				    checkbox->x + checkbox->size + 5,
-				    checkbox->y + (checkbox->size - textSurface->h) / 2,
-				    textSurface->w,
-				    textSurface->h
-				};
-
-				SDL_RenderTexture(r2d, textTexture, NULL, &textRect);
-				SDL_DestroyTexture(textTexture);
-			}
-
-			SDL_DestroySurface(textSurface);
-		}*/
+		font_p f = (font_p)font;
+		jcolor_t tc = checkbox->enabled ? checkbox->text_color : (jcolor_t){ 128, 128, 128, 255 };
+		jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
+			checkbox->x + checkbox->size + 5,
+			checkbox->y + (checkbox->size - (float)font_get_size(f)) / 2);
 	}
 }
 
@@ -1263,14 +1199,15 @@ void joystick_draw(joystick_p joystick)
 		shape_draw_rectangle(r2d, "fill", handle_fill);
 
 
-		/*	if (joystick_get_magnitude(joystick) > 0) {
-				vec2_t dir = joystick_get_direction(joystick);
-				SDL_RenderLine(r2d,
-					joystick->center.x,
-					joystick->center.y,
-					joystick->center.x + dir.x * joystick->radius,
-					joystick->center.y + dir.y * joystick->radius);
-			}*/
+		if (joystick_get_magnitude(joystick) > 0) {
+			vec2_t dir = joystick_get_direction(joystick);
+			r2d_set_color(r2d, 0, 0, 0, 100);
+			shape_draw_line(r2d,
+				joystick->center.x,
+				joystick->center.y,
+				joystick->center.x + dir.x * joystick->radius,
+				joystick->center.y + dir.y * joystick->radius);
+		}
 }
 
 // ��ȡҡ�˷���
@@ -1626,8 +1563,6 @@ void textinput_defocus(textinput_p ti)
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
 	textinput_clear_sel(ti);
-	//SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
-	//if (win) SDL_StopTextInput(win);
 }
 
 void textinput_draw(textinput_p ti)
@@ -1637,84 +1572,77 @@ void textinput_draw(textinput_p ti)
 	jrect_t rect = ti->rect;
 
 	/* 背景 */
-	//r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
-	//SDL_RenderFillRect(r, &rect);
+	r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
+	shape_draw_rectangle(r, "fill", rect);
 
-	///* 边框（聚焦时高亮） */
-	//jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
-	//r2d_set_color(r, border.r, border.g, border.b, border.a);
-	//SDL_RenderRect(r, &rect);
+	/* 边框（聚焦时高亮） */
+	jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
+	r2d_set_color(r, border.r, border.g, border.b, border.a);
+	shape_draw_rectangle(r, "line", rect);
 
-	///* 选中高亮（绘制在文字下方） */
-	//if (textinput_has_sel(ti) && ti->font) {
-	//	SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
-	//	SDL_SetRenderClipRect(r, &clip);
-	//	int a = ti->sel_start, b = ti->sel_end;
-	//	if (a > b) { int t = a; a = b; b = t; }
-	//	jcolor_t c = {0,0,0,255};
-	//	jtext_p ta = text_createx(ti->font, ti->buffer, a, c);
-	//	jtext_p tb = text_createx(ti->font, ti->buffer + a, b - a, c);
-	//	if (ta && tb) {
-	//		float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
-	//		float sw = (float)text_get_width(tb);
-	//		jrect_t sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
-	//		r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
-	//		SDL_RenderFillRect(r, &sel_rect);
-	//	}
-	//	if (ta) text_destroy(ta);
-	//	if (tb) text_destroy(tb);
-	//	SDL_SetRenderClipRect(r, NULL);
-	//}
+	/* 选中高亮（绘制在文字下方） */
+	if (textinput_has_sel(ti) && ti->font) {
+		int a = ti->sel_start, b = ti->sel_end;
+		if (a > b) { int t = a; a = b; b = t; }
+		jcolor_t c = {0,0,0,255};
+		jtext_p ta = text_createx(r, ti->font, ti->buffer, a, c);
+		jtext_p tb = text_createx(r, ti->font, ti->buffer + a, b - a, c);
+		if (ta && tb) {
+			float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
+			float sw = (float)text_get_width(tb);
+			jrect_t sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
+			r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
+			shape_draw_rectangle(r, "fill", sel_rect);
+		}
+		if (ta) text_destroy(ta);
+		if (tb) text_destroy(tb);
+	}
 
-	///* 文字（设裁剪区域防止溢出） */
-	//if (ti->text_len > 0 && ti->font) {
-	//	SDL_Rect clip = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
-	//	SDL_SetRenderClipRect(r, &clip);
-	//	float text_x = rect.x + 4;
-	//	float text_y = rect.y + (rect.h - text_get_height(text_createx(ti->font, "A", 1, ti->text_color))) / 2.0f;
-	//	float ox = text_x - (float)ti->scroll_offset;
+	/* 文字 */
+	if (ti->text_len > 0 && ti->font) {
+		float text_x = rect.x + 4;
+		float text_y = rect.y + (rect.h - (float)font_get_size(ti->font)) / 2.0f;
+		float ox = text_x - (float)ti->scroll_offset;
 
-	//	if (textinput_has_sel(ti)) {
-	//		int a = ti->sel_start, b = ti->sel_end;
-	//		if (a > b) { int t = a; a = b; b = t; }
-	//		jcolor_t white = {255, 255, 255, 255};
-	//		/* 选中前部分 */
-	//		if (a > 0)
-	//			jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
-	//		/* 选中部分（白色） */
-	//		if (b > a) {
-	//			float offset_before = (float)text_get_width(text_createx(ti->font, ti->buffer, a, ti->text_color));
-	//			jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
-	//		}
-	//		/* 选中后部分 */
-	//		if (b < ti->text_len) {
-	//			float offset_sel = (float)text_get_width(text_createx(ti->font, ti->buffer, b, ti->text_color));
-	//			jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
-	//		}
-	//	} else {
-	//		jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
-	//	}
-	//	SDL_SetRenderClipRect(r, NULL);
-	//}
+		if (textinput_has_sel(ti)) {
+			int a = ti->sel_start, b = ti->sel_end;
+			if (a > b) { int t = a; a = b; b = t; }
+			jcolor_t white = {255, 255, 255, 255};
+			/* 选中前部分 */
+			if (a > 0)
+				jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+			/* 选中部分（白色） */
+			if (b > a) {
+				float offset_before = (float)text_get_width(text_createx(r, ti->font, ti->buffer, a, ti->text_color));
+				jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+			}
+			/* 选中后部分 */
+			if (b < ti->text_len) {
+				float offset_sel = (float)text_get_width(text_createx(r, ti->font, ti->buffer, b, ti->text_color));
+				jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+			}
+		} else {
+			jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+		}
+	}
 
-	///* 光标（聚焦时绘制） */
-	//if (ti->focused) {
-	//	Uint64 now = get_ticks();
-	//	if (now - ti->cursor_timer >= 530) {
-	//		ti->cursor_visible = !ti->cursor_visible;
-	//		ti->cursor_timer = now;
-	//	}
-	//	if (ti->cursor_visible) {
-	//		int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
-	//		/* 光标在可视区域内时才绘制 */
-	//		if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
-	//			float cy = rect.y + 3;
-	//			float ch = rect.h - 6;
-	//			r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
-	//			SDL_RenderLine(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
-	//		}
-	//	}
-	//}
+	/* 光标（聚焦时绘制） */
+	if (ti->focused) {
+		uint64_t now = get_ticks();
+		if (now - ti->cursor_timer >= 530) {
+			ti->cursor_visible = !ti->cursor_visible;
+			ti->cursor_timer = now;
+		}
+		if (ti->cursor_visible) {
+			int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
+			if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
+				float cy = rect.y + 3;
+				float ch = rect.h - 6;
+				r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
+				shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+			}
+		}
+	}
 }
 
 bool textinput_is_pressed(textinput_p ti, float x, float y)
@@ -1850,25 +1778,25 @@ void slider_draw(slider_p s)
 	jr2d_p r = s->r2d;
 
 	/* 滑轨背景 */
-	//r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
-	//SDL_RenderFillRect(r, &s->track);
+	r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
+	shape_draw_rectangle(r, "fill", s->track);
 
-	///* 已填充部分（从 track.x 到 thumb 中心） */
-	//float tx = slider_thumb_x(s);
-	//float fill_w = tx - s->track.x;
-	//if (fill_w > 0) {
-	//	r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
-	//	jrect_t fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
-	//	SDL_RenderFillRect(r, &fill_rect);
-	//}
+	/* 已填充部分（从 track.x 到 thumb 中心） */
+	float tx = slider_thumb_x(s);
+	float fill_w = tx - s->track.x;
+	if (fill_w > 0) {
+		r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
+		jrect_t fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
+		shape_draw_rectangle(r, "fill", fill_rect);
+	}
 
-	///* 滑块 */
-	//jrect_t tr = slider_thumb_rect(s);
-	//jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
-	//r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
-	//SDL_RenderFillRect(r, &tr);
-	//r2d_set_color(r, 0, 0, 0, 255);
-	//SDL_RenderRect(r, &tr);
+	/* 滑块 */
+	jrect_t tr = slider_thumb_rect(s);
+	jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
+	r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
+	shape_draw_rectangle(r, "fill", tr);
+	r2d_set_color(r, 0, 0, 0, 255);
+	shape_draw_rectangle(r, "line", tr);
 }
 
 bool slider_is_pressed(slider_p s, float x, float y)
@@ -2003,62 +1931,63 @@ static void popup_draw_text_lines(jr2d_p r2d, font_p font, const char* text, flo
 void popup_draw(popup_p p, font_p title_font, font_p content_font)
 {
 	if (!p || !p->visible) return;
-	jr2d_p r2d = p->r2d;
+	jr2d_p r = p->r2d;
 	float x = p->x, y = p->y, w = p->w, h = p->h;
 
-	///* 半透明背景遮罩 */
-	//SDL_SetRenderDrawBlendMode(r2d, SDL_BLENDMODE_BLEND);
-	//r2d_set_color(r2d, 0, 0, 0, 120);
-	//jrect_t full = { 0, 0, 1920, 1080 }; /* 覆盖全屏 */
-	//shape_draw_rectangle(r2d, "fill", full);
-	//SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+	/* 半透明背景遮罩（使用 blend 模式） */
+	r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+	r2d_set_color(r, 0, 0, 0, 120);
+	jrect_t full = { 0, 0, 1920, 1080 };
+	shape_draw_rectangle(r, "fill", full);
+	r2d_set_blend_mode(r, JR2D_BLEND_NONE);
 
-	///* 边框 */
-	//r2d_set_color(ren, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
-	//SDL_RenderRect(ren, &(jrect_t){ x - 1, y - 1, w + 2, h + 2 });
+	/* 边框 */
+	r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+	shape_draw_rectangle(r, "line", (jrect_t){ x - 1, y - 1, w + 2, h + 2 });
 
-	///* 背景 */
-	//SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-	//r2d_set_color(ren, p->bg_color.r, p->bg_color.g, p->bg_color.b, p->bg_color.a);
-	//SDL_RenderFillRect(ren, &(jrect_t){ x, y, w, h });
+	/* 背景 */
+	r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+	r2d_set_color(r, p->bg_color.r, p->bg_color.g, p->bg_color.b, p->bg_color.a);
+	shape_draw_rectangle(r, "fill", (jrect_t){ x, y, w, h });
 
-	///* 标题栏背景 */
-	//r2d_set_color(ren, p->title_bg_color.r, p->title_bg_color.g, p->title_bg_color.b, p->title_bg_color.a);
-	//SDL_RenderFillRect(ren, &(jrect_t){ x, y, w, p->title_height });
+	/* 标题栏背景 */
+	r2d_set_color(r, p->title_bg_color.r, p->title_bg_color.g, p->title_bg_color.b, p->title_bg_color.a);
+	shape_draw_rectangle(r, "fill", (jrect_t){ x, y, w, p->title_height });
 
-	///* 标题栏分隔线 */
-	//r2d_set_color(ren, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
-	//SDL_RenderLine(ren, x, y + p->title_height, x + w, y + p->title_height);
+	/* 标题栏分隔线 */
+	r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+	shape_draw_line(r, x, y + p->title_height, x + w, y + p->title_height);
 
-	///* 标题文字 */
-	//if (p->title[0] && title_font) {
-	//	jtext_printx(ren, title_font, p->title, (int)strlen(p->title), p->title_text_color,
-	//		x + p->padding, y + (p->title_height - (float)title_font->fontsize) / 2);
-	//}
+	/* 标题文字 */
+	if (p->title[0] && title_font) {
+		int title_len = (int)strlen(p->title);
+		jtext_printx(r, title_font, p->title, title_len, p->title_text_color,
+			x + p->padding, y + (p->title_height - (float)font_get_size(title_font)) / 2);
+	}
 
-	///* 关闭按钮 */
-	//if (p->closeable) {
-	//	float cx = x + w - p->close_size - 4;
-	//	float cy = y + (p->title_height - p->close_size) / 2;
-	//	if (p->close_hovered)
-	//		r2d_set_color(ren, p->close_hover_color.r, p->close_hover_color.g, p->close_hover_color.b, p->close_hover_color.a);
-	//	else
-	//		r2d_set_color(ren, p->close_color.r, p->close_color.g, p->close_color.b, p->close_color.a);
-	//	SDL_RenderFillRect(ren, &(jrect_t){ cx, cy, p->close_size, p->close_size });
-	//	/* X 标记 */
-	//	r2d_set_color(ren, 255, 255, 255, 255);
-	//	SDL_RenderLine(ren, cx + 6, cy + 6, cx + p->close_size - 6, cy + p->close_size - 6);
-	//	SDL_RenderLine(ren, cx + p->close_size - 6, cy + 6, cx + 6, cy + p->close_size - 6);
-	//}
+	/* 关闭按钮 */
+	if (p->closeable) {
+		float cx = x + w - p->close_size - 4;
+		float cy = y + (p->title_height - p->close_size) / 2;
+		if (p->close_hovered)
+			r2d_set_color(r, p->close_hover_color.r, p->close_hover_color.g, p->close_hover_color.b, p->close_hover_color.a);
+		else
+			r2d_set_color(r, p->close_color.r, p->close_color.g, p->close_color.b, p->close_color.a);
+		shape_draw_rectangle(r, "fill", (jrect_t){ cx, cy, p->close_size, p->close_size });
+		/* X 标记 */
+		r2d_set_color(r, 255, 255, 255, 255);
+		shape_draw_line(r, cx + 6, cy + 6, cx + p->close_size - 6, cy + p->close_size - 6);
+		shape_draw_line(r, cx + p->close_size - 6, cy + 6, cx + 6, cy + p->close_size - 6);
+	}
 
-	///* 内容文字 */
-	//if (p->content[0] && content_font) {
-	//	SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-	//	popup_draw_text_lines(ren, content_font, p->content,
-	//		x + p->padding, y + p->title_height + p->padding,
-	//		w - p->padding * 2, p->content_color);
-	//}
-	//SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+	/* 内容文字 */
+	if (p->content[0] && content_font) {
+		r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+		popup_draw_text_lines(r, content_font, p->content,
+			x + p->padding, y + p->title_height + p->padding,
+			w - p->padding * 2, p->content_color);
+	}
+	r2d_set_blend_mode(r, JR2D_BLEND_NONE);
 }
 
 bool popup_is_close_clicked(popup_p p, float mx, float my)
@@ -2136,24 +2065,24 @@ void tooltip_set_visible(tooltip_p t, bool v)
 void tooltip_draw(tooltip_p t, font_p font)
 {
 	if (!t || !t->visible || !t->text_len) return;
-	jr2d_p r2d = t->r2d;
+	jr2d_p r = t->r2d;
 
-	///* 估算宽高：按字符数 * fontsize/2 粗略估算 */
-	//float fh = (float)font->fontsize;
-	//float tw = t->text_len * fh * 0.55f + t->padding * 2;
-	//float th = fh + t->padding;
+	/* 估算宽高：按字符数 * fontsize/2 粗略估算 */
+	float fh = (float)font_get_size(font);
+	float tw = t->text_len * fh * 0.55f + t->padding * 2;
+	float th = fh + t->padding;
 
-	///* 背景 */
-	//SDL_SetRenderDrawBlendMode(r2d, SDL_BLENDMODE_BLEND);
-	//r2d_set_color(r2d, t->bg_color.r, t->bg_color.g, t->bg_color.b, t->bg_color.a);
-	//SDL_RenderFillRect(ren, &(jrect_t){ t->x, t->y, tw, th });
+	/* 背景 */
+	r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+	r2d_set_color(r, t->bg_color.r, t->bg_color.g, t->bg_color.b, t->bg_color.a);
+	shape_draw_rectangle(r, "fill", (jrect_t){ t->x, t->y, tw, th });
 
-	///* 边框 */
-	//SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
-	//r2d_set_color(ren, t->border_color.r, t->border_color.g, t->border_color.b, t->border_color.a);
-	//SDL_RenderRect(ren, &(jrect_t){ t->x, t->y, tw, th });
+	/* 边框 */
+	r2d_set_blend_mode(r, JR2D_BLEND_NONE);
+	r2d_set_color(r, t->border_color.r, t->border_color.g, t->border_color.b, t->border_color.a);
+	shape_draw_rectangle(r, "line", (jrect_t){ t->x, t->y, tw, th });
 
-	///* 文字 */
-	//jtext_printx(ren, font, t->text, t->text_len, t->text_color,
-	//	t->x + t->padding, t->y + t->padding / 2);
+	/* 文字 */
+	jtext_printx(r, font, t->text, t->text_len, t->text_color,
+		t->x + t->padding, t->y + t->padding / 2);
 }
