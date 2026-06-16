@@ -254,6 +254,7 @@ struct game_scene {
 	scene_p scene;
 	flecs::world world;
 	jtilemap_p tilemap = NULL;
+	jtilemap_render_p tilemap_render = NULL;
 
 	int g_id = 1;
 	int g_frameid = 1;
@@ -848,7 +849,7 @@ static void on_load(scene_p s)
 
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
-		jtilemap_render_init(self->ctx->r2d, "adventure_server/", NULL);
+		self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_server/", NULL);
 
 	S2CEntity entities[512]; int ec = 0;
 	self->body_query.each([&](flecs::entity e, IdComponent& id,
@@ -1013,7 +1014,7 @@ static void on_destroy(scene_p s)
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->netserver);
 	tex_cache_clear();
-	jtilemap_render_destroy();
+	if (self->tilemap_render) jtilemap_render_destroy(self->tilemap_render);
 	if (self->tilemap) { jtilemap_destroy(self->tilemap); self->tilemap = NULL; }
 }
 

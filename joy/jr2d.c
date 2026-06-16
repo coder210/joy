@@ -897,3 +897,104 @@ void animation_draw(animation_p animation, jrect_t* camera)
         animation_clip = &kv_A(animation->clips, animation->idx_frame);
         image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
 }
+
+/* ===== Blend mode ===== */
+bool r2d_set_blend_mode(jr2d_p r2d, int mode)
+{
+        SDL_BlendMode sdl_mode = SDL_BLENDMODE_NONE;
+        switch (mode) {
+        case JR2D_BLEND_BLEND: sdl_mode = SDL_BLENDMODE_BLEND; break;
+        case JR2D_BLEND_ADD:   sdl_mode = SDL_BLENDMODE_ADD;   break;
+        case JR2D_BLEND_MOD:   sdl_mode = SDL_BLENDMODE_MOD;   break;
+        default: break;
+        }
+        return SDL_SetRenderDrawBlendMode(r2d->sdl, sdl_mode);
+}
+
+/* ===== 低级纹理操作 ===== */
+void* r2d_create_texture_from_surface(jr2d_p r2d, void* surface)
+{
+        return (void*)SDL_CreateTextureFromSurface(r2d->sdl, (SDL_Surface*)surface);
+}
+
+void r2d_destroy_texture(void* texture)
+{
+        if (texture) SDL_DestroyTexture((SDL_Texture*)texture);
+}
+
+void r2d_set_texture_alpha(void* texture, uint8_t alpha)
+{
+        SDL_SetTextureAlphaMod((SDL_Texture*)texture, alpha);
+}
+
+void r2d_set_texture_blend_mode(void* texture, int mode)
+{
+        SDL_BlendMode sdl_mode = SDL_BLENDMODE_NONE;
+        switch (mode) {
+        case JR2D_BLEND_BLEND: sdl_mode = SDL_BLENDMODE_BLEND; break;
+        case JR2D_BLEND_ADD:   sdl_mode = SDL_BLENDMODE_ADD;   break;
+        case JR2D_BLEND_MOD:   sdl_mode = SDL_BLENDMODE_MOD;   break;
+        default: break;
+        }
+        SDL_SetTextureBlendMode((SDL_Texture*)texture, sdl_mode);
+}
+
+bool r2d_get_texture_size(void* texture, float* w, float* h)
+{
+        return SDL_GetTextureSize((SDL_Texture*)texture, w, h);
+}
+
+bool r2d_render_texture(jr2d_p r2d, void* texture, const jrect_t* src, const jrect_t* dst)
+{
+        SDL_Texture* tex = (SDL_Texture*)texture;
+        const SDL_FRect* s = src ? (const SDL_FRect*)src : NULL;
+        const SDL_FRect* d = dst ? (const SDL_FRect*)dst : NULL;
+        return SDL_RenderTexture(r2d->sdl, tex, s, d);
+}
+
+bool r2d_render_texture_rotated(jr2d_p r2d, void* texture, const jrect_t* src, const jrect_t* dst, double angle, int flip)
+{
+        SDL_FlipMode f = SDL_FLIP_NONE;
+        if (flip == JR2D_FLIP_H)  f = SDL_FLIP_HORIZONTAL;
+        if (flip == JR2D_FLIP_V)  f = SDL_FLIP_VERTICAL;
+        if (flip == JR2D_FLIP_HV) f = (SDL_FlipMode)(SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL);
+        return SDL_RenderTextureRotated(r2d->sdl, (SDL_Texture*)texture,
+                (const SDL_FRect*)src, (const SDL_FRect*)dst, angle, NULL, f);
+}
+
+void* r2d_create_texture(jr2d_p r2d, int w, int h)
+{
+        return (void*)SDL_CreateTexture(r2d->sdl, SDL_PIXELFORMAT_RGBA8888,
+                SDL_TEXTUREACCESS_STREAMING, w, h);
+}
+
+void r2d_update_texture(void* texture, const jrect_t* rect, const void* pixels, int pitch)
+{
+        SDL_UpdateTexture((SDL_Texture*)texture,
+                (const SDL_Rect*)rect, pixels, pitch);
+}
+
+bool r2d_render_geometry(jr2d_p r2d, void* texture,
+                const float* vert_data, int vertex_count,
+                const int* indices, int index_count)
+{
+        /* vert_data: 每顶点 8 个 float (pos.x, pos.y, color.r, color.g, color.b, color.a, tex.x, tex.y) */
+        if (vertex_count <= 0 || index_count <= 0) return false;
+        SDL_Vertex* verts = (SDL_Vertex*)SDL_malloc(sizeof(SDL_Vertex) * vertex_count);
+        if (!verts) return false;
+        for (int i = 0; i < vertex_count; i++) {
+                const float* v = vert_data + i * 8;
+                verts[i].position.x = v[0];
+                verts[i].position.y = v[1];
+                verts[i].color.r = v[2];
+                verts[i].color.g = v[3];
+                verts[i].color.b = v[4];
+                verts[i].color.a = v[5];
+                verts[i].tex_coord.x = v[6];
+                verts[i].tex_coord.y = v[7];
+        }
+        bool ok = SDL_RenderGeometry(r2d->sdl, (SDL_Texture*)texture,
+                verts, vertex_count, indices, index_count);
+        SDL_free(verts);
+        return ok;
+}

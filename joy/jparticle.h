@@ -10,7 +10,7 @@ History:
 #ifndef JPARTICLE_H
 #define JPARTICLE_H
 #include "jconfig.h"
-#include <SDL3/SDL.h>
+#include "jr2d.h"
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -52,7 +52,7 @@ JOY_API void jparticle_clear(jparticle_p p);            /* 清除所有粒子 */
 
 /* 每帧调用 */
 JOY_API void jparticle_update(jparticle_p p, float dt);
-JOY_API void jparticle_render(jparticle_p p, SDL_Renderer* renderer);
+JOY_API void jparticle_render(jparticle_p p, jr2d_p r2d);
 
 /* 查询 */
 JOY_API int  jparticle_count(jparticle_p p);

@@ -1,9 +1,9 @@
 #ifndef JLIGHT_H
 #define JLIGHT_H
 #include "jconfig.h"
+#include "jr2d.h"
 #include <stdint.h>
 #include <stdbool.h>
-#include <SDL3/SDL.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +28,8 @@ typedef struct jlight_occluder {
 /* ---------- 灯光系统 ---------- */
 typedef struct jlight_sys {
     int width, height;
-    SDL_Texture* lightmap;
-    SDL_Texture* gradient;
+    image_p lightmap;
+    image_p gradient;
     jlight_t lights[JLIGHT_MAX];
     bool active[JLIGHT_MAX];
     int count;
@@ -57,7 +57,7 @@ JOY_API void jlight_clear_occluders(jlight_sys_p sys);
 JOY_API void jlight_set_ambient(jlight_sys_p sys, Uint8 r, Uint8 g, Uint8 b);
 
 /* 渲染: 场景绘制完成后, SDL_RenderPresent 前调用 */
-JOY_API void jlight_render(jlight_sys_p sys, SDL_Renderer* renderer);
+JOY_API void jlight_render(jlight_sys_p sys, jr2d_p r2d);
 
 #ifdef __cplusplus
 }

@@ -185,6 +185,7 @@ struct game_scene {
 
 	// ---- tilemap + 音频 ----
 	jtilemap_p          tilemap = NULL;
+	jtilemap_render_p   tilemap_render = NULL;
 	uint32_t            audio_dev = 0;
 	audio_shot_p        step_sound = NULL;
 	audio_bgm_p         bgm = NULL;
@@ -730,7 +731,7 @@ static void on_load(scene_p s)
 	// ---- tilemap 渲染 ----
 	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
 	if (self->tilemap) {
-		jtilemap_render_init(self->ctx->r2d, "adventure_client/", NULL);
+		self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_client/", NULL);
 		log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
 	}
 	else log_error("[tilemap] failed to load");
@@ -992,10 +993,10 @@ static void on_render(scene_p s) {
 	r2d_set_color(self->ctx->r2d, 100, 100, 100, 255);
 
 	// ---- tilemap 背景 ----
-	if (self->tilemap) {
+	if (self->tilemap && self->tilemap_render) {
 		float cam_x_px = self->ctx->camera_x * (float)PIXELS_PER_METER;
 		float cam_y_px = self->ctx->camera_y * (float)PIXELS_PER_METER;
-		jtilemap_render_all(self->tilemap, cam_x_px, cam_y_px, get_ticks());
+		jtilemap_render_all(self->tilemap_render, self->tilemap, cam_x_px, cam_y_px, get_ticks());
 	}
 
 	// ---- ECS 实体（碰撞体） ----
@@ -1063,7 +1064,7 @@ static void on_destroy(scene_p s) {
 	audio_shot_destroy(self->step_sound);
 	audio_bgm_destroy(self->bgm);
 	if (self->audio_dev) audio_close_device(self->audio_dev);
-	jtilemap_render_destroy();
+	if (self->tilemap_render) jtilemap_render_destroy(self->tilemap_render);
 	if (self->tilemap) jtilemap_destroy(self->tilemap);
 	delete self;
 }

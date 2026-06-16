@@ -171,16 +171,15 @@ void jparticle_update(jparticle_p p, float dt) {
 }
 
 /* ======================== 渲染 ======================== */
-void jparticle_render(jparticle_p p, SDL_Renderer* renderer) {
-    if (!p || !renderer) return;
+void jparticle_render(jparticle_p p, jr2d_p r2d) {
+    if (!p || !r2d) return;
     kvec_t(particle_inner_t)* parts = &p->particles;
     for (size_t i = 0; i < parts->n; i++) {
         particle_inner_t* pt = &kv_A(*parts, i);
         float half = pt->size * 0.5f;
-        SDL_FRect r = { pt->x - half, pt->y - half, pt->size, pt->size };
-        SDL_SetRenderDrawColor(renderer,
-            (Uint8)pt->r, (Uint8)pt->g, (Uint8)pt->b, (Uint8)pt->a);
-        SDL_RenderFillRect(renderer, &r);
+        jrect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
+        r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);
+        shape_draw_rectangle(r2d, "fill", r);
     }
 }
 
