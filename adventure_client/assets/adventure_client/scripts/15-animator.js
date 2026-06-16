@@ -1,4 +1,4 @@
-﻿// Animator demo with hotfix persistence
+// Animator demo with hotfix persistence
 var win, ren, anim;
 
 joy.load = function()

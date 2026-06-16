@@ -1,4 +1,4 @@
-﻿// msgpack JS 测试
+// msgpack JS 测试
 // 演示 msgpack.pack / unpack 的基本用法
 var win, ren, font;
 var results = [];

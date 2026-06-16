@@ -1,4 +1,4 @@
-﻿var state = state || {};
+var state = state || {};
 var win, ren, font;
 
 joy.load = function()

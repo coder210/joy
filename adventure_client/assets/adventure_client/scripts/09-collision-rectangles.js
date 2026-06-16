@@ -1,4 +1,4 @@
-﻿// 2D Rectangle vs Rectangle collision detection demo
+// 2D Rectangle vs Rectangle collision detection demo
 var PIXELS_PER_METER = 100;
 var rect1, rect2;
 var ren;

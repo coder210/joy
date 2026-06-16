@@ -1,4 +1,4 @@
-﻿-- 2D Rectangle vs Rectangle collision detection demo
+-- 2D Rectangle vs Rectangle collision detection demo
 local PIXELS_PER_METER = 100
 local rect1, rect2, angle1, angle2
 local ren

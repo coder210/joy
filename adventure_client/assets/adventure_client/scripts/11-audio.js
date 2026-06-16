@@ -1,4 +1,4 @@
-﻿// Audio playback demo with buttons
+// Audio playback demo with buttons
 var device_id, bgm, shot;
 var ren, win;
 

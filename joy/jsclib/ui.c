@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include "jsclib.h"
 #include "../jui.h"
@@ -7,10 +8,10 @@ static jcolor_t read_color(duk_context* ctx, int idx)
 {
         jcolor_t c = { 255, 255, 255, 255 };
         if (duk_is_object(ctx, idx)) {
-                duk_get_prop_string(ctx, idx, "r"); c.r = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-                duk_get_prop_string(ctx, idx, "g"); c.g = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-                duk_get_prop_string(ctx, idx, "b"); c.b = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
-                duk_get_prop_string(ctx, idx, "a"); c.a = (Uint8)duk_to_number(ctx, -1); duk_pop(ctx);
+                duk_get_prop_string(ctx, idx, "r"); c.r = (uint8_t)duk_to_number(ctx, -1); duk_pop(ctx);
+                duk_get_prop_string(ctx, idx, "g"); c.g = (uint8_t)duk_to_number(ctx, -1); duk_pop(ctx);
+                duk_get_prop_string(ctx, idx, "b"); c.b = (uint8_t)duk_to_number(ctx, -1); duk_pop(ctx);
+                duk_get_prop_string(ctx, idx, "a"); c.a = (uint8_t)duk_to_number(ctx, -1); duk_pop(ctx);
         }
         return c;
 }

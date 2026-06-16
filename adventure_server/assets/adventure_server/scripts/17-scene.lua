@@ -1,4 +1,4 @@
-﻿-- 场景系统 + UI 控件演示
+-- 场景系统 + UI 控件演示
 local win, ren, font
 local mgr, menu_scene, menu_root_node
 local btn_start, btn_quit, label_title

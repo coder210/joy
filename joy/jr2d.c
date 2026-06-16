@@ -45,8 +45,15 @@ struct animation {
 
 jr2d_p r2d_create(jwindow_p win)
 {
+        SDL_Window* raw = (SDL_Window*)get_raw_window(win);
+        if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
         jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
-        r2d->sdl = SDL_CreateRenderer(get_raw_window(win), "r2d");
+        r2d->sdl = SDL_CreateRenderer(raw, NULL);
+        if (!r2d->sdl) {
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: SDL_CreateRenderer failed: %s", SDL_GetError());
+                SDL_free(r2d);
+                return NULL;
+        }
         return r2d;
 }
 

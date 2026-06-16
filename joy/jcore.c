@@ -40,6 +40,7 @@ bool init_env()
 { 
 	return SDL_Init(SDL_INIT_AUDIO 
 		| SDL_INIT_VIDEO 
+		| SDL_INIT_EVENTS
 		| SDL_INIT_JOYSTICK);
 }
 
@@ -61,7 +62,12 @@ uint64_t get_ticks(void)
 jwindow_p create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
-        window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
+        window->sdl_window = SDL_CreateWindow(title, w, h, 0);
+        if (!window->sdl_window) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "create_window failed: %s", SDL_GetError());
+                SDL_free(window);
+                return NULL;
+        }
         return window;
 }
 

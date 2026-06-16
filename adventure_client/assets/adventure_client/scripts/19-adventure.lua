@@ -1,4 +1,4 @@
-﻿-- adventure 游戏（tilemap地图 + 精灵动画 + 网络同步）
+-- adventure 游戏（tilemap地图 + 精灵动画 + 网络同步）
 -- 碰撞推出 + 帧同步命令历史 + AI攻击对齐
 local win, ren, font
 local PPM = 50

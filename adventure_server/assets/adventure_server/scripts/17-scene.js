@@ -1,4 +1,4 @@
-﻿// 场景系统 + UI 控件 + 查找测试（同步 Lua 功能）
+// 场景系统 + UI 控件 + 查找测试（同步 Lua 功能）
 var win, ren, font;
 var mgr, menu_scene, menu_root_node;
 var btn_start, btn_quit;

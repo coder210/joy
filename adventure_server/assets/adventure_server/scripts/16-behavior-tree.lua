@@ -1,4 +1,4 @@
-﻿-- 行为树 demo（完整功能展示）
+-- 行为树 demo（完整功能展示）
 -- 演示：Sequence / Selector / Condition / Action /
 --        Wait / Repeater / Inverter / Succeeder / Parallel
 local win, ren, font

@@ -1,4 +1,4 @@
-﻿-- Circle vs Circle collision detection demo
+-- Circle vs Circle collision detection demo
 local PIXELS_PER_METER = 100
 local circle1, circle2
 local ren

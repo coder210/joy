@@ -1,4 +1,4 @@
-﻿local win
+local win
 
 function joy.load()
     win = joy.window.create("test", 800, 600, 0)

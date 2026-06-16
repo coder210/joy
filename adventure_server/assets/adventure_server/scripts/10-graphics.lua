@@ -1,4 +1,4 @@
-﻿-- 2D Graphics drawing demo
+-- 2D Graphics drawing demo
 local camera
 local ren
 local win

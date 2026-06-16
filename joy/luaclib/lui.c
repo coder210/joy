@@ -1,5 +1,4 @@
-﻿#include <SDL3/SDL.h>
-#include "luaclib.h"
+﻿#include "luaclib.h"
 #include "../jui.h"
 #include "../jutils.h"
 #include "../external/lua/lauxlib.h"
@@ -11,7 +10,7 @@ static int* str_to_codepoints(lua_State* L, int idx, int* out_len) {
     const char* s = lua_tolstring(L, idx, &len);
     size_t count = utf8_decode_all(s, len, NULL, 0);
     if (count == 0) { *out_len = 0; return NULL; }
-    int* cps = (int*)SDL_malloc(sizeof(int) * count);
+    int* cps = (int*)malloc(sizeof(int) * count);
     utf8_decode_all(s, len, (int32_t*)cps, count);
     *out_len = (int)count;
     return cps;
@@ -29,17 +28,17 @@ static int l_label_create(lua_State* L)
 		int num_codepoints;
 		int* codepoints = str_to_codepoints(L, 3, &num_codepoints);
 		label = label_create(r2d, fontinfo, codepoints, num_codepoints);
-		SDL_free(codepoints);
+		free(codepoints);
 	} else {
 		int num_codepoints = (int)luaL_len(L, 3);
-		int* codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
+		int* codepoints = (int*)malloc(sizeof(int) * num_codepoints);
 		for (int i = 1; i <= num_codepoints; i++) {
 			lua_geti(L, 3, i);
 			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
 			lua_pop(L, 1);
 		}
 		label = label_create(r2d, fontinfo, codepoints, num_codepoints);
-		SDL_free(codepoints);
+		free(codepoints);
 	}
 	lua_pushlightuserdata(L, label);
 	return 1;
@@ -67,17 +66,17 @@ static int l_label_set_text(lua_State* L)
 		int len;
 		int* cps = str_to_codepoints(L, 3, &len);
 		label_set_text(label, fontinfo, cps, len, color);
-		SDL_free(cps);
+		free(cps);
 	} else {
 		int codepoints_len = (int)luaL_len(L, 3);
-		int* codepoints = (int*)SDL_malloc(sizeof(int) * codepoints_len);
+		int* codepoints = (int*)malloc(sizeof(int) * codepoints_len);
 		for (int i = 1; i <= codepoints_len; i++) {
 			lua_geti(L, 3, i);
 			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
 			lua_pop(L, 1);
 		}
 		label_set_text(label, fontinfo, codepoints, codepoints_len, color);
-		SDL_free(codepoints);
+		free(codepoints);
 	}
 	return 0;
 }
@@ -157,7 +156,7 @@ static int l_button_set_text(lua_State* L)
 	} else {
 		/* 码点数组版 */
 		int num_codepoints = (int)luaL_len(L, 3);
-		int* codepoints = (int*)SDL_malloc(sizeof(int) * num_codepoints);
+		int* codepoints = (int*)malloc(sizeof(int) * num_codepoints);
 		for (int i = 1; i <= num_codepoints; i++) {
 			lua_geti(L, 3, i);
 			codepoints[i - 1] = (int)luaL_checkinteger(L, -1);
@@ -168,7 +167,7 @@ static int l_button_set_text(lua_State* L)
 		color.b = luaL_checkinteger(L, 6);
 		color.a = luaL_checkinteger(L, 7);
 		button_set_text(btn, fontinfo, codepoints, num_codepoints, color);
-		SDL_free(codepoints);
+		free(codepoints);
 	}
 	return 0;
 }
@@ -510,7 +509,7 @@ static int ldatagrid_setheaders(lua_State* L)
 		if (lua_isstring(L, -1)) {
 			const char* text = lua_tostring(L, -1);
 			if (dg->headers[i-1]) text_destroy(dg->headers[i-1]);
-			dg->headers[i-1] = text_createx(dg->r2d, fontinfo, text, (int)SDL_strlen(text), color);
+			dg->headers[i-1] = text_createx(dg->r2d, fontinfo, text, (int)strlen(text), color);
 		}
 		lua_pop(L, 1);
 	}
@@ -541,14 +540,14 @@ static int ldatagrid_addrow(lua_State* L)
 	luaL_checktype(L, 2, LUA_TTABLE);
 	int cols = (int)luaL_len(L, 2);
 	if (cols > dg->col_count) cols = dg->col_count;
-	const char** row = (const char**)SDL_malloc(cols * sizeof(char*));
+	const char** row = (const char**)malloc(cols * sizeof(char*));
 	for (int j = 0; j < cols; j++) {
 		lua_geti(L, 2, j + 1);
 		row[j] = lua_tostring(L, -1);
 		lua_pop(L, 1);
 	}
 	datagrid_addrow(dg, row);
-	SDL_free(row);
+	free(row);
 	return 0;
 }
 
@@ -655,7 +654,7 @@ static int l_textinput_defocus(lua_State* L) {
 static int l_textinput_insert(lua_State* L) {
 	textinput_p ti = (textinput_p)lua_touserdata(L, 1);
 	const char* text = luaL_checkstring(L, 2);
-	textinput_insert(ti, text, (int)SDL_strlen(text));
+	textinput_insert(ti, text, (int)strlen(text));
 	return 0;
 }
 

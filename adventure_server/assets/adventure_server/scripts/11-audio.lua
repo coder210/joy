@@ -1,4 +1,4 @@
-﻿-- audio test
+-- audio test
 local win, ren, device, shot, bgm
 
 function joy.load()

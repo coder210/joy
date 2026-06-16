@@ -1,5 +1,5 @@
 #include "luaclib.h"
-#include <SDL3/SDL.h>
+#include <stdlib.h>
 #include "../external/lua/lauxlib.h"
 #include "../jr2d.h"
 
@@ -32,10 +32,10 @@ static int lr_destroy(lua_State* L) {
 static int lr_begin(lua_State* L) {
         jr2d_p r2d = get_ren(L, 1);
         r2d_set_color(r2d,
-                (Uint8)luaL_optinteger(L, 2, 0),
-                (Uint8)luaL_optinteger(L, 3, 0),
-                (Uint8)luaL_optinteger(L, 4, 0),
-                (Uint8)luaL_optinteger(L, 5, 255));
+                (uint8_t)luaL_optinteger(L, 2, 0),
+                (uint8_t)luaL_optinteger(L, 3, 0),
+                (uint8_t)luaL_optinteger(L, 4, 0),
+                (uint8_t)luaL_optinteger(L, 5, 255));
         r2d_begin(r2d);
         return 0;
 }
@@ -68,10 +68,10 @@ static int lr_set_scale(lua_State* L) {
 
 static int lr_set_color(lua_State* L) {
         lua_pushboolean(L, r2d_set_color(get_ren(L, 1),
-                (Uint8)luaL_checkinteger(L, 2),
-                (Uint8)luaL_checkinteger(L, 3),
-                (Uint8)luaL_checkinteger(L, 4),
-                (Uint8)luaL_optinteger(L, 5, 255)));
+                (uint8_t)luaL_checkinteger(L, 2),
+                (uint8_t)luaL_checkinteger(L, 3),
+                (uint8_t)luaL_checkinteger(L, 4),
+                (uint8_t)luaL_optinteger(L, 5, 255)));
         return 1;
 }
 
@@ -116,7 +116,7 @@ static int lr_draw_point(lua_State* L) {
 static int lr_draw_points(lua_State* L) {
         jr2d_p r2d = get_ren(L, 1);
         int n = (int)luaL_len(L, 2);
-        vec2_t* pts = (vec2_t*)SDL_malloc(n * sizeof(vec2_t));
+        vec2_t* pts = (vec2_t*)malloc(n * sizeof(vec2_t));
         for (int i = 1; i <= n; i++) {
                 lua_rawgeti(L, 2, i);
                 lua_getfield(L, -1, "x"); pts[i - 1].x = (float)lua_tonumber(L, -1); lua_pop(L, 1);
@@ -124,7 +124,7 @@ static int lr_draw_points(lua_State* L) {
                 lua_pop(L, 1);
         }
         lua_pushboolean(L, r2d_draw_points(r2d, pts, n));
-        SDL_free(pts);
+        free(pts);
         return 1;
 }
 
@@ -152,7 +152,7 @@ static int lr_draw_polygon(lua_State* L) {
         const char* mode = luaL_checkstring(L, 2);
         int n = (lua_gettop(L) - 2) / 2;
         if (n < 3) return luaL_error(L, "polygon needs >= 3 vertices");
-        vec2_t* pts = (vec2_t*)SDL_malloc((n + 1) * sizeof(vec2_t));
+        vec2_t* pts = (vec2_t*)malloc((n + 1) * sizeof(vec2_t));
         for (int i = 0; i < n; i++) {
                 pts[i].x = (float)luaL_checknumber(L, 3 + i * 2);
                 pts[i].y = (float)luaL_checknumber(L, 4 + i * 2);
@@ -160,7 +160,7 @@ static int lr_draw_polygon(lua_State* L) {
         jcolor_t c;
         r2d_get_color(r2d, &c.r, &c.g, &c.b, &c.a);
         lua_pushboolean(L, shape_draw_polygon(r2d, mode, pts, n, c));
-        SDL_free(pts);
+        free(pts);
         return 1;
 }
 
@@ -272,18 +272,18 @@ static int lt_create(lua_State* L) {
         font_p f = (font_p)lua_touserdata(L, 2);
         if (!f) return luaL_error(L, "invalid font");
         int n = (int)luaL_len(L, 2);
-        int* cps = (int*)SDL_malloc(n * sizeof(int));
+        int* cps = (int*)malloc(n * sizeof(int));
         for (int i = 1; i <= n; i++) {
                 lua_geti(L, 2, i); cps[i - 1] = (int)luaL_checkinteger(L, -1); lua_pop(L, 1);
         }
         jcolor_t color = {
-            (Uint8)luaL_optinteger(L, 3, 255),
-            (Uint8)luaL_optinteger(L, 4, 255),
-            (Uint8)luaL_optinteger(L, 5, 255),
-            (Uint8)luaL_optinteger(L, 6, 255)
+            (uint8_t)luaL_optinteger(L, 3, 255),
+            (uint8_t)luaL_optinteger(L, 4, 255),
+            (uint8_t)luaL_optinteger(L, 5, 255),
+            (uint8_t)luaL_optinteger(L, 6, 255)
         };
         jtext_p t = text_create(r2d, f, cps, n, color);
-        SDL_free(cps);
+        free(cps);
         lua_pushlightuserdata(L, t);
         return 1;
 }
@@ -293,20 +293,20 @@ static int lt_update(lua_State* L) {
         font_p f = (font_p)lua_touserdata(L, 2);
         if (!t || !f) return luaL_error(L, "invalid text or font");
         int n = (int)luaL_len(L, 3);
-        int* cps = (int*)SDL_malloc(n * sizeof(int));
+        int* cps = (int*)malloc(n * sizeof(int));
         for (int i = 1; i <= n; i++) {
                 lua_geti(L, 3, i);
                 cps[i - 1] = (int)luaL_checkinteger(L, -1);
                 lua_pop(L, 1);
         }
         jcolor_t color = {
-            (Uint8)luaL_optinteger(L, 4, 255),
-            (Uint8)luaL_optinteger(L, 5, 255),
-            (Uint8)luaL_optinteger(L, 6, 255),
-            (Uint8)luaL_optinteger(L, 7, 255)
+            (uint8_t)luaL_optinteger(L, 4, 255),
+            (uint8_t)luaL_optinteger(L, 5, 255),
+            (uint8_t)luaL_optinteger(L, 6, 255),
+            (uint8_t)luaL_optinteger(L, 7, 255)
         };
         text_update(t, f, cps, n, color);
-        SDL_free(cps);
+        free(cps);
         return 0;
 }
 
@@ -331,12 +331,12 @@ static int l_print(lua_State* L) {
         if (!f) return luaL_error(L, "invalid font");
         const char* str = luaL_checkstring(L, 3);
         jcolor_t c = {
-            (Uint8)luaL_optinteger(L, 6, 255),
-            (Uint8)luaL_optinteger(L, 7, 255),
-            (Uint8)luaL_optinteger(L, 8, 255),
-            (Uint8)luaL_optinteger(L, 9, 255)
+            (uint8_t)luaL_optinteger(L, 6, 255),
+            (uint8_t)luaL_optinteger(L, 7, 255),
+            (uint8_t)luaL_optinteger(L, 8, 255),
+            (uint8_t)luaL_optinteger(L, 9, 255)
         };
-        jtext_printx(get_ren(L, 1), f, str, (int)SDL_strlen(str), c,
+        jtext_printx(get_ren(L, 1), f, str, (int)strlen(str), c,
                 (float)luaL_checknumber(L, 4),
                 (float)luaL_checknumber(L, 5));
         return 0;
