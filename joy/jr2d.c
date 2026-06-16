@@ -1,7 +1,4 @@
-﻿#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "external/stb_image.h"
+﻿#include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
@@ -299,8 +296,8 @@ draw_circle_outline(jr2d_p r2d, vec2_t center, float radius, int segments)
 {
         bool result;
         float angle;
-        vec2_t* points;
-        points = SDL_malloc(sizeof(vec2_t) * (segments + 1));
+        SDL_FPoint* points;
+        points = (SDL_FPoint*)SDL_malloc(sizeof(SDL_FPoint) * (segments + 1));
         for (int i = 0; i < segments; i++) {
                 angle = (float)i / (float)segments * 2.0f * 3.1415926535f;
                 points[i].x = center.x + cosf(angle) * radius;
@@ -369,11 +366,11 @@ shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int
         if (segments < 8) segments = 8;
         if (segments > 360) segments = 360;
         if (SDL_strcmp(mode, "line") == 0) {
-                result = draw_circle_outline(r2d->sdl, center, radius, segments);
+                result = draw_circle_outline(r2d, center, radius, segments);
         }
         else if (SDL_strcmp(mode, "fill") == 0) {
-                SDL_GetRenderDrawColorFloat(r2d->sdl, &color.r, &color.g, &color.b, &color.a);
-                result = draw_circle_filled(r2d->sdl, center, radius, segments, color);
+                SDL_GetRenderDrawColor(r2d->sdl, &color.r, &color.g, &color.b, &color.a);
+                result = draw_circle_filled(r2d, center, radius, segments, color);
         }
         else {
                 result = false;
@@ -498,10 +495,10 @@ image_p image_create(jr2d_p r2d, const char* filename)
 {
 	image_p image = NULL;
 	if (SDL_strstr(filename, ".bmp")) {
-		image = load_bmp(r2d->sdl, filename);
+		image = load_bmp(r2d, filename);
 	}
 	else if (SDL_strstr(filename, ".png")) {
-		image = load_png(r2d->sdl, filename);
+		image = load_png(r2d, filename);
 	}
 	return image;
 }
@@ -543,20 +540,26 @@ void image_draw(image_p image, vec2_t position)
 void image_draw1(image_p image,
 	const jrect_t* srcrect, const jrect_t* destrect)
 {
+    SDL_FRect raw_src, raw_dest;
 	SDL_Renderer *renderer;
 	renderer = SDL_GetRendererFromTexture(image->texture);
-	SDL_RenderTexture(renderer, image->texture, srcrect, destrect);
+    raw_src.x = srcrect->x;
+    raw_src.y = srcrect->y;
+    raw_src.w = srcrect->w;
+    raw_src.h = srcrect->h;
+    raw_dest.x = destrect->x;
+    raw_dest.y = destrect->y;
+    raw_dest.w = destrect->w;
+    raw_dest.h = destrect->h;
+	SDL_RenderTexture(renderer, image->texture, &raw_src, &raw_dest);
 }
 
 void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	float rotation, vec2_t scale, vec2_t origin)
 {
 	SDL_Renderer *renderer;
-	float w, h;
-	jrect_t dest_rect;
-	vec2_t center;
-	w = srcrect->w;
-	h = srcrect->h;
+	SDL_FRect raw_src, raw_dest;
+	SDL_FPoint center;
 	renderer = SDL_GetRendererFromTexture(image->texture);
 
 	// 负 scale → 转换为正宽度 + 翻转标志
@@ -565,15 +568,20 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	if (sx < 0) { flip = (SDL_FlipMode)(flip | SDL_FLIP_HORIZONTAL); sx = -sx; }
 	if (sy < 0) { flip = (SDL_FlipMode)(flip | SDL_FLIP_VERTICAL);   sy = -sy; }
 
-	dest_rect.x = (position.x - origin.x * sx);
-	dest_rect.y = (position.y - origin.y * sy);
-	dest_rect.w = w * sx;
-	dest_rect.h = h * sy;
+    raw_src.x = srcrect->x;
+    raw_src.y = srcrect->y;
+    raw_src.w = srcrect->w;
+    raw_src.h = srcrect->h;
+
+    raw_dest.x = (position.x - origin.x * sx);
+    raw_dest.y = (position.y - origin.y * sy);
+    raw_dest.w = srcrect->w * sx;
+    raw_dest.h = srcrect->h * sy;
 	center.x = origin.x * sx;
 	center.y = origin.y * sy;
 
 	SDL_RenderTextureRotated(renderer, image->texture,
-		srcrect, &dest_rect,
+        &raw_src, &raw_dest,
 		rotation * 180.0f / 3.1415926f,
 		&center, flip);
 	//SDL_SetTextureAlphaMod(image->texture, 255);
@@ -618,14 +626,14 @@ jtext_p text_create(jr2d_p r2d, font_p font,
         bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
 
         for (int i = 0; i < num_codepoints; ++i) {
-                stbtt_GetCodepointHMetrics(&font, codepoints[i], &advance_width, &left_side_bearing);
-                stbtt_GetCodepointBitmapBox(&font, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
                 y = font_ascent + c_y1;
 
                 int byte_offset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap(&font, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
+                stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
                 x += roundf(advance_width * scale);
-                kern = stbtt_GetCodepointKernAdvance(&font, codepoints[i], codepoints[i + 1]);
+                kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
                 x += roundf(kern * scale);
         }
 
@@ -692,14 +700,14 @@ void text_update(jtext_p text, font_p font,
         bitmap = (unsigned char*)SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
 
         for (int i = 0; i < num_codepoints; ++i) {
-                stbtt_GetCodepointHMetrics(&font, codepoints[i], &advance_width, &left_side_bearing);
-                stbtt_GetCodepointBitmapBox(&font, codepoints[i], font_scale, font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], font_scale, font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
                 y = font_ascent + c_y1;
 
                 int byteOffset = x + roundf(left_side_bearing * font_scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap(&font, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, font_scale, font_scale, codepoints[i]);
+                stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, font_scale, font_scale, codepoints[i]);
                 x += roundf(advance_width * font_scale);
-                kern = stbtt_GetCodepointKernAdvance(&font, codepoints[i], codepoints[i + 1]);
+                kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
                 x += roundf(kern * font_scale);
         }
 
@@ -755,8 +763,8 @@ void jtext_print(jr2d_p r2d,
         jtext_p text,
         float x, float y)
 {
-        jrect_t dst_rect = { x, y, (float)text->real_width, (float)text->real_height };
-        SDL_RenderTexture(r2d->sdl, text->texture, NULL, &dst_rect);
+        SDL_FRect raw_dest = { x, y, (float)text->real_width, (float)text->real_height };
+        SDL_RenderTexture(r2d->sdl, text->texture, NULL, &raw_dest);
 }
 
 void jtext_printx(jr2d_p r2d, font_p font,

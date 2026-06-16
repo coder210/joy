@@ -1,4 +1,3 @@
-#define STB_TRUETYPE_IMPLEMENTATION
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
 #include "jcore.h"

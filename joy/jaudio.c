@@ -1,6 +1,3 @@
-#define DR_MP3_IMPLEMENTATION
-#define DR_FLAC_IMPLEMENTATION
-#define DR_WAV_IMPLEMENTATION
 #include "SDL3/SDL.h"
 #include "external/dr_mp3.h"
 #include "external/dr_flac.h"
