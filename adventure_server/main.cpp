@@ -27,7 +27,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     AssetManager::Init();
 
-	//jsdl_create_window_and_renderer("server", 640, 480, 0, &ctx->window, &ctx->r2d);
     ctx->window = create_window("server", 640, 480);
     ctx->r2d = r2d_create(ctx->window);
     r2d_set_logical_presentation(ctx->r2d, 640, 480);

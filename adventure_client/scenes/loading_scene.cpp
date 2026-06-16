@@ -1,7 +1,7 @@
 ﻿#include "loading_scene.h"
 // SDL types via jsdl
 #include <joy/jcore.h>
-#include <joy/jtextures.h>
+#include <joy/jr2d.h>
 #include <stdlib.h>
 #include <math.h>
 #include "../layers/menu_layer.h"
@@ -28,22 +28,22 @@ static void on_load(scene_p s) {
     scene_add_root_node(self->scene, menu_layer_get_node(menu));
 
     int logical_w, logical_h;
-    jsdl_get_logical_presentation(self->ctx->renderer, &logical_w, &logical_h, NULL);
+    r2d_get_logical_presentation(self->ctx->r2d, &logical_w, &logical_h, NULL);
 
     // ---- Logo ----
     logo_data* ld = new logo_data{};
-    ld->image = image_create(self->ctx->renderer, "adventure_client/textures/logo.png");
+    ld->image = image_create(self->ctx->r2d, "adventure_client/textures/logo.png");
     scene_node_p logo_node = scene_node_create();
     scene_node_set_position(logo_node, 0, 0);
     scene_node_set_zorder(logo_node, 50);
     scene_node_set_userdata(logo_node, ld);
     scene_node_set_render_callback(logo_node, [](scene_node_p n, const void* arg) {
-        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+        jr2d_p renderer = (jr2d_p)arg;
         logo_data* ld = (logo_data*)scene_node_get_userdata(n);
         if (!ld || !ld->image) return;
         int w, h;
-        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
-        jsdl_rect_t dest = { (w - 400) / 2.0f, 40, 400, 100 };
+        r2d_get_logical_presentation(renderer, &w, &h, NULL);
+        jrect_t dest = { (w - 400) / 2.0f, 40, 400, 100 };
         image_draw1(ld->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(logo_node, [](scene_node_p n) {
@@ -57,18 +57,18 @@ static void on_load(scene_p s) {
 
     // ---- 左侧装饰 ----
     deco_data* dd_l = new deco_data{};
-    dd_l->image = image_create(self->ctx->renderer, "adventure_client/textures/deco/01.png");
+    dd_l->image = image_create(self->ctx->r2d, "adventure_client/textures/deco/01.png");
     scene_node_p deco_left = scene_node_create();
     scene_node_set_position(deco_left, 0, 0);
     scene_node_set_zorder(deco_left, 40);
     scene_node_set_userdata(deco_left, dd_l);
     scene_node_set_render_callback(deco_left, [](scene_node_p n, const void* arg) {
-        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+        jr2d_p r2d = (jr2d_p)arg;
         deco_data* dd = (deco_data*)scene_node_get_userdata(n);
         if (!dd || !dd->image) return;
         int w, h;
-        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
-        jsdl_rect_t dest = { 20, (h - 200) / 2.0f, 80, 200 };
+        r2d_get_logical_presentation(r2d, &w, &h, NULL);
+        jrect_t dest = { 20, (h - 200) / 2.0f, 80, 200 };
         image_draw1(dd->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(deco_left, [](scene_node_p n) {
@@ -82,18 +82,18 @@ static void on_load(scene_p s) {
 
     // ---- 右侧装饰 ----
     deco_data* dd_r = new deco_data{};
-    dd_r->image = image_create(self->ctx->renderer, "adventure_client/textures/deco/02.png");
+    dd_r->image = image_create(self->ctx->r2d, "adventure_client/textures/deco/02.png");
     scene_node_p deco_right = scene_node_create();
     scene_node_set_position(deco_right, 0, 0);
     scene_node_set_zorder(deco_right, 40);
     scene_node_set_userdata(deco_right, dd_r);
     scene_node_set_render_callback(deco_right, [](scene_node_p n, const void* arg) {
-        jsdl_renderer_t* renderer = (jsdl_renderer_t*)arg;
+        jr2d_p renderer = (jr2d_p)arg;
         deco_data* dd = (deco_data*)scene_node_get_userdata(n);
         if (!dd || !dd->image) return;
         int w, h;
-        jsdl_get_logical_presentation(renderer, &w, &h, NULL);
-        jsdl_rect_t dest = { w - 100, (h - 200) / 2.0f, 80, 200 };
+        r2d_get_logical_presentation(renderer, &w, &h, NULL);
+        jrect_t dest = { w - 100, (h - 200) / 2.0f, 80, 200 };
         image_draw1(dd->image, NULL, &dest);
     });
     scene_node_set_destroy_callback(deco_right, [](scene_node_p n) {

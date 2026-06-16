@@ -4,7 +4,7 @@
 #include <joy/jscene.h>
 #include "../context.h"
 
-#define MENU_EVENT (JSDL_EVENT_USER + 0x2)
+#define MENU_EVENT (0x2)
 
 enum menu_event_code {
         MENU_EVENT_START = 1,

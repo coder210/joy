@@ -9,13 +9,12 @@
 #include "game_scene.h"
 #include <joy/jmath.h>
 #include <joy/jcore.h>
-#include <joy/jtext.h>
+#include <joy/jr2d.h>
 #include <joy/jcollision.h>
 #include <joy/jnetwork.h>
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
 #include <joy/jaudio.h>
-#include <joy/jevent.h>
 #include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
 #include "../components/ai_component.h"
@@ -161,27 +160,20 @@ struct state_snapshot {
 // 玩家状态机（使用 ECS PlayerActionComponent）
 
 // 纹理缓存
-static std::unordered_map<std::string, jsdl_texture_t*> g_tex_cache;
+static std::unordered_map<std::string, image_p> g_tex_cache;
 
-jsdl_texture_t* tex_cache_get(jsdl_renderer_t* r, const char* path) {
+image_p tex_cache_get(jr2d_p r2d, const char* path) {
 	std::string k(path);
 	auto it = g_tex_cache.find(k);
 	if (it != g_tex_cache.end()) return it->second;
-	int w, h, ch;
-	auto* d = stbi_load(path, &w, &h, &ch, 4);
-	if (!d) return nullptr;
-	auto* s = jsdl_create_surface_from(w, h, JSDL_PIXELFORMAT_RGBA32, d, w * 4);
-	if (!s) { stbi_image_free(d); return nullptr; }
-	auto* t = jsdl_create_texture_from_surface(r, s);
-	jsdl_destroy_surface(s);
-	stbi_image_free(d);
+	image_p t = image_create(r2d, path);
 	g_tex_cache[k] = t;
 	return t;
 }
 
 void tex_cache_clear() {
 	for (auto& kv : g_tex_cache)
-		if (kv.second) jsdl_destroy_texture(kv.second);
+		if (kv.second) image_destroy(kv.second);
 	g_tex_cache.clear();
 }
 
@@ -209,7 +201,7 @@ struct game_scene {
 	int server_entity_id = 0;
 
 	// 固定逻辑步
-	Uint64 lastTime = jsdl_get_ticks();
+	Uint64 lastTime = get_ticks();
 	float accumulator = 0.0f;
 	float FIXED_TIMESTEP = 1.0f / 50.0f;
 
@@ -738,7 +730,7 @@ static void on_load(scene_p s)
 	// ---- tilemap 渲染 ----
 	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
 	if (self->tilemap) {
-		jtilemap_render_init(self->ctx->renderer, "adventure_client/", NULL);
+		jtilemap_render_init(self->ctx->r2d, "adventure_client/", NULL);
 		log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
 	}
 	else log_error("[tilemap] failed to load");
@@ -885,7 +877,7 @@ static void on_handle_event(scene_p s, const void* ev)
 	}
 
 	// 标准 SDL 键盘/鼠标事件 → 通过 dispatch_event 分发
-	event_callbacks_t cbs = {};
+	jevent_callbacks_t cbs = {};
 	cbs.on_keypressed = client_on_keypressed;
 	cbs.on_keyreleased = client_on_keyreleased;
 	dispatch_event(cbs, e, self);
@@ -997,13 +989,13 @@ static void on_update(scene_p s, float dt) {
 
 static void on_render(scene_p s) {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
-	jsdl_set_render_draw_color(self->ctx->renderer, 100, 100, 100, 255);
+	r2d_set_color(self->ctx->r2d, 100, 100, 100, 255);
 
 	// ---- tilemap 背景 ----
 	if (self->tilemap) {
 		float cam_x_px = self->ctx->camera_x * (float)PIXELS_PER_METER;
 		float cam_y_px = self->ctx->camera_y * (float)PIXELS_PER_METER;
-		jtilemap_render_all(self->tilemap, cam_x_px, cam_y_px, jsdl_get_ticks());
+		jtilemap_render_all(self->tilemap, cam_x_px, cam_y_px, get_ticks());
 	}
 
 	// ---- ECS 实体（碰撞体） ----
@@ -1044,22 +1036,22 @@ static void on_render(scene_p s) {
 			float bar_w = 48.0f, bar_h = 8.0f;
 			float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
 			// 黑色边框
-			jsdl_rect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
-			jsdl_set_render_draw_color(ctx->renderer, 0, 0, 0, 255);
-			jsdl_render_fill_rect(ctx->renderer, &bg);
+			jrect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
+			r2d_set_color(ctx->r2d, 0, 0, 0, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", bg);
 			// 深灰背景
-			jsdl_rect_t base = { bar_x, bar_y, bar_w, bar_h };
-			jsdl_set_render_draw_color(ctx->renderer, 40, 40, 40, 255);
-			jsdl_render_fill_rect(ctx->renderer, &base);
+			jrect_t base = { bar_x, bar_y, bar_w, bar_h };
+			r2d_set_color(ctx->r2d, 40, 40, 40, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", base);
 			// 彩色填充
 			float ratio = (float)id.hp / 10.0f;
 			if (ratio > 1.0f) ratio = 1.0f;
 			if (ratio < 0) ratio = 0;
-			jsdl_rect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
-			if (ratio > 0.6f)      jsdl_set_render_draw_color(ctx->renderer, 60, 210, 60, 255);
-			else if (ratio > 0.3f) jsdl_set_render_draw_color(ctx->renderer, 210, 210, 60, 255);
-			else                   jsdl_set_render_draw_color(ctx->renderer, 220, 60, 60, 255);
-			jsdl_render_fill_rect(ctx->renderer, &fill);
+			jrect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
+			if (ratio > 0.6f)      r2d_set_color(ctx->r2d, 60, 210, 60, 255);
+			else if (ratio > 0.3f) r2d_set_color(ctx->r2d, 210, 210, 60, 255);
+			else                   r2d_set_color(ctx->r2d, 220, 60, 60, 255);
+			shape_draw_rectangle(ctx->r2d, "fill", fill);
 		});
 	}
 }

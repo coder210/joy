@@ -91,7 +91,7 @@ button_create(jr2d_p r2d, float width, float height)
 	btn->normal_color = (jcolor_t){ 100, 100, 200, 255 };
 	btn->hover_color = (jcolor_t){ 150, 150, 250, 255 };
 	btn->pressed_color = (jcolor_t){ 50, 50, 150, 255 };
-	btn->jtext_pos = (vec2_t){0, 0};
+	btn->text_pos = (vec2_t){0, 0};
 	btn->image = NULL;
 	btn->pressed_image = NULL;
 	btn->text = NULL;
@@ -225,8 +225,8 @@ void button_draw(button_p btn)
 	if (btn->text) {
 		float widht = text_get_width(btn->text);
 		float height = text_get_height(btn->text);
-		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->jtext_pos.x;
-		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->jtext_pos.y;
+		dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
+		dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
 		jtext_print(r2d, btn->text, dest_rect.x, dest_rect.y);
 	}
 }

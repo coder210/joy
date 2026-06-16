@@ -3,9 +3,9 @@
 // 静态成员初始化
 AssetManager* AssetManager::instance_ = nullptr;
 
-AssetManager::AssetManager(jsdl_renderer_t* renderer)
+AssetManager::AssetManager()
 {
-        simheiFont24_ = font_create(renderer, "adventure_client/fonts/simhei.ttf", 24);
+        simheiFont24_ = font_create("adventure_server/fonts/simhei.ttf", 24);
 }
 
 AssetManager::~AssetManager()
@@ -14,10 +14,10 @@ AssetManager::~AssetManager()
                 font_destroy(simheiFont24_);
 }
 
-void AssetManager::Init(jsdl_renderer_t* renderer)
+void AssetManager::Init()
 {
         if (instance_ == nullptr) {
-                instance_ = new AssetManager(renderer);
+                instance_ = new AssetManager();
         }
         // 若已经初始化，可根据需要添加日志或断言
 }

@@ -55,6 +55,7 @@ extern "C" {
 	JOY_API bool init_env();
 	JOY_API void quit_env(void);
 	JOY_API const char *get_error(void);
+	JOY_API uint64_t get_ticks(void);
 
 	JOY_API jwindow_p create_window(const char* title, int w, int h);
 	JOY_API void destroy_window(jwindow_p win);

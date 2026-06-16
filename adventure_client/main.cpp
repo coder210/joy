@@ -1,11 +1,10 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
-#include <joy/jsdl.h>
+#include <joy/jcore.h>
 #include <string.h>
 #include <stdlib.h>
 #include <joy/jconfig.h>
 #include <joy/jscene.h>
-#include <joy/jcore.h>
 #include <joy/jsys.h>
 #include "context.h"
 #include "asset_manager.h"
@@ -21,8 +20,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 {
         sys_init_netenv();
 
-        if (!jsdl_init(JSDL_INIT_VIDEO | JSDL_INIT_AUDIO)) {
-                jsdl_log("SDL init failed: %s", jsdl_get_error());
+        if (!init_env()) {
+                log_info("SDL init failed: %s", get_error());
                 return SDL_APP_FAILURE;
         }
 
@@ -31,9 +30,11 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         game_timer_init(&ctx->game_timer);
         game_timer_set_target_fps(&ctx->game_timer, 60);
 
-        jsdl_create_window_and_renderer("client", 640, 480, 0, &ctx->window, &ctx->renderer);
-        jsdl_set_logical_presentation(ctx->renderer, 640, 480, JSDL_PRESENTATION_STRETCH);
-        AssetManager::Init(ctx->renderer);
+        AssetManager::Init();
+
+        ctx->window = create_window("client", 640, 480);
+        ctx->r2d = r2d_create(ctx->window);
+        r2d_set_logical_presentation(ctx->r2d, 640, 480);
 
 	ctx->FIXED_TIMESTEP = 1 / 50.0f;
         ctx->running = true;
@@ -77,10 +78,10 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
                         scene_manager_replace(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
                         break;
                 case MENU_EVENT_SETTINGS:
-                        jsdl_log("Settings button is clickable (work in progress)");
+                        log_info("Settings button is clickable (work in progress)");
                         break;
                 case MENU_EVENT_EXIT:
-                        jsdl_push_quit_event();
+                        push_quit_event();
                         break;
                 }
         }
@@ -93,18 +94,18 @@ SDL_AppResult SDL_AppIterate(void*)
         game_timer_update(&ctx->game_timer);
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         scene_manager_update(g_mgr, dt);
-        jsdl_set_render_draw_color(ctx->renderer, 30, 30, 40, 255);
-        jsdl_render_clear(ctx->renderer);
-        scene_manager_render(g_mgr, ctx->renderer);
-        jsdl_render_present(ctx->renderer);
+        r2d_set_color(ctx->r2d, 30, 30, 40, 255);
+        r2d_begin(ctx->r2d);
+        scene_manager_render(g_mgr, ctx->r2d);
+        r2d_end(ctx->r2d);
         return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void*, SDL_AppResult)
 {
         scene_manager_destroy(g_mgr);
-        jsdl_destroy_renderer(ctx->renderer);
-        jsdl_destroy_window(ctx->window);
+        r2d_destroy(ctx->r2d);
+        destroy_window(ctx->window);
         free(ctx);
         sys_release_netenv();
 }

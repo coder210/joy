@@ -34,7 +34,7 @@ struct button {
 	jcolor_t normal_color;   // 正常状态颜色
 	jcolor_t hover_color;    // 悬停状态颜色
 	jcolor_t pressed_color;  // 按下状态颜色
-	vec2_t jtext_pos;      // 文本相对位置
+	vec2_t text_pos;      // 文本相对位置
 	image_p image;            // 按钮正常纹理（可选）
 	image_p pressed_image;    // 按钮按下纹理（可选）
 	jtext_p text;      // 按钮文件纹理

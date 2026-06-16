@@ -53,6 +53,11 @@ const char* get_error(void)
 	return SDL_GetError();
 }
 
+uint64_t get_ticks(void)
+{
+	return SDL_GetTicks();
+}
+
 jwindow_p create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));

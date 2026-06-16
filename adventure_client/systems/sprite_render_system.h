@@ -7,7 +7,7 @@
 #include "../components/logic_rect_component.h"
 
 // 纹理缓存（定义在 game_scene.cpp）
-jsdl_texture_t* tex_cache_get(jsdl_renderer_t* r, const char* path);
+image_p tex_cache_get(jr2d_p r, const char* path);
 void tex_cache_clear();
 
 static void sprite_render_system(flecs::entity e,
@@ -19,12 +19,12 @@ static void sprite_render_system(flecs::entity e,
     float scr_x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
     float scr_y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
 
-    jsdl_texture_t* tex = tex_cache_get(ctx->renderer, ss.path);
+    image_p tex = tex_cache_get(ctx->r2d, ss.path);
     if (!tex) return;
 
-    int flip = (act.dir == 1) ? JSDL_FLIP_HORIZONTAL : JSDL_FLIP_NONE;
+    //int flip = (act.dir == 1) ? JSDL_FLIP_HORIZONTAL : JSDL_FLIP_NONE;
 
-    jsdl_rect_t src = {
+    jrect_t src = {
         (float)(af.cur_frame * ss.frame_w),
         (float)(af.cur_row * ss.frame_h),
         (float)ss.frame_w, (float)ss.frame_h
@@ -35,6 +35,7 @@ static void sprite_render_system(flecs::entity e,
     float off_x = (ss.frame_w - body_w) / 2.0f;
     float off_y = (ss.frame_h - body_h) / 2.0f;
 
-    jsdl_rect_t dst = { scr_x - off_x, scr_y - off_y, (float)ss.frame_w, (float)ss.frame_h };
-    jsdl_render_texture_rotated(ctx->renderer, tex, &src, &dst, 0, nullptr, flip);
+    jrect_t dst = { scr_x - off_x, scr_y - off_y, (float)ss.frame_w, (float)ss.frame_h };
+    //jsdl_render_texture_rotated(ctx->r2d, tex, &src, &dst, 0, nullptr, flip);
+    image_draw_ex(tex, &src, { scr_x - off_x, scr_y - off_y }, 0, { 1, 1 }, { 0, 0 });
 }
