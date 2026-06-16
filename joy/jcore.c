@@ -530,3 +530,19 @@ int game_timer_get_target_fps(const game_timer_p timer)
 	return timer->target_fps;
 }
 
+/* ---- 剪贴板 ---- */
+char* get_clipboard_text(void)
+{
+	const char* sdl_text = SDL_GetClipboardText();
+	if (!sdl_text) return NULL;
+	size_t len = strlen(sdl_text);
+	char* copy = (char*)malloc(len + 1);
+	if (copy) { memcpy(copy, sdl_text, len); copy[len] = '\0'; }
+	return copy;
+}
+
+void set_clipboard_text(const char* text)
+{
+	SDL_SetClipboardText(text);
+}
+

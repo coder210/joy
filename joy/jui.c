@@ -1,6 +1,9 @@
-﻿#include <SDL3/SDL.h>
-#include "jui.h"
+﻿#include "jui.h"
 #include "jcollision.h"
+#include <stdlib.h>
+#include <string.h>
+#include "jcore.h"
+#include "jutils.h"
 
 #define JOYSTICK_BG_COLOR 0x555555FF
 #define JOYSTICK_HANDLE_COLOR 0x888888FF
@@ -30,7 +33,7 @@ static float distance_squared(float x1, float y1, float x2, float y2) {
 label_p
 label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int num_codepoints)
 {
-	label_p label = (label_p)SDL_malloc(sizeof(label_t));
+	label_p label = (label_p)malloc(sizeof(label_t));
 	label->r2d = r2d;
 	label->position = (vec2_t){ 0, 0 };
 	label->color = (jcolor_t){ 255, 255,255, 255 };
@@ -43,7 +46,7 @@ label_destroy(label_p label)
 {
 	if (!label) return;
 	if (label->text) text_destroy(label->text);
-	SDL_free(label);
+	free(label);
 }
 
 void
@@ -73,7 +76,7 @@ void label_draw(label_p label)
 	jtext_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
-void label_handle_event(label_p label, SDL_Event* event)
+void label_handle_event(label_p label, void* event)
 {
 	(void)label;
 	(void)event;
@@ -82,7 +85,7 @@ void label_handle_event(label_p label, SDL_Event* event)
 button_p
 button_create(jr2d_p r2d, float width, float height)
 {
-	button_p btn = (button_p)SDL_malloc(sizeof(button_t));
+	button_p btn = (button_p)malloc(sizeof(button_t));
 	if (!btn) return NULL;
 	btn->r2d = r2d;
 	btn->position = (vec2_t){0, 0};
@@ -186,7 +189,7 @@ void button_destroy(button_p btn)
 	if (btn->text) text_destroy(btn->text);
 	if (btn->image) image_destroy(btn->image);
 	if (btn->pressed_image) image_destroy(btn->pressed_image);
-	SDL_free(btn);
+	free(btn);
 }
 
 
@@ -236,7 +239,7 @@ void button_draw(button_p btn)
 combobox_p combobox_create(jr2d_p r2d, jrect_t rect)
 {
 	combobox_p combobox;
-	combobox = (combobox_p)SDL_malloc(sizeof(combobox_t));
+	combobox = (combobox_p)malloc(sizeof(combobox_t));
 	combobox->r2d = r2d;
 	combobox->text = NULL;
 	combobox->main_rect = rect;
@@ -259,7 +262,7 @@ void combobox_destroy(combobox_p combobox)
 	if (combobox) {
 		for (int i = 0; i < combobox->item_count; i++)
 			if (combobox->items[i].text) text_destroy(combobox->items[i].text);
-		SDL_free(combobox);
+		free(combobox);
 	}
 }
 
@@ -415,9 +418,9 @@ datagrid_p
 datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font)
 {
 	datagrid_p grid;
-	grid = (datagrid_p)SDL_malloc(sizeof(datagrid_t));
+	grid = (datagrid_p)malloc(sizeof(datagrid_t));
 	if (!grid) return NULL;
-	SDL_memset(grid, 0, sizeof(datagrid_t));
+	memset(grid, 0, sizeof(datagrid_t));
 
 	grid->r2d = r2d;
 	grid->x = rect.x;
@@ -433,13 +436,13 @@ datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* 
 	grid->has_header = has_header;
 	grid->font = (font_p)font;
 	kv_init(grid->data);
-	grid->col_widths = (int*)SDL_malloc(col_count * sizeof(int));
+	grid->col_widths = (int*)malloc(col_count * sizeof(int));
 	grid->bg_color = (jcolor_t){ 0xFF, 0xFF, 0xFF, 0xFF };
 	grid->grid_color = (jcolor_t){ 0xCC, 0xCC, 0xCC, 0xFF };
 	grid->text_color = (jcolor_t){ 0x00, 0x00, 0x00, 0xFF };
 	grid->header_bg_color = (jcolor_t){ 0xEE, 0xEE, 0xEE, 0xFF };
 	grid->selected_color = (jcolor_t){ 0x33, 0x99, 0xFF, 0xFF };
-	SDL_memset(grid->headers, 0, 512 * sizeof(char));
+	memset(grid->headers, 0, 512 * sizeof(char));
 	int default_width = grid->width / col_count;
 	for (int i = 0; i < col_count; i++) {
 		grid->col_widths[i] = default_width;
@@ -484,7 +487,7 @@ void datagrid_addrow(datagrid_p grid, const char** row_data)
 	dg_row_t row;
 	kv_init(row);
 	for (int i = 0; i < grid->col_count; i++) {
-		kv_push(char*, row, row_data && row_data[i] ? SDL_strdup(row_data[i]) : NULL);
+		kv_push(char*, row, row_data && row_data[i] ? utils_strdup(row_data[i], NULL) : NULL);
 	}
 	kv_push(dg_row_t, grid->data, row);
 	grid->row_count = (int)kv_size(grid->data);
@@ -495,8 +498,8 @@ void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char*
 	if (!grid) return;
 	if (row_index < (int)kv_size(grid->data) && col_index < grid->col_count) {
 		dg_row_t *row = &kv_A(grid->data, row_index);
-		if (kv_A(*row, col_index)) SDL_free(kv_A(*row, col_index));
-		kv_A(*row, col_index) = data ? SDL_strdup(data) : NULL;
+		if (kv_A(*row, col_index)) free(kv_A(*row, col_index));
+		kv_A(*row, col_index) = data ? utils_strdup(data, NULL) : NULL;
 	}
 }
 
@@ -505,7 +508,7 @@ static void datagrid_cleardata(datagrid_p grid)
 	for (size_t i = 0; i < kv_size(grid->data); i++) {
 		dg_row_t *row = &kv_A(grid->data, i);
 		for (size_t j = 0; j < kv_size(*row); j++)
-			if (kv_A(*row, j)) { SDL_free(kv_A(*row, j)); kv_A(*row, j) = NULL; }
+			if (kv_A(*row, j)) { free(kv_A(*row, j)); kv_A(*row, j) = NULL; }
 		kv_destroy(*row);
 	}
 	kv_destroy(grid->data);
@@ -521,8 +524,8 @@ void datagrid_destroy(datagrid_p grid)
 			if (grid->headers[i]) text_destroy(grid->headers[i]);
 	}
 	datagrid_cleardata(grid);
-	SDL_free(grid->col_widths);
-	SDL_free(grid);
+	free(grid->col_widths);
+	free(grid);
 }
 
 void datagrid_draw(datagrid_p grid, jr2d_p r2d)
@@ -597,7 +600,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 				char* text = kv_A(kv_A(grid->data, row), col);
 				if (text) {
 					jcolor_t c = {0,0,0,255};
-					jtext_printx(r2d, grid->font, text, (int)SDL_strlen(text), c, (float)x + 2, (float)y);
+					jtext_printx(r2d, grid->font, text, (int)strlen(text), c, (float)x + 2, (float)y);
 				}
 			}
 
@@ -648,7 +651,7 @@ void datagrid_set_selected_row(datagrid_p grid, int row)
 radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id)
 {
 	radio_button_p radio;
-	radio = (radio_button_p)SDL_malloc(sizeof(radio_button_t));
+	radio = (radio_button_p)malloc(sizeof(radio_button_t));
 	if (!radio) return NULL;
 
 	radio->x = x;
@@ -660,7 +663,7 @@ radio_button_p radio_button_create(int x, int y, int size, const char* label, in
 
 	// ���Ʊ�ǩ�ı�
 	if (label) {
-		radio->label = SDL_strdup(label);
+		radio->label = utils_strdup(label, NULL);
 	}
 	else {
 		radio->label = NULL;
@@ -681,21 +684,21 @@ void radio_button_destroy(radio_button_p radio)
 	if (!radio) return;
 
 	if (radio->label) {
-		SDL_free(radio->label);
+		free(radio->label);
 	}
 
-	SDL_free(radio);
+	free(radio);
 }
 
 
 radio_button_group_p radio_button_group_create()
 {
 	radio_button_group_p group;
-	group = (radio_button_group_p)SDL_malloc(sizeof(radio_button_group_t));
+	group = (radio_button_group_p)malloc(sizeof(radio_button_group_t));
 	if (!group) return NULL;
 
 	group->capacity = 16;
-	group->buttons = SDL_malloc(group->capacity * sizeof(radio_button_p));
+	group->buttons = malloc(group->capacity * sizeof(radio_button_p));
 	group->count = 0;
 	group->selected_index = -1;
 
@@ -709,7 +712,7 @@ void radio_button_group_add_button(radio_button_group_p group, radio_button_p ra
 	group->count++;
 	if (group->capacity < group->count) {
 		group->capacity *= 2;
-		group->buttons = SDL_realloc(group->buttons, group->capacity * sizeof(radio_button_p));
+		group->buttons = realloc(group->buttons, group->capacity * sizeof(radio_button_p));
 	}
 	group->buttons[group->count - 1] = radio;
 }
@@ -759,8 +762,8 @@ void radio_button_group_destroy(radio_button_group_p group)
 	if (!group) return;
 
 	// ע�⣺���ﲻ�ͷŵ�����ť���ڴ棬�ɴ����߸���
-	SDL_free(group->buttons);
-	SDL_free(group);
+	free(group->buttons);
+	free(group);
 }
 
 void radio_button_render(radio_button_p radio, jr2d_p r2d)
@@ -884,14 +887,14 @@ void radio_button_set_hovered(radio_button_p radio, bool v)
 checkbox_p checkbox_create(int x, int y, int size, const char* label)
 {
 	checkbox_p cb;
-	cb = SDL_malloc(sizeof(checkbox_t));
+	cb = malloc(sizeof(checkbox_t));
 	if (!cb) return NULL;
 
 	cb->x = x;
 	cb->y = y;
 	cb->size = size;
 	cb->state = JOY_CHECKBOX_UNCHECKED;
-	cb->label = label ? SDL_strdup(label) : NULL;
+	cb->label = label ? utils_strdup(label, NULL) : NULL;
 	cb->hover = false;
 	cb->enabled = true;
 
@@ -905,7 +908,7 @@ checkbox_p checkbox_create(int x, int y, int size, const char* label)
 	int label_width = 0;
 	if (label) {
 		// �����ǩ���ȣ�ʵ����Ⱦʱ��Ҫ��ȷ���㣩
-		label_width = SDL_strlen(label) * 8;
+		label_width = strlen(label) * 8;
 	}
 	cb->hit_area.x = x;
 	cb->hit_area.y = y;
@@ -920,10 +923,10 @@ void checkbox_destroy(checkbox_p checkbox)
 	if (!checkbox) return;
 
 	if (checkbox->label) {
-		SDL_free(checkbox->label);
+		free(checkbox->label);
 	}
 
-	SDL_free(checkbox);
+	free(checkbox);
 }
 
 void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state)
@@ -1069,7 +1072,7 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius)
 {
 	joystick_p joystick;
-	joystick = (joystick_p)SDL_malloc(sizeof(joystick_t));
+	joystick = (joystick_p)malloc(sizeof(joystick_t));
 
 	joystick->r2d = r2d;
 	joystick->center.x = x;
@@ -1099,7 +1102,7 @@ joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius)
 
 void joystick_destroy(joystick_p joystick)
 {
-	SDL_free(joystick);
+	free(joystick);
 }
 
 // ����ҡ��λ��
@@ -1290,7 +1293,7 @@ float joystick_get_magnitude(joystick_p joystick)
 
 textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
 {
-	textinput_p ti = (textinput_p)SDL_calloc(1, sizeof(textinput_t));
+	textinput_p ti = (textinput_p)calloc(1, sizeof(textinput_t));
 	if (!ti) return NULL;
 	ti->r2d   = r2d;
 	ti->rect       = rect;
@@ -1302,13 +1305,13 @@ textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
 	ti->cursor_color = (jcolor_t){0, 0, 0, 255};
 	ti->sel_color    = (jcolor_t){100, 150, 255, 255};
 	ti->buf_len    = TEXTINPUT_BUF_INIT;
-	ti->buffer     = (char*)SDL_calloc(1, ti->buf_len);
+	ti->buffer     = (char*)calloc(1, ti->buf_len);
 	ti->text_len   = 0;
 	ti->cursor_pos = 0;
 	ti->sel_start  = -1;
 	ti->sel_end    = -1;
 	ti->focused    = false;
-	ti->cursor_timer = SDL_GetTicks();
+	ti->cursor_timer = get_ticks();
 	ti->cursor_visible = true;
 	return ti;
 }
@@ -1316,8 +1319,8 @@ textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
 void textinput_destroy(textinput_p ti)
 {
 	if (!ti) return;
-	SDL_free(ti->buffer);
-	SDL_free(ti);
+	free(ti->buffer);
+	free(ti);
 }
 
 
@@ -1339,7 +1342,7 @@ static void textinput_delete_sel(textinput_p ti)
 	if (!textinput_has_sel(ti)) return;
 	int a = ti->sel_start, b = ti->sel_end;
 	if (a > b) { int t = a; a = b; b = t; }
-	SDL_memmove(ti->buffer + a, ti->buffer + b, ti->text_len - b);
+	memmove(ti->buffer + a, ti->buffer + b, ti->text_len - b);
 	ti->text_len -= (b - a);
 	ti->cursor_pos = a;
 	textinput_clear_sel(ti);
@@ -1350,12 +1353,12 @@ static void textinput_delete_sel(textinput_p ti)
 void textinput_set_text(textinput_p ti, const char* text)
 {
 	if (!ti || !text) return;
-	int len = (int)SDL_strlen(text);
+	int len = (int)strlen(text);
 	if (len >= ti->buf_len) {
 		ti->buf_len = len + 64;
-		ti->buffer = (char*)SDL_realloc(ti->buffer, ti->buf_len);
+		ti->buffer = (char*)realloc(ti->buffer, ti->buf_len);
 	}
-	SDL_memcpy(ti->buffer, text, len);
+	memcpy(ti->buffer, text, len);
 	ti->buffer[len] = '\0';
 	ti->text_len = len;
 	ti->cursor_pos = len;
@@ -1402,12 +1405,12 @@ void textinput_insert(textinput_p ti, const char* s, int len)
 	if (ti->text_len + len >= ti->buf_len) {
 		while (ti->text_len + len >= ti->buf_len)
 			ti->buf_len *= 2;
-		ti->buffer = (char*)SDL_realloc(ti->buffer, ti->buf_len);
+		ti->buffer = (char*)realloc(ti->buffer, ti->buf_len);
 	}
-	SDL_memmove(ti->buffer + ti->cursor_pos + len,
+	memmove(ti->buffer + ti->cursor_pos + len,
 	            ti->buffer + ti->cursor_pos,
 	            ti->text_len - ti->cursor_pos);
-	SDL_memcpy(ti->buffer + ti->cursor_pos, s, len);
+	memcpy(ti->buffer + ti->cursor_pos, s, len);
 	ti->text_len += len;
 	ti->cursor_pos += len;
 	ti->buffer[ti->text_len] = '\0';
@@ -1515,7 +1518,7 @@ void textinput_backspace(textinput_p ti)
 	while (pos > 0 && ((unsigned char)ti->buffer[pos] & 0xC0) == 0x80)
 		pos--;
 	int ch_len = ti->cursor_pos - pos;
-	SDL_memmove(ti->buffer + pos, ti->buffer + ti->cursor_pos,
+	memmove(ti->buffer + pos, ti->buffer + ti->cursor_pos,
 	            ti->text_len - ti->cursor_pos);
 	ti->text_len -= ch_len;
 	ti->cursor_pos = pos;
@@ -1538,7 +1541,7 @@ void textinput_delete(textinput_p ti)
 	int ch_len = 1;
 	while (pos + ch_len < ti->text_len && ((unsigned char)ti->buffer[pos + ch_len] & 0xC0) == 0x80)
 		ch_len++;
-	SDL_memmove(ti->buffer + pos, ti->buffer + pos + ch_len,
+	memmove(ti->buffer + pos, ti->buffer + pos + ch_len,
 	            ti->text_len - pos - ch_len);
 	ti->text_len -= ch_len;
 	ti->buffer[ti->text_len] = '\0';
@@ -1549,8 +1552,8 @@ void textinput_delete(textinput_p ti)
 void textinput_paste(textinput_p ti)
 {
 	if (!ti) return;
-	const char* clip = SDL_GetClipboardText();
-	if (clip) textinput_insert(ti, clip, (int)SDL_strlen(clip));
+	const char* clip = get_clipboard_text();
+	if (clip) textinput_insert(ti, clip, (int)strlen(clip));
 }
 
 void textinput_copy(textinput_p ti)
@@ -1560,13 +1563,13 @@ void textinput_copy(textinput_p ti)
 		int a = ti->sel_start, b = ti->sel_end;
 		if (a > b) { int t = a; a = b; b = t; }
 		int len = b - a;
-		char* buf = (char*)SDL_malloc(len + 1);
-		SDL_memcpy(buf, ti->buffer + a, len);
+		char* buf = (char*)malloc(len + 1);
+		memcpy(buf, ti->buffer + a, len);
 		buf[len] = '\0';
-		SDL_SetClipboardText(buf);
-		SDL_free(buf);
+		set_clipboard_text(buf);
+		free(buf);
 	} else {
-		SDL_SetClipboardText(ti->buffer);
+		set_clipboard_text(ti->buffer);
 	}
 }
 
@@ -1577,16 +1580,16 @@ void textinput_cut(textinput_p ti)
 		int a = ti->sel_start, b = ti->sel_end;
 		if (a > b) { int t = a; a = b; b = t; }
 		int len = b - a;
-		char* buf = (char*)SDL_malloc(len + 1);
-		SDL_memcpy(buf, ti->buffer + a, len);
+		char* buf = (char*)malloc(len + 1);
+		memcpy(buf, ti->buffer + a, len);
 		buf[len] = '\0';
-		SDL_SetClipboardText(buf);
-		SDL_free(buf);
+		set_clipboard_text(buf);
+		free(buf);
 		textinput_delete_sel(ti);
 		ti->buffer[ti->text_len] = '\0';
 		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 	} else {
-		SDL_SetClipboardText(ti->buffer);
+		set_clipboard_text(ti->buffer);
 		ti->text_len = 0;
 		ti->cursor_pos = 0;
 		ti->buffer[0] = '\0';
@@ -1611,7 +1614,7 @@ void textinput_focus(textinput_p ti)
 {
 	if (!ti || ti->focused) return;
 	ti->focused = true;
-	ti->cursor_timer = SDL_GetTicks();
+	ti->cursor_timer = get_ticks();
 	ti->cursor_visible = true;
 	/* 从 r2d 获取 window 并启用文本输入 */
 	//SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
@@ -1696,7 +1699,7 @@ void textinput_draw(textinput_p ti)
 
 	///* 光标（聚焦时绘制） */
 	//if (ti->focused) {
-	//	Uint64 now = SDL_GetTicks();
+	//	Uint64 now = get_ticks();
 	//	if (now - ti->cursor_timer >= 530) {
 	//		ti->cursor_visible = !ti->cursor_visible;
 	//		ti->cursor_timer = now;
@@ -1792,7 +1795,7 @@ static bool slider_thumb_hit(slider_p s, float logic_x, float logic_y)
 
 slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial)
 {
-	slider_p s = (slider_p)SDL_calloc(1, sizeof(slider_t));
+	slider_p s = (slider_p)calloc(1, sizeof(slider_t));
 	if (!s) return NULL;
 	s->r2d = r2d;
 	s->track.x = x;
@@ -1816,7 +1819,7 @@ slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min
 
 void slider_destroy(slider_p s)
 {
-	SDL_free(s);
+	free(s);
 }
 
 void slider_set_value(slider_p s, float v)
@@ -1918,7 +1921,7 @@ void slider_set_hovered(slider_p s, bool v)
 
 popup_p popup_create(jr2d_p r2d, float w, float h)
 {
-	popup_p p = (popup_p)SDL_calloc(1, sizeof(popup_t));
+	popup_p p = (popup_p)calloc(1, sizeof(popup_t));
 	if (!p) return NULL;
 	p->r2d = r2d;
 	p->w = w; p->h = h;
@@ -1943,24 +1946,24 @@ popup_p popup_create(jr2d_p r2d, float w, float h)
 
 void popup_destroy(popup_p p)
 {
-	SDL_free(p);
+	free(p);
 }
 
 void popup_set_title(popup_p p, const char* text, int len)
 {
 	if (!p || !text) return;
-	if (len < 0) len = (int)SDL_strlen(text);
+	if (len < 0) len = (int)strlen(text);
 	if (len >= POPUP_MAX_TITLE) len = POPUP_MAX_TITLE - 1;
-	SDL_memcpy(p->title, text, len);
+	memcpy(p->title, text, len);
 	p->title[len] = '\0';
 }
 
 void popup_set_content(popup_p p, const char* text, int len)
 {
 	if (!p || !text) return;
-	if (len < 0) len = (int)SDL_strlen(text);
+	if (len < 0) len = (int)strlen(text);
 	if (len >= POPUP_MAX_CONTENT) len = POPUP_MAX_CONTENT - 1;
-	SDL_memcpy(p->content, text, len);
+	memcpy(p->content, text, len);
 	p->content[len] = '\0';
 }
 
@@ -1985,8 +1988,8 @@ static void popup_draw_text_lines(jr2d_p r2d, font_p font, const char* text, flo
 	/* 按行分割渲染 */
 	const char* start = text;
 	while (*start) {
-		const char* end = SDL_strchr(start, '\n');
-		if (!end) end = start + SDL_strlen(start);
+		const char* end = strchr(start, '\n');
+		if (!end) end = start + strlen(start);
 		int line_len = (int)(end - start);
 		if (line_len > 0) {
 			jtext_printx(r2d, font, start, line_len, color, x, y);
@@ -2029,7 +2032,7 @@ void popup_draw(popup_p p, font_p title_font, font_p content_font)
 
 	///* 标题文字 */
 	//if (p->title[0] && title_font) {
-	//	jtext_printx(ren, title_font, p->title, (int)SDL_strlen(p->title), p->title_text_color,
+	//	jtext_printx(ren, title_font, p->title, (int)strlen(p->title), p->title_text_color,
 	//		x + p->padding, y + (p->title_height - (float)title_font->fontsize) / 2);
 	//}
 
@@ -2092,7 +2095,7 @@ bool popup_is_inside(popup_p p, float mx, float my)
 /* ===== Tooltip ===== */
 tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len)
 {
-	tooltip_p t = (tooltip_p)SDL_calloc(1, sizeof(tooltip_t));
+	tooltip_p t = (tooltip_p)calloc(1, sizeof(tooltip_t));
 	if (!t) return NULL;
 	t->r2d = r2d;
 	t->x = 0; t->y = 0;
@@ -2107,15 +2110,15 @@ tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len)
 
 void tooltip_destroy(tooltip_p t)
 {
-	SDL_free(t);
+	free(t);
 }
 
 void tooltip_set_text(tooltip_p t, const char* text, int len)
 {
 	if (!t || !text) return;
-	if (len < 0) len = (int)SDL_strlen(text);
+	if (len < 0) len = (int)strlen(text);
 	if (len >= TOOLTIP_MAX_TEXT) len = TOOLTIP_MAX_TEXT - 1;
-	SDL_memcpy(t->text, text, len);
+	memcpy(t->text, text, len);
 	t->text[len] = '\0';
 	t->text_len = len;
 }

@@ -92,6 +92,11 @@ extern "C" {
 	JOY_API void game_timer_set_target_fps(game_timer_p clock, int fps);
 	JOY_API int game_timer_get_target_fps(const game_timer_p clock);
 
+	/** 获取剪贴板文本（调用者负责释放返回的字符串） */
+	JOY_API char* get_clipboard_text(void);
+	/** 设置剪贴板文本 */
+	JOY_API void set_clipboard_text(const char* text);
+
 #ifdef __cplusplus
 }
 #endif
