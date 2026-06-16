@@ -2,14 +2,10 @@
 #include "external/dr_mp3.h"
 #include "external/dr_flac.h"
 #include "external/dr_wav.h"
-
-/* OGG 支持（stb_vorbis.h 已在 external/ 中） */
-#define STB_VORBIS_IMPLEMENTATION
-#include "external/stb_vorbis.h"
-#define HAVE_OGG 1
-
 #include "jaudio.h"
 #include <string.h>
+
+#define HAVE_OGG 1
 
 /* ==================== 内部辅助 ==================== */
 
@@ -96,7 +92,6 @@ static Uint8* decode_flac(const char* path, SDL_AudioSpec* spec, Uint32* out_len
         return (Uint8*)samples; /* drflac 用 drflac_free() 释放，但 SDL_free 也能用 */
 }
 
-#if HAVE_OGG
 /* 用 stb_vorbis 解码 OGG → F32 PCM */
 static Uint8* decode_ogg(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
 {
@@ -121,7 +116,6 @@ static Uint8* decode_ogg(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
         *out_len       = byte_len;
         return (Uint8*)buf;
 }
-#endif
 
 /* ==================== 简易播放（创建循环流，自动播放） ==================== */
 
@@ -174,16 +168,11 @@ bool audio_create_flac(const char* filepath, uint32_t device_id)
 
 bool audio_create_ogg(const char* filepath, uint32_t device_id)
 {
-#if HAVE_OGG
         SDL_AudioSpec spec;
         Uint32 len;
         Uint8* data = decode_ogg(filepath, &spec, &len);
         if (!data) return false;
         return stream_from_pcm(device_id, &spec, data, len);
-#else
-        (void)filepath; (void)device_id;
-        return false;
-#endif
 }
 
 /* ==================== 背景音乐 ==================== */
@@ -264,16 +253,11 @@ audio_bgm_p audio_bgm_create_flac(const char* path, uint32_t device_id)
 
 audio_bgm_p audio_bgm_create_ogg(const char* path, uint32_t device_id)
 {
-#if HAVE_OGG
         SDL_AudioSpec spec;
         Uint32 len;
         Uint8* data = decode_ogg(path, &spec, &len);
         if (!data) return NULL;
         return bgm_create_from_pcm(&spec, data, len, device_id);
-#else
-        (void)path; (void)device_id;
-        return NULL;
-#endif
 }
 
 void audio_bgm_stop(audio_bgm_p bgm)
@@ -358,16 +342,11 @@ audio_shot_p audio_shot_create_flac(const char* path, uint32_t device_id)
 
 audio_shot_p audio_shot_create_ogg(const char* path, uint32_t device_id)
 {
-#if HAVE_OGG
         SDL_AudioSpec spec;
         Uint32 len;
         Uint8* data = decode_ogg(path, &spec, &len);
         if (!data) return NULL;
         return shot_create_from_pcm(&spec, data, len, device_id);
-#else
-        (void)path; (void)device_id;
-        return NULL;
-#endif
 }
 
 void audio_shot_play(audio_shot_p shot)

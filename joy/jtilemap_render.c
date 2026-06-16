@@ -190,7 +190,7 @@ jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
                                           const char* asset_base_path,
                                           jtilemap_path_remap_t remap)
 {
-	jtilemap_render_p r = (jtilemap_render_p)SDL_calloc(1, sizeof(jtilemap_render_t));
+	jtilemap_render_p r = (jtilemap_render_p)calloc(1, sizeof(jtilemap_render_t));
 	if (!r) return NULL;
 	r->r2d  = renderer;
 	r->remap = remap ? remap : default_remap;
@@ -270,5 +270,5 @@ void jtilemap_render_destroy(jtilemap_render_p r)
 		kh_destroy(tex_cache, r->tex_cache);
 	}
 	if (r->asset_base) free(r->asset_base);
-	SDL_free(r);
+	free(r);
 }

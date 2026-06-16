@@ -10,7 +10,6 @@ History:
 #ifndef JSX_H
 #define JSX_H
 #include <stdbool.h>
-#include <SDL3/SDL.h>
 #include "jconfig.h"
 
 typedef struct jsx jsx_t, *jsx_p;
@@ -24,7 +23,7 @@ extern "C" {
 	JOY_API void jsx_release(jsx_p jsx);
 
 	/* --- 事件派发 --- */
-	JOY_API void jsx_dispatch_event(jsx_p jsx, const SDL_Event* event);
+	JOY_API void jsx_dispatch_event(jsx_p jsx, const void* event);
 
 	/* --- 脚本调用 --- */
 	JOY_API bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt);

@@ -10,3 +10,7 @@
 #include "external/dr_wav.h"
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
+
+/* OGG 支持（stb_vorbis.h 已在 external/ 中） */
+#define STB_VORBIS_IMPLEMENTATION
+#include "external/stb_vorbis.h"

@@ -587,6 +587,60 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	//SDL_SetTextureAlphaMod(image->texture, 255);
 }
 
+image_p image_create_empty(jr2d_p r2d, int w, int h)
+{
+    SDL_Texture* tex = SDL_CreateTexture(r2d->sdl, SDL_PIXELFORMAT_RGBA32,
+        SDL_TEXTUREACCESS_STREAMING, w, h);
+    if (!tex) return NULL;
+    image_p img = (image_p)SDL_malloc(sizeof(image_t));
+    if (!img) { SDL_DestroyTexture(tex); return NULL; }
+    img->texture = tex;
+    SDL_strlcpy(img->filepath, "(empty)", JOY_MAX_PATH);
+    return img;
+}
+
+image_p image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h)
+{
+    SDL_Surface* surf = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32,
+        (void*)rgba_pixels, w * 4);
+    image_p img = image_create_from_surface(r2d, surf, "(data)");
+    SDL_DestroySurface(surf);
+    return img;
+}
+
+void image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch)
+{
+    SDL_Rect r = { (int)rect->x, (int)rect->y, (int)rect->w, (int)rect->h };
+    SDL_UpdateTexture(image->texture, &r, pixels, pitch);
+}
+
+void image_set_alpha(image_p image, uint8_t alpha)
+{
+    SDL_SetTextureAlphaMod(image->texture, alpha);
+}
+
+void image_set_blend_mode(image_p image, int mode)
+{
+    SDL_BlendMode m;
+    switch (mode) {
+    case 0: m = SDL_BLENDMODE_NONE; break;
+    case 1: m = SDL_BLENDMODE_BLEND; break;
+    case 2: m = SDL_BLENDMODE_ADD; break;
+    case 3: m = SDL_BLENDMODE_MOD; break;
+    default: m = SDL_BLENDMODE_BLEND; break;
+    }
+    SDL_SetTextureBlendMode(image->texture, m);
+}
+
+bool image_get_size(image_p image, float* w, float* h)
+{
+    if (!image || !image->texture) return false;
+    float fw, fh;
+    SDL_GetTextureSize(image->texture, &fw, &fh);
+    if (w) *w = fw; if (h) *h = fh;
+    return true;
+}
+
 jtext_p text_createx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color) {
         jtext_p texture;

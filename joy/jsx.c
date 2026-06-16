@@ -225,7 +225,7 @@ void jsx_release(jsx_p jsx)
 }
 
 
-void jsx_dispatch_event(jsx_p jsx, const SDL_Event* event)
+void jsx_dispatch_event(jsx_p jsx, const void* event)
 {
 	dispatch_event(jsx->cbs, event, jsx);
 }

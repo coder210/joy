@@ -33,7 +33,7 @@ typedef struct jlight_sys {
     jlight_t lights[JLIGHT_MAX];
     bool active[JLIGHT_MAX];
     int count;
-    Uint8 ambient_r, ambient_g, ambient_b;
+    uint8_t ambient_r, ambient_g, ambient_b;
     jlight_occluder_t occluders[JLIGHT_OCCLUDER_MAX];
     int occluder_count;
 } jlight_sys_t, *jlight_sys_p;
@@ -54,7 +54,7 @@ JOY_API int jlight_add_occluder(jlight_sys_p sys, float x1, float y1, float x2, 
 JOY_API void jlight_clear_occluders(jlight_sys_p sys);
 
 /* 环境光 */
-JOY_API void jlight_set_ambient(jlight_sys_p sys, Uint8 r, Uint8 g, Uint8 b);
+JOY_API void jlight_set_ambient(jlight_sys_p sys, uint8_t r, uint8_t g, uint8_t b);
 
 /* 渲染: 场景绘制完成后, SDL_RenderPresent 前调用 */
 JOY_API void jlight_render(jlight_sys_p sys, jr2d_p r2d);

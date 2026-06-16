@@ -7,8 +7,8 @@ Version: 1.0
 Date: 2021.3.28
 History:
 *************************************************/
-#ifndef AUDIO_H
-#define AUDIO_H
+#ifndef JAUDIO_H
+#define JAUDIO_H
 #include "jconfig.h"
 #include <stdint.h>
 #include <stdbool.h>
@@ -54,4 +54,4 @@ extern "C" {
 }
 #endif
 
-#endif // !CORE_AUDIO_H
+#endif // !JAUDIO_H

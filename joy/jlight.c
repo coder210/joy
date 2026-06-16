@@ -1,9 +1,10 @@
-/* jlight.c — 使用 jr2d API，不直接调用 SDL3 */
+﻿/* jlight.c — 使用 jr2d API，不直接调用 SDL3 */
 #include "jlight.h"
 #include "jr2d.h"
 #include "external/klib/kvec.h"
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -201,24 +202,24 @@ static int vc_sweep(VC* vc) {
 static image_p make_grad(jr2d_p r2d){
     image_p t = image_create_empty(r2d, GSZ, GSZ);
     if(!t)return NULL;
-    Uint32* px=(Uint32*)SDL_malloc(GSZ*GSZ*4);
+    uint32_t* px=(uint32_t*)malloc(GSZ*GSZ*4);
     if(!px){image_destroy(t);return NULL;}
     float cx=(GSZ-1)*0.5f,cy=cx,mr=cx;
     for(int y=0;y<GSZ;y++)for(int x=0;x<GSZ;x++){
         float d=sqrtf((x-cx)*(x-cx)+(y-cy)*(y-cy));
         float k=d/mr;if(k>1)k=1;
-        Uint8 a=(Uint8)((1-k*k)*255);
-        px[y*GSZ+x]=((Uint32)a<<24)|0x00FFFFFF;
+        uint8_t a=(uint8_t)((1-k*k)*255);
+        px[y*GSZ+x]=((uint32_t)a<<24)|0x00FFFFFF;
     }
     jrect_t full = {0, 0, GSZ, GSZ};
     image_update(t, &full, px, GSZ*4);
-    SDL_free(px);
+    free(px);
     image_set_blend_mode(t, JR2D_BLEND_ADD);
     return t;
 }
 
 jlight_sys_p jlight_sys_create(int w,int h){
-    jlight_sys_p s=(jlight_sys_p)SDL_calloc(1,sizeof(jlight_sys_t));
+    jlight_sys_p s=(jlight_sys_p)calloc(1,sizeof(jlight_sys_t));
     if(!s)return NULL;
     s->width=w;s->height=h;
     s->ambient_r=20;s->ambient_g=20;s->ambient_b=20;
@@ -231,7 +232,7 @@ void jlight_sys_destroy(jlight_sys_p s){
     if(!s)return;
     if(s->gradient) image_destroy(s->gradient);
     if(s->lightmap) image_destroy(s->lightmap);
-    SDL_free(s);
+    free(s);
 }
 void jlight_sys_resize(jlight_sys_p s,int w,int h){
     if(!s)return;
@@ -265,7 +266,7 @@ int jlight_add_occluder(jlight_sys_p s,float x1,float y1,float x2,float y2){
     s->occluders[id].x2=x2;s->occluders[id].y2=y2;
     return id;
 }
-void jlight_set_ambient(jlight_sys_p s,Uint8 r,Uint8 g,Uint8 b){
+void jlight_set_ambient(jlight_sys_p s,uint8_t r,uint8_t g,uint8_t b){
     if(!s)return;s->ambient_r=r;s->ambient_g=g;s->ambient_b=b;
 }
 
@@ -281,9 +282,9 @@ void jlight_render(jlight_sys_p s, jr2d_p r2d){
         jlight_t* l=&s->lights[li];
         if(l->intensity<=0||l->radius<=0)continue;
         float lx=l->x,ly=l->y,rr=l->radius;
-        Uint8 cr=(Uint8)(l->r*l->intensity);
-        Uint8 cg=(Uint8)(l->g*l->intensity);
-        Uint8 cb=(Uint8)(l->b*l->intensity);
+        uint8_t cr=(uint8_t)(l->r*l->intensity);
+        uint8_t cg=(uint8_t)(l->g*l->intensity);
+        uint8_t cb=(uint8_t)(l->b*l->intensity);
 
         if(s->occluder_count==0){
             float d=rr*2;
