@@ -2,6 +2,7 @@
 #include "jcollision.h"
 #include <stdlib.h>
 #include <string.h>
+#include <SDL3/SDL.h>
 #include "jcore.h"
 #include "jutils.h"
 
@@ -1554,8 +1555,8 @@ void textinput_focus(textinput_p ti)
 	ti->cursor_timer = get_ticks();
 	ti->cursor_visible = true;
 	/* 从 r2d 获取 window 并启用文本输入 */
-	//SDL_Window* win = SDL_GetRenderWindow(ti->r2d);
-	//if (win) SDL_StartTextInput(win);
+	SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
+	if (win) SDL_StartTextInput(win);
 }
 
 void textinput_defocus(textinput_p ti)
@@ -1563,6 +1564,8 @@ void textinput_defocus(textinput_p ti)
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
 	textinput_clear_sel(ti);
+	SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
+	if (win) SDL_StopTextInput(win);
 }
 
 void textinput_draw(textinput_p ti)
