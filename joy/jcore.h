@@ -38,6 +38,21 @@ extern "C" {
 		jevent_resize_fn on_resize;
 	} jevent_callbacks_t;
 
+	/* 事件类型常量（无需 SDL 头文件即可判断事件类型） */
+	#define JOY_EVENT_QUIT              0x100
+	#define JOY_EVENT_KEY_DOWN          0x300
+	#define JOY_EVENT_KEY_UP            0x301
+	#define JOY_EVENT_TEXT_INPUT        0x303
+	#define JOY_EVENT_MOUSE_MOTION      0x400
+	#define JOY_EVENT_MOUSE_BUTTON_DOWN 0x401
+	#define JOY_EVENT_MOUSE_BUTTON_UP   0x402
+	#define JOY_EVENT_WINDOW_RESIZED    0x701
+
+	/** 从鼠标事件中提取坐标 */
+	JOY_API void get_mouse_pos(const void* event, float* out_x, float* out_y);
+	/** 从鼠标事件中提取按钮（1=左, 2=中, 3=右） */
+	JOY_API int  get_mouse_button(const void* event);
+
 
 	typedef struct env env_t, * env_p;
 	typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
@@ -64,6 +79,9 @@ extern "C" {
 
 	JOY_API void dispatch_event(jevent_callbacks_t cbs,
 		const void* event, void* arg);
+	JOY_API int  get_event_type(const void* event);
+	JOY_API int  get_event_code(const void* event);
+	JOY_API bool is_user_event(const void* event, int type);
 	JOY_API bool push_user_event(int type, int code);
 	JOY_API bool push_quit_event(void);
 	JOY_API bool should_close(void* ev);

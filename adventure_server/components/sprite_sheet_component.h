@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL3/SDL.h>
 
 struct SpriteSheetComponent {
     char path[256];

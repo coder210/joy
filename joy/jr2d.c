@@ -549,16 +549,20 @@ void image_draw1(image_p image,
 {
     SDL_FRect raw_src, raw_dest;
 	SDL_Renderer *renderer;
+	SDL_FRect* src_ptr = NULL;
+	SDL_FRect* dst_ptr = NULL;
 	renderer = SDL_GetRendererFromTexture(image->texture);
-    raw_src.x = srcrect->x;
-    raw_src.y = srcrect->y;
-    raw_src.w = srcrect->w;
-    raw_src.h = srcrect->h;
-    raw_dest.x = destrect->x;
-    raw_dest.y = destrect->y;
-    raw_dest.w = destrect->w;
-    raw_dest.h = destrect->h;
-	SDL_RenderTexture(renderer, image->texture, &raw_src, &raw_dest);
+	if (srcrect) {
+		raw_src.x = srcrect->x; raw_src.y = srcrect->y;
+		raw_src.w = srcrect->w; raw_src.h = srcrect->h;
+		src_ptr = &raw_src;
+	}
+	if (destrect) {
+		raw_dest.x = destrect->x; raw_dest.y = destrect->y;
+		raw_dest.w = destrect->w; raw_dest.h = destrect->h;
+		dst_ptr = &raw_dest;
+	}
+	SDL_RenderTexture(renderer, image->texture, src_ptr, dst_ptr);
 }
 
 void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,

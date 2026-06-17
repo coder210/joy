@@ -493,7 +493,7 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 		}
 	}
 	if (msg_data) {
-		SDL_free(msg_data);
+		free(msg_data);
 	}
 }
 
@@ -869,10 +869,7 @@ static void on_load(scene_p s)
 static void server_on_keypressed(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg)
 {
 	(void)arg;
-	if (SDL_strcmp(key, "q") == 0 || SDL_strcmp(key, "Q") == 0) {
-		SDL_Event quit_event;
-		SDL_zero(quit_event);
-		quit_event.type = SDL_EVENT_QUIT;
+	if (strcmp(key, "q") == 0 || strcmp(key, "Q") == 0) {
 		push_quit_event();
 	}
 }
@@ -881,7 +878,7 @@ static void on_handle_event(scene_p s, const void* ev)
 {
 	jevent_callbacks_t cbs = {};
 	cbs.on_keypressed = server_on_keypressed;
-	dispatch_event(cbs, (const SDL_Event*)ev, NULL);
+	dispatch_event(cbs, ev, NULL);
 }
 
 static void on_update(scene_p s, float dt)
@@ -951,7 +948,7 @@ static void on_render(scene_p s)
 	if (self->tilemap) {
 		float cx = ctx->camera_x * (float)SERVER_PPM;
 		float cy = ctx->camera_y * (float)SERVER_PPM;
-		//jtilemap_render_all(self->tilemap, cx, cy, jsdl_get_ticks());
+		jtilemap_render_all(self->tilemap_render, self->tilemap, cx, cy, get_ticks());
 	}
 
 	// ---- ECS 实体（碰撞体） ----

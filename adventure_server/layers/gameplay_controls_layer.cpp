@@ -74,19 +74,18 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(up_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		jevent_callbacks cb;
-		
-
-		/*SDL_Event* ev = (SDL_Event*)e;
-		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+		int et = get_event_type(e);
+		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			if (button_is_pressed(self, x, y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_UP);
-		} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP);
-		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}*/
+		} else if (et == JOY_EVENT_MOUSE_MOTION) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_hovered(self, x, y);
+		}
 	});
 
 	scene_node_set_render_callback(up_button_node, [](scene_node_p n, const void* arg) {
@@ -112,16 +111,18 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(down_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		/*SDL_Event* ev = (SDL_Event*)e;
-		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+		int et = get_event_type(e);
+		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			if (button_is_pressed(self, x, y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN);
-		} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_DOWN);
-		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}*/
+		} else if (et == JOY_EVENT_MOUSE_MOTION) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_hovered(self, x, y);
+		}
 	});
 
 	scene_node_set_render_callback(down_button_node, [](scene_node_p n, const void* arg) {
@@ -147,16 +148,18 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(left_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		/*SDL_Event* ev = (SDL_Event*)e;
-		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+		int et = get_event_type(e);
+		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			if (button_is_pressed(self, x, y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT);
-		} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_LEFT);
-		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}*/
+		} else if (et == JOY_EVENT_MOUSE_MOTION) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_hovered(self, x, y);
+		}
 	});
 
 	scene_node_set_render_callback(left_button_node, [](scene_node_p n, const void* arg) {
@@ -182,16 +185,18 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(right_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		/*SDL_Event* ev = (SDL_Event*)e;
-		if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+		int et = get_event_type(e);
+		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			if (button_is_pressed(self, x, y))
 				send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT);
-		} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_RIGHT);
-		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}*/
+		} else if (et == JOY_EVENT_MOUSE_MOTION) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_hovered(self, x, y);
+		}
 	});
 
 	scene_node_set_render_callback(right_button_node, [](scene_node_p n, const void* arg) {
@@ -230,15 +235,17 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 
 	scene_node_set_event_callback(attack_button_node, [](scene_node_p n, const void* e) {
 		button_p self = (button_p)scene_node_get_userdata(n);
-		/*SDL_Event* ev = (SDL_Event*)e;
-		if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		int et = get_event_type(e);
+		if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
 			button_set_pressed(self, false);
 			send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK);
-		} else if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-			button_is_pressed(self, (float)ev->button.x, (float)ev->button.y);
-		} else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-			button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-		}*/
+		} else if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_pressed(self, x, y);
+		} else if (et == JOY_EVENT_MOUSE_MOTION) {
+			float x, y; get_mouse_pos(e, &x, &y);
+			button_is_hovered(self, x, y);
+		}
 	});
 
 	scene_node_set_render_callback(attack_button_node, [](scene_node_p n, const void* arg) {

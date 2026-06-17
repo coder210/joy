@@ -686,7 +686,7 @@ static void on_message(net_message_p msg, void* arg)
 			handle_command_s2c(self, (const char*)msg->data, (int)msg->len);
 		}
 	}
-	if (msg->data) SDL_free(msg->data);
+	if (msg->data) free(msg->data);
 }
 
 static void on_load(scene_p s)
@@ -814,15 +814,15 @@ static void client_on_keypressed(const char* key, int scancode, bool repeat, boo
 {
 	game_scene_p self = (game_scene_p)arg;
 	int key_mask = 0;
-	if (SDL_strcmp(key, "w") == 0) key_mask = INPUT_UP;
-	else if (SDL_strcmp(key, "W") == 0) key_mask = INPUT_UP;
-	else if (SDL_strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
-	else if (SDL_strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
-	else if (SDL_strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
-	else if (SDL_strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
-	else if (SDL_strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
-	else if (SDL_strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
-	else if (SDL_strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+	if (strcmp(key, "w") == 0) key_mask = INPUT_UP;
+	else if (strcmp(key, "W") == 0) key_mask = INPUT_UP;
+	else if (strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
+	else if (strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
+	else if (strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
+	else if (strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
+	else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
+	else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
+	else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
 	if (key_mask) {
 		self->current_input_mask |= key_mask;
 		if (key_mask == INPUT_ATTACK) self->attack_triggered = true;
@@ -835,27 +835,26 @@ static void client_on_keyreleased(const char* key, int scancode, void* arg)
 {
 	game_scene_p self = (game_scene_p)arg;
 	int key_mask = 0;
-	if (SDL_strcmp(key, "w") == 0) key_mask = INPUT_UP;
-	else if (SDL_strcmp(key, "W") == 0) key_mask = INPUT_UP;
-	else if (SDL_strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
-	else if (SDL_strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
-	else if (SDL_strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
-	else if (SDL_strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
-	else if (SDL_strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
-	else if (SDL_strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
-	else if (SDL_strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+	if (strcmp(key, "w") == 0) key_mask = INPUT_UP;
+	else if (strcmp(key, "W") == 0) key_mask = INPUT_UP;
+	else if (strcmp(key, "s") == 0) key_mask = INPUT_DOWN;
+	else if (strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
+	else if (strcmp(key, "a") == 0) key_mask = INPUT_LEFT;
+	else if (strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
+	else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
+	else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
+	else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
 	if (key_mask) self->current_input_mask &= ~key_mask;
 }
 
 static void on_handle_event(scene_p s, const void* ev)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
-	const SDL_Event* e = (const SDL_Event*)ev;
 
-	// 自定义触屏/UI 事件（非标准 SDL 事件）
-	if (e->type == GAMEPLAY_CONTROL_EVENT) {
+	// 自定义触屏/UI 事件
+	if (is_user_event(ev, GAMEPLAY_CONTROL_EVENT)) {
 		int new_mask = self->current_input_mask;
-		switch (e->user.code) {
+		switch (get_event_code(ev)) {
 		case GAMEPLAY_CONTROL_UP:    new_mask |= INPUT_UP; break;
 		case GAMEPLAY_CONTROL_DOWN:  new_mask |= INPUT_DOWN; break;
 		case GAMEPLAY_CONTROL_LEFT:  new_mask |= INPUT_LEFT; break;
@@ -877,11 +876,11 @@ static void on_handle_event(scene_p s, const void* ev)
 		return;
 	}
 
-	// 标准 SDL 键盘/鼠标事件 → 通过 dispatch_event 分发
+	// 标准键盘/鼠标事件 → 通过 dispatch_event 分发
 	jevent_callbacks_t cbs = {};
 	cbs.on_keypressed = client_on_keypressed;
 	cbs.on_keyreleased = client_on_keyreleased;
-	dispatch_event(cbs, e, self);
+	dispatch_event(cbs, ev, self);
 }
 
 // ========== AI 系统 ==========

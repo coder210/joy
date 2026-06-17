@@ -216,6 +216,44 @@ bool push_user_event(int type, int code)
 	return SDL_PushEvent(&event);
 }
 
+int get_event_type(const void* event)
+{
+	const SDL_Event* e = (const SDL_Event*)event;
+	return e->type;
+}
+
+int get_event_code(const void* event)
+{
+	const SDL_Event* e = (const SDL_Event*)event;
+	return e->user.code;
+}
+
+bool is_user_event(const void* event, int type)
+{
+	const SDL_Event* e = (const SDL_Event*)event;
+	return e->type == SDL_EVENT_USER + type;
+}
+
+void get_mouse_pos(const void* event, float* out_x, float* out_y)
+{
+	const SDL_Event* e = (const SDL_Event*)event;
+	if (e->type == SDL_EVENT_MOUSE_MOTION) {
+		*out_x = e->motion.x; *out_y = e->motion.y;
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+	           e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		*out_x = e->button.x; *out_y = e->button.y;
+	}
+}
+
+int get_mouse_button(const void* event)
+{
+	const SDL_Event* e = (const SDL_Event*)event;
+	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+	    e->type == SDL_EVENT_MOUSE_BUTTON_UP)
+		return e->button.button;
+	return 0;
+}
+
 bool push_quit_event(void) 
 {
 	SDL_Event e; SDL_zero(e);

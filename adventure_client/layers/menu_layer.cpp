@@ -71,15 +71,17 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(start_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                /*SDL_Event* ev = (SDL_Event*)e;
-                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                int et = get_event_type(e);
+                if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    if (button_is_pressed(self, x, y))
                         send_menu_event(MENU_EVENT_START);
-                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                } else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
                     button_set_pressed(self, false);
-                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-                }*/
+                } else if (et == JOY_EVENT_MOUSE_MOTION) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    button_is_hovered(self, x, y);
+                }
         });
         scene_node_set_render_callback(start_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
@@ -104,15 +106,17 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(settings_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                /*SDL_Event* ev = (SDL_Event*)e;
-                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                int et = get_event_type(e);
+                if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    if (button_is_pressed(self, x, y))
                         send_menu_event(MENU_EVENT_SETTINGS);
-                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                } else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
                     button_set_pressed(self, false);
-                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-                }*/
+                } else if (et == JOY_EVENT_MOUSE_MOTION) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    button_is_hovered(self, x, y);
+                }
         });
         scene_node_set_render_callback(settings_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
@@ -137,15 +141,17 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
         });
         scene_node_set_event_callback(exit_node, [](scene_node_p n, const void* e) {
                 button_p self = (button_p)scene_node_get_userdata(n);
-                /*SDL_Event* ev = (SDL_Event*)e;
-                if (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                    if (button_is_pressed(self, (float)ev->button.x, (float)ev->button.y))
+                int et = get_event_type(e);
+                if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    if (button_is_pressed(self, x, y))
                         send_menu_event(MENU_EVENT_EXIT);
-                } else if (ev->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                } else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
                     button_set_pressed(self, false);
-                } else if (ev->type == SDL_EVENT_MOUSE_MOTION) {
-                    button_is_hovered(self, (float)ev->motion.x, (float)ev->motion.y);
-                }*/
+                } else if (et == JOY_EVENT_MOUSE_MOTION) {
+                    float x, y; get_mouse_pos(e, &x, &y);
+                    button_is_hovered(self, x, y);
+                }
         });
         scene_node_set_render_callback(exit_node, [](scene_node_p n, const void* arg) {
                 button_p self = (button_p)scene_node_get_userdata(n);
