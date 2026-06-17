@@ -202,7 +202,7 @@ struct game_scene {
 	int server_entity_id = 0;
 
 	// 固定逻辑步
-	Uint64 lastTime = get_ticks();
+	uint64_t lastTime = get_ticks();
 	float accumulator = 0.0f;
 	float FIXED_TIMESTEP = 1.0f / 50.0f;
 

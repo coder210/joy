@@ -1,12 +1,10 @@
-﻿// SDL types via jsdl
-#include <string.h>
+﻿#include <string.h>
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
 static void setup_button_texture(button_p btn, jr2d_p renderer) {
 	btn->image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides.png");
 	btn->pressed_image = image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides_pressed.png");
-	// 有纹理后去掉纯色背景
 	jcolor_t transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
@@ -15,24 +13,49 @@ static void setup_button_texture(button_p btn, jr2d_p renderer) {
 
 struct gameplay_controls_layer {
 	scene_node_p scene_node;
+	button_p btn_up, btn_down, btn_left, btn_right, btn_attack;
 };
 
 
 static void send_gameplay_control_event(int event_code)
 {
-	/*SDL_Event event;
-	SDL_zero(event);
-	event.type = GAMEPLAY_CONTROL_EVENT;
-	event.user.code = event_code;
-	SDL_PushEvent(&event);*/
 	push_user_event(GAMEPLAY_CONTROL_EVENT, event_code);
 }
 
 static void on_event(scene_node_p n, const void* e)
 {
-	gameplay_controls_layer_p self;
-	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
-	//SDL_Event* event = (SDL_Event*)e;
+	gameplay_controls_layer_p self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
+	jevent_callbacks_t cbs = {};
+	cbs.on_mousepressed = [](float x, float y, int btn, void* arg) {
+		auto* self = (gameplay_controls_layer_p)arg;
+		auto hit = [&](button_p b) { return button_is_pressed(b, x, y); };
+		if (self->btn_up    && hit(self->btn_up))    send_gameplay_control_event(GAMEPLAY_CONTROL_UP);
+		if (self->btn_down  && hit(self->btn_down))  send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN);
+		if (self->btn_left  && hit(self->btn_left))  send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT);
+		if (self->btn_right && hit(self->btn_right)) send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT);
+		if (self->btn_attack && hit(self->btn_attack)) {} // 攻击按钮按下只记录状态,松手才触发
+	};
+	cbs.on_mousereleased = [](float x, float y, int btn, void* arg) {
+		auto* self = (gameplay_controls_layer_p)arg;
+		auto rel = [&](button_p b, int evt) { button_set_pressed(b, false); send_gameplay_control_event(evt); };
+		if (self->btn_up    && button_is_hovered(self->btn_up, x, y))    rel(self->btn_up, GAMEPLAY_CONTROL_RELEASE_UP);
+		if (self->btn_down  && button_is_hovered(self->btn_down, x, y))  rel(self->btn_down, GAMEPLAY_CONTROL_RELEASE_DOWN);
+		if (self->btn_left  && button_is_hovered(self->btn_left, x, y))  rel(self->btn_left, GAMEPLAY_CONTROL_RELEASE_LEFT);
+		if (self->btn_right && button_is_hovered(self->btn_right, x, y)) rel(self->btn_right, GAMEPLAY_CONTROL_RELEASE_RIGHT);
+		if (self->btn_attack && button_is_hovered(self->btn_attack, x, y)) {
+			button_set_pressed(self->btn_attack, false);
+			send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK);
+		}
+	};
+	cbs.on_mousemoved = [](float x, float y, float dx, float dy, void* arg) {
+		auto* self = (gameplay_controls_layer_p)arg;
+		if (self->btn_up)     button_is_hovered(self->btn_up, x, y);
+		if (self->btn_down)   button_is_hovered(self->btn_down, x, y);
+		if (self->btn_left)   button_is_hovered(self->btn_left, x, y);
+		if (self->btn_right)  button_is_hovered(self->btn_right, x, y);
+		if (self->btn_attack) button_is_hovered(self->btn_attack, x, y);
+	};
+	dispatch_event(cbs, e, self);
 }
 
 static void on_update(scene_node_p n, float dt)
@@ -54,6 +77,22 @@ static void on_destroy(scene_node_p n)
 	self = (gameplay_controls_layer_p)scene_node_get_userdata(n);
 }
 
+static scene_node_p make_button_node(button_p btn, int x, int y) {
+	scene_node_p node = scene_node_create();
+	scene_node_set_position(node, (float)x, (float)y);
+	scene_node_set_userdata(node, btn);
+	scene_node_set_zorder(node, 100);
+	scene_node_set_update_callback(node, [](scene_node_p n, float dt) {
+		button_p b = (button_p)scene_node_get_userdata(n);
+		scene_node_get_world_position(n, &b->position.x, &b->position.y);
+	});
+	scene_node_set_render_callback(node, [](scene_node_p n, const void* arg) {
+		button_p b = (button_p)scene_node_get_userdata(n);
+		button_draw(b);
+	});
+	return node;
+}
+
 static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 {
 	int logical_width, logical_height;
@@ -65,152 +104,25 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_set_zorder(root_node, 100);
 	scene_node_add_child(self->scene_node, root_node);
 
-	button_p up_button = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(up_button, ctx->r2d);
-	button_set_textx(up_button, simhei_font, "U", (int)strlen("U"), { 220, 200, 160, 255 });
-	scene_node_p up_button_node = scene_node_create();
-	scene_node_set_position(up_button_node, 50, 0);
-	scene_node_set_userdata(up_button_node, up_button);
-	scene_node_set_zorder(up_button_node, 100);
-	scene_node_set_update_callback(up_button_node, [](scene_node_p n, float dt) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &self->position.x, &self->position.y);
-	});
+	self->btn_up = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(self->btn_up, ctx->r2d);
+	button_set_textx(self->btn_up, simhei_font, "U", (int)strlen("U"), { 220, 200, 160, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_up, 50, 0));
 
-	scene_node_set_event_callback(up_button_node, [](scene_node_p n, const void* e) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		int et = get_event_type(e);
-		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			if (button_is_pressed(self, x, y))
-				send_gameplay_control_event(GAMEPLAY_CONTROL_UP);
-		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
-			button_set_pressed(self, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_UP);
-		} else if (et == JOY_EVENT_MOUSE_MOTION) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_hovered(self, x, y);
-		}
-	});
+	self->btn_down = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(self->btn_down, ctx->r2d);
+	button_set_textx(self->btn_down, simhei_font, "D", (int)strlen("D"), { 220, 200, 160, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_down, 50, 100));
 
-	scene_node_set_render_callback(up_button_node, [](scene_node_p n, const void* arg) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		jr2d_p renderer = (jr2d_p)arg;
-		button_draw(self);
-	});
+	self->btn_left = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(self->btn_left, ctx->r2d);
+	button_set_textx(self->btn_left, simhei_font, "L", (int)strlen("L"), { 220, 200, 160, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_left, 0, 50));
 
-	scene_node_add_child(root_node, up_button_node);
-
-	// down
-	button_p down_button = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(down_button, ctx->r2d);
-	button_set_textx(down_button, simhei_font, "D", (int)strlen("D"), { 220, 200, 160, 255 });
-	scene_node_p down_button_node = scene_node_create();
-	scene_node_set_position(down_button_node, 50, 100);
-	scene_node_set_userdata(down_button_node, down_button);
-	scene_node_set_zorder(down_button_node, 100);
-	scene_node_set_update_callback(down_button_node, [](scene_node_p n, float dt) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &self->position.x, &self->position.y);
-	});
-
-	scene_node_set_event_callback(down_button_node, [](scene_node_p n, const void* e) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		int et = get_event_type(e);
-		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			if (button_is_pressed(self, x, y))
-				send_gameplay_control_event(GAMEPLAY_CONTROL_DOWN);
-		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
-			button_set_pressed(self, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_DOWN);
-		} else if (et == JOY_EVENT_MOUSE_MOTION) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_hovered(self, x, y);
-		}
-	});
-
-	scene_node_set_render_callback(down_button_node, [](scene_node_p n, const void* arg) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		jr2d_p renderer = (jr2d_p)arg;
-		button_draw(self);
-	});
-
-	scene_node_add_child(root_node, down_button_node);
-
-	// left
-	button_p left_button = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(left_button, ctx->r2d);
-	button_set_textx(left_button, simhei_font, "L", (int)strlen("L"), { 220, 200, 160, 255 });
-	scene_node_p left_button_node = scene_node_create();
-	scene_node_set_position(left_button_node, 0, 50);
-	scene_node_set_userdata(left_button_node, left_button);
-	scene_node_set_zorder(left_button_node, 100);
-	scene_node_set_update_callback(left_button_node, [](scene_node_p n, float dt) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &self->position.x, &self->position.y);
-	});
-
-	scene_node_set_event_callback(left_button_node, [](scene_node_p n, const void* e) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		int et = get_event_type(e);
-		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			if (button_is_pressed(self, x, y))
-				send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT);
-		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
-			button_set_pressed(self, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_LEFT);
-		} else if (et == JOY_EVENT_MOUSE_MOTION) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_hovered(self, x, y);
-		}
-	});
-
-	scene_node_set_render_callback(left_button_node, [](scene_node_p n, const void* arg) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		jr2d_p renderer = (jr2d_p)arg;
-		button_draw(self);
-	});
-
-	scene_node_add_child(root_node, left_button_node);
-
-	// right
-	button_p right_button = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(right_button, ctx->r2d);
-	button_set_textx(right_button, simhei_font, "R", (int)strlen("R"), { 220, 200, 160, 255 });
-	scene_node_p right_button_node = scene_node_create();
-	scene_node_set_position(right_button_node, 100, 50);
-	scene_node_set_userdata(right_button_node, right_button);
-	scene_node_set_zorder(right_button_node, 100);
-	scene_node_set_update_callback(right_button_node, [](scene_node_p n, float dt) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &self->position.x, &self->position.y);
-	});
-
-	scene_node_set_event_callback(right_button_node, [](scene_node_p n, const void* e) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		int et = get_event_type(e);
-		if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			if (button_is_pressed(self, x, y))
-				send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT);
-		} else if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
-			button_set_pressed(self, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_RELEASE_RIGHT);
-		} else if (et == JOY_EVENT_MOUSE_MOTION) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_hovered(self, x, y);
-		}
-	});
-
-	scene_node_set_render_callback(right_button_node, [](scene_node_p n, const void* arg) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		jr2d_p renderer = (jr2d_p)arg;
-		button_draw(self);
-	});
-
-	scene_node_add_child(root_node, right_button_node);
+	self->btn_right = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(self->btn_right, ctx->r2d);
+	button_set_textx(self->btn_right, simhei_font, "R", (int)strlen("R"), { 220, 200, 160, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_right, 100, 50));
 }
 
 
@@ -225,50 +137,18 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_set_zorder(root_node, 100);
 	scene_node_add_child(self->scene_node, root_node);
 
-	// attack
-	button_p attack_button = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(attack_button, ctx->r2d);
-	button_set_textx(attack_button, simhei_font, "A", (int)strlen("A"), { 220, 200, 160, 255 });
-	scene_node_p attack_button_node = scene_node_create();
-	scene_node_set_position(attack_button_node, 0, 0);
-	scene_node_set_userdata(attack_button_node, attack_button);
-	scene_node_set_zorder(attack_button_node, 100);
-	scene_node_set_update_callback(attack_button_node, [](scene_node_p n, float dt) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &self->position.x, &self->position.y);
-	});
-
-	scene_node_set_event_callback(attack_button_node, [](scene_node_p n, const void* e) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		int et = get_event_type(e);
-		if (et == JOY_EVENT_MOUSE_BUTTON_UP) {
-			button_set_pressed(self, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK);
-		} else if (et == JOY_EVENT_MOUSE_BUTTON_DOWN) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_pressed(self, x, y);
-		} else if (et == JOY_EVENT_MOUSE_MOTION) {
-			float x, y; get_mouse_pos(e, &x, &y);
-			button_is_hovered(self, x, y);
-		}
-	});
-
-	scene_node_set_render_callback(attack_button_node, [](scene_node_p n, const void* arg) {
-		button_p self = (button_p)scene_node_get_userdata(n);
-		jr2d_p renderer = (jr2d_p)arg;
-		button_draw(self);
-	});
-
-	scene_node_add_child(root_node, attack_button_node);
+	self->btn_attack = button_create(ctx->r2d, 50, 50);
+	setup_button_texture(self->btn_attack, ctx->r2d);
+	button_set_textx(self->btn_attack, simhei_font, "A", (int)strlen("A"), { 220, 200, 160, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_attack, 0, 0));
 }
 
 gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
 {
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)malloc(sizeof(gameplay_controls_layer_t));
-	// jsdl_assert(self);
+	memset(self, 0, sizeof(*self));
 	self->scene_node = scene_node_create();
-	// jsdl_assert(self->scene_node);
 	scene_node_set_userdata(self->scene_node, self);
 	scene_node_set_event_callback(self->scene_node, on_event);
 	scene_node_set_update_callback(self->scene_node, on_update);
