@@ -51,5 +51,6 @@ int luaopen_janimator(lua_State* L);
 int luaopen_behavior(lua_State* L);
 int luaopen_scene(lua_State* L);
 int luaopen_msgpack(lua_State* L);
+int luaopen_font(lua_State* L);
 
 #endif // !LUACLIB_H

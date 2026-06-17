@@ -180,6 +180,8 @@ jsx_p jsx_create(void)
 	jsopen_behavior(jsx->ctx);
 	jsopen_scene(jsx->ctx);
 	jsopen_msgpack(jsx->ctx);
+	jsopen_font(jsx->ctx);
+
 
 	/* 创建全局 joy 对象 */
 	duk_push_object(jsx->ctx);

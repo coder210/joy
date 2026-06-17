@@ -134,7 +134,7 @@ static int l_audio_shot_destroy(lua_State* L)
 static int l_audio_bgm_create(lua_State* L)
 {
 	const char* path = luaL_checkstring(L, 1);
-	uint32_t dev = luaL_checkinteger(L, 2);
+	uint32_t dev = (uint32_t)luaL_optinteger(L, 2, 0);
 	audio_bgm_p bgm = bgm_by_ext(path, dev);
 	lua_pushlightuserdata(L, bgm);
 	return 1;

@@ -1,6 +1,6 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
-File name: jrender.h
+File name: jr3d.h
 Description: SDL_GPU 3D 渲染 — raylib 风格可重入 API + 底层工具
 Author: ydlc
 Version: 3.0
