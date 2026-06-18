@@ -8,10 +8,6 @@
 #include <cstring>
 #include <cstdlib>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* ================================ 常量 ================================ */
 enum { SERVER_PPM = 50 };
 
@@ -344,6 +340,4 @@ static inline int unpack_c2s(const char* data, int len,
     return 1;
 }
 
-#ifdef __cplusplus
-}
-#endif
+

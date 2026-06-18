@@ -595,9 +595,7 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 10000);
-	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
-	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "127.0.0.1", 10000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
