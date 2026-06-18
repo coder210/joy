@@ -15,6 +15,7 @@
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
 #include <joy/jaudio.h>
+#include "../../adventure_shared/protocol.h"
 #include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
 #include "../components/ai_component.h"
@@ -32,125 +33,6 @@
 
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
-
-// ===== 协议枚举/类型定义（基于 jmsgpack） =====
-enum C2SCmd_ {
-    CMD_UNKNOWN = 0, CMD_PLAYER_JOIN = 1, CMD_PLAYER_LEAVE = 2,
-    CMD_PLAYER_INPUT = 3, CMD_PLAYER_HEART = 4, CMD_LOADING = 5,
-};
-enum S2CCmd_ { S2C_CMD_NONE = 0, S2C_CMD_LOADING = 1, S2C_CMD_COMMAND = 2, };
-enum S2CType_ { S2C_TYPE_NORMAL = 0, S2C_TYPE_PLAYER = 1, S2C_TYPE_ENEMY = 2, };
-
-// ===== 协议类型定义 =====
-struct S2CPlayerJoin { int32_t conv; int64_t position_x, position_y; };
-struct S2CPlayerLeave { int32_t conv; };
-struct S2CPlayerInput { int32_t conv, keycode; };
-struct S2CEntity { int32_t id, type; int64_t position_x, position_y, width, height, hp; int32_t player_conv; };
-
-static int mp_write_cb(void* data, const char* buf, size_t len) {
-    ((std::string*)data)->append(buf, len); return 0;
-}
-static inline int64_t jmp_int(const jmsgpack_object_t* o) {
-    if (o->type == JMSGPACK_OBJECT_POSITIVE_INTEGER) return (int64_t)o->via.u64;
-    if (o->type == JMSGPACK_OBJECT_NEGATIVE_INTEGER) return o->via.i64;
-    return 0;
-}
-static inline uint32_t jmp_arr_size(const jmsgpack_object_t* o, int idx) {
-    return (o->type == JMSGPACK_OBJECT_ARRAY && (int)o->via.array.size > idx) ? o->via.array.size : 0;
-}
-static inline const jmsgpack_object_t* jmp_arr_at(const jmsgpack_object_t* o, int idx) {
-    return (o->type == JMSGPACK_OBJECT_ARRAY && (int)o->via.array.size > idx) ? &o->via.array.ptr[idx] : nullptr;
-}
-
-static std::string pack_c2s(int cmd, int64_t join_x, int64_t join_y, int input_kc) {
-    std::string out; jmsgpack_packer_t pk; jmsgpack_packer_init(&pk, &out, mp_write_cb);
-    jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int(&pk, cmd);
-    if (cmd == 1) { jmsgpack_pack_array(&pk, 2); jmsgpack_pack_int64(&pk, join_x); jmsgpack_pack_int64(&pk, join_y); }
-    else if (cmd == 3) { jmsgpack_pack_array(&pk, 1); jmsgpack_pack_int(&pk, input_kc); }
-    else { jmsgpack_pack_nil(&pk); }
-    return out;
-}
-
-static void unpack_entity(const jmsgpack_object_t* o, S2CEntity* e) {
-    if (!o || o->type != JMSGPACK_OBJECT_ARRAY || o->via.array.size < 8) return;
-    e->id = (int)jmp_int(&o->via.array.ptr[0]); e->type = (int)jmp_int(&o->via.array.ptr[1]);
-    e->position_x = jmp_int(&o->via.array.ptr[2]); e->position_y = jmp_int(&o->via.array.ptr[3]);
-    e->width = jmp_int(&o->via.array.ptr[4]); e->height = jmp_int(&o->via.array.ptr[5]);
-    e->hp = jmp_int(&o->via.array.ptr[6]); e->player_conv = (int)jmp_int(&o->via.array.ptr[7]);
-}
-
-// 解析 S2C loading 消息: 返回实体数，通过出参返回 conv/frame_id/eid
-static int unpack_loading(const char* data, int len, int* conv, int* frame_id, int* eid,
-    S2CEntity* entities, int max_ec) {
-    jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
-    size_t off = 0;
-    if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return -1; }
-    auto* pl = jmp_arr_at(&r.data, 1);
-    if (!pl || pl->type != JMSGPACK_OBJECT_ARRAY || pl->via.array.size < 3) { jmsgpack_unpacked_destroy(&r); return -1; }
-    if (conv) *conv = (int)jmp_int(&pl->via.array.ptr[0]);
-    if (frame_id) *frame_id = (int)jmp_int(&pl->via.array.ptr[1]);
-    auto* w = jmp_arr_at(pl, 2);
-    if (!w || w->type != JMSGPACK_OBJECT_ARRAY || w->via.array.size < 2) { jmsgpack_unpacked_destroy(&r); return -1; }
-    if (eid) *eid = (int)jmp_int(&w->via.array.ptr[0]);
-    auto* arr = jmp_arr_at(w, 1);
-    if (!arr) { jmsgpack_unpacked_destroy(&r); return 0; }
-    int n = (int)arr->via.array.size; if (n > max_ec) n = max_ec;
-    for (int i = 0; i < n; i++) unpack_entity(&arr->via.array.ptr[i], &entities[i]);
-    jmsgpack_unpacked_destroy(&r);
-    return n;
-}
-
-// 解析 S2C command 消息: 返回 1 成功
-static int unpack_command(const char* data, int len, int* frame_id,
-    S2CPlayerJoin* joins, int max_jn, int* jn,
-    S2CPlayerLeave* leaves, int max_ln, int* ln,
-    S2CPlayerInput* inputs, int max_in, int* in) {
-    memset(joins, 0, max_jn * sizeof(S2CPlayerJoin)); *jn = 0;
-    memset(leaves, 0, max_ln * sizeof(S2CPlayerLeave)); *ln = 0;
-    memset(inputs, 0, max_in * sizeof(S2CPlayerInput)); *in = 0;
-    jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
-    size_t off = 0;
-    if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return 0; }
-    auto* pl = jmp_arr_at(&r.data, 1);
-    if (!pl || pl->type != JMSGPACK_OBJECT_ARRAY || pl->via.array.size < 5) { jmsgpack_unpacked_destroy(&r); return (int)jmp_int(&r.data.via.array.ptr[0]) == 0; }
-    if (frame_id) *frame_id = (int)jmp_int(&pl->via.array.ptr[0]);
-    auto xarr = [&](int idx, auto* out, int max, int& cnt) {
-        auto* a = jmp_arr_at(pl, idx); if (!a) return;
-        int n = (int)a->via.array.size; if (n > max) n = max; cnt = n;
-        for (int i = 0; i < n; i++) {
-            auto* o = &a->via.array.ptr[i]; auto& d = out[i];
-            using T = std::decay_t<decltype(d)>;
-            if constexpr (std::is_same_v<T, S2CPlayerJoin>) {
-                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 3) { d.conv = (int)jmp_int(&o->via.array.ptr[0]); d.position_x = jmp_int(&o->via.array.ptr[1]); d.position_y = jmp_int(&o->via.array.ptr[2]); }
-            } else if constexpr (std::is_same_v<T, S2CPlayerLeave>) {
-                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 1) { d.conv = (int)jmp_int(&o->via.array.ptr[0]); }
-            } else if constexpr (std::is_same_v<T, S2CPlayerInput>) {
-                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 2) { d.conv = (int)jmp_int(&o->via.array.ptr[0]); d.keycode = (int)jmp_int(&o->via.array.ptr[1]); }
-            }
-        }
-    };
-    xarr(1, joins, max_jn, *jn); xarr(2, leaves, max_ln, *ln); xarr(3, inputs, max_in, *in);
-    jmsgpack_unpacked_destroy(&r);
-    return 1;
-}
-
-// 输入掩码
-const int INPUT_UP = 1 << 0;
-const int INPUT_DOWN = 1 << 1;
-const int INPUT_LEFT = 1 << 2;
-const int INPUT_RIGHT = 1 << 3;
-const int INPUT_ATTACK = 1 << 4;
-const int INPUT_DIR_MASK = INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT;
-
-// 从 keycode 提取方向索引 (0=下, 1=左, 2=右, 3=上)
-static int input_to_dir(int keycode) {
-	if (keycode & INPUT_DOWN)  return 0;
-	if (keycode & INPUT_LEFT)  return 1;
-	if (keycode & INPUT_RIGHT) return 2;
-	if (keycode & INPUT_UP)    return 3;
-	return 0;
-}
-static bool has_dir(int keycode) { return (keycode & INPUT_DIR_MASK) != 0; }
 
 // 状态快照（用于预测回滚）
 struct state_snapshot {
@@ -713,7 +595,7 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.21", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 10000);
 	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.42", 10000);
 	//self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "8.148.188.213", 10000);
 

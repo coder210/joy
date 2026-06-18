@@ -27,9 +27,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     AssetManager::Init();
 
-    ctx->window = create_window("server", 640, 480);
+    ctx->window = create_window("server", 480, 320);
     ctx->r2d = r2d_create(ctx->window);
-    r2d_set_logical_presentation(ctx->r2d, 640, 480);
+    r2d_set_logical_presentation(ctx->r2d, 480, 320);
 
 	g_mgr = scene_manager_create();
 	scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
