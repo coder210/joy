@@ -250,6 +250,20 @@ static int li_draw_ex(lua_State* L) {
         return 0;
 }
 
+/* ---- Font ---- */
+static int lf_create(lua_State* L) {
+        const char* font_path = luaL_checkstring(L, 1);
+        font_p f = font_create(font_path, (int)luaL_checkinteger(L, 2));
+        lua_pushlightuserdata(L, f);
+        return 1;
+}
+
+static int lf_destroy(lua_State* L) {
+        font_p f = (font_p)lua_touserdata(L, 1);
+        if (f) font_destroy(f);
+        return 0;
+}
+
 static int lt_create(lua_State* L) {
         jr2d_p r2d = (jr2d_p)lua_touserdata(L, 1);
         font_p f = (font_p)lua_touserdata(L, 2);
@@ -360,6 +374,8 @@ int luaopen_render2d(lua_State* L) {
             {"free_image", li_free},
             {"draw_image", li_draw},
             {"draw_image_ex", li_draw_ex},
+            {"create_font", lf_create},
+            {"destroy_font", lf_destroy},
             {"create_text", lt_create},
             {"update_text", lt_update},
             {"destroy_text", lt_destroy},
