@@ -1,13 +1,14 @@
 #include <string.h>
-#include <SDL3/SDL.h>
+#include <stdlib.h>
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
+#include "external/mongoose.h"
 #include "external/kcp.h"
-
 #include "jconfig.h"
 #include "jutils.h"
 #include "jsys.h"
 #include "jcore.h"
+#include "jutils.h"
 #include "jnetwork.h"
 
 #ifdef JOY_WIN
@@ -15,7 +16,6 @@
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
-#include "external/mongoose.h"
 
 #ifdef JOY_EMSCRIPTEN
 #include <emscripten/emscripten.h>
@@ -44,7 +44,7 @@ KHASH_INIT(kconn, int, kcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(ktcp_conn, int, tcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
 // no-op: free 作为 KMEMPOOL_INIT 析构函数会导致宏内建 free 之后 double-free
-// 消息内部 data 由 kl_begin/kl_end 循环中的 SDL_free(msg->data) 负责释放
+// 消息内部 data 由 kl_begin/kl_end 循环中的 free(msg->data) 负责释放
 static void kmq_free_nop(void* p) {}
 KLIST_INIT(kmq, net_message_t, kmq_free_nop)
 
@@ -125,9 +125,9 @@ kcpserver_p
 kcpserver_create(const char* ip, int port)
 {
         kcpserver_p ks;
-        ks = (kcpserver_p)SDL_malloc(sizeof(kcpserver_t));
-        SDL_assert(ks);
-        SDL_memset(ks, 0, sizeof(kcpserver_t));
+        ks = (kcpserver_p)malloc(sizeof(kcpserver_t));
+        assert(ks);
+        memset(ks, 0, sizeof(kcpserver_t));
         ks->sockfd = sys_udp();
         ks->conv = 1000;
         ks->conns = kh_init(kconn);
@@ -159,7 +159,7 @@ int kcpserver_destroy(kcpserver_p ks)
                         if (conn)
                         {
                                 if (conn->kcp) ikcp_release(conn->kcp);
-                                SDL_free(conn);
+                                free(conn);
                         }
                 }
         }
@@ -167,13 +167,13 @@ int kcpserver_destroy(kcpserver_p ks)
         net_message_t msg;
         while (kcpserver_poll_message(ks, &msg))
         {
-                if (msg.data) SDL_free(msg.data);
+                if (msg.data) free(msg.data);
         }
 
         sys_closesocket(ks->sockfd);
         kh_destroy(kconn, ks->conns);
         //kl_destroy(kmq, ks->mq);
-        SDL_free(ks);
+        free(ks);
         return 1;
 }
 
@@ -233,7 +233,7 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
                 }
         }
 
-        conn = (kcp_connection_p)SDL_malloc(sizeof(kcp_connection_t));
+        conn = (kcp_connection_p)malloc(sizeof(kcp_connection_t));
         assert(conn);
         memset(conn, 0, sizeof(kcp_connection_t));
 
@@ -254,7 +254,7 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
         {
                 log_error("kh_put failed");
                 ikcp_release(conn->kcp);
-                SDL_free(conn);
+                free(conn);
                 return;
         }
         kh_val(ks->conns, k) = conn;
@@ -263,8 +263,8 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
         sys_sendto(ks->sockfd, buf, 4, conn->ip, conn->port);
 
         msg.type = NET_TYPE_CONNECTED;
-        msg.data = SDL_strdup("connected");
-        msg.len = SDL_strlen(msg.data);
+        msg.data = utils_strdup("connected", NULL);
+        msg.len = strlen(msg.data);
         msg.conv = conv;
 
         if (ks->cb) {
@@ -329,7 +329,7 @@ void kcpserver_update(kcpserver_p ks)
                 kcpserver_input(ks, buf, len, ip, port);
         }
 
-        khint_t* del_list = SDL_malloc(kh_size(ks->conns) * sizeof(khint_t));
+        khint_t* del_list = malloc(kh_size(ks->conns) * sizeof(khint_t));
         int del_cnt = 0;
 
         for (khint_t p = kh_begin(ks->conns); p != kh_end(ks->conns); p++)
@@ -355,8 +355,8 @@ void kcpserver_update(kcpserver_p ks)
                         buf[len] = 0;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.len = len;
-                        msg.data = SDL_malloc(msg.len);
-                        SDL_memcpy(msg.data, buf, msg.len);
+                        msg.data = malloc(msg.len);
+                        memcpy(msg.data, buf, msg.len);
                         msg.conv = ikcp_getconv(conn->kcp);
 
                         if (ks->cb) {
@@ -374,8 +374,8 @@ void kcpserver_update(kcpserver_p ks)
                 kcp_connection_p conn = kh_val(ks->conns, p);
 
                 msg.type = NET_TYPE_DISCONNECTED;
-                msg.data = SDL_strdup("disconnected");
-                msg.len = SDL_strlen(msg.data);
+                msg.data = utils_strdup("disconnected", NULL);
+                msg.len = strlen(msg.data);
                 msg.conv = ikcp_getconv(conn->kcp);
 
                 if (ks->cb) {
@@ -386,10 +386,10 @@ void kcpserver_update(kcpserver_p ks)
                 }
 
                 ikcp_release(conn->kcp);
-                SDL_free(conn);
+                free(conn);
                 kh_del(kconn, ks->conns, p);
         }
-        SDL_free(del_list);
+        free(del_list);
 }
 
 int kcpserver_connection_count(kcpserver_p ks)
@@ -426,8 +426,8 @@ void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata)
 kcpclient_p kcpclient_create(const char* ip, int port)
 {
         kcpclient_p kc;
-        kc = (kcpclient_p)SDL_malloc(sizeof(kcpclient_t));
-        SDL_assert(kc);
+        kc = (kcpclient_p)malloc(sizeof(kcpclient_t));
+        assert(kc);
         memset(kc, 0, sizeof(kcpclient_t)); // 【修复】初始化全0
         kc->kcp = NULL;
         kc->sockfd = sys_udp();
@@ -454,10 +454,10 @@ void kcpclient_destroy(kcpclient_p kc)
         }
         net_message_t msg;
         while (kcpclient_poll_message(kc, &msg)) {
-                if (msg.data) SDL_free(msg.data);
+                if (msg.data) free(msg.data);
         }
         //kl_destroy(kmq, kc->mq);
-        SDL_free(kc);
+        free(kc);
 }
 
 static int
@@ -495,8 +495,8 @@ kcpclient_input(kcpclient_p kc, const char* data, int sz)
                 ikcp_nodelay(kc->kcp, 0, 40, 0, 0);
                 ikcp_setoutput(kc->kcp, kcpclient_output);
                 msg.conv = conv;
-                msg.data = SDL_strdup("connected");
-                msg.len = SDL_strlen(msg.data);
+                msg.data = utils_strdup("connected", NULL);
+                msg.len = strlen(msg.data);
                 msg.type = NET_TYPE_CONNECTED;
                 if (kc->cb)
                 {
@@ -553,7 +553,7 @@ void kcpclient_update(kcpclient_p kc)
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
                         msg.len = 11;
-                        msg.data = SDL_strdup("disconnected");
+                        msg.data = utils_strdup("disconnected", NULL);
                         if (kc->cb)
                         {
                                 kc->cb(&msg, kc->userdata);
@@ -570,8 +570,8 @@ void kcpclient_update(kcpclient_p kc)
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = ikcp_getconv(kc->kcp);
                         msg.len = len;
-                        msg.data = (char*)SDL_malloc(msg.len);
-                        SDL_memcpy(msg.data, buf, msg.len);
+                        msg.data = (char*)malloc(msg.len);
+                        memcpy(msg.data, buf, msg.len);
 
                         if (kc->cb) {
                                 kc->cb(&msg, kc->userdata);
@@ -620,8 +620,8 @@ tcpserver_p
 tcpserver_create(const char *ip, int port)
 {
         tcpserver_p tcpserver;
-        tcpserver = (tcpserver_p)SDL_malloc(sizeof(tcpserver_t));
-        SDL_assert(tcpserver);
+        tcpserver = (tcpserver_p)malloc(sizeof(tcpserver_t));
+        assert(tcpserver);
         tcpserver->sockfd = sys_tcp();
         tcpserver->conv = 1000;
         tcpserver->conns = kh_init(ktcp_conn);
@@ -662,7 +662,7 @@ int tcpserver_destroy(tcpserver_p tcpserver)
                 {
                         tcp_connection_p conn = kh_val(tcpserver->conns, k);
                         sys_closesocket(conn->sockfd);
-                        SDL_free(conn);
+                        free(conn);
                 }
         }
 
@@ -673,14 +673,14 @@ int tcpserver_destroy(tcpserver_p tcpserver)
         {
                 net_message_t *msg = &kl_val(p);
                 if (msg->data)
-                        SDL_free(msg->data);
+                        free(msg->data);
         }
         kl_destroy(kmq, tcpserver->mq);
 
         // �ͷ�������Դ
         kh_destroy(ktcp_conn, tcpserver->conns);
         sys_closesocket(tcpserver->sockfd);
-        SDL_free(tcpserver);
+        free(tcpserver);
         return 1;
 }
 
@@ -692,7 +692,7 @@ tcpserver_accpet(tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port
         tcp_connection_p conn;
         net_message_t msg;
 
-        conn = (tcp_connection_p)SDL_malloc(sizeof(tcp_connection_t));
+        conn = (tcp_connection_p)malloc(sizeof(tcp_connection_t));
         assert(conn);
         conn->sockfd = sockfd;
         conn->port = port;
@@ -704,8 +704,8 @@ tcpserver_accpet(tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port
         kh_val(tcpserver->conns, k) = conn;
 
         msg.type = NET_TYPE_CONNECTED;
-        msg.data = SDL_strdup("connected");
-        msg.len = SDL_strlen(msg.data);
+        msg.data = utils_strdup("connected", NULL);
+        msg.len = strlen(msg.data);
         msg.conv = conv;
         *kl_pushp(kmq, tcpserver->mq) = msg;
         log_debug("connected conv=%d\n", conv);
@@ -779,8 +779,8 @@ void tcpserver_update(tcpserver_p tcpserver)
                         {
                                 msg.type = NET_TYPE_MESSAGE;
                                 msg.len = len;
-                                msg.data = (char *)SDL_malloc(msg.len);
-                                SDL_memcpy(msg.data, buf, msg.len);
+                                msg.data = (char *)malloc(msg.len);
+                                memcpy(msg.data, buf, msg.len);
                                 msg.conv = conv;
                                 *kl_pushp(kmq, tcpserver->mq) = msg;
                         }
@@ -796,8 +796,8 @@ void tcpserver_update(tcpserver_p tcpserver)
                         if (conn->timeout < 0)
                         {
                                 msg.type = NET_TYPE_DISCONNECTED;
-                                msg.data = SDL_strdup("disconnected");
-                                msg.len = SDL_strlen(msg.data);
+                                msg.data = utils_strdup("disconnected", NULL);
+                                msg.len = strlen(msg.data);
                                 msg.conv = conv;
                                 *kl_pushp(kmq, tcpserver->mq) = msg;
                                 kh_del(ktcp_conn, tcpserver->conns, p);
@@ -835,8 +835,8 @@ int tcpserver_connection_count(tcpserver_p tcpserver)
 tcpclient_p tcpclient_create(const char *ip, int port)
 {
         tcpclient_p tcpclient;
-        tcpclient = (tcpclient_p)SDL_malloc(sizeof(tcpclient_t));
-        SDL_assert(tcpclient);
+        tcpclient = (tcpclient_p)malloc(sizeof(tcpclient_t));
+        assert(tcpclient);
         tcpclient->sockfd = sys_tcp();
         tcpclient->connected = false;
         strcpy(tcpclient->server_ip, ip);
@@ -855,7 +855,7 @@ tcpclient_p tcpclient_create(const char *ip, int port)
 void tcpclient_destroy(tcpclient_p tcpclient)
 {
         sys_closesocket(tcpclient->sockfd);
-        SDL_free(tcpclient);
+        free(tcpclient);
 }
 
 int tcpclient_send(tcpclient_p tcpclient, const char *data, int len)
@@ -879,8 +879,8 @@ void tcpclient_update(tcpclient_p tcpclient)
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = (int)tcpclient->sockfd;
                         msg.len = len;
-                        msg.data = (char *)SDL_malloc(msg.len);
-                        SDL_memcpy(msg.data, buf, msg.len);
+                        msg.data = (char *)malloc(msg.len);
+                        memcpy(msg.data, buf, msg.len);
                         *kl_pushp(kmq, tcpclient->mq) = msg;
                 }
         }
@@ -893,8 +893,8 @@ void tcpclient_update(tcpclient_p tcpclient)
                                 tcpclient->connected = true;
                                 msg.type = NET_TYPE_CONNECTED;
                                 msg.conv = (int)tcpclient->sockfd;
-                                msg.data = SDL_strdup("connected");
-                                msg.len = SDL_strlen(msg.data);
+                                msg.data = utils_strdup("connected", NULL);
+                                msg.len = strlen(msg.data);
                                 *kl_pushp(kmq, tcpclient->mq) = msg;
                         }
                         else {
@@ -908,8 +908,8 @@ void tcpclient_update(tcpclient_p tcpclient)
                         tcpclient->connected = true;
                         msg.type = NET_TYPE_CONNECTED;
                         msg.conv = (int)tcpclient->sockfd;
-                        msg.data = SDL_strdup("connected");
-                        msg.len = SDL_strlen(msg.data);
+                        msg.data = utils_strdup("connected", NULL);
+                        msg.len = strlen(msg.data);
                         *kl_pushp(kmq, tcpclient->mq) = msg;
                 }
                 else
@@ -931,7 +931,7 @@ void tcpclient_update(tcpclient_p tcpclient)
                 msg.type = NET_TYPE_DISCONNECTED;
                 msg.conv = (int)tcpclient->sockfd;
                 msg.len = 9;
-                msg.data = SDL_strdup("disconnected");
+                msg.data = utils_strdup("disconnected", NULL);
                 *kl_pushp(kmq, tcpclient->mq) = msg;
                 return;
         }
@@ -974,7 +974,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
                 // 为连接分配上下文
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)SDL_malloc(sizeof(wsnetserver_ctx_t));
+                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)malloc(sizeof(wsnetserver_ctx_t));
                 if (ctx) {
                         ctx->conv = ws->conv++;
                         ctx->server = ws;  // 保存服务器指针
@@ -985,7 +985,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_CONNECTED;
                         msg.conv = ctx->conv;
-                        msg.data = SDL_strdup("connected");
+                        msg.data = utils_strdup("connected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (ws->cb) {
                                 ws->cb(&msg, ws->userdata);
@@ -1006,7 +1006,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = ctx->conv;
-                        msg.data = (char*)SDL_malloc(payload_len);
+                        msg.data = (char*)malloc(payload_len);
                         if (msg.data) {
                                 memcpy(msg.data, wm->data, payload_len);
                                 msg.len = payload_len;
@@ -1035,14 +1035,14 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = ctx->conv;
-                        msg.data = SDL_strdup("disconnected");
+                        msg.data = utils_strdup("disconnected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (server->cb) {
                                 server->cb(&msg, server->userdata);
                         } else {
                                 *kl_pushp(kmq, server->mq) = msg;
                         }
-                        SDL_free(ctx);
+                        free(ctx);
                         c->user_data = NULL;
                 }
         }
@@ -1050,9 +1050,9 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 
 wsnetserver_p wsnetserver_create(const char* ip, int port)
 {
-        wsnetserver_p ws = (wsnetserver_p)SDL_malloc(sizeof(wsnetserver_t));
+        wsnetserver_p ws = (wsnetserver_p)malloc(sizeof(wsnetserver_t));
         if (!ws) return NULL;
-        SDL_memset(ws, 0, sizeof(wsnetserver_t));
+        memset(ws, 0, sizeof(wsnetserver_t));
 
         ws->conv = 1000;
         ws->mq = kl_init(kmq);
@@ -1068,10 +1068,10 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
         char addr[256];
         if (ip && ip[0] && strcmp(ip, "0.0.0.0") != 0) {
                 // 绑定到特定 IP（如果需要限制在特定接口）
-                SDL_snprintf(addr, sizeof(addr), "tcp://%s:%d", ip, port);
+                snprintf(addr, sizeof(addr), "tcp://%s:%d", ip, port);
         } else {
                 // 绑定到所有接口（推荐）
-                SDL_snprintf(addr, sizeof(addr), "tcp://:%d", port);
+                snprintf(addr, sizeof(addr), "tcp://:%d", port);
         }
         
         // 创建 TCP 监听
@@ -1082,7 +1082,7 @@ wsnetserver_p wsnetserver_create(const char* ip, int port)
                 if (ws->mq) {
                         kl_destroy(kmq, ws->mq);
                 }
-                SDL_free(ws);
+                free(ws);
                 return NULL;
         }
         
@@ -1108,11 +1108,11 @@ int wsnetserver_destroy(wsnetserver_p ws)
         kliter_t(kmq)* p;
         for (p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
                 net_message_t* msg = &kl_val(p);
-                if (msg->data) SDL_free(msg->data);
+                if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, ws->mq);
 
-        SDL_free(ws);
+        free(ws);
         return 1;
 }
 
@@ -1228,9 +1228,9 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 
 wsnetclient_p wsnetclient_create(const char* url)
 {
-        wsnetclient_p wc = (wsnetclient_p)SDL_malloc(sizeof(wsnetclient_t));
+        wsnetclient_p wc = (wsnetclient_p)malloc(sizeof(wsnetclient_t));
         if (!wc) return NULL;
-        SDL_memset(wc, 0, sizeof(wsnetclient_t));
+        memset(wc, 0, sizeof(wsnetclient_t));
 
         wc->connected = false;
         wc->connecting = true;
@@ -1240,7 +1240,7 @@ wsnetclient_p wsnetclient_create(const char* url)
         wc->initialized = false;
 
         if (url) {
-                SDL_strlcpy(wc->url, url, sizeof(wc->url));
+                strncpy(wc->url, url, sizeof(wc->url));
         }
 
         // 初始化 Mongoose manager
@@ -1251,7 +1251,7 @@ wsnetclient_p wsnetclient_create(const char* url)
                 log_error("wsnetclient: FATAL - Invalid WebSocket URL format: %s", url);
                 mg_mgr_free(&wc->mgr);
                 kl_destroy(kmq, wc->mq);
-                SDL_free(wc);
+                free(wc);
                 return NULL;
         }
         
@@ -1262,7 +1262,7 @@ wsnetclient_p wsnetclient_create(const char* url)
                 log_error("wsnetclient: This usually means TCP connection failed!");
                 mg_mgr_free(&wc->mgr);
                 kl_destroy(kmq, wc->mq);
-                SDL_free(wc);
+                free(wc);
                 return NULL;
         }
 
@@ -1289,11 +1289,11 @@ void wsnetclient_destroy(wsnetclient_p wc)
         kliter_t(kmq)* p;
         for (p = kl_begin(wc->mq); p != kl_end(wc->mq); p = kl_next(p)) {
                 net_message_t* msg = &kl_val(p);
-                if (msg->data) SDL_free(msg->data);
+                if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, wc->mq);
 
-        SDL_free(wc);
+        free(wc);
 }
 
 int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
@@ -1376,7 +1376,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 net_message_t msg;
                 msg.type = NET_TYPE_CONNECTED;
                 msg.conv = 0;
-                msg.data = SDL_strdup("connected");
+                msg.data = utils_strdup("connected", NULL);
                 msg.len = (int)strlen(msg.data);
                 if (wc->cb) {
                         wc->cb(&msg, wc->userdata);
@@ -1393,7 +1393,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = 0;
-                        msg.data = (char*)SDL_malloc(payload_len);
+                        msg.data = (char*)malloc(payload_len);
                         if (msg.data) {
                                 memcpy(msg.data, wm->data, payload_len);
                                 msg.len = payload_len;
@@ -1413,7 +1413,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
-                        msg.data = SDL_strdup("disconnected");
+                        msg.data = utils_strdup("disconnected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (wc->cb) {
                                 wc->cb(&msg, wc->userdata);
@@ -1460,11 +1460,11 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
         net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
         msg.conv = 0;
-        msg.data = SDL_strdup("connected");
+        msg.data = utils_strdup("connected", NULL);
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
                 wc->cb(&msg, wc->userdata);
-                SDL_free(msg.data);
+                free(msg.data);
         }
         else {
                 *kl_pushp(kmq, wc->mq) = msg;
@@ -1483,14 +1483,14 @@ static bool em_ws_onmessage(int eventType, const EmscriptenWebSocketMessageEvent
                 msg.type = NET_TYPE_MESSAGE;
                 msg.conv = 0;
                 msg.len = (int)e->numBytes;
-                msg.data = (char*)SDL_malloc(msg.len + 1);
+                msg.data = (char*)malloc(msg.len + 1);
                 if (msg.data) {
                         memcpy(msg.data, e->data, msg.len);
                         msg.data[msg.len] = 0;
 
                         if (wc->cb) {
                                 wc->cb(&msg, wc->userdata);
-                                SDL_free(msg.data);
+                                free(msg.data);
                         }
                         else {
                                 *kl_pushp(kmq, wc->mq) = msg;
@@ -1523,11 +1523,11 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
         net_message_t msg;
         msg.type = NET_TYPE_DISCONNECTED;
         msg.conv = 0;
-        msg.data = SDL_strdup("disconnected");
+        msg.data = utils_strdup("disconnected", NULL);
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
                 wc->cb(&msg, wc->userdata);
-                SDL_free(msg.data);
+                free(msg.data);
         }
         else {
                 *kl_pushp(kmq, wc->mq) = msg;
@@ -1537,9 +1537,9 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
 
 wsnetclient_p wsnetclient_create(const char* url)
 {
-        wsnetclient_p wc = (wsnetclient_p)SDL_malloc(sizeof(wsnetclient_t));
+        wsnetclient_p wc = (wsnetclient_p)malloc(sizeof(wsnetclient_t));
         if (!wc) return NULL;
-        SDL_memset(wc, 0, sizeof(wsnetclient_t));
+        memset(wc, 0, sizeof(wsnetclient_t));
 
         wc->connected = false;
         wc->connecting = true;
@@ -1549,7 +1549,7 @@ wsnetclient_p wsnetclient_create(const char* url)
         wc->initialized = false;
 
         if (url) {
-                SDL_strlcpy(wc->url, url, sizeof(wc->url));
+                strncpy(wc->url, url, sizeof(wc->url));
         }
 
         log_info("emscripten_ws: === Starting connection to %s ===", url);
@@ -1558,7 +1558,7 @@ wsnetclient_p wsnetclient_create(const char* url)
         if (strncmp(url, "ws://", 5) != 0 && strncmp(url, "wss://", 6) != 0) {
                 log_error("emscripten_ws: FATAL - Invalid WebSocket URL format: %s", url);
                 kl_destroy(kmq, wc->mq);
-                SDL_free(wc);
+                free(wc);
                 return NULL;
         }
 
@@ -1570,7 +1570,7 @@ wsnetclient_p wsnetclient_create(const char* url)
         if (wc->ws_socket < 0) {
                 log_error("emscripten_ws: FATAL - failed to create WebSocket for %s", url);
                 kl_destroy(kmq, wc->mq);
-                SDL_free(wc);
+                free(wc);
                 return NULL;
         }
 
@@ -1598,11 +1598,11 @@ void wsnetclient_destroy(wsnetclient_p wc)
         kliter_t(kmq)* p;
         for (p = kl_begin(wc->mq); p != kl_end(wc->mq); p = kl_next(p)) {
                 net_message_t* msg = &kl_val(p);
-                if (msg->data) SDL_free(msg->data);
+                if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, wc->mq);
 
-        SDL_free(wc);
+        free(wc);
 }
 
 int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
@@ -1669,10 +1669,10 @@ struct netclient
 
 netclient_p netclient_create(net_client_type type, const char* host, int port)
 {
-        netclient_p nc = (netclient_p)SDL_malloc(sizeof(netclient_t));
+        netclient_p nc = (netclient_p)malloc(sizeof(netclient_t));
         if (!nc) return NULL;
 
-        SDL_memset(nc, 0, sizeof(netclient_t));
+        memset(nc, 0, sizeof(netclient_t));
         nc->type = type;
         nc->cb = NULL;
         nc->userdata = NULL;
@@ -1681,14 +1681,14 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
         case NET_CLIENT_KCP:
                 nc->client.kcp = kcpclient_create(host, port);
                 if (!nc->client.kcp) {
-                        SDL_free(nc);
+                        free(nc);
                         return NULL;
                 }
                 break;
         case NET_CLIENT_TCP:
                 nc->client.tcp = tcpclient_create(host, port);
                 if (!nc->client.tcp) {
-                        SDL_free(nc);
+                        free(nc);
                         return NULL;
                 }
                 break;
@@ -1696,19 +1696,19 @@ netclient_p netclient_create(net_client_type type, const char* host, int port)
                 {
                         char url[512];
                         if (strncmp(host, "ws://", 5) == 0 || strncmp(host, "wss://", 6) == 0) {
-                                SDL_strlcpy(url, host, sizeof(url));
+                                strncpy(url, host, sizeof(url));
                         } else {
-                                SDL_snprintf(url, sizeof(url), "ws://%s:%d/", host, port);
+                                snprintf(url, sizeof(url), "ws://%s:%d/", host, port);
                         }
                         nc->client.ws = wsnetclient_create(url);
                         if (!nc->client.ws) {
-                                SDL_free(nc);
+                                free(nc);
                                 return NULL;
                         }
                 }
                 break;
         default:
-                SDL_free(nc);
+                free(nc);
                 return NULL;
         }
 
@@ -1733,7 +1733,7 @@ void netclient_destroy(netclient_p nc)
                 break;
         }
 
-        SDL_free(nc);
+        free(nc);
 }
 
 int netclient_send(netclient_p nc, const char* data, int len)
@@ -1833,10 +1833,10 @@ struct netserver
 
 netserver_p netserver_create(net_server_type type, const char* ip, int port)
 {
-        netserver_p ns = (netserver_p)SDL_malloc(sizeof(netserver_t));
+        netserver_p ns = (netserver_p)malloc(sizeof(netserver_t));
         if (!ns) return NULL;
 
-        SDL_memset(ns, 0, sizeof(netserver_t));
+        memset(ns, 0, sizeof(netserver_t));
         ns->type = type;
         ns->cb = NULL;
         ns->userdata = NULL;
@@ -1845,26 +1845,26 @@ netserver_p netserver_create(net_server_type type, const char* ip, int port)
         case NET_SERVER_KCP:
                 ns->server.kcp = kcpserver_create(ip, port);
                 if (!ns->server.kcp) {
-                        SDL_free(ns);
+                        free(ns);
                         return NULL;
                 }
                 break;
         case NET_SERVER_TCP:
                 ns->server.tcp = tcpserver_create(ip, port);
                 if (!ns->server.tcp) {
-                        SDL_free(ns);
+                        free(ns);
                         return NULL;
                 }
                 break;
         case NET_SERVER_WEBSOCKET:
                 ns->server.ws = wsnetserver_create(ip, port);
                 if (!ns->server.ws) {
-                        SDL_free(ns);
+                        free(ns);
                         return NULL;
                 }
                 break;
         default:
-                SDL_free(ns);
+                free(ns);
                 return NULL;
         }
 
@@ -1889,7 +1889,7 @@ void netserver_destroy(netserver_p ns)
                 break;
         }
 
-        SDL_free(ns);
+        free(ns);
 }
 
 void netserver_send(netserver_p ns, int conv, const char* data, int len)

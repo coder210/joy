@@ -283,7 +283,7 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 			log_info("Failed to parse message from conv=%d", msg->conv);
 		}
 	}
-	if (msg_data) {
+	if (msg->type == NET_TYPE_MESSAGE && msg_data) {
 		free(msg_data);
 	}
 }
@@ -556,7 +556,7 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "0.0.0.0", 10000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));

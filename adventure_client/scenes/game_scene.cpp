@@ -568,7 +568,7 @@ static void on_message(net_message_p msg, void* arg)
 			handle_command_s2c(self, (const char*)msg->data, (int)msg->len);
 		}
 	}
-	if (msg->data) free(msg->data);
+	if (msg->type == NET_TYPE_MESSAGE && msg->data) free(msg->data);
 }
 
 static void on_load(scene_p s)
@@ -595,7 +595,7 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "127.0.0.1", 10000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 30000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
