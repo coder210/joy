@@ -1,17 +1,16 @@
 ﻿#ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
 #include <joy/jfont.h>
+#include <joy/jr2d.h>
+#include <string>
+#include <unordered_map>
 
 class AssetManager
 {
 public:
-	// 获取单例实例（使用前必须先调用 Init）
 	static AssetManager* GetInstance();
-
-	// 初始化单例，传入 SDL_Renderer，必须在使用前调用一次
 	static void Init();
 
-	// 禁止拷贝和赋值
 	AssetManager(const AssetManager&) = delete;
 	AssetManager& operator=(const AssetManager&) = delete;
 
@@ -19,12 +18,17 @@ public:
 
 	font_p GetSimheiFont24();
 
+	// 纹理缓存：获取/加载纹理
+	image_p tex_cache_get(jr2d_p r2d, const char* path);
+	// 清空纹理缓存（释放所有纹理）
+	void tex_cache_clear();
+
 private:
-	// 私有构造，只能通过 Init 内部调用
 	explicit AssetManager();
 
 	static AssetManager* instance_;
 	font_p simheiFont24_;
+	std::unordered_map<std::string, image_p> tex_cache_;
 };
 
 #endif // ASSET_MANAGER_H

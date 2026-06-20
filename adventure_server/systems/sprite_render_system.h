@@ -1,15 +1,12 @@
 ﻿#pragma once
 #include "../flecs.h"
 #include "../context.h"
+#include "../asset_manager.h"
 #include "../../adventure_shared/protocol.h"
 #include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
 #include "../components/transform_component.h"
 #include "../components/logic_rect_component.h"
-
-// 纹理缓存（定义在 game_scene.cpp）
-image_p tex_cache_get(jr2d_p r, const char* path);
-void tex_cache_clear();
 
 static void sprite_render_system(flecs::entity e,
     TransformComponent& t, LogicRectComponent& r,
@@ -20,7 +17,7 @@ static void sprite_render_system(flecs::entity e,
     float scr_x = (t.position_x - ctx->camera_x) * SERVER_PPM;
     float scr_y = (t.position_y - ctx->camera_y) * SERVER_PPM;
 
-    image_p tex = tex_cache_get(ctx->r2d, ss.path);
+    image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, ss.path);
     if (!tex) return;
 
     jrect_t src = {

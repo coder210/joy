@@ -12,6 +12,7 @@ AssetManager::~AssetManager()
 {
         if (simheiFont24_)
                 font_destroy(simheiFont24_);
+        tex_cache_clear();
 }
 
 void AssetManager::Init()
@@ -19,16 +20,31 @@ void AssetManager::Init()
         if (instance_ == nullptr) {
                 instance_ = new AssetManager();
         }
-        // 若已经初始化，可根据需要添加日志或断言
 }
 
 AssetManager* AssetManager::GetInstance()
 {
-        // 调用前必须确保已调用 Init，否则返回 nullptr
         return instance_;
 }
 
 font_p AssetManager::GetSimheiFont24()
 {
         return simheiFont24_;
+}
+
+image_p AssetManager::tex_cache_get(jr2d_p r2d, const char* path)
+{
+        std::string k(path);
+        auto it = tex_cache_.find(k);
+        if (it != tex_cache_.end()) return it->second;
+        image_p t = image_create(r2d, path);
+        tex_cache_[k] = t;
+        return t;
+}
+
+void AssetManager::tex_cache_clear()
+{
+        for (auto& kv : tex_cache_)
+                if (kv.second) image_destroy(kv.second);
+        tex_cache_.clear();
 }

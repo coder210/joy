@@ -1,6 +1,5 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #include <joy/external/stb_image.h>
-#include <unordered_map>
 #include <map>
 #include <string>
 #include <algorithm>
@@ -31,6 +30,7 @@
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
+#include "../asset_manager.h"
 
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
@@ -40,25 +40,8 @@ struct state_snapshot {
 	fp_t position_x, position_y;
 };
 
+
 // 玩家状态机（使用 ECS PlayerActionComponent）
-
-// 纹理缓存
-static std::unordered_map<std::string, image_p> g_tex_cache;
-
-image_p tex_cache_get(jr2d_p r2d, const char* path) {
-	std::string k(path);
-	auto it = g_tex_cache.find(k);
-	if (it != g_tex_cache.end()) return it->second;
-	image_p t = image_create(r2d, path);
-	g_tex_cache[k] = t;
-	return t;
-}
-
-void tex_cache_clear() {
-	for (auto& kv : g_tex_cache)
-		if (kv.second) image_destroy(kv.second);
-	g_tex_cache.clear();
-}
 
 struct game_scene {
 	scene_p scene;
@@ -962,7 +945,7 @@ static void on_render(scene_p s) {
 static void on_destroy(scene_p s) {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	if (self->netclient) { netclient_destroy(self->netclient); self->netclient = NULL; }
-	tex_cache_clear();
+	AssetManager::GetInstance()->tex_cache_clear();
 	audio_shot_destroy(self->step_sound);
 	audio_bgm_destroy(self->bgm);
 	if (self->audio_dev) audio_close_device(self->audio_dev);

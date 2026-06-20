@@ -1,6 +1,5 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 #include <joy/external/stb_image.h>
-#include <unordered_map>
 #include "../flecs.h"
 #include <joy/jmsgpack.h>
 #include <string>
@@ -34,6 +33,7 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../context.h"
+#include "../asset_manager.h"
 #include "game_scene.h"
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
@@ -87,23 +87,6 @@ struct game_scene {
 	std::map<int, std::string> worlds;
 
 };
-
-// 纹理缓存
-static std::unordered_map<std::string, image_p> g_tex_cache;
-
-image_p tex_cache_get(jr2d_p r, const char* path) {
-	std::string k(path);
-	auto it = g_tex_cache.find(k);
-	if (it != g_tex_cache.end())
-		return it->second;
-	return NULL;
-}
-void tex_cache_clear() {
-	for (auto& kv : g_tex_cache)
-		if (kv.second)
-			image_destroy(kv.second);
-	g_tex_cache.clear();
-}
 
 static int GenId(game_scene_p game_scene)
 {
@@ -796,7 +779,7 @@ static void on_destroy(scene_p s)
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	simple_fps_destory(self->sample_fps);
 	netserver_destroy(self->netserver);
-	tex_cache_clear();
+	AssetManager::GetInstance()->tex_cache_clear();
 	if (self->tilemap_render) jtilemap_render_destroy(self->tilemap_render);
 	if (self->tilemap) { jtilemap_destroy(self->tilemap); self->tilemap = NULL; }
 }
