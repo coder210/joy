@@ -16,12 +16,13 @@
 #include <joy/jtilemap_render.h>
 #include <joy/jaudio.h>
 #include "../../adventure_shared/protocol.h"
-#include "../components/sprite_sheet_component.h"
 #include "../components/player_action_component.h"
+#include "../components/animator_def.h"
+#include "../components/animator_component.h"
 #include "../components/ai_component.h"
 #include "../components/enemy_component.h"
-#include "../systems/animation_update_system.h"
-#include "../systems/sprite_render_system.h"
+#include "../systems/animator_update_system.h"
+#include "../systems/animator_render_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../components/connection_component.h"
@@ -40,6 +41,77 @@ struct state_snapshot {
 	fp_t position_x, position_y;
 };
 
+
+// ========== 动画定义辅助函数 ==========
+static flecs::entity create_warrior_anim_def(flecs::world& world, const char* tex_path) {
+    auto def_entity = world.entity();
+    AnimatorDef def;
+
+    const int FPS = 6;
+    const float DUR = 0.15f;
+    const int FW = 192, FH = 192;
+
+    // State 0: idle (row 0)
+    {
+        AnimStateDef s;
+        s.name = "idle"; s.loop = true;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i * FW), 0, (float)FW, (float)FH }, DUR });
+        def.states.push_back(s);
+    }
+    // State 1: walk (row 1)
+    {
+        AnimStateDef s;
+        s.name = "walk"; s.loop = true;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i * FW), (float)(1 * FH), (float)FW, (float)FH }, DUR });
+        def.states.push_back(s);
+    }
+    // State 2-5: attack (rows 4,2,2,6 for directions 下,左,右,上)
+    const char* atk_names[] = { "attack_d", "attack_l", "attack_r", "attack_u" };
+    int atk_rows[] = { 4, 2, 2, 6 };
+    for (int d = 0; d < 4; d++) {
+        AnimStateDef s;
+        s.name = atk_names[d]; s.loop = false;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i * FW), (float)(atk_rows[d] * FH), (float)FW, (float)FH }, DUR });
+        def.states.push_back(s);
+    }
+
+    // Transitions
+    // idle(0) ↔ walk(1)
+    {
+        AnimTransitionDef t;
+        t.from_state = 0; t.to_state = 1;
+        t.conditions.push_back({ "speed", AnimCondMode::GREATER, 0.5f });
+        def.transitions.push_back(t);
+    }
+    {
+        AnimTransitionDef t;
+        t.from_state = 1; t.to_state = 0;
+        t.conditions.push_back({ "speed", AnimCondMode::LESS, 0.5f });
+        def.transitions.push_back(t);
+    }
+    // any → attack_dir (2~5), triggered by attack + dir == d
+    for (int d = 0; d < 4; d++) {
+        AnimTransitionDef t;
+        t.from_state = -1; t.to_state = 2 + d;
+        t.conditions.push_back({ "attack", AnimCondMode::TRIGGER, 0 });
+        t.conditions.push_back({ "dir", AnimCondMode::EQUALS, (float)d });
+        def.transitions.push_back(t);
+    }
+    // attack_dir → idle after 0.6s
+    for (int d = 0; d < 4; d++) {
+        AnimTransitionDef t;
+        t.from_state = 2 + d; t.to_state = 0;
+        t.exit_time = 0.6f;
+        def.transitions.push_back(t);
+    }
+
+    def.default_state = 0;
+    def_entity.set<AnimatorDef>(def);
+    return def_entity;
+}
 
 // 玩家状态机（使用 ECS PlayerActionComponent）
 
@@ -90,9 +162,9 @@ struct game_scene {
 
 	// ---- 预构建渲染 query（避免 on_render 每帧 filter_builder） ----
 	flecs::query<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent> render_player_query;
+		Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
 	flecs::query<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent> render_enemy_query;
+		Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
 	flecs::query<IdComponent, TransformComponent> healthbar_query;
 
 	// 远程玩家方向追踪（从静态局部变量移到 struct）
@@ -110,6 +182,12 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
 	self->server_frameid = frame_id;
 	self->server_entity_id = eid;
 
+	// 创建动画定义实体
+	flecs::entity player_anim_def = create_warrior_anim_def(self->ecs_world,
+		"adventure_client/textures/knights/troops/warrior/warrior_blue.png");
+	flecs::entity enemy_anim_def = create_warrior_anim_def(self->ecs_world,
+		"adventure_client/textures/knights/troops/warrior/warrior_red.png");
+
 	self->ecs_world.defer_begin();
 	for (int i = 0; i < ec; i++) {
 		auto& entity = entities[i];
@@ -121,34 +199,20 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
 			.set<TransformComponent>({ fp_to_float(entity.position_x),
 						   fp_to_float(entity.position_y), 0, 1, 1 });
 		if (entity.type == S2C_TYPE_PLAYER) {
-			SpriteSheetComponent ss{};
-			snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-			ss.frame_w = 192; ss.frame_h = 192;
-			ss.idle_row = 0; ss.walk_row = 1;
-			ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
-			ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
-			ss.frame_count = 6; ss.frame_duration = 0.15f;
-			e.set<PlayerActionComponent>({});
-			e.set<SpriteSheetComponent>(ss);
-			e.set<AnimationFrameComponent>({});
-			e.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
-			e.set<PlayerComponent>({ entity.player_conv });
+			e.set<PlayerActionComponent>({})
+				.set<Animator>({ player_anim_def })
+				.set<AnimParams>({})
+				.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
+				.set<PlayerComponent>({ entity.player_conv });
 		}
 		else if (entity.type == S2C_TYPE_ENEMY) {
-			SpriteSheetComponent ss{};
-			snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_red.png");
-			ss.frame_w = 192; ss.frame_h = 192;
-			ss.idle_row = 0; ss.walk_row = 1;
-			ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
-			ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
-			ss.frame_count = 6; ss.frame_duration = 0.15f;
 			e.add<EnemyComponent>()
 				.set<AIComponent>({ 0, 0,
 					fp_from_float(4.0f), fp_from_float(15.0f),
 					fp_from_float(1.5f), 0, 0, 0, 0 })
 				.set<PlayerActionComponent>({})
-				.set<SpriteSheetComponent>(ss)
-				.set<AnimationFrameComponent>({})
+				.set<Animator>({ enemy_anim_def })
+				.set<AnimParams>({})
 				.set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
 		}
 	}
@@ -376,6 +440,11 @@ static void update_ai(game_scene_p self)
 						ai.timer = 0;
 						ai.state = 2; // 攻击
 						attack_by_hitbox(self, &pos, rect, id, atk_dir, false); // 敌人攻击只伤玩家
+						if (e.has<AnimParams>()) {
+							auto* p = e.get_mut<AnimParams>();
+							p->attack = true;
+							p->dir = atk_dir;
+						}
 					}
 				}
 				else {
@@ -443,13 +512,8 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 		log_info("%d:CMD_PLAYER_JOIN", pj.conv);
 		fp_t x = pj.position_x;
 		fp_t y = pj.position_y;
-		SpriteSheetComponent ss{};
-		snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-		ss.frame_w = 192; ss.frame_h = 192;
-		ss.idle_row = 0; ss.walk_row = 1;
-		ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
-		ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
-		ss.frame_count = 6; ss.frame_duration = 0.15f;
+		flecs::entity anim_def = create_warrior_anim_def(self->ecs_world,
+			"adventure_client/textures/knights/troops/warrior/warrior_blue.png");
 		self->ecs_world.entity()
 			.set<IdComponent>({ self->server_entity_id++, 10 })
 			.set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
@@ -458,8 +522,8 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 			.set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
 			.set<PlayerComponent>({ pj.conv })
 			.set<PlayerActionComponent>({})
-			.set<SpriteSheetComponent>(ss)
-			.set<AnimationFrameComponent>({});
+			.set<Animator>({ anim_def })
+			.set<AnimParams>({});
 	}
 
 	// 2. 处理玩家离开
@@ -593,18 +657,19 @@ static void on_load(scene_p s)
 	self->ecs_world.component<TransformComponent>();
 	self->ecs_world.component<PlayerComponent>();
 	self->ecs_world.component<AttackRayEffectComponent>();
-	self->ecs_world.component<SpriteSheetComponent>();
-	self->ecs_world.component<AnimationFrameComponent>();
 	self->ecs_world.component<PlayerActionComponent>();
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
+	self->ecs_world.component<AnimatorDef>();
+	self->ecs_world.component<Animator>();
+	self->ecs_world.component<AnimParams>();
 
 	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.4", 30000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
-	self->ecs_world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
-		.each(animation_update_system);
+	self->ecs_world.system<Animator, AnimParams>()
+		.each(animator_update_system);
 	self->sync_query = self->ecs_world.query<IdComponent, LogicPositionComponent, TransformComponent>();
 	self->drawing_entity_query = self->ecs_world.query<IdComponent, LogicRectComponent, TransformComponent>();
 	self->attack_ray_effect_query = self->ecs_world.query<AttackRayEffectComponent>();
@@ -614,9 +679,9 @@ static void on_load(scene_p s)
 
 	// 预构建渲染 query
 	self->render_player_query = self->ecs_world.query<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>();
+		Animator, AnimParams, PlayerActionComponent, PlayerComponent>();
 	self->render_enemy_query = self->ecs_world.query<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>();
+		Animator, AnimParams, PlayerActionComponent, EnemyComponent>();
 	self->healthbar_query = self->ecs_world.query<IdComponent, TransformComponent>();
 
 	// ---- tilemap 渲染 ----
@@ -659,6 +724,11 @@ static void fixedupdate(game_scene_p self, float dt)
 						auto* act = e.get_mut<PlayerActionComponent>();
 						act->state = PlayerActionComponent::ATTACK;
 						act->dir = self->local_dir;
+					}
+					if (e.has<AnimParams>()) {
+						auto* params = e.get_mut<AnimParams>();
+						params->attack = true;
+						params->dir = self->local_dir;
 					}
 				}
 			});
@@ -803,6 +873,19 @@ static void on_update(scene_p s, float dt) {
 		self->accumulator -= self->FIXED_TIMESTEP;
 	}
 
+	// ---------- 同步 PlayerAction → AnimParams（在 ECS systems 之前） ----------
+	self->ecs_world.defer_begin();
+	self->player_query.each([&](flecs::entity e, PlayerComponent&, IdComponent&,
+		LogicRectComponent&, LogicPositionComponent&) {
+			if (e.has<AnimParams>() && e.has<PlayerActionComponent>()) {
+				auto* params = e.get_mut<AnimParams>();
+				auto* act = e.get<PlayerActionComponent>();
+				params->speed = (act->state == PlayerActionComponent::WALK) ? 1.0f : 0.0f;
+				params->dir = act->dir;
+			}
+		});
+	self->ecs_world.defer_end();
+
 	self->ecs_world.progress(dt);
 
 	// ---------- 心跳 ----------
@@ -863,6 +946,12 @@ static void on_update(scene_p s, float dt) {
 						if (act->state != PlayerActionComponent::ATTACK)
 							act->state = moved ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
 					}
+					// 同步到 AnimParams
+					if (e.has<AnimParams>()) {
+						auto* params = e.get_mut<AnimParams>();
+						params->speed = moved ? 1.0f : 0.0f;
+						params->dir = new_dir;
+					}
 				}
 			});
 	}
@@ -895,16 +984,14 @@ static void on_render(scene_p s) {
 
 	// ---- ECS 精灵渲染（玩家） ----
 	self->render_player_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-		SpriteSheetComponent& ss, AnimationFrameComponent& af,
-		PlayerActionComponent& act, PlayerComponent&) {
-			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		Animator& anim, AnimParams& params, PlayerActionComponent& act, PlayerComponent&) {
+			animator_render_system(it.entity(i), t, r, anim, act);
 		});
 
 	// ---- ECS 精灵渲染（敌人） ----
 	self->render_enemy_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-		SpriteSheetComponent& ss, AnimationFrameComponent& af,
-		PlayerActionComponent& act, EnemyComponent&) {
-		sprite_render_system(it.entity(i), t, r, ss, af, act);
+		Animator& anim, AnimParams& params, PlayerActionComponent& act, EnemyComponent&) {
+		animator_render_system(it.entity(i), t, r, anim, act);
 		});
 
 	// ---- 血条渲染（所有有血量实体头顶） ----

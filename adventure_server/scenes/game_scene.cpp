@@ -28,8 +28,8 @@
 #include "../components/logic_velocity_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
-#include "../systems/animation_update_system.h"
-#include "../systems/sprite_render_system.h"
+#include "../systems/animator_update_system.h"
+#include "../systems/animator_render_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../context.h"
@@ -69,9 +69,9 @@ struct game_scene {
 
         // 精灵渲染 query（避免 on_render 每帧重建 filter）
         flecs::query<TransformComponent, LogicRectComponent,
-                SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent> render_player_query;
+                Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
         flecs::query<TransformComponent, LogicRectComponent,
-                SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent> render_enemy_query;
+                Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
 
         // 位置同步 query（合并玩家和敌人）
         flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
@@ -87,6 +87,51 @@ struct game_scene {
         std::map<int, std::string> worlds;
 
 };
+
+// ========== 动画定义辅助 ==========
+static flecs::entity create_warrior_anim_def(flecs::world& world, const char* tex_path) {
+    auto def_entity = world.entity();
+    AnimatorDef def;
+
+    const int FPS = 6;
+    const float DUR = 0.15f;
+    const int FW = 192, FH = 192;
+
+    { AnimStateDef s; s.name = "idle"; s.loop = true;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i*FW), 0, (float)FW, (float)FH }, DUR });
+        def.states.push_back(s); }
+    { AnimStateDef s; s.name = "walk"; s.loop = true;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i*FW), (float)(1*FH), (float)FW, (float)FH }, DUR });
+        def.states.push_back(s); }
+
+    const char* atk_names[] = { "attack_d","attack_l","attack_r","attack_u" };
+    int atk_rows[] = { 4,2,2,6 };
+    for (int d = 0; d < 4; d++) {
+        AnimStateDef s; s.name = atk_names[d]; s.loop = false;
+        for (int i = 0; i < FPS; i++)
+            s.clips.push_back({ tex_path, { (float)(i*FW), (float)(atk_rows[d]*FH), (float)FW, (float)FH }, DUR });
+        def.states.push_back(s);
+    }
+
+    { AnimTransitionDef t; t.from_state=0; t.to_state=1;
+        t.conditions.push_back({"speed",AnimCondMode::GREATER,0.5f}); def.transitions.push_back(t); }
+    { AnimTransitionDef t; t.from_state=1; t.to_state=0;
+        t.conditions.push_back({"speed",AnimCondMode::LESS,0.5f}); def.transitions.push_back(t); }
+    for (int d = 0; d < 4; d++) {
+        AnimTransitionDef t; t.from_state=-1; t.to_state=2+d;
+        t.conditions.push_back({"attack",AnimCondMode::TRIGGER,0});
+        t.conditions.push_back({"dir",AnimCondMode::EQUALS,(float)d}); def.transitions.push_back(t);
+    }
+    for (int d = 0; d < 4; d++) {
+        AnimTransitionDef t; t.from_state=2+d; t.to_state=0; t.exit_time=0.6f; def.transitions.push_back(t);
+    }
+
+    def.default_state = 0;
+    def_entity.set<AnimatorDef>(def);
+    return def_entity;
+}
 
 static int GenId(game_scene_p game_scene)
 {
@@ -383,6 +428,11 @@ static void UpdateAI(game_scene_p self)
                                                 ai.timer = 0;
                                                 ai.state = 2; // 攻击
                                                 AttackTarget(self, &pos, rect, id, atk_dir);
+                                                if (e.has<AnimParams>()) {
+                                                    auto* p = e.get_mut<AnimParams>();
+                                                    p->attack = true;
+                                                    p->dir = atk_dir;
+                                                }
                                         }
                                 }
                                 else {
@@ -444,13 +494,8 @@ static void HandleCommandSystem(game_scene_p self)
                 fp_t x = pj.position_x;
                 fp_t y = pj.position_y;
 
-                SpriteSheetComponent ss{};
-                snprintf(ss.path, sizeof(ss.path), "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-                ss.frame_w = 192; ss.frame_h = 192;
-                ss.idle_row = 0; ss.walk_row = 1;
-                ss.atk_rows[0] = 4; ss.atk_rows[1] = 2;
-                ss.atk_rows[2] = 2; ss.atk_rows[3] = 6;
-                ss.frame_count = 6; ss.frame_duration = 0.15f;
+                flecs::entity anim_def = create_warrior_anim_def(self->world,
+                    "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
                 self->world.entity()
                         .set<IdComponent>({ GenId(self), 10})
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
@@ -459,8 +504,8 @@ static void HandleCommandSystem(game_scene_p self)
                         .set<TransformComponent>({ fp_to_float(x), fp_to_float(y), 0, 1, 1 })
                         .set<PlayerComponent>({ pj.conv })
                         .set<PlayerActionComponent>({})
-                        .set<SpriteSheetComponent>(ss)
-                        .set<AnimationFrameComponent>({});
+                        .set<Animator>({ anim_def })
+                        .set<AnimParams>({});
         }
 
         // 玩家离开（defer 延迟销毁，避免迭代中删除实体）
@@ -484,13 +529,16 @@ static void HandleCommandSystem(game_scene_p self)
                                 if (p.conv != input.conv) return;
                                 if (e.has<PlayerActionComponent>()) {
                                         auto* act = e.get_mut<PlayerActionComponent>();
+                                        auto* params = e.has<AnimParams>() ? e.get_mut<AnimParams>() : nullptr;
                                         if (input.keycode & INPUT_ATTACK) {
                                                 act->state = PlayerActionComponent::ATTACK;
                                                 act->dir = dir;
+                                                if (params) { params->attack = true; params->dir = dir; }
                                         }
                                         else {
                                                 act->state = moving ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
                                                 act->dir = dir;
+                                                if (params) { params->speed = moving ? 1.0f : 0.0f; params->dir = dir; }
                                         }
                                 }
                                 ApplyInput(self, &pos, r, id, input.conv, input.keycode);
@@ -588,13 +636,8 @@ static void on_load(scene_p s)
                 fp_t ey = fp_from_float(3);
                 fp_t cx = ex;
                 fp_t cy = ey;
-                SpriteSheetComponent ess{};
-                snprintf(ess.path, sizeof(ess.path), "adventure_server/textures/knights/troops/warrior/warrior_red.png");
-                ess.frame_w = 192; ess.frame_h = 192;
-                ess.idle_row = 0; ess.walk_row = 1;
-                ess.atk_rows[0] = 4; ess.atk_rows[1] = 2;
-                ess.atk_rows[2] = 2; ess.atk_rows[3] = 6;
-                ess.frame_count = 6; ess.frame_duration = 0.15f;
+                flecs::entity enemy_anim_def = create_warrior_anim_def(self->world,
+                    "adventure_server/textures/knights/troops/warrior/warrior_red.png");
                 self->world.entity()
                         .add<EnemyComponent>()
                         .set<AIComponent>({
@@ -608,15 +651,15 @@ static void on_load(scene_p s)
                         .set<LogicPositionComponent>({ ex, ey })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                         .set<TransformComponent>({ fp_to_float(ex), fp_to_float(ey), 0, 1, 1 })
-                        .set<SpriteSheetComponent>(ess)
                         .set<PlayerActionComponent>({})
-                        .set<AnimationFrameComponent>({});
+                        .set<Animator>({ enemy_anim_def })
+                        .set<AnimParams>({});
         }
         log_info("[AI] created %d enemies", ENEMY_COUNT);
 
         self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-        self->world.system<PlayerActionComponent, SpriteSheetComponent, AnimationFrameComponent>()
-                .each(animation_update_system);
+        self->world.system<Animator, AnimParams>()
+                .each(animator_update_system);
 
         self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
         self->drawing_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
@@ -627,9 +670,9 @@ static void on_load(scene_p s)
 
         // 预构建渲染 query，避免每帧重复 filter_builder().build()
         self->render_player_query = self->world.query<TransformComponent, LogicRectComponent,
-                SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>();
+                Animator, AnimParams, PlayerActionComponent, PlayerComponent>();
         self->render_enemy_query = self->world.query<TransformComponent, LogicRectComponent,
-                SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>();
+                Animator, AnimParams, PlayerActionComponent, EnemyComponent>();
 
         // 位置同步 query（所有同时拥有逻辑位置和渲染位置的实体）
         self->position_sync_query = self->world.query<LogicPositionComponent, TransformComponent>();
@@ -731,16 +774,14 @@ static void on_render(scene_p s)
 
         // ---- ECS 精灵渲染（玩家） ----
         self->render_player_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-                SpriteSheetComponent& ss, AnimationFrameComponent& af,
-                PlayerActionComponent& act, PlayerComponent&) {
-                        sprite_render_system(it.entity(i), t, r, ss, af, act);
+                Animator& anim, AnimParams& params, PlayerActionComponent& act, PlayerComponent&) {
+                        animator_render_system(it.entity(i), t, r, anim, act);
                 });
 
         // ---- ECS 精灵渲染（敌人） ----
         self->render_enemy_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-                SpriteSheetComponent& ss, AnimationFrameComponent& af,
-                PlayerActionComponent& act, EnemyComponent&) {
-                        sprite_render_system(it.entity(i), t, r, ss, af, act);
+                Animator& anim, AnimParams& params, PlayerActionComponent& act, EnemyComponent&) {
+                        animator_render_system(it.entity(i), t, r, anim, act);
                 });
 
         // ---- 血条渲染（所有有血量实体头顶） ----
@@ -801,9 +842,10 @@ game_scene_p game_scene_create(Context* ctx)
         self->world.component<TransformComponent>();
         self->world.component<PlayerComponent>();
         self->world.component<AttackRayEffectComponent>();
-        self->world.component<SpriteSheetComponent>();
-        self->world.component<AnimationFrameComponent>();
         self->world.component<PlayerActionComponent>();
+        self->world.component<AnimatorDef>();
+        self->world.component<Animator>();
+        self->world.component<AnimParams>();
 
         self->world.component<AIComponent>();
         self->world.component<EnemyComponent>();
