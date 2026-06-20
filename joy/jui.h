@@ -180,9 +180,9 @@ extern "C" {
 
 	JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
 	JOY_API void combobox_destroy(combobox_p combobox);
-	JOY_API void combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
+	JOY_API void combobox_set_text(combobox_p combobox, font_p font,
 		const int* codepoints, int len, jcolor_t color);
-	JOY_API void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, 
+	JOY_API void combobox_add_item(combobox_p combobox, font_p font,
 		const int* codepoints, int len, jcolor_t color);
 	JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
 	JOY_API bool combobox_is_open(combobox_p combobox);

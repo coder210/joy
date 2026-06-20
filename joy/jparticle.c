@@ -64,7 +64,7 @@ jparticle_cfg_t jparticle_cfg_default(void) {
 
 /* ======================== 创建/销毁 ======================== */
 jparticle_p jparticle_create(jparticle_cfg_t cfg) {
-    jparticle_p p = (jparticle_p)SDL_malloc(sizeof(jparticle_t));
+    jparticle_p p = (jparticle_p)malloc(sizeof(jparticle_t));
     if (!p) return NULL;
     p->cfg = cfg;
     p->emit_acc = 0;
@@ -75,7 +75,7 @@ jparticle_p jparticle_create(jparticle_cfg_t cfg) {
 void jparticle_destroy(jparticle_p p) {
     if (!p) return;
     kv_destroy(p->particles);
-    SDL_free(p);
+    free(p);
 }
 
 /* ======================== 控制 ======================== */

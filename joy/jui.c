@@ -268,16 +268,16 @@ void combobox_destroy(combobox_p combobox)
 }
 
 void
-combobox_set_text(combobox_p combobox, const char* filename, int fontsize,
+combobox_set_text(combobox_p combobox, font_p font,
 	const int* codepoints, int len, jcolor_t color)
 {
 	if (combobox->text) {
 		text_destroy(combobox->text);
 	}
-	combobox->text = text_create(combobox->r2d, fontsize, codepoints, len, color);
+	combobox->text = text_create(combobox->r2d, font, codepoints, len, color);
 }
 
-void combobox_add_item(combobox_p combobox, const char* filename, int fontsize, const int* codepoints, int len, jcolor_t color)
+void combobox_add_item(combobox_p combobox, font_p font, const int* codepoints, int len, jcolor_t color)
 {
 	combobox_item_p item;
 	jr2d_p r2d;
