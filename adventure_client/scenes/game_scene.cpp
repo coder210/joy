@@ -392,7 +392,7 @@ static void update_ai(game_scene_p self)
 					if (ai.timer >= 60) {
 						ai.timer = 0;
 						ai.state = 2; // 攻击
-						attack_by_hitbox(self, &pos, rect, id, atk_dir);
+						attack_by_hitbox(self, &pos, rect, id, atk_dir, false); // 敌人攻击只伤玩家
 					}
 				}
 				else {
