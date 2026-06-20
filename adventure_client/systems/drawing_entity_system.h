@@ -30,7 +30,6 @@ static void drawing_entity_system(flecs::entity e,
         }
 
         r2d_set_color(ctx->r2d, 0, 0, 0, 255);
-        //SDL_RenderDebugText(ctx->r2d, body.x, body.y + body.h * 0.5f, std::to_string(id.hp).c_str());
 }
 
 

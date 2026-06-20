@@ -22,8 +22,6 @@ static void sprite_render_system(flecs::entity e,
     image_p tex = tex_cache_get(ctx->r2d, ss.path);
     if (!tex) return;
 
-    //int flip = (act.dir == 1) ? JSDL_FLIP_HORIZONTAL : JSDL_FLIP_NONE;
-
     jrect_t src = {
         (float)(af.cur_frame * ss.frame_w),
         (float)(af.cur_row * ss.frame_h),

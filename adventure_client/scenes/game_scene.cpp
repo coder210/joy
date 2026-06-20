@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 #include <joy/jmsgpack.h>
 #include "../flecs.h"
 #include "game_scene.h"
@@ -103,6 +104,19 @@ struct game_scene {
 	flecs::query<IdComponent, LogicPositionComponent, TransformComponent> sync_query;
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> attack_ray_effect_query;
+
+	// ---- 预构建渲染 query（避免 on_render 每帧 filter_builder） ----
+	flecs::query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent> render_player_query;
+	flecs::query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent> render_enemy_query;
+	flecs::query<IdComponent, TransformComponent> healthbar_query;
+
+	// 远程玩家方向追踪（从静态局部变量移到 struct）
+	std::map<flecs::entity_t, int>  tracked_dir;
+	std::map<flecs::entity_t, fp_t> tracked_last_px;
+	std::map<flecs::entity_t, fp_t> tracked_last_py;
+	float step_timer = 0;
 
 };
 
@@ -276,8 +290,9 @@ static nearest_attack_target find_nearest_target_in_attack_ray(
 }
 
 // 通用碰撞盒攻击辅助（dir: 0=下 1=左 2=右 3=上）
+// hit_enemies: true=只伤敌人（玩家攻击）, false=只伤玩家（敌人攻击）
 static void attack_by_hitbox(game_scene_p self,
-	LogicPositionComponent* p, LogicRectComponent& currRect, IdComponent& currId, int dir)
+	LogicPositionComponent* p, LogicRectComponent& currRect, IdComponent& currId, int dir, bool hit_enemies)
 {
 	fp_t atk_range = fp_from_float(0.7f);
 	fp_t ox = 0, oy = 0;
@@ -286,8 +301,9 @@ static void attack_by_hitbox(game_scene_p self,
 	else if (dir == 2) ox = atk_range;
 	else if (dir == 3) oy = -atk_range;
 	rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
-	self->body_query.each([&](IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
+	self->body_query.each([&](flecs::entity e, IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
 		if (currId.id == id.id) return;
+		if (hit_enemies ? !e.has<EnemyComponent>() : !e.has<PlayerComponent>()) return;
 		rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
 		contact2df_t contact;
 		if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
@@ -301,7 +317,7 @@ static void attack_with_damage_and_effect(game_scene_p self,
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
-	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input));
+	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input), true);
 }
 
 // 仅攻击（减血，无特效）
@@ -309,7 +325,7 @@ static void attack_damage_only(game_scene_p self,
 	LogicPositionComponent* p, LogicRectComponent& currRect,
 	IdComponent& currId, int conv, int input)
 {
-	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input));
+	attack_by_hitbox(self, p, currRect, currId, input_to_dir(input), true);
 }
 
 // 仅显示特效（不减血）
@@ -519,6 +535,11 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 				snapshots.insert({ id.id, { pos.x, pos.y } });
 			});
 		self->snapshots.insert({ self->server_frameid, snapshots });
+
+		// 限制快照增长，最多保留 1000 帧
+		const size_t MAX_SNAPSHOT_FRAMES = 1000;
+		while (self->snapshots.size() > MAX_SNAPSHOT_FRAMES)
+			self->snapshots.erase(self->snapshots.begin());
 	}
 
 	// 预测
@@ -607,6 +628,13 @@ static void on_load(scene_p s)
 	self->player_query = self->ecs_world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->body_query = self->ecs_world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->enemy_query = self->ecs_world.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+
+	// 预构建渲染 query
+	self->render_player_query = self->ecs_world.query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>();
+	self->render_enemy_query = self->ecs_world.query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>();
+	self->healthbar_query = self->ecs_world.query<IdComponent, TransformComponent>();
 
 	// ---- tilemap 渲染 ----
 	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
@@ -765,13 +793,14 @@ static void on_handle_event(scene_p s, const void* ev)
 
 // ========== AI 系统 ==========
 
-// 敌人碰撞盒攻击
+// 敌人碰撞盒攻击（只伤玩家）
 static void ai_attack_target(game_scene_p self, LogicPositionComponent* p,
 	LogicRectComponent& currRect, IdComponent& currId)
 {
 	rectanglef_t atk_rect = { p->x, p->y, currRect.width, currRect.height };
-	self->body_query.each([&](IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
+	self->body_query.each([&](flecs::entity e, IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
 		if (currId.id == id.id) return;
+		if (!e.has<PlayerComponent>()) return; // 敌人只攻击玩家
 		rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
 		contact2df_t contact;
 		if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
@@ -799,7 +828,6 @@ static void on_update(scene_p s, float dt) {
 	// ---------- 摄像机跟随 + 远程状态同步 + 脚步音效 ----------
 	self->ecs_world.defer_begin();
 	{
-		static float step_timer = 0;
 		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
 			LogicRectComponent&, LogicPositionComponent& pos) {
 				if (p.conv == (int)self->local_conv) {
@@ -822,20 +850,20 @@ static void on_update(scene_p s, float dt) {
 
 					// 脚步音效
 					if (e.has<PlayerActionComponent>() && e.get<PlayerActionComponent>()->state == PlayerActionComponent::WALK) {
-						step_timer += dt;
-						if (step_timer >= 0.30f) {
+						self->step_timer += dt;
+						if (self->step_timer >= 0.30f) {
 							if (self->step_sound) audio_shot_play(self->step_sound);
-							step_timer = 0;
+							self->step_timer = 0;
 						}
 					}
-					else { step_timer = 0; }
+					else { self->step_timer = 0; }
 				}
 				else {
 					// 远程玩家方向追踪
 					flecs::entity_t eid = e;
 					auto& ldi = self->remote_dirs[eid];
-					static std::map<flecs::entity_t, fp_t> last_px, last_py;
-					auto& lx = last_px[eid]; auto& ly = last_py[eid];
+					auto& lx = self->tracked_last_px[eid];
+					auto& ly = self->tracked_last_py[eid];
 					if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
 					fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
 					fp_t th = fp_from_float(0.001f);
@@ -883,28 +911,23 @@ static void on_render(scene_p s) {
 	self->attack_ray_effect_query.each(drawing_attack_ray_effect_system);
 
 	// ---- ECS 精灵渲染（玩家） ----
-	self->ecs_world.filter_builder<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>()
-		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-			SpriteSheetComponent& ss, AnimationFrameComponent& af,
-			PlayerActionComponent& act, PlayerComponent&) {
-				sprite_render_system(it.entity(i), t, r, ss, af, act);
-			});
+	self->render_player_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+		SpriteSheetComponent& ss, AnimationFrameComponent& af,
+		PlayerActionComponent& act, PlayerComponent&) {
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
 
 	// ---- ECS 精灵渲染（敌人） ----
-	self->ecs_world.filter_builder<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>()
-		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-			SpriteSheetComponent& ss, AnimationFrameComponent& af,
-			PlayerActionComponent& act, EnemyComponent&) {
-			sprite_render_system(it.entity(i), t, r, ss, af, act);
+	self->render_enemy_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+		SpriteSheetComponent& ss, AnimationFrameComponent& af,
+		PlayerActionComponent& act, EnemyComponent&) {
+		sprite_render_system(it.entity(i), t, r, ss, af, act);
 		});
 
 	// ---- 血条渲染（所有有血量实体头顶） ----
 	{
 		context* ctx = self->ctx;
-		self->ecs_world.filter_builder<IdComponent, TransformComponent>()
-			.build().each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
+		self->healthbar_query.each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
 			flecs::entity e = it.entity(i);
 			if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
 			if (id.hp <= 0) return;
