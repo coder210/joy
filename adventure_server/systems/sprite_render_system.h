@@ -31,7 +31,10 @@ static void sprite_render_system(flecs::entity e,
     float off_x = (ss.frame_w - body_w) / 2.0f;
     float off_y = (ss.frame_h - body_h) / 2.0f;
 
-    jrect_t dst = { scr_x - off_x, scr_y - off_y, (float)ss.frame_w, (float)ss.frame_h };
-    //jsdl_render_texture_rotated(ctx->r2d, tex, &src, &dst, 0, nullptr, flip);
-    image_draw_ex(tex, &src, { scr_x - off_x, scr_y - off_y }, 0, { 1, 1 }, { 0, 0 });
+    float draw_x = scr_x - off_x;
+    float draw_y = scr_y - off_y;
+    float scale_x = (act.dir == 1) ? -1.0f : 1.0f;
+    float cx = draw_x + ss.frame_w * 0.5f;
+    float cy = draw_y + ss.frame_h * 0.5f;
+    image_draw_ex(tex, &src, { cx, cy }, 0, { scale_x, 1 }, { ss.frame_w * 0.5f, ss.frame_h * 0.5f });
 }
