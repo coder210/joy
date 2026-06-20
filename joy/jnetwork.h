@@ -132,6 +132,9 @@ extern "C" {
 	JOY_API void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata);
 	JOY_API net_server_type netserver_get_type(netserver_p ns);
 
+	/** 释放 net_message 的 data 字段（在 DLL 堆中执行，避免跨模块 free） */
+	JOY_API void netmessage_free_data(net_message_p msg);
+
 #ifdef __cplusplus
 }
 #endif

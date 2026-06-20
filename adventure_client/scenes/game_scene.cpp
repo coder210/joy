@@ -568,7 +568,7 @@ static void on_message(net_message_p msg, void* arg)
 			handle_command_s2c(self, (const char*)msg->data, (int)msg->len);
 		}
 	}
-	if (msg->type == NET_TYPE_MESSAGE && msg->data) free(msg->data);
+	if (msg->type == NET_TYPE_MESSAGE && msg->data) netmessage_free_data(msg);
 }
 
 static void on_load(scene_p s)
@@ -595,7 +595,7 @@ static void on_load(scene_p s)
 	self->ecs_world.component<AIComponent>();
 	self->ecs_world.component<EnemyComponent>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 30000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.4", 30000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
@@ -618,7 +618,7 @@ static void on_load(scene_p s)
 
 	// ---- 音频 ----
 	self->audio_dev = audio_open_device();
-	self->step_sound = audio_shot_create("adventure_client/sounds/ak47.wav", self->audio_dev);
+	self->step_sound = audio_shot_create("adventure_client/sounds/grass-step.wav", self->audio_dev);
 	audio_shot_set_gain(self->step_sound, 1.0f);
 	self->bgm = audio_bgm_create("adventure_client/sounds/bgm.wav", self->audio_dev);
 	audio_bgm_set_gain(self->bgm, 0.5f);

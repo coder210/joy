@@ -18,7 +18,6 @@
 #include <joy/jtilemap.h>
 #include <joy/jtilemap_render.h>
 #include "../../adventure_shared/protocol.h"
-
 #include "../layers/debug_layer.h"
 #include "../components/connection_component.h"
 #include "../components/player_component.h"
@@ -284,7 +283,7 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 		}
 	}
 	if (msg->type == NET_TYPE_MESSAGE && msg_data) {
-		free(msg_data);
+		netmessage_free_data(msg);
 	}
 }
 
@@ -556,7 +555,7 @@ static void on_load(scene_p s)
 {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
 	self->sample_fps = simple_fps_create();
-	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
+	self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.4", 30000);
 
 	debug_layer_p debug_layer = create_debug_layer();
 	scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -564,12 +563,12 @@ static void on_load(scene_p s)
 	self->world.set_ctx(self->ctx);
 
 	// 本地方块：有碰撞检测，但不会同步到客户端（因为有 LocalOnlyComponent）
-	self->world.entity()
+	/*self->world.entity()
 		.add<LocalOnlyComponent>()
 		.set<IdComponent>({ 10000, 100 })
 		.set<LogicRectComponent>({ fp_from_float(0.5f), fp_from_float(0.5f) })
 		.set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
-		.set<TransformComponent>({ 5,5,0,1,1 });
+		.set<TransformComponent>({ 5,5,0,1,1 });*/
 
 	// 加载 tilemap 碰撞墙体（替代硬编码围墙）
 	self->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");

@@ -2026,3 +2026,12 @@ net_server_type netserver_get_type(netserver_p ns)
 {
         return ns->type;
 }
+
+void netmessage_free_data(net_message_p msg)
+{
+        if (msg && msg->data) {
+                free(msg->data);
+                msg->data = NULL;
+                msg->len = 0;
+        }
+}
