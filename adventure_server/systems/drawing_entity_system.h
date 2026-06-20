@@ -3,6 +3,7 @@
 #include "../flecs.h"
 #include "../context.h"
 #include "../scenes/game_scene.h"
+#include "../../adventure_shared/protocol.h"
 #include "../components/id_component.h"
 #include "../components/player_component.h"
 #include "../components/logic_rect_component.h"
@@ -17,10 +18,10 @@ static void DrawingEntitySystem(flecs::entity e,
         jrect_t body = { 0 };
         jrect_t header = { 0 };
         // 摄像机偏移：世界坐标 - 摄像机坐标 → 屏幕像素
-        body.x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
-        body.y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
-        body.w = fp_to_float(rect.width) * PIXELS_PER_METER;
-        body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
+        body.x = (t.position_x - ctx->camera_x) * SERVER_PPM;
+        body.y = (t.position_y - ctx->camera_y) * SERVER_PPM;
+        body.w = fp_to_float(rect.width) * SERVER_PPM;
+        body.h = fp_to_float(rect.height) * SERVER_PPM;
         if (e.has<PlayerComponent>()) {
                 return; // 玩家由 game_scene 用精灵绘制
         }

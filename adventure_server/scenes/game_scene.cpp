@@ -59,12 +59,24 @@ struct game_scene {
 	netserver_p netserver;
 	Context* ctx;
 
+	// ---- 预构建的 ECS Query ----
 	flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
 	flecs::query<ConnectionComponent> connection_query;
 	flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
 	flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
 	flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
 	flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
+
+	// 精灵渲染 query（避免 on_render 每帧重建 filter）
+	flecs::query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent> render_player_query;
+	flecs::query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent> render_enemy_query;
+
+	// 位置同步 query（合并玩家和敌人）
+	flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
+
+	// ---- 纹理缓存 ----
 
 	std::vector<S2CPlayerJoin> player_joins;
 	std::vector<S2CPlayerLeave> player_leaves;
@@ -82,14 +94,13 @@ static std::unordered_map<std::string, image_p> g_tex_cache;
 image_p tex_cache_get(jr2d_p r, const char* path) {
 	std::string k(path);
 	auto it = g_tex_cache.find(k);
-	if (it != g_tex_cache.end()) 
+	if (it != g_tex_cache.end())
 		return it->second;
 	return NULL;
 }
-
 void tex_cache_clear() {
 	for (auto& kv : g_tex_cache)
-		if (kv.second) 
+		if (kv.second)
 			image_destroy(kv.second);
 	g_tex_cache.clear();
 }
@@ -159,12 +170,7 @@ static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
 			rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
 			contact2df_t contact;
 			if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
-				if (id.hp <= 1) {
-					id.hp = 1;
-				}
-				else{
-					id.hp--;
-				}
+				if (id.hp > 1) id.hp--;
 			}
 		});
 	// 射线攻击已注释
@@ -473,13 +479,12 @@ static void HandleCommandSystem(game_scene_p self)
 			.set<AnimationFrameComponent>({});
 	}
 
-	// 玩家离开
+	// 玩家离开（defer 延迟销毁，避免迭代中删除实体）
 	self->world.defer_begin();
 	for (int i = 0; i < ln; i++) {
 		int conv = leaves[i].conv;
-		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
-			LogicRectComponent& r, LogicPositionComponent& pos) {
-				if (p.conv == conv) e.destruct();
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&, LogicRectComponent&, LogicPositionComponent&) {
+			if (p.conv == conv) e.destruct();
 			});
 	}
 	self->world.defer_end();
@@ -636,6 +641,15 @@ static void on_load(scene_p s)
 	self->player_query = self->world.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 	self->enemy_query = self->world.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
+	// 预构建渲染 query，避免每帧重复 filter_builder().build()
+	self->render_player_query = self->world.query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>();
+	self->render_enemy_query = self->world.query<TransformComponent, LogicRectComponent,
+		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>();
+
+	// 位置同步 query（所有同时拥有逻辑位置和渲染位置的实体）
+	self->position_sync_query = self->world.query<LogicPositionComponent, TransformComponent>();
+
 	// ---- tilemap + 精灵渲染初始化 ----
 	if (self->tilemap)
 		self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_server/", NULL);
@@ -695,23 +709,10 @@ static void on_update(scene_p s, float dt)
 		NotifySystem(self);
 
 
-		// 位置同步：HandleCommandSystem/UpdateAI 更新了 LogicPositionComponent，
-		// 手动同步 TransformComponent 确保渲染正确
-		self->player_query.each([&](flecs::entity e, PlayerComponent&, IdComponent&,
-			LogicRectComponent&, LogicPositionComponent& pos) {
-				if (e.has<TransformComponent>()) {
-					auto* t = e.get_mut<TransformComponent>();
-					t->position_x = fp_to_float(pos.x);
-					t->position_y = fp_to_float(pos.y);
-				}
-			});
-		self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent&,
-			IdComponent&, LogicRectComponent&, LogicPositionComponent& pos) {
-				if (e.has<TransformComponent>()) {
-					auto* t = e.get_mut<TransformComponent>();
-					t->position_x = fp_to_float(pos.x);
-					t->position_y = fp_to_float(pos.y);
-				}
+		// 位置同步：合并玩家和敌人为一次查询
+		self->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
+			t.position_x = fp_to_float(pos.x);
+			t.position_y = fp_to_float(pos.y);
 			});
 	}
 
@@ -745,22 +746,18 @@ static void on_render(scene_p s)
 	self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
 
 	// ---- ECS 精灵渲染（玩家） ----
-	self->world.filter_builder<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, PlayerComponent>()
-		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-			SpriteSheetComponent& ss, AnimationFrameComponent& af,
-			PlayerActionComponent& act, PlayerComponent&) {
-				sprite_render_system(it.entity(i), t, r, ss, af, act);
-			});
+	self->render_player_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+		SpriteSheetComponent& ss, AnimationFrameComponent& af,
+		PlayerActionComponent& act, PlayerComponent&) {
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
 
 	// ---- ECS 精灵渲染（敌人） ----
-	self->world.filter_builder<TransformComponent, LogicRectComponent,
-		SpriteSheetComponent, AnimationFrameComponent, PlayerActionComponent, EnemyComponent>()
-		.build().each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-			SpriteSheetComponent& ss, AnimationFrameComponent& af,
-			PlayerActionComponent& act, EnemyComponent&) {
-				sprite_render_system(it.entity(i), t, r, ss, af, act);
-			});
+	self->render_enemy_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
+		SpriteSheetComponent& ss, AnimationFrameComponent& af,
+		PlayerActionComponent& act, EnemyComponent&) {
+			sprite_render_system(it.entity(i), t, r, ss, af, act);
+		});
 
 	// ---- 血条渲染（所有有血量实体头顶） ----
 	{
