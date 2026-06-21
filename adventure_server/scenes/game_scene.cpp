@@ -437,6 +437,13 @@ static void UpdateAI(game_scene_p self)
                                 }
                                 else {
                                         ai.state = 1; // 追击
+                                        if (e.has<PlayerActionComponent>()) {
+                                                auto* act = e.get_mut<PlayerActionComponent>();
+                                                act->state = PlayerActionComponent::WALK;
+                                                if (e.has<AnimParams>()) {
+                                                        e.get_mut<AnimParams>()->speed = 1.0f;
+                                                }
+                                        }
                                         fp_t dx = fp_sub(nearest_player_x, pos.x);
                                         fp_t dy = fp_sub(nearest_player_y, pos.y);
                                         fp_t dist = fp_sqrt(fp_add(fp_mul(dx, dx), fp_mul(dy, dy)));
@@ -455,6 +462,11 @@ static void UpdateAI(game_scene_p self)
                                 fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
                                 fp_t arrived = fp_from_float(0.5f);
                                 if (dist_sq < fp_mul(arrived, arrived)) {
+                                        // 到达巡逻点 → idle
+                                        if (e.has<PlayerActionComponent>()) {
+                                                e.get_mut<PlayerActionComponent>()->state = PlayerActionComponent::IDLE;
+                                                if (e.has<AnimParams>()) e.get_mut<AnimParams>()->speed = 0;
+                                        }
                                         fp_t range = ai.patrol_radius;
                                         ai.target_x = fp_add(ai.patrol_center_x,
                                                 fp_mul(fp_from_float((float)(rand() % 100 - 50)),
@@ -464,6 +476,11 @@ static void UpdateAI(game_scene_p self)
                                                         fp_div(range, fp_from_float(50.0f))));
                                 }
                                 else {
+                                        // 向巡逻点移动 → walk
+                                        if (e.has<PlayerActionComponent>()) {
+                                                e.get_mut<PlayerActionComponent>()->state = PlayerActionComponent::WALK;
+                                                if (e.has<AnimParams>()) e.get_mut<AnimParams>()->speed = 1.0f;
+                                        }
                                         fp_t dist = fp_sqrt(dist_sq);
                                         pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
                                         pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
@@ -734,14 +751,17 @@ static void on_update(scene_p s, float dt)
                 CollectCommandSystem(self);
                 HandleCommandSystem(self);
                 NotifySystem(self);
-
-
-                // 位置同步：合并玩家和敌人为一次查询
-                self->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
-                        t.position_x = fp_to_float(pos.x);
-                        t.position_y = fp_to_float(pos.y);
-                        });
         }
+
+        // 位置同步（插值平滑，避免 20Hz 逻辑更新导致的跳跃）
+        self->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
+                float target_x = fp_to_float(pos.x);
+                float target_y = fp_to_float(pos.y);
+                float alpha = dt * 10.0f;
+                if (alpha > 1.0f) alpha = 1.0f;
+                t.position_x = ft_lerp(t.position_x, target_x, alpha);
+                t.position_y = ft_lerp(t.position_y, target_y, alpha);
+        });
 
         // ---------- 摄像机跟随第一个玩家 ----------
         self->player_query.each([&](PlayerComponent&, IdComponent&,
