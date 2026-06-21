@@ -25,7 +25,7 @@ static void drawing_entity_system(flecs::entity e,
                 return;
         }
         else {
-                r2d_set_color(ctx->r2d, 160, 140, 110, 255);
+                r2d_set_color(ctx->r2d, 140, 195, 196, 255);
                 shape_draw_rectangle(ctx->r2d, "fill", body);
         }
 

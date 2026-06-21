@@ -86,6 +86,10 @@ struct game_scene {
         std::queue<std::string> command_queue;
         std::map<int, std::string> worlds;
 
+        // 玩家位置追踪（每帧检测移动→同步 act.state/params）
+        std::map<flecs::entity_t, fp_t> player_last_px;
+        std::map<flecs::entity_t, fp_t> player_last_py;
+
 };
 
 // ========== 动画定义辅助 ==========
@@ -763,6 +767,37 @@ static void on_update(scene_p s, float dt)
                 t.position_x = ft_lerp(t.position_x, target_x, alpha);
                 t.position_y = ft_lerp(t.position_y, target_y, alpha);
         });
+
+        // ---------- 玩家状态追踪（每帧检测位置变化，同步 act.state/params，类比客户端的远程玩家处理） ----------
+        self->world.defer_begin();
+        self->player_query.each([&](flecs::entity e, PlayerComponent&, IdComponent&,
+                LogicRectComponent&, LogicPositionComponent& pos) {
+                        flecs::entity_t eid = e;
+                        auto& lx = self->player_last_px[eid];
+                        auto& ly = self->player_last_py[eid];
+                        if (lx == 0 && ly == 0) { lx = pos.x; ly = pos.y; }
+                        fp_t dx = fp_sub(pos.x, lx), dy = fp_sub(pos.y, ly);
+                        fp_t th = fp_from_float(0.001f);
+                        int new_dir = 0;
+                        if (dx > th)        new_dir = 2;
+                        else if (dx < -th)  new_dir = 1;
+                        if (dy < -th)       new_dir = 3;
+                        else if (dy > th)   new_dir = 0;
+                        bool moved = (dx > th || dx < -th || dy > th || dy < -th);
+                        if (moved) { lx = pos.x; ly = pos.y; }
+                        if (e.has<PlayerActionComponent>()) {
+                                auto* act = e.get_mut<PlayerActionComponent>();
+                                act->dir = new_dir;
+                                if (act->state != PlayerActionComponent::ATTACK)
+                                        act->state = moved ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
+                        }
+                        if (e.has<AnimParams>()) {
+                                auto* params = e.get_mut<AnimParams>();
+                                params->speed = moved ? 1.0f : 0.0f;
+                                params->dir = new_dir;
+                        }
+                });
+        self->world.defer_end();
 
         // ---------- 摄像机跟随第一个玩家 ----------
         self->player_query.each([&](PlayerComponent&, IdComponent&,

@@ -991,7 +991,7 @@ static void on_update(scene_p s, float dt) {
 
 static void on_render(scene_p s) {
 	game_scene_p self = (game_scene_p)scene_get_userdata(s);
-	r2d_set_color(self->ctx->r2d, 100, 100, 100, 255);
+	r2d_set_color(self->ctx->r2d, 50, 120, 50, 255);
 
 	// ---- tilemap 背景 ----
 	if (self->tilemap && self->tilemap_render) {

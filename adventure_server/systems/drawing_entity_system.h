@@ -26,7 +26,7 @@ static void DrawingEntitySystem(flecs::entity e,
                 return; // 玩家由 game_scene 用精灵绘制
         }
         else {
-            r2d_set_color(ctx->r2d, 160, 140, 110, 255);
+            r2d_set_color(ctx->r2d, 140, 195, 196, 255);
             shape_draw_rectangle(ctx->r2d, "fill", body);
         }
 

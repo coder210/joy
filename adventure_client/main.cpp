@@ -92,7 +92,7 @@ SDL_AppResult SDL_AppIterate(void*)
         game_timer_update(&ctx->game_timer);
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         scene_manager_update(g_mgr, dt);
-        r2d_set_color(ctx->r2d, 30, 30, 40, 255);
+        r2d_set_color(ctx->r2d, 50, 120, 50, 255);
         r2d_begin(ctx->r2d);
         scene_manager_render(g_mgr, ctx->r2d);
         r2d_end(ctx->r2d);
