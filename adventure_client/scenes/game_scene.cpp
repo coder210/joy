@@ -752,10 +752,22 @@ static void fixedupdate(game_scene_p self, float dt)
 
 	if (has_dir(self->current_input_mask)) {
 		self->pending_inputs.push_back(self->current_input_mask);
-		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+		self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
-				if (p.conv == self->local_conv)
+				if (p.conv == self->local_conv) {
 					movement(self, &pos, r, id, self->local_conv, self->current_input_mask);
+					// 预测移动时立即更新方向，使翻转在当前帧生效
+					if (e.has<AnimParams>()) {
+						auto* params = e.get_mut<AnimParams>();
+						params->dir = input_to_dir(self->current_input_mask);
+					}
+					if (e.has<PlayerActionComponent>()) {
+						auto* act = e.get_mut<PlayerActionComponent>();
+						act->dir = input_to_dir(self->current_input_mask);
+						if (act->state != PlayerActionComponent::ATTACK)
+							act->state = PlayerActionComponent::WALK;
+					}
+				}
 			});
 		auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->current_input_mask);
 		netclient_send(self->netclient, data.c_str(), (int)data.size());
