@@ -229,7 +229,7 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
 	self->snapshots.insert({ self->server_frameid, snapshots });
 
 	// 告知服务器本地玩家加入
-	auto data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0);
+	auto data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0, 0);
 	netclient_send(self->netclient, data.c_str(), (int)data.size());
 }
 
@@ -543,34 +543,35 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 	// 5. 应用所有玩家的输入
 	for (int i = 0; i < in; i++) {
 		auto& input = inputs[i];
+		int input_combined = input.dir | (input.attack ? INPUT_ATTACK : 0);
 		self->player_query.each([&](PlayerComponent& p, IdComponent& id,
 			LogicRectComponent& r, LogicPositionComponent& pos) {
 				if (p.conv == input.conv) {
 					if (input.conv == self->local_conv) {
 						if (!self->pending_inputs.empty()
-							&& self->pending_inputs.front() == input.keycode) {
-							log_info("%d:%d", self->pending_inputs.front(), input.keycode);
+							&& self->pending_inputs.front() == input_combined) {
+							log_info("%d:%d", self->pending_inputs.front(), input_combined);
 							self->pending_inputs.erase(self->pending_inputs.begin());
 						} else {
 							bool found = false;
 							for (auto it = self->pending_inputs.begin();
 								it != self->pending_inputs.end(); ++it) {
-								if (*it == input.keycode) {
-									log_error("%d:%d", *it, input.keycode);
+								if (*it == input_combined) {
+									log_error("%d:%d", *it, input_combined);
 									self->pending_inputs.erase(it);
 									found = true; break;
 								}
 							}
 							if (!found)
-								log_error("input:%d not found in pending", input.keycode);
+								log_error("input:%d not found in pending", input_combined);
 						}
-						if (input.keycode & INPUT_ATTACK)
-							attack_damage_only(self, &pos, r, id, input.conv, input.keycode);
-						movement(self, &pos, r, id, input.conv, input.keycode);
+						if (input.attack)
+							attack_damage_only(self, &pos, r, id, input.conv, input_combined);
+						movement(self, &pos, r, id, input.conv, input_combined);
 					} else {
-						if (input.keycode & INPUT_ATTACK)
-							attack_with_damage_and_effect(self, &pos, r, id, input.conv, input.keycode);
-						movement(self, &pos, r, id, input.conv, input.keycode);
+						if (input.attack)
+							attack_with_damage_and_effect(self, &pos, r, id, input.conv, input_combined);
+						movement(self, &pos, r, id, input.conv, input_combined);
 					}
 				}
 			});
@@ -615,7 +616,7 @@ static void on_message(net_message_p msg, void* arg)
 {
 	game_scene_p self = (game_scene_p)arg;
 	if (msg->type == NET_TYPE_CONNECTED) {
-		auto d = pack_c2s(CMD_LOADING, 0, 0, 0);
+		auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0);
 		netclient_send(self->netclient, d.c_str(), (int)d.size());
 	}
 	else if (msg->type == NET_TYPE_MESSAGE) {
@@ -735,7 +736,7 @@ static void fixedupdate(game_scene_p self, float dt)
 				}
 			});
 		{
-		auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, INPUT_ATTACK);
+		auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, 1);
 		netclient_send(self->netclient, data.c_str(), (int)data.size());
 		}
 		return;
@@ -769,7 +770,7 @@ static void fixedupdate(game_scene_p self, float dt)
 					}
 				}
 			});
-		auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->current_input_mask);
+		auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->current_input_mask, 0);
 		netclient_send(self->netclient, data.c_str(), (int)data.size());
 	}
 }
@@ -780,7 +781,7 @@ static void send_heartbeat(game_scene_p self, float dt)
 	self->heartbeatTimer += dt;
 	if (self->heartbeatTimer >= 3.f) {
 		self->heartbeatTimer = 0.f;
-		auto d = pack_c2s(CMD_PLAYER_HEART, 0, 0, 0);
+		auto d = pack_c2s(CMD_PLAYER_HEART, 0, 0, 0, 0);
 		netclient_send(self->netclient, d.c_str(), d.size());
 	}
 }

@@ -163,8 +163,8 @@ static void AddPlayerJoin(game_scene_p g, int conv, int64_t x, int64_t y) {
 static void AddPlayerLeave(game_scene_p g, int conv) {
         S2CPlayerLeave l = { conv }; g->player_leaves.push_back(l);
 }
-static void AddPlayerInput(game_scene_p g, int conv, int keycode) {
-        S2CPlayerInput i = { conv, keycode }; g->player_inputs.push_back(i);
+static void AddPlayerInput(game_scene_p g, int conv, int dir, int attack) {
+        S2CPlayerInput i = { conv, dir, (int8_t)attack }; g->player_inputs.push_back(i);
 }
 
 static void HandleHeartbeat(game_scene_p g, int conv)
@@ -303,13 +303,13 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
                 self->player_leaves.push_back(l);
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
-                int cmd, input_kc = 0; int64_t join_x = 0, join_y = 0;
-                if (unpack_c2s((const char*)msg_data, (int)msg_len, &cmd, &join_x, &join_y, &input_kc)) {
+                int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
+                if (unpack_c2s((const char*)msg_data, (int)msg_len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
                         switch (cmd) {
                         case CMD_LOADING:      HandleLoading(self, msg->conv); break;
                         case CMD_PLAYER_JOIN:  AddPlayerJoin(self, msg->conv, join_x, join_y); break;
                         case CMD_PLAYER_LEAVE: AddPlayerLeave(self, msg->conv); break;
-                        case CMD_PLAYER_INPUT: AddPlayerInput(self, msg->conv, input_kc); break;
+                        case CMD_PLAYER_INPUT: AddPlayerInput(self, msg->conv, input_dir, input_attack); break;
                         case CMD_PLAYER_HEART: HandleHeartbeat(self, msg->conv); break;
                         }
                 }
@@ -538,8 +538,9 @@ static void HandleCommandSystem(game_scene_p self)
         // 应用输入
         for (int i = 0; i < in; i++) {
                 auto& input = inputs[i];
-                int dir = input_to_dir(input.keycode);
-                bool moving = has_dir(input.keycode);
+                int dir = input_to_dir(input.dir);
+                bool moving = has_dir(input.dir);
+                int input_combined = input.dir | (input.attack ? INPUT_ATTACK : 0);
 
                 self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
@@ -547,7 +548,7 @@ static void HandleCommandSystem(game_scene_p self)
                                 if (e.has<PlayerActionComponent>()) {
                                         auto* act = e.get_mut<PlayerActionComponent>();
                                         auto* params = e.has<AnimParams>() ? e.get_mut<AnimParams>() : nullptr;
-                                        if (input.keycode & INPUT_ATTACK) {
+                                        if (input.attack) {
                                                 act->state = PlayerActionComponent::ATTACK;
                                                 act->dir = dir;
                                                 if (params) { params->attack = true; params->dir = dir; }
@@ -558,7 +559,7 @@ static void HandleCommandSystem(game_scene_p self)
                                                 if (params) { params->speed = moving ? 1.0f : 0.0f; params->dir = dir; }
                                         }
                                 }
-                                ApplyInput(self, &pos, r, id, input.conv, input.keycode);
+                                ApplyInput(self, &pos, r, id, input.conv, input_combined);
                         });
         }
 

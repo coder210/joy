@@ -48,7 +48,7 @@ enum S2CType {
 /* ============================ 协议结构体 ============================ */
 struct S2CPlayerJoin  { int32_t conv; int64_t position_x, position_y; };
 struct S2CPlayerLeave { int32_t conv; };
-struct S2CPlayerInput { int32_t conv, keycode; };
+struct S2CPlayerInput { int32_t conv, dir; int8_t attack; };
 struct S2CEntity {
     int32_t id, type;
     int64_t position_x, position_y, width, height, hp;
@@ -101,13 +101,14 @@ static inline void pack_leave(jmsgpack_packer_t* pk, const S2CPlayerLeave& l) {
     jmsgpack_pack_int(pk, l.conv);
 }
 static inline void pack_input(jmsgpack_packer_t* pk, const S2CPlayerInput& i) {
-    jmsgpack_pack_array(pk, 2);
+    jmsgpack_pack_array(pk, 3);
     jmsgpack_pack_int(pk, i.conv);
-    jmsgpack_pack_int(pk, i.keycode);
+    jmsgpack_pack_int(pk, i.dir);
+    jmsgpack_pack_int(pk, i.attack);
 }
 
 /* C2S 打包: [cmd, payload] */
-static inline std::string pack_c2s(int cmd, int64_t join_x, int64_t join_y, int input_kc) {
+static inline std::string pack_c2s(int cmd, int64_t join_x, int64_t join_y, int input_dir, int input_attack) {
     std::string out;
     jmsgpack_packer_t pk;
     jmsgpack_packer_init(&pk, &out, mp_write_cb);
@@ -118,8 +119,9 @@ static inline std::string pack_c2s(int cmd, int64_t join_x, int64_t join_y, int 
         jmsgpack_pack_int64(&pk, join_x);
         jmsgpack_pack_int64(&pk, join_y);
     } else if (cmd == CMD_PLAYER_INPUT) {
-        jmsgpack_pack_array(&pk, 1);
-        jmsgpack_pack_int(&pk, input_kc);
+        jmsgpack_pack_array(&pk, 2);
+        jmsgpack_pack_int(&pk, input_dir);
+        jmsgpack_pack_int(&pk, input_attack);
     } else {
         jmsgpack_pack_nil(&pk);
     }
@@ -293,9 +295,10 @@ static inline int unpack_command(const char* data, int len,
                     d.conv = (int)jmp_int(&o->via.array.ptr[0]);
                 }
             } else if constexpr (std::is_same_v<T, S2CPlayerInput>) {
-                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 2) {
+                if (o->type == JMSGPACK_OBJECT_ARRAY && o->via.array.size >= 3) {
                     d.conv = (int)jmp_int(&o->via.array.ptr[0]);
-                    d.keycode = (int)jmp_int(&o->via.array.ptr[1]);
+                    d.dir = (int)jmp_int(&o->via.array.ptr[1]);
+                    d.attack = (int8_t)jmp_int(&o->via.array.ptr[2]);
                 }
             }
         }
@@ -311,9 +314,9 @@ static inline int unpack_command(const char* data, int len,
 
 /* 解包 C2S 消息: [cmd, payload]
  * 返回 1 成功，0 失败。
- * 通过出参返回 cmd / join_x, join_y / input_kc */
+ * 通过出参返回 cmd / join_x, join_y / input_dir, input_attack */
 static inline int unpack_c2s(const char* data, int len,
-    int* cmd, int64_t* join_x, int64_t* join_y, int* input_kc)
+    int* cmd, int64_t* join_x, int64_t* join_y, int* input_dir, int* input_attack)
 {
     jmsgpack_unpacked_t r;
     jmsgpack_unpacked_init(&r);
@@ -331,8 +334,10 @@ static inline int unpack_c2s(const char* data, int len,
             }
             break;
         case CMD_PLAYER_INPUT:
-            if (payload->via.array.size >= 1)
-                *input_kc = (int)jmp_int(&payload->via.array.ptr[0]);
+            if (payload->via.array.size >= 2) {
+                *input_dir = (int)jmp_int(&payload->via.array.ptr[0]);
+                *input_attack = (int)jmp_int(&payload->via.array.ptr[1]);
+            }
             break;
         }
     }
