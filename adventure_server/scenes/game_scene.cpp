@@ -116,9 +116,9 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
     }
 
     { AnimTransitionDef t; t.from_state=0; t.to_state=1;
-        t.conditions.push_back({"speed",AnimCondMode::GREATER,0.5f}); def.transitions.push_back(t); }
+        t.conditions.push_back({"speed",AnimCondMode::GREATER,0.5f}); t.exit_time=0.05f; def.transitions.push_back(t); }
     { AnimTransitionDef t; t.from_state=1; t.to_state=0;
-        t.conditions.push_back({"speed",AnimCondMode::LESS,0.5f}); def.transitions.push_back(t); }
+        t.conditions.push_back({"speed",AnimCondMode::LESS,0.5f}); t.exit_time=0.05f; def.transitions.push_back(t); }
     for (int d = 0; d < 4; d++) {
         AnimTransitionDef t; t.from_state=-1; t.to_state=2+d;
         t.conditions.push_back({"attack",AnimCondMode::TRIGGER,0});

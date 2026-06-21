@@ -43,6 +43,9 @@ static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& 
 
     float dt = (float)e.world().delta_time();
 
+    anim.flip_h = (params.dir == 1); // 1=左 → 翻转
+
+
     bool transitioned = false;
     for (auto& t : def->transitions) {
         if (t.from_state != -1) continue;

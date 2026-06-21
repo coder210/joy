@@ -79,17 +79,19 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
     }
 
     // Transitions
-    // idle(0) ↔ walk(1)
+    // idle(0) ↔ walk(1) 带防抖 exit_time
     {
         AnimTransitionDef t;
         t.from_state = 0; t.to_state = 1;
         t.conditions.push_back({ "speed", AnimCondMode::GREATER, 0.5f });
+        t.exit_time = 0.05f;
         def.transitions.push_back(t);
     }
     {
         AnimTransitionDef t;
         t.from_state = 1; t.to_state = 0;
         t.conditions.push_back({ "speed", AnimCondMode::LESS, 0.5f });
+        t.exit_time = 0.05f;
         def.transitions.push_back(t);
     }
     // any → attack_dir (2~5), triggered by attack + dir == d
@@ -905,13 +907,20 @@ static void on_update(scene_p s, float dt) {
 					self->ctx->camera_x += (target_cam_x - self->ctx->camera_x) * lerp;
 					self->ctx->camera_y += (target_cam_y - self->ctx->camera_y) * lerp;
 
-					// 本地玩家状态同步(不覆盖 ATTACK)
+					// 本地玩家状态同步 + AnimParams 同步（不覆盖 ATTACK）
 					if (e.has<PlayerActionComponent>()) {
 						auto* act = e.get_mut<PlayerActionComponent>();
 						if (act->state != PlayerActionComponent::ATTACK) {
 							act->state = has_dir(self->current_input_mask) ? PlayerActionComponent::WALK : PlayerActionComponent::IDLE;
 							act->dir = self->local_dir;
 						}
+					}
+					// 同时同步 AnimParams，避免与 pre-sync 产生一帧偏差
+					if (e.has<AnimParams>()) {
+						auto* params = e.get_mut<AnimParams>();
+						const auto* act = e.get<PlayerActionComponent>();
+						params->speed = (act->state == PlayerActionComponent::WALK) ? 1.0f : 0.0f;
+						params->dir = act->dir;
 					}
 
 					// 脚步音效

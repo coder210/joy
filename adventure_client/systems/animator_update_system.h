@@ -50,6 +50,9 @@ static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& 
 
     float dt = (float)e.world().delta_time();
 
+    // --- 0. 根据方向设置水平翻转 ---
+    anim.flip_h = (params.dir == 1); // 1=左 → 翻转
+
     // --- 1. 检查过渡 ---
     bool transitioned = false;
     // 先检查 Any State 过渡（from_state == -1）

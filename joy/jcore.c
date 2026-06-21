@@ -150,7 +150,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousemoved)
 			cbs.on_mousemoved(x, y, dx, dy, arg);
 		else
-			log_error("unhandled SDL_EVENT_MOUSE_MOTION");
+			;//log_error("unhandled SDL_EVENT_MOUSE_MOTION");
 		break;
 	}
 	case SDL_EVENT_KEY_DOWN: {
