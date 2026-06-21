@@ -2,6 +2,7 @@
 #include "../flecs.h"
 #include "../components/animator_component.h"
 #include "../components/animator_def.h"
+#include "../components/player_action_component.h"
 
 // 检查单个条件
 static inline bool check_anim_cond(const AnimCondDef& cond, const AnimParams& params) {
@@ -40,7 +41,7 @@ static inline bool check_cond_list(const std::vector<AnimCondDef>& conditions, c
 }
 
 // 动画状态机更新系统
-static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& params) {
+static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& params, PlayerActionComponent& act) {
     // 获取定义
     flecs::entity def_entity = e.world().get_alive(anim.def);
     if (!def_entity.is_valid()) return;
@@ -111,5 +112,12 @@ static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& 
                 break;
             }
         }
+    }
+
+    // --- 4. 同步回 PlayerActionComponent ---
+    // 如果动画机已离开攻击状态，但 act.state 仍卡在 ATTACK，则复位
+    if (act.state == PlayerActionComponent::ATTACK &&
+        state.name.rfind("attack", 0) != 0) {
+        act.state = PlayerActionComponent::IDLE;
     }
 }

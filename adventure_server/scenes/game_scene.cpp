@@ -658,7 +658,7 @@ static void on_load(scene_p s)
         log_info("[AI] created %d enemies", ENEMY_COUNT);
 
         self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-        self->world.system<Animator, AnimParams>()
+        self->world.system<Animator, AnimParams, PlayerActionComponent>()
                 .each(animator_update_system);
 
         self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();

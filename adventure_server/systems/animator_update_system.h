@@ -2,6 +2,7 @@
 #include "../flecs.h"
 #include "../components/animator_component.h"
 #include "../components/animator_def.h"
+#include "../components/player_action_component.h"
 
 static inline bool check_anim_cond(const AnimCondDef& cond, const AnimParams& params) {
     switch (cond.mode) {
@@ -34,7 +35,7 @@ static inline bool check_cond_list(const std::vector<AnimCondDef>& conditions, c
     return true;
 }
 
-static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& params) {
+static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& params, PlayerActionComponent& act) {
     flecs::entity def_entity = e.world().get_alive(anim.def);
     if (!def_entity.is_valid()) return;
     const AnimatorDef* def = def_entity.get<AnimatorDef>();
@@ -98,5 +99,11 @@ static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& 
                 break;
             }
         }
+    }
+
+    // --- 4. 同步回 PlayerActionComponent ---
+    if (act.state == PlayerActionComponent::ATTACK &&
+        state.name.rfind("attack", 0) != 0) {
+        act.state = PlayerActionComponent::IDLE;
     }
 }

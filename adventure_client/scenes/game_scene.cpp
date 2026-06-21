@@ -668,7 +668,7 @@ static void on_load(scene_p s)
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
-	self->ecs_world.system<Animator, AnimParams>()
+	self->ecs_world.system<Animator, AnimParams, PlayerActionComponent>()
 		.each(animator_update_system);
 	self->sync_query = self->ecs_world.query<IdComponent, LogicPositionComponent, TransformComponent>();
 	self->drawing_entity_query = self->ecs_world.query<IdComponent, LogicRectComponent, TransformComponent>();
