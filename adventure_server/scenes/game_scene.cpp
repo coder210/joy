@@ -77,7 +77,6 @@ struct game_scene {
         flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
 
         // ---- 纹理缓存 ----
-
         std::vector<S2CPlayerJoin> player_joins;
         std::vector<S2CPlayerLeave> player_leaves;
         std::vector<S2CPlayerInput> player_inputs;
@@ -216,8 +215,9 @@ static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
 
 static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int input)
 {
-        fp_t delta = fp_from_float(self->ctx->FIXED_TIMESTEP);
-        fp_t step = fp_mul(MOVE_SPEED, delta);
+        //fp_t delta = fp_from_float(self->ctx->FIXED_TIMESTEP);
+        //fp_t step = fp_mul(MOVE_SPEED, delta);
+        fp_t step = MOVE_SPEED;
 
         *out_x = fp_zero();
         *out_y = fp_zero();
@@ -601,20 +601,27 @@ static void NotifySystem(game_scene_p self)
                 });
 }
 
-// 固定逻辑帧更新
-static void FixedUpdate(game_scene_p self, float dt)
-{
-        net_message_t msg;
-        if (netserver_poll_message(self->netserver, &msg)) {
-                OnMessage(self, &msg, NULL);
-        }
+// 在文件顶部或 on_load 前定义静态函数
+static void poll_network_system(ecs_iter_t* it) {
+    game_scene_p self = (game_scene_p)ecs_get_context(it->world);
+    net_message_t msg;
+    while (netserver_poll_message(self->netserver, &msg)) {
+        OnMessage(self, &msg, NULL);
+    }
+}
+
+static void process_network_system(ecs_iter_t* it) {
+    game_scene_p self = (game_scene_p)ecs_get_context();
+    CollectCommandSystem(self);
+    HandleCommandSystem(self);
+    NotifySystem(self);
 }
 
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
-        self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.4", 30000);
+        self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -683,6 +690,19 @@ static void on_load(scene_p s)
         self->world.system<Animator, AnimParams, PlayerActionComponent>()
                 .each(animator_update_system);
 
+        // 在 on_load 中注册：
+        self->world.system<>()
+            .kind(flecs::PreUpdate)
+            .rate(3)
+            .run(poll_network_system);   // 传入函数指针
+
+        self->world.system<>()
+            .kind(flecs::OnUpdate)
+            .rate(3)
+            .run(process_network_system);
+
+
+
         self->drawing_entity_query = self->world.query<IdComponent, LogicRectComponent, TransformComponent>();
         self->drawing_attack_rayeffect_query = self->world.query<AttackRayEffectComponent>();
         self->body_query = self->world.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
@@ -741,22 +761,7 @@ static void on_update(scene_p s, float dt)
         netserver_update(self->netserver);
         simple_fps_update(self->sample_fps);
 
-        // 固定步长物理更新（50Hz）
-        if (self->accumulator >= self->ctx->FIXED_TIMESTEP) {
-                FixedUpdate(self, self->ctx->FIXED_TIMESTEP);
-                self->accumulator -= self->ctx->FIXED_TIMESTEP;
-        }
-
         self->world.progress(dt);
-
-        // AI 更新 + 独立的帧同步 Tick（20Hz）
-        self->serverTickTimer += dt;
-        if (self->serverTickTimer >= self->SERVER_TICK_INTERVAL) {
-                self->serverTickTimer -= self->SERVER_TICK_INTERVAL;
-                CollectCommandSystem(self);
-                HandleCommandSystem(self);
-                NotifySystem(self);
-        }
 
         // 位置同步（插值平滑，避免 20Hz 逻辑更新导致的跳跃）
         self->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
