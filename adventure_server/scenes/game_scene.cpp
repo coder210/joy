@@ -1,6 +1,4 @@
-﻿#define STB_IMAGE_IMPLEMENTATION
-#include <joy/external/stb_image.h>
-#include "../flecs.h"
+﻿#include "../flecs.h"
 #include <joy/jmsgpack.h>
 #include <string>
 #include <map>
@@ -602,16 +600,16 @@ static void NotifySystem(game_scene_p self)
 }
 
 // 在文件顶部或 on_load 前定义静态函数
-static void poll_network_system(ecs_iter_t* it) {
-    game_scene_p self = (game_scene_p)ecs_get_context(it->world);
+static void poll_network_system(flecs::iter it) {
+    game_scene_p self = (game_scene_p)it.world().get_ctx();
     net_message_t msg;
     while (netserver_poll_message(self->netserver, &msg)) {
         OnMessage(self, &msg, NULL);
     }
 }
 
-static void process_network_system(ecs_iter_t* it) {
-    game_scene_p self = (game_scene_p)ecs_get_context();
+static void process_network_system(flecs::iter it) {
+    game_scene_p self = (game_scene_p)it.world().get_ctx();
     CollectCommandSystem(self);
     HandleCommandSystem(self);
     NotifySystem(self);
@@ -626,7 +624,7 @@ static void on_load(scene_p s)
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
-        self->world.set_ctx(self->ctx);
+        self->world.set_ctx(self);
 
         // 本地方块：有碰撞检测，但不会同步到客户端（因为有 LocalOnlyComponent）
         /*self->world.entity()

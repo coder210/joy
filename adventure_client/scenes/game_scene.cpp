@@ -1,6 +1,4 @@
-﻿#define STB_IMAGE_IMPLEMENTATION
-#include <joy/external/stb_image.h>
-#include <map>
+﻿#include <map>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
