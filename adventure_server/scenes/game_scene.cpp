@@ -619,7 +619,7 @@ static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
-        self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
+        self->netserver = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -685,19 +685,18 @@ static void on_load(scene_p s)
         log_info("[AI] created %d enemies", ENEMY_COUNT);
 
         self->world.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-        self->world.system<Animator, AnimParams, PlayerActionComponent>()
-                .each(animator_update_system);
+        self->world.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);
 
         // 在 on_load 中注册：
         self->world.system<>()
             .kind(flecs::PreUpdate)
             .rate(3)
-            .run(poll_network_system);   // 传入函数指针
+            .iter(poll_network_system);   // 传入函数指针
 
         self->world.system<>()
             .kind(flecs::OnUpdate)
             .rate(3)
-            .run(process_network_system);
+            .iter(process_network_system);
 
 
 
