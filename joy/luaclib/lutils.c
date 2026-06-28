@@ -1,10 +1,8 @@
-#include "../jutils.h"
-#include <stdlib.h>
-#include <string.h>
+#include "SDL3/SDL.h"
 #include "../external/lua/lapi.h"
 #include "../external/lua/lauxlib.h"
-#include "SDL3/SDL.h"
 #include "luaclib.h"
+#include "../joy.h"
 
 static int lcurrent_datetime(lua_State *L)
 {

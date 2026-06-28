@@ -1,12 +1,8 @@
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 #include <SDL3/SDL.h>
 #include "external/duktape/duktape.h"
 #include "jsx.h"
-#include "jutils.h"
-#include "jcore.h"
 #include "jsclib/jsclib.h"
+#include "joy.h"
 
 /* setEnv / getEnv 前向声明 */
 static duk_ret_t js_set_env(duk_context* ctx);

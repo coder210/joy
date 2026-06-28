@@ -3,10 +3,8 @@
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"
 #include "jvector.h"
-#include "jecs.h"
 #include "jconfig.h"
-#include "jcore.h"
-#include "jutils.h"
+#include "joy.h"
 
 // ==================== Bitsetʵ�� ====================
 typedef struct bitset {

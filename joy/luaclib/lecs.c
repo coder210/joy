@@ -1,7 +1,7 @@
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
 #include "SDL3/SDL.h"
-#include "../jecs.h"
+#include "../joy.h"
 #include "luaclib.h"
 
 typedef struct lua_ecs_data {

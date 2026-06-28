@@ -1,8 +1,7 @@
 #include "../external/lua/lapi.h"
 #include "../external/lua/lauxlib.h"
+#include "../joy.h"
 #include "luaclib.h"
-#include "../jaudio.h"
-#include <string.h>
 
 /* ==================== 辅助：根据扩展名派发 ==================== */
 

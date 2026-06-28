@@ -1,5 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jcore.h"
 
 static duk_ret_t jconsole_log(duk_context* ctx)
 {

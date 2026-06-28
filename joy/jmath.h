@@ -12,9 +12,9 @@ History:
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
-#include "jlut.h"
 #include <float.h>
 #include <math.h>
+#include "jlut.h"
 #include "jconfig.h"
 
 
@@ -1570,14 +1570,16 @@ JOY_INLINE ft_t ft_radians(ft_t degrees) {
 	return degrees * (3.14159265358979323846f / 180.0f);
 }
 
-JOY_INLINE mat44_t mat44_perspective(ft_t fov, ft_t aspect, ft_t near, ft_t far) {
+JOY_INLINE mat44_t mat44_perspective(
+	ft_t fov, ft_t aspect, 
+	ft_t near_value, ft_t far_value) {
 	ft_t tan_half = tanf(fov / 2.0f);
 	mat44_t result = { 0 };
 	result.m0 = 1.0f / (aspect * tan_half);
 	result.m5 = 1.0f / tan_half;
-	result.m10 = far / (near - far);
+	result.m10 = far_value / (near_value - far_value);
 	result.m11 = -1.0f;
-	result.m14 = (near * far) / (near - far);
+	result.m14 = (near_value * far_value) / (near_value - far_value);
 	return result;
 }
 

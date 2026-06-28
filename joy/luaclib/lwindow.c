@@ -1,7 +1,7 @@
-#include "luaclib.h"
-#include "../jcore.h"
 #include "../external/lua/lauxlib.h"
+#include "../joy.h"
 #include <SDL3/SDL.h>
+#include "luaclib.h"
 
 
 static int l_create(lua_State* L) {

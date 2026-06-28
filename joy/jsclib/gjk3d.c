@@ -1,7 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jgjk.h"
-#include <string.h>
-#include <stdlib.h>
 
 #define PTR(n)  duk_get_pointer(ctx, n)
 #define INT(n)  ((int)duk_to_number(ctx, n))

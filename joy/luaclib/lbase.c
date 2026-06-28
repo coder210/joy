@@ -1,7 +1,8 @@
-#include "luaclib.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
-#include "../jcore.h"
+#include "../joy.h"
+#include "luaclib.h"
+
 
 static int l_console_log(lua_State* L) {
 	int n = lua_gettop(L);

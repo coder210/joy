@@ -1,7 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jcollision.h"
 
 static circle_t read_circle(duk_context* ctx, int idx) { circle_t c={{0,0},0}; duk_get_prop_string(ctx,idx,"x"); c.center.x=(int)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,idx,"y"); c.center.y=(int)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,idx,"r"); c.radius=(int)duk_to_number(ctx,-1); duk_pop(ctx); return c; }
 static rectangle_t read_rect(duk_context* ctx, int idx) { rectangle_t r={0,0,0,0}; duk_get_prop_string(ctx,idx,"x"); r.x=(int)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,idx,"y"); r.y=(int)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,idx,"w"); r.width=(int)duk_to_number(ctx,-1); duk_pop(ctx); duk_get_prop_string(ctx,idx,"h"); r.height=(int)duk_to_number(ctx,-1); duk_pop(ctx); return r; }

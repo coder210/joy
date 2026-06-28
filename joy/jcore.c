@@ -1,4 +1,4 @@
-#include "jcore.h"
+#include "joy.h"
 #include <SDL3/SDL.h>
 
 union jwindow {

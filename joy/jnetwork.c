@@ -1,15 +1,10 @@
-#include <string.h>
-#include <stdlib.h>
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/mongoose.h"
 #include "external/kcp.h"
 #include "jconfig.h"
-#include "jutils.h"
 #include "jsys.h"
-#include "jcore.h"
-#include "jutils.h"
-#include "jnetwork.h"
+#include "joy.h"
 
 #ifdef JOY_WIN
 #include <WinSock2.h>

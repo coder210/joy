@@ -1,10 +1,8 @@
-#include "luaclib.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
 #include "../jscene.h"
-#include "../jcore.h"
-#include <stdlib.h>
-#include <string.h>
+#include "../joy.h"
+#include "luaclib.h"
 
 /* ===== 回调存储 ===== */
 typedef struct {

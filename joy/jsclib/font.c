@@ -1,5 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jfont.h"
 
 static duk_ret_t jfont_create(duk_context* ctx) {
     const char* path = duk_to_string(ctx, 0);

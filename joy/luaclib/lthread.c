@@ -1,9 +1,8 @@
-#include "luaclib.h"
 #include <SDL3/SDL.h>
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
-#include "../jcore.h"
-#include "../jluax.h"
+#include "../joy.h"
+#include "luaclib.h"
 
 /* =================================================================
  * Thread

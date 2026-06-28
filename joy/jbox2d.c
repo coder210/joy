@@ -1,8 +1,7 @@
-#include "jbox2d.h"
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"
-
+#include "joy.h"
 
 // --- klib container types ---
 

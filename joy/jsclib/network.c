@@ -1,8 +1,5 @@
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jnetwork.h"
 
 #define PTR(n) duk_get_pointer(ctx,n)
 #define STR(n) duk_to_string(ctx,n)

@@ -34,7 +34,6 @@ int luaopen_ui(lua_State* L);
 int luaopen_c2s(lua_State* L);
 int luaopen_s2c(lua_State* L);
 int luaopen_ecs(lua_State* L);
-int luaopen_world2df(lua_State* L);
 int luaopen_server(lua_State* L);
 int luaopen_client(lua_State* L);
 int luaopen_timer(lua_State* L);

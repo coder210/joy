@@ -1,6 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jcore.h"
-#include <stdlib.h>
 
 static duk_ret_t jwindow_create(duk_context* ctx)
 {

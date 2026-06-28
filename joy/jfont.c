@@ -1,8 +1,6 @@
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
-#include "jcore.h"
-#include "jutils.h"
-#include "jfont.h"
+#include "joy.h"
 
 struct jfont {
 	stbtt_fontinfo fontinfo;

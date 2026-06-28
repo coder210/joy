@@ -7,11 +7,8 @@ Version: 1.0
 Date: 2024.7.15
 History:
 *************************************************/
-#include "jparticle.h"
 #include "external/klib/kvec.h"
-#include <stdlib.h>
-#include <math.h>
-
+#include "joy.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -28,10 +25,10 @@ typedef struct {
 } particle_inner_t;
 
 /* 发射器 */
-struct jparticle_t {
-    jparticle_cfg_t cfg;
-    float emit_acc;         /* 持续发射累积时间 */
-    kvec_t(particle_inner_t) particles;
+struct jparticle {
+        jparticle_cfg_t cfg;
+        float emit_acc;         /* 持续发射累积时间 */
+        kvec_t(particle_inner_t) particles;
 };
 
 /* ======================== 工具函数 ======================== */

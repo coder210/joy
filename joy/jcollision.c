@@ -1,4 +1,4 @@
-#include "jcollision.h"
+#include "joy.h"
 
 ray2d_collisionf_t 
 collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)

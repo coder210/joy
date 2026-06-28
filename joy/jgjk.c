@@ -1,8 +1,5 @@
-#include "jgjk.h"
 #include "external/klib/kvec.h"
-#include <string.h>
-#include <float.h>
-#include <stddef.h>
+#include "joy.h"
 
 /* ============ 内部类型 ============ */
 
@@ -392,7 +389,6 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 }
 
 /* ============ 公开API实现 ============ */
-
 bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 	vec3f_t init_dir, gjk3d_contact_p contact)
 {

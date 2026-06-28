@@ -1,8 +1,5 @@
 #include "jsclib.h"
-#include "../jr3d.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "../joy.h"
 
 #define R3D_PTR(n)  ((jr3d_p)duk_get_pointer(ctx, n))
 #define MSH_PTR(n)  ((render_mesh_p)duk_get_pointer(ctx, n))

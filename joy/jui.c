@@ -1,14 +1,191 @@
-﻿#include "jui.h"
-#include "jcollision.h"
-#include <stdlib.h>
-#include <string.h>
+﻿#include "external/klib/kvec.h"
 #include <SDL3/SDL.h>
-#include "jcore.h"
-#include "jutils.h"
+#include "joy.h"
 
 #define JOYSTICK_BG_COLOR 0x555555FF
 #define JOYSTICK_HANDLE_COLOR 0x888888FF
 #define JOYSTICK_HANDLE_ACTIVE_COLOR 0x4CAF50FF
+
+typedef kvec_t(char*) dg_row_t;
+
+typedef struct label {
+	jr2d_p r2d;
+	vec2_t position;
+	jtext_p text;
+	jcolor_t color;
+}label_t, * label_p;
+
+
+struct button {
+	jr2d_p r2d;   // 渲染器
+	vec2_t position;      // 位置
+	float width;              // 宽度
+	float height;             // 高度
+	jcolor_t normal_color;   // 正常状态颜色
+	jcolor_t hover_color;    // 悬停状态颜色
+	jcolor_t pressed_color;  // 按下状态颜色
+	vec2_t text_pos;      // 文本相对位置
+	image_p image;            // 按钮正常纹理（可选）
+	image_p pressed_image;    // 按钮按下纹理（可选）
+	jtext_p text;      // 按钮文件纹理
+	bool is_hovered;          // 内部状态：由 is_hovered() / is_pressed() 设置
+	bool is_pressed;
+};
+
+struct combobox_item {
+	jrect_t rect;
+	jtext_p text;
+	bool is_selected;
+};
+
+struct combobox {
+	jrect_t main_rect;
+	jrect_t dropdown_rect;
+	combobox_item_t items[20];
+	int item_count;
+	int item_height;
+	int selected_index;
+	bool is_open;
+	jtext_p text;
+	jcolor_t bg_color;
+	jcolor_t text_color;
+	jcolor_t hover_color;
+	jr2d_p r2d;
+};
+
+struct datagrid {
+	jr2d_p r2d;
+	int x, y;              // 位置
+	int width, height;     // 尺寸
+	int row_height;        // 行高
+	int col_count;         // 列数
+	int row_count;         // 行数（包括表头）
+	int visible_rows;      // 可见行数
+	int scroll_offset;     // 滚动偏移
+	int selected_row;      // 选中的行
+	jtext_p headers[512];        // 表头
+	kvec_t(dg_row_t) data;              // 表格数据（klib 动态数组 of dg_row_t）
+	int* col_widths;       // 列宽
+	bool has_header;   // 是否有表头
+	font_p font;        // 字体
+	jcolor_t grid_color;
+	jcolor_t bg_color;
+	jcolor_t text_color;
+	jcolor_t header_bg_color;
+	jcolor_t selected_color;
+};
+
+struct radio_button {
+	int x, y;                  // 位置
+	int size;                  // 大小
+	bool checked;              // 是否选中
+	char* label;               // 标签文本
+	int group_id;              // 所属组ID
+	jrect_t hit_area;         // 点击区域
+	bool hover;                // 鼠标悬停状态
+	jcolor_t r1_color;
+	jcolor_t r2_color;
+	jcolor_t r3_color;
+};
+
+struct radio_button_group {
+	radio_button_t** buttons;     // 按钮数组
+	int capacity; // 容量
+	int count;                 // 按钮数量
+	int selected_index;        // 当前选中的按钮索引
+};
+
+struct checkbox {
+	int x, y;                   // 位置
+	int size;                   // 大小
+	checkbox_state_t state;     // 当前状态
+	char* label;                // 标签文本
+	jcolor_t box_color;         // 框的颜色
+	jcolor_t check_color;       // 勾选标记的颜色
+	jcolor_t text_color;        // 文本颜色
+	jcolor_t hover_color;       // 悬停颜色
+	bool hover;                 // 悬停状态
+	bool enabled;               // 是否启用
+	jrect_t hit_area;           // 点击区域
+};
+
+struct textinput {
+	jr2d_p r2d;
+	jrect_t rect;               // 位置和大小
+	jcolor_t bg_color;           // 背景色
+	jcolor_t border_color;       // 边框色
+	jcolor_t text_color;         // 文字色
+	jcolor_t cursor_color;       // 光标色
+	jcolor_t sel_color;          // 选中背景色
+	jcolor_t focus_border_color; // 聚焦时边框色
+	font_p font;                  // 字体
+	char* buffer;                 // 文本缓冲区
+	int buf_len;                  // 缓冲区大小
+	int text_len;                 // 当前文本长度
+	int cursor_pos;               // 光标位置（字节偏移）
+	int sel_start;                // 选中起始（-1 表示无选中）
+	int sel_end;                  // 选中结束
+	int scroll_offset;            // 文本滚动偏移（像素）
+	bool focused;                 // 是否聚焦
+	bool hovered;                 // 鼠标悬停
+	uint64_t cursor_timer;          // 光标闪烁计时
+	bool cursor_visible;          // 光标是否可见
+	void (*on_submit)(struct textinput* ti, void* userdata);
+	void (*on_change)(struct textinput* ti, void* userdata);
+	void* cb_userdata;
+};
+
+struct slider {
+	jr2d_p r2d;
+	jrect_t track;             // 滑轨区域
+	float min, max;              // 取值范围
+	float value;                 // 当前值
+	float thumb_width;           // 滑块宽度（高度 = track.h）
+	bool is_dragging;            // 是否在拖动
+	jcolor_t track_color;       // 滑轨背景色
+	jcolor_t fill_color;        // 已填充部分颜色
+	jcolor_t thumb_color;       // 滑块颜色
+	jcolor_t thumb_hover_color; // 滑块悬停颜色
+	bool hovered;                // 滑块是否悬停
+};
+
+
+
+struct popup {
+	jr2d_p r2d;
+	float x, y, w, h;
+	float title_height;         // title bar height (set in draw)
+	float padding;
+	float close_size;
+	jcolor_t bg_color;
+	jcolor_t border_color;
+	jcolor_t title_bg_color;
+	jcolor_t content_color;
+	jcolor_t close_color;
+	jcolor_t close_hover_color;
+	jcolor_t title_text_color;
+	bool visible;
+	bool closeable;
+	char title[POPUP_MAX_TITLE];
+	char content[POPUP_MAX_CONTENT];
+	bool close_hovered;
+	bool is_dragging;
+	float drag_off_x, drag_off_y;
+};
+
+
+struct tooltip {
+	jr2d_p r2d;
+	float x, y;
+	char text[TOOLTIP_MAX_TEXT];
+	int text_len;
+	jcolor_t bg_color;
+	jcolor_t border_color;
+	jcolor_t text_color;
+	float padding;
+	bool visible;
+};
+
 
 struct joystick {
 	jr2d_p r2d;

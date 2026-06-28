@@ -1,5 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../janimator.h"
 
 #define PTR(n) duk_get_pointer(ctx, n)
 #define STR(n) duk_to_string(ctx, n)

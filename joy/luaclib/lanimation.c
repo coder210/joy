@@ -1,9 +1,7 @@
-#include <stdbool.h>
 #include <SDL3/SDL.h>
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
-#include "../jconfig.h"
-#include "../jr2d.h"
+#include "../joy.h"
 #include "luaclib.h"
 
 static int l_animation_create(lua_State* L)

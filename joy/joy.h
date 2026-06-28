@@ -1,29 +1,1564 @@
+/************************************************
+Copyright: 2021-2028, lanchong.xyz/Ltd.
+File name: joy.h
+Description:
+Author: ydlc
+Version: 1.0
+Date: 2021.3.28
+History:
+*************************************************/
 #ifndef JOY_H
 #define JOY_H
+#include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include "jconfig.h"
+#include "jmath.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct jrect
-{
-        float x;
-        float y;
-        float w;
-        float h;
-} jrect_t;
+        /* 事件类型常量（无需 SDL 头文件即可判断事件类型） */
+#define JOY_EVENT_QUIT              0x100
+#define JOY_EVENT_KEY_DOWN          0x300
+#define JOY_EVENT_KEY_UP            0x301
+#define JOY_EVENT_TEXT_INPUT        0x303
+#define JOY_EVENT_MOUSE_MOTION      0x400
+#define JOY_EVENT_MOUSE_BUTTON_DOWN 0x401
+#define JOY_EVENT_MOUSE_BUTTON_UP   0x402
+#define JOY_EVENT_WINDOW_RESIZED    0x701
 
-typedef struct jcolor
-{
-        uint8_t r;
-        uint8_t g;
-        uint8_t b;
-        uint8_t a;
-} jcolor_t;
+/* ---------- 混合模式 ---------- */
+#define JR2D_BLEND_NONE  0
+#define JR2D_BLEND_BLEND 1
+#define JR2D_BLEND_ADD   2
+#define JR2D_BLEND_MOD   3
+
+/* ---------- 翻转模式 ---------- */
+#define JR2D_FLIP_NONE 0
+#define JR2D_FLIP_H    1
+#define JR2D_FLIP_V    2
+#define JR2D_FLIP_HV   3
+
+#define POPUP_MAX_TITLE 128
+#define POPUP_MAX_CONTENT 2048
+#define TOOLTIP_MAX_TEXT 256
+
+
+#define ACCUMULATE_IMPULSES 1
+#define WARM_STARTING 1
+#define POSITION_CORRECTION 1
+#define MAX_POINTS 2
+
+
+
+        typedef struct delay {
+                uint64_t time;
+                short timeout;
+        } delay_t;
+
+        typedef struct random_num random_num_t, * random_num_p;
+
+        // 定时器回调函数类型
+        // actual_interval: 实际经过的时间（ms）
+        // interval: 设定的间隔（ms）
+        // userdata: 用户自定义数据
+        typedef void (*timer_callback)(int actual_interval, int interval, void* userdata);
+
+        // 定时器对象（不透明指针）
+        typedef struct timer xtimer_t, * timer_p;
+
+        typedef union jwindow jwindow_t, * jwindow_p;
+
+        typedef void (*jevent_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
+        typedef void (*jevent_keyreleased_fn)(const char* key, int scancode, void* arg);
+        typedef void (*jevent_mousepressed_fn)(float x, float y, int button, void* arg);
+        typedef void (*jevent_mousereleased_fn)(float x, float y, int button, void* arg);
+        typedef void (*jevent_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
+        typedef void (*jevent_textinput_fn)(const char* text, void* arg);
+        typedef void (*jevent_resize_fn)(int w, int h, void* arg);
+
+        typedef struct jevent_callbacks {
+                jevent_keypressed_fn on_keypressed;
+                jevent_keyreleased_fn on_keyreleased;
+                jevent_mousepressed_fn on_mousepressed;
+                jevent_mousereleased_fn on_mousereleased;
+                jevent_mousemoved_fn on_mousemoved;
+                jevent_textinput_fn on_textinput;
+                jevent_resize_fn on_resize;
+        } jevent_callbacks_t;
+
+        typedef struct env env_t, * env_p;
+        typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
+        typedef struct game_timer {
+                int64_t last_time;          // 上一帧结束时的纳秒时间戳
+                int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
+                double delta_time;         // 未缩放的帧间隔时间（秒）
+                double time_scale;         // 时间缩放因子
+                int target_fps;            // 目标 FPS（0 表示不限制）
+                double target_frame_time;  // 目标每帧时间（秒）
+        } game_timer_t, * game_timer_p;
+
+        typedef struct jrect
+        {
+                float x;
+                float y;
+                float w;
+                float h;
+        } jrect_t;
+
+        typedef struct jcolor
+        {
+                uint8_t r;
+                uint8_t g;
+                uint8_t b;
+                uint8_t a;
+        } jcolor_t;
+
+
+        typedef struct jfont font_t, * font_p;
+        typedef union jr2d jr2d_t, * jr2d_p;
+        typedef struct image image_t, * image_p;
+        typedef struct jtext jtext_t, * jtext_p;
+        typedef struct animation animation_t, * animation_p;
+        typedef struct jr3d   jr3d_t, * jr3d_p;          /* 3D 渲染上下文 */
+        typedef struct render_mesh render_mesh_t, * render_mesh_p;  /* 网格 */
+        /* ---------- MVP 结构（无 SDL 依赖） ---------- */
+        typedef struct render_mvp {
+                float viewProj[16];
+                float model[16];
+        } render_mvp_t;
+
+
+        typedef struct ray2df {
+                vec2f_t origin, direction;
+        }ray2df_t;
+
+        typedef struct ray2d_collisionf {
+                bool hit;               // Did the ray hit something?
+                fp_t distance;         // Distance to the nearest hit
+                vec2f_t point;          // Point of the nearest hit
+                vec2f_t normal;         // Surface normal of hit
+        }ray2d_collisionf_t;
+
+
+        typedef struct rectanglef {
+                fp_t x; // rectangle top-left corner position x
+                fp_t y; // rectangle top-left corner position y
+                fp_t width;
+                fp_t height;
+        }rectanglef_t;
+
+        typedef struct circlef {
+                vec2f_t center;
+                fp_t radius;
+        }circlef_t;
+
+        typedef struct polygonf {
+                vec2f_t* vertices;
+                int num_vertices;
+        }polygonf_t;
+
+
+        typedef struct contact2df {
+                vec2f_t sp; // starting point
+                vec2f_t ep; // ending point
+                vec2f_t normal;
+                fp_t depth;
+        }contact2df_t;
+
+
+        typedef struct ray3df {
+                vec3f_t position, direction;
+        }ray3df_t;
+
+        typedef struct ray3d_collisionf {
+                bool hit;               // Did the ray hit something?
+                fp_t distance;         // Distance to the nearest hit
+                vec3f_t point;          // Point of the nearest hit
+                vec3f_t normal;         // Surface normal of hit
+        }ray3d_collisionf_t;
+
+        typedef struct spheref {
+                vec3f_t position;
+                fp_t radius;
+        }spheref_t;
+
+        typedef struct bounding_boxf {
+                vec3f_t min;            // Minimum vertex box-corner
+                vec3f_t max;            // Maximum vertex box-corner
+        } bounding_boxf_t;
+
+        typedef struct ray2d {
+                vec2_t origin, direction;
+        }ray2d_t;
+
+        typedef struct ray2d_collision {
+                bool hit;
+                ft_t distance;
+                vec2_t point;
+                vec2_t normal;
+        }ray2d_collision_t;
+
+        typedef struct rectangle {
+                ft_t x, y, width, height;
+        }rectangle_t;
+
+        typedef struct circle {
+                vec2_t center;
+                ft_t radius;
+        }circle_t;
+
+        typedef struct polygon {
+                vec2_t* vertices;
+                int num_vertices;
+        }polygon_t;
+
+        typedef struct contact2d {
+                vec2_t sp;
+                vec2_t ep;
+                vec2_t normal;
+                ft_t depth;
+        }contact2d_t;
+
+        typedef struct ray3d {
+                vec3_t position, direction;
+        }ray3d_t;
+
+        typedef struct ray3d_collision {
+                bool hit;
+                ft_t distance;
+                vec3_t point;
+                vec3_t normal;
+        }ray3d_collision_t;
+
+        typedef struct sphere {
+                vec3_t position;
+                ft_t radius;
+        }sphere_t;
+
+        typedef struct bounding_box {
+                vec3_t min;
+                vec3_t max;
+        } bounding_box_t;
+
+
+
+
+        /* ---------- 碰撞体类型 ---------- */
+        typedef enum gjk3d_ctype {
+                GJK3D_CTYPE_SPHERE,   /* 球体: position + radius */
+                GJK3D_CTYPE_BOX,      /* AABB盒: position + half_size */
+                GJK3D_CTYPE_CAPSULE,  /* 胶囊: position(中心) + radius + height + axis */
+                GJK3D_CTYPE_CYLINDER, /* 圆柱: position + radius + height */
+                GJK3D_CTYPE_CONE,     /* 圆锥: position + radius + height */
+                GJK3D_CTYPE_MESH      /* 自定义网格: vertices数组 */
+        } gjk3d_ctype_k;
+
+        /* ---------- 3D碰撞体 ---------- */
+        typedef struct gjk3d_collider {
+                gjk3d_ctype_k type;
+                vec3f_t position;      /* 中心位置 */
+                fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
+                vec3f_t half_size;     /* BOX半边长 */
+                fp_t height;           /* 胶囊/圆柱/圆锥高度 */
+                vec3f_t axis;          /* 胶囊朝向(单位向量) */
+                vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
+                int vertices_num;
+        } gjk3d_collider_t, * gjk3d_collider_p;
+
+        /* ---------- 接触信息(含EPA穿透深度) ---------- */
+        typedef struct gjk3d_contact {
+                vec3f_t normal;
+                fp_t depth;
+        } gjk3d_contact_t, * gjk3d_contact_p;
+
+      
+
+        /* ======================================================================== */
+        /*                             GJK 2D 碰撞检测                                */
+        /* ======================================================================== */
+
+        typedef uint8_t gjk2d_ctype_k;
+        #define GJK2D_CTYPE_CIRCLE   0  /* 圆: position + radius */
+        #define GJK2D_CTYPE_BOX      1  /* AABB盒: position + half_size */
+        #define GJK2D_CTYPE_CAPSULE  2  /* 胶囊: position(中心) + radius + height + axis */
+        #define GJK2D_CTYPE_POLYGON  3  /* 凸多边形: vertices数组(预变换到世界坐标) */
+        #define GJK2D_CTYPE_PIE      4  /* 扇形: position + radius + sweep(弧度) */
+
+        typedef struct gjk2d_collider {
+                gjk2d_ctype_k type;
+                vec2f_t position;       /* 中心位置 */
+                fp_t radius;            /* 圆/胶囊/扇形半径 */
+                vec2f_t half_size;      /* BOX半边长 */
+                fp_t height;            /* 胶囊线段长度 */
+                vec2f_t axis;           /* 胶囊朝向(单位向量) */
+                vec2f_t* vertices;      /* POLYGON顶点数组(借用的指针,不释放) */
+                int vertices_num;
+                fp_t sweep;             /* 扇形张角(弧度) */
+        } gjk2d_collider_t, * gjk2d_collider_p;
+
+        typedef struct gjk2d_contact {
+                vec2f_t normal;
+                fp_t depth;
+        } gjk2d_contact_t, * gjk2d_contact_p;
+
+
+
+
+        /* ========== Types ========== */
+        typedef struct janimator janimator_t, * janimator_p;
+
+        /* Parameter types */
+        typedef enum {
+                JANIM_PARAM_FLOAT,
+                JANIM_PARAM_INT,
+                JANIM_PARAM_BOOL,
+                JANIM_PARAM_TRIGGER,
+        } janim_param_type_t;
+
+        /* Condition modes */
+        typedef enum {
+                JANIM_COND_GREATER,     /* param > threshold */
+                JANIM_COND_LESS,        /* param < threshold */
+                JANIM_COND_EQUALS,      /* param == threshold (float with epsilon) */
+                JANIM_COND_NOT_EQUALS,  /* param != threshold */
+                JANIM_COND_IF_TRUE,     /* bool param == true */
+                JANIM_COND_IF_FALSE,    /* bool param == false */
+                JANIM_COND_TRIGGER,     /* trigger was set */
+        } janim_cond_mode_t;
+
+        /* State enter/exit callback */
+        typedef void (*janim_state_cb)(const char* state_name, void* userdata);
+
+        typedef struct label label_t, * label_p;
+        typedef struct button button_t, * button_p;
+        typedef struct combobox_item combobox_item_t, * combobox_item_p;
+        typedef struct combobox combobox_t, * combobox_p;
+        typedef struct datagrid datagrid_t, * datagrid_p;
+        typedef struct radio_button radio_button_t, * radio_button_p;
+        typedef struct radio_button_group radio_button_group_t, * radio_button_group_p;
+        typedef enum checkbox_state {
+                JOY_CHECKBOX_UNCHECKED,
+                JOY_CHECKBOX_CHECKED,
+                JOY_CHECKBOX_INDETERMINATE
+        }checkbox_state_t;
+        typedef struct checkbox checkbox_t, * checkbox_p;
+        typedef struct joystick joystick_t, * joystick_p;
+        typedef struct textinput textinput_t, * textinput_p;
+        typedef struct slider slider_t, * slider_p;
+        typedef struct popup popup_t, * popup_p;
+        typedef struct tooltip tooltip_t, * tooltip_p;
+
+        typedef struct jtilemap_gid_resolve jtilemap_gid_resolve_t;
+        typedef struct jtilemap jtilemap_t, * jtilemap_p;
+        typedef struct jtilemap_tileset jtilemap_tileset_t, * jtilemap_tileset_p;
+        typedef struct jtilemap_tile_layer jtilemap_tile_layer_t, * jtilemap_tile_layer_p;
+        typedef struct jtilemap_object_layer jtilemap_object_layer_t, * jtilemap_object_layer_p;
+
+        /* ---------- 路径映射回调 ---------- */
+        typedef const char* (*jtilemap_path_remap_t)(const char* original_path);
+        /* ---------- 渲染实例（不透明句柄，可重入） ---------- */
+        typedef struct jtilemap_render_t jtilemap_render_t, * jtilemap_render_p;
+
+
+        typedef enum {
+                NET_TYPE_CONNECTED = 0x1,
+                NET_TYPE_DISCONNECTED = 0x2,
+                NET_TYPE_MESSAGE = 0x3,
+        } net_event_type_k;
+
+        typedef struct net_message {
+                net_event_type_k type;
+                int conv;
+                char* data;
+                int len;
+        }net_message_t, * net_message_p;
+
+        typedef void (*net_callback)(net_message_p msg, void* userdata);
+        typedef struct kcpserver kcpserver_t, * kcpserver_p;
+        typedef struct kcpclient kcpclient_t, * kcpclient_p;
+        typedef struct tcpserver tcpserver_t, * tcpserver_p;
+        typedef struct tcpclient tcpclient_t, * tcpclient_p;
+        typedef struct wsnetserver wsnetserver_t, * wsnetserver_p;
+        typedef struct wsnetclient wsnetclient_t, * wsnetclient_p;
+
+        // ==============================
+        // Unified NetClient (封装 kcp/tcp/ws)
+        // ==============================
+        typedef enum {
+                NET_CLIENT_TCP,
+                NET_CLIENT_KCP,
+                NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
+        } net_client_type;
+
+        typedef struct netclient netclient_t, * netclient_p;
+
+        // ==============================
+        // Unified NetServer (封装 kcp/tcp/ws 服务器)
+        // ==============================
+        typedef enum {
+                NET_SERVER_KCP,
+                NET_SERVER_TCP,
+                NET_SERVER_WEBSOCKET,
+        } net_server_type;
+
+        typedef struct netserver netserver_t, * netserver_p;
+
+
+        /* ---------- 粒子发射器配置 ---------- */
+        typedef struct jparticle_cfg {
+                float x, y;                /* 发射位置 */
+                float spawn_radius;        /* 生成半径(粒子在此范围内随机生成) */
+                float direction;           /* 基础方向(度) */
+                float spread;              /* 扩散角(度, 0=无扩散, 360=全方向) */
+                float speed_min, speed_max;
+                float lifetime_min, lifetime_max;
+                float size_start, size_end;/* 起始/结束大小(线性插值) */
+                float r, g, b, a;         /* 颜色 */
+                float fadeout;             /* 淡出比例 0~1(0.8=最后20%生命周期淡出) */
+                int   burst;               /* 每次 emit 产生的粒子数 */
+                float rate;                /* 持续发射: 每秒粒子数(<=0 只爆发不持续) */
+                bool  gravity;             /* 是否受重力影响 */
+                float gravity_y;           /* 重力值(正数向下, 如 50.0f) */
+        } jparticle_cfg_t;
+
+        typedef struct jparticle jparticle_t, * jparticle_p;
+
+        /* ---------- 光源 ---------- */
+        typedef struct jlight {
+                float x, y;          /* 位置(像素坐标) */
+                float radius;        /* 光照半径 */
+                float r, g, b;       /* 颜色(0-255) */
+                float intensity;     /* 强度 0~1 */
+        } jlight_t;
+
+        typedef struct jlight_sys jlight_sys_t, * jlight_sys_p;
+
+
+        typedef int ecs_id_t;
+        typedef struct ecs_world ecs_world_t, * ecs_world_p;
+        //VECTOR_INIT(kecs, ecs_id_t);
+
+        typedef struct ecs_id_array {
+                ecs_id_t ids[512];
+                int num;
+        }ecs_id_array_t, * ecs_id_array_p;
+
+        typedef struct ecs_system {
+                void* arg;
+                void (*cb)(ecs_world_p, void*, float);
+        } ecs_system_t, * ecs_system_p;
+
+
+        /* ===== 行为树状态 ===== */
+        typedef enum {
+                BT_SUCCESS,
+                BT_FAILURE,
+                BT_RUNNING,
+        } bt_status_t;
+
+        /* ===== 前向声明 ===== */
+        typedef struct bt_node bt_node_t;
+
+        /* ===== 用户回调函数类型 ===== */
+        typedef bt_status_t(*bt_action_fn)(float dt);
+        typedef bool        (*bt_condition_fn)(void);
+
+        /* ===== 节点生命周期回调 ===== */
+        typedef void     (*bt_enter_fn)(bt_node_t* self);
+        typedef bt_status_t(*bt_tick_fn)(bt_node_t* self, float dt);
+        typedef void     (*bt_exit_fn)(bt_node_t* self);
+        typedef void     (*bt_destroy_fn)(bt_node_t* self);
+
+        /* ===== 基础节点结构 ===== */
+        struct bt_node {
+                bt_status_t   status;      /* 当前运行状态 */
+                bt_enter_fn   enter;       /* 进入回调 */
+                bt_tick_fn    tick;        /* 更新回调 */
+                bt_exit_fn    exit;        /* 退出回调 */
+                bt_destroy_fn destroy;     /* 销毁回调 */
+        };
+
+        /* ===== 内嵌状态机节点 ===== */
+        typedef struct bt_state_slot {
+                const char* name;                    /* 状态名称（不可为 NULL） */
+                bt_enter_fn  state_enter;             /* 状态 enter（可为 NULL） */
+                const char* (*state_update)(bt_node_t* node, float dt); /* 返回下一状态名，NULL 表示不切换 */
+                bt_exit_fn   state_exit;              /* 状态 exit（可为 NULL） */
+        } bt_state_slot_t;
+
+
+
+        typedef struct audio_shot audio_shot_t, * audio_shot_p;
+        typedef struct audio_bgm audio_bgm_t, * audio_bgm_p;
+
+
+        typedef void* (*module_create_t)(void);
+        typedef int (*module_init_t)(void* inst, void* app, const char* param);
+        typedef int (*module_event_t)(void* inst, void* event);
+        typedef int (*module_update_t)(void* inst, float delta_time);
+        typedef void (*module_release_t)(void* inst);
+
+        typedef struct module {
+                char name[512];
+                void* handle;
+                module_create_t create;
+                module_init_t init;
+                module_event_t event_handler;
+                module_update_t update;
+                module_release_t release;
+        }module_t, * module_p;
+
+        typedef struct modules modules_t, * modules_p;
+
+
+
+
+        typedef struct box2d_body_t {
+                int id;
+                vec2f_t position;
+                fp_t rotation;
+                vec2f_t velocity;
+                fp_t angular_velocity;
+                vec2f_t force;
+                fp_t torque;
+                vec2f_t bounds;
+                fp_t friction;
+                fp_t mass, inv_mass;
+                fp_t I, invI;
+        } box2d_body_t;
+
+
+        typedef struct box2d_joint_t {
+                mat22f_t M;
+                vec2f_t local_anchor1, local_anchor2;
+                vec2f_t r1, r2;
+                vec2f_t bias;
+                vec2f_t p;		// accumulated impulse
+                int id1, id2;
+                fp_t biasfactor;
+                fp_t softness;
+        } box2d_joint_t;
+
+
+        typedef struct box2d_manifold_t {
+                vec2f_t position;
+                vec2f_t normal;
+                fp_t separation;
+                int feature;
+                fp_t pn;	// accumulated normal impulse
+                fp_t pt;	// accumulated tangent impulse
+                vec2f_t r1, r2;
+                fp_t mass_normal, mass_tangent;
+                fp_t bias;
+        } box2d_manifold_t;
+
+
+        typedef union box2d_arbiter_key_t {
+                struct id_pair {
+                        int id1, id2;
+                } id_pair;
+                int64_t value;
+        } box2d_arbiter_key_t;
+
+
+        typedef struct box2d_arbiter_t {
+                box2d_manifold_t manifolds[MAX_POINTS];
+                int num_manifolds, id1, id2;
+                fp_t friction; // combined friction
+        } box2d_arbiter_t;
+
+
+        typedef struct box2d_world_t box2d_world_t;
+
+
+
+        /* ===== 装箱回调类型 ===== */
+        typedef int (*jmsgpack_write_fn)(void* data, const char* buf, size_t len);
+
+        /* ===== 类型别名 ===== */
+        typedef struct jmsgpack_packer {
+                void* data;
+                jmsgpack_write_fn callback;
+        } jmsgpack_packer_t;
+
+        typedef struct jmsgpack_zone jmsgpack_zone_t;
+        typedef struct jmsgpack_object jmsgpack_object_t;
+
+        typedef enum {
+                JMSGPACK_OBJECT_NIL = 0x00,
+                JMSGPACK_OBJECT_BOOLEAN = 0x01,
+                JMSGPACK_OBJECT_POSITIVE_INTEGER = 0x02,
+                JMSGPACK_OBJECT_NEGATIVE_INTEGER = 0x03,
+                JMSGPACK_OBJECT_FLOAT64 = 0x04,
+                JMSGPACK_OBJECT_STR = 0x05,
+                JMSGPACK_OBJECT_ARRAY = 0x06,
+                JMSGPACK_OBJECT_MAP = 0x07,
+        } jmsgpack_object_type_t;
+
+        typedef struct {
+                uint32_t size;
+                const jmsgpack_object_t* ptr;
+        } jmsgpack_object_array_t;
+
+        typedef struct {
+                uint32_t size;
+                const char* ptr;
+        } jmsgpack_object_str_t;
+
+        typedef struct jmsgpack_object {
+                jmsgpack_object_type_t type;
+                union {
+                        bool boolean;
+                        uint64_t u64;
+                        int64_t i64;
+                        double f64;
+                        jmsgpack_object_array_t array;
+                        jmsgpack_object_str_t str;
+                } via;
+        } jmsgpack_object_t;
+
+        typedef struct {
+                jmsgpack_zone_t* zone;
+                jmsgpack_object_t data;
+        } jmsgpack_unpacked_t;
+
+
+
+
+        typedef struct luax luax_t, * luax_p;
+
+
+        ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////  utils  //////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+        JOY_API char* utils_strdup(const char* str, size_t* out_sz);
+        JOY_API bool utils_get_current_time(uint64_t* ms_ticks);
+        JOY_API void utils_current_datetime(const char* fmt, char* buf, size_t len);
+        JOY_API char* utils_read_file(const char* filename, size_t* sz);
+        JOY_API bool utils_check_file(const char* filename);
+        JOY_API void utils_append_file(const char* filename, const char* data);
+        JOY_API char* utils_read_script(const char* file, size_t* data_size);
+        JOY_API short utils_bit2short(uint8_t* buf);
+        JOY_API void  utils_short2bit(uint8_t* buf, short value);
+        /* c# = BitConverter.FromUInt32 */
+        JOY_API int utils_bit2int(uint8_t* buf);
+        /* c# = BitConverter.ToUInt32 */
+        JOY_API void utils_int2bit(uint8_t* buf, int value);
+        JOY_API bool utils_wait_delay(delay_t* delay, uint64_t current_time);
+        JOY_API short utils_md5x(const char* input, size_t len, char* output);
+        JOY_API char* utils_des_crypt(const char* key, const char* text, size_t textsz, size_t* out_len);
+        JOY_API char* utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len);
+
+        JOY_API unsigned long sdbm_hash(const char* str, int size);
+        JOY_API unsigned long fnv1a_hash(const char* str, int size);
+        JOY_API unsigned long jenkins_hash(const char* str, int size);
+        JOY_API unsigned long murmur3_hash(const char* str);
+        JOY_API unsigned long kr_hash(const char* str, int size);
+
+        /**
+         * 解码 UTF-8 字符串的第一个字符
+         * @param s    输入字符串
+         * @param len  字符串长度（字节数）
+         * @param code 输出参数，存储解码后的 Unicode 码点 (int32_t)
+         * @return     成功时返回消耗的字节数（1~4），失败返回 0
+         */
+        JOY_API size_t utf8_decode(const char* s, size_t len, int32_t* code);
+
+        /**
+         * 迭代遍历 UTF-8 字符串
+         * @param s    输入字符串
+         * @param len  字符串长度
+         * @param pos  当前位置指针（输入/输出）
+         * @param code 输出码点 (int32_t)
+         * @return     成功返回 1，结束或错误返回 0
+         */
+        JOY_API int utf8_next(const char* s, size_t len,
+                size_t* pos, int32_t* code);
+
+        /**
+         * 将整个 UTF-8 字符串解码为码点数组（调用者提供缓冲区）
+         * @param s            输入字符串
+         * @param len          字符串长度（字节数）
+         * @param out_codes    输出缓冲区（接收码点数组），可为 NULL 以查询所需长度
+         * @param out_capacity 输出缓冲区的容量（最多能存放的码点个数）
+         * @return             成功时返回实际写入的码点个数（若 out_codes==NULL，则返回所需个数）；
+         *                     若字符串无效或缓冲区容量不足，返回 0
+         */
+        JOY_API size_t utf8_decode_all(const char* s, size_t len,
+                int32_t* out_codes, size_t out_capacity);
+        JOY_API int pack_int8(char* buf, int8_t value, int offset);
+        JOY_API int pack_int16(char* buf, int16_t value, int offset);
+        JOY_API int pack_int32(char* buf, int32_t value, int offset);
+        JOY_API int pack_uint32(char* buf, uint32_t value, int offset);
+        JOY_API int pack_int64(char* buf, int64_t value, int offset);
+        JOY_API int unpack_int8(const char* buf, int8_t* value, int offset);
+        JOY_API int unpack_int16(const char* buf, int16_t* value, int offset);
+        JOY_API int unpack_int32(const char* buf, int32_t* value, int offset);
+        JOY_API int unpack_uint32(const char* buf, uint32_t* value, int offset);
+        JOY_API int unpack_int64(const char* buf, int64_t* value, int offset);
+        JOY_API int pack_string(char* buf, const char* value, int type_size, int offset);
+        JOY_API int unpack_string(const char* buf, char* value, int type_size, int offset);
+
+
+        /**
+         * 创建定时器
+         * @param interval 触发间隔（毫秒）
+         * @param cb       回调函数（为 NULL 时不触发）
+         * @param userdata 用户数据，透传给回调
+         * @return 定时器指针，失败返回 NULL
+         */
+        JOY_API timer_p timerx_create(int interval, timer_callback cb, void* userdata);
+
+        /**
+         * 销毁定时器
+         * @param timer 定时器指针
+         */
+        JOY_API void timerx_destroy(timer_p timer);
+
+        /**
+         * 触发检查（通常放在主循环中每帧调用）
+         * 内部使用 SDL_GetTicks() 获取当前时间，若达到间隔则调用回调
+         * @param timer 定时器指针
+         */
+        JOY_API void timerx_trigger(timer_p timer);
+
+        /**
+         * 设置定时器间隔
+         * @param timer    定时器指针
+         * @param interval 新间隔（毫秒）
+         */
+        JOY_API void timerx_set_interval(timer_p timer, int interval);
+
+        /**
+         * 设置激活状态
+         * @param timer  定时器指针
+         * @param active true 激活，false 暂停
+         */
+        JOY_API void timerx_set_active(timer_p timer, bool active);
+
+        /**
+         * 重置定时器（将上次触发时间设为当前时间）
+         * @param timer 定时器指针
+         */
+        JOY_API void timerx_reset(timer_p timer);
+
+        /**
+         * 获取自上次触发以来经过的时间（毫秒）
+         * @param timer 定时器指针
+         * @return 经过的毫秒数
+         */
+        JOY_API uint64_t timerx_get_elapsed(timer_p timer);
+
+
+
+
+        ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////  core  ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        JOY_API bool init_env();
+        JOY_API void quit_env(void);
+        JOY_API const char* get_error(void);
+        JOY_API uint64_t get_ticks(void);
+
+        /** 从鼠标事件中提取坐标 */
+        JOY_API void get_mouse_pos(const void* event, float* out_x, float* out_y);
+        /** 从鼠标事件中提取按钮（1=左, 2=中, 3=右） */
+        JOY_API int  get_mouse_button(const void* event);
+
+        JOY_API jwindow_p create_window(const char* title, int w, int h);
+        JOY_API void destroy_window(jwindow_p win);
+        JOY_API void* get_raw_window(jwindow_p win);
+
+        JOY_API void dispatch_event(jevent_callbacks_t cbs,
+                const void* event, void* arg);
+        JOY_API int  get_event_type(const void* event);
+        JOY_API int  get_event_code(const void* event);
+        JOY_API bool is_user_event(const void* event, int type);
+        JOY_API bool push_user_event(int type, int code);
+        JOY_API bool push_quit_event(void);
+        JOY_API bool should_close(void* ev);
+
+        JOY_API int log_info(const char* format, ...);
+        JOY_API int log_debug(const char* format, ...);
+        JOY_API int log_error(const char* format, ...);
+        JOY_API void log_title(int type);
+
+        JOY_API env_p env_create(void);
+        JOY_API const char* env_get(env_p env, const char* key);
+        JOY_API void env_set(env_p env, const char* key, const char* value);
+        JOY_API void env_destroy(env_p env);
+
+        JOY_API simple_fps_counter_p simple_fps_create();
+        JOY_API void simple_fps_destory(simple_fps_counter_p fps);
+        JOY_API void simple_fps_update(simple_fps_counter_p fps);
+        JOY_API int simple_fps_value(simple_fps_counter_p fps);
+
+        JOY_API void game_timer_init(game_timer_p clock);
+        JOY_API void game_timer_update(game_timer_p clock);
+        JOY_API float game_timer_get_delta_time(const game_timer_p clock);
+        JOY_API float game_timer_get_unscaled_delta_time(const game_timer_p clock);
+        JOY_API void game_timer_set_time_scale(game_timer_p clock, float scale);
+        JOY_API float game_timer_get_time_scale(const game_timer_p clock);
+        JOY_API void game_timer_set_target_fps(game_timer_p clock, int fps);
+        JOY_API int game_timer_get_target_fps(const game_timer_p clock);
+
+        /** 获取剪贴板文本（调用者负责释放返回的字符串） */
+        JOY_API char* get_clipboard_text(void);
+        /** 设置剪贴板文本 */
+        JOY_API void set_clipboard_text(const char* text);
+
+        ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////  font ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        JOY_API font_p font_create(const char* filename, int fontsize);
+        JOY_API void font_destroy(font_p font);
+        JOY_API float font_get_scale(font_p font);
+        JOY_API int font_get_size(font_p font);
+        JOY_API int font_get_ascent(font_p font);
+
+
+        ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////  j2rd ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        JOY_API jr2d_p r2d_create(jwindow_p win);
+        JOY_API jr2d_p r2d_wrap(void* sdl_renderer);
+        JOY_API void r2d_destroy(jr2d_p r2d);
+        JOY_API void* r2d_unwrap(jr2d_p r2d);
+        JOY_API vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y);
+
+        /* 颜色/状态 */
+        JOY_API bool r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a);
+        JOY_API bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+        JOY_API void r2d_begin(jr2d_p r2d);
+        JOY_API void r2d_end(jr2d_p r2d);
+        JOY_API bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h);
+        JOY_API bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode);
+        JOY_API void r2d_get_size(jr2d_p r2d, int* w, int* h);
+        JOY_API bool r2d_set_vsync(jr2d_p r2d, int vsync);
+        JOY_API bool r2d_set_scale(jr2d_p r2d, float sx, float sy);
+        JOY_API void r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a);
+        JOY_API void r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a);
+        JOY_API bool r2d_set_blend_mode(jr2d_p r2d, int mode);
+        JOY_API bool r2d_draw_point(jr2d_p r2d, float x, float y);
+        JOY_API bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count);
+
+        /* 形状绘制 */
+        JOY_API bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2);
+        JOY_API bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count);
+        JOY_API bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect);
+        JOY_API bool shape_draw_polygon(jr2d_p r2d, const char* mode, vec2_t* points, int point_count, jcolor_t color);
+        JOY_API bool shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments);
+        JOY_API bool shape_draw_grid(jr2d_p r2d, vec2_t start, vec2_t end, float grid_size);
+        JOY_API bool shape_draw_gridx(jr2d_p r2d, vec2_t position, int rows, int cols, float grid_size);
+
+        /* 图片操作 */
+        JOY_API image_p image_create(jr2d_p r2d, const char* filename);
+        JOY_API image_p image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h);
+        JOY_API image_p image_create_empty(jr2d_p r2d, int w, int h);
+        JOY_API void  image_destroy(image_p image);
+        JOY_API void  image_draw(image_p image, vec2_t position);
+        JOY_API void  image_draw1(image_p image, const jrect_t* srcrect, const jrect_t* destrect);
+        JOY_API void  image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position, float rotation, vec2_t scale, vec2_t origin);
+        JOY_API void  image_set_alpha(image_p image, uint8_t alpha);
+        JOY_API void  image_set_blend_mode(image_p image, int mode);
+        JOY_API bool  image_get_size(image_p image, float* w, float* h);
+        JOY_API void  image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch);
+
+        /* 文字 */
+        JOY_API jtext_p text_createx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API jtext_p text_create(jr2d_p r2d, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
+        JOY_API void text_updatex(jtext_p text, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API void text_update(jtext_p text, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
+        JOY_API void text_destroy(jtext_p jtext_tex);
+        JOY_API void jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
+        JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
+        JOY_API int text_get_width(jtext_p jtext_tex);
+        JOY_API int text_get_height(jtext_p jtext_tex);
+
+        /* 简单动画 */
+        JOY_API animation_p animation_create(jr2d_p r2d);
+        JOY_API void animation_destroy(animation_p animation);
+        JOY_API void animation_reset(animation_p animation);
+        JOY_API void animation_add_clip(animation_p animation, const char* image_path, float duration, jrect_t src_rect);
+        JOY_API bool animation_is_finished(animation_p animation);
+        JOY_API void animation_set_position(animation_p animation, float x, float y);
+        JOY_API void animation_set_scale(animation_p animation, float x, float y);
+        JOY_API void animation_set_rotation(animation_p animation, float rotation);
+        JOY_API void animation_update(animation_p animation, float dt);
+        JOY_API void animation_draw(animation_p animation, jrect_t* camera);
+
+
+        ///////////////////////////////////////////////////////////////////////
+        ////////////////////////////  j3rd ///////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////
+
+        JOY_API void* r3d_load_shader(void* device, const char* filename,
+                int stage, int sampler_num, int uniform_buffer_num);
+        JOY_API void* r3d_create_pipeline(void* device,
+                void* vertex_shader, void* fragment_shader,
+                int swapchain_format, int depth_format);
+        JOY_API void* r3d_upload_buffer(void* device, const void* data, size_t size);
+        JOY_API void* r3d_create_solid_texture(void* device,
+                unsigned char r, unsigned char g, unsigned char b);
+        JOY_API void* r3d_create_depth_texture(void* device, int width, int height);
+        JOY_API void* r3d_create_sampler(void* device);
+        JOY_API void  r3d_mat44_to_float16(const mat44_t* m, float out[16]);
+
+        /* ================================================================
+         * 高级 API (v3.0) — 可重入，无 SDL3 类型暴露
+         * ================================================================ */
+
+         /* ---------- 生命周期 ---------- */
+        JOY_API jr3d_p r3d_create(jwindow_p win, const char* shader_dir);
+        JOY_API void   r3d_destroy(jr3d_p r);
+
+        /* ---------- 帧管理 ---------- */
+        JOY_API bool r3d_begin(jr3d_p r);
+        JOY_API void r3d_end(jr3d_p r);
+
+        /* ---------- 相机 ---------- */
+        JOY_API void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fovy);
+        JOY_API void r3d_camera_fps(jr3d_p r, vec3_t pos, float yaw, float pitch, float fovy);
+
+        /* ---------- 网格 ---------- */
+        JOY_API render_mesh_p r3d_mesh_cube(jr3d_p r, float w, float h, float d);
+        JOY_API render_mesh_p r3d_mesh_sphere(jr3d_p r, float radius, int slices, int stacks);
+        JOY_API render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs);
+        JOY_API render_mesh_p r3d_mesh_ramp(jr3d_p r, float w, float l, float h);
+        JOY_API render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count);
+        JOY_API void         r3d_mesh_destroy(jr3d_p r, render_mesh_p m);
+
+        /* ---------- 纹理 ---------- */
+        JOY_API void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count);
+
+        /* ---------- 绘制 ---------- */
+        JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
+        JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
+        JOY_API void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width);
+
+        ///////////////////////////////////////////////////////////////////////
+       ////////////////////////////  collision ///////////////////////////////
+       ///////////////////////////////////////////////////////////////////////
+
+
+        JOY_API ray2d_collision_t collision2d_get_ray_circle(ray2d_t ray, circle_t circle);
+        JOY_API ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect);
+        JOY_API ray2d_collision_t collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle);
+        JOY_API ray2d_collision_t collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon);
+        JOY_API bool collision2d_check_point_rectangle(vec2_t point, rectangle_t rect);
+        JOY_API bool collision2d_check_point_circle(vec2_t point, circle_t circle);
+        JOY_API ft_t collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle);
+        JOY_API bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3);
+        JOY_API bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp);
+        JOY_API bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold);
+        JOY_API bool collision2d_check_circles(circle_t a, circle_t b);
+        JOY_API bool collision2d_check_rectangles(rectangle_t a, rectangle_t b);
+        JOY_API bool collision2d_check_polygons(polygon_t a, polygon_t b);
+        JOY_API bool collision2d_check_circle_rectangle(circle_t a, rectangle_t b);
+        JOY_API bool collision2d_check_circle_polygon(circle_t a, polygon_t b);
+        JOY_API int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact);
+        JOY_API int collision2d_get_rectangles(rectangle_t a, ft_t a_angle, rectangle_t b, ft_t b_angle, contact2d_t* contact);
+        JOY_API int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact);
+        JOY_API ray3d_collision_t collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3);
+        JOY_API ray3d_collision_t collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4);
+        JOY_API ray3d_collision_t collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere);
+        JOY_API ray3d_collision_t collision3d_get_ray_box(ray3d_t ray, bounding_box_t box);
+        JOY_API bool collision3d_check_spheres(sphere_t a, sphere_t b);
+        JOY_API bool collision3d_check_boxes(bounding_box_t a, bounding_box_t b);
+        JOY_API bool collision3d_check_box_sphere(bounding_box_t a, sphere_t b);
+
+        JOY_API ray2d_collisionf_t collision2df_get_ray_circle(ray2df_t ray,
+                circlef_t circle);
+        JOY_API ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray,
+                rectanglef_t rect);
+        JOY_API ray2d_collisionf_t collision2df_get_ray_rectanglex(ray2df_t ray,
+                rectanglef_t rect, fp_t angle);
+        JOY_API ray2d_collisionf_t collision2df_get_ray_polygon(ray2df_t ray,
+                polygonf_t polygon);
+        JOY_API bool collision2df_check_point_rectangle(vec2f_t point,
+                rectanglef_t rect);
+        JOY_API bool collision2df_check_point_circle(vec2f_t point, circlef_t circle);
+        JOY_API fp_t collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle);
+        JOY_API bool collision2df_check_point_triangle(vec2f_t point,
+                vec2f_t p1, vec2f_t p2, vec2f_t p3);
+        JOY_API bool collision2df_check_lines(vec2f_t a1, vec2f_t b1,
+                vec2f_t a2, vec2f_t b2, vec2f_t* cp);
+        JOY_API bool collision2df_check_point_line(vec2f_t point,
+                vec2f_t p1, vec2f_t p2, fp_t threshold);
+        JOY_API bool collision2df_check_circles(circlef_t a, circlef_t b);
+        JOY_API bool collision2df_check_rectangles(rectanglef_t a, rectanglef_t b);
+        JOY_API bool collision2df_check_polygons(polygonf_t a, polygonf_t b);
+        JOY_API bool collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b);
+        JOY_API bool collision2df_check_circle_polygon(circlef_t a, polygonf_t b);
+        JOY_API int collision2df_get_circles(circlef_t a, circlef_t b,
+                contact2df_t* contact);
+        JOY_API int collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
+                rectanglef_t b, fp_t b_angle,
+                contact2df_t* contact);
+        JOY_API fp_t find_min_separation(polygonf_t a, polygonf_t b,
+                vec2f_t* axis, vec2f_t* point);
+        JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
+                contact2df_t* contact);
+        JOY_API ray3d_collisionf_t collision3df_get_ray_triangle(ray3df_t ray,
+                vec3f_t p1, vec3f_t p2, vec3f_t p3);
+        JOY_API ray3d_collisionf_t collision3df_get_ray_quad(ray3df_t ray,
+                vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3f_t p4);
+        JOY_API ray3d_collisionf_t collision3df_get_ray_sphere(ray3df_t ray,
+                spheref_t sphere);
+        JOY_API ray3d_collisionf_t collision3df_get_ray_box(ray3df_t ray,
+                bounding_boxf_t box);
+        JOY_API bool collision3df_check_spheres(spheref_t a, spheref_t b);
+        JOY_API bool collision3df_check_boxes(bounding_boxf_t a,
+                bounding_boxf_t b);
+        JOY_API bool collision3df_check_box_sphere(bounding_boxf_t a,
+                spheref_t b);
+
+
+        /* 主碰撞检测: GJK + EPA, 返回是否碰撞, contact填充法线和深度 */
+        JOY_API bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
+                vec2f_t init_dir, gjk2d_contact_p contact);
+        JOY_API void gjk2d_init_circle(gjk2d_collider_t* c, vec2f_t pos, fp_t radius);
+        JOY_API void gjk2d_init_box(gjk2d_collider_t* c, vec2f_t pos, vec2f_t half_size);
+        JOY_API void gjk2d_init_capsule(gjk2d_collider_t* c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius);
+        JOY_API void gjk2d_init_polygon(gjk2d_collider_t* c, vec2f_t* vertices, int num);
+        JOY_API void gjk2d_init_pie(gjk2d_collider_t* c, vec2f_t pos, fp_t radius, fp_t sweep);
+        JOY_API bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
+                vec3f_t init_dir, gjk3d_contact_p contact);
+        /* 快捷初始化函数(仅设置参数,无内存分配) */
+        JOY_API void gjk3d_init_sphere(gjk3d_collider_t* c, vec3f_t pos, fp_t radius);
+        JOY_API void gjk3d_init_box(gjk3d_collider_t* c, vec3f_t pos, vec3f_t half_size);
+        JOY_API void gjk3d_init_capsule(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
+        JOY_API void gjk3d_init_cylinder(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void gjk3d_init_cone(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void gjk3d_init_mesh(gjk3d_collider_t* c, vec3f_t* vertices, int num);
+
+        /* ========== Lifecycle ========== */
+        JOY_API janimator_p janimator_create(jr2d_p r2d);
+        JOY_API void janimator_destroy(janimator_p anim);
+
+        /* ========== Parameters ========== */
+        JOY_API void janimator_set_float(janimator_p anim, const char* name, float v);
+        JOY_API void janimator_set_int(janimator_p anim, const char* name, int v);
+        JOY_API void janimator_set_bool(janimator_p anim, const char* name, bool v);
+        JOY_API void janimator_set_trigger(janimator_p anim, const char* name);
+        JOY_API float janimator_get_float(janimator_p anim, const char* name);
+        JOY_API int janimator_get_int(janimator_p anim, const char* name);
+        JOY_API bool janimator_get_bool(janimator_p anim, const char* name);
+
+        /* ========== States ========== */
+        JOY_API void janimator_add_state(janimator_p anim, const char* name);
+        JOY_API void janimator_set_default_state(janimator_p anim, const char* name);
+
+        /* Add a clip (frame) to a state from an image file */
+        JOY_API void janimator_state_add_clip(janimator_p anim, const char* state_name,
+                const char* image_path, float duration, jrect_t src_rect);
+
+        /* Add a solid color clip (no image file needed) */
+        JOY_API void janimator_state_add_color(janimator_p anim, const char* state_name,
+                float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+
+        JOY_API void janimator_state_set_loop(janimator_p anim, const char* state_name, bool loop);
+        JOY_API void janimator_state_set_speed(janimator_p anim, const char* state_name, float speed);
+
+        /* ========== Blend Tree (1D) ========== */
+        JOY_API void janimator_state_set_blend(janimator_p anim, const char* state_name,
+                const char* param_name);
+        JOY_API void janimator_state_add_motion(janimator_p anim, const char* state_name,
+                const char* image_path, float duration, jrect_t src_rect, float threshold);
+
+        /* ========== Transitions ========== */
+        /* Returns transition index (for adding conditions) */
+        JOY_API int janimator_add_transition(janimator_p anim, const char* from, const char* to);
+        /* Add a transition from Any State (index = -1) */
+        JOY_API int janimator_add_any_transition(janimator_p anim, const char* to);
+        /* Add condition to a transition by index */
+        JOY_API void janimator_transition_add_cond(janimator_p anim, int trans_idx,
+                const char* param_name, int mode, float threshold);
+        /* Set exit time: minimum seconds the source state must play before transition (0 = immediate) */
+        JOY_API void janimator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds);
+
+        /* ========== Update / Draw ========== */
+        JOY_API void janimator_update(janimator_p anim, float dt);
+        JOY_API void janimator_draw(janimator_p anim, float x, float y);
+        JOY_API void janimator_set_flip_h(janimator_p anim, bool flip);
+        JOY_API const char* janimator_current_state(janimator_p anim);
+
+        /* ========== Callbacks ========== */
+        JOY_API void janimator_set_on_enter(janimator_p anim, janim_state_cb cb, void* userdata);
+        JOY_API void janimator_set_on_exit(janimator_p anim, janim_state_cb cb, void* userdata);
+
+
+        JOY_API label_p label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
+        JOY_API void label_destroy(label_p label);
+        JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
+        JOY_API void label_draw(label_p label);
+
+        JOY_API button_p button_create(jr2d_p r2d, float width, float height);
+        JOY_API void button_destroy(button_p btn);
+        JOY_API void button_set_position(button_p btn, float x, float y);
+        JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
+        JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
+        JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
+        JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, jcolor_t color);
+        JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
+        JOY_API bool button_is_hovered(button_p btn, float x, float y);
+        JOY_API bool button_is_pressed(button_p btn, float x, float y);
+        JOY_API void button_set_hovered(button_p btn, bool v);
+        JOY_API void button_set_pressed(button_p btn, bool v);
+        JOY_API void button_draw(button_p btn);
+
+        JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
+        JOY_API void combobox_destroy(combobox_p combobox);
+        JOY_API void combobox_set_text(combobox_p combobox, font_p font,
+                const int* codepoints, int len, jcolor_t color);
+        JOY_API void combobox_add_item(combobox_p combobox, font_p font,
+                const int* codepoints, int len, jcolor_t color);
+        JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
+        JOY_API bool combobox_is_open(combobox_p combobox);
+        JOY_API void combobox_set_open(combobox_p combobox, bool v);
+        JOY_API int combobox_hit_item(combobox_p combobox, float x, float y);
+        JOY_API void combobox_set_selected(combobox_p combobox, int index);
+        JOY_API int combobox_get_selected(combobox_p combobox);
+        JOY_API void combobox_draw(combobox_p combobox);
+
+        JOY_API datagrid_p datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font);
+        JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
+        JOY_API void datagrid_setheader(datagrid_p grid, int index, const char* header);
+        JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
+        JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
+        JOY_API void datagrid_destroy(datagrid_p grid);
+        JOY_API void datagrid_draw(datagrid_p grid, jr2d_p r2d);
+        JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
+        JOY_API void datagrid_scroll(datagrid_p grid, int lines);
+        JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
+
+        JOY_API radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id);
+        JOY_API void radio_button_destroy(radio_button_p radio);
+
+        JOY_API radio_button_group_p radio_button_group_create();
+        JOY_API void radio_button_group_destroy(radio_button_group_p group);
+        JOY_API void radio_button_group_add_button(radio_button_group_p group, radio_button_p radio);
+        JOY_API void radio_button_group_set_selected(radio_button_group_p group, int index);
+        JOY_API bool radio_button_is_pressed(radio_button_p radio, float x, float y);
+        JOY_API void radio_button_set_hovered(radio_button_p radio, bool v);
+        JOY_API void radio_button_group_draw(radio_button_group_p group, jr2d_p r2d);
+
+        JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
+        JOY_API void checkbox_destroy(checkbox_p checkbox);
+        JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
+        JOY_API void checkbox_toggle(checkbox_p checkbox);
+        JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
+        JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
+        JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
+
+        JOY_API joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius);
+        JOY_API void joystick_destroy(joystick_p joystick);
+        JOY_API void joystick_draw(joystick_p joystick);
+        JOY_API void joystick_reset(joystick_p joystick);
+        JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
+        JOY_API bool joystick_is_dragging(joystick_p joystick);
+        JOY_API void joystick_touch_down(joystick_p joystick, float x, float y);
+        JOY_API void joystick_touch_move(joystick_p joystick, float x, float y);
+        JOY_API void joystick_touch_up(joystick_p joystick);
+        JOY_API vec2_t joystick_get_direction(joystick_p joystick);
+        JOY_API float joystick_get_magnitude(joystick_p joystick);
+
+        JOY_API textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font);
+        JOY_API void textinput_destroy(textinput_p ti);
+        JOY_API void textinput_set_text(textinput_p ti, const char* text);
+        JOY_API const char* textinput_get_text(textinput_p ti);
+        JOY_API void textinput_set_callback(textinput_p ti, void (*submit)(textinput_p, void*), void (*change)(textinput_p, void*), void* userdata);
+        JOY_API void textinput_draw(textinput_p ti);
+        JOY_API bool textinput_is_pressed(textinput_p ti, float x, float y);
+        JOY_API bool textinput_is_hovered(textinput_p ti, float x, float y);
+        JOY_API void textinput_focus(textinput_p ti);
+        JOY_API void textinput_defocus(textinput_p ti);
+        JOY_API void textinput_insert(textinput_p ti, const char* s, int len);
+        JOY_API void textinput_backspace(textinput_p ti);
+        JOY_API void textinput_delete(textinput_p ti);
+        JOY_API void textinput_cursor_left(textinput_p ti);
+        JOY_API void textinput_cursor_right(textinput_p ti);
+        JOY_API void textinput_cursor_home(textinput_p ti);
+        JOY_API void textinput_cursor_end(textinput_p ti);
+        JOY_API void textinput_select_left(textinput_p ti);
+        JOY_API void textinput_select_right(textinput_p ti);
+        JOY_API void textinput_select_home(textinput_p ti);
+        JOY_API void textinput_select_end(textinput_p ti);
+        JOY_API void textinput_select_all(textinput_p ti);
+        JOY_API void textinput_paste(textinput_p ti);
+        JOY_API void textinput_copy(textinput_p ti);
+        JOY_API void textinput_cut(textinput_p ti);
+        JOY_API bool textinput_is_focused(textinput_p ti);
+
+
+
+        JOY_API slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial);
+        JOY_API void slider_destroy(slider_p s);
+        JOY_API void slider_set_value(slider_p s, float v);
+        JOY_API float slider_get_value(slider_p s);
+        JOY_API void slider_set_range(slider_p s, float min, float max);
+        JOY_API void slider_draw(slider_p s);
+        JOY_API bool slider_is_pressed(slider_p s, float x, float y);
+        JOY_API void slider_set_pressed(slider_p s, bool v);
+        JOY_API void slider_drag_move(slider_p s, float x, float y);
+        JOY_API bool slider_is_hovered(slider_p s, float x, float y);
+        JOY_API void slider_set_hovered(slider_p s, bool v);
+
+
+
+
+        JOY_API popup_p popup_create(jr2d_p r2d, float w, float h);
+        JOY_API void popup_destroy(popup_p p);
+        JOY_API void popup_set_title(popup_p p, const char* text, int len);
+        JOY_API void popup_set_content(popup_p p, const char* text, int len);
+        JOY_API void popup_set_position(popup_p p, float x, float y);
+        JOY_API void popup_set_visible(popup_p p, bool v);
+        JOY_API void popup_set_closeable(popup_p p, bool v);
+        JOY_API void popup_draw(popup_p p, font_p title_font, font_p content_font);
+        JOY_API bool popup_is_close_clicked(popup_p p, float mx, float my);
+        JOY_API bool popup_is_title_clicked(popup_p p, float mx, float my);
+        JOY_API void popup_drag_move(popup_p p, float mx, float my);
+        JOY_API bool popup_is_inside(popup_p p, float mx, float my);
+
+        JOY_API tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len);
+        JOY_API void tooltip_destroy(tooltip_p t);
+        JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
+        JOY_API void tooltip_set_position(tooltip_p t, float x, float y);
+        JOY_API void tooltip_set_visible(tooltip_p t, bool v);
+        JOY_API void tooltip_draw(tooltip_p t, font_p font);
+
+        /* 直接加载 Lua 格式的地图文件（内部创建 Lua 状态，外部无需关心 Lua） */
+        /* filename: map.lua 文件路径 */
+        /* 返回新分配的 jtilemap_t，失败返回 NULL */
+        JOY_API jtilemap_p jtilemap_load_file(const char* filename);
+        JOY_API void jtilemap_destroy(jtilemap_p tm);
+        /* 解析全局 GID → 对应 tileset + 局部 ID */
+        JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
+        /* 获取 columns=0 的 tileset 中指定局部瓦片的独立图片路径，返回 NULL 表示无独立图片 */
+        JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
+        /* 获取 columns=0 的 tileset 中指定局部瓦片的独立图片尺寸，返回 false 表示无独立图片 */
+        JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
+                int* out_w, int* out_h);
+        /*
+         * 计算指定 GID 在当前时刻的纹理坐标（瓦片在 tileset 纹理图中的像素矩形）
+         * tm:       地图
+         * gid:      全局瓦片 ID（0 表示空白，此时返回零矩形）
+         * time_ms:  当前时间（毫秒），用于驱动动画
+         * out_rect: 输出 {x, y, w, h} 像素坐标
+         * 返回值：   true 表示有效瓦片，false 表示空白
+         */
+        JOY_API bool jtilemap_get_tile_uv(const jtilemap_p tm, int gid,
+                uint32_t time_ms, float out_rect[4]);
+
+        /*
+         * 获取 GID 在当前时刻应显示的局部瓦片 ID（考虑动画）
+         * 无动画时返回 local_id == tileset 内局部 ID
+         */
+        JOY_API int jtilemap_get_anim_tileid(const jtilemap_p tm, int gid,
+                uint32_t time_ms);
+
+        /* ==================== 图层查询 ==================== */
+
+        /* 获取指定名称的 tile layer，未找到返回 NULL */
+        JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
+                const char* name);
+
+        /* 获取指定名称的 object layer，未找到返回 NULL */
+        JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm,
+                const char* name);
+
+        /* 获取 tile layer 中 (tx, ty) 处的 GID，越界返回 0 */
+        JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer,
+                int tx, int ty);
+
+        /* 创建渲染实例，asset_base_path 会拼在所有图片路径前 */
+        /* renderer: SDL 渲染器, remap: 路径映射回调（NULL 用默认） */
+        JOY_API jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
+                const char* asset_base_path,
+                jtilemap_path_remap_t remap);
+
+        /* 渲染地图所有层（按 layers[] 顺序） */
+        JOY_API void jtilemap_render_all(jtilemap_render_p r,
+                jtilemap_p tm,
+                float camera_x, float camera_y,
+                uint32_t time_ms);
+
+        /* 渲染指定名称的层，返回 true 成功，false 层未找到 */
+        JOY_API bool jtilemap_render_layer(jtilemap_render_p r,
+                jtilemap_p tm,
+                const char* layer_name,
+                float camera_x, float camera_y,
+                uint32_t time_ms);
+
+        /* 销毁渲染实例，释放所有缓存纹理 */
+        JOY_API void jtilemap_render_destroy(jtilemap_render_p r);
+
+
+        // ==============================
+        // KCP Server & Client
+        // ==============================
+        JOY_API kcpserver_p kcpserver_create(const char* ip, int port);
+        JOY_API int kcpserver_destroy(kcpserver_p ks);
+        JOY_API void kcpserver_send(kcpserver_p ks, int conv, const char* data, int len);
+        JOY_API void kcpserver_broadcast(kcpserver_p ks, const char* data, int len);
+        JOY_API void kcpserver_offline(kcpserver_p ks, int conv);
+        JOY_API void kcpserver_update(kcpserver_p ks);
+        JOY_API int kcpserver_connection_count(kcpserver_p ks);
+        JOY_API bool kcpserver_poll_message(kcpserver_p ks, net_message_p msg);
+        JOY_API void kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata);
+        JOY_API kcpclient_p kcpclient_create(const char* ip, int port);
+        JOY_API void kcpclient_destroy(kcpclient_p kc);
+        JOY_API int kcpclient_send(kcpclient_p kc, const char* data, int len);
+        JOY_API void kcpclient_update(kcpclient_p kc);
+        JOY_API bool kcpclient_poll_message(kcpclient_p kc, net_message_p msg);
+        JOY_API void kcpclient_set_callback(kcpclient_p kc, net_callback cb, void* userdata);
+        JOY_API tcpserver_p tcpserver_create(const char* ip, int port);
+        JOY_API int tcpserver_destroy(tcpserver_p tcpserver);
+        JOY_API void tcpserver_send(tcpserver_p tcpserver, int conv, const char* data, int len);
+        JOY_API void tcpserver_broadcast(tcpserver_p tcpserver, const char* data, int len);
+        JOY_API void tcpserver_offline(tcpserver_p tcpserver, int conv);
+        JOY_API void tcpserver_update(tcpserver_p tcpserver);
+        JOY_API int tcpserver_connection_count(tcpserver_p tcpserver);
+        JOY_API bool tcpserver_poll_message(tcpserver_p tcpserver, net_message_p msg);
+        JOY_API tcpclient_p tcpclient_create(const char* ip, int port);
+        JOY_API void tcpclient_destroy(tcpclient_p tcpclient);
+        JOY_API int tcpclient_send(tcpclient_p tcpclient, const char* data, int len);
+        JOY_API void tcpclient_update(tcpclient_p tcpclient);
+        JOY_API bool tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg);
+        JOY_API wsnetserver_p wsnetserver_create(const char* ip, int port);
+        JOY_API int wsnetserver_destroy(wsnetserver_p ws);
+        JOY_API void wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int len);
+        JOY_API void wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len);
+        JOY_API void wsnetserver_offline(wsnetserver_p ws, int conv);
+        JOY_API void wsnetserver_update(wsnetserver_p ws);
+        JOY_API int wsnetserver_connection_count(wsnetserver_p ws);
+        JOY_API bool wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg);
+        JOY_API void wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata);
+        JOY_API wsnetclient_p wsnetclient_create(const char* url);
+        JOY_API void wsnetclient_destroy(wsnetclient_p wc);
+        JOY_API int wsnetclient_send(wsnetclient_p wc, const char* data, int len);
+        JOY_API void wsnetclient_update(wsnetclient_p wc);
+        JOY_API bool wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg);
+        JOY_API void wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata);
+        JOY_API netclient_p netclient_create(net_client_type type, const char* host, int port);
+        JOY_API void netclient_destroy(netclient_p nc);
+        JOY_API int netclient_send(netclient_p nc, const char* data, int len);
+        JOY_API void netclient_update(netclient_p nc);
+        JOY_API bool netclient_poll_message(netclient_p nc, net_message_p msg);
+        JOY_API void netclient_set_callback(netclient_p nc, net_callback cb, void* userdata);
+        JOY_API net_client_type netclient_get_type(netclient_p nc);
+        JOY_API netserver_p netserver_create(net_server_type type, const char* ip, int port);
+        JOY_API void netserver_destroy(netserver_p ns);
+        JOY_API void netserver_send(netserver_p ns, int conv, const char* data, int len);
+        JOY_API void netserver_broadcast(netserver_p ns, const char* data, int len);
+        JOY_API void netserver_offline(netserver_p ns, int conv);
+        JOY_API void netserver_update(netserver_p ns);
+        JOY_API int netserver_connection_count(netserver_p ns);
+        JOY_API bool netserver_poll_message(netserver_p ns, net_message_p msg);
+        JOY_API void netserver_set_callback(netserver_p ns, net_callback cb, void* userdata);
+        JOY_API net_server_type netserver_get_type(netserver_p ns);
+        /** 释放 net_message 的 data 字段（在 DLL 堆中执行，避免跨模块 free） */
+        JOY_API void netmessage_free_data(net_message_p msg);
+
+
+        /* 默认配置 */
+        JOY_API jparticle_cfg_t jparticle_cfg_default(void);
+
+
+        /* 创建/销毁 */
+        JOY_API jparticle_p jparticle_create(jparticle_cfg_t cfg);
+        JOY_API void jparticle_destroy(jparticle_p p);
+
+        /* 控制 */
+        JOY_API void jparticle_set_position(jparticle_p p, float x, float y);
+        JOY_API void jparticle_emit(jparticle_p p);            /* 爆发一次 */
+        JOY_API void jparticle_clear(jparticle_p p);            /* 清除所有粒子 */
+
+        /* 每帧调用 */
+        JOY_API void jparticle_update(jparticle_p p, float dt);
+        JOY_API void jparticle_render(jparticle_p p, jr2d_p r2d);
+
+        /* 查询 */
+        JOY_API int  jparticle_count(jparticle_p p);
+        JOY_API bool jparticle_is_active(jparticle_p p);
+
+
+        /* 创建/销毁 */
+        JOY_API jlight_sys_p jlight_sys_create(int width, int height);
+        JOY_API void jlight_sys_destroy(jlight_sys_p sys);
+        JOY_API void jlight_sys_resize(jlight_sys_p sys, int width, int height);
+
+        /* 管理光源 */
+        JOY_API int  jlight_add(jlight_sys_p sys, jlight_t light);
+        JOY_API void jlight_remove(jlight_sys_p sys, int id);
+        JOY_API void jlight_set(jlight_sys_p sys, int id, jlight_t light);
+        JOY_API void jlight_clear(jlight_sys_p sys);
+
+        /* 管理遮挡物 */
+        JOY_API int jlight_add_occluder(jlight_sys_p sys, float x1, float y1, float x2, float y2);
+        JOY_API void jlight_clear_occluders(jlight_sys_p sys);
+
+        /* 环境光 */
+        JOY_API void jlight_set_ambient(jlight_sys_p sys, uint8_t r, uint8_t g, uint8_t b);
+
+        /* 渲染: 场景绘制完成后, SDL_RenderPresent 前调用 */
+        JOY_API void jlight_render(jlight_sys_p sys, jr2d_p r2d);
+
+
+
+        JOY_API ecs_world_p ecs_create();
+        JOY_API void ecs_destroy(ecs_world_p world);
+        JOY_API void ecs_process(ecs_world_p world, float dt);
+        JOY_API ecs_id_t ecs_spawn(ecs_world_p world);
+        JOY_API void ecs_kill(ecs_world_p world, ecs_id_t id);
+        JOY_API void ecs_define(ecs_world_p world, const char* name, size_t size);
+        JOY_API void ecs_set(ecs_world_p world, ecs_id_t id, const char* name, const void* ptr, size_t size);
+        JOY_API size_t ecs_get(ecs_world_p world, ecs_id_t id, const char* name, void** data);
+        JOY_API void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name);
+        JOY_API ecs_id_array_t ecs_query(ecs_world_p world, int arg_cnt, ...);
+        JOY_API ecs_id_array_t ecs_queryx(ecs_world_p world, int arg_cnt, char** args);
+        JOY_API void ecs_register(ecs_world_p world, ecs_system_t system);
+        JOY_API int ecs_test();
+
+
+        /* ===== 运行与生命周期管理 ===== */
+        bt_status_t bt_node_run(bt_node_t* node, float dt);
+        void        bt_node_reset(bt_node_t* node);
+        void        bt_node_destroy(bt_node_t* node);
+        /* Action: 执行动作，返回 SUCCESS / FAILURE / RUNNING */
+        bt_node_t* bt_action_create(bt_action_fn fn);
+        bt_node_t* bt_action_createv(bt_action_fn fn, void* userdata);
+        void bt_action_set_userdata(bt_node_t* node, void* userdata);
+        void* bt_action_get_userdata(bt_node_t* node);
+        /* Condition: 条件判断，true → SUCCESS, false → FAILURE */
+        bt_node_t* bt_condition_create(bt_condition_fn pred);
+        /* Wait: 等待指定秒数 */
+        bt_node_t* bt_wait_create(float seconds);
+        /* ===== 组合节点 ===== */
+        /* Sequence: 顺序执行全部子节点，全部成功才返回 SUCCESS */
+        bt_node_t* bt_sequence_create(bt_node_t** children, int count);
+        /* Selector: 顺序尝试子节点，任一成功即返回 SUCCESS */
+        bt_node_t* bt_selector_create(bt_node_t** children, int count);
+        /* Parallel: 并行执行，success_count 个成功即成功 */
+        bt_node_t* bt_parallel_create(bt_node_t** children, int count, int success_count);
+        /* Inverter: 反转子节点结果 */
+        bt_node_t* bt_inverter_create(bt_node_t* child);
+        /* Succeeder: 总是返回 SUCCESS */
+        bt_node_t* bt_succeeder_create(bt_node_t* child);
+        /* Repeater: 重复子节点 times 次（-1 无限） */
+        bt_node_t* bt_repeater_create(bt_node_t* child, int times);
+        bt_node_t* bt_statemachine_create(bt_state_slot_t* states, int count, const char* initial);
+        void       bt_statemachine_transition(bt_node_t* node, const char* state_name);
+
+
+        JOY_API uint32_t audio_open_device();
+        JOY_API void audio_close_device(uint32_t device_id);
+        JOY_API bool audio_create_wav(const char* filepath, uint32_t device_id);
+        JOY_API bool audio_create_mp3(const char* filepath, uint32_t device_id);
+        JOY_API bool audio_create_flac(const char* filepath, uint32_t device_id);
+        JOY_API bool audio_create_ogg(const char* filepath, uint32_t device_id);
+        JOY_API audio_shot_p audio_shot_create(const char* wav_path, uint32_t device_id);
+        JOY_API audio_shot_p audio_shot_create_mp3(const char* path, uint32_t device_id);
+        JOY_API audio_shot_p audio_shot_create_flac(const char* path, uint32_t device_id);
+        JOY_API audio_shot_p audio_shot_create_ogg(const char* path, uint32_t device_id);
+        JOY_API void audio_shot_play(audio_shot_p shot);
+        JOY_API void audio_shot_set_gain(audio_shot_p shot, float gain);
+        JOY_API void audio_shot_destroy(audio_shot_p shot);
+        JOY_API audio_bgm_p audio_bgm_create(const char* wav_path, uint32_t device_id);
+        JOY_API audio_bgm_p audio_bgm_create_mp3(const char* path, uint32_t device_id);
+        JOY_API audio_bgm_p audio_bgm_create_flac(const char* path, uint32_t device_id);
+        JOY_API audio_bgm_p audio_bgm_create_ogg(const char* path, uint32_t device_id);
+        JOY_API void audio_bgm_stop(audio_bgm_p bgm);
+        JOY_API void audio_bgm_set_gain(audio_bgm_p bgm, float gain);
+        JOY_API void audio_bgm_destroy(audio_bgm_p bgm);
+
+
+        JOY_API modules_p modules_create(const char* path);
+        JOY_API void modules_destroy(modules_p modules);
+        JOY_API bool modules_query(modules_p modules, const char* name, module_p* mod);
+        JOY_API void modules_register(modules_p modules, const char* name,
+                module_create_t create,
+                module_init_t init,
+                module_event_t event_handler,
+                module_update_t update,
+                module_release_t release);
+        JOY_API void modules_require(modules_p modules, const char* name);
+        JOY_API bool moudles_retire(modules_p modules, const char* name, module_p* mod);
+        JOY_API void* module_instance_create(module_p mod);
+        JOY_API void module_instance_init(module_p mod, void* inst, void* ctx, const char* param);
+        JOY_API void module_instance_event(module_p mod, void* inst, void* event);
+        JOY_API void module_instance_update(module_p mod, void* inst, float delta_time);
+        JOY_API void module_instance_release(module_p mod, void* inst);
+
+
+
+        JOY_API box2d_world_t* box2d_create_world(vec2f_t gravity, int iterations);
+        JOY_API void box2d_clear_world(box2d_world_t* world);
+        JOY_API void box2d_destroy_world(box2d_world_t* world);
+        JOY_API void box2d_step(box2d_world_t* world, fp_t dt);
+        JOY_API box2d_body_t* box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by);
+        JOY_API void box2d_destroy_body(box2d_world_t* world, int id);
+        JOY_API box2d_joint_t* box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor);
+        JOY_API void box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint);
+        JOY_API void box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*));
+        JOY_API void box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
+        JOY_API void box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
+
+
+
+        JOY_API void jmsgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb);
+        JOY_API int  jmsgpack_pack_int(jmsgpack_packer_t* pk, int d);
+        JOY_API int  jmsgpack_pack_int64(jmsgpack_packer_t* pk, int64_t d);
+        JOY_API int  jmsgpack_pack_uint(jmsgpack_packer_t* pk, unsigned int d);
+        JOY_API int  jmsgpack_pack_uint64(jmsgpack_packer_t* pk, uint64_t d);
+        JOY_API int  jmsgpack_pack_nil(jmsgpack_packer_t* pk);
+        JOY_API int  jmsgpack_pack_array(jmsgpack_packer_t* pk, size_t n);
+        JOY_API int  jmsgpack_pack_str(jmsgpack_packer_t* pk, size_t l);
+        JOY_API int  jmsgpack_pack_str_body(jmsgpack_packer_t* pk, const void* b, size_t l);
+        JOY_API void jmsgpack_unpacked_init(jmsgpack_unpacked_t* result);
+        JOY_API void jmsgpack_unpacked_destroy(jmsgpack_unpacked_t* result);
+        /* 返回值: >0 成功, 0 需要更多数据, <0 错误 */
+        JOY_API int  jmsgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off);
+
+
+
+
+        /* --- 基础 --- */
+        JOY_API luax_p luax_create(void);
+        JOY_API bool luax_dofile(luax_p luax, const char* filename);
+        JOY_API void luax_release(luax_p luax);
+        void* luax_get_state(luax_p luax);
+
+        /* --- 热更新 --- */
+        JOY_API bool luax_reload(luax_p luax, const char* filename);
+        JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt);
+
+        /* --- 事件派发 --- */
+        JOY_API void luax_dispatch_event(luax_p luax, const void* event);
+
+        /* --- 文件监控 --- */
+        JOY_API void luax_set_watch(luax_p luax, const char* filename);
+        JOY_API bool luax_poll_reload(luax_p luax);
+        JOY_API const char* luax_get_watch(luax_p luax);
+
+        /* --- 命令行参数 --- */
+        JOY_API void luax_set_args(luax_p luax, int argc, char* argv[]);
+
 
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif // !JOY_H

@@ -1,6 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jaudio.h"
-#include <string.h>
 
 /* ==================== 辅助：根据扩展名派发 ==================== */
 

@@ -1,8 +1,7 @@
-#include "luaclib.h"
 #include "../external/lua/lauxlib.h"
-#include "../jgjk.h"
-#include <string.h>
-#include <stdlib.h>
+#include "../joy.h"
+#include "luaclib.h"
+
 
 #define COLLIDER_MT "gjk3d_collider_t*"
 

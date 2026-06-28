@@ -1,8 +1,7 @@
 ﻿#include "luaclib.h"
-#include "../jui.h"
-#include "../jutils.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
+#include "../joy.h"
 
 /* ===== UTF-8 字符串 → 码点数组（使用 jutils.h 的 utf8_decode_all） ===== */
 static int* str_to_codepoints(lua_State* L, int idx, int* out_len) {
@@ -88,7 +87,7 @@ static int l_label_set_position(lua_State* L)
 	label = (label_p)lua_touserdata(L, 1);
 	position.x = (float)luaL_checknumber(L, 2);
 	position.y = (float)luaL_checknumber(L, 3);
-	label->position = position;
+	//label->position = position;
 	return 0;
 }
 
@@ -247,10 +246,10 @@ static int l_button_get_rect(lua_State* L)
 {
 	button_p btn = (button_p)lua_touserdata(L, 1);
 	lua_newtable(L);
-	lua_pushnumber(L, btn->position.x); lua_setfield(L, -2, "x");
-	lua_pushnumber(L, btn->position.y); lua_setfield(L, -2, "y");
-	lua_pushnumber(L, btn->width);      lua_setfield(L, -2, "w");
-	lua_pushnumber(L, btn->height);     lua_setfield(L, -2, "h");
+	//lua_pushnumber(L, btn->position.x); lua_setfield(L, -2, "x");
+	//lua_pushnumber(L, btn->position.y); lua_setfield(L, -2, "y");
+	//lua_pushnumber(L, btn->width);      lua_setfield(L, -2, "w");
+	//lua_pushnumber(L, btn->height);     lua_setfield(L, -2, "h");
 	return 1;
 }
 
@@ -345,14 +344,14 @@ static int lcombobox_additem(lua_State* L)
 	combobox_p combobox = (combobox_p)lua_touserdata(L, 1);
 	const char* text = luaL_checkstring(L, 2);
 	if (!text) return 0;
-	if (combobox->item_count >= 20) return 0;
-	font_p font = (font_p)lua_touserdata(L, 3);
-	jcolor_t c = {0, 0, 0, 255};
-	combobox_item_p item = &combobox->items[combobox->item_count];
-	item->text = text_createx(combobox->r2d, font, text, (int)strlen(text), c);
-	item->is_selected = false;
-	combobox->item_count++;
-	combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
+	//if (combobox->item_count >= 20) return 0;
+	//font_p font = (font_p)lua_touserdata(L, 3);
+	//jcolor_t c = {0, 0, 0, 255};
+	//combobox_item_p item = &combobox->items[combobox->item_count];
+	//item->text = text_createx(combobox->r2d, font, text, (int)strlen(text), c);
+	//item->is_selected = false;
+	//combobox->item_count++;
+	//combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
 	return 0;
 }
 
@@ -503,16 +502,16 @@ static int ldatagrid_setheaders(lua_State* L)
 	font_p fontinfo = (font_p)lua_touserdata(L, 2);
 	jcolor_t color = { 0, 0, 0, 255 };
 	luaL_checktype(L, 3, LUA_TTABLE);
-	int n = (int)luaL_len(L, 3);
-	for (int i = 1; i <= n && (i-1) < dg->col_count; i++) {
-		lua_geti(L, 3, i);
-		if (lua_isstring(L, -1)) {
-			const char* text = lua_tostring(L, -1);
-			if (dg->headers[i-1]) text_destroy(dg->headers[i-1]);
-			dg->headers[i-1] = text_createx(dg->r2d, fontinfo, text, (int)strlen(text), color);
-		}
-		lua_pop(L, 1);
-	}
+	//int n = (int)luaL_len(L, 3);
+	//for (int i = 1; i <= n && (i-1) < dg->col_count; i++) {
+	//	lua_geti(L, 3, i);
+	//	if (lua_isstring(L, -1)) {
+	//		const char* text = lua_tostring(L, -1);
+	//		if (dg->headers[i-1]) text_destroy(dg->headers[i-1]);
+	//		dg->headers[i-1] = text_createx(dg->r2d, fontinfo, text, (int)strlen(text), color);
+	//	}
+	//	lua_pop(L, 1);
+	//}
 	return 0;
 }
 
@@ -537,33 +536,33 @@ static int ldatagrid_destroy(lua_State* L)
 static int ldatagrid_addrow(lua_State* L)
 {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
-	luaL_checktype(L, 2, LUA_TTABLE);
-	int cols = (int)luaL_len(L, 2);
-	if (cols > dg->col_count) cols = dg->col_count;
-	const char** row = (const char**)malloc(cols * sizeof(char*));
-	for (int j = 0; j < cols; j++) {
-		lua_geti(L, 2, j + 1);
-		row[j] = lua_tostring(L, -1);
-		lua_pop(L, 1);
-	}
-	datagrid_addrow(dg, row);
-	free(row);
+	//luaL_checktype(L, 2, LUA_TTABLE);
+	//int cols = (int)luaL_len(L, 2);
+	//if (cols > dg->col_count) cols = dg->col_count;
+	//const char** row = (const char**)malloc(cols * sizeof(char*));
+	//for (int j = 0; j < cols; j++) {
+	//	lua_geti(L, 2, j + 1);
+	//	row[j] = lua_tostring(L, -1);
+	//	lua_pop(L, 1);
+	//}
+	//datagrid_addrow(dg, row);
+	//free(row);
 	return 0;
 }
 
 static int ldatagrid_get_row_count(lua_State* L) {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
-	lua_pushinteger(L, dg->row_count);
+	//lua_pushinteger(L, dg->row_count);
 	return 1;
 }
 
 static int ldatagrid_get_cell(lua_State* L) {
 	datagrid_p dg = (datagrid_p)lua_touserdata(L, 1);
-	int r = (int)luaL_checkinteger(L, 2), c = (int)luaL_checkinteger(L, 3);
-	if (r >= 0 && r < (int)kv_size(dg->data) && c >= 0 && c < dg->col_count) {
-		char* val = kv_A(kv_A(dg->data, r), c);
-		if (val) lua_pushstring(L, val); else lua_pushnil(L);
-	} else lua_pushnil(L);
+	//int r = (int)luaL_checkinteger(L, 2), c = (int)luaL_checkinteger(L, 3);
+	//if (r >= 0 && r < (int)kv_size(dg->data) && c >= 0 && c < dg->col_count) {
+	//	char* val = kv_A(kv_A(dg->data, r), c);
+	//	if (val) lua_pushstring(L, val); else lua_pushnil(L);
+	//} else lua_pushnil(L);
 	return 1;
 }
 

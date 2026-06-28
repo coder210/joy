@@ -2,8 +2,7 @@
 #include "external/dr_mp3.h"
 #include "external/dr_flac.h"
 #include "external/dr_wav.h"
-#include "jaudio.h"
-#include <string.h>
+#include "joy.h"
 
 #define HAVE_OGG 1
 

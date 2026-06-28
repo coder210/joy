@@ -1,7 +1,15 @@
-#include "jmodule.h"
+/************************************************
+Copyright: 2021-2028, lanchong.xyz/Ltd.
+File name: module.h
+Description: ²å¼þÏµÍ³
+Author: ydlc
+Version: 1.0
+Date: 2021.3.3
+History:
+*************************************************/
 #include <SDL3/SDL.h>
 #include "external/klib/khash.h"
-#include "jcore.h"
+#include "joy.h"
 
 
 KHASH_INIT(kmod, const char*, module_p, 1, kh_str_hash_func, kh_str_hash_equal)
@@ -11,8 +19,6 @@ struct modules {
 	char path[1024];
 	khash_t(kmod)* mods;
 };
-
-
 
 static void* _try_open(const char* path, const char* name)
 {

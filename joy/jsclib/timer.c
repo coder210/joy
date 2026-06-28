@@ -1,5 +1,5 @@
 #include "jsclib.h"
-#include "../jutils.h"
+#include "../joy.h"
 
 static duk_ret_t jtimer_create(duk_context* ctx)
 {

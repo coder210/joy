@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "jsclib.h"
-#include "../jr2d.h"
+#include "../joy.h"
+
 #define PTR(n) duk_get_pointer(ctx,n)
 #define STR(n) duk_to_string(ctx,n)
 #define NUM(n) ((float)duk_to_number(ctx,n))

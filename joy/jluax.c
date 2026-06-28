@@ -7,18 +7,13 @@ Version: 1.0
 Date: 2021.12.14
 History:
 *************************************************/
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 #include <SDL3/SDL.h>
 #include "external/lua/lapi.h"
 #include "external/lua/lualib.h"
 #include "external/lua/lauxlib.h"
 #include "external/lua_cjson/lua_cjson.h"
-#include "jcore.h"
-#include "jutils.h"
 #include "luaclib/luaclib.h"
-#include "jluax.h"
+#include "joy.h"
 
 /* set_env / get_env 前向声明 */
 static int l_set_env(lua_State* L);
@@ -168,7 +163,6 @@ luax_p luax_create(void)
         JOY_MOD("ecs", luaopen_ecs);
         JOY_MOD("mat22f", luaopen_mat22f);
         JOY_MOD("mat22", luaopen_mat22);
-        JOY_MOD("world2df", luaopen_world2df);
         JOY_MOD("server", luaopen_server);
         JOY_MOD("client", luaopen_client);
         JOY_MOD("timer", luaopen_timer);
@@ -270,7 +264,7 @@ void* luax_get_state(luax_p luax)
         return luax->L;
 }
 
-void luax_dispatch_event(luax_p luax, const SDL_Event* event)
+void luax_dispatch_event(luax_p luax, const void* event)
 {
 	dispatch_event(luax->cbs, event, luax);
 }

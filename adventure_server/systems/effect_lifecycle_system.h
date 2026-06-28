@@ -7,10 +7,10 @@
 static void EffectLifecycleSystem(flecs::entity e, AttackRayEffectComponent& effect)
 {
 	Context* ctx = (Context*)e.world().get_ctx();
-	effect.lifetime -= ctx->FIXED_TIMESTEP;
-	if (effect.lifetime <= 0.0f) {
-		e.destruct();
-	}
+	//effect.lifetime -= ctx->FIXED_TIMESTEP;
+	//if (effect.lifetime <= 0.0f) {
+	//	e.destruct();
+	//}
 }
 
 #endif

@@ -1,12 +1,9 @@
-#include <stdlib.h>
-#include <string.h>
 #include <SDL3/SDL.h>
 #include "../external/lua/lapi.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/kcp.h"
 #include "luaclib.h"
-#include "../jsys.h"
-#include "../jnetwork.h"
+#include "../joy.h"
 //
 //
 //typedef struct l_kcpcb {

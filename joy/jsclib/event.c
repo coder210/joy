@@ -1,5 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jcore.h"
 
 static duk_ret_t jevent_quit(duk_context* ctx)
 {

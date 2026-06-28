@@ -7,11 +7,7 @@ Version: 1.0
 Date: 2021.3.18
 History:
 *************************************************/
-#include "jbehavior.h"
-#include "jcore.h"
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "joy.h"
 
 /* =================================================================
  * 基础生命周期

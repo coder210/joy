@@ -1,14 +1,33 @@
-﻿/* jlight.c — 使用 jr2d API，不直接调用 SDL3 */
-#include "jlight.h"
-#include "jr2d.h"
-#include "external/klib/kvec.h"
-#include <string.h>
-#include <math.h>
-#include <stdlib.h>
+﻿#include "external/klib/kvec.h"
+#include <SDL3/SDL.h>
+#include "joy.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+#define JLIGHT_MAX 128
+#define JLIGHT_OCCLUDER_MAX 512
+
+
+
+/* ---------- 遮挡线段(墙壁/柱子等) ---------- */
+typedef struct jlight_occluder {
+        float x1, y1, x2, y2;
+} jlight_occluder_t;
+
+/* ---------- 灯光系统 ---------- */
+typedef struct jlight_sys {
+        int width, height;
+        image_p lightmap;
+        image_p gradient;
+        jlight_t lights[JLIGHT_MAX];
+        bool active[JLIGHT_MAX];
+        int count;
+        uint8_t ambient_r, ambient_g, ambient_b;
+        jlight_occluder_t occluders[JLIGHT_OCCLUDER_MAX];
+        int occluder_count;
+} jlight_sys_t, * jlight_sys_p;
 
 typedef struct { float x, y; } v2;
 static v2 v2f(float x, float y) { v2 v={x,y}; return v; }

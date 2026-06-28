@@ -1,9 +1,8 @@
-#include "jmsgpack.h"
-#include "jconfig.h"
 #include <msgpack/pack.h>
 #include <msgpack/unpack.h>
 #include <msgpack/object.h>
 #include <msgpack/zone.h>
+#include "joy.h"
 
 /* ===== Packer ===== */
 

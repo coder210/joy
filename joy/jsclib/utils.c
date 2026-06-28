@@ -1,9 +1,7 @@
-#include <math.h>
-#include <stdlib.h>
 #include <time.h>
 #include <SDL3/SDL.h>
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jutils.h"
 
 static duk_ret_t jutils_now(duk_context* ctx)
 { duk_push_number(ctx, (duk_double_t)SDL_GetTicks()); return 1; }

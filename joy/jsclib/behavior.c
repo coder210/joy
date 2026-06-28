@@ -1,7 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jbehavior.h"
-#include <stdlib.h>
-#include <string.h>
 
 /* ===== 全局 Duktape 上下文 + JS 回调存储 ===== */
 static duk_context* G = NULL;

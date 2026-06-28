@@ -1,7 +1,7 @@
-#include "luaclib.h"
-#include "../jfont.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
+#include "../joy.h"
+#include "luaclib.h"
 
 /* =================================================================
  * Font

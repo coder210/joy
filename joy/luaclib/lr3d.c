@@ -1,6 +1,6 @@
 #include "luaclib.h"
-#include "../jr3d.h"
 #include "../external/lua/lauxlib.h"
+#include "../joy.h"
 
 /* ---- helpers ---- */
 

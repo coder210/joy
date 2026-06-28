@@ -12,18 +12,15 @@
 #define LUA_LIB
 
 #include "../external/lua/lprefix.h"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "SDL3/SDL.h"
-
 #include "../external/lua/lua.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lualib.h"
-#include "../jutils.h"
+//#include "../jutils.h"
 
 
 /*

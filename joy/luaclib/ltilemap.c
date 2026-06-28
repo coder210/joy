@@ -1,8 +1,7 @@
 #include "luaclib.h"
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
-#include "../jtilemap.h"
-#include "../jtilemap_render.h"
+#include "../joy.h"
 
 static int l_tilemap_load_file(lua_State* L)
 {
@@ -23,28 +22,28 @@ static int l_tilemap_destroy(lua_State* L)
 static int l_tilemap_get_width(lua_State* L)
 {
     jtilemap_p p = (jtilemap_p)lua_touserdata(L, 1);
-    lua_pushinteger(L, p ? p->width : 0);
+    //lua_pushinteger(L, p ? p->width : 0);
     return 1;
 }
 
 static int l_tilemap_get_height(lua_State* L)
 {
     jtilemap_p p = (jtilemap_p)lua_touserdata(L, 1);
-    lua_pushinteger(L, p ? p->height : 0);
+    //lua_pushinteger(L, p ? p->height : 0);
     return 1;
 }
 
 static int l_tilemap_get_tilewidth(lua_State* L)
 {
     jtilemap_p p = (jtilemap_p)lua_touserdata(L, 1);
-    lua_pushinteger(L, p ? p->tilewidth : 0);
+    //lua_pushinteger(L, p ? p->tilewidth : 0);
     return 1;
 }
 
 static int l_tilemap_get_tileheight(lua_State* L)
 {
     jtilemap_p p = (jtilemap_p)lua_touserdata(L, 1);
-    lua_pushinteger(L, p ? p->tileheight : 0);
+    //lua_pushinteger(L, p ? p->tileheight : 0);
     return 1;
 }
 

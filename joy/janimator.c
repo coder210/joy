@@ -1,10 +1,6 @@
-#include <string.h>
-#include <stdlib.h>
 #include <SDL3/SDL.h>
-#include <math.h>
-#include "janimator.h"
-#include "jr2d.h"
 #include "external/klib/kvec.h"
+#include "joy.h"
 
 /* ========== Internal Types ========== */
 

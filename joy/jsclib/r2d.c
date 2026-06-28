@@ -1,8 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jr2d.h"
-#include "../jfont.h"
-#include <stdlib.h>
-#include <string.h>
 
 static jr2d_p check_ren(duk_context* ctx, int idx)
 {

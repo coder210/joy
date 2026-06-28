@@ -1,7 +1,4 @@
-#include "jr3d.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "joy.h"
 #include <SDL3/SDL.h>
 
 /* ================================================================

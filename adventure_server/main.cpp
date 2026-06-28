@@ -9,33 +9,33 @@
 
 static scene_manager_p g_mgr;
 static Context* ctx;
+static game_timer_t game_timer;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-	sys_init_netenv();
+        sys_init_netenv();
 
-	if (!init_env()) {
-		log_info("SDL init failed: %s", get_error());
-		return SDL_APP_FAILURE;
-	}
+        if (!init_env()) {
+                log_info("SDL init failed: %s", get_error());
+                return SDL_APP_FAILURE;
+        }
 
-	ctx = (Context*)calloc(1, sizeof(Context));
-        ctx->FIXED_TIMESTEP = 1 / 50.0f;
+        ctx = (Context*)calloc(1, sizeof(Context));
 
-	game_timer_init(&ctx->game_timer);
-	game_timer_set_target_fps(&ctx->game_timer, 60);
+        game_timer_init(&game_timer);
+        game_timer_set_target_fps(&game_timer, 60);
 
-    AssetManager::Init();
+        AssetManager::Init();
 
-    ctx->window = create_window("server", 480, 320);
-    ctx->r2d = r2d_create(ctx->window);
-    r2d_set_logical_presentation(ctx->r2d, 480, 320);
+        ctx->window = create_window("server", 480, 320);
+        ctx->r2d = r2d_create(ctx->window);
+        r2d_set_logical_presentation(ctx->r2d, 480, 320);
 
-	g_mgr = scene_manager_create();
-	scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
+        g_mgr = scene_manager_create();
+        scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
 
-	log_info("server start");
-	return SDL_APP_CONTINUE;
+        log_info("server start");
+        return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
@@ -51,8 +51,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
 
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-        game_timer_update(&ctx->game_timer);
-        float dt = game_timer_get_delta_time(&ctx->game_timer);
+        game_timer_update(&game_timer);
+        float dt = game_timer_get_delta_time(&game_timer);
         scene_manager_update(g_mgr, dt);
         r2d_set_color(ctx->r2d, 50, 120, 50, 255);
         r2d_begin(ctx->r2d);

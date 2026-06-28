@@ -3,8 +3,7 @@
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
 #include "external/klib/kvec.h"
-#include "jr2d.h"
-#include "jutils.h"
+#include "joy.h"
 
 union jr2d {
         SDL_Renderer* sdl;

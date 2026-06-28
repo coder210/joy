@@ -1,14 +1,28 @@
-#ifndef APP_CONTEXT_H
-#define APP_CONTEXT_H
+#ifndef CONTEXT_H
+#define CONTEXT_H
+#include <string>
+#include <map>
+#include <queue>
+#include <joy/jmath.h>
 #include <joy/jcore.h>
 #include <joy/jr2d.h>
+#include <joy/jnetwork.h>
+#include "../../adventure_shared/protocol.h"
 
 struct Context {
         jwindow_p window;
         jr2d_p r2d;
-        game_timer_t game_timer;
-        float FIXED_TIMESTEP;
-        float camera_x, camera_y; // æ‘„åƒæœºä¸–ç•Œåæ ‡(ç±³)
+      
+        int global_id; // Íæ¼ÒÈ«¾ÖÎ¨Ò» ID
+        int frame_id;  // µ±Ç°Ö¡ ID
+        std::vector<S2CPlayerJoin> player_joins;
+        std::vector<S2CPlayerLeave> player_leaves;
+        std::vector<S2CPlayerInput> player_inputs;
+
+        std::map<int, std::string> commands;
+        std::queue<std::string> command_queue;
+        std::map<int, std::string> worlds;
+        netserver_p netserver;
 };
 
 

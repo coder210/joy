@@ -1,8 +1,5 @@
-#include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jui.h"
 
 static jcolor_t read_color(duk_context* ctx, int idx)
 {
@@ -38,8 +35,8 @@ static duk_ret_t jui_label_destroy(duk_context* ctx)
 static duk_ret_t jui_label_set_position(duk_context* ctx)
 {
 	label_p lb = (label_p)PTR(0);
-	lb->position.x = NUM(1);
-	lb->position.y = NUM(2);
+	//lb->position.x = NUM(1);
+	//lb->position.y = NUM(2);
 	return 0;
 }
 
@@ -126,16 +123,16 @@ static duk_ret_t jui_combobox_destroy(duk_context* ctx)
 static duk_ret_t jui_combobox_additem(duk_context* ctx)
 {
 	combobox_p c = (combobox_p)PTR(0);
-	if (c->item_count >= 20)
-		return 0;
-	const char* text = STR(1);
-	font_p fp = (font_p)PTR(2);
-	jcolor_t col = { 0,0,0,255 };
-	combobox_item_p item = &c->items[c->item_count];
-	item->text = text_createx(c->r2d, fp, text, strlen(text), col);
-	item->is_selected = false;
-	c->item_count++;
-	c->dropdown_rect.h = c->item_count * c->item_height;
+	//if (c->item_count >= 20)
+	//	return 0;
+	//const char* text = STR(1);
+	//font_p fp = (font_p)PTR(2);
+	//jcolor_t col = { 0,0,0,255 };
+	//combobox_item_p item = &c->items[c->item_count];
+	//item->text = text_createx(c->r2d, fp, text, strlen(text), col);
+	//item->is_selected = false;
+	//c->item_count++;
+	//c->dropdown_rect.h = c->item_count * c->item_height;
 	return 0;
 }
 
@@ -186,13 +183,27 @@ static duk_ret_t jui_radiogroup_draw(duk_context* ctx) { radio_button_group_draw
 static duk_ret_t jui_datagrid_create(duk_context* ctx) { jr2d_p r = REN(0); jrect_t rect = { INT(1),INT(2),INT(3),INT(4) }; duk_push_pointer(ctx, datagrid_create(r, rect, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
 static duk_ret_t jui_datagrid_destroy(duk_context* ctx) { datagrid_destroy((datagrid_p)PTR(0)); return 0; }
 static duk_ret_t jui_datagrid_draw(duk_context* ctx) { datagrid_draw((datagrid_p)PTR(0), REN(1)); return 0; }
-static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) { datagrid_p g = (datagrid_p)PTR(0); font_p fp = (font_p)PTR(1); jcolor_t col = { 0,0,0,255 }; int n = (int)duk_get_length(ctx, 2); for (int i = 0; i < n && i < g->col_count; i++) { duk_get_prop_index(ctx, 2, (duk_uarridx_t)i); const char* text = duk_to_string(ctx, -1); if (g->headers[i]) text_destroy(g->headers[i]); g->headers[i] = text_createx(g->r2d, fp, text, strlen(text), col); duk_pop(ctx); } return 0; }
-static duk_ret_t jui_datagrid_addrow(duk_context* ctx) { datagrid_p g = (datagrid_p)PTR(0); int n = (int)duk_get_length(ctx, 1); if (n > g->col_count) n = g->col_count; const char** row = (const char**)malloc(n * sizeof(char*)); for (int i = 0; i < n; i++) { duk_get_prop_index(ctx, 1, (duk_uarridx_t)i); row[i] = duk_to_string(ctx, -1); duk_pop(ctx); } datagrid_addrow(g, row); free(row); return 0; }
+static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) {
+	//datagrid_p g = (datagrid_p)PTR(0); font_p fp = (font_p)PTR(1); jcolor_t col = { 0,0,0,255 }; int n = (int)duk_get_length(ctx, 2); for (int i = 0; i < n && i < g->col_count; i++) { duk_get_prop_index(ctx, 2, (duk_uarridx_t)i); const char* text = duk_to_string(ctx, -1); if (g->headers[i]) text_destroy(g->headers[i]); g->headers[i] = text_createx(g->r2d, fp, text, strlen(text), col); duk_pop(ctx); } 
+	return 0; 
+}
+
+static duk_ret_t jui_datagrid_addrow(duk_context* ctx) { 
+	/*datagrid_p g = (datagrid_p)PTR(0); int n = (int)duk_get_length(ctx, 1); if (n > g->col_count) n = g->col_count; const char** row = (const char**)malloc(n * sizeof(char*)); for (int i = 0; i < n; i++) { duk_get_prop_index(ctx, 1, (duk_uarridx_t)i); row[i] = duk_to_string(ctx, -1); duk_pop(ctx); } datagrid_addrow(g, row); free(row);*/
+	return 0;
+}
+
 static duk_ret_t jui_datagrid_hit_row(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)datagrid_hit_row((datagrid_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_datagrid_scroll(duk_context* ctx) { datagrid_scroll((datagrid_p)PTR(0), INT(1)); return 0; }
 static duk_ret_t jui_datagrid_set_selected_row(duk_context* ctx) { datagrid_set_selected_row((datagrid_p)PTR(0), INT(1)); return 0; }
-static duk_ret_t jui_datagrid_get_row_count(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)((datagrid_p)PTR(0))->row_count); return 1; }
-static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) { datagrid_p g = (datagrid_p)PTR(0); int r = INT(1), c = INT(2); if (r >= 0 && (size_t)r < kv_size(g->data) && c >= 0 && c < g->col_count) { char* v = kv_A(kv_A(g->data, r), c); if (v) { duk_push_string(ctx, v); return 1; } } duk_push_undefined(ctx); return 1; }
+static duk_ret_t jui_datagrid_get_row_count(duk_context* ctx) { 
+	//duk_push_number(ctx, (duk_double_t)((datagrid_p)PTR(0))->row_count);
+	return 1;
+}
+static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) { 
+	//datagrid_p g = (datagrid_p)PTR(0); int r = INT(1), c = INT(2); if (r >= 0 && (size_t)r < kv_size(g->data) && c >= 0 && c < g->col_count) { char* v = kv_A(kv_A(g->data, r), c); if (v) { duk_push_string(ctx, v); return 1; } } duk_push_undefined(ctx); 
+	return 1;
+}
 
 static duk_ret_t jui_textinput_create(duk_context* ctx) { jr2d_p r = REN(0); font_p fp = (font_p)PTR(1); jrect_t rect = { NUM(2),NUM(3),NUM(4),NUM(5) }; duk_push_pointer(ctx, textinput_create(r, rect, fp)); return 1; }
 static duk_ret_t jui_textinput_destroy(duk_context* ctx) { textinput_destroy((textinput_p)PTR(0)); return 0; }

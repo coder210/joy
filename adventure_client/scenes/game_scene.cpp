@@ -665,7 +665,7 @@ static void on_load(scene_p s)
 	self->ecs_world.component<Animator>();
 	self->ecs_world.component<AnimParams>();
 
-	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.41", 30000);
+	self->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.17", 30000);
 
 	self->ecs_world.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
 	self->ecs_world.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
