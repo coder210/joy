@@ -1,7 +1,6 @@
 ﻿#ifndef GAMEPLAYER_CONTROLS_LAYER_H
 #define GAMEPLAYER_CONTROLS_LAYER_H
-#include <joy/jui.h>
-#include <joy/jscene.h>
+#include <joy/joy.h>
 #include "../context.h"
 
 #define GAMEPLAY_CONTROL_EVENT (0x1)

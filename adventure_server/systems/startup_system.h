@@ -1,9 +1,7 @@
 #ifndef STARTUP_SYSTEM_H
 #define STARTUP_SYSTEM_H
-#include <joy/jcore.h>
-#include <joy/jtilemap.h>
-#include <joy/jtilemap_render.h>
 #include "../flecs.h"
+#include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
 #include "../components/id_component.h"
 #include "../components/logic_rect_component.h"
@@ -27,7 +25,7 @@ static void startup_system(flecs::iter& it)
 
                // ¼ÓÔØ tilemap Åö×²Ç½Ìå£¨Ìæ´úÓ²±àÂëÎ§Ç½£©
 
-        self->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
+       /* self->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
         if (self->tilemap) {
                 jtilemap_object_layer_p ol = jtilemap_find_object_layer(self->tilemap, "collision");
                 if (ol) {
@@ -47,7 +45,7 @@ static void startup_system(flecs::iter& it)
                         }
                         log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
                 }
-        }
+        }*/
         // ---- tilemap + ¾«ÁéäÖÈ¾³õÊ¼»¯ ----
         if (self->tilemap)
                 self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_server/", NULL);

@@ -2,9 +2,7 @@
 /* 冒险游戏网络协议（基于 jmsgpack）
  * Server ↔ Client 帧同步协议定义
  * 枚举、结构体、打包/解包工具函数 */
-
-#include <joy/jmsgpack.h>
-#include <string>
+#include <joy/joy.h>
 #include <cstring>
 #include <cstdlib>
 

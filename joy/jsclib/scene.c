@@ -1,7 +1,5 @@
+#include "../joy.h"
 #include "jsclib.h"
-#include "../jscene.h"
-#include <stdlib.h>
-#include <string.h>
 
 /* JS 绑定简化版：暴露核心 API 但不支持 C 回调（Duktape 对函数引用的限制）
  * 用户直接在 joy.update / joy.draw 中调用 scene.update / scene.render

@@ -3,10 +3,7 @@
 #include <string>
 #include <map>
 #include <queue>
-#include <joy/jmath.h>
-#include <joy/jcore.h>
-#include <joy/jr2d.h>
-#include <joy/jnetwork.h>
+#include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
 
 struct Context {

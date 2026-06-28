@@ -2,8 +2,6 @@
 #include "external/klib/klist.h"
 #include "external/mongoose.h"
 #include "external/kcp.h"
-#include "jconfig.h"
-#include "jsys.h"
 #include "joy.h"
 
 #ifdef JOY_WIN

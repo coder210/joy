@@ -1,9 +1,8 @@
 ﻿#ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
-#include <joy/jfont.h>
-#include <joy/jr2d.h>
 #include <string>
 #include <unordered_map>
+#include <joy/joy.h>
 
 class AssetManager
 {

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <joy/jr2d.h>
+#include <joy/joy.h>
 
 enum class AnimCondMode {
     GREATER, LESS, EQUALS, NOT_EQUALS, IF_TRUE, IF_FALSE, TRIGGER,

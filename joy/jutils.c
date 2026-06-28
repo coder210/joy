@@ -1,13 +1,11 @@
-#include "joy.h"
 #include <time.h>
 #include "external/md5.h"
 #include "external/base64.h"
 #include "external/aes_util.h"
 #include "external/des.h"
 #include <SDL3/SDL.h>
+#include "joy.h"
 #include "jcont.h"
-#include "jconfig.h"
-#include "jsys.h"
 
 
 #define MT_N 624

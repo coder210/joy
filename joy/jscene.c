@@ -7,10 +7,8 @@ Version: 1.0
 Date: 2026.5.5
 History:
 ************************************************/
-#include "jscene.h"
 #include <SDL3/SDL.h>
-#include <stdlib.h>
-#include <string.h>
+#include "joy.h"
 
 // ============================================================
 // 节点结构体（定义在 .c 中，外部不可见）

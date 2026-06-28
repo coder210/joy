@@ -2,8 +2,6 @@
 #include "external/klib/khash.h"
 #include "external/klib/klist.h"
 #include "external/klib/kvec.h"
-#include "jvector.h"
-#include "jconfig.h"
 #include "joy.h"
 
 // ==================== Bitsetʵ�� ====================
@@ -154,7 +152,7 @@ typedef struct ecs_component_data {
 
 typedef unsigned long ecs_cid_t;
 #define __int_free(x)
-KLIST_INIT(kecs_system, ecs_system_t, __int_free)
+KLIST_INIT(kecs_system, jecs_system_t, __int_free)
 
 // ����洢���ڰ���ϡ�輯��λ��
 typedef struct component_store {
@@ -167,19 +165,19 @@ KHASH_INIT(kecs_component_data, ecs_cid_t, ecs_component_data_p, 1, kh_int_hash_
 KHASH_INIT(kecs_meta, ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
 typedef khash_t(kecs_component_data) ecs_entity_t, * ecs_entity_p;
-KHASH_INIT(kecs_entity, ecs_id_t, ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_entity, jecs_id_t, ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
-struct ecs_world {
-        ecs_id_t global_id;
+struct jecs_world {
+        jecs_id_t global_id;
         khash_t(kecs_meta)* metas;
         klist_t(kecs_system)* systems;
         khash_t(kecs_component)* components;
         khash_t(kecs_entity)* entities;
 };
 
-ecs_world_p ecs_create() 
+jecs_world_p jecs_create() 
 {
-        ecs_world_p world = (ecs_world_p)SDL_malloc(sizeof(ecs_world_t));
+        jecs_world_p world = (jecs_world_p)SDL_malloc(sizeof(jecs_world_t));
         world->metas = kh_init(kecs_meta);
         world->systems = kl_init(kecs_system);
         world->components = kh_init(kecs_component);
@@ -189,9 +187,9 @@ ecs_world_p ecs_create()
 }
 
 
-void ecs_destroy(ecs_world_p world)
+void jecs_destroy(jecs_world_p world)
 {
-        ecs_id_t id;
+        jecs_id_t id;
         ecs_entity_p entity;
         khint_t i, j, p;
         sparse_set_p sparse_set;
@@ -229,9 +227,9 @@ void ecs_destroy(ecs_world_p world)
         SDL_free(world);
 }
 
-void ecs_process(ecs_world_p world, float dt)
+void jecs_process(jecs_world_p world, float dt)
 {
-        ecs_system_t system;
+        jecs_system_t system;
         kliter_t(kecs_system)* p;
         p = kl_begin(world->systems);
         while (p != kl_end(world->systems)) {
@@ -241,9 +239,9 @@ void ecs_process(ecs_world_p world, float dt)
         }
 }
 
-ecs_id_t ecs_spawn(ecs_world_p world)
+jecs_id_t jecs_spawn(jecs_world_p world)
 {
-        ecs_id_t id;
+        jecs_id_t id;
         khint_t k;
         int ret;
         id = world->global_id++;
@@ -252,7 +250,7 @@ ecs_id_t ecs_spawn(ecs_world_p world)
         return id;
 }
 
-void ecs_kill(ecs_world_p world, ecs_id_t id)
+void jecs_kill(jecs_world_p world, jecs_id_t id)
 {
         ecs_entity_p entity;
         component_store_t* store;
@@ -287,7 +285,7 @@ void ecs_kill(ecs_world_p world, ecs_id_t id)
         kh_destroy(kecs_component_data, entity);
 }
 
-void ecs_define(ecs_world_p world, const char* name, size_t size)
+void jecs_define(jecs_world_p world, const char* name, size_t size)
 {
         ecs_cid_t component_id;
         khint_t k;
@@ -300,7 +298,7 @@ void ecs_define(ecs_world_p world, const char* name, size_t size)
         }
 }
 
-void ecs_set(ecs_world_p world, ecs_id_t id, const char* name, const void* ptr, size_t size)
+void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size)
 {
         ecs_entity_p entity;
         ecs_cid_t component_id;
@@ -354,7 +352,7 @@ void ecs_set(ecs_world_p world, ecs_id_t id, const char* name, const void* ptr, 
         }
 }
 
-size_t ecs_get(ecs_world_p world, ecs_id_t id, const char* name, void** data)
+size_t jecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
 {
         ecs_cid_t component_id;
         ecs_entity_p entity;
@@ -375,7 +373,7 @@ size_t ecs_get(ecs_world_p world, ecs_id_t id, const char* name, void** data)
         return component_data->size;
 }
 
-void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name)
+void jecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
 {
         ecs_entity_p entity;
         component_store_t* store;
@@ -404,10 +402,10 @@ void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name)
 }
 //
 //static vector_t(kecs)
-//_intersection(ecs_id_t* a_arr, int a_arr_len, ecs_id_t* b_arr, int b_arr_len)
+//_intersection(jecs_id_t* a_arr, int a_arr_len, jecs_id_t* b_arr, int b_arr_len)
 //{
 //        vector_t(kecs) vec;
-//        ecs_id_t a, b;
+//        jecs_id_t a, b;
 //
 //        vector_init(kecs, &vec);
 //        for (size_t i = 0; i < a_arr_len; i++) {
@@ -424,9 +422,9 @@ void ecs_remove(ecs_world_p world, ecs_id_t id, const char* name)
 //        return vec;
 //}
 
-ecs_id_array_t ecs_query(ecs_world_p world, int arg_cnt, ...)
+jecs_id_array_t jecs_query(jecs_world_p world, int arg_cnt, ...)
 {
-        ecs_id_array_t result = { 0 };
+        jecs_id_array_t result = { 0 };
         if (arg_cnt <= 0) {
                 return result;
         }
@@ -440,15 +438,15 @@ ecs_id_array_t ecs_query(ecs_world_p world, int arg_cnt, ...)
         }
         va_end(va);
 
-        result = ecs_queryx(world, arg_cnt, args);
+        result = jecs_queryx(world, arg_cnt, args);
         SDL_free(args);
 
         return result;
 }
 
-ecs_id_array_t ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
+jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char**args)
 {
-        ecs_id_array_t result = { 0 };
+        jecs_id_array_t result = { 0 };
 
         if (arg_cnt <= 0) {
                 return result;
@@ -491,7 +489,7 @@ ecs_id_array_t ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
                         sparse_set_p sparse_set = store->sparse_set;
 
                         for (int i = 0; i < kv_size(sparse_set->density); i++) {
-                                ecs_id_t id = kv_A(sparse_set->density, i);
+                                jecs_id_t id = kv_A(sparse_set->density, i);
                                 if (bitset_test(result_bitset, id)) {
                                         result.ids[result.num++] = id;
                                 }
@@ -505,7 +503,7 @@ ecs_id_array_t ecs_queryx(ecs_world_p world, int arg_cnt, char**args)
 }
 
 
-void ecs_register(ecs_world_p world, ecs_system_t system)
+void jecs_register(jecs_world_p world, jecs_system_t system)
 {
         *kl_pushp(kecs_system, world->systems) = system;
 }
@@ -551,13 +549,13 @@ int ecs_test()
        // sparse_set_destroy(sparse_set);*/
 
 
-       // ecs_world_p world;
+       // jecs_world_p world;
        // world = ecs_create();
        // ecs_define(world, "position_t", sizeof(position_t));
        // ecs_define(world, "velocity_t", sizeof(velocity_t));
 
-       // ecs_id_t id1 = ecs_spawn(world);
-       // ecs_id_t id2 = ecs_spawn(world);
+       // jecs_id_t id1 = ecs_spawn(world);
+       // jecs_id_t id2 = ecs_spawn(world);
        // /*ecs_set(world, id1, "position_t", &(position_t){0.2, 0.3});
        // ecs_set(world, id1, "velocity_t", &(velocity_t){2.2, 4.3});
        // ecs_set(world, id2, "position_t", &(position_t){2.2, 3.3});
@@ -569,14 +567,14 @@ int ecs_test()
 
        // /*  vector_t entities = ecs_query(world, 2, "position_t", "velocity_t");
        //   for (int i = 0; i < vector_size(&entities); i++) {
-       //           ecs_id_t id = vector_a(&entities, i);
+       //           jecs_id_t id = vector_a(&entities, i);
        //           position_t* position = (position_t*)ecs_get(world, id, "position_t");
        //           velocity_t* velocity = (velocity_t*)ecs_get(world, id, "velocity_t");
        //           SDL_Log("%d <%f,%f> <%f,%f>", id, position->x, position->y, velocity->x, velocity->y);
        //   }*/
        // vector_t(kecs) entities = ecs_query(world, 1, "position_t");
        // for (int i = 0; i < vector_size(kecs, &entities); i++) {
-       //         ecs_id_t id = vector_a(kecs, &entities, i);
+       //         jecs_id_t id = vector_a(kecs, &entities, i);
        //         //position_t* position = (position_t*)ecs_get(world, id, "position_t");
        //         //SDL_Log("%d <%f,%f>", id, position->x, position->y);
        // }

@@ -1,15 +1,10 @@
 #ifdef ENABLED_CSHARP_SCRIPT
-
-#include <stdlib.h>
-#include <assert.h>
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
-#include "jcore.h"
-#include "jutils.h"
-#include "jcsx.h"
+#include "joy.h"
 
 // 动态数组，存储已加载的程序集
 typedef struct assembly_list {

@@ -29,87 +29,87 @@ static int lecs_sizeofshort(lua_State* L)
 
 static int lecs_create(lua_State* L)
 {
-        ecs_world_p world;
-        world = ecs_create();
+        jecs_world_p world;
+        world = jecs_create();
         lua_pushlightuserdata(L, world);
         return 1;
 }
 
 static int lecs_destroy(lua_State* L)
 {
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        ecs_destroy(world);
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        jecs_destroy(world);
         return 0;
 }
 
 static int lecs_process(lua_State* L)
 {
         float dt;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
         dt = (float)luaL_checknumber(L, 2);
-        ecs_process(world, dt);
+        jecs_process(world, dt);
         return 0;
 }
 
 static int lecs_spawn(lua_State* L)
 {
-        ecs_id_t id;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        id = ecs_spawn(world);
+        jecs_id_t id;
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        id = jecs_spawn(world);
         lua_pushinteger(L, id);
         return 1;
 }
 
 static int lecs_kill(lua_State* L)
 {
-        ecs_id_t id;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        id = (ecs_id_t)luaL_checkinteger(L, 2);
-        ecs_kill(world, id);
+        jecs_id_t id;
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        id = (jecs_id_t)luaL_checkinteger(L, 2);
+        jecs_kill(world, id);
         return 1;
 }
 
 static int lecs_define(lua_State* L)
 {
         const char* name;
-        ecs_world_p world;
+        jecs_world_p world;
         size_t size;
-        world = (ecs_world_p)lua_touserdata(L, 1);
+        world = (jecs_world_p)lua_touserdata(L, 1);
         name = luaL_checkstring(L, 2);
         size = (size_t)luaL_checkinteger(L, 3);
-        ecs_define(world, name, size);
+        jecs_define(world, name, size);
         return 0;
 }
 
 static int lecs_set(lua_State* L)
 {
-        ecs_id_t id;
+        jecs_id_t id;
         size_t len;
         const char* name, *ptr;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        id = (ecs_id_t)luaL_checkinteger(L, 2);
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        id = (jecs_id_t)luaL_checkinteger(L, 2);
         name = luaL_checkstring(L, 3);
         ptr = luaL_checklstring(L, 4, &len);
-        ecs_set(world, id, name, ptr, len);
+        jecs_set(world, id, name, ptr, len);
         return 0;
 }
 
 static int lecs_get(lua_State* L)
 {
-        ecs_id_t id;
+        jecs_id_t id;
         void* ptr;
         size_t size;
         const char* name;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        id = (ecs_id_t)luaL_checkinteger(L, 2);
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        id = (jecs_id_t)luaL_checkinteger(L, 2);
         name = luaL_checkstring(L, 3);
-        size = ecs_get(world, id, name, &ptr);
+        size = jecs_get(world, id, name, &ptr);
         if (size <= 0) {
                 lua_pushnil(L);
         }
@@ -121,26 +121,26 @@ static int lecs_get(lua_State* L)
 
 static int lecs_remove(lua_State* L)
 {
-        ecs_id_t id;
+        jecs_id_t id;
         const char* name;
-        ecs_world_p world;
-        world = (ecs_world_p)lua_touserdata(L, 1);
-        id = (ecs_id_t)luaL_checkinteger(L, 2);
+        jecs_world_p world;
+        world = (jecs_world_p)lua_touserdata(L, 1);
+        id = (jecs_id_t)luaL_checkinteger(L, 2);
         name = luaL_checkstring(L, 3);
-        ecs_remove(world, id, name);
+        jecs_remove(world, id, name);
         return 0;
 }
 
 static int lecs_query(lua_State* L)
 {
         /*vector_t(kecs) id_arr;
-        ecs_world_p world;
+        jecs_world_p world;
         int args_count;
         char** component_names;
         int components_count;
 
         components_count = 0;
-        world = (ecs_world_p)lua_touserdata(L, 1);
+        world = (jecs_world_p)lua_touserdata(L, 1);
         luaL_checktype(L, 2, LUA_TTABLE);
         args_count = luaL_len(L, 2);
         component_names = SDL_malloc(sizeof(char*) * args_count);
@@ -165,7 +165,7 @@ static int lecs_query(lua_State* L)
         return 1;
 }
 
-static void _system_cb(ecs_world_p world, void *arg, float dt)
+static void _system_cb(jecs_world_p world, void *arg, float dt)
 {
         lua_State* L;
         lua_ecs_data_p data;
@@ -185,16 +185,16 @@ static void _system_cb(ecs_world_p world, void *arg, float dt)
 
 static int lecs_register(lua_State* L)
 {
-        ecs_world_p world;
+        jecs_world_p world;
         lua_ecs_data_p data;
-        ecs_system_t system;
-        world = (ecs_world_p)lua_touserdata(L, 1);
+        jecs_system_t system;
+        world = (jecs_world_p)lua_touserdata(L, 1);
         data = (lua_ecs_data_p)SDL_malloc(sizeof(lua_ecs_data_t));
         data->func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
         data->L = L;
         system.cb = _system_cb;
         system.arg = data;
-        ecs_register(world, system);
+        jecs_register(world, system);
         return 0;
 }
 

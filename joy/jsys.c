@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include "jsys.h"
+#include "joy.h"
 
 
 #if defined(JOY_WIN)
