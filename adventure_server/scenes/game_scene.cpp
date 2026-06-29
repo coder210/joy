@@ -13,7 +13,6 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/startup_system.h"
-#include "../systems/poll_network_system.h"
 #include "../systems/collect_command_system.h"
 #include "../systems/handle_command_system.h"
 #include "../systems/notify_command_system.h"
@@ -89,7 +88,7 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.17", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -101,17 +100,12 @@ static void on_load(scene_p s)
         auto net_entity = ctx->ecs.entity().add<NetComponent>();
         log_info("NetComponent count: %d", ctx->ecs.filter<NetComponent>().count());
 
-        ctx->ecs.entity().add<ConnectionComponent>();
-
 
         ctx->ecs.system("Startup")
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::PreUpdate)
-                .rate(0.05)
-                .iter(poll_network_system);
+       
         ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
                 .rate(0.05)
@@ -121,15 +115,14 @@ static void on_load(scene_p s)
                 .rate(0.05)
                 .iter(handle_command_system);
 
-        ctx->ecs.system<ConnectionComponent>()
-            .kind(flecs::OnUpdate)
-            .rate(0.05)
-            .each(notify_command_system);
+        //ctx->ecs.system<ConnectionComponent>()
+        //    .kind(flecs::OnUpdate)
+        //    .rate(0.05)
+        //    .each(notify_command_system);
 
         ctx->drawing_entity_query = ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
         ctx->drawing_attack_rayeffect_query = ctx->ecs.query<AttackRayEffectComponent>();
         ctx->body_query = ctx->ecs.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
-        ctx->connection_query = ctx->ecs.query<ConnectionComponent>();
         ctx->player_query = ctx->ecs.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
         ctx->enemy_query = ctx->ecs.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
@@ -174,13 +167,117 @@ static void on_handle_event(scene_p s, const void* ev)
         dispatch_event(cbs, ev, NULL);
 }
 
+
+static void handle_cmd_loading(Context* ctx, int conv)
+{
+        log_info("C2S_CMD_LOADING");
+        auto& session = ctx->sessions[conv];
+        session.conv = conv;
+        session.is_loaded = false;
+
+        /*flecs::entity entity = ctx->ecs.entity().add<ConnectionComponent>();
+        auto conn = entity.get_mut<ConnectionComponent>();
+        conn->conv = conv;
+        conn->frameid = std::max(ctx->global_frame_id - 1, 1);
+        conn->health = 10;
+
+        auto it = ctx->world_snapshots.find(conn->frameid);
+        if (it == ctx->world_snapshots.end()) {
+                log_info("没有world");
+                return;
+        }
+
+        S2CEntity entities[512];
+        int ec = 0, eid = 0;
+        ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
+        auto data = pack_s2c_loading(conn->conv, conn->frameid, eid, entities, ec);
+        netserver_send(ctx->net_server, conn->conv, data.c_str(), (int)data.size());*/
+}
+
+static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
+{
+        S2CPlayerJoin j = { conv, x, y };
+        ctx->player_joins.push_back(j);
+}
+
+static void handle_cmd_player_leave(Context* ctx, int conv)
+{
+        S2CPlayerLeave l = { conv };
+        ctx->player_leaves.push_back(l);
+}
+
+static void handle_cmd_player_input(Context* ctx, int conv, int dir, int attack)
+{
+        S2CPlayerInput i = { conv, dir, (int8_t)attack };
+        ctx->player_inputs.push_back(i);
+}
+
+static void handle_cmd_heartbeat(Context* ctx, int conv)
+{
+        log_info("%d: C2S_CMD_HEARTBEAT", conv);
+        /*ctx->connection_query.each([&](ConnectionComponent& conn) {
+                if (conn.conv == conv) {
+                        conn.health = 10;
+                        return false;
+                }
+                return true;
+                });*/
+}
+
+
+static void network_receive(Context* ctx)
+{
+        net_message_t msg;
+        while (netserver_poll_message(ctx->net_server, &msg)) {
+                if (msg.type == NET_TYPE_CONNECTED) {
+                        log_info("connected=%d", msg.conv);
+                }
+                else if (msg.type == NET_TYPE_DISCONNECTED) {
+                        log_info("disconnected=%d", msg.conv);
+                        S2CPlayerLeave l = { msg.conv };
+                        ctx->player_leaves.push_back(l);
+                }
+                else if (msg.type == NET_TYPE_MESSAGE) {
+                        int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
+                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
+                                switch (cmd) {
+                                case CMD_LOADING:
+                                        handle_cmd_loading(ctx, msg.conv);
+                                        break;
+                                case CMD_PLAYER_JOIN:
+                                        handle_cmd_player_join(ctx, msg.conv, join_x, join_y);
+                                        break;
+                                case CMD_PLAYER_LEAVE:
+                                        handle_cmd_player_leave(ctx, msg.conv);
+                                        break;
+                                case CMD_PLAYER_INPUT:
+                                        handle_cmd_player_input(ctx, msg.conv, input_dir, input_attack);
+                                        break;
+                                case CMD_PLAYER_HEART:
+                                        handle_cmd_heartbeat(ctx, msg.conv);
+                                        break;
+                                }
+                        }
+                        else {
+                                log_info("Failed to parse message from conv=%d", msg.conv);
+                        }
+                }
+                if (msg.type == NET_TYPE_MESSAGE && msg.data) {
+                        netmessage_free_data(&msg);
+                }
+        }
+}
+
+
 static void on_update(scene_p s, float dt)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         Context* ctx = self->ctx;
 
-        netserver_update(ctx->net_server);
         simple_fps_update(self->sample_fps);
+
+        netserver_update(ctx->net_server);
+        network_receive(ctx);
 
         ctx->ecs.progress(dt);
 

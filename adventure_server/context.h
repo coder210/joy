@@ -11,7 +11,6 @@
 
 #include "components/transform_component.h"
 #include "components/attack_ray_effect_component.h"
-#include "components/connection_component.h"
 #include "components/player_component.h"
 #include "components/local_only_component.h"
 #include "components/player_action_component.h"
@@ -25,6 +24,14 @@
 #include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
 
+struct Session {
+        int conv;
+        flecs::entity player_entity;  // 对应的玩家实体（加载完成后才赋值）
+        int health = 10;
+        uint32_t last_heartbeat = 0;
+        bool is_loaded = false;       // 是否已完成初始加载
+};
+
 struct Context {
         jwindow_p window;
         jr2d_p r2d;
@@ -37,7 +44,6 @@ struct Context {
 
         // ---- 预构建的 ECS Query ----
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
-        flecs::query<ConnectionComponent> connection_query;
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
         flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
         flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
@@ -65,6 +71,8 @@ struct Context {
         std::map<int, std::string> commands;
         std::queue<std::string> command_queue;
         std::map<int, std::string> world_snapshots; // 以帧号为键的世界快照
+
+        std::unordered_map<int, Session> sessions;   // key = conv
 
         netserver_p net_server;
 };
