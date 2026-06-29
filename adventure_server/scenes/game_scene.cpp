@@ -101,10 +101,13 @@ static void on_load(scene_p s)
         auto net_entity = ctx->ecs.entity().add<NetComponent>();
         log_info("NetComponent count: %d", ctx->ecs.filter<NetComponent>().count());
 
+        ctx->ecs.entity().add<ConnectionComponent>();
+
 
         ctx->ecs.system("Startup")
                 .kind(flecs::OnStart)
                 .iter(startup_system);
+
         ctx->ecs.system<NetComponent>()
                 .kind(flecs::PreUpdate)
                 .rate(0.05)
@@ -117,11 +120,11 @@ static void on_load(scene_p s)
                 .kind(flecs::OnUpdate)
                 .rate(0.05)
                 .iter(handle_command_system);
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::OnUpdate)
-                .rate(0.05)
-                .iter(notify_command_system);
 
+        ctx->ecs.system<ConnectionComponent>()
+            .kind(flecs::OnUpdate)
+            .rate(0.05)
+            .each(notify_command_system);
 
         ctx->drawing_entity_query = ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
         ctx->drawing_attack_rayeffect_query = ctx->ecs.query<AttackRayEffectComponent>();

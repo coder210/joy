@@ -235,7 +235,9 @@ static void handle_command_system(flecs::iter& it)
 
     std::string command_data = ctx->command_queue.front();
     int frame_id, jn = 0, ln = 0, in = 0;
-    S2CPlayerJoin joins[32]; S2CPlayerLeave leaves[32]; S2CPlayerInput inputs[64];
+    S2CPlayerJoin joins[32];
+    S2CPlayerLeave leaves[32];
+    S2CPlayerInput inputs[64];
     if (!unpack_command(command_data.c_str(), (int)command_data.size(), &frame_id,
         joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in)) {
         log_info("Failed to parse command");

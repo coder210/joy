@@ -3,14 +3,11 @@
 #include "../flecs.h"
 #include "../context.h"
 #include "../components/connection_component.h"
-#include "../components/net_component.h"
-
 
 
 static void handle_cmd_loading(Context* ctx, int conv)
 {
     log_info("C2S_CMD_LOADING");
-    NetComponent* net = ctx->ecs.entity().get_mut<NetComponent>();
     flecs::entity entity = ctx->ecs.entity().add<ConnectionComponent>();
     auto conn = entity.get_mut<ConnectionComponent>();
     conn->conv = conv;
@@ -18,7 +15,10 @@ static void handle_cmd_loading(Context* ctx, int conv)
     conn->health = 10;
 
     auto it = ctx->world_snapshots.find(conn->frameid);
-    if (it == ctx->world_snapshots.end()) { log_info("没有world"); return; }
+    if (it == ctx->world_snapshots.end()) { 
+        log_info("没有world");
+        return;
+    }
 
     S2CEntity entities[512];
     int ec = 0, eid = 0;
@@ -57,58 +57,48 @@ static void handle_cmd_heartbeat(Context* ctx, int conv)
         });
 }
 
-static void on_message(Context* ctx, net_message_p msg, void* userdata)
-{
-    void* msg_data = msg->data;
-    size_t msg_len = msg->len;
 
-    if (msg->type == NET_TYPE_CONNECTED) {
-        log_info("connected=%d", msg->conv);
-    }
-    else if (msg->type == NET_TYPE_DISCONNECTED) {
-        log_info("disconnected=%d", msg->conv);
-        S2CPlayerLeave l = { msg->conv };
-        ctx->player_leaves.push_back(l);
-    }
-    else if (msg->type == NET_TYPE_MESSAGE) {
-        int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
-        if (unpack_c2s((const char*)msg_data, (int)msg_len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
-            switch (cmd) {
-            case CMD_LOADING:      
-                handle_cmd_loading(ctx, msg->conv); 
-                break;
-            case CMD_PLAYER_JOIN:  
-                handle_cmd_player_join(ctx, msg->conv, join_x, join_y);
-                break;
-            case CMD_PLAYER_LEAVE: 
-                handle_cmd_player_leave(ctx, msg->conv);
-                break;
-            case CMD_PLAYER_INPUT: 
-                handle_cmd_player_input(ctx, msg->conv, input_dir, input_attack);
-                break;
-            case CMD_PLAYER_HEART: 
-                handle_cmd_heartbeat(ctx, msg->conv); 
-                break;
-            }
-        }
-        else {
-            log_info("Failed to parse message from conv=%d", msg->conv);
-        }
-    }
-    if (msg->type == NET_TYPE_MESSAGE && msg_data) {
-        netmessage_free_data(msg);
-    }
-}
-
-
-// 在文件顶部或 on_load 前定义静态函数
 static void poll_network_system(flecs::iter& it)
 {
     Context* ctx = (Context*)it.world().get_ctx();
     net_message_t msg;
-    //log_info("poll_network_system");
     while (netserver_poll_message(ctx->net_server, &msg)) {
-        on_message(ctx, &msg, NULL);
+        if (msg.type == NET_TYPE_CONNECTED) {
+            log_info("connected=%d", msg.conv);
+        }
+        else if (msg.type == NET_TYPE_DISCONNECTED) {
+            log_info("disconnected=%d", msg.conv);
+            S2CPlayerLeave l = { msg.conv };
+            ctx->player_leaves.push_back(l);
+        }
+        else if (msg.type == NET_TYPE_MESSAGE) {
+            int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
+            if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
+                switch (cmd) {
+                case CMD_LOADING:
+                    handle_cmd_loading(ctx, msg.conv);
+                    break;
+                case CMD_PLAYER_JOIN:
+                    handle_cmd_player_join(ctx, msg.conv, join_x, join_y);
+                    break;
+                case CMD_PLAYER_LEAVE:
+                    handle_cmd_player_leave(ctx, msg.conv);
+                    break;
+                case CMD_PLAYER_INPUT:
+                    handle_cmd_player_input(ctx, msg.conv, input_dir, input_attack);
+                    break;
+                case CMD_PLAYER_HEART:
+                    handle_cmd_heartbeat(ctx, msg.conv);
+                    break;
+                }
+            }
+            else {
+                log_info("Failed to parse message from conv=%d", msg.conv);
+            }
+        }
+        if (msg.type == NET_TYPE_MESSAGE && msg.data) {
+            netmessage_free_data(&msg);
+        }
     }
 }
 

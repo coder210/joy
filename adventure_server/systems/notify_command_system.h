@@ -19,22 +19,20 @@ static int get_target_frame_id(int curr_frameid, int context_frameid)
     return curr_frameid;
 }
 
-static void notify_command_system(flecs::iter& it)
+static void notify_command_system(flecs::entity e, ConnectionComponent& conn)
 {
-        Context* ctx = (Context*)it.world().get_ctx();
-        ctx->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
-            int taget_frameid = get_target_frame_id(conn.frameid, ctx->global_frame_id);
-            for (int i = conn.frameid; i < taget_frameid; i++) {
-                auto it = ctx->commands.find(i);
-                if (it != ctx->commands.end()) {
-                    netserver_send(ctx->net_server, conn.conv, it->second.c_str(), it->second.size());
-                }
-                else {
-                    log_error("Frame %d not found in commands, skip sending.", i);
-                }
-            }
-            conn.frameid = taget_frameid;
-            });
+    Context* ctx = (Context*)e.world().get_ctx();
+    int taget_frameid = get_target_frame_id(conn.frameid, ctx->global_frame_id);
+    for (int i = conn.frameid; i < taget_frameid; i++) {
+        auto it = ctx->commands.find(i);
+        if (it != ctx->commands.end()) {
+            netserver_send(ctx->net_server, conn.conv, it->second.c_str(), it->second.size());
+        }
+        else {
+            log_error("Frame %d not found in commands, skip sending.", i);
+        }
+    }
+    conn.frameid = taget_frameid;
 }
 
 
