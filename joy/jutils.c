@@ -682,86 +682,86 @@ int unpack_string(const char* buf, char* value, int type_size, int offset)
 
 
 
-struct timer {
+struct jtimer {
 	uint64_t last_time;        // 上次触发的时间点（SDL_GetTicks）
 	int interval;              // 触发间隔（毫秒）
 	bool active;               // 是否激活
-	timer_callback callback;   // 回调函数
+	jtimer_callback callback;   // 回调函数
 	void* userdata;            // 用户数据
 };
 
-timer_p timerx_create(int interval, timer_callback cb, void* userdata)
+jtimer_p jtimer_create(int interval, jtimer_callback cb, void* userdata)
 {
-	timer_p timer = (timer_p)malloc(sizeof(struct timer));
-	if (!timer) return NULL;
+	jtimer_p jtimer = (jtimer_p)malloc(sizeof(struct jtimer));
+	if (!jtimer) return NULL;
 
-	timer->last_time = SDL_GetTicks();
-	timer->interval = interval;
-	timer->active = true;
-	timer->callback = cb;
-	timer->userdata = userdata;
+	jtimer->last_time = SDL_GetTicks();
+	jtimer->interval = interval;
+	jtimer->active = true;
+	jtimer->callback = cb;
+	jtimer->userdata = userdata;
 
-	return timer;
+	return jtimer;
 }
 
-void timerx_destroy(timer_p timer)
+void jtimer_destroy(jtimer_p jtimer)
 {
-	if (timer) {
-		free(timer);
+	if (jtimer) {
+		free(jtimer);
 	}
 }
 
-void timerx_trigger(timer_p timer)
+void jtimer_trigger(jtimer_p jtimer)
 {
-	if (!timer || !timer->active || !timer->callback) {
+	if (!jtimer || !jtimer->active || !jtimer->callback) {
 		return;
 	}
 
 	uint64_t current_time = SDL_GetTicks();
-	uint64_t elapsed = current_time - timer->last_time;
+	uint64_t elapsed = current_time - jtimer->last_time;
 
-	if (elapsed >= (uint64_t)timer->interval) {
+	if (elapsed >= (uint64_t)jtimer->interval) {
 		int actual_interval = (int)elapsed;
 
 		// 调用回调
-		timer->callback(actual_interval, timer->interval, timer->userdata);
+		jtimer->callback(actual_interval, jtimer->interval, jtimer->userdata);
 
 		// 更新最后触发时间（避免累积漂移）
-		timer->last_time += timer->interval;
+		jtimer->last_time += jtimer->interval;
 
 		// 如果落后太多，快速追赶（防止回调执行时间过长导致连续触发）
-		while (current_time - timer->last_time >= (uint64_t)timer->interval) {
-			timer->last_time += timer->interval;
+		while (current_time - jtimer->last_time >= (uint64_t)jtimer->interval) {
+			jtimer->last_time += jtimer->interval;
 		}
 	}
 }
 
-void timerx_set_interval(timer_p timer, int interval)
+void jtimer_set_interval(jtimer_p jtimer, int interval)
 {
-	if (timer) {
-		timer->interval = interval;
+	if (jtimer) {
+		jtimer->interval = interval;
 	}
 }
 
-void timerx_set_active(timer_p timer, bool active)
+void jtimer_set_active(jtimer_p jtimer, bool active)
 {
-	if (timer) {
-		timer->active = active;
+	if (jtimer) {
+		jtimer->active = active;
 		if (active) {
-			timer->last_time = SDL_GetTicks(); // 重新激活时重置计时
+			jtimer->last_time = SDL_GetTicks(); // 重新激活时重置计时
 		}
 	}
 }
 
-void timerx_reset(timer_p timer)
+void jtimer_reset(jtimer_p jtimer)
 {
-	if (timer) {
-		timer->last_time = SDL_GetTicks();
+	if (jtimer) {
+		jtimer->last_time = SDL_GetTicks();
 	}
 }
 
-uint64_t timerx_get_elapsed(timer_p timer)
+uint64_t jtimer_get_elapsed(jtimer_p jtimer)
 {
-	if (!timer) return 0;
-	return SDL_GetTicks() - timer->last_time;
+	if (!jtimer) return 0;
+	return SDL_GetTicks() - jtimer->last_time;
 }
