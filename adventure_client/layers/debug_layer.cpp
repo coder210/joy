@@ -1,7 +1,5 @@
 ﻿#include "debug_layer.h"
-#include <joy/jr2d.h>
-#include <string.h>
-#include <stdlib.h>
+#include <joy/joy.h>
 
 struct debug_layer {
 	scene_node_p scene_node;

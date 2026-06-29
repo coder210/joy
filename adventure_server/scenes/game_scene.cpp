@@ -6,15 +6,6 @@
 #include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
 #include "../layers/debug_layer.h"
-#include "../components/connection_component.h"
-#include "../components/player_component.h"
-#include "../components/local_only_component.h"
-#include "../components/player_action_component.h"
-#include "../components/sprite_sheet_component.h"
-#include "../components/ai_component.h"
-#include "../components/enemy_component.h"
-#include "../components/logic_velocity_component.h"
-#include "../components/net_component.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/lerp_system.h"
 #include "../systems/animator_update_system.h"
@@ -36,22 +27,7 @@ struct game_scene {
 
         Context* ctx;
 
-        // ---- 预构建的 ECS Query ----
-        flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
-        flecs::query<ConnectionComponent> connection_query;
-        flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
-        flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
-        flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
-        flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
-
-        // 精灵渲染 query（避免 on_render 每帧重建 filter）
-        flecs::query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
-        flecs::query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
-
-        // 位置同步 query（合并玩家和敌人）
-        flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
+        
 
       
 };
@@ -109,40 +85,40 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
         return def_entity;
 }
 
-static void HandleLoading(game_scene_p g, int conv)
+static void HandleLoading(Context *ctx, int conv)
 {
         log_info("C2S_CMD_LOADING");
-        NetComponent* net = g->ctx->ecs.entity().get_mut<NetComponent>();
-        flecs::entity entity = g->ctx->ecs.entity().add<ConnectionComponent>();
+        NetComponent* net = ctx->ecs.entity().get_mut<NetComponent>();
+        flecs::entity entity = ctx->ecs.entity().add<ConnectionComponent>();
         auto conn = entity.get_mut<ConnectionComponent>();
         conn->conv = conv;
-        conn->frameid = std::max(g->ctx->global_frame_id - 1, 1);
+        conn->frameid = std::max(ctx->global_frame_id - 1, 1);
         conn->health = 10;
 
-        auto it = g->ctx->world_snapshots.find(conn->frameid);
-        if (it == g->ctx->world_snapshots.end()) { log_info("没有world"); return; }
+        auto it = ctx->world_snapshots.find(conn->frameid);
+        if (it == ctx->world_snapshots.end()) { log_info("没有world"); return; }
 
         S2CEntity entities[512];
         int ec = 0, eid = 0;
         ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
         auto data = pack_s2c_loading(conn->conv, conn->frameid, eid, entities, ec);
-        netserver_send(g->ctx->net_server, conn->conv, data.c_str(), (int)data.size());
+        netserver_send(ctx->net_server, conn->conv, data.c_str(), (int)data.size());
 }
 
-static void AddPlayerJoin(game_scene_p g, int conv, int64_t x, int64_t y) {
-        S2CPlayerJoin j = { conv, x, y }; g->ctx->player_joins.push_back(j);
+static void AddPlayerJoin(Context *ctx, int conv, int64_t x, int64_t y) {
+        S2CPlayerJoin j = { conv, x, y }; ctx->player_joins.push_back(j);
 }
-static void AddPlayerLeave(game_scene_p g, int conv) {
-        S2CPlayerLeave l = { conv }; g->ctx->player_leaves.push_back(l);
+static void AddPlayerLeave(Context *ctx, int conv) {
+        S2CPlayerLeave l = { conv }; ctx->player_leaves.push_back(l);
 }
-static void AddPlayerInput(game_scene_p g, int conv, int dir, int attack) {
-        S2CPlayerInput i = { conv, dir, (int8_t)attack }; g->ctx->player_inputs.push_back(i);
+static void AddPlayerInput(Context *ctx, int conv, int dir, int attack) {
+        S2CPlayerInput i = { conv, dir, (int8_t)attack }; ctx->player_inputs.push_back(i);
 }
 
-static void HandleHeartbeat(game_scene_p g, int conv)
+static void HandleHeartbeat(Context* ctx, int conv)
 {
         log_info("%d: C2S_CMD_HEARTBEAT", conv);
-        g->connection_query.each([&](ConnectionComponent& conn) {
+        ctx->connection_query.each([&](ConnectionComponent& conn) {
                 if (conn.conv == conv) {
                         conn.health = 10;
                         return false;
@@ -151,7 +127,7 @@ static void HandleHeartbeat(game_scene_p g, int conv)
                 });
 }
 
-static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
+static void AttackTarget(Context *ctx, LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId, int dir)
 {
         // 攻击判定：向攻击方向偏移的碰撞盒（0.6m → 偏移 0.7m）
@@ -163,7 +139,7 @@ static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
         else if (dir == 3) oy = -atk_range;
         rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
 
-        self->body_query.each([&](flecs::entity e, IdComponent& id,
+        ctx->body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
                         if (currId.id == id.id) return;
                         if (!e.has<PlayerComponent>()) return; // 只攻击玩家
@@ -182,9 +158,9 @@ static void AttackTarget(game_scene_p self, LogicPositionComponent* p,
         */
 }
 
-static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int input)
+static void calc_move_step(Context* ctx, fp_t* out_x, fp_t* out_y, int input)
 {
-        //fp_t delta = fp_from_float(self->ctx->FIXED_TIMESTEP);
+        //fp_t delta = fp_from_float(ctx->FIXED_TIMESTEP);
         //fp_t step = fp_mul(MOVE_SPEED, delta);
         fp_t step = MOVE_SPEED;
 
@@ -197,10 +173,10 @@ static void calc_move_step(game_scene_p self, fp_t* out_x, fp_t* out_y, int inpu
         if (input & INPUT_RIGHT) *out_x = fp_add(*out_x, step);
 }
 
-static void resolve_collision(game_scene_p self, LogicPositionComponent* p,
+static void resolve_collision(Context* ctx, LogicPositionComponent* p,
         LogicRectComponent& currRect, IdComponent& currId)
 {
-        self->body_query.each([&](IdComponent& other_id,
+        ctx->body_query.each([&](IdComponent& other_id,
                 LogicRectComponent& r,
                 LogicPositionComponent& other_pos) {
                         if (other_id.id == currId.id) return;
@@ -223,7 +199,7 @@ static void resolve_collision(game_scene_p self, LogicPositionComponent* p,
                 });
 }
 
-static void ApplyInput(game_scene_p self,
+static void ApplyInput(Context* ctx,
         LogicPositionComponent* p, LogicRectComponent& currRect,
         IdComponent& currId, int conv, int input)
 {
@@ -237,7 +213,7 @@ static void ApplyInput(game_scene_p self,
                 else if (dir == 2) ox = atk_range;
                 else if (dir == 3) oy = -atk_range;
                 rectanglef_t atk_rect = { fp_add(p->x, ox), fp_add(p->y, oy), currRect.width, currRect.height };
-                self->body_query.each([&](flecs::entity e, IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
+                ctx->body_query.each([&](flecs::entity e, IdComponent& id, LogicRectComponent& r, LogicPositionComponent& pos) {
                         if (currId.id == id.id) return;
                         if (!e.has<EnemyComponent>()) return; // 玩家攻击只伤敌人
                         rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
@@ -254,15 +230,15 @@ static void ApplyInput(game_scene_p self,
         }
 
         fp_t move_x, move_y;
-        calc_move_step(self, &move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
+        calc_move_step(ctx, &move_x, &move_y, input & (INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT));
 
         p->x = fp_add(p->x, move_x);
         p->y = fp_add(p->y, move_y);
 
-        resolve_collision(self, p, currRect, currId);
+        resolve_collision(ctx, p, currRect, currId);
 }
 
-static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
+static void OnMessage(Context* ctx, net_message_p msg, void* userdata)
 {
         void* msg_data = msg->data;
         size_t msg_len = msg->len;
@@ -273,17 +249,17 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
         else if (msg->type == NET_TYPE_DISCONNECTED) {
                 log_info("disconnected=%d", msg->conv);
                 S2CPlayerLeave l = { msg->conv };
-                self->ctx->player_leaves.push_back(l);
+                ctx->player_leaves.push_back(l);
         }
         else if (msg->type == NET_TYPE_MESSAGE) {
                 int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
                 if (unpack_c2s((const char*)msg_data, (int)msg_len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
                         switch (cmd) {
-                        case CMD_LOADING:      HandleLoading(self, msg->conv); break;
-                        case CMD_PLAYER_JOIN:  AddPlayerJoin(self, msg->conv, join_x, join_y); break;
-                        case CMD_PLAYER_LEAVE: AddPlayerLeave(self, msg->conv); break;
-                        case CMD_PLAYER_INPUT: AddPlayerInput(self, msg->conv, input_dir, input_attack); break;
-                        case CMD_PLAYER_HEART: HandleHeartbeat(self, msg->conv); break;
+                        case CMD_LOADING:      HandleLoading(ctx, msg->conv); break;
+                        case CMD_PLAYER_JOIN:  AddPlayerJoin(ctx, msg->conv, join_x, join_y); break;
+                        case CMD_PLAYER_LEAVE: AddPlayerLeave(ctx, msg->conv); break;
+                        case CMD_PLAYER_INPUT: AddPlayerInput(ctx, msg->conv, input_dir, input_attack); break;
+                        case CMD_PLAYER_HEART: HandleHeartbeat(ctx, msg->conv); break;
                         }
                 }
                 else {
@@ -296,20 +272,20 @@ static void OnMessage(game_scene_p self, net_message_p msg, void* userdata)
 }
 
 // 帧同步：收集命令
-static void CollectCommandSystem(game_scene_p self)
+static void CollectCommandSystem(Context* ctx)
 {
-        int frame_id = self->ctx->global_frame_id++;
+        int frame_id = ctx->global_frame_id++;
 
         S2CPlayerJoin joins[32]; int jn = 0;
-        for (auto& j : self->ctx->player_joins) if (jn < 32) joins[jn++] = j;
+        for (auto& j : ctx->player_joins) if (jn < 32) joins[jn++] = j;
         S2CPlayerLeave leaves[32]; int ln = 0;
-        for (auto& l : self->ctx->player_leaves) if (ln < 32) leaves[ln++] = l;
+        for (auto& l : ctx->player_leaves) if (ln < 32) leaves[ln++] = l;
         S2CPlayerInput inputs[64]; int in = 0;
-        for (auto& i : self->ctx->player_inputs) if (in < 64) inputs[in++] = i;
+        for (auto& i : ctx->player_inputs) if (in < 64) inputs[in++] = i;
 
         // 只收集玩家实体，按 id 排序确保顺序一致
         std::vector<std::pair<int, std::pair<fp_t, fp_t>>> positions;
-        self->player_query.each([&](PlayerComponent& p, IdComponent& id,
+        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
                         positions.push_back({ id.id, { (int64_t)pos.x, (int64_t)pos.y } });
                 });
@@ -328,16 +304,16 @@ static void CollectCommandSystem(game_scene_p self)
 
         log_info("[checksum] frame=%d md5=%s", frame_id, md5_out);
         auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, jn, leaves, ln, inputs, in, md5_out);
-        self->ctx->commands[frame_id] = command_data;
-        self->ctx->command_queue.push(command_data);
+        ctx->commands[frame_id] = command_data;
+        ctx->command_queue.push(command_data);
 
-        self->ctx->player_joins.clear();
-        self->ctx->player_leaves.clear();
-        self->ctx->player_inputs.clear();
+        ctx->player_joins.clear();
+        ctx->player_leaves.clear();
+        ctx->player_inputs.clear();
 
         // 收集世界实体状态
         S2CEntity entities[512]; int ec = 0;
-        self->body_query.each([&](flecs::entity e, IdComponent& id,
+        ctx->body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
                         if (e.has<LocalOnlyComponent>() || ec >= 512) return;
                         auto& ent = entities[ec++]; memset(&ent, 0, sizeof(ent));
@@ -348,22 +324,22 @@ static void CollectCommandSystem(game_scene_p self)
                         ent.hp = id.hp; ent.position_x = pos.x; ent.position_y = pos.y;
                         ent.width = r.width; ent.height = r.height;
                 });
-        self->ctx->world_snapshots[frame_id] = pack_world(self->ctx->global_frame_id, entities, ec);
+        ctx->world_snapshots[frame_id] = pack_world(ctx->global_frame_id, entities, ec);
 
         // 限制 worlds 和 commands 最多保留 1000 帧
         const size_t MAX_FRAMES = 1000;
-        while (self->ctx->commands.size() > MAX_FRAMES) {
-            self->ctx->commands.erase(self->ctx->commands.begin());
+        while (ctx->commands.size() > MAX_FRAMES) {
+            ctx->commands.erase(ctx->commands.begin());
         }
-        while (self->ctx->world_snapshots.size() > MAX_FRAMES) {
-            self->ctx->world_snapshots.erase(self->ctx->world_snapshots.begin());
+        while (ctx->world_snapshots.size() > MAX_FRAMES) {
+            ctx->world_snapshots.erase(ctx->world_snapshots.begin());
         }
 }
 
 
-static void UpdateAI(game_scene_p self)
+static void UpdateAI(Context *ctx)
 {
-        self->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
+        ctx->enemy_query.each([&](flecs::entity e, EnemyComponent&, AIComponent& ai,
                 IdComponent& id, LogicRectComponent& rect, LogicPositionComponent& pos) {
 
                         fp_t speed = fp_from_float(2.0f);
@@ -375,7 +351,7 @@ static void UpdateAI(game_scene_p self)
                         fp_t nearest_player_x = 0, nearest_player_y = 0;
                         bool found = false;
 
-                        self->player_query.each([&](PlayerComponent&, IdComponent&,
+                        ctx->player_query.each([&](PlayerComponent&, IdComponent&,
                                 LogicRectComponent&, LogicPositionComponent& pp) {
                                         fp_t dist_sq = collision2df_get_squared_distance_point_circle(
                                                 vec2f_t{ pp.x, pp.y }, circlef_t{ {pos.x, pos.y}, ai.detect_radius });
@@ -400,7 +376,7 @@ static void UpdateAI(game_scene_p self)
                                         if (ai.timer >= 60) {
                                                 ai.timer = 0;
                                                 ai.state = 2; // 攻击
-                                                AttackTarget(self, &pos, rect, id, atk_dir);
+                                                AttackTarget(ctx, &pos, rect, id, atk_dir);
                                                 if (e.has<AnimParams>()) {
                                                         auto* p = e.get_mut<AnimParams>();
                                                         p->attack = true;
@@ -423,7 +399,7 @@ static void UpdateAI(game_scene_p self)
                                         if (dist > fp_zero()) {
                                                 pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
                                                 pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
-                                                resolve_collision(self, &pos, rect, id);
+                                                resolve_collision(ctx, &pos, rect, id);
                                         }
                                 }
                         }
@@ -457,7 +433,7 @@ static void UpdateAI(game_scene_p self)
                                         fp_t dist = fp_sqrt(dist_sq);
                                         pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
                                         pos.y = fp_add(pos.y, fp_mul(fp_div(dy, dist), step));
-                                        resolve_collision(self, &pos, rect, id);
+                                        resolve_collision(ctx, &pos, rect, id);
                                 }
                         }
                 });
@@ -465,17 +441,17 @@ static void UpdateAI(game_scene_p self)
 
 
 // 帧同步：执行命令
-static void HandleCommandSystem(game_scene_p self)
+static void HandleCommandSystem(Context *ctx)
 {
-        if (self->ctx->command_queue.empty()) return;
+        if (ctx->command_queue.empty()) return;
 
-        std::string command_data = self->ctx->command_queue.front();
+        std::string command_data = ctx->command_queue.front();
         int frame_id, jn = 0, ln = 0, in = 0;
         S2CPlayerJoin joins[32]; S2CPlayerLeave leaves[32]; S2CPlayerInput inputs[64];
         if (!unpack_command(command_data.c_str(), (int)command_data.size(), &frame_id,
                 joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in)) {
                 log_info("Failed to parse command");
-                self->ctx->command_queue.pop(); return;
+                ctx->command_queue.pop(); return;
         }
 
         for (int i = 0; i < jn; i++) {
@@ -484,10 +460,10 @@ static void HandleCommandSystem(game_scene_p self)
                 fp_t x = pj.position_x;
                 fp_t y = pj.position_y;
 
-                flecs::entity anim_def = create_warrior_anim_def(self->ctx->ecs,
+                flecs::entity anim_def = create_warrior_anim_def(ctx->ecs,
                         "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
-                self->ctx->ecs.entity()
-                        .set<IdComponent>({ get_entity_id(self->ctx), 10 })
+                ctx->ecs.entity()
+                        .set<IdComponent>({ get_entity_id(ctx), 10 })
                         .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
                         .set<LogicPositionComponent>({ x, y })
                         .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
@@ -499,14 +475,14 @@ static void HandleCommandSystem(game_scene_p self)
         }
 
         // 玩家离开（defer 延迟销毁，避免迭代中删除实体）
-        self->ctx->ecs.defer_begin();
+        ctx->ecs.defer_begin();
         for (int i = 0; i < ln; i++) {
                 int conv = leaves[i].conv;
-                self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&, LogicRectComponent&, LogicPositionComponent&) {
+                ctx->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&, LogicRectComponent&, LogicPositionComponent&) {
                         if (p.conv == conv) e.destruct();
                         });
         }
-        self->ctx->ecs.defer_end();
+        ctx->ecs.defer_end();
 
         // 应用输入
         for (int i = 0; i < in; i++) {
@@ -515,7 +491,7 @@ static void HandleCommandSystem(game_scene_p self)
                 bool moving = has_dir(input.dir);
                 int input_combined = input.dir | (input.attack ? INPUT_ATTACK : 0);
 
-                self->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
+                ctx->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent& id,
                         LogicRectComponent& r, LogicPositionComponent& pos) {
                                 if (p.conv != input.conv) return;
                                 if (e.has<PlayerActionComponent>()) {
@@ -532,48 +508,58 @@ static void HandleCommandSystem(game_scene_p self)
                                                 if (params) { params->speed = moving ? 1.0f : 0.0f; params->dir = dir; }
                                         }
                                 }
-                                ApplyInput(self, &pos, r, id, input.conv, input_combined);
+                                ApplyInput(ctx, &pos, r, id, input.conv, input_combined);
                         });
         }
 
-        UpdateAI(self);
-        self->ctx->command_queue.pop();
+        UpdateAI(ctx);
+        ctx->command_queue.pop();
 }
 
+static int GetTargetFrameId(int curr_frameid, int context_frameid)
+{
+    int diff = context_frameid - curr_frameid;
 
+    if (diff >= 50)      return curr_frameid + 9;
+    if (diff >= 30)      return curr_frameid;
+    if (diff >= 10)      return curr_frameid + 4;
+    if (diff > 2)        return curr_frameid + 2;
+
+    return curr_frameid;
+}
 
 // 帧同步：通知客户端
-static void NotifySystem(game_scene_p self)
+static void NotifySystem(Context *ctx)
 {
-        /*self->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
-                int taget_frameid = GetTargetFrameId(conn.frameid, self->g_frameid);
+        ctx->connection_query.each([&](flecs::entity e, ConnectionComponent& conn) {
+                int taget_frameid = GetTargetFrameId(conn.frameid, ctx->global_frame_id);
                 for (int i = conn.frameid; i < taget_frameid; i++) {
-                        auto it = self->commands.find(i);
-                        if (it != self->commands.end()) {
-                                netserver_send(self->netserver, conn.conv, it->second.c_str(), it->second.size());
+                        auto it = ctx->commands.find(i);
+                        if (it != ctx->commands.end()) {
+                                netserver_send(ctx->net_server, conn.conv, it->second.c_str(), it->second.size());
                         }
                         else {
                                 log_error("Frame %d not found in commands, skip sending.", i);
                         }
                 }
                 conn.frameid = taget_frameid;
-                });*/
+                });
 }
 
 // 在文件顶部或 on_load 前定义静态函数
 static void poll_network_system(flecs::iter& it) {
-        game_scene_p self = (game_scene_p)it.world().get_ctx();
+        Context* ctx = (Context*)it.world().get_ctx();
         net_message_t msg;
-        while (netserver_poll_message(self->ctx->net_server, &msg)) {
-                OnMessage(self, &msg, NULL);
+        while (netserver_poll_message(ctx->net_server, &msg)) {
+                OnMessage(ctx, &msg, NULL);
         }
 }
 
 static void process_network_system(flecs::iter& it) {
-        game_scene_p self = (game_scene_p)it.world().get_ctx();
-        CollectCommandSystem(self);
-        HandleCommandSystem(self);
-        NotifySystem(self);
+        Context* ctx = (Context*)it.world().get_ctx();
+        CollectCommandSystem(ctx);
+        HandleCommandSystem(ctx);
+        NotifySystem(ctx);
 }
 
 
@@ -582,23 +568,24 @@ static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
-        self->ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
+        Context* ctx = self->ctx;
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
-        self->ctx->ecs.set_ctx(self);
+        ctx->ecs.set_ctx(ctx);
 
-        self->ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-        self->ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);
-        self->ctx->ecs.add<NetComponent>();
+        ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
+        ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);
+        ctx->ecs.add<NetComponent>();
 
-        self->ctx->ecs.system("Startup")
+        ctx->ecs.system("Startup")
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
         // 在 on_load 中注册：
-        self->ctx->ecs.system<NetComponent>()
+        ctx->ecs.system<NetComponent>()
                 .kind(flecs::PreUpdate)
                 //.rate(3)
                 .iter(poll_network_system);   // 传入函数指针
@@ -608,32 +595,32 @@ static void on_load(scene_p s)
         //        //.rate(3)
         //        .iter(process_network_system);
 
-        self->ctx->ecs.system<NetComponent>()
+        ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
                 //.rate(3)
                 .iter(process_network_system);
 
 
-        self->drawing_entity_query = self->ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
-        self->drawing_attack_rayeffect_query = self->ctx->ecs.query<AttackRayEffectComponent>();
-        self->body_query = self->ctx->ecs.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
-        self->connection_query = self->ctx->ecs.query<ConnectionComponent>();
-        self->player_query = self->ctx->ecs.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-        self->enemy_query = self->ctx->ecs.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+        ctx->drawing_entity_query = ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
+        ctx->drawing_attack_rayeffect_query = ctx->ecs.query<AttackRayEffectComponent>();
+        ctx->body_query = ctx->ecs.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
+        ctx->connection_query = ctx->ecs.query<ConnectionComponent>();
+        ctx->player_query = ctx->ecs.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+        ctx->enemy_query = ctx->ecs.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
 
         // 预构建渲染 query，避免每帧重复 filter_builder().build()
-        self->render_player_query = self->ctx->ecs.query<TransformComponent, LogicRectComponent,
+        ctx->render_player_query = ctx->ecs.query<TransformComponent, LogicRectComponent,
                 Animator, AnimParams, PlayerActionComponent, PlayerComponent>();
-        self->render_enemy_query = self->ctx->ecs.query<TransformComponent, LogicRectComponent,
+        ctx->render_enemy_query = ctx->ecs.query<TransformComponent, LogicRectComponent,
                 Animator, AnimParams, PlayerActionComponent, EnemyComponent>();
 
         // 位置同步 query（所有同时拥有逻辑位置和渲染位置的实体）
-        self->position_sync_query = self->ctx->ecs.query<LogicPositionComponent, TransformComponent>();
+        ctx->position_sync_query = ctx->ecs.query<LogicPositionComponent, TransformComponent>();
 
        
 
         S2CEntity entities[512]; int ec = 0;
-        self->body_query.each([&](flecs::entity e, IdComponent& id,
+        ctx->body_query.each([&](flecs::entity e, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
                         if (ec >= 512) return;
                         auto& ent = entities[ec++]; memset(&ent, 0, sizeof(ent));
@@ -644,7 +631,7 @@ static void on_load(scene_p s)
                         ent.hp = id.hp; ent.width = r.width; ent.height = r.height;
                         ent.position_x = pos.x; ent.position_y = pos.y;
                 });
-        self->ctx->world_snapshots[self->ctx->global_frame_id] = pack_world(self->ctx->global_entity_id, entities, ec);
+        ctx->world_snapshots[ctx->global_frame_id] = pack_world(ctx->global_entity_id, entities, ec);
 }
 
 static void server_on_keypressed(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg)
@@ -665,14 +652,15 @@ static void on_handle_event(scene_p s, const void* ev)
 static void on_update(scene_p s, float dt)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
+        Context* ctx = self->ctx;
 
-        netserver_update(self->ctx->net_server);
+        netserver_update(ctx->net_server);
         simple_fps_update(self->sample_fps);
 
-        self->ctx->ecs.progress(dt);
+        ctx->ecs.progress(dt);
 
         // 位置同步（插值平滑，避免 20Hz 逻辑更新导致的跳跃）
-        self->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
+        ctx->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
                 float target_x = fp_to_float(pos.x);
                 float target_y = fp_to_float(pos.y);
                 float alpha = dt * 10.0f;
@@ -683,14 +671,14 @@ static void on_update(scene_p s, float dt)
        
 
         // ---------- 摄像机跟随第一个玩家 ----------
-        self->player_query.each([&](PlayerComponent&, IdComponent&,
+        ctx->player_query.each([&](PlayerComponent&, IdComponent&,
                 LogicRectComponent&, LogicPositionComponent& pos) {
                         float target_cam_x = fp_to_float(pos.x) - 6.4f;
                         float target_cam_y = fp_to_float(pos.y) - 4.8f;
                         float lerp = dt * 5.0f;
                         if (lerp > 1.0f) lerp = 1.0f;
-                        self->ctx->camera.x += (target_cam_x - self->ctx->camera.x) * lerp;
-                        self->ctx->camera.y += (target_cam_y - self->ctx->camera.y) * lerp;
+                        ctx->camera.x += (target_cam_x - ctx->camera.x) * lerp;
+                        ctx->camera.y += (target_cam_y - ctx->camera.y) * lerp;
                         return; // 只跟第一个玩家
                 });
 }
@@ -704,7 +692,7 @@ static void on_render(scene_p s)
         if (ctx->tilemap) {
                 float cx = ctx->camera.x * (float)SERVER_PPM;
                 float cy = ctx->camera.y * (float)SERVER_PPM;
-                jtilemap_render_all(self->ctx->tilemap_render, self->ctx->tilemap, cx, cy, get_ticks());
+                jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());
         }
 
         // ---- ECS 实体（碰撞体） ----
@@ -758,15 +746,16 @@ static void on_render(scene_p s)
 static void on_destroy(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
+        Context* ctx = self->ctx;
         simple_fps_destory(self->sample_fps);
-        netserver_destroy(self->ctx->net_server);
+        netserver_destroy(ctx->net_server);
         AssetManager::GetInstance()->tex_cache_clear();
-        if (self->ctx->tilemap_render) {
-            jtilemap_render_destroy(self->ctx->tilemap_render);
+        if (ctx->tilemap_render) {
+            jtilemap_render_destroy(ctx->tilemap_render);
         }
-        if (self->ctx->tilemap) { 
-            jtilemap_destroy(self->ctx->tilemap);
-            self->ctx->tilemap = NULL;
+        if (ctx->tilemap) { 
+            jtilemap_destroy(ctx->tilemap);
+            ctx->tilemap = NULL;
         }
 }
 
@@ -777,21 +766,21 @@ game_scene_p game_scene_create(Context* ctx)
         self->ctx = ctx;
         // 初始化摄像机
         ctx->camera = { 0.0f,0.0f };
-        self->ctx->ecs.component<ConnectionComponent>();
-        self->ctx->ecs.component<IdComponent>();
-        self->ctx->ecs.component<LogicRectComponent>();
-        self->ctx->ecs.component<LogicPositionComponent>();
-        self->ctx->ecs.component<LogicVelocityComponent>();
-        self->ctx->ecs.component<TransformComponent>();
-        self->ctx->ecs.component<PlayerComponent>();
-        self->ctx->ecs.component<AttackRayEffectComponent>();
-        self->ctx->ecs.component<PlayerActionComponent>();
-        self->ctx->ecs.component<AnimatorDef>();
-        self->ctx->ecs.component<Animator>();
-        self->ctx->ecs.component<AnimParams>();
-        self->ctx->ecs.component<AIComponent>();
-        self->ctx->ecs.component<EnemyComponent>();
-        self->ctx->ecs.component<NetComponent>();
+        ctx->ecs.component<ConnectionComponent>();
+        ctx->ecs.component<IdComponent>();
+        ctx->ecs.component<LogicRectComponent>();
+        ctx->ecs.component<LogicPositionComponent>();
+        ctx->ecs.component<LogicVelocityComponent>();
+        ctx->ecs.component<TransformComponent>();
+        ctx->ecs.component<PlayerComponent>();
+        ctx->ecs.component<AttackRayEffectComponent>();
+        ctx->ecs.component<PlayerActionComponent>();
+        ctx->ecs.component<AnimatorDef>();
+        ctx->ecs.component<Animator>();
+        ctx->ecs.component<AnimParams>();
+        ctx->ecs.component<AIComponent>();
+        ctx->ecs.component<EnemyComponent>();
+        ctx->ecs.component<NetComponent>();
 
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);

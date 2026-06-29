@@ -1,6 +1,6 @@
 #ifndef GAME_SCENE_H
 #define GAME_SCENE_H
-#include <joy/jscene.h>
+#include <joy/joy.h>
 #include "../context.h"
 
 typedef struct game_scene game_scene_t, *game_scene_p;

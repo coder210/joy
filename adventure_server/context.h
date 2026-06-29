@@ -3,9 +3,27 @@
 #include <map>
 #include <queue>
 #include <string>
-#include "../flecs.h"
+#include "flecs.h"
+#include "components/id_component.h"
+#include "components/logic_rect_component.h"
+#include "components/logic_position_component.h"
+#include "components/logic_velocity_component.h"
+
+#include "components/transform_component.h"
+#include "components/attack_ray_effect_component.h"
+#include "components/connection_component.h"
+#include "components/player_component.h"
+#include "components/local_only_component.h"
+#include "components/player_action_component.h"
+#include "components/sprite_sheet_component.h"
+#include "components/animator_component.h"
+#include "components/animator_def.h"
+
+#include "components/ai_component.h"
+#include "components/enemy_component.h"
+#include "components/net_component.h"
+#include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
-#include "../../adventure_shared/protocol.h"
 
 struct Context {
         jwindow_p window;
@@ -15,6 +33,25 @@ struct Context {
         jtilemap_render_p tilemap_render;
 
         flecs::world ecs;
+
+
+        // ---- 预构建的 ECS Query ----
+        flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
+        flecs::query<ConnectionComponent> connection_query;
+        flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
+        flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
+        flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
+        flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
+
+        // 精灵渲染 query（避免 on_render 每帧重建 filter）
+        flecs::query<TransformComponent, LogicRectComponent,
+            Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
+        flecs::query<TransformComponent, LogicRectComponent,
+            Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
+
+        // 位置同步 query（合并玩家和敌人）
+        flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
+
 
         vec2_t camera; // 摄像机世界坐标(米)
 

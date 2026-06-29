@@ -1,7 +1,6 @@
 ﻿#ifndef ASSET_MANAGER_H
 #define ASSET_MANAGER_H
-#include <joy/jfont.h>
-#include <joy/jr2d.h>
+#include <joy/joy.h>
 #include <string>
 #include <unordered_map>
 

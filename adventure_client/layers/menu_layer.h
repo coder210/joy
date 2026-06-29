@@ -1,7 +1,6 @@
 ﻿#ifndef MENU_LAYER_H
 #define MENU_LAYER_H
-#include <joy/jui.h>
-#include <joy/jscene.h>
+#include <joy/joy.h>
 #include "../context.h"
 
 #define MENU_EVENT (0x2)

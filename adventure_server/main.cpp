@@ -18,7 +18,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
                 return SDL_APP_FAILURE;
         }
 
-        ctx = (Context*)calloc(1, sizeof(Context));
+        ctx = new Context();
 
         game_timer_init(&game_timer);
         game_timer_set_target_fps(&game_timer, 60);
@@ -64,6 +64,6 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
         scene_manager_destroy(g_mgr);
         r2d_destroy(ctx->r2d);
         destroy_window(ctx->window);
-        free(ctx);
+        delete ctx;
         sys_release_netenv();
 }

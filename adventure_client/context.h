@@ -1,7 +1,6 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
-#include <joy/jcore.h>
-#include <joy/jr2d.h>
+#include <joy/joy.h>
 
 #define PIXELS_PER_METER 50
 
