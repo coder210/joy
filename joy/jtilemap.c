@@ -85,17 +85,7 @@ typedef struct jtilemap_tileset {
 } jtilemap_tileset_t, * jtilemap_tileset_p;
 
 
-/* ---------- 对象（碰撞体/实体） ---------- */
-typedef struct jtilemap_object {
-        int    id;
-        char* name;
-        char* type;         /* 用户自定义类型 */
-        int    shape;        /* JTILEMAP_SHAPE_* */
-        float  x, y;
-        float  width, height; /* 矩形有效 */
-        float  rotation;
-        bool   visible;
-}jtilemap_object_t, * jtilemap_object_p;
+
 
 /* ---------- 图层基类 ---------- */
 typedef struct jtilemap_layer {
@@ -507,7 +497,7 @@ static void collect_anim_gids(jtilemap_p tm)
 
 /* ==================== 主加载函数 ==================== */
 
-JOY_API jtilemap_p jtilemap_load_lua(struct lua_State* L, int idx)
+jtilemap_p jtilemap_load_lua(struct lua_State* L, int idx)
 {
     if (!L) return NULL;
 
@@ -599,7 +589,7 @@ JOY_API jtilemap_p jtilemap_load_lua(struct lua_State* L, int idx)
 
 /* ==================== 从文件直接加载（封装 Lua） ==================== */
 
-JOY_API jtilemap_p jtilemap_load_file(const char* filename)
+jtilemap_p jtilemap_load_file(const char* filename)
 {
     if (!filename) {
         log_error("jtilemap_load_file: filename is NULL");
@@ -644,7 +634,7 @@ JOY_API jtilemap_p jtilemap_load_file(const char* filename)
 
 /* ==================== 获取 deco 独立瓦片图片路径 ==================== */
 
-JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id)
+const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id)
 {
     if (!ts) return NULL;
     for (size_t i = 0; i < kv_size(ts->tile_defs); i++) {
@@ -654,7 +644,7 @@ JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int loc
     return NULL;
 }
 
-JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
+bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
                                           int* out_w, int* out_h)
 {
     if (!ts) return false;
@@ -722,7 +712,7 @@ static void destroy_layer(void* layer)
     free(layer);
 }
 
-JOY_API void jtilemap_destroy(jtilemap_p tm)
+void jtilemap_destroy(jtilemap_p tm)
 {
     if (!tm) return;
 
@@ -747,7 +737,7 @@ JOY_API void jtilemap_destroy(jtilemap_p tm)
 
 /* ==================== GID 解析 ==================== */
 
-JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid)
+jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid)
 {
     jtilemap_gid_resolve_t result;
     memset(&result, 0, sizeof(result));
@@ -786,7 +776,7 @@ JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid
 
 /* ==================== 动画帧计算 ==================== */
 
-JOY_API int jtilemap_get_anim_tileid(const jtilemap_p tm, int gid, uint32_t time_ms)
+int jtilemap_get_anim_tileid(const jtilemap_p tm, int gid, uint32_t time_ms)
 {
     jtilemap_gid_resolve_t res = jtilemap_resolve_gid(tm, gid);
     if (!res.has_anim) return res.local_id;
@@ -814,7 +804,7 @@ JOY_API int jtilemap_get_anim_tileid(const jtilemap_p tm, int gid, uint32_t time
 
 /* ==================== 纹理坐标计算 ==================== */
 
-JOY_API bool jtilemap_get_tile_uv(const jtilemap_p tm, int gid,
+bool jtilemap_get_tile_uv(const jtilemap_p tm, int gid,
                                    uint32_t time_ms, float out_rect[4])
 {
     if (!tm || !out_rect) return false;
@@ -853,7 +843,7 @@ JOY_API bool jtilemap_get_tile_uv(const jtilemap_p tm, int gid,
 
 /* ==================== 图层查询 ==================== */
 
-JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
+jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
                                                          const char* name)
 {
     if (!tm || !name) return NULL;
@@ -868,7 +858,7 @@ JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
     return NULL;
 }
 
-JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm,
+jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm,
                                                             const char* name)
 {
     if (!tm || !name) return NULL;
@@ -883,7 +873,20 @@ JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm,
     return NULL;
 }
 
-JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer, int tx, int ty)
+void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj))
+{
+    if (ol) {
+        for (size_t i = 0; i < kv_size(ol->objects); i++) {
+            jtilemap_object_t* obj = &kv_A(ol->objects, i);
+            if (obj->shape != JTILEMAP_SHAPE_RECT)
+                continue;
+            callback(obj);
+        }
+        log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
+    }
+}
+
+int jtilemap_get_tile(const jtilemap_tile_layer_p layer, int tx, int ty)
 {
     if (!layer || !layer->data) return 0;
     if (tx < 0 || tx >= layer->width || ty < 0 || ty >= layer->height)

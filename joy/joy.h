@@ -411,6 +411,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct popup popup_t, * popup_p;
         typedef struct tooltip tooltip_t, * tooltip_p;
 
+
+        /* ---------- 对象（碰撞体/实体） ---------- */
+        typedef struct jtilemap_object {
+            int    id;
+            char* name;
+            char* type;         /* 用户自定义类型 */
+            int    shape;        /* JTILEMAP_SHAPE_* */
+            float  x, y;
+            float  width, height; /* 矩形有效 */
+            float  rotation;
+            bool   visible;
+        }jtilemap_object_t, * jtilemap_object_p;
         typedef struct jtilemap_gid_resolve jtilemap_gid_resolve_t;
         typedef struct jtilemap jtilemap_t, * jtilemap_p;
         typedef struct jtilemap_tileset jtilemap_tileset_t, * jtilemap_tileset_p;
@@ -1301,6 +1313,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
                 const char* name);
         JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm, const char* name);
+        JOY_API void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj));
         JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer,
                 int tx, int ty);
         JOY_API jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
@@ -1316,7 +1329,6 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 float camera_x, float camera_y,
                 uint32_t time_ms);
         JOY_API void jtilemap_render_destroy(jtilemap_render_p r);
-
 
         // ==============================
         // KCP Server & Client

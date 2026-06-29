@@ -1,6 +1,5 @@
 #include "../external/lua/lauxlib.h"
 #include "../external/lua/lua.h"
-#include "../jscene.h"
 #include "../joy.h"
 #include "luaclib.h"
 
