@@ -7,48 +7,47 @@
 #include "../components/logic_rect_component.h"
 #include "../components/logic_position_component.h"
 #include "../components/transform_component.h"
+#include "../context.h"
 
 
 static void startup_system(flecs::iter& it)
 {
         //std::cout << it.system().name() << "\n";
         log_info("[Startup] system: %s", it.system().name());
-        //game_scene_p self = (game_scene_p)it.world().get_ctx();
+        Context* ctx = (Context*)it.world().get_ctx();
 
         // 本地方块：有碰撞检测，但不会同步到客户端（因为有 LocalOnlyComponent）
-       /*self->world.entity()
+        ctx->ecs.entity()
                .add<LocalOnlyComponent>()
                .set<IdComponent>({ 10000, 100 })
                .set<LogicRectComponent>({ fp_from_float(0.5f), fp_from_float(0.5f) })
                .set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
-               .set<TransformComponent>({ 5,5,0,1,1 });*/
+               .set<TransformComponent>({ 5,5,0,1,1 });
 
-               // 加载 tilemap 碰撞墙体（替代硬编码围墙）
-
-       /* self->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
-        if (self->tilemap) {
-                jtilemap_object_layer_p ol = jtilemap_find_object_layer(self->tilemap, "collision");
-                if (ol) {
-                        for (size_t i = 0; i < kv_size(ol->objects); i++) {
-                                jtilemap_object_t* obj = &kv_A(ol->objects, i);
-                                if (obj->shape != JTILEMAP_SHAPE_RECT)
-                                        continue;
-                                fp_t px = fp_from_float(obj->x / (float)SERVER_PPM);
-                                fp_t py = fp_from_float(obj->y / (float)SERVER_PPM);
-                                fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
-                                fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
-                                self->world.entity()
-                                        .set<IdComponent>({ GenId(self), 100 })
-                                        .set<LogicRectComponent>({ pw, ph })
-                                        .set<LogicPositionComponent>({ px, py })
-                                        .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
-                        }
-                        log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
-                }
-        }*/
+        // 加载 tilemap 碰撞墙体（替代硬编码围墙）
         // ---- tilemap + 精灵渲染初始化 ----
-        if (self->tilemap)
-                self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_server/", NULL);
+        ctx->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
+        if (ctx->tilemap) {
+                jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
+                jtilemap_object_layer_foreach(ol, [](jtilemap_object_p obj, void* arg) {
+                    Context* ctx = (Context*)arg;
+                    if (obj->shape != JTILEMAP_SHAPE_RECT)
+                        return;
+                    fp_t px = fp_from_float(obj->x / (float)SERVER_PPM);
+                    fp_t py = fp_from_float(obj->y / (float)SERVER_PPM);
+                    fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
+                    fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
+                    ctx->ecs.entity()
+                        .set<IdComponent>({ get_entity_id(ctx), 100 })
+                        .set<LogicRectComponent>({ pw, ph })
+                        .set<LogicPositionComponent>({ px, py })
+                        .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
+                    }, ctx);
+
+                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_server/", NULL);
+                
+        }
+                
         //// ---- 创建敌人 ----
         //const int ENEMY_COUNT = 1;
         //for (int i = 0; i < ENEMY_COUNT; i++) {

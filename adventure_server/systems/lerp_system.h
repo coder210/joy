@@ -10,12 +10,14 @@ static void LerpSystem(flecs::entity e,
 	LogicPositionComponent& lp, TransformComponent& t)
 {
 	Context* ctx = (Context*)e.world().get_ctx();
-	float target_position_x = fp_to_float(lp.x);
-	float target_position_y = fp_to_float(lp.y);
+	vec2_t target = {
+		fp_to_float(lp.x),
+		fp_to_float(lp.y)
+	};
 	float alpha = e.world().delta_time() * 10;
 	alpha = std::clamp(alpha, 0.0f, 1.0f);
-	t.position_x = ft_lerp(t.position_x, target_position_x, alpha);
-	t.position_y = ft_lerp(t.position_y, target_position_y, alpha);
+	t.position.x = ft_lerp(t.position.x, target.x, alpha);
+	t.position.y = ft_lerp(t.position.y, target.y, alpha);
 }
 
 #endif

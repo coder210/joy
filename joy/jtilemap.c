@@ -16,23 +16,7 @@ History:
 #include "joy.h"
 
 
-/* ---------- 分层类型常量 ---------- */
-#define JTILEMAP_LAYER_TILE     0
-#define JTILEMAP_LAYER_OBJECT   1
-#define JTILEMAP_LAYER_IMAGE    2
 
-/* ---------- 形状常量 ---------- */
-#define JTILEMAP_SHAPE_RECT     0
-#define JTILEMAP_SHAPE_POLYGON  1
-#define JTILEMAP_SHAPE_POLYLINE 2
-#define JTILEMAP_SHAPE_ELLIPSE  3
-#define JTILEMAP_SHAPE_POINT    4
-
-/* ---------- GID 翻转标志（Tiled 规范，编码在 GID 高位） ---------- */
-#define JTILEMAP_FLIP_H       0x80000000
-#define JTILEMAP_FLIP_V       0x40000000
-#define JTILEMAP_FLIP_D       0x20000000
-#define JTILEMAP_GID_MASK     0x1FFFFFFF
 
 
 
@@ -873,14 +857,14 @@ jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm,
     return NULL;
 }
 
-void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj))
+void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void* arg), void*arg)
 {
     if (ol) {
         for (size_t i = 0; i < kv_size(ol->objects); i++) {
             jtilemap_object_t* obj = &kv_A(ol->objects, i);
             if (obj->shape != JTILEMAP_SHAPE_RECT)
                 continue;
-            callback(obj);
+            callback(obj, arg);
         }
         log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
     }

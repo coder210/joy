@@ -1,12 +1,11 @@
 #ifndef TRANSFORM_COMPONENT_H
 #define TRANSFORM_COMPONENT_H
+#include <joy/jmath.h>
 
 struct TransformComponent {
-	float position_x;
-	float position_y;
+	vec2_t position;
 	float rotation;
-	float scale_x;
-	float scale_y;
+	vec2_t scale;
 };
 
 #endif

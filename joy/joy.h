@@ -51,6 +51,23 @@ extern "C" {
 #define POPUP_MAX_CONTENT 2048
 #define TOOLTIP_MAX_TEXT 256
 
+/* ---------- 分层类型常量 ---------- */
+#define JTILEMAP_LAYER_TILE     0
+#define JTILEMAP_LAYER_OBJECT   1
+#define JTILEMAP_LAYER_IMAGE    2
+
+/* ---------- 形状常量 ---------- */
+#define JTILEMAP_SHAPE_RECT     0
+#define JTILEMAP_SHAPE_POLYGON  1
+#define JTILEMAP_SHAPE_POLYLINE 2
+#define JTILEMAP_SHAPE_ELLIPSE  3
+#define JTILEMAP_SHAPE_POINT    4
+
+/* ---------- GID 翻转标志（Tiled 规范，编码在 GID 高位） ---------- */
+#define JTILEMAP_FLIP_H       0x80000000
+#define JTILEMAP_FLIP_V       0x40000000
+#define JTILEMAP_FLIP_D       0x20000000
+#define JTILEMAP_GID_MASK     0x1FFFFFFF
 
 #define ACCUMULATE_IMPULSES 1
 #define WARM_STARTING 1
@@ -1185,6 +1202,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API button_p button_create(jr2d_p r2d, float width, float height);
         JOY_API void button_destroy(button_p btn);
         JOY_API void button_set_position(button_p btn, float x, float y);
+        JOY_API vec2_t button_get_position(button_p btn);
         JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
         JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
         JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
@@ -1313,7 +1331,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
                 const char* name);
         JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm, const char* name);
-        JOY_API void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj));
+        JOY_API void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
         JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer,
                 int tx, int ty);
         JOY_API jtilemap_render_p jtilemap_render_create(jr2d_p renderer,

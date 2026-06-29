@@ -83,7 +83,8 @@ static scene_node_p make_button_node(button_p btn, int x, int y) {
 	scene_node_set_zorder(node, 100);
 	scene_node_set_update_callback(node, [](scene_node_p n, float dt) {
 		button_p b = (button_p)scene_node_get_userdata(n);
-		scene_node_get_world_position(n, &b->position.x, &b->position.y);
+		vec2_t position = button_get_position(b);
+		scene_node_get_world_position(n, &position.x, &position.y);
 	});
 	scene_node_set_render_callback(node, [](scene_node_p n, const void* arg) {
 		button_p b = (button_p)scene_node_get_userdata(n);

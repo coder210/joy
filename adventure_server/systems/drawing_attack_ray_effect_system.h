@@ -9,8 +9,8 @@ static void DrawingAttackRayEffectSystem(flecs::entity e, AttackRayEffectCompone
 {
 	Context* ctx = (Context*)e.world().get_ctx();
 	jrect_t line;
-	line.x = (effect.x - ctx->camera_x) * SERVER_PPM;
-	line.y = (effect.y - ctx->camera_y) * SERVER_PPM;
+	line.x = (effect.x - ctx->camera.x) * SERVER_PPM;
+	line.y = (effect.y - ctx->camera.y) * SERVER_PPM;
 	line.w = effect.w * SERVER_PPM;
 	line.h = effect.h * SERVER_PPM;
 	r2d_set_color(ctx->r2d, 255, 255, 255, 255);

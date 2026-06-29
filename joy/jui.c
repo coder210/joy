@@ -330,6 +330,11 @@ void button_set_position(button_p btn, float x, float y)
 	btn->position.y = y;
 }
 
+vec2_t button_get_position(button_p btn)
+{
+	return btn->position;
+}
+
 static bool button_hit_test(button_p btn, float x, float y)
 {
 	vec2_t logic = r2d_coordinates_from_window(btn->r2d, x, y);

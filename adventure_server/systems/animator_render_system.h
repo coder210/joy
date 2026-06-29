@@ -28,8 +28,8 @@ static void animator_render_system(flecs::entity e,
     image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, clip.path.c_str());
     if (!tex) return;
 
-    float scr_x = (t.position_x - ctx->camera_x) * SERVER_PPM;
-    float scr_y = (t.position_y - ctx->camera_y) * SERVER_PPM;
+    float scr_x = (t.position.x - ctx->camera.x) * SERVER_PPM;
+    float scr_y = (t.position.y - ctx->camera.y) * SERVER_PPM;
 
     int frame_w = clip.src_rect.w;
     int frame_h = clip.src_rect.h;

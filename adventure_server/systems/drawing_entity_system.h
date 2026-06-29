@@ -18,8 +18,8 @@ static void DrawingEntitySystem(flecs::entity e,
         jrect_t body = { 0 };
         jrect_t header = { 0 };
         // 摄像机偏移：世界坐标 - 摄像机坐标 → 屏幕像素
-        body.x = (t.position_x - ctx->camera_x) * SERVER_PPM;
-        body.y = (t.position_y - ctx->camera_y) * SERVER_PPM;
+        body.x = (t.position.x - ctx->camera.x) * SERVER_PPM;
+        body.y = (t.position.y - ctx->camera.y) * SERVER_PPM;
         body.w = fp_to_float(rect.width) * SERVER_PPM;
         body.h = fp_to_float(rect.height) * SERVER_PPM;
         if (e.has<PlayerComponent>()) {
