@@ -13,9 +13,7 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/startup_system.h"
-#include "../systems/collect_command_system.h"
-#include "../systems/handle_command_system.h"
-#include "../systems/notify_command_system.h"
+#include "../systems/input_consume_system.h"
 #include "../context.h"
 #include "../asset_manager.h"
 #include "game_scene.h"
@@ -105,15 +103,20 @@ static void on_load(scene_p s)
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
-       
+        // 消费
         ctx->ecs.system<NetComponent>()
+            .kind(flecs::PreUpdate)
+            .rate(0.05)
+            .iter(input_consume_system);
+       
+      /*  ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
                 .rate(0.05)
                 .iter(collect_command_system);
         ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
                 .rate(0.05)
-                .iter(handle_command_system);
+                .iter(handle_command_system);*/
 
         //ctx->ecs.system<ConnectionComponent>()
         //    .kind(flecs::OnUpdate)
@@ -171,9 +174,15 @@ static void on_handle_event(scene_p s, const void* ev)
 static void handle_cmd_loading(Context* ctx, int conv)
 {
         log_info("C2S_CMD_LOADING");
-        auto& session = ctx->sessions[conv];
-        session.conv = conv;
-        session.is_loaded = false;
+        auto it = ctx->sessions.find(conv);
+        if (it == ctx->sessions.end()) {
+            // 如果 Session 不存在，先创建一个（正常情况应该在 CONNECTED 时已创建）
+            ctx->sessions[conv] = { conv, flecs::entity::null(), 10, 0, false };
+            it = ctx->sessions.find(conv);
+        }
+        // 标记该玩家需要初始加载（帧末由 ReplicationSystem 发送快照）
+        it->second.is_loaded = false;   // false 表示尚未发送初始数据
+        it->second.health = 10;
 
         /*flecs::entity entity = ctx->ecs.entity().add<ConnectionComponent>();
         auto conn = entity.get_mut<ConnectionComponent>();
@@ -206,22 +215,25 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
         ctx->player_leaves.push_back(l);
 }
 
-static void handle_cmd_player_input(Context* ctx, int conv, int dir, int attack)
+static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack)
 {
-        S2CPlayerInput i = { conv, dir, (int8_t)attack };
-        ctx->player_inputs.push_back(i);
+    S2CPlayerInput i = { conv, seq, dir, (int8_t)attack };
+    ctx->player_inputs.push_back(i);
 }
 
 static void handle_cmd_heartbeat(Context* ctx, int conv)
 {
         log_info("%d: C2S_CMD_HEARTBEAT", conv);
-        /*ctx->connection_query.each([&](ConnectionComponent& conn) {
-                if (conn.conv == conv) {
-                        conn.health = 10;
-                        return false;
-                }
-                return true;
-                });*/
+        uint64_t ms_ticks;
+        utils_get_current_time(&ms_ticks);
+        auto it = ctx->sessions.find(conv);
+        if (it != ctx->sessions.end()) {
+            it->second.health = 10;
+            it->second.last_heartbeat = ms_ticks;
+        }
+        else {
+            log_debug("Heartbeat from unknown conv: %d", conv);
+        }
 }
 
 
@@ -275,10 +287,8 @@ static void on_update(scene_p s, float dt)
         Context* ctx = self->ctx;
 
         simple_fps_update(self->sample_fps);
-
         netserver_update(ctx->net_server);
         network_receive(ctx);
-
         ctx->ecs.progress(dt);
 
         // 位置同步（插值平滑，避免 20Hz 逻辑更新导致的跳跃）
@@ -388,7 +398,6 @@ game_scene_p game_scene_create(Context* ctx)
         self->ctx = ctx;
         // 初始化摄像机
         ctx->camera = { 0.0f,0.0f };
-        ctx->ecs.component<ConnectionComponent>();
         ctx->ecs.component<IdComponent>();
         ctx->ecs.component<LogicRectComponent>();
         ctx->ecs.component<LogicPositionComponent>();

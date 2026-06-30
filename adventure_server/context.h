@@ -1,9 +1,13 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 #include <map>
+#include <unordered_map>
 #include <queue>
 #include <string>
 #include "flecs.h"
+#include "components/initial_sync_tag.h"
+#include "components/player_event_input.h"
+#include "components/player_state_input.h"
 #include "components/id_component.h"
 #include "components/logic_rect_component.h"
 #include "components/logic_position_component.h"
@@ -30,6 +34,7 @@ struct Session {
         int health = 10;
         uint32_t last_heartbeat = 0;
         bool is_loaded = false;       // 是否已完成初始加载
+        uint32_t last_processed_seq; // 最后已处理的序列号
 };
 
 struct Context {

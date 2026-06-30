@@ -2,7 +2,6 @@
 #define HANDLE_COMMAND_SYSTEM_H
 #include "../flecs.h"
 #include "../context.h"
-#include "../components/connection_component.h"
 #include "../components/net_component.h"
 
 

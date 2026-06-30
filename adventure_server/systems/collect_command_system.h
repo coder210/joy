@@ -3,7 +3,6 @@
 #include <algorithm>
 #include "../flecs.h"
 #include "../context.h"
-#include "../components/connection_component.h"
 #include "../components/net_component.h"
 
 

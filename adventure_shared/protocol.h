@@ -46,7 +46,7 @@ enum S2CType {
 /* ============================ 协议结构体 ============================ */
 struct S2CPlayerJoin  { int32_t conv; int64_t position_x, position_y; };
 struct S2CPlayerLeave { int32_t conv; };
-struct S2CPlayerInput { int32_t conv, dir; int8_t attack; };
+struct S2CPlayerInput { uint32_t client_seq; int32_t conv, dir;  int8_t attack; };
 struct S2CEntity {
     int32_t id, type;
     int64_t position_x, position_y, width, height, hp;
