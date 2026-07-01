@@ -13,6 +13,7 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/startup_system.h"
+#include "../systems/collect_command_system.h"
 #include "../systems/input_consume_system.h"
 #include "../context.h"
 #include "../asset_manager.h"
@@ -102,6 +103,13 @@ static void on_load(scene_p s)
         ctx->ecs.system("Startup")
                 .kind(flecs::OnStart)
                 .iter(startup_system);
+
+        // 收集
+        ctx->ecs.system<NetComponent>()
+            .kind(flecs::PreUpdate)
+            .rate(0.05)
+            .iter(collect_command_system);
+
 
         // 消费
         ctx->ecs.system<NetComponent>()
