@@ -30,11 +30,11 @@
 
 struct Session {
         int conv;
-        flecs::entity player_entity;  // ¶ÔÓ¦µÄÍæ¼ÒÊµÌå£¨¼ÓÔØÍê³Éºó²Å¸³Öµ£©
+        flecs::entity player_entity;  // å¯¹åº”çš„ç©å®¶å®ä½“ï¼ˆåŠ è½½å®Œæˆåæ‰èµ‹å€¼ï¼‰
         int health = 10;
         uint32_t last_heartbeat = 0;
-        bool is_loaded = false;       // ÊÇ·ñÒÑÍê³É³õÊ¼¼ÓÔØ
-        uint32_t last_processed_seq; // ×îºóÒÑ´¦ÀíµÄĞòÁĞºÅ
+        bool is_loaded = false;       // æ˜¯å¦å·²å®Œæˆåˆå§‹åŠ è½½
+        uint32_t last_processed_seq; // æœ€åå·²å¤„ç†çš„åºåˆ—å·
 };
 
 struct Context {
@@ -47,27 +47,27 @@ struct Context {
         flecs::world ecs;
 
 
-        // ---- Ô¤¹¹½¨µÄ ECS Query ----
+        // ---- é¢„æ„å»ºçš„ ECS Query ----
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
         flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
         flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
         flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
 
-        // ¾«ÁéäÖÈ¾ query£¨±ÜÃâ on_render Ã¿Ö¡ÖØ½¨ filter£©
+        // ç²¾çµæ¸²æŸ“ queryï¼ˆé¿å… on_render æ¯å¸§é‡å»º filterï¼‰
         flecs::query<TransformComponent, LogicRectComponent,
             Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
         flecs::query<TransformComponent, LogicRectComponent,
             Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
 
-        // Î»ÖÃÍ¬²½ query£¨ºÏ²¢Íæ¼ÒºÍµĞÈË£©
+        // ä½ç½®åŒæ­¥ queryï¼ˆåˆå¹¶ç©å®¶å’Œæ•Œäººï¼‰
         flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
 
 
-        vec2_t camera; // ÉãÏñ»úÊÀ½ç×ø±ê(Ã×)
+        vec2_t camera; // æ‘„åƒæœºä¸–ç•Œåæ ‡(ç±³)
 
-        int global_entity_id; // Íæ¼ÒÈ«¾ÖÎ¨Ò» ID
-        int global_frame_id;  // µ±Ç°Ö¡ ID
+        int global_entity_id; // ç©å®¶å…¨å±€å”¯ä¸€ ID
+        int global_frame_id;  // å½“å‰å¸§ ID
 
         std::vector<S2CPlayerJoin> player_joins;
         std::vector<S2CPlayerLeave> player_leaves;
@@ -75,11 +75,15 @@ struct Context {
 
         std::map<int, std::string> commands;
         std::queue<std::string> command_queue;
-        std::map<int, std::string> world_snapshots; // ÒÔÖ¡ºÅÎª¼üµÄÊÀ½ç¿ìÕÕ
+        std::map<int, std::string> world_snapshots; // ä»¥å¸§å·ä¸ºé”®çš„ä¸–ç•Œå¿«ç…§
 
         std::unordered_map<int, Session> sessions;   // key = conv
 
         netserver_p net_server;
+
+        // ---- å›ºå®šæ­¥é•¿é€»è¾‘ ----
+        float accumulator = 0.0f;
+        static constexpr float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
 };
 
 

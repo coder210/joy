@@ -104,18 +104,14 @@ static void on_load(scene_p s)
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
-        // 收集
+        // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
         ctx->ecs.system<NetComponent>()
             .kind(flecs::PreUpdate)
-            .rate(0.05)
-            .iter(collect_command_system);
-
-
-        // 消费
-        ctx->ecs.system<NetComponent>()
-            .kind(flecs::PreUpdate)
-            .rate(0.05)
             .iter(input_consume_system);
+
+        ctx->ecs.system<NetComponent>()
+            .kind(flecs::PostUpdate)
+            .iter(collect_command_system);
        
       /*  ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
@@ -296,10 +292,18 @@ static void on_update(scene_p s, float dt)
 
         simple_fps_update(self->sample_fps);
         netserver_update(ctx->net_server);
-        network_receive(ctx);
-        ctx->ecs.progress(dt);
 
-        // 位置同步（插值平滑，避免 20Hz 逻辑更新导致的跳跃）
+        // === 网络 I/O（60Hz 每帧都收，不丢包）===
+        network_receive(ctx);
+
+        // === 固定步长逻辑 Tick（20Hz）===
+        ctx->accumulator += dt;
+        while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
+                ctx->accumulator -= ctx->FIXED_TIMESTEP;
+                ctx->ecs.progress(ctx->FIXED_TIMESTEP);
+        }
+
+        // === 渲染插值（60Hz 平滑，不参与逻辑）===
         ctx->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
                 float target_x = fp_to_float(pos.x);
                 float target_y = fp_to_float(pos.y);
@@ -308,7 +312,6 @@ static void on_update(scene_p s, float dt)
                 t.position.x = ft_lerp(t.position.x, target_x, alpha);
                 t.position.y = ft_lerp(t.position.y, target_y, alpha);
                 });
-       
 
         // ---------- 摄像机跟随第一个玩家 ----------
         ctx->player_query.each([&](PlayerComponent&, IdComponent&,
