@@ -15,6 +15,7 @@
 #include "../systems/startup_system.h"
 #include "../systems/collect_command_system.h"
 #include "../systems/input_consume_system.h"
+#include "../systems/handle_command_system.h"
 #include "../context.h"
 #include "../asset_manager.h"
 #include "game_scene.h"
@@ -81,7 +82,6 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
 }
 
 
-
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
@@ -104,23 +104,18 @@ static void on_load(scene_p s)
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
-        // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
         ctx->ecs.system<NetComponent>()
             .kind(flecs::PreUpdate)
-            .iter(input_consume_system);
+            .iter(collect_command_system);
+
+        // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
+        ctx->ecs.system<NetComponent>()
+                .kind(flecs::OnUpdate)
+                .iter(input_consume_system);
 
         ctx->ecs.system<NetComponent>()
-            .kind(flecs::PostUpdate)
-            .iter(collect_command_system);
-       
-      /*  ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
-                .rate(0.05)
-                .iter(collect_command_system);
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::OnUpdate)
-                .rate(0.05)
-                .iter(handle_command_system);*/
+                .iter(handle_command_system);
 
         //ctx->ecs.system<ConnectionComponent>()
         //    .kind(flecs::OnUpdate)
@@ -267,7 +262,7 @@ static void network_receive(Context* ctx)
                                         handle_cmd_player_leave(ctx, msg.conv);
                                         break;
                                 case CMD_PLAYER_INPUT:
-                                        handle_cmd_player_input(ctx, msg.conv, input_dir, input_attack);
+                                        handle_cmd_player_input(ctx, msg.conv, 0,  input_dir, input_attack);
                                         break;
                                 case CMD_PLAYER_HEART:
                                         handle_cmd_heartbeat(ctx, msg.conv);
@@ -281,6 +276,76 @@ static void network_receive(Context* ctx)
                 if (msg.type == NET_TYPE_MESSAGE && msg.data) {
                         netmessage_free_data(&msg);
                 }
+        }
+}
+
+
+static void collect_command(Context* ctx)
+{
+        int frame_id = ctx->global_frame_id++;
+        S2CPlayerJoin joins[32]; int num_joins = 0;
+        for (auto& j : ctx->player_joins)
+                if (num_joins < 32) joins[num_joins++] = j;
+        S2CPlayerLeave leaves[32]; int num_leaves = 0;
+        for (auto& l : ctx->player_leaves)
+                if (num_leaves < 32) leaves[num_leaves++] = l;
+        S2CPlayerInput inputs[64]; int num_inputs = 0;
+        for (auto& inp : ctx->player_inputs)
+                if (num_inputs < 64) inputs[num_inputs++] = inp;
+
+        // 收集所有已加载玩家的位置，按 id 排序确保所有客户端顺序一致
+        std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
+        for (auto& [conv, sess] : ctx->sessions) {
+                if (!sess.player_entity.is_valid()) continue;
+                const auto* id_comp = sess.player_entity.get<IdComponent>();
+                const auto* pos_comp = sess.player_entity.get<LogicPositionComponent>();
+                if (!id_comp || !pos_comp) continue;
+                player_positions.push_back({ id_comp->id, { pos_comp->x, pos_comp->y } });
+        }
+        std::sort(player_positions.begin(), player_positions.end());
+
+        std::string checksum_input;
+        for (auto& player : player_positions) {
+                char buf[64];
+                int n = snprintf(buf, sizeof(buf), "%d:%lld:%lld,",
+                        player.first, (long long)player.second.first,
+                        (long long)player.second.second);
+                checksum_input.append(buf, n);
+        }
+        char checksum[64] = { 0 };
+        utils_md5x(checksum_input.c_str(), checksum_input.size(), checksum);
+
+        log_info("[checksum] frame=%d md5=%s", frame_id, checksum);
+        auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, num_joins, leaves, num_leaves, inputs, num_inputs, checksum);
+        ctx->commands[frame_id] = command_data;
+        ctx->command_queue.push(command_data);
+
+        ctx->player_joins.clear();
+        ctx->player_leaves.clear();
+        ctx->player_inputs.clear();
+
+        // 收集世界实体状态（用于同步快照）
+        S2CEntity entities[512]; int num_entities = 0;
+        ctx->body_query.each([&](flecs::entity e, IdComponent& id_comp,
+                LogicRectComponent& rect, LogicPositionComponent& pos_comp) {
+                        if (e.has<LocalOnlyComponent>() || num_entities >= 512) return;
+                        auto& ent = entities[num_entities++]; memset(&ent, 0, sizeof(ent));
+                        ent.id = id_comp.id;
+                        if (e.has<PlayerComponent>()) { ent.type = S2C_TYPE_PLAYER; ent.player_conv = e.get_mut<PlayerComponent>()->conv; }
+                        else if (e.has<EnemyComponent>()) { ent.type = S2C_TYPE_ENEMY; }
+                        else { ent.type = S2C_TYPE_NORMAL; }
+                        ent.hp = id_comp.hp; ent.position_x = pos_comp.x; ent.position_y = pos_comp.y;
+                        ent.width = rect.width; ent.height = rect.height;
+                });
+        ctx->world_snapshots[frame_id] = pack_world(ctx->global_frame_id, entities, num_entities);
+
+        // 限制 worlds 和 commands 最多保留 1000 帧
+        const size_t MAX_FRAMES = 1000;
+        while (ctx->commands.size() > MAX_FRAMES) {
+                ctx->commands.erase(ctx->commands.begin());
+        }
+        while (ctx->world_snapshots.size() > MAX_FRAMES) {
+                ctx->world_snapshots.erase(ctx->world_snapshots.begin());
         }
 }
 
@@ -300,30 +365,37 @@ static void on_update(scene_p s, float dt)
         ctx->accumulator += dt;
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
+                collect_command(ctx);
+        }
+
+        // 用网络消息驱动逻辑更
+        if (!ctx->command_queue.empty()) {
+                std::string command_data = ctx->command_queue.front();
                 ctx->ecs.progress(ctx->FIXED_TIMESTEP);
         }
 
-        // === 渲染插值（60Hz 平滑，不参与逻辑）===
-        ctx->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
-                float target_x = fp_to_float(pos.x);
-                float target_y = fp_to_float(pos.y);
-                float alpha = dt * 10.0f;
-                if (alpha > 1.0f) alpha = 1.0f;
-                t.position.x = ft_lerp(t.position.x, target_x, alpha);
-                t.position.y = ft_lerp(t.position.y, target_y, alpha);
-                });
 
-        // ---------- 摄像机跟随第一个玩家 ----------
-        ctx->player_query.each([&](PlayerComponent&, IdComponent&,
-                LogicRectComponent&, LogicPositionComponent& pos) {
-                        float target_cam_x = fp_to_float(pos.x) - 6.4f;
-                        float target_cam_y = fp_to_float(pos.y) - 4.8f;
-                        float lerp = dt * 5.0f;
-                        if (lerp > 1.0f) lerp = 1.0f;
-                        ctx->camera.x += (target_cam_x - ctx->camera.x) * lerp;
-                        ctx->camera.y += (target_cam_y - ctx->camera.y) * lerp;
-                        return; // 只跟第一个玩家
-                });
+        // === 渲染插值（60Hz 平滑，不参与逻辑）===
+        //ctx->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
+        //        float target_x = fp_to_float(pos.x);
+        //        float target_y = fp_to_float(pos.y);
+        //        float alpha = dt * 10.0f;
+        //        if (alpha > 1.0f) alpha = 1.0f;
+        //        t.position.x = ft_lerp(t.position.x, target_x, alpha);
+        //        t.position.y = ft_lerp(t.position.y, target_y, alpha);
+        //        });
+
+        //// ---------- 摄像机跟随第一个玩家 ----------
+        //ctx->player_query.each([&](PlayerComponent&, IdComponent&,
+        //        LogicRectComponent&, LogicPositionComponent& pos) {
+        //                float target_cam_x = fp_to_float(pos.x) - 6.4f;
+        //                float target_cam_y = fp_to_float(pos.y) - 4.8f;
+        //                float lerp = dt * 5.0f;
+        //                if (lerp > 1.0f) lerp = 1.0f;
+        //                ctx->camera.x += (target_cam_x - ctx->camera.x) * lerp;
+        //                ctx->camera.y += (target_cam_y - ctx->camera.y) * lerp;
+        //                return; // 只跟第一个玩家
+        //        });
 }
 
 static void on_render(scene_p s)

@@ -17,7 +17,6 @@ static void input_consume_system(flecs::iter& it) {
         player.set<LogicRectComponent>({ 32, 32 }); // 根据需要设置
         player.set<TransformComponent>({ fp_to_float(join.position_x), fp_to_float(join.position_y) });
         // 添加一个“初始同步”标记，让 ReplicationSystem 知道要发全量数据
-        player.add<InitialSyncTag>();
 
         // 关联到 Session
         auto it_sess = ctx->sessions.find(join.conv);

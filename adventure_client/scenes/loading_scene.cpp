@@ -1,9 +1,5 @@
 ﻿#include "loading_scene.h"
-// SDL types via jsdl
-#include <joy/jcore.h>
-#include <joy/jr2d.h>
-#include <stdlib.h>
-#include <math.h>
+#include <joy/joy.h>
 #include "../layers/menu_layer.h"
 
 struct logo_data {

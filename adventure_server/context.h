@@ -5,7 +5,6 @@
 #include <queue>
 #include <string>
 #include "flecs.h"
-#include "components/initial_sync_tag.h"
 #include "components/player_event_input.h"
 #include "components/player_state_input.h"
 #include "components/id_component.h"
