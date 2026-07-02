@@ -79,6 +79,7 @@ struct Context {
         std::unordered_map<int, Session> sessions;   // key = conv
 
         netserver_p net_server;
+        flecs::entity net_entity;   // 持有 NetComponent 的单例实体
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;

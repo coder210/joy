@@ -13,7 +13,6 @@
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/startup_system.h"
-#include "../systems/collect_command_system.h"
 #include "../systems/input_consume_system.h"
 #include "../systems/handle_command_system.h"
 #include "../context.h"
@@ -96,7 +95,7 @@ static void on_load(scene_p s)
 
         ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
         ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);
-        auto net_entity = ctx->ecs.entity().add<NetComponent>();
+        ctx->net_entity = ctx->ecs.entity().add<NetComponent>();
         log_info("NetComponent count: %d", ctx->ecs.filter<NetComponent>().count());
 
 
@@ -104,18 +103,13 @@ static void on_load(scene_p s)
                 .kind(flecs::OnStart)
                 .iter(startup_system);
 
-        ctx->ecs.system<NetComponent>()
-            .kind(flecs::PreUpdate)
-            .iter(collect_command_system);
-
         // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
         ctx->ecs.system<NetComponent>()
                 .kind(flecs::OnUpdate)
                 .iter(input_consume_system);
 
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::OnUpdate)
-                .iter(handle_command_system);
+        // handle_command_system 已废弃，命令解析统一在 on_update 中完成
+        // 新系统可以从 NetComponent + CurrentFrameCommand 读取解析后的数据
 
         //ctx->ecs.system<ConnectionComponent>()
         //    .kind(flecs::OnUpdate)
@@ -368,12 +362,29 @@ static void on_update(scene_p s, float dt)
                 collect_command(ctx);
         }
 
-        // 用网络消息驱动逻辑更
+        // 从队列取出命令，解析后写到 ECS 组件上
         if (!ctx->command_queue.empty()) {
                 std::string command_data = ctx->command_queue.front();
+                ctx->command_queue.pop();  // 取走，不再由系统消费
+
+                // 解析命令数据
+                int frame_id, jn = 0, ln = 0, in = 0;
+                S2CPlayerJoin joins[32];
+                S2CPlayerLeave leaves[32];
+                S2CPlayerInput inputs[64];
+                bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
+                    &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
+                if (ok) {
+                    auto* cmd = ctx->net_entity.get_mut<NetComponent>();
+                    cmd->frame_id = ok ? frame_id : -1;
+                    cmd->num_joins = jn;  memcpy(cmd->joins, joins, jn * sizeof(S2CPlayerJoin));
+                    cmd->num_leaves = ln; memcpy(cmd->leaves, leaves, ln * sizeof(S2CPlayerLeave));
+                    cmd->num_inputs = in; memcpy(cmd->inputs, inputs, in * sizeof(S2CPlayerInput));
+                }
+
+                // 驱动逻辑 tick
                 ctx->ecs.progress(ctx->FIXED_TIMESTEP);
         }
-
 
         // === 渲染插值（60Hz 平滑，不参与逻辑）===
         //ctx->position_sync_query.each([&](LogicPositionComponent& pos, TransformComponent& t) {
@@ -495,6 +506,7 @@ game_scene_p game_scene_create(Context* ctx)
         ctx->ecs.component<AIComponent>();
         ctx->ecs.component<EnemyComponent>();
         ctx->ecs.component<NetComponent>();
+
 
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);
