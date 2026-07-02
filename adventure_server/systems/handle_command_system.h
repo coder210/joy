@@ -6,7 +6,7 @@
 
 
 
-static const fp_t MOVE_SPEED = fp_from_float(5.0f);
+//static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
 
 static void attack_target(Context* ctx, LogicPositionComponent* p,

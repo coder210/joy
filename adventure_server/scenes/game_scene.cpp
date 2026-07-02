@@ -14,6 +14,8 @@
 #include "../systems/drawing_entity_system.h"
 #include "../systems/startup_system.h"
 #include "../systems/input_consume_system.h"
+#include "../systems/input_forwarding_system.h"
+#include "../systems/movement_system.h"
 #include "../systems/handle_command_system.h"
 #include "../context.h"
 #include "../asset_manager.h"
@@ -93,11 +95,10 @@ static void on_load(scene_p s)
 
         ctx->ecs.set_ctx(ctx);
 
-        ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-        ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);
+    /*    ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
+        ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);*/
         ctx->net_entity = ctx->ecs.entity().add<NetComponent>();
         log_info("NetComponent count: %d", ctx->ecs.filter<NetComponent>().count());
-
 
         ctx->ecs.system("Startup")
                 .kind(flecs::OnStart)
@@ -105,8 +106,17 @@ static void on_load(scene_p s)
 
         // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
         ctx->ecs.system<NetComponent>()
-                .kind(flecs::OnUpdate)
+                .kind(flecs::PreUpdate)
                 .iter(input_consume_system);
+
+        // 玩家移动系统（由外部固定步长累加器驱动，不需要
+        ctx->ecs.system<PlayerStateInput, LogicPositionComponent>()
+                .kind(flecs::OnUpdate)
+                .each(movement_system);
+
+        ctx->ecs.system<NetComponent>()
+                .kind(flecs::OnUpdate)
+                .iter(input_forwarding_system);
 
         // handle_command_system 已废弃，命令解析统一在 on_update 中完成
         // 新系统可以从 NetComponent + CurrentFrameCommand 读取解析后的数据

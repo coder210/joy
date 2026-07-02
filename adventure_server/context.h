@@ -34,6 +34,7 @@ struct Session {
         uint32_t last_heartbeat = 0;
         bool is_loaded = false;       // 是否已完成初始加载
         uint32_t last_processed_seq; // 最后已处理的序列号
+        int frameid; // 客户端最后已接收的帧号
 };
 
 struct Context {

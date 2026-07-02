@@ -3,44 +3,38 @@
 #include "../flecs.h"
 #include "../context.h"
 
-static void input_forwarding_system(flecs::iter& it) {
-    Context* ctx = (Context*)it.world().get_ctx();
+static int get_target_frame_id(int curr_frameid, int context_frameid)
+{
+    int diff = context_frameid - curr_frameid;
 
-    // 1. 转发 JOIN 指令
-    for (auto& join : ctx->player_joins) {
-        for (auto& kv : ctx->sessions) {
-            if (kv.first == join.conv) continue; // 不发给自己
-            auto data = pack_s2c_player_join(join); // 序列化
-            ctx->send_queue.push_back({ kv.first, data });
-        }
-    }
+    if (diff >= 50)      return curr_frameid + 9;
+    if (diff >= 30)      return curr_frameid;
+    if (diff >= 10)      return curr_frameid + 4;
+    if (diff > 2)        return curr_frameid + 2;
 
-    // 2. 转发 LEAVE 指令
-    for (auto& leave : ctx->player_leaves) {
-        for (auto& kv : ctx->sessions) {
-            if (kv.first == leave.conv) continue;
-            auto data = pack_s2c_player_leave(leave);
-            ctx->send_queue.push_back({ kv.first, data });
-        }
-    }
-
-    // 3. 转发 INPUT 指令（批量打包，提高效率）
-    if (!ctx->player_inputs.empty()) {
-        // 按目标 conv 分组
-        std::unordered_map<int, std::vector<S2CPlayerInput>> grouped;
-        for (auto& input : ctx->player_inputs) {
-            for (auto& kv : ctx->sessions) {
-                if (kv.first == input.conv) continue;
-                grouped[kv.first].push_back(input);
-            }
-        }
-        // 批量发送
-        for (auto& kv : grouped) {
-            auto batch = pack_batch_input(kv.second); // 需要实现批量打包
-            ctx->send_queue.push_back({ kv.first, batch });
-        }
-    }
+    return curr_frameid;
 }
 
+static void input_forwarding_system(flecs::iter& it)
+{
+    Context* ctx = (Context*)it.world().get_ctx();
+    for (auto& [conv, sess] : ctx->sessions) {
+            // ---- 未加载的客户端：发送初始世界快照 ----
+            if (!sess.is_loaded) {
+                    int taget_frameid = get_target_frame_id(sess.frameid, ctx->global_frame_id);
+                    for (int i = sess.frameid; i < taget_frameid; i++) {
+                            auto it = ctx->commands.find(i);
+                            if (it != ctx->commands.end()) {
+                                    netserver_send(ctx->net_server, sess.conv, it->second.c_str(), it->second.size());
+                            }
+                            else {
+                                    log_error("Frame %d not found in commands, skip sending.", i);
+                            }
+                    }
+                    sess.frameid = taget_frameid;
+            }
+    }
+   
+}
 
 #endif
