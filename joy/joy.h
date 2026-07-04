@@ -1161,6 +1161,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
         JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
         JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
+        JOY_API void button_set_image(button_p btn, image_p image);
+        JOY_API void button_set_pressed_image(button_p btn, image_p image);
         JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, jcolor_t color);
         JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
         JOY_API bool button_is_hovered(button_p btn, float x, float y);
@@ -1276,6 +1278,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         JOY_API jtilemap_p jtilemap_load_file(const char* filename);
         JOY_API void jtilemap_destroy(jtilemap_p tm);
+        JOY_API int jtilemap_get_width(const jtilemap_p tm);
+        JOY_API int jtilemap_get_height(const jtilemap_p tm);
         JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
         JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
         JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id, int* out_w, int* out_h);

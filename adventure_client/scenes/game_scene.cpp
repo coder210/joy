@@ -681,7 +681,10 @@ static void on_load(scene_p s)
 	self->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
 	if (self->tilemap) {
 		self->tilemap_render = jtilemap_render_create(self->ctx->r2d, "adventure_client/", NULL);
-		log_info("[tilemap] loaded %dx%d", self->tilemap->width, self->tilemap->height);
+		log_info("[tilemap] loaded %dx%d",
+			jtilemap_get_width(self->tilemap),
+			jtilemap_get_height(self->tilemap));
+
 	}
 	else log_error("[tilemap] failed to load");
 

@@ -34,7 +34,6 @@ static void input_forwarding_system(flecs::iter& it)
                     sess.frameid = taget_frameid;
             }
     }
-   
 }
 
 #endif

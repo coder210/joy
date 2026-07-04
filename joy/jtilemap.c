@@ -696,6 +696,14 @@ static void destroy_layer(void* layer)
     free(layer);
 }
 
+int jtilemap_get_width(const jtilemap_p tm) {
+    return tm ? tm->width : 0;
+}
+
+int jtilemap_get_height(const jtilemap_p tm) {
+    return tm ? tm->height : 0;
+}
+
 void jtilemap_destroy(jtilemap_p tm)
 {
     if (!tm) return;

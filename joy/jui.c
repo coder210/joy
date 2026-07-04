@@ -298,6 +298,20 @@ void button_set_pressed_color(button_p btn, jcolor_t color)
 	btn->pressed_color = color;
 }
 
+void button_set_image(button_p btn, image_p image)
+{
+	if (!btn) return;
+	btn->image = image;
+}
+
+void button_set_pressed_image(button_p btn, image_p image)
+{
+	if (!btn) return;
+	btn->pressed_image = image;
+}
+
+
+
 void button_set_textx(button_p btn, font_p font,
 	const char* str, int len, jcolor_t color)
 {
