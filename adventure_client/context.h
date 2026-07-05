@@ -2,6 +2,7 @@
 #define CONTEXT_H
 #include <map>
 #include <vector>
+#include <queue>
 #include "flecs.h"
 #include <joy/joy.h>
 #include "./components/player_action_component.h"
@@ -17,6 +18,8 @@
 #include "./components/player_component.h"
 #include "./components/transform_component.h"
 #include "./components/attack_ray_effect_component.h"
+#include "./components/net_component.h"
+
 
 #define PIXELS_PER_METER 50
 
@@ -55,12 +58,13 @@ struct context {
 
         // 固定逻辑步
         uint64_t lastTime = get_ticks();
-        float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 50.0f;
+        float FIXED_TIMESTEP = 1.0f / 20.0f;
 
         int current_input_mask = 0;
         float heartbeatTimer = 0.0f;
         bool attack_triggered = false;   // 攻击键按下待发送
+
+        std::queue<std::string> command_queue;
 
         // ========== 预测回滚相关 ==========
         uint32_t local_conv = 0;                     // 本地玩家的 conv（连接标识）

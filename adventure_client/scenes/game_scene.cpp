@@ -117,12 +117,11 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
         self->ctx->server_entity_id = eid;
 
         // 创建动画定义实体
-        flecs::entity player_anim_def = create_warrior_anim_def(self->ctx->ecs,
-                "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-        flecs::entity enemy_anim_def = create_warrior_anim_def(self->ctx->ecs,
-                "adventure_client/textures/knights/troops/warrior/warrior_red.png");
+        //flecs::entity player_anim_def = create_warrior_anim_def(self->ctx->ecs,
+                //"adventure_client/textures/knights/troops/warrior/warrior_blue.png");
+        //flecs::entity enemy_anim_def = create_warrior_anim_def(self->ctx->ecs,
+                //"adventure_client/textures/knights/troops/warrior/warrior_red.png");
 
-        self->ctx->ecs.defer_begin();
         for (int i = 0; i < ec; i++) {
                 auto& entity = entities[i];
                 int64_t hp = entity.hp;
@@ -134,23 +133,22 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
                                                    fp_to_float(entity.position_y), 0, 1, 1 });
                 if (entity.type == S2C_TYPE_PLAYER) {
                         e.set<PlayerActionComponent>({})
-                                .set<Animator>({ player_anim_def })
-                                .set<AnimParams>({})
+                                //.set<Animator>({ player_anim_def })
+                                //.set<AnimParams>({})
                                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })
                                 .set<PlayerComponent>({ entity.player_conv });
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         e.add<EnemyComponent>()
-                                .set<AIComponent>({ 0, 0,
-                                        fp_from_float(4.0f), fp_from_float(15.0f),
-                                        fp_from_float(1.5f), 0, 0, 0, 0 })
+                                //.set<AIComponent>({ 0, 0,
+                                 //       fp_from_float(4.0f), fp_from_float(15.0f),
+                                  //      fp_from_float(1.5f), 0, 0, 0, 0 })
                                 .set<PlayerActionComponent>({})
-                                .set<Animator>({ enemy_anim_def })
-                                .set<AnimParams>({})
+                                //.set<Animator>({ enemy_anim_def })
+                                //.set<AnimParams>({})
                                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
                 }
         }
-        self->ctx->ecs.defer_end();
 
         // 保存当前快照
         std::map<int, state_snapshot> snapshots;
@@ -537,25 +535,29 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
         update_ai(self);
 }
 
-static void handle_command_s2c(game_scene_p self, const char* data, int len)
-{
-        int frame_id, jn = 0, ln = 0, in = 0;
-        S2CPlayerJoin joins[32]; S2CPlayerLeave leaves[32]; S2CPlayerInput inputs[64];
-        if (unpack_command(data, len, &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in))
-                handle_command(self, frame_id, jn, ln, in, joins, leaves, inputs);
-}
+//static void handle_command_s2c(game_scene_p self, const char* data, int len)
+//{
+//        int frame_id, jn = 0, ln = 0, in = 0;
+//        S2CPlayerJoin joins[32]; S2CPlayerLeave leaves[32]; S2CPlayerInput inputs[64];
+//        if (unpack_command(data, len, &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in))
+//                handle_command(self, frame_id, jn, ln, in, joins, leaves, inputs);
+//}
 
 
-static void on_message(net_message_p msg, void* arg)
+static void network_receive(net_message_p msg, void* arg)
 {
         game_scene_p self = (game_scene_p)arg;
         if (msg->type == NET_TYPE_CONNECTED) {
                 auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0);
                 netclient_send(self->ctx->netclient, d.c_str(), (int)d.size());
         }
+        else if (msg->type == NET_TYPE_DISCONNECTED) {
+                log_info("disconnected=%d", msg->conv);
+        }
         else if (msg->type == NET_TYPE_MESSAGE) {
                 // 先解析首元素 cmd 决定是 loading 还是 command
-                jmsgpack_unpacked_t r; jmsgpack_unpacked_init(&r);
+                jmsgpack_unpacked_t r;
+                jmsgpack_unpacked_init(&r);
                 size_t off = 0;
                 int is_loading = 0;
                 if (jmsgpack_unpack_next(&r, (const char*)msg->data, (int)msg->len, &off) >= 0
@@ -568,13 +570,15 @@ static void on_message(net_message_p msg, void* arg)
                         int conv, frame_id, eid;
                         S2CEntity entities[512];
                         int ec = unpack_loading((const char*)msg->data, (int)msg->len, &conv, &frame_id, &eid, entities, 512);
-                        if (ec >= 0) handle_loading(self, conv, frame_id, eid, entities, ec);
+                        if (ec >= 0)
+                                handle_loading(self, conv, frame_id, eid, entities, ec);
                 }
                 else {
-                        handle_command_s2c(self, (const char*)msg->data, (int)msg->len);
+                        self->ctx->command_queue.push(std::string(msg->data, msg->len));
                 }
         }
-        if (msg->type == NET_TYPE_MESSAGE && msg->data) netmessage_free_data(msg);
+        if (msg->type == NET_TYPE_MESSAGE && msg->data)
+                netmessage_free_data(msg);
 }
 
 static void on_load(scene_p s)
@@ -602,10 +606,12 @@ static void on_load(scene_p s)
         self->ctx->ecs.component<Animator>();
         self->ctx->ecs.component<AnimParams>();
 
-      /*  self->ctx->ecs.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
-        self->ctx->ecs.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
-        self->ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>()
-                .each(animator_update_system);*/
+        self->ctx->ecs.add<NetComponent>();
+
+        /*  self->ctx->ecs.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
+          self->ctx->ecs.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
+          self->ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>()
+                  .each(animator_update_system);*/
         self->ctx->sync_query = self->ctx->ecs.query<IdComponent, LogicPositionComponent, TransformComponent>();
         self->ctx->drawing_entity_query = self->ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
         self->ctx->attack_ray_effect_query = self->ctx->ecs.query<AttackRayEffectComponent>();
@@ -641,7 +647,7 @@ static void fixedupdate(game_scene_p self, float dt)
         if (!self->ctx->netclient) return;
         net_message_t msg;
         if (netclient_poll_message(self->ctx->netclient, &msg)) {
-                on_message(&msg, self);
+                network_receive(&msg, self);
         }
 
         if (!self->ctx->ready) return;
@@ -704,6 +710,7 @@ static void fixedupdate(game_scene_p self, float dt)
                 auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->ctx->current_input_mask, 0);
                 netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
         }
+
 }
 
 static void send_heartbeat(game_scene_p self, float dt)
@@ -732,7 +739,7 @@ static void client_on_keypressed(const char* key, int scancode, bool repeat, boo
         else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
         if (key_mask) {
                 self->ctx->current_input_mask |= key_mask;
-                if (key_mask == INPUT_ATTACK) 
+                if (key_mask == INPUT_ATTACK)
                         self->ctx->attack_triggered = true;
                 if (key_mask & INPUT_DIR_MASK)
                         self->ctx->local_dir = input_to_dir(key_mask);
@@ -812,13 +819,36 @@ static void ai_attack_target(game_scene_p self, LogicPositionComponent* p,
 
 static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        //if (!self->netclient) return;
-        //netclient_update(self->netclient);
-        //self->accumulator += dt;
-        //if (self->accumulator >= self->FIXED_TIMESTEP) {
-        //        fixedupdate(self, self->FIXED_TIMESTEP);
-        //        self->accumulator -= self->FIXED_TIMESTEP;
-        //}
+        if (self->ctx->netclient) {
+                netclient_update(self->ctx->netclient);
+        }
+        net_message_t msg;
+        if (netclient_poll_message(self->ctx->netclient, &msg)) {
+                network_receive(&msg, self);
+        }
+
+        // 从队列取出命令，解析后写到 ECS 组件上
+        if (!self->ctx->command_queue.empty()) {
+                std::string command_data = self->ctx->command_queue.front();
+                self->ctx->command_queue.pop();
+
+                // 解析命令数据
+                int frame_id, jn = 0, ln = 0, in = 0;
+                S2CPlayerJoin joins[32];
+                S2CPlayerLeave leaves[32];
+                S2CPlayerInput inputs[64];
+                bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
+                        &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
+                if (ok) {
+                        auto* cmd = self->ctx->ecs.get_mut<NetComponent>();
+                        cmd->frame_id = ok ? frame_id : -1;
+                        cmd->num_joins = jn;  memcpy(cmd->joins, joins, jn * sizeof(S2CPlayerJoin));
+                        cmd->num_leaves = ln; memcpy(cmd->leaves, leaves, ln * sizeof(S2CPlayerLeave));
+                        cmd->num_inputs = in; memcpy(cmd->inputs, inputs, in * sizeof(S2CPlayerInput));
+                }
+
+                self->ctx->ecs.progress(self->ctx->FIXED_TIMESTEP);
+        }
 
         //// ---------- 同步 PlayerAction → AnimParams（在 ECS systems 之前） ----------
         //self->ctx->ecs.defer_begin();
@@ -976,7 +1006,7 @@ static void on_render(scene_p s) {
 
 static void on_destroy(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        if (self->ctx->netclient) { 
+        if (self->ctx->netclient) {
                 netclient_destroy(self->ctx->netclient);
                 self->ctx->netclient = NULL;
         }
@@ -984,7 +1014,7 @@ static void on_destroy(scene_p s) {
         audio_shot_destroy(self->ctx->step_sound);
         audio_bgm_destroy(self->ctx->bgm);
         if (self->ctx->audio_dev) audio_close_device(self->ctx->audio_dev);
-        if (self->ctx->tilemap_render) 
+        if (self->ctx->tilemap_render)
                 jtilemap_render_destroy(self->ctx->tilemap_render);
         if (self->ctx->tilemap) jtilemap_destroy(self->ctx->tilemap);
         delete self;
@@ -994,7 +1024,6 @@ game_scene_p game_scene_create(context* ctx) {
         game_scene_p self = new game_scene();
         self->scene = scene_create("game");
         self->ctx = ctx;
-        self->ctx->accumulator = 0;
         self->ctx->ecs.set_ctx(ctx);
         ctx->camera_x = 0.0f;
         ctx->camera_y = 0.0f;
