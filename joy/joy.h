@@ -1169,6 +1169,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool button_is_pressed(button_p btn, float x, float y);
         JOY_API void button_set_hovered(button_p btn, bool v);
         JOY_API void button_set_pressed(button_p btn, bool v);
+        JOY_API void button_set_text_offset(button_p btn, float x, float y);
         JOY_API void button_draw(button_p btn);
         JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
         JOY_API void combobox_destroy(combobox_p combobox);

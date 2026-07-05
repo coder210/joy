@@ -1,0 +1,42 @@
+#ifndef INIT_TILEMAP_SYSTEM_H
+#define INIT_TILEMAP_SYSTEM_H
+#include "../flecs.h"
+#include <joy/joy.h>
+#include "../../adventure_shared/protocol.h"
+#include "../components/id_component.h"
+#include "../components/logic_rect_component.h"
+#include "../components/logic_position_component.h"
+#include "../components/transform_component.h"
+#include "../context.h"
+
+
+static void init_tilemap_system(flecs::iter& it)
+{
+        log_info("[Startup] system: %s", it.system().name());
+        context* ctx = (context*)it.world().get_ctx();
+
+        // ¼ÓÔØ tilemap Åö×²Ç½Ìå£¨Ìæ´úÓ²±àÂëÎ§Ç½£©
+        // ---- tilemap + ¾«ÁéäÖÈ¾³õÊ¼»¯ ----
+        ctx->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
+        if (ctx->tilemap) {
+                jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
+                jtilemap_object_layer_foreach(ol, [](jtilemap_object_p obj, void* arg) {
+                        context* ctx = (context*)arg;
+                    if (obj->shape != JTILEMAP_SHAPE_RECT)
+                        return;
+                    fp_t px = fp_from_float(obj->x / (float)SERVER_PPM);
+                    fp_t py = fp_from_float(obj->y / (float)SERVER_PPM);
+                    fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
+                    fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
+                    ctx->ecs.entity()
+                        .set<LogicRectComponent>({ pw, ph })
+                        .set<LogicPositionComponent>({ px, py })
+                        .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
+                    }, ctx);
+
+                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_server/", NULL);
+                
+        }
+}
+
+#endif

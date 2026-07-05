@@ -46,9 +46,9 @@ struct Context {
 
         flecs::world ecs;
 
-
-        // ---- 预构建的 ECS Query ----
         flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
+
+
         flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
         flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
         flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
@@ -80,7 +80,9 @@ struct Context {
         std::unordered_map<int, Session> sessions;   // key = conv
 
         netserver_p net_server;
-        flecs::entity net_entity;   // 持有 NetComponent 的单例实体
+
+        S2CEntity entities[512]; 
+        int num_entities = 0;
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;

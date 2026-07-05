@@ -1,5 +1,5 @@
-#ifndef STARTUP_SYSTEM_H
-#define STARTUP_SYSTEM_H
+#ifndef INIT_TILEMAP_SYSTEM_H
+#define INIT_TILEMAP_SYSTEM_H
 #include "../flecs.h"
 #include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
@@ -10,19 +10,10 @@
 #include "../context.h"
 
 
-static void startup_system(flecs::iter& it)
+static void init_tilemap_system(flecs::iter& it)
 {
-        //std::cout << it.system().name() << "\n";
         log_info("[Startup] system: %s", it.system().name());
         Context* ctx = (Context*)it.world().get_ctx();
-
-        // 本地方块：有碰撞检测，但不会同步到客户端（因为有 LocalOnlyComponent）
-        ctx->ecs.entity()
-               .add<LocalOnlyComponent>()
-               .set<IdComponent>({ 10000, 100 })
-               .set<LogicRectComponent>({ fp_from_float(0.5f), fp_from_float(0.5f) })
-               .set<LogicPositionComponent>({ fp_from_float(5), fp_from_float(5) })
-               .set<TransformComponent>({ 5,5,0,1,1 });
 
         // 加载 tilemap 碰撞墙体（替代硬编码围墙）
         // ---- tilemap + 精灵渲染初始化 ----
@@ -38,7 +29,6 @@ static void startup_system(flecs::iter& it)
                     fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
                     fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
                     ctx->ecs.entity()
-                        .set<IdComponent>({ get_entity_id(ctx), 100 })
                         .set<LogicRectComponent>({ pw, ph })
                         .set<LogicPositionComponent>({ px, py })
                         .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });

@@ -44,7 +44,9 @@ struct animation {
 
 jr2d_p r2d_create(jwindow_p win)
 {
+        int w, h;
         SDL_Window* raw = (SDL_Window*)get_raw_window(win);
+        SDL_GetWindowSize(raw, &w, &h);
         if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
         jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
         r2d->sdl = SDL_CreateRenderer(raw, NULL);
@@ -53,6 +55,7 @@ jr2d_p r2d_create(jwindow_p win)
                 SDL_free(r2d);
                 return NULL;
         }
+        r2d_set_logical_presentation(r2d, w, h);
         return r2d;
 }
 
@@ -546,7 +549,7 @@ void image_draw(image_p image, vec2_t position)
 void image_draw1(image_p image,
 	const jrect_t* srcrect, const jrect_t* destrect)
 {
-    SDL_FRect raw_src, raw_dest;
+        SDL_FRect raw_src, raw_dest;
 	SDL_Renderer *renderer;
 	SDL_FRect* src_ptr = NULL;
 	SDL_FRect* dst_ptr = NULL;

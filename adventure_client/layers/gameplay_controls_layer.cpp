@@ -6,7 +6,6 @@ static void setup_button_texture(button_p btn, jr2d_p renderer) {
 	button_set_image(btn, image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides.png"));
 	button_set_pressed_image(btn, image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides_pressed.png"));
 	jcolor_t transparent = { 0, 0, 0, 0 };
-	jcolor_t transparent = {0, 0, 0, 0};
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);
 	button_set_pressed_color(btn, transparent);
@@ -85,8 +84,9 @@ static scene_node_p make_button_node(button_p btn, int x, int y) {
 	scene_node_set_zorder(node, 100);
 	scene_node_set_update_callback(node, [](scene_node_p n, float dt) {
 		button_p b = (button_p)scene_node_get_userdata(n);
-                vec2_t position = button_get_position(b);
-		scene_node_get_world_position(n, &position.x, &position.y);
+		vec2_t world_pos;
+		scene_node_get_world_position(n, &world_pos.x, &world_pos.y);
+		button_set_position(b, world_pos.x, world_pos.y);
 	});
 	scene_node_set_render_callback(node, [](scene_node_p n, const void* arg) {
 		button_p b = (button_p)scene_node_get_userdata(n);

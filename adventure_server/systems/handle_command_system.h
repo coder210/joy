@@ -28,7 +28,7 @@ static void attack_target(Context* ctx, LogicPositionComponent* p,
             rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
             contact2df_t contact;
             if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
-                if (id.hp > 1) id.hp--;
+                //if (id.hp > 1) id.hp--;
             }
         });
     // 射线攻击已注释
@@ -207,7 +207,7 @@ static void apply_input(Context* ctx,
             rectanglef_t other_rect = { pos.x, pos.y, r.width, r.height };
             contact2df_t contact;
             if (collision2df_get_rectangles(atk_rect, fp_zero(), other_rect, fp_zero(), &contact)) {
-                id.hp--;
+                //id.hp--;
             }
             });
         // 射线攻击已注释
@@ -252,7 +252,7 @@ static void handle_command_system(flecs::iter& it)
         //flecs::entity anim_def = create_warrior_anim_def(ctx->ecs,
             //"adventure_server/textures/knights/troops/warrior/warrior_blue.png");
         ctx->ecs.entity()
-            .set<IdComponent>({ get_entity_id(ctx), 10 })
+            .set<IdComponent>({ get_entity_id(ctx) })
             .set<LogicRectComponent>({ fp_from_float(.6f), fp_from_float(.6f) })
             .set<LogicPositionComponent>({ x, y })
             .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) })

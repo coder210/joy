@@ -375,6 +375,13 @@ void button_set_hovered(button_p btn, bool v)
 	if (btn) btn->is_hovered = v;
 }
 
+void button_set_text_offset(button_p btn, float x, float y)
+{
+	if (!btn) return;
+	btn->text_pos.x = x;
+	btn->text_pos.y = y;
+}
+
 void button_set_pressed(button_p btn, bool v)
 {
 	if (btn) btn->is_pressed = v;

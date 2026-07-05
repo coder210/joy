@@ -10,7 +10,7 @@ static void input_consume_system(flecs::iter& it) {
     Context* ctx = (Context*)it.world().get_ctx();
 
     // 从 NetComponent 读取当前 tick 的命令数据
-    auto* net = ctx->net_entity.get<NetComponent>();
+    auto* net = it.world().get<NetComponent>();
     if (!net || net->frame_id < 0) return;
 
     // ---- 1. 处理 JOIN ----

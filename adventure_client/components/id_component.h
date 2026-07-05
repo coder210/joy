@@ -5,7 +5,6 @@
 struct IdComponent
 {
         int id;
-        fp_t hp;
 };
 
 #endif

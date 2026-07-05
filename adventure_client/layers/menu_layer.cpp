@@ -71,8 +71,9 @@ static scene_node_p make_button_node(button_p btn, int x, int y) {
 	scene_node_set_zorder(node, 100);
 	scene_node_set_update_callback(node, [](scene_node_p n, float dt) {
 		button_p b = (button_p)scene_node_get_userdata(n);
-		vec2_t position = button_get_position(b);
-		scene_node_get_world_position(n, &position.x, &position.y);
+		vec2_t world_pos;
+		scene_node_get_world_position(n, &world_pos.x, &world_pos.y);
+		button_set_position(b, world_pos.x, world_pos.y);
 	});
 	scene_node_set_render_callback(node, [](scene_node_p n, const void* arg) {
 		button_p b = (button_p)scene_node_get_userdata(n);
@@ -93,19 +94,19 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
 
 	self->btn_start = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_texture(self->btn_start, ctx->r2d);
-	self->btn_start->text_pos.y = 3.0f;
+	button_set_text_offset(self->btn_start, 0, 3.0f);
 	button_set_textx(self->btn_start, simhei_font, "Start", (int)strlen("Start"), { 220, 200, 160, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_start, btn_x, start_y));
 
 	self->btn_settings = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_texture(self->btn_settings, ctx->r2d);
-	self->btn_settings->text_pos.y = 3.0f;
+	button_set_text_offset(self->btn_settings, 0, 3.0f);
 	button_set_textx(self->btn_settings, simhei_font, "Settings", (int)strlen("Settings"), { 220, 200, 160, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_settings, btn_x, start_y + btn_height + 20));
 
 	self->btn_exit = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_texture(self->btn_exit, ctx->r2d);
-	self->btn_exit->text_pos.y = 3.0f;
+	button_set_text_offset(self->btn_exit, 0, 3.0f);
 	button_set_textx(self->btn_exit, simhei_font, "Exit", (int)strlen("Exit"), { 220, 200, 160, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_exit, btn_x, start_y + (btn_height + 20) * 2));
 }

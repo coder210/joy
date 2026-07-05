@@ -62,7 +62,7 @@ uint64_t get_ticks(void)
 jwindow_p create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
-        window->sdl_window = SDL_CreateWindow(title, w, h, 0);
+        window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
         if (!window->sdl_window) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "create_window failed: %s", SDL_GetError());
                 SDL_free(window);
