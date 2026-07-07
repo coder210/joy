@@ -12,6 +12,7 @@
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
+#include "../systems/input_consume_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
@@ -608,6 +609,9 @@ static void on_load(scene_p s)
 
         self->ctx->ecs.add<NetComponent>();
 
+        self->ctx->ecs.add<NetComponent>();
+        log_info("NetComponent count: %d", self->ctx->ecs.filter<NetComponent>().count());
+
         /*  self->ctx->ecs.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
           self->ctx->ecs.system<AttackRayEffectComponent>().each(effect_lifecycle_system);
           self->ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>()
@@ -630,6 +634,10 @@ static void on_load(scene_p s)
                 .kind(flecs::OnStart)
                 .iter(init_tilemap_system);
 
+        // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
+        self->ctx->ecs.system<NetComponent>()
+                .kind(flecs::PreUpdate)
+                .iter(input_consume_system);
 
 
         // ---- 音频 ----

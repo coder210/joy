@@ -2,6 +2,7 @@
 #define CONTEXT_H
 #include <map>
 #include <vector>
+#include <unordered_map>
 #include <queue>
 #include "flecs.h"
 #include <joy/joy.h>
@@ -15,6 +16,8 @@
 #include "./components/logic_velocity_component.h"
 #include "./components/enemy_component.h"
 #include "./components/connection_component.h"
+#include "./components/player_state_input.h"
+#include "./components/player_event_input.h"
 #include "./components/player_component.h"
 #include "./components/transform_component.h"
 #include "./components/attack_ray_effect_component.h"
@@ -28,6 +31,13 @@ struct state_snapshot {
         fp_t position_x, position_y;
 };
 
+struct Session {
+        int conv;
+        flecs::entity player_entity;  // 对应的玩家实体（加载完成后才赋值）
+        bool is_loaded = false;       // 是否已完成初始加载
+        uint32_t last_processed_seq; // 最后已处理的序列号
+        int frameid; // 客户端最后已接收的帧号
+};
 
 struct context {
         bool running;
@@ -63,6 +73,8 @@ struct context {
         int current_input_mask = 0;
         float heartbeatTimer = 0.0f;
         bool attack_triggered = false;   // 攻击键按下待发送
+
+        std::unordered_map<int, Session> sessions;   // key = conv
 
         std::queue<std::string> command_queue;
 
