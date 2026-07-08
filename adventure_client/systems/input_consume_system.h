@@ -45,33 +45,40 @@ static void input_consume_system(flecs::iter& it) {
 
     // ---- 3. 处理 INPUT（最关键） ----
     for (int i = 0; i < net->num_inputs; i++) {
-        auto& input = net->inputs[i];
-        auto it_sess = ctx->sessions.find(input.conv);
-        if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity) continue;
+            auto& input = net->inputs[i];
+            auto it_sess = ctx->sessions.find(input.conv);
+            if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity)
+                    continue;
 
-        auto& sess = it_sess->second;
-        if (input.client_seq <= sess.last_processed_seq) {
-            continue;
-        }
-        sess.last_processed_seq = input.client_seq;
-
-        flecs::entity player = sess.player_entity;
-
-        auto* state = player.get_mut<PlayerStateInput>();
-        if (!state) {
-            player.set<PlayerStateInput>({ 0, 0, 0 });
-            state = player.get_mut<PlayerStateInput>();
-        }
-        state->move_bits = DIR_TO_BITS[input.dir % 4];
-
-        if (input.attack) {
-            auto* events = player.get_mut<PlayerEventInput>();
-            if (!events) {
-                player.set<PlayerEventInput>({});
-                events = player.get_mut<PlayerEventInput>();
+            auto& sess = it_sess->second;
+            if (input.client_seq <= sess.last_processed_seq) {
+                    //continue;
             }
-            events->pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
-        }
+            sess.last_processed_seq = input.client_seq;
+
+            flecs::entity& player = sess.player_entity;
+
+            PlayerStateInput state_input;
+            state_input.move_bits = DIR_TO_BITS[input.dir % 4];
+            if (player.has<PlayerStateInput>()) {
+                    auto* state = player.get_mut<PlayerStateInput>();
+                    state->move_bits = state_input.move_bits;
+            }
+            else {
+                    player.set<PlayerStateInput>(state_input);
+            }
+
+            if (input.attack) {
+                    if (player.has<PlayerEventInput>()) {
+                            auto* events = player.get_mut<PlayerEventInput>();
+                            events->pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
+                    }
+                    else {
+                            PlayerEventInput events = { };
+                            events.pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
+                            player.set<PlayerEventInput>(events);
+                    }
+            }
     }
 
     net->num_joins = 0;

@@ -31,8 +31,8 @@ static void animator_render_system(flecs::entity e,
     if (!tex) return;
 
     // 屏幕坐标
-    float scr_x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
-    float scr_y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
+    float scr_x = (t.position.x - ctx->camera_x) * PIXELS_PER_METER;
+    float scr_y = (t.position.y - ctx->camera_y) * PIXELS_PER_METER;
 
     // 精灵对齐偏移
     int frame_w = clip.src_rect.w;
