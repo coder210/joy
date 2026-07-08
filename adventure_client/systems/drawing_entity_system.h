@@ -22,6 +22,8 @@ static void drawing_entity_system(flecs::entity e,
         body.h = fp_to_float(rect.height) * PIXELS_PER_METER;
         if (e.has<PlayerComponent>()) {
                 // 玩家由 game_scene 的 on_render 用精灵绘制，不画方块
+                r2d_set_color(ctx->r2d, 140, 195, 196, 255);
+                shape_draw_rectangle(ctx->r2d, "fill", body);
                 return;
         }
         else {

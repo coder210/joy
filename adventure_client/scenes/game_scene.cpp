@@ -110,12 +110,12 @@ struct game_scene {
 
 };
 
-static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
+static void handle_loading(context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
 {
-        self->ctx->ready = true;
-        self->ctx->local_conv = conv;
-        self->ctx->server_frameid = frame_id;
-        self->ctx->server_entity_id = eid;
+        ctx->ready = true;
+        ctx->local_conv = conv;
+        ctx->server_frameid = frame_id;
+        ctx->server_entity_id = eid;
 
         // 创建动画定义实体
         //flecs::entity player_anim_def = create_warrior_anim_def(self->ctx->ecs,
@@ -126,7 +126,7 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
         for (int i = 0; i < ec; i++) {
                 auto& entity = entities[i];
                 int64_t hp = entity.hp;
-                auto e = self->ctx->ecs.entity()
+                auto e = ctx->ecs.entity()
                         .set<IdComponent>({ entity.id })
                         .set<LogicRectComponent>({ entity.width, entity.height })
                         .set<LogicPositionComponent>({ entity.position_x, entity.position_y })
@@ -153,15 +153,15 @@ static void handle_loading(game_scene_p self, int conv, int frame_id, int eid, c
 
         // 保存当前快照
         std::map<int, state_snapshot> snapshots;
-        self->ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
+        ctx->player_query.each([&](PlayerComponent& p, IdComponent& id,
                 LogicRectComponent& r, LogicPositionComponent& pos) {
                         snapshots.insert({ id.id, { pos.x, pos.y } });
                 });
-        self->ctx->snapshots.insert({ self->ctx->server_frameid, snapshots });
+        ctx->snapshots.insert({ ctx->server_frameid, snapshots });
 
         // 告知服务器本地玩家加入
-        auto data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0, 0);
-        netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
+        std::string data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0, 0);
+        netclient_send(ctx->netclient, data.c_str(), (int)data.size());
 }
 
 // ----------------------------------------------------------------------
@@ -545,41 +545,43 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 //}
 
 
-static void network_receive(net_message_p msg, void* arg)
+static void network_receive(context *ctx)
 {
-        game_scene_p self = (game_scene_p)arg;
-        if (msg->type == NET_TYPE_CONNECTED) {
+        net_message_t msg;
+        if (netclient_poll_message(ctx->netclient, &msg)) {
+            if (msg.type == NET_TYPE_CONNECTED) {
                 auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0);
-                netclient_send(self->ctx->netclient, d.c_str(), (int)d.size());
-        }
-        else if (msg->type == NET_TYPE_DISCONNECTED) {
-                log_info("disconnected=%d", msg->conv);
-        }
-        else if (msg->type == NET_TYPE_MESSAGE) {
+                netclient_send(ctx->netclient, d.c_str(), (int)d.size());
+            }
+            else if (msg.type == NET_TYPE_DISCONNECTED) {
+                log_info("disconnected=%d", msg.conv);
+            }
+            else if (msg.type == NET_TYPE_MESSAGE) {
                 // 先解析首元素 cmd 决定是 loading 还是 command
                 jmsgpack_unpacked_t r;
                 jmsgpack_unpacked_init(&r);
                 size_t off = 0;
                 int is_loading = 0;
-                if (jmsgpack_unpack_next(&r, (const char*)msg->data, (int)msg->len, &off) >= 0
-                        && r.data.type == JMSGPACK_OBJECT_ARRAY && r.data.via.array.size >= 2
-                        && r.data.via.array.ptr[0].type == JMSGPACK_OBJECT_POSITIVE_INTEGER)
-                        is_loading = (r.data.via.array.ptr[0].via.u64 == S2C_CMD_LOADING);
+                if (jmsgpack_unpack_next(&r, (const char*)msg.data, (int)msg.len, &off) >= 0
+                    && r.data.type == JMSGPACK_OBJECT_ARRAY && r.data.via.array.size >= 2
+                    && r.data.via.array.ptr[0].type == JMSGPACK_OBJECT_POSITIVE_INTEGER)
+                    is_loading = (r.data.via.array.ptr[0].via.u64 == S2C_CMD_LOADING);
                 jmsgpack_unpacked_destroy(&r);
 
                 if (is_loading) {
-                        int conv, frame_id, eid;
-                        S2CEntity entities[512];
-                        int ec = unpack_loading((const char*)msg->data, (int)msg->len, &conv, &frame_id, &eid, entities, 512);
-                        if (ec >= 0)
-                                handle_loading(self, conv, frame_id, eid, entities, ec);
+                    int conv, frame_id, eid;
+                    S2CEntity entities[512];
+                    int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, entities, 512);
+                    if (ec >= 0)
+                        handle_loading(ctx, conv, frame_id, eid, entities, ec);
                 }
                 else {
-                        self->ctx->command_queue.push(std::string(msg->data, msg->len));
+                    ctx->command_queue.push(std::string(msg.data, msg.len));
                 }
+            }
+            if (msg.type == NET_TYPE_MESSAGE && msg.data)
+                netmessage_free_data(&msg);
         }
-        if (msg->type == NET_TYPE_MESSAGE && msg->data)
-                netmessage_free_data(msg);
 }
 
 static void on_load(scene_p s)
@@ -591,7 +593,7 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.5", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.41", 30000);
         self->ctx->ecs.component<ConnectionComponent>();
         self->ctx->ecs.component<IdComponent>();
         self->ctx->ecs.component<LogicRectComponent>();
@@ -650,13 +652,10 @@ static void on_load(scene_p s)
 }
 
 
-static void fixedupdate(game_scene_p self, float dt)
+static void fixed_update(game_scene_p self, float dt)
 {
         if (!self->ctx->netclient) return;
-        net_message_t msg;
-        if (netclient_poll_message(self->ctx->netclient, &msg)) {
-                network_receive(&msg, self);
-        }
+        network_receive(self->ctx);
 
         if (!self->ctx->ready) return;
 
@@ -688,13 +687,13 @@ static void fixedupdate(game_scene_p self, float dt)
         }
 
         // 攻击中不处理移动
-        bool is_attacking = false;
+        /*bool is_attacking = false;
         self->ctx->player_query.each([&](flecs::entity e, PlayerComponent& p, IdComponent&,
                 LogicRectComponent&, LogicPositionComponent&) {
                         if (p.conv == self->ctx->local_conv && e.has<PlayerActionComponent>())
                                 is_attacking = (e.get<PlayerActionComponent>()->state == PlayerActionComponent::ATTACK);
                 });
-        if (is_attacking) return;
+        if (is_attacking) return;*/
 
         if (has_dir(self->ctx->current_input_mask)) {
                 self->ctx->pending_inputs.push_back(self->ctx->current_input_mask);
@@ -719,6 +718,15 @@ static void fixedupdate(game_scene_p self, float dt)
                 netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
         }
 
+}
+
+static void send_input(context *ctx)
+{
+    if (!ctx->netclient) return;
+    if (has_dir(ctx->current_input_mask)) {
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, ctx->current_input_mask, 0);
+        netclient_send(ctx->netclient, data.c_str(), (int)data.size());
+    }
 }
 
 static void send_heartbeat(game_scene_p self, float dt)
@@ -778,14 +786,30 @@ static void on_handle_event(scene_p s, const void* ev)
         if (is_user_event(ev, GAMEPLAY_CONTROL_EVENT)) {
                 int new_mask = self->ctx->current_input_mask;
                 switch (get_event_code(ev)) {
-                case GAMEPLAY_CONTROL_UP:    new_mask |= INPUT_UP; break;
-                case GAMEPLAY_CONTROL_DOWN:  new_mask |= INPUT_DOWN; break;
-                case GAMEPLAY_CONTROL_LEFT:  new_mask |= INPUT_LEFT; break;
-                case GAMEPLAY_CONTROL_RIGHT: new_mask |= INPUT_RIGHT; break;
-                case GAMEPLAY_CONTROL_RELEASE_UP:    new_mask &= ~INPUT_UP; break;
-                case GAMEPLAY_CONTROL_RELEASE_DOWN:  new_mask &= ~INPUT_DOWN; break;
-                case GAMEPLAY_CONTROL_RELEASE_LEFT:  new_mask &= ~INPUT_LEFT; break;
-                case GAMEPLAY_CONTROL_RELEASE_RIGHT: new_mask &= ~INPUT_RIGHT; break;
+                case GAMEPLAY_CONTROL_UP:    
+                    new_mask |= INPUT_UP; 
+                    break;
+                case GAMEPLAY_CONTROL_DOWN:  
+                    new_mask |= INPUT_DOWN; 
+                    break;
+                case GAMEPLAY_CONTROL_LEFT:  
+                    new_mask |= INPUT_LEFT; 
+                    break;
+                case GAMEPLAY_CONTROL_RIGHT: 
+                    new_mask |= INPUT_RIGHT; 
+                    break;
+                case GAMEPLAY_CONTROL_RELEASE_UP:    
+                    new_mask &= ~INPUT_UP; 
+                    break;
+                case GAMEPLAY_CONTROL_RELEASE_DOWN:  
+                    new_mask &= ~INPUT_DOWN; 
+                    break;
+                case GAMEPLAY_CONTROL_RELEASE_LEFT:  
+                    new_mask &= ~INPUT_LEFT; 
+                    break;
+                case GAMEPLAY_CONTROL_RELEASE_RIGHT: 
+                    new_mask &= ~INPUT_RIGHT; 
+                    break;
                 case GAMEPLAY_CONTROL_ATTACK:
                         self->ctx->attack_triggered = true;
                         break;
@@ -829,10 +853,14 @@ static void on_update(scene_p s, float dt) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         if (self->ctx->netclient) {
                 netclient_update(self->ctx->netclient);
+                network_receive(self->ctx);
         }
-        net_message_t msg;
-        if (netclient_poll_message(self->ctx->netclient, &msg)) {
-                network_receive(&msg, self);
+
+        // === 固定步长逻辑 Tick（20Hz）===
+        self->ctx->accumulator += dt;
+        while (self->ctx->accumulator >= self->ctx->FIXED_TIMESTEP) {
+            self->ctx->accumulator -= self->ctx->FIXED_TIMESTEP;
+            send_input(self->ctx);
         }
 
         // 从队列取出命令，解析后写到 ECS 组件上
@@ -962,7 +990,8 @@ static void on_render(scene_p s) {
         }
 
         //// ---- ECS 实体（碰撞体） ----
-        //self->drawing_entity_query.each(drawing_entity_system);
+        self->ctx->drawing_entity_query.each(drawing_entity_system);
+
         //self->attack_ray_effect_query.each(drawing_attack_ray_effect_system);
 
         //// ---- ECS 精灵渲染（玩家） ----

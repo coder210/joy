@@ -13,13 +13,16 @@ static void input_consume_system(flecs::iter& it) {
     auto* net = it.world().get_mut<NetComponent>();
     if (!net || net->frame_id < 0) return;
 
+    
+
     // ---- 1. 处理 JOIN ----
     for (int i = 0; i < net->num_joins; i++) {
         auto& join = net->joins[i];
         flecs::entity player = ctx->ecs.entity();
+        player.set<IdComponent>({ get_entity_id(ctx) });
         player.set<PlayerComponent>({ join.conv });
         player.set<LogicPositionComponent>({ join.position_x, join.position_y });
-        player.set<LogicRectComponent>({ 32, 32 });
+        player.set<LogicRectComponent>({ fp_from_float(1), fp_from_float(1) });
         player.set<TransformComponent>({ fp_to_float(join.position_x), fp_to_float(join.position_y) });
 
         // 关联到 Session
@@ -46,11 +49,12 @@ static void input_consume_system(flecs::iter& it) {
     for (int i = 0; i < net->num_inputs; i++) {
         auto& input = net->inputs[i];
         auto it_sess = ctx->sessions.find(input.conv);
-        if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity) continue;
+        if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity) 
+            continue;
 
         auto& sess = it_sess->second;
         if (input.client_seq <= sess.last_processed_seq) {
-            continue;
+            //continue;
         }
         sess.last_processed_seq = input.client_seq;
 

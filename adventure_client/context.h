@@ -68,7 +68,8 @@ struct context {
 
         // 固定逻辑步
         uint64_t lastTime = get_ticks();
-        float FIXED_TIMESTEP = 1.0f / 20.0f;
+
+
 
         int current_input_mask = 0;
         float heartbeatTimer = 0.0f;
@@ -97,6 +98,16 @@ struct context {
         flecs::query<IdComponent, TransformComponent> healthbar_query;
 
 
+        // ---- 固定步长逻辑 ----
+        float accumulator = 0.0f;
+        float FIXED_TIMESTEP = 1.0f / 20.0f;
 };
+
+
+static int get_entity_id(context* ctx)
+{
+    return ctx->server_entity_id++;
+}
+
 
 #endif

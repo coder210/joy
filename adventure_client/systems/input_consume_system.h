@@ -17,9 +17,10 @@ static void input_consume_system(flecs::iter& it) {
     for (int i = 0; i < net->num_joins; i++) {
         auto& join = net->joins[i];
         flecs::entity player = ctx->ecs.entity();
+        player.set<IdComponent>({ get_entity_id(ctx) });
         player.set<PlayerComponent>({ join.conv });
         player.set<LogicPositionComponent>({ join.position_x, join.position_y });
-        player.set<LogicRectComponent>({ 32, 32 });
+        player.set<LogicRectComponent>({ fp_from_float(1), fp_from_float(1) });
         player.set<TransformComponent>({ fp_to_float(join.position_x), fp_to_float(join.position_y) });
 
         // 关联到 Session

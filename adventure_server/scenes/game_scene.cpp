@@ -129,7 +129,7 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.5", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -144,6 +144,7 @@ static void on_load(scene_p s)
         ctx->body_query = ctx->ecs.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
 
         ctx->drawing_entity_query = ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
+
         ctx->drawing_attack_rayeffect_query = ctx->ecs.query<AttackRayEffectComponent>();
         ctx->player_query = ctx->ecs.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
         ctx->enemy_query = ctx->ecs.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
@@ -233,7 +234,7 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
 
 static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack)
 {
-        S2CPlayerInput i = { conv, seq, dir, (int8_t)attack };
+        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack };
         ctx->player_inputs.push_back(i);
 }
 
@@ -373,11 +374,18 @@ static void on_update(scene_p s, float dt)
                 bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
                         &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
                 if (ok) {
+                        
+
                         auto* cmd = ctx->ecs.get_mut<NetComponent>();
                         cmd->frame_id = ok ? frame_id : -1;
-                        cmd->num_joins = jn;  memcpy(cmd->joins, joins, jn * sizeof(S2CPlayerJoin));
-                        cmd->num_leaves = ln; memcpy(cmd->leaves, leaves, ln * sizeof(S2CPlayerLeave));
-                        cmd->num_inputs = in; memcpy(cmd->inputs, inputs, in * sizeof(S2CPlayerInput));
+                        cmd->num_joins = jn;
+                        cmd->num_leaves = ln;
+                        cmd->num_inputs = in;
+                        memcpy(cmd->leaves, leaves, ln * sizeof(S2CPlayerLeave));
+                        memcpy(cmd->joins, joins, jn * sizeof(S2CPlayerJoin));
+                        if (cmd->num_inputs > 0) {
+                            memcpy(cmd->inputs, inputs, in * sizeof(S2CPlayerInput));
+                        }
                 }
 
                 // 驱动逻辑 tick
@@ -420,7 +428,8 @@ static void on_render(scene_p s)
         }
 
         // ---- ECS 实体（碰撞体） ----
-        //self->drawing_entity_query.each(DrawingEntitySystem);
+        self->ctx->drawing_entity_query.each(drawing_entity_system);
+
         //self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
 
         //// ---- ECS 精灵渲染（玩家） ----
