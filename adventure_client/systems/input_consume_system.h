@@ -15,8 +15,6 @@ static void input_consume_system(flecs::iter& it) {
     auto* net = it.world().get_mut<NetComponent>();
     if (!net || net->frame_id < 0) return;
 
-
-
     // ---- 1. 处理 JOIN ----
     for (int i = 0; i < net->num_joins; i++) {
         auto& join = net->joins[i];
@@ -29,9 +27,8 @@ static void input_consume_system(flecs::iter& it) {
 
         // 关联到 Session
         auto it_sess = ctx->sessions.find(join.conv);
-        if (it_sess != ctx->sessions.end()) {
-            it_sess->second.player_entity = player;
-            it_sess->second.is_loaded = true;
+        if (it_sess == ctx->sessions.end()) {
+                ctx->sessions.insert({ join.conv, player });
         }
     }
 
@@ -40,8 +37,8 @@ static void input_consume_system(flecs::iter& it) {
         auto& leave = net->leaves[i];
         auto it_sess = ctx->sessions.find(leave.conv);
         if (it_sess != ctx->sessions.end()) {
-            if (it_sess->second.player_entity) {
-                it_sess->second.player_entity.destruct();
+            if (it_sess->second) {
+                it_sess->second.destruct();
             }
             ctx->sessions.erase(it_sess);
         }
@@ -51,16 +48,11 @@ static void input_consume_system(flecs::iter& it) {
     for (int i = 0; i < net->num_inputs; i++) {
         auto& input = net->inputs[i];
         auto it_sess = ctx->sessions.find(input.conv);
-        if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity)
+        if (it_sess == ctx->sessions.end() || !it_sess->second)
             continue;
+      
 
-        auto& sess = it_sess->second;
-        if (input.client_seq <= sess.last_processed_seq) {
-            //continue;
-        }
-        sess.last_processed_seq = input.client_seq;
-
-        flecs::entity& player = sess.player_entity;
+        flecs::entity& player = it_sess->second;
 
         PlayerStateInput state_input;
         //state_input.move_bits = DIR_TO_BITS[input.dir % 4];

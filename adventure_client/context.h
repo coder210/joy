@@ -31,14 +31,6 @@ struct state_snapshot {
         fp_t position_x, position_y;
 };
 
-struct Session {
-        int conv;
-        flecs::entity player_entity;  // 对应的玩家实体（加载完成后才赋值）
-        bool is_loaded = false;       // 是否已完成初始加载
-        uint32_t last_processed_seq; // 最后已处理的序列号
-        int frameid; // 客户端最后已接收的帧号
-};
-
 struct Context {
         bool running;
         game_timer_t game_timer;
@@ -75,7 +67,7 @@ struct Context {
         float heartbeatTimer = 0.0f;
         bool attack_triggered = false;   // 攻击键按下待发送
 
-        std::unordered_map<int, Session> sessions;   // key = conv
+        std::unordered_map<int, flecs::entity> sessions;   // key = conv
 
         std::queue<std::string> command_queue;
 

@@ -86,7 +86,7 @@ struct Context {
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
-        static constexpr float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
+        float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
 };
 
 

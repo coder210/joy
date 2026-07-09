@@ -31,7 +31,6 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         ctx->r2d = r2d_create(ctx->window);
        
 
-        ctx->FIXED_TIMESTEP = 1 / 50.0f;
         ctx->running = true;
 
         g_mgr = scene_manager_create();
