@@ -5,7 +5,7 @@
 
 typedef struct loading_scene loading_scene_t, *loading_scene_p;
 
-loading_scene_p loading_scene_create(context* ctx);
+loading_scene_p loading_scene_create(Context* ctx);
 scene_p loading_scene_get_scene(loading_scene_p s);
 
 #endif

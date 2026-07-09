@@ -6,12 +6,16 @@
 static const uint8_t DIR_TO_BITS[4] = { 0b0001, 0b0010, 0b0100, 0b1000 };
 
 // 系统实现
+
+// 系统实现
 static void input_consume_system(flecs::iter& it) {
-    context* ctx = (context*)it.world().get_ctx();
+    Context* ctx = (Context*)it.world().get_ctx();
 
     // 从 NetComponent 读取当前 tick 的命令数据
-    NetComponent* net = it.world().get_mut<NetComponent>();
+    auto* net = it.world().get_mut<NetComponent>();
     if (!net || net->frame_id < 0) return;
+
+
 
     // ---- 1. 处理 JOIN ----
     for (int i = 0; i < net->num_joins; i++) {
@@ -45,40 +49,44 @@ static void input_consume_system(flecs::iter& it) {
 
     // ---- 3. 处理 INPUT（最关键） ----
     for (int i = 0; i < net->num_inputs; i++) {
-            auto& input = net->inputs[i];
-            auto it_sess = ctx->sessions.find(input.conv);
-            if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity)
-                    continue;
+        auto& input = net->inputs[i];
+        auto it_sess = ctx->sessions.find(input.conv);
+        if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity)
+            continue;
 
-            auto& sess = it_sess->second;
-            if (input.client_seq <= sess.last_processed_seq) {
-                    //continue;
-            }
-            sess.last_processed_seq = input.client_seq;
+        auto& sess = it_sess->second;
+        if (input.client_seq <= sess.last_processed_seq) {
+            //continue;
+        }
+        sess.last_processed_seq = input.client_seq;
 
-            flecs::entity& player = sess.player_entity;
+        flecs::entity& player = sess.player_entity;
 
-            PlayerStateInput state_input;
-            state_input.move_bits = DIR_TO_BITS[input.dir % 4];
-            if (player.has<PlayerStateInput>()) {
-                    auto* state = player.get_mut<PlayerStateInput>();
-                    state->move_bits = state_input.move_bits;
+        PlayerStateInput state_input;
+        //state_input.move_bits = DIR_TO_BITS[input.dir % 4];
+        state_input.move_bits = input.dir;
+
+        log_info("Raw dir: %d\n", input.dir);
+
+        if (player.has<PlayerStateInput>()) {
+            auto* state = player.get_mut<PlayerStateInput>();
+            state->move_bits = state_input.move_bits;
+        }
+        else {
+            player.set<PlayerStateInput>(state_input);
+        }
+
+        if (input.attack) {
+            if (player.has<PlayerEventInput>()) {
+                auto* events = player.get_mut<PlayerEventInput>();
+                events->pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
             }
             else {
-                    player.set<PlayerStateInput>(state_input);
+                PlayerEventInput events = { };
+                events.pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
+                player.set<PlayerEventInput>(events);
             }
-
-            if (input.attack) {
-                    if (player.has<PlayerEventInput>()) {
-                            auto* events = player.get_mut<PlayerEventInput>();
-                            events->pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
-                    }
-                    else {
-                            PlayerEventInput events = { };
-                            events.pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
-                            player.set<PlayerEventInput>(events);
-                    }
-            }
+        }
     }
 
     net->num_joins = 0;

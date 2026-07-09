@@ -20,7 +20,7 @@ enum gameplay_control_event_k {
 
 typedef struct gameplay_controls_layer gameplay_controls_layer_t, * gameplay_controls_layer_p;
 
-gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx);
+gameplay_controls_layer_p create_gameplay_controls_layer(Context* ctx);
 scene_node_p gameplay_controls_layer_get_node(gameplay_controls_layer_p gameplay_controls_layer);
 
 #endif

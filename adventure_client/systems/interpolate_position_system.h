@@ -8,7 +8,7 @@
 static void interpolate_position_system(flecs::entity e,
         LogicPositionComponent& lp, TransformComponent& t)
 {
-        context* ctx = (context*)e.world().get_ctx();
+        Context* ctx = (Context*)e.world().get_ctx();
         float target_position_x = fp_to_float(lp.x);
         float target_position_y = fp_to_float(lp.y);
         float smooth_time = 0.1f;

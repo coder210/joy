@@ -13,15 +13,15 @@
 static void init_tilemap_system(flecs::iter& it)
 {
         log_info("[Startup] system: %s", it.system().name());
-        context* ctx = (context*)it.world().get_ctx();
+        Context* ctx = (Context*)it.world().get_ctx();
 
-        // ¼ÓÔØ tilemap Åö×²Ç½Ìå£¨Ìæ´úÓ²±àÂëÎ§Ç½£©
-        // ---- tilemap + ¾«ÁéäÖÈ¾³õÊ¼»¯ ----
+        // åŠ è½½ tilemap ç¢°æ’žå¢™ä½“ï¼ˆæ›¿ä»£ç¡¬ç¼–ç å›´å¢™ï¼‰
+        // ---- tilemap + ç²¾çµæ¸²æŸ“åˆå§‹åŒ– ----
         ctx->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
         if (ctx->tilemap) {
                 jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
                 jtilemap_object_layer_foreach(ol, [](jtilemap_object_p obj, void* arg) {
-                        context* ctx = (context*)arg;
+                        Context* ctx = (Context*)arg;
                     if (obj->shape != JTILEMAP_SHAPE_RECT)
                         return;
                     fp_t px = fp_from_float(obj->x / (float)SERVER_PPM);

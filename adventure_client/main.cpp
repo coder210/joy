@@ -9,7 +9,7 @@
 
 
 static scene_manager_p g_mgr;
-static context* ctx;
+static Context* ctx;
 
 SDL_AppResult SDL_AppInit(void**, int, char**)
 {
@@ -20,7 +20,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
                 return SDL_APP_FAILURE;
         }
 
-	ctx = new context();
+	ctx = new Context();
 
         game_timer_init(&ctx->game_timer);
         game_timer_set_target_fps(&ctx->game_timer, 60);

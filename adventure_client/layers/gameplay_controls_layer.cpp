@@ -95,7 +95,7 @@ static scene_node_p make_button_node(button_p btn, int x, int y) {
 	return node;
 }
 
-static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
+static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	int logical_width, logical_height;
 	r2d_get_logical_presentation(ctx->r2d, &logical_width, &logical_height, NULL);
@@ -128,7 +128,7 @@ static void load_dpad_panel(gameplay_controls_layer_p self, context* ctx)
 }
 
 
-static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
+static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 {
 	font_p simhei_font = AssetManager::GetInstance()->GetSimheiFont24();
 	int logical_width, logical_height;
@@ -145,7 +145,7 @@ static void load_action_panel(gameplay_controls_layer_p self, context* ctx)
 	scene_node_add_child(root_node, make_button_node(self->btn_attack, 0, 0));
 }
 
-gameplay_controls_layer_p create_gameplay_controls_layer(context* ctx)
+gameplay_controls_layer_p create_gameplay_controls_layer(Context* ctx)
 {
 	gameplay_controls_layer_p self;
 	self = (gameplay_controls_layer_p)malloc(sizeof(gameplay_controls_layer_t));

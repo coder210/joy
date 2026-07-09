@@ -99,7 +99,7 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
 
 struct game_scene {
         scene_p scene;
-        context* ctx;
+        Context* ctx;
 
 
         // 远程玩家方向追踪（从静态局部变量移到 struct）
@@ -110,7 +110,7 @@ struct game_scene {
 
 };
 
-static void handle_loading(context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
+static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
 {
         ctx->ready = true;
         ctx->local_conv = conv;
@@ -545,7 +545,7 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
 //}
 
 
-static void network_receive(context *ctx)
+static void network_receive(Context*ctx)
 {
         net_message_t msg;
         if (netclient_poll_message(ctx->netclient, &msg)) {
@@ -720,7 +720,7 @@ static void fixed_update(game_scene_p self, float dt)
 
 }
 
-static void send_input(context *ctx)
+static void send_input(Context*ctx)
 {
     if (!ctx->netclient) return;
     if (has_dir(ctx->current_input_mask)) {
@@ -1008,7 +1008,7 @@ static void on_render(scene_p s) {
 
         //// ---- 血条渲染（所有有血量实体头顶） ----
         //{
-        //        context* ctx = self->ctx;
+        //        Context* ctx = self->ctx;
         //        self->healthbar_query.each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
         //                flecs::entity e = it.entity(i);
         //                if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
@@ -1057,7 +1057,7 @@ static void on_destroy(scene_p s) {
         delete self;
 }
 
-game_scene_p game_scene_create(context* ctx) {
+game_scene_p game_scene_create(Context* ctx) {
         game_scene_p self = new game_scene();
         self->scene = scene_create("game");
         self->ctx = ctx;

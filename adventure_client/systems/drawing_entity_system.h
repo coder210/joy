@@ -12,7 +12,7 @@ static void drawing_entity_system(flecs::entity e,
         LogicRectComponent& rect, 
         TransformComponent& t)
 {
-        struct context* ctx = (struct context*)e.world().get_ctx();
+        Context* ctx = (Context* )e.world().get_ctx();
         jrect_t body = { 0 };
         jrect_t header = { 0 };
         // 摄像机偏移：世界坐标 - 摄像机坐标 → 屏幕像素

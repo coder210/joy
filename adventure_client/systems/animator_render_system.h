@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "../flecs.h"
 #include "../context.h"
 #include "../asset_manager.h"
@@ -13,7 +13,7 @@ static void animator_render_system(flecs::entity e,
     TransformComponent& t, LogicRectComponent& r,
     Animator& anim, PlayerActionComponent& act)
 {
-    struct context* ctx = (struct context*)e.world().get_ctx();
+    Context* ctx = (Context* )e.world().get_ctx();
 
     // 获取定义
     flecs::entity def_entity = e.world().get_alive(anim.def);

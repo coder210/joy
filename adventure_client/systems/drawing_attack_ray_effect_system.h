@@ -9,7 +9,7 @@ static void
 drawing_attack_ray_effect_system(flecs::entity e, 
         AttackRayEffectComponent& effect)
 {
-        struct context* ctx = (struct context*)e.world().get_ctx();
+        Context* ctx = (Context* )e.world().get_ctx();
         jrect_t line;
         line.x = (effect.x - ctx->camera_x) * PIXELS_PER_METER;
         line.y = (effect.y - ctx->camera_y) * PIXELS_PER_METER;

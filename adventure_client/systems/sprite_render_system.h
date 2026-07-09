@@ -12,7 +12,7 @@ static void sprite_render_system(flecs::entity e,
     SpriteSheetComponent& ss, AnimationFrameComponent& af,
     PlayerActionComponent& act)
 {
-    struct context* ctx = (struct context*)e.world().get_ctx();
+    Context* ctx = (Context* )e.world().get_ctx();
     float scr_x = (t.position_x - ctx->camera_x) * PIXELS_PER_METER;
     float scr_y = (t.position_y - ctx->camera_y) * PIXELS_PER_METER;
 

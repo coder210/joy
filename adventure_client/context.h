@@ -39,7 +39,7 @@ struct Session {
         int frameid; // 客户端最后已接收的帧号
 };
 
-struct context {
+struct Context {
         bool running;
         game_timer_t game_timer;
         jwindow_p window;
@@ -104,7 +104,7 @@ struct context {
 };
 
 
-static int get_entity_id(context* ctx)
+static int get_entity_id(Context* ctx)
 {
     return ctx->server_entity_id++;
 }

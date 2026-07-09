@@ -16,7 +16,7 @@ struct deco_data {
 
 struct loading_scene {
         scene_p scene;
-        context* ctx;
+        Context* ctx;
 };
 
 static void on_load(scene_p s) {
@@ -120,7 +120,7 @@ static void on_destroy(scene_p s) {
         delete self;
 }
 
-loading_scene_p loading_scene_create(context* ctx) {
+loading_scene_p loading_scene_create(Context* ctx) {
         loading_scene_p self = new loading_scene_t();
         self->scene = scene_create("Loading");
         self->ctx = ctx;

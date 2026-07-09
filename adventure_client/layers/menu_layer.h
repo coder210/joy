@@ -13,7 +13,7 @@ enum menu_event_code {
 
 typedef struct menu_layer menu_layer_t, *menu_layer_p;
 
-menu_layer_p create_menu_layer(context* ctx);
+menu_layer_p create_menu_layer(Context* ctx);
 scene_node_p menu_layer_get_node(menu_layer_p layer);
 
 #endif

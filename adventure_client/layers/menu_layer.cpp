@@ -82,7 +82,7 @@ static scene_node_p make_button_node(button_p btn, int x, int y) {
 	return node;
 }
 
-static void load_menu_buttons(menu_layer_p self, context* ctx)
+static void load_menu_buttons(menu_layer_p self, Context* ctx)
 {
 	int logical_width, logical_height;
 	r2d_get_logical_presentation(ctx->r2d, &logical_width, &logical_height, NULL);
@@ -111,7 +111,7 @@ static void load_menu_buttons(menu_layer_p self, context* ctx)
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_exit, btn_x, start_y + (btn_height + 20) * 2));
 }
 
-menu_layer_p create_menu_layer(context* ctx)
+menu_layer_p create_menu_layer(Context* ctx)
 {
 	menu_layer_p self = (menu_layer_p)malloc(sizeof(menu_layer_t));
 	memset(self, 0, sizeof(*self));
