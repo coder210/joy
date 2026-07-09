@@ -5,7 +5,8 @@
 #include "../components/logic_position_component.h"
 #include "../components/transform_component.h"
 
-static void interpolate_position_system(flecs::entity e,
+static void interpolate_position_system(flecs::entity e, 
+        IdComponent &id,
         LogicPositionComponent& lp, TransformComponent& t)
 {
         Context* ctx = (Context*)e.world().get_ctx();
@@ -15,6 +16,9 @@ static void interpolate_position_system(flecs::entity e,
         float alpha = e.world().delta_time() * 10;
         t.position.x = ft_lerp(t.position.x, target_position_x, alpha);
         t.position.y = ft_lerp(t.position.y, target_position_y, alpha);
+
+        //log_info("interpolate_position_system: id:%d, x=%f, y=%f", id.id, fp_to_float(target_position_x), fp_to_float(target_position_y));
+
 }
 
 #endif

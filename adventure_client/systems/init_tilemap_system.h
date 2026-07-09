@@ -34,7 +34,7 @@ static void init_tilemap_system(flecs::iter& it)
                         .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
                     }, ctx);
 
-                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_server/", NULL);
+                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_client/", NULL);
                 
         }
 }

@@ -13,13 +13,10 @@
 #include "../systems/drawing_entity_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/input_consume_system.h"
+#include "../systems/movement_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
-
-
-static const fp_t MOVE_SPEED = fp_from_float(5.0f);
-
 
 
 // ========== 动画定义辅助函数 ==========
@@ -141,10 +138,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         e.add<EnemyComponent>()
-                                //.set<AIComponent>({ 0, 0,
-                                 //       fp_from_float(4.0f), fp_from_float(15.0f),
-                                  //      fp_from_float(1.5f), 0, 0, 0, 0 })
                                 .set<PlayerActionComponent>({})
+                                //.set<AIComponent>({ 0, 0,
+                                //       fp_from_float(4.0f), fp_from_float(15.0f),
+                                //      fp_from_float(1.5f), 0, 0, 0, 0 })
                                 //.set<Animator>({ enemy_anim_def })
                                 //.set<AnimParams>({})
                                 .set<LogicVelocityComponent>({ fp_from_float(0), fp_from_float(0) });
@@ -610,8 +607,6 @@ static void on_load(scene_p s)
         self->ctx->ecs.component<AnimParams>();
 
         self->ctx->ecs.add<NetComponent>();
-
-        self->ctx->ecs.add<NetComponent>();
         log_info("NetComponent count: %d", self->ctx->ecs.filter<NetComponent>().count());
 
         /*  self->ctx->ecs.system<LogicPositionComponent, TransformComponent>().each(lerp_system);
@@ -640,6 +635,16 @@ static void on_load(scene_p s)
         self->ctx->ecs.system<NetComponent>()
                 .kind(flecs::PreUpdate)
                 .iter(input_consume_system);
+
+        // 玩家移动系统（由外部固定步长累加器驱动，不需要
+        self->ctx->ecs.system<PlayerStateInput, LogicPositionComponent>()
+            .kind(flecs::OnUpdate)
+            .each(movement_system);
+
+        // 插值
+        self->ctx->ecs.system<IdComponent, LogicPositionComponent, TransformComponent>()
+            .kind(flecs::OnUpdate)
+            .each(interpolate_position_system);
 
 
         // ---- 音频 ----

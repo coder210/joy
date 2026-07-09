@@ -184,7 +184,7 @@ static void on_load(scene_p s)
                 .each(movement_system);
 
         // 插值
-        ctx->ecs.system<LogicPositionComponent, TransformComponent>()
+        ctx->ecs.system<IdComponent, LogicPositionComponent, TransformComponent>()
                 .kind(flecs::OnUpdate)
                 .each(interpolate_position_system);
 
@@ -219,9 +219,6 @@ static void handle_cmd_loading(Context* ctx, int conv)
         it->second.is_loaded = false;   // false 表示尚未发送初始数据
         it->second.health = 10;
         it->second.frameid = std::max(ctx->global_frame_id - 1, 1);
-
-
-
 }
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
