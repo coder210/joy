@@ -17,6 +17,7 @@
 #include "../systems/input_consume_system.h"
 #include "../systems/snapshot_system.h"
 #include "../systems/movement_system.h"
+#include "../systems/collision_system.h"
 #include "../systems/handle_command_system.h"
 #include "../context.h"
 #include "../asset_manager.h"
@@ -182,6 +183,10 @@ static void on_load(scene_p s)
         ctx->ecs.system<PlayerStateInput, LogicPositionComponent>()
                 .kind(flecs::OnUpdate)
                 .each(movement_system);
+
+        ctx->ecs.system<PlayerComponent, LogicRectComponent, LogicPositionComponent>()
+                .kind(flecs::OnUpdate)
+                .each(collision_system);
 
         // 插值
         ctx->ecs.system<IdComponent, LogicPositionComponent, TransformComponent>()
