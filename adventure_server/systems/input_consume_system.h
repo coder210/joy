@@ -3,7 +3,12 @@
 #include "../flecs.h"
 #include "../context.h"
 
-static const uint8_t DIR_TO_BITS[4] = { 0b0001, 0b0010, 0b0100, 0b1000 };
+static const uint8_t DIR_TO_BITS[4] = { 
+        0b1000,  // 索引 0 -> 右
+        0b0010,  // 索引 1 -> 下
+        0b0100,  // 索引 2 -> 左
+        0b0001   // 索引 3 -> 上
+};
 
 // 系统实现
 static void input_consume_system(flecs::iter& it) {
@@ -61,7 +66,11 @@ static void input_consume_system(flecs::iter& it) {
                 flecs::entity& player = sess.player_entity;
 
                 PlayerStateInput state_input;
-                state_input.move_bits = DIR_TO_BITS[input.dir % 4];
+                //state_input.move_bits = DIR_TO_BITS[input.dir % 4];
+                state_input.move_bits = input.dir;
+
+                log_info("Raw dir: %d\n", input.dir);
+
                 if (player.has<PlayerStateInput>()) {
                         auto* state = player.get_mut<PlayerStateInput>();
                         state->move_bits = state_input.move_bits;
