@@ -590,7 +590,7 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.5", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.41", 30000);
         self->ctx->ecs.component<ConnectionComponent>();
         self->ctx->ecs.component<IdComponent>();
         self->ctx->ecs.component<LogicRectComponent>();

@@ -130,7 +130,7 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.5", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.41", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -183,6 +183,16 @@ static void on_load(scene_p s)
         ctx->ecs.system<PlayerStateInput, LogicPositionComponent>()
                 .kind(flecs::OnUpdate)
                 .each(movement_system);
+
+        // 观察者直接捕获 wall_query 引用
+        ctx->ecs.observer<PlayerComponent, LogicPositionComponent>()
+            .event(flecs::OnSet)
+            .each([](flecs::entity e, PlayerComponent& player, LogicPositionComponent& lp) {
+
+            int a = 10;
+       
+        });
+
 
         ctx->ecs.system<PlayerComponent, LogicRectComponent, LogicPositionComponent>()
                 .kind(flecs::OnUpdate)
