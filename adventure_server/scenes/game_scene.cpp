@@ -185,9 +185,9 @@ static void on_load(scene_p s)
                 .each(movement_system);
 
         // 观察者直接捕获 wall_query 引用
-        ctx->ecs.observer<PlayerComponent, LogicPositionComponent>()
+        ctx->ecs.observer<LogicPositionComponent>()
             .event(flecs::OnSet)
-            .each([](flecs::entity e, PlayerComponent& player, LogicPositionComponent& lp) {
+            .each([](flecs::entity e, LogicPositionComponent& lp) {
 
             int a = 10;
        
