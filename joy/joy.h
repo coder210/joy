@@ -1179,7 +1179,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void combobox_set_text(combobox_p combobox, font_p font,
                 const int* codepoints, int len, jcolor_t color);
         JOY_API void combobox_add_item(combobox_p combobox, font_p font,
+                const char* str, int len, jcolor_t color);
+        JOY_API void combobox_add_itemx(combobox_p combobox, font_p font,
                 const int* codepoints, int len, jcolor_t color);
+
         JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
         JOY_API bool combobox_is_open(combobox_p combobox);
         JOY_API void combobox_set_open(combobox_p combobox, bool v);
