@@ -1154,6 +1154,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void label_destroy(label_p label);
         JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
         JOY_API void label_draw(label_p label);
+        JOY_API void label_process_event(label_p label, const void* event);
         JOY_API button_p button_create(jr2d_p r2d, float width, float height);
         JOY_API void button_destroy(button_p btn);
         JOY_API void button_set_position(button_p btn, float x, float y);
@@ -1171,6 +1172,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void button_set_pressed(button_p btn, bool v);
         JOY_API void button_set_text_offset(button_p btn, float x, float y);
         JOY_API void button_draw(button_p btn);
+        JOY_API void button_process_event(button_p btn, const void* event);
         JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
         JOY_API void combobox_destroy(combobox_p combobox);
         JOY_API void combobox_set_text(combobox_p combobox, font_p font,
@@ -1184,6 +1186,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void combobox_set_selected(combobox_p combobox, int index);
         JOY_API int combobox_get_selected(combobox_p combobox);
         JOY_API void combobox_draw(combobox_p combobox);
+        JOY_API void combobox_process_event(combobox_p cb, const void* event);
         JOY_API datagrid_p datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font);
         JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
         JOY_API void datagrid_setheader(datagrid_p grid, int index, const char* header);
@@ -1194,6 +1197,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
         JOY_API void datagrid_scroll(datagrid_p grid, int lines);
         JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
+        JOY_API void datagrid_process_event(datagrid_p dg, const void* event);
         JOY_API radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id);
         JOY_API void radio_button_destroy(radio_button_p radio);
         JOY_API radio_button_group_p radio_button_group_create();
@@ -1202,6 +1206,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void radio_button_group_set_selected(radio_button_group_p group, int index);
         JOY_API bool radio_button_is_pressed(radio_button_p radio, float x, float y);
         JOY_API void radio_button_set_hovered(radio_button_p radio, bool v);
+        JOY_API void radio_button_process_event(radio_button_p rb, const void* event);
         JOY_API void radio_button_group_draw(radio_button_group_p group, jr2d_p r2d);
         JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
         JOY_API void checkbox_destroy(checkbox_p checkbox);
@@ -1210,6 +1215,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
         JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
         JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
+        JOY_API void checkbox_process_event(checkbox_p cb, const void* event);
         JOY_API joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius);
         JOY_API void joystick_destroy(joystick_p joystick);
         JOY_API void joystick_draw(joystick_p joystick);
@@ -1221,6 +1227,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void joystick_touch_up(joystick_p joystick);
         JOY_API vec2_t joystick_get_direction(joystick_p joystick);
         JOY_API float joystick_get_magnitude(joystick_p joystick);
+        JOY_API void joystick_process_event(joystick_p js, const void* event);
         JOY_API textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font);
         JOY_API void textinput_destroy(textinput_p ti);
         JOY_API void textinput_set_text(textinput_p ti, const char* text);
@@ -1247,6 +1254,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void textinput_copy(textinput_p ti);
         JOY_API void textinput_cut(textinput_p ti);
         JOY_API bool textinput_is_focused(textinput_p ti);
+        JOY_API void textinput_process_event(textinput_p ti, const void* event);
         JOY_API slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial);
         JOY_API void slider_destroy(slider_p s);
         JOY_API void slider_set_value(slider_p s, float v);
@@ -1258,6 +1266,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void slider_drag_move(slider_p s, float x, float y);
         JOY_API bool slider_is_hovered(slider_p s, float x, float y);
         JOY_API void slider_set_hovered(slider_p s, bool v);
+        JOY_API void slider_process_event(slider_p s, const void* event);
         JOY_API popup_p popup_create(jr2d_p r2d, float w, float h);
         JOY_API void popup_destroy(popup_p p);
         JOY_API void popup_set_title(popup_p p, const char* text, int len);
@@ -1270,12 +1279,14 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool popup_is_title_clicked(popup_p p, float mx, float my);
         JOY_API void popup_drag_move(popup_p p, float mx, float my);
         JOY_API bool popup_is_inside(popup_p p, float mx, float my);
+        JOY_API void popup_process_event(popup_p p, const void* event);
         JOY_API tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len);
         JOY_API void tooltip_destroy(tooltip_p t);
         JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
         JOY_API void tooltip_set_position(tooltip_p t, float x, float y);
         JOY_API void tooltip_set_visible(tooltip_p t, bool v);
         JOY_API void tooltip_draw(tooltip_p t, font_p font);
+        JOY_API void jui_process_event(void** widgets, int count, const void* event);
 
         JOY_API jtilemap_p jtilemap_load_file(const char* filename);
         JOY_API void jtilemap_destroy(jtilemap_p tm);

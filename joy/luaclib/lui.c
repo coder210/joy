@@ -878,6 +878,17 @@ static int l_tooltip_draw(lua_State* L) {
 	return 0;
 }
 
+static int l_label_process_event(lua_State* L) { label_process_event((label_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_button_process_event(lua_State* L) { button_process_event((button_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_textinput_process_event(lua_State* L) { textinput_process_event((textinput_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_slider_process_event(lua_State* L) { slider_process_event((slider_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_popup_process_event(lua_State* L) { popup_process_event((popup_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_combobox_process_event(lua_State* L) { combobox_process_event((combobox_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_checkbox_process_event(lua_State* L) { checkbox_process_event((checkbox_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_radiobutton_process_event(lua_State* L) { radio_button_process_event((radio_button_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_datagrid_process_event(lua_State* L) { datagrid_process_event((datagrid_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+static int l_joystick_process_event(lua_State* L) { joystick_process_event((joystick_p)lua_touserdata(L, 1), lua_touserdata(L, 2)); return 0; }
+
 int luaopen_ui(lua_State* L)
 {
 	lua_newtable(L);
@@ -888,6 +899,7 @@ int luaopen_ui(lua_State* L)
 	    {"set_text", l_label_set_text},
 	    {"set_position", l_label_set_position},
 	    {"draw", l_label_draw},
+	    {"process_event", l_label_process_event},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, label_lib);
@@ -907,6 +919,7 @@ int luaopen_ui(lua_State* L)
 	    {"set_pressed", l_button_set_pressed},
 	    {"get_rect", l_button_get_rect},
 	    {"draw", l_button_draw},
+	    {"process_event", l_button_process_event},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, button_lib);
@@ -934,6 +947,7 @@ int luaopen_ui(lua_State* L)
 	    {"hit_item", l_combobox_hit_item},
 	    {"set_selected", l_combobox_set_selected},
 	    {"get_selected", l_combobox_get_selected},
+	    {"process_event", l_combobox_process_event},
 	    {NULL, NULL},
 	};
 	luaL_newlib(L, combobox_lib);
@@ -945,6 +959,7 @@ int luaopen_ui(lua_State* L)
 		{"draw", l_checkbox_draw},
 		{"is_pressed", l_checkbox_is_pressed},
 		{"set_hovered", l_checkbox_set_hovered},
+		{"process_event", l_checkbox_process_event},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, checkbox_lib);
@@ -955,6 +970,7 @@ int luaopen_ui(lua_State* L)
 		{"destroy", lradiobutton_destroy},
 		{"is_pressed", l_radio_button_is_pressed},
 		{"set_hovered", l_radio_button_set_hovered},
+		{"process_event", l_radiobutton_process_event},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, radiobutton_lib);
@@ -971,6 +987,7 @@ int luaopen_ui(lua_State* L)
 	    {"set_selected_row", l_datagrid_set_selected_row},
 	    {"get_row_count", ldatagrid_get_row_count},
 	    {"get_cell", ldatagrid_get_cell},
+	    {"process_event", l_datagrid_process_event},
 	{NULL, NULL},
 	};
 	luaL_newlib(L, datagrid_lib);
@@ -1002,6 +1019,7 @@ int luaopen_ui(lua_State* L)
 		{"copy", l_textinput_copy},
 		{"cut", l_textinput_cut},
 		{"is_focused", l_textinput_is_focused},
+		{"process_event", l_textinput_process_event},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, textinput_lib);
@@ -1019,6 +1037,7 @@ int luaopen_ui(lua_State* L)
 		{"drag_move", l_slider_drag_move},
 		{"is_hovered", l_slider_is_hovered},
 		{"set_hovered", l_slider_set_hovered},
+		{"process_event", l_slider_process_event},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, slider_lib);
@@ -1038,6 +1057,7 @@ int luaopen_ui(lua_State* L)
 		{"is_title_clicked", l_popup_is_title_clicked},
 		{"drag_move", l_popup_drag_move},
 		{"is_inside", l_popup_is_inside},
+		{"process_event", l_popup_process_event},
 		{NULL, NULL},
 	};
 	luaL_newlib(L, popup_lib);

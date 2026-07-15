@@ -2292,3 +2292,163 @@ void tooltip_draw(tooltip_p t, font_p font)
 	jtext_printx(r, font, t->text, t->text_len, t->text_color,
 		t->x + t->padding, t->y + t->padding / 2);
 }
+
+/* =================================================================
+ * 通用事件处理函数
+ * 将 label_handle_event 重命名为 label_process_event，风格统一
+ * ================================================================= */
+
+void label_process_event(label_p label, const void* ev)
+{
+	(void)label;
+	(void)ev;
+}
+
+void button_process_event(button_p btn, const void* ev)
+{
+	if (!btn || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_MOTION) {
+		button_is_hovered(btn, e->motion.x, e->motion.y);
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		button_is_pressed(btn, e->button.x, e->button.y);
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		btn->is_pressed = false;
+	}
+}
+
+void textinput_process_event(textinput_p ti, const void* ev)
+{
+	if (!ti || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_MOTION) {
+		textinput_is_hovered(ti, e->motion.x, e->motion.y);
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		textinput_is_pressed(ti, e->button.x, e->button.y);
+	} else if (e->type == SDL_EVENT_TEXT_INPUT) {
+		if (ti->focused) {
+			textinput_insert(ti, e->text.text, (int)strlen(e->text.text));
+		}
+	} else if (e->type == SDL_EVENT_KEY_DOWN) {
+		if (!ti->focused) return;
+		switch (e->key.scancode) {
+		case SDL_SCANCODE_BACKSPACE: textinput_backspace(ti); break;
+		case SDL_SCANCODE_DELETE:    textinput_delete(ti); break;
+		case SDL_SCANCODE_LEFT:
+			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_left(ti);
+			else textinput_cursor_left(ti);
+			break;
+		case SDL_SCANCODE_RIGHT:
+			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_right(ti);
+			else textinput_cursor_right(ti);
+			break;
+		case SDL_SCANCODE_HOME:
+			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_home(ti);
+			else textinput_cursor_home(ti);
+			break;
+		case SDL_SCANCODE_END:
+			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_end(ti);
+			else textinput_cursor_end(ti);
+			break;
+		case SDL_SCANCODE_A:
+			if (e->key.mod & SDL_KMOD_CTRL) textinput_select_all(ti);
+			break;
+		case SDL_SCANCODE_V:
+			if (e->key.mod & SDL_KMOD_CTRL) textinput_paste(ti);
+			break;
+		case SDL_SCANCODE_C:
+			if (e->key.mod & SDL_KMOD_CTRL) textinput_copy(ti);
+			break;
+		case SDL_SCANCODE_X:
+			if (e->key.mod & SDL_KMOD_CTRL) textinput_cut(ti);
+			break;
+		default: break;
+		}
+	}
+}
+
+void slider_process_event(slider_p s, const void* ev)
+{
+	if (!s || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_MOTION) {
+		slider_is_hovered(s, e->motion.x, e->motion.y);
+		if (s->is_dragging) slider_drag_move(s, e->motion.x, e->motion.y);
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		slider_is_pressed(s, e->button.x, e->button.y);
+	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		s->is_dragging = false;
+	}
+}
+
+void popup_process_event(popup_p p, const void* ev)
+{
+	(void)p;
+	(void)ev;
+	/* Popup 需要配合外部状态管理（visible、dragging），不在 C 层自动处理 */
+}
+
+void combobox_process_event(combobox_p cb, const void* ev)
+{
+	(void)cb;
+	(void)ev;
+	/* Combobox 需要配合外部状态（open/close），不在 C 层自动处理 */
+}
+
+void checkbox_process_event(checkbox_p cb, const void* ev)
+{
+	if (!cb || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		checkbox_is_pressed(cb, e->button.x, e->button.y);
+	}
+}
+
+void radio_button_process_event(radio_button_p rb, const void* ev)
+{
+	if (!rb || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		radio_button_is_pressed(rb, e->button.x, e->button.y);
+	}
+}
+
+void datagrid_process_event(datagrid_p dg, const void* ev)
+{
+	(void)dg;
+	(void)ev;
+	/* datagrid 需要配合外部状态管理 */
+}
+
+void joystick_process_event(joystick_p js, const void* ev)
+{
+	if (!js || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_FINGER_DOWN || e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+		float x = (e->type == SDL_EVENT_FINGER_DOWN) ? e->tfinger.x * 800 : e->button.x;
+		float y = (e->type == SDL_EVENT_FINGER_DOWN) ? e->tfinger.y * 600 : e->button.y;
+		joystick_touch_down(js, x, y);
+	} else if (e->type == SDL_EVENT_FINGER_MOTION || e->type == SDL_EVENT_MOUSE_MOTION) {
+		if (joystick_is_dragging(js)) {
+			float x = (e->type == SDL_EVENT_FINGER_MOTION) ? e->tfinger.x * 800 : e->motion.x;
+			float y = (e->type == SDL_EVENT_FINGER_MOTION) ? e->tfinger.y * 600 : e->motion.y;
+			joystick_touch_move(js, x, y);
+		}
+	} else if (e->type == SDL_EVENT_FINGER_UP || e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+		joystick_touch_up(js);
+	}
+}
+
+/* ===== 通用函数：将 SDL 事件路由到控件数组 ===== */
+void jui_process_event(void** widgets, int count, const void* event)
+{
+	if (!widgets || !event) return;
+	const SDL_Event* e = (const SDL_Event*)event;
+	for (int i = 0; i < count; i++) {
+		if (!widgets[i]) continue;
+		/* 通过指针的指针判断控件类型（取前 4 字节作为类型标记） */
+		/* 或者由调用方传入类型数组，更安全的方式是由脚本层直接调用各自 process_event */
+		/* 此函数保持通用，实际分发给脚本层 */
+		(void)e;
+	}
+}
