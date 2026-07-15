@@ -106,6 +106,13 @@ static void default_resize(int w, int h, void* arg)
         lua_pushinteger(L, w); lua_pushinteger(L, h);
         call_joy_n(L, "resize", 2);
 }
+static void default_process_event(const void* event, void* arg)
+{
+        luax_p luax = (luax_p)arg;
+        lua_State* L = luax->L;
+        lua_pushlightuserdata(L, (void*)event);
+        call_joy_n(L, "process_event", 1);
+}
 
 luax_p luax_create(void)
 {
@@ -131,6 +138,7 @@ luax_p luax_create(void)
         luax->cbs.on_keyreleased    = default_keyreleased;
         luax->cbs.on_textinput      = default_textinput;
         luax->cbs.on_resize         = default_resize;
+        luax->cbs.on_process_event  = default_process_event;
 
         // 创建 joy 表，所有模块注册在 joy.* 下
         lua_newtable(luax->L);

@@ -117,6 +117,13 @@ static void default_resize(int w, int h, void* arg)
 	call_joy_js(ctx, "resize", 2);
 }
 
+static void default_process_event(const void* event, void* arg)
+{
+	jsx_p jsx = (jsx_p)arg;
+	duk_context* ctx = jsx->ctx;
+	duk_push_pointer(ctx, (void*)event);
+	call_joy_js(ctx, "process_event", 1);
+}
 
 jsx_p jsx_create(void)
 {
@@ -143,6 +150,7 @@ jsx_p jsx_create(void)
 	jsx->cbs.on_keyreleased    = default_keyreleased;
 	jsx->cbs.on_textinput      = default_textinput;
 	jsx->cbs.on_resize         = default_resize;
+	jsx->cbs.on_process_event  = default_process_event;
 
 	/* 注册 jsclib 模块 */
 	jsopen_base(jsx->ctx);

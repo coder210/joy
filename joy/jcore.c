@@ -202,9 +202,10 @@ void dispatch_event(jevent_callbacks_t cbs,
 		break;
 	}
 	default:
-		log_debug("unhandled SDL event type: 0x%x", event->type);
 		break;
 	}
+	if (cbs.on_process_event)
+		cbs.on_process_event(ev, arg);
 }
 
 bool push_user_event(int type, int code)

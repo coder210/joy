@@ -153,6 +153,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef void (*jevent_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
         typedef void (*jevent_textinput_fn)(const char* text, void* arg);
         typedef void (*jevent_resize_fn)(int w, int h, void* arg);
+        typedef void (*jevent_process_event_fn)(const void* event, void* arg);
 
         typedef struct jevent_callbacks {
                 jevent_keypressed_fn on_keypressed;
@@ -162,6 +163,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 jevent_mousemoved_fn on_mousemoved;
                 jevent_textinput_fn on_textinput;
                 jevent_resize_fn on_resize;
+                jevent_process_event_fn on_process_event;
         } jevent_callbacks_t;
 
         typedef struct env env_t, * env_p;
