@@ -169,16 +169,10 @@ static duk_ret_t jui_checkbox_draw(duk_context* ctx) { checkbox_draw((checkbox_p
 static duk_ret_t jui_checkbox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, checkbox_is_pressed((checkbox_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_checkbox_set_hovered(duk_context* ctx) { checkbox_set_hovered((checkbox_p)PTR(0), BOOL(1)); return 0; }
 
-static duk_ret_t jui_radiobutton_create(duk_context* ctx) { duk_push_pointer(ctx, radio_button_create(NUM(0), NUM(1), NUM(2), STR(3), INT(4))); return 1; }
-static duk_ret_t jui_radiobutton_destroy(duk_context* ctx) { radio_button_destroy((radio_button_p)PTR(0)); return 0; }
-static duk_ret_t jui_radiobutton_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, radio_button_is_pressed((radio_button_p)PTR(0), NUM(1), NUM(2))); return 1; }
-static duk_ret_t jui_radiobutton_set_hovered(duk_context* ctx) { radio_button_set_hovered((radio_button_p)PTR(0), BOOL(1)); return 0; }
-
-static duk_ret_t jui_radiogroup_create(duk_context* ctx) { duk_push_pointer(ctx, radio_button_group_create()); return 1; }
-static duk_ret_t jui_radiogroup_destroy(duk_context* ctx) { radio_button_group_destroy((radio_button_group_p)PTR(0)); return 0; }
-static duk_ret_t jui_radiogroup_add_button(duk_context* ctx) { radio_button_group_add_button((radio_button_group_p)PTR(0), (radio_button_p)PTR(1)); return 0; }
-static duk_ret_t jui_radiogroup_set_selected(duk_context* ctx) { radio_button_group_set_selected((radio_button_group_p)PTR(0), INT(1)); return 0; }
-static duk_ret_t jui_radiogroup_draw(duk_context* ctx) { radio_button_group_draw((radio_button_group_p)PTR(0), REN(1)); return 0; }
+static duk_ret_t jui_radio_create(duk_context* ctx) { duk_push_pointer(ctx, radio_create(NUM(0), NUM(1), NUM(2), STR(3), INT(4))); return 1; }
+static duk_ret_t jui_radio_destroy(duk_context* ctx) { radio_destroy((radio_p)PTR(0)); return 0; }
+static duk_ret_t jui_radio_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, radio_is_pressed((radio_p)PTR(0), NUM(1), NUM(2))); return 1; }
+static duk_ret_t jui_radio_set_hovered(duk_context* ctx) { radio_set_hovered((radio_p)PTR(0), BOOL(1)); return 0; }
 
 static duk_ret_t jui_datagrid_create(duk_context* ctx) { jr2d_p r = REN(0); jrect_t rect = { INT(1),INT(2),INT(3),INT(4) }; duk_push_pointer(ctx, datagrid_create(r, rect, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
 static duk_ret_t jui_datagrid_destroy(duk_context* ctx) { datagrid_destroy((datagrid_p)PTR(0)); return 0; }
@@ -205,29 +199,29 @@ static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) {
 	return 1;
 }
 
-static duk_ret_t jui_textinput_create(duk_context* ctx) { jr2d_p r = REN(0); font_p fp = (font_p)PTR(1); jrect_t rect = { NUM(2),NUM(3),NUM(4),NUM(5) }; duk_push_pointer(ctx, textinput_create(r, rect, fp)); return 1; }
-static duk_ret_t jui_textinput_destroy(duk_context* ctx) { textinput_destroy((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_set_text(duk_context* ctx) { textinput_set_text((textinput_p)PTR(0), STR(1)); return 0; }
-static duk_ret_t jui_textinput_get_text(duk_context* ctx) { duk_push_string(ctx, textinput_get_text((textinput_p)PTR(0))); return 1; }
-static duk_ret_t jui_textinput_draw(duk_context* ctx) { textinput_draw((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_pressed((textinput_p)PTR(0), NUM(1), NUM(2))); return 1; }
-static duk_ret_t jui_textinput_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_hovered((textinput_p)PTR(0), NUM(1), NUM(2))); return 1; }
-static duk_ret_t jui_textinput_focus(duk_context* ctx) { textinput_focus((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_defocus(duk_context* ctx) { textinput_defocus((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_insert(duk_context* ctx) { textinput_insert((textinput_p)PTR(0), STR(1), strlen(STR(1))); return 0; }
-static duk_ret_t jui_textinput_backspace(duk_context* ctx) { textinput_backspace((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_delete(duk_context* ctx) { textinput_delete((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_cursor_left(duk_context* ctx) { textinput_cursor_left((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_cursor_right(duk_context* ctx) { textinput_cursor_right((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_cursor_home(duk_context* ctx) { textinput_cursor_home((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_cursor_end(duk_context* ctx) { textinput_cursor_end((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_select_left(duk_context* ctx) { textinput_select_left((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_select_right(duk_context* ctx) { textinput_select_right((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_select_all(duk_context* ctx) { textinput_select_all((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_paste(duk_context* ctx) { textinput_paste((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_copy(duk_context* ctx) { textinput_copy((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_cut(duk_context* ctx) { textinput_cut((textinput_p)PTR(0)); return 0; }
-static duk_ret_t jui_textinput_is_focused(duk_context* ctx) { duk_push_boolean(ctx, textinput_is_focused((textinput_p)PTR(0))); return 1; }
+static duk_ret_t jui_inputbox_create(duk_context* ctx) { jr2d_p r = REN(0); font_p fp = (font_p)PTR(1); jrect_t rect = { NUM(2),NUM(3),NUM(4),NUM(5) }; duk_push_pointer(ctx, inputbox_create(r, rect, fp)); return 1; }
+static duk_ret_t jui_inputbox_destroy(duk_context* ctx) { inputbox_destroy((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_set_text(duk_context* ctx) { inputbox_set_text((inputbox_p)PTR(0), STR(1)); return 0; }
+static duk_ret_t jui_inputbox_get_text(duk_context* ctx) { duk_push_string(ctx, inputbox_get_text((inputbox_p)PTR(0))); return 1; }
+static duk_ret_t jui_inputbox_draw(duk_context* ctx) { inputbox_draw((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, inputbox_is_pressed((inputbox_p)PTR(0), NUM(1), NUM(2))); return 1; }
+static duk_ret_t jui_inputbox_is_hovered(duk_context* ctx) { duk_push_boolean(ctx, inputbox_is_hovered((inputbox_p)PTR(0), NUM(1), NUM(2))); return 1; }
+static duk_ret_t jui_inputbox_focus(duk_context* ctx) { inputbox_focus((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_defocus(duk_context* ctx) { inputbox_defocus((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_insert(duk_context* ctx) { inputbox_insert((inputbox_p)PTR(0), STR(1), strlen(STR(1))); return 0; }
+static duk_ret_t jui_inputbox_backspace(duk_context* ctx) { inputbox_backspace((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_delete(duk_context* ctx) { inputbox_delete((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_cursor_left(duk_context* ctx) { inputbox_cursor_left((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_cursor_right(duk_context* ctx) { inputbox_cursor_right((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_cursor_home(duk_context* ctx) { inputbox_cursor_home((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_cursor_end(duk_context* ctx) { inputbox_cursor_end((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_select_left(duk_context* ctx) { inputbox_select_left((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_select_right(duk_context* ctx) { inputbox_select_right((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_select_all(duk_context* ctx) { inputbox_select_all((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_paste(duk_context* ctx) { inputbox_paste((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_copy(duk_context* ctx) { inputbox_copy((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_cut(duk_context* ctx) { inputbox_cut((inputbox_p)PTR(0)); return 0; }
+static duk_ret_t jui_inputbox_is_focused(duk_context* ctx) { duk_push_boolean(ctx, inputbox_is_focused((inputbox_p)PTR(0))); return 1; }
 
 static duk_ret_t jui_slider_create(duk_context* ctx) { duk_push_pointer(ctx, slider_create(REN(0), NUM(1), NUM(2), NUM(3), NUM(4), NUM(5), NUM(6), NUM(7))); return 1; }
 static duk_ret_t jui_slider_destroy(duk_context* ctx) { slider_destroy((slider_p)PTR(0)); return 0; }
@@ -275,6 +269,7 @@ static duk_ret_t jui_tooltip_destroy(duk_context* ctx) { tooltip_destroy((toolti
 static duk_ret_t jui_tooltip_set_text(duk_context* ctx) { tooltip_set_text((tooltip_p)PTR(0), STR(1), -1); return 0; }
 static duk_ret_t jui_tooltip_set_position(duk_context* ctx) { tooltip_set_position((tooltip_p)PTR(0), NUM(1), NUM(2)); return 0; }
 static duk_ret_t jui_tooltip_set_visible(duk_context* ctx) { tooltip_set_visible((tooltip_p)PTR(0), BOOL(1)); return 0; }
+static duk_ret_t jui_tooltip_process_event(duk_context* ctx) { tooltip_process_event((tooltip_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_tooltip_draw(duk_context* ctx) {
 	tooltip_p t = (tooltip_p)PTR(0);
 	font_p f = (font_p)duk_get_pointer(ctx, 1);
@@ -287,12 +282,12 @@ static void reg_sub(duk_context* ctx, const char* name, const reg_pair_t* pairs)
 
 static duk_ret_t jui_label_process_event(duk_context* ctx) { label_process_event((label_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_button_process_event(duk_context* ctx) { button_process_event((button_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
-static duk_ret_t jui_textinput_process_event(duk_context* ctx) { textinput_process_event((textinput_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
+static duk_ret_t jui_inputbox_process_event(duk_context* ctx) { inputbox_process_event((inputbox_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_slider_process_event(duk_context* ctx) { slider_process_event((slider_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_popup_process_event(duk_context* ctx) { popup_process_event((popup_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_combobox_process_event(duk_context* ctx) { combobox_process_event((combobox_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_checkbox_process_event(duk_context* ctx) { checkbox_process_event((checkbox_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
-static duk_ret_t jui_radiobutton_process_event(duk_context* ctx) { radio_button_process_event((radio_button_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
+static duk_ret_t jui_radio_process_event(duk_context* ctx) { radio_process_event((radio_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_datagrid_process_event(duk_context* ctx) { datagrid_process_event((datagrid_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 static duk_ret_t jui_joystick_process_event(duk_context* ctx) { joystick_process_event((joystick_p)PTR(0), (const void*)duk_get_pointer(ctx, 1)); return 0; }
 
@@ -307,13 +302,12 @@ void jsopen_ui(duk_context* ctx)
 	P(button) { { jui_button_create, "create" }, { jui_button_destroy,"destroy" }, { jui_button_set_position,"set_position" }, { jui_button_set_text,"set_text" }, { jui_button_is_hovered,"is_hovered" }, { jui_button_is_pressed,"is_pressed" }, { jui_button_set_hovered,"set_hovered" }, { jui_button_set_pressed,"set_pressed" }, { jui_button_draw,"draw" }, { jui_button_process_event,"process_event" }, E }; R(button);
 	P(combobox) { { jui_combobox_create, "create" }, { jui_combobox_destroy,"destroy" }, { jui_combobox_additem,"additem" }, { jui_combobox_draw,"draw" }, { jui_combobox_is_pressed,"is_pressed" }, { jui_combobox_is_open,"is_open" }, { jui_combobox_set_open,"set_open" }, { jui_combobox_hit_item,"hit_item" }, { jui_combobox_set_selected,"set_selected" }, { jui_combobox_get_selected,"get_selected" }, E }; R(combobox);
 	P(checkbox) { { jui_checkbox_create, "create" }, { jui_checkbox_destroy,"destroy" }, { jui_checkbox_draw,"draw" }, { jui_checkbox_is_pressed,"is_pressed" }, { jui_checkbox_set_hovered,"set_hovered" }, { jui_checkbox_process_event,"process_event" }, E }; R(checkbox);
-	P(radiobutton) { { jui_radiobutton_create, "create" }, { jui_radiobutton_destroy,"destroy" }, { jui_radiobutton_is_pressed,"is_pressed" }, { jui_radiobutton_set_hovered,"set_hovered" }, { jui_radiobutton_process_event,"process_event" }, E }; R(radiobutton);
-	P(button_group) { { jui_radiogroup_create, "create" }, { jui_radiogroup_destroy,"destroy" }, { jui_radiogroup_add_button,"add_button" }, { jui_radiogroup_set_selected,"set_selected" }, { jui_radiogroup_draw,"draw" }, E }; R(button_group);
+	P(radiobutton) { { jui_radio_create, "create" }, { jui_radio_destroy,"destroy" }, { jui_radio_is_pressed,"is_pressed" }, { jui_radio_set_hovered,"set_hovered" }, { jui_radio_process_event,"process_event" }, E }; 	R(radiobutton);
 	P(datagrid) { { jui_datagrid_create, "create" }, { jui_datagrid_destroy,"destroy" }, { jui_datagrid_draw,"draw" }, { jui_datagrid_setheaders,"setheaders" }, { jui_datagrid_addrow,"addrow" }, { jui_datagrid_hit_row,"hit_row" }, { jui_datagrid_scroll,"scroll" }, { jui_datagrid_set_selected_row,"set_selected_row" }, { jui_datagrid_get_row_count,"get_row_count" }, { jui_datagrid_get_cell,"get_cell" }, { jui_datagrid_process_event,"process_event" }, E }; R(datagrid);
-	P(textinput) { { jui_textinput_create, "create" }, { jui_textinput_destroy,"destroy" }, { jui_textinput_set_text,"set_text" }, { jui_textinput_get_text,"get_text" }, { jui_textinput_draw,"draw" }, { jui_textinput_is_pressed,"is_pressed" }, { jui_textinput_is_hovered,"is_hovered" }, { jui_textinput_focus,"focus" }, { jui_textinput_defocus,"defocus" }, { jui_textinput_insert,"insert" }, { jui_textinput_backspace,"backspace" }, { jui_textinput_delete,"delete" }, { jui_textinput_cursor_left,"cursor_left" }, { jui_textinput_cursor_right,"cursor_right" }, { jui_textinput_cursor_home,"cursor_home" }, { jui_textinput_cursor_end,"cursor_end" }, { jui_textinput_select_left,"select_left" }, { jui_textinput_select_right,"select_right" }, { jui_textinput_select_all,"select_all" }, { jui_textinput_paste,"paste" }, { jui_textinput_copy,"copy" }, { jui_textinput_cut,"cut" }, { jui_textinput_is_focused,"is_focused" }, { jui_textinput_process_event,"process_event" }, E }; R(textinput);
+	P(inputbox) { { jui_inputbox_create, "create" }, { jui_inputbox_destroy,"destroy" }, { jui_inputbox_set_text,"set_text" }, { jui_inputbox_get_text,"get_text" }, { jui_inputbox_draw,"draw" }, { jui_inputbox_is_pressed,"is_pressed" }, { jui_inputbox_is_hovered,"is_hovered" }, { jui_inputbox_focus,"focus" }, { jui_inputbox_defocus,"defocus" }, { jui_inputbox_insert,"insert" }, { jui_inputbox_backspace,"backspace" }, { jui_inputbox_delete,"delete" }, { jui_inputbox_cursor_left,"cursor_left" }, { jui_inputbox_cursor_right,"cursor_right" }, { jui_inputbox_cursor_home,"cursor_home" }, { jui_inputbox_cursor_end,"cursor_end" }, { jui_inputbox_select_left,"select_left" }, { jui_inputbox_select_right,"select_right" }, { jui_inputbox_select_all,"select_all" }, { jui_inputbox_paste,"paste" }, { jui_inputbox_copy,"copy" }, { jui_inputbox_cut,"cut" }, { jui_inputbox_is_focused,"is_focused" }, { jui_inputbox_process_event,"process_event" }, E }; R(inputbox);
 	P(slider) { { jui_slider_create, "create" }, { jui_slider_destroy,"destroy" }, { jui_slider_set_value,"set_value" }, { jui_slider_get_value,"get_value" }, { jui_slider_set_range,"set_range" }, { jui_slider_draw,"draw" }, { jui_slider_is_pressed,"is_pressed" }, { jui_slider_set_pressed,"set_pressed" }, { jui_slider_drag_move,"drag_move" }, { jui_slider_is_hovered,"is_hovered" }, { jui_slider_set_hovered,"set_hovered" }, { jui_slider_process_event,"process_event" }, E }; R(slider);
 	P(popup) { { jui_popup_create, "create" }, { jui_popup_destroy,"destroy" }, { jui_popup_set_title,"set_title" }, { jui_popup_set_content,"set_content" }, { jui_popup_set_position,"set_position" }, { jui_popup_set_visible,"set_visible" }, { jui_popup_set_closeable,"set_closeable" }, { jui_popup_draw,"draw" }, { jui_popup_is_close_clicked,"is_close_clicked" }, { jui_popup_is_title_clicked,"is_title_clicked" }, { jui_popup_drag_move,"drag_move" }, { jui_popup_is_inside,"is_inside" }, { jui_popup_process_event,"process_event" }, E }; R(popup);
-	P(tooltip) { { jui_tooltip_create, "create" }, { jui_tooltip_destroy,"destroy" }, { jui_tooltip_set_text,"set_text" }, { jui_tooltip_set_position,"set_position" }, { jui_tooltip_set_visible,"set_visible" }, { jui_tooltip_draw,"draw" }, E }; R(tooltip);
+	P(tooltip) { { jui_tooltip_create, "create" }, { jui_tooltip_destroy,"destroy" }, { jui_tooltip_set_text,"set_text" }, { jui_tooltip_set_position,"set_position" }, { jui_tooltip_set_visible,"set_visible" }, { jui_tooltip_draw,"draw" }, { jui_tooltip_process_event,"process_event" }, E }; R(tooltip);
 
 	duk_put_global_string(ctx, "ui");
 }

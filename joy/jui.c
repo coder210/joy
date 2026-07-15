@@ -75,7 +75,7 @@ struct datagrid {
 	jcolor_t selected_color;
 };
 
-struct radio_button {
+struct radio {
 	int x, y;                  // 位置
 	int size;                  // 大小
 	bool checked;              // 是否选中
@@ -86,13 +86,6 @@ struct radio_button {
 	jcolor_t r1_color;
 	jcolor_t r2_color;
 	jcolor_t r3_color;
-};
-
-struct radio_button_group {
-	radio_button_t** buttons;     // 按钮数组
-	int capacity; // 容量
-	int count;                 // 按钮数量
-	int selected_index;        // 当前选中的按钮索引
 };
 
 struct checkbox {
@@ -109,7 +102,7 @@ struct checkbox {
 	jrect_t hit_area;           // 点击区域
 };
 
-struct textinput {
+struct inputbox {
 	jr2d_p r2d;
 	jrect_t rect;               // 位置和大小
 	jcolor_t bg_color;           // 背景色
@@ -130,8 +123,8 @@ struct textinput {
 	bool hovered;                 // 鼠标悬停
 	uint64_t cursor_timer;          // 光标闪烁计时
 	bool cursor_visible;          // 光标是否可见
-	void (*on_submit)(struct textinput* ti, void* userdata);
-	void (*on_change)(struct textinput* ti, void* userdata);
+	void (*on_submit)(struct inputbox* ti, void* userdata);
+	void (*on_change)(struct inputbox* ti, void* userdata);
 	void* cb_userdata;
 };
 
@@ -839,10 +832,10 @@ void datagrid_set_selected_row(datagrid_p grid, int row)
 	if (grid) grid->selected_row = row;
 }
 
-radio_button_p radio_button_create(int x, int y, int size, const char* label, int group_id)
+radio_p radio_create(int x, int y, int size, const char* label, int group_id)
 {
-	radio_button_p radio;
-	radio = (radio_button_p)malloc(sizeof(radio_button_t));
+	radio_p radio;
+	radio = (radio_p)malloc(sizeof(radio_t));
 	if (!radio) return NULL;
 
 	radio->x = x;
@@ -870,7 +863,7 @@ radio_button_p radio_button_create(int x, int y, int size, const char* label, in
 	return radio;
 }
 
-void radio_button_destroy(radio_button_p radio)
+void radio_destroy(radio_p radio)
 {
 	if (!radio) return;
 
@@ -882,82 +875,7 @@ void radio_button_destroy(radio_button_p radio)
 }
 
 
-radio_button_group_p radio_button_group_create()
-{
-	radio_button_group_p group;
-	group = (radio_button_group_p)malloc(sizeof(radio_button_group_t));
-	if (!group) return NULL;
-
-	group->capacity = 16;
-	group->buttons = malloc(group->capacity * sizeof(radio_button_p));
-	group->count = 0;
-	group->selected_index = -1;
-
-	return group;
-}
-
-void radio_button_group_add_button(radio_button_group_p group, radio_button_p radio)
-{
-	if (!group || !radio) return;
-
-	group->count++;
-	if (group->capacity < group->count) {
-		group->capacity *= 2;
-		group->buttons = realloc(group->buttons, group->capacity * sizeof(radio_button_p));
-	}
-	group->buttons[group->count - 1] = radio;
-}
-
-void radio_button_group_set_selected(radio_button_group_p group, int index)
-{
-	if (!group || index < 0 || index >= group->count) return;
-
-	// ȡ��֮ǰѡ�еİ�ť
-	if (group->selected_index >= 0 && group->selected_index < group->count) {
-		group->buttons[group->selected_index]->checked = false;
-	}
-
-	// �����µ�ѡ�а�ť
-	group->selected_index = index;
-	group->buttons[index]->checked = true;
-}
-
-// ͨ����ťָ������ѡ��
-void radio_button_group_set_selected_by_button(radio_button_group_p group, radio_button_p selected)
-{
-	if (!group || !selected) return;
-	for (int i = 0; i < group->count; i++) {
-		if (group->buttons[i] == selected) {
-			radio_button_group_set_selected(group, i);
-			return;
-		}
-	}
-}
-
-int radio_button_group_get_selected_index(radio_button_group_p group)
-{
-	return group ? group->selected_index : -1;
-}
-
-radio_button_p radio_button_group_get_selected_button(radio_button_group_p group)
-{
-	if (!group || group->selected_index < 0 || group->selected_index >= group->count) {
-		return NULL;
-	}
-	return group->buttons[group->selected_index];
-}
-
-// �ͷŵ�ѡ��ť���ڴ�
-void radio_button_group_destroy(radio_button_group_p group)
-{
-	if (!group) return;
-
-	// ע�⣺���ﲻ�ͷŵ�����ť���ڴ棬�ɴ����߸���
-	free(group->buttons);
-	free(group);
-}
-
-void radio_button_render(radio_button_p radio, jr2d_p r2d)
+void radio_render(radio_p radio, jr2d_p r2d)
 {
 	if (!radio) return;
 
@@ -1005,16 +923,7 @@ void radio_button_render(radio_button_p radio, jr2d_p r2d)
 	}
 }
 
-void radio_button_group_draw(radio_button_group_p group, jr2d_p r2d)
-{
-	if (!group) return;
-
-	for (int i = 0; i < group->count; i++) {
-		radio_button_render(group->buttons[i], r2d);
-	}
-}
-
-bool radio_button_is_pressed(radio_button_p radio, float x, float y)
+bool radio_is_pressed(radio_p radio, float x, float y)
 {
 	if (!radio) 
 		return false;
@@ -1033,7 +942,7 @@ bool radio_button_is_pressed(radio_button_p radio, float x, float y)
 	return false;
 }
 
-void radio_button_set_hovered(radio_button_p radio, bool v)
+void radio_set_hovered(radio_p radio, bool v)
 {
 	if (radio) radio->hover = v;
 }
@@ -1427,14 +1336,14 @@ float joystick_get_magnitude(joystick_p joystick)
 }
 
 /* =================================================================
- * TextInput
+ * InputBox
  * ================================================================= */
 
-#define TEXTINPUT_BUF_INIT 256
+#define INPUTBOX_BUF_INIT 256
 
-textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
+inputbox_p inputbox_create(jr2d_p r2d, jrect_t rect, font_p font)
 {
-	textinput_p ti = (textinput_p)calloc(1, sizeof(textinput_t));
+	inputbox_p ti = (inputbox_p)calloc(1, sizeof(inputbox_t));
 	if (!ti) return NULL;
 	ti->r2d   = r2d;
 	ti->rect       = rect;
@@ -1445,7 +1354,7 @@ textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
 	ti->text_color = (jcolor_t){0, 0, 0, 255};
 	ti->cursor_color = (jcolor_t){0, 0, 0, 255};
 	ti->sel_color    = (jcolor_t){100, 150, 255, 255};
-	ti->buf_len    = TEXTINPUT_BUF_INIT;
+	ti->buf_len    = INPUTBOX_BUF_INIT;
 	ti->buffer     = (char*)calloc(1, ti->buf_len);
 	ti->text_len   = 0;
 	ti->cursor_pos = 0;
@@ -1457,7 +1366,7 @@ textinput_p textinput_create(jr2d_p r2d, jrect_t rect, font_p font)
 	return ti;
 }
 
-void textinput_destroy(textinput_p ti)
+void inputbox_destroy(inputbox_p ti)
 {
 	if (!ti) return;
 	free(ti->buffer);
@@ -1467,31 +1376,31 @@ void textinput_destroy(textinput_p ti)
 
 /* ---- 选中支持 ---- */
 
-static void textinput_clear_sel(textinput_p ti)
+static void inputbox_clear_sel(inputbox_p ti)
 {
 	ti->sel_start = ti->sel_end = -1;
 }
 
-static bool textinput_has_sel(textinput_p ti)
+static bool inputbox_has_sel(inputbox_p ti)
 {
 	return ti->sel_start >= 0 && ti->sel_end >= 0 && ti->sel_start != ti->sel_end;
 }
 
 /* 删除选中文本，将光标置于选中起始 */
-static void textinput_delete_sel(textinput_p ti)
+static void inputbox_delete_sel(inputbox_p ti)
 {
-	if (!textinput_has_sel(ti)) return;
+	if (!inputbox_has_sel(ti)) return;
 	int a = ti->sel_start, b = ti->sel_end;
 	if (a > b) { int t = a; a = b; b = t; }
 	memmove(ti->buffer + a, ti->buffer + b, ti->text_len - b);
 	ti->text_len -= (b - a);
 	ti->cursor_pos = a;
-	textinput_clear_sel(ti);
+	inputbox_clear_sel(ti);
 	ti->buffer[ti->text_len] = '\0';
 }
 
 
-void textinput_set_text(textinput_p ti, const char* text)
+void inputbox_set_text(inputbox_p ti, const char* text)
 {
 	if (!ti || !text) return;
 	int len = (int)strlen(text);
@@ -1503,19 +1412,19 @@ void textinput_set_text(textinput_p ti, const char* text)
 	ti->buffer[len] = '\0';
 	ti->text_len = len;
 	ti->cursor_pos = len;
-	textinput_clear_sel(ti);
+	inputbox_clear_sel(ti);
 	ti->scroll_offset = 0;
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 }
 
-const char* textinput_get_text(textinput_p ti)
+const char* inputbox_get_text(inputbox_p ti)
 {
 	return ti ? ti->buffer : "";
 }
 
-void textinput_set_callback(textinput_p ti,
-	void (*submit)(textinput_p, void*),
-	void (*change)(textinput_p, void*),
+void inputbox_set_callback(inputbox_p ti,
+	void (*submit)(inputbox_p, void*),
+	void (*change)(inputbox_p, void*),
 	void* userdata)
 {
 	if (!ti) return;
@@ -1524,12 +1433,12 @@ void textinput_set_callback(textinput_p ti,
 	ti->cb_userdata = userdata;
 }
 
-static int textinput_cursor_x(textinput_p ti);
+static int inputbox_cursor_x(inputbox_p ti);
 
 /* 滚动到光标可见 */
-static void textinput_scroll_to_cursor(textinput_p ti)
+static void inputbox_scroll_to_cursor(inputbox_p ti)
 {
-	int cw = textinput_cursor_x(ti);
+	int cw = inputbox_cursor_x(ti);
 	int visible_w = (int)ti->rect.w - 8;
 	if (cw - ti->scroll_offset > visible_w)
 		ti->scroll_offset = cw - visible_w;
@@ -1538,10 +1447,10 @@ static void textinput_scroll_to_cursor(textinput_p ti)
 }
 
 /* 在 buffer 的 cursor_pos 处插入 len 字节 */
-void textinput_insert(textinput_p ti, const char* s, int len)
+void inputbox_insert(inputbox_p ti, const char* s, int len)
 {
 	/* 有选中时先删除选中文本 */
-	if (textinput_has_sel(ti)) textinput_delete_sel(ti);
+	if (inputbox_has_sel(ti)) inputbox_delete_sel(ti);
 
 	if (ti->text_len + len >= ti->buf_len) {
 		while (ti->text_len + len >= ti->buf_len)
@@ -1556,19 +1465,19 @@ void textinput_insert(textinput_p ti, const char* s, int len)
 	ti->cursor_pos += len;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
-	textinput_scroll_to_cursor(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
 /* 移动光标并清除选中 */
-static void textinput_move_cursor(textinput_p ti, int pos)
+static void inputbox_move_cursor(inputbox_p ti, int pos)
 {
 	ti->cursor_pos = pos;
-	textinput_clear_sel(ti);
-	textinput_scroll_to_cursor(ti);
+	inputbox_clear_sel(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
 /* 扩展选中到光标位置 */
-static void textinput_update_sel(textinput_p ti)
+static void inputbox_update_sel(inputbox_p ti)
 {
 	if (ti->sel_start < 0) ti->sel_start = ti->cursor_pos;
 	ti->sel_end = ti->cursor_pos;
@@ -1576,81 +1485,81 @@ static void textinput_update_sel(textinput_p ti)
 
 /* ---- end 选中支持 ---- */
 
-void textinput_cursor_left(textinput_p ti)
+void inputbox_cursor_left(inputbox_p ti)
 {
 	if (!ti || ti->cursor_pos <= 0) return;
-	textinput_move_cursor(ti, ti->cursor_pos - 1);
+	inputbox_move_cursor(ti, ti->cursor_pos - 1);
 }
 
-void textinput_cursor_right(textinput_p ti)
+void inputbox_cursor_right(inputbox_p ti)
 {
 	if (!ti || ti->cursor_pos >= ti->text_len) return;
-	textinput_move_cursor(ti, ti->cursor_pos + 1);
+	inputbox_move_cursor(ti, ti->cursor_pos + 1);
 }
 
-void textinput_cursor_home(textinput_p ti)
+void inputbox_cursor_home(inputbox_p ti)
 {
 	if (!ti) return;
-	textinput_move_cursor(ti, 0);
+	inputbox_move_cursor(ti, 0);
 	ti->scroll_offset = 0;
 }
 
-void textinput_cursor_end(textinput_p ti)
+void inputbox_cursor_end(inputbox_p ti)
 {
 	if (!ti) return;
-	textinput_move_cursor(ti, ti->text_len);
-	textinput_scroll_to_cursor(ti);
+	inputbox_move_cursor(ti, ti->text_len);
+	inputbox_scroll_to_cursor(ti);
 }
 
-void textinput_select_left(textinput_p ti)
+void inputbox_select_left(inputbox_p ti)
 {
 	if (!ti || ti->cursor_pos <= 0) return;
 	ti->cursor_pos--;
-	textinput_update_sel(ti);
-	textinput_scroll_to_cursor(ti);
+	inputbox_update_sel(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
-void textinput_select_right(textinput_p ti)
+void inputbox_select_right(inputbox_p ti)
 {
 	if (!ti || ti->cursor_pos >= ti->text_len) return;
 	ti->cursor_pos++;
-	textinput_update_sel(ti);
-	textinput_scroll_to_cursor(ti);
+	inputbox_update_sel(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
-void textinput_select_home(textinput_p ti)
+void inputbox_select_home(inputbox_p ti)
 {
 	if (!ti) return;
-	textinput_update_sel(ti);
+	inputbox_update_sel(ti);
 	ti->cursor_pos = 0;
 	ti->scroll_offset = 0;
 	ti->sel_end = 0;
 }
 
-void textinput_select_end(textinput_p ti)
+void inputbox_select_end(inputbox_p ti)
 {
 	if (!ti) return;
-	textinput_update_sel(ti);
+	inputbox_update_sel(ti);
 	ti->cursor_pos = ti->text_len;
 	ti->sel_end = ti->text_len;
-	textinput_scroll_to_cursor(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
-void textinput_select_all(textinput_p ti)
+void inputbox_select_all(inputbox_p ti)
 {
 	if (!ti) return;
 	ti->sel_start = 0;
 	ti->sel_end = ti->text_len;
 	ti->cursor_pos = ti->text_len;
-	textinput_scroll_to_cursor(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
 /* 删除光标前一个 UTF-8 字符（退格） */
-void textinput_backspace(textinput_p ti)
+void inputbox_backspace(inputbox_p ti)
 {
-	if (textinput_has_sel(ti)) {
-		textinput_delete_sel(ti);
-		textinput_scroll_to_cursor(ti);
+	if (inputbox_has_sel(ti)) {
+		inputbox_delete_sel(ti);
+		inputbox_scroll_to_cursor(ti);
 		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 		return;
 	}
@@ -1665,15 +1574,15 @@ void textinput_backspace(textinput_p ti)
 	ti->cursor_pos = pos;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
-	textinput_scroll_to_cursor(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
 /* 删除光标后一个 UTF-8 字符（Delete） */
-void textinput_delete(textinput_p ti)
+void inputbox_delete(inputbox_p ti)
 {
-	if (textinput_has_sel(ti)) {
-		textinput_delete_sel(ti);
-		textinput_scroll_to_cursor(ti);
+	if (inputbox_has_sel(ti)) {
+		inputbox_delete_sel(ti);
+		inputbox_scroll_to_cursor(ti);
 		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 		return;
 	}
@@ -1687,20 +1596,20 @@ void textinput_delete(textinput_p ti)
 	ti->text_len -= ch_len;
 	ti->buffer[ti->text_len] = '\0';
 	if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
-	textinput_scroll_to_cursor(ti);
+	inputbox_scroll_to_cursor(ti);
 }
 
-void textinput_paste(textinput_p ti)
+void inputbox_paste(inputbox_p ti)
 {
 	if (!ti) return;
 	const char* clip = get_clipboard_text();
-	if (clip) textinput_insert(ti, clip, (int)strlen(clip));
+	if (clip) inputbox_insert(ti, clip, (int)strlen(clip));
 }
 
-void textinput_copy(textinput_p ti)
+void inputbox_copy(inputbox_p ti)
 {
 	if (!ti || ti->text_len <= 0) return;
-	if (textinput_has_sel(ti)) {
+	if (inputbox_has_sel(ti)) {
 		int a = ti->sel_start, b = ti->sel_end;
 		if (a > b) { int t = a; a = b; b = t; }
 		int len = b - a;
@@ -1714,10 +1623,10 @@ void textinput_copy(textinput_p ti)
 	}
 }
 
-void textinput_cut(textinput_p ti)
+void inputbox_cut(inputbox_p ti)
 {
 	if (!ti || ti->text_len <= 0) return;
-	if (textinput_has_sel(ti)) {
+	if (inputbox_has_sel(ti)) {
 		int a = ti->sel_start, b = ti->sel_end;
 		if (a > b) { int t = a; a = b; b = t; }
 		int len = b - a;
@@ -1726,7 +1635,7 @@ void textinput_cut(textinput_p ti)
 		buf[len] = '\0';
 		set_clipboard_text(buf);
 		free(buf);
-		textinput_delete_sel(ti);
+		inputbox_delete_sel(ti);
 		ti->buffer[ti->text_len] = '\0';
 		if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 	} else {
@@ -1739,7 +1648,7 @@ void textinput_cut(textinput_p ti)
 }
 
 /* 获取光标之前的文本宽度（像素） */
-static int textinput_cursor_x(textinput_p ti)
+static int inputbox_cursor_x(inputbox_p ti)
 {
 	if (ti->cursor_pos <= 0 || !ti->font) return 0;
 	/* 用 text_createx 生成光标前的子串，量宽度 */
@@ -1751,7 +1660,7 @@ static int textinput_cursor_x(textinput_p ti)
 	return w;
 }
 
-void textinput_focus(textinput_p ti)
+void inputbox_focus(inputbox_p ti)
 {
 	if (!ti || ti->focused) return;
 	ti->focused = true;
@@ -1762,16 +1671,16 @@ void textinput_focus(textinput_p ti)
 	if (win) SDL_StartTextInput(win);
 }
 
-void textinput_defocus(textinput_p ti)
+void inputbox_defocus(inputbox_p ti)
 {
 	if (!ti || !ti->focused) return;
 	ti->focused = false;
-	textinput_clear_sel(ti);
+	inputbox_clear_sel(ti);
 	SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
 	if (win) SDL_StopTextInput(win);
 }
 
-void textinput_draw(textinput_p ti)
+void inputbox_draw(inputbox_p ti)
 {
 	if (!ti) return;
 	jr2d_p r = ti->r2d;
@@ -1787,7 +1696,7 @@ void textinput_draw(textinput_p ti)
 	shape_draw_rectangle(r, "line", rect);
 
 	/* 选中高亮（绘制在文字下方） */
-	if (textinput_has_sel(ti) && ti->font) {
+	if (inputbox_has_sel(ti) && ti->font) {
 		int a = ti->sel_start, b = ti->sel_end;
 		if (a > b) { int t = a; a = b; b = t; }
 		jcolor_t c = {0,0,0,255};
@@ -1810,7 +1719,7 @@ void textinput_draw(textinput_p ti)
 		float text_y = rect.y + (rect.h - (float)font_get_size(ti->font)) / 2.0f;
 		float ox = text_x - (float)ti->scroll_offset;
 
-		if (textinput_has_sel(ti)) {
+		if (inputbox_has_sel(ti)) {
 			int a = ti->sel_start, b = ti->sel_end;
 			if (a > b) { int t = a; a = b; b = t; }
 			jcolor_t white = {255, 255, 255, 255};
@@ -1840,7 +1749,7 @@ void textinput_draw(textinput_p ti)
 			ti->cursor_timer = now;
 		}
 		if (ti->cursor_visible) {
-			int cx = textinput_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
+			int cx = inputbox_cursor_x(ti) - ti->scroll_offset + (int)rect.x + 4;
 			if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
 				float cy = rect.y + 3;
 				float ch = rect.h - 6;
@@ -1851,7 +1760,7 @@ void textinput_draw(textinput_p ti)
 	}
 }
 
-bool textinput_is_pressed(textinput_p ti, float x, float y)
+bool inputbox_is_pressed(inputbox_p ti, float x, float y)
 {
 	if (!ti) return false;
 	vec2_t logic;
@@ -1862,14 +1771,14 @@ bool textinput_is_pressed(textinput_p ti, float x, float y)
 	rect.height = ti->rect.h;
 	logic = r2d_coordinates_from_window(ti->r2d, x, y);
 	if (collision2d_check_point_rectangle(logic, rect)) {
-		textinput_focus(ti);
+		inputbox_focus(ti);
 		return true;
 	}
-	textinput_defocus(ti);
+	inputbox_defocus(ti);
 	return false;
 }
 
-bool textinput_is_hovered(textinput_p ti, float x, float y)
+bool inputbox_is_hovered(inputbox_p ti, float x, float y)
 {
 	if (!ti) return false;
 	vec2_t logic;
@@ -1883,7 +1792,7 @@ bool textinput_is_hovered(textinput_p ti, float x, float y)
 	return ti->hovered;
 }
 
-bool textinput_is_focused(textinput_p ti)
+bool inputbox_is_focused(inputbox_p ti)
 {
 	return ti ? ti->focused : false;
 }
@@ -2317,50 +2226,50 @@ void button_process_event(button_p btn, const void* ev)
 	}
 }
 
-void textinput_process_event(textinput_p ti, const void* ev)
+void inputbox_process_event(inputbox_p ti, const void* ev)
 {
 	if (!ti || !ev) return;
 	const SDL_Event* e = (const SDL_Event*)ev;
 	if (e->type == SDL_EVENT_MOUSE_MOTION) {
-		textinput_is_hovered(ti, e->motion.x, e->motion.y);
+		inputbox_is_hovered(ti, e->motion.x, e->motion.y);
 	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		textinput_is_pressed(ti, e->button.x, e->button.y);
+		inputbox_is_pressed(ti, e->button.x, e->button.y);
 	} else if (e->type == SDL_EVENT_TEXT_INPUT) {
 		if (ti->focused) {
-			textinput_insert(ti, e->text.text, (int)strlen(e->text.text));
+			inputbox_insert(ti, e->text.text, (int)strlen(e->text.text));
 		}
 	} else if (e->type == SDL_EVENT_KEY_DOWN) {
 		if (!ti->focused) return;
 		switch (e->key.scancode) {
-		case SDL_SCANCODE_BACKSPACE: textinput_backspace(ti); break;
-		case SDL_SCANCODE_DELETE:    textinput_delete(ti); break;
+		case SDL_SCANCODE_BACKSPACE: inputbox_backspace(ti); break;
+		case SDL_SCANCODE_DELETE:    inputbox_delete(ti); break;
 		case SDL_SCANCODE_LEFT:
-			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_left(ti);
-			else textinput_cursor_left(ti);
+			if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_left(ti);
+			else inputbox_cursor_left(ti);
 			break;
 		case SDL_SCANCODE_RIGHT:
-			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_right(ti);
-			else textinput_cursor_right(ti);
+			if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_right(ti);
+			else inputbox_cursor_right(ti);
 			break;
 		case SDL_SCANCODE_HOME:
-			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_home(ti);
-			else textinput_cursor_home(ti);
+			if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_home(ti);
+			else inputbox_cursor_home(ti);
 			break;
 		case SDL_SCANCODE_END:
-			if (e->key.mod & SDL_KMOD_SHIFT) textinput_select_end(ti);
-			else textinput_cursor_end(ti);
+			if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_end(ti);
+			else inputbox_cursor_end(ti);
 			break;
 		case SDL_SCANCODE_A:
-			if (e->key.mod & SDL_KMOD_CTRL) textinput_select_all(ti);
+			if (e->key.mod & SDL_KMOD_CTRL) inputbox_select_all(ti);
 			break;
 		case SDL_SCANCODE_V:
-			if (e->key.mod & SDL_KMOD_CTRL) textinput_paste(ti);
+			if (e->key.mod & SDL_KMOD_CTRL) inputbox_paste(ti);
 			break;
 		case SDL_SCANCODE_C:
-			if (e->key.mod & SDL_KMOD_CTRL) textinput_copy(ti);
+			if (e->key.mod & SDL_KMOD_CTRL) inputbox_copy(ti);
 			break;
 		case SDL_SCANCODE_X:
-			if (e->key.mod & SDL_KMOD_CTRL) textinput_cut(ti);
+			if (e->key.mod & SDL_KMOD_CTRL) inputbox_cut(ti);
 			break;
 		default: break;
 		}
@@ -2378,6 +2287,15 @@ void slider_process_event(slider_p s, const void* ev)
 		slider_is_pressed(s, e->button.x, e->button.y);
 	} else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
 		s->is_dragging = false;
+	}
+}
+
+void tooltip_process_event(tooltip_p t, const void* ev)
+{
+	if (!t || !ev) return;
+	const SDL_Event* e = (const SDL_Event*)ev;
+	if (e->type == SDL_EVENT_MOUSE_MOTION) {
+		tooltip_set_position(t, e->motion.x + 12, e->motion.y - 10);
 	}
 }
 
@@ -2404,12 +2322,12 @@ void checkbox_process_event(checkbox_p cb, const void* ev)
 	}
 }
 
-void radio_button_process_event(radio_button_p rb, const void* ev)
+void radio_process_event(radio_p rb, const void* ev)
 {
 	if (!rb || !ev) return;
 	const SDL_Event* e = (const SDL_Event*)ev;
 	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-		radio_button_is_pressed(rb, e->button.x, e->button.y);
+		radio_is_pressed(rb, e->button.x, e->button.y);
 	}
 }
 
