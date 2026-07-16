@@ -1446,15 +1446,30 @@ void inputbox_set_callback(inputbox_p ti,
 
 static int inputbox_cursor_x(inputbox_p ti);
 
-/* 滚动到光标可见 */
+/* 滚动到光标可见，并尽量填充右侧空白 */
 static void inputbox_scroll_to_cursor(inputbox_p ti)
 {
         int cw = inputbox_cursor_x(ti);
         int visible_w = (int)ti->rect.w - 8;
+
+        /* 1. 保证光标可见 */
         if (cw - ti->scroll_offset > visible_w)
                 ti->scroll_offset = cw - visible_w;
         else if (cw - ti->scroll_offset < 0)
                 ti->scroll_offset = cw;
+
+        /* 2. 如果文字总宽度小于可见区域，直接左对齐 */
+        int total_w = inputbox_cursor_x_at(ti, ti->text_len);
+        if (total_w < visible_w)
+                ti->scroll_offset = 0;
+
+        /* 3. 如果右侧出现空白（删除文字后），把隐藏的左侧文字拉出来 */
+        int rightmost_visible = ti->scroll_offset + visible_w;
+        if (rightmost_visible > total_w && total_w > visible_w)
+                ti->scroll_offset = total_w - visible_w;
+
+        if (ti->scroll_offset < 0)
+                ti->scroll_offset = 0;
 }
 
 /* 在 buffer 的 cursor_pos 处插入 len 字节 */
@@ -1650,11 +1665,13 @@ void inputbox_cut(inputbox_p ti)
                 inputbox_delete_sel(ti);
                 ti->buffer[ti->text_len] = '\0';
                 if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
+                inputbox_scroll_to_cursor(ti);
         }
         else {
                 set_clipboard_text(ti->buffer);
                 ti->text_len = 0;
                 ti->cursor_pos = 0;
+                ti->scroll_offset = 0;
                 ti->buffer[0] = '\0';
                 if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
         }
@@ -1667,6 +1684,18 @@ static int inputbox_cursor_x(inputbox_p ti)
         /* 用 text_createx 生成光标前的子串，量宽度 */
         jcolor_t c = { 0,0,0,255 };
         jtext_p tex = text_createx(ti->r2d, ti->font, ti->buffer, ti->cursor_pos, c);
+        if (!tex) return 0;
+        int w = text_get_width(tex);
+        text_destroy(tex);
+        return w;
+}
+
+/* 获取 buffer 中从开头到 pos 字节位置的文本宽度（像素） */
+static int inputbox_cursor_x_at(inputbox_p ti, int pos)
+{
+        if (pos <= 0 || !ti->font) return 0;
+        jcolor_t c = { 0,0,0,255 };
+        jtext_p tex = text_createx(ti->r2d, ti->font, ti->buffer, pos, c);
         if (!tex) return 0;
         int w = text_get_width(tex);
         text_destroy(tex);
@@ -1707,6 +1736,15 @@ void inputbox_draw(inputbox_p ti)
         jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
         r2d_set_color(r, border.r, border.g, border.b, border.a);
         shape_draw_rectangle(r, "line", rect);
+
+        /* 设置裁剪区域，防止文字绘制到 inputbox 矩形之外 */
+        SDL_Renderer* sdl_r = (SDL_Renderer*)r2d_unwrap(r);
+        SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
+        bool clip_was_enabled = SDL_RenderClipEnabled(sdl_r);
+        SDL_Rect old_clip;
+        if (clip_was_enabled)
+                SDL_GetRenderClipRect(sdl_r, &old_clip);
+        SDL_SetRenderClipRect(sdl_r, &clip_rect);
 
         /* 选中高亮（绘制在文字下方） */
         if (inputbox_has_sel(ti) && ti->font) {
@@ -1754,6 +1792,12 @@ void inputbox_draw(inputbox_p ti)
                         jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
                 }
         }
+
+        /* 恢复裁剪区域 */
+        if (clip_was_enabled)
+                SDL_SetRenderClipRect(sdl_r, &old_clip);
+        else
+                SDL_SetRenderClipRect(sdl_r, NULL);
 
         /* 光标（聚焦时绘制） */
         if (ti->focused) {
