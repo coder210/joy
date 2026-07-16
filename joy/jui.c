@@ -1052,67 +1052,57 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
         float cx = (float)checkbox->x;
         float cy = (float)checkbox->y;
         float sz = (float)checkbox->size;
-        float r = sz * 0.15f; // 圆角半径
 
-        // === 框体背景（白色填充 + 圆角）===
-        uint8_t bg_alpha = checkbox->enabled ? 255 : 100;
-        r2d_set_color(r2d, 255, 255, 255, bg_alpha);
+        uint8_t alpha = checkbox->enabled ? 255 : 100;
+
+        // === 框体背景（蓝色填充）===
+        r2d_set_color(r2d, 50, 130, 230, alpha);
         jrect_t fill_rect = { cx, cy, sz, sz };
         shape_draw_rectangle(r2d, "fill", fill_rect);
 
-        // === 悬停高亮 ===
+        // === 悬停时更亮 ===
         if (checkbox->hover && checkbox->enabled) {
-                r2d_set_color(r2d,
-                        checkbox->hover_color.r,
-                        checkbox->hover_color.g,
-                        checkbox->hover_color.b,
-                        checkbox->hover_color.a);
+                r2d_set_color(r2d, 80, 160, 250, 255);
                 shape_draw_rectangle(r2d, "fill", fill_rect);
         }
 
-        // === 边框 ===
-        r2d_set_color(r2d,
-                checkbox->box_color.r,
-                checkbox->box_color.g,
-                checkbox->box_color.b,
-                checkbox->box_color.a);
+        // === 白色边框 ===
+        r2d_set_color(r2d, 255, 255, 255, alpha);
         shape_draw_rectangle(r2d, "line", fill_rect);
 
-        // === 选中/不确定 标记 ===
-        if (checkbox->state != JOY_CHECKBOX_UNCHECKED && checkbox->enabled) {
-                r2d_set_color(r2d,
-                        checkbox->check_color.r,
-                        checkbox->check_color.g,
-                        checkbox->check_color.b,
-                        checkbox->check_color.a);
-
-                if (checkbox->state == JOY_CHECKBOX_CHECKED) {
-                        // 对勾：两条粗线（先画框内填充色）
-                        r2d_set_color(r2d, 60, 160, 60, 255);
-                        jrect_t check_fill = { cx + 2, cy + 2, sz - 4, sz - 4 };
-                        shape_draw_rectangle(r2d, "fill", check_fill);
-
-                        // 白色对勾
-                        r2d_set_color(r2d, 255, 255, 255, 255);
-                        float p = sz * 0.2f;
-                        float m = sz * 0.5f;
-                        float e = sz - p;
-                        vec2_t check[3] = {
-                            {cx + p,       cy + m},
-                            {cx + sz * 0.4f, cy + e},
-                            {cx + e,       cy + p}
+        // === 选中状态：白色对勾 ===
+        if (checkbox->state == JOY_CHECKBOX_CHECKED && checkbox->enabled) {
+                r2d_set_color(r2d, 255, 255, 255, 255);
+                float p = sz * 0.18f;
+                float m = sz * 0.5f;
+                float e = sz - p;
+                float h1 = sz * 0.38f;
+                float h2 = sz - p;
+                vec2_t check[3] = {
+                    {cx + p,      cy + m},
+                    {cx + h1,     cy + h2},
+                    {cx + e,      cy + p}
+                };
+                // 加粗：画 4 条偏移线（-1.5, -0.5, 0.5, 1.5）
+                for (float off = -1.5f; off <= 1.5f; off += 1.0f) {
+                        vec2_t thick[3] = {
+                            {check[0].x + off * 0.4f, check[0].y + off * 0.4f},
+                            {check[1].x + off * 0.4f, check[1].y + off * 0.4f},
+                            {check[2].x + off * 0.4f, check[2].y + off * 0.4f}
                         };
-                        r2d_draw_lines(r2d, check, 3);
+                        r2d_draw_lines(r2d, thick, 3);
                 }
-                else {
-                        // 不确定状态：短横线
-                        float p = sz * 0.25f;
-                        vec2_t dash[2] = {
-                            {cx + p, cy + sz * 0.5f},
-                            {cx + sz - p, cy + sz * 0.5f}
-                        };
-                        shape_draw_line(r2d, dash[0].x, dash[0].y, dash[1].x, dash[1].y);
-                }
+                r2d_draw_lines(r2d, check, 3);
+        }
+        else if (checkbox->state == JOY_CHECKBOX_INDETERMINATE && checkbox->enabled) {
+                // 不确定状态：白色短横线
+                r2d_set_color(r2d, 255, 255, 255, 255);
+                float p = sz * 0.25f;
+                vec2_t dash[2] = {
+                    {cx + p, cy + sz * 0.5f},
+                    {cx + sz - p, cy + sz * 0.5f}
+                };
+                shape_draw_line(r2d, dash[0].x, dash[0].y, dash[1].x, dash[1].y);
         }
 
         // === 禁用遮罩 ===
@@ -1124,9 +1114,9 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
         // === 标签文本 ===
         if (checkbox->label && font) {
                 font_p f = (font_p)font;
-                jcolor_t tc = checkbox->enabled ? checkbox->text_color : (jcolor_t) { 128, 128, 128, 255 };
+                jcolor_t tc = checkbox->enabled ? (jcolor_t){ 255, 255, 255, 255 } : (jcolor_t){ 160, 160, 160, 255 };
                 jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
-                        cx + sz + 5,
+                        cx + sz + 8,
                         cy + (sz - (float)font_get_size(f)) / 2);
         }
 }
