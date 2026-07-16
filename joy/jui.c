@@ -2372,16 +2372,47 @@ void tooltip_process_event(tooltip_p t, const void* ev)
 
 void popup_process_event(popup_p p, const void* ev)
 {
-        (void)p;
-        (void)ev;
-        /* Popup 需要配合外部状态管理（visible、dragging），不在 C 层自动处理 */
+        if (!p || !ev) return;
+        const SDL_Event* e = (const SDL_Event*)ev;
+        if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                float mx = e->button.x, my = e->button.y;
+                if (popup_is_close_clicked(p, mx, my)) {
+                        popup_set_visible(p, false);
+                } else if (popup_is_title_clicked(p, mx, my)) {
+                        p->is_dragging = true;
+                }
+        }
+        else if (e->type == SDL_EVENT_MOUSE_MOTION) {
+                if (p->is_dragging) {
+                        popup_drag_move(p, e->motion.x, e->motion.y);
+                }
+        }
+        else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                p->is_dragging = false;
+        }
 }
 
 void combobox_process_event(combobox_p cb, const void* ev)
 {
-        (void)cb;
-        (void)ev;
-        /* Combobox 需要配合外部状态（open/close），不在 C 层自动处理 */
+        if (!cb || !ev) return;
+        const SDL_Event* e = (const SDL_Event*)ev;
+        if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                float mx = e->button.x, my = e->button.y;
+                if (combobox_is_pressed(cb, mx, my)) {
+                        // 点击主框 → 切换展开
+                        combobox_set_open(cb, !combobox_is_open(cb));
+                } else if (combobox_is_open(cb)) {
+                        // 下拉已展开：检查是否点击了某个 item
+                        int hit = combobox_hit_item(cb, mx, my);
+                        if (hit >= 0) {
+                                combobox_set_selected(cb, hit);
+                                combobox_set_open(cb, false);
+                        } else {
+                                // 点击下拉外部 → 收起
+                                combobox_set_open(cb, false);
+                        }
+                }
+        }
 }
 
 void checkbox_process_event(checkbox_p cb, const void* ev)
