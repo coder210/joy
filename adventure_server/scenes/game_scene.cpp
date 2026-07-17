@@ -113,8 +113,15 @@ static void input_forwarding(Context* ctx)
                 else {
                         auto it = ctx->world_snapshots.find(sess.frameid);
                         if (it == ctx->world_snapshots.end()) {
-                                log_info("没有world");
-                                return;
+                                // 先跑一次 snapshot 收集当前世界状态
+                                snapshot_system(ctx->ecs, ctx);
+                                it = ctx->world_snapshots.find(sess.frameid);
+                                if (it == ctx->world_snapshots.end()) {
+                                        // 还是没有，发一个空快照让客户端能继续
+                                        auto data = pack_s2c_loading(conv, sess.frameid, ctx->global_entity_id, nullptr, 0);
+                                        netserver_send(ctx->net_server, sess.conv, data.c_str(), data.size());
+                                        return;
+                                }
                         }
                         S2CEntity entities[512];
                         int ec = 0, eid = 0;
@@ -175,7 +182,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
         // 标记该玩家需要初始加载（帧末由 ReplicationSystem 发送快照）
         it->second.is_loaded = false;   // false 表示尚未发送初始数据
         it->second.health = 10;
-        it->second.frameid = std::max(ctx->global_frame_id - 1, 1);
+        it->second.frameid = ctx->global_frame_id;
 }
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
