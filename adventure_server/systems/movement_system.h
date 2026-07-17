@@ -22,8 +22,6 @@ static void movement_system(flecs::entity e, PlayerStateInput& psi, LogicPositio
                 p.x = fp_sub(p.x, step); // 左
         if (psi.move_bits & 0b1000) 
                 p.x = fp_add(p.x, step); // 右c
-
-        e.modified<LogicPositionComponent>();   // 触发 OnSet
         e.remove<PlayerStateInput>();
 }
 

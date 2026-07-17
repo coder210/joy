@@ -185,18 +185,14 @@ static void on_load(scene_p s)
                 .each(movement_system);
 
         // 观察者直接捕获 wall_query 引用
-        ctx->ecs.observer<LogicPositionComponent>()
-            .event(flecs::OnSet)
-            .each([](flecs::entity e, LogicPositionComponent& lp) {
+        /*ctx->ecs.observer<PlayerStateInput>()
+            .event(flecs::OnRemove)
+            .each([](flecs::entity e) {
 
             int a = 10;
        
-        });
+        });*/
 
-
-        ctx->ecs.system<PlayerComponent, LogicRectComponent, LogicPositionComponent>()
-                .kind(flecs::OnUpdate)
-                .each(collision_system);
 
         // 插值
         ctx->ecs.system<IdComponent, LogicPositionComponent, TransformComponent>()

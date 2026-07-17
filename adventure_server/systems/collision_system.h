@@ -7,7 +7,7 @@
 // 碰撞系统：在 movement_system 之后运行，分为两轮
 // 1. 与地图墙体碰撞（无 IdComponent 的静态碰撞体）
 // 2. 与动态体碰撞（有 IdComponent 的其他实体）
-static void collision_system(flecs::entity e, PlayerComponent& p, LogicRectComponent& rect, LogicPositionComponent& pos)
+static void collision_system2(flecs::entity e, PlayerComponent& p, LogicRectComponent& rect, LogicPositionComponent& pos)
 {
     Context* ctx = (Context*)e.world().get_ctx();
 
