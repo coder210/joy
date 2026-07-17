@@ -114,7 +114,7 @@ static void input_forwarding(Context* ctx)
                         auto it = ctx->world_snapshots.find(sess.frameid);
                         if (it == ctx->world_snapshots.end()) {
                                 // 先跑一次 snapshot 收集当前世界状态
-                                snapshot_system(ctx->ecs, ctx);
+                                snapshot_system(ctx->ecs, ctx, 0);
                                 it = ctx->world_snapshots.find(sess.frameid);
                                 if (it == ctx->world_snapshots.end()) {
                                         // 还是没有，发一个空快照让客户端能继续
@@ -147,10 +147,16 @@ static void on_load(scene_p s)
         ctx->singleton_net = ctx->ecs.create();
         ctx->ecs.emplace<NetComponent>(ctx->singleton_net);
 
-        // 手动调用 OnStart 系统
-        creating_block_system(ctx->ecs, ctx);
-        init_tilemap_system(ctx->ecs, ctx);
-        snapshot_system(ctx->ecs, ctx);
+        // 注册 system（OnStart 的 system 注册在 OnStart phase）
+        ctx->add_system(Context::OnStart, "creating_block", creating_block_system);
+        ctx->add_system(Context::OnStart, "init_tilemap", init_tilemap_system);
+        ctx->add_system(Context::PreUpdate, "input_consume", input_consume_system);
+        ctx->add_system(Context::OnUpdate, "movement", movement_system);
+        ctx->add_system(Context::OnUpdate, "interpolate", interpolate_position_system);
+        ctx->add_system(Context::PostUpdate, "snapshot", snapshot_system);
+
+        // 执行 OnStart 阶段的 system（只执行一次）
+        ctx->run_phase(Context::OnStart, 0);
 
 }
 
@@ -352,26 +358,10 @@ static void on_update(scene_p s, float dt)
                         }
                 }
 
-                // 手动调度逻辑 tick（entt 无内置调度器）
-                float tick_dt = ctx->FIXED_TIMESTEP;
-                // PreUpdate: input_consume_system
-                input_consume_system(ctx->ecs, ctx);
-                // OnUpdate: movement + interpolation
-                auto move_view = ctx->ecs.view<PlayerStateInput, LogicPositionComponent>();
-                for (auto e : move_view) {
-                        auto& psi = move_view.get<PlayerStateInput>(e);
-                        auto& lp = move_view.get<LogicPositionComponent>(e);
-                        movement_system(ctx, ctx->ecs, e, psi, lp);
-                }
-                auto interp_view = ctx->ecs.view<IdComponent, LogicPositionComponent, TransformComponent>();
-                for (auto e : interp_view) {
-                        auto& id = interp_view.get<IdComponent>(e);
-                        auto& lp = interp_view.get<LogicPositionComponent>(e);
-                        auto& t = interp_view.get<TransformComponent>(e);
-                        interpolate_position_system(ctx, id, lp, t, tick_dt);
-                }
-                // PostUpdate: snapshot
-                snapshot_system(ctx->ecs, ctx);
+                // 自动调度逻辑 tick
+                ctx->run_phase(Context::PreUpdate, ctx->FIXED_TIMESTEP);
+                ctx->run_phase(Context::OnUpdate, ctx->FIXED_TIMESTEP);
+                ctx->run_phase(Context::PostUpdate, ctx->FIXED_TIMESTEP);
         }
 
         // === 渲染插值（60Hz 平滑，不参与逻辑）===

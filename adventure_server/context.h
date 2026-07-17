@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <queue>
 #include <string>
+#include <vector>
+#include <functional>
 #include "entt.hpp"
 #include "components/player_event_input.h"
 #include "components/player_state_input.h"
@@ -74,6 +76,29 @@ struct Context {
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
+
+        // ---- System 注册表（自动调度） ----
+        enum Phase { OnStart, PreUpdate, OnUpdate, PostUpdate };
+        struct SystemEntry {
+                std::string name;
+                Phase phase;
+                std::function<void(entt::registry&, Context*, float)> fn;
+        };
+        std::vector<SystemEntry> systems;
+
+        template<typename... Components>
+        void add_system(Phase phase, const char* name,
+                void (*fn)(entt::registry&, Context*, float))
+        {
+                systems.push_back({ name, phase, fn });
+        }
+
+        void run_phase(Phase phase, float dt) {
+                for (auto& sys : systems) {
+                        if (sys.phase == phase)
+                                sys.fn(ecs, this, dt);
+                }
+        }
 };
 
 

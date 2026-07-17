@@ -1,17 +1,10 @@
 #ifndef INIT_TILEMAP_SYSTEM_H
 #define INIT_TILEMAP_SYSTEM_H
-#include <joy/joy.h>
-#include "../../adventure_shared/protocol.h"
-#include "../components/id_component.h"
-#include "../components/logic_rect_component.h"
-#include "../components/logic_position_component.h"
-#include "../components/transform_component.h"
 #include "../context.h"
 
-static void init_tilemap_system(entt::registry& registry, Context* ctx)
-{
+static void init_tilemap_system(entt::registry& registry, Context* ctx, float dt) {
+        (void)dt;
         log_info("[Startup] system: init_tilemap");
-        // 加载 tilemap 碰撞墙体（替代硬编码围墙）
         ctx->tilemap = jtilemap_load_file("adventure_server/tilemap/map.lua");
         if (ctx->tilemap) {
                 jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
