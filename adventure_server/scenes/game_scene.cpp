@@ -32,8 +32,8 @@ struct game_scene {
 };
 
 // ========== 动画定义辅助 ==========
-static flecs::entity create_warrior_anim_def(flecs::world& world, const char* tex_path) {
-        auto def_entity = world.entity();
+static entt::entity create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
+        auto def_entity = registry.create();
         AnimatorDef def;
 
         const int FPS = 6;
@@ -80,7 +80,7 @@ static flecs::entity create_warrior_anim_def(flecs::world& world, const char* te
         }
 
         def.default_state = 0;
-        def_entity.set<AnimatorDef>(def);
+        registry.emplace<AnimatorDef>(def_entity, def);
         return def_entity;
 }
 
@@ -135,69 +135,15 @@ static void on_load(scene_p s)
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
-        ctx->ecs.set_ctx(ctx);
+        // entt 不需要 set_ctx，system 通过参数传 ctx
+        // 创建 NetComponent 作为 singleton（用 entity + emplace 模拟）
+        ctx->singleton_net = ctx->ecs.create();
+        ctx->ecs.emplace<NetComponent>(ctx->singleton_net);
 
-        /*    ctx->ecs.system<AttackRayEffectComponent>().each(EffectLifecycleSystem);
-            ctx->ecs.system<Animator, AnimParams, PlayerActionComponent>().each(animator_update_system);*/
-        ctx->ecs.add<NetComponent>();
-        log_info("NetComponent count: %d", ctx->ecs.filter<NetComponent>().count());
-
-        ctx->body_query = ctx->ecs.query<IdComponent, LogicRectComponent, LogicPositionComponent>();
-
-        ctx->drawing_entity_query = ctx->ecs.query<IdComponent, LogicRectComponent, TransformComponent>();
-
-        ctx->drawing_attack_rayeffect_query = ctx->ecs.query<AttackRayEffectComponent>();
-        ctx->player_query = ctx->ecs.query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-        ctx->enemy_query = ctx->ecs.query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-        // 预构建渲染 query，避免每帧重复 filter_builder().build()
-        ctx->render_player_query = ctx->ecs.query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, PlayerComponent>();
-        ctx->render_enemy_query = ctx->ecs.query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, EnemyComponent>();
-        // 位置同步 query（所有同时拥有逻辑位置和渲染位置的实体）
-        ctx->position_sync_query = ctx->ecs.query<LogicPositionComponent, TransformComponent>();
-        
-
-
-        ctx->ecs.system("creating_block")
-                .kind(flecs::OnStart)
-                .iter(creating_block_system);
-        ctx->ecs.system("init_tilemap")
-                .kind(flecs::OnStart)
-                .iter(init_tilemap_system);
-        ctx->ecs.system("snapshot")
-                .kind(flecs::OnStart)
-                .iter(snapshot_system);
-
-        // 帧同步：消费输入 + 收集命令（由外部固定步长累加器驱动，不需要 .rate()）
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::PreUpdate)
-                .iter(input_consume_system);
-
-        // 快照系统：收集世界状态（由外部固定步长累加器驱动，不需要 .rate()）
-        ctx->ecs.system<NetComponent>()
-                .kind(flecs::PostUpdate)
-                .iter(snapshot_system);
-
-        // 玩家移动系统（由外部固定步长累加器驱动，不需要
-        ctx->ecs.system<PlayerStateInput, LogicPositionComponent>()
-                .kind(flecs::OnUpdate)
-                .each(movement_system);
-
-        // 观察者直接捕获 wall_query 引用
-        /*ctx->ecs.observer<PlayerStateInput>()
-            .event(flecs::OnRemove)
-            .each([](flecs::entity e) {
-
-            int a = 10;
-       
-        });*/
-
-
-        // 插值
-        ctx->ecs.system<IdComponent, LogicPositionComponent, TransformComponent>()
-                .kind(flecs::OnUpdate)
-                .each(interpolate_position_system);
+        // 手动调用 OnStart 系统
+        creating_block_system(ctx->ecs, ctx);
+        init_tilemap_system(ctx->ecs, ctx);
+        snapshot_system(ctx->ecs, ctx);
 
 }
 
@@ -223,7 +169,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
         auto it = ctx->sessions.find(conv);
         if (it == ctx->sessions.end()) {
                 // 如果 Session 不存在，先创建一个（正常情况应该在 CONNECTED 时已创建）
-                ctx->sessions[conv] = { conv, flecs::entity::null(), 10, 0, false };
+                ctx->sessions[conv] = { conv, entt::null, 10, 0, false };
                 it = ctx->sessions.find(conv);
         }
         // 标记该玩家需要初始加载（帧末由 ReplicationSystem 发送快照）
@@ -326,9 +272,10 @@ static void collect_input(Context* ctx)
         // 收集所有已加载玩家的位置，按 id 排序确保所有客户端顺序一致
         std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
         for (auto& [conv, sess] : ctx->sessions) {
-                if (!sess.player_entity.is_valid()) continue;
-                const auto* id_comp = sess.player_entity.get<IdComponent>();
-                const auto* pos_comp = sess.player_entity.get<LogicPositionComponent>();
+                if (sess.player_entity == entt::null) continue;
+                if (!ctx->ecs.valid(sess.player_entity)) continue;
+                const auto* id_comp = ctx->ecs.try_get<IdComponent>(sess.player_entity);
+                const auto* pos_comp = ctx->ecs.try_get<LogicPositionComponent>(sess.player_entity);
                 if (!id_comp || !pos_comp) continue;
                 player_positions.push_back({ id_comp->id, { pos_comp->x, pos_comp->y } });
         }
@@ -386,22 +333,38 @@ static void on_update(scene_p s, float dt)
                 bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
                         &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
                 if (ok) {
-                        
-
-                        auto* cmd = ctx->ecs.get_mut<NetComponent>();
-                        cmd->frame_id = ok ? frame_id : -1;
-                        cmd->num_joins = jn;
-                        cmd->num_leaves = ln;
-                        cmd->num_inputs = in;
-                        memcpy(cmd->leaves, leaves, ln * sizeof(S2CPlayerLeave));
-                        memcpy(cmd->joins, joins, jn * sizeof(S2CPlayerJoin));
-                        if (cmd->num_inputs > 0) {
-                            memcpy(cmd->inputs, inputs, in * sizeof(S2CPlayerInput));
+                        auto& cmd = ctx->ecs.get<NetComponent>(ctx->singleton_net);
+                        cmd.frame_id = ok ? frame_id : -1;
+                        cmd.num_joins = jn;
+                        cmd.num_leaves = ln;
+                        cmd.num_inputs = in;
+                        memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
+                        memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
+                        if (cmd.num_inputs > 0) {
+                            memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
                         }
                 }
 
-                // 驱动逻辑 tick
-                ctx->ecs.progress(ctx->FIXED_TIMESTEP);
+                // 手动调度逻辑 tick（entt 无内置调度器）
+                float tick_dt = ctx->FIXED_TIMESTEP;
+                // PreUpdate: input_consume_system
+                input_consume_system(ctx->ecs, ctx);
+                // OnUpdate: movement + interpolation
+                auto move_view = ctx->ecs.view<PlayerStateInput, LogicPositionComponent>();
+                for (auto e : move_view) {
+                        auto& psi = move_view.get<PlayerStateInput>(e);
+                        auto& lp = move_view.get<LogicPositionComponent>(e);
+                        movement_system(ctx, ctx->ecs, e, psi, lp);
+                }
+                auto interp_view = ctx->ecs.view<IdComponent, LogicPositionComponent, TransformComponent>();
+                for (auto e : interp_view) {
+                        auto& id = interp_view.get<IdComponent>(e);
+                        auto& lp = interp_view.get<LogicPositionComponent>(e);
+                        auto& t = interp_view.get<TransformComponent>(e);
+                        interpolate_position_system(ctx, id, lp, t, tick_dt);
+                }
+                // PostUpdate: snapshot
+                snapshot_system(ctx->ecs, ctx);
         }
 
         // === 渲染插值（60Hz 平滑，不参与逻辑）===
@@ -440,52 +403,13 @@ static void on_render(scene_p s)
         }
 
         // ---- ECS 实体（碰撞体） ----
-        self->ctx->drawing_entity_query.each(drawing_entity_system);
-
-        //self->drawing_attack_rayeffect_query.each(DrawingAttackRayEffectSystem);
-
-        //// ---- ECS 精灵渲染（玩家） ----
-        //self->render_player_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-        //        Animator& anim, AnimParams& params, PlayerActionComponent& act, PlayerComponent&) {
-        //                animator_render_system(it.entity(i), t, r, anim, act);
-        //        });
-
-        //// ---- ECS 精灵渲染（敌人） ----
-        //self->render_enemy_query.each([](flecs::iter& it, size_t i, TransformComponent& t, LogicRectComponent& r,
-        //        Animator& anim, AnimParams& params, PlayerActionComponent& act, EnemyComponent&) {
-        //                animator_render_system(it.entity(i), t, r, anim, act);
-        //        });
-
-        //// ---- 血条渲染（所有有血量实体头顶） ----
-        //{
-        //        auto* ctx = self->ctx;
-        //        self->world.filter_builder<IdComponent, TransformComponent>()
-        //                .build().each([ctx](flecs::iter& it, size_t i, IdComponent& id, TransformComponent& t) {
-        //                if (id.hp <= 0) return;
-        //                flecs::entity e = it.entity(i);
-        //                if (!e.has<PlayerComponent>() && !e.has<EnemyComponent>()) return;
-        //                float sx = (t.position_x - ctx->camera_x) * SERVER_PPM;
-        //                float sy = (t.position_y - ctx->camera_y) * SERVER_PPM;
-        //                const float SPRITE_OFF = 81.0f;
-        //                float bar_w = 48.0f, bar_h = 8.0f;
-        //                float bar_x = sx - bar_w / 2.0f, bar_y = sy - SPRITE_OFF - bar_h - 4.0f;
-        //                jrect_t bg = { bar_x - 1, bar_y - 1, bar_w + 2, bar_h + 2 };
-
-        //                r2d_set_color(ctx->r2d, 0, 0, 0, 255);
-        //                shape_draw_rectangle(ctx->r2d, "fill", bg);
-        //                jrect_t base = { bar_x, bar_y, bar_w, bar_h };
-        //                r2d_set_color(ctx->r2d, 40, 40, 40, 255);
-        //                shape_draw_rectangle(ctx->r2d, "fill", base);
-        //                float ratio = (float)id.hp / 10.0f;
-        //                if (ratio > 1.0f) ratio = 1.0f;
-        //                if (ratio < 0) ratio = 0;
-        //                jrect_t fill = { bar_x, bar_y, bar_w * ratio, bar_h };
-        //                if (ratio > 0.6f)      r2d_set_color(ctx->r2d, 60, 210, 60, 255);
-        //                else if (ratio > 0.3f) r2d_set_color(ctx->r2d, 210, 210, 60, 255);
-        //                else                   r2d_set_color(ctx->r2d, 220, 60, 60, 255);
-        //                shape_draw_rectangle(ctx->r2d, "fill", fill);
-        //                        });
-        //}
+        auto draw_view = ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
+        for (auto e : draw_view) {
+                auto& id = draw_view.get<IdComponent>(e);
+                auto& rect = draw_view.get<LogicRectComponent>(e);
+                auto& t = draw_view.get<TransformComponent>(e);
+                drawing_entity_system(ctx, e, id, rect, t);
+        }
 }
 
 static void on_destroy(scene_p s)
@@ -511,20 +435,7 @@ game_scene_p game_scene_create(Context* ctx)
         self->ctx = ctx;
         // 初始化摄像机
         ctx->camera = { 0.0f,0.0f };
-        ctx->ecs.component<IdComponent>();
-        ctx->ecs.component<LogicRectComponent>();
-        ctx->ecs.component<LogicPositionComponent>();
-        ctx->ecs.component<LogicVelocityComponent>();
-        ctx->ecs.component<TransformComponent>();
-        ctx->ecs.component<PlayerComponent>();
-        ctx->ecs.component<AttackRayEffectComponent>();
-        ctx->ecs.component<PlayerActionComponent>();
-        ctx->ecs.component<AnimatorDef>();
-        ctx->ecs.component<Animator>();
-        ctx->ecs.component<AnimParams>();
-        ctx->ecs.component<AIComponent>();
-        ctx->ecs.component<EnemyComponent>();
-        ctx->ecs.component<NetComponent>();
+        // entt 不需要显式注册组件，使用即注册
 
 
         scene_set_userdata(self->scene, self);

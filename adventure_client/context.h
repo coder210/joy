@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
-#include "flecs.h"
+#include "entt.hpp"
 #include <joy/joy.h>
 #include "./components/player_action_component.h"
 #include "./components/animator_def.h"
@@ -38,7 +38,8 @@ struct Context {
         jr2d_p r2d;
         float camera_x, camera_y; // 摄像机世界坐标(米)
         netclient_p netclient;
-        flecs::world ecs;
+        entt::registry ecs;
+        entt::entity singleton_net = entt::null;
 
         // ---- tilemap + 音频 ----
         jtilemap_p          tilemap = NULL;
@@ -48,10 +49,7 @@ struct Context {
         audio_bgm_p         bgm = NULL;
         int local_dir = 0; // 本地玩家方向
         // 远程玩家方向追踪
-        std::map<flecs::entity_t, int>  remote_dirs;
-
-        // AI 查询
-        flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
+        std::map<entt::entity, int>  remote_dirs;
 
         std::map<int, int> server_inputs;
         bool ready = false;
@@ -61,13 +59,11 @@ struct Context {
         // 固定逻辑步
         uint64_t lastTime = get_ticks();
 
-
-
         int current_input_mask = 0;
         float heartbeatTimer = 0.0f;
         bool attack_triggered = false;   // 攻击键按下待发送
 
-        std::unordered_map<int, flecs::entity> sessions;   // key = conv
+        std::unordered_map<int, entt::entity> sessions;   // key = conv
 
         std::queue<std::string> command_queue;
 
@@ -75,20 +71,6 @@ struct Context {
         uint32_t local_conv = 0;                     // 本地玩家的 conv（连接标识）
         std::map<int, std::map<int, state_snapshot>> snapshots;        // 按 frame_id 递增存储的历史快照
         std::vector<int> pending_inputs;     // 已发送但未确认的输入
-
-        flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
-        flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
-        flecs::query<IdComponent, LogicPositionComponent, TransformComponent> sync_query;
-        flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
-        flecs::query<AttackRayEffectComponent> attack_ray_effect_query;
-
-        // ---- 预构建渲染 query（避免 on_render 每帧 filter_builder） ----
-        flecs::query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
-        flecs::query<TransformComponent, LogicRectComponent,
-                Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
-        flecs::query<IdComponent, TransformComponent> healthbar_query;
-
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;

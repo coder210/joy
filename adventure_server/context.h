@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <queue>
 #include <string>
-#include "flecs.h"
+#include "entt.hpp"
 #include "components/player_event_input.h"
 #include "components/player_state_input.h"
 #include "components/id_component.h"
@@ -29,7 +29,7 @@
 
 struct Session {
         int conv;
-        flecs::entity player_entity;  // 对应的玩家实体（加载完成后才赋值）
+        entt::entity player_entity = entt::null;  // 对应的玩家实体（加载完成后才赋值）
         int health = 10;
         uint32_t last_heartbeat = 0;
         bool is_loaded = false;       // 是否已完成初始加载
@@ -44,24 +44,11 @@ struct Context {
         jtilemap_p tilemap;
         jtilemap_render_p tilemap_render;
 
-        flecs::world ecs;
+        entt::registry ecs;
+        entt::entity singleton_net = entt::null;
 
-        flecs::query<IdComponent, LogicRectComponent, LogicPositionComponent> body_query;
-
-
-        flecs::query<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent> player_query;
-        flecs::query<EnemyComponent, AIComponent, IdComponent, LogicRectComponent, LogicPositionComponent> enemy_query;
-        flecs::query<IdComponent, LogicRectComponent, TransformComponent> drawing_entity_query;
-        flecs::query<AttackRayEffectComponent> drawing_attack_rayeffect_query;
-
-        // 精灵渲染 query（避免 on_render 每帧重建 filter）
-        flecs::query<TransformComponent, LogicRectComponent,
-            Animator, AnimParams, PlayerActionComponent, PlayerComponent> render_player_query;
-        flecs::query<TransformComponent, LogicRectComponent,
-            Animator, AnimParams, PlayerActionComponent, EnemyComponent> render_enemy_query;
-
-        // 位置同步 query（合并玩家和敌人）
-        flecs::query<LogicPositionComponent, TransformComponent> position_sync_query;
+        // 缓存常用 view（entt 的 view 构造很轻量，不需要缓存，这里留空）
+        // 在 system 调用处直接使用 registry.view<T...>()
 
 
         vec2_t camera; // 摄像机世界坐标(米)

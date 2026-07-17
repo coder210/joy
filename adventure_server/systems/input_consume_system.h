@@ -1,6 +1,5 @@
 ﻿#ifndef INPUT_CONSUME_SYSTEM_H
 #define INPUT_CONSUME_SYSTEM_H
-#include "../flecs.h"
 #include "../context.h"
 
 static const uint8_t DIR_TO_BITS[4] = { 
@@ -11,24 +10,20 @@ static const uint8_t DIR_TO_BITS[4] = {
 };
 
 // 系统实现
-static void input_consume_system(flecs::iter& it) {
-        Context* ctx = (Context*)it.world().get_ctx();
-
+static void input_consume_system(entt::registry& registry, Context* ctx) {
         // 从 NetComponent 读取当前 tick 的命令数据
-        auto* net = it.world().get_mut<NetComponent>();
-        if (!net || net->frame_id < 0) return;
-
-
+        auto& net = registry.get<NetComponent>(ctx->singleton_net);
+        if (net.frame_id < 0) return;
 
         // ---- 1. 处理 JOIN ----
-        for (int i = 0; i < net->num_joins; i++) {
-                auto& join = net->joins[i];
-                flecs::entity player = ctx->ecs.entity();
-                player.set<IdComponent>({ get_entity_id(ctx) });
-                player.set<PlayerComponent>({ join.conv });
-                player.set<LogicPositionComponent>({ join.position_x, join.position_y });
-                player.set<LogicRectComponent>({ fp_from_float(1), fp_from_float(1) });
-                player.set<TransformComponent>({ fp_to_float(join.position_x), fp_to_float(join.position_y) });
+        for (int i = 0; i < net.num_joins; i++) {
+                auto& join = net.joins[i];
+                entt::entity player = registry.create();
+                registry.emplace<IdComponent>(player, get_entity_id(ctx));
+                registry.emplace<PlayerComponent>(player, join.conv);
+                registry.emplace<LogicPositionComponent>(player, join.position_x, join.position_y);
+                registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
+                registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
 
                 // 关联到 Session
                 auto it_sess = ctx->sessions.find(join.conv);
@@ -39,22 +34,22 @@ static void input_consume_system(flecs::iter& it) {
         }
 
         // ---- 2. 处理 LEAVE ----
-        for (int i = 0; i < net->num_leaves; i++) {
-                auto& leave = net->leaves[i];
+        for (int i = 0; i < net.num_leaves; i++) {
+                auto& leave = net.leaves[i];
                 auto it_sess = ctx->sessions.find(leave.conv);
                 if (it_sess != ctx->sessions.end()) {
-                        if (it_sess->second.player_entity) {
-                                it_sess->second.player_entity.destruct();
+                        if (it_sess->second.player_entity != entt::null) {
+                                registry.destroy(it_sess->second.player_entity);
                         }
                         ctx->sessions.erase(it_sess);
                 }
         }
 
         // ---- 3. 处理 INPUT（最关键） ----
-        for (int i = 0; i < net->num_inputs; i++) {
-                auto& input = net->inputs[i];
+        for (int i = 0; i < net.num_inputs; i++) {
+                auto& input = net.inputs[i];
                 auto it_sess = ctx->sessions.find(input.conv);
-                if (it_sess == ctx->sessions.end() || !it_sess->second.player_entity)
+                if (it_sess == ctx->sessions.end() || it_sess->second.player_entity == entt::null)
                         continue;
 
                 auto& sess = it_sess->second;
@@ -63,41 +58,37 @@ static void input_consume_system(flecs::iter& it) {
                 }
                 sess.last_processed_seq = input.client_seq;
 
-                flecs::entity& player = sess.player_entity;
+                entt::entity player = sess.player_entity;
 
                 PlayerStateInput state_input;
-                //state_input.move_bits = DIR_TO_BITS[input.dir % 4];
                 state_input.move_bits = input.dir;
 
                 log_info("Raw dir: %d\n", input.dir);
 
-                if (player.has<PlayerStateInput>()) {
-                        auto* state = player.get_mut<PlayerStateInput>();
-                        state->move_bits = state_input.move_bits;
+                if (registry.all_of<PlayerStateInput>(player)) {
+                        auto& state = registry.get<PlayerStateInput>(player);
+                        state.move_bits = state_input.move_bits;
                 }
                 else {
-                        player.set<PlayerStateInput>(state_input);
+                        registry.emplace<PlayerStateInput>(player, state_input);
                 }
 
                 if (input.attack) {
-                        if (player.has<PlayerEventInput>()) {
-                                auto* events = player.get_mut<PlayerEventInput>();
-                                events->pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
+                        if (registry.all_of<PlayerEventInput>(player)) {
+                                auto& events = registry.get<PlayerEventInput>(player);
+                                events.pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
                         }
                         else {
-                                PlayerEventInput events = { };
+                                PlayerEventInput events;
                                 events.pending_actions.push_back({ input.client_seq, (uint8_t)input.attack });
-                                player.set<PlayerEventInput>(events);
+                                registry.emplace<PlayerEventInput>(player, events);
                         }
                 }
         }
 
-        net->num_joins = 0;
-        net->num_leaves = 0;
-        net->num_inputs = 0;
+        net.num_joins = 0;
+        net.num_leaves = 0;
+        net.num_inputs = 0;
 }
-
-
-
 
 #endif

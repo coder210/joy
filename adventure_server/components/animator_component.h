@@ -1,9 +1,9 @@
 #pragma once
-#include "../flecs.h"
 #include "animator_def.h"
+#include "../entt.hpp"
 
 struct Animator {
-    flecs::entity_t def;
+    entt::entity def = entt::null;
     int current_state = 0;
     int current_frame = 0;
     float frame_elapsed = 0;

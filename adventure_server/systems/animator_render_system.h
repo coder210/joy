@@ -1,5 +1,4 @@
 #pragma once
-#include "../flecs.h"
 #include "../context.h"
 #include "../asset_manager.h"
 #include "../../adventure_shared/protocol.h"
@@ -9,15 +8,13 @@
 #include "../components/logic_rect_component.h"
 #include "../components/player_action_component.h"
 
-static void animator_render_system(flecs::entity e,
+static void animator_render_system(Context* ctx, entt::registry& registry,
     TransformComponent& t, LogicRectComponent& r,
     Animator& anim, PlayerActionComponent& act)
 {
-    Context* ctx = (Context*)e.world().get_ctx();
-
-    flecs::entity def_entity = e.world().get_alive(anim.def);
-    if (!def_entity.is_valid()) return;
-    const AnimatorDef* def = def_entity.get<AnimatorDef>();
+    if (anim.def == entt::null) return;
+    if (!registry.valid((entt::entity)anim.def)) return;
+    const AnimatorDef* def = registry.try_get<AnimatorDef>((entt::entity)anim.def);
     if (!def) return;
     if (anim.current_state < 0 || anim.current_state >= (int)def->states.size()) return;
 

@@ -1,14 +1,13 @@
 #ifndef EFFECT_LIFECYCLE_SYSTEM_H
 #define EFFECT_LIFECYCLE_SYSTEM_H
-#include "../flecs.h"
 #include "../context.h"
 #include "../components/attack_ray_effect_component.h"
 
-static void effect_lifecycle_system(flecs::entity e, AttackRayEffectComponent& effect)
+static void effect_lifecycle_system(Context* ctx, entt::registry& registry, entt::entity e, AttackRayEffectComponent& effect, float dt)
 {
-        effect.lifetime -= (float)e.world().delta_time();
+        effect.lifetime -= dt;
         if (effect.lifetime <= 0.0f) {
-                e.destruct();
+                registry.destroy(e);
         }
 }
 

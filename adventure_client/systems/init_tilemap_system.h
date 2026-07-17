@@ -1,6 +1,5 @@
 #ifndef INIT_TILEMAP_SYSTEM_H
 #define INIT_TILEMAP_SYSTEM_H
-#include "../flecs.h"
 #include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
 #include "../components/id_component.h"
@@ -10,13 +9,9 @@
 #include "../context.h"
 
 
-static void init_tilemap_system(flecs::iter& it)
+static void init_tilemap_system(entt::registry& registry, Context* ctx)
 {
-        log_info("[Startup] system: %s", it.system().name());
-        Context* ctx = (Context*)it.world().get_ctx();
-
-        // 加载 tilemap 碰撞墙体（替代硬编码围墙）
-        // ---- tilemap + 精灵渲染初始化 ----
+        log_info("[Startup] system: init_tilemap");
         ctx->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
         if (ctx->tilemap) {
                 jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
@@ -28,14 +23,13 @@ static void init_tilemap_system(flecs::iter& it)
                     fp_t py = fp_from_float(obj->y / (float)SERVER_PPM);
                     fp_t pw = fp_from_float(obj->width / (float)SERVER_PPM);
                     fp_t ph = fp_from_float(obj->height / (float)SERVER_PPM);
-                    ctx->ecs.entity()
-                        .set<LogicRectComponent>({ pw, ph })
-                        .set<LogicPositionComponent>({ px, py })
-                        .set<TransformComponent>({ fp_to_float(px), fp_to_float(py), 0,1,1 });
+                    entt::entity e = ctx->ecs.create();
+                    ctx->ecs.emplace<LogicRectComponent>(e, pw, ph);
+                    ctx->ecs.emplace<LogicPositionComponent>(e, px, py);
+                    ctx->ecs.emplace<TransformComponent>(e, fp_to_float(px), fp_to_float(py), 0.0f, 1.0f, 1.0f);
                     }, ctx);
 
                 ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_client/", NULL);
-                
         }
 }
 

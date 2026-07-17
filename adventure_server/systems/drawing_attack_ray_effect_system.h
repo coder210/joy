@@ -1,13 +1,11 @@
 ﻿#ifndef DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
-#include "../flecs.h"
 #include "../components/attack_ray_effect_component.h"
 #include "../context.h"
 #include "../../adventure_shared/protocol.h"
 
-static void DrawingAttackRayEffectSystem(flecs::entity e, AttackRayEffectComponent& effect)
+static void DrawingAttackRayEffectSystem(Context* ctx, AttackRayEffectComponent& effect)
 {
-	Context* ctx = (Context*)e.world().get_ctx();
 	jrect_t line;
 	line.x = (effect.x - ctx->camera.x) * SERVER_PPM;
 	line.y = (effect.y - ctx->camera.y) * SERVER_PPM;

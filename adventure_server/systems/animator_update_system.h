@@ -1,5 +1,4 @@
 #pragma once
-#include "../flecs.h"
 #include "../components/animator_component.h"
 #include "../components/animator_def.h"
 #include "../components/player_action_component.h"
@@ -35,16 +34,16 @@ static inline bool check_cond_list(const std::vector<AnimCondDef>& conditions, c
     return true;
 }
 
-static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& params, PlayerActionComponent& act) {
-    flecs::entity def_entity = e.world().get_alive(anim.def);
-    if (!def_entity.is_valid()) return;
-    const AnimatorDef* def = def_entity.get<AnimatorDef>();
+static void animator_update_system(entt::registry& registry, entt::entity e,
+    Animator& anim, AnimParams& params, PlayerActionComponent& act, float dt) {
+    // AnimatorDef 存储在单独的实体上，通过 anim.def 引用
+    // entt 中需要外部传入 AnimatorDef 实体 ID，暂用 anim.def 存储
+    if (anim.def == entt::null) return;
+    if (!registry.valid((entt::entity)anim.def)) return;
+    const AnimatorDef* def = registry.try_get<AnimatorDef>((entt::entity)anim.def);
     if (!def || def->states.empty()) return;
 
-    float dt = (float)e.world().delta_time();
-
-    anim.flip_h = (params.dir == 1); // 1=左 → 翻转
-
+    anim.flip_h = (params.dir == 1);
 
     bool transitioned = false;
     for (auto& t : def->transitions) {
@@ -104,7 +103,6 @@ static void animator_update_system(flecs::entity e, Animator& anim, AnimParams& 
         }
     }
 
-    // --- 4. 同步回 PlayerActionComponent ---
     if (act.state == PlayerActionComponent::ATTACK &&
         state.name.rfind("attack", 0) != 0) {
         act.state = PlayerActionComponent::IDLE;
