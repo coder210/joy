@@ -27,6 +27,8 @@
 #include "components/ai_component.h"
 #include "components/enemy_component.h"
 #include "components/net_component.h"
+#include "components/world_state_component.h"
+#include "components/camera_component.h"
 #include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
 
@@ -45,13 +47,9 @@ struct Context {
         jtilemap_render_p tilemap_render;
 
         entt::registry ecs;
-        entt::entity singleton_net = entt::null;
-
-
-        vec2_t camera; // 摄像机世界坐标(米)
-
-        int global_entity_id; // 玩家全局唯一 ID
-        int global_frame_id;  // 当前帧 ID
+        entt::entity singleton_net    = entt::null;
+        entt::entity singleton_world = entt::null;
+        entt::entity singleton_camera = entt::null;
 
         std::vector<S2CPlayerJoin> player_joins;
         std::vector<S2CPlayerLeave> player_leaves;
@@ -97,9 +95,10 @@ struct Context {
 };
 
 
-static int get_entity_id(Context* ctx)
-{
-    return ctx->global_entity_id++;
+// 从 WorldState 单例获取下一个全局实体 ID
+static inline int get_entity_id(Context* ctx) {
+    auto& ws = ctx->ecs.get<WorldState>(ctx->singleton_world);
+    return ws.next_entity_id++;
 }
 
 

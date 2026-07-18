@@ -98,7 +98,7 @@ static void input_forwarding(Context* ctx)
 {
         for (auto& [conv, sess] : ctx->sessions) {
                 if (sess.is_loaded) {
-                        int taget_frameid = get_target_frame_id(sess.frameid, ctx->global_frame_id);
+                        int taget_frameid = get_target_frame_id(sess.frameid, ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id);
                         for (int i = sess.frameid; i < taget_frameid; i++) {
                                 auto it = ctx->commands.find(i);
                                 if (it != ctx->commands.end()) {
@@ -118,7 +118,7 @@ static void input_forwarding(Context* ctx)
                                 it = ctx->world_snapshots.find(sess.frameid);
                                 if (it == ctx->world_snapshots.end()) {
                                         // 还是没有，发一个空快照让客户端能继续
-                                        auto data = pack_s2c_loading(conv, sess.frameid, ctx->global_entity_id, nullptr, 0);
+                                        auto data = pack_s2c_loading(conv, sess.frameid, ctx->ecs.get<WorldState>(ctx->singleton_world).next_entity_id, nullptr, 0);
                                         netserver_send(ctx->net_server, sess.conv, data.c_str(), data.size());
                                         return;
                                 }
@@ -142,10 +142,10 @@ static void on_load(scene_p s)
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
-        // entt 不需要 set_ctx，system 通过参数传 ctx
-        // 创建 NetComponent 作为 singleton（用 entity + emplace 模拟）
-        ctx->singleton_net = ctx->ecs.create();
-        ctx->ecs.emplace<NetComponent>(ctx->singleton_net);
+        // 创建单例实体
+        ctx->singleton_net    = ctx->ecs.create(); ctx->ecs.emplace<NetComponent>(ctx->singleton_net);
+        ctx->singleton_world  = ctx->ecs.create(); ctx->ecs.emplace<WorldState>(ctx->singleton_world);
+        ctx->singleton_camera = ctx->ecs.create(); ctx->ecs.emplace<CameraComponent>(ctx->singleton_camera);
 
         // 注册 system（OnStart 的 system 注册在 OnStart phase）
         ctx->add_system(Context::OnStart, "creating_block", creating_block_system);
@@ -189,7 +189,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
         }
         // 标记该玩家需要初始加载（帧末由 ReplicationSystem 发送快照）
         it->second.is_loaded = false;
-        it->second.frameid = ctx->global_frame_id;
+        it->second.frameid = ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id;
 }
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
@@ -276,7 +276,7 @@ static void network_receive(Context* ctx)
 
 static void collect_input(Context* ctx)
 {
-        int frame_id = ctx->global_frame_id++;
+        int frame_id = ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id++;
         S2CPlayerJoin joins[32]; int num_joins = 0;
         for (auto& j : ctx->player_joins)
                 if (num_joins < 32) joins[num_joins++] = j;
@@ -386,8 +386,9 @@ static void on_update(scene_p s, float dt)
         //                float target_cam_y = fp_to_float(pos.y) - 4.8f;
         //                float lerp = dt * 5.0f;
         //                if (lerp > 1.0f) lerp = 1.0f;
-        //                ctx->camera.x += (target_cam_x - ctx->camera.x) * lerp;
-        //                ctx->camera.y += (target_cam_y - ctx->camera.y) * lerp;
+        //                auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+        //                cam.x += (target_cam_x - cam.x) * lerp;
+        //                cam.y += (target_cam_y - cam.y) * lerp;
         //                return; // 只跟第一个玩家
         //        });
 }
@@ -399,8 +400,9 @@ static void on_render(scene_p s)
 
         // ---- tilemap 背景 ----
         if (ctx->tilemap) {
-                float cx = ctx->camera.x * (float)SERVER_PPM;
-                float cy = ctx->camera.y * (float)SERVER_PPM;
+                auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+                float cx = cam.x * (float)SERVER_PPM;
+                float cy = cam.y * (float)SERVER_PPM;
                 jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());
         }
 
@@ -435,8 +437,6 @@ game_scene_p game_scene_create(Context* ctx)
         game_scene_p self = new game_scene();
         self->scene = scene_create("game_server");
         self->ctx = ctx;
-        // 初始化摄像机
-        ctx->camera = { 0.0f,0.0f };
         // entt 不需要显式注册组件，使用即注册
 
 

@@ -35,8 +35,9 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                 ent.height = rect.height;
         }
 
-        int frame_id = ctx->global_frame_id - 1;
-        ctx->world_snapshots[frame_id] = pack_world(ctx->global_entity_id, ctx->entities, ctx->num_entities);
+        auto& ws = ctx->ecs.get<WorldState>(ctx->singleton_world);
+        int frame_id = ws.next_frame_id - 1;
+        ctx->world_snapshots[frame_id] = pack_world(ws.next_entity_id, ctx->entities, ctx->num_entities);
 }
 
 #endif

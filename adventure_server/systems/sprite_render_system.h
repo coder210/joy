@@ -12,8 +12,9 @@ static void sprite_render_system(Context* ctx,
     SpriteSheetComponent& ss, AnimationFrameComponent& af,
     PlayerActionComponent& act)
 {
-    float scr_x = (t.position.x - ctx->camera.x) * SERVER_PPM;
-    float scr_y = (t.position.y - ctx->camera.y) * SERVER_PPM;
+    auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+    float scr_x = (t.position.x - cam.x) * SERVER_PPM;
+    float scr_y = (t.position.y - cam.y) * SERVER_PPM;
 
     image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, ss.path);
     if (!tex) return;

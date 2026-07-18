@@ -25,8 +25,9 @@ static void animator_render_system(Context* ctx, entt::registry& registry,
     image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, clip.path.c_str());
     if (!tex) return;
 
-    float scr_x = (t.position.x - ctx->camera.x) * SERVER_PPM;
-    float scr_y = (t.position.y - ctx->camera.y) * SERVER_PPM;
+    auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+    float scr_x = (t.position.x - cam.x) * SERVER_PPM;
+    float scr_y = (t.position.y - cam.y) * SERVER_PPM;
 
     int frame_w = clip.src_rect.w;
     int frame_h = clip.src_rect.h;
