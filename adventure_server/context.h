@@ -8,6 +8,7 @@
 #include <functional>
 #include "entt.hpp"
 #include "components/player_event_input.h"
+#include "components/connection_component.h"
 #include "components/player_state_input.h"
 #include "components/id_component.h"
 #include "components/logic_rect_component.h"
@@ -32,11 +33,8 @@
 struct Session {
         int conv;
         entt::entity player_entity = entt::null;  // 对应的玩家实体（加载完成后才赋值）
-        int health = 10;
-        uint32_t last_heartbeat = 0;
         bool is_loaded = false;       // 是否已完成初始加载
-        uint32_t last_processed_seq; // 最后已处理的序列号
-        int frameid; // 客户端最后已接收的帧号
+        int frameid = 0;              // 客户端最后已接收的帧号
 };
 
 struct Context {
@@ -48,9 +46,6 @@ struct Context {
 
         entt::registry ecs;
         entt::entity singleton_net = entt::null;
-
-        // 缓存常用 view（entt 的 view 构造很轻量，不需要缓存，这里留空）
-        // 在 system 调用处直接使用 registry.view<T...>()
 
 
         vec2_t camera; // 摄像机世界坐标(米)

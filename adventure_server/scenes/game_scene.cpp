@@ -181,13 +181,14 @@ static void handle_cmd_loading(Context* ctx, int conv)
         log_info("C2S_CMD_LOADING");
         auto it = ctx->sessions.find(conv);
         if (it == ctx->sessions.end()) {
-                // 如果 Session 不存在，先创建一个（正常情况应该在 CONNECTED 时已创建）
-                ctx->sessions[conv] = { conv, entt::null, 10, 0, false };
+                // 如果 Session 不存在，先创建一个
+                Session sess;
+                sess.conv = conv;
+                ctx->sessions[conv] = sess;
                 it = ctx->sessions.find(conv);
         }
         // 标记该玩家需要初始加载（帧末由 ReplicationSystem 发送快照）
-        it->second.is_loaded = false;   // false 表示尚未发送初始数据
-        it->second.health = 10;
+        it->second.is_loaded = false;
         it->second.frameid = ctx->global_frame_id;
 }
 
@@ -215,12 +216,16 @@ static void handle_cmd_heartbeat(Context* ctx, int conv)
         uint64_t ms_ticks;
         utils_get_current_time(&ms_ticks);
         auto it = ctx->sessions.find(conv);
-        if (it != ctx->sessions.end()) {
-                it->second.health = 10;
-                it->second.last_heartbeat = ms_ticks;
-        }
-        else {
+        if (it == ctx->sessions.end()) {
                 log_debug("Heartbeat from unknown conv: %d", conv);
+                return;
+        }
+        // 写入玩家实体上的 ConnectionComponent
+        entt::entity player = it->second.player_entity;
+        if (player != entt::null && ctx->ecs.valid(player)) {
+                auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
+                conn.health = 10;
+                conn.last_heartbeat = (uint32_t)ms_ticks;
         }
 }
 

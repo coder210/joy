@@ -25,6 +25,10 @@ static void input_consume_system(entt::registry& registry, Context* ctx, float d
                 registry.emplace<LogicPositionComponent>(player, join.position_x, join.position_y);
                 registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
                 registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
+                // 挂载网络连接数据
+                ConnectionComponent conn;
+                conn.conv = join.conv;
+                registry.emplace<ConnectionComponent>(player, conn);
 
                 // 关联到 Session
                 auto it_sess = ctx->sessions.find(join.conv);
@@ -53,13 +57,14 @@ static void input_consume_system(entt::registry& registry, Context* ctx, float d
                 if (it_sess == ctx->sessions.end() || it_sess->second.player_entity == entt::null)
                         continue;
 
-                auto& sess = it_sess->second;
-                if (input.client_seq <= sess.last_processed_seq) {
+                entt::entity player = it_sess->second.player_entity;
+                auto& conn = registry.get_or_emplace<ConnectionComponent>(player);
+
+                // 序列号去重
+                if (input.client_seq <= conn.last_processed_seq) {
                         //continue;
                 }
-                sess.last_processed_seq = input.client_seq;
-
-                entt::entity player = sess.player_entity;
+                conn.last_processed_seq = input.client_seq;
 
                 PlayerStateInput state_input;
                 state_input.move_bits = input.dir;
