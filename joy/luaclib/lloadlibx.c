@@ -642,6 +642,13 @@ static int loadfilex(lua_State* L, const char* filename,
         return status;
 }
 
+static char* read_script(const char* file, size_t* data_size)
+{
+        char* raw_data;
+        raw_data = SDL_LoadFile(file, data_size);
+        return raw_data;
+}
+
 static int searcher_Lua(lua_State* L) {
         size_t data_size, filename_len;
         int stat;
@@ -653,7 +660,7 @@ static int searcher_Lua(lua_State* L) {
         if (filename == NULL) return 1;  /* module not found in this path */
         filename_len = SDL_strlen(filename);
         if (!SDL_strcmp(filename + (filename_len - 5), ".luas")) {
-                data = utils_read_script(filename, &data_size);
+                data = read_script(filename, &data_size);
                 if (!data) return 1;
                 strcat(chunkname, "@");
                 strcat(chunkname, filename);
