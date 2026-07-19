@@ -102,6 +102,7 @@ static void on_load(scene_p s)
         add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
         add_system(ctx, PreUpdate, "input_consume", input_consume_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
+        add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 
