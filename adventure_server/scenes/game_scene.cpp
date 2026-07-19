@@ -44,7 +44,7 @@ static void on_load(scene_p s)
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
-        create_warrior_anim_def(ctx->ecs, "assets/warrior.png");
+        create_warrior_anim_def(ctx->ecs, "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
 
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
