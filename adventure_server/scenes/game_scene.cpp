@@ -30,9 +30,8 @@ struct game_scene {
         Context* ctx;
 };
 
-// ========== 动画定义辅助 ==========
-static entt::entity create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
-        auto def_entity = registry.create();
+// ========== 动画定义辅助（存入 registry.ctx() 全局单例）==========
+static void create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
         AnimatorDef def;
 
         const int FPS = 6;
@@ -75,12 +74,13 @@ static entt::entity create_warrior_anim_def(entt::registry& registry, const char
                 t.conditions.push_back({ "dir",AnimCondMode::EQUALS,(float)d }); def.transitions.push_back(t);
         }
         for (int d = 0; d < 4; d++) {
-                AnimTransitionDef t; t.from_state = 2 + d; t.to_state = 0; t.exit_time = 0.6f; def.transitions.push_back(t);
+                AnimTransitionDef t; t.from_state = 2 + d; t.to_state = 0;
+                t.exit_time = (float)(FPS * DUR); // = 0.9f，等攻击动画完整播完再切回 idle
+                def.transitions.push_back(t);
         }
 
         def.default_state = 0;
-        registry.emplace<AnimatorDef>(def_entity, def);
-        return def_entity;
+        registry.ctx().emplace<AnimatorDef>(std::move(def));
 }
 
 static void on_load(scene_p s)
@@ -96,6 +96,7 @@ static void on_load(scene_p s)
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
+        create_warrior_anim_def(ctx->ecs, "assets/warrior.png");
 
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
@@ -103,6 +104,7 @@ static void on_load(scene_p s)
         add_system(ctx, PreUpdate, "input_consume", input_consume_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
+        add_system(ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 
@@ -188,13 +190,19 @@ static void on_render(scene_p s)
                 jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());
         }
 
-        // ---- ECS 实体（碰撞体） ----
+        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
         auto draw_view = ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
         for (auto e : draw_view) {
-                auto& id = draw_view.get<IdComponent>(e);
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                drawing_entity_system(ctx, e, id, rect, t);
+                if (ctx->ecs.all_of<Animator, AnimParams, PlayerActionComponent>(e)) {
+                        auto& anim = ctx->ecs.get<Animator>(e);
+                        auto& act = ctx->ecs.get<PlayerActionComponent>(e);
+                        animator_render_system(ctx, ctx->ecs, t, rect, anim, act);
+                } else {
+                        auto& id = draw_view.get<IdComponent>(e);
+                        drawing_entity_system(ctx, e, id, rect, t);
+                }
         }
 }
 

@@ -1,46 +1,76 @@
-#pragma once
+#ifndef ANIMATOR_RENDER_SYSTEM_H
+#define ANIMATOR_RENDER_SYSTEM_H
 #include "../context.h"
-#include "../asset_manager.h"
-#include "../../adventure_shared/protocol.h"
-#include "../components/animator_component.h"
-#include "../components/animator_def.h"
-#include "../components/transform_component.h"
-#include "../components/logic_rect_component.h"
-#include "../components/player_action_component.h"
+#include <SDL3/SDL_render.h>
+#include <SDL3_image/SDL_image.h>
+
+static SDL_Texture* get_or_load_texture(SDL_Renderer* renderer, const std::string& path) {
+    static std::map<std::string, SDL_Texture*> cache;
+
+    auto it = cache.find(path);
+    if (it != cache.end()) return it->second;
+
+    SDL_Surface* surface = IMG_Load(path.c_str());
+    if (!surface) return nullptr;
+
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    if (tex) cache[path] = tex;
+    return tex;
+}
 
 static void animator_render_system(Context* ctx, entt::registry& registry,
     TransformComponent& t, LogicRectComponent& r,
     Animator& anim, PlayerActionComponent& act)
 {
-    if (anim.def == entt::null) return;
-    if (!registry.valid((entt::entity)anim.def)) return;
-    const AnimatorDef* def = registry.try_get<AnimatorDef>((entt::entity)anim.def);
-    if (!def) return;
-    if (anim.current_state < 0 || anim.current_state >= (int)def->states.size()) return;
+    (void)registry;
+    (void)act;
 
-    const auto& state = def->states[anim.current_state];
-    if (anim.current_frame < 0 || anim.current_frame >= (int)state.clips.size()) return;
-    const auto& clip = state.clips[anim.current_frame];
+    if (!ctx->ecs.ctx().contains<AnimatorDef>()) return;
+    auto& def = ctx->ecs.ctx().get<AnimatorDef>();
+    if (def.states.empty()) return;
 
-    image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, clip.path.c_str());
-    if (!tex) return;
+    int cs = anim.current_state;
+    if (cs < 0 || cs >= (int)def.states.size()) cs = def.default_state;
+    auto& state = def.states[cs];
 
-    auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-    float scr_x = (t.position.x - cam.x) * SERVER_PPM;
-    float scr_y = (t.position.y - cam.y) * SERVER_PPM;
+    int cf = anim.current_frame;
+    if (cf < 0 || cf >= (int)state.clips.size()) cf = 0;
+    auto& clip = state.clips[cf];
 
-    int frame_w = clip.src_rect.w;
-    int frame_h = clip.src_rect.h;
-    float body_w = fp_to_float(r.width) * SERVER_PPM;
-    float body_h = fp_to_float(r.height) * SERVER_PPM;
-    float off_x = (frame_w - body_w) / 2.0f;
-    float off_y = (frame_h - body_h) / 2.0f;
+    SDL_Texture* tex = get_or_load_texture(ctx->renderer, clip.path);
+    if (!tex) {
+        // fallback: 绘制与原方块等大的纯色框
+        float px = t.position.x - clip.src_rect.w / 2;
+        float py = t.position.y - clip.src_rect.h / 2;
+        SDL_FRect dr = { px, py, (float)clip.src_rect.w, (float)clip.src_rect.h };
+        SDL_SetRenderDrawColor(ctx->renderer, 0, 255, 0, 180);
+        SDL_RenderFillRect(ctx->renderer, &dr);
+        return;
+    }
 
-    float draw_x = scr_x - off_x;
-    float draw_y = scr_y - off_y;
     float scale_x = (anim.flip_h) ? -1.0f : 1.0f;
-    float cx = draw_x + frame_w * 0.5f;
-    float cy = draw_y + frame_h * 0.5f;
+    SDL_FRect src = {
+        (float)clip.src_rect.x, (float)clip.src_rect.y,
+        (float)clip.src_rect.w, (float)clip.src_rect.h
+    };
+    float cx = t.position.x;
+    float cy = t.position.y;
+    float w = (float)clip.src_rect.w * ctx->global_scale;
+    float h = (float)clip.src_rect.h * ctx->global_scale;
+    SDL_FRect dst = { cx - w / 2, cy - h / 2, w, h };
 
-    image_draw_ex(tex, &clip.src_rect, { cx, cy }, 0, { scale_x, 1 }, { frame_w * 0.5f, frame_h * 0.5f });
+    SDL_RenderTextureRotated(ctx->renderer, tex, &src, &dst, 0, nullptr,
+        anim.flip_h ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+
+    // 绘制碰撞框（调试）
+    SDL_FRect debug_rect = {
+        cx - r.width / 2 * 100, cy - r.height / 2 * 100,
+        r.width * 100, r.height * 100
+    };
+    SDL_SetRenderDrawColor(ctx->renderer, 255, 0, 0, 100);
+    SDL_RenderRect(ctx->renderer, &debug_rect);
 }
+
+#endif
