@@ -30,10 +30,10 @@ static void input_consume_system(entt::registry& registry, Context* ctx, float d
                 conn.conv = join.conv;
                 registry.emplace<ConnectionComponent>(player, conn);
 
-                // 挂载动画组件（如果 AnimatorDef 已注册）
-                if (registry.ctx().contains<AnimatorDef>()) {
-                        registry.emplace<Animator>(player);
-                        registry.emplace<AnimParams>(player);
+                // 挂载动画组件（如果 AnimatorDefComponent 已注册）
+                if (registry.ctx().contains<AnimatorDefComponent>()) {
+                        registry.emplace<AnimatorComponent>(player);
+                        registry.emplace<AnimParamsComponent>(player);
                         registry.emplace<PlayerActionComponent>(player);
                 }
 

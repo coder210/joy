@@ -33,7 +33,7 @@ struct AnimStateDef {
     float speed = 1.0f;
 };
 
-struct AnimatorDef {
+struct AnimatorDefComponent {
     std::vector<AnimStateDef> states;
     std::vector<AnimTransitionDef> transitions;
     int default_state = 0;

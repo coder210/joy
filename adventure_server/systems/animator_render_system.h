@@ -22,13 +22,13 @@ static SDL_Texture* get_or_load_texture(SDL_Renderer* renderer, const std::strin
 
 static void animator_render_system(Context* ctx, entt::registry& registry,
     TransformComponent& t, LogicRectComponent& r,
-    Animator& anim, PlayerActionComponent& act)
+    AnimatorComponent& anim, PlayerActionComponent& act)
 {
     (void)registry;
     (void)act;
 
-    if (!ctx->ecs.ctx().contains<AnimatorDef>()) return;
-    auto& def = ctx->ecs.ctx().get<AnimatorDef>();
+    if (!ctx->ecs.ctx().contains<AnimatorDefComponent>()) return;
+    auto& def = ctx->ecs.ctx().get<AnimatorDefComponent>();
     if (def.states.empty()) return;
 
     int cs = anim.current_state;
@@ -73,4 +73,3 @@ static void animator_render_system(Context* ctx, entt::registry& registry,
     SDL_RenderRect(ctx->renderer, &debug_rect);
 }
 
-#endif

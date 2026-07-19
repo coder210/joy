@@ -32,7 +32,7 @@ struct game_scene {
 
 // ========== 动画定义辅助（存入 registry.ctx() 全局单例）==========
 static void create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
-        AnimatorDef def;
+        AnimatorDefComponent def;
 
         const int FPS = 6;
         const float DUR = 0.15f;
@@ -80,7 +80,7 @@ static void create_warrior_anim_def(entt::registry& registry, const char* tex_pa
         }
 
         def.default_state = 0;
-        registry.ctx().emplace<AnimatorDef>(std::move(def));
+        registry.ctx().emplace<AnimatorDefComponent>(std::move(def));
 }
 
 static void on_load(scene_p s)
@@ -196,7 +196,7 @@ static void on_render(scene_p s)
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
                 if (ctx->ecs.all_of<Animator, AnimParams, PlayerActionComponent>(e)) {
-                        auto& anim = ctx->ecs.get<Animator>(e);
+                        auto& anim = ctx->ecs.get<AnimatorComponent>(e);
                         auto& act = ctx->ecs.get<PlayerActionComponent>(e);
                         animator_render_system(ctx, ctx->ecs, t, rect, anim, act);
                 } else {

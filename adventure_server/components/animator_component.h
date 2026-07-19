@@ -1,6 +1,6 @@
 #pragma once
 
-struct Animator {
+struct AnimatorComponent {
     int current_state = 0;
     int current_frame = 0;
     float frame_elapsed = 0;
@@ -9,7 +9,7 @@ struct Animator {
     bool flip_h = false;
 };
 
-struct AnimParams {
+struct AnimParamsComponent {
     float speed = 0;
     int dir = 0;
     bool attack = false;

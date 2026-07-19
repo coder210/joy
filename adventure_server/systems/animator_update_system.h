@@ -15,7 +15,7 @@ static bool check_anim_cond(float a, AnimCondMode mode, float b) {
     }
 }
 
-static bool check_cond_list(const std::vector<AnimCondDef>& conds, AnimParams& params) {
+static bool check_cond_list(const std::vector<AnimCondDef>& conds, AnimParamsComponent& params) {
     if (conds.empty()) return true;
     for (auto& c : conds) {
         float val = 0;
@@ -31,13 +31,13 @@ static bool check_cond_list(const std::vector<AnimCondDef>& conds, AnimParams& p
 static void animator_update_system(entt::registry& registry, Context* ctx, float dt) {
     (void)ctx;
 
-    if (!registry.ctx().contains<AnimatorDef>()) return;
-    auto& def = registry.ctx().get<AnimatorDef>();
+    if (!registry.ctx().contains<AnimatorDefComponent>()) return;
+    auto& def = registry.ctx().get<AnimatorDefComponent>();
 
-    auto view = registry.view<Animator, AnimParams, PlayerActionComponent>();
+    auto view = registry.view<AnimatorComponent, AnimParamsComponent, PlayerActionComponent>();
     for (auto entity : view) {
-        auto& anim = view.get<Animator>(entity);
-        auto& params = view.get<AnimParams>(entity);
+        auto& anim = view.get<AnimatorComponent>(entity);
+        auto& params = view.get<AnimParamsComponent>(entity);
         auto& act = view.get<PlayerActionComponent>(entity);
 
         // 方向同步
