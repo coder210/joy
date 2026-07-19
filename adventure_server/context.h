@@ -27,8 +27,7 @@
 #include "components/ai_component.h"
 #include "components/enemy_component.h"
 #include "components/net_component.h"
-#include "components/world_state_component.h"
-#include "components/camera_component.h"
+#include "components/global_state_component.h"
 #include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
 
@@ -47,9 +46,6 @@ struct Context {
         jtilemap_render_p tilemap_render;
 
         entt::registry ecs;
-        entt::entity singleton_net    = entt::null;
-        entt::entity singleton_world = entt::null;
-        entt::entity singleton_camera = entt::null;
 
         std::vector<S2CPlayerJoin> player_joins;
         std::vector<S2CPlayerLeave> player_leaves;
@@ -70,35 +66,36 @@ struct Context {
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
 
-        // ---- System 注册表（自动调度） ----
-        enum Phase { OnStart, PreUpdate, OnUpdate, PostUpdate };
-        struct SystemEntry {
-                std::string name;
-                Phase phase;
-                std::function<void(entt::registry&, Context*, float)> fn;
-        };
-        std::vector<SystemEntry> systems;
-
-        template<typename... Components>
-        void add_system(Phase phase, const char* name,
-                void (*fn)(entt::registry&, Context*, float))
-        {
-                systems.push_back({ name, phase, fn });
-        }
-
-        void run_phase(Phase phase, float dt) {
-                for (auto& sys : systems) {
-                        if (sys.phase == phase)
-                                sys.fn(ecs, this, dt);
-                }
-        }
+        std::vector<struct SystemEntry> systems;
 };
 
+// ---- System 调度（自由函数） ----
+enum Phase { OnStart, PreUpdate, OnUpdate, PostUpdate };
 
-// 从 WorldState 单例获取下一个全局实体 ID
+struct SystemEntry {
+        std::string name;
+        Phase phase;
+        std::function<void(entt::registry&, Context*, float)> fn;
+};
+
+inline void add_system(Context* ctx, Phase phase, const char* name,
+        void (*fn)(entt::registry&, Context*, float))
+{
+        ctx->systems.push_back({ name, phase, fn });
+}
+
+inline void run_phase(Context* ctx, Phase phase, float dt) {
+        for (auto& sys : ctx->systems) {
+                if (sys.phase == phase)
+                        sys.fn(ctx->ecs, ctx, dt);
+        }
+}
+
+
+// 从 GlobalState 单例获取下一个全局实体 ID
 static inline int get_entity_id(Context* ctx) {
-    auto& ws = ctx->ecs.get<WorldState>(ctx->singleton_world);
-    return ws.next_entity_id++;
+    auto& gs = ctx->ecs.ctx().get<GlobalState>();
+    return gs.next_entity_id++;
 }
 
 

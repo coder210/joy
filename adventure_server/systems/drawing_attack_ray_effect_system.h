@@ -7,7 +7,7 @@
 static void DrawingAttackRayEffectSystem(Context* ctx, AttackRayEffectComponent& effect)
 {
 	jrect_t line;
-	auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+	auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
 	line.x = (effect.x - cam.x) * SERVER_PPM;
 	line.y = (effect.y - cam.y) * SERVER_PPM;
 	line.w = effect.w * SERVER_PPM;

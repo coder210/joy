@@ -12,7 +12,7 @@ static void sprite_render_system(Context* ctx,
     SpriteSheetComponent& ss, AnimationFrameComponent& af,
     PlayerActionComponent& act)
 {
-    auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+    auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
     float scr_x = (t.position.x - cam.x) * SERVER_PPM;
     float scr_y = (t.position.y - cam.y) * SERVER_PPM;
 

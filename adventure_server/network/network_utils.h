@@ -1,5 +1,5 @@
-#ifndef NETWORK_SYSTEM_H
-#define NETWORK_SYSTEM_H
+#ifndef NETWORK_UTILS_H
+#define NETWORK_UTILS_H
 #include "../context.h"
 
 // ========== 网络命令处理（handle_cmd_*）==========
@@ -14,7 +14,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
                 it = ctx->sessions.find(conv);
         }
         it->second.is_loaded = false;
-        it->second.frameid = ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id;
+        it->second.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
 }
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
@@ -101,7 +101,7 @@ static int get_target_frame_id(int curr_frameid, int context_frameid)
 // ========== 收集输入 + 打包命令帧 ==========
 static void collect_input(Context* ctx)
 {
-        int frame_id = ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id++;
+        int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id++;
         S2CPlayerJoin joins[32]; int num_joins = 0;
         for (auto& j : ctx->player_joins)
                 if (num_joins < 32) joins[num_joins++] = j;
@@ -149,7 +149,7 @@ static void input_forwarding(Context* ctx)
         for (auto& [conv, sess] : ctx->sessions) {
                 if (sess.is_loaded) {
                         int taget_frameid = get_target_frame_id(sess.frameid,
-                                ctx->ecs.get<WorldState>(ctx->singleton_world).next_frame_id);
+                                ctx->ecs.ctx().get<GlobalState>().next_frame_id);
                         for (int i = sess.frameid; i < taget_frameid; i++) {
                                 auto it = ctx->commands.find(i);
                                 if (it != ctx->commands.end()) {
@@ -162,16 +162,16 @@ static void input_forwarding(Context* ctx)
                         sess.frameid = taget_frameid;
                 }
                 else {
-                        auto it = ctx->world_snapshots.find(sess.frameid);
-                        if (it == ctx->world_snapshots.end()) {
-                                snapshot_system(ctx->ecs, ctx, 0);
-                                it = ctx->world_snapshots.find(sess.frameid);
-                                if (it == ctx->world_snapshots.end()) {
+                        auto it = ctx->world_snapshots.lower_bound(sess.frameid);
+                        if (it == ctx->world_snapshots.end() || it->first > sess.frameid) {
+                                if (it == ctx->world_snapshots.begin()) {
+                                        log_info("WARNING: no snapshot cache found for frame %d (client %d), sending empty loading", sess.frameid, sess.conv);
                                         auto data = pack_s2c_loading(conv, sess.frameid,
-                                                ctx->ecs.get<WorldState>(ctx->singleton_world).next_entity_id, nullptr, 0);
+                                                ctx->ecs.ctx().get<GlobalState>().next_entity_id, nullptr, 0);
                                         netserver_send(ctx->net_server, sess.conv, data.c_str(), data.size());
                                         return;
                                 }
+                                --it;
                         }
                         S2CEntity entities[512];
                         int ec = 0, eid = 0;

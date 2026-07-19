@@ -14,7 +14,7 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
         TransformComponent& t)
 {
         jrect_t body_rect = { 0 };
-        auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
         body_rect.x = (t.position.x - cam.x) * SERVER_PPM;
         body_rect.y = (t.position.y - cam.y) * SERVER_PPM;
         body_rect.w = fp_to_float(rect.width) * SERVER_PPM;

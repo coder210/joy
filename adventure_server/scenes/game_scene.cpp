@@ -19,7 +19,7 @@
 #include "../systems/movement_system.h"
 #include "../systems/collision_system.h"
 #include "../systems/handle_command_system.h"
-#include "../systems/network_system.h"
+#include "../network/network_utils.h"
 #include "../context.h"
 #include "../asset_manager.h"
 #include "game_scene.h"
@@ -93,21 +93,20 @@ static void on_load(scene_p s)
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
 
-        // 创建单例实体
-        ctx->singleton_net    = ctx->ecs.create(); ctx->ecs.emplace<NetComponent>(ctx->singleton_net);
-        ctx->singleton_world  = ctx->ecs.create(); ctx->ecs.emplace<WorldState>(ctx->singleton_world);
-        ctx->singleton_camera = ctx->ecs.create(); ctx->ecs.emplace<CameraComponent>(ctx->singleton_camera);
+        // 注册全局单例（通过 registry.ctx() 访问）
+        ctx->ecs.ctx().emplace<NetComponent>();
+        ctx->ecs.ctx().emplace<GlobalState>();
 
         // 注册 system
-        ctx->add_system(Context::OnStart, "creating_block", creating_block_system);
-        ctx->add_system(Context::OnStart, "init_tilemap", init_tilemap_system);
-        ctx->add_system(Context::PreUpdate, "input_consume", input_consume_system);
-        ctx->add_system(Context::OnUpdate, "movement", movement_system);
-        ctx->add_system(Context::OnUpdate, "interpolate", interpolate_position_system);
-        ctx->add_system(Context::PostUpdate, "snapshot", snapshot_system);
+        add_system(ctx, OnStart, "creating_block", creating_block_system);
+        add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
+        add_system(ctx, PreUpdate, "input_consume", input_consume_system);
+        add_system(ctx, OnUpdate, "movement", movement_system);
+        add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
+        add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 
         // 执行 OnStart 阶段的 system（只执行一次）
-        ctx->run_phase(Context::OnStart, 0);
+        run_phase(ctx, OnStart, 0);
 
 }
 
@@ -156,7 +155,7 @@ static void on_update(scene_p s, float dt)
                 bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
                         &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
                 if (ok) {
-                        auto& cmd = ctx->ecs.get<NetComponent>(ctx->singleton_net);
+                        auto& cmd = ctx->ecs.ctx().get<NetComponent>();
                         cmd.frame_id = ok ? frame_id : -1;
                         cmd.num_joins = jn;
                         cmd.num_leaves = ln;
@@ -169,9 +168,9 @@ static void on_update(scene_p s, float dt)
                 }
 
                 // 自动调度逻辑 tick
-                ctx->run_phase(Context::PreUpdate, ctx->FIXED_TIMESTEP);
-                ctx->run_phase(Context::OnUpdate, ctx->FIXED_TIMESTEP);
-                ctx->run_phase(Context::PostUpdate, ctx->FIXED_TIMESTEP);
+                run_phase(ctx, PreUpdate, ctx->FIXED_TIMESTEP);
+                run_phase(ctx, OnUpdate, ctx->FIXED_TIMESTEP);
+                run_phase(ctx, PostUpdate, ctx->FIXED_TIMESTEP);
         }
 }
 
@@ -182,7 +181,7 @@ static void on_render(scene_p s)
 
         // ---- tilemap 背景 ----
         if (ctx->tilemap) {
-                auto& cam = ctx->ecs.get<CameraComponent>(ctx->singleton_camera).position;
+                auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
                 float cx = cam.x * (float)SERVER_PPM;
                 float cy = cam.y * (float)SERVER_PPM;
                 jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());

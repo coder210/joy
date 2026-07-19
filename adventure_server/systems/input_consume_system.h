@@ -13,7 +13,7 @@ static const uint8_t DIR_TO_BITS[4] = {
 static void input_consume_system(entt::registry& registry, Context* ctx, float dt) {
         (void)dt;
         // 从 NetComponent 读取当前 tick 的命令数据
-        auto& net = registry.get<NetComponent>(ctx->singleton_net);
+        auto& net = registry.ctx().get<NetComponent>();
         if (net.frame_id < 0) return;
 
         // ---- 1. 处理 JOIN ----
