@@ -15,6 +15,7 @@
 #include "../systems/creating_block_system.h"
 #include "../systems/init_tilemap_system.h"
 #include "../systems/input_consume_system.h"
+#include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
 #include "../systems/movement_system.h"
 #include "../systems/collision_system.h"
@@ -30,65 +31,12 @@ struct game_scene {
         Context* ctx;
 };
 
-// ========== 动画定义辅助（存入 registry.ctx() 全局单例）==========
-static void create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
-        AnimatorDefComponent def;
-
-        const int FPS = 6;
-        const float DUR = 0.15f;
-        const int FW = 192, FH = 192;
-
-        {
-                AnimStateDef s; s.name = "idle"; s.loop = true;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), 0, (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-        {
-                AnimStateDef s; s.name = "walk"; s.loop = true;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), (float)(1 * FH), (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-
-        const char* atk_names[] = { "attack_d","attack_l","attack_r","attack_u" };
-        int atk_rows[] = { 4,2,2,6 };
-        for (int d = 0; d < 4; d++) {
-                AnimStateDef s; s.name = atk_names[d]; s.loop = false;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), (float)(atk_rows[d] * FH), (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-
-        {
-                AnimTransitionDef t; t.from_state = 0; t.to_state = 1;
-                t.conditions.push_back({ "speed",AnimCondMode::GREATER,0.5f }); t.exit_time = 0.05f; def.transitions.push_back(t);
-        }
-        {
-                AnimTransitionDef t; t.from_state = 1; t.to_state = 0;
-                t.conditions.push_back({ "speed",AnimCondMode::LESS,0.5f }); t.exit_time = 0.05f; def.transitions.push_back(t);
-        }
-        for (int d = 0; d < 4; d++) {
-                AnimTransitionDef t; t.from_state = -1; t.to_state = 2 + d;
-                t.conditions.push_back({ "attack",AnimCondMode::TRIGGER,0 });
-                t.conditions.push_back({ "dir",AnimCondMode::EQUALS,(float)d }); def.transitions.push_back(t);
-        }
-        for (int d = 0; d < 4; d++) {
-                AnimTransitionDef t; t.from_state = 2 + d; t.to_state = 0;
-                t.exit_time = (float)(FPS * DUR); // = 0.9f，等攻击动画完整播完再切回 idle
-                def.transitions.push_back(t);
-        }
-
-        def.default_state = 0;
-        registry.ctx().emplace<AnimatorDefComponent>(std::move(def));
-}
-
 static void on_load(scene_p s)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.17", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.3", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -195,7 +143,7 @@ static void on_render(scene_p s)
         for (auto e : draw_view) {
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (ctx->ecs.all_of<Animator, AnimParams, PlayerActionComponent>(e)) {
+                if (ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
                         auto& anim = ctx->ecs.get<AnimatorComponent>(e);
                         auto& act = ctx->ecs.get<PlayerActionComponent>(e);
                         animator_render_system(ctx, ctx->ecs, t, rect, anim, act);

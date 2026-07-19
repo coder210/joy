@@ -1,16 +1,6 @@
 #pragma once
+// 本文件保持向后兼容，实质定义已迁至 joy/joy/anim.h
+#include <joy/anim.h>
 
-struct AnimatorComponent {
-    int current_state = 0;
-    int current_frame = 0;
-    float frame_elapsed = 0;
-    float state_elapsed = 0;
-    bool just_entered = true;
-    bool flip_h = false;
-};
-
-struct AnimParamsComponent {
-    float speed = 0;
-    int dir = 0;
-    bool attack = false;
-};
+using AnimatorComponent  = anim_t;
+using AnimParamsComponent = anim_params_t;

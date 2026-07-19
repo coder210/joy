@@ -1,40 +1,10 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <joy/joy.h>
+// 本文件保持向后兼容，实质定义已迁至 joy/joy/anim.h
+#include <joy/anim.h>
 
-enum class AnimCondMode {
-    GREATER, LESS, EQUALS, NOT_EQUALS, IF_TRUE, IF_FALSE, TRIGGER,
-};
-
-struct AnimClipDef {
-    std::string path;
-    jrect_t src_rect = {};
-    float duration = 0.15f;
-};
-
-struct AnimCondDef {
-    std::string param_name;
-    AnimCondMode mode = AnimCondMode::GREATER;
-    float threshold = 0;
-};
-
-struct AnimTransitionDef {
-    int from_state = -1;
-    int to_state = 0;
-    std::vector<AnimCondDef> conditions;
-    float exit_time = 0;
-};
-
-struct AnimStateDef {
-    std::string name;
-    std::vector<AnimClipDef> clips;
-    bool loop = true;
-    float speed = 1.0f;
-};
-
-struct AnimatorDefComponent {
-    std::vector<AnimStateDef> states;
-    std::vector<AnimTransitionDef> transitions;
-    int default_state = 0;
-};
+using AnimCondMode     = anim_cond_mode_t;
+using AnimCondDef      = anim_cond_t;
+using AnimTransitionDef = anim_transition_t;
+using AnimClipDef      = anim_clip_def_t;
+using AnimStateDef     = anim_state_t;
+using AnimatorDefComponent = anim_def_t;

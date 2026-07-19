@@ -2,6 +2,7 @@
 #define HANDLE_COMMAND_SYSTEM_H
 #include "../context.h"
 #include "../components/net_component.h"
+#include "../components/animator_component.h"
 
 //static const fp_t MOVE_SPEED = fp_from_float(5.0f);
 
@@ -101,8 +102,8 @@ static void update_ai(Context* ctx, entt::registry& registry)
                     ai.timer = 0;
                     ai.state = 2;
                     attack_target(ctx, registry, &pos, rect, id, atk_dir);
-                    if (registry.all_of<AnimParams>(e)) {
-                        auto& p = registry.get<AnimParams>(e);
+                    if (registry.all_of<anim_params_t>(e)) {
+                        auto& p = registry.get<anim_params_t>(e);
                         p.attack = true;
                         p.dir = atk_dir;
                     }
@@ -113,8 +114,8 @@ static void update_ai(Context* ctx, entt::registry& registry)
                 if (registry.all_of<PlayerActionComponent>(e)) {
                     auto& act = registry.get<PlayerActionComponent>(e);
                     act.state = PlayerActionComponent::WALK;
-                    if (registry.all_of<AnimParams>(e)) {
-                        registry.get<AnimParams>(e).speed = 1.0f;
+                    if (registry.all_of<anim_params_t>(e)) {
+                        registry.get<anim_params_t>(e).speed = 1.0f;
                     }
                 }
                 fp_t dx = fp_sub(nearest_player_x, pos.x);
@@ -136,7 +137,7 @@ static void update_ai(Context* ctx, entt::registry& registry)
             if (dist_sq < fp_mul(arrived, arrived)) {
                 if (registry.all_of<PlayerActionComponent>(e)) {
                     registry.get<PlayerActionComponent>(e).state = PlayerActionComponent::IDLE;
-                    if (registry.all_of<AnimParams>(e)) registry.get<AnimParams>(e).speed = 0;
+                    if (registry.all_of<anim_params_t>(e)) registry.get<anim_params_t>(e).speed = 0;
                 }
                 fp_t range = ai.patrol_radius;
                 ai.target_x = fp_add(ai.patrol_center_x,
@@ -149,7 +150,7 @@ static void update_ai(Context* ctx, entt::registry& registry)
             else {
                 if (registry.all_of<PlayerActionComponent>(e)) {
                     registry.get<PlayerActionComponent>(e).state = PlayerActionComponent::WALK;
-                    if (registry.all_of<AnimParams>(e)) registry.get<AnimParams>(e).speed = 1.0f;
+                    if (registry.all_of<anim_params_t>(e)) registry.get<anim_params_t>(e).speed = 1.0f;
                 }
                 fp_t dist = fp_sqrt(dist_sq);
                 pos.x = fp_add(pos.x, fp_mul(fp_div(dx, dist), step));
@@ -264,7 +265,7 @@ static void handle_command_system(Context* ctx, entt::registry& registry)
             if (p.conv != input.conv) continue;
             if (registry.all_of<PlayerActionComponent>(e)) {
                 auto& act = registry.get<PlayerActionComponent>(e);
-                auto* params = registry.all_of<AnimParams>(e) ? &registry.get<AnimParams>(e) : nullptr;
+                auto* params = registry.all_of<anim_params_t>(e) ? &registry.get<anim_params_t>(e) : nullptr;
                 if (input.attack) {
                     act.state = PlayerActionComponent::ATTACK;
                     act.dir = dir;

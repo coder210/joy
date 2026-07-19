@@ -1,75 +1,58 @@
 #ifndef ANIMATOR_RENDER_SYSTEM_H
 #define ANIMATOR_RENDER_SYSTEM_H
 #include "../context.h"
-#include <SDL3/SDL_render.h>
-#include <SDL3_image/SDL_image.h>
+#include <joy/anim.h>
 
-static SDL_Texture* get_or_load_texture(SDL_Renderer* renderer, const std::string& path) {
-    static std::map<std::string, SDL_Texture*> cache;
-
+static image_p get_or_load_image(jr2d_p r2d, const char* path) {
+    static std::map<std::string, image_p> cache;
     auto it = cache.find(path);
     if (it != cache.end()) return it->second;
-
-    SDL_Surface* surface = IMG_Load(path.c_str());
-    if (!surface) return nullptr;
-
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_DestroySurface(surface);
-
-    if (tex) cache[path] = tex;
-    return tex;
+    image_p img = image_create(r2d, path);
+    if (img) cache[path] = img;
+    return img;
 }
 
 static void animator_render_system(Context* ctx, entt::registry& registry,
     TransformComponent& t, LogicRectComponent& r,
-    AnimatorComponent& anim, PlayerActionComponent& act)
+    anim_t& anim, PlayerActionComponent& act)
 {
     (void)registry;
     (void)act;
 
-    if (!ctx->ecs.ctx().contains<AnimatorDefComponent>()) return;
-    auto& def = ctx->ecs.ctx().get<AnimatorDefComponent>();
-    if (def.states.empty()) return;
+    if (!ctx->ecs.ctx().contains<anim_def_t>()) return;
+    auto& def = ctx->ecs.ctx().get<anim_def_t>();
+    if (def.num_states <= 0) return;
 
-    int cs = anim.current_state;
-    if (cs < 0 || cs >= (int)def.states.size()) cs = def.default_state;
-    auto& state = def.states[cs];
+    anim_clip_t clip;
+    if (!anim_get_current_clip(&anim, &def, &clip)) return;
 
-    int cf = anim.current_frame;
-    if (cf < 0 || cf >= (int)state.clips.size()) cf = 0;
-    auto& clip = state.clips[cf];
-
-    SDL_Texture* tex = get_or_load_texture(ctx->renderer, clip.path);
-    if (!tex) {
-        // fallback: 绘制与原方块等大的纯色框
-        float px = t.position.x - clip.src_rect.w / 2;
-        float py = t.position.y - clip.src_rect.h / 2;
-        SDL_FRect dr = { px, py, (float)clip.src_rect.w, (float)clip.src_rect.h };
-        SDL_SetRenderDrawColor(ctx->renderer, 0, 255, 0, 180);
-        SDL_RenderFillRect(ctx->renderer, &dr);
+    image_p img = get_or_load_image(ctx->r2d, clip.path);
+    if (!img) {
+        jrect_t dr = {
+            t.position.x - clip.src_rect.w / 2,
+            t.position.y - clip.src_rect.h / 2,
+            (float)clip.src_rect.w, (float)clip.src_rect.h
+        };
+        r2d_set_color(ctx->r2d, 0, 255, 0, 180);
+        shape_draw_rectangle(ctx->r2d, "fill", dr);
         return;
     }
 
-    float scale_x = (anim.flip_h) ? -1.0f : 1.0f;
-    SDL_FRect src = {
-        (float)clip.src_rect.x, (float)clip.src_rect.y,
-        (float)clip.src_rect.w, (float)clip.src_rect.h
-    };
     float cx = t.position.x;
     float cy = t.position.y;
-    float w = (float)clip.src_rect.w * ctx->global_scale;
-    float h = (float)clip.src_rect.h * ctx->global_scale;
-    SDL_FRect dst = { cx - w / 2, cy - h / 2, w, h };
+    vec2_t pos = { cx, cy };
+    vec2_t scale = { anim.flip_h ? -1.0f : 1.0f, 1.0f };
+    vec2_t origin = { clip.src_rect.w / 2, clip.src_rect.h / 2 };
 
-    SDL_RenderTextureRotated(ctx->renderer, tex, &src, &dst, 0, nullptr,
-        anim.flip_h ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    image_draw_ex(img, &clip.src_rect, pos, 0.0f, scale, origin);
 
     // 绘制碰撞框（调试）
-    SDL_FRect debug_rect = {
+    jrect_t debug_rect = {
         cx - r.width / 2 * 100, cy - r.height / 2 * 100,
         r.width * 100, r.height * 100
     };
-    SDL_SetRenderDrawColor(ctx->renderer, 255, 0, 0, 100);
-    SDL_RenderRect(ctx->renderer, &debug_rect);
+    r2d_set_color(ctx->r2d, 255, 0, 0, 100);
+    shape_draw_rectangle(ctx->r2d, "line", debug_rect);
 }
 
+#endif // ANIMATOR_RENDER_SYSTEM_H
