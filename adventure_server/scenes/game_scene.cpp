@@ -18,6 +18,7 @@
 #include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
 #include "../systems/movement_system.h"
+#include "../systems/cleanup_system.h"
 #include "../systems/collision_system.h"
 #include "../systems/handle_command_system.h"
 #include "../network/network_utils.h"
@@ -54,6 +55,7 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
+        add_system(ctx, OnUpdate, "cleanup", cleanup_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 
         // 执行 OnStart 阶段的 system（只执行一次）
