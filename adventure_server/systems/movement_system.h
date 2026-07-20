@@ -1,6 +1,7 @@
 ﻿#ifndef MOVEMENT_SYSTEM_H
 #define MOVEMENT_SYSTEM_H
 #include "../context.h"
+#include "../components/animator_component.h"
 #include <joy/jmath.h>
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);
@@ -11,7 +12,11 @@ static void movement_system(entt::registry& registry, Context* ctx, float dt) {
         for (auto e : view) {
                 auto& psi = view.get<PlayerStateInput>(e);
                 auto& p = view.get<LogicPositionComponent>(e);
-                if (psi.move_bits == 0) { registry.remove<PlayerStateInput>(e); return; }
+                if (psi.move_bits == 0) {
+                        if (registry.all_of<AnimParamsComponent>(e))
+                                registry.get<AnimParamsComponent>(e).speed = 0.0f;
+                        registry.remove<PlayerStateInput>(e); return;
+                }
                 fp_t step = fp_mul(MOVE_SPEED, fp_from_float(ctx->FIXED_TIMESTEP));
                 if (psi.move_bits & 0b0001)
                         p.y = fp_sub(p.y, step);
@@ -21,6 +26,8 @@ static void movement_system(entt::registry& registry, Context* ctx, float dt) {
                         p.x = fp_sub(p.x, step);
                 if (psi.move_bits & 0b1000) 
                         p.x = fp_add(p.x, step);
+                if (registry.all_of<AnimParamsComponent>(e))
+                        registry.get<AnimParamsComponent>(e).speed = 1.0f;
                 registry.remove<PlayerStateInput>(e);
         }
 }
