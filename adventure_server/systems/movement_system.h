@@ -15,13 +15,13 @@ static void movement_system(entt::registry& registry, Context* ctx, float dt) {
                 if (psi.move_bits == 0) { return; }
                 fp_t step = fp_mul(MOVE_SPEED, fp_from_float(ctx->FIXED_TIMESTEP));
                 if (psi.move_bits & 0b0001)
-                        p.y = fp_sub(p.y, step);
+                        p.y = fp_sub(p.y, step); // 上
                 if (psi.move_bits & 0b0010) 
-                        p.y = fp_add(p.y, step);
+                        p.y = fp_add(p.y, step); // 下
                 if (psi.move_bits & 0b0100) 
-                        p.x = fp_sub(p.x, step);
+                        p.x = fp_sub(p.x, step); // 左
                 if (psi.move_bits & 0b1000) 
-                        p.x = fp_add(p.x, step);
+                        p.x = fp_add(p.x, step); // 右
                 if (registry.all_of<AnimParamsComponent>(e))
                         registry.get<AnimParamsComponent>(e).speed = 1.0f;
         }

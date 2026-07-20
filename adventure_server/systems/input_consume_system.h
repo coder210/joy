@@ -97,6 +97,26 @@ static void input_consume_system(entt::registry& registry, Context* ctx, float d
                                 registry.emplace<PlayerEventInput>(player, events);
                         }
                 }
+
+                // 更新动画参数：将原始方向位掩码翻译为 anim_params_t.dir / speed / attack
+                if (registry.all_of<anim_params_t, PlayerActionComponent>(player)) {
+                        auto& params = registry.get<anim_params_t>(player);
+                        auto& act    = registry.get<PlayerActionComponent>(player);
+
+                        int  dir_idx = input_to_dir(input.dir);
+                        bool moving  = has_dir(input.dir);
+
+                        if (input.attack) {
+                                act.state     = PlayerActionComponent::ATTACK;
+                                params.attack = true;
+                                params.dir    = dir_idx;
+                        } else {
+                                act.state  = moving ? PlayerActionComponent::WALK
+                                                    : PlayerActionComponent::IDLE;
+                                params.speed = moving ? 1.0f : 0.0f;
+                                params.dir   = dir_idx;
+                        }
+                }
         }
 
         net.num_joins = 0;
