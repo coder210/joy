@@ -15,6 +15,10 @@ static void animator_update_system(entt::registry& registry, Context* ctx, float
         auto& params = view.get<anim_params_t>(entity);
         auto& act = view.get<PlayerActionComponent>(entity);
 
+        // 这帧没有收到输入 → 空闲
+        if (!registry.all_of<PlayerStateInput>(entity))
+            params.speed = 0.0f;
+
         // 方向同步
         a.flip_h = (params.dir == 1);
 

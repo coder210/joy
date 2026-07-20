@@ -12,11 +12,7 @@ static void movement_system(entt::registry& registry, Context* ctx, float dt) {
         for (auto e : view) {
                 auto& psi = view.get<PlayerStateInput>(e);
                 auto& p = view.get<LogicPositionComponent>(e);
-                if (psi.move_bits == 0) {
-                        if (registry.all_of<AnimParamsComponent>(e))
-                                registry.get<AnimParamsComponent>(e).speed = 0.0f;
-                        registry.remove<PlayerStateInput>(e); return;
-                }
+                if (psi.move_bits == 0) { registry.remove<PlayerStateInput>(e); return; }
                 fp_t step = fp_mul(MOVE_SPEED, fp_from_float(ctx->FIXED_TIMESTEP));
                 if (psi.move_bits & 0b0001)
                         p.y = fp_sub(p.y, step);
