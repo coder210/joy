@@ -662,8 +662,10 @@ static void fixed_update(game_scene_p self, float dt)
 static void send_input(Context*ctx)
 {
     if (!ctx->netclient) return;
-    if (has_dir(ctx->current_input_mask)) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, ctx->current_input_mask, 0);
+    int dir = ctx->current_input_mask & INPUT_DIR_MASK;
+    int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
+    if (dir || attack) {
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
     }
 }
