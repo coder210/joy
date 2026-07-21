@@ -666,6 +666,7 @@ static void send_input(Context*ctx)
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (dir || attack) {
         auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
+        log_info("[CLIENT] send_input: dir=%d attack=%d mask=%d", dir, attack, ctx->current_input_mask);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
     }
 }

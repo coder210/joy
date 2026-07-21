@@ -31,6 +31,7 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
 
 static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack)
 {
+        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d", conv, dir, attack);
         S2CPlayerInput i = { seq, conv, dir, (int8_t)attack };
         ctx->player_inputs.push_back(i);
 }
