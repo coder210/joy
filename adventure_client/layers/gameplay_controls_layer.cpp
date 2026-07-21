@@ -38,14 +38,16 @@ static void on_event(scene_node_p n, const void* e)
 	cbs.on_mousereleased = [](float x, float y, int btn, void* arg) {
 		auto* self = (gameplay_controls_layer_p)arg;
 		auto rel = [&](button_p b, int evt) { button_set_pressed(b, false); send_gameplay_control_event(evt); };
-		if (self->btn_up    && button_is_hovered(self->btn_up, x, y))    rel(self->btn_up, GAMEPLAY_CONTROL_RELEASE_UP);
-		if (self->btn_down  && button_is_hovered(self->btn_down, x, y))  rel(self->btn_down, GAMEPLAY_CONTROL_RELEASE_DOWN);
-		if (self->btn_left  && button_is_hovered(self->btn_left, x, y))  rel(self->btn_left, GAMEPLAY_CONTROL_RELEASE_LEFT);
-		if (self->btn_right && button_is_hovered(self->btn_right, x, y)) rel(self->btn_right, GAMEPLAY_CONTROL_RELEASE_RIGHT);
-		if (self->btn_attack && button_is_hovered(self->btn_attack, x, y)) {
-			button_set_pressed(self->btn_attack, false);
-			send_gameplay_control_event(GAMEPLAY_CONTROL_ATTACK);
-		}
+		if (self->btn_up    && button_is_hovered(self->btn_up, x, y))
+			rel(self->btn_up, GAMEPLAY_CONTROL_RELEASE_UP);
+		if (self->btn_down  && button_is_hovered(self->btn_down, x, y))
+			rel(self->btn_down, GAMEPLAY_CONTROL_RELEASE_DOWN);
+		if (self->btn_left  && button_is_hovered(self->btn_left, x, y))
+			rel(self->btn_left, GAMEPLAY_CONTROL_RELEASE_LEFT);
+		if (self->btn_right && button_is_hovered(self->btn_right, x, y))
+			rel(self->btn_right, GAMEPLAY_CONTROL_RELEASE_RIGHT);
+		if (self->btn_attack && button_is_hovered(self->btn_attack, x, y))
+			rel(self->btn_attack, GAMEPLAY_CONTROL_ATTACK);
 	};
 	cbs.on_mousemoved = [](float x, float y, float dx, float dy, void* arg) {
 		auto* self = (gameplay_controls_layer_p)arg;

@@ -573,7 +573,7 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.3", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton
@@ -600,62 +600,62 @@ static void fixed_update(game_scene_p self, float dt)
 
         if (!self->ctx->ready) return;
 
-        // 攻击触发：直接设置 ECS 状态 + 发送输入
-        if (self->ctx->attack_triggered) {
-                self->ctx->attack_triggered = false;
-                self->ctx->pending_inputs.push_back(INPUT_ATTACK);
-                auto pv = self->ctx->ecs.view<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-                for (auto e : pv) {
-                        auto& p = pv.get<PlayerComponent>(e);
-                        auto& id = pv.get<IdComponent>(e);
-                        auto& r = pv.get<LogicRectComponent>(e);
-                        auto& pos = pv.get<LogicPositionComponent>(e);
-                        if (p.conv == self->ctx->local_conv) {
-                                attack_effect_only(self, &pos, r, id, self->ctx->local_conv, INPUT_ATTACK);
-                                if (self->ctx->ecs.all_of<PlayerActionComponent>(e)) {
-                                        auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
-                                        act.state = PlayerActionComponent::ATTACK;
-                                        act.dir = self->ctx->local_dir;
-                                }
-                                if (self->ctx->ecs.all_of<AnimParams>(e)) {
-                                        auto& params = self->ctx->ecs.get<AnimParams>(e);
-                                        params.attack = true;
-                                        params.dir = self->ctx->local_dir;
-                                }
-                        }
-                }
-                {
-                        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, 1);
-                        netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
-                }
-                return;
-        }
+        //// 攻击触发：直接设置 ECS 状态 + 发送输入
+        //if (self->ctx->attack_triggered) {
+        //        self->ctx->attack_triggered = false;
+        //        self->ctx->pending_inputs.push_back(INPUT_ATTACK);
+        //        auto pv = self->ctx->ecs.view<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+        //        for (auto e : pv) {
+        //                auto& p = pv.get<PlayerComponent>(e);
+        //                auto& id = pv.get<IdComponent>(e);
+        //                auto& r = pv.get<LogicRectComponent>(e);
+        //                auto& pos = pv.get<LogicPositionComponent>(e);
+        //                if (p.conv == self->ctx->local_conv) {
+        //                        attack_effect_only(self, &pos, r, id, self->ctx->local_conv, INPUT_ATTACK);
+        //                        if (self->ctx->ecs.all_of<PlayerActionComponent>(e)) {
+        //                                auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
+        //                                act.state = PlayerActionComponent::ATTACK;
+        //                                act.dir = self->ctx->local_dir;
+        //                        }
+        //                        if (self->ctx->ecs.all_of<AnimParams>(e)) {
+        //                                auto& params = self->ctx->ecs.get<AnimParams>(e);
+        //                                params.attack = true;
+        //                                params.dir = self->ctx->local_dir;
+        //                        }
+        //                }
+        //        }
+        //        {
+        //                auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, 1);
+        //                netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
+        //        }
+        //        return;
+        //}
 
-        if (has_dir(self->ctx->current_input_mask)) {
-                self->ctx->pending_inputs.push_back(self->ctx->current_input_mask);
-                auto pv = self->ctx->ecs.view<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
-                for (auto e : pv) {
-                        auto& p = pv.get<PlayerComponent>(e);
-                        auto& id = pv.get<IdComponent>(e);
-                        auto& r = pv.get<LogicRectComponent>(e);
-                        auto& pos = pv.get<LogicPositionComponent>(e);
-                        if (p.conv == self->ctx->local_conv) {
-                                movement(self, &pos, r, id, self->ctx->local_conv, self->ctx->current_input_mask);
-                                if (self->ctx->ecs.all_of<AnimParams>(e)) {
-                                        auto& params = self->ctx->ecs.get<AnimParams>(e);
-                                        params.dir = input_to_dir(self->ctx->current_input_mask);
-                                }
-                                if (self->ctx->ecs.all_of<PlayerActionComponent>(e)) {
-                                        auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
-                                        act.dir = input_to_dir(self->ctx->current_input_mask);
-                                        if (act.state != PlayerActionComponent::ATTACK)
-                                                act.state = PlayerActionComponent::WALK;
-                                }
-                        }
-                }
-                auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->ctx->current_input_mask, 0);
-                netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
-        }
+        //if (has_dir(self->ctx->current_input_mask)) {
+        //        self->ctx->pending_inputs.push_back(self->ctx->current_input_mask);
+        //        auto pv = self->ctx->ecs.view<PlayerComponent, IdComponent, LogicRectComponent, LogicPositionComponent>();
+        //        for (auto e : pv) {
+        //                auto& p = pv.get<PlayerComponent>(e);
+        //                auto& id = pv.get<IdComponent>(e);
+        //                auto& r = pv.get<LogicRectComponent>(e);
+        //                auto& pos = pv.get<LogicPositionComponent>(e);
+        //                if (p.conv == self->ctx->local_conv) {
+        //                        movement(self, &pos, r, id, self->ctx->local_conv, self->ctx->current_input_mask);
+        //                        if (self->ctx->ecs.all_of<AnimParams>(e)) {
+        //                                auto& params = self->ctx->ecs.get<AnimParams>(e);
+        //                                params.dir = input_to_dir(self->ctx->current_input_mask);
+        //                        }
+        //                        if (self->ctx->ecs.all_of<PlayerActionComponent>(e)) {
+        //                                auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
+        //                                act.dir = input_to_dir(self->ctx->current_input_mask);
+        //                                if (act.state != PlayerActionComponent::ATTACK)
+        //                                        act.state = PlayerActionComponent::WALK;
+        //                        }
+        //                }
+        //        }
+        //        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, self->ctx->current_input_mask, 0);
+        //        netclient_send(self->ctx->netclient, data.c_str(), (int)data.size());
+        //}
 
 }
 
@@ -664,6 +664,8 @@ static void send_input(Context*ctx)
     if (!ctx->netclient) return;
     int dir = ctx->current_input_mask & INPUT_DIR_MASK;
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
+    // UI 按钮一次性触发：发送一次后自动复位
+    if (ctx->attack_triggered) { attack = 1; ctx->attack_triggered = false; }
     if (dir || attack) {
         auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
         log_info("[CLIENT] send_input: dir=%d attack=%d mask=%d", dir, attack, ctx->current_input_mask);
@@ -697,8 +699,10 @@ static void client_on_keypressed(const char* key, int scancode, bool repeat, boo
         else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
         if (key_mask) {
                 self->ctx->current_input_mask |= key_mask;
-                if (key_mask == INPUT_ATTACK)
-                        self->ctx->attack_triggered = true;
+                if (key_mask == INPUT_ATTACK) {
+
+                }
+                        //self->ctx->attack_triggered = true;
                 if (key_mask & INPUT_DIR_MASK)
                         self->ctx->local_dir = input_to_dir(key_mask);
         }

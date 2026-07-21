@@ -25,6 +25,10 @@ static void animator_update_system(entt::registry& registry, Context* ctx, float
         // 核心状态机更新（无 entt 依赖）
         anim_update(&a, &def, &params, dt);
 
+        // 攻击是一次性触发，消费后立即复位
+        // 让攻击动画自然播放 0.9s 后通过 s_atk[d] → idle 过渡回到空闲
+        params.attack = false;
+
         // === ECS 专有逻辑：同步 act.state ===
         if (act.state == PlayerActionComponent::ATTACK) {
             if (strncmp(def.states[a.current_state].name, "attack", 6) != 0) {

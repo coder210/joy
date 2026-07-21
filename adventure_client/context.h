@@ -60,8 +60,8 @@ struct Context {
         uint64_t lastTime = get_ticks();
 
         int current_input_mask = 0;
+        bool attack_triggered = false;          // 按钮 tap 攻击，发送一次后自动复位
         float heartbeatTimer = 0.0f;
-        bool attack_triggered = false;   // 攻击键按下待发送
 
         std::unordered_map<int, entt::entity> sessions;   // key = conv
 
