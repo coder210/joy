@@ -20,7 +20,7 @@
 #include "../systems/movement_system.h"
 #include "../systems/cleanup_system.h"
 #include "../systems/collision_system.h"
-#include "../systems/handle_command_system.h"
+
 #include "../network/network_utils.h"
 #include "../context.h"
 #include "../asset_manager.h"
