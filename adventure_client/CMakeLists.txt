@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "*.h")
+file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES
