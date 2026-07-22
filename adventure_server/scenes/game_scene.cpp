@@ -37,7 +37,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.39", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.3", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
