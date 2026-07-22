@@ -9,7 +9,7 @@
 #include "../context.h"
 
 
-static void init_tilemap_system(entt::registry& registry, Context* ctx)
+static void init_tilemap_system(entt::registry& registry, Context* ctx, float /*dt*/)
 {
         log_info("[Startup] system: init_tilemap");
         ctx->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");

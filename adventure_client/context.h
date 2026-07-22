@@ -4,6 +4,8 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <string>
+#include <functional>
 #include "entt.hpp"
 #include <joy/joy.h>
 #include "./components/player_action_component.h"
@@ -30,6 +32,30 @@
 struct state_snapshot {
         fp_t position_x, position_y;
 };
+
+// ========== System 调度基础设施 ==========
+enum Phase { OnStart, PreUpdate, OnUpdate, PostUpdate };
+
+struct SystemEntry {
+        std::string name;
+        Phase phase;
+        std::function<void(entt::registry&, Context*, float)> fn;
+};
+
+inline void add_system(Context* ctx, Phase phase, const char* name,
+        void (*fn)(entt::registry&, Context*, float))
+{
+        ctx->systems.push_back({ name, phase, fn });
+}
+
+inline void run_phase(Context* ctx, Phase phase, float dt)
+{
+        for (auto& sys : ctx->systems) {
+                if (sys.phase == phase) {
+                        sys.fn(ctx->ecs, ctx, dt);
+                }
+        }
+}
 
 struct Context {
         bool running;
@@ -75,6 +101,9 @@ struct Context {
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 20.0f;
+
+        // system 注册
+        std::vector<SystemEntry> systems;
 };
 
 

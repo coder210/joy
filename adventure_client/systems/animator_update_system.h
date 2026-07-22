@@ -34,12 +34,16 @@ static inline bool check_cond_list(const std::vector<AnimCondDef>& conditions, c
     return true;
 }
 
-static void animator_update_system(entt::registry& registry, entt::entity e,
-    Animator& anim, AnimParams& params, PlayerActionComponent& act, float dt) {
-    if (anim.def == entt::null) return;
-    if (!registry.valid((entt::entity)anim.def)) return;
+static void animator_update_system(entt::registry& registry, Context* /*ctx*/, float dt) {
+    auto view = registry.view<Animator, AnimParams, PlayerActionComponent>();
+    for (auto e : view) {
+        auto& anim = view.get<Animator>(e);
+        auto& params = view.get<AnimParams>(e);
+        auto& act = view.get<PlayerActionComponent>(e);
+    if (anim.def == entt::null) continue;
+    if (!registry.valid((entt::entity)anim.def)) continue;
     const AnimatorDef* def = registry.try_get<AnimatorDef>((entt::entity)anim.def);
-    if (!def || def->states.empty()) return;
+    if (!def || def->states.empty()) continue;
 
     anim.flip_h = (params.dir == 1);
 
@@ -79,7 +83,7 @@ static void animator_update_system(entt::registry& registry, entt::entity e,
     }
 
     const auto& state = def->states[anim.current_state];
-    if (state.clips.empty()) return;
+    if (state.clips.empty()) continue;
 
     anim.frame_elapsed += dt * state.speed;
     float clip_dur = state.clips[anim.current_frame].duration;
@@ -104,5 +108,6 @@ static void animator_update_system(entt::registry& registry, entt::entity e,
     if (act.state == PlayerActionComponent::ATTACK &&
         state.name.rfind("attack", 0) != 0) {
         act.state = PlayerActionComponent::IDLE;
+    }
     }
 }

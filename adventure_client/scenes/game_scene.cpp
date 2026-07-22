@@ -501,8 +501,14 @@ static void on_load(scene_p s)
         self->ctx->singleton_net = self->ctx->ecs.create();
         self->ctx->ecs.emplace<NetComponent>(self->ctx->singleton_net);
 
-        // 手动调用 OnStart 系统
-        init_tilemap_system(self->ctx->ecs, self->ctx);
+        // 注册 system
+        add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);
+        add_system(self->ctx, PreUpdate, "input_consume",      input_consume_system);
+        add_system(self->ctx, OnUpdate,  "movement",           movement_system);
+        add_system(self->ctx, OnUpdate,  "animator_update",    animator_update_system);
+        add_system(self->ctx, OnUpdate,  "interpolate",        interpolate_position_system);
+        // 执行 OnStart phase
+        run_phase(self->ctx, OnStart, 0);
 
         // ---- 音频 ----
         self->ctx->audio_dev = audio_open_device();
@@ -721,24 +727,10 @@ static void on_update(scene_p s, float dt) {
                         cmd.num_inputs = in; memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
                 }
 
-                // 手动调度逻辑 tick
-                float tick_dt = self->ctx->FIXED_TIMESTEP;
-                // PreUpdate: input_consume_system
-                input_consume_system(self->ctx->ecs, self->ctx);
-                // OnUpdate: movement + interpolation
-                auto move_view = self->ctx->ecs.view<PlayerStateInput, LogicPositionComponent>();
-                for (auto e : move_view) {
-                        auto& psi = move_view.get<PlayerStateInput>(e);
-                        auto& lp = move_view.get<LogicPositionComponent>(e);
-                        movement_system(self->ctx, self->ctx->ecs, e, psi, lp);
-                }
-                auto interp_view = self->ctx->ecs.view<IdComponent, LogicPositionComponent, TransformComponent>();
-                for (auto e : interp_view) {
-                        auto& id = interp_view.get<IdComponent>(e);
-                        auto& lp = interp_view.get<LogicPositionComponent>(e);
-                        auto& t = interp_view.get<TransformComponent>(e);
-                        interpolate_position_system(self->ctx, id, lp, t, tick_dt);
-                }
+                // 统一 system 调度（PreUpdate → OnUpdate → PostUpdate）
+                run_phase(self->ctx, PreUpdate, self->ctx->FIXED_TIMESTEP);
+                run_phase(self->ctx, OnUpdate, self->ctx->FIXED_TIMESTEP);
+                run_phase(self->ctx, PostUpdate, self->ctx->FIXED_TIMESTEP);
         }
 }
 

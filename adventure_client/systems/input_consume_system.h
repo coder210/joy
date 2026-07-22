@@ -4,7 +4,7 @@
 
 static const uint8_t DIR_TO_BITS[4] = { 0b0001, 0b0010, 0b0100, 0b1000 };
 
-static void input_consume_system(entt::registry& registry, Context* ctx) {
+static void input_consume_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     auto& net = registry.get<NetComponent>(ctx->singleton_net);
     if (net.frame_id < 0) return;
 
