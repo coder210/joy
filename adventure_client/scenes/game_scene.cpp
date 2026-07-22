@@ -745,13 +745,19 @@ static void on_render(scene_p s) {
                 jtilemap_render_all(self->ctx->tilemap_render, self->ctx->tilemap, cam_x_px, cam_y_px, get_ticks());
         }
 
-        // ---- ECS 实体（碰撞体） ----
+        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
         auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
         for (auto e : draw_view) {
-                auto& id = draw_view.get<IdComponent>(e);
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                drawing_entity_system(self->ctx, e, id, rect, t);
+                if (self->ctx->ecs.all_of<Animator, AnimParams, PlayerActionComponent>(e)) {
+                        auto& anim = self->ctx->ecs.get<Animator>(e);
+                        auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
+                        animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act);
+                } else {
+                        auto& id = draw_view.get<IdComponent>(e);
+                        drawing_entity_system(self->ctx, e, id, rect, t);
+                }
         }
 }
 
