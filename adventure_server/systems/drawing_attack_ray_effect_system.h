@@ -1,6 +1,6 @@
 ﻿#ifndef DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
-#include "../components/attack_ray_effect_component.h"
+#include "../../adventure_shared/components/attack_ray_effect_component.h"
 #include "../context.h"
 #include "../../adventure_shared/protocol.h"
 

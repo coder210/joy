@@ -2,10 +2,10 @@
 #include "../context.h"
 #include "../asset_manager.h"
 #include "../../adventure_shared/protocol.h"
-#include "../components/sprite_sheet_component.h"
-#include "../components/player_action_component.h"
-#include "../components/transform_component.h"
-#include "../components/logic_rect_component.h"
+#include "../../adventure_shared/components/sprite_sheet_component.h"
+#include "../../adventure_shared/components/player_action_component.h"
+#include "../../adventure_shared/components/transform_component.h"
+#include "../../adventure_shared/components/logic_rect_component.h"
 
 static void sprite_render_system(Context* ctx,
     TransformComponent& t, LogicRectComponent& r,

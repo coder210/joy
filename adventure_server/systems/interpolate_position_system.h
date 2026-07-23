@@ -1,8 +1,8 @@
 #ifndef INTERPOLATE_POSITION_SYSTEM_H
 #define INTERPOLATE_POSITION_SYSTEM_H
 #include "../context.h"
-#include "../components/logic_position_component.h"
-#include "../components/transform_component.h"
+#include "../../adventure_shared/components/logic_position_component.h"
+#include "../../adventure_shared/components/transform_component.h"
 
 static void interpolate_position_system(entt::registry& registry, Context* ctx, float dt) {
         auto view = registry.view<IdComponent, LogicPositionComponent, TransformComponent>();

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../context.h"
-#include "../components/player_state_input.h"
+#include "../../adventure_shared/components/player_state_input.h"
 #include <joy/anim.h>
 
 static void animator_update_system(entt::registry& registry, Context* ctx, float dt) {

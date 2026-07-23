@@ -1,7 +1,7 @@
 ﻿#ifndef MOVEMENT_SYSTEM_H
 #define MOVEMENT_SYSTEM_H
 #include "../context.h"
-#include "../components/animator_component.h"
+#include "../../adventure_shared/components/animator_component.h"
 #include <joy/jmath.h>
 
 static const fp_t MOVE_SPEED = fp_from_float(5.0f);

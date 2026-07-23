@@ -2,10 +2,10 @@
 #define INIT_TILEMAP_SYSTEM_H
 #include <joy/joy.h>
 #include "../../adventure_shared/protocol.h"
-#include "../components/id_component.h"
-#include "../components/logic_rect_component.h"
-#include "../components/logic_position_component.h"
-#include "../components/transform_component.h"
+#include "../../adventure_shared/components/id_component.h"
+#include "../../adventure_shared/components/logic_rect_component.h"
+#include "../../adventure_shared/components/logic_position_component.h"
+#include "../../adventure_shared/components/transform_component.h"
 #include "../context.h"
 
 

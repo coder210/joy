@@ -1,10 +1,10 @@
 ﻿#ifndef DRAWING_ENTITY_SYSTEM_H
 #define DRAWING_ENTITY_SYSTEM_H
 #include "../context.h"
-#include "../components/id_component.h"
-#include "../components/player_component.h"
-#include "../components/logic_rect_component.h"
-#include "../components/transform_component.h"
+#include "../../adventure_shared/components/id_component.h"
+#include "../../adventure_shared/components/player_component.h"
+#include "../../adventure_shared/components/logic_rect_component.h"
+#include "../../adventure_shared/components/transform_component.h"
 
 static void drawing_entity_system(Context* ctx, entt::entity e,
         IdComponent& id,

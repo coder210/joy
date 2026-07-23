@@ -1,7 +1,7 @@
 ﻿#ifndef DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
 #include "../context.h"
-#include "../components/attack_ray_effect_component.h"
+#include "../../adventure_shared/components/attack_ray_effect_component.h"
 
 
 static void 

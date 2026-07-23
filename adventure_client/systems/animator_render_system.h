@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 #include "../context.h"
-#include "../components/player_action_component.h"
+#include "../../adventure_shared/components/player_action_component.h"
 
 // 缓存图片（按路径）
 static image_p get_or_load_image(jr2d_p r2d, std::unordered_map<std::string, image_p>& cache, const std::string& path) {
