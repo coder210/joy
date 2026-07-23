@@ -1,45 +1,37 @@
-﻿#pragma once
+﻿// animator_render_system.h
+#pragma once
+
+#include <unordered_map>
 #include "../context.h"
-#include "../asset_manager.h"
-#include "../../adventure_shared/protocol.h"
-#include "../components/animator_component.h"
-#include "../components/animator_def.h"
-#include "../components/transform_component.h"
-#include "../components/logic_rect_component.h"
 #include "../components/player_action_component.h"
 
-static void animator_render_system(Context* ctx, entt::registry& registry,
-    TransformComponent& t, LogicRectComponent& r,
-    Animator& anim, PlayerActionComponent& act)
-{
-    if (anim.def == entt::null) return;
-    if (!registry.valid((entt::entity)anim.def)) return;
-    const AnimatorDef* def = registry.try_get<AnimatorDef>((entt::entity)anim.def);
-    if (!def) return;
-    if (anim.current_state < 0 || anim.current_state >= (int)def->states.size()) return;
+// 缓存图片（按路径）
+static image_p get_or_load_image(jr2d_p r2d, std::unordered_map<std::string, image_p>& cache, const std::string& path) {
+    auto it = cache.find(path);
+    if (it != cache.end()) return it->second;
+    image_p img = image_create(r2d, path.c_str());
+    cache[path] = img;
+    return img;
+}
 
-    const auto& state = def->states[anim.current_state];
-    if (anim.current_frame < 0 || anim.current_frame >= (int)state.clips.size()) return;
-    const auto& clip = state.clips[anim.current_frame];
+inline void animator_render_system(Context* ctx, entt::registry& registry,
+    const TransformComponent& t, const LogicRectComponent& rect,
+    anim_t& anim, PlayerActionComponent& act) {
 
-    image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, clip.path.c_str());
+    auto& def = registry.ctx().get<anim_def_t>();
+    anim_clip_t clip;
+    if (!anim_get_current_clip(&anim, &def, &clip)) return;
+
+    // 屏幕坐标（世界坐标 - 相机偏移）* PPM
+    float scr_x = (t.position.x - ctx->camera_x) * (float)PIXELS_PER_METER;
+    float scr_y = (t.position.y - ctx->camera_y) * (float)PIXELS_PER_METER;
+
+    static std::unordered_map<std::string, image_p> image_cache;
+    image_p tex = get_or_load_image(ctx->r2d, image_cache, clip.path);
     if (!tex) return;
 
-    float scr_x = (t.position.x - ctx->camera_x) * PIXELS_PER_METER;
-    float scr_y = (t.position.y - ctx->camera_y) * PIXELS_PER_METER;
-
-    int frame_w = clip.src_rect.w;
-    int frame_h = clip.src_rect.h;
-    float body_w = fp_to_float(r.width) * PIXELS_PER_METER;
-    float body_h = fp_to_float(r.height) * PIXELS_PER_METER;
-    float off_x = (frame_w - body_w) / 2.0f;
-    float off_y = (frame_h - body_h) / 2.0f;
-
-    float draw_x = scr_x - off_x;
-    float draw_y = scr_y - off_y;
-    float scale_x = (anim.flip_h) ? -1.0f : 1.0f;
-    float cx = draw_x + frame_w * 0.5f;
-    float cy = draw_y + frame_h * 0.5f;
-
-    image_draw_ex(tex, &clip.src_rect, { cx, cy }, 0, { scale_x, 1 }, { frame_w * 0.5f, frame_h * 0.5f });
+    image_draw_ex(tex, &clip.src_rect,
+        { scr_x, scr_y }, 0,
+        { act.dir < 0 ? -1.0f : 1.0f, 1 },
+        { clip.src_rect.w * 0.5f, clip.src_rect.h * 0.5f });
 }

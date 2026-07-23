@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp" "*.h" "scenes/*.h" "scenes/*.cpp" "components/*.h" "components/*.cpp" "systems/*.h" "systems/*.cpp" "network/*.h" "network/*.cpp" "layers/*.h" "layers/*.cpp" "factory/*.h" "factory/*.cpp")
+file(GLOB SRC_FILES "*.h" "*.c" "*.hpp" "*.cpp" "*.h" "scenes/*.h" "scenes/*.cpp" "components/*.h" "components/*.cpp" "systems/*.h" "systems/*.cpp" "network/*.h" "network/*.cpp" "layers/*.h" "layers/*.cpp" "factory/*.h" "factory/*.cpp" "../adventure_shared/*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -51,7 +51,8 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     joy
 )
 
-# 协议完全由 joy 库的 jprotocol.h 提供，无需额外 include 路径
+# 添加 adventure_shared 共享目录
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_shared")
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
@@ -158,7 +159,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin" AND NOT CMAKE_GENERATOR MATCHES "Xcode")
 endif()
 
 # 源文件分组（便于 IDE 显示）
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${PROJECT_FILES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${PROJECT_FILES})
 
 # 调试信息（可选）
 message(STATUS "Adventure current dir: ${CMAKE_CURRENT_LIST_DIR}")

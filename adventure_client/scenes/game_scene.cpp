@@ -6,6 +6,7 @@
 #include "game_scene.h"
 #include "../../adventure_shared/protocol.h"
 #include "../systems/animator_update_system.h"
+#include "../factory/animator_def_factory.h"
 #include "../systems/animator_render_system.h"
 #include "../systems/interpolate_position_system.h"
 #include "../systems/init_tilemap_system.h"
@@ -20,78 +21,7 @@
 #include "../network/network_utils.h"
 
 
-// ========== 动画定义辅助函数 ==========
-static entt::entity create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
-        auto def_entity = registry.create();
-        AnimatorDef def;
-
-        const int FPS = 6;
-        const float DUR = 0.15f;
-        const int FW = 192, FH = 192;
-
-        // State 0: idle (row 0)
-        {
-                AnimStateDef s;
-                s.name = "idle"; s.loop = true;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), 0, (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-        // State 1: walk (row 1)
-        {
-                AnimStateDef s;
-                s.name = "walk"; s.loop = true;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), (float)(1 * FH), (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-        // State 2-5: attack (rows 4,2,2,6 for directions 下,左,右,上)
-        const char* atk_names[] = { "attack_d", "attack_l", "attack_r", "attack_u" };
-        int atk_rows[] = { 4, 2, 2, 6 };
-        for (int d = 0; d < 4; d++) {
-                AnimStateDef s;
-                s.name = atk_names[d]; s.loop = false;
-                for (int i = 0; i < FPS; i++)
-                        s.clips.push_back({ tex_path, { (float)(i * FW), (float)(atk_rows[d] * FH), (float)FW, (float)FH }, DUR });
-                def.states.push_back(s);
-        }
-
-        // Transitions
-        // idle(0) ↔ walk(1) 带防抖 exit_time
-        {
-                AnimTransitionDef t;
-                t.from_state = 0; t.to_state = 1;
-                t.conditions.push_back({ "speed", AnimCondMode::GREATER, 0.5f });
-                t.exit_time = 0.05f;
-                def.transitions.push_back(t);
-        }
-        {
-                AnimTransitionDef t;
-                t.from_state = 1; t.to_state = 0;
-                t.conditions.push_back({ "speed", AnimCondMode::LESS, 0.5f });
-                t.exit_time = 0.05f;
-                def.transitions.push_back(t);
-        }
-        // any → attack_dir (2~5), triggered by attack + dir == d
-        for (int d = 0; d < 4; d++) {
-                AnimTransitionDef t;
-                t.from_state = -1; t.to_state = 2 + d;
-                t.conditions.push_back({ "attack", AnimCondMode::TRIGGER, 0 });
-                t.conditions.push_back({ "dir", AnimCondMode::EQUALS, (float)d });
-                def.transitions.push_back(t);
-        }
-        // attack_dir → idle after 0.6s
-        for (int d = 0; d < 4; d++) {
-                AnimTransitionDef t;
-                t.from_state = 2 + d; t.to_state = 0;
-                t.exit_time = 0.6f;
-                def.transitions.push_back(t);
-        }
-
-        def.default_state = 0;
-        registry.emplace<AnimatorDef>(def_entity, def);
-        return def_entity;
-}
+// 动画定义现在由 animator_def_factory.h 提供
 
 // 玩家状态机（使用 ECS PlayerActionComponent）
 
@@ -311,8 +241,8 @@ static void update_ai(game_scene_p self)
                                         ai.timer = 0;
                                         ai.state = 2;
                                         attack_by_hitbox(self, &pos, rect, id, atk_dir, false);
-                                        if (self->ctx->ecs.all_of<AnimParams>(e)) {
-                                                auto& p = self->ctx->ecs.get<AnimParams>(e);
+                                        if (self->ctx->ecs.all_of<anim_params_t>(e)) {
+                                                auto& p = self->ctx->ecs.get<anim_params_t>(e);
                                                 p.attack = true;
                                                 p.dir = atk_dir;
                                         }
@@ -384,8 +314,6 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
                 log_info("%d:CMD_PLAYER_JOIN", pj.conv);
                 fp_t x = pj.position_x;
                 fp_t y = pj.position_y;
-                entt::entity anim_def = create_warrior_anim_def(self->ctx->ecs,
-                        "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
                 entt::entity entity = self->ctx->ecs.create();
                 self->ctx->ecs.emplace<IdComponent>(entity, self->ctx->server_entity_id++);
                 self->ctx->ecs.emplace<LogicRectComponent>(entity, fp_from_float(.6f), fp_from_float(.6f));
@@ -394,8 +322,8 @@ static void handle_command(game_scene_p self, int frame_id, int jn, int ln, int 
                 self->ctx->ecs.emplace<TransformComponent>(entity, fp_to_float(x), fp_to_float(y), 0.0f, 1.0f, 1.0f);
                 self->ctx->ecs.emplace<PlayerComponent>(entity, pj.conv);
                 self->ctx->ecs.emplace<PlayerActionComponent>(entity);
-                self->ctx->ecs.emplace<Animator>(entity, anim_def);
-                self->ctx->ecs.emplace<AnimParams>(entity);
+                self->ctx->ecs.emplace<anim_t>(entity);
+                self->ctx->ecs.emplace<anim_params_t>(entity);
         }
 
         // 2. 处理玩家离开
@@ -494,13 +422,17 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.39", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.3", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.3", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton
         self->ctx->singleton_net = self->ctx->ecs.create();
         self->ctx->ecs.emplace<NetComponent>(self->ctx->singleton_net);
+
+        // 注册动画定义（全局单例，仅一次）
+        create_warrior_anim_def(self->ctx->ecs,
+                "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
 
         // 注册 system
         add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);
@@ -545,8 +477,8 @@ static void fixed_update(game_scene_p self, float dt)
         //                                act.state = PlayerActionComponent::ATTACK;
         //                                act.dir = self->ctx->local_dir;
         //                        }
-        //                        if (self->ctx->ecs.all_of<AnimParams>(e)) {
-        //                                auto& params = self->ctx->ecs.get<AnimParams>(e);
+        //                        if (self->ctx->ecs.all_of<anim_params_t>(e)) {
+        //                                auto& params = self->ctx->ecs.get<anim_params_t>(e);
         //                                params.attack = true;
         //                                params.dir = self->ctx->local_dir;
         //                        }
@@ -569,8 +501,8 @@ static void fixed_update(game_scene_p self, float dt)
         //                auto& pos = pv.get<LogicPositionComponent>(e);
         //                if (p.conv == self->ctx->local_conv) {
         //                        movement(self, &pos, r, id, self->ctx->local_conv, self->ctx->current_input_mask);
-        //                        if (self->ctx->ecs.all_of<AnimParams>(e)) {
-        //                                auto& params = self->ctx->ecs.get<AnimParams>(e);
+        //                        if (self->ctx->ecs.all_of<anim_params_t>(e)) {
+        //                                auto& params = self->ctx->ecs.get<anim_params_t>(e);
         //                                params.dir = input_to_dir(self->ctx->current_input_mask);
         //                        }
         //                        if (self->ctx->ecs.all_of<PlayerActionComponent>(e)) {
@@ -751,8 +683,8 @@ static void on_render(scene_p s) {
         for (auto e : draw_view) {
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (self->ctx->ecs.all_of<Animator, AnimParams, PlayerActionComponent>(e)) {
-                        auto& anim = self->ctx->ecs.get<Animator>(e);
+                if (self->ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
+                        auto& anim = self->ctx->ecs.get<anim_t>(e);
                         auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
                         animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act);
                 } else {
