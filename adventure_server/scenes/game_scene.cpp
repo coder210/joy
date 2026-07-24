@@ -14,7 +14,9 @@
 #include "../systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/init_tilemap_system.h"
-#include "../systems/input_consume_system.h"
+#include "../systems/input_consume_join_system.h"
+#include "../adventure_shared/systems/input_consume_leave_system.h"
+#include "../adventure_shared/systems/input_consume_input_system.h"
 #include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
 #include "../systems/movement_system.h"
@@ -37,8 +39,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -51,7 +53,9 @@ static void on_load(scene_p s)
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
         add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
-        add_system(ctx, PreUpdate, "input_consume", input_consume_system);
+        add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
+        add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
+        add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);

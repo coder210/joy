@@ -33,6 +33,12 @@ struct state_snapshot {
         fp_t position_x, position_y;
 };
 
+struct Session {
+    entt::entity player_entity = entt::null;  // 对应的玩家实体（加载完成后才赋值）
+};
+
+
+
 struct Context {
         bool running;
         game_timer_t game_timer;
@@ -65,7 +71,7 @@ struct Context {
         bool attack_triggered = false;          // 按钮 tap 攻击，发送一次后自动复位
         float heartbeatTimer = 0.0f;
 
-        std::unordered_map<int, entt::entity> sessions;   // key = conv
+        std::unordered_map<int, Session> sessions;   // key = conv
 
         std::queue<std::string> command_queue;
 

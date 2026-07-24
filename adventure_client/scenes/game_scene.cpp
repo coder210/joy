@@ -13,7 +13,9 @@
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
-#include "../systems/input_consume_system.h"
+#include "../systems/input_consume_join_system.h"
+#include "../adventure_shared/systems/input_consume_leave_system.h"
+#include "../adventure_shared/systems/input_consume_input_system.h"
 #include "../systems/movement_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
@@ -422,8 +424,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton
@@ -435,8 +437,10 @@ static void on_load(scene_p s)
                 "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
 
         // 注册 system
-        add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);
-        add_system(self->ctx, PreUpdate, "input_consume",      input_consume_system);
+        add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);  
+        add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
+        add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
+        add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "animator_update",    animator_update_system);
         add_system(self->ctx, OnUpdate,  "interpolate",        interpolate_position_system);
