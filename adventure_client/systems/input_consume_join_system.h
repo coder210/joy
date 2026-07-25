@@ -4,7 +4,7 @@
 
 
 static void input_consume_join_system(entt::registry& registry, Context* ctx, float /*dt*/) {
-    auto& net = registry.get<NetComponent>(ctx->singleton_net);
+    auto& net = registry.ctx().get<NetComponent>();
     if (net.frame_id < 0) return;
 
     // ---- 1. 处理 JOIN ----
