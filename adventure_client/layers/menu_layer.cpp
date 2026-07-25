@@ -28,9 +28,12 @@ static void on_event(scene_node_p n, const void* e)
 	cbs.on_mousepressed = [](float x, float y, int btn, void* arg) {
 		auto* self = (menu_layer_p)arg;
 		auto hit = [&](button_p b) { return button_is_pressed(b, x, y); };
-		if (self->btn_start   && hit(self->btn_start))   send_menu_event(MENU_EVENT_START);
-		if (self->btn_settings && hit(self->btn_settings)) send_menu_event(MENU_EVENT_SETTINGS);
-		if (self->btn_exit    && hit(self->btn_exit))    send_menu_event(MENU_EVENT_EXIT);
+		if (self->btn_start && hit(self->btn_start)) 
+			send_menu_event(MENU_EVENT_START);
+		if (self->btn_settings && hit(self->btn_settings))
+			send_menu_event(MENU_EVENT_SETTINGS);
+		if (self->btn_exit && hit(self->btn_exit))
+			send_menu_event(MENU_EVENT_EXIT);
 	};
 	cbs.on_mousereleased = [](float x, float y, int btn, void* arg) {
 		auto* self = (menu_layer_p)arg;

@@ -7,8 +7,8 @@
 #include "../../adventure_shared/protocol.h"
 #include "../layers/debug_layer.h"
 #include "../systems/effect_lifecycle_system.h"
-#include "../systems/interpolate_position_system.h"
-#include "../systems/animator_update_system.h"
+#include "../../adventure_shared/systems/interpolate_position_system.h"
+#include "../../adventure_shared/systems/animator_update_system.h"
 #include "../systems/animator_render_system.h"
 #include "../systems/drawing_attack_ray_effect_system.h"
 #include "../systems/drawing_entity_system.h"
@@ -19,8 +19,8 @@
 #include "../adventure_shared/systems/input_consume_input_system.h"
 #include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
-#include "../systems/movement_system.h"
-#include "../systems/cleanup_system.h"
+#include "../../adventure_shared/systems/movement_system.h"
+#include "../../adventure_shared/systems/cleanup_system.h"
 #include "../systems/collision_system.h"
 
 #include "../network/network_utils.h"
@@ -39,8 +39,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));

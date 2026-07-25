@@ -5,10 +5,10 @@
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../adventure_shared/protocol.h"
-#include "../systems/animator_update_system.h"
+#include "../adventure_shared/systems/animator_update_system.h"
 #include "../factory/animator_def_factory.h"
 #include "../systems/animator_render_system.h"
-#include "../systems/interpolate_position_system.h"
+#include "../adventure_shared/systems/interpolate_position_system.h"
 #include "../systems/init_tilemap_system.h"
 #include "../systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
@@ -16,7 +16,8 @@
 #include "../systems/input_consume_join_system.h"
 #include "../adventure_shared/systems/input_consume_leave_system.h"
 #include "../adventure_shared/systems/input_consume_input_system.h"
-#include "../systems/movement_system.h"
+#include "../adventure_shared/systems/movement_system.h"
+#include "../adventure_shared/systems/cleanup_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
@@ -424,13 +425,14 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
-        // 创建 NetComponent 作为 singleton
+        // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
         self->ctx->singleton_net = self->ctx->ecs.create();
         self->ctx->ecs.emplace<NetComponent>(self->ctx->singleton_net);
+        self->ctx->ecs.ctx().emplace<NetComponent>();
 
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,
@@ -444,6 +446,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "animator_update",    animator_update_system);
         add_system(self->ctx, OnUpdate,  "interpolate",        interpolate_position_system);
+        add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);
         // 执行 OnStart phase
         run_phase(self->ctx, OnStart, 0);
 
@@ -657,7 +660,7 @@ static void on_update(scene_p s, float dt) {
                 bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
                         &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
                 if (ok) {
-                        auto& cmd = self->ctx->ecs.get<NetComponent>(self->ctx->singleton_net);
+                        auto& cmd = self->ctx->ecs.ctx().get<NetComponent>();
                         cmd.frame_id = ok ? frame_id : -1;
                         cmd.num_joins = jn;  memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
                         cmd.num_leaves = ln; memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
