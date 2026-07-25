@@ -12,7 +12,7 @@
 #include "../../adventure_shared/systems/animator_update_system.h"
 #include "../../adventure_shared/systems/animator_render_system.h"
 #include "../../adventure_shared/systems/drawing_attack_ray_effect_system.h"
-#include "../systems/drawing_entity_system.h"
+#include "../../adventure_shared/systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/init_tilemap_system.h"
 #include "../systems/input_consume_join_system.h"
@@ -22,7 +22,7 @@
 #include "../systems/snapshot_system.h"
 #include "../../adventure_shared/systems/movement_system.h"
 #include "../../adventure_shared/systems/cleanup_system.h"
-#include "../systems/collision_system.h"
+#include "../../adventure_shared/systems/collision_system.h"
 
 #include "../network/network_utils.h"
 #include "../asset_manager.h"

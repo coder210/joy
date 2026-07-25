@@ -11,13 +11,14 @@
 #include "../adventure_shared/systems/interpolate_position_system.h"
 #include "../systems/init_tilemap_system.h"
 #include "../adventure_shared/systems/effect_lifecycle_system.h"
-#include "../systems/drawing_entity_system.h"
+#include "../adventure_shared/systems/drawing_entity_system.h"
 #include "../adventure_shared/systems/drawing_attack_ray_effect_system.h"
 #include "../systems/input_consume_join_system.h"
 #include "../adventure_shared/systems/input_consume_leave_system.h"
 #include "../adventure_shared/systems/input_consume_input_system.h"
 #include "../adventure_shared/systems/movement_system.h"
 #include "../adventure_shared/systems/cleanup_system.h"
+#include "../adventure_shared/systems/collision_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
@@ -445,6 +446,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
+        add_system(self->ctx, OnUpdate,  "collision",          collision_system);
         add_system(self->ctx, OnUpdate,  "animator_update",    animator_update_system);
         add_system(self->ctx, OnUpdate,  "interpolate",        interpolate_position_system);
         add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);

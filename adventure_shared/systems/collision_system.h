@@ -1,6 +1,11 @@
 #ifndef COLLISION_SYSTEM_H
 #define COLLISION_SYSTEM_H
-#include "../context.h"
+#include "../components/enemy_component.h"
+#include "../components/logic_position_component.h"
+#include "../components/logic_rect_component.h"
+#include "../components/player_component.h"
+
+struct Context;
 
 // 玩家与 tilemap 碰撞处理 system
 // 在 OnUpdate 阶段运行，在 movement_system 之后
