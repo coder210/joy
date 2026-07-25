@@ -7,12 +7,12 @@
 #include "../../adventure_shared/protocol.h"
 #include "../adventure_shared/systems/animator_update_system.h"
 #include "../factory/animator_def_factory.h"
-#include "../systems/animator_render_system.h"
+#include "../adventure_shared/systems/animator_render_system.h"
 #include "../adventure_shared/systems/interpolate_position_system.h"
 #include "../systems/init_tilemap_system.h"
-#include "../systems/effect_lifecycle_system.h"
+#include "../adventure_shared/systems/effect_lifecycle_system.h"
 #include "../systems/drawing_entity_system.h"
-#include "../systems/drawing_attack_ray_effect_system.h"
+#include "../adventure_shared/systems/drawing_attack_ray_effect_system.h"
 #include "../systems/input_consume_join_system.h"
 #include "../adventure_shared/systems/input_consume_leave_system.h"
 #include "../adventure_shared/systems/input_consume_input_system.h"
@@ -433,6 +433,7 @@ static void on_load(scene_p s)
         self->ctx->singleton_net = self->ctx->ecs.create();
         self->ctx->ecs.emplace<NetComponent>(self->ctx->singleton_net);
         self->ctx->ecs.ctx().emplace<NetComponent>();
+        self->ctx->ecs.ctx().emplace<GlobalState>();
 
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,

@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 /* ================================ 常量 ================================ */
-enum { SERVER_PPM = 50 };
+enum { SERVER_PPM = 50, PIXELS_PER_METER = 50 };
 
 /* 输入位掩码 */
 enum {

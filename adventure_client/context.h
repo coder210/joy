@@ -8,6 +8,7 @@
 #include <functional>
 #include "entt.hpp"
 #include <joy/joy.h>
+#include "../adventure_shared/protocol.h"
 #include "../adventure_shared/components/player_action_component.h"
 #include "../adventure_shared/components/animator_def.h"
 #include "../adventure_shared/components/animator_component.h"
@@ -26,7 +27,6 @@
 #include "../adventure_shared/components/net_component.h"
 
 
-#define PIXELS_PER_METER 50
 
 // 状态快照（用于预测回滚）
 struct state_snapshot {

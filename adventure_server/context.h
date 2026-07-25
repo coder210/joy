@@ -27,7 +27,7 @@
 #include "../adventure_shared/components/ai_component.h"
 #include "../adventure_shared/components/enemy_component.h"
 #include "../adventure_shared/components/net_component.h"
-#include "components/global_state_component.h"
+#include "../adventure_shared/components/global_state_component.h"
 #include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
 
