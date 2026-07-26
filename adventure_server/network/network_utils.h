@@ -19,7 +19,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
                 ctx->ecs.emplace<ConnectionComponent>(conn, conv);
         }
         auto& comp = ctx->ecs.get<ConnectionComponent>(conn);
-        comp.is_loaded = true;
+        comp.is_loaded = false;
         comp.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
 }
 
@@ -189,6 +189,7 @@ static void input_forwarding(Context* ctx)
                         ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
                         auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec);
                         netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
+                        comp.is_loaded = true;
                 }
         }
 }
