@@ -6,15 +6,21 @@
 static void handle_cmd_loading(Context* ctx, int conv)
 {
         log_info("C2S_CMD_LOADING");
-        auto it = ctx->sessions.find(conv);
-        if (it == ctx->sessions.end()) {
-                Session sess;
-                sess.conv = conv;
-                ctx->sessions[conv] = sess;
-                it = ctx->sessions.find(conv);
+        auto view = ctx->ecs.view<ConnectionComponent>();
+        entt::entity conn = entt::null;
+        for (auto e : view) {
+                if (ctx->ecs.get<ConnectionComponent>(e).conv == conv) {
+                        conn = e;
+                        break;
+                }
         }
-        it->second.is_loaded = true;
-        it->second.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
+        if (conn == entt::null) {
+                conn = ctx->ecs.create();
+                ctx->ecs.emplace<ConnectionComponent>(conn, conv);
+        }
+        auto& comp = ctx->ecs.get<ConnectionComponent>(conn);
+        comp.is_loaded = true;
+        comp.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
 }
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
@@ -41,17 +47,21 @@ static void handle_cmd_heartbeat(Context* ctx, int conv)
         log_info("%d: C2S_CMD_HEARTBEAT", conv);
         uint64_t ms_ticks;
         utils_get_current_time(&ms_ticks);
-        auto it = ctx->sessions.find(conv);
-        if (it == ctx->sessions.end()) {
+        auto view = ctx->ecs.view<ConnectionComponent>();
+        entt::entity conn = entt::null;
+        for (auto e : view) {
+                if (ctx->ecs.get<ConnectionComponent>(e).conv == conv) {
+                        conn = e;
+                        break;
+                }
+        }
+        if (conn == entt::null) {
                 log_debug("Heartbeat from unknown conv: %d", conv);
                 return;
         }
-        //entt::entity player = it->second.player_entity;
-        //if (player != entt::null && ctx->ecs.valid(player)) {
-        //        /*auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
-        //        conn.health = 10;
-        //        conn.last_heartbeat = (uint32_t)ms_ticks;*/
-        //}
+        auto& comp = ctx->ecs.get<ConnectionComponent>(conn);
+        comp.health = 10;
+        comp.last_heartbeat = (uint32_t)ms_ticks;
 }
 
 // ========== 网络接收 ==========
@@ -114,14 +124,12 @@ static void collect_input(Context* ctx)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
         std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
-        //for (auto& [conv, sess] : ctx->sessions) {
-        //        if (sess.player_entity == entt::null) continue;
-        //        if (!ctx->ecs.valid(sess.player_entity)) continue;
-        //        const auto* id_comp = ctx->ecs.try_get<IdComponent>(sess.player_entity);
-        //        const auto* pos_comp = ctx->ecs.try_get<LogicPositionComponent>(sess.player_entity);
-        //        if (!id_comp || !pos_comp) continue;
-        //        player_positions.push_back({ id_comp->id, { pos_comp->x, pos_comp->y } });
-        //}
+        auto pos_view = ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
+        for (auto e : pos_view) {
+                auto& idc = pos_view.get<IdComponent>(e);
+                auto& lpc = pos_view.get<LogicPositionComponent>(e);
+                player_positions.push_back({ idc.id, { lpc.x, lpc.y } });
+        }
         std::sort(player_positions.begin(), player_positions.end());
 
         std::string checksum_input;
@@ -147,29 +155,31 @@ static void collect_input(Context* ctx)
 // ========== 转发命令帧给客户端 ==========
 static void input_forwarding(Context* ctx)
 {
-        for (auto& [conv, sess] : ctx->sessions) {
-                if (sess.is_loaded) {
-                        int taget_frameid = get_target_frame_id(sess.frameid,
+        auto view = ctx->ecs.view<ConnectionComponent>();
+        for (auto e : view) {
+                auto& comp = view.get<ConnectionComponent>(e);
+                if (comp.is_loaded) {
+                        int taget_frameid = get_target_frame_id(comp.frameid,
                                 ctx->ecs.ctx().get<GlobalState>().next_frame_id);
-                        for (int i = sess.frameid; i < taget_frameid; i++) {
+                        for (int i = comp.frameid; i < taget_frameid; i++) {
                                 auto it = ctx->commands.find(i);
                                 if (it != ctx->commands.end()) {
-                                        netserver_send(ctx->net_server, sess.conv, it->second.c_str(), it->second.size());
+                                        netserver_send(ctx->net_server, comp.conv, it->second.c_str(), it->second.size());
                                 }
                                 else {
                                         log_error("Frame %d not found in commands, skip sending.", i);
                                 }
                         }
-                        sess.frameid = taget_frameid;
+                        comp.frameid = taget_frameid;
                 }
                 else {
-                        auto it = ctx->world_snapshots.lower_bound(sess.frameid);
-                        if (it == ctx->world_snapshots.end() || it->first > sess.frameid) {
+                        auto it = ctx->world_snapshots.lower_bound(comp.frameid);
+                        if (it == ctx->world_snapshots.end() || it->first > comp.frameid) {
                                 if (it == ctx->world_snapshots.begin()) {
-                                        log_info("WARNING: no snapshot cache found for frame %d (client %d), sending empty loading", sess.frameid, sess.conv);
-                                        auto data = pack_s2c_loading(conv, sess.frameid,
+                                        log_info("WARNING: no snapshot cache found for frame %d (client %d), sending empty loading", comp.frameid, comp.conv);
+                                        auto data = pack_s2c_loading(comp.conv, comp.frameid,
                                                 ctx->ecs.ctx().get<GlobalState>().next_entity_id, nullptr, 0);
-                                        netserver_send(ctx->net_server, sess.conv, data.c_str(), data.size());
+                                        netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
                                         return;
                                 }
                                 --it;
@@ -177,8 +187,8 @@ static void input_forwarding(Context* ctx)
                         S2CEntity entities[512];
                         int ec = 0, eid = 0;
                         ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
-                        auto data = pack_s2c_loading(conv, sess.frameid, eid, entities, ec);
-                        netserver_send(ctx->net_server, sess.conv, data.c_str(), data.size());
+                        auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec);
+                        netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
                 }
         }
 }

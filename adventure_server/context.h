@@ -31,12 +31,6 @@
 #include "../adventure_shared/protocol.h"
 #include <joy/joy.h>
 
-struct Session {
-        int conv;
-        bool is_loaded = false;       // 是否已完成初始加载
-        int frameid = 0;              // 客户端最后已接收的帧号
-};
-
 struct Context {
         jwindow_p window;
         jr2d_p r2d;
@@ -53,8 +47,6 @@ struct Context {
         std::map<int, std::string> commands;
         std::queue<std::string> command_queue;
         std::map<int, std::string> world_snapshots; // 以帧号为键的世界快照
-
-        std::unordered_map<int, Session> sessions;   // key = conv
 
         netserver_p net_server;
 
