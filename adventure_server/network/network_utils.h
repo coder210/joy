@@ -48,9 +48,9 @@ static void handle_cmd_heartbeat(Context* ctx, int conv)
         }
         entt::entity player = it->second.player_entity;
         if (player != entt::null && ctx->ecs.valid(player)) {
-                auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
+                /*auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
                 conn.health = 10;
-                conn.last_heartbeat = (uint32_t)ms_ticks;
+                conn.last_heartbeat = (uint32_t)ms_ticks;*/
         }
 }
 

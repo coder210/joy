@@ -17,8 +17,6 @@ public:
 
 	font_p GetSimheiFont24();
 
-	// 纹理缓存：获取/加载纹理
-	image_p tex_cache_get(jr2d_p r2d, const char* path);
 	// 清空纹理缓存（释放所有纹理）
 	void tex_cache_clear();
 

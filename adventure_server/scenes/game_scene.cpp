@@ -15,7 +15,7 @@
 #include "../../adventure_shared/systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/init_tilemap_system.h"
-#include "../systems/input_consume_join_system.h"
+#include "../../adventure_shared/systems/input_consume_join_system.h"
 #include "../adventure_shared/systems/input_consume_leave_system.h"
 #include "../adventure_shared/systems/input_consume_input_system.h"
 #include "../factory/animator_def_factory.h"

@@ -18,7 +18,6 @@
 #include "../adventure_shared/components/logic_position_component.h"
 #include "../adventure_shared/components/logic_velocity_component.h"
 #include "../adventure_shared/components/enemy_component.h"
-#include "./components/connection_component.h"
 #include "../adventure_shared/components/player_state_input.h"
 #include "../adventure_shared/components/player_event_input.h"
 #include "../adventure_shared/components/player_component.h"

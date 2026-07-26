@@ -14,7 +14,7 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
                         continue;
 
                 entt::entity player = it_sess->second.player_entity;
-                auto& conn = registry.get_or_emplace<ConnectionComponent>(player);
+                //auto& conn = registry.get_or_emplace<ConnectionComponent>(player);
 
                 // 序列号去重
                 //if (input.client_seq <= conn.last_processed_seq) {
