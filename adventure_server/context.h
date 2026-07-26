@@ -33,7 +33,6 @@
 
 struct Session {
         int conv;
-        entt::entity player_entity = entt::null;  // 对应的玩家实体（加载完成后才赋值）
         bool is_loaded = false;       // 是否已完成初始加载
         int frameid = 0;              // 客户端最后已接收的帧号
 };

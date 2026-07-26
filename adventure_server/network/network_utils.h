@@ -13,7 +13,7 @@ static void handle_cmd_loading(Context* ctx, int conv)
                 ctx->sessions[conv] = sess;
                 it = ctx->sessions.find(conv);
         }
-        it->second.is_loaded = false;
+        it->second.is_loaded = true;
         it->second.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
 }
 
@@ -46,12 +46,12 @@ static void handle_cmd_heartbeat(Context* ctx, int conv)
                 log_debug("Heartbeat from unknown conv: %d", conv);
                 return;
         }
-        entt::entity player = it->second.player_entity;
-        if (player != entt::null && ctx->ecs.valid(player)) {
-                /*auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
-                conn.health = 10;
-                conn.last_heartbeat = (uint32_t)ms_ticks;*/
-        }
+        //entt::entity player = it->second.player_entity;
+        //if (player != entt::null && ctx->ecs.valid(player)) {
+        //        /*auto& conn = ctx->ecs.get_or_emplace<ConnectionComponent>(player);
+        //        conn.health = 10;
+        //        conn.last_heartbeat = (uint32_t)ms_ticks;*/
+        //}
 }
 
 // ========== 网络接收 ==========
@@ -114,14 +114,14 @@ static void collect_input(Context* ctx)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
         std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
-        for (auto& [conv, sess] : ctx->sessions) {
-                if (sess.player_entity == entt::null) continue;
-                if (!ctx->ecs.valid(sess.player_entity)) continue;
-                const auto* id_comp = ctx->ecs.try_get<IdComponent>(sess.player_entity);
-                const auto* pos_comp = ctx->ecs.try_get<LogicPositionComponent>(sess.player_entity);
-                if (!id_comp || !pos_comp) continue;
-                player_positions.push_back({ id_comp->id, { pos_comp->x, pos_comp->y } });
-        }
+        //for (auto& [conv, sess] : ctx->sessions) {
+        //        if (sess.player_entity == entt::null) continue;
+        //        if (!ctx->ecs.valid(sess.player_entity)) continue;
+        //        const auto* id_comp = ctx->ecs.try_get<IdComponent>(sess.player_entity);
+        //        const auto* pos_comp = ctx->ecs.try_get<LogicPositionComponent>(sess.player_entity);
+        //        if (!id_comp || !pos_comp) continue;
+        //        player_positions.push_back({ id_comp->id, { pos_comp->x, pos_comp->y } });
+        //}
         std::sort(player_positions.begin(), player_positions.end());
 
         std::string checksum_input;
