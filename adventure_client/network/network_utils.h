@@ -38,6 +38,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<EnemyComponent>(e);
                         ctx->ecs.emplace<PlayerActionComponent>(e);
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
+                        if (ctx->ecs.ctx().contains<AnimatorDefComponent>()) {
+                            ctx->ecs.emplace<AnimatorComponent>(e);
+                            ctx->ecs.emplace<AnimParamsComponent>(e);
+                        }
                 }
         }
 

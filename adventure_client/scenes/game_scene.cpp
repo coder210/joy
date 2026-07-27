@@ -22,6 +22,7 @@
 #include "../asset_manager.h"
 #include "../network/network_utils.h"
 #include "../../adventure_shared/systems/camera_follow_system.h"
+#include "../../adventure_shared/systems/ai_system.h"
 
 // 动画定义现在由 animator_def_factory.h 提供
 
@@ -61,6 +62,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
+        add_system(self->ctx, OnUpdate, "ai_system", ai_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
         add_system(self->ctx, OnUpdate, "animator_update", animator_update_system);

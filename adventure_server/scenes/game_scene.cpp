@@ -14,6 +14,7 @@
 #include "../../adventure_shared/systems/drawing_attack_ray_effect_system.h"
 #include "../../adventure_shared/systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
+#include "../systems/spawn_enemy_system.h"
 #include "../systems/init_tilemap_system.h"
 #include "../../adventure_shared/systems/input_consume_join_system.h"
 #include "../adventure_shared/systems/input_consume_leave_system.h"
@@ -24,6 +25,7 @@
 #include "../../adventure_shared/systems/cleanup_system.h"
 #include "../../adventure_shared/systems/collision_system.h"
 #include "../../adventure_shared/systems/camera_follow_system.h"
+#include "../../adventure_shared/systems/ai_system.h"
 
 #include "../network/network_utils.h"
 #include "../asset_manager.h"
@@ -53,10 +55,12 @@ static void on_load(scene_p s)
 
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
+        add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
+        add_system(ctx, OnUpdate, "ai_system", ai_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);
