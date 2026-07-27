@@ -60,10 +60,8 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);
-        add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
         add_system(ctx, OnUpdate, "cleanup", cleanup_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
-        add_system(ctx, PostUpdate, "camera_follow", camera_follow_system);
 
         // 执行 OnStart 阶段的 system（只执行一次）
         run_phase(ctx, OnStart, 0);
@@ -132,6 +130,11 @@ static void on_update(scene_p s, float dt)
                 run_phase(ctx, OnUpdate, ctx->FIXED_TIMESTEP);
                 run_phase(ctx, PostUpdate, ctx->FIXED_TIMESTEP);
         }
+
+
+        interpolate_position_system(ctx->ecs, ctx, dt);
+        camera_follow_system(ctx->ecs, ctx, dt);
+
 }
 
 static void on_render(scene_p s)
