@@ -57,12 +57,12 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 				act.state     = PlayerActionComponent::ATTACK;
 				params.attack = true;
 				params.speed  = 1.0f;
-				params.dir    = dir_idx;
+				if (moving) params.dir = dir_idx;
 			} else {
 				act.state  = moving ? PlayerActionComponent::WALK
 				                    : PlayerActionComponent::IDLE;
 				params.speed = moving ? 1.0f : 0.0f;
-				params.dir   = dir_idx;
+				if (moving) params.dir = dir_idx;
 				params.attack = false;
 			}
 		}

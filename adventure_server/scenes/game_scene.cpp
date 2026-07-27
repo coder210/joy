@@ -1,4 +1,4 @@
-﻿#include <string>
+#include <string>
 #include <map>
 #include <queue>
 #include <algorithm>
@@ -23,6 +23,7 @@
 #include "../../adventure_shared/systems/movement_system.h"
 #include "../../adventure_shared/systems/cleanup_system.h"
 #include "../../adventure_shared/systems/collision_system.h"
+#include "../../adventure_shared/systems/camera_follow_system.h"
 
 #include "../network/network_utils.h"
 #include "../asset_manager.h"
@@ -62,6 +63,7 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate, "interpolate", interpolate_position_system);
         add_system(ctx, OnUpdate, "cleanup", cleanup_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
+        add_system(ctx, PostUpdate, "camera_follow", camera_follow_system);
 
         // 执行 OnStart 阶段的 system（只执行一次）
         run_phase(ctx, OnStart, 0);

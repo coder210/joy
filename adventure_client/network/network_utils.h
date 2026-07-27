@@ -5,12 +5,14 @@
 #include <vector>
 #include "../context.h"
 #include "../../adventure_shared/protocol.h"
+#include "../../adventure_shared/components/global_state_component.h"
 
 // ========== 加载数据处理 ==========
 static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
 {
         ctx->ready = true;
         ctx->local_conv = conv;
+        ctx->ecs.ctx().get<GlobalState>().camera_follow_conv = conv;
         ctx->server_frameid = frame_id;
         ctx->server_entity_id = eid;
 

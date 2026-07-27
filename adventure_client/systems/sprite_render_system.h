@@ -1,10 +1,11 @@
-﻿#pragma once
+#pragma once
 #include "../context.h"
 #include "../asset_manager.h"
 #include "../../adventure_shared/protocol.h"
 #include "../../adventure_shared/components/sprite_sheet_component.h"
 #include "../../adventure_shared/components/player_action_component.h"
 #include "../../adventure_shared/components/transform_component.h"
+#include "../../adventure_shared/components/global_state_component.h"
 #include "../../adventure_shared/components/logic_rect_component.h"
 
 static void sprite_render_system(Context* ctx,
@@ -12,8 +13,9 @@ static void sprite_render_system(Context* ctx,
     SpriteSheetComponent& ss, AnimationFrameComponent& af,
     PlayerActionComponent& act)
 {
-    float scr_x = (t.position.x - ctx->camera_x) * PIXELS_PER_METER;
-    float scr_y = (t.position.y - ctx->camera_y) * PIXELS_PER_METER;
+    auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
+    float scr_x = (t.position.x - cam.x) * PIXELS_PER_METER;
+    float scr_y = (t.position.y - cam.y) * PIXELS_PER_METER;
 
     image_p tex = AssetManager::GetInstance()->tex_cache_get(ctx->r2d, ss.path);
     if (!tex) return;

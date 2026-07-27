@@ -1,12 +1,15 @@
 #ifndef INPUT_CONSUME_JOIN_SYSTEM_H
 #define INPUT_CONSUME_JOIN_SYSTEM_H
 
+#include "../components/global_state_component.h"
+
 struct Context;
 
 static void input_consume_join_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 	auto& net = registry.ctx().get<NetComponent>();
 	if (net.frame_id < 0) return;
 
+	auto& gs = registry.ctx().get<GlobalState>();
 
 	for (int i = 0; i < net.num_joins; i++) {
 		log_info("creating player %d", net.num_joins);
@@ -23,6 +26,11 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 			registry.emplace<AnimatorComponent>(player);
 			registry.emplace<AnimParamsComponent>(player);
 			registry.emplace<PlayerActionComponent>(player);
+		}
+
+		// 首次加入的玩家作为摄像机跟随目标
+		if (gs.camera_follow_conv < 0) {
+			gs.camera_follow_conv = join.conv;
 		}
 	}
 	net.num_joins = 0;

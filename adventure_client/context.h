@@ -43,7 +43,6 @@ struct Context {
         game_timer_t game_timer;
         jwindow_p window;
         jr2d_p r2d;
-        float camera_x, camera_y; // 摄像机世界坐标(米)
         netclient_p netclient;
         entt::registry ecs;
         entt::entity singleton_net = entt::null;

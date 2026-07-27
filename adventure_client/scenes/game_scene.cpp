@@ -1,4 +1,4 @@
-﻿#include <map>
+#include <map>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
@@ -21,6 +21,7 @@
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
 #include "../network/network_utils.h"
+#include "../../adventure_shared/systems/camera_follow_system.h"
 
 // 动画定义现在由 animator_def_factory.h 提供
 
@@ -65,6 +66,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, OnUpdate,  "animator_update",    animator_update_system);
         add_system(self->ctx, OnUpdate,  "interpolate",        interpolate_position_system);
         add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);
+        add_system(self->ctx, PostUpdate, "camera_follow",     camera_follow_system);
         // 执行 OnStart phase
         run_phase(self->ctx, OnStart, 0);
 
@@ -198,8 +200,9 @@ static void on_render(scene_p s) {
 
         // ---- tilemap 背景 ----
         if (self->ctx->tilemap && self->ctx->tilemap_render) {
-                float cam_x_px = self->ctx->camera_x * (float)PIXELS_PER_METER;
-                float cam_y_px = self->ctx->camera_y * (float)PIXELS_PER_METER;
+                auto& cam = self->ctx->ecs.ctx().get<GlobalState>().camera_position;
+                float cam_x_px = cam.x * (float)PIXELS_PER_METER;
+                float cam_y_px = cam.y * (float)PIXELS_PER_METER;
                 jtilemap_render_all(self->ctx->tilemap_render, self->ctx->tilemap, cam_x_px, cam_y_px, get_ticks());
         }
 
@@ -239,8 +242,6 @@ game_scene_p game_scene_create(Context* ctx) {
         game_scene_p self = new game_scene();
         self->scene = scene_create("game");
         self->ctx = ctx;
-        ctx->camera_x = 0.0f;
-        ctx->camera_y = 0.0f;
         scene_set_userdata(self->scene, self);
         scene_set_load_callback(self->scene, on_load);
         scene_set_event_callback(self->scene, on_handle_event);
