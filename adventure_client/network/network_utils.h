@@ -23,9 +23,14 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 ctx->ecs.emplace<TransformComponent>(e, fp_to_float(entity.position_x),
                                                    fp_to_float(entity.position_y), 0.0f, 1.0f, 1.0f);
                 if (entity.type == S2C_TYPE_PLAYER) {
-                        ctx->ecs.emplace<PlayerActionComponent>(e);
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
+                        // 挂载动画组件(如果 AnimatorDefComponent 已注册)
+                        if (ctx->ecs.ctx().contains<AnimatorDefComponent>()) {
+                            ctx->ecs.emplace<AnimatorComponent>(e);
+                            ctx->ecs.emplace<AnimParamsComponent>(e);
+                            ctx->ecs.emplace<PlayerActionComponent>(e);
+                        }
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);

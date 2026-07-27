@@ -67,9 +67,11 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
 
         // 监测：该玩家的 movement 坐标被碰撞修正
         if (was_corrected) {
+            /*
             log_info("COLLISION: player entity %d collision corrected (moved from (%.2f, %.2f) to (%.2f, %.2f))",
                 (int)player_entity, fp_to_float(orig_x), fp_to_float(orig_y),
                 fp_to_float(player_pos.x), fp_to_float(player_pos.y));
+                */
         }
     }
 }

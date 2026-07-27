@@ -29,14 +29,7 @@
 struct game_scene {
         scene_p scene;
         Context* ctx;
-
-
-        // 远程玩家方向追踪（从静态局部变量移到 struct）
-        std::map<entt::entity, int>  tracked_dir;
-        std::map<entt::entity, fp_t> tracked_last_px;
-        std::map<entt::entity, fp_t> tracked_last_py;
         float step_timer = 0;
-
 };
 
 static void on_load(scene_p s)
@@ -48,8 +41,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）

@@ -7,7 +7,9 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 	auto& net = registry.ctx().get<NetComponent>();
 	if (net.frame_id < 0) return;
 
+
 	for (int i = 0; i < net.num_joins; i++) {
+		log_info("creating player %d", net.num_joins);
 		auto& join = net.joins[i];
 		entt::entity player = registry.create();
 		registry.emplace<IdComponent>(player, get_entity_id(ctx));
