@@ -9,3 +9,5 @@ using AnimTransitionDef      = anim_transition_t;
 using AnimClipDef            = anim_clip_def_t;
 using AnimStateDef           = anim_state_t;
 using AnimatorDefComponent   = anim_def_t;
+
+

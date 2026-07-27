@@ -52,6 +52,7 @@ static void on_load(scene_p s)
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
         create_warrior_anim_def(ctx->ecs, "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
+        create_goblin_anim_def(ctx->ecs, "adventure_server/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
@@ -162,7 +163,7 @@ static void on_render(scene_p s)
                 if (ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
                         auto& anim = ctx->ecs.get<AnimatorComponent>(e);
                         auto& act = ctx->ecs.get<PlayerActionComponent>(e);
-                        animator_render_system(ctx, ctx->ecs, t, rect, anim, act);
+                        animator_render_system(ctx, ctx->ecs, t, rect, anim, act, e);
                 } else {
                         auto& id = draw_view.get<IdComponent>(e);
                         drawing_entity_system(ctx, e, id, rect, t);

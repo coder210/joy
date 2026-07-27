@@ -56,6 +56,8 @@ static void on_load(scene_p s)
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,
                 "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
+        create_goblin_anim_def(self->ctx->ecs,
+                "adventure_client/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
         add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);  
@@ -220,7 +222,7 @@ static void on_render(scene_p s) {
                 if (self->ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
                         auto& anim = self->ctx->ecs.get<anim_t>(e);
                         auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
-                        animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act);
+                        animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act, e);
                 } else {
                         auto& id = draw_view.get<IdComponent>(e);
                         drawing_entity_system(self->ctx, e, id, rect, t);

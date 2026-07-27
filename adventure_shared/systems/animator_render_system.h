@@ -1,6 +1,7 @@
 #ifndef ANIMATOR_RENDER_SYSTEM_H
 #define ANIMATOR_RENDER_SYSTEM_H
 #include "../components/global_state_component.h"
+#include "../components/enemy_component.h"
 #include "../protocol.h"
 #include <joy/anim.h>
 #include <map>
@@ -19,17 +20,25 @@ static image_p get_or_load_image(jr2d_p r2d, const char* path) {
 
 static void animator_render_system(Context* ctx, entt::registry& registry,
 	TransformComponent& t, LogicRectComponent& r,
-	anim_t& anim, PlayerActionComponent& act)
+	anim_t& anim, PlayerActionComponent& act,
+	entt::entity e)
 {
 	(void)registry;
 	(void)act;
 
-	if (!ctx->ecs.ctx().contains<anim_def_t>()) return;
-	auto& def = ctx->ecs.ctx().get<anim_def_t>();
-	if (def.num_states <= 0) return;
+	// 根据实体类型选择动画定义
+	anim_def_t* def = nullptr;
+	if (registry.all_of<EnemyComponent>(e)) {
+		if (ctx->ecs.ctx().contains<EnemyAnimDef>())
+			def = &ctx->ecs.ctx().get<EnemyAnimDef>().def;
+	} else {
+		if (ctx->ecs.ctx().contains<anim_def_t>())
+			def = &ctx->ecs.ctx().get<anim_def_t>();
+	}
+	if (!def || def->num_states <= 0) return;
 
 	anim_clip_t clip;
-	if (!anim_get_current_clip(&anim, &def, &clip)) return;
+	if (!anim_get_current_clip(&anim, def, &clip)) return;
 
 	// === 摄像头偏移 + PPM 换算（与其他渲染系统一致）===
 	auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
