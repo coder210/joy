@@ -9,27 +9,13 @@
 #include "../../adventure_shared/components/transform_component.h"
 #include "../../adventure_shared/components/action_state_component.h"
 #include "../../adventure_shared/components/animator_component.h"
-
-// 敌人生成位置和参数
-struct SpawnDef {
-    float x, y;           // 位置
-    float patrol_radius;  // 巡逻半径
-    float detect_radius;  // 检测范围
-    float attack_radius;  // 攻击范围
-};
+#include "../../adventure_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
 static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     (void)ctx;
 
-
-    SpawnDef spawns[] = {
-        { 10.0f, 10.0f, 3.0f, 5.0f, 1.5f },
-        { 3.0f,  12.0f, 2.0f, 4.0f, 1.5f },
-        { 15.0f, 8.0f,  4.0f, 6.0f, 1.5f },
-    };
-
-    for (auto& s : spawns) {
+    for (auto& s : ENEMY_SPAWNS) {
         entt::entity e = registry.create();
         registry.emplace<IdComponent>(e, get_entity_id(ctx));
         registry.emplace<EnemyComponent>(e);

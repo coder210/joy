@@ -6,6 +6,8 @@
 #include "../context.h"
 #include "../../adventure_shared/protocol.h"
 #include "../../adventure_shared/components/global_state_component.h"
+#include "../../adventure_shared/components/ai_component.h"
+#include "../../adventure_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
 static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
@@ -41,6 +43,19 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
+                        }
+                        // 按位置匹配 SpawnDef，创建 AIComponent（保证初始条件与服务端一致）
+                        for (int si = 0; si < ENEMY_SPAWN_COUNT; si++) {
+                            auto& sd = ENEMY_SPAWNS[si];
+                            if (entity.position_x == (int64_t)fp_from_float(sd.x) &&
+                                entity.position_y == (int64_t)fp_from_float(sd.y)) {
+                                ctx->ecs.emplace<AIComponent>(e,
+                                    fp_from_float(sd.x), fp_from_float(sd.y),
+                                    fp_from_float(sd.patrol_radius),
+                                    fp_from_float(sd.detect_radius),
+                                    fp_from_float(sd.attack_radius));
+                                break;
+                            }
                         }
                 }
         }
