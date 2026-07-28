@@ -11,9 +11,9 @@ struct SpawnDef {
 
 inline const SpawnDef ENEMY_SPAWNS[] = {
     { 10.0f, 10.0f, 3.0f, 5.0f, 1.5f },
-    { 3.0f,  12.0f, 2.0f, 4.0f, 1.5f },
-    { 15.0f, 8.0f,  4.0f, 6.0f, 1.5f },
+    //{ 3.0f,  12.0f, 2.0f, 4.0f, 1.5f },
+    // // { 15.0f, 8.0f,  4.0f, 6.0f, 1.5f },
 };
-inline constexpr int ENEMY_SPAWN_COUNT = 3;
+inline constexpr int ENEMY_SPAWN_COUNT = 1;
 
 #endif

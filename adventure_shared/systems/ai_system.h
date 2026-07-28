@@ -98,7 +98,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 
             ai.timer--;
             if (ai.timer <= 0) {
-                int seed = (int)e;
+                //int seed = (int)e;
+                int seed = 0;
                 fp_t rx = fp_from_float((fp_to_float(ai.patrol_radius) * ((seed % 7) - 3) / 3.0f));
                 fp_t ry = fp_from_float((fp_to_float(ai.patrol_radius) * (((seed * 13) % 9) - 4) / 4.0f));
                 ai.target_x = fp_add(ai.patrol_center_x, rx);
