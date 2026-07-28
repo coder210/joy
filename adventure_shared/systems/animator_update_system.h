@@ -4,6 +4,7 @@
 #include "../components/player_state_input.h"
 #include "../components/action_state_component.h"
 #include "../components/enemy_component.h"
+#include "../components/animator_def.h"
 
 struct Context;
 
@@ -19,11 +20,11 @@ static void animator_update_system(entt::registry& registry, Context* ctx, float
 		// 根据实体类型选择动画定义
 		anim_def_t* def = nullptr;
 		if (registry.all_of<EnemyComponent>(entity)) {
-			if (registry.ctx().contains<EnemyAnimDef>())
-				def = &registry.ctx().get<EnemyAnimDef>().def;
+			if (registry.ctx().contains<TorchBlueAnimDefComponent>())
+				def = &registry.ctx().get<TorchBlueAnimDefComponent>().def;
 		} else {
-			if (registry.ctx().contains<anim_def_t>())
-				def = &registry.ctx().get<anim_def_t>();
+			if (registry.ctx().contains<WarriorBlueAnimDefComponent>())
+				def = &registry.ctx().get<WarriorBlueAnimDefComponent>().def;
 		}
 		if (!def) continue;
 

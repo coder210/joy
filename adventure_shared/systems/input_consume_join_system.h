@@ -2,6 +2,7 @@
 #define INPUT_CONSUME_JOIN_SYSTEM_H
 
 #include "../components/global_state_component.h"
+#include "../components/animator_def.h"
 
 struct Context;
 
@@ -21,8 +22,8 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
 		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
 
-		// 挂载动画组件（如果 AnimatorDefComponent 已注册）
-		if (registry.ctx().contains<AnimatorDefComponent>()) {
+		// 挂载动画组件（如果 WarriorBlueAnimDefComponent 已注册）
+		if (registry.ctx().contains<WarriorBlueAnimDefComponent>()) {
 			registry.emplace<AnimatorComponent>(player);
 			registry.emplace<AnimParamsComponent>(player);
 			registry.emplace<ActionStateComponent>(player);

@@ -8,6 +8,9 @@ using AnimCondDef            = anim_cond_t;
 using AnimTransitionDef      = anim_transition_t;
 using AnimClipDef            = anim_clip_def_t;
 using AnimStateDef           = anim_state_t;
-using AnimatorDefComponent   = anim_def_t;
+
+// 各纹理对应的动画定义（用结构体包装确保 registry.ctx() 中类型唯一）
+struct WarriorBlueAnimDefComponent { anim_def_t def; };
+struct TorchBlueAnimDefComponent  { anim_def_t def; };
 
 

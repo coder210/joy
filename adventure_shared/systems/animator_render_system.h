@@ -2,6 +2,7 @@
 #define ANIMATOR_RENDER_SYSTEM_H
 #include "../components/global_state_component.h"
 #include "../components/enemy_component.h"
+#include "../components/animator_def.h"
 #include "../protocol.h"
 #include <joy/anim.h>
 #include <map>
@@ -29,11 +30,11 @@ static void animator_render_system(Context* ctx, entt::registry& registry,
 	// 根据实体类型选择动画定义
 	anim_def_t* def = nullptr;
 	if (registry.all_of<EnemyComponent>(e)) {
-		if (ctx->ecs.ctx().contains<EnemyAnimDef>())
-			def = &ctx->ecs.ctx().get<EnemyAnimDef>().def;
+		if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>())
+			def = &ctx->ecs.ctx().get<TorchBlueAnimDefComponent>().def;
 	} else {
-		if (ctx->ecs.ctx().contains<anim_def_t>())
-			def = &ctx->ecs.ctx().get<anim_def_t>();
+		if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>())
+			def = &ctx->ecs.ctx().get<WarriorBlueAnimDefComponent>().def;
 	}
 	if (!def || def->num_states <= 0) return;
 

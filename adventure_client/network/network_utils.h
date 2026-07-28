@@ -27,8 +27,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 if (entity.type == S2C_TYPE_PLAYER) {
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
-                        // 挂载动画组件(如果 AnimatorDefComponent 已注册)
-                        if (ctx->ecs.ctx().contains<AnimatorDefComponent>()) {
+                        // 挂载动画组件(如果 WarriorBlueAnimDefComponent 已注册)
+                        if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                             ctx->ecs.emplace<ActionStateComponent>(e);
@@ -38,7 +38,7 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<EnemyComponent>(e);
                         ctx->ecs.emplace<ActionStateComponent>(e);
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
-                        if (ctx->ecs.ctx().contains<EnemyAnimDef>()) {
+                        if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                         }

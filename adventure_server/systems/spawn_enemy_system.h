@@ -45,8 +45,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
             fp_from_float(s.attack_radius)
         );
 
-        // 挂载动画组件（如果敌人动画定义已注册）
-        if (registry.ctx().contains<EnemyAnimDef>()) {
+        // 挂载动画组件（如果 TorchBlueAnimDefComponent 已注册）
+        if (registry.ctx().contains<TorchBlueAnimDefComponent>()) {
             registry.emplace<AnimatorComponent>(e);
             registry.emplace<AnimParamsComponent>(e);
         }

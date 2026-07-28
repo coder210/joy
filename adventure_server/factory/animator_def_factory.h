@@ -1,7 +1,7 @@
 #pragma once
 #include <joy/anim.h>
 #include "../entt.hpp"
-#include "../../adventure_shared/components/enemy_component.h"
+#include "../../adventure_shared/components/animator_def.h"
 
 // ========== 创建默认的 warrior 动画定义，存入 registry.ctx() ==========
 static inline void create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
@@ -58,7 +58,7 @@ static inline void create_warrior_anim_def(entt::registry& registry, const char*
     }
 
     anim_set_default_state(&def, s_idle);
-    registry.ctx().emplace<anim_def_t>(std::move(def));
+    registry.ctx().emplace<WarriorBlueAnimDefComponent>(WarriorBlueAnimDefComponent{std::move(def)});
 }
 
 // ========== 创建 goblin torch 动画定义，存入 registry.ctx() 作为 EnemyAnimDef ==========
@@ -116,5 +116,5 @@ static inline void create_goblin_anim_def(entt::registry& registry, const char* 
     }
 
     anim_set_default_state(&def, s_idle);
-    registry.ctx().emplace<EnemyAnimDef>(EnemyAnimDef{ std::move(def) });
+    registry.ctx().emplace<TorchBlueAnimDefComponent>(TorchBlueAnimDefComponent{std::move(def)});
 }
