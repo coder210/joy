@@ -26,7 +26,7 @@
 
 // 动画定义现在由 animator_def_factory.h 提供
 
-// 玩家状态机（使用 ECS PlayerActionComponent）
+// 玩家状态机（使用 ECS ActionStateComponent）
 
 struct game_scene {
         scene_p scene;
@@ -43,8 +43,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.44", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -219,9 +219,9 @@ static void on_render(scene_p s) {
         for (auto e : draw_view) {
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (self->ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
+                if (self->ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
                         auto& anim = self->ctx->ecs.get<anim_t>(e);
-                        auto& act = self->ctx->ecs.get<PlayerActionComponent>(e);
+                        auto& act = self->ctx->ecs.get<ActionStateComponent>(e);
                         animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act, e);
                 } else {
                         auto& id = draw_view.get<IdComponent>(e);

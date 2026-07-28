@@ -1,10 +1,10 @@
-﻿#include <string.h>
+#include <string.h>
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
 static void setup_button_texture(button_p btn, jr2d_p renderer) {
-	button_set_image(btn, image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides.png"));
-	button_set_pressed_image(btn, image_create(renderer, "adventure_server/ui/buttons/button_blue_9slides_pressed.png"));
+	button_set_image(btn, image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides.png"));
+	button_set_pressed_image(btn, image_create(renderer, "adventure_client/ui/buttons/button_blue_9slides_pressed.png"));
 	jcolor_t transparent = { 0, 0, 0, 0 };
 	button_set_normal_color(btn, transparent);
 	button_set_hover_color(btn, transparent);

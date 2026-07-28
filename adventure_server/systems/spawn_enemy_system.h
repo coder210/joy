@@ -1,4 +1,4 @@
-﻿#ifndef SPAWN_ENEMY_SYSTEM_H
+#ifndef SPAWN_ENEMY_SYSTEM_H
 #define SPAWN_ENEMY_SYSTEM_H
 
 #include "../context.h"
@@ -7,7 +7,7 @@
 #include "../../adventure_shared/components/logic_position_component.h"
 #include "../../adventure_shared/components/logic_rect_component.h"
 #include "../../adventure_shared/components/transform_component.h"
-#include "../../adventure_shared/components/player_action_component.h"
+#include "../../adventure_shared/components/action_state_component.h"
 #include "../../adventure_shared/components/animator_component.h"
 
 // 敌人生成位置和参数
@@ -37,7 +37,7 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<LogicRectComponent>(e, fp_from_float(1), fp_from_float(1));
         registry.emplace<TransformComponent>(e, s.x, s.y, 0.0f, 1.0f, 1.0f);
 
-        registry.emplace<PlayerActionComponent>(e);
+        registry.emplace<ActionStateComponent>(e);
         registry.emplace<AIComponent>(e,
             fp_from_float(s.x), fp_from_float(s.y),  // patrol_center
             fp_from_float(s.patrol_radius),

@@ -25,7 +25,7 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		if (registry.ctx().contains<AnimatorDefComponent>()) {
 			registry.emplace<AnimatorComponent>(player);
 			registry.emplace<AnimParamsComponent>(player);
-			registry.emplace<PlayerActionComponent>(player);
+			registry.emplace<ActionStateComponent>(player);
 		}
 
 		// 首次加入的玩家作为摄像机跟随目标

@@ -2,7 +2,7 @@
 #define ANIMATOR_UPDATE_SYSTEM_H
 #include <joy/anim.h>
 #include "../components/player_state_input.h"
-#include "../components/player_action_component.h"
+#include "../components/action_state_component.h"
 #include "../components/enemy_component.h"
 
 struct Context;
@@ -10,11 +10,11 @@ struct Context;
 static void animator_update_system(entt::registry& registry, Context* ctx, float dt) {
 	(void)ctx;
 
-	auto view = registry.view<anim_t, anim_params_t, PlayerActionComponent>();
+	auto view = registry.view<anim_t, anim_params_t, ActionStateComponent>();
 	for (auto entity : view) {
 		auto& a      = view.get<anim_t>(entity);
 		auto& params = view.get<anim_params_t>(entity);
-		auto& act    = view.get<PlayerActionComponent>(entity);
+		auto& act    = view.get<ActionStateComponent>(entity);
 
 		// 根据实体类型选择动画定义
 		anim_def_t* def = nullptr;
@@ -41,9 +41,9 @@ static void animator_update_system(entt::registry& registry, Context* ctx, float
 		params.attack = false;
 
 		// === ECS 专有逻辑：同步 act.state ===
-		if (act.state == PlayerActionComponent::ATTACK) {
+		if (act.state == ActionStateComponent::ATTACK) {
 			if (strncmp(def->states[a.current_state].name, "attack", 6) != 0) {
-				act.state = PlayerActionComponent::IDLE;
+				act.state = ActionStateComponent::IDLE;
 			}
 		}
 	}

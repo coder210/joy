@@ -31,12 +31,12 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         if (ctx->ecs.ctx().contains<AnimatorDefComponent>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
-                            ctx->ecs.emplace<PlayerActionComponent>(e);
+                            ctx->ecs.emplace<ActionStateComponent>(e);
                         }
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);
-                        ctx->ecs.emplace<PlayerActionComponent>(e);
+                        ctx->ecs.emplace<ActionStateComponent>(e);
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         if (ctx->ecs.ctx().contains<EnemyAnimDef>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);

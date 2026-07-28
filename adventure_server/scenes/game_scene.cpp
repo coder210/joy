@@ -42,8 +42,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.44", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -160,9 +160,9 @@ static void on_render(scene_p s)
         for (auto e : draw_view) {
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (ctx->ecs.all_of<anim_t, anim_params_t, PlayerActionComponent>(e)) {
+                if (ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
                         auto& anim = ctx->ecs.get<AnimatorComponent>(e);
-                        auto& act = ctx->ecs.get<PlayerActionComponent>(e);
+                        auto& act = ctx->ecs.get<ActionStateComponent>(e);
                         animator_render_system(ctx, ctx->ecs, t, rect, anim, act, e);
                 } else {
                         auto& id = draw_view.get<IdComponent>(e);

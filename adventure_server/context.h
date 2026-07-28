@@ -19,7 +19,7 @@
 #include "../adventure_shared/components/attack_ray_effect_component.h"
 #include "../adventure_shared/components/player_component.h"
 #include "components/local_only_component.h"
-#include "../adventure_shared/components/player_action_component.h"
+#include "../adventure_shared/components/action_state_component.h"
 #include "../adventure_shared/components/sprite_sheet_component.h"
 #include "../adventure_shared/components/animator_component.h"
 #include "../adventure_shared/components/animator_def.h"

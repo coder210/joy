@@ -9,7 +9,7 @@
 #include "entt.hpp"
 #include <joy/joy.h>
 #include "../adventure_shared/protocol.h"
-#include "../adventure_shared/components/player_action_component.h"
+#include "../adventure_shared/components/action_state_component.h"
 #include "../adventure_shared/components/animator_def.h"
 #include "../adventure_shared/components/animator_component.h"
 #include "../adventure_shared/components/id_component.h"

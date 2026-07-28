@@ -5,7 +5,7 @@
 #include "../components/enemy_component.h"
 #include "../components/player_component.h"
 #include "../components/logic_position_component.h"
-#include "../components/player_action_component.h"
+#include "../components/action_state_component.h"
 #include "../components/player_event_input.h"
 #include "../components/animator_component.h"
 
@@ -14,13 +14,13 @@ struct Context;
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(ctx->FIXED_TIMESTEP));
 
-    auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, PlayerActionComponent>();
+    auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent>();
 
     for (auto e : view) {
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
-        auto& act = view.get<PlayerActionComponent>(e);
+        auto& act = view.get<ActionStateComponent>(e);
 
         // 寻找最近玩家
         bool found_player = false;
@@ -47,7 +47,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         if (in_attack_range) {
             // 状态 2：攻击
             ai.state = 2;
-            act.state = PlayerActionComponent::ATTACK;
+            act.state = ActionStateComponent::ATTACK;
 
             if (!registry.all_of<PlayerEventInput>(e)) {
                 registry.emplace<PlayerEventInput>(e);
@@ -69,7 +69,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         else if (found_player) {
             // 状态 1：追击
             ai.state = 1;
-            act.state = PlayerActionComponent::WALK;
+            act.state = ActionStateComponent::WALK;
 
             fp_t dx = fp_sub(nearest_px, pos.x);
             fp_t dy = fp_sub(nearest_py, pos.y);
@@ -94,7 +94,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         else {
             // 状态 0：巡逻
             ai.state = 0;
-            act.state = PlayerActionComponent::WALK;
+            act.state = ActionStateComponent::WALK;
 
             ai.timer--;
             if (ai.timer <= 0) {

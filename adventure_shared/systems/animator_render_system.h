@@ -20,7 +20,7 @@ static image_p get_or_load_image(jr2d_p r2d, const char* path) {
 
 static void animator_render_system(Context* ctx, entt::registry& registry,
 	TransformComponent& t, LogicRectComponent& r,
-	anim_t& anim, PlayerActionComponent& act,
+	anim_t& anim, ActionStateComponent& act,
 	entt::entity e)
 {
 	(void)registry;

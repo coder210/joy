@@ -3,7 +3,7 @@
 #include "../asset_manager.h"
 #include "../../adventure_shared/protocol.h"
 #include "../../adventure_shared/components/sprite_sheet_component.h"
-#include "../../adventure_shared/components/player_action_component.h"
+#include "../../adventure_shared/components/action_state_component.h"
 #include "../../adventure_shared/components/transform_component.h"
 #include "../../adventure_shared/components/global_state_component.h"
 #include "../../adventure_shared/components/logic_rect_component.h"
@@ -11,7 +11,7 @@
 static void sprite_render_system(Context* ctx,
     TransformComponent& t, LogicRectComponent& r,
     SpriteSheetComponent& ss, AnimationFrameComponent& af,
-    PlayerActionComponent& act)
+    ActionStateComponent& act)
 {
     auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
     float scr_x = (t.position.x - cam.x) * PIXELS_PER_METER;

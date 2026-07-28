@@ -46,21 +46,21 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 		}
 
 		// 更新动画参数：将原始方向位掩码翻译为 anim_params_t.dir / speed / attack
-		if (registry.all_of<anim_params_t, PlayerActionComponent>(player)) {
+		if (registry.all_of<anim_params_t, ActionStateComponent>(player)) {
 			auto& params = registry.get<anim_params_t>(player);
-			auto& act    = registry.get<PlayerActionComponent>(player);
+			auto& act    = registry.get<ActionStateComponent>(player);
 
 			int  dir_idx = input_to_dir(input.dir);
 			bool moving  = has_dir(input.dir);
 
 			if (input.attack) {
-				act.state     = PlayerActionComponent::ATTACK;
+				act.state     = ActionStateComponent::ATTACK;
 				params.attack = true;
 				params.speed  = 1.0f;
 				if (moving) params.dir = dir_idx;
 			} else {
-				act.state  = moving ? PlayerActionComponent::WALK
-				                    : PlayerActionComponent::IDLE;
+				act.state  = moving ? ActionStateComponent::WALK
+				                    : ActionStateComponent::IDLE;
 				params.speed = moving ? 1.0f : 0.0f;
 				if (moving) params.dir = dir_idx;
 				params.attack = false;
