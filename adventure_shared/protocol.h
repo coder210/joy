@@ -51,6 +51,7 @@ struct S2CEntity {
     int32_t id, type;
     int64_t position_x, position_y, width, height, hp;
     int32_t player_conv;
+    int64_t ai_seed;       // AI 随机种子（确定性帧同步用）
 };
 
 /* ======================== 辅助函数 ======================== */

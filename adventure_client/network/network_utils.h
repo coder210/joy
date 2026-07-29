@@ -57,6 +57,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                                 break;
                             }
                         }
+                        // 保存服务端下发的 AI 种子（确定性帧同步用）
+                        ctx->ecs.ctx().get<GlobalState>().ai_seed = (int)entity.ai_seed;
                 }
         }
 

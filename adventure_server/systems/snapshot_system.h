@@ -1,4 +1,4 @@
-﻿#ifndef SNAPSHOT_SYSTEM_H
+#ifndef SNAPSHOT_SYSTEM_H
 #define SNAPSHOT_SYSTEM_H
 #include "../context.h"
 
