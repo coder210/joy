@@ -44,21 +44,16 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                         }
-                        // 按位置匹配 SpawnDef，创建 AIComponent（保证初始条件与服务端一致）
-                        for (int si = 0; si < ENEMY_SPAWN_COUNT; si++) {
+                        // 使用服务端打包的 ai_seed 作为 SpawnDef 索引（避免位置匹配方式在 AI 移动后失效）
+                        int si = (int)entity.ai_seed;
+                        if (si >= 0 && si < ENEMY_SPAWN_COUNT) {
                             auto& sd = ENEMY_SPAWNS[si];
-                            if (entity.position_x == (int64_t)fp_from_float(sd.x) &&
-                                entity.position_y == (int64_t)fp_from_float(sd.y)) {
-                                ctx->ecs.emplace<AIComponent>(e,
-                                    fp_from_float(sd.x), fp_from_float(sd.y),
-                                    fp_from_float(sd.patrol_radius),
-                                    fp_from_float(sd.detect_radius),
-                                    fp_from_float(sd.attack_radius));
-                                break;
-                            }
+                            ctx->ecs.emplace<AIComponent>(e,
+                                fp_from_float(sd.x), fp_from_float(sd.y),
+                                fp_from_float(sd.patrol_radius),
+                                fp_from_float(sd.detect_radius),
+                                fp_from_float(sd.attack_radius));
                         }
-                        // 保存服务端下发的 AI 种子（确定性帧同步用）
-                        ctx->ecs.ctx().get<GlobalState>().ai_seed = (int)entity.ai_seed;
                 }
         }
 

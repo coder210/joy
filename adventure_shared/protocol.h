@@ -83,11 +83,12 @@ static int mp_write_cb(void* data, const char* buf, size_t len) {
 
 /* --- 子对象打包 --- */
 static inline void pack_entity(jmsgpack_packer_t* pk, const S2CEntity& e) {
-    jmsgpack_pack_array(pk, 8);
+    jmsgpack_pack_array(pk, 9);
     jmsgpack_pack_int(pk, e.id);    jmsgpack_pack_int(pk, e.type);
     jmsgpack_pack_int64(pk, e.position_x); jmsgpack_pack_int64(pk, e.position_y);
     jmsgpack_pack_int64(pk, e.width);      jmsgpack_pack_int64(pk, e.height);
     jmsgpack_pack_int64(pk, e.hp);  jmsgpack_pack_int(pk, e.player_conv);
+    jmsgpack_pack_int64(pk, e.ai_seed);
 }
 static inline void pack_join(jmsgpack_packer_t* pk, const S2CPlayerJoin& j) {
     jmsgpack_pack_array(pk, 3);
@@ -193,7 +194,7 @@ static inline std::string pack_s2c(int16_t cmd, int32_t frame_id,
 
 /* 解包单个实体 */
 static inline void unpack_entity(const jmsgpack_object_t* o, S2CEntity* e) {
-    if (!o || o->type != JMSGPACK_OBJECT_ARRAY || o->via.array.size < 8) return;
+    if (!o || o->type != JMSGPACK_OBJECT_ARRAY || o->via.array.size < 9) return;
     e->id         = (int)jmp_int(&o->via.array.ptr[0]);
     e->type       = (int)jmp_int(&o->via.array.ptr[1]);
     e->position_x = jmp_int(&o->via.array.ptr[2]);
@@ -202,6 +203,7 @@ static inline void unpack_entity(const jmsgpack_object_t* o, S2CEntity* e) {
     e->height     = jmp_int(&o->via.array.ptr[5]);
     e->hp         = jmp_int(&o->via.array.ptr[6]);
     e->player_conv = (int)jmp_int(&o->via.array.ptr[7]);
+    e->ai_seed    = jmp_int(&o->via.array.ptr[8]);
 }
 
 /* 解包 S2C 世界快照: [eid, [entity...]]，返回实体数 */

@@ -61,7 +61,7 @@ static void on_load(scene_p s)
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
-        //add_system(ctx, OnUpdate, "ai_system", ai_system);
+        add_system(ctx, OnUpdate, "ai_system", ai_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);
