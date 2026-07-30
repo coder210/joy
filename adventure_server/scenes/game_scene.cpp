@@ -42,8 +42,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.40", 30000);
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.40", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -61,7 +61,7 @@ static void on_load(scene_p s)
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
-        //add_system(ctx, OnUpdate, "ai_system", ai_system);
+        add_system(ctx, OnUpdate, "ai_system", ai_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
         add_system(ctx, OnUpdate, "animator_update", animator_update_system);

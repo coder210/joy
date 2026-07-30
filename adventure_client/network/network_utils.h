@@ -12,6 +12,7 @@
 // ========== 加载数据处理 ==========
 static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
 {
+        log_info("handle_loading");
         ctx->ready = true;
         ctx->local_conv = conv;
         ctx->ecs.ctx().get<GlobalState>().camera_follow_conv = conv;

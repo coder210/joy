@@ -43,8 +43,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.40", 30000);
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.40", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -64,7 +64,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
-        //add_system(self->ctx, OnUpdate, "ai_system", ai_system);
+        add_system(self->ctx, OnUpdate, "ai_system", ai_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
         add_system(self->ctx, OnUpdate, "animator_update", animator_update_system);
