@@ -17,9 +17,10 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
         auto player_view = registry.view<PlayerComponent, LogicPositionComponent>();
 
-        log_info("AI check: player_view size=%d, enemy_count=%d",
-                registry.view<PlayerComponent>().size(),
-                registry.view<EnemyComponent>().size());
+        log_info("AI(%s): player_view=%zu, enemy_count=%zu",
+                ctx->is_server ? "server" : "client",
+                player_view.size(),
+                view.size());
 
         for (auto e : view) {
                 auto& ai = view.get<AIComponent>(e);

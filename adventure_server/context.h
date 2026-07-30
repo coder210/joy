@@ -32,6 +32,7 @@
 #include <joy/joy.h>
 
 struct Context {
+        bool is_server = true;
         jwindow_p window;
         jr2d_p r2d;
       
