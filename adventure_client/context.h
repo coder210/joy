@@ -39,6 +39,7 @@ struct state_snapshot {
 
 
 struct Context {
+        bool is_server = false;
         bool running;
         bool is_server = false;
         game_timer_t game_timer;
