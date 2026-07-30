@@ -44,8 +44,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                         }
-                        // 使用服务端打包的 ai_seed 作为 SpawnDef 索引（避免位置匹配方式在 AI 移动后失效）
-                        int si = (int)entity.ai_seed;
+                        // 使用服务端打包的 ai_type 作为 SpawnDef 索引（避免位置匹配方式在 AI 移动后失效）
+                        int si = (int)entity.ai_type;
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {
                             auto& sd = ENEMY_SPAWNS[si];
                             ctx->ecs.emplace<AIComponent>(e,

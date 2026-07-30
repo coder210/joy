@@ -83,9 +83,9 @@ static inline void create_goblin_anim_def(entt::registry& registry, const char* 
         anim_add_clip(&def, s_walk, tex_path, DUR, r);
     }
 
-    // attack directions (rows 2-4)
+    // attack directions (row 2=右攻击, row 3=下攻击, row 4=上攻击, 左攻击与右攻击同 row 用 flip_h)
     const char* atk_names[] = { "attack_d","attack_l","attack_r","attack_u" };
-    int atk_rows[] = { 2, 3, 3, 4 };
+    int atk_rows[] = { 3, 2, 2, 4 };
     int s_atk[4];
     for (int d = 0; d < 4; d++) {
         s_atk[d] = anim_add_state(&def, atk_names[d], false);
