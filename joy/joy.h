@@ -326,6 +326,37 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
 
         /* ---------- 碰撞体类型 ---------- */
+        typedef enum gjk3df_ctype {
+                GJK3DF_CTYPE_SPHERE,   /* 球体: position + radius */
+                GJK3DF_CTYPE_BOX,      /* AABB盒: position + half_size */
+                GJK3DF_CTYPE_CAPSULE,  /* 胶囊: position(中心) + radius + height + axis */
+                GJK3DF_CTYPE_CYLINDER, /* 圆柱: position + radius + height */
+                GJK3DF_CTYPE_CONE,     /* 圆锥: position + radius + height */
+                GJK3DF_CTYPE_MESH      /* 自定义网格: vertices数组 */
+        } gjk3df_ctype_k;
+
+        /* ---------- 3D碰撞体 ---------- */
+        typedef struct gjk3df_collider {
+                gjk3df_ctype_k type;
+                vec3f_t position;      /* 中心位置 */
+                fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
+                vec3f_t half_size;     /* BOX半边长 */
+                fp_t height;           /* 胶囊/圆柱/圆锥高度 */
+                vec3f_t axis;          /* 胶囊朝向(单位向量) */
+                vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
+                int vertices_num;
+        } gjk3df_collider_t, * gjk3df_collider_p;
+
+        /* ---------- 接触信息(含EPA穿透深度) ---------- */
+        typedef struct gjk3df_contact {
+                vec3f_t normal;
+                fp_t depth;
+        } gjk3df_contact_t, * gjk3df_contact_p;
+
+        /* ======================================================================== */
+        /*                        GJK 3D 浮点版 (ft_t/vec3_t)                        */
+        /* ======================================================================== */
+        /* ---------- 碰撞体类型 ---------- */
         typedef enum gjk3d_ctype {
                 GJK3D_CTYPE_SPHERE,   /* 球体: position + radius */
                 GJK3D_CTYPE_BOX,      /* AABB盒: position + half_size */
@@ -335,22 +366,22 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 GJK3D_CTYPE_MESH      /* 自定义网格: vertices数组 */
         } gjk3d_ctype_k;
 
-        /* ---------- 3D碰撞体 ---------- */
+        /* ---------- 3D碰撞体(浮点) ---------- */
         typedef struct gjk3d_collider {
                 gjk3d_ctype_k type;
-                vec3f_t position;      /* 中心位置 */
-                fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
-                vec3f_t half_size;     /* BOX半边长 */
-                fp_t height;           /* 胶囊/圆柱/圆锥高度 */
-                vec3f_t axis;          /* 胶囊朝向(单位向量) */
-                vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
+                vec3_t position;       /* 中心位置 */
+                ft_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
+                vec3_t half_size;      /* BOX半边长 */
+                ft_t height;           /* 胶囊/圆柱/圆锥高度 */
+                vec3_t axis;           /* 胶囊朝向(单位向量) */
+                vec3_t* vertices;      /* MESH顶点数组(借用的指针,不负责释放) */
                 int vertices_num;
         } gjk3d_collider_t, * gjk3d_collider_p;
 
         /* ---------- 接触信息(含EPA穿透深度) ---------- */
         typedef struct gjk3d_contact {
-                vec3f_t normal;
-                fp_t depth;
+                vec3_t normal;
+                ft_t depth;
         } gjk3d_contact_t, * gjk3d_contact_p;
 
       
@@ -1108,15 +1139,27 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void gjk2d_init_capsule(gjk2d_collider_t* c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius);
         JOY_API void gjk2d_init_polygon(gjk2d_collider_t* c, vec2f_t* vertices, int num);
         JOY_API void gjk2d_init_pie(gjk2d_collider_t* c, vec2f_t pos, fp_t radius, fp_t sweep);
-        JOY_API bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
-                vec3f_t init_dir, gjk3d_contact_p contact);
+        JOY_API bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
+                vec3f_t init_dir, gjk3df_contact_p contact);
         /* 快捷初始化函数(仅设置参数,无内存分配) */
-        JOY_API void gjk3d_init_sphere(gjk3d_collider_t* c, vec3f_t pos, fp_t radius);
-        JOY_API void gjk3d_init_box(gjk3d_collider_t* c, vec3f_t pos, vec3f_t half_size);
-        JOY_API void gjk3d_init_capsule(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
-        JOY_API void gjk3d_init_cylinder(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
-        JOY_API void gjk3d_init_cone(gjk3d_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
-        JOY_API void gjk3d_init_mesh(gjk3d_collider_t* c, vec3f_t* vertices, int num);
+        JOY_API void gjk3df_init_sphere(gjk3df_collider_t* c, vec3f_t pos, fp_t radius);
+        JOY_API void gjk3df_init_box(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size);
+        JOY_API void gjk3df_init_capsule(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
+        JOY_API void gjk3df_init_cylinder(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void gjk3df_init_cone(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void gjk3df_init_mesh(gjk3df_collider_t* c, vec3f_t* vertices, int num);
+
+        /* ============ GJK 3D 浮点版 (ft_t/vec3_t) ============ */
+        /* 主碰撞检测: GJK + EPA, 返回是否碰撞, contact填充法线和深度 */
+        JOY_API bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
+                vec3_t init_dir, gjk3d_contact_p contact);
+        /* 快捷初始化函数(仅设置参数,无内存分配) */
+        JOY_API void gjk3d_init_sphere(gjk3d_collider_t* c, vec3_t pos, ft_t radius);
+        JOY_API void gjk3d_init_box(gjk3d_collider_t* c, vec3_t pos, vec3_t half_size);
+        JOY_API void gjk3d_init_capsule(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis);
+        JOY_API void gjk3d_init_cylinder(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
+        JOY_API void gjk3d_init_cone(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
+        JOY_API void gjk3d_init_mesh(gjk3d_collider_t* c, vec3_t* vertices, int num);
 
         JOY_API janimator_p janimator_create(jr2d_p r2d);
         JOY_API void janimator_destroy(janimator_p anim);

@@ -41,17 +41,17 @@ joy.load = function()
     ];
     for (var i = 0; i < box_defs.length; i++) {
         var d = box_defs[i];
-        var c = gjk3d.new_collider();
+        var c = gjk3df.new_collider();
         var pos  = {x:fp.from_float(d.x), y:fp.from_float(d.sy*0.5), z:fp.from_float(d.z)};
         var half = {x:fp.from_float(d.sx*0.5), y:fp.from_float(d.sy*0.5), z:fp.from_float(d.sz*0.5)};
-        gjk3d.init_box(c, pos, half);
+        gjk3df.init_box(c, pos, half);
         boxes.push({pos:{x:d.x, y:d.sy*0.5, z:d.z}, size:{x:d.sx, y:d.sy, z:d.sz}, collider:c});
         obstacles.push(c);
     }
 
     // sphere
-    var c = gjk3d.new_collider();
-    gjk3d.init_sphere(c, {x:fp.from_float(2), y:fp.from_float(0.5), z:fp.from_float(2)}, fp.from_float(0.5));
+    var c = gjk3df.new_collider();
+    gjk3df.init_sphere(c, {x:fp.from_float(2), y:fp.from_float(0.5), z:fp.from_float(2)}, fp.from_float(0.5));
     balls.push({pos:{x:2, y:0.5, z:2}, radius:0.5, collider:c});
     obstacles.push(c);
 
@@ -91,16 +91,16 @@ joy.draw = function()
         // GJK collision
         var player_half = {x:fp.from_float(0.3), y:fp.from_float(0.6), z:fp.from_float(0.3)};
         var player_fp = {x:fp.from_float(new_x), y:fp.from_float(player_pos.y), z:fp.from_float(new_z)};
-        var pc = gjk3d.new_collider();
-        gjk3d.init_box(pc, player_fp, player_half);
+        var pc = gjk3df.new_collider();
+        gjk3df.init_box(pc, player_fp, player_half);
         var init_dir = {x:fp.one(), y:fp.zero(), z:fp.zero()};
 
         var blocked = false;
         for (var j = 0; j < obstacles.length; j++) {
-            var r = gjk3d.collide(pc, obstacles[j], init_dir);
+            var r = gjk3df.collide(pc, obstacles[j], init_dir);
             if (r.hit) { blocked = true; break; }
         }
-        gjk3d.destroy(pc);
+        gjk3df.destroy(pc);
 
         if (!blocked) {
             if (new_x > 9.5) new_x = 9.5;

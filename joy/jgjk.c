@@ -50,17 +50,17 @@ static void simplex_push(simplex3d_t *s, vec3f_t p) {
 
 /* ============ 各碰撞体的最远点计算 ============ */
 
-static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
+static vec3f_t find_furthest_point(gjk3df_collider_p c, vec3f_t dir) {
 	vec3f_t result = { fp_zero(), fp_zero(), fp_zero() };
 
 	switch (c->type) {
-	case GJK3D_CTYPE_SPHERE: {
+	case GJK3DF_CTYPE_SPHERE: {
 		vec3f_t ndir = vec3f_normalize(dir);
 		vec3f_t offset = vec3f_scale(ndir, c->radius);
 		result = vec3f_add(c->position, offset);
 		break;
 	}
-	case GJK3D_CTYPE_BOX: {
+	case GJK3DF_CTYPE_BOX: {
 		/* AABB: 根据方向符号取半边长 */
 		fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
 		fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
@@ -70,7 +70,7 @@ static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
 		result.z = fp_add(c->position.z, sz);
 		break;
 	}
-	case GJK3D_CTYPE_CAPSULE: {
+	case GJK3DF_CTYPE_CAPSULE: {
 		/* 胶囊: 线段(沿axis方向 ± height/2) + 半径 */
 		fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
@@ -82,7 +82,7 @@ static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
 		result = vec3f_add(center, vec3f_scale(ndir, c->radius));
 		break;
 	}
-	case GJK3D_CTYPE_CYLINDER: {
+	case GJK3DF_CTYPE_CYLINDER: {
 		/* 圆柱: 底部圆盘 + 顶部圆盘 */
 		fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
@@ -95,7 +95,7 @@ static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
 		result.z = fp_add(c->position.z, fp_mul(ndir.z, fp_mul(r_scale, c->radius)));
 		break;
 	}
-	case GJK3D_CTYPE_CONE: {
+	case GJK3DF_CTYPE_CONE: {
 		/* 圆锥: 锥顶在 center + (0, height/2, 0)，底在 center - (0, height/2, 0) */
 		fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
@@ -120,7 +120,7 @@ static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
 		}
 		break;
 	}
-	case GJK3D_CTYPE_MESH: {
+	case GJK3DF_CTYPE_MESH: {
 		fp_t max_dot = fp_min_value();
 		for (int i = 0; i < c->vertices_num; i++) {
 			fp_t d = vec3f_dot(c->vertices[i], dir);
@@ -134,7 +134,7 @@ static vec3f_t find_furthest_point(gjk3d_collider_p c, vec3f_t dir) {
 
 /* ============ Minkowski差支持函数 ============ */
 
-static vec3f_t get_support_point(gjk3d_collider_p ca, gjk3d_collider_p cb, vec3f_t dir) {
+static vec3f_t get_support_point(gjk3df_collider_p ca, gjk3df_collider_p cb, vec3f_t dir) {
 	vec3f_t a = find_furthest_point(ca, dir);
 	vec3f_t b = find_furthest_point(cb, vec3f_negate(dir));
 	return vec3f_sub(a, b);
@@ -262,7 +262,7 @@ static void add_unique_edge(kvec_t(epa_edge_t) *edges, kvec_t(size_t) *faces, si
 }
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
-static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
+static bool epa(simplex3d_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
 	kvec_t(vec3f_t) polytope;
 	kvec_t(size_t) faces;
 	kvec_t(epa_face_t) normals;
@@ -389,8 +389,8 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 }
 
 /* ============ 公开API实现 ============ */
-bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
-	vec3f_t init_dir, gjk3d_contact_p contact)
+bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
+	vec3f_t init_dir, gjk3df_contact_p contact)
 {
 	simplex3d_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
@@ -426,48 +426,48 @@ bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 
 /* ============ 碰撞体初始化函数 ============ */
 
-void gjk3d_init_sphere(gjk3d_collider_t *c, vec3f_t pos, fp_t radius) {
+void gjk3df_init_sphere(gjk3df_collider_t *c, vec3f_t pos, fp_t radius) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_SPHERE;
+	c->type = GJK3DF_CTYPE_SPHERE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void gjk3d_init_box(gjk3d_collider_t *c, vec3f_t pos, vec3f_t half_size) {
+void gjk3df_init_box(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_BOX;
+	c->type = GJK3DF_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void gjk3d_init_capsule(gjk3d_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
+void gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_CAPSULE;
+	c->type = GJK3DF_CTYPE_CAPSULE;
 	c->position = pos;
 	c->radius = radius;
 	c->height = height;
 	c->axis = vec3f_normalize(axis);
 }
 
-void gjk3d_init_cylinder(gjk3d_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_CYLINDER;
+	c->type = GJK3DF_CTYPE_CYLINDER;
 	c->position = pos;
 	c->radius = radius;
 	c->height = height;
 }
 
-void gjk3d_init_cone(gjk3d_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_CONE;
+	c->type = GJK3DF_CTYPE_CONE;
 	c->position = pos;
 	c->radius = radius;
 	c->height = height;
 }
 
-void gjk3d_init_mesh(gjk3d_collider_t *c, vec3f_t *vertices, int num) {
+void gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
-	c->type = GJK3D_CTYPE_MESH;
+	c->type = GJK3DF_CTYPE_MESH;
 	c->vertices = vertices;
 	c->vertices_num = num;
 }

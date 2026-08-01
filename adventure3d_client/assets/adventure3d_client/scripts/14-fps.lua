@@ -50,19 +50,19 @@ function joy.load()
         {x=-1, z=-5, sx=1.2, sy=0.6, sz=1.2},
     }
     for _, d in ipairs(box_defs) do
-        local c = joy.gjk3d.new_collider()
+        local c = joy.gjk3df.new_collider()
         local pos = {x=joy.fp.from_float(d.x), y=joy.fp.from_float(d.sy*0.5), z=joy.fp.from_float(d.z)}
         local half = {x=joy.fp.from_float(d.sx*0.5), y=joy.fp.from_float(d.sy*0.5), z=joy.fp.from_float(d.sz*0.5)}
-        joy.gjk3d.init_box(c, pos, half)
+        joy.gjk3df.init_box(c, pos, half)
         table.insert(boxes, {pos={x=d.x, y=d.sy*0.5, z=d.z}, size={x=d.sx, y=d.sy, z=d.sz}, collider=c})
         table.insert(obstacles, c)
     end
 
     -- 创建球体
     do
-        local c = joy.gjk3d.new_collider()
+        local c = joy.gjk3df.new_collider()
         local pos = {x=joy.fp.from_float(2), y=joy.fp.from_float(0.5), z=joy.fp.from_float(2)}
-        joy.gjk3d.init_sphere(c, pos, joy.fp.from_float(0.5))
+        joy.gjk3df.init_sphere(c, pos, joy.fp.from_float(0.5))
         table.insert(balls, {pos={x=2, y=0.5, z=2}, radius=0.5, collider=c})
         table.insert(obstacles, c)
     end
@@ -98,13 +98,13 @@ function joy.draw()
         local player_half = {x=joy.fp.from_float(0.3), y=joy.fp.from_float(0.6), z=joy.fp.from_float(0.3)}
         local player_pos_fp = {x=joy.fp.from_float(new_x), y=joy.fp.from_float(player_pos.y), z=joy.fp.from_float(new_z)}
 
-        local pc = joy.gjk3d.new_collider()
-        joy.gjk3d.init_box(pc, player_pos_fp, player_half)
+        local pc = joy.gjk3df.new_collider()
+        joy.gjk3df.init_box(pc, player_pos_fp, player_half)
         local init_dir = {x=joy.fp.one(), y=joy.fp.zero(), z=joy.fp.zero()}
 
         local blocked = false
         for _, obs in ipairs(obstacles) do
-            local r = joy.gjk3d.collide(pc, obs, init_dir)
+            local r = joy.gjk3df.collide(pc, obs, init_dir)
             if r.hit then blocked = true; break end
         end
 

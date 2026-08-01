@@ -24,10 +24,10 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
 
         if (player_col.type != ColliderComponent::BOX) continue;
 
-        gjk3d_collider_t player_shape;
+        gjk3df_collider_t player_shape;
         vec3f_t ppos = { player_pos.x, player_pos.y, player_pos.z };
         vec3f_t phs  = { player_col.half_size.x, player_col.half_size.y, player_col.half_size.z };
-        gjk3d_init_box(&player_shape, ppos, phs);
+        gjk3df_init_box(&player_shape, ppos, phs);
 
         for (auto other_entity : static_view) {
             if (other_entity == player_entity) continue;
@@ -39,14 +39,14 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
 
             if (other_col.type != ColliderComponent::BOX) continue;
 
-            gjk3d_collider_t other_shape;
+            gjk3df_collider_t other_shape;
             vec3f_t opos = { other_pos.x, other_pos.y, other_pos.z };
             vec3f_t ohs  = { other_col.half_size.x, other_col.half_size.y, other_col.half_size.z };
-            gjk3d_init_box(&other_shape, opos, ohs);
+            gjk3df_init_box(&other_shape, opos, ohs);
 
-            gjk3d_contact_t contact;
+            gjk3df_contact_t contact;
             vec3f_t init_dir = { fp_one(), fp_zero(), fp_zero() };
-            if (gjk3d_collide(&player_shape, &other_shape, init_dir, &contact)) {
+            if (gjk3df_collide(&player_shape, &other_shape, init_dir, &contact)) {
                 // 沿法线方向推开玩家（法线从 other 指向 player）
                 fp_t depth = contact.depth;
                 if (depth < fp_zero()) depth = fp_sub(fp_zero(), depth);
@@ -59,7 +59,7 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
                 ppos.x = player_pos.x;
                 ppos.y = player_pos.y;
                 ppos.z = player_pos.z;
-                gjk3d_init_box(&player_shape, ppos, phs);
+                gjk3df_init_box(&player_shape, ppos, phs);
             }
         }
     }

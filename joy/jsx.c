@@ -178,7 +178,7 @@ jsx_p jsx_create(void)
 	jsopen_render2d(jsx->ctx);
 	jsopen_window(jsx->ctx);
 	jsopen_render3d(jsx->ctx);
-	jsopen_gjk3d(jsx->ctx);
+	jsopen_gjk3df(jsx->ctx);
 	jsopen_janimator(jsx->ctx);
 	jsopen_behavior(jsx->ctx);
 	jsopen_scene(jsx->ctx);

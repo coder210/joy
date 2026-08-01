@@ -180,7 +180,7 @@ luax_p luax_create(void)
         JOY_MOD("thread", luaopen_thread);
         JOY_MOD("console", luaopen_console);
         JOY_MOD("render3d", luaopen_render3d);
-        JOY_MOD("gjk3d", luaopen_gjk3d);
+        JOY_MOD("gjk3df", luaopen_gjk3df);
         JOY_MOD("animator", luaopen_janimator);
         JOY_MOD("tilemap", luaopen_tilemap);
         JOY_MOD("behavior", luaopen_behavior);
