@@ -209,6 +209,26 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 float model[16];
         } render_mvp_t;
 
+        /* ---------- 光照结构（与 GLSL std140 布局对齐, 同 main888） ---------- */
+        #define JR3D_MAX_LIGHTS 4
+        #define JR3D_LIGHT_DIRECTIONAL 0
+        #define JR3D_LIGHT_POINT 1
+        typedef struct jr3d_shader_light {
+                int    enabled;      /* 0 */
+                int    type;         /* 4 */
+                int    _pad0[2];     /* 8 */
+                float  position[3];  /* 16 */
+                float  _pad1;        /* 28 */
+                float  target[3];    /* 32 */
+                float  _pad2;        /* 44 */
+                float  color[4];     /* 48 */
+        } jr3d_shader_light_t;       /* 64 字节 */
+        typedef struct jr3d_light_block {
+                jr3d_shader_light_t lights[JR3D_MAX_LIGHTS];
+                float ambient[4];
+                float viewPos[4];
+        } jr3d_light_block_t;        /* 288 字节 */
+
 
         typedef struct ray2df {
                 vec2f_t origin, direction;
@@ -1052,6 +1072,24 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
         JOY_API void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width);
+
+        /* ---------- 光照渲染（顶点格式 pos+normal+uv, pitch=32） ---------- */
+        /* 创建光照管线: 顶点 uniform slot0 = render_mvp_t(MVP),
+           片元 uniform slot0 = jr3d_light_block_t, 片元采样器 slot0 = 纹理 */
+        JOY_API void* r3d_create_lighting_pipeline(void* device,
+                void* vertex_shader, void* fragment_shader,
+                int swapchain_format, int depth_format);
+        /* 带法线的网格生成（pos+normal+uv, 8 float/顶点） */
+        JOY_API render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d);
+        JOY_API render_mesh_p r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks);
+        JOY_API render_mesh_p r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs);
+        JOY_API render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h);
+        JOY_API render_mesh_p r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count);
+        /* 设置光照数据; 相机更新时 viewPos 会自动覆盖为当前相机位置 */
+        JOY_API void r3d_set_light_block(jr3d_p r, const jr3d_light_block_t* block);
+        /* 用光照管线绘制网格（需在 r3d_begin/r3d_end 之间调用） */
+        JOY_API void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* tex);
+        JOY_API void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color);
 
         ///////////////////////////////////////////////////////////////////////
        ////////////////////////////  collision ///////////////////////////////

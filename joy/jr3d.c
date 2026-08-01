@@ -1,6 +1,10 @@
 #include "joy.h"
 #include <SDL3/SDL.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /* ================================================================
  * 内部结构 — 完整 SDL3 GPU 类型
  * ================================================================ */
@@ -34,6 +38,13 @@ struct jr3d {
 	/* 颜色纹理缓存 */
 	struct { Uint8 r, g, b; SDL_GPUTexture* tex; } color_cache[MAX_COLOR_CACHE];
 	int                color_count;
+
+	/* 光照渲染（可选, 由 r3d_create 探测 lighting.vert/frag.spv 自动启用） */
+	SDL_GPUShader*     lvs;
+	SDL_GPUShader*     lfs;
+	SDL_GPUGraphicsPipeline* lighting_pipeline;
+	jr3d_light_block_t light_block;
+	bool               light_block_valid;
 };
 
 /* ================================================================
@@ -94,6 +105,81 @@ void* r3d_create_pipeline(void* device,
 	buffer_desc.instance_step_rate = 0;
 	buffer_desc.slot = 0;
 	buffer_desc.pitch = sizeof(float) * 5;
+
+	ci.vertex_input_state.num_vertex_buffers = 1;
+	ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
+	ci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+	ci.vertex_shader = vs;
+	ci.fragment_shader = fs;
+	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.multisample_state.enable_mask = false;
+	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.target_info.num_color_targets = 1;
+	ci.target_info.has_depth_stencil_target = true;
+	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
+
+	SDL_GPUDepthStencilState ds = { 0 };
+	ds.back_stencil_state.compare_op = SDL_GPU_COMPAREOP_NEVER;
+	ds.back_stencil_state.pass_op = SDL_GPU_STENCILOP_ZERO;
+	ds.back_stencil_state.fail_op = SDL_GPU_STENCILOP_ZERO;
+	ds.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
+	ds.compare_op = SDL_GPU_COMPAREOP_LESS;
+	ds.enable_depth_test = true;
+	ds.enable_depth_write = true;
+	ds.enable_stencil_test = false;
+	ds.compare_mask = 0xFF;
+	ds.write_mask = 0xFF;
+	ci.depth_stencil_state = ds;
+
+	SDL_GPUColorTargetDescription desc = { 0 };
+	desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+	desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+	desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B | SDL_GPU_COLORCOMPONENT_A;
+	desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+	desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
+	desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+	desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+	desc.blend_state.enable_blend = true;
+	desc.blend_state.enable_color_write_mask = false;
+	desc.format = (SDL_GPUTextureFormat)swapchain_format;
+	ci.target_info.color_target_descriptions = &desc;
+
+	return (void*)SDL_CreateGPUGraphicsPipeline(dev, &ci);
+}
+
+void* r3d_create_lighting_pipeline(void* device,
+	void* vertex_shader, void* fragment_shader,
+	int swapchain_format, int depth_format)
+{
+	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
+	SDL_GPUShader* vs = (SDL_GPUShader*)vertex_shader;
+	SDL_GPUShader* fs = (SDL_GPUShader*)fragment_shader;
+
+	SDL_GPUGraphicsPipelineCreateInfo ci = { 0 };
+	/* pos FLOAT3 + normal FLOAT3 + uv FLOAT2 */
+	SDL_GPUVertexAttribute attributes[3];
+	attributes[0].location = 0;
+	attributes[0].buffer_slot = 0;
+	attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+	attributes[0].offset = 0;
+	attributes[1].location = 1;
+	attributes[1].buffer_slot = 0;
+	attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+	attributes[1].offset = sizeof(float) * 3;
+	attributes[2].location = 2;
+	attributes[2].buffer_slot = 0;
+	attributes[2].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+	attributes[2].offset = sizeof(float) * 6;
+
+	ci.vertex_input_state.vertex_attributes = attributes;
+	ci.vertex_input_state.num_vertex_attributes = 3;
+
+	SDL_GPUVertexBufferDescription buffer_desc = { 0 };
+	buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+	buffer_desc.instance_step_rate = 0;
+	buffer_desc.slot = 0;
+	buffer_desc.pitch = sizeof(float) * 8;
 
 	ci.vertex_input_state.num_vertex_buffers = 1;
 	ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
@@ -330,6 +416,45 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	r->fovy   = 45.0f;
 	r->near_  = 0.1f;
 	r->far_   = 100.0f;
+
+	/* 光照管线(可选): 若存在 lighting.vert.spv / lighting.frag.spv 则自动启用 */
+	{
+		size_t lplen = dirlen + 24;
+		char* lvert_path = (char*)SDL_malloc(lplen);
+		char* lfrag_path = (char*)SDL_malloc(lplen);
+		if (lvert_path && lfrag_path) {
+			snprintf(lvert_path, lplen, "%s%slighting.vert.spv", shader_dir, sep);
+			snprintf(lfrag_path, lplen, "%s%slighting.frag.spv", shader_dir, sep);
+			r->lvs = (SDL_GPUShader*)r3d_load_shader(r->dev, lvert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+			r->lfs = (SDL_GPUShader*)r3d_load_shader(r->dev, lfrag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
+			if (r->lvs && r->lfs) {
+				r->lighting_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_lighting_pipeline(r->dev,
+					r->lvs, r->lfs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
+			}
+		}
+		SDL_free(lvert_path); SDL_free(lfrag_path);
+	}
+
+	/* 默认光照: 环境光 + 一个方向光 */
+	memset(&r->light_block, 0, sizeof(r->light_block));
+	r->light_block.ambient[0] = 0.15f;
+	r->light_block.ambient[1] = 0.15f;
+	r->light_block.ambient[2] = 0.15f;
+	r->light_block.ambient[3] = 1.0f;
+	r->light_block.lights[0].enabled = 1;
+	r->light_block.lights[0].type = JR3D_LIGHT_DIRECTIONAL;
+	r->light_block.lights[0].position[0] = 30.0f;
+	r->light_block.lights[0].position[1] = 25.0f;
+	r->light_block.lights[0].position[2] = 30.0f;
+	r->light_block.lights[0].target[0] = 0.0f;
+	r->light_block.lights[0].target[1] = -1.0f;
+	r->light_block.lights[0].target[2] = 0.0f;
+	r->light_block.lights[0].color[0] = 1.0f;
+	r->light_block.lights[0].color[1] = 0.95f;
+	r->light_block.lights[0].color[2] = 0.8f;
+	r->light_block.lights[0].color[3] = 1.0f;
+	r->light_block_valid = true;
+
 	return r;
 }
 
@@ -345,8 +470,11 @@ void r3d_destroy(jr3d_p r)
 	if (r->depth)    SDL_ReleaseGPUTexture(r->dev, r->depth);
 	if (r->sampler)  SDL_ReleaseGPUSampler(r->dev, r->sampler);
 	if (r->pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->pipeline);
+	if (r->lighting_pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->lighting_pipeline);
 	if (r->vs)       SDL_ReleaseGPUShader(r->dev, r->vs);
 	if (r->fs)       SDL_ReleaseGPUShader(r->dev, r->fs);
+	if (r->lvs)      SDL_ReleaseGPUShader(r->dev, r->lvs);
+	if (r->lfs)      SDL_ReleaseGPUShader(r->dev, r->lfs);
 	if (r->dev) {
 		SDL_ReleaseWindowFromGPUDevice(r->dev, r->win);
 		SDL_DestroyGPUDevice(r->dev);
@@ -420,6 +548,12 @@ void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fov
 	view = mat44_lookAt(eye, target, up);
 	proj = mat44_perspective(ft_radians(r->fovy), r->aspect, r->near_, r->far_);
 	r->viewProj = mat44_mul(view, proj);
+	if (r->light_block_valid) {
+		r->light_block.viewPos[0] = eye.x;
+		r->light_block.viewPos[1] = eye.y;
+		r->light_block.viewPos[2] = eye.z;
+		r->light_block.viewPos[3] = 1.0f;
+	}
 }
 
 void r3d_camera_fps(jr3d_p r, vec3_t pos, float yaw, float pitch, float fovy)
@@ -611,11 +745,181 @@ render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
 	return m;
 }
 
+/* ---- 光照网格（pos FLOAT3 + normal FLOAT3 + uv FLOAT2, 8 float/顶点, 无索引） ---- */
+
+render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
+{
+	float hw = w * 0.5f, hh = h * 0.5f, hd = d * 0.5f;
+	float verts[36 * 8];
+	render_mesh_p m;
+	int vi = 0;
+#define LIT_V(PX,PY,PZ,NX,NY,NZ,U,V) do { \
+		verts[vi++]=(PX); verts[vi++]=(PY); verts[vi++]=(PZ); \
+		verts[vi++]=(NX); verts[vi++]=(NY); verts[vi++]=(NZ); \
+		verts[vi++]=(U);  verts[vi++]=(V); \
+	} while (0)
+	/* +Z */ LIT_V(-hw,-hh, hd,0,0, 1,0,0); LIT_V( hw,-hh, hd,0,0, 1,1,0); LIT_V( hw, hh, hd,0,0, 1,1,1);
+	         LIT_V( hw, hh, hd,0,0, 1,1,1); LIT_V(-hw, hh, hd,0,0, 1,0,1); LIT_V(-hw,-hh, hd,0,0, 1,0,0);
+	/* -Z */ LIT_V( hw,-hh,-hd,0,0,-1,0,0); LIT_V(-hw,-hh,-hd,0,0,-1,1,0); LIT_V(-hw, hh,-hd,0,0,-1,1,1);
+	         LIT_V(-hw, hh,-hd,0,0,-1,1,1); LIT_V( hw, hh,-hd,0,0,-1,0,1); LIT_V( hw,-hh,-hd,0,0,-1,0,0);
+	/* +X */ LIT_V( hw,-hh, hd,1,0,0,0,0); LIT_V( hw,-hh,-hd,1,0,0,1,0); LIT_V( hw, hh,-hd,1,0,0,1,1);
+	         LIT_V( hw, hh,-hd,1,0,0,1,1); LIT_V( hw, hh, hd,1,0,0,0,1); LIT_V( hw,-hh, hd,1,0,0,0,0);
+	/* -X */ LIT_V(-hw,-hh,-hd,-1,0,0,0,0); LIT_V(-hw,-hh, hd,-1,0,0,1,0); LIT_V(-hw, hh, hd,-1,0,0,1,1);
+	         LIT_V(-hw, hh, hd,-1,0,0,1,1); LIT_V(-hw, hh,-hd,-1,0,0,0,1); LIT_V(-hw,-hh,-hd,-1,0,0,0,0);
+	/* +Y */ LIT_V(-hw, hh, hd,0,1,0,0,0); LIT_V( hw, hh, hd,0,1,0,1,0); LIT_V( hw, hh,-hd,0,1,0,1,1);
+	         LIT_V( hw, hh,-hd,0,1,0,1,1); LIT_V(-hw, hh,-hd,0,1,0,0,1); LIT_V(-hw, hh, hd,0,1,0,0,0);
+	/* -Y */ LIT_V(-hw,-hh,-hd,0,-1,0,0,0); LIT_V( hw,-hh,-hd,0,-1,0,1,0); LIT_V( hw,-hh, hd,0,-1,0,1,1);
+	         LIT_V( hw,-hh, hd,0,-1,0,1,1); LIT_V(-hw,-hh, hd,0,-1,0,0,1); LIT_V(-hw,-hh,-hd,0,-1,0,0,0);
+#undef LIT_V
+	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) return NULL;
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = 36;
+	return m;
+}
+
 void r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 {
 	if (!r || !m) return;
 	if (m->buffer) SDL_ReleaseGPUBuffer(r->dev, m->buffer);
 	SDL_free(m);
+}
+
+render_mesh_p r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks)
+{
+	int stack, slice, vcount, vi;
+	float* verts;
+	render_mesh_p m;
+	if (slices < 3) slices = 3;
+	if (stacks < 2) stacks = 2;
+	vcount = slices * stacks * 6;
+	verts = (float*)SDL_malloc((size_t)vcount * 8 * sizeof(float));
+	if (!verts) return NULL;
+	vi = 0;
+	for (stack = 0; stack < stacks; stack++) {
+		float phi0 = (float)M_PI * (float)stack / (float)stacks;
+		float phi1 = (float)M_PI * (float)(stack + 1) / (float)stacks;
+		for (slice = 0; slice < slices; slice++) {
+			float th0 = 2.0f * (float)M_PI * (float)slice / (float)slices;
+			float th1 = 2.0f * (float)M_PI * (float)(slice + 1) / (float)slices;
+			/* 四角点: a0(phi0,th0) a1(phi0,th1) b0(phi1,th0) b1(phi1,th1) */
+			float ca0[3] = { sinf(phi0)*cosf(th0), cosf(phi0), sinf(phi0)*sinf(th0) };
+			float ca1[3] = { sinf(phi0)*cosf(th1), cosf(phi0), sinf(phi0)*sinf(th1) };
+			float cb0[3] = { sinf(phi1)*cosf(th0), cosf(phi1), sinf(phi1)*sinf(th0) };
+			float cb1[3] = { sinf(phi1)*cosf(th1), cosf(phi1), sinf(phi1)*sinf(th1) };
+			int i;
+			float* tri[6];
+			float u0 = (float)slice / (float)slices, u1 = (float)(slice + 1) / (float)slices;
+			float v0 = (float)stack / (float)stacks, v1 = (float)(stack + 1) / (float)stacks;
+			tri[0] = ca0; tri[1] = cb0; tri[2] = ca1;
+			tri[3] = ca1; tri[4] = cb0; tri[5] = cb1;
+			for (i = 0; i < 6; i++) {
+				float u = (i == 0 || i == 2 || i == 3) ? u0 : u1;
+				float v = (i == 0 || i == 1) ? v0 : v1;
+				verts[vi++] = tri[i][0] * radius;
+				verts[vi++] = tri[i][1] * radius;
+				verts[vi++] = tri[i][2] * radius;
+				verts[vi++] = tri[i][0];
+				verts[vi++] = tri[i][1];
+				verts[vi++] = tri[i][2];
+				verts[vi++] = u;
+				verts[vi++] = v;
+			}
+		}
+	}
+	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) { SDL_free(verts); return NULL; }
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
+	SDL_free(verts);
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = vcount;
+	return m;
+}
+
+render_mesh_p r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
+{
+	int x, z, vcount, vi;
+	float* verts;
+	render_mesh_p m;
+	if (segs < 1) segs = 1;
+	vcount = segs * segs * 6;
+	verts = (float*)SDL_malloc((size_t)vcount * 8 * sizeof(float));
+	if (!verts) return NULL;
+	vi = 0;
+	for (z = 0; z < segs; z++) {
+		for (x = 0; x < segs; x++) {
+			float x0 = (float)x / (float)segs * w - w * 0.5f;
+			float x1 = (float)(x + 1) / (float)segs * w - w * 0.5f;
+			float z0 = (float)z / (float)segs * d - d * 0.5f;
+			float z1 = (float)(z + 1) / (float)segs * d - d * 0.5f;
+			float u0 = (float)x / (float)segs, u1 = (float)(x + 1) / (float)segs;
+			float v0 = (float)z / (float)segs, v1 = (float)(z + 1) / (float)segs;
+			/* 两个三角形 */
+			verts[vi++]=x0; verts[vi++]=0; verts[vi++]=z0; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u0; verts[vi++]=v0;
+			verts[vi++]=x1; verts[vi++]=0; verts[vi++]=z0; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u1; verts[vi++]=v0;
+			verts[vi++]=x0; verts[vi++]=0; verts[vi++]=z1; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u0; verts[vi++]=v1;
+			verts[vi++]=x0; verts[vi++]=0; verts[vi++]=z1; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u0; verts[vi++]=v1;
+			verts[vi++]=x1; verts[vi++]=0; verts[vi++]=z0; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u1; verts[vi++]=v0;
+			verts[vi++]=x1; verts[vi++]=0; verts[vi++]=z1; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u1; verts[vi++]=v1;
+		}
+	}
+	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) { SDL_free(verts); return NULL; }
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
+	SDL_free(verts);
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = vcount;
+	return m;
+}
+
+render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
+{
+	/* 三角棱柱斜坡: 底在 y=0, 沿 +Z 从 0 升到 h */
+	float L = sqrtf(l * l + h * h);
+	float sn = h / L, cn = l / L;   /* 坡面法线 (0, sn, -cn) */
+	float verts[30 * 8];   /* 5 面 × 6 顶点 = 30 顶点, 每顶点 8 float */
+	render_mesh_p m;
+	int vi = 0;
+	/* A(0,0,0) B(w,0,0) C(w,h,l) D(0,h,l) E(0,0,l) F(w,0,l) */
+#define RV(PX,PY,PZ,NX,NY,NZ,U,V) do { \
+		verts[vi++]=(PX); verts[vi++]=(PY); verts[vi++]=(PZ); \
+		verts[vi++]=(NX); verts[vi++]=(NY); verts[vi++]=(NZ); \
+		verts[vi++]=(U);  verts[vi++]=(V); \
+	} while (0)
+	/* 底面 (0,-1,0) */
+	RV(0,0,0, 0,-1,0, 0,0); RV(w,0,0, 0,-1,0, 1,0); RV(w,0,l, 0,-1,0, 1,1);
+	RV(w,0,l, 0,-1,0, 1,1); RV(0,0,l, 0,-1,0, 0,1); RV(0,0,0, 0,-1,0, 0,0);
+	/* 坡面 (0, sn, -cn) */
+	RV(0,0,0, 0, sn,-cn, 0,0); RV(w,0,0, 0, sn,-cn, 1,0); RV(w,h,l, 0, sn,-cn, 1,1);
+	RV(w,h,l, 0, sn,-cn, 1,1); RV(0,h,l, 0, sn,-cn, 0,1); RV(0,0,0, 0, sn,-cn, 0,0);
+	/* 背面 z=l (0,0,1) */
+	RV(0,0,l, 0,0, 1, 0,0); RV(w,0,l, 0,0, 1, 1,0); RV(w,h,l, 0,0, 1, 1,1);
+	RV(w,h,l, 0,0, 1, 1,1); RV(0,h,l, 0,0, 1, 0,1); RV(0,0,l, 0,0, 1, 0,0);
+	/* 左面 x=0 (-1,0,0) */
+	RV(0,0,0,-1,0,0, 0,0); RV(0,0,l,-1,0,0, 1,0); RV(0,h,l,-1,0,0, 1,1);
+	RV(0,h,l,-1,0,0, 1,1); RV(0,0,l,-1,0,0, 0,1); RV(0,0,0,-1,0,0, 0,0);
+	/* 右面 x=w (1,0,0) */
+	RV(w,0,0, 1,0,0, 0,0); RV(w,h,l, 1,0,0, 1,1); RV(w,0,l, 1,0,0, 1,0);
+	RV(w,h,l, 1,0,0, 1,1); RV(w,0,0, 1,0,0, 0,0); RV(w,0,l, 1,0,0, 0,0);
+#undef RV
+	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) return NULL;
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = 30;
+	return m;
+}
+
+render_mesh_p r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
+{
+	render_mesh_p m;
+	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) return NULL;
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 8 * sizeof(float));
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = vertex_count;
+	return m;
 }
 
 /* ---- 内部：用 model 矩阵和纹理绘制一个网格 ---- */
@@ -665,6 +969,50 @@ void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
 	model.m15 = 1;
 	draw_mesh_internal(r, m, &model, (SDL_GPUTexture*)tex);
+}
+
+/* ---- 光照绘制（需在 r3d_begin/r3d_end 之间调用） ---- */
+
+void r3d_set_light_block(jr3d_p r, const jr3d_light_block_t* block)
+{
+	if (!r || !block) return;
+	r->light_block = *block;
+	r->light_block_valid = true;
+}
+
+void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* tex)
+{
+	render_mvp_t mvp;
+	SDL_GPUTextureSamplerBinding samp;
+	SDL_GPUBufferBinding bind;
+	if (!r || !r->rp || !r->lighting_pipeline || !r->light_block_valid || !m || !m->buffer) return;
+
+	memset(&mvp, 0, sizeof(mvp));
+	r3d_mat44_to_float16(&r->viewProj, mvp.viewProj);
+	r3d_mat44_to_float16(model, mvp.model);
+	SDL_PushGPUVertexUniformData(r->cmd, 0, &mvp, sizeof(mvp));
+	SDL_PushGPUFragmentUniformData(r->cmd, 0, &r->light_block, sizeof(r->light_block));
+
+	SDL_BindGPUGraphicsPipeline(r->rp, r->lighting_pipeline);
+
+	if (tex) {
+		memset(&samp, 0, sizeof(samp));
+		samp.texture = (SDL_GPUTexture*)tex; samp.sampler = r->sampler;
+		SDL_BindGPUFragmentSamplers(r->rp, 0, &samp, 1);
+	}
+
+	memset(&bind, 0, sizeof(bind));
+	bind.buffer = m->buffer; bind.offset = 0;
+	SDL_BindGPUVertexBuffers(r->rp, 0, &bind, 1);
+	SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
+}
+
+void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
+{
+	SDL_GPUTexture* tex;
+	if (!r) return;
+	tex = get_color_texture(r, color.r, color.g, color.b);
+	r3d_draw_mesh_lit(r, m, model, tex);
 }
 
 /* ---- 棋盘格纹理 ---- */
