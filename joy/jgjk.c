@@ -142,8 +142,27 @@ static vec3f_t get_support_point(gjk3df_collider_p ca, gjk3df_collider_p cb, vec
 
 /* ============ GJK核心 ============ */
 
+/* 相对方向判断: 点积显著为正(余弦 > 1e-4)才视为同向,
+   避免对称退化位形下符号在噪声中翻转导致分支路径依赖 */
 static bool same_direction(vec3f_t dir, vec3f_t ao) {
-	return vec3f_dot(dir, ao) > fp_zero();
+	fp_t dot = vec3f_dot(dir, ao);
+	if (dot <= fp_zero()) return false;
+	/* (dot / (|dir||ao|))^2 > eps^2, 避免 sqrt */
+	fp_t eps2 = fp_from_float(1e-8f);
+	fp_t len2 = fp_mul(vec3f_square_length(dir), vec3f_square_length(ao));
+	return fp_mul(dot, dot) > fp_mul(eps2, len2);
+}
+
+/* 安全叉积归一化: 三点近共线(叉积退化)时返回 false */
+static bool safe_cross_normalize(vec3f_t a, vec3f_t b, vec3f_t *out) {
+	fp_t ab2 = fp_mul(vec3f_square_length(a), vec3f_square_length(b));
+	if (ab2 == fp_zero()) return false;
+	vec3f_t n = vec3f_cross(a, b);
+	fp_t len2 = vec3f_square_length(n);
+	fp_t eps2 = fp_from_float(1e-8f);
+	if (len2 <= fp_mul(ab2, eps2)) return false;
+	*out = vec3f_normalize(n);
+	return true;
 }
 
 static bool gjk_line(simplex3d_t *s, vec3f_t *dir) {
@@ -164,7 +183,12 @@ static bool gjk_triangle(simplex3d_t *s, vec3f_t *dir) {
 	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
 	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
 	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
-	vec3f_t abc = vec3f_normalize(vec3f_cross(ab, ac));
+	vec3f_t abc;
+	if (!safe_cross_normalize(ab, ac, &abc)) {
+		/* 三点近共线(退化三角形): 退化为线段处理 */
+		simplex_init2(s, a, b);
+		return gjk_line(s, dir);
+	}
 
 	if (same_direction(vec3f_cross(abc, ac), ao)) {
 		if (same_direction(ac, ao)) {
@@ -196,13 +220,15 @@ static bool gjk_tetrahedron(simplex3d_t *s, vec3f_t *dir) {
 	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
 	vec3f_t ad = vec3f_normalize(vec3f_sub(d, a));
 	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
-	vec3f_t abc = vec3f_normalize(vec3f_cross(ab, ac));
-	vec3f_t acd = vec3f_normalize(vec3f_cross(ac, ad));
-	vec3f_t adb = vec3f_normalize(vec3f_cross(ad, ab));
+	vec3f_t abc, acd, adb;
+	/* 各面退化(近共线)时跳过该分支, 避免法线为噪声方向 */
+	bool has_abc = safe_cross_normalize(ab, ac, &abc);
+	bool has_acd = safe_cross_normalize(ac, ad, &acd);
+	bool has_adb = safe_cross_normalize(ad, ab, &adb);
 
-	if (same_direction(abc, ao)) { simplex_init3(s, a, b, c); return gjk_triangle(s, dir); }
-	if (same_direction(acd, ao)) { simplex_init3(s, a, c, d); return gjk_triangle(s, dir); }
-	if (same_direction(adb, ao)) { simplex_init3(s, a, d, b); return gjk_triangle(s, dir); }
+	if (has_abc && same_direction(abc, ao)) { simplex_init3(s, a, b, c); return gjk_triangle(s, dir); }
+	if (has_acd && same_direction(acd, ao)) { simplex_init3(s, a, c, d); return gjk_triangle(s, dir); }
+	if (has_adb && same_direction(adb, ao)) { simplex_init3(s, a, d, b); return gjk_triangle(s, dir); }
 	return true;
 }
 
@@ -230,7 +256,16 @@ static void get_face_normals(kvec_t(vec3f_t) *polytope, kvec_t(size_t) *faces,
 
 		vec3f_t ba = vec3f_normalize(vec3f_sub(b, a));
 		vec3f_t ca = vec3f_normalize(vec3f_sub(c, a));
-		vec3f_t n = vec3f_normalize(vec3f_cross(ba, ca));
+		vec3f_t n;
+		if (!safe_cross_normalize(ba, ca, &n)) {
+			/* 退化面(三点近共线): 法线退化为噪声方向, 跳过该面,
+			   将其距离置为最大避免被选为最近面 */
+			epa_face_t face;
+			face.normal = (vec3f_t){ fp_one(), fp_zero(), fp_zero() };
+			face.distance = fp_max_value();
+			kv_push(epa_face_t, *normals, face);
+			continue;
+		}
 
 		fp_t dist = vec3f_dot(n, a);
 		if (dist < fp_zero()) { n = vec3f_negate(n); dist = -dist; }
@@ -378,6 +413,38 @@ static bool epa(simplex3d_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb
 		}
 	}
 
+	/* EPA后处理: 用一组候选方向重新验证穿透深度, 取最小值,
+	   纠正EPA因退化/局部最优收敛到错误支撑面的情况 */
+	{
+		vec3f_t candidates[8];
+		int n = 0;
+		vec3f_t axis[3] = {
+			{ fp_one(), fp_zero(), fp_zero() },
+			{ fp_zero(), fp_one(), fp_zero() },
+			{ fp_zero(), fp_zero(), fp_one() }
+		};
+		for (int i = 0; i < 3; i++) {
+			candidates[n++] = axis[i];
+			candidates[n++] = vec3f_negate(axis[i]);
+		}
+		/* 两物体中心连线方向 */
+		vec3f_t delta = vec3f_sub(cb->position, ca->position);
+		fp_t dl = vec3f_length(delta);
+		if (dl > fp_zero()) {
+			candidates[n++] = vec3f_scale(delta, fp_div(fp_one(), dl));
+			candidates[n++] = vec3f_scale(vec3f_negate(delta), fp_div(fp_one(), dl));
+		}
+
+		for (int i = 0; i < n; i++) {
+			vec3f_t support = get_support_point(ca, cb, candidates[i]);
+			fp_t d = vec3f_dot(candidates[i], support);
+			if (d > fp_zero() && d < min_distance) {
+				min_distance = d;
+				min_normal = candidates[i];
+			}
+		}
+	}
+
 	contact->normal = min_normal;
 	contact->depth = fp_add(min_distance, fp_from_float(0.001f));
 
@@ -385,6 +452,33 @@ static bool epa(simplex3d_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb
 	kv_destroy(faces);
 	kv_destroy(normals);
 
+	return true;
+}
+
+/* ============ 退化兜底 ============ */
+
+/* 当 GJK 因对称/共线退化无法构建四面体(如同心球、共线单纯形)时,
+   用 ±3轴方向采样穿透距离: 任一方向分离(支持点投影 <= 0)则判定无碰撞,
+   否则取最小穿透距离作为深度(法线为该轴方向) */
+static bool degenerate_fallback(gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
+	vec3f_t axes[6] = {
+		{  fp_one(), fp_zero(), fp_zero() },
+		{ -fp_one(), fp_zero(), fp_zero() },
+		{  fp_zero(),  fp_one(), fp_zero() },
+		{  fp_zero(), -fp_one(), fp_zero() },
+		{  fp_zero(), fp_zero(),  fp_one() },
+		{  fp_zero(), fp_zero(), -fp_one() }
+	};
+	fp_t min_d = fp_max_value();
+	vec3f_t min_n = { fp_zero(), fp_zero(), fp_zero() };
+	for (int i = 0; i < 6; i++) {
+		vec3f_t s = get_support_point(ca, cb, axes[i]);
+		fp_t d = vec3f_dot(axes[i], s);
+		if (d <= fp_zero()) return false; /* 该方向分离 */
+		if (d < min_d) { min_d = d; min_n = axes[i]; }
+	}
+	contact->normal = min_n;
+	contact->depth = fp_add(min_d, fp_from_float(0.001f));
 	return true;
 }
 
@@ -399,9 +493,14 @@ bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 	simplex_push(&simplex, support);
 	vec3f_t dir = vec3f_normalize(vec3f_negate(support));
 
+	fp_t tiny2 = fp_from_float(1e-8f);
 	int gjk_iter = 0;
 	while (gjk_iter < 128) {
 		gjk_iter++;
+		/* 方向退化(零向量): 无法继续推进, 进入退化兜底 */
+		if (vec3f_square_length(dir) <= tiny2) {
+			return degenerate_fallback(c1, c2, contact);
+		}
 		support = get_support_point(c1, c2, dir);
 		if (vec3f_dot(support, dir) < fp_zero()) {
 			/* 无碰撞 */
@@ -410,6 +509,14 @@ bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 			contact->normal.z = fp_zero();
 			contact->depth = fp_zero();
 			return false;
+		}
+		/* 支持点与已有点重合(不再推进): 对称退化, 兜底判定 */
+		{
+			bool dup = false;
+			for (int i = 0; i < simplex.points_num; i++) {
+				if (vec3f_square_length(vec3f_sub(support, simplex.points[i])) <= tiny2) { dup = true; break; }
+			}
+			if (dup) return degenerate_fallback(c1, c2, contact);
 		}
 		simplex_push(&simplex, support);
 		if (next_simplex(&simplex, &dir)) {
