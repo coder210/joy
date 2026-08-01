@@ -23,9 +23,9 @@ static void handle_cmd_loading(Context* ctx, int conv)
         comp.frameid = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
 }
 
-static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y)
+static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y, int64_t z)
 {
-        S2CPlayerJoin j = { conv, x, y };
+        S2CPlayerJoin j = { conv, x, y, z };
         ctx->player_joins.push_back(j);
 }
 
@@ -35,10 +35,10 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
         ctx->player_leaves.push_back(l);
 }
 
-static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack)
+static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack, int16_t yaw)
 {
-        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d", conv, dir, attack);
-        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack };
+        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d yaw=%d", conv, dir, attack, yaw);
+        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack, yaw };
         ctx->player_inputs.push_back(i);
 }
 
@@ -78,13 +78,13 @@ static void network_receive(Context* ctx)
                         ctx->player_leaves.push_back(l);
                 }
                 else if (msg.type == NET_TYPE_MESSAGE) {
-                        int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
-                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
+                        int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0, join_z = 0; int16_t input_yaw = 0;
+                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &join_z, &input_dir, &input_attack, &input_yaw)) {
                                 switch (cmd) {
                                 case CMD_LOADING:       handle_cmd_loading(ctx, msg.conv); break;
-                                case CMD_PLAYER_JOIN:   handle_cmd_player_join(ctx, msg.conv, join_x, join_y); break;
+                                case CMD_PLAYER_JOIN:   handle_cmd_player_join(ctx, msg.conv, join_x, join_y, join_z); break;
                                 case CMD_PLAYER_LEAVE:  handle_cmd_player_leave(ctx, msg.conv); break;
-                                case CMD_PLAYER_INPUT:  handle_cmd_player_input(ctx, msg.conv, 0, input_dir, input_attack); break;
+                                case CMD_PLAYER_INPUT:  handle_cmd_player_input(ctx, msg.conv, 0, input_dir, input_attack, input_yaw); break;
                                 case CMD_PLAYER_HEART:  handle_cmd_heartbeat(ctx, msg.conv); break;
                                 }
                         }
@@ -123,21 +123,22 @@ static void collect_input(Context* ctx)
         for (auto& inp : ctx->player_inputs)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
-        std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
+        std::vector<std::pair<int, std::tuple<fp_t, fp_t, fp_t>>> player_positions;
         auto pos_view = ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
         for (auto e : pos_view) {
                 auto& idc = pos_view.get<IdComponent>(e);
                 auto& lpc = pos_view.get<LogicPositionComponent>(e);
-                player_positions.push_back({ idc.id, { lpc.x, lpc.y } });
+                player_positions.push_back({ idc.id, { lpc.x, lpc.y, lpc.z } });
         }
         std::sort(player_positions.begin(), player_positions.end());
 
         std::string checksum_input;
         for (auto& player : player_positions) {
-                char buf[64];
-                int n = snprintf(buf, sizeof(buf), "%d:%lld:%lld,",
-                        player.first, (long long)player.second.first,
-                        (long long)player.second.second);
+                char buf[96];
+                int n = snprintf(buf, sizeof(buf), "%d:%lld:%lld:%lld,",
+                        player.first, (long long)std::get<0>(player.second),
+                        (long long)std::get<1>(player.second),
+                        (long long)std::get<2>(player.second));
                 checksum_input.append(buf, n);
         }
         char checksum[64] = { 0 };

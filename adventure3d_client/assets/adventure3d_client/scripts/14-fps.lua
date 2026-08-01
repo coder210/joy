@@ -1,4 +1,4 @@
--- 3D FPS Demo（移植自 main8.cpp）
+﻿-- 3D FPS Demo（移植自 main8.cpp）
 local PIXELS_PER_METER = 100
 
 local r3d, win

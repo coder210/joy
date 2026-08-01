@@ -1,4 +1,4 @@
--- 2D Ray vs Rectangle collision detection demo
+﻿-- 2D Ray vs Rectangle collision detection demo
 local PIXELS_PER_METER = 100
 local rect = { x = joy.fp.from_float(2), y = joy.fp.from_float(2),
                w = joy.fp.from_float(2), h = joy.fp.from_float(2) }

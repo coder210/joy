@@ -33,8 +33,13 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                 ent.hp = 0;
                 ent.position_x = pos.x;
                 ent.position_y = pos.y;
+                ent.position_z = pos.z;
                 ent.width = rect.width;
                 ent.height = rect.height;
+                if (registry.all_of<ActionStateComponent>(e)) {
+                        float yaw = registry.get<ActionStateComponent>(e).yaw;
+                        ent.yaw_quantized = (int16_t)(yaw / 3.14159265f * 32767.0f);
+                }
         }
 
         auto& gs = ctx->ecs.ctx().get<GlobalState>();

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="torch_red" tilewidth="192" tileheight="192" tilecount="35" columns="7">
  <image source="textures/goblins/troops/torch/torch_red.png" width="1344" height="960"/>
  <tile id="0">

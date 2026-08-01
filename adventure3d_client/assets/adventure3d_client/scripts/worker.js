@@ -1,4 +1,4 @@
-// Worker script: uses joy lifecycle (similar to main thread)
+﻿// Worker script: uses joy lifecycle (similar to main thread)
 // Enters infinite loop, continuously calling joy.update()
 
 joy.load = function()

@@ -1,13 +1,13 @@
-#ifndef CLIENT_NETWORK_UTILS_H
+﻿#ifndef CLIENT_NETWORK_UTILS_H
 #define CLIENT_NETWORK_UTILS_H
 
 #include <string>
 #include <vector>
 #include "../context.h"
-#include "../../adventure_shared/protocol.h"
-#include "../../adventure_shared/components/global_state_component.h"
-#include "../../adventure_shared/components/ai_component.h"
-#include "../../adventure_shared/systems/spawn_def.h"
+#include "../../adventure3d_shared/protocol.h"
+#include "../../adventure3d_shared/components/global_state_component.h"
+#include "../../adventure3d_shared/components/ai_component.h"
+#include "../../adventure3d_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
 static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const S2CEntity* entities, int ec)
@@ -24,17 +24,18 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 auto e = ctx->ecs.create();
                 ctx->ecs.emplace<IdComponent>(e, entity.id);
                 ctx->ecs.emplace<LogicRectComponent>(e, entity.width, entity.height);
-                ctx->ecs.emplace<LogicPositionComponent>(e, entity.position_x, entity.position_y);
-                ctx->ecs.emplace<TransformComponent>(e, fp_to_float(entity.position_x),
-                                                   fp_to_float(entity.position_y), 0.0f, 1.0f, 1.0f);
+                ctx->ecs.emplace<LogicPositionComponent>(e, entity.position_x, entity.position_y, entity.position_z);
+                ctx->ecs.emplace<TransformComponent>(e,
+                    vec3_t{ fp_to_float(entity.position_x), fp_to_float(entity.position_y), fp_to_float(entity.position_z) },
+                    (float)entity.yaw_quantized / 32767.0f * 3.14159265f,
+                    vec3_t{ 1.0f, 1.0f, 1.0f });
                 if (entity.type == S2C_TYPE_PLAYER) {
-                        ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
+                        ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
-                        // 挂载动画组件(如果 WarriorBlueAnimDefComponent 已注册)
+                        ctx->ecs.emplace<ActionStateComponent>(e);
                         if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
-                            ctx->ecs.emplace<ActionStateComponent>(e);
                         }
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
@@ -50,7 +51,7 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {
                             auto& sd = ENEMY_SPAWNS[si];
                             ctx->ecs.emplace<AIComponent>(e,
-                                fp_from_float(sd.x), fp_from_float(sd.y),
+                                fp_from_float(sd.x), fp_from_float(sd.z),
                                 fp_from_float(sd.patrol_radius),
                                 fp_from_float(sd.detect_radius),
                                 fp_from_float(sd.attack_radius));
@@ -64,12 +65,12 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
         for (auto e : pv) {
                 auto& id = pv.get<IdComponent>(e);
                 auto& pos = pv.get<LogicPositionComponent>(e);
-                snapshots.insert({ id.id, { pos.x, pos.y } });
+                snapshots.insert({ id.id, { pos.x, pos.y, pos.z } });
         }
-        ctx->snapshots.insert({ ctx->server_frameid, snapshots });
+        ctx->snapshots.emplace(ctx->server_frameid, std::move(snapshots));
 
         // 告知服务器本地玩家加入
-        std::string data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0, 0);
+        std::string data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(0.0f), fp_from_float(2.3f), 0, 0, 0);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
 }
 
@@ -80,8 +81,9 @@ static void send_input(Context* ctx)
     int dir = ctx->current_input_mask & INPUT_DIR_MASK;
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (ctx->attack_triggered) { attack = 1; ctx->attack_triggered = false; }
+    int16_t yaw = (int16_t)(ctx->local_yaw / 3.14159265f * 32767.0f);
     if (dir || attack) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, dir, attack, yaw);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
     }
 }
@@ -92,7 +94,7 @@ static void network_receive(Context* ctx)
         net_message_t msg;
         if (netclient_poll_message(ctx->netclient, &msg)) {
             if (msg.type == NET_TYPE_CONNECTED) {
-                auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0);
+                auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0, 0, 0);
                 netclient_send(ctx->netclient, d.c_str(), (int)d.size());
             }
             else if (msg.type == NET_TYPE_DISCONNECTED) {

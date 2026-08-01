@@ -1,4 +1,4 @@
-#ifndef GAME_SCENE_H
+﻿#ifndef GAME_SCENE_H
 #define GAME_SCENE_H
 #include <joy/joy.h>
 #include "../context.h"

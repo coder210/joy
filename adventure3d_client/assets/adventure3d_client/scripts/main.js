@@ -1,4 +1,4 @@
-// Demo selector for joy_beat (JS)
+﻿// Demo selector for joy_beat (JS)
 // Usage: joy_beat.exe joy_beat/scripts/XX-name.js
 // Run a specific demo script directly.
 

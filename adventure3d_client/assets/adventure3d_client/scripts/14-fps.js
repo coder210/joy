@@ -1,4 +1,4 @@
-// 3D FPS Demo (ported from main8.cpp)
+﻿// 3D FPS Demo (ported from main8.cpp)
 var r3d, win;
 var cube_mesh, sphere_mesh, floor_mesh;
 var yaw = 0, pitch = 25;

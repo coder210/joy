@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../adventure_shared/*.h" "../adventure_shared/components/*.h" "../adventure_shared/systems/*.h")
+file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../adventure3d_shared/*.h" "../adventure3d_shared/components/*.h" "../adventure3d_shared/systems/*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -49,8 +49,8 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     joy
 )
 
-# 添加 adventure_shared 共享目录
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_shared")
+# 添加 adventure3d_shared 共享目录
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../adventure3d_shared")
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
@@ -88,7 +88,7 @@ elseif(EMSCRIPTEN)
     endforeach()
     message(STATUS "PRELOAD_FLAGS: ${PRELOAD_FLAGS}")
     # Emscripten WebSocket 支持（使用浏览器原生 WebSocket API）
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE 
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE
         ${PRELOAD_FLAGS}
     )
 else()
@@ -137,8 +137,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 )
 if(MSVC)
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-		VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
-	)
+                VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>"
+        )
 endif()
 # Visual Studio 启动项目设置（作用于当前目录）
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${EXECUTABLE_NAME}")

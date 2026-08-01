@@ -3,7 +3,7 @@
 
 // 敌人生成位置和参数（服务端和客户端共享，保证初始条件一致）
 struct SpawnDef {
-    float x, y;           // 位置
+    float x, z;           // 位置（XZ 平面，Y 由地面决定）
     float patrol_radius;  // 巡逻半径
     float detect_radius;  // 检测范围
     float attack_radius;  // 攻击范围

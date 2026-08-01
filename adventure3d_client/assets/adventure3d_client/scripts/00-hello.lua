@@ -1,4 +1,4 @@
-function joy.load()
+﻿function joy.load()
     console.log("hello world")
 end
 

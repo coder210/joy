@@ -22,12 +22,14 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 
 		PlayerStateInput state_input;
 		state_input.move_bits = input.dir;
+		state_input.yaw_quantized = input.yaw_quantized;
 
-		log_info("Raw dir: %d\n", input.dir);
+		log_info("Raw dir: %d yaw: %d\n", input.dir, input.yaw_quantized);
 
 		if (registry.all_of<PlayerStateInput>(player)) {
 			auto& state = registry.get<PlayerStateInput>(player);
 			state.move_bits = state_input.move_bits;
+			state.yaw_quantized = state_input.yaw_quantized;
 		}
 		else {
 			registry.emplace<PlayerStateInput>(player, state_input);

@@ -1,11 +1,9 @@
-#define SDL_MAIN_USE_CALLBACKS 1
+﻿#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
 #include <joy/joy.h>
 #include "context.h"
-#include "asset_manager.h"
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
-#include "layers/menu_layer.h"
 
 
 static scene_manager_p g_mgr;
@@ -25,11 +23,8 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         game_timer_init(&ctx->game_timer);
         game_timer_set_target_fps(&ctx->game_timer, 60);
 
-        AssetManager::Init();
-
         ctx->window = create_window("client", 240, 160);
-        ctx->r2d = r2d_create(ctx->window);
-        r2d_set_logical_presentation(ctx->r2d, 480, 320);
+        ctx->r3d = r3d_create(ctx->window, "adventure3d_client/shaders");
 
         ctx->running = true;
 
@@ -64,19 +59,6 @@ SDL_AppResult SDL_AppEvent(void*, SDL_Event* e)
 			break;
 		}
 	}
-	else if (is_user_event(e, MENU_EVENT)) {
-		switch (get_event_code(e)) {
-		case MENU_EVENT_START:
-			scene_manager_replace(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
-			break;
-		case MENU_EVENT_SETTINGS:
-			log_info("Settings button is clickable (work in progress)");
-			break;
-		case MENU_EVENT_EXIT:
-			push_quit_event();
-			break;
-		}
-	}
 
 	return SDL_APP_CONTINUE;
 }
@@ -86,17 +68,15 @@ SDL_AppResult SDL_AppIterate(void*)
         game_timer_update(&ctx->game_timer);
         float dt = game_timer_get_delta_time(&ctx->game_timer);
         scene_manager_update(g_mgr, dt);
-        r2d_set_color(ctx->r2d, 50, 120, 50, 255);
-        r2d_begin(ctx->r2d);
-        scene_manager_render(g_mgr, ctx->r2d);
-        r2d_end(ctx->r2d);
+        // pure 3D rendering: render3d_system manages r3d_begin/r3d_end internally
+        scene_manager_render(g_mgr, ctx->r3d);
         return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void*, SDL_AppResult)
 {
         scene_manager_destroy(g_mgr);
-        r2d_destroy(ctx->r2d);
+        if (ctx->r3d) r3d_destroy(ctx->r3d);
         destroy_window(ctx->window);
 	delete ctx;
         sys_release_netenv();

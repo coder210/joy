@@ -1,28 +1,23 @@
-#include <map>
+﻿#include <map>
 #include <string>
 #include <algorithm>
 #include <cstdlib>
 #include <joy/joy.h>
 #include "game_scene.h"
-#include "../../adventure_shared/protocol.h"
-#include "../adventure_shared/systems/animator_update_system.h"
+#include "../../adventure3d_shared/protocol.h"
+#include "../adventure3d_shared/systems/animator_update_system.h"
 #include "../factory/animator_def_factory.h"
-#include "../adventure_shared/systems/animator_render_system.h"
-#include "../adventure_shared/systems/interpolate_position_system.h"
-#include "../systems/init_tilemap_system.h"
-#include "../adventure_shared/systems/drawing_entity_system.h"
-#include "../adventure_shared/systems/input_consume_join_system.h"
-#include "../adventure_shared/systems/input_consume_leave_system.h"
-#include "../adventure_shared/systems/input_consume_input_system.h"
-#include "../adventure_shared/systems/movement_system.h"
-#include "../adventure_shared/systems/cleanup_system.h"
-#include "../adventure_shared/systems/collision_system.h"
-#include "../layers/debug_layer.h"
-#include "../layers/gameplay_controls_layer.h"
-#include "../asset_manager.h"
+#include "../adventure3d_shared/systems/interpolate_position_system.h"
+#include "../systems/render3d_system.h"
+#include "../adventure3d_shared/systems/input_consume_join_system.h"
+#include "../adventure3d_shared/systems/input_consume_leave_system.h"
+#include "../adventure3d_shared/systems/input_consume_input_system.h"
+#include "../adventure3d_shared/systems/movement_system.h"
+#include "../adventure3d_shared/systems/cleanup_system.h"
+#include "../adventure3d_shared/systems/collision_system.h"
 #include "../network/network_utils.h"
-#include "../../adventure_shared/systems/camera_follow_system.h"
-#include "../../adventure_shared/systems/ai_system.h"
+#include "../../adventure3d_shared/systems/camera_follow_system.h"
+#include "../../adventure3d_shared/systems/ai_system.h"
 
 // 动画定义现在由 animator_def_factory.h 提供
 
@@ -39,10 +34,6 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         log_info("[game scene] start...");
 
-        debug_layer_p debug_layer = create_debug_layer();
-        gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
-        scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
-        scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
         //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.40", 30000);
         self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
@@ -53,6 +44,11 @@ static void on_load(scene_p s)
         self->ctx->ecs.ctx().emplace<NetComponent>();
         self->ctx->ecs.ctx().emplace<GlobalState>();
 
+        // r3d is created once in SDL_AppInit; only meshes are created here
+        self->ctx->mesh_player = r3d_mesh_cube(self->ctx->r3d, 0.6f, 1.2f, 0.6f);
+        self->ctx->mesh_enemy  = r3d_mesh_cube(self->ctx->r3d, 0.5f, 1.0f, 0.5f);
+        self->ctx->mesh_floor  = r3d_mesh_plane(self->ctx->r3d, 40.0f, 40.0f, 20);
+
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,
                 "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
@@ -60,7 +56,6 @@ static void on_load(scene_p s)
                 "adventure_client/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
-        add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);  
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
@@ -122,38 +117,23 @@ static void client_on_keyreleased(const char* key, int scancode, void* arg)
         if (key_mask) self->ctx->current_input_mask &= ~key_mask;
 }
 
+static void client_on_mousemoved(float x, float y, float /*dx*/, float /*dy*/, void* arg)
+{
+        game_scene_p self = (game_scene_p)arg;
+        // 逻辑分辨率 480x320，中心点 (240, 160)
+        float cx = 240.0f;
+        float cy = 160.0f;
+        self->ctx->local_yaw = atan2f(x - cx, -(y - cy));
+}
+
 static void on_handle_event(scene_p s, const void* ev)
 {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
 
-        // 自定义触屏/UI 事件
-        if (is_user_event(ev, GAMEPLAY_CONTROL_EVENT)) {
-                int new_mask = self->ctx->current_input_mask;
-                switch (get_event_code(ev)) {
-                case GAMEPLAY_CONTROL_UP:    new_mask |= INPUT_UP; break;
-                case GAMEPLAY_CONTROL_DOWN:  new_mask |= INPUT_DOWN; break;
-                case GAMEPLAY_CONTROL_LEFT:  new_mask |= INPUT_LEFT; break;
-                case GAMEPLAY_CONTROL_RIGHT: new_mask |= INPUT_RIGHT; break;
-                case GAMEPLAY_CONTROL_RELEASE_UP:    new_mask &= ~INPUT_UP; break;
-                case GAMEPLAY_CONTROL_RELEASE_DOWN:  new_mask &= ~INPUT_DOWN; break;
-                case GAMEPLAY_CONTROL_RELEASE_LEFT:  new_mask &= ~INPUT_LEFT; break;
-                case GAMEPLAY_CONTROL_RELEASE_RIGHT: new_mask &= ~INPUT_RIGHT; break;
-                case GAMEPLAY_CONTROL_ATTACK:
-                        self->ctx->attack_triggered = true;
-                        break;
-                default:
-                        new_mask &= ~(INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT);
-                        break;
-                }
-                if (new_mask != self->ctx->current_input_mask) {
-                        self->ctx->current_input_mask = new_mask;
-                }
-                return;
-        }
-
         jevent_callbacks_t cbs = {};
         cbs.on_keypressed = client_on_keypressed;
         cbs.on_keyreleased = client_on_keyreleased;
+        cbs.on_mousemoved = client_on_mousemoved;
         dispatch_event(cbs, ev, self);
 }
 
@@ -204,30 +184,7 @@ static void on_update(scene_p s, float dt) {
 
 static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        r2d_set_color(self->ctx->r2d, 50, 120, 50, 255);
-
-        // ---- tilemap 背景 ----
-        if (self->ctx->tilemap && self->ctx->tilemap_render) {
-                auto& cam = self->ctx->ecs.ctx().get<GlobalState>().camera_position;
-                float cam_x_px = cam.x * (float)PIXELS_PER_METER;
-                float cam_y_px = cam.y * (float)PIXELS_PER_METER;
-                jtilemap_render_all(self->ctx->tilemap_render, self->ctx->tilemap, cam_x_px, cam_y_px, get_ticks());
-        }
-
-        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
-        auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
-        for (auto e : draw_view) {
-                auto& rect = draw_view.get<LogicRectComponent>(e);
-                auto& t = draw_view.get<TransformComponent>(e);
-                if (self->ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
-                        auto& anim = self->ctx->ecs.get<anim_t>(e);
-                        auto& act = self->ctx->ecs.get<ActionStateComponent>(e);
-                        animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act, e);
-                } else {
-                        auto& id = draw_view.get<IdComponent>(e);
-                        drawing_entity_system(self->ctx, e, id, rect, t);
-                }
-        }
+        render3d_system(self->ctx, 0.0f);
 }
 
 static void on_destroy(scene_p s) {
@@ -236,13 +193,12 @@ static void on_destroy(scene_p s) {
                 netclient_destroy(self->ctx->netclient);
                 self->ctx->netclient = NULL;
         }
-        AssetManager::GetInstance()->tex_cache_clear();
         audio_shot_destroy(self->ctx->step_sound);
         audio_bgm_destroy(self->ctx->bgm);
         if (self->ctx->audio_dev) audio_close_device(self->ctx->audio_dev);
-        if (self->ctx->tilemap_render)
-                jtilemap_render_destroy(self->ctx->tilemap_render);
-        if (self->ctx->tilemap) jtilemap_destroy(self->ctx->tilemap);
+        if (self->ctx->mesh_floor) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_floor);
+        if (self->ctx->mesh_enemy) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_enemy);
+        if (self->ctx->mesh_player) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_player);
         delete self;
 }
 

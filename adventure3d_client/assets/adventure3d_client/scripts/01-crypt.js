@@ -1,4 +1,4 @@
-// crypt/des — utils JS binding 暂未实现，仅作为演示框架
+﻿// crypt/des — utils JS binding 暂未实现，仅作为演示框架
 joy.load = function()
 {
     console.log("=================================");

@@ -1,4 +1,4 @@
-// 3D Ray vs Quad collision detection demo
+﻿// 3D Ray vs Quad collision detection demo
 var PIXELS_PER_METER = 100;
 var ray_pos, ray_dir;
 var quad = [];

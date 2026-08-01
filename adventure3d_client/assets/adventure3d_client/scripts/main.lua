@@ -1,4 +1,4 @@
--- Demo selector for joy_beat
+﻿-- Demo selector for joy_beat
 -- Usage: set demo_name below to one of the demo filenames (without .lua)
 -- or pass as arg to joy_beat
 

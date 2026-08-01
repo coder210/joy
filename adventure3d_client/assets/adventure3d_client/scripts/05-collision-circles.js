@@ -1,4 +1,4 @@
-// Circle vs Circle collision detection demo
+﻿// Circle vs Circle collision detection demo
 var PIXELS_PER_METER = 100;
 var circle1, circle2;
 var ren;

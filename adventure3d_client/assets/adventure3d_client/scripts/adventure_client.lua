@@ -1,4 +1,4 @@
-local livnet = requirex "livnet"
+﻿local livnet = requirex "livnet"
 
 local SDL_EVENT_KEY_DOWN = 768;
 local SDL_SCANCODE_ESCAPE = 41;

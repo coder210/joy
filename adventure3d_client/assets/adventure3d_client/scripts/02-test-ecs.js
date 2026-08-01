@@ -1,4 +1,4 @@
-// ECS + cjson — JS binding 暂未实现
+﻿// ECS + cjson — JS binding 暂未实现
 var world;
 
 joy.load = function()

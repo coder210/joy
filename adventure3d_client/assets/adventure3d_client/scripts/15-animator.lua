@@ -1,4 +1,4 @@
--- 骑士动画状态机演示 (warrior_blue.png)
+﻿-- 骑士动画状态机演示 (warrior_blue.png)
 -- WASD=移动  Space=攻击  Q=退出
 local win, ren, anim
 

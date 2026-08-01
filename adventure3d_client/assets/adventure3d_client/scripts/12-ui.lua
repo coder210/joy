@@ -1,4 +1,4 @@
-state = state or {}
+﻿state = state or {}
 local win
 
 function joy.load()

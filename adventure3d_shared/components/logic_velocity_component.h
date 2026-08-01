@@ -6,6 +6,7 @@ struct LogicVelocityComponent
 {
         fp_t x;
         fp_t y;
+        fp_t z;
 };
 
 #endif

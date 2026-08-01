@@ -1,4 +1,4 @@
-// Polygon vs Polygon collision detection demo
+﻿// Polygon vs Polygon collision detection demo
 var PIXELS_PER_METER = 100;
 var poly_a, poly_b, poly_c;
 var ren;

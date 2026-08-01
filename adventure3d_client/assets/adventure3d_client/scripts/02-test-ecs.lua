@@ -1,4 +1,4 @@
--- ECS (Entity Component System) demo
+﻿-- ECS (Entity Component System) demo
 local world
 
 function joy.load()

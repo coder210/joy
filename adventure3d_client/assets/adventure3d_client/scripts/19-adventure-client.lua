@@ -1,4 +1,4 @@
--- adventure 游戏客户端
+﻿-- adventure 游戏客户端
 -- 服务端权威移动 + 客户端预测/回滚 + lerp 插值
 local win, ren, font
 local PPM = 50

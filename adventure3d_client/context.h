@@ -8,28 +8,27 @@
 #include <functional>
 #include "entt.hpp"
 #include <joy/joy.h>
-#include "../adventure_shared/protocol.h"
-#include "../adventure_shared/components/action_state_component.h"
-#include "../adventure_shared/components/animator_def.h"
-#include "../adventure_shared/components/animator_component.h"
-#include "../adventure_shared/components/id_component.h"
-#include "../adventure_shared/components/ai_component.h"
-#include "../adventure_shared/components/logic_rect_component.h"
-#include "../adventure_shared/components/logic_position_component.h"
-#include "../adventure_shared/components/logic_velocity_component.h"
-#include "../adventure_shared/components/enemy_component.h"
-#include "../adventure_shared/components/player_state_input.h"
-#include "../adventure_shared/components/player_event_input.h"
-#include "../adventure_shared/components/player_component.h"
-#include "../adventure_shared/components/transform_component.h"
-#include "../adventure_shared/components/attack_ray_effect_component.h"
-#include "../adventure_shared/components/net_component.h"
+#include "../adventure3d_shared/protocol.h"
+#include "../adventure3d_shared/components/action_state_component.h"
+#include "../adventure3d_shared/components/animator_def.h"
+#include "../adventure3d_shared/components/animator_component.h"
+#include "../adventure3d_shared/components/id_component.h"
+#include "../adventure3d_shared/components/ai_component.h"
+#include "../adventure3d_shared/components/logic_rect_component.h"
+#include "../adventure3d_shared/components/logic_position_component.h"
+#include "../adventure3d_shared/components/logic_velocity_component.h"
+#include "../adventure3d_shared/components/enemy_component.h"
+#include "../adventure3d_shared/components/player_state_input.h"
+#include "../adventure3d_shared/components/player_event_input.h"
+#include "../adventure3d_shared/components/player_component.h"
+#include "../adventure3d_shared/components/transform_component.h"
+#include "../adventure3d_shared/components/attack_ray_effect_component.h"
+#include "../adventure3d_shared/components/net_component.h"
 
 
 
-// 状态快照（用于预测回滚）
 struct state_snapshot {
-        fp_t position_x, position_y;
+	int64_t position_x, position_y, position_z;
 };
 
 //struct Session {
@@ -43,18 +42,20 @@ struct Context {
         bool running;
         game_timer_t game_timer;
         jwindow_p window;
-        jr2d_p r2d;
+        jr3d_p r3d = NULL;
+        render_mesh_p mesh_player = NULL;
+        render_mesh_p mesh_enemy = NULL;
+        render_mesh_p mesh_floor = NULL;
         netclient_p netclient;
         entt::registry ecs;
         entt::entity singleton_net = entt::null;
 
-        // ---- tilemap + 音频 ----
-        jtilemap_p          tilemap = NULL;
-        jtilemap_render_p   tilemap_render = NULL;
+        // ---- 音频 ----
         uint32_t            audio_dev = 0;
         audio_shot_p        step_sound = NULL;
         audio_bgm_p         bgm = NULL;
         int local_dir = 0; // 本地玩家方向
+        float local_yaw = 0.0f; // 本地玩家朝向（鼠标）
         // 远程玩家方向追踪
         std::map<entt::entity, int>  remote_dirs;
 

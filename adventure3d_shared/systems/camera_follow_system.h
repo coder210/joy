@@ -7,8 +7,7 @@
 
 struct Context;
 
-// 将摄像机跟随指定玩家，使玩家居中于屏幕
-// 逻辑屏幕 480x320，PPM=50，偏移量 = (480/2/50, 320/2/50) = (4.8, 3.2)
+// 3D 俯视角：摄像机目标跟随玩家，摄像机偏移在 render3d_system 中设置
 static void camera_follow_system(entt::registry& registry, Context* /*ctx*/, float /*dt*/) {
     auto& gs = registry.ctx().get<GlobalState>();
     if (gs.camera_follow_conv < 0) return;
@@ -17,8 +16,9 @@ static void camera_follow_system(entt::registry& registry, Context* /*ctx*/, flo
     for (auto e : view) {
         if (registry.get<PlayerComponent>(e).conv == gs.camera_follow_conv) {
             auto& t = registry.get<TransformComponent>(e);
-            gs.camera_position.x = t.position.x - 4.8f;
-            gs.camera_position.y = t.position.y - 3.2f;
+            gs.camera_target.x = t.position.x;
+            gs.camera_target.y = t.position.y;
+            gs.camera_target.z = t.position.z;
             return;
         }
     }

@@ -1,4 +1,4 @@
-function joy.load()
+﻿function joy.load()
     console.log("=================================")
     local str = joy.utils.des_encrypt("1111111", "liwei")
     console.log(str)

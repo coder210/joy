@@ -9,7 +9,8 @@ struct GlobalState {
     int next_frame_id  = 1;
 
     // 摄像机
-    vec2_t camera_position = { 0.0f, 0.0f };
+    vec3_t camera_position = { 0.0f, 0.0f, 0.0f };
+    vec3_t camera_target = { 0.0f, 0.0f, 0.0f };
     int camera_follow_conv = -1;  // 要跟随的玩家 conv，-1 表示不跟随
 };
 

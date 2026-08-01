@@ -1,4 +1,4 @@
--- 3D GPU 测试（raylib 风格 render3d API）
+﻿-- 3D GPU 测试（raylib 风格 render3d API）
 local r3d
 local cube_mesh, sphere_mesh, floor_mesh
 local yaw = 0

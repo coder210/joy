@@ -1,4 +1,4 @@
-// 2D Ray vs Rectangle collision detection demo
+﻿// 2D Ray vs Rectangle collision detection demo
 var PIXELS_PER_METER = 100;
 var rect = { x: fp.from_float(2), y: fp.from_float(2),
              w: fp.from_float(2), h: fp.from_float(2) };

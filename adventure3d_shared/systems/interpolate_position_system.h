@@ -16,10 +16,12 @@ static void interpolate_position_system(entt::registry& registry, Context* /*ctx
 		auto& t  = view.get<TransformComponent>(e);
 		float target_x = fp_to_float(lp.x);
 		float target_y = fp_to_float(lp.y);
+		float target_z = fp_to_float(lp.z);
 		float alpha = dt * 10.0f;
 		if (alpha > 1.0f) alpha = 1.0f;
 		t.position.x = ft_lerp(t.position.x, target_x, alpha);
 		t.position.y = ft_lerp(t.position.y, target_y, alpha);
+		t.position.z = ft_lerp(t.position.z, target_z, alpha);
 	}
 }
 

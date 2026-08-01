@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="explosions" tilewidth="192" tileheight="192" tilecount="9" columns="9">
  <image source="effects/explosions.png" width="1728" height="192"/>
  <tile id="0">

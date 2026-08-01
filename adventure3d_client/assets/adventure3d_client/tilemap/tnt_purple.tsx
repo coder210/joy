@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="tnt_purple" tilewidth="192" tileheight="192" tilecount="21" columns="7">
  <image source="textures/goblins/troops/tnt/tnt_purple.png" width="1344" height="576"/>
  <tile id="0">

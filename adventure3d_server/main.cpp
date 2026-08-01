@@ -2,7 +2,6 @@
 #include <SDL3/SDL_main.h>
 #include <joy/joy.h>
 #include "scenes/game_scene.h"
-#include "asset_manager.h"
 #include "context.h"
 
 static scene_manager_p g_mgr;
@@ -23,11 +22,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         game_timer_init(&game_timer);
         game_timer_set_target_fps(&game_timer, 60);
 
-        AssetManager::Init();
-
         ctx->window = create_window("server", 240, 160);
-        ctx->r2d = r2d_create(ctx->window);
-        r2d_set_logical_presentation(ctx->r2d, 480, 320);
 
         g_mgr = scene_manager_create();
         scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));
@@ -52,17 +47,15 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         game_timer_update(&game_timer);
         float dt = game_timer_get_delta_time(&game_timer);
         scene_manager_update(g_mgr, dt);
-        r2d_set_color(ctx->r2d, 50, 120, 50, 255);
-        r2d_begin(ctx->r2d);
-        scene_manager_render(g_mgr, ctx->r2d);
-        r2d_end(ctx->r2d);
+        // pure 3D rendering: render3d_system manages r3d_begin/r3d_end internally
+        scene_manager_render(g_mgr, ctx->r3d);
         return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
         scene_manager_destroy(g_mgr);
-        r2d_destroy(ctx->r2d);
+        if (ctx->r3d) r3d_destroy(ctx->r3d);
         destroy_window(ctx->window);
         delete ctx;
         sys_release_netenv();

@@ -3,9 +3,9 @@
 #include <joy/jmath.h>
 
 struct TransformComponent {
-	vec2_t position;
-	float rotation;
-	vec2_t scale;
+	vec3_t position;
+	float yaw;
+	vec3_t scale;
 };
 
 #endif

@@ -299,13 +299,16 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 		SDL_DestroyGPUDevice(r->dev); SDL_free(r); return NULL;
 	}
 
-	/* 加载着色器 */
+	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符） */
 	size_t dirlen = strlen(shader_dir);
-	char* vert_path = (char*)SDL_malloc(dirlen + 10);
-	char* frag_path = (char*)SDL_malloc(dirlen + 10);
+	bool has_sep = (dirlen > 0) && (shader_dir[dirlen - 1] == '/' || shader_dir[dirlen - 1] == '\\');
+	const char* sep = has_sep ? "" : "/";
+	size_t plen = dirlen + 16;
+	char* vert_path = (char*)SDL_malloc(plen);
+	char* frag_path = (char*)SDL_malloc(plen);
 	if (!vert_path || !frag_path) { SDL_free(vert_path); SDL_free(frag_path); r3d_destroy(r); return NULL; }
-	snprintf(vert_path, dirlen + 10, "%svert.spv", shader_dir);
-	snprintf(frag_path, dirlen + 10, "%sfrag.spv", shader_dir);
+	snprintf(vert_path, plen, "%s%svert.spv", shader_dir, sep);
+	snprintf(frag_path, plen, "%s%sfrag.spv", shader_dir, sep);
 	r->vs = (SDL_GPUShader*)r3d_load_shader(r->dev, vert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
 	r->fs = (SDL_GPUShader*)r3d_load_shader(r->dev, frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
 	SDL_free(vert_path); SDL_free(frag_path);

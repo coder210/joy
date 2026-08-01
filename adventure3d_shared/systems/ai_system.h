@@ -17,30 +17,26 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent>();
 
-    if (!ctx->is_server) {
-        int i = 10;
-    }
-
     for (auto e : view) {
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
 
-        // 寻找最近玩家
+        // 寻找最近玩家（XZ 平面距离）
         bool found_player = false;
         fp_t nearest_dist_sq = fp_mul(ai.detect_radius, ai.detect_radius);
-        fp_t nearest_px = fp_zero(), nearest_py = fp_zero();
+        fp_t nearest_px = fp_zero(), nearest_pz = fp_zero();
 
         for (auto p : player_view) {
             auto& ppos = player_view.get<LogicPositionComponent>(p);
             fp_t dx = fp_sub(ppos.x, pos.x);
-            fp_t dy = fp_sub(ppos.y, pos.y);
-            fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+            fp_t dz = fp_sub(ppos.z, pos.z);
+            fp_t dist_sq = fp_add(fp_mul(dx, dx), fp_mul(dz, dz));
             if (dist_sq < nearest_dist_sq) {
                 nearest_dist_sq = dist_sq;
                 found_player = true;
                 nearest_px = ppos.x;
-                nearest_py = ppos.y;
+                nearest_pz = ppos.z;
             }
         }
 
@@ -59,13 +55,16 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             auto& events = registry.get<PlayerEventInput>(e);
             events.pending_actions.push_back({ 0, 0 });
 
+            // 朝向目标
+            fp_t dx = fp_sub(nearest_px, pos.x);
+            fp_t dz = fp_sub(nearest_pz, pos.z);
+            act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
+
             if (registry.all_of<anim_params_t>(e)) {
                 auto& params = registry.get<anim_params_t>(e);
-                fp_t dx = fp_sub(nearest_px, pos.x);
-                fp_t dy = fp_sub(nearest_py, pos.y);
-                params.dir = (fp_abs(dx) > fp_abs(dy))
+                params.dir = (fp_abs(dx) > fp_abs(dz))
                     ? (dx > fp_zero() ? 2 : 1)
-                    : (dy > fp_zero() ? 0 : 3);
+                    : (dz > fp_zero() ? 0 : 3);
                 params.attack = true;
                 params.speed = 0.0f;
             }
@@ -76,19 +75,21 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             act.state = ActionStateComponent::WALK;
 
             fp_t dx = fp_sub(nearest_px, pos.x);
-            fp_t dy = fp_sub(nearest_py, pos.y);
+            fp_t dz = fp_sub(nearest_pz, pos.z);
 
-            if (fp_abs(dx) > fp_abs(dy)) {
+            if (fp_abs(dx) > fp_abs(dz)) {
                 pos.x = dx > fp_zero() ? fp_add(pos.x, step) : fp_sub(pos.x, step);
             } else {
-                pos.y = dy > fp_zero() ? fp_add(pos.y, step) : fp_sub(pos.y, step);
+                pos.z = dz > fp_zero() ? fp_add(pos.z, step) : fp_sub(pos.z, step);
             }
+
+            act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
 
             if (registry.all_of<anim_params_t>(e)) {
                 auto& params = registry.get<anim_params_t>(e);
-                params.dir = (fp_abs(dx) > fp_abs(dy))
+                params.dir = (fp_abs(dx) > fp_abs(dz))
                     ? (dx > fp_zero() ? 2 : 1)
-                    : (dy > fp_zero() ? 0 : 3);
+                    : (dz > fp_zero() ? 0 : 3);
                 params.speed = 1.0f;
                 params.attack = false;
             }
@@ -102,30 +103,31 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 
             ai.timer--;
             if (ai.timer <= 0) {
-                //int seed = (int)e;
                 int seed = 0;
                 fp_t rx = fp_from_float((fp_to_float(ai.patrol_radius) * ((seed % 7) - 3) / 3.0f));
-                fp_t ry = fp_from_float((fp_to_float(ai.patrol_radius) * (((seed * 13) % 9) - 4) / 4.0f));
+                fp_t rz = fp_from_float((fp_to_float(ai.patrol_radius) * (((seed * 13) % 9) - 4) / 4.0f));
                 ai.target_x = fp_add(ai.patrol_center_x, rx);
-                ai.target_y = fp_add(ai.patrol_center_y, ry);
+                ai.target_z = fp_add(ai.patrol_center_z, rz);
                 ai.timer = 120;
             }
 
             fp_t dx = fp_sub(ai.target_x, pos.x);
-            fp_t dy = fp_sub(ai.target_y, pos.y);
-            if (fp_abs(dx) > fp_from_float(0.2f) || fp_abs(dy) > fp_from_float(0.2f)) {
-                if (fp_abs(dx) > fp_abs(dy)) {
+            fp_t dz = fp_sub(ai.target_z, pos.z);
+            if (fp_abs(dx) > fp_from_float(0.2f) || fp_abs(dz) > fp_from_float(0.2f)) {
+                if (fp_abs(dx) > fp_abs(dz)) {
                     pos.x = dx > fp_zero() ? fp_add(pos.x, step) : fp_sub(pos.x, step);
                 } else {
-                    pos.y = dy > fp_zero() ? fp_add(pos.y, step) : fp_sub(pos.y, step);
+                    pos.z = dz > fp_zero() ? fp_add(pos.z, step) : fp_sub(pos.z, step);
                 }
             }
 
+            act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
+
             if (registry.all_of<anim_params_t>(e)) {
                 auto& params = registry.get<anim_params_t>(e);
-                params.dir = (fp_abs(dx) > fp_abs(dy))
+                params.dir = (fp_abs(dx) > fp_abs(dz))
                     ? (dx > fp_zero() ? 2 : 1)
-                    : (dy > fp_zero() ? 0 : 3);
+                    : (dz > fp_zero() ? 0 : 3);
                 params.speed = 1.0f;
                 params.attack = false;
             }

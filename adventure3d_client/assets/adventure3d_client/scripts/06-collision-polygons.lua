@@ -1,4 +1,4 @@
--- Polygon vs Polygon collision detection demo
+﻿-- Polygon vs Polygon collision detection demo
 local PIXELS_PER_METER = 100
 local poly_a, poly_b, poly_c
 

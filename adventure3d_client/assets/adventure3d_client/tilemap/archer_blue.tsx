@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="archer_blue" tilewidth="192" tileheight="192" tilecount="56" columns="8">
  <image source="textures/knights/troops/archer/archer_blue.png" width="1536" height="1344"/>
  <tile id="0">

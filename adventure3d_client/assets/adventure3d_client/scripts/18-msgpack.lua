@@ -1,4 +1,4 @@
--- msgpack 测试
+﻿-- msgpack 测试
 -- 演示 joy.msgpack.pack / unpack 的基本用法
 local win, ren, font
 

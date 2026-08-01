@@ -1,4 +1,4 @@
--- 3D Ray vs Quad collision detection demo
+﻿-- 3D Ray vs Quad collision detection demo
 local PIXELS_PER_METER = 100
 local ray_pos, ray_dir
 local quad = {}

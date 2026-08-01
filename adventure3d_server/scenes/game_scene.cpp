@@ -4,31 +4,26 @@
 #include <algorithm>
 #include <cstdlib>
 #include <joy/joy.h>
-#include "../../adventure_shared/protocol.h"
+#include "../../adventure3d_shared/protocol.h"
 #include "../context.h"
-#include "../layers/debug_layer.h"
-#include "../../adventure_shared/systems/effect_lifecycle_system.h"
-#include "../../adventure_shared/systems/interpolate_position_system.h"
-#include "../../adventure_shared/systems/animator_update_system.h"
-#include "../../adventure_shared/systems/animator_render_system.h"
-#include "../../adventure_shared/systems/drawing_attack_ray_effect_system.h"
-#include "../../adventure_shared/systems/drawing_entity_system.h"
+#include "../../adventure3d_shared/systems/effect_lifecycle_system.h"
+#include "../../adventure3d_shared/systems/interpolate_position_system.h"
+#include "../../adventure3d_shared/systems/animator_update_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/spawn_enemy_system.h"
-#include "../systems/init_tilemap_system.h"
-#include "../../adventure_shared/systems/input_consume_join_system.h"
-#include "../adventure_shared/systems/input_consume_leave_system.h"
-#include "../adventure_shared/systems/input_consume_input_system.h"
+#include "../../adventure3d_shared/systems/input_consume_join_system.h"
+#include "../../adventure3d_shared/systems/input_consume_leave_system.h"
+#include "../../adventure3d_shared/systems/input_consume_input_system.h"
 #include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
-#include "../../adventure_shared/systems/movement_system.h"
-#include "../../adventure_shared/systems/cleanup_system.h"
-#include "../../adventure_shared/systems/collision_system.h"
-#include "../../adventure_shared/systems/camera_follow_system.h"
-#include "../../adventure_shared/systems/ai_system.h"
+#include "../../adventure3d_shared/systems/movement_system.h"
+#include "../../adventure3d_shared/systems/cleanup_system.h"
+#include "../../adventure3d_shared/systems/collision_system.h"
+#include "../../adventure3d_shared/systems/camera_follow_system.h"
+#include "../../adventure3d_shared/systems/ai_system.h"
 
 #include "../network/network_utils.h"
-#include "../asset_manager.h"
+#include "../systems/render3d_system.h"
 #include "game_scene.h"
 
 struct game_scene {
@@ -45,8 +40,11 @@ static void on_load(scene_p s)
         //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.40", 30000);
         ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
-        debug_layer_p debug_layer = create_debug_layer();
-        scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
+        // 初始化 3D 渲染器和网格资源
+        ctx->r3d = r3d_create(ctx->window, "adventure3d_server/shaders");
+        ctx->mesh_player = r3d_mesh_cube(ctx->r3d, 0.6f, 1.2f, 0.6f);
+        ctx->mesh_enemy  = r3d_mesh_cube(ctx->r3d, 0.5f, 1.0f, 0.5f);
+        ctx->mesh_floor  = r3d_mesh_plane(ctx->r3d, 40.0f, 40.0f, 20);
 
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
@@ -57,7 +55,6 @@ static void on_load(scene_p s)
         // 注册 system
         //add_system(ctx, OnStart, "creating_block", creating_block_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
-        add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
@@ -147,28 +144,8 @@ static void on_render(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         auto* ctx = self->ctx;
 
-        // ---- tilemap 背景 ----
-        if (ctx->tilemap) {
-                auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-                float cx = cam.x * (float)SERVER_PPM;
-                float cy = cam.y * (float)SERVER_PPM;
-                jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());
-        }
-
-        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
-        auto draw_view = ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
-        for (auto e : draw_view) {
-                auto& rect = draw_view.get<LogicRectComponent>(e);
-                auto& t = draw_view.get<TransformComponent>(e);
-                if (ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
-                        auto& anim = ctx->ecs.get<AnimatorComponent>(e);
-                        auto& act = ctx->ecs.get<ActionStateComponent>(e);
-                        animator_render_system(ctx, ctx->ecs, t, rect, anim, act, e);
-                } else {
-                        auto& id = draw_view.get<IdComponent>(e);
-                        drawing_entity_system(ctx, e, id, rect, t);
-                }
-        }
+        // 3D rendering: render3d_system manages r3d_begin/r3d_end internally
+        render3d_system(ctx, 0);
 }
 
 static void on_destroy(scene_p s)
@@ -176,15 +153,14 @@ static void on_destroy(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         Context* ctx = self->ctx;
         simple_fps_destory(self->sample_fps);
+        if (ctx->mesh_floor) r3d_mesh_destroy(ctx->r3d, ctx->mesh_floor);
+        if (ctx->mesh_enemy) r3d_mesh_destroy(ctx->r3d, ctx->mesh_enemy);
+        if (ctx->mesh_player) r3d_mesh_destroy(ctx->r3d, ctx->mesh_player);
+        if (ctx->r3d) {
+                r3d_destroy(ctx->r3d);
+                ctx->r3d = NULL;
+        }
         netserver_destroy(ctx->net_server);
-        AssetManager::GetInstance()->tex_cache_clear();
-        if (ctx->tilemap_render) {
-                jtilemap_render_destroy(ctx->tilemap_render);
-        }
-        if (ctx->tilemap) {
-                jtilemap_destroy(ctx->tilemap);
-                ctx->tilemap = NULL;
-        }
 }
 
 game_scene_p game_scene_create(Context* ctx)

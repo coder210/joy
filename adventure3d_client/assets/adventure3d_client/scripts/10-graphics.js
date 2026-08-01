@@ -1,4 +1,4 @@
-// 2D Graphics drawing demo
+﻿// 2D Graphics drawing demo
 // Note: JS polygon not yet implemented, using lines to approximate
 var ren;
 

@@ -1,4 +1,4 @@
-// 行为树 demo（JS 版，C 绑定完整功能）
+﻿// 行为树 demo（JS 版，C 绑定完整功能）
 var win, ren, font;
 var bt_root;
 var elapsed = 0;

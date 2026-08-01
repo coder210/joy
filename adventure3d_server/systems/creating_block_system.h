@@ -9,8 +9,12 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<IdComponent>(e, 10000);
         registry.emplace<LogicRectComponent>(e, fp_from_float(0.5f), fp_from_float(0.5f));
-        registry.emplace<LogicPositionComponent>(e, fp_from_float(5), fp_from_float(5));
-        registry.emplace<TransformComponent>(e, 5.0f, 5.0f, 0.0f, 1.0f, 1.0f);
+        registry.emplace<LogicPositionComponent>(e, fp_from_float(5), fp_zero(), fp_from_float(5));
+        registry.emplace<ColliderComponent>(e);
+        registry.emplace<TransformComponent>(e,
+            vec3_t{ 5.0f, 0.0f, 5.0f },
+            0.0f,
+            vec3_t{ 1.0f, 1.0f, 1.0f });
 }
 
 #endif

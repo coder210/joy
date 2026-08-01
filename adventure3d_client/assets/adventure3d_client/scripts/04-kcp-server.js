@@ -1,4 +1,4 @@
-// KCP reliable UDP server demo
+﻿// KCP reliable UDP server demo
 var kcpserver;
 
 joy.load = function()
