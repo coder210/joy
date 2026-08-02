@@ -693,71 +693,26 @@ JOY_INLINE mat22f_t mat22f_abs(mat22f_t a)
 
 JOY_INLINE mat44f_t mat44f_mul(mat44f_t left, mat44f_t right)
 {
+	// 列主序乘法：result = left · right
+	// mat44f_t 按列主序存储（每 4 个连续成员为一列），与 mat44_t / GLSL mat4 / 其余 mat44f_* 函数约定一致
+	// (A·B)[i][j] = Σ_k A[i][k]·B[k][j] = Σ_k left.m_{i+4k} · right.m_{4j+k}
 	mat44f_t result;
-	result.m0 = fp_add(
-		fp_add(fp_mul(left.m0, right.m0), fp_mul(left.m1, right.m4)), 
-		fp_add(fp_mul(left.m2, right.m8), fp_mul(left.m3, right.m12))
-	);
-	result.m1 = fp_add(
-		fp_add(fp_mul(left.m0, right.m1), fp_mul(left.m1, right.m5)), 
-		fp_add(fp_mul(left.m2, right.m9), fp_mul(left.m3, right.m13))
-	);
-	result.m2 = fp_add(
-		fp_add(fp_mul(left.m0, right.m2), fp_mul(left.m1, right.m6)), 
-		fp_add(fp_mul(left.m2, right.m10), fp_mul(left.m3, right.m14))
-	);
-	result.m3 = fp_add(
-		fp_add(fp_mul(left.m0, right.m3), fp_mul(left.m1, right.m7)),
-		fp_add(fp_mul(left.m2, right.m11), fp_mul(left.m3, right.m15))
-	);
-	result.m4 = fp_add(
-		fp_add(fp_mul(left.m4, right.m0), fp_mul(left.m5, right.m4)),
-		fp_add(fp_mul(left.m6, right.m8), fp_mul(left.m7, right.m12))
-	);
-	result.m5 = fp_add(
-		fp_add(fp_mul(left.m4, right.m1), fp_mul(left.m5, right.m5)),
-		fp_add(fp_mul(left.m6, right.m9), fp_mul(left.m7, right.m13))
-	);
-	result.m6 = fp_add(
-		fp_add(fp_mul(left.m4, right.m2), fp_mul(left.m5, right.m6)),
-		fp_add(fp_mul(left.m6, right.m10), fp_mul(left.m7, right.m14))
-	);
-	result.m7 = fp_add(
-		fp_add(fp_mul(left.m4, right.m3), fp_mul(left.m5, right.m7)),
-		fp_add(fp_mul(left.m6, right.m11), fp_mul(left.m7, right.m15))
-	);
-	result.m8 = fp_add(
-		fp_add(fp_mul(left.m8, right.m0), fp_mul(left.m9, right.m4)),
-		fp_add(fp_mul(left.m10, right.m8), fp_mul(left.m11, right.m12))
-	);
-	result.m9 = fp_add(
-		fp_add(fp_mul(left.m8, right.m1), fp_mul(left.m9, right.m5)),
-		fp_add(fp_mul(left.m10, right.m9), fp_mul(left.m11, right.m13))
-	);
-	result.m10 = fp_add(
-		fp_add(fp_mul(left.m8, right.m2), fp_mul(left.m9, right.m6)),
-		fp_add(fp_mul(left.m10, right.m10), fp_mul(left.m11, right.m14))
-	);
-	result.m11 = fp_add(
-		fp_add(fp_mul(left.m8, right.m3), fp_mul(left.m9, right.m7)),
-		fp_add(fp_mul(left.m10, right.m11), fp_mul(left.m11, right.m15))
-	);
-	result.m12 = fp_add(
-		fp_add(fp_mul(left.m12, right.m0), fp_mul(left.m13, right.m4)),
-		fp_add(fp_mul(left.m14, right.m8), fp_mul(left.m15, right.m12))
-	);
-	result.m13 = fp_add(
-		fp_add(fp_mul(left.m12, right.m1), fp_mul(left.m13, right.m5)),
-		fp_add(fp_mul(left.m14, right.m9), fp_mul(left.m15, right.m13))
-	);
-	result.m14 = fp_add(
-		fp_add(fp_mul(left.m12, right.m2), fp_mul(left.m13, right.m6)),
-		fp_add(fp_mul(left.m14, right.m10), fp_mul(left.m15, right.m14))
-	);
-	result.m15 = fp_add(
-		fp_add(fp_mul(left.m12, right.m3), fp_mul(left.m13, right.m7)),
-		fp_add(fp_mul(left.m14, right.m11), fp_mul(left.m15, right.m15))
-	);
+	result.m0  = fp_add(fp_add(fp_mul(left.m0,  right.m0),  fp_mul(left.m4,  right.m1)),  fp_add(fp_mul(left.m8,  right.m2),  fp_mul(left.m12, right.m3)));
+	result.m1  = fp_add(fp_add(fp_mul(left.m1,  right.m0),  fp_mul(left.m5,  right.m1)),  fp_add(fp_mul(left.m9,  right.m2),  fp_mul(left.m13, right.m3)));
+	result.m2  = fp_add(fp_add(fp_mul(left.m2,  right.m0),  fp_mul(left.m6,  right.m1)),  fp_add(fp_mul(left.m10, right.m2),  fp_mul(left.m14, right.m3)));
+	result.m3  = fp_add(fp_add(fp_mul(left.m3,  right.m0),  fp_mul(left.m7,  right.m1)),  fp_add(fp_mul(left.m11, right.m2),  fp_mul(left.m15, right.m3)));
+	result.m4  = fp_add(fp_add(fp_mul(left.m0,  right.m4),  fp_mul(left.m4,  right.m5)),  fp_add(fp_mul(left.m8,  right.m6),  fp_mul(left.m12, right.m7)));
+	result.m5  = fp_add(fp_add(fp_mul(left.m1,  right.m4),  fp_mul(left.m5,  right.m5)),  fp_add(fp_mul(left.m9,  right.m6),  fp_mul(left.m13, right.m7)));
+	result.m6  = fp_add(fp_add(fp_mul(left.m2,  right.m4),  fp_mul(left.m6,  right.m5)),  fp_add(fp_mul(left.m10, right.m6),  fp_mul(left.m14, right.m7)));
+	result.m7  = fp_add(fp_add(fp_mul(left.m3,  right.m4),  fp_mul(left.m7,  right.m5)),  fp_add(fp_mul(left.m11, right.m6),  fp_mul(left.m15, right.m7)));
+	result.m8  = fp_add(fp_add(fp_mul(left.m0,  right.m8),  fp_mul(left.m4,  right.m9)),  fp_add(fp_mul(left.m8,  right.m10), fp_mul(left.m12, right.m11)));
+	result.m9  = fp_add(fp_add(fp_mul(left.m1,  right.m8),  fp_mul(left.m5,  right.m9)),  fp_add(fp_mul(left.m9,  right.m10), fp_mul(left.m13, right.m11)));
+	result.m10 = fp_add(fp_add(fp_mul(left.m2,  right.m8),  fp_mul(left.m6,  right.m9)),  fp_add(fp_mul(left.m10, right.m10), fp_mul(left.m14, right.m11)));
+	result.m11 = fp_add(fp_add(fp_mul(left.m3,  right.m8),  fp_mul(left.m7,  right.m9)),  fp_add(fp_mul(left.m11, right.m10), fp_mul(left.m15, right.m11)));
+	result.m12 = fp_add(fp_add(fp_mul(left.m0,  right.m12), fp_mul(left.m4,  right.m13)), fp_add(fp_mul(left.m8,  right.m14), fp_mul(left.m12, right.m15)));
+	result.m13 = fp_add(fp_add(fp_mul(left.m1,  right.m12), fp_mul(left.m5,  right.m13)), fp_add(fp_mul(left.m9,  right.m14), fp_mul(left.m13, right.m15)));
+	result.m14 = fp_add(fp_add(fp_mul(left.m2,  right.m12), fp_mul(left.m6,  right.m13)), fp_add(fp_mul(left.m10, right.m14), fp_mul(left.m14, right.m15)));
+	result.m15 = fp_add(fp_add(fp_mul(left.m3,  right.m12), fp_mul(left.m7,  right.m13)), fp_add(fp_mul(left.m11, right.m14), fp_mul(left.m15, right.m15)));
 	return result;
 }
 
@@ -1340,71 +1295,26 @@ JOY_INLINE mat22_t mat22_abs(mat22_t a)
 
 JOY_INLINE mat44_t mat44_mul(mat44_t left, mat44_t right)
 {
+	// 列主序乘法：result = left · right
+	// mat44_t 按列主序存储（每 4 个连续成员为一列），与 GLSL mat4 / 其余矩阵函数约定一致
+	// (A·B)[i][j] = Σ_k A[i][k]·B[k][j] = Σ_k left.m_{i+4k} · right.m_{4j+k}
 	mat44_t result;
-	result.m0 = ft_add(
-		ft_add(ft_mul(left.m0, right.m0), ft_mul(left.m1, right.m4)),
-		ft_add(ft_mul(left.m2, right.m8), ft_mul(left.m3, right.m12))
-	);
-	result.m1 = ft_add(
-		ft_add(ft_mul(left.m0, right.m1), ft_mul(left.m1, right.m5)),
-		ft_add(ft_mul(left.m2, right.m9), ft_mul(left.m3, right.m13))
-	);
-	result.m2 = ft_add(
-		ft_add(ft_mul(left.m0, right.m2), ft_mul(left.m1, right.m6)),
-		ft_add(ft_mul(left.m2, right.m10), ft_mul(left.m3, right.m14))
-	);
-	result.m3 = ft_add(
-		ft_add(ft_mul(left.m0, right.m3), ft_mul(left.m1, right.m7)),
-		ft_add(ft_mul(left.m2, right.m11), ft_mul(left.m3, right.m15))
-	);
-	result.m4 = ft_add(
-		ft_add(ft_mul(left.m4, right.m0), ft_mul(left.m5, right.m4)),
-		ft_add(ft_mul(left.m6, right.m8), ft_mul(left.m7, right.m12))
-	);
-	result.m5 = ft_add(
-		ft_add(ft_mul(left.m4, right.m1), ft_mul(left.m5, right.m5)),
-		ft_add(ft_mul(left.m6, right.m9), ft_mul(left.m7, right.m13))
-	);
-	result.m6 = ft_add(
-		ft_add(ft_mul(left.m4, right.m2), ft_mul(left.m5, right.m6)),
-		ft_add(ft_mul(left.m6, right.m10), ft_mul(left.m7, right.m14))
-	);
-	result.m7 = ft_add(
-		ft_add(ft_mul(left.m4, right.m3), ft_mul(left.m5, right.m7)),
-		ft_add(ft_mul(left.m6, right.m11), ft_mul(left.m7, right.m15))
-	);
-	result.m8 = ft_add(
-		ft_add(ft_mul(left.m8, right.m0), ft_mul(left.m9, right.m4)),
-		ft_add(ft_mul(left.m10, right.m8), ft_mul(left.m11, right.m12))
-	);
-	result.m9 = ft_add(
-		ft_add(ft_mul(left.m8, right.m1), ft_mul(left.m9, right.m5)),
-		ft_add(ft_mul(left.m10, right.m9), ft_mul(left.m11, right.m13))
-	);
-	result.m10 = ft_add(
-		ft_add(ft_mul(left.m8, right.m2), ft_mul(left.m9, right.m6)),
-		ft_add(ft_mul(left.m10, right.m10), ft_mul(left.m11, right.m14))
-	);
-	result.m11 = ft_add(
-		ft_add(ft_mul(left.m8, right.m3), ft_mul(left.m9, right.m7)),
-		ft_add(ft_mul(left.m10, right.m11), ft_mul(left.m11, right.m15))
-	);
-	result.m12 = ft_add(
-		ft_add(ft_mul(left.m12, right.m0), ft_mul(left.m13, right.m4)),
-		ft_add(ft_mul(left.m14, right.m8), ft_mul(left.m15, right.m12))
-	);
-	result.m13 = ft_add(
-		ft_add(ft_mul(left.m12, right.m1), ft_mul(left.m13, right.m5)),
-		ft_add(ft_mul(left.m14, right.m9), ft_mul(left.m15, right.m13))
-	);
-	result.m14 = ft_add(
-		ft_add(ft_mul(left.m12, right.m2), ft_mul(left.m13, right.m6)),
-		ft_add(ft_mul(left.m14, right.m10), ft_mul(left.m15, right.m14))
-	);
-	result.m15 = ft_add(
-		ft_add(ft_mul(left.m12, right.m3), ft_mul(left.m13, right.m7)),
-		ft_add(ft_mul(left.m14, right.m11), ft_mul(left.m15, right.m15))
-	);
+	result.m0  = ft_add(ft_add(ft_mul(left.m0,  right.m0),  ft_mul(left.m4,  right.m1)),  ft_add(ft_mul(left.m8,  right.m2),  ft_mul(left.m12, right.m3)));
+	result.m1  = ft_add(ft_add(ft_mul(left.m1,  right.m0),  ft_mul(left.m5,  right.m1)),  ft_add(ft_mul(left.m9,  right.m2),  ft_mul(left.m13, right.m3)));
+	result.m2  = ft_add(ft_add(ft_mul(left.m2,  right.m0),  ft_mul(left.m6,  right.m1)),  ft_add(ft_mul(left.m10, right.m2),  ft_mul(left.m14, right.m3)));
+	result.m3  = ft_add(ft_add(ft_mul(left.m3,  right.m0),  ft_mul(left.m7,  right.m1)),  ft_add(ft_mul(left.m11, right.m2),  ft_mul(left.m15, right.m3)));
+	result.m4  = ft_add(ft_add(ft_mul(left.m0,  right.m4),  ft_mul(left.m4,  right.m5)),  ft_add(ft_mul(left.m8,  right.m6),  ft_mul(left.m12, right.m7)));
+	result.m5  = ft_add(ft_add(ft_mul(left.m1,  right.m4),  ft_mul(left.m5,  right.m5)),  ft_add(ft_mul(left.m9,  right.m6),  ft_mul(left.m13, right.m7)));
+	result.m6  = ft_add(ft_add(ft_mul(left.m2,  right.m4),  ft_mul(left.m6,  right.m5)),  ft_add(ft_mul(left.m10, right.m6),  ft_mul(left.m14, right.m7)));
+	result.m7  = ft_add(ft_add(ft_mul(left.m3,  right.m4),  ft_mul(left.m7,  right.m5)),  ft_add(ft_mul(left.m11, right.m6),  ft_mul(left.m15, right.m7)));
+	result.m8  = ft_add(ft_add(ft_mul(left.m0,  right.m8),  ft_mul(left.m4,  right.m9)),  ft_add(ft_mul(left.m8,  right.m10), ft_mul(left.m12, right.m11)));
+	result.m9  = ft_add(ft_add(ft_mul(left.m1,  right.m8),  ft_mul(left.m5,  right.m9)),  ft_add(ft_mul(left.m9,  right.m10), ft_mul(left.m13, right.m11)));
+	result.m10 = ft_add(ft_add(ft_mul(left.m2,  right.m8),  ft_mul(left.m6,  right.m9)),  ft_add(ft_mul(left.m10, right.m10), ft_mul(left.m14, right.m11)));
+	result.m11 = ft_add(ft_add(ft_mul(left.m3,  right.m8),  ft_mul(left.m7,  right.m9)),  ft_add(ft_mul(left.m11, right.m10), ft_mul(left.m15, right.m11)));
+	result.m12 = ft_add(ft_add(ft_mul(left.m0,  right.m12), ft_mul(left.m4,  right.m13)), ft_add(ft_mul(left.m8,  right.m14), ft_mul(left.m12, right.m15)));
+	result.m13 = ft_add(ft_add(ft_mul(left.m1,  right.m12), ft_mul(left.m5,  right.m13)), ft_add(ft_mul(left.m9,  right.m14), ft_mul(left.m13, right.m15)));
+	result.m14 = ft_add(ft_add(ft_mul(left.m2,  right.m12), ft_mul(left.m6,  right.m13)), ft_add(ft_mul(left.m10, right.m14), ft_mul(left.m14, right.m15)));
+	result.m15 = ft_add(ft_add(ft_mul(left.m3,  right.m12), ft_mul(left.m7,  right.m13)), ft_add(ft_mul(left.m11, right.m14), ft_mul(left.m15, right.m15)));
 	return result;
 }
 
