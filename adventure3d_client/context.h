@@ -10,8 +10,6 @@
 #include <joy/joy.h>
 #include "../adventure3d_shared/protocol.h"
 #include "../adventure3d_shared/components/action_state_component.h"
-#include "../adventure3d_shared/components/animator_def.h"
-#include "../adventure3d_shared/components/animator_component.h"
 #include "../adventure3d_shared/components/id_component.h"
 #include "../adventure3d_shared/components/ai_component.h"
 #include "../adventure3d_shared/components/logic_rect_component.h"
@@ -46,7 +44,7 @@ struct Context {
         render_mesh_p mesh_player = NULL;
         render_mesh_p mesh_enemy = NULL;
         render_mesh_p mesh_floor = NULL;
-        void* floor_tex = NULL;  // 棋盘格地板纹理
+        void* floor_tex = NULL;  // checkerboard floor texture
         netclient_p netclient;
         entt::registry ecs;
         entt::entity singleton_net = entt::null;

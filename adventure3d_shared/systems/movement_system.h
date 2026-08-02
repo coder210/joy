@@ -4,7 +4,6 @@
 #include "../components/logic_position_component.h"
 #include "../components/player_physics_component.h"
 #include "../components/action_state_component.h"
-#include "../components/animator_component.h"
 #include "../protocol.h"
 #include <joy/jmath.h>
 #include <cmath>
@@ -41,8 +40,6 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
 			fdx /= len; fdz /= len;
 			p.x = fp_add(p.x, fp_from_float(fdx * fp_to_float(step)));
 			p.z = fp_add(p.z, fp_from_float(fdz * fp_to_float(step)));
-			if (registry.all_of<AnimParamsComponent>(e))
-				registry.get<AnimParamsComponent>(e).speed = 1.0f;
 		}
 
 		// ---- 垂直物理（重力/跳跃/落地） ----

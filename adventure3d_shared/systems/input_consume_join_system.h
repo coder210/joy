@@ -2,7 +2,6 @@
 #define INPUT_CONSUME_JOIN_SYSTEM_H
 
 #include "../components/global_state_component.h"
-#include "../components/animator_def.h"
 #include "../components/collider_component.h"
 #include "../components/player_physics_component.h"
 #include "../components/player_state_input.h"
@@ -30,12 +29,8 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<ColliderComponent>(player);
 		registry.emplace<PlayerPhysicsComponent>(player);
 
-		// 挂载动画组件（如果 WarriorBlueAnimDefComponent 已注册）
-		if (registry.ctx().contains<WarriorBlueAnimDefComponent>()) {
-			registry.emplace<AnimatorComponent>(player);
-			registry.emplace<AnimParamsComponent>(player);
-			registry.emplace<ActionStateComponent>(player);
-		}
+		// 挂载状态组件（承载 yaw/朝向数据，3D 相机跟随需要）
+		registry.emplace<ActionStateComponent>(player);
 
 		// 首次加入的玩家作为摄像机跟随目标
 		if (gs.camera_follow_conv < 0) {

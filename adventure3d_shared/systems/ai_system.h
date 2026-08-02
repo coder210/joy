@@ -7,7 +7,6 @@
 #include "../components/logic_position_component.h"
 #include "../components/action_state_component.h"
 #include "../components/player_event_input.h"
-#include "../components/animator_component.h"
 
 struct Context;
 
@@ -59,15 +58,6 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             fp_t dx = fp_sub(nearest_px, pos.x);
             fp_t dz = fp_sub(nearest_pz, pos.z);
             act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
-
-            if (registry.all_of<anim_params_t>(e)) {
-                auto& params = registry.get<anim_params_t>(e);
-                params.dir = (fp_abs(dx) > fp_abs(dz))
-                    ? (dx > fp_zero() ? 2 : 1)
-                    : (dz > fp_zero() ? 0 : 3);
-                params.attack = true;
-                params.speed = 0.0f;
-            }
         }
         else if (found_player) {
             // 状态 1：追击
@@ -84,15 +74,6 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             }
 
             act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
-
-            if (registry.all_of<anim_params_t>(e)) {
-                auto& params = registry.get<anim_params_t>(e);
-                params.dir = (fp_abs(dx) > fp_abs(dz))
-                    ? (dx > fp_zero() ? 2 : 1)
-                    : (dz > fp_zero() ? 0 : 3);
-                params.speed = 1.0f;
-                params.attack = false;
-            }
 
             ai.timer = 0;
         }
@@ -122,15 +103,6 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             }
 
             act.yaw = atan2f(fp_to_float(dx), -fp_to_float(dz));
-
-            if (registry.all_of<anim_params_t>(e)) {
-                auto& params = registry.get<anim_params_t>(e);
-                params.dir = (fp_abs(dx) > fp_abs(dz))
-                    ? (dx > fp_zero() ? 2 : 1)
-                    : (dz > fp_zero() ? 0 : 3);
-                params.speed = 1.0f;
-                params.attack = false;
-            }
         }
     }
 }

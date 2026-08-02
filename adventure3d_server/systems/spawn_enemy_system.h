@@ -8,7 +8,6 @@
 #include "../../adventure3d_shared/components/logic_rect_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
 #include "../../adventure3d_shared/components/action_state_component.h"
-#include "../../adventure3d_shared/components/animator_component.h"
 #include "../../adventure3d_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
@@ -36,12 +35,6 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
             fp_from_float(s.detect_radius),
             fp_from_float(s.attack_radius)
         );
-
-        // 挂载动画组件（如果 TorchBlueAnimDefComponent 已注册）
-        if (registry.ctx().contains<TorchBlueAnimDefComponent>()) {
-            registry.emplace<AnimatorComponent>(e);
-            registry.emplace<AnimParamsComponent>(e);
-        }
     }
 }
 

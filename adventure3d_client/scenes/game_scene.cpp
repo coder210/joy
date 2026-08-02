@@ -5,8 +5,6 @@
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../adventure3d_shared/protocol.h"
-#include "../adventure3d_shared/systems/animator_update_system.h"
-#include "../factory/animator_def_factory.h"
 #include "../adventure3d_shared/systems/interpolate_position_system.h"
 #include "../systems/render3d_system.h"
 #include "../adventure3d_shared/systems/input_consume_join_system.h"
@@ -18,8 +16,6 @@
 #include "../network/network_utils.h"
 #include "../../adventure3d_shared/systems/camera_follow_system.h"
 #include "../../adventure3d_shared/systems/ai_system.h"
-
-// 动画定义现在由 animator_def_factory.h 提供
 
 // 玩家状态机（使用 ECS ActionStateComponent）
 
@@ -51,12 +47,6 @@ static void on_load(scene_p s)
         self->ctx->mesh_floor  = r3d_mesh_plane_lit(self->ctx->r3d, 20.0f, 20.0f, 10);
         self->ctx->floor_tex   = r3d_gen_checkerboard(self->ctx->r3d, 32, 10);
 
-        // 注册动画定义（全局单例，仅一次）
-        create_warrior_anim_def(self->ctx->ecs,
-                "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(self->ctx->ecs,
-                "adventure_client/textures/goblins/troops/torch/torch_blue.png");
-
         // 注册 system
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
@@ -64,7 +54,6 @@ static void on_load(scene_p s)
         add_system(self->ctx, OnUpdate, "ai_system", ai_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
-        add_system(self->ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);
 
         // 执行 OnStart phase
@@ -179,7 +168,6 @@ static void on_update(scene_p s, float dt) {
         }
 
         // 视觉相关 system 用实时 dt 每帧更新（不放在固定步长内）
-        //animator_update_system(self->ctx->ecs, self->ctx, dt);
         interpolate_position_system(self->ctx->ecs, self->ctx, dt);
         camera_follow_system(self->ctx->ecs, self->ctx, dt);
 }

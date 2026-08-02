@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstring>
 #include "../context.h"
+#include "../components/static_mesh_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
 #include "../../adventure3d_shared/components/player_component.h"
 #include "../../adventure3d_shared/components/enemy_component.h"
@@ -55,7 +56,31 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         r3d_draw_mesh_lit(ctx->r3d, ctx->mesh_floor, &m, ctx->floor_tex);
     }
 
-    // 联机玩家/敌人由客户端渲染，服务器只渲染地面
+    // 联机玩家/敌人由客户端渲染，服务器只渲染地面 + 静态碰撞体
+    // 静态碰撞体（箱子/球/OBB/斜坡，来自 main8888.cpp）由服务器本地渲染
+    auto static_view = ctx->ecs.view<TransformComponent, StaticMeshComponent>();
+    for (auto e : static_view) {
+        auto& t = static_view.get<TransformComponent>(e);
+        auto& sm = static_view.get<StaticMeshComponent>(e);
+        if (!sm.mesh) continue;
+        mat44_t m = mat44_identity();
+        float sx = t.scale.x, sy = t.scale.y, sz = t.scale.z;
+        if (sm.roll != 0.0f) {
+            // 绕 Z 轴旋转（斜放长方体斜坡）
+            float cr = cosf(sm.roll), sr = sinf(sm.roll);
+            m.m0 = sx;        m.m5 = sy * cr; m.m6 = sy * sr;
+            m.m9 = sz * -sr;  m.m10 = sz * cr;
+        } else if (t.yaw != 0.0f) {
+            // 绕 Y 轴旋转（OBB）
+            float c = cosf(t.yaw), s = sinf(t.yaw);
+            m.m0 = sx * c; m.m2 = sx * -s; m.m5 = sy;
+            m.m8 = sz * s; m.m10 = sz * c;
+        } else {
+            m.m0 = sx; m.m5 = sy; m.m10 = sz;
+        }
+        m.m12 = t.position.x; m.m13 = t.position.y; m.m14 = t.position.z;
+        r3d_draw_mesh_lit_color(ctx->r3d, sm.mesh, &m, sm.color);
+    }
 
     r3d_end(ctx->r3d);
 }

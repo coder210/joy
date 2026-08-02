@@ -37,12 +37,17 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
             auto& other_col = static_view.get<ColliderComponent>(other_entity);
             auto& other_pos = static_view.get<LogicPositionComponent>(other_entity);
 
-            if (other_col.type != ColliderComponent::BOX) continue;
+            if (other_col.type != ColliderComponent::BOX &&
+                other_col.type != ColliderComponent::SPHERE) continue;
 
             gjk3df_collider_t other_shape;
             vec3f_t opos = { other_pos.x, other_pos.y, other_pos.z };
-            vec3f_t ohs  = { other_col.half_size.x, other_col.half_size.y, other_col.half_size.z };
-            gjk3df_init_box(&other_shape, opos, ohs);
+            if (other_col.type == ColliderComponent::SPHERE) {
+                gjk3df_init_sphere(&other_shape, opos, other_col.radius);
+            } else {
+                vec3f_t ohs  = { other_col.half_size.x, other_col.half_size.y, other_col.half_size.z };
+                gjk3df_init_box(&other_shape, opos, ohs);
+            }
 
             gjk3df_contact_t contact;
             vec3f_t init_dir = { fp_one(), fp_zero(), fp_zero() };

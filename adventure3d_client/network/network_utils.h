@@ -33,19 +33,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
                         ctx->ecs.emplace<ActionStateComponent>(e);
-                        if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>()) {
-                            ctx->ecs.emplace<AnimatorComponent>(e);
-                            ctx->ecs.emplace<AnimParamsComponent>(e);
-                        }
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);
                         ctx->ecs.emplace<ActionStateComponent>(e);
-                        //ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
-                        if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>()) {
-                            ctx->ecs.emplace<AnimatorComponent>(e);
-                            ctx->ecs.emplace<AnimParamsComponent>(e);
-                        }
                         // 使用服务端打包的 ai_type 作为 SpawnDef 索引（避免位置匹配方式在 AI 移动后失效）
                         int si = (int)entity.ai_type;
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {

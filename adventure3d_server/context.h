@@ -21,9 +21,6 @@
 #include "../adventure3d_shared/components/player_component.h"
 #include "components/local_only_component.h"
 #include "../adventure3d_shared/components/action_state_component.h"
-#include "../adventure3d_shared/components/sprite_sheet_component.h"
-#include "../adventure3d_shared/components/animator_component.h"
-#include "../adventure3d_shared/components/animator_def.h"
 
 #include "../adventure3d_shared/components/ai_component.h"
 #include "../adventure3d_shared/components/enemy_component.h"

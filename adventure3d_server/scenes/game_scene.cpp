@@ -8,13 +8,12 @@
 #include "../context.h"
 #include "../../adventure3d_shared/systems/effect_lifecycle_system.h"
 #include "../../adventure3d_shared/systems/interpolate_position_system.h"
-#include "../../adventure3d_shared/systems/animator_update_system.h"
 #include "../systems/creating_block_system.h"
+#include "../components/static_mesh_component.h"
 #include "../systems/spawn_enemy_system.h"
 #include "../../adventure3d_shared/systems/input_consume_join_system.h"
 #include "../../adventure3d_shared/systems/input_consume_leave_system.h"
 #include "../../adventure3d_shared/systems/input_consume_input_system.h"
-#include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
 #include "../../adventure3d_shared/systems/movement_system.h"
 #include "../../adventure3d_shared/systems/cleanup_system.h"
@@ -48,11 +47,9 @@ static void on_load(scene_p s)
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
-        create_warrior_anim_def(ctx->ecs, "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(ctx->ecs, "adventure_server/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
-        //add_system(ctx, OnStart, "creating_block", creating_block_system);
+        add_system(ctx, OnStart, "creating_block", creating_block_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
@@ -60,7 +57,6 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate, "ai_system", ai_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
-        add_system(ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(ctx, OnUpdate, "cleanup", cleanup_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 
@@ -152,6 +148,14 @@ static void on_destroy(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         Context* ctx = self->ctx;
         simple_fps_destory(self->sample_fps);
+        // 销毁静态碰撞体 mesh
+        if (ctx->r3d) {
+                auto sm_view = ctx->ecs.view<StaticMeshComponent>();
+                for (auto e : sm_view) {
+                        if (sm_view.get<StaticMeshComponent>(e).mesh)
+                                r3d_mesh_destroy(ctx->r3d, sm_view.get<StaticMeshComponent>(e).mesh);
+                }
+        }
         if (ctx->mesh_floor) r3d_mesh_destroy(ctx->r3d, ctx->mesh_floor);
         if (ctx->r3d) {
                 r3d_destroy(ctx->r3d);
