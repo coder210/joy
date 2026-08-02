@@ -5,6 +5,7 @@
 #include "../components/collider_component.h"
 #include "../components/player_physics_component.h"
 #include "../components/player_state_input.h"
+#include "../components/mesh_component.h"
 
 struct Context;
 
@@ -43,6 +44,9 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 
 		// 挂载状态组件（承载 yaw/朝向数据，3D 相机跟随需要）
 		registry.emplace<ActionStateComponent>(player);
+
+		// 渲染网格：从共享资源池取玩家 mesh，每个玩家实体独立持有
+		registry.emplace<MeshComponent>(player, ctx->mesh_player, jcolor_t{ 100, 150, 255, 255 });
 
 		// 首次加入的玩家作为摄像机跟随目标
 		if (gs.camera_follow_conv < 0) {

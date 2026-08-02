@@ -7,6 +7,7 @@
 #include "../../adventure3d_shared/protocol.h"
 #include "../../adventure3d_shared/components/global_state_component.h"
 #include "../../adventure3d_shared/components/ai_component.h"
+#include "../../adventure3d_shared/components/mesh_component.h"
 #include "../../adventure3d_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
@@ -33,10 +34,13 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
                         ctx->ecs.emplace<ActionStateComponent>(e);
+                        // 渲染网格：从共享资源池取玩家 mesh，每个玩家实体独立持有
+                        ctx->ecs.emplace<MeshComponent>(e, ctx->mesh_player, jcolor_t{ 100, 150, 255, 255 });
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);
                         ctx->ecs.emplace<ActionStateComponent>(e);
+                        ctx->ecs.emplace<MeshComponent>(e, ctx->mesh_enemy, jcolor_t{ 255, 80, 80, 255 });
                         // 使用服务端打包的 ai_type 作为 SpawnDef 索引（避免位置匹配方式在 AI 移动后失效）
                         int si = (int)entity.ai_type;
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {

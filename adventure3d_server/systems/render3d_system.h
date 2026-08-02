@@ -7,11 +7,8 @@
 #include "../context.h"
 #include "../components/static_mesh_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
-#include "../../adventure3d_shared/components/player_component.h"
-#include "../../adventure3d_shared/components/enemy_component.h"
-#include "../../adventure3d_shared/components/collider_component.h"
+#include "../../adventure3d_shared/components/mesh_component.h"
 #include "../../adventure3d_shared/components/global_state_component.h"
-#include "../../adventure3d_shared/components/action_state_component.h"
 
 static void render3d_system(Context* ctx, float /*dt*/) {
     if (!ctx->r3d) return;
@@ -55,26 +52,17 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         r3d_draw_mesh_lit(ctx->r3d, ctx->mesh_floor, &m, ctx->floor_tex);
     }
 
-    // 玩家/敌人实体（带光照 + 颜色），与客户端渲染一致
-    auto view = ctx->ecs.view<TransformComponent>();
+    // 玩家/敌人实体（带光照 + 颜色）：每个实体通过 MeshComponent 独立持有 mesh 与颜色
+    auto view = ctx->ecs.view<TransformComponent, MeshComponent>();
     for (auto e : view) {
         auto& t = view.get<TransformComponent>(e);
-
-        render_mesh_p mesh = nullptr;
-        jcolor_t color = { 255, 255, 255, 255 };
-        if (ctx->ecs.all_of<PlayerComponent>(e)) {
-            mesh = ctx->mesh_player;
-            color = { 100, 150, 255, 255 };
-        } else if (ctx->ecs.all_of<EnemyComponent>(e)) {
-            mesh = ctx->mesh_enemy;
-            color = { 255, 80, 80, 255 };
-        }
-        if (!mesh) continue;
+        auto& mc = view.get<MeshComponent>(e);
+        if (!mc.mesh) continue;
 
         mat44_t m = mat44_identity();
         m.m0 = t.scale.x; m.m5 = t.scale.y; m.m10 = t.scale.z;
         m.m12 = t.position.x; m.m13 = t.position.y; m.m14 = t.position.z;
-        r3d_draw_mesh_lit_color(ctx->r3d, mesh, &m, color);
+        r3d_draw_mesh_lit_color(ctx->r3d, mc.mesh, &m, mc.color);
     }
 
     // 静态碰撞体（箱子/球/OBB/斜坡，来自 main8888.cpp）由服务器本地渲染

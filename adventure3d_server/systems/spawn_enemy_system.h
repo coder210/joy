@@ -8,17 +8,18 @@
 #include "../../adventure3d_shared/components/logic_rect_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
 #include "../../adventure3d_shared/components/action_state_component.h"
+#include "../../adventure3d_shared/components/mesh_component.h"
 #include "../../adventure3d_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
 static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*dt*/) {
-    (void)ctx;
 
     for (int i = 0; i < ENEMY_SPAWN_COUNT; i++) {
         auto& s = ENEMY_SPAWNS[i];
         entt::entity e = registry.create();
         registry.emplace<IdComponent>(e, get_entity_id(ctx));
         registry.emplace<EnemyComponent>(e);
+        registry.emplace<MeshComponent>(e, ctx->mesh_enemy, jcolor_t{ 255, 80, 80, 255 });
         registry.emplace<SpawnIdxComponent>(e, i);
         registry.emplace<LogicPositionComponent>(e, fp_from_float(s.x), fp_zero(), fp_from_float(s.z));
         registry.emplace<LogicRectComponent>(e, fp_from_float(1), fp_from_float(1));
