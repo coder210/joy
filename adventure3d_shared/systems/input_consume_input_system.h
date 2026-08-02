@@ -1,6 +1,8 @@
 #ifndef INPUT_CONSUME_INPUT_SYSTEM_H
 #define INPUT_CONSUME_INPUT_SYSTEM_H
 
+#include "../components/player_physics_component.h"
+
 struct Context;
 
 static void input_consume_input_system(entt::registry& registry, Context* /*ctx*/, float /*dt*/) {
@@ -23,6 +25,14 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 		PlayerStateInput state_input;
 		state_input.move_bits = input.dir;
 		state_input.yaw_quantized = input.yaw_quantized;
+
+		// 跳跃：上升沿触发一次（按住不连跳）
+		bool jump_down = (input.dir & INPUT_JUMP) != 0;
+		if (registry.all_of<PlayerPhysicsComponent>(player)) {
+			auto& phy = registry.get<PlayerPhysicsComponent>(player);
+			if (jump_down && !phy.jump_prev) phy.jump_requested = true;
+			phy.jump_prev = jump_down;
+		}
 
 		log_info("Raw dir: %d yaw: %d\n", input.dir, input.yaw_quantized);
 

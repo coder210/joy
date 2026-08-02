@@ -40,11 +40,10 @@ static void on_load(scene_p s)
         //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.40", 30000);
         ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
-        // 初始化 3D 渲染器和网格资源
+        // 初始化 3D 渲染器和网格资源（lit 网格 + 棋盘格地板，与 main8888.cpp 一致）
         ctx->r3d = r3d_create(ctx->window, "adventure3d_server/shaders");
-        ctx->mesh_player = r3d_mesh_cube(ctx->r3d, 0.6f, 1.2f, 0.6f);
-        ctx->mesh_enemy  = r3d_mesh_cube(ctx->r3d, 0.5f, 1.0f, 0.5f);
-        ctx->mesh_floor  = r3d_mesh_plane(ctx->r3d, 40.0f, 40.0f, 20);
+        ctx->mesh_floor  = r3d_mesh_plane_lit(ctx->r3d, 20.0f, 20.0f, 10);
+        ctx->floor_tex   = r3d_gen_checkerboard(ctx->r3d, 32, 10);
 
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
@@ -154,8 +153,6 @@ static void on_destroy(scene_p s)
         Context* ctx = self->ctx;
         simple_fps_destory(self->sample_fps);
         if (ctx->mesh_floor) r3d_mesh_destroy(ctx->r3d, ctx->mesh_floor);
-        if (ctx->mesh_enemy) r3d_mesh_destroy(ctx->r3d, ctx->mesh_enemy);
-        if (ctx->mesh_player) r3d_mesh_destroy(ctx->r3d, ctx->mesh_player);
         if (ctx->r3d) {
                 r3d_destroy(ctx->r3d);
                 ctx->r3d = NULL;

@@ -16,6 +16,7 @@ enum {
     INPUT_LEFT   = 1 << 2,
     INPUT_RIGHT  = 1 << 3,
     INPUT_ATTACK = 1 << 4,
+    INPUT_JUMP   = 1 << 5,
     INPUT_DIR_MASK = INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT,
 };
 

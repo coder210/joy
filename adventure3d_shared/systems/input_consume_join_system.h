@@ -3,6 +3,9 @@
 
 #include "../components/global_state_component.h"
 #include "../components/animator_def.h"
+#include "../components/collider_component.h"
+#include "../components/player_physics_component.h"
+#include "../components/player_state_input.h"
 
 struct Context;
 
@@ -21,6 +24,11 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<LogicPositionComponent>(player, join.position_x, join.position_y);
 		registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
 		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
+
+		// 玩家输入/碰撞/物理组件（无动画时也可移动/跳跃）
+		registry.emplace<PlayerStateInput>(player);
+		registry.emplace<ColliderComponent>(player);
+		registry.emplace<PlayerPhysicsComponent>(player);
 
 		// 挂载动画组件（如果 WarriorBlueAnimDefComponent 已注册）
 		if (registry.ctx().contains<WarriorBlueAnimDefComponent>()) {

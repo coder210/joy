@@ -78,7 +78,7 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
 static void send_input(Context* ctx)
 {
     if (!ctx->netclient) return;
-    int dir = ctx->current_input_mask & INPUT_DIR_MASK;
+    int dir = ctx->current_input_mask & (INPUT_DIR_MASK | INPUT_JUMP);
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (ctx->attack_triggered) { attack = 1; ctx->attack_triggered = false; }
     int16_t yaw = (int16_t)(ctx->local_yaw / 3.14159265f * 32767.0f);

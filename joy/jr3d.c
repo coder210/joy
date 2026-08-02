@@ -661,7 +661,7 @@ render_mesh_p r3d_mesh_sphere(jr3d_p r, float radius, int slices, int stacks)
 render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs)
 {
 	float hw, hd, step_x, step_z, x0, z0, x1, z1, u0, v0, u1, v1;
-	int total, iz, ix, idx, o;
+	int total, iz, ix, idx;
 	float* verts;
 	render_mesh_p m;
 	hw = w * 0.5f; hd = d * 0.5f;
@@ -676,13 +676,12 @@ render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs)
 			x1 = x0 + step_x; z1 = z0 + step_z;
 			u0 = (float)ix / segs; v0 = (float)iz / segs;
 			u1 = (float)(ix + 1) / segs; v1 = (float)(iz + 1) / segs;
-			o = idx * 5;
-			verts[o]=x0; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u0; verts[o+4]=v0; idx++;
-			verts[o]=x1; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u1; verts[o+4]=v0; idx++;
-			verts[o]=x1; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; idx++;
-			verts[o]=x0; verts[o+1]=0; verts[o+2]=z0; verts[o+3]=u0; verts[o+4]=v0; idx++;
-			verts[o]=x1; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u1; verts[o+4]=v1; idx++;
-			verts[o]=x0; verts[o+1]=0; verts[o+2]=z1; verts[o+3]=u0; verts[o+4]=v1; idx++;
+			verts[idx*5+0]=x0; verts[idx*5+1]=0; verts[idx*5+2]=z0; verts[idx*5+3]=u0; verts[idx*5+4]=v0; idx++;
+			verts[idx*5+0]=x1; verts[idx*5+1]=0; verts[idx*5+2]=z0; verts[idx*5+3]=u1; verts[idx*5+4]=v0; idx++;
+			verts[idx*5+0]=x1; verts[idx*5+1]=0; verts[idx*5+2]=z1; verts[idx*5+3]=u1; verts[idx*5+4]=v1; idx++;
+			verts[idx*5+0]=x0; verts[idx*5+1]=0; verts[idx*5+2]=z0; verts[idx*5+3]=u0; verts[idx*5+4]=v0; idx++;
+			verts[idx*5+0]=x1; verts[idx*5+1]=0; verts[idx*5+2]=z1; verts[idx*5+3]=u1; verts[idx*5+4]=v1; idx++;
+			verts[idx*5+0]=x0; verts[idx*5+1]=0; verts[idx*5+2]=z1; verts[idx*5+3]=u0; verts[idx*5+4]=v1; idx++;
 		}
 	}
 	m = r3d_mesh_custom(r, verts, total);

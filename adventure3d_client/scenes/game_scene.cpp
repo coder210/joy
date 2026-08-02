@@ -45,9 +45,11 @@ static void on_load(scene_p s)
         self->ctx->ecs.ctx().emplace<GlobalState>();
 
         // r3d is created once in SDL_AppInit; only meshes are created here
-        self->ctx->mesh_player = r3d_mesh_cube(self->ctx->r3d, 0.6f, 1.2f, 0.6f);
-        self->ctx->mesh_enemy  = r3d_mesh_cube(self->ctx->r3d, 0.5f, 1.0f, 0.5f);
-        self->ctx->mesh_floor  = r3d_mesh_plane(self->ctx->r3d, 40.0f, 40.0f, 20);
+        // 全部使用 lit 网格 + 棋盘格地板纹理，与 joy_editor/main8888.cpp 一致
+        self->ctx->mesh_player = r3d_mesh_cube_lit(self->ctx->r3d, 0.6f, 1.2f, 0.6f);
+        self->ctx->mesh_enemy  = r3d_mesh_cube_lit(self->ctx->r3d, 0.5f, 1.0f, 0.5f);
+        self->ctx->mesh_floor  = r3d_mesh_plane_lit(self->ctx->r3d, 20.0f, 20.0f, 10);
+        self->ctx->floor_tex   = r3d_gen_checkerboard(self->ctx->r3d, 32, 10);
 
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,
@@ -89,7 +91,7 @@ static void client_on_keypressed(const char* key, int scancode, bool repeat, boo
         else if (strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
         else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
-        else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+        else if (strcmp(key, "space") == 0) key_mask = INPUT_JUMP;
         if (key_mask) {
                 self->ctx->current_input_mask |= key_mask;
                 if (key_mask == INPUT_ATTACK) {
@@ -113,7 +115,7 @@ static void client_on_keyreleased(const char* key, int scancode, void* arg)
         else if (strcmp(key, "A") == 0) key_mask = INPUT_LEFT;
         else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
-        else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+        else if (strcmp(key, "space") == 0) key_mask = INPUT_JUMP;
         if (key_mask) self->ctx->current_input_mask &= ~key_mask;
 }
 

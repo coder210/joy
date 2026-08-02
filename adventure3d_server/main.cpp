@@ -22,7 +22,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         game_timer_init(&game_timer);
         game_timer_set_target_fps(&game_timer, 60);
 
-        ctx->window = create_window("server", 240, 160);
+        ctx->window = create_window("server", 800, 600);
 
         g_mgr = scene_manager_create();
         scene_manager_push(g_mgr, game_scene_get_scene(game_scene_create(ctx)));

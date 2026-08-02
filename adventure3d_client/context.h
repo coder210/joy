@@ -46,6 +46,7 @@ struct Context {
         render_mesh_p mesh_player = NULL;
         render_mesh_p mesh_enemy = NULL;
         render_mesh_p mesh_floor = NULL;
+        void* floor_tex = NULL;  // 棋盘格地板纹理
         netclient_p netclient;
         entt::registry ecs;
         entt::entity singleton_net = entt::null;

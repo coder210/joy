@@ -11,6 +11,7 @@ struct GlobalState {
     // 摄像机
     vec3_t camera_position = { 0.0f, 0.0f, 0.0f };
     vec3_t camera_target = { 0.0f, 0.0f, 0.0f };
+    float camera_yaw = 0.0f;  // 相机水平朝向（弧度），移动方向相对此方向
     int camera_follow_conv = -1;  // 要跟随的玩家 conv，-1 表示不跟随
 };
 
