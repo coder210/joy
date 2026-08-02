@@ -4,6 +4,7 @@
 #include "../components/logic_position_component.h"
 #include "../components/player_physics_component.h"
 #include "../components/action_state_component.h"
+#include "../components/global_state_component.h"
 #include "../protocol.h"
 #include <joy/jmath.h>
 #include <cmath>
@@ -28,13 +29,16 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
 		if (registry.all_of<ActionStateComponent>(e))
 			registry.get<ActionStateComponent>(e).yaw = yaw;
 
-		// ---- 相对相机方向的 XZ 移动（W=相机前方，D=相机右侧） ----
+		// ---- MOBA 标准：WASD 相对相机方向移动 ----
+		// 相机 yaw 固定 0（正对 +Z 看）时：W=+Z、S=-Z、A=+X、D=-X
+		// 前向 F=(sin,0,cos)，右侧 R=(-cos,0,sin)，W=F、S=-F、D=R、A=-R
+		float cam_yaw = ctx->ecs.ctx().get<GlobalState>().camera_yaw;
+		float sy = sinf(cam_yaw), cy = cosf(cam_yaw);
 		float fdx = 0.0f, fdz = 0.0f;
-		float sy = sinf(yaw), cy = cosf(yaw);
 		if (psi.move_bits & INPUT_UP)    { fdx += sy; fdz += cy; }
 		if (psi.move_bits & INPUT_DOWN)  { fdx -= sy; fdz -= cy; }
-		if (psi.move_bits & INPUT_LEFT)  { fdx -= cy; fdz += sy; }
-		if (psi.move_bits & INPUT_RIGHT) { fdx += cy; fdz -= sy; }
+		if (psi.move_bits & INPUT_LEFT)  { fdx += cy; fdz -= sy; }
+		if (psi.move_bits & INPUT_RIGHT) { fdx -= cy; fdz += sy; }
 		float len = sqrtf(fdx * fdx + fdz * fdz);
 		if (len > 1e-4f) {
 			fdx /= len; fdz /= len;

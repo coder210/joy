@@ -73,17 +73,16 @@ static void send_input(Context* ctx)
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (ctx->attack_triggered) { attack = 1; ctx->attack_triggered = false; }
     int16_t yaw = (int16_t)(ctx->local_yaw / 3.14159265f * 32767.0f);
-    if (dir || attack) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, dir, attack, yaw);
-        netclient_send(ctx->netclient, data.c_str(), (int)data.size());
-    }
+    // 始终发送（含 dir=0）：松开按键时服务器才能收到停止指令，清零 move_bits
+    auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, 0, dir, attack, yaw);
+    netclient_send(ctx->netclient, data.c_str(), (int)data.size());
 }
 
 // ========== 网络消息接收 ==========
 static void network_receive(Context* ctx)
 {
         net_message_t msg;
-        if (netclient_poll_message(ctx->netclient, &msg)) {
+        while (netclient_poll_message(ctx->netclient, &msg)) {
             if (msg.type == NET_TYPE_CONNECTED) {
                 auto d = pack_c2s(CMD_LOADING, 0, 0, 0, 0, 0, 0);
                 netclient_send(ctx->netclient, d.c_str(), (int)d.size());

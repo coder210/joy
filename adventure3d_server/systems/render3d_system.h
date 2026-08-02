@@ -18,13 +18,12 @@ static void render3d_system(Context* ctx, float /*dt*/) {
 
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
-    // MOBA 俯视角相机：绕目标水平旋转（yaw 跟随玩家朝向），固定俯仰角 60°，
-    // 视线瞄准玩家头顶上方 1 米 —— 与 joy_editor/main8888.cpp 一致
-    const float CAM_DIST = 8.0f;
-    const float CAM_PITCH = 60.0f * 3.14159265f / 180.0f;
-    float yaw = gs.camera_yaw;
+    // 固定相机：55° 俯仰角 + 正对场景（yaw=0，格子不斜），拉远看全场景
+    const float CAM_DIST = 22.0f;
+    const float CAM_PITCH = 55.0f * 3.14159265f / 180.0f;
+    float yaw = 0.0f;  // 正对 -Z 方向，场景轴与屏幕对齐
     float cp = cosf(CAM_PITCH), sp = sinf(CAM_PITCH);
-    vec3_t target = gs.camera_target;
+    vec3_t target = { 0.0f, 0.0f, 0.0f };
     vec3_t aim = { target.x, target.y + 1.0f, target.z };
     vec3_t eye = {
         target.x - sinf(yaw) * cp * CAM_DIST,
@@ -56,7 +55,28 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         r3d_draw_mesh_lit(ctx->r3d, ctx->mesh_floor, &m, ctx->floor_tex);
     }
 
-    // 联机玩家/敌人由客户端渲染，服务器只渲染地面 + 静态碰撞体
+    // 玩家/敌人实体（带光照 + 颜色），与客户端渲染一致
+    auto view = ctx->ecs.view<TransformComponent>();
+    for (auto e : view) {
+        auto& t = view.get<TransformComponent>(e);
+
+        render_mesh_p mesh = nullptr;
+        jcolor_t color = { 255, 255, 255, 255 };
+        if (ctx->ecs.all_of<PlayerComponent>(e)) {
+            mesh = ctx->mesh_player;
+            color = { 100, 150, 255, 255 };
+        } else if (ctx->ecs.all_of<EnemyComponent>(e)) {
+            mesh = ctx->mesh_enemy;
+            color = { 255, 80, 80, 255 };
+        }
+        if (!mesh) continue;
+
+        mat44_t m = mat44_identity();
+        m.m0 = t.scale.x; m.m5 = t.scale.y; m.m10 = t.scale.z;
+        m.m12 = t.position.x; m.m13 = t.position.y; m.m14 = t.position.z;
+        r3d_draw_mesh_lit_color(ctx->r3d, mesh, &m, color);
+    }
+
     // 静态碰撞体（箱子/球/OBB/斜坡，来自 main8888.cpp）由服务器本地渲染
     auto static_view = ctx->ecs.view<TransformComponent, StaticMeshComponent>();
     for (auto e : static_view) {

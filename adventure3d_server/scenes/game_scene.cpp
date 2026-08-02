@@ -18,7 +18,6 @@
 #include "../../adventure3d_shared/systems/movement_system.h"
 #include "../../adventure3d_shared/systems/cleanup_system.h"
 #include "../../adventure3d_shared/systems/collision_system.h"
-#include "../../adventure3d_shared/systems/camera_follow_system.h"
 #include "../../adventure3d_shared/systems/ai_system.h"
 
 #include "../network/network_utils.h"
@@ -42,6 +41,8 @@ static void on_load(scene_p s)
         // 初始化 3D 渲染器和网格资源（lit 网格 + 棋盘格地板，与 main8888.cpp 一致）
         ctx->r3d = r3d_create(ctx->window, "adventure3d_server/shaders");
         ctx->mesh_floor  = r3d_mesh_plane_lit(ctx->r3d, 20.0f, 20.0f, 10);
+        ctx->mesh_player = r3d_mesh_cube_lit(ctx->r3d, 0.6f, 1.2f, 0.6f);
+        ctx->mesh_enemy  = r3d_mesh_cube_lit(ctx->r3d, 0.5f, 1.0f, 0.5f);
         ctx->floor_tex   = r3d_gen_checkerboard(ctx->r3d, 32, 10);
 
         // 注册全局单例（通过 registry.ctx() 访问）
@@ -49,7 +50,7 @@ static void on_load(scene_p s)
         ctx->ecs.ctx().emplace<GlobalState>();
 
         // 注册 system
-        add_system(ctx, OnStart, "creating_block", creating_block_system);
+        //add_system(ctx, OnStart, "creating_block", creating_block_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
@@ -130,7 +131,6 @@ static void on_update(scene_p s, float dt)
 
 
         interpolate_position_system(ctx->ecs, ctx, dt);
-        camera_follow_system(ctx->ecs, ctx, dt);
 
 }
 
@@ -157,6 +157,8 @@ static void on_destroy(scene_p s)
                 }
         }
         if (ctx->mesh_floor) r3d_mesh_destroy(ctx->r3d, ctx->mesh_floor);
+        if (ctx->mesh_player) r3d_mesh_destroy(ctx->r3d, ctx->mesh_player);
+        if (ctx->mesh_enemy) r3d_mesh_destroy(ctx->r3d, ctx->mesh_enemy);
         if (ctx->r3d) {
                 r3d_destroy(ctx->r3d);
                 ctx->r3d = NULL;

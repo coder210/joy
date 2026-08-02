@@ -17,13 +17,12 @@ static void render3d_system(Context* ctx, float /*dt*/) {
 
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
-    // MOBA 俯视角相机：绕目标水平旋转（yaw 跟随玩家朝向），固定俯仰角 60°，
-    // 视线瞄准玩家头顶上方 1 米 —— 与 joy_editor/main8888.cpp 一致
-    const float CAM_DIST = 8.0f;
-    const float CAM_PITCH = 60.0f * 3.14159265f / 180.0f;
-    float yaw = gs.camera_yaw;
+    // 固定相机：55° 俯仰角 + 正对场景（yaw=0，格子不斜），拉远看全场景
+    const float CAM_DIST = 22.0f;
+    const float CAM_PITCH = 55.0f * 3.14159265f / 180.0f;
+    float yaw = 0.0f;  // 正对 -Z 方向，场景轴与屏幕对齐
     float cp = cosf(CAM_PITCH), sp = sinf(CAM_PITCH);
-    vec3_t target = gs.camera_target;
+    vec3_t target = { 0.0f, 0.0f, 0.0f };
     vec3_t aim = { target.x, target.y + 1.0f, target.z };
     vec3_t eye = {
         target.x - sinf(yaw) * cp * CAM_DIST,

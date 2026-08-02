@@ -35,6 +35,8 @@ struct Context {
         jwindow_p window;
         jr3d_p r3d = NULL;
         render_mesh_p mesh_floor = NULL;
+        render_mesh_p mesh_player = NULL;
+        render_mesh_p mesh_enemy = NULL;
         void* floor_tex = NULL;  // 棋盘格地板纹理
 
         entt::registry ecs;

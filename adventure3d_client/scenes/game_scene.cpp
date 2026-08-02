@@ -14,7 +14,6 @@
 #include "../adventure3d_shared/systems/cleanup_system.h"
 #include "../adventure3d_shared/systems/collision_system.h"
 #include "../network/network_utils.h"
-#include "../../adventure3d_shared/systems/camera_follow_system.h"
 #include "../../adventure3d_shared/systems/ai_system.h"
 
 // 玩家状态机（使用 ECS ActionStateComponent）
@@ -169,7 +168,6 @@ static void on_update(scene_p s, float dt) {
 
         // 视觉相关 system 用实时 dt 每帧更新（不放在固定步长内）
         interpolate_position_system(self->ctx->ecs, self->ctx, dt);
-        camera_follow_system(self->ctx->ecs, self->ctx, dt);
 }
 
 static void on_render(scene_p s) {
