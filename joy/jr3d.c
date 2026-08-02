@@ -27,6 +27,7 @@ struct jr3d {
 	SDL_GPUCommandBuffer* cmd;
 	SDL_GPURenderPass* rp;
 	int                ww, wh;
+	int                last_ww, last_wh;  /* 上次已处理的渲染尺寸（resize 检测基准） */
 
 	/* 相机/投影 */
 	mat44_t            viewProj;
@@ -409,6 +410,7 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	if (!r->sampler) { r3d_destroy(r); return NULL; }
 
 	SDL_GetWindowSize(r->win, &r->ww, &r->wh);
+	r->last_ww = r->ww; r->last_wh = r->wh;
 	r->depth = (SDL_GPUTexture*)r3d_create_depth_texture(r->dev, r->ww, r->wh);
 	if (!r->depth) { r3d_destroy(r); return NULL; }
 
@@ -499,7 +501,12 @@ bool r3d_begin(jr3d_p r)
 		SDL_SubmitGPUCommandBuffer(r->cmd); r->cmd = NULL; return false;
 	}
 
-	if ((int)sw != r->ww || (int)sh != r->wh) {
+	/* 以实际 swapchain 尺寸为基准检测 resize：
+	 * 窗口 resize 后 swapchain 尺寸变化, 更新投影宽高比并重建深度纹理；
+	 * 不能拿 SDL_GetWindowSize 的逻辑尺寸与 swapchain 比较,
+	 * 否则 GetWindowSize 已先刷新 ww/wh, 条件恒不成立导致 aspect 永不更新 */
+	if ((int)sw != r->last_ww || (int)sh != r->last_wh) {
+		r->last_ww = (int)sw; r->last_wh = (int)sh;
 		r->ww = (int)sw; r->wh = (int)sh;
 		r->aspect = (float)r->ww / (float)r->wh;
 		if (r->depth) SDL_ReleaseGPUTexture(r->dev, r->depth);
@@ -524,7 +531,8 @@ bool r3d_begin(jr3d_p r)
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 
 	SDL_GPUViewport vp = { 0 };
-	vp.w = (float)r->ww; vp.h = (float)r->wh; vp.max_depth = 1;
+	/* 用实际 swapchain 尺寸，避免 SDL_GetWindowSize 逻辑尺寸与物理像素不一致 */
+	vp.w = (float)r->last_ww; vp.h = (float)r->last_wh; vp.max_depth = 1;
 	SDL_SetGPUViewport(r->rp, &vp);
 
 	return true;
