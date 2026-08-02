@@ -547,7 +547,8 @@ void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fov
 	r->fovy = fovy;
 	view = mat44_lookAt(eye, target, up);
 	proj = mat44_perspective(ft_radians(r->fovy), r->aspect, r->near_, r->far_);
-	r->viewProj = mat44_mul(view, proj);
+	// Column-major multiply: viewProj = proj * view (clip = viewProj * model * v = P * V * M * v)
+	r->viewProj = mat44_mul(proj, view);
 	if (r->light_block_valid) {
 		r->light_block.viewPos[0] = eye.x;
 		r->light_block.viewPos[1] = eye.y;

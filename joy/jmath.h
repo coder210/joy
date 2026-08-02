@@ -53,11 +53,13 @@ typedef struct mat22f {
 } mat22f_t;
 
 
+// Column-major layout: m0,m4,m8,m12 = column 1, m1,m5,m9,m13 = column 2, etc.
+// (same convention as GLSL mat4 / mat44_t / the rest of the mat44f_* functions)
 typedef struct mat44f {
-	fp_t m0, m4, m8, m12;  // Matrix first row (4 components)
-	fp_t m1, m5, m9, m13;  // Matrix second row (4 components)
-	fp_t m2, m6, m10, m14; // Matrix third row (4 components)
-	fp_t m3, m7, m11, m15; // Matrix fourth row (4 components)
+	fp_t m0, m4, m8, m12;  // Column 1 (4 components)
+	fp_t m1, m5, m9, m13;  // Column 2 (4 components)
+	fp_t m2, m6, m10, m14; // Column 3 (4 components)
+	fp_t m3, m7, m11, m15; // Column 4 (4 components)
 }mat44f_t;
 
 
@@ -80,11 +82,13 @@ typedef struct mat22 {
 	vec2_t col2;
 } mat22_t;
 
+// Column-major layout: m0,m4,m8,m12 = column 1, m1,m5,m9,m13 = column 2, etc.
+// (same convention as GLSL mat4 / mat44f_t / the rest of the mat44_* functions)
 typedef struct mat44 {
-	ft_t m0, m4, m8, m12;  // Matrix first row (4 components)
-	ft_t m1, m5, m9, m13;  // Matrix second row (4 components)
-	ft_t m2, m6, m10, m14; // Matrix third row (4 components)
-	ft_t m3, m7, m11, m15; // Matrix fourth row (4 components)
+	ft_t m0, m4, m8, m12;  // Column 1 (4 components)
+	ft_t m1, m5, m9, m13;  // Column 2 (4 components)
+	ft_t m2, m6, m10, m14; // Column 3 (4 components)
+	ft_t m3, m7, m11, m15; // Column 4 (4 components)
 }mat44_t;
 
 
