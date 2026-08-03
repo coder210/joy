@@ -1,6 +1,7 @@
 #ifndef NETWORK_UTILS_H
 #define NETWORK_UTILS_H
 #include "../context.h"
+#include <joy/joy.h>
 
 // ========== 网络命令处理（handle_cmd_*）==========
 static void handle_cmd_loading(Context* ctx, int conv)
@@ -25,6 +26,14 @@ static void handle_cmd_loading(Context* ctx, int conv)
 
 static void handle_cmd_player_join(Context* ctx, int conv, int64_t x, int64_t y, int64_t z)
 {
+        // 玩家出生点由服务端用帧同步随机数决定，保证 server/client 位置一致
+        if (ctx->random) {
+                float rx = (float)utils_random_next(ctx->random) / (float)UINT32_MAX * 16.0f - 8.0f;
+                float rz = (float)utils_random_next(ctx->random) / (float)UINT32_MAX * 16.0f - 8.0f;
+                x = fp_from_float(rx);
+                y = fp_from_float(0.0f);
+                z = fp_from_float(rz);
+        }
         S2CPlayerJoin j = { conv, x, y, z };
         ctx->player_joins.push_back(j);
 }
