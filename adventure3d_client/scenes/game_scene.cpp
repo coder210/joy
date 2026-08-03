@@ -189,6 +189,7 @@ static void on_destroy(scene_p s) {
         if (self->ctx->mesh_enemy) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_enemy);
         if (self->ctx->mesh_player) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_player);
         if (self->ctx->mesh_prop) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_prop);
+        if (self->ctx->random) utils_random_destroy(self->ctx->random);
         delete self;
 }
 

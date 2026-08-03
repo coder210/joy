@@ -48,6 +48,8 @@ struct Context {
         void* floor_tex = NULL;  // checkerboard floor texture
         netclient_p netclient;
         entt::registry ecs;
+        random_num_p random = NULL;  // 与服务端同源的随机数（loading 时以 seed 创建）
+
         entt::entity singleton_net = entt::null;
 
         // ---- 音频 ----

@@ -141,6 +141,11 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         typedef struct random_num random_num_t, * random_num_p;
 
+        // 可重置随机数（Mersenne Twister），用于帧同步保证 server/client 随机序列一致
+        random_num_p utils_random_create(uint32_t seed);
+        void         utils_random_destroy(random_num_p rnum);
+        uint32_t     utils_random_next(random_num_p rnum);
+
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct jtimer jtimer_t, *jtimer_p;
 

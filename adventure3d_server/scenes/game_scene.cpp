@@ -3,6 +3,7 @@
 #include <queue>
 #include <algorithm>
 #include <cstdlib>
+#include <ctime>
 #include <joy/joy.h>
 #include "../../adventure3d_shared/protocol.h"
 #include "../context.h"
@@ -47,7 +48,9 @@ static void on_load(scene_p s)
 
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
-        ctx->ecs.ctx().emplace<GlobalState>();
+        auto& gs = ctx->ecs.ctx().emplace<GlobalState>();
+        gs.random_seed = (int)time(nullptr);  // 每次启动随机种子，loading 时同步给客户端
+        ctx->random = utils_random_create((uint32_t)gs.random_seed);
 
         // 注册 system
         add_system(ctx, OnStart, "creating_block", creating_block_system);
@@ -163,6 +166,7 @@ static void on_destroy(scene_p s)
                 r3d_destroy(ctx->r3d);
                 ctx->r3d = NULL;
         }
+        if (ctx->random) utils_random_destroy(ctx->random);
         netserver_destroy(ctx->net_server);
 }
 

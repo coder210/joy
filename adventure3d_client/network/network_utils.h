@@ -110,11 +110,14 @@ static void network_receive(Context* ctx)
                 jmsgpack_unpacked_destroy(&r);
 
                 if (is_loading) {
-                    int conv, frame_id, eid;
+                    int conv, frame_id, eid, seed;
                     S2CEntity entities[512];
-                    int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, entities, 512);
-                    if (ec >= 0)
+                    int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, &seed, entities, 512);
+                    if (ec >= 0) {
+                        if (ctx->random) utils_random_destroy(ctx->random);
+                        ctx->random = utils_random_create((uint32_t)seed);
                         handle_loading(ctx, conv, frame_id, eid, entities, ec);
+                    }
                 }
                 else {
                     ctx->command_queue.push(std::string(msg.data, msg.len));

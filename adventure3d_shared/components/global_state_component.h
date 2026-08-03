@@ -8,6 +8,9 @@ struct GlobalState {
     int next_entity_id = 1;
     int next_frame_id  = 1;
 
+    // 随机种子（loading 时同步给客户端，保证双方随机行为一致）
+    int random_seed = 0;
+
     // 摄像机
     vec3_t camera_position = { 0.0f, 0.0f, 0.0f };
     vec3_t camera_target = { 0.0f, 0.0f, 0.0f };

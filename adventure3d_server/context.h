@@ -40,6 +40,7 @@ struct Context {
         void* floor_tex = NULL;  // 棋盘格地板纹理
 
         entt::registry ecs;
+        random_num_p random = NULL;  // 与服务端同源的随机数（on_load 时以 seed 创建）
 
         std::vector<S2CPlayerJoin> player_joins;
         std::vector<S2CPlayerLeave> player_leaves;

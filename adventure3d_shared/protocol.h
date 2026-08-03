@@ -152,16 +152,16 @@ static inline std::string pack_world(int entity_id, const S2CEntity* entities, i
     return out;
 }
 
-/* S2C loading 打包: [S2C_CMD_LOADING, [conv, frame_id, [world_eid, [entity...]]]] */
+/* S2C loading 打包: [S2C_CMD_LOADING, [conv, frame_id, [world_eid, [entity...]], seed]] */
 static inline std::string pack_s2c_loading(int32_t conv, int32_t frame_id, int32_t world_eid,
-    const S2CEntity* entities, int ec)
+    const S2CEntity* entities, int ec, int32_t seed)
 {
     std::string out;
     jmsgpack_packer_t pk;
     jmsgpack_packer_init(&pk, &out, mp_write_cb);
     jmsgpack_pack_array(&pk, 2);
     jmsgpack_pack_int(&pk, S2C_CMD_LOADING);
-    jmsgpack_pack_array(&pk, 3);
+    jmsgpack_pack_array(&pk, 4);
     jmsgpack_pack_int(&pk, conv);
     jmsgpack_pack_int(&pk, frame_id);
     jmsgpack_pack_array(&pk, 2);
@@ -169,6 +169,7 @@ static inline std::string pack_s2c_loading(int32_t conv, int32_t frame_id, int32
     jmsgpack_pack_array(&pk, ec);
     for (int i = 0; i < ec; i++)
         pack_entity(&pk, entities[i]);
+    jmsgpack_pack_int(&pk, seed);
     return out;
 }
 
@@ -236,9 +237,9 @@ static inline int unpack_world(const char* data, int len, int* eid, S2CEntity* e
     return n;
 }
 
-/* 解包 S2C loading 消息: 返回实体数，通过出参返回 conv/frame_id/eid */
+/* 解包 S2C loading 消息: 返回实体数，通过出参返回 conv/frame_id/eid/seed */
 static inline int unpack_loading(const char* data, int len,
-    int* conv, int* frame_id, int* eid,
+    int* conv, int* frame_id, int* eid, int* seed,
     S2CEntity* entities, int max_ec)
 {
     jmsgpack_unpacked_t r;
@@ -246,12 +247,13 @@ static inline int unpack_loading(const char* data, int len,
     size_t off = 0;
     if (jmsgpack_unpack_next(&r, data, len, &off) < 0) { jmsgpack_unpacked_destroy(&r); return -1; }
     auto* pl = &r.data.via.array.ptr[1];
-    if (pl->type != JMSGPACK_OBJECT_ARRAY || pl->via.array.size < 3) { jmsgpack_unpacked_destroy(&r); return -1; }
+    if (pl->type != JMSGPACK_OBJECT_ARRAY || pl->via.array.size < 4) { jmsgpack_unpacked_destroy(&r); return -1; }
     if (conv)     *conv     = (int)jmp_int(&pl->via.array.ptr[0]);
     if (frame_id) *frame_id = (int)jmp_int(&pl->via.array.ptr[1]);
     auto* w = &pl->via.array.ptr[2];
     if (w->type != JMSGPACK_OBJECT_ARRAY || w->via.array.size < 2) { jmsgpack_unpacked_destroy(&r); return -1; }
     if (eid) *eid = (int)jmp_int(&w->via.array.ptr[0]);
+    if (seed) *seed = (int)jmp_int(&pl->via.array.ptr[3]);
     auto* arr = &w->via.array.ptr[1];
     int n = (int)arr->via.array.size;
     if (n > max_ec) n = max_ec;
