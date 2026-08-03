@@ -1,14 +1,14 @@
-#ifndef CREATING_BLOCK_SYSTEM_H
-#define CREATING_BLOCK_SYSTEM_H
+#ifndef SPAWN_OBSTACLES_SYSTEM_H
+#define SPAWN_OBSTACLES_SYSTEM_H
 #include "../context.h"
-#include "../components/static_mesh_component.h"
+#include "../adventure3d_shared/components/static_mesh_component.h"
 #include <joy/joy.h>
 #include <cmath>
 
 // 静态碰撞体生成 system：在 OnStart 阶段一次性创建（只执行一次）
 // 数据来自 joy_editor/main8888.cpp（SDL_AppInit 中的 boxDefs / 球 / OBB / 斜坡）
 // 组装方式与创建玩家一致：registry.create() + 逐个 emplace 组件
-static void creating_block_system(entt::registry& registry, Context* ctx, float dt) {
+static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
     (void)dt;
     if (!ctx->r3d) return;
 
@@ -43,7 +43,6 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         registry.emplace<TransformComponent>(e,
             vec3_t{ d.x, d.sy * 0.5f, d.z }, 0.0f,
             vec3_t{ d.sx, d.sy, d.sz });
-        registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 150, 110, 70, 255 }, 0.0f });
     }
 
@@ -58,7 +57,6 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         col.radius = fp_from_float(0.5f);
         registry.emplace<ColliderComponent>(e, col);
         registry.emplace<TransformComponent>(e, vec3_t{ 2, 0.5f, 2 }, 0.0f, vec3_t{ 1, 1, 1 });
-        registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ sphere, { 60, 200, 90, 255 }, 0.0f });
     }
 
@@ -73,7 +71,6 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         col.half_size = { fp_from_float(0.4f), fp_from_float(0.4f), fp_from_float(0.4f) };
         registry.emplace<ColliderComponent>(e, col);
         registry.emplace<TransformComponent>(e, vec3_t{ -2, 0.5f, 2 }, ft_radians(45.0f), vec3_t{ 0.8f, 0.8f, 0.8f });
-        registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 255, 165, 0, 255 }, 0.0f });
     }
 
@@ -88,7 +85,6 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         col.half_size = { fp_from_float(1.0f), fp_from_float(0.75f), fp_from_float(1.5f) };
         registry.emplace<ColliderComponent>(e, col);
         registry.emplace<TransformComponent>(e, vec3_t{ -6, 0, 0 }, 0.0f, vec3_t{ 1, 1, 1 });
-        registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ ramp, { 180, 140, 90, 255 }, 0.0f });
     }
 
@@ -104,7 +100,6 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         col.half_size = { fp_from_float(1.0f), fp_from_float(0.5f), fp_from_float(1.5f) };
         registry.emplace<ColliderComponent>(e, col);
         registry.emplace<TransformComponent>(e, vec3_t{ 6, 0.5f, 0 }, 0.0f, vec3_t{ 2, 1, 3 });
-        registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 180, 140, 90, 255 }, roll });
     }
 }

@@ -10,6 +10,10 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
         for (auto e : body_view) {
                 if (registry.all_of<LocalOnlyComponent>(e))
                         continue;
+                // 静态障碍物（箱子/球/OBB/斜坡）由客户端本地 spawn_obstacles 创建并渲染，
+                // 不通过 snapshot 同步，避免重复创建与渲染不一致。
+                if (registry.all_of<StaticMeshComponent>(e))
+                        continue;
                 if (ctx->num_entities >= 512)
                         return;
 

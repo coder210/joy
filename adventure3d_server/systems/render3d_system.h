@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstring>
 #include "../context.h"
-#include "../components/static_mesh_component.h"
+#include "../../adventure3d_shared/components/static_mesh_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
 #include "../../adventure3d_shared/components/mesh_component.h"
 #include "../../adventure3d_shared/components/global_state_component.h"
@@ -82,10 +82,14 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         mat44_t m = mat44_identity();
         float sx = t.scale.x, sy = t.scale.y, sz = t.scale.z;
         if (sm.roll != 0.0f) {
-            // 绕 Z 轴旋转（斜放长方体斜坡）
+            // 绕 Z 轴旋转（斜放长方体斜坡）。mat44 为列主序：
+            //   [ c -s 0 ]       列1: m0=c*sx, m1=-s*sy, m2=0
+            //   [ s  c 0 ]       列2: m4=s*sx, m5=c*sy,  m6=0
+            //   [ 0  0 1 ]       列3: m8=0,    m9=0,     m10=sz
             float cr = cosf(sm.roll), sr = sinf(sm.roll);
-            m.m0 = sx;        m.m5 = sy * cr; m.m6 = sy * sr;
-            m.m9 = sz * -sr;  m.m10 = sz * cr;
+            m.m0 = cr * sx;  m.m1 = sr * sy;  m.m2 = 0.0f;
+            m.m4 = -sr * sx; m.m5 = cr * sy;  m.m6 = 0.0f;
+            m.m8 = 0.0f;     m.m9 = 0.0f;     m.m10 = sz;
         } else if (t.yaw != 0.0f) {
             // 绕 Y 轴旋转（OBB）
             float c = cosf(t.yaw), s = sinf(t.yaw);

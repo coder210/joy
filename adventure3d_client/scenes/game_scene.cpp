@@ -13,6 +13,7 @@
 #include "../adventure3d_shared/systems/movement_system.h"
 #include "../adventure3d_shared/systems/cleanup_system.h"
 #include "../adventure3d_shared/systems/collision_system.h"
+#include "../adventure3d_shared/systems/spawn_obstacles_system.h"
 #include "../network/network_utils.h"
 #include "../../adventure3d_shared/systems/ai_system.h"
 
@@ -49,6 +50,7 @@ static void on_load(scene_p s)
         self->ctx->mesh_sky    = r3d_mesh_cube(self->ctx->r3d, 200.0f, 200.0f, 200.0f);  // 天空盒
 
         // 注册 system
+        add_system(self->ctx, OnStart, "spawn_obstacles", spawn_obstacles);
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);

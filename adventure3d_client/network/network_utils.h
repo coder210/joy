@@ -53,8 +53,9 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         }
                 }
                 else if (entity.type == S2C_TYPE_PROP) {
-                        // 静态障碍物：用本地的 prop mesh + 固定颜色渲染
-                        ctx->ecs.emplace<MeshComponent>(e, ctx->mesh_prop, jcolor_t{ 150, 110, 70, 255 });
+                        // 静态障碍物不再由服务器同步：客户端在 spawn_obstacles 本地创建并渲染。
+                        // 这里的实体来自旧快照/兜底，直接丢弃，避免重复创建。
+                        continue;
                 }
         }
 

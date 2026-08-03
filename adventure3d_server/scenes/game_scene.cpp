@@ -9,17 +9,17 @@
 #include "../context.h"
 #include "../../adventure3d_shared/systems/effect_lifecycle_system.h"
 #include "../../adventure3d_shared/systems/interpolate_position_system.h"
-#include "../systems/creating_block_system.h"
-#include "../components/static_mesh_component.h"
-#include "../systems/spawn_enemy_system.h"
+#include "../adventure3d_shared/components/static_mesh_component.h"
 #include "../../adventure3d_shared/systems/input_consume_join_system.h"
 #include "../../adventure3d_shared/systems/input_consume_leave_system.h"
 #include "../../adventure3d_shared/systems/input_consume_input_system.h"
-#include "../systems/snapshot_system.h"
 #include "../../adventure3d_shared/systems/movement_system.h"
 #include "../../adventure3d_shared/systems/cleanup_system.h"
 #include "../../adventure3d_shared/systems/collision_system.h"
 #include "../../adventure3d_shared/systems/ai_system.h"
+#include "../../adventure3d_shared/systems/spawn_obstacles_system.h"
+#include "../systems/snapshot_system.h"
+#include "../systems/spawn_enemy_system.h"
 
 #include "../network/network_utils.h"
 #include "../systems/render3d_system.h"
@@ -54,7 +54,7 @@ static void on_load(scene_p s)
         ctx->random = utils_random_create((uint32_t)gs.random_seed);
 
         // 注册 system
-        add_system(ctx, OnStart, "creating_block", creating_block_system);
+        add_system(ctx, OnStart, "spawn_obstacles", spawn_obstacles);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
