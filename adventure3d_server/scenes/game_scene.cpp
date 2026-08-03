@@ -45,6 +45,7 @@ static void on_load(scene_p s)
         ctx->mesh_player = r3d_mesh_cube_lit(ctx->r3d, 0.6f, 1.2f, 0.6f);
         ctx->mesh_enemy  = r3d_mesh_cube_lit(ctx->r3d, 0.5f, 1.0f, 0.5f);
         ctx->floor_tex   = r3d_gen_checkerboard(ctx->r3d, 32, 10);
+        ctx->mesh_sky    = r3d_mesh_cube(ctx->r3d, 200.0f, 200.0f, 200.0f);  // 天空盒
 
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
@@ -160,6 +161,7 @@ static void on_destroy(scene_p s)
                 }
         }
         if (ctx->mesh_floor) r3d_mesh_destroy(ctx->r3d, ctx->mesh_floor);
+        if (ctx->mesh_sky) r3d_mesh_destroy(ctx->r3d, ctx->mesh_sky);
         if (ctx->mesh_player) r3d_mesh_destroy(ctx->r3d, ctx->mesh_player);
         if (ctx->mesh_enemy) r3d_mesh_destroy(ctx->r3d, ctx->mesh_enemy);
         if (ctx->r3d) {

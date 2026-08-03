@@ -31,8 +31,15 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
 
         for (auto other_entity : static_view) {
             if (other_entity == player_entity) continue;
-            if (registry.all_of<PlayerComponent>(other_entity)) continue;
-            if (registry.all_of<EnemyComponent>(other_entity)) continue;
+            // 玩家之间、玩家与敌人之间也互相推开，避免相互穿透
+            if (registry.all_of<PlayerComponent>(other_entity)) {
+                // 仅当 other 的 entity id 大于当前玩家时才处理，
+                // 保证帧同步两端按一致顺序两两分离，避免双推导致顺序依赖
+                if ((uint32_t)other_entity <= (uint32_t)player_entity) continue;
+            }
+            if (registry.all_of<EnemyComponent>(other_entity)) {
+                // 敌人视为不可推动的障碍，仅把玩家推开
+            }
 
             auto& other_col = static_view.get<ColliderComponent>(other_entity);
             auto& other_pos = static_view.get<LogicPositionComponent>(other_entity);
@@ -52,13 +59,14 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
             gjk3df_contact_t contact;
             vec3f_t init_dir = { fp_one(), fp_zero(), fp_zero() };
             if (gjk3df_collide(&player_shape, &other_shape, init_dir, &contact)) {
-                // 沿法线方向推开玩家（法线从 other 指向 player）
+                // gjk3df_collide(c1=player, c2=other) 返回的 normal 方向为 player→other，
+                // 需沿 -normal（other→player）把玩家推离静态物，否则会越推越进去导致穿透。
                 fp_t depth = contact.depth;
                 if (depth < fp_zero()) depth = fp_sub(fp_zero(), depth);
 
-                player_pos.x = fp_add(player_pos.x, fp_mul(contact.normal.x, depth));
-                player_pos.y = fp_add(player_pos.y, fp_mul(contact.normal.y, depth));
-                player_pos.z = fp_add(player_pos.z, fp_mul(contact.normal.z, depth));
+                player_pos.x = fp_sub(player_pos.x, fp_mul(contact.normal.x, depth));
+                player_pos.y = fp_sub(player_pos.y, fp_mul(contact.normal.y, depth));
+                player_pos.z = fp_sub(player_pos.z, fp_mul(contact.normal.z, depth));
 
                 // 更新玩家形状以继续检测
                 ppos.x = player_pos.x;

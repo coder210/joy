@@ -32,6 +32,14 @@ static void render3d_system(Context* ctx, float /*dt*/) {
     if (!r3d_begin(ctx->r3d)) return;
     r3d_camera_lookat(ctx->r3d, eye, aim, up, 60.0f);
 
+    // 天空盒：大立方体纯色背景，中心置于相机处（永远在玩家四周），
+    // 必须在 camera_lookat 之后绘制，使用本帧正确的相机矩阵。
+    // 深度测试保证地面/实体正确覆盖它。
+    if (ctx->mesh_sky) {
+        jcolor_t sky_color = { 135, 206, 235, 255 };
+        r3d_draw_mesh(ctx->r3d, ctx->mesh_sky, eye, { 1.0f, 1.0f, 1.0f }, sky_color);
+    }
+
     // 光照：环境光 + 方向光（方向随相机 yaw 旋转），与 main8888.cpp 一致
     jr3d_light_block_t lb;
     memset(&lb, 0, sizeof(lb));

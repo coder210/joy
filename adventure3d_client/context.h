@@ -44,6 +44,7 @@ struct Context {
         render_mesh_p mesh_player = NULL;
         render_mesh_p mesh_enemy = NULL;
         render_mesh_p mesh_prop = NULL;   // 静态障碍物（墙/箱子）
+        render_mesh_p mesh_sky = NULL;    // 天空盒（大立方体，纯色）
         render_mesh_p mesh_floor = NULL;
         void* floor_tex = NULL;  // checkerboard floor texture
         netclient_p netclient;

@@ -37,6 +37,7 @@ struct Context {
         render_mesh_p mesh_floor = NULL;
         render_mesh_p mesh_player = NULL;
         render_mesh_p mesh_enemy = NULL;
+        render_mesh_p mesh_sky = NULL;   // 天空盒（大立方体，纯色）
         void* floor_tex = NULL;  // 棋盘格地板纹理
 
         entt::registry ecs;

@@ -46,6 +46,7 @@ static void on_load(scene_p s)
         self->ctx->mesh_prop   = r3d_mesh_cube_lit(self->ctx->r3d, 1.0f, 1.0f, 1.0f);
         self->ctx->mesh_floor  = r3d_mesh_plane_lit(self->ctx->r3d, 20.0f, 20.0f, 10);
         self->ctx->floor_tex   = r3d_gen_checkerboard(self->ctx->r3d, 32, 10);
+        self->ctx->mesh_sky    = r3d_mesh_cube(self->ctx->r3d, 200.0f, 200.0f, 200.0f);  // 天空盒
 
         // 注册 system
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
@@ -186,6 +187,7 @@ static void on_destroy(scene_p s) {
         audio_bgm_destroy(self->ctx->bgm);
         if (self->ctx->audio_dev) audio_close_device(self->ctx->audio_dev);
         if (self->ctx->mesh_floor) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_floor);
+        if (self->ctx->mesh_sky) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_sky);
         if (self->ctx->mesh_enemy) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_enemy);
         if (self->ctx->mesh_player) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_player);
         if (self->ctx->mesh_prop) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_prop);
