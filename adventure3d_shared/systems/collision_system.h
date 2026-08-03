@@ -45,12 +45,20 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
             auto& other_pos = static_view.get<LogicPositionComponent>(other_entity);
 
             if (other_col.type != ColliderComponent::BOX &&
-                other_col.type != ColliderComponent::SPHERE) continue;
+                other_col.type != ColliderComponent::SPHERE &&
+                other_col.type != ColliderComponent::OBB &&
+                other_col.type != ColliderComponent::MESH) continue;
 
             gjk3df_collider_t other_shape;
             vec3f_t opos = { other_pos.x, other_pos.y, other_pos.z };
             if (other_col.type == ColliderComponent::SPHERE) {
                 gjk3df_init_sphere(&other_shape, opos, other_col.radius);
+            } else if (other_col.type == ColliderComponent::OBB) {
+                vec3f_t ohs  = { other_col.half_size.x, other_col.half_size.y, other_col.half_size.z };
+                gjk3df_init_obb(&other_shape, opos, ohs, other_col.rotation);
+            } else if (other_col.type == ColliderComponent::MESH) {
+                // 真实世界顶点（与渲染几何一致），GJK 直接对凸包检测
+                gjk3df_init_mesh(&other_shape, other_col.verts, other_col.verts_num);
             } else {
                 vec3f_t ohs  = { other_col.half_size.x, other_col.half_size.y, other_col.half_size.z };
                 gjk3df_init_box(&other_shape, opos, ohs);

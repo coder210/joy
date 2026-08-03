@@ -357,7 +357,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 GJK3DF_CTYPE_CAPSULE,  /* 胶囊: position(中心) + radius + height + axis */
                 GJK3DF_CTYPE_CYLINDER, /* 圆柱: position + radius + height */
                 GJK3DF_CTYPE_CONE,     /* 圆锥: position + radius + height */
-                GJK3DF_CTYPE_MESH      /* 自定义网格: vertices数组 */
+                GJK3DF_CTYPE_MESH,     /* 自定义网格: vertices数组 */
+                GJK3DF_CTYPE_OBB       /* 旋转盒: position + half_size + rotation(欧拉角) */
         } gjk3df_ctype_k;
 
         /* ---------- 3D碰撞体 ---------- */
@@ -365,9 +366,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 gjk3df_ctype_k type;
                 vec3f_t position;      /* 中心位置 */
                 fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
-                vec3f_t half_size;     /* BOX半边长 */
+                vec3f_t half_size;     /* BOX/OBB半边长 */
                 fp_t height;           /* 胶囊/圆柱/圆锥高度 */
                 vec3f_t axis;          /* 胶囊朝向(单位向量) */
+                vec3f_t rotation;      /* OBB欧拉角(绕 X/Y/Z 弧度) */
                 vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
                 int vertices_num;
         } gjk3df_collider_t, * gjk3df_collider_p;
@@ -1187,6 +1189,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 快捷初始化函数(仅设置参数,无内存分配) */
         JOY_API void gjk3df_init_sphere(gjk3df_collider_t* c, vec3f_t pos, fp_t radius);
         JOY_API void gjk3df_init_box(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size);
+        JOY_API void gjk3df_init_obb(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation);
         JOY_API void gjk3df_init_capsule(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
         JOY_API void gjk3df_init_cylinder(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
         JOY_API void gjk3df_init_cone(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);

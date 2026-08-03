@@ -1,6 +1,36 @@
 #include "external/klib/kvec.h"
 #include "joy.h"
 
+/* ============ OBB 辅助: 欧拉角(绕X/Y/Z) -> 列主序旋转矩阵 ============ */
+
+/* 列主序 mat44f_t 对方向向量做旋转(忽略平移分量) */
+static vec3f_t mat44f_rotate_dir(mat44f_t m, vec3f_t v) {
+        vec3f_t r;
+        r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m4, v.y)), fp_mul(m.m8,  v.z));
+        r.y = fp_add(fp_add(fp_mul(m.m1, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m9,  v.z));
+        r.z = fp_add(fp_add(fp_mul(m.m2, v.x), fp_mul(m.m6, v.y)), fp_mul(m.m10, v.z));
+        return r;
+}
+
+/* 列主序 mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
+static vec3f_t mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
+        vec3f_t r;
+        r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m1, v.y)), fp_mul(m.m2,  v.z));
+        r.y = fp_add(fp_add(fp_mul(m.m4, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m6,  v.z));
+        r.z = fp_add(fp_add(fp_mul(m.m8, v.x), fp_mul(m.m9, v.y)), fp_mul(m.m10, v.z));
+        return r;
+}
+
+/* 欧拉角(弧度) -> 组合旋转矩阵, 顺序: R = Rz * Ry * Rx */
+static mat44f_t euler_to_rot(vec3f_t euler) {
+        mat44f_t rx = mat44f_rotate_x(euler.x);
+        mat44f_t ry = mat44f_rotate_y(euler.y);
+        mat44f_t rz = mat44f_rotate_z(euler.z);
+        /* R = Rz * Ry * Rx */
+        mat44f_t tmp = mat44f_mul(ry, rx);
+        return mat44f_mul(rz, tmp);
+}
+
 /* ============ 内部类型 ============ */
 
 /* 单纯形 (GJK用) */
@@ -68,6 +98,20 @@ static vec3f_t find_furthest_point(gjk3df_collider_p c, vec3f_t dir) {
 		result.x = fp_add(c->position.x, sx);
 		result.y = fp_add(c->position.y, sy);
 		result.z = fp_add(c->position.z, sz);
+		break;
+	}
+	case GJK3DF_CTYPE_OBB: {
+		/* 旋转盒: 把 dir 逆旋转到本地空间取 AABB 最远点, 再正旋转回世界 */
+		mat44f_t R = euler_to_rot(c->rotation);
+		vec3f_t local_dir = mat44f_rotate_dir_t(R, dir);  /* 逆旋转(旋转矩阵正交, 用转置) */
+		fp_t sx = local_dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
+		fp_t sy = local_dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
+		fp_t sz = local_dir.z > fp_zero() ? c->half_size.z : -c->half_size.z;
+		vec3f_t local_pt = { sx, sy, sz };
+		vec3f_t world_pt = mat44f_rotate_dir(R, local_pt);
+		result.x = fp_add(c->position.x, world_pt.x);
+		result.y = fp_add(c->position.y, world_pt.y);
+		result.z = fp_add(c->position.z, world_pt.z);
 		break;
 	}
 	case GJK3DF_CTYPE_CAPSULE: {
@@ -545,6 +589,14 @@ void gjk3df_init_box(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size) {
 	c->type = GJK3DF_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
+}
+
+void gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation) {
+	memset(c, 0, sizeof(*c));
+	c->type = GJK3DF_CTYPE_OBB;
+	c->position = pos;
+	c->half_size = half_size;
+	c->rotation = rotation;
 }
 
 void gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
