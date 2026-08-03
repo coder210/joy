@@ -993,7 +993,12 @@ void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* te
 	render_mvp_t mvp;
 	SDL_GPUTextureSamplerBinding samp;
 	SDL_GPUBufferBinding bind;
-	if (!r || !r->rp || !r->lighting_pipeline || !r->light_block_valid || !m || !m->buffer) return;
+	if (!r || !r->rp || !r->lighting_pipeline || !r->light_block_valid || !m) return;
+	/* 拦截明显非法的 buffer 指针（如 0xFFFFFFFFFFFFFFFF / 内核地址），避免崩溃 */
+	if ((uintptr_t)m->buffer < (uintptr_t)0x1000 || (uintptr_t)m->buffer == (uintptr_t)-1) {
+		log_error("r3d_draw_mesh_lit: 跳过非法 mesh buffer %p", (void*)m->buffer);
+		return;
+	}
 
 	memset(&mvp, 0, sizeof(mvp));
 	r3d_mat44_to_float16(&r->viewProj, mvp.viewProj);

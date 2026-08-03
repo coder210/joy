@@ -22,6 +22,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
 
         for (int i = 0; i < ec; i++) {
                 auto& entity = entities[i];
+                // 静态障碍物不再由服务器同步：客户端在 spawn_obstacles 本地创建并渲染。
+                // 这里的 PROP 实体直接跳过，避免创建无渲染组件的幽灵实体。
+                if (entity.type == S2C_TYPE_PROP) continue;
+
                 auto e = ctx->ecs.create();
                 ctx->ecs.emplace<IdComponent>(e, entity.id);
                 ctx->ecs.emplace<LogicRectComponent>(e, entity.width, entity.height);
@@ -51,11 +55,6 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                                 fp_from_float(sd.detect_radius),
                                 fp_from_float(sd.attack_radius));
                         }
-                }
-                else if (entity.type == S2C_TYPE_PROP) {
-                        // 静态障碍物不再由服务器同步：客户端在 spawn_obstacles 本地创建并渲染。
-                        // 这里的实体来自旧快照/兜底，直接丢弃，避免重复创建。
-                        continue;
                 }
         }
 
