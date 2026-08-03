@@ -52,6 +52,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                                 fp_from_float(sd.attack_radius));
                         }
                 }
+                else if (entity.type == S2C_TYPE_PROP) {
+                        // 静态障碍物：用本地的 prop mesh + 固定颜色渲染
+                        ctx->ecs.emplace<MeshComponent>(e, ctx->mesh_prop, jcolor_t{ 150, 110, 70, 255 });
+                }
         }
 
         // 保存当前快照

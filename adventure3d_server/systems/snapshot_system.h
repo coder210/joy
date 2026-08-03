@@ -27,6 +27,8 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                         ent.type = S2C_TYPE_ENEMY;
                         if (registry.all_of<SpawnIdxComponent>(e))
                             ent.ai_type = registry.get<SpawnIdxComponent>(e).idx;
+                } else if (registry.all_of<StaticMeshComponent>(e)) {
+                        ent.type = S2C_TYPE_PROP;
                 } else {
                         ent.type = S2C_TYPE_NORMAL;
                 }

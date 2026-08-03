@@ -42,6 +42,7 @@ enum S2CType {
     S2C_TYPE_NORMAL = 0,
     S2C_TYPE_PLAYER = 1,
     S2C_TYPE_ENEMY  = 2,
+    S2C_TYPE_PROP   = 3,  // 静态障碍物（墙/箱子）
 };
 
 /* ============================ 协议结构体 ============================ */

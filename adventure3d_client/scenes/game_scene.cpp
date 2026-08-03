@@ -29,8 +29,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         log_info("[game scene] start...");
 
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.40", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.40", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -43,6 +43,7 @@ static void on_load(scene_p s)
         // 全部使用 lit 网格 + 棋盘格地板纹理，与 joy_editor/main8888.cpp 一致
         self->ctx->mesh_player = r3d_mesh_cube_lit(self->ctx->r3d, 0.6f, 1.2f, 0.6f);
         self->ctx->mesh_enemy  = r3d_mesh_cube_lit(self->ctx->r3d, 0.5f, 1.0f, 0.5f);
+        self->ctx->mesh_prop   = r3d_mesh_cube_lit(self->ctx->r3d, 1.0f, 1.0f, 1.0f);
         self->ctx->mesh_floor  = r3d_mesh_plane_lit(self->ctx->r3d, 20.0f, 20.0f, 10);
         self->ctx->floor_tex   = r3d_gen_checkerboard(self->ctx->r3d, 32, 10);
 
@@ -187,6 +188,7 @@ static void on_destroy(scene_p s) {
         if (self->ctx->mesh_floor) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_floor);
         if (self->ctx->mesh_enemy) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_enemy);
         if (self->ctx->mesh_player) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_player);
+        if (self->ctx->mesh_prop) r3d_mesh_destroy(self->ctx->r3d, self->ctx->mesh_prop);
         delete self;
 }
 

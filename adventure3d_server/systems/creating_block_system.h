@@ -43,7 +43,7 @@ static void creating_block_system(entt::registry& registry, Context* ctx, float 
         registry.emplace<TransformComponent>(e,
             vec3_t{ d.x, d.sy * 0.5f, d.z }, 0.0f,
             vec3_t{ d.sx, d.sy, d.sz });
-        registry.emplace<LocalOnlyComponent>(e);
+        //registry.emplace<LocalOnlyComponent>(e);
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 150, 110, 70, 255 }, 0.0f });
     }
 

@@ -43,6 +43,7 @@ struct Context {
         jr3d_p r3d = NULL;
         render_mesh_p mesh_player = NULL;
         render_mesh_p mesh_enemy = NULL;
+        render_mesh_p mesh_prop = NULL;   // 静态障碍物（墙/箱子）
         render_mesh_p mesh_floor = NULL;
         void* floor_tex = NULL;  // checkerboard floor texture
         netclient_p netclient;
