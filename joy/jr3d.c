@@ -372,6 +372,12 @@ static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb)
 
 /* ---- 生命周期 ---- */
 
+void* r3d_get_device(jr3d_p r)
+{
+	if (!r) return NULL;
+	return (void*)r->dev;
+}
+
 jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 {
 	SDL_Window* window = (SDL_Window*)get_raw_window(win);

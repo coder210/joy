@@ -1055,6 +1055,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
          /* ---------- 生命周期 ---------- */
         JOY_API jr3d_p r3d_create(jwindow_p win, const char* shader_dir);
         JOY_API void   r3d_destroy(jr3d_p r);
+        /* 返回内部 SDL_GPUDevice*, 供调用方用 SDL3 API 自传纹理(如字体图集) */
+        JOY_API void*  r3d_get_device(jr3d_p r);
 
         /* ---------- 帧管理 ---------- */
         JOY_API bool r3d_begin(jr3d_p r);
