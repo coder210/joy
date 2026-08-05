@@ -1072,14 +1072,21 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs);
         JOY_API render_mesh_p r3d_mesh_ramp(jr3d_p r, float w, float l, float h);
         JOY_API render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count);
+        /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5] */
+        JOY_API render_mesh_p r3d_mesh_quad(jr3d_p r);
         JOY_API void         r3d_mesh_destroy(jr3d_p r, render_mesh_p m);
 
         /* ---------- 纹理 ---------- */
+        /* 通用 RGBA32 纹理创建(自动处理 upload 行对齐, flip=true 时上下翻转, 与 stbi_set_flip_vertically_on_load 对应) */
+        JOY_API void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip);
         JOY_API void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count);
 
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
+        /* billboard 绘制: 用 center + right + up 基向量(无需归一化, 内部按 size 缩放) 把单位 quad 朝向相机 */
+        JOY_API void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
+                vec3_t center, vec3_t right, vec3_t up, float size, void* tex);
         JOY_API void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width);
 
         /* ---------- 光照渲染（顶点格式 pos+normal+uv, pitch=32） ---------- */

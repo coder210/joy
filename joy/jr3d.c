@@ -13,7 +13,9 @@
 
 struct render_mesh {
 	SDL_GPUBuffer* buffer;
+	SDL_GPUBuffer* index_buffer;   /* 可选: 非空表示用索引绘制 */
 	int            vertex_count;
+	int            index_count;
 };
 
 struct jr3d {
@@ -127,7 +129,7 @@ void* r3d_create_pipeline(void* device,
 	ds.back_stencil_state.depth_fail_op = SDL_GPU_STENCILOP_ZERO;
 	ds.compare_op = SDL_GPU_COMPAREOP_LESS;
 	ds.enable_depth_test = true;
-	ds.enable_depth_write = true;
+	ds.enable_depth_write = false;   // 非 lit 用于字体/图片 billboard, 关闭深度写入避免共面三角形 z-fighting 被剔除
 	ds.enable_stencil_test = false;
 	ds.compare_mask = 0xFF;
 	ds.write_mask = 0xFF;
@@ -137,10 +139,10 @@ void* r3d_create_pipeline(void* device,
 	desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
 	desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
 	desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B | SDL_GPU_COLORCOMPONENT_A;
-	desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-	desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE;
-	desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
-	desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ZERO;
+	desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+	desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
 	desc.blend_state.enable_blend = true;
 	desc.blend_state.enable_color_write_mask = false;
 	desc.format = (SDL_GPUTextureFormat)swapchain_format;
@@ -257,15 +259,24 @@ void* r3d_upload_buffer(void* device, const void* data, size_t size)
 
 static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 	const unsigned char* pixels, int w, int h, SDL_GPUTextureFormat format,
-	SDL_GPUTextureUsageFlags usage)
+	SDL_GPUTextureUsageFlags usage, int flip)
 {
-	size_t image_size = (size_t)w * h * 4;
+	const int bpp = 4; /* RGBA32 */
+	const int src_row = w * bpp;
+	/* GPU 上传要求每行字节数按 256 对齐(示例亦用连续 w, 但非对齐宽度会错位, 这里显式对齐) */
+	int aligned_row = (src_row + 255) & ~255;
+	int pixels_per_row = aligned_row / bpp;
+	size_t buf_size = (size_t)aligned_row * h;
+
 	SDL_GPUTransferBufferCreateInfo tb_ci = { 0 };
-	tb_ci.size = image_size; tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+	tb_ci.size = buf_size; tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 	SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(device, &tb_ci);
 	if (!tb) return NULL;
-	void* ptr = SDL_MapGPUTransferBuffer(device, tb, false);
-	memcpy(ptr, pixels, image_size);
+	unsigned char* ptr = (unsigned char*)SDL_MapGPUTransferBuffer(device, tb, false);
+	for (int y = 0; y < h; y++) {
+		int sy = flip ? (h - 1 - y) : y;   /* flip: 与 stbi_set_flip_vertically_on_load(true) 对应 */
+		memcpy(ptr + (size_t)y * aligned_row, pixels + (size_t)sy * src_row, src_row);
+	}
 	SDL_UnmapGPUTransferBuffer(device, tb);
 
 	SDL_GPUTextureCreateInfo tex_ci = { 0 };
@@ -279,7 +290,7 @@ static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 	SDL_GPUCommandBuffer* cmd = SDL_AcquireGPUCommandBuffer(device);
 	SDL_GPUCopyPass* copy = SDL_BeginGPUCopyPass(cmd);
 	SDL_GPUTextureTransferInfo ti = { 0 };
-	ti.offset = 0; ti.pixels_per_row = w; ti.rows_per_layer = h; ti.transfer_buffer = tb;
+	ti.offset = 0; ti.pixels_per_row = pixels_per_row; ti.rows_per_layer = h; ti.transfer_buffer = tb;
 	SDL_GPUTextureRegion region = { 0 };
 	region.w = w; region.h = h; region.x = 0; region.y = 0;
 	region.layer = 0; region.mip_level = 0; region.z = 0; region.d = 1;
@@ -304,7 +315,7 @@ void* r3d_create_solid_texture(void* device,
 		pixels[i * 4 + 2] = b; pixels[i * 4 + 3] = 255;
 	}
 	SDL_GPUTexture* tex = upload_pixels_to_texture(dev, pixels, tw, th,
-		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER);
+		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 0);
 	SDL_free(pixels);
 	return (void*)tex;
 }
@@ -325,9 +336,9 @@ void* r3d_create_sampler(void* device)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	SDL_GPUSamplerCreateInfo ci = { 0 };
-	ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-	ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
-	ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT;
+	ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+	ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+	ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
 	ci.enable_anisotropy = true; ci.max_anisotropy = 4.0f;
 	ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS; ci.enable_compare = false;
 	ci.mag_filter = SDL_GPU_FILTER_LINEAR; ci.min_filter = SDL_GPU_FILTER_LINEAR;
@@ -759,6 +770,42 @@ render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
 	return m;
 }
 
+/* 通用 RGBA32 纹理创建: 自动处理 upload 行对齐, flip=1 时上下翻转(与 stbi_set_flip_vertically_on_load 对应) */
+void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip)
+{
+	if (!r || !rgba32 || w <= 0 || h <= 0) return NULL;
+	return (void*)upload_pixels_to_texture(r->dev, (const unsigned char*)rgba32, w, h,
+		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, flip);
+}
+
+/* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
+   UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
+render_mesh_p r3d_mesh_quad(jr3d_p r)
+{
+	static const float verts[4 * 5] = {
+		/* x,    y,    z,   u,  v */
+		-0.5f, -0.5f, 0,  0, 1,   /* 左下 */
+		 0.5f, -0.5f, 0,  1, 1,   /* 右下 */
+		 0.5f,  0.5f, 0,  1, 0,   /* 右上 */
+		-0.5f,  0.5f, 0,  0, 0,   /* 左上 */
+	};
+	static const Uint32 indices[6] = { 0, 1, 2, 0, 2, 3 };
+
+	render_mesh_p m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	if (!m) return NULL;
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->index_buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, indices, sizeof(indices));
+	if (!m->buffer || !m->index_buffer) {
+		if (m->buffer) SDL_ReleaseGPUBuffer(r->dev, m->buffer);
+		if (m->index_buffer) SDL_ReleaseGPUBuffer(r->dev, m->index_buffer);
+		SDL_free(m);
+		return NULL;
+	}
+	m->vertex_count = 4;
+	m->index_count = 6;
+	return m;
+}
+
 /* ---- 光照网格（pos FLOAT3 + normal FLOAT3 + uv FLOAT2, 8 float/顶点, 无索引） ---- */
 
 render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
@@ -797,6 +844,7 @@ void r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 {
 	if (!r || !m) return;
 	if (m->buffer) SDL_ReleaseGPUBuffer(r->dev, m->buffer);
+	if (m->index_buffer) SDL_ReleaseGPUBuffer(r->dev, m->index_buffer);
 	SDL_free(m);
 }
 
@@ -959,7 +1007,16 @@ static void draw_mesh_internal(jr3d_p r, render_mesh_p m, mat44_t* model, SDL_GP
 	memset(&bind, 0, sizeof(bind));
 	bind.buffer = m->buffer; bind.offset = 0;
 	SDL_BindGPUVertexBuffers(r->rp, 0, &bind, 1);
-	SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
+
+	if (m->index_buffer && m->index_count > 0) {
+		SDL_GPUBufferBinding ibind;
+		memset(&ibind, 0, sizeof(ibind));
+		ibind.buffer = m->index_buffer; ibind.offset = 0;
+		SDL_BindGPUIndexBuffer(r->rp, &ibind, SDL_GPU_INDEXELEMENTSIZE_32BIT);
+		SDL_DrawGPUIndexedPrimitives(r->rp, m->index_count, 1, 0, 0, 0);
+	} else {
+		SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
+	}
 }
 
 /* ---- 公开绘制 API ---- */
@@ -981,6 +1038,23 @@ void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void
 	mat44_t model = { 0 };
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
+	model.m15 = 1;
+	draw_mesh_internal(r, m, &model, (SDL_GPUTexture*)tex);
+}
+
+/* billboard 绘制: 单位 quad 经 right/up 基向量旋转 + size 缩放 + center 平移 */
+void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
+	vec3_t center, vec3_t right, vec3_t up, float size, void* tex)
+{
+	if (!r || !m) return;
+	mat44_t model = { 0 };
+	/* 列主序: 第0列 = right*size, 第1列 = up*size, 第2列 = right×up(normal), 第3列 = center */
+	model.m0  = right.x * size;  model.m1  = right.y * size;  model.m2  = right.z * size;
+	model.m4  = up.x * size;     model.m5  = up.y * size;     model.m6  = up.z * size;
+	model.m8  = right.y * up.z - right.z * up.y;   /* n = right × up */
+	model.m9  = right.z * up.x - right.x * up.z;
+	model.m10 = right.x * up.y - right.y * up.x;
+	model.m12 = center.x; model.m13 = center.y; model.m14 = center.z;
 	model.m15 = 1;
 	draw_mesh_internal(r, m, &model, (SDL_GPUTexture*)tex);
 }
@@ -1067,7 +1141,7 @@ void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count)
 	}
 
 	tex = upload_pixels_to_texture(r->dev, pixels, w, h,
-		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER);
+		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 0);
 	SDL_free(pixels);
 	return (void*)tex;
 }
