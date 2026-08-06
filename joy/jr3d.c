@@ -778,6 +778,32 @@ void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip)
 		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, flip);
 }
 
+/* 从 PNG 文件加载并创建 GPU 纹理: SDL_LoadPNG -> RGBA32 -> r3d_create_texture(flip=1)
+   返回 SDL_GPUTexture* (void*)。失败返回 NULL 并通过 SDL_GetError 暴露原因。
+   统一封装了图片文件加载, 供各 app 复用, 避免重复手写 SDL_LoadPNG 流程。 */
+void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
+{
+	if (!r || !path) return NULL;
+	SDL_Surface* surf = SDL_LoadPNG(path);
+	if (!surf) {
+		SDL_Log("r3d_load_texture_png: load %s failed: %s", path, SDL_GetError());
+		return NULL;
+	}
+	SDL_Surface* rgba = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
+	int w = surf->w, h = surf->h;
+	SDL_DestroySurface(surf);
+	if (!rgba) {
+		SDL_Log("r3d_load_texture_png: convert %s failed: %s", path, SDL_GetError());
+		return NULL;
+	}
+	void* tex = r3d_create_texture(r, rgba->w, rgba->h, rgba->pixels, 1);
+	SDL_DestroySurface(rgba);
+	if (outW) *outW = w;
+	if (outH) *outH = h;
+	SDL_Log("r3d_load_texture_png: OK %s %dx%d tex=%p", path, w, h, tex);
+	return tex;
+}
+
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
    UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
 render_mesh_p r3d_mesh_quad(jr3d_p r)

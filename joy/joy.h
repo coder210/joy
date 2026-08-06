@@ -1079,6 +1079,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* ---------- 纹理 ---------- */
         /* 通用 RGBA32 纹理创建(自动处理 upload 行对齐, flip=true 时上下翻转, 与 stbi_set_flip_vertically_on_load 对应) */
         JOY_API void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip);
+        /* 从 PNG 文件加载并创建 GPU 纹理(SDL_LoadPNG -> RGBA32 -> r3d_create_texture, flip=1)
+           成功返回 SDL_GPUTexture*(void*), 失败返回 NULL 并通过 SDL_Log 暴露原因 */
+        JOY_API void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH);
         JOY_API void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count);
 
         /* ---------- 绘制 ---------- */
