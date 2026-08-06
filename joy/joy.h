@@ -18,6 +18,7 @@ History:
 #include <stddef.h>
 #include "jconfig.h"
 #include "jmath.h"
+#include "SDL3/SDL_events.h"
 
 
 #ifdef __cplusplus
@@ -1168,6 +1169,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
             bool  focused;          /* 是否聚焦 */
             uint64_t cursor_timer;  /* 光标闪烁计时 */
             bool  cursor_visible;   /* 光标是否可见 */
+            int   sel_start;        /* 选中起点(字节偏移); <0 表示无选中 */
+            int   sel_end;          /* 选中终点(字节偏移) */
             void (*on_submit)(jr3d_input_p);  /* 回车提交回调 */
         };
 
