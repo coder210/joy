@@ -822,6 +822,9 @@ void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 	return tex;
 }
 
+/* 前向声明: 用自定义投影矩阵绘制(供字体 2D/3D 函数使用, 定义在下方) */
+static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, mat44_t* proj, SDL_GPUTexture* tex);
+
 /* ================================================================
  * 字体渲染 (stb_truetype)
  *   整段文字烤成一张 RGBA32 纹理(白字形 + alpha), UV (0,0)-(1,1),
@@ -909,12 +912,14 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	}
 	int final_w = x > 0 ? x : 1;
 
-	// 转成 RGBA32(白字 + alpha), 位图第 0 行=顶部, 配 r3d_create_texture(flip=0)
+	// 转成 RGBA32(白字 + alpha)。位图第 0 行=顶部, 但 quad UV 是 (0,0)=左上对应纹理顶行,
+	// 而 GPU 纹理第 0 行在底部, 这里把行上下翻转写入, 使纹理内容正确为正向。
 	unsigned char* rgba = (unsigned char*)SDL_malloc((size_t)final_w * real_height * 4);
 	if (!rgba) { SDL_free(bitmap); return false; }
 	for (int yy = 0; yy < real_height; yy++) {
+		int src_y = real_height - 1 - yy;   // 上下翻转: 顶部行写到纹理底, 底行写到顶
 		for (int xx = 0; xx < final_w; xx++) {
-			unsigned char a = bitmap[yy * real_width + xx];
+			unsigned char a = bitmap[src_y * real_width + xx];
 			int idx = (yy * final_w + xx) * 4;
 			rgba[idx + 0] = 255;
 			rgba[idx + 1] = 255;
@@ -965,6 +970,83 @@ bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
 	};
 	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
 	return true;
+}
+
+/* 在 3D 空间绘制文字, 朝向固定(不随相机 yaw/pitch 变化): 始终水平直立、正对 -Z。
+   topLeft: 文字左上角锚点(世界坐标); size: 文字世界高度。 */
+bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
+						 vec3_t topLeft, float size)
+{
+	if (!r || !m || !text || size <= 0) return false;
+	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_fixed: font not init"); return false; }
+
+	if (SDL_strcmp(r->font_cache, text) != 0) {
+		if (!r3d_font_bake(r, text)) return false;
+	}
+
+	/* 固定基向量: right 沿世界 -X, up 沿世界 +Y, 文字方向恒定 */
+	vec3_t right = { -1.0f, 0.0f, 0.0f };
+	vec3_t up    = {  0.0f, 1.0f, 0.0f };
+
+	float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
+	float worldH = size;
+	float worldW = size * aspect;
+	vec3_t rightScaled = { right.x * aspect, right.y * aspect, right.z * aspect };
+	vec3_t center = {
+		topLeft.x + rightScaled.x * (worldW * 0.5f) + up.x * (worldH * 0.5f),
+		topLeft.y + rightScaled.y * (worldW * 0.5f) + up.y * (worldH * 0.5f),
+		topLeft.z + rightScaled.z * (worldW * 0.5f) + up.z * (worldH * 0.5f),
+	};
+	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
+	return true;
+}
+
+/* 在屏幕(窗口)坐标绘制文字, 像 2D HUD 一样固定在窗口左上角, 不随相机旋转/移动。
+   pixelX/pixelY: 文字左上角在窗口中的像素坐标(原点左上, Y 向下);
+   fontSize: 文字像素高度; winW/winH: 窗口像素尺寸(通常传 r->ww/r->wh)。 */
+bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
+					  float pixelX, float pixelY, float fontSize,
+					  float winW, float winH)
+{
+	if (!r || !m || !text || fontSize <= 0 || winW <= 0 || winH <= 0) return false;
+	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_2d: font not init"); return false; }
+
+	if (SDL_strcmp(r->font_cache, text) != 0) {
+		if (!r3d_font_bake(r, text)) return false;
+	}
+
+	float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
+	float worldW = fontSize * aspect;
+	float worldH = fontSize;
+
+	/* model: 把单位 quad([-0.5,0.5]) 缩放到像素尺寸并平移到屏幕像素位置(中心对齐) */
+	mat44_t model; memset(&model, 0, sizeof(model));
+	model.m0  = worldW;
+	model.m5  = worldH;
+	model.m10 = 1.0f;
+	model.m12 = pixelX + worldW * 0.5f;
+	model.m13 = pixelY + worldH * 0.5f;
+	model.m15 = 1.0f;
+
+	/* 屏幕像素正交投影: 原点左上, X 向右, Y 向下, 覆盖整个窗口。
+	   这是纯屏幕坐标映射, 不修正文字朝向——文字朝向由纹理内容保证。 */
+	mat44_t proj; memset(&proj, 0, sizeof(proj));
+	proj.m0  =  2.0f / winW;
+	proj.m5  = -2.0f / winH;
+	proj.m10 =  1.0f;
+	proj.m12 = -1.0f;
+	proj.m13 =  1.0f;
+	proj.m15 =  1.0f;
+
+	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)r->font_tex);
+	return true;
+}
+
+void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
+{
+	if (!r) return;
+	if (outW) *outW = r->last_ww;
+	if (outH) *outH = r->last_wh;
 }
 
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
@@ -1177,13 +1259,19 @@ render_mesh_p r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
 
 static void draw_mesh_internal(jr3d_p r, render_mesh_p m, mat44_t* model, SDL_GPUTexture* tex)
 {
+	draw_mesh_internal_proj(r, m, model, &r->viewProj, tex);
+}
+
+/* 内部: 用自定义投影矩阵(而非相机 viewProj)绘制, 用于 2D/UI 正交绘制 */
+static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, mat44_t* proj, SDL_GPUTexture* tex)
+{
 	render_mvp_t mvp;
 	SDL_GPUTextureSamplerBinding samp;
 	SDL_GPUBufferBinding bind;
 	if (!r->rp || !m || !m->buffer) return;
 
 	memset(&mvp, 0, sizeof(mvp));
-	r3d_mat44_to_float16(&r->viewProj, mvp.viewProj);
+	r3d_mat44_to_float16(proj, mvp.viewProj);
 	r3d_mat44_to_float16(model, mvp.model);
 	SDL_PushGPUVertexUniformData(r->cmd, 0, &mvp, sizeof(mvp));
 

@@ -1092,6 +1092,17 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
            right/up 由 yaw/pitch 推得, 保证文字直立不斜切。 */
         JOY_API bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
                                        vec3_t topLeft, float yaw, float pitch, float size);
+        /* 固定朝向绘制文字(不随相机变化): 始终水平直立、正对 -Z。
+           topLeft 为左上角锚点(世界坐标), size 为文字世界高度。 */
+        JOY_API bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
+                                         vec3_t topLeft, float size);
+        /* 屏幕 2D HUD 文字: 固定在窗口像素坐标(pixelX,pixelY 左上, Y向下), 不随相机变化。
+           fontSize 为像素高度, winW/winH 为窗口像素尺寸。 */
+        JOY_API bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
+                                      float pixelX, float pixelY, float fontSize,
+                                      float winW, float winH);
+        /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
+        JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
