@@ -1104,6 +1104,34 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
+        /* ---------- 2D UI: button (仿 jr2d, 用屏幕正交投影渲染, 不随相机变化) ---------- */
+        /* 按钮状态 */
+        typedef enum {
+            JR3D_BTN_NORMAL  = 0,
+            JR3D_BTN_HOVER   = 1,
+            JR3D_BTN_PRESSED = 2
+        } jr3d_button_state_t;
+
+        /* 按钮对象(屏幕像素坐标, 原点左上) */
+        typedef struct jr3d_button {
+            float x, y, w, h;          /* 位置与尺寸(像素) */
+            char  text[128];           /* 按钮文字 */
+            jr3d_button_state_t state; /* 当前状态 */
+        } jr3d_button_t, * jr3d_button_p;
+
+        /* 创建一个按钮(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text);
+        /* 绘制按钮(需先 r3d_font_init; m 为单位 quad)。按钮会自己处理 normal/hover/pressed 配色 */
+        JOY_API void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH);
+        /* 命中测试: 屏幕像素坐标 (mx,my) 是否在按钮内 */
+        JOY_API bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my);
+        /* 按下测试: 鼠标在按钮内且 mouse_down 为 true 时返回 true(并置为 pressed 状态) */
+        JOY_API bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float my);
+        /* 释放按钮: 更新状态为 hover/normal */
+        JOY_API void r3d_button_release(jr3d_button_p btn, float mx, float my);
+        /* 销毁按钮 */
+        JOY_API void r3d_button_destroy(jr3d_button_p btn);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);

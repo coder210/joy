@@ -1049,6 +1049,113 @@ void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 	if (outH) *outH = r->last_wh;
 }
 
+/* ================================================================
+ * 2D UI: button (仿 jr2d, 用屏幕正交投影渲染, 不随相机变化)
+ * ================================================================ */
+
+/* 内部: 在屏幕像素坐标绘制一个实心矩形(左上角 x,y, 尺寸 w,h) */
+static void draw_rect_2d(jr3d_p r, render_mesh_p m,
+						 float x, float y, float w, float h,
+						 Uint8 cr, Uint8 cg, Uint8 cb,
+						 float winW, float winH)
+{
+	if (!r || !m || w <= 0 || h <= 0 || winW <= 0 || winH <= 0) return;
+
+	mat44_t model; memset(&model, 0, sizeof(model));
+	model.m0  = w;
+	model.m5  = h;
+	model.m10 = 1.0f;
+	model.m12 = x + w * 0.5f;
+	model.m13 = y + h * 0.5f;
+	model.m15 = 1.0f;
+
+	mat44_t proj; memset(&proj, 0, sizeof(proj));
+	proj.m0  =  2.0f / winW;
+	proj.m5  = -2.0f / winH;
+	proj.m10 =  1.0f;
+	proj.m12 = -1.0f;
+	proj.m13 =  1.0f;
+	proj.m15 =  1.0f;
+
+	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb);
+	draw_mesh_internal_proj(r, m, &model, &proj, tex);
+}
+
+jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text)
+{
+	jr3d_button_p b = (jr3d_button_p)SDL_malloc(sizeof(jr3d_button_t));
+	if (!b) return NULL;
+	b->x = x; b->y = y; b->w = w; b->h = h;
+	b->text[0] = '\0';
+	if (text) SDL_strlcpy(b->text, text, sizeof(b->text));
+	b->state = JR3D_BTN_NORMAL;
+	return b;
+}
+
+bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my)
+{
+	if (!btn) return false;
+	return (mx >= btn->x && mx <= btn->x + btn->w &&
+			my >= btn->y && my <= btn->y + btn->h);
+}
+
+bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float my)
+{
+	if (!btn) return false;
+	bool hover = r3d_button_is_hovered(btn, mx, my);
+	if (hover && mouse_down) {
+		btn->state = JR3D_BTN_PRESSED;
+		return true;
+	}
+	btn->state = hover ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
+	return false;
+}
+
+void r3d_button_release(jr3d_button_p btn, float mx, float my)
+{
+	if (!btn) return;
+	btn->state = r3d_button_is_hovered(btn, mx, my) ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
+}
+
+void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
+{
+	if (!r || !m || !btn || winW <= 0 || winH <= 0) return;
+
+	/* 配色(仿 jr2d button): normal 灰 / hover 浅灰 / pressed 深灰, 黑边框 */
+	Uint8 fr = 130, fg = 130, fb = 130;
+	if (btn->state == JR3D_BTN_HOVER)   { fr = 160; fg = 160; fb = 160; }
+	if (btn->state == JR3D_BTN_PRESSED) { fr = 90;  fg = 90;  fb = 90;  }
+
+	/* 填充矩形 */
+	draw_rect_2d(r, m, btn->x, btn->y, btn->w, btn->h, fr, fg, fb, winW, winH);
+	/* 黑边框(4 条 2px 粗) */
+	float bw = 2.0f;
+	draw_rect_2d(r, m, btn->x,                btn->y,                btn->w, bw,     0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, btn->x,                btn->y + btn->h - bw,  btn->w, bw,     0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, btn->x,                btn->y,                bw,    btn->h,  0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, btn->x + btn->w - bw,  btn->y,                bw,    btn->h,  0, 0, 0, winW, winH);
+
+	/* 按钮文字: 居中绘制 */
+	if (r->font_ttf_buf && btn->text[0]) {
+		float fontSize = btn->h * 0.5f;                 // 字号约为按钮高度一半
+		float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
+		/* 用最新烘焙的文字测宽(若缓存的不是本按钮文字, 先烘焙) */
+		if (SDL_strcmp(r->font_cache, btn->text) != 0) {
+			r3d_font_bake(r, btn->text);
+		}
+		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
+		float tx = btn->x + (btn->w - textW) * 0.5f;
+		float ty = btn->y + (btn->h - fontSize) * 0.5f;
+		r3d_font_draw_2d(r, m, btn->text, tx, ty, fontSize, winW, winH);
+		(void)aspect;
+	}
+}
+
+void r3d_button_destroy(jr3d_button_p btn)
+{
+	if (btn) SDL_free(btn);
+}
+
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
    UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
 render_mesh_p r3d_mesh_quad(jr3d_p r)
