@@ -1089,7 +1089,14 @@ jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* 
 	b->text[0] = '\0';
 	if (text) SDL_strlcpy(b->text, text, sizeof(b->text));
 	b->state = JR3D_BTN_NORMAL;
+	b->pressedInside = false;
+	b->onClick = NULL;
 	return b;
+}
+
+void r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p))
+{
+	if (btn) btn->onClick = cb;
 }
 
 bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my)
@@ -1105,6 +1112,7 @@ bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float m
 	bool hover = r3d_button_is_hovered(btn, mx, my);
 	if (hover && mouse_down) {
 		btn->state = JR3D_BTN_PRESSED;
+		btn->pressedInside = true;
 		return true;
 	}
 	btn->state = hover ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
@@ -1114,7 +1122,13 @@ bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float m
 void r3d_button_release(jr3d_button_p btn, float mx, float my)
 {
 	if (!btn) return;
-	btn->state = r3d_button_is_hovered(btn, mx, my) ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
+	bool hover = r3d_button_is_hovered(btn, mx, my);
+	/* 完整 click: 按下在按钮内 且 松开也在按钮内 -> 触发回调 */
+	if (btn->pressedInside && hover && btn->onClick) {
+		btn->onClick(btn);
+	}
+	btn->pressedInside = false;
+	btn->state = hover ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
 }
 
 void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
@@ -1154,6 +1168,40 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 void r3d_button_destroy(jr3d_button_p btn)
 {
 	if (btn) SDL_free(btn);
+}
+
+/* ================================================================
+ * 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置, 不随相机变化)
+ * ================================================================ */
+
+/* label 类型已在 joy.h 中定义 */
+jr3d_label_p r3d_label_create(float x, float y, float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
+{
+	jr3d_label_p l = (jr3d_label_p)SDL_malloc(sizeof(jr3d_label_t));
+	if (!l) return NULL;
+	l->x = x; l->y = y; l->fontSize = fontSize;
+	l->r = cr; l->g = cg; l->b = cb;
+	l->text[0] = '\0';
+	if (text) SDL_strlcpy(l->text, text, sizeof(l->text));
+	return l;
+}
+
+/* 更新文字内容(支持动态文本如 FPS) */
+void r3d_label_set_text(jr3d_label_p l, const char* text)
+{
+	if (l && text) SDL_strlcpy(l->text, text, sizeof(l->text));
+}
+
+void r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float winH)
+{
+	if (!r || !m || !l || winW <= 0 || winH <= 0) return;
+	if (!r->font_ttf_buf || !l->text[0]) return;
+	r3d_font_draw_2d(r, m, l->text, l->x, l->y, l->fontSize, winW, winH);
+}
+
+void r3d_label_destroy(jr3d_label_p l)
+{
+	if (l) SDL_free(l);
 }
 
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]

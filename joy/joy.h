@@ -1113,11 +1113,14 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } jr3d_button_state_t;
 
         /* 按钮对象(屏幕像素坐标, 原点左上) */
-        typedef struct jr3d_button {
+        typedef struct jr3d_button jr3d_button_t, * jr3d_button_p;
+        struct jr3d_button {
             float x, y, w, h;          /* 位置与尺寸(像素) */
             char  text[128];           /* 按钮文字 */
             jr3d_button_state_t state; /* 当前状态 */
-        } jr3d_button_t, * jr3d_button_p;
+            bool  pressedInside;       /* 按下时是否在按钮内(用于判定 click) */
+            void (*onClick)(jr3d_button_p);  /* 点击回调(按下+松开均在按钮内触发) */
+        };
 
         /* 创建一个按钮(屏幕像素坐标, 原点左上) */
         JOY_API jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text);
@@ -1127,10 +1130,30 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my);
         /* 按下测试: 鼠标在按钮内且 mouse_down 为 true 时返回 true(并置为 pressed 状态) */
         JOY_API bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float my);
+        /* 设置点击回调(按下并松开均在按钮内时触发) */
+        JOY_API void r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p));
         /* 释放按钮: 更新状态为 hover/normal */
         JOY_API void r3d_button_release(jr3d_button_p btn, float mx, float my);
         /* 销毁按钮 */
         JOY_API void r3d_button_destroy(jr3d_button_p btn);
+
+        /* ---------- 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置) ---------- */
+        typedef struct jr3d_label jr3d_label_t, * jr3d_label_p;
+        struct jr3d_label {
+            float x, y;          /* 左上角位置(像素) */
+            float fontSize;      /* 字号(像素) */
+            uint8_t r, g, b;     /* 文字颜色 */
+            char  text[256];     /* 文字内容 */
+        };
+
+        /* 创建 label(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_label_p r3d_label_create(float x, float y, float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text);
+        /* 更新文字内容 */
+        JOY_API void r3d_label_set_text(jr3d_label_p l, const char* text);
+        /* 绘制 label */
+        JOY_API void r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float winH);
+        /* 销毁 label */
+        JOY_API void r3d_label_destroy(jr3d_label_p l);
 
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
