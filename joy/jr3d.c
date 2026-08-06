@@ -5,6 +5,10 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+/* stb_truetype 实现已由 jimpl.c 编译一次(含 STB_TRUETYPE_IMPLEMENTATION),
+   此处仅包含头文件以使用其声明, 避免多重定义 */
+#include "external/stb_truetype.h"
+
 /* ================================================================
  * 内部结构 — 完整 SDL3 GPU 类型
  * ================================================================ */
@@ -48,6 +52,17 @@ struct jr3d {
 	SDL_GPUGraphicsPipeline* lighting_pipeline;
 	jr3d_light_block_t light_block;
 	bool               light_block_valid;
+
+	/* 字体渲染（stb_truetype）: 整段文字烤成一张纹理, 由引擎统一管理生命周期 */
+	stbtt_fontinfo     font_info;
+	unsigned char*     font_ttf_buf;   /* stbtt 内部持有偏移指针, 绝不在程序结束前释放 */
+	float              font_scale;
+	int                font_ascent;
+	int                font_pix_h;
+	SDL_GPUTexture*    font_tex;       /* 当前字符串烘焙的整张纹理 */
+	int                font_tex_w;
+	int                font_tex_h;
+	char               font_cache[256]; /* 已烘焙的字符串缓存 */
 };
 
 /* ================================================================
@@ -494,10 +509,13 @@ void r3d_destroy(jr3d_p r)
 	if (r->fs)       SDL_ReleaseGPUShader(r->dev, r->fs);
 	if (r->lvs)      SDL_ReleaseGPUShader(r->dev, r->lvs);
 	if (r->lfs)      SDL_ReleaseGPUShader(r->dev, r->lfs);
+	if (r->font_tex) SDL_ReleaseGPUTexture(r->dev, r->font_tex);
 	if (r->dev) {
 		SDL_ReleaseWindowFromGPUDevice(r->dev, r->win);
 		SDL_DestroyGPUDevice(r->dev);
 	}
+	/* stbtt 持有 font_ttf_buf 内部偏移指针, 仅程序退出时释放(可接受) */
+	if (r->font_ttf_buf) free(r->font_ttf_buf);
 	SDL_free(r);
 }
 
@@ -802,6 +820,151 @@ void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 	if (outH) *outH = h;
 	SDL_Log("r3d_load_texture_png: OK %s %dx%d tex=%p", path, w, h, tex);
 	return tex;
+}
+
+/* ================================================================
+ * 字体渲染 (stb_truetype)
+ *   整段文字烤成一张 RGBA32 纹理(白字形 + alpha), UV (0,0)-(1,1),
+ *   通过 r3d_draw_mesh_tex_basis 以 billboard 方式贴到 3D 空间。
+ *   算法沿用原 main_tex.cpp 中已验证可用的 yaw/pitch 基向量计算,
+ *   保证文字始终直立、不斜切。
+ * ================================================================ */
+
+/* 初始化字体: 逐行照抄原版 font_init, 仅 gFont* -> r->font* */
+bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
+{
+	if (!r || !ttf_path || pixel_height <= 0) return false;
+
+	// 读取 ttf (工作目录为 build/<config>, 字体在 joy_editor/fonts/arial.ttf)
+	FILE* f = fopen(ttf_path, "rb");
+	if (!f) { SDL_Log("font: open %s failed", ttf_path); return false; }
+	fseek(f, 0, SEEK_END);
+	long sz = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	r->font_ttf_buf = (unsigned char*)SDL_malloc(sz);
+	if (!r->font_ttf_buf) { fclose(f); return false; }
+	fread(r->font_ttf_buf, 1, sz, f);
+	fclose(f);
+
+	// 注意: stbtt_fontinfo 内部保存指向 font_ttf_buf 的偏移指针, 该缓冲必须存活到程序结束, 不能 free
+	if (!stbtt_InitFont(&r->font_info, r->font_ttf_buf, 0)) { SDL_Log("font: InitFont failed"); return false; }
+	r->font_scale = stbtt_ScaleForPixelHeight(&r->font_info, (float)pixel_height);
+
+	int ascent = 0, descent = 0, lineGap = 0;
+	stbtt_GetFontVMetrics(&r->font_info, &ascent, &descent, &lineGap);
+	r->font_ascent = (int)(ascent * r->font_scale);
+	r->font_pix_h  = pixel_height;
+	r->font_tex    = NULL;
+	r->font_cache[0] = '\0';
+	SDL_Log("font: ready scale=%.3f ascent=%d", r->font_scale, r->font_ascent);
+	return true;
+}
+
+/* 把整段字符串烘焙成一张 RGBA 纹理(白字 + alpha), 逐行照抄原版 bake_text_texture,
+   仅 gFont 系列全局变量 -> r->font 结构体字段, gTextTex -> r->font_tex
+   (固定宽度 gFontPixH*n, 原版对齐/裁剪, flip=0) */
+static bool r3d_font_bake(jr3d_p r, const char* str)
+{
+	if (str == NULL) return false;
+	// 字符串未变则不重建
+	if (r->font_tex && SDL_strcmp(str, r->font_cache) == 0) return true;
+
+	int n = (int)SDL_strlen(str);
+	if (n <= 0) { r->font_tex_w = 1; r->font_tex_h = (int)r->font_pix_h; return false; }
+
+	int real_width = r->font_pix_h * n;          // 预估宽度(同 jr2d)
+	int real_height = (int)r->font_pix_h;
+	unsigned char* bitmap = (unsigned char*)SDL_calloc((size_t)real_width * real_height + 1, 1);
+	if (!bitmap) return false;
+
+	int x = 0;
+	for (int i = 0; i < n; i++) {
+		int c = (unsigned char)str[i];
+		if (c < 32 || c > 126) c = '?';
+		int advance_width = 0, left_side_bearing = 0;
+		int c_x1, c_y1, c_x2, c_y2;
+		stbtt_GetCodepointHMetrics(&r->font_info, c, &advance_width, &left_side_bearing);
+		stbtt_GetCodepointBitmapBox(&r->font_info, c, r->font_scale, r->font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
+		int bw = c_x2 - c_x1, bh = c_y2 - c_y1;
+		int y = r->font_ascent + c_y1;          // 顶部对齐(ascent 基线), 同 jr2d
+		if (bw > 0 && bh > 0) {
+			// 先渲染到临时 buffer, 再按 y 偏移复制到整行位图(避免负偏移越界)
+			unsigned char* tmp = (unsigned char*)SDL_malloc((size_t)bw * bh);
+			if (tmp) {
+				stbtt_MakeCodepointBitmap(&r->font_info, tmp, bw, bh, bw, r->font_scale, r->font_scale, c);
+				int bx = x + (int)(left_side_bearing * r->font_scale);
+				for (int yy = 0; yy < bh; yy++) {
+					int dy = y + yy;
+					if (dy < 0 || dy >= real_height) continue;
+					for (int xx = 0; xx < bw; xx++) {
+						int dx = bx + xx;
+						if (dx < 0 || dx >= real_width) continue;
+						bitmap[dy * real_width + dx] = tmp[yy * bw + xx];
+					}
+				}
+				SDL_free(tmp);
+			}
+		}
+		x += (int)(advance_width * r->font_scale);
+	}
+	int final_w = x > 0 ? x : 1;
+
+	// 转成 RGBA32(白字 + alpha), 位图第 0 行=顶部, 配 r3d_create_texture(flip=0)
+	unsigned char* rgba = (unsigned char*)SDL_malloc((size_t)final_w * real_height * 4);
+	if (!rgba) { SDL_free(bitmap); return false; }
+	for (int yy = 0; yy < real_height; yy++) {
+		for (int xx = 0; xx < final_w; xx++) {
+			unsigned char a = bitmap[yy * real_width + xx];
+			int idx = (yy * final_w + xx) * 4;
+			rgba[idx + 0] = 255;
+			rgba[idx + 1] = 255;
+			rgba[idx + 2] = 255;
+			rgba[idx + 3] = a;
+		}
+	}
+	SDL_free(bitmap);
+
+	if (r->font_tex) { SDL_ReleaseGPUTexture(r->dev, r->font_tex); r->font_tex = NULL; }
+	r->font_tex = (SDL_GPUTexture*)r3d_create_texture(r, final_w, real_height, rgba, 0);
+	SDL_free(rgba);
+	r->font_tex_w = final_w;
+	r->font_tex_h = real_height;
+	SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
+	SDL_Log("font: baked text '%s' %dx%d tex=%p", str, final_w, real_height, r->font_tex);
+	return true;
+}
+
+/* 在 3D 空间绘制文字 billboard。
+   topLeft: 文字左上角锚点(世界坐标); yaw/pitch: 屏幕基向量方向(与相机一致);
+   size: 文字在世界中的高度。 right/up 由 yaw/pitch 推得, 保证文字直立。 */
+bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
+					  vec3_t topLeft, float yaw, float pitch, float size)
+{
+	if (!r || !m || !text || size <= 0) return false;
+	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_3d: font not init"); return false; }
+
+	if (SDL_strcmp(r->font_cache, text) != 0) {
+		if (!r3d_font_bake(r, text)) return false;
+	}
+
+	float cy = cosf(yaw), sy = sinf(yaw);
+	float cp = cosf(pitch), sp = sinf(pitch);
+	vec3_t right = { -cy, 0.0f, sy };
+	vec3_t up    = { sp * sy, cp, sp * sy };
+	float ulen = sqrtf(up.x * up.x + up.y * up.y + up.z * up.z);
+	if (ulen > 1e-4f) { up.x /= ulen; up.y /= ulen; up.z /= ulen; }
+
+	float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
+	float worldH = size;
+	float worldW = size * aspect;
+	vec3_t rightScaled = { right.x * aspect, right.y * aspect, right.z * aspect };
+	vec3_t center = {
+		topLeft.x + rightScaled.x * (worldW * 0.5f) + up.x * (worldH * 0.5f),
+		topLeft.y + rightScaled.y * (worldW * 0.5f) + up.y * (worldH * 0.5f),
+		topLeft.z + rightScaled.z * (worldW * 0.5f) + up.z * (worldH * 0.5f),
+	};
+	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
+	return true;
 }
 
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]

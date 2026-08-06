@@ -1084,6 +1084,15 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH);
         JOY_API void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count);
 
+        /* ---------- 字体渲染 (stb_truetype) ---------- */
+        /* 初始化字体(读取 TTF, 由引擎持有缓冲, 程序退出前不释放) */
+        JOY_API bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height);
+        /* 在 3D 空间以 billboard 绘制文字: topLeft 为左上角锚点(世界坐标),
+           yaw/pitch 为屏幕基向量方向(与相机一致), size 为文字世界高度。
+           right/up 由 yaw/pitch 推得, 保证文字直立不斜切。 */
+        JOY_API bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
+                                       vec3_t topLeft, float yaw, float pitch, float size);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
