@@ -1155,6 +1155,44 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 销毁 label */
         JOY_API void r3d_label_destroy(jr3d_label_p l);
 
+        /* ---------- 2D UI: input (仿 jr2d inputbox, 屏幕像素坐标, 不随相机变化) ---------- */
+        /* 输入框对象(屏幕像素坐标, 原点左上) */
+        typedef struct jr3d_input jr3d_input_t, * jr3d_input_p;
+        struct jr3d_input {
+            float x, y, w, h;       /* 位置与尺寸(像素) */
+            float fontSize;         /* 字号(像素) */
+            uint8_t r, g, b;        /* 文字颜色 */
+            char  text[256];        /* 文本缓冲区 */
+            bool  focused;          /* 是否聚焦 */
+            uint64_t cursor_timer;  /* 光标闪烁计时 */
+            bool  cursor_visible;   /* 光标是否可见 */
+            void (*on_submit)(jr3d_input_p);  /* 回车提交回调 */
+        };
+
+        /* 创建输入框(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize,
+                                              uint8_t cr, uint8_t cg, uint8_t cb, const char* text);
+        /* 设置/获取文本 */
+        JOY_API void   r3d_input_set_text(jr3d_input_p inp, const char* text);
+        JOY_API const char* r3d_input_get_text(jr3d_input_p inp);
+        /* 命中测试: 屏幕像素坐标 (mx,my) 是否在输入框内 */
+        JOY_API bool   r3d_input_is_hovered(const jr3d_input_p inp, float mx, float my);
+        /* 聚焦/失焦 */
+        JOY_API void   r3d_input_focus(jr3d_input_p inp);
+        JOY_API void   r3d_input_defocus(jr3d_input_p inp);
+        JOY_API bool   r3d_input_is_focused(const jr3d_input_p inp);
+        /* 文本编辑: 在末尾插入字符串 / 删除最后一个字符(退格) */
+        JOY_API void   r3d_input_insert(jr3d_input_p inp, const char* s);
+        JOY_API void   r3d_input_backspace(jr3d_input_p inp);
+        /* 设置回车提交回调 */
+        JOY_API void   r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p));
+        /* 触发提交(调用 on_submit); 供回车事件调用 */
+        JOY_API void   r3d_input_submit(jr3d_input_p inp);
+        /* 绘制输入框(需先 r3d_font_init; m 为单位 quad) */
+        JOY_API void   r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, float winH);
+        /* 销毁输入框 */
+        JOY_API void   r3d_input_destroy(jr3d_input_p inp);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);

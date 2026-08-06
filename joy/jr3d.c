@@ -875,15 +875,18 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	int n = (int)SDL_strlen(str);
 	if (n <= 0) { r->font_tex_w = 1; r->font_tex_h = (int)r->font_pix_h; return false; }
 
-	int real_width = r->font_pix_h * n;          // 预估宽度(同 jr2d)
+	int real_width = r->font_pix_h * n;          // 预估宽度(按字节+余量, 码点不会超过此宽)
 	int real_height = (int)r->font_pix_h;
 	unsigned char* bitmap = (unsigned char*)SDL_calloc((size_t)real_width * real_height + 1, 1);
 	if (!bitmap) return false;
 
 	int x = 0;
-	for (int i = 0; i < n; i++) {
-		int c = (unsigned char)str[i];
-		if (c < 32 || c > 126) c = '?';
+	size_t pos = 0;
+	int32_t code;
+	while (pos < (size_t)n) {
+		size_t consumed = utf8_decode(str + pos, (size_t)n - pos, &code);
+		if (consumed == 0) { code = '?'; consumed = 1; }   // 非法字节: 用 '?' 占位
+		int c = (int)code;
 		int advance_width = 0, left_side_bearing = 0;
 		int c_x1, c_y1, c_x2, c_y2;
 		stbtt_GetCodepointHMetrics(&r->font_info, c, &advance_width, &left_side_bearing);
@@ -909,6 +912,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 			}
 		}
 		x += (int)(advance_width * r->font_scale);
+		pos += consumed;
 	}
 	int final_w = x > 0 ? x : 1;
 
@@ -1202,6 +1206,155 @@ void r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float
 void r3d_label_destroy(jr3d_label_p l)
 {
 	if (l) SDL_free(l);
+}
+
+/* ================================================================
+ * 2D UI: input (仿 jr2d inputbox, 屏幕像素坐标, 不随相机变化)
+ * ================================================================ */
+
+jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize,
+                              uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
+{
+	jr3d_input_p inp = (jr3d_input_p)SDL_malloc(sizeof(jr3d_input_t));
+	if (!inp) return NULL;
+	inp->x = x; inp->y = y; inp->w = w; inp->h = h;
+	inp->fontSize = fontSize;
+	inp->r = cr; inp->g = cg; inp->b = cb;
+	inp->text[0] = '\0';
+	if (text) SDL_strlcpy(inp->text, text, sizeof(inp->text));
+	inp->focused = false;
+	inp->cursor_timer = SDL_GetTicks();
+	inp->cursor_visible = true;
+	inp->on_submit = NULL;
+	return inp;
+}
+
+void r3d_input_set_text(jr3d_input_p inp, const char* text)
+{
+	if (!inp) return;
+	inp->text[0] = '\0';
+	if (text) SDL_strlcpy(inp->text, text, sizeof(inp->text));
+}
+
+const char* r3d_input_get_text(jr3d_input_p inp)
+{
+	return inp ? inp->text : "";
+}
+
+bool r3d_input_is_hovered(const jr3d_input_p inp, float mx, float my)
+{
+	if (!inp) return false;
+	return (mx >= inp->x && mx <= inp->x + inp->w &&
+			my >= inp->y && my <= inp->y + inp->h);
+}
+
+void r3d_input_focus(jr3d_input_p inp)
+{
+	if (inp) inp->focused = true;
+}
+
+void r3d_input_defocus(jr3d_input_p inp)
+{
+	if (inp) inp->focused = false;
+}
+
+bool r3d_input_is_focused(const jr3d_input_p inp)
+{
+	return inp ? inp->focused : false;
+}
+
+void r3d_input_insert(jr3d_input_p inp, const char* s)
+{
+	if (!inp || !s) return;
+	size_t cur = SDL_strlen(inp->text);
+	size_t add = SDL_strlen(s);
+	size_t cap = sizeof(inp->text) - 1;
+	if (cur + add > cap) add = cap - cur;          // 截断到容量
+	SDL_memcpy(inp->text + cur, s, add);
+	inp->text[cur + add] = '\0';
+}
+
+void r3d_input_backspace(jr3d_input_p inp)
+{
+	if (!inp || !inp->text[0]) return;
+	/* 退格: 删除最后一个 UTF-8 字符(一个码点可能占多字节, 如中文) */
+	size_t len = SDL_strlen(inp->text);
+	size_t pos = 0;
+	size_t last = 0;          /* 倒数第二个码点的起始位置 */
+	int32_t code;
+	while (pos < len) {
+		size_t consumed = utf8_decode(inp->text + pos, len - pos, &code);
+		if (consumed == 0) break;
+		if (pos + consumed >= len) break;   /* 这是最后一个码点, 停在它之前 */
+		last = pos;
+		pos += consumed;
+	}
+	inp->text[last] = '\0';
+}
+
+void r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p))
+{
+	if (inp) inp->on_submit = cb;
+}
+
+void r3d_input_submit(jr3d_input_p inp)
+{
+	if (inp && inp->on_submit) inp->on_submit(inp);
+}
+
+void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, float winH)
+{
+	if (!r || !m || !inp || winW <= 0 || winH <= 0) return;
+
+	/* 背景: 白底(聚焦时略偏蓝) */
+	Uint8 br = 255, bg = 255, bb = 255;
+	if (inp->focused) { br = 235; bg = 242; bb = 255; }
+	draw_rect_2d(r, m, inp->x, inp->y, inp->w, inp->h, br, bg, bb, winW, winH);
+
+	/* 边框: 2px; 聚焦时蓝, 否则灰 */
+	float bw = 2.0f;
+	Uint8 bor_r = inp->focused ? 70 : 120;
+	Uint8 bor_g = inp->focused ? 130 : 120;
+	Uint8 bor_b = inp->focused ? 230 : 120;
+	draw_rect_2d(r, m, inp->x,            inp->y,                inp->w, bw,     bor_r, bor_g, bor_b, winW, winH);
+	draw_rect_2d(r, m, inp->x,            inp->y + inp->h - bw,  inp->w, bw,     bor_r, bor_g, bor_b, winW, winH);
+	draw_rect_2d(r, m, inp->x,            inp->y,                bw,    inp->h,  bor_r, bor_g, bor_b, winW, winH);
+	draw_rect_2d(r, m, inp->x + inp->w - bw, inp->y,            bw,    inp->h,  bor_r, bor_g, bor_b, winW, winH);
+
+	if (!r->font_ttf_buf) return;
+
+	/* 文字: 左对齐, 垂直居中 (draw_2d 内部会 bake 并设置 font_tex_w/h) */
+	float padX = 4.0f;
+	float fontSize = inp->fontSize > 0 ? inp->fontSize : (inp->h * 0.6f);
+	float ty = inp->y + (inp->h - fontSize) * 0.5f;
+	if (inp->text[0]) {
+		r3d_font_draw_2d(r, m, inp->text, inp->x + padX, ty, fontSize, winW, winH);
+	}
+
+	/* 光标: 聚焦时闪烁, 绘制在文字之后 */
+	if (inp->focused) {
+		uint64_t now = SDL_GetTicks();
+		if (now - inp->cursor_timer >= 500) {
+			inp->cursor_visible = !inp->cursor_visible;
+			inp->cursor_timer = now;
+		}
+		if (inp->cursor_visible) {
+			/* 用 font_tex_w/h 估计文字宽度(已由上一次 bake 设置) */
+			float cw = 0.0f;
+			if (inp->text[0] && r->font_tex_h > 0) {
+				cw = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
+			}
+			float caret_x = inp->x + padX + cw;
+			draw_rect_2d(r, m, caret_x, ty, 2.0f, fontSize, 0, 0, 0, winW, winH);
+		}
+	} else {
+		inp->cursor_visible = true;   /* 失焦时复位, 下次聚焦立即显示 */
+	}
+}
+
+void r3d_input_destroy(jr3d_input_p inp)
+{
+	if (inp) SDL_free(inp);
 }
 
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
