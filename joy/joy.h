@@ -1163,6 +1163,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
             float fontSize;         /* 字号(像素) */
             uint8_t r, g, b;        /* 文字颜色 */
             char  text[256];        /* 文本缓冲区 */
+            int   cursor_pos;       /* 光标位置(字节偏移, UTF-8 安全) */
+            int   scroll;           /* 文本水平滚动偏移(像素) */
             bool  focused;          /* 是否聚焦 */
             uint64_t cursor_timer;  /* 光标闪烁计时 */
             bool  cursor_visible;   /* 光标是否可见 */
@@ -1181,9 +1183,22 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void   r3d_input_focus(jr3d_input_p inp);
         JOY_API void   r3d_input_defocus(jr3d_input_p inp);
         JOY_API bool   r3d_input_is_focused(const jr3d_input_p inp);
-        /* 文本编辑: 在末尾插入字符串 / 删除最后一个字符(退格) */
+        /* 在光标处插入字符串(支持中文等多字节) */
         JOY_API void   r3d_input_insert(jr3d_input_p inp, const char* s);
+        /* 删除光标前/后的 UTF-8 字符(退格/Delete) */
         JOY_API void   r3d_input_backspace(jr3d_input_p inp);
+        JOY_API void   r3d_input_delete(jr3d_input_p inp);
+        /* 光标移动(UTF-8 安全): 左/右/行首/行尾 */
+        JOY_API void   r3d_input_cursor_left(jr3d_input_p inp);
+        JOY_API void   r3d_input_cursor_right(jr3d_input_p inp);
+        JOY_API void   r3d_input_cursor_home(jr3d_input_p inp);
+        JOY_API void   r3d_input_cursor_end(jr3d_input_p inp);
+        /* 鼠标点击定位光标: 屏幕像素坐标 (mx,my) -> cursor_pos(并聚焦) */
+        JOY_API void   r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my);
+        /* 统一事件处理(对齐 jr2d inputbox_process_event): 内部处理
+           鼠标聚焦/定位、文本输入、键盘(退格/删除/方向/Home/End/回车)。
+           返回 true 表示事件已被输入框消费(调用方应停止后续处理, 如相机旋转)。 */
+        JOY_API bool   r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event);
         /* 设置回车提交回调 */
         JOY_API void   r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p));
         /* 触发提交(调用 on_submit); 供回车事件调用 */

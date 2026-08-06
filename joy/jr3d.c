@@ -1212,6 +1212,42 @@ void r3d_label_destroy(jr3d_label_p l)
  * 2D UI: input (仿 jr2d inputbox, 屏幕像素坐标, 不随相机变化)
  * ================================================================ */
 
+/* 测量 str 前 byte_len 字节的像素宽度(UTF-8 安全; 用 stbtt 累加 advance, 不重建 GPU 纹理) */
+static float r3d_font_measure(jr3d_p r, const char* str, int byte_len)
+{
+	if (!r->font_ttf_buf || !str || byte_len <= 0) return 0.0f;
+	float w = 0.0f;
+	int pos = 0;
+	int32_t code;
+	while (pos < byte_len) {
+		size_t consumed = utf8_decode(str + pos, (size_t)(byte_len - pos), &code);
+		if (consumed == 0) break;
+		int advance = 0, lsb = 0;
+		stbtt_GetCodepointHMetrics(&r->font_info, (int)code, &advance, &lsb);
+		w += advance * r->font_scale;
+		pos += (int)consumed;
+	}
+	return w;
+}
+
+/* 回退到上一个 UTF-8 字符起点(字节偏移) */
+static int r3d_input_prev_char(const char* s, int pos)
+{
+	int p = pos;
+	while (p > 0 && ((unsigned char)s[p] & 0xC0) == 0x80) p--;
+	return p;
+}
+
+/* 前进到下一个 UTF-8 字符起点(字节偏移) */
+static int r3d_input_next_char(const char* s, int pos, int len)
+{
+	int p = pos;
+	if (p >= len) return len;
+	size_t consumed = utf8_decode(s + p, (size_t)(len - p), &(int32_t){0});
+	if (consumed == 0) return len;
+	return p + (int)consumed;
+}
+
 jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize,
                               uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
@@ -1222,6 +1258,8 @@ jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize
 	inp->r = cr; inp->g = cg; inp->b = cb;
 	inp->text[0] = '\0';
 	if (text) SDL_strlcpy(inp->text, text, sizeof(inp->text));
+	inp->cursor_pos = (int)SDL_strlen(inp->text);
+	inp->scroll = 0;
 	inp->focused = false;
 	inp->cursor_timer = SDL_GetTicks();
 	inp->cursor_visible = true;
@@ -1234,6 +1272,8 @@ void r3d_input_set_text(jr3d_input_p inp, const char* text)
 	if (!inp) return;
 	inp->text[0] = '\0';
 	if (text) SDL_strlcpy(inp->text, text, sizeof(inp->text));
+	inp->cursor_pos = (int)SDL_strlen(inp->text);
+	inp->scroll = 0;
 }
 
 const char* r3d_input_get_text(jr3d_input_p inp)
@@ -1250,7 +1290,7 @@ bool r3d_input_is_hovered(const jr3d_input_p inp, float mx, float my)
 
 void r3d_input_focus(jr3d_input_p inp)
 {
-	if (inp) inp->focused = true;
+	if (inp) { inp->focused = true; inp->cursor_visible = true; inp->cursor_timer = SDL_GetTicks(); }
 }
 
 void r3d_input_defocus(jr3d_input_p inp)
@@ -1270,26 +1310,85 @@ void r3d_input_insert(jr3d_input_p inp, const char* s)
 	size_t add = SDL_strlen(s);
 	size_t cap = sizeof(inp->text) - 1;
 	if (cur + add > cap) add = cap - cur;          // 截断到容量
-	SDL_memcpy(inp->text + cur, s, add);
-	inp->text[cur + add] = '\0';
+	if (add == 0) return;
+	/* 在 cursor_pos 处插入 */
+	SDL_memmove(inp->text + inp->cursor_pos + add,
+				inp->text + inp->cursor_pos,
+				cur - inp->cursor_pos + 1);          // 含结尾 '\0'
+	SDL_memcpy(inp->text + inp->cursor_pos, s, add);
+	inp->cursor_pos += (int)add;
 }
 
 void r3d_input_backspace(jr3d_input_p inp)
 {
-	if (!inp || !inp->text[0]) return;
-	/* 退格: 删除最后一个 UTF-8 字符(一个码点可能占多字节, 如中文) */
-	size_t len = SDL_strlen(inp->text);
-	size_t pos = 0;
-	size_t last = 0;          /* 倒数第二个码点的起始位置 */
-	int32_t code;
-	while (pos < len) {
-		size_t consumed = utf8_decode(inp->text + pos, len - pos, &code);
-		if (consumed == 0) break;
-		if (pos + consumed >= len) break;   /* 这是最后一个码点, 停在它之前 */
-		last = pos;
-		pos += consumed;
+	if (!inp || inp->cursor_pos <= 0) return;
+	int start = r3d_input_prev_char(inp->text, inp->cursor_pos);
+	int ch_len = inp->cursor_pos - start;
+	size_t cur = SDL_strlen(inp->text);
+	SDL_memmove(inp->text + start, inp->text + inp->cursor_pos, cur - inp->cursor_pos + 1);
+	inp->cursor_pos = start;
+}
+
+void r3d_input_delete(jr3d_input_p inp)
+{
+	if (!inp) return;
+	size_t cur = SDL_strlen(inp->text);
+	if (inp->cursor_pos >= (int)cur) return;
+	int nxt = r3d_input_next_char(inp->text, inp->cursor_pos, (int)cur);
+	SDL_memmove(inp->text + inp->cursor_pos, inp->text + nxt, cur - nxt + 1);
+	/* cursor_pos 不变 */
+}
+
+void r3d_input_cursor_left(jr3d_input_p inp)
+{
+	if (!inp || inp->cursor_pos <= 0) return;
+	inp->cursor_pos = r3d_input_prev_char(inp->text, inp->cursor_pos);
+}
+
+void r3d_input_cursor_right(jr3d_input_p inp)
+{
+	if (!inp) return;
+	size_t cur = SDL_strlen(inp->text);
+	if (inp->cursor_pos >= (int)cur) return;
+	inp->cursor_pos = r3d_input_next_char(inp->text, inp->cursor_pos, (int)cur);
+}
+
+void r3d_input_cursor_home(jr3d_input_p inp)
+{
+	if (inp) inp->cursor_pos = 0;
+}
+
+void r3d_input_cursor_end(jr3d_input_p inp)
+{
+	if (inp) inp->cursor_pos = (int)SDL_strlen(inp->text);
+}
+
+void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
+{
+	if (!inp) return;
+	inp->focused = true;
+	inp->cursor_timer = SDL_GetTicks();
+	inp->cursor_visible = true;
+	if (!r3d_input_is_hovered(inp, mx, my)) return;
+
+	float padX = 4.0f;
+	/* 点击位置对应文本像素(已含 scroll) */
+	float px = (mx - (inp->x + padX)) + (float)inp->scroll;
+
+	int len = (int)SDL_strlen(inp->text);
+	int pos = 0;
+	float acc = 0.0f;
+	int best = 0;
+	float best_dist = 1e30f;
+	while (pos <= len) {
+		float d = SDL_fabsf(acc - px);
+		if (d < best_dist) { best_dist = d; best = pos; }
+		if (pos >= len) break;
+		int nxt = r3d_input_next_char(inp->text, pos, len);
+		acc += r3d_font_measure(r, inp->text + pos, nxt - pos);
+		pos = nxt;
 	}
-	inp->text[last] = '\0';
+	inp->cursor_pos = best;
 }
 
 void r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p))
@@ -1306,9 +1405,9 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 {
 	if (!r || !m || !inp || winW <= 0 || winH <= 0) return;
 
-	/* 背景: 白底(聚焦时略偏蓝) */
-	Uint8 br = 255, bg = 255, bb = 255;
-	if (inp->focused) { br = 235; bg = 242; bb = 255; }
+	/* 背景: 深色(字体纹理为白字, 深色底才看得清); 聚焦时略亮偏蓝灰 */
+	Uint8 br = 40, bg = 40, bb = 40;
+	if (inp->focused) { br = 50; bg = 54; bb = 64; }
 	draw_rect_2d(r, m, inp->x, inp->y, inp->w, inp->h, br, bg, bb, winW, winH);
 
 	/* 边框: 2px; 聚焦时蓝, 否则灰 */
@@ -1323,15 +1422,45 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 
 	if (!r->font_ttf_buf) return;
 
-	/* 文字: 左对齐, 垂直居中 (draw_2d 内部会 bake 并设置 font_tex_w/h) */
-	float padX = 4.0f;
+	float padX   = 4.0f;
 	float fontSize = inp->fontSize > 0 ? inp->fontSize : (inp->h * 0.6f);
-	float ty = inp->y + (inp->h - fontSize) * 0.5f;
-	if (inp->text[0]) {
-		r3d_font_draw_2d(r, m, inp->text, inp->x + padX, ty, fontSize, winW, winH);
+	float ty     = inp->y + (inp->h - fontSize) * 0.5f;
+	float visW   = inp->w - 2.0f * bw - 2.0f * padX;   /* 可见文本宽度 */
+	int   len    = (int)SDL_strlen(inp->text);
+
+	/* 维护滚动: 保证光标可见(参考 jr2d inputbox_scroll_to_cursor) */
+	if (inp->focused) {
+		float cw = r3d_font_measure(r, inp->text, inp->cursor_pos);
+		if (cw - inp->scroll > visW)       inp->scroll = (int)(cw - visW);
+		else if (cw - inp->scroll < 0)     inp->scroll = (int)cw;
+		float total = r3d_font_measure(r, inp->text, len);
+		if (total < visW)                  inp->scroll = 0;
+		else if (inp->scroll + visW > total) inp->scroll = (int)(total - visW);
+		if (inp->scroll < 0)               inp->scroll = 0;
 	}
 
-	/* 光标: 聚焦时闪烁, 绘制在文字之后 */
+	/* 计算可见字符起点: 第一个使 (measure(pos) - scroll) >= 0 的字节 */
+	int vis_start = 0;
+	{
+		int p = 0;
+		while (p < len) {
+			float w = r3d_font_measure(r, inp->text, p);
+			if (w - inp->scroll >= 0.0f) { vis_start = p; break; }
+			int nxt = r3d_input_next_char(inp->text, p, len);
+			if (nxt <= p) { vis_start = len; break; }
+			p = nxt;
+		}
+	}
+	/* 可见起点之前的累计宽度(用于绘制偏移) */
+	float pre_w = r3d_font_measure(r, inp->text, vis_start);
+
+	/* 绘制可见文本子串(从 vis_start 开始) */
+	if (vis_start < len) {
+		float draw_x = inp->x + padX - (pre_w - (float)inp->scroll);
+		r3d_font_draw_2d(r, m, inp->text + vis_start, draw_x, ty, fontSize, winW, winH);
+	}
+
+	/* 光标: 聚焦时闪烁, 限制绘制在框内 */
 	if (inp->focused) {
 		uint64_t now = SDL_GetTicks();
 		if (now - inp->cursor_timer >= 500) {
@@ -1339,13 +1468,12 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 			inp->cursor_timer = now;
 		}
 		if (inp->cursor_visible) {
-			/* 用 font_tex_w/h 估计文字宽度(已由上一次 bake 设置) */
-			float cw = 0.0f;
-			if (inp->text[0] && r->font_tex_h > 0) {
-				cw = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
+			float cw = r3d_font_measure(r, inp->text, inp->cursor_pos);
+			float caret_x = inp->x + padX + (cw - (float)inp->scroll);
+			/* 仅在框内绘制光标 */
+			if (caret_x >= inp->x + bw && caret_x <= inp->x + inp->w - bw) {
+				draw_rect_2d(r, m, caret_x, ty, 2.0f, fontSize, 255, 255, 255, winW, winH);
 			}
-			float caret_x = inp->x + padX + cw;
-			draw_rect_2d(r, m, caret_x, ty, 2.0f, fontSize, 0, 0, 0, winW, winH);
 		}
 	} else {
 		inp->cursor_visible = true;   /* 失焦时复位, 下次聚焦立即显示 */
