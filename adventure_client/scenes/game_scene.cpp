@@ -17,7 +17,6 @@
 #include "../adventure_shared/systems/movement_system.h"
 #include "../adventure_shared/systems/cleanup_system.h"
 #include "../adventure_shared/systems/collision_system.h"
-#include "../systems/spawn_obstacles_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"

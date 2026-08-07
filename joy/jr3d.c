@@ -1,4 +1,4 @@
-#include "joy.h"
+﻿#include "joy.h"
 #include <SDL3/SDL.h>
 
 #ifndef M_PI
@@ -63,7 +63,16 @@ struct jr3d {
 	int                font_tex_w;
 	int                font_tex_h;
 	char               font_cache[256]; /* 已烘焙的字符串缓存 */
+
+	/* 延迟释放队列: r3d_mesh_destroy 不再立即释放 GPU buffer,
+	   而是延迟到 r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
+	SDL_GPUBuffer**    pending_buffers;
+	int                pending_count;
+	int                pending_cap;
 };
+
+/* 前向声明: 延迟释放队列的 buffer, 在 r3d_end / r3d_destroy 后统一释放 */
+static void r3d_flush_pending(jr3d_p r);
 
 /* ================================================================
  * 底层工具 — 使用 void* 隐藏 SDL3 句柄，内部强转
@@ -418,16 +427,17 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 		SDL_DestroyGPUDevice(r->dev); SDL_free(r); return NULL;
 	}
 
-	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符） */
-	size_t dirlen = strlen(shader_dir);
-	bool has_sep = (dirlen > 0) && (shader_dir[dirlen - 1] == '/' || shader_dir[dirlen - 1] == '\\');
+	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符, nullptr 视为空串） */
+	const char* sd = shader_dir ? shader_dir : "";
+	size_t dirlen = strlen(sd);
+	bool has_sep = (dirlen > 0) && (sd[dirlen - 1] == '/' || sd[dirlen - 1] == '\\');
 	const char* sep = has_sep ? "" : "/";
 	size_t plen = dirlen + 16;
 	char* vert_path = (char*)SDL_malloc(plen);
 	char* frag_path = (char*)SDL_malloc(plen);
 	if (!vert_path || !frag_path) { SDL_free(vert_path); SDL_free(frag_path); r3d_destroy(r); return NULL; }
-	snprintf(vert_path, plen, "%s%svert.spv", shader_dir, sep);
-	snprintf(frag_path, plen, "%s%sfrag.spv", shader_dir, sep);
+	snprintf(vert_path, plen, "%s%svert.spv", sd, sep);
+	snprintf(frag_path, plen, "%s%sfrag.spv", sd, sep);
 	r->vs = (SDL_GPUShader*)r3d_load_shader(r->dev, vert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
 	r->fs = (SDL_GPUShader*)r3d_load_shader(r->dev, frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
 	SDL_free(vert_path); SDL_free(frag_path);
@@ -457,8 +467,8 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 		char* lvert_path = (char*)SDL_malloc(lplen);
 		char* lfrag_path = (char*)SDL_malloc(lplen);
 		if (lvert_path && lfrag_path) {
-			snprintf(lvert_path, lplen, "%s%slighting.vert.spv", shader_dir, sep);
-			snprintf(lfrag_path, lplen, "%s%slighting.frag.spv", shader_dir, sep);
+			snprintf(lvert_path, lplen, "%s%slighting.vert.spv", sd, sep);
+			snprintf(lfrag_path, lplen, "%s%slighting.frag.spv", sd, sep);
 			r->lvs = (SDL_GPUShader*)r3d_load_shader(r->dev, lvert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
 			r->lfs = (SDL_GPUShader*)r3d_load_shader(r->dev, lfrag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
 			if (r->lvs && r->lfs) {
@@ -511,6 +521,8 @@ void r3d_destroy(jr3d_p r)
 	if (r->lfs)      SDL_ReleaseGPUShader(r->dev, r->lfs);
 	if (r->font_tex) SDL_ReleaseGPUTexture(r->dev, r->font_tex);
 	if (r->dev) {
+		r3d_flush_pending(r); /* 释放所有延迟队列中的 buffer */
+		if (r->pending_buffers) SDL_free(r->pending_buffers);
 		SDL_ReleaseWindowFromGPUDevice(r->dev, r->win);
 		SDL_DestroyGPUDevice(r->dev);
 	}
@@ -578,6 +590,8 @@ void r3d_end(jr3d_p r)
 	if (!r) return;
 	if (r->rp)  { SDL_EndGPURenderPass(r->rp); r->rp = NULL; }
 	if (r->cmd) { SDL_SubmitGPUCommandBuffer(r->cmd); r->cmd = NULL; }
+	/* 帧提交后再释放上一帧遗留的旧 buffer, 此时 GPU 已完成渲染 */
+	r3d_flush_pending(r);
 }
 
 /* ---- 相机 ---- */
@@ -780,7 +794,7 @@ render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
 	(void)r;
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 5 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -1796,7 +1810,7 @@ render_mesh_p r3d_mesh_quad(jr3d_p r)
 	};
 	static const Uint32 indices[6] = { 0, 1, 2, 0, 2, 3 };
 
-	render_mesh_p m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	m->index_buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, indices, sizeof(indices));
@@ -1837,7 +1851,7 @@ render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
 	/* -Y */ LIT_V(-hw,-hh,-hd,0,-1,0,0,0); LIT_V( hw,-hh,-hd,0,-1,0,1,0); LIT_V( hw,-hh, hd,0,-1,0,1,1);
 	         LIT_V( hw,-hh, hd,0,-1,0,1,1); LIT_V(-hw,-hh, hd,0,-1,0,0,1); LIT_V(-hw,-hh,-hd,0,-1,0,0,0);
 #undef LIT_V
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -1845,11 +1859,34 @@ render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
 	return m;
 }
 
+static void r3d_flush_pending(jr3d_p r)
+{
+	if (!r || r->pending_count == 0) return;
+	for (int i = 0; i < r->pending_count; i++)
+		SDL_ReleaseGPUBuffer(r->dev, r->pending_buffers[i]);
+	r->pending_count = 0;
+}
+
 void r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 {
 	if (!r || !m) return;
-	if (m->buffer) SDL_ReleaseGPUBuffer(r->dev, m->buffer);
-	if (m->index_buffer) SDL_ReleaseGPUBuffer(r->dev, m->index_buffer);
+	/* 延迟释放 GPU buffer: 推入队列, 待 r3d_end 后统一释放,
+	   避免释放仍被 GPU 引用的 buffer 导致 VULKAN 崩溃 */
+	if (m->buffer) {
+		if (r->pending_count >= r->pending_cap) {
+			int nc = r->pending_cap ? r->pending_cap * 2 : 16;
+			SDL_GPUBuffer** nb = (SDL_GPUBuffer**)SDL_realloc(r->pending_buffers,
+				(size_t)nc * sizeof(SDL_GPUBuffer*));
+			if (nb) { r->pending_buffers = nb; r->pending_cap = nc; }
+		}
+		if (r->pending_count < r->pending_cap)
+			r->pending_buffers[r->pending_count++] = m->buffer;
+	}
+	/* index_buffer 同样可能仍被 GPU 引用, 一并延迟释放 */
+	if (m->index_buffer) {
+		if (r->pending_count < r->pending_cap)
+			r->pending_buffers[r->pending_count++] = m->index_buffer;
+	}
 	SDL_free(m);
 }
 
@@ -1895,7 +1932,7 @@ render_mesh_p r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks
 			}
 		}
 	}
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
@@ -1931,7 +1968,7 @@ render_mesh_p r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
 			verts[vi++]=x1; verts[vi++]=0; verts[vi++]=z1; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u1; verts[vi++]=v1;
 		}
 	}
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
@@ -1970,7 +2007,7 @@ render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 	RV(w,0,0, 1,0,0, 0,0); RV(w,h,l, 1,0,0, 1,1); RV(w,0,l, 1,0,0, 1,0);
 	RV(w,h,l, 1,0,0, 1,1); RV(w,0,0, 1,0,0, 0,0); RV(w,0,l, 1,0,0, 0,0);
 #undef RV
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -1981,7 +2018,7 @@ render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 render_mesh_p r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
-	m = (render_mesh_p)SDL_malloc(sizeof(render_mesh_t));
+	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 8 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
