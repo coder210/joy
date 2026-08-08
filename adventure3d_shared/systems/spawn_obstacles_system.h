@@ -61,7 +61,27 @@ static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
     }
 
     // ---- 旋转 45° 的 OBB 箱子（-2,0.5,2,0.8³, 绕 Y 轴 45°）----
+    // 用 OBB + 半尺寸 + 旋转欧拉角，走 jgjk.c 的 GJK3DF_CTYPE_OBB 支持函数（正确分离旋转盒）
+    // 注意：必须 emplace LogicPositionComponent，否则 collision_system 的
+    // static_view（view<Collider, LogicPosition>）遍历不到它，碰撞会被完全跳过导致穿模！
+    {
+        entt::entity e = registry.create();
+        registry.emplace<IdComponent>(e, id++);
+        float rad = ft_radians(45.0f);
+        registry.emplace<LogicPositionComponent>(e, fp_from_float(-2), fp_from_float(0.5f), fp_from_float(2));
+        registry.emplace<LogicRectComponent>(e, fp_from_float(0.8f), fp_from_float(0.8f));
+        ColliderComponent col;
+        col.type = ColliderComponent::OBB;
+        col.half_size = { fp_from_float(0.4f), fp_from_float(0.4f), fp_from_float(0.4f) };
+        col.rotation  = { fp_zero(), fp_from_float(rad), fp_zero() };   // 绕 Y 轴 45°
+        registry.emplace<ColliderComponent>(e, col);
+        registry.emplace<TransformComponent>(e, vec3_t{ -2, 0.5f, 2 }, ft_radians(45.0f), vec3_t{ 0.8f, 0.8f, 0.8f });
+        registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 255, 165, 0, 255 }, 0.0f });
+    }
+
+    // ---- 旋转 45° 的 MESH 箱子（-2,0.5,-2,0.8³, 绕 Y 轴 45°）----
     // 用 MESH + 真实世界顶点（绕 Y 轴旋转），与渲染 TransformComponent.yaw=45° 一致
+    // 注意：必须 emplace LogicPositionComponent，否则 collision_system 遍历不到它导致穿模
     {
         entt::entity e = registry.create();
         registry.emplace<IdComponent>(e, id++);
@@ -77,9 +97,11 @@ static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
             { fp_from_float(-half), fp_from_float(-half), fp_from_float( half) },
         };
         float rad = ft_radians(45.0f);
-        mat44f_t t = mat44f_translate(fp_from_float(-2.0f), fp_from_float(0.5f), fp_from_float(2.0f));
+        mat44f_t t = mat44f_translate(fp_from_float(-2.0f), fp_from_float(0.5f), fp_from_float(-2.0f));
         mat44f_t r = mat44f_rotate_y(fp_from_float(rad));
         mat44f_t transform = mat44f_mul(t, r);
+        registry.emplace<LogicPositionComponent>(e, fp_from_float(-2), fp_from_float(0.5f), fp_from_float(-2));
+        registry.emplace<LogicRectComponent>(e, fp_from_float(0.8f), fp_from_float(0.8f));
         ColliderComponent col;
         col.type = ColliderComponent::MESH;
         col.verts_num = 8;
@@ -89,8 +111,8 @@ static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
             col.verts[i] = { res.x, res.y, res.z };
         }
         registry.emplace<ColliderComponent>(e, col);
-        registry.emplace<TransformComponent>(e, vec3_t{ -2, 0.5f, 2 }, ft_radians(45.0f), vec3_t{ 0.8f, 0.8f, 0.8f });
-        registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 255, 165, 0, 255 }, 0.0f });
+        registry.emplace<TransformComponent>(e, vec3_t{ -2, 0.5f, -2 }, ft_radians(45.0f), vec3_t{ 0.8f, 0.8f, 0.8f });
+        registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 255, 200, 0, 255 }, 0.0f });
     }
 
     // ---- 三角斜坡（-6,0,0,w2 l3 h1.5，非旋转三角棱柱）----
