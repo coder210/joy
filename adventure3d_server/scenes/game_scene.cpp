@@ -95,7 +95,7 @@ static void on_update(scene_p s, float dt)
         netserver_update(ctx->net_server);
         network_receive(ctx);
 
-        // === 固定步长逻辑 Tick（20Hz）===
+        // === 固定步长逻辑 Tick（30Hz）===
         ctx->accumulator += dt;
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;

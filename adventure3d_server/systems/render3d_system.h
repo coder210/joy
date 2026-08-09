@@ -4,6 +4,7 @@
 #include <joy/joy.h>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 #include "../context.h"
 #include "../../adventure3d_shared/components/static_mesh_component.h"
 #include "../../adventure3d_shared/components/transform_component.h"
@@ -12,6 +13,35 @@
 
 static void render3d_system(Context* ctx, float /*dt*/) {
     if (!ctx->r3d) return;
+
+    // ---- FPS 显示（HUD 文字，一次性初始化字体 + quad）----
+    static bool  g_font_ok = false;
+    static bool  g_font_tried = false;
+    static render_mesh_p g_hud_quad = NULL;
+    static uint64_t g_fps_last = 0;
+    static int   g_fps_count = 0;
+    static int   g_fps = 0;
+    if (!g_font_tried) {
+        g_font_tried = true;
+        g_hud_quad = r3d_mesh_quad(ctx->r3d);
+        // 优先黑体（含中文），回退 arial（ASCII）；路径为资源目录下的 fonts
+        if (!r3d_font_init(ctx->r3d, "adventure3d_server/fonts/simhei.ttf", 48) &&
+            !r3d_font_init(ctx->r3d, "adventure3d_server/fonts/arial.ttf", 48)) {
+            log_info("render3d: font init failed (FPS HUD disabled)");
+        } else {
+            g_font_ok = true;
+        }
+    }
+    {
+        uint64_t now = get_ticks();
+        g_fps_count++;
+        if (g_fps_last == 0) g_fps_last = now;
+        if (now - g_fps_last >= 500) {
+            g_fps = (int)(g_fps_count * 1000 / (now - g_fps_last));
+            g_fps_count = 0;
+            g_fps_last = now;
+        }
+    }
 
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
@@ -82,14 +112,14 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         mat44_t m = mat44_identity();
         float sx = t.scale.x, sy = t.scale.y, sz = t.scale.z;
         if (sm.roll != 0.0f) {
-            // 绕 Z 轴旋转（斜放长方体斜坡）。mat44 为列主序：
-            //   [ c -s 0 ]       列1: m0=c*sx, m1=-s*sy, m2=0
-            //   [ s  c 0 ]       列2: m4=s*sx, m5=c*sy,  m6=0
-            //   [ 0  0 1 ]       列3: m8=0,    m9=0,     m10=sz
+            // 绕 X 轴旋转（斜放长方体斜坡，与碰撞 MESH 顶点 y-z 平面旋转一致）。
+            // main8888.cpp 原版：m.m5=height*cs, m.m6=height*sn, m.m9=length*-sn, m.m10=length*cs
+            // 列主序，旋转作用在 y 与 z 分量：
+            //   列2(y方向): m5=cs*sy, m6=sr*sy
+            //   列3(z方向): m9=-sr*sz, m10=cs*sz
             float cr = cosf(sm.roll), sr = sinf(sm.roll);
-            m.m0 = cr * sx;  m.m1 = sr * sy;  m.m2 = 0.0f;
-            m.m4 = -sr * sx; m.m5 = cr * sy;  m.m6 = 0.0f;
-            m.m8 = 0.0f;     m.m9 = 0.0f;     m.m10 = sz;
+            m.m5 = cr * sy; m.m6 = sr * sy;
+            m.m9 = -sr * sz; m.m10 = cr * sz;
         } else if (t.yaw != 0.0f) {
             // 绕 Y 轴旋转（OBB）
             float c = cosf(t.yaw), s = sinf(t.yaw);
@@ -100,6 +130,16 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         }
         m.m12 = t.position.x; m.m13 = t.position.y; m.m14 = t.position.z;
         r3d_draw_mesh_lit_color(ctx->r3d, sm.mesh, &m, sm.color);
+    }
+
+    // FPS HUD：固定在窗口左上角（2D 屏幕像素坐标，不随相机变化）
+    if (g_font_ok && g_hud_quad) {
+        int winW = 0, winH = 0;
+        r3d_get_window_size(ctx->r3d, &winW, &winH);
+        char fpsTxt[64];
+        snprintf(fpsTxt, sizeof(fpsTxt), "FPS: %d", g_fps);
+        r3d_font_draw_2d(ctx->r3d, g_hud_quad, fpsTxt, 10.0f, 10.0f, 24.0f,
+                         (float)(winW > 0 ? winW : 760), (float)(winH > 0 ? winH : 480));
     }
 
     r3d_end(ctx->r3d);

@@ -92,21 +92,6 @@ static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ ramp, { 180, 140, 90, 255 }, 0.0f });
     }
 
-    // 斜放长方体斜坡 basePos{6,0,0} w2 l3 h1，roll = -atan2f(h, l)
-    {
-        entt::entity e = registry.create();
-        float roll = -atan2f(1.0f, 3.0f);
-        registry.emplace<IdComponent>(e, id++);
-        registry.emplace<LogicPositionComponent>(e, fp_from_float(6), fp_from_float(0.5f), fp_zero());
-        registry.emplace<LogicRectComponent>(e, fp_from_float(2), fp_from_float(3));
-        ColliderComponent col;
-        col.type = ColliderComponent::BOX;
-        col.half_size = { fp_from_float(1.0f), fp_from_float(0.5f), fp_from_float(1.5f) };
-        registry.emplace<ColliderComponent>(e, col);
-        registry.emplace<TransformComponent>(e, vec3_t{ 6, 0.5f, 0 }, 0.0f, vec3_t{ 2, 1, 3 });
-        registry.emplace<LocalOnlyComponent>(e);
-        registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 180, 140, 90, 255 }, roll });
-    }
 }
 
 #endif

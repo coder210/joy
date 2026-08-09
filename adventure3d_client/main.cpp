@@ -22,7 +22,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
         game_timer_init(&ctx->game_timer);
         game_timer_set_target_fps(&ctx->game_timer, 60);
 
-        ctx->window = create_window("client", 320, 240);
+        ctx->window = create_window("client", 760, 480);
         ctx->r3d = r3d_create(ctx->window, "adventure3d_client/shaders");
 
         ctx->running = true;

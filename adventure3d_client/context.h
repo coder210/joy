@@ -85,7 +85,7 @@ struct Context {
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 20.0f;
+        float FIXED_TIMESTEP = 1.0f / 30.0f; // 30Hz，与服务端一致
 
         // system 注册
         std::vector<struct SystemEntry> systems;

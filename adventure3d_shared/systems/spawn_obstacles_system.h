@@ -138,34 +138,6 @@ static void spawn_obstacles(entt::registry& registry, Context* ctx, float dt) {
         registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ ramp, { 180, 140, 90, 255 }, 0.0f });
     }
 
-    // ---- 斜放长方体斜坡（6,0,0,w2 l3 h1，绕 Z 轴 roll=-atan2(h,l)）----
-    // 用 MESH + 旋转后的 8 顶点（绕 Z 轴 roll），与渲染 cube roll 完全一致
-    {
-        entt::entity e = registry.create();
-        float roll = -atan2f(1.0f, 3.0f);
-        registry.emplace<IdComponent>(e, id++);
-        float hw = 1.0f, hh = 0.5f, hl = 1.5f;   // half
-        float cx = 6.0f, cy = 0.5f, cz = 0.0f;    // 中心
-        float cs = cosf(roll), sn = sinf(roll);
-        ColliderComponent col;
-        col.type = ColliderComponent::MESH;
-        col.verts_num = 8;
-        int vi = 0;
-        for (int ix = -1; ix <= 1; ix += 2)
-            for (int iy = -1; iy <= 1; iy += 2)
-                for (int iz = -1; iz <= 1; iz += 2) {
-                    float lx = ix * hw, ly = iy * hh, lz = iz * hl;
-                    float wx = lx + cx;
-                    float wy = ly * cs - lz * sn + cy;
-                    float wz = ly * sn + lz * cs + cz;
-                    col.verts[vi++] = { fp_from_float(wx), fp_from_float(wy), fp_from_float(wz) };
-                }
-        registry.emplace<ColliderComponent>(e, col);
-        registry.emplace<LogicPositionComponent>(e, fp_from_float(cx), fp_from_float(cy), fp_zero());
-        registry.emplace<LogicRectComponent>(e, fp_from_float(2), fp_from_float(3));
-        registry.emplace<TransformComponent>(e, vec3_t{ 6, 0.5f, 0 }, 0.0f, vec3_t{ 2, 1, 3 });
-        registry.emplace<StaticMeshComponent>(e, StaticMeshComponent{ cube, { 180, 140, 90, 255 }, roll });
-    }
 }
 
 #endif

@@ -34,7 +34,7 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 			phy.jump_prev = jump_down;
 		}
 
-		log_info("Raw dir: %d yaw: %d\n", input.dir, input.yaw_quantized);
+		// log_info("Raw dir: %d yaw: %d\n", input.dir, input.yaw_quantized);
 
 		if (registry.all_of<PlayerStateInput>(player)) {
 			auto& state = registry.get<PlayerStateInput>(player);

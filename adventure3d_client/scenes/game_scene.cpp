@@ -138,7 +138,7 @@ static void on_update(scene_p s, float dt) {
                 network_receive(self->ctx);
         }
 
-        // === 固定步长逻辑 Tick（20Hz）===
+        // === 固定步长逻辑 Tick（30Hz）===
         self->ctx->accumulator += dt;
         while (self->ctx->accumulator >= self->ctx->FIXED_TIMESTEP) {
             self->ctx->accumulator -= self->ctx->FIXED_TIMESTEP;
