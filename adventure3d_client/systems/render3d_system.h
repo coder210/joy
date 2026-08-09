@@ -10,38 +10,10 @@
 #include "../../adventure3d_shared/components/mesh_component.h"
 #include "../../adventure3d_shared/components/static_mesh_component.h"
 #include "../../adventure3d_shared/components/global_state_component.h"
+#include "../layers/debug_layer.h"
 
 static void render3d_system(Context* ctx, float /*dt*/) {
     if (!ctx->r3d) return;
-
-    // ---- FPS 显示（HUD 文字，一次性初始化字体 + quad）----
-    static bool  g_font_ok = false;
-    static bool  g_font_tried = false;
-    static render_mesh_p g_hud_quad = NULL;
-    static uint64_t g_fps_last = 0;
-    static int   g_fps_count = 0;
-    static int   g_fps = 0;
-    if (!g_font_tried) {
-        g_font_tried = true;
-        g_hud_quad = r3d_mesh_quad(ctx->r3d);
-        // 优先黑体（含中文），回退 arial（ASCII）；路径为资源目录下的 fonts
-        if (!r3d_font_init(ctx->r3d, "adventure3d_client/fonts/simhei.ttf", 48) &&
-            !r3d_font_init(ctx->r3d, "adventure3d_client/fonts/arial.ttf", 48)) {
-            log_info("render3d: font init failed (FPS HUD disabled)");
-        } else {
-            g_font_ok = true;
-        }
-    }
-    {
-        uint64_t now = get_ticks();
-        g_fps_count++;
-        if (g_fps_last == 0) g_fps_last = now;
-        if (now - g_fps_last >= 500) {
-            g_fps = (int)(g_fps_count * 1000 / (now - g_fps_last));
-            g_fps_count = 0;
-            g_fps_last = now;
-        }
-    }
 
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
@@ -135,14 +107,15 @@ static void render3d_system(Context* ctx, float /*dt*/) {
         r3d_draw_mesh_lit_color(ctx->r3d, sm.mesh, &m, sm.color);
     }
 
-    // FPS HUD：固定在窗口左上角（2D 屏幕像素坐标，不随相机变化）
-    if (g_font_ok && g_hud_quad) {
-        int winW = 0, winH = 0;
-        r3d_get_window_size(ctx->r3d, &winW, &winH);
-        char fpsTxt[64];
-        snprintf(fpsTxt, sizeof(fpsTxt), "FPS: %d", g_fps);
-        r3d_font_draw_2d(ctx->r3d, g_hud_quad, fpsTxt, 10.0f, 10.0f, 24.0f,
-                         (float)(winW > 0 ? winW : 760), (float)(winH > 0 ? winH : 480));
+    // 调试层 HUD（FPS）：独立于 ECS 实体渲染，字体渲染统一放 debug_layer
+    {
+        static bool g_quad_tried = false;
+        static render_mesh_p g_hud_quad = NULL;
+        if (!g_quad_tried) {
+            g_quad_tried = true;
+            g_hud_quad = r3d_mesh_quad(ctx->r3d);
+        }
+        debug_layer_render_hud(ctx, g_hud_quad);
     }
 
     r3d_end(ctx->r3d);
