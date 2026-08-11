@@ -7,20 +7,24 @@
 static inline void create_warrior_anim_def(entt::registry& registry, const char* tex_path) {
     anim_def_t def = {0};
 
-    const int FPS = 6;
     const float DUR = 0.15f;
     const int FW = 192, FH = 192;
 
+    // 每个状态独立指定帧数（按纹理从左到右取，行不足则丢弃多余帧）
+    const int N_IDLE = 6;                 // idle 帧数
+    const int N_WALK = 6;                 // walk 帧数
+    const int N_ATK[4] = { 6, 6, 6, 6 };  // attack_d/l/r/u 帧数
+
     // idle
     int s_idle = anim_add_state(&def, "idle", true);
-    for (int i = 0; i < FPS; i++) {
+    for (int i = 0; i < N_IDLE; i++) {
         jrect_t r = { (float)(i * FW), 0, (float)FW, (float)FH };
         anim_add_clip(&def, s_idle, tex_path, DUR, r);
     }
 
     // walk
     int s_walk = anim_add_state(&def, "walk", true);
-    for (int i = 0; i < FPS; i++) {
+    for (int i = 0; i < N_WALK; i++) {
         jrect_t r = { (float)(i * FW), (float)(1 * FH), (float)FW, (float)FH };
         anim_add_clip(&def, s_walk, tex_path, DUR, r);
     }
@@ -31,7 +35,7 @@ static inline void create_warrior_anim_def(entt::registry& registry, const char*
     int s_atk[4];
     for (int d = 0; d < 4; d++) {
         s_atk[d] = anim_add_state(&def, atk_names[d], false);
-        for (int i = 0; i < FPS; i++) {
+        for (int i = 0; i < N_ATK[d]; i++) {
             jrect_t r = { (float)(i * FW), (float)(atk_rows[d] * FH), (float)FW, (float)FH };
             anim_add_clip(&def, s_atk[d], tex_path, DUR, r);
         }
@@ -54,7 +58,7 @@ static inline void create_warrior_anim_def(entt::registry& registry, const char*
     }
     for (int d = 0; d < 4; d++) {
         t = anim_add_transition(&def, s_atk[d], s_idle);
-        anim_transition_set_exit_time(&def, t, (float)(FPS * DUR));
+        anim_transition_set_exit_time(&def, t, (float)(N_ATK[d] * DUR));
     }
 
     anim_set_default_state(&def, s_idle);
@@ -63,22 +67,26 @@ static inline void create_warrior_anim_def(entt::registry& registry, const char*
 
 // ========== 创建 goblin torch 动画定义，存入 registry.ctx() 作为 EnemyAnimDef ==========
 static inline void create_goblin_anim_def(entt::registry& registry, const char* tex_path) {
-    const int FPS = 7;
     const float DUR = 0.15f;
     const int FW = 192, FH = 192;
 
     anim_def_t def = {0};
 
+    // 每个状态独立指定帧数（按纹理从左到右取，行不足则丢弃多余帧）
+    const int N_IDLE = 7;                 // idle 帧数
+    const int N_WALK = 7;                 // walk 帧数
+    const int N_ATK[4] = { 7, 7, 7, 7 };  // attack_d/l/r/u 帧数
+
     // idle (row 0)
     int s_idle = anim_add_state(&def, "idle", true);
-    for (int i = 0; i < FPS; i++) {
+    for (int i = 0; i < N_IDLE; i++) {
         jrect_t r = { (float)(i * FW), 0, (float)FW, (float)FH };
         anim_add_clip(&def, s_idle, tex_path, DUR, r);
     }
 
     // walk (row 1)
     int s_walk = anim_add_state(&def, "walk", true);
-    for (int i = 0; i < FPS; i++) {
+    for (int i = 0; i < N_WALK; i++) {
         jrect_t r = { (float)(i * FW), (float)(1 * FH), (float)FW, (float)FH };
         anim_add_clip(&def, s_walk, tex_path, DUR, r);
     }
@@ -89,7 +97,7 @@ static inline void create_goblin_anim_def(entt::registry& registry, const char* 
     int s_atk[4];
     for (int d = 0; d < 4; d++) {
         s_atk[d] = anim_add_state(&def, atk_names[d], false);
-        for (int i = 0; i < FPS; i++) {
+        for (int i = 0; i < N_ATK[d]; i++) {
             jrect_t r = { (float)(i * FW), (float)(atk_rows[d] * FH), (float)FW, (float)FH };
             anim_add_clip(&def, s_atk[d], tex_path, DUR, r);
         }
@@ -112,7 +120,7 @@ static inline void create_goblin_anim_def(entt::registry& registry, const char* 
     }
     for (int d = 0; d < 4; d++) {
         t = anim_add_transition(&def, s_atk[d], s_idle);
-        anim_transition_set_exit_time(&def, t, (float)(FPS * DUR));
+        anim_transition_set_exit_time(&def, t, (float)(N_ATK[d] * DUR));
     }
 
     anim_set_default_state(&def, s_idle);
