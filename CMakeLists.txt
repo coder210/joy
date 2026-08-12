@@ -16,8 +16,8 @@ option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
 option(BUILD_JOY_BEAT "Build joy_beat" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
-option(BUILD_ADVENTURE3D_SERVER "Build adventure3d_server" OFF)
-option(BUILD_ADVENTURE3D_CLIENT "Build adventure3d_client" OFF)
+option(BUILD_PROJECT_PROXY3D_SERVER "Build project_proxy3d_server" OFF)
+option(BUILD_PROJECT_PROXY3D_CLIENT "Build project_proxy3d_client" OFF)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -64,12 +64,12 @@ if(BUILD_ADVENTURE_CLIENT)
     add_subdirectory(adventure_client)
 endif()
 
-if(BUILD_ADVENTURE3D_SERVER)
-    add_subdirectory(adventure3d_server)
+if(BUILD_PROJECT_PROXY3D_SERVER)
+    add_subdirectory(project_proxy3d_server)
 endif()
 
-if(BUILD_ADVENTURE3D_CLIENT)
-    add_subdirectory(adventure3d_client)
+if(BUILD_PROJECT_PROXY3D_CLIENT)
+    add_subdirectory(project_proxy3d_client)
 endif()
 
 # 可选：CPack 打包配置（如果原来有）

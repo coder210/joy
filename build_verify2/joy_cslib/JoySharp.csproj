@@ -1,0 +1,426 @@
+﻿
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8B68E305-F4EB-3AEC-87E5-3CC265D0F892}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <Configurations>Debug;Release;MinSizeRel;RelWithDebInfo</Configurations>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+    <ManagedAssembly>true</ManagedAssembly>
+    <TargetFramework>net8.0</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>D:\github\joy\build_verify2\Debug\</OutputPath>
+    <AssemblyName>JoySharp</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <Optimize>false</Optimize>
+    <Platform>x64</Platform>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>D:\github\joy\build_verify2\Release\</OutputPath>
+    <AssemblyName>JoySharp</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>queue</ErrorReport>
+    <Optimize>true</Optimize>
+    <Platform>x64</Platform>
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'MinSizeRel'">
+    <OutputPath>D:\github\joy\build_verify2\MinSizeRel\</OutputPath>
+    <AssemblyName>JoySharp</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <Platform>x64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'RelWithDebInfo'">
+    <OutputPath>D:\github\joy\build_verify2\RelWithDebInfo\</OutputPath>
+    <AssemblyName>JoySharp</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+    <Platform>x64</Platform>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="D:\github\joy\joy_cslib\CMakeLists.txt">
+      <Link>CMakeLists.txt</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'Debug'"
+    Name="CustomCommand_Debug_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_verify2\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_verify2 --check-stamp-file D:/github/joy/build_verify2/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'Release'"
+    Name="CustomCommand_Release_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_verify2\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_verify2 --check-stamp-file D:/github/joy/build_verify2/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'MinSizeRel'"
+    Name="CustomCommand_MinSizeRel_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_verify2\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_verify2 --check-stamp-file D:/github/joy/build_verify2/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'RelWithDebInfo'"
+    Name="CustomCommand_RelWithDebInfo_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_verify2\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_verify2\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_verify2\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_verify2 --check-stamp-file D:/github/joy/build_verify2/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Collision\FixAABB.cs">
+      <Link>Joy\Collision\FixAABB.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Collision\FixGjk3D.cs">
+      <Link>Joy\Collision\FixGjk3D.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Collision\FixGjk3DShape.cs">
+      <Link>Joy\Collision\FixGjk3DShape.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\Fix64.cs">
+      <Link>Joy\FixMath\Fix64.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\Fix64SinLut.cs">
+      <Link>Joy\FixMath\Fix64SinLut.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\Fix64TanLut.cs">
+      <Link>Joy\FixMath\Fix64TanLut.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\FixMat44.cs">
+      <Link>Joy\FixMath\FixMat44.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\FixVec2.cs">
+      <Link>Joy\FixMath\FixVec2.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\FixVec3.cs">
+      <Link>Joy\FixMath\FixVec3.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\FixMath\FixVec4.cs">
+      <Link>Joy\FixMath\FixVec4.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\AABB.cs">
+      <Link>Joy\GJK2D\AABB.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\BaseCollider.cs">
+      <Link>Joy\GJK2D\BaseCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Capsule.cs">
+      <Link>Joy\GJK2D\Capsule.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\CapsuleCollider.cs">
+      <Link>Joy\GJK2D\CapsuleCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Circle.cs">
+      <Link>Joy\GJK2D\Circle.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\CircleCollider.cs">
+      <Link>Joy\GJK2D\CircleCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\ColliderFactory.cs">
+      <Link>Joy\GJK2D\ColliderFactory.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Const.cs">
+      <Link>Joy\GJK2D\Const.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\EPA.cs">
+      <Link>Joy\GJK2D\EPA.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Ellipse.cs">
+      <Link>Joy\GJK2D\Ellipse.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\EllipseCollider.cs">
+      <Link>Joy\GJK2D\EllipseCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\ExpandingSimplex.cs">
+      <Link>Joy\GJK2D\ExpandingSimplex.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\GJK.cs">
+      <Link>Joy\GJK2D\GJK.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\GeometryHelper.cs">
+      <Link>Joy\GJK2D\GeometryHelper.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\ICollider.cs">
+      <Link>Joy\GJK2D\ICollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\IGeometry.cs">
+      <Link>Joy\GJK2D\IGeometry.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\MathX.cs">
+      <Link>Joy\GJK2D\MathX.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Matrix.cs">
+      <Link>Joy\GJK2D\Matrix.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Minkowski.cs">
+      <Link>Joy\GJK2D\Minkowski.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Penetration.cs">
+      <Link>Joy\GJK2D\Penetration.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Pie.cs">
+      <Link>Joy\GJK2D\Pie.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\PieCollider.cs">
+      <Link>Joy\GJK2D\PieCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Polygon.cs">
+      <Link>Joy\GJK2D\Polygon.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\PolygonCollider.cs">
+      <Link>Joy\GJK2D\PolygonCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Rectangle.cs">
+      <Link>Joy\GJK2D\Rectangle.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\RectangleCollider.cs">
+      <Link>Joy\GJK2D\RectangleCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Segment.cs">
+      <Link>Joy\GJK2D\Segment.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\SegmentCollider.cs">
+      <Link>Joy\GJK2D\SegmentCollider.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Simplex.cs">
+      <Link>Joy\GJK2D\Simplex.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Transform.cs">
+      <Link>Joy\GJK2D\Transform.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Vector.cs">
+      <Link>Joy\GJK2D\Vector.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\GJK2D\Velocity.cs">
+      <Link>Joy\GJK2D\Velocity.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\JsonHelper.cs">
+      <Link>Joy\JsonHelper.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\KcpServer.cs">
+      <Link>Joy\KcpServer.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\CollisionF.cs">
+      <Link>Joy\Native\CollisionF.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Core.cs">
+      <Link>Joy\Native\Core.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\FP.cs">
+      <Link>Joy\Native\FP.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\FT.cs">
+      <Link>Joy\Native\FT.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Kcp.cs">
+      <Link>Joy\Native\Kcp.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Mat22.cs">
+      <Link>Joy\Native\Mat22.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Mat22F.cs">
+      <Link>Joy\Native\Mat22F.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Mat44.cs">
+      <Link>Joy\Native\Mat44.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Mat44F.cs">
+      <Link>Joy\Native\Mat44F.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\SDL.cs">
+      <Link>Joy\Native\SDL.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\ShapeBatch.cs">
+      <Link>Joy\Native\ShapeBatch.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\SpriteBatch.cs">
+      <Link>Joy\Native\SpriteBatch.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Sys.cs">
+      <Link>Joy\Native\Sys.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Utils.cs">
+      <Link>Joy\Native\Utils.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Vec2.cs">
+      <Link>Joy\Native\Vec2.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Vec2F.cs">
+      <Link>Joy\Native\Vec2F.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Vec3.cs">
+      <Link>Joy\Native\Vec3.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Native\Vec3F.cs">
+      <Link>Joy\Native\Vec3F.cs</Link>
+    </Compile>
+    <Compile Include="D:\github\joy\joy_cslib\Joy\Tilemap.cs">
+      <Link>Joy\Tilemap.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\github\joy\build_verify2\ZERO_CHECK.vcxproj">
+      <Project>{306E858F-85B5-3CF2-8CFC-E90F1D952247}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

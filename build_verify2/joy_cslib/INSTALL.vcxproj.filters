@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\github\joy\build_verify2\CMakeFiles\cce9a0a4b176598e1b4cc97c8b925ffe\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{20068874-B2E8-34F2-81C3-45C0B46CD02E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
