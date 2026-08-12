@@ -16,11 +16,9 @@
 #include "../project_proxy2d_shared/components/logic_velocity_component.h"
 
 #include "../project_proxy2d_shared/components/transform_component.h"
-#include "../project_proxy2d_shared/components/attack_ray_effect_component.h"
 #include "../project_proxy2d_shared/components/player_component.h"
 #include "components/local_only_component.h"
 #include "../project_proxy2d_shared/components/action_state_component.h"
-#include "../project_proxy2d_shared/components/sprite_sheet_component.h"
 #include "../project_proxy2d_shared/components/animator_component.h"
 #include "../project_proxy2d_shared/components/animator_def.h"
 

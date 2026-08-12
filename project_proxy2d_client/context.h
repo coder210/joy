@@ -22,7 +22,6 @@
 #include "../project_proxy2d_shared/components/player_event_input.h"
 #include "../project_proxy2d_shared/components/player_component.h"
 #include "../project_proxy2d_shared/components/transform_component.h"
-#include "../project_proxy2d_shared/components/attack_ray_effect_component.h"
 #include "../project_proxy2d_shared/components/net_component.h"
 
 

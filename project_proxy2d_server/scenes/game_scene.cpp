@@ -7,12 +7,11 @@
 #include "../../project_proxy2d_shared/protocol.h"
 #include "../context.h"
 #include "../layers/debug_layer.h"
-#include "../../project_proxy2d_shared/systems/effect_lifecycle_system.h"
 #include "../../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../../project_proxy2d_shared/systems/animator_update_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
-#include "../systems/creating_block_system.h"
 #include "../systems/spawn_enemy_system.h"
+#include "../systems/map_spawn_system.h"
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
@@ -52,7 +51,7 @@ static void on_load(scene_p s)
         create_goblin_anim_def(ctx->ecs, "project_proxy2d_server/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
-        //add_system(ctx, OnStart, "creating_block", creating_block_system);
+        add_system(ctx, OnStart, "map_spawn", map_spawn_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
@@ -143,8 +142,9 @@ static void on_render(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         auto* ctx = self->ctx;
 
-        // ---- 几何网格背景（纯视觉）----
+        // ---- 几何网格背景 + 地形装饰（纯视觉）----
         draw_grid_background(ctx);
+        draw_map_tiles(ctx);
 
         // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();

@@ -204,8 +204,9 @@ static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         r2d_set_color(self->ctx->r2d, 28, 36, 50, 255);
 
-        // ---- 几何网格背景（纯视觉）----
+        // ---- 几何网格背景 + 地形装饰（纯视觉）----
         draw_grid_background(self->ctx);
+        draw_map_tiles(self->ctx);
 
         // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
