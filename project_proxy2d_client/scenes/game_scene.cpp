@@ -10,6 +10,7 @@
 #include "../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
+#include "../project_proxy2d_shared/systems/player_status_display.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
 #include "../project_proxy2d_shared/systems/movement_system.h"
@@ -214,6 +215,10 @@ static void on_render(scene_p s) {
                 auto& t = draw_view.get<TransformComponent>(e);
                 drawing_entity_system(self->ctx, e, id, rect, t);
         }
+
+        // ---- 玩家状态 HUD（仅游戏场景显示）----
+        player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
+                AssetManager::GetInstance()->GetSimheiFont24());
 }
 
 static void on_destroy(scene_p s) {
