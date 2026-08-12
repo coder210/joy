@@ -421,7 +421,7 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 
 	r->win = window;
 	r->dev = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
-	if (!r->dev) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: CreateGPUDevice failed"); SDL_free(r); return NULL; }
+	if (!r->dev) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: CreateGPUDevice failed: %s", SDL_GetError()); SDL_free(r); return NULL; }
 	if (!SDL_ClaimWindowForGPUDevice(r->dev, r->win)) {
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: ClaimWindow failed");
 		SDL_DestroyGPUDevice(r->dev); SDL_free(r); return NULL;

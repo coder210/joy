@@ -24,6 +24,10 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         ctx->window = create_window("client", 760, 480);
         ctx->r3d = r3d_create(ctx->window, "project_proxy3d_client/shaders");
+        if (!ctx->r3d) {
+                log_error("r3d_create failed: %s", get_error());
+                return SDL_APP_FAILURE;
+        }
 
         ctx->running = true;
 

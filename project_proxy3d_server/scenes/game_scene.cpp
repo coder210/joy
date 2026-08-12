@@ -36,8 +36,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.40", 30000);
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.31", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.7", 30000);
 
         // 初始化 3D 渲染器和网格资源（lit 网格 + 棋盘格地板，与 main8888.cpp 一致）
         ctx->r3d = r3d_create(ctx->window, "project_proxy3d_server/shaders");
