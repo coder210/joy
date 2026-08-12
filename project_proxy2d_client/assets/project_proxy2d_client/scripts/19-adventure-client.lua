@@ -151,25 +151,6 @@ local function update_ai(e, dt)
     end
 end
 
--- ====== 从 map.lua 创建墙壁（同服务端）=====
-local function init_walls()
-    local map_data = dofile("joy_beat/tilemap/map.lua")
-    if map_data and map_data.layers then
-        for _, layer in ipairs(map_data.layers) do
-            if layer.name == "collision" and layer.objects then
-                for _, obj in ipairs(layer.objects) do
-                    if obj.shape == "rectangle" and obj.width > 0 and obj.height > 0 then
-                        local e = { id = -math.random(99999), type = "wall",
-                            pos = { x = obj.x / PPM + obj.width / PPM / 2, y = obj.y / PPM + obj.height / PPM / 2 },
-                            size = { w = obj.width / PPM, h = obj.height / PPM } }
-                        entities[e.id] = e; table.insert(enetity_list.wall, e)
-                    end
-                end; break
-            end
-        end
-    end
-end
-
 -- ====== 实体管理 + 全量回滚 ======
 -- 为实体创建 render_pos（插值用）
 local function ensure_render_pos(e)
@@ -379,19 +360,11 @@ local function draw_sprite(e)
     end
 end
 
-local tilemap
-local function init_tilemap()
-    local ok, tm = pcall(joy.tilemap.load_file, "joy_beat/tilemap/map.lua")
-    if ok and tm then tilemap = tm; joy.tilemap.render_init_base(ren, "joy_beat/") end
-end
-
 function joy.load()
     win = joy.window.create("adventure-client", 400, 300, 0)
     ren = joy.r2d.create(win)
     joy.r2d.set_logical_presentation(ren, 960, 720, 2)
     font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
-    init_tilemap(); init_walls()
-
     local nc = joy.net.netclient
     local ok, c = pcall(nc.create, "kcp", "127.0.0.1", 10000)
     if ok and c then
@@ -497,8 +470,6 @@ end
 
 function joy.draw()
     joy.r2d.begin(ren, 30, 35, 45, 255)
-    local ms = joy.sdl.get_ticks()
-    if tilemap then joy.tilemap.render_all(tilemap, camera.x*PPM-480, camera.y*PPM-360, ms) end
 
     -- 绘制实体（使用 render_pos 插值位置）
     for _, e in ipairs(enetity_list.enemy) do draw_sprite(e) end

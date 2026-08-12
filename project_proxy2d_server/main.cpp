@@ -4,6 +4,7 @@
 #include "scenes/game_scene.h"
 #include "asset_manager.h"
 #include "context.h"
+#include "../project_proxy2d_shared/systems/fps_display.h"
 
 static scene_manager_p g_mgr;
 static Context* ctx;
@@ -52,9 +53,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         game_timer_update(&game_timer);
         float dt = game_timer_get_delta_time(&game_timer);
         scene_manager_update(g_mgr, dt);
-        r2d_set_color(ctx->r2d, 50, 120, 50, 255);
+        r2d_set_color(ctx->r2d, 28, 36, 50, 255);
         r2d_begin(ctx->r2d);
         scene_manager_render(g_mgr, ctx->r2d);
+        fps_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(), dt);
         r2d_end(ctx->r2d);
         return SDL_APP_CONTINUE;
 }

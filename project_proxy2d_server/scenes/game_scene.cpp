@@ -10,12 +10,9 @@
 #include "../../project_proxy2d_shared/systems/effect_lifecycle_system.h"
 #include "../../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../../project_proxy2d_shared/systems/animator_update_system.h"
-#include "../../project_proxy2d_shared/systems/animator_render_system.h"
-#include "../../project_proxy2d_shared/systems/drawing_attack_ray_effect_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/spawn_enemy_system.h"
-#include "../systems/init_tilemap_system.h"
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
@@ -57,7 +54,6 @@ static void on_load(scene_p s)
         // 注册 system
         //add_system(ctx, OnStart, "creating_block", creating_block_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
-        add_system(ctx, OnStart, "init_tilemap", init_tilemap_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
@@ -147,27 +143,16 @@ static void on_render(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         auto* ctx = self->ctx;
 
-        // ---- tilemap 背景 ----
-        if (ctx->tilemap) {
-                auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-                float cx = cam.x * (float)SERVER_PPM;
-                float cy = cam.y * (float)SERVER_PPM;
-                jtilemap_render_all(ctx->tilemap_render, ctx->tilemap, cx, cy, get_ticks());
-        }
+        // ---- 几何网格背景（纯视觉）----
+        draw_grid_background(ctx);
 
-        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
+        // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
         for (auto e : draw_view) {
+                auto& id = draw_view.get<IdComponent>(e);
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
-                        auto& anim = ctx->ecs.get<AnimatorComponent>(e);
-                        auto& act = ctx->ecs.get<ActionStateComponent>(e);
-                        animator_render_system(ctx, ctx->ecs, t, rect, anim, act, e);
-                } else {
-                        auto& id = draw_view.get<IdComponent>(e);
-                        drawing_entity_system(ctx, e, id, rect, t);
-                }
+                drawing_entity_system(ctx, e, id, rect, t);
         }
 }
 
@@ -178,13 +163,6 @@ static void on_destroy(scene_p s)
         simple_fps_destory(self->sample_fps);
         netserver_destroy(ctx->net_server);
         AssetManager::GetInstance()->tex_cache_clear();
-        if (ctx->tilemap_render) {
-                jtilemap_render_destroy(ctx->tilemap_render);
-        }
-        if (ctx->tilemap) {
-                jtilemap_destroy(ctx->tilemap);
-                ctx->tilemap = NULL;
-        }
 }
 
 game_scene_p game_scene_create(Context* ctx)

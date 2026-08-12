@@ -48,9 +48,7 @@ struct Context {
         entt::registry ecs;
         entt::entity singleton_net = entt::null;
 
-        // ---- tilemap + 音频 ----
-        jtilemap_p          tilemap = NULL;
-        jtilemap_render_p   tilemap_render = NULL;
+        // ---- 音频 ----
         uint32_t            audio_dev = 0;
         audio_shot_p        step_sound = NULL;
         audio_bgm_p         bgm = NULL;

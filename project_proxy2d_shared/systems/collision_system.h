@@ -7,9 +7,9 @@
 
 struct Context;
 
-// 玩家与 tilemap 碰撞处理 system
+// 玩家与碰撞体碰撞处理 system（通用碰撞，碰撞体为带 LogicRect 的实体）
 // 在 OnUpdate 阶段运行，在 movement_system 之后
-// 检测所有玩家与地图碰撞层的碰撞，修正玩家位置
+// 检测所有玩家与碰撞层的碰撞，修正玩家位置
 static void collision_system(entt::registry& registry, Context* ctx, float dt) {
     (void)ctx;
     (void)dt;
@@ -33,7 +33,7 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
         rectanglef_t player_box = { player_pos.x, player_pos.y, player_rect.width, player_rect.height };
 
         for (auto tile_entity : all_view) {
-            // 跳过玩家自身、敌人等非 tilemap 实体
+            // 跳过玩家自身、敌人等实体
             if (tile_entity == player_entity) continue;
             if (registry.all_of<PlayerComponent>(tile_entity)) continue;
             if (registry.all_of<EnemyComponent>(tile_entity)) continue;

@@ -1,4 +1,4 @@
--- adventure 游戏（tilemap地图 + 精灵动画 + 网络同步）
+-- adventure 游戏（精灵动画 + 网络同步）
 -- 碰撞推出 + 帧同步命令历史 + AI攻击对齐
 local win, ren, font
 local PPM = 50
@@ -22,7 +22,6 @@ local player_leaves = {}
 local player_inputs = {}
 
 
-local tilemap
 local TEX_PLAYER_PATH = "joy_beat/textures/knights/troops/warrior/warrior_blue.png"
 local TEX_ENEMY_PATH = "joy_beat/textures/knights/troops/warrior/warrior_red.png"
 
@@ -442,29 +441,7 @@ function joy.load()
     joy.r2d.set_logical_presentation(ren, 960, 720, 2)
     font = joy.r2d.create_font(ren, "joy_beat/fonts/simhei.ttf", 16)
 
-    local ok, tm = pcall(joy.tilemap.load_file, "joy_beat/tilemap/map.lua")
-    if ok and tm then tilemap = tm; joy.tilemap.render_init_base(ren, "joy_beat/") end
-
-    -- 从 tilemap collision 层创建墙壁实体
-    local map_data = dofile("joy_beat/tilemap/map.lua")
-    if map_data and map_data.layers then
-        for _, layer in ipairs(map_data.layers) do
-            if layer.name == "collision" and layer.objects then
-                for _, obj in ipairs(layer.objects) do
-                    if obj.shape == "rectangle" and obj.width > 0 and obj.height > 0 then
-                        local mx = obj.x / PPM + obj.width / PPM / 2
-                        local my = obj.y / PPM + obj.height / PPM / 2
-                        create_wall(mx, my, obj.width / PPM, obj.height / PPM)
-                    end
-                end
-                break
-            end
-        end
-    end
-
     create_enemy(12, 5)
-    console.log("walls created: " .. #entity_list.wall)
-    console.log("map size: " .. map_data.width .. "x" .. map_data.height .. " tiles")
     local ok_srv, svr = pcall(net.create, "kcp", server_ip, server_port)
     if ok_srv and svr then server = svr; set_env("server", svr) end
     console.log("WASD=move SPACE=attack Q=quit")
@@ -504,8 +481,6 @@ end
 
 function joy.draw()
     joy.r2d.begin(ren, 30, 35, 45, 255)
-    local ms = joy.sdl.get_ticks()
-    if tilemap then joy.tilemap.render_all(tilemap, camera.x*PPM-480, camera.y*PPM-360, ms) end
 
     for _, ray in ipairs(attack_rays) do
         local sx, sy = to_screen(ray.x, ray.y)

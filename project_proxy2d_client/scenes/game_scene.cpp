@@ -7,9 +7,7 @@
 #include "../../project_proxy2d_shared/protocol.h"
 #include "../project_proxy2d_shared/systems/animator_update_system.h"
 #include "../factory/animator_def_factory.h"
-#include "../project_proxy2d_shared/systems/animator_render_system.h"
 #include "../project_proxy2d_shared/systems/interpolate_position_system.h"
-#include "../systems/init_tilemap_system.h"
 #include "../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
@@ -60,7 +58,6 @@ static void on_load(scene_p s)
                 "project_proxy2d_client/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
-        add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);  
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
@@ -204,29 +201,18 @@ static void on_update(scene_p s, float dt) {
 
 static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        r2d_set_color(self->ctx->r2d, 50, 120, 50, 255);
+        r2d_set_color(self->ctx->r2d, 28, 36, 50, 255);
 
-        // ---- tilemap 背景 ----
-        if (self->ctx->tilemap && self->ctx->tilemap_render) {
-                auto& cam = self->ctx->ecs.ctx().get<GlobalState>().camera_position;
-                float cam_x_px = cam.x * (float)PIXELS_PER_METER;
-                float cam_y_px = cam.y * (float)PIXELS_PER_METER;
-                jtilemap_render_all(self->ctx->tilemap_render, self->ctx->tilemap, cam_x_px, cam_y_px, get_ticks());
-        }
+        // ---- 几何网格背景（纯视觉）----
+        draw_grid_background(self->ctx);
 
-        // ---- ECS 实体渲染（有动画的用动画，没有的用方块）----
+        // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
         for (auto e : draw_view) {
+                auto& id = draw_view.get<IdComponent>(e);
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                if (self->ctx->ecs.all_of<anim_t, anim_params_t, ActionStateComponent>(e)) {
-                        auto& anim = self->ctx->ecs.get<anim_t>(e);
-                        auto& act = self->ctx->ecs.get<ActionStateComponent>(e);
-                        animator_render_system(self->ctx, self->ctx->ecs, t, rect, anim, act, e);
-                } else {
-                        auto& id = draw_view.get<IdComponent>(e);
-                        drawing_entity_system(self->ctx, e, id, rect, t);
-                }
+                drawing_entity_system(self->ctx, e, id, rect, t);
         }
 }
 
@@ -240,9 +226,6 @@ static void on_destroy(scene_p s) {
         audio_shot_destroy(self->ctx->step_sound);
         audio_bgm_destroy(self->ctx->bgm);
         if (self->ctx->audio_dev) audio_close_device(self->ctx->audio_dev);
-        if (self->ctx->tilemap_render)
-                jtilemap_render_destroy(self->ctx->tilemap_render);
-        if (self->ctx->tilemap) jtilemap_destroy(self->ctx->tilemap);
         delete self;
 }
 

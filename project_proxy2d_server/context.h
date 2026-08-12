@@ -36,9 +36,6 @@ struct Context {
 
         jwindow_p window;
         jr2d_p r2d;
-      
-        jtilemap_p tilemap;
-        jtilemap_render_p tilemap_render;
 
         entt::registry ecs;
 
