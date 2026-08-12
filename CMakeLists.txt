@@ -16,6 +16,8 @@ option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
 option(BUILD_JOY_BEAT "Build joy_beat" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
+option(BUILD_PROJECT_PROXY2D_SERVER "Build project_proxy2d_server" OFF)
+option(BUILD_PROJECT_PROXY2D_CLIENT "Build project_proxy2d_client" OFF)
 option(BUILD_PROJECT_PROXY3D_SERVER "Build project_proxy3d_server" OFF)
 option(BUILD_PROJECT_PROXY3D_CLIENT "Build project_proxy3d_client" OFF)
 
@@ -62,6 +64,14 @@ endif()
 
 if(BUILD_ADVENTURE_CLIENT)
     add_subdirectory(adventure_client)
+endif()
+
+if(BUILD_PROJECT_PROXY2D_SERVER)
+    add_subdirectory(project_proxy2d_server)
+endif()
+
+if(BUILD_PROJECT_PROXY2D_CLIENT)
+    add_subdirectory(project_proxy2d_client)
 endif()
 
 if(BUILD_PROJECT_PROXY3D_SERVER)

@@ -4,25 +4,25 @@
 #include <cstdlib>
 #include <joy/joy.h>
 #include "game_scene.h"
-#include "../../adventure_shared/protocol.h"
-#include "../adventure_shared/systems/animator_update_system.h"
+#include "../../project_proxy2d_shared/protocol.h"
+#include "../project_proxy2d_shared/systems/animator_update_system.h"
 #include "../factory/animator_def_factory.h"
-#include "../adventure_shared/systems/animator_render_system.h"
-#include "../adventure_shared/systems/interpolate_position_system.h"
+#include "../project_proxy2d_shared/systems/animator_render_system.h"
+#include "../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../systems/init_tilemap_system.h"
-#include "../adventure_shared/systems/drawing_entity_system.h"
-#include "../adventure_shared/systems/input_consume_join_system.h"
-#include "../adventure_shared/systems/input_consume_leave_system.h"
-#include "../adventure_shared/systems/input_consume_input_system.h"
-#include "../adventure_shared/systems/movement_system.h"
-#include "../adventure_shared/systems/cleanup_system.h"
-#include "../adventure_shared/systems/collision_system.h"
+#include "../project_proxy2d_shared/systems/drawing_entity_system.h"
+#include "../project_proxy2d_shared/systems/input_consume_join_system.h"
+#include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
+#include "../project_proxy2d_shared/systems/input_consume_input_system.h"
+#include "../project_proxy2d_shared/systems/movement_system.h"
+#include "../project_proxy2d_shared/systems/cleanup_system.h"
+#include "../project_proxy2d_shared/systems/collision_system.h"
 #include "../layers/debug_layer.h"
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
 #include "../network/network_utils.h"
-#include "../../adventure_shared/systems/camera_follow_system.h"
-#include "../../adventure_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/camera_follow_system.h"
+#include "../../project_proxy2d_shared/systems/ai_system.h"
 
 // 动画定义现在由 animator_def_factory.h 提供
 
@@ -55,9 +55,9 @@ static void on_load(scene_p s)
 
         // 注册动画定义（全局单例，仅一次）
         create_warrior_anim_def(self->ctx->ecs,
-                "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
+                "project_proxy2d_client/textures/knights/troops/warrior/warrior_blue.png");
         create_goblin_anim_def(self->ctx->ecs,
-                "adventure_client/textures/goblins/troops/torch/torch_blue.png");
+                "project_proxy2d_client/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
         add_system(self->ctx, OnStart,   "init_tilemap",       init_tilemap_system);  
@@ -75,9 +75,9 @@ static void on_load(scene_p s)
 
         // ---- 音频 ----
         self->ctx->audio_dev = audio_open_device();
-        self->ctx->step_sound = audio_shot_create("adventure_client/sounds/grass-step.wav", self->ctx->audio_dev);
+        self->ctx->step_sound = audio_shot_create("project_proxy2d_client/sounds/grass-step.wav", self->ctx->audio_dev);
         audio_shot_set_gain(self->ctx->step_sound, 1.0f);
-        self->ctx->bgm = audio_bgm_create("adventure_client/sounds/bgm.wav", self->ctx->audio_dev);
+        self->ctx->bgm = audio_bgm_create("project_proxy2d_client/sounds/bgm.wav", self->ctx->audio_dev);
         audio_bgm_set_gain(self->ctx->bgm, 0.5f);
 
 }

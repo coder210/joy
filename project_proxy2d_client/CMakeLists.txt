@@ -1,5 +1,5 @@
-# 可执行文件名（保持不变）
-set(EXECUTABLE_NAME "adventure_client")
+# 可执行文件名
+set(EXECUTABLE_NAME "project_proxy2d_client")
 message(STATUS "EXECUTABLE_NAME = '${EXECUTABLE_NAME}'")
 
 
@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../adventure_shared/*.h" "../adventure_shared/components/*.h" "../adventure_shared/systems/*.h")
+file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../project_proxy2d_shared/*.h" "../project_proxy2d_shared/components/*.h" "../project_proxy2d_shared/systems/*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES
@@ -49,8 +49,8 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
     joy
 )
 
-# 添加 adventure_shared 共享目录
-target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_shared")
+# 添加 project_proxy2d_shared 共享目录
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../project_proxy2d_shared")
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位
@@ -162,6 +162,6 @@ endif()
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${PROJECT_FILES})
 
 # 调试信息（可选）
-message(STATUS "Adventure current dir: ${CMAKE_CURRENT_LIST_DIR}")
-message(STATUS "Adventure source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "Adventure binary dir: ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "Project current dir: ${CMAKE_CURRENT_LIST_DIR}")
+message(STATUS "Project source dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Project binary dir: ${CMAKE_CURRENT_BINARY_DIR}")

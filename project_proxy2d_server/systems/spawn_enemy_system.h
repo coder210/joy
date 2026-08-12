@@ -2,14 +2,14 @@
 #define SPAWN_ENEMY_SYSTEM_H
 
 #include "../context.h"
-#include "../../adventure_shared/components/enemy_component.h"
-#include "../../adventure_shared/components/ai_component.h"
-#include "../../adventure_shared/components/logic_position_component.h"
-#include "../../adventure_shared/components/logic_rect_component.h"
-#include "../../adventure_shared/components/transform_component.h"
-#include "../../adventure_shared/components/action_state_component.h"
-#include "../../adventure_shared/components/animator_component.h"
-#include "../../adventure_shared/systems/spawn_def.h"
+#include "../../project_proxy2d_shared/components/enemy_component.h"
+#include "../../project_proxy2d_shared/components/ai_component.h"
+#include "../../project_proxy2d_shared/components/logic_position_component.h"
+#include "../../project_proxy2d_shared/components/logic_rect_component.h"
+#include "../../project_proxy2d_shared/components/transform_component.h"
+#include "../../project_proxy2d_shared/components/action_state_component.h"
+#include "../../project_proxy2d_shared/components/animator_component.h"
+#include "../../project_proxy2d_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
 static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*dt*/) {

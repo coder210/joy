@@ -1,18 +1,18 @@
 #ifndef INIT_TILEMAP_SYSTEM_H
 #define INIT_TILEMAP_SYSTEM_H
 #include <joy/joy.h>
-#include "../../adventure_shared/protocol.h"
-#include "../../adventure_shared/components/id_component.h"
-#include "../../adventure_shared/components/logic_rect_component.h"
-#include "../../adventure_shared/components/logic_position_component.h"
-#include "../../adventure_shared/components/transform_component.h"
+#include "../../project_proxy2d_shared/protocol.h"
+#include "../../project_proxy2d_shared/components/id_component.h"
+#include "../../project_proxy2d_shared/components/logic_rect_component.h"
+#include "../../project_proxy2d_shared/components/logic_position_component.h"
+#include "../../project_proxy2d_shared/components/transform_component.h"
 #include "../context.h"
 
 
 static void init_tilemap_system(entt::registry& registry, Context* ctx, float /*dt*/)
 {
         log_info("[Startup] system: init_tilemap");
-        ctx->tilemap = jtilemap_load_file("adventure_client/tilemap/map.lua");
+        ctx->tilemap = jtilemap_load_file("project_proxy2d_client/tilemap/map.lua");
         if (ctx->tilemap) {
                 jtilemap_object_layer_p ol = jtilemap_find_object_layer(ctx->tilemap, "collision");
                 jtilemap_object_layer_foreach(ol, [](jtilemap_object_p obj, void* arg) {
@@ -29,7 +29,7 @@ static void init_tilemap_system(entt::registry& registry, Context* ctx, float /*
                     ctx->ecs.emplace<TransformComponent>(e, fp_to_float(px), fp_to_float(py), 0.0f, 1.0f, 1.0f);
                     }, ctx);
 
-                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "adventure_client/", NULL);
+                ctx->tilemap_render = jtilemap_render_create(ctx->r2d, "project_proxy2d_client/", NULL);
         }
 }
 

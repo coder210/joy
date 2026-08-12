@@ -1,6 +1,6 @@
 #ifndef NET_COMPONENT_H
 #define NET_COMPONENT_H
-#include "../../adventure_shared/protocol.h"
+#include "../../project_proxy2d_shared/protocol.h"
 
 struct NetComponent {
     // 当前 tick 待处理的帧同步命令

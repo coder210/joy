@@ -1,12 +1,12 @@
 #pragma once
 #include "../context.h"
 #include "../asset_manager.h"
-#include "../../adventure_shared/protocol.h"
-#include "../../adventure_shared/components/sprite_sheet_component.h"
-#include "../../adventure_shared/components/action_state_component.h"
-#include "../../adventure_shared/components/transform_component.h"
-#include "../../adventure_shared/components/global_state_component.h"
-#include "../../adventure_shared/components/logic_rect_component.h"
+#include "../../project_proxy2d_shared/protocol.h"
+#include "../../project_proxy2d_shared/components/sprite_sheet_component.h"
+#include "../../project_proxy2d_shared/components/action_state_component.h"
+#include "../../project_proxy2d_shared/components/transform_component.h"
+#include "../../project_proxy2d_shared/components/global_state_component.h"
+#include "../../project_proxy2d_shared/components/logic_rect_component.h"
 
 static void sprite_render_system(Context* ctx,
     TransformComponent& t, LogicRectComponent& r,

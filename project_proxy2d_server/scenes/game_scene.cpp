@@ -4,28 +4,28 @@
 #include <algorithm>
 #include <cstdlib>
 #include <joy/joy.h>
-#include "../../adventure_shared/protocol.h"
+#include "../../project_proxy2d_shared/protocol.h"
 #include "../context.h"
 #include "../layers/debug_layer.h"
-#include "../../adventure_shared/systems/effect_lifecycle_system.h"
-#include "../../adventure_shared/systems/interpolate_position_system.h"
-#include "../../adventure_shared/systems/animator_update_system.h"
-#include "../../adventure_shared/systems/animator_render_system.h"
-#include "../../adventure_shared/systems/drawing_attack_ray_effect_system.h"
-#include "../../adventure_shared/systems/drawing_entity_system.h"
+#include "../../project_proxy2d_shared/systems/effect_lifecycle_system.h"
+#include "../../project_proxy2d_shared/systems/interpolate_position_system.h"
+#include "../../project_proxy2d_shared/systems/animator_update_system.h"
+#include "../../project_proxy2d_shared/systems/animator_render_system.h"
+#include "../../project_proxy2d_shared/systems/drawing_attack_ray_effect_system.h"
+#include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../systems/creating_block_system.h"
 #include "../systems/spawn_enemy_system.h"
 #include "../systems/init_tilemap_system.h"
-#include "../../adventure_shared/systems/input_consume_join_system.h"
-#include "../adventure_shared/systems/input_consume_leave_system.h"
-#include "../adventure_shared/systems/input_consume_input_system.h"
+#include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
+#include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
+#include "../project_proxy2d_shared/systems/input_consume_input_system.h"
 #include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
-#include "../../adventure_shared/systems/movement_system.h"
-#include "../../adventure_shared/systems/cleanup_system.h"
-#include "../../adventure_shared/systems/collision_system.h"
-#include "../../adventure_shared/systems/camera_follow_system.h"
-#include "../../adventure_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/movement_system.h"
+#include "../../project_proxy2d_shared/systems/cleanup_system.h"
+#include "../../project_proxy2d_shared/systems/collision_system.h"
+#include "../../project_proxy2d_shared/systems/camera_follow_system.h"
+#include "../../project_proxy2d_shared/systems/ai_system.h"
 
 #include "../network/network_utils.h"
 #include "../asset_manager.h"
@@ -51,8 +51,8 @@ static void on_load(scene_p s)
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
-        create_warrior_anim_def(ctx->ecs, "adventure_server/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(ctx->ecs, "adventure_server/textures/goblins/troops/torch/torch_blue.png");
+        create_warrior_anim_def(ctx->ecs, "project_proxy2d_server/textures/knights/troops/warrior/warrior_blue.png");
+        create_goblin_anim_def(ctx->ecs, "project_proxy2d_server/textures/goblins/troops/torch/torch_blue.png");
 
         // 注册 system
         //add_system(ctx, OnStart, "creating_block", creating_block_system);
