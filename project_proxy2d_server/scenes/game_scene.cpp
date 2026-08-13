@@ -10,6 +10,7 @@
 #include "../../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../../project_proxy2d_shared/systems/animator_update_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
+#include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../systems/spawn_enemy_system.h"
 #include "../systems/map_spawn_system.h"
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
