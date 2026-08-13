@@ -22,6 +22,7 @@
 #include "../network/network_utils.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 
 // 动画定义现在由 animator_def_factory.h 提供
 
@@ -42,8 +43,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.31", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.5", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.31", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.7", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -198,15 +199,16 @@ static void on_update(scene_p s, float dt) {
         //animator_update_system(self->ctx->ecs, self->ctx, dt);
         interpolate_position_system(self->ctx->ecs, self->ctx, dt);
         camera_follow_system(self->ctx->ecs, self->ctx, dt);
+
+        // 视觉时间推进（仅渲染用，驱动"浑天仪式"轨道环自旋/变形，不参与帧同步）
+        self->ctx->visual_time += dt;
 }
 
 static void on_render(scene_p s) {
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
-        r2d_set_color(self->ctx->r2d, 28, 36, 50, 255);
 
-        // ---- 几何网格背景 + 地形装饰（纯视觉）----
+        // ---- 几何网格背景（纯视觉，自绘白底+浅灰网格）----
         draw_grid_background(self->ctx);
-        draw_map_tiles(self->ctx);
 
         // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
@@ -216,6 +218,9 @@ static void on_render(scene_p s) {
                 auto& t = draw_view.get<TransformComponent>(e);
                 drawing_entity_system(self->ctx, e, id, rect, t);
         }
+
+        // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
+        drawing_collision_debug_system(self->ctx);
 
         // ---- 玩家状态 HUD（仅游戏场景显示）----
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,

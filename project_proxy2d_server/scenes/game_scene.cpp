@@ -135,6 +135,8 @@ static void on_update(scene_p s, float dt)
         interpolate_position_system(ctx->ecs, ctx, dt);
         camera_follow_system(ctx->ecs, ctx, dt);
 
+        // 视觉时间推进（仅渲染用，驱动"浑天仪式"轨道环自旋/变形，不参与帧同步）
+        ctx->visual_time += dt;
 }
 
 static void on_render(scene_p s)

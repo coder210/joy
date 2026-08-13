@@ -1,5 +1,6 @@
-﻿#pragma once
+#pragma once
 #include <math.h>
+#include <joy/joy.h>
 #include "../components/global_state_component.h"
 #include "../components/id_component.h"
 #include "../components/player_component.h"
@@ -8,205 +9,222 @@
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
 #include "../protocol.h"
-#include "map_def.h"
 
 struct Context;
 
 // ============================================================
-// 纯矩形渲染系统（纯视觉，只读组件，不参与帧同步逻辑）
-//   - 地形：矩形块
-//   - 玩家：亮蓝矩形 + 白描边 + 朝向指示线
-//   - 敌人：橙红矩形
-//   - 其他：青灰矩形
-//   - 攻击中（ActionState==ATTACK）：沿朝向画一段攻击射线
+// 实体几何渲染（官方《几何决斗》画风，非照搬）
+//   - 白色画布 + 浅灰网格（随相机滚动）
+//   - 玩家/敌人为旋转的正方形（玩家白填充黑描边 / 敌人黑填充白描边）
+//   - 标志性"浑天仪式"双轨道环：三角形↔正方形间逐点变形，
+//     随移动速度变亮、变大、自旋加快（蓝系=玩家 / 金系=敌人）
+//   - 朝向指示线、攻击发光射线
+//   - 纯视觉，不参与帧同步（视觉几何 ≠ 碰撞几何，碰撞体以红框为准）
 // ============================================================
 
-// 世界坐标网格背景（跟随相机滚动）
+static const float GD_PI         = 3.14159265f;
+static const float GD_GRID_STEP  = 50.0f;    // 背景网格间距（逻辑像素）
+static const float GD_RING_IN    = 52.0f;    // 内环半径（官方 52）
+static const float GD_RING_OUT   = 72.0f;    // 外环半径（官方 72）
+static const int   GD_RING_POINTS = 36;      // 环采样点（三角 3 边×12，方形 4 边×9）
+
+// ---- 三角形 ↔ 正方形 逐点插值，生成形态环采样点 ----
+// blend ∈ [0,1]：0=三角形，1=正方形；rot 为环整体旋转角
+static void morph_ring_points(vec2_t center, float R, float blend, float rot, vec2_t* pts)
+{
+        vec2_t tri[GD_RING_POINTS], quad[GD_RING_POINTS];
+        for (int i = 0; i < GD_RING_POINTS; i++) {
+                // 三角形：3 条边，每边 12 个采样点
+                int e = i / 12;
+                int s = i % 12;
+                float a0 = rot + e * (2.0f * GD_PI / 3.0f);
+                float a1 = rot + (e + 1) * (2.0f * GD_PI / 3.0f);
+                float t  = (float)s / 11.0f;
+                vec2_t p0 = { center.x + R * cosf(a0), center.y + R * sinf(a0) };
+                vec2_t p1 = { center.x + R * cosf(a1), center.y + R * sinf(a1) };
+                tri[i].x = p0.x + (p1.x - p0.x) * t;
+                tri[i].y = p0.y + (p1.y - p0.y) * t;
+
+                // 正方形：4 条边，每边 9 个采样点（+45° 起始，rot=0 时角朝上）
+                int qe = i / 9;
+                int qs = i % 9;
+                float b0 = rot + 0.785398f + qe * (GD_PI * 0.5f);
+                float b1 = rot + 0.785398f + (qe + 1) * (GD_PI * 0.5f);
+                float q  = (float)qs / 8.0f;
+                vec2_t q0 = { center.x + R * cosf(b0), center.y + R * sinf(b0) };
+                vec2_t q1 = { center.x + R * cosf(b1), center.y + R * sinf(b1) };
+                quad[i].x = q0.x + (q1.x - q0.x) * q;
+                quad[i].y = q0.y + (q1.y - q0.y) * q;
+
+                pts[i].x = tri[i].x + (quad[i].x - tri[i].x) * blend;
+                pts[i].y = tri[i].y + (quad[i].y - tri[i].y) * blend;
+        }
+}
+
+// ---- 双轨道环（浑天仪式）：内外环反向自旋，随速度变亮变大，三角↔方形变形 ----
+static void draw_orbits(Context* ctx, vec2_t c, float speed_ratio, bool is_player,
+        float visual_time, float seed)
+{
+        jcolor_t deep, bright;
+        if (is_player) {
+                deep   = { 45, 65, 140, 255 };   // 深蓝
+                bright = { 90, 140, 255, 255 };  // 亮蓝
+        } else {
+                deep   = { 155, 115, 30, 255 };  // 深金
+                bright = { 255, 200, 80, 255 };  // 亮金
+        }
+
+        float alpha = 0.5f + speed_ratio * 0.35f;      // 速度越快越亮
+        float grow  = 1.0f + speed_ratio * 0.6f;       // 速度越快越大
+        // 内外环变形相位相差 π：一边接近三角形时另一边接近正方形
+        float morph1 = 0.5f + 0.5f * sinf(visual_time * 0.25f + seed);
+        float morph2 = 0.5f + 0.5f * sinf(visual_time * 0.25f + seed + GD_PI);
+        // 内外环反向自旋，速度越快转得越快
+        float rot_in  = visual_time * (0.6f + speed_ratio * 1.4f);
+        float rot_out = -visual_time * (0.45f + speed_ratio * 1.1f);
+
+        vec2_t ring[GD_RING_POINTS];
+
+        // ---- 外环（亮色）----
+        // 发光晕圈：向外扩 4px，半透明
+        morph_ring_points(c, (GD_RING_OUT + 4.0f) * grow, morph1, rot_out, ring);
+        r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(60 * alpha));
+        for (int i = 0; i < GD_RING_POINTS; i++) {
+                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+        }
+        // 主环
+        morph_ring_points(c, GD_RING_OUT * grow, morph1, rot_out, ring);
+        r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(255 * alpha));
+        for (int i = 0; i < GD_RING_POINTS; i++) {
+                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+        }
+
+        // ---- 内环（深色）----
+        morph_ring_points(c, (GD_RING_IN + 3.0f) * grow, morph2, rot_in, ring);
+        r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(55 * alpha));
+        for (int i = 0; i < GD_RING_POINTS; i++) {
+                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+        }
+        morph_ring_points(c, GD_RING_IN * grow, morph2, rot_in, ring);
+        r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(255 * alpha));
+        for (int i = 0; i < GD_RING_POINTS; i++) {
+                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+        }
+}
+
+// ---- 旋转正方形本体（4 顶点，fill + 描边）----
+static void draw_rotated_square(Context* ctx, vec2_t c, float half, float rot,
+        jcolor_t fill, jcolor_t stroke)
+{
+        vec2_t pts[4];
+        for (int i = 0; i < 4; i++) {
+                float a = rot + i * (GD_PI * 0.5f);
+                pts[i].x = c.x + cosf(a) * half;
+                pts[i].y = c.y + sinf(a) * half;
+        }
+        shape_draw_polygon(ctx->r2d, "fill", pts, 4, fill);
+        shape_draw_polygon(ctx->r2d, "line", pts, 4, stroke);
+}
+
+// ---- 白色画布 + 浅灰网格（随相机滚动）----
 static void draw_grid_background(Context* ctx)
 {
-        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-        const float W = 480.0f;
-        const float H = 320.0f;
-        const float CELL = 40.0f;                       // 网格间距(px)
-        float ox = -fmodf(cam.x * SERVER_PPM, CELL);    // 网格随相机偏移
-        float oy = -fmodf(cam.y * SERVER_PPM, CELL);
-        r2d_set_color(ctx->r2d, 42, 54, 74, 255);
-        for (float x = ox; x < W; x += CELL)
-                shape_draw_line(ctx->r2d, x, 0.0f, x, H);
-        for (float y = oy; y < H; y += CELL)
-                shape_draw_line(ctx->r2d, 0.0f, y, W, y);
+        auto& gs = ctx->ecs.ctx().get<GlobalState>();
+        float cx = gs.camera_position.x * SERVER_PPM;
+        float cy = gs.camera_position.y * SERVER_PPM;
+
+        // 白底
+        r2d_set_color(ctx->r2d, 255, 255, 255, 255);
+        jrect_t bg = { 0, 0, 480, 320 };
+        shape_draw_rectangle(ctx->r2d, "fill", bg);
+
+        // 浅灰网格（官方 rgba(224,224,224,0.3) ≈ alpha 76）
+        r2d_set_color(ctx->r2d, 224, 224, 224, 76);
+        float offx = fmodf(-cx, GD_GRID_STEP);
+        if (offx > 0.0f) offx -= GD_GRID_STEP;
+        for (float gx = offx; gx <= 480.0f; gx += GD_GRID_STEP)
+                shape_draw_line(ctx->r2d, gx, 0.0f, gx, 320.0f);
+        float offy = fmodf(-cy, GD_GRID_STEP);
+        if (offy > 0.0f) offy -= GD_GRID_STEP;
+        for (float gy = offy; gy <= 320.0f; gy += GD_GRID_STEP)
+                shape_draw_line(ctx->r2d, 0.0f, gy, 480.0f, gy);
 }
 
-// 地图矩形绘制工具：以中心点 + 半宽半高画填充矩形
-static void draw_fill_rect(Context* ctx, float cx, float cy, float hw, float hh, jcolor_t col)
-{
-        vec2_t pts[4] = {
-                { cx - hw, cy - hh },
-                { cx + hw, cy - hh },
-                { cx + hw, cy + hh },
-                { cx - hw, cy + hh }
-        };
-        shape_draw_polygon(ctx->r2d, "fill", pts, 4, col);
-}
-
-static void draw_fill_rect_line(Context* ctx, float cx, float cy, float hw, float hh, jcolor_t fill, jcolor_t line)
-{
-        vec2_t pts[4] = {
-                { cx - hw, cy - hh },
-                { cx + hw, cy - hh },
-                { cx + hw, cy + hh },
-                { cx - hw, cy + hh }
-        };
-        shape_draw_polygon(ctx->r2d, "fill", pts, 4, fill);
-        shape_draw_polygon(ctx->r2d, "line", pts, 4, line);
-}
-
-// 地形装饰绘制：遍历相机可视范围内的 MAP_LAYOUT 格子并绘制对应矩形
-static void draw_map_tiles(Context* ctx)
-{
-        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-        const float VIEW_W = 480.0f / SERVER_PPM;   // 可见世界宽度(米)
-        const float VIEW_H = 320.0f / SERVER_PPM;   // 可见世界高度(米)
-
-        int x0 = (int)floorf(cam.x - VIEW_W * 0.5f - 1.0f);
-        int x1 = (int)ceilf (cam.x + VIEW_W * 0.5f + 1.0f);
-        int y0 = (int)floorf(cam.y - VIEW_H * 0.5f - 1.0f);
-        int y1 = (int)ceilf (cam.y + VIEW_H * 0.5f + 1.0f);
-
-        for (int ty = y0; ty <= y1; ty++) {
-                for (int tx = x0; tx <= x1; tx++) {
-                        char c = map_tile_at(tx, ty);
-                        if (c == '.') continue;
-
-                        float cx = ((float)tx + 0.5f - cam.x) * SERVER_PPM;
-                        float cy = ((float)ty + 0.5f - cam.y) * SERVER_PPM;
-                        float s  = SERVER_PPM * 0.5f;   // 半格(px)
-
-                        switch (map_tile_type(c)) {
-                        case MAP_TILE_WALL: {
-                                // 树篱墙：深绿矩形
-                                jcolor_t col  = { 46, 68, 51, 255 };
-                                jcolor_t lcol = { 60, 92, 62, 255 };
-                                draw_fill_rect_line(ctx, cx, cy, s, s, col, lcol);
-                                break;
-                        }
-                        case MAP_TILE_TREE: {
-                                // 树干：棕色矩形
-                                jcolor_t tcol = { 101, 67, 40, 255 };
-                                draw_fill_rect(ctx, cx, cy + s * 0.15f, s * 0.25f, s * 0.2f, tcol);
-                                // 树冠：两层绿色矩形叠出立体感
-                                jcolor_t col1 = { 42, 108, 58, 255 };
-                                draw_fill_rect(ctx, cx, cy - s * 0.15f, s * 0.75f, s * 0.65f, col1);
-                                jcolor_t col2 = { 72, 142, 82, 255 };
-                                draw_fill_rect(ctx, cx, cy - s * 0.2f, s * 0.45f, s * 0.4f, col2);
-                                break;
-                        }
-                        case MAP_TILE_ROCK: {
-                                // 石头：灰色矩形
-                                jcolor_t col  = { 132, 132, 148, 255 };
-                                jcolor_t lcol = { 166, 166, 178, 255 };
-                                draw_fill_rect_line(ctx, cx, cy, s * 0.75f, s * 0.6f, col, lcol);
-                                break;
-                        }
-                        case MAP_TILE_WATER: {
-                                // 水面：蓝色矩形
-                                jcolor_t col = { 42, 104, 178, 255 };
-                                draw_fill_rect(ctx, cx, cy, s, s, col);
-                                // 波纹线（保留两条短线示意水面）
-                                r2d_set_color(ctx->r2d, 130, 195, 238, 200);
-                                shape_draw_line(ctx->r2d, cx - s * 0.6f, cy - s * 0.3f, cx, cy - s * 0.3f);
-                                shape_draw_line(ctx->r2d, cx - s * 0.4f, cy + s * 0.2f, cx + s * 0.5f, cy + s * 0.2f);
-                                break;
-                        }
-                        case MAP_TILE_GRASS: {
-                                // 草丛：嫩绿小矩形
-                                jcolor_t col = { 96, 168, 96, 255 };
-                                draw_fill_rect(ctx, cx, cy, s * 0.35f, s * 0.25f, col);
-                                break;
-                        }
-                        case MAP_TILE_FLOWER: {
-                                // 花：粉色矩形（花瓣）+ 黄色小矩形（花蕊）
-                                jcolor_t pcol = { 232, 150, 190, 255 };
-                                draw_fill_rect(ctx, cx, cy, s * 0.35f, s * 0.35f, pcol);
-                                jcolor_t ycol = { 255, 220, 90, 255 };
-                                draw_fill_rect(ctx, cx, cy, s * 0.14f, s * 0.14f, ycol);
-                                break;
-                        }
-                        case MAP_TILE_PATH: {
-                                // 小路：浅棕矩形
-                                jcolor_t col = { 158, 130, 96, 255 };
-                                draw_fill_rect(ctx, cx, cy, s * 0.45f, s * 0.45f, col);
-                                break;
-                        }
-                        default: break;
-                        }
-                }
-        }
-}
-
+// ---- 主渲染入口（签名保持不变，供 client/server 场景调用）----
 static void drawing_entity_system(Context* ctx, entt::entity e,
-        IdComponent& id,
-        LogicRectComponent& rect,
-        TransformComponent& t)
+        IdComponent& id, LogicRectComponent& rect, TransformComponent& t)
 {
         (void)id;
-        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
-        float cx = (t.position.x - cam.x) * SERVER_PPM;
-        float cy = (t.position.y - cam.y) * SERVER_PPM;
-        float w  = fp_to_float(rect.width)  * SERVER_PPM;
-        float h  = fp_to_float(rect.height) * SERVER_PPM;
-        float hw = w * 0.5f;
-        float hh = h * 0.5f;
+        if (!ctx->ecs.valid(e)) return;
 
-        // 朝向角：优先 ActionStateComponent.dir（0=down 1=left 2=right 3=up），
-        // 否则用 TransformComponent.rotation
-        float dir_rad = t.rotation;
-        int   act_state = -1;
+        bool is_player = ctx->ecs.all_of<PlayerComponent>(e);
+        bool is_enemy  = ctx->ecs.all_of<EnemyComponent>(e);
+        if (!is_player && !is_enemy) return;   // 只渲染玩家/敌人
+
+        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
+        vec2_t c;
+        c.x = (t.position.x - cam.x) * SERVER_PPM;
+        c.y = (t.position.y - cam.y) * SERVER_PPM;
+
+        // 视觉方块半边长：以碰撞盒较长边为准（旋转后角部略超碰撞盒，碰撞体以红框为准）
+        float w = fp_to_float(rect.width);
+        float h = fp_to_float(rect.height);
+        float half = (w > h ? w : h) * 0.5f;
+        if (half < 8.0f) half = 8.0f;
+
+        float dir_rad = -GD_PI * 0.5f;   // 默认朝上（dir 0=下 1=左 2=右 3=上）
+        float speed_ratio = 0.0f;
+        bool is_attack = false;
         if (ctx->ecs.all_of<ActionStateComponent>(e)) {
-                auto& act = ctx->ecs.get<ActionStateComponent>(e);
-                act_state = (int)act.state;
-                switch (act.dir) {
-                case 0: dir_rad = 3.14159265f * 0.5f; break;        // down
-                case 1: dir_rad = 3.14159265f;        break;        // left
-                case 2: dir_rad = 0.0f;               break;        // right
-                case 3: dir_rad = -3.14159265f * 0.5f; break;       // up
-                default: break;
+                auto& ac = ctx->ecs.get<ActionStateComponent>(e);
+                if (ac.state == ActionStateComponent::WALK) speed_ratio = 1.0f;
+                else if (ac.state == ActionStateComponent::ATTACK) { speed_ratio = 0.6f; is_attack = true; }
+                switch (ac.dir) {
+                case 0: dir_rad =  GD_PI * 0.5f; break;   // 下
+                case 1: dir_rad =  GD_PI;        break;   // 左
+                case 2: dir_rad =  0.0f;         break;   // 右
+                case 3: dir_rad = -GD_PI * 0.5f; break;   // 上
                 }
         }
 
-        if (ctx->ecs.all_of<PlayerComponent>(e)) {
-                // ---- 玩家：亮蓝矩形 + 白描边 + 朝向线 ----
-                jcolor_t fill = { 90, 170, 255, 255 };
-                jcolor_t line = { 255, 255, 255, 90 };
-                draw_fill_rect_line(ctx, cx, cy, hw, hh, fill, line);
-                // 朝向指示线
-                r2d_set_color(ctx->r2d, 255, 255, 255, 230);
-                shape_draw_line(ctx->r2d, cx, cy,
-                        cx + cosf(dir_rad) * hw, cy + sinf(dir_rad) * hh);
-        }
-        else if (ctx->ecs.all_of<EnemyComponent>(e)) {
-                // ---- 敌人：橙红矩形 ----
-                jcolor_t fill = { 230, 95, 75, 255 };
-                jcolor_t line = { 255, 255, 255, 80 };
-                draw_fill_rect_line(ctx, cx, cy, hw, hh, fill, line);
-        }
-        else {
-                // ---- 地图碰撞地形实体由 draw_map_tiles 负责绘制，跳过 ----
-                char tile = map_tile_at((int)floorf(t.position.x), (int)floorf(t.position.y));
-                if (map_is_collidable(tile)) return;
+        // 轨道环相位种子：同一实体稳定、不同实体错开
+        float seed = t.position.x * 1.7f + t.position.y * 3.1f + (is_player ? 0.0f : 13.37f);
 
-                // ---- 其他：青灰矩形 ----
-                jcolor_t fill = { 140, 195, 196, 255 };
-                draw_fill_rect(ctx, cx, cy, hw, hh, fill);
+        // 自旋角：静止慢转、移动加快；基础 45° 使方块呈菱形（官方造型）
+        float spin = 0.7f + speed_ratio * 1.8f;
+        float rot  = 0.785398f + ctx->visual_time * spin;
+
+        // 先画轨道环，本体压在其上
+        draw_orbits(ctx, c, speed_ratio, is_player, ctx->visual_time, seed);
+
+        // 攻击：沿朝向画发光射线（两层线模拟辉光）
+        if (is_attack) {
+                float ray_len = half * 3.2f;
+                vec2_t r1 = { c.x + cosf(dir_rad) * half * 0.9f, c.y + sinf(dir_rad) * half * 0.9f };
+                vec2_t r2 = { c.x + cosf(dir_rad) * ray_len,     c.y + sinf(dir_rad) * ray_len };
+                r2d_set_color(ctx->r2d, is_player ? 90 : 255, is_player ? 140 : 200, is_player ? 255 : 80, 90);
+                shape_draw_line(ctx->r2d, r1.x - 2.0f, r1.y - 2.0f, r2.x - 2.0f, r2.y - 2.0f);
+                r2d_set_color(ctx->r2d, is_player ? 45 : 155, is_player ? 65 : 115, is_player ? 140 : 30, 230);
+                shape_draw_line(ctx->r2d, r1.x, r1.y, r2.x, r2.y);
         }
 
-        // ---- 攻击指示：ATTACK 时沿朝向画一段射线（纯视觉反馈）----
-        if (act_state == ActionStateComponent::ATTACK) {
-                float len = (hw < hh ? hw : hh) * 2.2f;
-                float r = (hw < hh ? hw : hh) * 0.6f;
-                r2d_set_color(ctx->r2d, 255, 255, 255, 200);
-                shape_draw_line(ctx->r2d,
-                        cx + cosf(dir_rad) * r, cy + sinf(dir_rad) * r,
-                        cx + cosf(dir_rad) * len, cy + sinf(dir_rad) * len);
+        // 本体旋转方块
+        if (is_player) {
+                jcolor_t fill   = { 255, 255, 255, 255 };
+                jcolor_t stroke = { 30, 30, 35, 255 };
+                draw_rotated_square(ctx, c, half, rot, fill, stroke);
+        } else {
+                jcolor_t fill   = { 22, 22, 26, 255 };
+                jcolor_t stroke = { 255, 255, 255, 255 };
+                draw_rotated_square(ctx, c, half, rot, fill, stroke);
         }
+
+        // 朝向指示线（沿移动方向，方块内侧）
+        r2d_set_color(ctx->r2d, is_player ? 90 : 255, is_player ? 140 : 200, is_player ? 255 : 80, 220);
+        vec2_t tip = { c.x + cosf(dir_rad) * half * 0.8f, c.y + sinf(dir_rad) * half * 0.8f };
+        shape_draw_line(ctx->r2d, c.x, c.y, tip.x, tip.y);
 }

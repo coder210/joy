@@ -52,6 +52,6 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
                 snprintf(buf, sizeof(buf), "HP: --  POS:(--, --)  ST: --");
         }
 
-        jcolor_t c = { 150, 255, 150, 235 };   // 淡绿，与 FPS 白色区分
+        jcolor_t c = { 40, 60, 110, 235 };   // 深蓝，适配白底背景（与 FPS 深灰区分）
         jtext_printx(r2d, font, buf, (int)strlen(buf), c, 8.0f, 32.0f);
 }

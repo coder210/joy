@@ -23,6 +23,6 @@ static void fps_display_draw(jr2d_p r2d, font_p font, float dt)
                 accum = 0.0f;
         }
 
-        jcolor_t c = { 255, 255, 255, 235 };
+        jcolor_t c = { 60, 60, 70, 235 };   // 深灰，适配白底背景
         jtext_printx(r2d, font, text, (int)strlen(text), c, 8.0f, 6.0f);
 }
