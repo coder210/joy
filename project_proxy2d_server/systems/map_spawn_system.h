@@ -18,8 +18,10 @@ static void map_spawn_system(entt::registry& registry, Context* ctx, float /*dt*
 
             entt::entity e = registry.create();
             registry.emplace<IdComponent>(e, get_entity_id(ctx));
-            registry.emplace<LogicPositionComponent>(e, fp_from_float(px), fp_from_float(py));
+            // 碰撞盒 = 整格 [x, x+1]，LogicPosition 取左上角（与玩家/敌人一致）
+            registry.emplace<LogicPositionComponent>(e, fp_from_float((float)x), fp_from_float((float)y));
             registry.emplace<LogicRectComponent>(e, fp_from_float(1), fp_from_float(1));
+            // 渲染原点 = 碰撞盒中心 = 格子中心
             registry.emplace<TransformComponent>(e, px, py, 0.0f, 1.0f, 1.0f);
         }
     }

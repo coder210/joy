@@ -1,4 +1,4 @@
-﻿#include "external/klib/kvec.h"
+#include "external/klib/kvec.h"
 #include <SDL3/SDL.h>
 #include "joy.h"
 
@@ -558,16 +558,16 @@ void combobox_draw(combobox_p combobox)
         r2d_set_color(r2d, 0, 0, 0, 255);
         shape_draw_rectangle(r2d, "line", combobox->main_rect);
 
-        // ��Ⱦ��ǰѡ�е��ı�
+        // 渲染当前选中的文本
         if (combobox->selected_index >= 0 && combobox->items[combobox->selected_index].text) {
                 jtext_print(r2d, combobox->items[combobox->selected_index].text,
                         combobox->main_rect.x + 5, combobox->main_rect.y);
         }
 
 
-        // ����������Ǵ򿪵ģ���Ⱦѡ���б�
+        // 如果下拉框是打开的, 渲染选择列表
         if (combobox->is_open) {
-                // ��Ⱦ������ͷ
+                // 渲染下拉箭头
                 jcolor_t color = { 0, 0, 0, 255 };
                 r2d_set_color(r2d, 0, 0, 0, 255);
                 vec2_t arrow_points[3] = {
@@ -594,7 +594,7 @@ void combobox_draw(combobox_p combobox)
                             combobox->item_height
                         };
 
-                        // ����ǵ�ǰѡ�е��ʹ����ͣ��ɫ
+                        // 如果是当前选中的项, 使用高亮颜色
                         if (i == combobox->selected_index) {
                                 r2d_set_color(r2d, combobox->hover_color.r, combobox->hover_color.g, combobox->hover_color.b, combobox->hover_color.a);
                                 shape_draw_rectangle(r2d, "line", item_rect);
@@ -610,7 +610,7 @@ void combobox_draw(combobox_p combobox)
                 }
         }
         else {
-                // ��Ⱦ������ͷ
+                // 渲染下拉箭头
                 jcolor_t color = { 0, 0, 0, 255 };
                 vec2_t arrow_points[3] = {
                     {combobox->main_rect.x + combobox->main_rect.w - 15, combobox->main_rect.y + 10},
@@ -736,24 +736,24 @@ void datagrid_destroy(datagrid_p grid)
 
 void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 {
-        // ����ɼ��з�Χ
+        // 计算可见行范围
         int start_row = grid->scroll_offset;
         int end_row = start_row + grid->visible_rows;
         if (end_row > grid->row_count) end_row = grid->row_count;
 
-        // ���Ʊ���
+        // 绘制背景
         jcolor_t bg_color = grid->bg_color;
         r2d_set_color(r2d, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
         jrect_t bg_rect = { grid->x, grid->y, grid->width, grid->height };
         shape_draw_rectangle(r2d, "fill", bg_rect);
 
-        // ���������ߺ�����
+        // 获取网格线和文字颜色
         jcolor_t grid_color = grid->grid_color;
         jcolor_t text_color = grid->text_color;
         jcolor_t header_bg_color = grid->header_bg_color;
         jcolor_t selected_color = grid->selected_color;
 
-        // ���Ʊ���
+        // 绘制表头
         r2d_set_color(r2d, header_bg_color.r, header_bg_color.g, header_bg_color.b, header_bg_color.a);
         jrect_t header_rect = { grid->x, grid->y, grid->width, grid->row_height };
         shape_draw_rectangle(r2d, "fill", header_rect);
@@ -766,7 +766,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                         jtext_p tex = grid->headers[col];
                         jtext_print(r2d, tex, x, y);
 
-                        // ���ƴ�ֱ��
+                        // 绘制垂直分隔线
                         r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
                         shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
@@ -774,11 +774,11 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                 }
         }
 
-        // ������������
+        // 绘制数据行
         for (int row = start_row; row < end_row; row++) {
                 int y = grid->y + (row - start_row) * grid->row_height + grid->row_height;
 
-                // �����б���
+                // 绘制选中行背景
                 if (row == grid->selected_row) {
                         r2d_set_color(r2d, selected_color.r, selected_color.g, selected_color.b, selected_color.a);
                         jrect_t selected_rect = { grid->x, y, grid->width, grid->row_height };
@@ -788,7 +788,7 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                         /* 非选中行默认无背景 */
                 }
 
-                // ���Ƶ�Ԫ�����ݺ�����
+                // 绘制单元格内容和分隔线
                 int x = grid->x;
                 for (int col = 0; col < grid->col_count; col++) {
                         if ((size_t)row < kv_size(grid->data) && (size_t)col < kv_size(kv_A(grid->data, row))) {
@@ -799,19 +799,19 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                                 }
                         }
 
-                        // ���ƴ�ֱ��
+                        // 绘制垂直分隔线
                         r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
                         shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
                         x += grid->col_widths[col];
                 }
 
-                // ����ˮƽ��
+                // 绘制水平分隔线
                 r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
                 shape_draw_line(r2d, grid->x, y + grid->row_height, grid->x + grid->width, y + grid->row_height);
         }
 
-        // ������߿�
+        // 绘制外边框
         r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
         shape_draw_rectangle(r2d, "line", bg_rect);
 }
@@ -856,7 +856,7 @@ radio_p radio_create(int x, int y, int size, const char* label, int group_id)
         radio->group_id = group_id;
         radio->hover = false;
 
-        // ���Ʊ�ǩ�ı�
+        // 复制标签文本
         if (label) {
                 radio->label = utils_strdup(label, NULL);
         }
@@ -864,8 +864,8 @@ radio_p radio_create(int x, int y, int size, const char* label, int group_id)
                 radio->label = NULL;
         }
 
-        // ���õ�����򣨰�����ǩ����
-        int label_width = label ? strlen(label) * 10 : 0; // �����ǩ����
+        // 设置点击区域(包含标签宽度)
+        int label_width = label ? strlen(label) * 10 : 0; // 估算标签宽度
         radio->hit_area.x = x;
         radio->hit_area.y = y;
         radio->hit_area.w = size + 5 + label_width;
@@ -896,8 +896,8 @@ void radio_render(radio_p radio, jr2d_p r2d)
         float r2 = r1 - 2;
         float r3 = r2 - 4;
 
-        // ʹ���㹻��ĵ�������ƽ����Բ
-        const int segments = 99; // ���ӷֶ���ʹԲ��ƽ��
+        // 使用足够大的分段数绘制平滑圆形
+        const int segments = 99; // 增加分段数使圆形平滑
         radio->r1_color.r = 0;
         radio->r1_color.g = 0;
         radio->r1_color.b = 255;
@@ -928,7 +928,7 @@ void radio_render(radio_p radio, jr2d_p r2d)
                 shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r3, 32);
         }
 
-        // ���Ʊ�ǩ�ı�
+        // 渲染标签文本
         if (radio->label) {
                 /* 标签文本 — 由外部传入 font 后使用 jtext_printx 渲染 */
         }
@@ -973,16 +973,16 @@ checkbox_p checkbox_create(int x, int y, int size, const char* label)
         cb->hover = false;
         cb->enabled = true;
 
-        // ����Ĭ����ɫ
-        cb->box_color = (jcolor_t){ 0, 0, 0, 255 };        // ��ɫ�߿�
-        cb->check_color = (jcolor_t){ 0, 120, 0, 255 };    // ��ɫ��ѡ
-        cb->text_color = (jcolor_t){ 0, 0, 0, 255 };       // ��ɫ�ı�
-        cb->hover_color = (jcolor_t){ 200, 200, 200, 255 };// ǳ��ɫ��ͣ
+        // 设置默认颜色
+        cb->box_color = (jcolor_t){ 0, 0, 0, 255 };        // 黑色边框
+        cb->check_color = (jcolor_t){ 0, 120, 0, 255 };    // 绿色勾选
+        cb->text_color = (jcolor_t){ 0, 0, 0, 255 };       // 黑色文本
+        cb->hover_color = (jcolor_t){ 200, 200, 200, 255 };// 浅灰色悬停
 
-        // ���õ�����򣨰�����ǩ��
+        // 设置点击区域(包含标签)
         int label_width = 0;
         if (label) {
-                // �����ǩ���ȣ�ʵ����Ⱦʱ��Ҫ��ȷ���㣩
+                // 估算标签宽度(实际渲染时需要精确计算)
                 label_width = strlen(label) * 8;
         }
         cb->hit_area.x = x;
@@ -1023,7 +1023,7 @@ void checkbox_toggle(checkbox_p checkbox)
 }
 
 
-// ������ѡ���¼�
+// 处理复选框点击事件
 bool checkbox_is_pressed(checkbox_p cb, float x, float y)
 {
         if (!cb || !cb->enabled) return false;
@@ -1124,7 +1124,7 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 
 
 
-// ��ʼ��ҡ��
+// 初始化摇杆
 joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius)
 {
         joystick_p joystick;
@@ -1161,7 +1161,7 @@ void joystick_destroy(joystick_p joystick)
         free(joystick);
 }
 
-// ����ҡ��λ��
+// 设置摇杆位置
 void joystick_set_position(joystick_p joystick, float x, float y)
 {
         joystick->center.x = x;
@@ -1176,48 +1176,48 @@ void joystick_set_position(joystick_p joystick, float x, float y)
         }
 }
 
-// ����ҡ����ק����
+// 更新摇杆拖拽逻辑
 static void joystick_update_drag(joystick_p joystick, float touch_x, float touch_y)
 {
-        // ������������ĵ������
+        // 计算手指到中心的偏移量
         float dx = touch_x - joystick->center.x;
         float dy = touch_y - joystick->center.y;
 
-        // �������
+        // 计算距离
         float distance = sqrtf(dx * dx + dy * dy);
 
-        // ���ƾ��벻���������뾶
+        // 控制距离不超过摇杆半径
         if (distance > joystick->radius) {
                 dx = (dx / distance) * joystick->radius;
                 dy = (dy / distance) * joystick->radius;
                 distance = joystick->radius;
         }
 
-        // ���㷽���ǿ��
+        // 计算方向和强度
         joystick->magnitude = distance / joystick->radius;
 
-        // Ӧ������
+        // 应用死区
         if (joystick->magnitude < joystick->deadzone) {
                 joystick->direction.x = 0.0f;
                 joystick->direction.y = 0.0f;
                 joystick->magnitude = 0.0f;
 
-                // �ֱ��ص�����
+                // 手柄回到中心
                 joystick->handle.x = joystick->center.x - joystick->handle_radius;
                 joystick->handle.y = joystick->center.y - joystick->handle_radius;
         }
         else {
-                // ��һ����������
+                // 非死区时更新方向
                 joystick->direction.x = dx / joystick->radius;
                 joystick->direction.y = dy / joystick->radius;
 
-                // �����ֱ�λ��
+                // 更新手柄位置
                 joystick->handle.x = joystick->center.x + dx - joystick->handle_radius;
                 joystick->handle.y = joystick->center.y + dy - joystick->handle_radius;
         }
 }
 
-// �����¼�������Ӧ�߼��ֱ��ʣ�
+// 处理事件和响应逻辑(分辨率)
 bool joystick_is_dragging(joystick_p j)
 {
         return j ? j->is_dragging : false;
@@ -1249,7 +1249,7 @@ void joystick_touch_up(joystick_p j)
         joystick_reset(j);
 }
 
-// ����ҡ��
+// 重置摇杆
 void joystick_reset(joystick_p joystick)
 {
         joystick->direction.x = 0.0f;
@@ -1259,26 +1259,26 @@ void joystick_reset(joystick_p joystick)
         joystick->is_touch_active = false;
         joystick->touch_id = -1;
 
-        // �ֱ��ص�����
+        // 手柄回到中心
         joystick->handle.x = joystick->center.x - joystick->handle_radius;
         joystick->handle.y = joystick->center.y - joystick->handle_radius;
 }
 
-// ����ҡ��
+// 绘制摇杆
 void joystick_draw(joystick_p joystick)
 {
         jr2d_p r2d = joystick->r2d;
 
-        // ���Ʊ���Բ��
+        // 绘制背景圆环
         r2d_set_color(r2d,
                 (JOYSTICK_BG_COLOR >> 24) & 0xFF,
                 (JOYSTICK_BG_COLOR >> 16) & 0xFF,
                 (JOYSTICK_BG_COLOR >> 8) & 0xFF,
                 JOYSTICK_BG_COLOR & 0xFF);
-        // ����Բ�α�����ʹ�ö����ģ��Բ�Σ�
+        // 绘制圆形背景, 使用多段模拟圆形
         shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
 
-        // ����ʮ����
+        // 绘制十字线
         r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
 
         shape_draw_line(r2d,
@@ -1288,7 +1288,7 @@ void joystick_draw(joystick_p joystick)
                 joystick->center.x, joystick->center.y - joystick->radius,
                 joystick->center.x, joystick->center.y + joystick->radius);
 
-        // �����ֱ�
+        // 绘制手柄
         jcolor_t handle_color = joystick->is_dragging ?
                 (jcolor_t) {
                 0x4C, 0xAF, 0x50, 0xFF
@@ -1299,7 +1299,7 @@ void joystick_draw(joystick_p joystick)
 
                 r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
 
-                // ����Բ���ֱ�
+                // 绘制圆形手柄
 
                 vec2_t handle_center = {
                 joystick->handle.x + joystick->handle_radius,
@@ -1307,7 +1307,7 @@ void joystick_draw(joystick_p joystick)
                 };
                 shape_draw_circle(r2d, "fill", handle_center, joystick->radius * 0.5f, 24);
 
-                // ����ֱ�
+                // 绘制手柄
                 r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
 
                 jrect_t handle_fill = {
@@ -1330,13 +1330,13 @@ void joystick_draw(joystick_p joystick)
                 }
 }
 
-// ��ȡҡ�˷���
+// 获取摇杆方向
 vec2_t joystick_get_direction(joystick_p joystick)
 {
         return joystick->direction;
 }
 
-// ��ȡҡ��ǿ��
+// 获取摇杆强度
 float joystick_get_magnitude(joystick_p joystick)
 {
         return joystick->magnitude;

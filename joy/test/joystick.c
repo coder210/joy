@@ -4,48 +4,48 @@
 //#define BACKGROUND_COLOR 0x333333FF
 //
 //int main(int argc, char* argv[]) {
-//        // ³õÊ¼»¯SDL
+//        // åˆå§‹åŒ–SDL
 //        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-//                SDL_Log("SDL³õÊ¼»¯Ê§°Ü: %s", SDL_GetError());
+//                SDL_Log("SDLåˆå§‹åŒ–å¤±è´¥: %s", SDL_GetError());
 //                return 1;
 //        }
 //
-//        // ´´½¨´°¿Ú
+//        // åˆ›å»ºçª—å£
 //        SDL_Window* window = SDL_CreateWindow("SDL3 Joystick (Adaptive)",
 //                800, 600, SDL_WINDOW_RESIZABLE);
 //
 //        if (!window) {
-//                SDL_Log("´°¿Ú´´½¨Ê§°Ü: %s", SDL_GetError());
+//                SDL_Log("çª—å£åˆ›å»ºå¤±è´¥: %s", SDL_GetError());
 //                SDL_Quit();
 //                return 1;
 //        }
 //
-//        // ´´½¨äÖÈ¾Æ÷£¨ÉèÖÃÂß¼­·Ö±æÂÊ£©
+//        // åˆ›å»ºæ¸²æŸ“å™¨ï¼ˆè®¾ç½®é€»è¾‘åˆ†è¾¨ç‡ï¼‰
 //        SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
 //        if (!renderer) {
-//                SDL_Log("äÖÈ¾Æ÷´´½¨Ê§°Ü: %s", SDL_GetError());
+//                SDL_Log("æ¸²æŸ“å™¨åˆ›å»ºå¤±è´¥: %s", SDL_GetError());
 //                SDL_DestroyWindow(window);
 //                SDL_Quit();
 //                return 1;
 //        }
 //
-//        // ÉèÖÃÂß¼­·Ö±æÂÊ£¨×ÔÊÊÓ¦Ëõ·ÅµÄºËĞÄ£©
+//        // è®¾ç½®é€»è¾‘åˆ†è¾¨ç‡ï¼ˆè‡ªé€‚åº”ç¼©æ”¾çš„æ ¸å¿ƒï¼‰
 //        SDL_SetRenderLogicalPresentation(renderer, 800, 600, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 //
-//        // ³õÊ¼»¯×óÒ¡¸Ë£¨ÔÚÂß¼­¿Õ¼äµÄ¹Ì¶¨Î»ÖÃ£©
+//        // åˆå§‹åŒ–å·¦æ‘‡æ†ï¼ˆåœ¨é€»è¾‘ç©ºé—´çš„å›ºå®šä½ç½®ï¼‰
 //        joystick_p left_joystick;
 //        left_joystick = joystick_create(renderer, 200.0f, 400.0f, 80.0f);
 //
-//        // ³õÊ¼»¯ÓÒÒ¡¸Ë
+//        // åˆå§‹åŒ–å³æ‘‡æ†
 //        joystick_p right_joystick;
 //        right_joystick = joystick_create(renderer, 600.0f, 400.0f, 80.0f);
 //
-//        // Ö÷Ñ­»·
+//        // ä¸»å¾ªç¯
 //        bool quit = false;
 //        while (!quit) {
 //                SDL_Event event;
 //
-//                // ´¦ÀíÊÂ¼ş
+//                // å¤„ç†äº‹ä»¶
 //                while (SDL_PollEvent(&event)) {
 //                        if (event.type == SDL_EVENT_QUIT) {
 //                                quit = true;
@@ -55,23 +55,23 @@
 //                                        quit = true;
 //                                }
 //                                else if (event.key.key == SDLK_SPACE) {
-//                                        // ´òÓ¡Ò¡¸Ë×´Ì¬
+//                                        // æ‰“å°æ‘‡æ†çŠ¶æ€
 //                                        SDL_FPoint left_dir = joystick_get_direction(left_joystick);
 //                                        SDL_FPoint right_dir = joystick_get_direction(&right_joystick);
 //
-//                                        printf("×óÒ¡¸Ë: X=%.2f, Y=%.2f, Ç¿¶È=%.2f\n",
+//                                        printf("å·¦æ‘‡æ†: X=%.2f, Y=%.2f, å¼ºåº¦=%.2f\n",
 //                                                left_dir.x, left_dir.y, joystick_get_magnitude(left_joystick));
-//                                        printf("ÓÒÒ¡¸Ë: X=%.2f, Y=%.2f, Ç¿¶È=%.2f\n",
+//                                        printf("å³æ‘‡æ†: X=%.2f, Y=%.2f, å¼ºåº¦=%.2f\n",
 //                                                right_dir.x, right_dir.y, joystick_get_magnitude(&right_joystick));
 //                                }
 //                        }
 //
-//                        // ½«ÊÂ¼ş´«µİ¸øÁ½¸öÒ¡¸Ë
+//                        // å°†äº‹ä»¶ä¼ é€’ç»™ä¸¤ä¸ªæ‘‡æ†
 //                        joystick_handle_event(left_joystick, &event);
 //                        joystick_handle_event(right_joystick, &event);
 //                }
 //
-//                // Çå³ıÆÁÄ»
+//                // æ¸…é™¤å±å¹•
 //                SDL_SetRenderDrawColor(renderer,
 //                        (BACKGROUND_COLOR >> 24) & 0xFF,
 //                        (BACKGROUND_COLOR >> 16) & 0xFF,
@@ -79,11 +79,11 @@
 //                        BACKGROUND_COLOR & 0xFF);
 //                SDL_RenderClear(renderer);
 //
-//                // »æÖÆÒ¡¸Ë
+//                // ç»˜åˆ¶æ‘‡æ†
 //                joystick_render(left_joystick);
 //                joystick_render(right_joystick);
 //
-//                // »æÖÆ·½ÏòÖ¸Ê¾Ïß
+//                // ç»˜åˆ¶æ–¹å‘æŒ‡ç¤ºçº¿
 //                SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 //
 //               /* if (joystick_get_magnitude(left_joystick) > 0) {
@@ -104,19 +104,19 @@
 //                                right_joystick.center.y + dir.y * right_joystick.radius);
 //                }*/
 //
-//                // »æÖÆËµÃ÷ÎÄ×Ö±³¾°
+//                // ç»˜åˆ¶è¯´æ˜æ–‡å­—èƒŒæ™¯
 //                SDL_FRect text_bg = { 10, 10, 350, 140 };
 //                SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x80);
 //                SDL_RenderFillRect(renderer, &text_bg);
 //
-//                // ¸üĞÂäÖÈ¾
+//                // æ›´æ–°æ¸²æŸ“
 //                SDL_RenderPresent(renderer);
 //
-//                // ¿ØÖÆÖ¡ÂÊ
+//                // æ§åˆ¶å¸§ç‡
 //                SDL_Delay(16);
 //        }
 //
-//        // ÇåÀí×ÊÔ´
+//        // æ¸…ç†èµ„æº
 //        joystick_destroy(left_joystick);
 //        joystick_destroy(right_joystick);
 //        SDL_DestroyRenderer(renderer);

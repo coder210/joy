@@ -25,8 +25,11 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 ctx->ecs.emplace<IdComponent>(e, entity.id);
                 ctx->ecs.emplace<LogicRectComponent>(e, entity.width, entity.height);
                 ctx->ecs.emplace<LogicPositionComponent>(e, entity.position_x, entity.position_y);
-                ctx->ecs.emplace<TransformComponent>(e, fp_to_float(entity.position_x),
-                                                   fp_to_float(entity.position_y), 0.0f, 1.0f, 1.0f);
+                // 快照 position 是碰撞盒左上角，Transform 取碰撞盒中心（与 server 端一致）
+                ctx->ecs.emplace<TransformComponent>(e,
+                                                   fp_to_float(entity.position_x) + fp_to_float(entity.width) * 0.5f,
+                                                   fp_to_float(entity.position_y) + fp_to_float(entity.height) * 0.5f,
+                                                   0.0f, 1.0f, 1.0f);
                 if (entity.type == S2C_TYPE_PLAYER) {
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);

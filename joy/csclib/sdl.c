@@ -526,12 +526,12 @@
 //	//delegate = livS_mono_gchandle_get_target(gchandle);
 //
 //	//result = livS_mono_runtime_delegate_invoke(delegate, NULL, &exc);
-//	//// 6. ¼ì²éÒì³£
+//	//// 6. æ£€æŸ¥å¼‚å¸¸
 //	//if (exc) {
-//	//	// ´¦ÀíÒì³£ - ´òÓ¡¶ÑÕ»¸ú×ÙµÈ
+//	//	// å¤„ç†å¼‚å¸¸ - æ‰“å°å †æ ˆè·Ÿè¸ªç­‰
 //	//	livS_mono_print_unhandled_exception(exc);
 //	//}
-//	//// 7. ÊÍ·ÅGC¾ä±ú
+//	//// 7. é‡Šæ”¾GCå¥æŸ„
 //	//livS_mono_gchandle_free(gchandle);
 //
 //	delegate = (MonoObject*)arg;
@@ -543,7 +543,7 @@
 //static SDL_Thread*
 //create_thread(MonoObject* delegate, MonoString* name)
 //{
-//	//uint32_t gchandle = livS_mono_gchandle_new(delegate, 0); // 0 = ÆÕÍ¨ÒıÓÃ
+//	//uint32_t gchandle = livS_mono_gchandle_new(delegate, 0); // 0 = æ™®é€šå¼•ç”¨
 //
 //	SDL_Thread* thread;
 //	const char* cstr_name;

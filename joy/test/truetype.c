@@ -12,7 +12,7 @@
 //
 //int main(int argc, const char* argv[])
 //{
-//        /* ¼ÓÔØ×ÖÌå£¨.ttf£©ÎÄ¼ş */
+//        /* åŠ è½½å­—ä½“ï¼ˆ.ttfï¼‰æ–‡ä»¶ */
 //        long int size = 0;
 //        unsigned char* fontBuffer = NULL;
 //
@@ -22,15 +22,15 @@
 //                printf("Can not open font file!\n");
 //                return 0;
 //        }
-//        fseek(fontFile, 0, SEEK_END); /* ÉèÖÃÎÄ¼şÖ¸Õëµ½ÎÄ¼şÎ²£¬»ùÓÚÎÄ¼şÎ²Æ«ÒÆ0×Ö½Ú */
-//        size = ftell(fontFile);       /* »ñÈ¡ÎÄ¼ş´óĞ¡£¨ÎÄ¼şÎ² - ÎÄ¼şÍ·  µ¥Î»£º×Ö½Ú£© */
-//        fseek(fontFile, 0, SEEK_SET); /* ÖØĞÂÉèÖÃÎÄ¼şÖ¸Õëµ½ÎÄ¼şÍ· */
+//        fseek(fontFile, 0, SEEK_END); /* è®¾ç½®æ–‡ä»¶æŒ‡é’ˆåˆ°æ–‡ä»¶å°¾ï¼ŒåŸºäºæ–‡ä»¶å°¾åç§»0å­—èŠ‚ */
+//        size = ftell(fontFile);       /* è·å–æ–‡ä»¶å¤§å°ï¼ˆæ–‡ä»¶å°¾ - æ–‡ä»¶å¤´  å•ä½ï¼šå­—èŠ‚ï¼‰ */
+//        fseek(fontFile, 0, SEEK_SET); /* é‡æ–°è®¾ç½®æ–‡ä»¶æŒ‡é’ˆåˆ°æ–‡ä»¶å¤´ */
 //
 //        fontBuffer = calloc(size, sizeof(unsigned char));
 //        fread(fontBuffer, size, 1, fontFile);
 //        fclose(fontFile);
 //
-//        /* ³õÊ¼»¯×ÖÌå */
+//        /* åˆå§‹åŒ–å­—ä½“ */
 //        stbtt_fontinfo info;
 //        if (!stbtt_InitFont(&info, fontBuffer, 0))
 //        {
@@ -39,109 +39,109 @@
 //
 //        SDL_Color color;
 //
-//        // ÉèÖÃÎÄ±¾ÑÕÉ«
+//        // è®¾ç½®æ–‡æœ¬é¢œè‰²
 //        color.r = 255;
 //        color.g = 0;
 //        color.b = 0;
 //        color.a = 255;
 //
 //        unsigned short word2[20];
-//        //int len2 = utf8_to_unicode('ÊÀ', word2);
+//        //int len2 = utf8_to_unicode('ä¸–', word2);
 //
 //
-//        /* "STB"µÄ unicode ±àÂë */
+//        /* "STB"çš„ unicode ç¼–ç  */
 //        int word[20] = { 0x6211, 0x754C };
 //        int len = 2;
 //
-//        /* ¼ÆËã×ÖÌåËõ·Å */
-//        float pixels = 60.0;                                    /* ×ÖÌå´óĞ¡£¨×ÖºÅ£© */
+//        /* è®¡ç®—å­—ä½“ç¼©æ”¾ */
+//        float pixels = 60.0;                                    /* å­—ä½“å¤§å°ï¼ˆå­—å·ï¼‰ */
 //        float scale = stbtt_ScaleForPixelHeight(&info, pixels); /* scale = pixels / (ascent - descent) */
 //
 //        /**
-//         * »ñÈ¡´¹Ö±·½ÏòÉÏµÄ¶ÈÁ¿
-//         * ascent£º×ÖÌå´Ó»ùÏßµ½¶¥²¿µÄ¸ß¶È£»
-//         * descent£º»ùÏßµ½µ×²¿µÄ¸ß¶È£¬Í¨³£Îª¸ºÖµ£»
-//         * lineGap£ºÁ½¸ö×ÖÌåÖ®¼äµÄ¼ä¾à£»
-//         * ĞĞ¼ä¾àÎª£ºascent - descent + lineGap¡£
+//         * è·å–å‚ç›´æ–¹å‘ä¸Šçš„åº¦é‡
+//         * ascentï¼šå­—ä½“ä»åŸºçº¿åˆ°é¡¶éƒ¨çš„é«˜åº¦ï¼›
+//         * descentï¼šåŸºçº¿åˆ°åº•éƒ¨çš„é«˜åº¦ï¼Œé€šå¸¸ä¸ºè´Ÿå€¼ï¼›
+//         * lineGapï¼šä¸¤ä¸ªå­—ä½“ä¹‹é—´çš„é—´è·ï¼›
+//         * è¡Œé—´è·ä¸ºï¼šascent - descent + lineGapã€‚
 //        */
 //        int ascent = 0;
 //        int descent = 0;
 //        int lineGap = 0;
 //        stbtt_GetFontVMetrics(&info, &ascent, &descent, &lineGap);
 //
-//        /* ¸ù¾İËõ·Åµ÷Õû×Ö¸ß */
+//        /* æ ¹æ®ç¼©æ”¾è°ƒæ•´å­—é«˜ */
 //        ascent = roundf(ascent * scale);
 //        descent = roundf(descent * scale);
 //
-//        /* ´´½¨Î»Í¼ */
-//        int bitmap_w = pixels * len; /* Î»Í¼µÄ¿í */
-//        int bitmap_h = pixels; /* Î»Í¼µÄ¸ß */
+//        /* åˆ›å»ºä½å›¾ */
+//        int bitmap_w = pixels * len; /* ä½å›¾çš„å®½ */
+//        int bitmap_h = pixels; /* ä½å›¾çš„é«˜ */
 //        unsigned char* bitmap = calloc(bitmap_w * bitmap_h, sizeof(unsigned char));
 //
-//        int x = 0; /*Î»Í¼µÄx*/
+//        int x = 0; /*ä½å›¾çš„x*/
 //
-//        /* Ñ­»·¼ÓÔØwordÖĞÃ¿¸ö×Ö·û */
+//        /* å¾ªç¯åŠ è½½wordä¸­æ¯ä¸ªå­—ç¬¦ */
 //        for (int i = 0; i < len; ++i)
 //        {
 //                /**
-//                  * »ñÈ¡Ë®Æ½·½ÏòÉÏµÄ¶ÈÁ¿
-//                  * advanceWidth£º×Ö¿í£»
-//                  * leftSideBearing£º×ó²àÎ»ÖÃ£»
+//                  * è·å–æ°´å¹³æ–¹å‘ä¸Šçš„åº¦é‡
+//                  * advanceWidthï¼šå­—å®½ï¼›
+//                  * leftSideBearingï¼šå·¦ä¾§ä½ç½®ï¼›
 //                */
 //                int advanceWidth = 0;
 //                int leftSideBearing = 0;
 //                stbtt_GetCodepointHMetrics(&info, word[i], &advanceWidth, &leftSideBearing);
 //
-//                /* »ñÈ¡×Ö·ûµÄ±ß¿ò£¨±ß½ç£© */
+//                /* è·å–å­—ç¬¦çš„è¾¹æ¡†ï¼ˆè¾¹ç•Œï¼‰ */
 //                int c_x1, c_y1, c_x2, c_y2;
 //                stbtt_GetCodepointBitmapBox(&info, word[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
 //
-//                /* ¼ÆËãÎ»Í¼µÄy (²»Í¬×Ö·ûµÄ¸ß¶È²»Í¬£© */
+//                /* è®¡ç®—ä½å›¾çš„y (ä¸åŒå­—ç¬¦çš„é«˜åº¦ä¸åŒï¼‰ */
 //                int y = ascent + c_y1;
 //
-//                /* äÖÈ¾×Ö·û */
+//                /* æ¸²æŸ“å­—ç¬¦ */
 //                int byteOffset = x + roundf(leftSideBearing * scale) + (y * bitmap_w);
 //                stbtt_MakeCodepointBitmap(&info, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, bitmap_w, scale, scale, word[i]);
 //
-//                /* µ÷Õûx */
+//                /* è°ƒæ•´x */
 //                x += roundf(advanceWidth * scale);
 //
-//                /* µ÷Õû×Ö¾à */
+//                /* è°ƒæ•´å­—è· */
 //                int kern;
 //                kern = stbtt_GetCodepointKernAdvance(&info, word[i], word[i + 1]);
 //                x += roundf(kern * scale);
 //        }
 //
-//        // ³õÊ¼»¯SDL
+//        // åˆå§‹åŒ–SDL
 //        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-//                fprintf(stderr, "SDL³õÊ¼»¯Ê§°Ü: %s\n", SDL_GetError());
+//                fprintf(stderr, "SDLåˆå§‹åŒ–å¤±è´¥: %s\n", SDL_GetError());
 //                return 1;
 //        }
 //
-//        // ´´½¨´°¿ÚºÍäÖÈ¾Æ÷
-//        SDL_Window* window = SDL_CreateWindow("SDL3ÖĞÎÄäÖÈ¾", 800, 600, 0);
+//        // åˆ›å»ºçª—å£å’Œæ¸²æŸ“å™¨
+//        SDL_Window* window = SDL_CreateWindow("SDL3ä¸­æ–‡æ¸²æŸ“", 800, 600, 0);
 //        if (!window) {
-//                fprintf(stderr, "´°¿Ú´´½¨Ê§°Ü: %s\n", SDL_GetError());
+//                fprintf(stderr, "çª—å£åˆ›å»ºå¤±è´¥: %s\n", SDL_GetError());
 //                SDL_Quit();
 //                return 1;
 //        }
 //
 //        SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
 //        if (!renderer) {
-//                fprintf(stderr, "äÖÈ¾Æ÷´´½¨Ê§°Ü: %s\n", SDL_GetError());
+//                fprintf(stderr, "æ¸²æŸ“å™¨åˆ›å»ºå¤±è´¥: %s\n", SDL_GetError());
 //                SDL_DestroyWindow(window);
 //                SDL_Quit();
 //                return 1;
 //        }
 //
 //
-//        /* ½«Î»Í¼Êı¾İ±£´æµ½1Í¨µÀµÄpngÍ¼ÏñÖĞ */
+//        /* å°†ä½å›¾æ•°æ®ä¿å­˜åˆ°1é€šé“çš„pngå›¾åƒä¸­ */
 //        //stbi_write_png("D:\\STB.png", bitmap_w, bitmap_h, 1, bitmap, bitmap_w);
-//         // ´´½¨ÎÆÀí
+//         // åˆ›å»ºçº¹ç†
 //
 //        SDL_Surface* surface = SDL_CreateSurface(bitmap_w, bitmap_h, SDL_PIXELFORMAT_RGBA8888);
 //        if (!surface) {
-//                printf("ÎŞ·¨´´½¨±íÃæ: %s\n", SDL_GetError());
+//                printf("æ— æ³•åˆ›å»ºè¡¨é¢: %s\n", SDL_GetError());
 //                free(bitmap);
 //                return NULL;
 //        }
@@ -149,11 +149,11 @@
 //        Uint32* surface_pixels = (Uint32*)surface->pixels;
 //        int pitch = surface->pitch / sizeof(Uint32);
 //
-//        //»Ò¶È×ªRGBA£¨´øÍ¸Ã÷¶È£©
+//        //ç°åº¦è½¬RGBAï¼ˆå¸¦é€æ˜åº¦ï¼‰
 //        for (int y = 0; y < bitmap_h; ++y) {
 //                for (int x = 0; x < bitmap_w; ++x) {
 //                        Uint8 alpha = bitmap[y * bitmap_w + x];
-//                        // ÕıÈ·ÉèÖÃRGBAÖµ£¨°×É«ÎÄ×Ö£¬alphaÍ¨µÀÀ´×ÔÎ»Í¼£©
+//                        // æ­£ç¡®è®¾ç½®RGBAå€¼ï¼ˆç™½è‰²æ–‡å­—ï¼Œalphaé€šé“æ¥è‡ªä½å›¾ï¼‰
 //                        //surface_pixels[y * pitch + x] = (Uint32)((0x00FFFFFF) | (alpha << 24));
 //                        //surface_pixels[y * pitch + x] = (Uint32)((0x00FFFFFF) | (alpha << 24));
 //                        surface_pixels[y * pitch + x] = alpha;
@@ -163,7 +163,7 @@
 //        //for (int y = 0; y < bitmap_h; ++y) {
 //        //        for (int x = 0; x < bitmap_w; ++x) {
 //        //                //Uint8 alpha = bitmap[y * bitmap_w + x];
-//        //                // ÕıÈ·ÉèÖÃRGBAÖµ£¨°×É«ÎÄ×Ö£¬alphaÍ¨µÀÀ´×ÔÎ»Í¼£©
+//        //                // æ­£ç¡®è®¾ç½®RGBAå€¼ï¼ˆç™½è‰²æ–‡å­—ï¼Œalphaé€šé“æ¥è‡ªä½å›¾ï¼‰
 //        //                //surface_pixels[y * pitch + x] = (Uint32)((0x00FFFFFF) | (alpha << 24));
 //        //                //surface_pixels[y * pitch + x] = (Uint32)((0x00FFFFFF) | (alpha << 24));
 //        //                int bitmap_idx = y * bitmap_w + x;
@@ -189,7 +189,7 @@
 //                        if (event.type == SDL_EVENT_QUIT) quit = 1;
 //                }
 //
-//                // ÇåÆÁ
+//                // æ¸…å±
 //                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 //                SDL_RenderClear(renderer);
 //                SDL_FRect dest = { 0, 0, bitmap_w, bitmap_h };

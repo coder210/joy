@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: mathx.h
-Description: ��ѧ��
+Description: 数学库
 Author: ydlc
 Version: 1.0
 Date: 2023.1.29
@@ -480,7 +480,7 @@ JOY_INLINE vec2f_t vec2f_normal(vec2f_t v)
 /*
  * x = x * cos(angle) - y * sin(angle);
  * y = x * sin(angle) + y * cos(angle);
- * vM: ��ʸ��
+ * vM: 旋转矢量
  *[x, y] [c, -s]
  *		 [s,  c]
 */
@@ -1089,7 +1089,7 @@ JOY_INLINE vec2_t vec2_normal(vec2_t a)
 /*
  * x = x * cos(angle) - y * sin(angle);
  * y = x * sin(angle) + y * cos(angle);
- * vM: ��ʸ��
+ * vM: 旋转矢量
  *[x, y] [c, -s]
  *		 [s,  c]
 */

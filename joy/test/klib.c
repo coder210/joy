@@ -11,25 +11,25 @@
 //////kbitr_t itr;
 ////
 //////
-//////// ÉùÃ÷²¢³õÊ¼»¯Ò»¸ö¼üÎªint£¬ÖµÎªintµÄ¹şÏ£±í
+//////// å£°æ˜å¹¶åˆå§‹åŒ–ä¸€ä¸ªé”®ä¸ºintï¼Œå€¼ä¸ºintçš„å“ˆå¸Œè¡¨
 //////KHASH_INIT(32, int, int, 1, kh_int_hash_func, kh_int_hash_equal)
 //////
 //////static void test_hash()
 //////{
-//////        khash_t(32)* h = kh_init(32); // ´´½¨¹şÏ£±í
+//////        khash_t(32)* h = kh_init(32); // åˆ›å»ºå“ˆå¸Œè¡¨
 //////        int ret;
 //////
-//////        // ²åÈë¼üÖµ¶Ô key=1, value=100
+//////        // æ’å…¥é”®å€¼å¯¹ key=1, value=100
 //////        khint_t k = kh_put(32, h, 1, &ret);
 //////        kh_val(h, k) = 100;
 //////
-//////        // ²éÕÒ key=1
+//////        // æŸ¥æ‰¾ key=1
 //////        k = kh_get(32, h, 1);
 //////        if (k != kh_end(h)) {
-//////                printf("value: %d\n", kh_val(h, k)); // Êä³ö: value: 100
+//////                printf("value: %d\n", kh_val(h, k)); // è¾“å‡º: value: 100
 //////        }
 //////
-//////        kh_destroy(32, h); // Ïú»Ù¹şÏ£±í
+//////        kh_destroy(32, h); // é”€æ¯å“ˆå¸Œè¡¨
 //////        return 0;
 //////}
 //////
@@ -39,16 +39,16 @@
 ////}kv_t, *kv_p;
 ////
 ////
-////// ¶¨Òå±È½Ïº¯Êı£¨±ØĞë£©
+////// å®šä¹‰æ¯”è¾ƒå‡½æ•°ï¼ˆå¿…é¡»ï¼‰
 ////static inline int kv_cmp(int a, int b) {
 ////        return (a > b) - (a < b);
 ////}
 ////
-////// ÉùÃ÷Ò»¸ö¼üÎªÕûÊı¡¢ÖµÎª×Ö·û´®µÄ B Ê÷
+////// å£°æ˜ä¸€ä¸ªé”®ä¸ºæ•´æ•°ã€å€¼ä¸ºå­—ç¬¦ä¸²çš„ B æ ‘
 ////KBTREE_INIT(kint, int, kv_cmp)
 ////
 ////int main() {
-////        kbtree_t(kint)* tree = kb_init(kint, KB_DEFAULT_SIZE); // ³õÊ¼»¯ B Ê÷
+////        kbtree_t(kint)* tree = kb_init(kint, KB_DEFAULT_SIZE); // åˆå§‹åŒ– B æ ‘
 ////
 ////        kv_t kv1, kv2, kv3;
 ////        kv1.key = 2;
@@ -63,25 +63,25 @@
 ////
 ////
 ////
-////        // ²éÕÒ¼ü
+////        // æŸ¥æ‰¾é”®
 ////        //kv_p *value = kb_get(kint, tree, &kv2);
 ////        ////kv_p *value = kb_get(int, tree, &kv2);
 ////        //if (value) {
-////        //        printf("2: %d\n", (*value)->key); // Êä³ö: 2: two
+////        //        printf("2: %d\n", (*value)->key); // è¾“å‡º: 2: two
 ////        //}
 ////
-////        // ±éÀúËùÓĞ¼üÖµ¶Ô£¨°´¼üµÄË³Ğò£©
+////        // éå†æ‰€æœ‰é”®å€¼å¯¹ï¼ˆæŒ‰é”®çš„é¡ºåºï¼‰
 ////       /* khiter_t  itr;
 ////        kb_itr_first(int, tree, &itr);
 ////        do {
 ////                printf("%d: %s\n", kb_iter_key(int, &itr), kb_iter_value(char*, &itr));
 ////        } while (kb_iter_next(int, tree, &itr));*/
-////        // Êä³ö:
+////        // è¾“å‡º:
 ////        // 1: one
 ////        // 2: two
 ////        // 3: three
 ////
-////        //kb_destroy(kv_t, tree); // Ïú»Ù B Ê÷
+////        //kb_destroy(kv_t, tree); // é”€æ¯ B æ ‘
 ////        return 0;
 ////}
 //

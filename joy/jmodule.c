@@ -1,7 +1,7 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: module.h
-Description: ���ϵͳ
+Description: 插件系统
 Author: ydlc
 Version: 1.0
 Date: 2021.3.3

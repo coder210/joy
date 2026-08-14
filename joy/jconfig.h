@@ -24,16 +24,16 @@
 
 
 #if defined(JOY_STATIC)
-// ¾²Ì¬¿â£º²»ĞèÒªÈÎºÎµ¼Èëµ¼³öÉùÃ÷
+// é™æ€åº“ï¼šä¸éœ€è¦ä»»ä½•å¯¼å…¥å¯¼å‡ºå£°æ˜
 #       define JOY_API
 #elif defined(JOY_WIN) || defined(__CYGWIN__)
-// Windows »ò Cygwin£ºÊ¹ÓÃ __declspec(dllexport/import)
+// Windows æˆ– Cygwinï¼šä½¿ç”¨ __declspec(dllexport/import)
 #       define JOY_API __declspec(dllexport)
 #elif defined(__GNUC__) && (__GNUC__ >= 4) || defined(__clang__)
-// GCC >= 4 »ò Clang£ºÊ¹ÓÃ¿É¼ûĞÔÊôĞÔ
+// GCC >= 4 æˆ– Clangï¼šä½¿ç”¨å¯è§æ€§å±æ€§
 #       define JOY_API __attribute__((visibility("default")))
 #else
-// ÆäËû±àÒëÆ÷£ºÎŞÌØÊâÉùÃ÷
+// å…¶ä»–ç¼–è¯‘å™¨ï¼šæ— ç‰¹æ®Šå£°æ˜
 #       define JOY_API
 #endif
 

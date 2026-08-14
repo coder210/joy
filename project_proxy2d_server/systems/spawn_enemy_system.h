@@ -23,7 +23,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<SpawnIdxComponent>(e, i);
         registry.emplace<LogicPositionComponent>(e, fp_from_float(s.x), fp_from_float(s.y));
         registry.emplace<LogicRectComponent>(e, fp_from_float(1), fp_from_float(1));
-        registry.emplace<TransformComponent>(e, s.x, s.y, 0.0f, 1.0f, 1.0f);
+        // 碰撞盒为 1x1，position 取碰撞盒中心（渲染以中心为原点）
+        registry.emplace<TransformComponent>(e, s.x + 0.5f, s.y + 0.5f, 0.0f, 1.0f, 1.0f);
 
         registry.emplace<ActionStateComponent>(e);
         registry.emplace<AIComponent>(e,

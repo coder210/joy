@@ -8,7 +8,7 @@
 //	MonoString *name;
 //} MyData;
 //
-//// ¶¨ÒåÓë C# Point ½á¹¹ÌåÆ¥ÅäµÄ½á¹¹
+//// å®šä¹‰ä¸ C# Point ç»“æ„ä½“åŒ¹é…çš„ç»“æ„
 //typedef struct {
 //	int X;
 //	int Y;
@@ -154,7 +154,7 @@
 //
 //int test_mono(MonoDomain* domain)
 //{
-//	// µÚÒ»¸ö²ÎÊıÊÇ±ê×¼¿âÄ¿Â¼£¬µÚ¶ş¸ö²ÎÊıÒÑ¾­·ÏÆú
+//	// ç¬¬ä¸€ä¸ªå‚æ•°æ˜¯æ ‡å‡†åº“ç›®å½•ï¼Œç¬¬äºŒä¸ªå‚æ•°å·²ç»åºŸå¼ƒ
 //	//domain = mono_jit_init("TestMono");
 //
 //	//init_mono_delegate_system(domain);
@@ -164,18 +164,18 @@
 //	
 //	*/
 //
-//	// ÑéÖ¤ºËĞÄ¿âÒÑ¼ÓÔØ
+//	// éªŒè¯æ ¸å¿ƒåº“å·²åŠ è½½
 //	//MonoAssembly* corelib = mono_assembly_open("System.Private.CoreLib", NULL);
 //	//if (!corelib) {
-//	//	printf("ºËĞÄ¿â¼ÓÔØÊ§°Ü£¡\n");
+//	//	printf("æ ¸å¿ƒåº“åŠ è½½å¤±è´¥ï¼\n");
 //	//	return -1;
 //	//}
-//	//printf("ºËĞÄ¿â°æ±¾: %s\n",
+//	//printf("æ ¸å¿ƒåº“ç‰ˆæœ¬: %s\n",
 //		//mono_assembly_name_get_version(mono_assembly_get_name(corelib)));
 //
 //
 //	//ASSERT_LOG_RETURN(domain != NULL, 1, "error: domain");
-//	// µÚ¶ş¸ö²ÎÊıÌîÈëÒª¼ÓÔØµÄc#µÄil
+//	// ç¬¬äºŒä¸ªå‚æ•°å¡«å…¥è¦åŠ è½½çš„c#çš„il
 //	//MonoAssembly* assembly = mono_domain_assembly_open(domain, "E:\\c++\\mono_test\\x64\\Debug\\Test.dll");
 //
 //
@@ -190,7 +190,7 @@
 //	MonoImageOpenStatus status;
 //	MonoImage* image = MONO_IMAGE_OPEN_FROM_DATA(assembly_data, data_size, 1, &status);
 //	if (status != MONO_IMAGE_OK || !image) {
-//		//fprintf(stderr, "´´½¨Ó³ÏñÊ§°Ü: %d\n", status);
+//		//fprintf(stderr, "åˆ›å»ºæ˜ åƒå¤±è´¥: %d\n", status);
 //		//return NULL;
 //
 //	}
@@ -198,22 +198,22 @@
 //
 //	
 //
-//	// 2. ÉèÖÃ³ÌĞò¼¯Ãû³Æ£¨¿ÉÑ¡µ«ÍÆ¼ö£©
+//	// 2. è®¾ç½®ç¨‹åºé›†åç§°ï¼ˆå¯é€‰ä½†æ¨èï¼‰
 //	//const char * t = mono_image_get_name(image);
 //	////mono_image_set_name(image, "Test");
-// //        // 3. ´ÓÓ³Ïñ´´½¨³ÌĞò¼¯
+// //        // 3. ä»æ˜ åƒåˆ›å»ºç¨‹åºé›†
 //	//MonoAssembly* assembly = mono_assembly_load_from_full(
-//	//	image,          // ÄÚ´æÓ³Ïñ
-//	//	"Test",           // ³ÌĞò¼¯Ãû³Æ
-//	//	&status,        // ×´Ì¬Âë
-//	//	0               // ½öÓÃÓÚ·´Éä
+//	//	image,          // å†…å­˜æ˜ åƒ
+//	//	"Test",           // ç¨‹åºé›†åç§°
+//	//	&status,        // çŠ¶æ€ç 
+//	//	0               // ä»…ç”¨äºåå°„
 //	//);
 //
 //
 //	MonoClass* main_class = MONO_CLASS_FROM_NAME(image, "Test", "Class1");
 //	//ASSERT_LOG_RETURN(image != NULL, 1, "error: main_class");
 //
-//	// ×¢²á£¬´Ë´¦µÚÒ»¸ö²ÎÊı×îºóµÄÃû×Ö¾ÍÊÇC#ÖĞÒªÓÃµÄ·½·¨Ãû£¬Ç°ÃæµÄÃüÃû¿Õ¼äºÍÀàÃû¿ÉÒÔ×Ô¶¨Òå
+//	// æ³¨å†Œï¼Œæ­¤å¤„ç¬¬ä¸€ä¸ªå‚æ•°æœ€åçš„åå­—å°±æ˜¯C#ä¸­è¦ç”¨çš„æ–¹æ³•åï¼Œå‰é¢çš„å‘½åç©ºé—´å’Œç±»åå¯ä»¥è‡ªå®šä¹‰
 //	MONO_REGISTER("Livnet.Log::Info", log_info);
 //	MONO_REGISTER("Livnet.Log::Info2", log_info2);
 //	MONO_REGISTER("Log2::Info3", log_info3);
@@ -225,7 +225,7 @@
 //	MONO_REGISTER("Livnet.Log::Callback", callback);
 //	MONO_REGISTER("Livnet.Log::SetPointer", set_pointer);
 //
-//	// »ñÈ¡ÏêÏ¸´íÎóĞÅÏ¢
+//	// è·å–è¯¦ç»†é”™è¯¯ä¿¡æ¯
 //
 //	MonoMethod* mono_method = MONO_CLASS_GET_METHOD_FROM_NAME(main_class, "Fun", 0);
 //	//ASSERT_LOG_RETURN(mono_method != NULL, 1, "error: main_class");
@@ -234,29 +234,29 @@
 //		MonoClass* my_class = MONO_CLASS_FROM_NAME(image, "Livnet", "MyClass");
 //		MonoMethod* process_data_method = MONO_CLASS_GET_METHOD_FROM_NAME(my_class, "ProcessData", 2);
 //
-//		// 5. ×¼±¸²ÎÊı
-//		int id = 123;  // ÕûÊı²ÎÊı
-//		const char* value = "Hello from C";  // ×Ö·û´®²ÎÊı
+//		// 5. å‡†å¤‡å‚æ•°
+//		int id = 123;  // æ•´æ•°å‚æ•°
+//		const char* value = "Hello from C";  // å­—ç¬¦ä¸²å‚æ•°
 //
-//		// ´´½¨ Mono ×Ö·û´®¶ÔÏó
+//		// åˆ›å»º Mono å­—ç¬¦ä¸²å¯¹è±¡
 //		MonoString* monoString = mono_string_new(domain, value);
 //
-//		// ²ÎÊıÊı×é£¨×¢ÒâË³Ğò£ºid ÔÚÇ°£¬value ÔÚºó£©
+//		// å‚æ•°æ•°ç»„ï¼ˆæ³¨æ„é¡ºåºï¼šid åœ¨å‰ï¼Œvalue åœ¨åï¼‰
 //		void* args[2];
-//		args[0] = &id;         // int ²ÎÊıĞèÒª´«µİÖ¸Õë
-//		args[1] = monoString;  // ×Ö·û´®Ö±½Ó´«µİ¶ÔÏóÖ¸Õë
+//		args[0] = &id;         // int å‚æ•°éœ€è¦ä¼ é€’æŒ‡é’ˆ
+//		args[1] = monoString;  // å­—ç¬¦ä¸²ç›´æ¥ä¼ é€’å¯¹è±¡æŒ‡é’ˆ
 //
-//		// 6. µ÷ÓÃ·½·¨
+//		// 6. è°ƒç”¨æ–¹æ³•
 //		MonoObject* result = MONO_RUNTIME_INVOKE(
-//			process_data_method,  // ·½·¨Ö¸Õë
-//			NULL,    // ÊµÀı¶ÔÏó£¨¾²Ì¬·½·¨Îª NULL£©
-//			args,    // ²ÎÊıÊı×é
-//			NULL     // Òì³£¶ÔÏóÖ¸Õë£¨¿ÉÉèÎª NULL£©
+//			process_data_method,  // æ–¹æ³•æŒ‡é’ˆ
+//			NULL,    // å®ä¾‹å¯¹è±¡ï¼ˆé™æ€æ–¹æ³•ä¸º NULLï¼‰
+//			args,    // å‚æ•°æ•°ç»„
+//			NULL     // å¼‚å¸¸å¯¹è±¡æŒ‡é’ˆï¼ˆå¯è®¾ä¸º NULLï¼‰
 //		);
 //		ProcessReturnValue(result);
 //	}
 //
-//	// Ë®ÀûÏîÄ¿´úÂëµ¥Ôª¹¦ÄÜ²âÊÔ
+//	// æ°´åˆ©é¡¹ç›®ä»£ç å•å…ƒåŠŸèƒ½æµ‹è¯•
 //	MyData data;
 //	data.id = 100;
 //	data.name = mono_string_new(domain, "LIMS");
@@ -284,117 +284,117 @@
 //	}
 //
 //	{
-//		// »ñÈ¡ RefOutExample Àà
+//		// è·å– RefOutExample ç±»
 //		MonoClass* exampleClass = MONO_CLASS_FROM_NAME(image, "", "RefOutExample");
 //		if (!exampleClass) {
-//			fprintf(stderr, "Î´ÕÒµ½ RefOutExample Àà\n");
+//			fprintf(stderr, "æœªæ‰¾åˆ° RefOutExample ç±»\n");
 //			return 1;
 //		}
 //
-//		// Ê¾Àı1: ´¦Àí ref int ²ÎÊı
-//		printf("=== Ê¾Àı1: ref int ²ÎÊı ===\n");
+//		// ç¤ºä¾‹1: å¤„ç† ref int å‚æ•°
+//		printf("=== ç¤ºä¾‹1: ref int å‚æ•° ===\n");
 //		{
-//			// ²éÕÒ·½·¨
+//			// æŸ¥æ‰¾æ–¹æ³•
 //                        MonoMethod* ref_method;
 //			ref_method = MONO_CLASS_GET_METHOD_FROM_NAME(exampleClass, "RefIncrement", 1);
 //
 //			if (!ref_method) {
-//				fprintf(stderr, "Î´ÕÒµ½ RefIncrement ·½·¨\n");
+//				fprintf(stderr, "æœªæ‰¾åˆ° RefIncrement æ–¹æ³•\n");
 //				return 1;
 //			}
 //
-//			// ×¼±¸²ÎÊı
+//			// å‡†å¤‡å‚æ•°
 //			int value = 10;
-//			printf("C: µ÷ÓÃÇ°Öµ: %d\n", value);
+//			printf("C: è°ƒç”¨å‰å€¼: %d\n", value);
 //
-//			// ´´½¨²ÎÊıÊı×é (ref ²ÎÊıĞèÒª´«µİÖ¸Õë)
+//			// åˆ›å»ºå‚æ•°æ•°ç»„ (ref å‚æ•°éœ€è¦ä¼ é€’æŒ‡é’ˆ)
 //			void* args[1];
 //			args[0] = &value;
 //
-//			// µ÷ÓÃ·½·¨
+//			// è°ƒç”¨æ–¹æ³•
 //			MONO_RUNTIME_INVOKE(ref_method, NULL, args, NULL);
-//			printf("C: µ÷ÓÃºóÖµ: %d\n", value);
+//			printf("C: è°ƒç”¨åå€¼: %d\n", value);
 //		}
 //
-//		// Ê¾Àı2: ´¦Àí out int ²ÎÊı
-//		printf("\n=== Ê¾Àı2: out int ²ÎÊı ===\n");
+//		// ç¤ºä¾‹2: å¤„ç† out int å‚æ•°
+//		printf("\n=== ç¤ºä¾‹2: out int å‚æ•° ===\n");
 //		{
-//			// ²éÕÒ·½·¨
+//			// æŸ¥æ‰¾æ–¹æ³•
 //			MonoMethod* out_method;
 //			out_method = MONO_CLASS_GET_METHOD_FROM_NAME(exampleClass, "OutParse", 2);
 //			if (!out_method) {
-//				fprintf(stderr, "Î´ÕÒµ½ OutParse ·½·¨\n");
+//				fprintf(stderr, "æœªæ‰¾åˆ° OutParse æ–¹æ³•\n");
 //				return 1;
 //			}
 //
-//			// ×¼±¸²ÎÊı
+//			// å‡†å¤‡å‚æ•°
 //			const char* input = "42";
-//			int result = 0; // ²»ĞèÒª³õÊ¼»¯£¬µ«ĞèÒªÄÚ´æ¿Õ¼ä
+//			int result = 0; // ä¸éœ€è¦åˆå§‹åŒ–ï¼Œä½†éœ€è¦å†…å­˜ç©ºé—´
 //
-//			// ´´½¨²ÎÊıÊı×é
+//			// åˆ›å»ºå‚æ•°æ•°ç»„
 //			void* args[2];
-//			args[0] = mono_string_new(domain, input); // ×Ö·û´®²ÎÊı
-//			args[1] = &result; // out ²ÎÊı´«µİÖ¸Õë
+//			args[0] = mono_string_new(domain, input); // å­—ç¬¦ä¸²å‚æ•°
+//			args[1] = &result; // out å‚æ•°ä¼ é€’æŒ‡é’ˆ
 //
-//			// µ÷ÓÃ·½·¨²¢»ñÈ¡·µ»ØÖµ
+//			// è°ƒç”¨æ–¹æ³•å¹¶è·å–è¿”å›å€¼
 //			MonoObject* returnValue = MONO_RUNTIME_INVOKE(out_method, NULL, args, NULL);
 //			int success = (*(int*)MONO_OBJECT_UNBOX(returnValue));
-//			printf("C: ½âÎö³É¹¦: %s\n", success ? "ÊÇ" : "·ñ");
-//			printf("C: ½âÎö½á¹û: %d\n", result);
+//			printf("C: è§£ææˆåŠŸ: %s\n", success ? "æ˜¯" : "å¦");
+//			printf("C: è§£æç»“æœ: %d\n", result);
 //		}
 //
-//		// Ê¾Àı3: ´¦Àí ref ½á¹¹Ìå²ÎÊı
-//		printf("\n=== Ê¾Àı3: ref ½á¹¹Ìå²ÎÊı ===\n");
+//		// ç¤ºä¾‹3: å¤„ç† ref ç»“æ„ä½“å‚æ•°
+//		printf("\n=== ç¤ºä¾‹3: ref ç»“æ„ä½“å‚æ•° ===\n");
 //		{
-//			// ²éÕÒ·½·¨
+//			// æŸ¥æ‰¾æ–¹æ³•
 //			MonoMethod* ref_struct_method;
 //			ref_struct_method = MONO_CLASS_GET_METHOD_FROM_NAME(exampleClass, "RefMovePoint", 3);
 //			if (!ref_struct_method) {
-//				fprintf(stderr, "Î´ÕÒµ½ RefMovePoint ·½·¨\n");
+//				fprintf(stderr, "æœªæ‰¾åˆ° RefMovePoint æ–¹æ³•\n");
 //				return 1;
 //			}
 //
-//			// ×¼±¸²ÎÊı
+//			// å‡†å¤‡å‚æ•°
 //			Point point = { .X = 10, .Y = 20 };
 //			int dx = 5, dy = -3;
 //
-//			printf("C: µ÷ÓÃÇ°µãÎ»ÖÃ: (%d, %d)\n", point.X, point.Y);
+//			printf("C: è°ƒç”¨å‰ç‚¹ä½ç½®: (%d, %d)\n", point.X, point.Y);
 //
-//			// ´´½¨²ÎÊıÊı×é
+//			// åˆ›å»ºå‚æ•°æ•°ç»„
 //			void* args[3];
-//			args[0] = &point; // ref ²ÎÊı´«µİÖ¸Õë
+//			args[0] = &point; // ref å‚æ•°ä¼ é€’æŒ‡é’ˆ
 //			args[1] = &dx;
 //			args[2] = &dy;
 //
-//			// µ÷ÓÃ·½·¨
+//			// è°ƒç”¨æ–¹æ³•
 //			MONO_RUNTIME_INVOKE(ref_struct_method, NULL, args, NULL);
-//			printf("C: µ÷ÓÃºóµãÎ»ÖÃ: (%d, %d)\n", point.X, point.Y);
+//			printf("C: è°ƒç”¨åç‚¹ä½ç½®: (%d, %d)\n", point.X, point.Y);
 //		}
 //
-//		// Ê¾Àı4: ´¦Àí out ½á¹¹Ìå²ÎÊı
-//		printf("\n=== Ê¾Àı4: out ½á¹¹Ìå²ÎÊı ===\n");
+//		// ç¤ºä¾‹4: å¤„ç† out ç»“æ„ä½“å‚æ•°
+//		printf("\n=== ç¤ºä¾‹4: out ç»“æ„ä½“å‚æ•° ===\n");
 //		{
-//			// ²éÕÒ·½·¨
+//			// æŸ¥æ‰¾æ–¹æ³•
 //			MonoMethod* out_struct_method;
 //			out_struct_method = MONO_CLASS_GET_METHOD_FROM_NAME(exampleClass, "OutCreatePoint", 3);
 //			if (!out_struct_method) {
-//				fprintf(stderr, "Î´ÕÒµ½ OutCreatePoint ·½·¨\n");
+//				fprintf(stderr, "æœªæ‰¾åˆ° OutCreatePoint æ–¹æ³•\n");
 //				return 1;
 //			}
 //
-//			// ×¼±¸²ÎÊı
-//			Point point; // ²»ĞèÒª³õÊ¼»¯
+//			// å‡†å¤‡å‚æ•°
+//			Point point; // ä¸éœ€è¦åˆå§‹åŒ–
 //			int x = 100, y = 200;
 //
-//			// ´´½¨²ÎÊıÊı×é
+//			// åˆ›å»ºå‚æ•°æ•°ç»„
 //			void* args[3];
-//			args[0] = &point; // out ²ÎÊı´«µİÖ¸Õë
+//			args[0] = &point; // out å‚æ•°ä¼ é€’æŒ‡é’ˆ
 //			args[1] = &x;
 //			args[2] = &y;
 //
-//			// µ÷ÓÃ·½·¨
+//			// è°ƒç”¨æ–¹æ³•
 //			MONO_RUNTIME_INVOKE(out_struct_method, NULL, args, NULL);
-//			printf("C: ´´½¨µÄµã: (%d, %d)\n", point.X, point.Y);
+//			printf("C: åˆ›å»ºçš„ç‚¹: (%d, %d)\n", point.X, point.Y);
 //		}
 //	}
 //

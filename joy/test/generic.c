@@ -2,23 +2,23 @@
 //#include <stdbool.h>
 //#include <stdlib.h>
 //
-//// 1. »ù±¾ºêº¯Êı - ÇóÆ½·½
+//// 1. åŸºæœ¬å®å‡½æ•° - æ±‚å¹³æ–¹
 //#define SQUARE(x) ((x) * (x))
 //
-//// 2. ¶àĞĞºêº¯Êı - ½»»»Á½¸öÖµ
+//// 2. å¤šè¡Œå®å‡½æ•° - äº¤æ¢ä¸¤ä¸ªå€¼
 //#define SWAP(type, a, b) do { \
 //    type temp = a; \
 //    a = b; \
 //    b = temp; \
 //} while(0)
 //
-//// 3. ´øÌõ¼şµÄºêº¯Êı - Çó×î´óÖµ
+//// 3. å¸¦æ¡ä»¶çš„å®å‡½æ•° - æ±‚æœ€å¤§å€¼
 //#define MAX(a, b) ((a) > (b) ? (a) : (b))
 //
-//// 4. ×Ö·û´®»¯²Ù×÷ - ½«²ÎÊı×ª»»Îª×Ö·û´®
+//// 4. å­—ç¬¦ä¸²åŒ–æ“ä½œ - å°†å‚æ•°è½¬æ¢ä¸ºå­—ç¬¦ä¸²
 //#define STRINGIFY(x) #x
 //
-//// 5. Á¬½Ó²Ù×÷ - Á¬½ÓÁ½¸ö±ê¼Ç
+//// 5. è¿æ¥æ“ä½œ - è¿æ¥ä¸¤ä¸ªæ ‡è®°
 //#define CONCAT(a, b) a##b
 //
 //
@@ -130,26 +130,26 @@
 //
 //int main(int argc, char** argv)
 //{
-//	// Ê¹ÓÃSQUAREºê
+//	// ä½¿ç”¨SQUAREå®
 //	int num = 5;
-//	printf("%dµÄÆ½·½ÊÇ: %d\n", num, SQUARE(num));
+//	printf("%dçš„å¹³æ–¹æ˜¯: %d\n", num, SQUARE(num));
 //
-//	// Ê¹ÓÃSWAPºê
+//	// ä½¿ç”¨SWAPå®
 //	int x = 10, y = 20;
-//	printf("½»»»Ç°: x=%d, y=%d\n", x, y);
+//	printf("äº¤æ¢å‰: x=%d, y=%d\n", x, y);
 //	SWAP(int, x, y);
-//	printf("½»»»ºó: x=%d, y=%d\n", x, y);
+//	printf("äº¤æ¢å: x=%d, y=%d\n", x, y);
 //
-//	// Ê¹ÓÃMAXºê
-//	printf("%dºÍ%dÖĞµÄ×î´óÖµÊÇ: %d\n", x, y, MAX(x, y));
+//	// ä½¿ç”¨MAXå®
+//	printf("%då’Œ%dä¸­çš„æœ€å¤§å€¼æ˜¯: %d\n", x, y, MAX(x, y));
 //
-//	// Ê¹ÓÃSTRINGIFYºê
-//	printf("±äÁ¿Ãû: %s\n", STRINGIFY(num));
+//	// ä½¿ç”¨STRINGIFYå®
+//	printf("å˜é‡å: %s\n", STRINGIFY(num));
 //
-//	// Ê¹ÓÃCONCATºê
+//	// ä½¿ç”¨CONCATå®
 //	int value1 = 100;
 //	int value2 = 200;
-//	printf("Á¬½ÓºóµÄÖµ: %d\n", CONCAT(value, 1)); // Êä³övalue1µÄÖµ
+//	printf("è¿æ¥åçš„å€¼: %d\n", CONCAT(value, 1)); // è¾“å‡ºvalue1çš„å€¼
 //
 //	linked_queue_test_t t;
 //	linked_queue_is_emtpty(test, &t);

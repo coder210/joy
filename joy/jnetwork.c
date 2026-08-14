@@ -647,7 +647,7 @@ int tcpserver_destroy(tcpserver_p tcpserver)
         if (!tcpserver)
                 return 0;
 
-        // �ͷ���������
+        // 释放所有连接
         khint_t k;
         for (k = kh_begin(tcpserver->conns); k != kh_end(tcpserver->conns); ++k)
         {
@@ -659,7 +659,7 @@ int tcpserver_destroy(tcpserver_p tcpserver)
                 }
         }
 
-        // �ͷ���Ϣ�����е���Ϣ
+        // 释放消息队列中的所有消息
         kliter_t(kmq) * p;
         for (p = kl_begin(tcpserver->mq);
              p != kl_end(tcpserver->mq); p = kl_next(p))
@@ -670,7 +670,7 @@ int tcpserver_destroy(tcpserver_p tcpserver)
         }
         kl_destroy(kmq, tcpserver->mq);
 
-        // �ͷ�������Դ
+        // 释放服务器资源
         kh_destroy(ktcp_conn, tcpserver->conns);
         sys_closesocket(tcpserver->sockfd);
         free(tcpserver);

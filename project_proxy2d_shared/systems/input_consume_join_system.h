@@ -20,7 +20,8 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<PlayerComponent>(player, join.conv);
 		registry.emplace<LogicPositionComponent>(player, join.position_x, join.position_y);
 		registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
-		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
+		// 碰撞盒为 1x1，position 取碰撞盒中心（渲染以中心为原点）
+		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x) + 0.5f, fp_to_float(join.position_y) + 0.5f, 0.0f, 1.0f, 1.0f);
 
 		// 挂载动画组件（如果 WarriorBlueAnimDefComponent 已注册）
 		if (registry.ctx().contains<WarriorBlueAnimDefComponent>()) {

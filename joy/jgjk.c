@@ -140,7 +140,7 @@ static vec3f_t find_furthest_point(gjk3df_collider_p c, vec3f_t dir) {
 		break;
 	}
 	case GJK3DF_CTYPE_CONE: {
-		/* 圆锥: 锥顶在 center + (0, height/2, 0)，底在 center - (0, height/2, 0) */
+		/* 圆锥: 底在 center, 锥顶在 center + (0, height, 0) */
 		fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
 		vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));

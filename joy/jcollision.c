@@ -545,10 +545,10 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 {
         /*
         Setup
-	ȡA B��������İ뾶,bounds�д洢���Ǳ߳�
-	�����ȡ������һ��ĳ��ȣ�Ҳ������Ϊ����
-	�������������ϵ�µĵ�һ���޵ĵ㣬��������ϵ�Ծ�������Ϊ(0,0)��
-	��ôa_h��b_h�����Ͻǵ�һ���޵ĵ�
+	取 A B 的半径: bounds 中存储的是边长(宽高)
+	再取边长的一半, 即半宽/半高(半径)
+	把矩形放到以中心为(0,0)的局部坐标系第一象限的顶点
+	那么 a_h / b_h 就是右上角第一象限的点
         */
         vec2f_t a_bounds, b_bounds;
         vec2f_t a_h, b_h, a_pos, b_pos;
@@ -570,9 +570,9 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 	b_h = vec2f_scale(b_bounds, fp_half());
 
         /*
-        ȡA B����������������꣬���屾������������ľֲ�����
-	position�洢�ľ���������ʵ�����������λ�ã�����������������
-	������Ϊ��ȫ����Ļ���꣬Ҳ������ʵ�ʿ���������
+	把 A B 的左上角坐标换算成中心坐标, 这是全局坐标
+	position 存储的是实际参与碰撞检测的实体位置
+	既不是完整屏幕坐标, 而是实际的碰撞体中心
         */
         a_pos.x = fp_add(a.x, a_h.x);
         a_pos.y = fp_add(a.y, a_h.y);
@@ -580,8 +580,8 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
         b_pos.y = fp_add(b.y, b_h.y);
 
         /*
-        ��ȡA B����������ת�ǣ�Ȼ�������ת����
-	��Ϊ�Ƕ�ά�ռ��е���ת�����Ծ�����2x2�ģ�
+	取 A B 各自的旋转角(度), 转成弧度并构造 2x2 旋转矩阵
+	因为二维空间中的旋转矩阵是 2x2 的
         */
         a_res = fp_div(fp_mul(a_angle, fp_pi()), fp_from_float(180));
         b_res = fp_div(fp_mul(b_angle, fp_pi()), fp_from_float(180));
@@ -589,21 +589,21 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 	b_rot = mat22f_rotate(b_res);
 
         /*
-        ��������ת����ת��
-	�������a���Ծ���a_rot�����ǽ�a���Լ��ľֲ�����ϵA�任���������꣬
-	�任���a�ڳ���b_rotT���ǽ�a�任���ֲ�����ϵB�¡����յ�Ч�����ǽ�
-	����a��A����ϵ�任��B����ϵ�¡�
+	再取旋转矩阵的转置(正交矩阵的逆)
+	a_rot 将 A 从自身局部坐标系变换到世界坐标
+	a_rotT 将世界坐标变换回 A 的局部系; 最终效果是把
+	A 中的向量变换到 B 的坐标系中
         */
 	a_rotT = mat22f_transpose(a_rot);
 	b_rotT = mat22f_transpose(b_rot);
 
         
-	/* ������������ĵ�����õ��ľ������������������ߵ����� */
+	/* 计算 A 到 B 的中心距离向量 dp, 即两盒中心之间的连线 */
 	dp = vec2f_sub(b_pos, a_pos);
 
         /*
-        �������߷ֱ����������Ե�ת�þ���
-	�ͻὫ��������dp�任�����Եľֲ�����ϵ��
+	把中心距离向量分别乘以各自的转置矩阵
+	将 dp 变换到各自的局部坐标系中
         */
 	a_d = mat22f_mul_vec2f(a_rotT, dp);
 	b_d = mat22f_mul_vec2f(b_rotT, dp);
@@ -614,15 +614,15 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 
         /*
         Box A faces
-	a_d�����������յ����ߵ�����������Abs�����a_d��ʾ��ֻ����ֵ���塣
-	ʵ���ϣ�����Ĵ�����Abs(a_d) - (a_h + abs_c * b_h)
-	a_h���Ǿ���A���Ͻǵĵ㣬abs_c * b_h�������B����A���εľֲ�����ϵ�µ��ĸ�������
-	x,y�����ϵ����ֵ����Ϊa_d��a_h,b_h���Ǵ�(0,0)����������������������е���ֵ����
-	��ʾ��ֵ����
-	Abs(a_d) - (a_h + abs_c * b_h)�������ʽ�ӣ����ֻ��x��
-	ʵ���Ͼ���a_d��x�����ʾ�������ε�����������x��ͶӰ����Ϊs��
-	a_h�Ǿ���A��x�������������ߵ����ͶӰ����a,abs_c*b_h���Ǿ���B��x�������������ߵ����ͶӰ����b
-	���s-a-b����0����˵��ͶӰ���ཻ��
+	a_d 是 A 局部系中指向 B 的距离向量, abs_a_d 只取其绝对值
+	分离判据: a_face = Abs(a_d) - (a_h + abs_c * b_h)
+	a_h 是 A 的半宽, abs_c * b_h 是 B 在 A 局部系下各轴上的投影半径
+	x/y 轴分别计算: a_d、a_h、b_h 均从(0,0)出发, 比较各轴的投影长度
+	即投影长度
+	Abs(a_d) - (a_h + abs_c * b_h) 这个式子(以 x 轴为例)
+	就是 a_d 在 x 轴上的分量减去两盒在 x 轴上的投影长度, 记为 s
+	a_h 是 A 在 x 轴上的半投影 a, abs_c*b_h 是 B 在 x 轴上的半投影 b
+	若 s > 0 说明两盒在该轴上的投影不相交(分离)
         */
         abs_a_d = vec2f_abs(a_d);
 	a_face = vec2f_sub(vec2f_sub(abs_a_d, a_h), mat22f_mul_vec2f(abs_c, b_h));
@@ -642,7 +642,7 @@ collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
         separation = a_face.x;
         r_separation = fp_mul(relative_tol, separation);
 
-	/* B��A���Ҳ���x�������Σ������x�Ḻ����*/
+	/* 若 B 在 A 右侧, 分离法线取 A 的 +X 轴; 否则取 -X 轴 */
         normal = a_d.x > fp_zero() ? a_rot.col1 : vec2f_negate(a_rot.col1);
 
 	if (a_face.y > fp_add(r_separation, fp_mul(absolute_tol, a_h.y))){	

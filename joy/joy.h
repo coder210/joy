@@ -248,6 +248,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         }ray2d_collisionf_t;
 
 
+        /* 锚点约定: 矩形用"左上角(x,y) + 宽高"定位, 区别于 GJK BOX 的"中心 + 半边长" */
         typedef struct rectanglef {
                 fp_t x; // rectangle top-left corner position x
                 fp_t y; // rectangle top-left corner position y
@@ -363,6 +364,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } gjk3df_ctype_k;
 
         /* ---------- 3D碰撞体 ---------- */
+        /* 注意: BOX/OBB 的 position 是中心(half_size 为半边长), 与 rectanglef_t 的"左上角+宽高"语义不同 */
         typedef struct gjk3df_collider {
                 gjk3df_ctype_k type;
                 vec3f_t position;      /* 中心位置 */
@@ -425,6 +427,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         #define GJK2D_CTYPE_POLYGON  3  /* 凸多边形: vertices数组(预变换到世界坐标) */
         #define GJK2D_CTYPE_PIE      4  /* 扇形: position + radius + sweep(弧度) */
 
+        /* 注意: BOX 的 position 是中心(half_size 为半边长), 与 rectanglef_t 的"左上角+宽高"语义不同 */
         typedef struct gjk2d_collider {
                 gjk2d_ctype_k type;
                 vec2f_t position;       /* 中心位置 */
@@ -1273,7 +1276,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray,
                 rectanglef_t rect);
         JOY_API ray2d_collisionf_t collision2df_get_ray_rectanglex(ray2df_t ray,
-                rectanglef_t rect, fp_t angle);
+                rectanglef_t rect, fp_t angle /* 旋转角, 单位: 度 */);
         JOY_API ray2d_collisionf_t collision2df_get_ray_polygon(ray2df_t ray,
                 polygonf_t polygon);
         JOY_API bool collision2df_check_point_rectangle(vec2f_t point,
@@ -1293,8 +1296,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool collision2df_check_circle_polygon(circlef_t a, polygonf_t b);
         JOY_API int collision2df_get_circles(circlef_t a, circlef_t b,
                 contact2df_t* contact);
-        JOY_API int collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
-                rectanglef_t b, fp_t b_angle,
+        JOY_API int collision2df_get_rectangles(rectanglef_t a, fp_t a_angle /* 度 */,
+                rectanglef_t b, fp_t b_angle /* 度 */,
                 contact2df_t* contact);
         JOY_API fp_t find_min_separation(polygonf_t a, polygonf_t b,
                 vec2f_t* axis, vec2f_t* point);

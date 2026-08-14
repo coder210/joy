@@ -46,7 +46,7 @@ aes_encryptx(const unsigned char *data, int in_len, unsigned int* out_len,
     aes_encrypt_cbc(input, src_len, buff, key_schedule, key_size, iv);
     *out_len = src_len;
 
-    //内存释放
+    //鍐呭瓨閲婃斁
     free(input);
 
     return buff;
@@ -94,7 +94,7 @@ unsigned char *aes_decryptx(const unsigned char *data, int in_len, unsigned int*
 
     *out_len = src_len;
 
-    //内存释放
+    //鍐呭瓨閲婃斁
     free(input);
 
     return buff;

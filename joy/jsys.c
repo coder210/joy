@@ -49,18 +49,18 @@ static LONG WINAPI crashHandler(EXCEPTION_POINTERS* ep)
 
 static void crashHandler(int sig) 
 {
-        // ´òÓ¡ĞÅºÅĞÅÏ¢
+        // æ‰“å°ä¿¡å·ä¿¡æ¯
         char msg[128];
         snprintf(msg, sizeof(msg), "\n======== CRASH ======== signal=%d (%s)\n",
                 sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
         write(STDERR_FILENO, msg, strlen(msg));
 
-        // ²É¼¯µ÷ÓÃ¶ÑÕ»
+        // é‡‡é›†è°ƒç”¨å †æ ˆ
         void* buffer[128];
         int frames = backtrace(buffer, 128);
         backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
 
-        // Ğ´ÈëÈÕÖ¾ÎÄ¼ş
+        // å†™å…¥æ—¥å¿—æ–‡ä»¶
         time_t t = time(nullptr);
         struct tm* lt = localtime(&t);
         char logPath[256];
@@ -75,7 +75,7 @@ static void crashHandler(int sig)
                 close(fd);
         }
 
-        // »Ö¸´Ä¬ÈÏĞÅºÅ´¦Àí²¢ÖØĞÂ´¥·¢£¬ÈÃÏµÍ³Éú³É core dump
+        // æ¢å¤é»˜è®¤ä¿¡å·å¤„ç†å¹¶é‡æ–°è§¦å‘ï¼Œè®©ç³»ç»Ÿç”Ÿæˆ core dump
         signal(sig, SIG_DFL);
         raise(sig);
 }
@@ -123,7 +123,7 @@ static void crashHandler(int sig)
 }
 
 #elif defined(JOY_UNIX)
-// ÊÊÓÃÓÚ FreeBSD, Solaris µÈÖ§³Ö execinfo.h µÄ Unix ÏµÍ³
+// é€‚ç”¨äº FreeBSD, Solaris ç­‰æ”¯æŒ execinfo.h çš„ Unix ç³»ç»Ÿ
 #   include <unistd.h>
 #   include <sys/time.h>
 #   include <sys/socket.h>
@@ -511,43 +511,43 @@ void sys_install_crash_handlers()
 
 #ifdef JOY_WIN
 
-// ¿Í»§¶Ë»á»°½á¹¹
+// å®¢æˆ·ç«¯ä¼šè¯ç»“æ„
 typedef struct iocp_client_session
 {
         char client_ip[JOY_MAX_IP];
         int client_port;
         SOCKET client_socket;
-        int heartbeat_count;          // ĞÄÌø¼ÆÊıÆ÷
-        bool is_handshaked;           // ÊÇ·ñÒÑÍê³ÉÎÕÊÖ
-        bool is_active;               // »á»°ÊÇ·ñ»îÔ¾
+        int heartbeat_count;          // å¿ƒè·³è®¡æ•°å™¨
+        bool is_handshaked;           // æ˜¯å¦å·²å®Œæˆæ¡æ‰‹
+        bool is_active;               // ä¼šè¯æ˜¯å¦æ´»è·ƒ
         // unsigned char send_buffer[MAX_SEND_PKG];
 } iocp_client_session_t, * iocp_client_session_ptr;
 
-// IOCP²Ù×÷°ü½á¹¹
+// IOCPæ“ä½œåŒ…ç»“æ„
 typedef struct iocp_operation_packet {
         WSAOVERLAPPED overlapped;
         WSABUF wsabuffer;
-        int operation_type;           // ²Ù×÷ÀàĞÍ
-        SOCKET target_socket;         // Ä¿±êÌ×½Ó×Ö
-        int bytes_received;           // ÒÑ½ÓÊÕ×Ö½ÚÊı
-        unsigned char* long_buffer;   // ³¤°ü»º³åÇø
-        int max_buffer_length;        // »º³åÇø×î´ó³¤¶È
+        int operation_type;           // æ“ä½œç±»å‹
+        SOCKET target_socket;         // ç›®æ ‡å¥—æ¥å­—
+        int bytes_received;           // å·²æ¥æ”¶å­—èŠ‚æ•°
+        unsigned char* long_buffer;   // é•¿åŒ…ç¼“å†²åŒº
+        int max_buffer_length;        // ç¼“å†²åŒºæœ€å¤§é•¿åº¦
         unsigned char buffer[JOY_MAX_BUFFER + 1];
-        int direction;                // 0:½ÓÊÕ, 1:·¢ËÍ
-        iocp_client_session_ptr associated_session; // ¹ØÁªµÄ¿Í»§¶Ë»á»°
+        int direction;                // 0:æ¥æ”¶, 1:å‘é€
+        iocp_client_session_ptr associated_session; // å…³è”çš„å®¢æˆ·ç«¯ä¼šè¯
 } iocp_operation_packet_t, * iocp_operation_packet_ptr;
 
-// IOCP·şÎñÆ÷ÊµÀı½á¹¹
+// IOCPæœåŠ¡å™¨å®ä¾‹ç»“æ„
 typedef struct iocp_server
 {
-        HANDLE completion_port;               // IOCPÍê³É¶Ë¿Ú¾ä±ú
-        SOCKET listen_socket;                 // ¼àÌıÌ×½Ó×Ö
+        HANDLE completion_port;               // IOCPå®Œæˆç«¯å£å¥æŸ„
+        SOCKET listen_socket;                 // ç›‘å¬å¥—æ¥å­—
         enum packet_format {
-                PACKET_FORMAT_TCP_BINARY = 0, // TCP¶ş½øÖÆ·â°ü
-                PACKET_FORMAT_TCP_JSON,       // TCP JSON·â°ü
-                PACKET_FORMAT_WEBSOCKET_JSON  // WebSocket JSON·â°ü
+                PACKET_FORMAT_TCP_BINARY = 0, // TCPäºŒè¿›åˆ¶å°åŒ…
+                PACKET_FORMAT_TCP_JSON,       // TCP JSONå°åŒ…
+                PACKET_FORMAT_WEBSOCKET_JSON  // WebSocket JSONå°åŒ…
         } packet_format;
-        int heartbeat_interval;               // ĞÄÌø¼ì²â¼ä¸ô(Ãë)
+        int heartbeat_interval;               // å¿ƒè·³æ£€æµ‹é—´éš”(ç§’)
         enum iocp_operation {
                 IOCP_OPERATION_ACCEPT = 0,
                 IOCP_OPERATION_RECEIVE,
@@ -555,19 +555,19 @@ typedef struct iocp_server
         } iocp_operation_type;
         LPFN_ACCEPTEX acceptex_function;
         LPFN_GETACCEPTEXSOCKADDRS get_acceptex_sockaddrs_function;
-        bool is_running;                      // ·şÎñÆ÷ÔËĞĞ×´Ì¬
-        CRITICAL_SECTION critical_section;    // Ïß³ÌÍ¬²½ÁÙ½çÇø
+        bool is_running;                      // æœåŠ¡å™¨è¿è¡ŒçŠ¶æ€
+        CRITICAL_SECTION critical_section;    // çº¿ç¨‹åŒæ­¥ä¸´ç•ŒåŒº
 
 } iocp_server_t, * iocp_server_p;
 
-// º¯ÊıÉùÃ÷
+// å‡½æ•°å£°æ˜
 static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_packet_ptr packet);
 static int iocp_post_receive_operation(iocp_client_session_ptr session);
 static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_packet_ptr packet);
 static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session);
 static void iocp_cleanup_client_session(iocp_client_session_ptr session);
 
-// ÇåÀí¿Í»§¶Ë»á»°×ÊÔ´
+// æ¸…ç†å®¢æˆ·ç«¯ä¼šè¯èµ„æº
 static void iocp_cleanup_client_session(iocp_client_session_ptr session)
 {
         if (!session) return;
@@ -580,7 +580,7 @@ static void iocp_cleanup_client_session(iocp_client_session_ptr session)
         free(session);
 }
 
-// Í¶µİAcceptEx²Ù×÷
+// æŠ•é€’AcceptExæ“ä½œ
 static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
@@ -589,7 +589,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
         packet->wsabuffer.len = JOY_MAX_BUFFER;
         packet->operation_type = IOCP_OPERATION_ACCEPT;
 
-        // ´´½¨ÓÃÓÚAcceptExµÄ¿Í»§¶ËÌ×½Ó×Ö
+        // åˆ›å»ºç”¨äºAcceptExçš„å®¢æˆ·ç«¯å¥—æ¥å­—
         packet->target_socket = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP,
                 NULL, 0, WSA_FLAG_OVERLAPPED);
         if (packet->target_socket == INVALID_SOCKET) {
@@ -600,7 +600,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
         DWORD bytes_received = 0;
         int address_size = (sizeof(struct sockaddr_in) + 16);
 
-        // Ê¹ÓÃAcceptExÒì²½½ÓÊÜÁ¬½Ó
+        // ä½¿ç”¨AcceptExå¼‚æ­¥æ¥å—è¿æ¥
         if (!server->acceptex_function(server->listen_socket,
                 packet->target_socket,
                 packet->wsabuffer.buf, 0,
@@ -613,7 +613,7 @@ static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_pack
         }
 }
 
-// Í¶µİ½ÓÊÕÊı¾İ²Ù×÷
+// æŠ•é€’æ¥æ”¶æ•°æ®æ“ä½œ
 static int iocp_post_receive_operation(iocp_client_session_ptr session)
 {
         if (!session || session->client_socket == INVALID_SOCKET) return -1;
@@ -643,19 +643,19 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
         return 0;
 }
 
-// ´¦Àí½ÓÊÕÍê³ÉÊÂ¼ş
+// å¤„ç†æ¥æ”¶å®Œæˆäº‹ä»¶
 static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session)
 {
         if (!packet || !session) return;
 
         packet->bytes_received += bytes_transferred;
 
-        // ´¦Àí½ÓÊÕµ½µÄÊı¾İ
+        // å¤„ç†æ¥æ”¶åˆ°çš„æ•°æ®
         if (bytes_transferred > 0) {
                 //printf("Received %lu bytes from client %s:%d",
                  //       bytes_transferred, session->client_ip, session->client_port);
 
-                // Ê¾Àı£º»ØÏÔÊı¾İ
+                // ç¤ºä¾‹ï¼šå›æ˜¾æ•°æ®
                 WSABUF wsa_buffer;
                 wsa_buffer.buf = packet->buffer;
                 wsa_buffer.len = bytes_transferred;
@@ -680,16 +680,16 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                 }
         }
 
-        // ¼ÌĞø½ÓÊÕÊı¾İ
+        // ç»§ç»­æ¥æ”¶æ•°æ®
         if (session->is_active) {
                 iocp_post_receive_operation(session);
         }
 
-        // ÊÍ·Å²Ù×÷°ü
+        // é‡Šæ”¾æ“ä½œåŒ…
         free(packet);
 }
 
-// ´¦ÀíAcceptÍê³ÉÊÂ¼ş
+// å¤„ç†Acceptå®Œæˆäº‹ä»¶
 static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
@@ -701,14 +701,14 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
         struct sockaddr_in* remote_address = NULL;
         int remote_address_length = sizeof(struct sockaddr_in);
 
-        // »ñÈ¡¿Í»§¶ËµØÖ·ĞÅÏ¢
+        // è·å–å®¢æˆ·ç«¯åœ°å€ä¿¡æ¯
         server->get_acceptex_sockaddrs_function(packet->wsabuffer.buf,
                 0,
                 address_size, address_size,
                 (struct sockaddr**)&local_address, &local_address_length,
                 (struct sockaddr**)&remote_address, &remote_address_length);
 
-        // ´´½¨¿Í»§¶Ë»á»°
+        // åˆ›å»ºå®¢æˆ·ç«¯ä¼šè¯
         iocp_client_session_ptr session = (iocp_client_session_ptr)calloc(1, sizeof(iocp_client_session_t));
         if (!session) {
                 closesocket(client_socket);
@@ -717,9 +717,9 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
 
         session->client_socket = client_socket;
         session->is_active = true;
-        session->heartbeat_count = 5; // ³õÊ¼»¯ĞÄÌø¼ÆÊıÆ÷
+        session->heartbeat_count = 5; // åˆå§‹åŒ–å¿ƒè·³è®¡æ•°å™¨
 
-        // »ñÈ¡¿Í»§¶ËIPºÍ¶Ë¿Ú
+        // è·å–å®¢æˆ·ç«¯IPå’Œç«¯å£
         char client_ip_address[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &remote_address->sin_addr, client_ip_address, sizeof(client_ip_address));
         snprintf(session->client_ip, sizeof(session->client_ip), "%s", client_ip_address);
@@ -727,7 +727,7 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
 
         printf("New client connected from %s:%d", session->client_ip, session->client_port);
 
-        // ½«¿Í»§¶ËÌ×½Ó×Ö¹ØÁªµ½Íê³É¶Ë¿Ú
+        // å°†å®¢æˆ·ç«¯å¥—æ¥å­—å…³è”åˆ°å®Œæˆç«¯å£
         if (CreateIoCompletionPort((HANDLE)client_socket,
                 server->completion_port,
                 (ULONG_PTR)session, 0) == NULL) {
@@ -736,27 +736,27 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
                 return;
         }
 
-        // ÉèÖÃÌ×½Ó×ÖÉÏÏÂÎÄ
+        // è®¾ç½®å¥—æ¥å­—ä¸Šä¸‹æ–‡
         setsockopt(client_socket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
                 (char*)&server->listen_socket, sizeof(server->listen_socket));
 
-        // ¿ªÊ¼½ÓÊÕ¿Í»§¶ËÊı¾İ
+        // å¼€å§‹æ¥æ”¶å®¢æˆ·ç«¯æ•°æ®
         if (iocp_post_receive_operation(session) != 0) {
                 iocp_cleanup_client_session(session);
                 return;
         }
 
-        // ÖØĞÂÍ¶µİAccept²Ù×÷£¬×¼±¸½ÓÊÜÏÂÒ»¸öÁ¬½Ó
+        // é‡æ–°æŠ•é€’Acceptæ“ä½œï¼Œå‡†å¤‡æ¥å—ä¸‹ä¸€ä¸ªè¿æ¥
         iocp_operation_packet_ptr new_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
         if (new_packet) {
                 iocp_post_accept_operation(server, new_packet);
         }
 
-        // ÊÍ·Åµ±Ç°Accept²Ù×÷°ü
+        // é‡Šæ”¾å½“å‰Acceptæ“ä½œåŒ…
         free(packet);
 }
 
-// ´´½¨IOCP·şÎñÆ÷
+// åˆ›å»ºIOCPæœåŠ¡å™¨
 iocp_server_p iocp_server_create(const char* ip, int port)
 {
         WSADATA wsa_data;
@@ -777,7 +777,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         InitializeCriticalSection(&server->critical_section);
         server->is_running = true;
 
-        // ´´½¨IOCPÍê³É¶Ë¿Ú
+        // åˆ›å»ºIOCPå®Œæˆç«¯å£
         server->completion_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE,
                 NULL, 0, 0);
         if (server->completion_port == NULL) {
@@ -785,7 +785,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // ´´½¨¼àÌıÌ×½Ó×Ö
+        // åˆ›å»ºç›‘å¬å¥—æ¥å­—
         server->listen_socket = WSASocket(AF_INET, SOCK_STREAM, 0, NULL, 0,
                 WSA_FLAG_OVERLAPPED);
         if (server->listen_socket == INVALID_SOCKET) {
@@ -793,7 +793,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // ÉèÖÃ¶Ë¿Ú¸´ÓÃÑ¡Ïî
+        // è®¾ç½®ç«¯å£å¤ç”¨é€‰é¡¹
         int reuse_address = 1;
         setsockopt(server->listen_socket, SOL_SOCKET, SO_REUSEADDR,
                 (char*)&reuse_address, sizeof(reuse_address));
@@ -815,7 +815,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // »ñÈ¡AcceptExÀ©Õ¹º¯Êı
+        // è·å–AcceptExæ‰©å±•å‡½æ•°
         if (WSAIoctl(server->listen_socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
                 &guid_acceptex, sizeof(guid_acceptex),
                 &server->acceptex_function, sizeof(server->acceptex_function),
@@ -824,7 +824,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // »ñÈ¡GetAcceptExSockaddrsÀ©Õ¹º¯Êı
+        // è·å–GetAcceptExSockaddrsæ‰©å±•å‡½æ•°
         if (WSAIoctl(server->listen_socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
                 &guid_get_acceptex_sockaddrs,
                 sizeof(guid_get_acceptex_sockaddrs),
@@ -835,7 +835,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // ½«¼àÌıÌ×½Ó×Ö¹ØÁªµ½Íê³É¶Ë¿Ú
+        // å°†ç›‘å¬å¥—æ¥å­—å…³è”åˆ°å®Œæˆç«¯å£
         if (CreateIoCompletionPort((HANDLE)server->listen_socket,
                 server->completion_port,
                 (ULONG_PTR)server, 0) == NULL) {
@@ -844,7 +844,7 @@ iocp_server_p iocp_server_create(const char* ip, int port)
                 goto error_cleanup;
         }
 
-        // Í¶µİ³õÊ¼µÄAccept²Ù×÷
+        // æŠ•é€’åˆå§‹çš„Acceptæ“ä½œ
         iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
         if (packet) {
                 iocp_post_accept_operation(server, packet);
@@ -858,7 +858,7 @@ error_cleanup:
         return NULL;
 }
 
-// Ïú»ÙIOCP·şÎñÆ÷
+// é”€æ¯IOCPæœåŠ¡å™¨
 void iocp_server_destroy(iocp_server_p server)
 {
         if (!server) return;
@@ -883,7 +883,7 @@ void iocp_server_destroy(iocp_server_p server)
         WSACleanup();
 }
 
-// ´¦ÀíIOCPÊÂ¼ş
+// å¤„ç†IOCPäº‹ä»¶
 void iocp_process_events(iocp_server_p server, int timeout_ms)
 {
         if (!server || !server->is_running) return;
@@ -906,19 +906,19 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
                 return;
         }
 
-        // ¼ì²éÊÇ·ñÎªÈ¡Ïû²Ù×÷
+        // æ£€æŸ¥æ˜¯å¦ä¸ºå–æ¶ˆæ“ä½œ
         if (bytes_transferred == 0 && completion_key == 0 && operation_packet == NULL) {
                 return;
         }
 
         if (completion_key == (ULONG_PTR)server) {
-                // ¼àÌıÌ×½Ó×ÖÊÂ¼ş
+                // ç›‘å¬å¥—æ¥å­—äº‹ä»¶
                 if (operation_packet && operation_packet->operation_type == IOCP_OPERATION_ACCEPT) {
                         iocp_handle_accept_completion(server, operation_packet);
                 }
         }
         else {
-                // ¿Í»§¶ËÌ×½Ó×ÖÊÂ¼ş
+                // å®¢æˆ·ç«¯å¥—æ¥å­—äº‹ä»¶
                 iocp_client_session_ptr session = (iocp_client_session_ptr)completion_key;
 
                 if (!session || !session->is_active) {
@@ -926,7 +926,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
                         return;
                 }
 
-                // ¿Í»§¶Ë¶Ï¿ªÁ¬½Ó
+                // å®¢æˆ·ç«¯æ–­å¼€è¿æ¥
                 if (bytes_transferred == 0 && operation_packet && operation_packet->operation_type == IOCP_OPERATION_RECEIVE) {
                         printf("Client disconnected: %s:%d", session->client_ip, session->client_port);
                         iocp_cleanup_client_session(session);
@@ -934,14 +934,14 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
                         return;
                 }
 
-                // ´¦Àí²»Í¬ÀàĞÍµÄ²Ù×÷
+                // å¤„ç†ä¸åŒç±»å‹çš„æ“ä½œ
                 if (operation_packet) {
                         switch (operation_packet->operation_type) {
                         case IOCP_OPERATION_RECEIVE:
                                 iocp_handle_receive_completion(operation_packet, bytes_transferred, session);
                                 break;
                         case IOCP_OPERATION_SEND:
-                                // ·¢ËÍÍê³É´¦Àí
+                                // å‘é€å®Œæˆå¤„ç†
                                 free(operation_packet);
                                 break;
                         default:
@@ -954,7 +954,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 
 #else
 
-// ·ÇWindowsÆ½Ì¨µÄ¿ÕÊµÏÖ
+// éWindowså¹³å°çš„ç©ºå®ç°
 iocp_server_p iocp_server_create(const char* bind_ip, int bind_port)
 {
         printf("IOCP is only supported on Windows platform");

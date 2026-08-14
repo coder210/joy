@@ -4,16 +4,16 @@
 #include "external/klib/kvec.h"
 #include "joy.h"
 
-// ==================== Bitsetʵ�� ====================
+// ==================== Bitset 实现 ====================
 typedef struct bitset {
         uint64_t* words;
-        int nwords;      // ��ǰword����
-        int capacity;    // ��ǰ�ܱ�ʾ�����ʵ��ID+1
+        int nwords;      // 当前 word 数量
+        int capacity;    // 当前能表示的最大实体 ID + 1
 } bitset_t;
 
 static bitset_t* bitset_create(int initial_capacity) {
         bitset_t* bs = SDL_malloc(sizeof(bitset_t));
-        // ��ʼ��������ȡ����64�ı���
+        // 初始化容量, 向上取整为 64 的倍数
         bs->nwords = (initial_capacity + 63) / 64;
         bs->capacity = bs->nwords * 64;
         bs->words = SDL_calloc(bs->nwords, sizeof(uint64_t));
@@ -31,7 +31,7 @@ static void bitset_ensure_capacity(bitset_t* bs, int min_capacity) {
         if (min_capacity > bs->capacity) {
                 int new_nwords = (min_capacity + 63) / 64;
                 uint64_t* new_words = SDL_realloc(bs->words, new_nwords * sizeof(uint64_t));
-                // �·���Ĳ�������
+                // 新分配的位清零
                 for (int i = bs->nwords; i < new_nwords; i++) {
                         new_words[i] = 0;
                 }
@@ -68,7 +68,7 @@ static void bitset_and(bitset_t* dest, bitset_t* src) {
         for (int i = 0; i < min_words; i++) {
                 dest->words[i] &= src->words[i];
         }
-        // dest�г���src�Ĳ���ȫ������
+        // dest 中超出 src 的部分全部清零
         for (int i = min_words; i < dest->nwords; i++) {
                 dest->words[i] = 0;
         }
@@ -78,7 +78,7 @@ static void bitset_copy(bitset_t* dest, bitset_t* src) {
         bitset_ensure_capacity(dest, src->capacity);
         int words_to_copy = dest->nwords < src->nwords ? dest->nwords : src->nwords;
         SDL_memcpy(dest->words, src->words, words_to_copy * sizeof(uint64_t));
-        // ���dest���󣬶��ಿ�ֱ���ԭ��
+        // 若 dest 更大, 多余部分保持原样
 }
 
 // ==================== Sparse Set with Bitset ====================
@@ -87,14 +87,14 @@ KHASH_INIT(ksparse, int, int, 1, kh_int_hash_func, kh_int_hash_equal)
 typedef struct sparse_set {
         kvec_t(int) density;
         khash_t(ksparse)* sparse;
-        bitset_t* bitset;  // ����λ��
+        bitset_t* bitset;  // 辅助位图
 } sparse_set_t, * sparse_set_p;
 
 static sparse_set_p sparse_set_create() {
         sparse_set_p sparse_set = (sparse_set_p)SDL_malloc(sizeof(sparse_set_t));
         kv_init(sparse_set->density);
         sparse_set->sparse = kh_init(ksparse);
-        sparse_set->bitset = bitset_create(256);  // ��ʼ����256��ʵ��
+        sparse_set->bitset = bitset_create(256);  // 初始支持 256 个实体
         return sparse_set;
 }
 
@@ -123,7 +123,7 @@ static void sparse_set_remove(sparse_set_p sparse_set, int value) {
                 kh_del(ksparse, sparse_set->sparse, k);
                 bitset_clear(sparse_set->bitset, value);
 
-                // ���±��ƶ�Ԫ�ص�sparseӳ��
+                // 更新被移动元素的 sparse 映射
                 if (value != last_value) {
                         khint_t k2 = kh_get(ksparse, sparse_set->sparse, last_value);
                         if (k2 != kh_end(sparse_set->sparse)) {
@@ -154,7 +154,7 @@ typedef unsigned long ecs_cid_t;
 #define __int_free(x)
 KLIST_INIT(kecs_system, jecs_system_t, __int_free)
 
-// ����洢���ڰ���ϡ�輯��λ��
+// 组件存储: 内含稀疏集合与位图
 typedef struct component_store {
         sparse_set_p sparse_set;
         bitset_t* bitset;
@@ -195,11 +195,11 @@ void jecs_destroy(jecs_world_p world)
         sparse_set_p sparse_set;
         ecs_component_data_p component_data;
 
-        // ����ʵ��
+        // 销毁实体
         for (khint_t i = kh_begin(world->entities); i != kh_end(world->entities); i++) {
                 if (kh_exist(world->entities, i)) {
                         ecs_entity_p entity = kh_val(world->entities, i);
-                        // ����ʵ���������
+                        // 销毁实体的所有组件
                         for (khint_t j = kh_begin(entity); j != kh_end(entity); j++) {
                                 if (kh_exist(entity, j)) {
                                         component_data = kh_val(entity, j);
@@ -211,7 +211,7 @@ void jecs_destroy(jecs_world_p world)
                 }
         }
 
-        // ��������洢������ϡ�輯��λ����
+        // 销毁组件存储: 释放稀疏集合与位图
         for (khint_t i = kh_begin(world->components); i != kh_end(world->components); i++) {
                 if (kh_exist(world->components, i)) {
                         component_store_t* store = kh_val(world->components, i);
@@ -266,7 +266,7 @@ void jecs_kill(jecs_world_p world, jecs_id_t id)
         entity = kh_val(world->entities, k);
         kh_del(kecs_entity, world->entities, k);
 
-        // ������������Ƴ���ʵ��
+        // 从组件存储中移除该实体
         for (k = kh_begin(entity); k != kh_end(entity); k++) {
                 if (kh_exist(entity, k)) {
                         component_id = kh_key(entity, k);
@@ -329,13 +329,13 @@ void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* pt
                 k = kh_put(kecs_component_data, entity, component_id, &ret);
                 kh_val(entity, k) = component_data;
 
-                // ��������洢
+                // 更新组件存储
                 k = kh_get(kecs_component, world->components, component_id);
                 if (k == kh_end(world->components)) {
                         k = kh_put(kecs_component, world->components, component_id, &ret);
                         store = (component_store_p)SDL_malloc(sizeof(component_store_t));
                         store->sparse_set = sparse_set_create();
-                        store->bitset = bitset_create(world->global_id + 64); // Ԥ���ռ�
+                        store->bitset = bitset_create(world->global_id + 64); // 预留空间
                         kh_val(world->components, k) = store;
                 }
                 else {
