@@ -1,7 +1,7 @@
 // animator_def.h
 #pragma once
-// 本文件保持向后兼容，实质定义已迁至 joy/anim.h
-#include <joy/anim.h>
+// 本文件保持向后兼容，实质定义已迁至 joy/janim.h
+#include <joy/janim.h>
 
 using AnimCondMode           = anim_cond_mode_t;
 using AnimCondDef            = anim_cond_t;

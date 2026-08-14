@@ -8,6 +8,8 @@
 #include "../components/action_state_component.h"
 #include "../components/player_event_input.h"
 #include "../components/animator_component.h"
+#include "../components/pathfinding_component.h"
+#include <cmath>
 
 struct Context;
 
@@ -71,21 +73,23 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             }
         }
         else if (found_player) {
-            // 状态 1：追击
+            // 状态 1：追击（实际移动由 pathfinding_system 的 A* 完成）
             ai.state = 1;
             act.state = ActionStateComponent::WALK;
 
-            fp_t dx = fp_sub(nearest_px, pos.x);
-            fp_t dy = fp_sub(nearest_py, pos.y);
-
-            if (fp_abs(dx) > fp_abs(dy)) {
-                pos.x = dx > fp_zero() ? fp_add(pos.x, step) : fp_sub(pos.x, step);
-            } else {
-                pos.y = dy > fp_zero() ? fp_add(pos.y, step) : fp_sub(pos.y, step);
+            // 记录最近玩家所在格子作为寻路目标，标记需要重算
+            if (!registry.all_of<PathComponent>(e)) {
+                registry.emplace<PathComponent>(e);
             }
+            auto& pc = registry.get<PathComponent>(e);
+            pc.target_gx = (int)(fp_to_float(nearest_px));
+            pc.target_gy = (int)(fp_to_float(nearest_py));
+            pc.dirty = true;
 
             if (registry.all_of<anim_params_t>(e)) {
                 auto& params = registry.get<anim_params_t>(e);
+                fp_t dx = fp_sub(nearest_px, pos.x);
+                fp_t dy = fp_sub(nearest_py, pos.y);
                 params.dir = (fp_abs(dx) > fp_abs(dy))
                     ? (dx > fp_zero() ? 2 : 1)
                     : (dy > fp_zero() ? 0 : 3);

@@ -4,7 +4,7 @@
 #include "../components/enemy_component.h"
 #include "../components/animator_def.h"
 #include "../protocol.h"
-#include <joy/anim.h>
+#include <joy/janim.h>
 #include <map>
 #include <string>
 
@@ -30,11 +30,11 @@ static void animator_render_system(Context* ctx, entt::registry& registry,
 	// 根据实体类型选择动画定义
 	anim_def_t* def = nullptr;
 	if (registry.all_of<EnemyComponent>(e)) {
-		if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>())
-			def = &ctx->ecs.ctx().get<TorchBlueAnimDefComponent>().def;
+		if (ctx->ecs.ctx().contains<janim_goblin_def_t>())
+			def = &ctx->ecs.ctx().get<janim_goblin_def_t>().layout;
 	} else {
-		if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>())
-			def = &ctx->ecs.ctx().get<WarriorBlueAnimDefComponent>().def;
+		if (ctx->ecs.ctx().contains<janim_warrior_def_t>())
+			def = &ctx->ecs.ctx().get<janim_warrior_def_t>().layout;
 	}
 	if (!def || def->num_states <= 0) return;
 

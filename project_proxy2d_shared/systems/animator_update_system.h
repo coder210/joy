@@ -1,6 +1,6 @@
 #ifndef ANIMATOR_UPDATE_SYSTEM_H
 #define ANIMATOR_UPDATE_SYSTEM_H
-#include <joy/anim.h>
+#include <joy/janim.h>
 #include "../components/player_state_input.h"
 #include "../components/action_state_component.h"
 #include "../components/enemy_component.h"

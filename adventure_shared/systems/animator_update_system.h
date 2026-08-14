@@ -1,6 +1,6 @@
 #ifndef ANIMATOR_UPDATE_SYSTEM_H
 #define ANIMATOR_UPDATE_SYSTEM_H
-#include <joy/anim.h>
+#include <joy/janim.h>
 #include "../components/player_state_input.h"
 #include "../components/action_state_component.h"
 #include "../components/enemy_component.h"
@@ -20,11 +20,11 @@ static void animator_update_system(entt::registry& registry, Context* ctx, float
 		// 根据实体类型选择动画定义
 		anim_def_t* def = nullptr;
 		if (registry.all_of<EnemyComponent>(entity)) {
-			if (registry.ctx().contains<TorchBlueAnimDefComponent>())
-				def = &registry.ctx().get<TorchBlueAnimDefComponent>().def;
+			if (registry.ctx().contains<janim_goblin_def_t>())
+				def = &registry.ctx().get<janim_goblin_def_t>().layout;
 		} else {
-			if (registry.ctx().contains<WarriorBlueAnimDefComponent>())
-				def = &registry.ctx().get<WarriorBlueAnimDefComponent>().def;
+			if (registry.ctx().contains<janim_warrior_def_t>())
+				def = &registry.ctx().get<janim_warrior_def_t>().layout;
 		}
 		if (!def) continue;
 

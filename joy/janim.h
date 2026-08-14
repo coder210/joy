@@ -1,30 +1,40 @@
 /************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
-File name: anim.h
-Description: 帧动画状态机（纯 C，单文件）
-  采用数据导向设计，定义/运行时/参数三层分离，
+File name: janim.h
+Description: 帧动画状态机（纯 C，单文件，宏生成多实例类型）
+  数据导向设计，定义/运行时/参数三层分离，
   适合 ECS 或自定义管理。
 
+  klib 风格：用 JANIM_DEFINE(name) 生成独立具名类型，
+  解决 ECS 中多个动画定义注册为组件时类型重名的问题：
+
+    JANIM_DEFINE(warrior);    // 生成 janim_warrior_def_t + janim_warrior_* 函数
+    JANIM_DEFINE(goblin);     // 生成 janim_goblin_def_t  + janim_goblin_*  函数
+
   用法示例:
-    anim_def_t def = {0};
-    int s = anim_add_state(&def, "walk", true);
-    anim_add_clip(&def, s, "tex.png", 0.15f, (jrect_t){0,0,192,192});
+    janim_warrior_def_t def = {0};
+    int s = janim_warrior_add_state(&def, "walk", true);
+    janim_warrior_add_clip(&def, s, "tex.png", 0.15f, (jrect_t){0,0,192,192});
     ...
     anim_t a; anim_init(&a);
     anim_params_t p = { .speed = 1.0f, .dir = 0 };
-    anim_update(&a, &def, &p, 0.016f);
+    janim_warrior_update(&a, &def, &p, 0.016f);
 
     anim_clip_t clip;
-    anim_get_current_clip(&a, &def, &clip);
+    janim_warrior_get_current_clip(&a, &def, &clip);
     image_draw_ex(img, &clip.src_rect, pos, 0, scale, origin);
 
+  共享底层：未宏化的 anim_def_t / anim_* 函数仍然可用，
+  适合不关心类型唯一性的直接使用场景。
+
 Author: ydlc
-Version: 1.0
+Version: 2.0
 Date: 2026.7.20
 History:
+  2026.8.14: v2.0 增加 JANIM_DEFINE(name) 宏生成多实例具名类型（klib 风格）
 *************************************************/
-#ifndef JOY_ANIM_H
-#define JOY_ANIM_H
+#ifndef JOY_JANIM_H
+#define JOY_JANIM_H
 
 #include <stdbool.h>
 #include <string.h>
@@ -53,7 +63,7 @@ typedef enum {
     ANIM_COND_TRIGGER,
 } anim_cond_mode_t;
 
-/* ==================== 定义层（每个动画类型一份） ==================== */
+/* ==================== 定义层（共享成员类型） ==================== */
 
 /** 过渡条件 */
 typedef struct anim_cond {
@@ -87,7 +97,8 @@ typedef struct anim_state {
     float speed;
 } anim_state_t;
 
-/** 完整动画定义（存全局单例，多实体共享） */
+/** 完整动画定义（共享布局类型，多实体共享）。
+    若需作为 ECS 组件注册多个不同类型，请用 JANIM_DEFINE(name) 生成具名包装类型。 */
 typedef struct anim_def {
     anim_state_t states[ANIM_MAX_STATES];
     int num_states;
@@ -96,7 +107,7 @@ typedef struct anim_def {
     int default_state;
 } anim_def_t;
 
-/* ==================== 运行时层（每个实体一份） ==================== */
+/* ==================== 运行时层（每个实体一份，全局共享） ==================== */
 
 /** 动画运行时状态 */
 typedef struct anim {
@@ -122,7 +133,7 @@ typedef struct anim_clip {
     float duration;
 } anim_clip_t;
 
-/* ==================== API 声明 ==================== */
+/* ==================== 共享 API 声明（实现见文件末尾） ==================== */
 
 int anim_add_state(anim_def_t* def, const char* name, bool loop);
 void anim_add_clip(anim_def_t* def, int state_idx, const char* img_path, float duration, jrect_t src_rect);
@@ -134,6 +145,52 @@ void anim_transition_set_exit_time(anim_def_t* def, int trans_idx, float seconds
 void anim_init(anim_t* a);
 bool anim_update(anim_t* a, const anim_def_t* def, const anim_params_t* params, float dt);
 bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_clip_t* out_clip);
+
+/* ==================== JANIM_DEFINE：生成具名定义类型 ==================== */
+/* klib 风格宏。每个 name 生成一套独立类型与转发函数：
+ *   类型     janim_##name##_def_t   （包裹 anim_def_t layout，布局统一）
+ *   构建     janim_##name##_add_state / _add_clip / _set_default_state /
+ *            _add_transition / _transition_add_cond / _transition_set_exit_time
+ *   运行     janim_##name##_update / _get_current_clip
+ * 转发只做 &def->layout 转换，共享实现只写一遍（见文件末尾）。
+ */
+#define JANIM_DEFINE(name)                                                                  \
+    typedef struct janim_##name##_def {                                                     \
+        anim_def_t layout;                                                                  \
+    } janim_##name##_def_t;                                                                 \
+                                                                                            \
+    static inline int janim_##name##_add_state(                                             \
+        janim_##name##_def_t* def, const char* n, bool loop)                                \
+    { return anim_add_state(&def->layout, n, loop); }                                       \
+                                                                                            \
+    static inline void janim_##name##_add_clip(                                             \
+        janim_##name##_def_t* def, int state_idx, const char* img, float dur,               \
+        jrect_t rect)                                                                       \
+    { anim_add_clip(&def->layout, state_idx, img, dur, rect); }                             \
+                                                                                            \
+    static inline void janim_##name##_set_default_state(                                    \
+        janim_##name##_def_t* def, int idx)                                                 \
+    { anim_set_default_state(&def->layout, idx); }                                          \
+                                                                                            \
+    static inline int janim_##name##_add_transition(                                        \
+        janim_##name##_def_t* def, int from, int to)                                        \
+    { return anim_add_transition(&def->layout, from, to); }                                 \
+                                                                                            \
+    static inline void janim_##name##_transition_add_cond(                                  \
+        janim_##name##_def_t* def, int trans_idx, const char* p, int mode, float th)        \
+    { anim_transition_add_cond(&def->layout, trans_idx, p, mode, th); }                     \
+                                                                                            \
+    static inline void janim_##name##_transition_set_exit_time(                             \
+        janim_##name##_def_t* def, int trans_idx, float secs)                               \
+    { anim_transition_set_exit_time(&def->layout, trans_idx, secs); }                       \
+                                                                                            \
+    static inline bool janim_##name##_update(                                               \
+        anim_t* a, const janim_##name##_def_t* def, const anim_params_t* params, float dt)  \
+    { return anim_update(a, &def->layout, params, dt); }                                    \
+                                                                                            \
+    static inline bool janim_##name##_get_current_clip(                                     \
+        const anim_t* a, const janim_##name##_def_t* def, anim_clip_t* out)                 \
+    { return anim_get_current_clip(a, &def->layout, out); }
 
 #ifdef __cplusplus
 }
@@ -325,4 +382,4 @@ static bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_c
     return true;
 }
 
-#endif /* JOY_ANIM_H */
+#endif /* JOY_JANIM_H */

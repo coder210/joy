@@ -7,6 +7,7 @@
 #include "../../adventure_shared/protocol.h"
 #include "../../adventure_shared/components/global_state_component.h"
 #include "../../adventure_shared/components/ai_component.h"
+#include "../../adventure_shared/components/animator_def.h"
 #include "../../adventure_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
@@ -30,8 +31,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                 if (entity.type == S2C_TYPE_PLAYER) {
                         ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
-                        // 挂载动画组件(如果 WarriorBlueAnimDefComponent 已注册)
-                        if (ctx->ecs.ctx().contains<WarriorBlueAnimDefComponent>()) {
+                        // 挂载动画组件(如果 warrior 动画定义已注册)
+                        if (ctx->ecs.ctx().contains<janim_warrior_def_t>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                             ctx->ecs.emplace<ActionStateComponent>(e);
@@ -41,7 +42,7 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<EnemyComponent>(e);
                         ctx->ecs.emplace<ActionStateComponent>(e);
                         //ctx->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
-                        if (ctx->ecs.ctx().contains<TorchBlueAnimDefComponent>()) {
+                        if (ctx->ecs.ctx().contains<janim_goblin_def_t>()) {
                             ctx->ecs.emplace<AnimatorComponent>(e);
                             ctx->ecs.emplace<AnimParamsComponent>(e);
                         }

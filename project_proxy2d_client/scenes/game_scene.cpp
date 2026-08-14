@@ -22,6 +22,7 @@
 #include "../network/network_utils.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 
@@ -65,6 +66,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(self->ctx, OnUpdate, "ai_system", ai_system);
+        add_system(self->ctx, OnUpdate, "pathfinding", pathfinding_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
         add_system(self->ctx, OnUpdate, "animator_update", animator_update_system);

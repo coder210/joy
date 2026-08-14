@@ -1,5 +1,5 @@
 #pragma once
-#include <joy/anim.h>
+#include <joy/janim.h>
 #include "../entt.hpp"
 #include "../../project_proxy2d_shared/components/animator_def.h"
 

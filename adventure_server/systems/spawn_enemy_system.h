@@ -9,6 +9,7 @@
 #include "../../adventure_shared/components/transform_component.h"
 #include "../../adventure_shared/components/action_state_component.h"
 #include "../../adventure_shared/components/animator_component.h"
+#include "../../adventure_shared/components/animator_def.h"
 #include "../../adventure_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
@@ -33,8 +34,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
             fp_from_float(s.attack_radius)
         );
 
-        // 挂载动画组件（如果 TorchBlueAnimDefComponent 已注册）
-        if (registry.ctx().contains<TorchBlueAnimDefComponent>()) {
+        // 挂载动画组件（如果 goblin 动画定义已注册）
+        if (registry.ctx().contains<janim_goblin_def_t>()) {
             registry.emplace<AnimatorComponent>(e);
             registry.emplace<AnimParamsComponent>(e);
         }
