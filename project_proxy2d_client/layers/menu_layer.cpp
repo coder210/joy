@@ -2,11 +2,11 @@
 #include "menu_layer.h"
 #include "../asset_manager.h"
 
-// 《几何决斗》黑白灰画风按钮：无贴图，纯几何填充 + 黑色描边（button_draw 自带线框）
+// 白底黑框按钮：无贴图，白色填充 + 黑色描边（button_draw 自带线框）+ 黑色文字
 static void setup_button_style(button_p btn) {
-	jcolor_t normal  = { 60, 62, 68, 255 };   // 深灰
-	jcolor_t hover   = { 96, 99, 106, 255 };  // 中灰（悬停提亮）
-	jcolor_t pressed = { 26, 27, 30, 255 };   // 近黑（按下加深）
+	jcolor_t normal  = { 255, 255, 255, 255 }; // 白
+	jcolor_t hover   = { 255, 255, 255, 255 }; // 白
+	jcolor_t pressed = { 255, 255, 255, 255 }; // 白
 	button_set_normal_color(btn, normal);
 	button_set_hover_color(btn, hover);
 	button_set_pressed_color(btn, pressed);
@@ -99,19 +99,19 @@ static void load_menu_buttons(menu_layer_p self, Context* ctx)
 	self->btn_start = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_style(self->btn_start);
 	button_set_text_offset(self->btn_start, 0, 3.0f);
-	button_set_textx(self->btn_start, simhei_font, "Start", (int)strlen("Start"), { 235, 235, 240, 255 });
+	button_set_textx(self->btn_start, simhei_font, "Start", (int)strlen("Start"), { 0, 0, 0, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_start, btn_x, start_y));
 
 	self->btn_settings = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_style(self->btn_settings);
 	button_set_text_offset(self->btn_settings, 0, 3.0f);
-	button_set_textx(self->btn_settings, simhei_font, "Settings", (int)strlen("Settings"), { 235, 235, 240, 255 });
+	button_set_textx(self->btn_settings, simhei_font, "Settings", (int)strlen("Settings"), { 0, 0, 0, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_settings, btn_x, start_y + btn_height + 20));
 
 	self->btn_exit = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
 	setup_button_style(self->btn_exit);
 	button_set_text_offset(self->btn_exit, 0, 3.0f);
-	button_set_textx(self->btn_exit, simhei_font, "Exit", (int)strlen("Exit"), { 235, 235, 240, 255 });
+	button_set_textx(self->btn_exit, simhei_font, "Exit", (int)strlen("Exit"), { 0, 0, 0, 255 });
 	scene_node_add_child(self->scene_node, make_button_node(self->btn_exit, btn_x, start_y + (btn_height + 20) * 2));
 }
 

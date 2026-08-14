@@ -393,7 +393,7 @@ void button_destroy(button_p btn)
 void button_draw(button_p btn)
 {
         jr2d_p r2d;
-        jrect_t dest_rect, rect;
+        jrect_t dest_rect, rect, inner;
         jcolor_t color;
         if (!btn) return;
 
@@ -415,6 +415,15 @@ void button_draw(button_p btn)
         shape_draw_rectangle(r2d, "fill", rect);
         r2d_set_color(r2d, 0, 0, 0, 255);
         shape_draw_rectangle(r2d, "line", rect);
+        /* 加粗边框：内缩 1 逻辑像素再描一圈，形成约 2px 黑框（窗口缩小时仍可见） */
+        inner = rect;
+        inner.x += 1;
+        inner.y += 1;
+        inner.w -= 2;
+        inner.h -= 2;
+        if (inner.w > 0 && inner.h > 0) {
+                shape_draw_rectangle(r2d, "line", inner);
+        }
 
         if (btn->is_pressed && btn->pressed_image) {
                 image_draw1(btn->pressed_image, NULL, &rect);
