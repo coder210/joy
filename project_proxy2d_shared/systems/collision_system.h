@@ -14,27 +14,31 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
     (void)ctx;
     (void)dt;
 
-    // 玩家视图：所有带 PlayerComponent 的实体（同时需有 LogicRectComponent + LogicPositionComponent）
-    auto player_view = registry.view<PlayerComponent, LogicRectComponent, LogicPositionComponent>();
+    // 移动体视图：所有玩家/敌人（同时需有 LogicRectComponent + LogicPositionComponent）
+    auto mover_view = registry.view<LogicRectComponent, LogicPositionComponent>();
 
     // 地图碰撞体视图：所有带 LogicRectComponent + LogicPositionComponent 的实体
     auto all_view = registry.view<LogicRectComponent, LogicPositionComponent>();
 
-    for (auto player_entity : player_view) {
-        auto& player_rect = player_view.get<LogicRectComponent>(player_entity);
-        auto& player_pos = player_view.get<LogicPositionComponent>(player_entity);
+    for (auto mover_entity : mover_view) {
+        // 只对玩家/敌人做碰撞修正，静态碰撞体本身不参与
+        if (!registry.all_of<PlayerComponent>(mover_entity) &&
+            !registry.all_of<EnemyComponent>(mover_entity)) continue;
 
-        // 记录 movement 修改后的坐标（用于监测哪些玩家被修正）
-        fp_t orig_x = player_pos.x;
-        fp_t orig_y = player_pos.y;
+        auto& mover_rect = mover_view.get<LogicRectComponent>(mover_entity);
+        auto& mover_pos = mover_view.get<LogicPositionComponent>(mover_entity);
+
+        // 记录 movement 修改后的坐标（用于监测哪些移动体被修正）
+        fp_t orig_x = mover_pos.x;
+        fp_t orig_y = mover_pos.y;
         bool was_corrected = false;
 
-        // 构建玩家碰撞盒子（x/y 跟随 LogicPositionComponent）
-        rectanglef_t player_box = { player_pos.x, player_pos.y, player_rect.width, player_rect.height };
+        // 构建移动体碰撞盒子（x/y 跟随 LogicPositionComponent）
+        rectanglef_t mover_box = { mover_pos.x, mover_pos.y, mover_rect.width, mover_rect.height };
 
         for (auto tile_entity : all_view) {
-            // 跳过玩家自身、敌人等实体
-            if (tile_entity == player_entity) continue;
+            // 跳过移动体自身、其他玩家/敌人实体（保持现状：玩家与敌人互不碰撞）
+            if (tile_entity == mover_entity) continue;
             if (registry.all_of<PlayerComponent>(tile_entity)) continue;
             if (registry.all_of<EnemyComponent>(tile_entity)) continue;
 
@@ -46,31 +50,31 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
             rectanglef_t tile_box = { tile_pos.x, tile_pos.y, tile_rect.width, tile_rect.height };
 
             contact2df_t contact;
-            if (collision2df_get_rectangles(player_box, fp_zero(), tile_box, fp_zero(), &contact)) {
-                // 碰撞发生，沿法线方向将玩家推出
+            if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
+                // 碰撞发生，沿法线方向将移动体推出
                 fp_t depth = contact.depth;
                 if (depth < fp_zero()) {
                     depth = fp_sub(fp_zero(), depth);
                 }
                 fp_t nx = fp_sub(fp_zero(), contact.normal.x);
                 fp_t ny = fp_sub(fp_zero(), contact.normal.y);
-                player_pos.x = fp_add(player_pos.x, fp_mul(nx, depth));
-                player_pos.y = fp_add(player_pos.y, fp_mul(ny, depth));
+                mover_pos.x = fp_add(mover_pos.x, fp_mul(nx, depth));
+                mover_pos.y = fp_add(mover_pos.y, fp_mul(ny, depth));
 
-                // 更新 player_box 以继续与其他 tile 碰撞检测
-                player_box.x = player_pos.x;
-                player_box.y = player_pos.y;
+                // 更新 mover_box 以继续与其他 tile 碰撞检测
+                mover_box.x = mover_pos.x;
+                mover_box.y = mover_pos.y;
 
                 was_corrected = true;
             }
         }
 
-        // 监测：该玩家的 movement 坐标被碰撞修正
+        // 监测：该移动体的 movement 坐标被碰撞修正
         if (was_corrected) {
             /*
-            log_info("COLLISION: player entity %d collision corrected (moved from (%.2f, %.2f) to (%.2f, %.2f))",
-                (int)player_entity, fp_to_float(orig_x), fp_to_float(orig_y),
-                fp_to_float(player_pos.x), fp_to_float(player_pos.y));
+            log_info("COLLISION: mover entity %d collision corrected (moved from (%.2f, %.2f) to (%.2f, %.2f))",
+                (int)mover_entity, fp_to_float(orig_x), fp_to_float(orig_y),
+                fp_to_float(mover_pos.x), fp_to_float(mover_pos.y));
                 */
         }
     }

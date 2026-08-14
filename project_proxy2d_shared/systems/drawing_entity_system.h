@@ -24,8 +24,8 @@ struct Context;
 
 static const float GD_PI         = 3.14159265f;
 static const float GD_GRID_STEP  = 50.0f;    // 背景网格间距（逻辑像素）
-static const float GD_RING_IN    = 52.0f;    // 内环半径（官方 52）
-static const float GD_RING_OUT   = 72.0f;    // 外环半径（官方 72）
+static const float GD_RING_IN    = 36.0f;    // 内环半径（官方 52，按视口比例缩小）
+static const float GD_RING_OUT   = 48.0f;    // 外环半径（官方 72，按视口比例缩小）
 static const int   GD_RING_POINTS = 36;      // 环采样点（三角 3 边×12，方形 4 边×9）
 
 // ---- 三角形 ↔ 正方形 逐点插值，生成形态环采样点 ----

@@ -14,6 +14,7 @@ struct Context;
 //      白底画布 + 黑/灰几何形状（线框/圆环/几何点阵），无写实绿色植被
 //  - 1 格 = 1m = SERVER_PPM 像素，随相机滚动
 //  - 只绘制视口（480x320 逻辑像素）内的格子
+//  - 越界格子（空气墙外）不绘制任何地形，保持白底，与地图内部一致
 //  - 与 draw_grid_background 配合使用（先网格背景，后地形）
 // ============================================================
 static void draw_map_tiles(Context* ctx)
@@ -32,6 +33,8 @@ static void draw_map_tiles(Context* ctx)
 
 	for (int y = y0; y <= y1; y++) {
 		for (int x = x0; x <= x1; x++) {
+			// 越界格子（空气墙外）保持白底，不绘制地形装饰
+			if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) continue;
 			char c = map_tile_at(x, y);
 			int type = map_tile_type(c);
 			if (type == MAP_TILE_EMPTY) continue;
