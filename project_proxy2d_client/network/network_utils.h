@@ -68,8 +68,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
         }
         ctx->snapshots.insert({ ctx->server_frameid, snapshots });
 
-        // 告知服务器本地玩家加入
-        std::string data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(3.2f), fp_from_float(2.3f), 0, 0);
+        // 告知服务器本地玩家加入（出生在地图中央开阔地，避免视野内大片边界绿墙）
+        std::string data = pack_c2s(CMD_PLAYER_JOIN, fp_from_float(15.5f), fp_from_float(10.5f), 0, 0);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
 }
 

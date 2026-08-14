@@ -10,7 +10,8 @@ struct Context;
 
 // ============================================================
 // 地图瓦片几何渲染（纯视觉，不参与帧同步逻辑）
-//  - 按 MAP_LAYOUT 绘制地形装饰：墙/树/石头/水/草丛/花/小路
+//  - 按 MAP_LAYOUT 绘制地形装饰，风格统一为《几何决斗》极简几何：
+//      白底画布 + 黑/灰几何形状（线框/圆环/几何点阵），无写实绿色植被
 //  - 1 格 = 1m = SERVER_PPM 像素，随相机滚动
 //  - 只绘制视口（480x320 逻辑像素）内的格子
 //  - 与 draw_grid_background 配合使用（先网格背景，后地形）
@@ -40,45 +41,67 @@ static void draw_map_tiles(Context* ctx)
 			vec2_t center = { px + SERVER_PPM * 0.5f, py + SERVER_PPM * 0.5f };
 
 			switch (type) {
-			case MAP_TILE_WALL: {   // '#' 树篱墙
-				r2d_set_color(ctx->r2d, 76, 120, 60, 255);
+			case MAP_TILE_WALL: {   // '#' 边界墙：几何砖格（深灰填充 + 浅色十字分割）
+				r2d_set_color(ctx->r2d, 60, 62, 68, 255);
 				jrect_t r = { px, py, SERVER_PPM, SERVER_PPM };
 				shape_draw_rectangle(ctx->r2d, "fill", r);
+				r2d_set_color(ctx->r2d, 228, 228, 232, 255);
+				float mx = px + SERVER_PPM * 0.5f;
+				float my = py + SERVER_PPM * 0.5f;
+				shape_draw_line(ctx->r2d, mx, py, mx, py + SERVER_PPM);
+				shape_draw_line(ctx->r2d, px, my, px + SERVER_PPM, my);
 				break;
 			}
-			case MAP_TILE_TREE: {   // 'T' 树：绿色树冠 + 棕色树干
-				r2d_set_color(ctx->r2d, 96, 160, 72, 255);
-				shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.38f, 16);
-				r2d_set_color(ctx->r2d, 130, 90, 55, 255);
-				jrect_t trunk = { center.x - 5.0f, center.y + 4.0f, 10.0f, 14.0f };
-				shape_draw_rectangle(ctx->r2d, "fill", trunk);
+			case MAP_TILE_TREE: {   // 'T' 树：黑色圆环（几何感，无绿色）
+				r2d_set_color(ctx->r2d, 45, 45, 50, 255);
+				shape_draw_circle(ctx->r2d, "line", center, SERVER_PPM * 0.36f, 16);
+				r2d_set_color(ctx->r2d, 45, 45, 50, 255);
+				shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.12f, 12);
 				break;
 			}
-			case MAP_TILE_ROCK: {   // 'R' 石头：灰色圆 + 深色描边
-				r2d_set_color(ctx->r2d, 156, 156, 162, 255);
-				shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.34f, 12);
-				r2d_set_color(ctx->r2d, 120, 120, 128, 255);
-				shape_draw_circle(ctx->r2d, "line", center, SERVER_PPM * 0.34f, 12);
+			case MAP_TILE_ROCK: {   // 'R' 石头：深灰实心圆 + 白色描边
+				r2d_set_color(ctx->r2d, 80, 80, 88, 255);
+				shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.32f, 12);
+				r2d_set_color(ctx->r2d, 240, 240, 244, 255);
+				shape_draw_circle(ctx->r2d, "line", center, SERVER_PPM * 0.32f, 12);
 				break;
 			}
-			case MAP_TILE_WATER: {  // '~' 水：半透明浅蓝
-				r2d_set_color(ctx->r2d, 110, 170, 230, 200);
-				jrect_t r = { px, py, SERVER_PPM, SERVER_PPM };
-				shape_draw_rectangle(ctx->r2d, "fill", r);
+			case MAP_TILE_WATER: {  // '~' 水：浅蓝几何波纹（三条横线）
+				r2d_set_color(ctx->r2d, 96, 148, 214, 255);
+				float w = SERVER_PPM * 0.66f;
+				float hw = w * 0.5f;
+				for (int k = -1; k <= 1; k++) {
+					float yy = center.y + k * SERVER_PPM * 0.18f;
+					shape_draw_line(ctx->r2d, center.x - hw, yy, center.x + hw, yy);
+				}
 				break;
 			}
-			case MAP_TILE_GRASS:    // 'g' 草丛：浅绿圆点
-				r2d_set_color(ctx->r2d, 170, 220, 130, 210);
-				shape_draw_circle(ctx->r2d, "fill", center, 7.0f, 10);
+			case MAP_TILE_GRASS:    // 'g' 草丛：几何小方块点阵
+				r2d_set_color(ctx->r2d, 150, 150, 158, 255);
+				{
+					float s = 5.0f;
+					jrect_t grass = { center.x - s, center.y - s, s * 2, s * 2 };
+					shape_draw_rectangle(ctx->r2d, "fill", grass);
+				}
 				break;
-			case MAP_TILE_FLOWER:   // 'f' 花：粉红圆点
-				r2d_set_color(ctx->r2d, 235, 150, 180, 255);
-				shape_draw_circle(ctx->r2d, "fill", center, 5.0f, 8);
+			case MAP_TILE_FLOWER:   // 'f' 花：几何菱形点
+				r2d_set_color(ctx->r2d, 205, 205, 212, 255);
+				{
+					float s = 4.0f;
+					vec2_t pts[4] = {
+						{ center.x,         center.y - s * 1.5f },
+						{ center.x + s,     center.y },
+						{ center.x,         center.y + s * 1.5f },
+						{ center.x - s,     center.y },
+					};
+					jcolor_t flower = { 205, 205, 212, 255 };
+					shape_draw_polygon(ctx->r2d, "fill", pts, 4, flower);
+				}
 				break;
-			case MAP_TILE_PATH: {   // 'p' 小路：米黄圆角感矩形
-				r2d_set_color(ctx->r2d, 218, 198, 152, 220);
-				jrect_t r = { px + 6.0f, py + 6.0f, SERVER_PPM - 12.0f, SERVER_PPM - 12.0f };
-				shape_draw_rectangle(ctx->r2d, "fill", r);
+			case MAP_TILE_PATH: {   // 'p' 小路：浅灰线框矩形
+				r2d_set_color(ctx->r2d, 176, 176, 184, 255);
+				jrect_t r = { px + 8.0f, py + 8.0f, SERVER_PPM - 16.0f, SERVER_PPM - 16.0f };
+				shape_draw_rectangle(ctx->r2d, "line", r);
 				break;
 			}
 			default:

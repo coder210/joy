@@ -2,13 +2,14 @@
 #include "gameplay_controls_layer.h"
 #include "../asset_manager.h"
 
-static void setup_button_texture(button_p btn, jr2d_p renderer) {
-	button_set_image(btn, image_create(renderer, "project_proxy2d_client/ui/buttons/button_blue_9slides.png"));
-	button_set_pressed_image(btn, image_create(renderer, "project_proxy2d_client/ui/buttons/button_blue_9slides_pressed.png"));
-	jcolor_t transparent = { 0, 0, 0, 0 };
-	button_set_normal_color(btn, transparent);
-	button_set_hover_color(btn, transparent);
-	button_set_pressed_color(btn, transparent);
+// 《几何决斗》黑白灰画风按钮：无贴图，纯几何填充 + 黑色描边（button_draw 自带线框）
+static void setup_button_style(button_p btn) {
+	jcolor_t normal  = { 60, 62, 68, 255 };   // 深灰
+	jcolor_t hover   = { 96, 99, 106, 255 };  // 中灰（悬停提亮）
+	jcolor_t pressed = { 26, 27, 30, 255 };   // 近黑（按下加深）
+	button_set_normal_color(btn, normal);
+	button_set_hover_color(btn, hover);
+	button_set_pressed_color(btn, pressed);
 }
 
 struct gameplay_controls_layer {
@@ -109,23 +110,23 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 	scene_node_add_child(self->scene_node, root_node);
 
 	self->btn_up = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(self->btn_up, ctx->r2d);
-	button_set_textx(self->btn_up, simhei_font, "U", (int)strlen("U"), { 220, 200, 160, 255 });
+	setup_button_style(self->btn_up);
+	button_set_textx(self->btn_up, simhei_font, "U", (int)strlen("U"), { 235, 235, 240, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_up, 50, 0));
 
 	self->btn_down = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(self->btn_down, ctx->r2d);
-	button_set_textx(self->btn_down, simhei_font, "D", (int)strlen("D"), { 220, 200, 160, 255 });
+	setup_button_style(self->btn_down);
+	button_set_textx(self->btn_down, simhei_font, "D", (int)strlen("D"), { 235, 235, 240, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_down, 50, 100));
 
 	self->btn_left = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(self->btn_left, ctx->r2d);
-	button_set_textx(self->btn_left, simhei_font, "L", (int)strlen("L"), { 220, 200, 160, 255 });
+	setup_button_style(self->btn_left);
+	button_set_textx(self->btn_left, simhei_font, "L", (int)strlen("L"), { 235, 235, 240, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_left, 0, 50));
 
 	self->btn_right = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(self->btn_right, ctx->r2d);
-	button_set_textx(self->btn_right, simhei_font, "R", (int)strlen("R"), { 220, 200, 160, 255 });
+	setup_button_style(self->btn_right);
+	button_set_textx(self->btn_right, simhei_font, "R", (int)strlen("R"), { 235, 235, 240, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_right, 100, 50));
 }
 
@@ -142,8 +143,8 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 	scene_node_add_child(self->scene_node, root_node);
 
 	self->btn_attack = button_create(ctx->r2d, 50, 50);
-	setup_button_texture(self->btn_attack, ctx->r2d);
-	button_set_textx(self->btn_attack, simhei_font, "A", (int)strlen("A"), { 220, 200, 160, 255 });
+	setup_button_style(self->btn_attack);
+	button_set_textx(self->btn_attack, simhei_font, "A", (int)strlen("A"), { 235, 235, 240, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_attack, 0, 0));
 }
 
