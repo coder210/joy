@@ -159,6 +159,11 @@ static void pathfinding_system(entt::registry& registry, Context* ctx, float /*d
                 else
                     pos.y = dy > fp_zero() ? fp_add(pos.y, step) : fp_sub(pos.y, step);
             }
+        } else {
+            // 路径已走完（追到目标格 / 等待重算冷却）：静止待命。
+            // 若不覆盖，ai_system 每 tick 保持 WALK → speed_ratio=1.0 → 静止时也最高速自旋。
+            auto& act = view.get<ActionStateComponent>(e);
+            act.state = ActionStateComponent::IDLE;
         }
     }
 }

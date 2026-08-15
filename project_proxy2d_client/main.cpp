@@ -28,7 +28,7 @@ SDL_AppResult SDL_AppInit(void**, int, char**)
 
         AssetManager::Init();
 
-        ctx->window = create_window("client", 240, 160);
+        ctx->window = create_window("client", 960, 640);
         ctx->r2d = r2d_create(ctx->window);
         r2d_set_logical_presentation(ctx->r2d, 480, 320);
 

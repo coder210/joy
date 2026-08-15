@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <unordered_map>
 #include <joy/joy.h>
 #include "../components/global_state_component.h"
 #include "../components/id_component.h"
@@ -27,6 +28,16 @@ static const float GD_GRID_STEP  = 50.0f;    // 背景网格间距（逻辑像�
 static const float GD_RING_IN    = 36.0f;    // 内环半径（官方 52，按视口比例缩小）
 static const float GD_RING_OUT   = 48.0f;    // 外环半径（官方 72，按视口比例缩小）
 static const int   GD_RING_POINTS = 36;      // 环采样点（三角 3 边×12，方形 4 边×9）
+
+// 每个实体的平滑速度比：走/停切换时环的速度/大小/亮度渐变过渡，消除突变观感
+static std::unordered_map<entt::entity, float> g_ring_smooth;
+
+// 每个实体上一渲染帧的视觉位置（逻辑单位）：用于以"真实位移速度"驱动环动画，
+// 而非依赖 act.state 标签（ai_system/pathfinding_system 交替写 WALK/IDLE 会导致
+// 静止也全速转 + 忽快忽慢抖动；位移速度天然与标签解耦、平滑无抖动）
+static std::unordered_map<entt::entity, vec2_t> g_ring_last_pos;
+static float g_ring_last_vt = 0.0f;
+static bool  g_ring_vt_init  = false;
 
 // ---- 三角形 ↔ 正方形 逐点插值，生成形态环采样点 ----
 // blend ∈ [0,1]：0=三角形，1=正方形；rot 为环整体旋转角
@@ -77,8 +88,9 @@ static void draw_orbits(Context* ctx, vec2_t c, float speed_ratio, bool is_playe
         float alpha = 0.5f + speed_ratio * 0.35f;      // 速度越快越亮
         float grow  = 1.0f + speed_ratio * 0.6f;       // 速度越快越大
         // 内外环变形相位相差 π：一边接近三角形时另一边接近正方形
-        float morph1 = 0.5f + 0.5f * sinf(visual_time * 0.25f + seed);
-        float morph2 = 0.5f + 0.5f * sinf(visual_time * 0.25f + seed + GD_PI);
+        // 0.05f → 变形周期约 126 秒，呼吸舒缓不易察觉（原 0.25f 每 ~12 秒就回到三角形起点）
+        float morph1 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed);
+        float morph2 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed + GD_PI);
         // 内外环反向自旋，速度越快转得越快
         float rot_in  = visual_time * (0.6f + speed_ratio * 1.4f);
         float rot_out = -visual_time * (0.45f + speed_ratio * 1.1f);
@@ -177,12 +189,10 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
         if (half < 8.0f) half = 8.0f;
 
         float dir_rad = -GD_PI * 0.5f;   // 默认朝上（dir 0=下 1=左 2=右 3=上）
-        float speed_ratio = 0.0f;
         bool is_attack = false;
         if (ctx->ecs.all_of<ActionStateComponent>(e)) {
                 auto& ac = ctx->ecs.get<ActionStateComponent>(e);
-                if (ac.state == ActionStateComponent::WALK) speed_ratio = 1.0f;
-                else if (ac.state == ActionStateComponent::ATTACK) { speed_ratio = 0.6f; is_attack = true; }
+                if (ac.state == ActionStateComponent::ATTACK) is_attack = true;
                 switch (ac.dir) {
                 case 0: dir_rad =  GD_PI * 0.5f; break;   // 下
                 case 1: dir_rad =  GD_PI;        break;   // 左
@@ -190,6 +200,40 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                 case 3: dir_rad = -GD_PI * 0.5f; break;   // 上
                 }
         }
+
+        // ---- 环速度比：由真实位移速度驱动（逻辑单位/秒），与 act.state 标签解耦 ----
+        // 修复：玩家未加入时 command_queue 为空 → ai_system 不运行 → act.state 恒为 IDLE
+        // → 环慢转"正常"；玩家加入后 ai_system 把敌人写成 WALK（即使静止）→ 环全速自旋
+        // → 且 pathfinding_system 又回写 IDLE → speed_ratio 0↔1 抖动。
+        // 现在改为量测每帧实际位移，动则快、静则慢，任何 AI 标签都不再干扰视觉节奏。
+        float dt = 0.0f;
+        if (g_ring_vt_init) {
+                dt = ctx->visual_time - g_ring_last_vt;
+                if (dt < 0.0f) dt = 0.0f;
+        }
+        g_ring_last_vt = ctx->visual_time;
+        g_ring_vt_init = true;
+
+        float target_ratio = 0.0f;
+        auto it = g_ring_last_pos.find(e);
+        if (dt > 0.0001f && it != g_ring_last_pos.end()) {
+                float dx = t.position.x - it->second.x;
+                float dy = t.position.y - it->second.y;
+                float move_speed = sqrtf(dx * dx + dy * dy) / dt;   // 逻辑单位/秒
+                float max_speed = is_player ? 5.0f : 2.5f;          // 玩家 MOVE_SPEED=5.0 / 敌人步速 2.5
+                target_ratio = move_speed / max_speed;
+                if (target_ratio > 1.0f) target_ratio = 1.0f;
+                it->second = { t.position.x, t.position.y };
+        } else {
+                // 首次记录位置：首帧视为静止，避免实体初生/复用 ID 时位移跳变
+                g_ring_last_pos[e] = { t.position.x, t.position.y };
+        }
+
+        // 指数平滑趋近目标值：走/停切换时环渐变，不再 0↔1 硬切
+        float& smooth = g_ring_smooth[e];
+        smooth += (target_ratio - smooth) * 0.15f;
+        if (fabsf(smooth - target_ratio) < 0.01f) smooth = target_ratio;
+        float speed_ratio = smooth;
 
         // 轨道环相位种子：同一实体稳定、不同实体错开
         float seed = t.position.x * 1.7f + t.position.y * 3.1f + (is_player ? 0.0f : 13.37f);
