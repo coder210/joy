@@ -1,9 +1,11 @@
 #ifndef INPUT_CONSUME_INPUT_SYSTEM_H
 #define INPUT_CONSUME_INPUT_SYSTEM_H
 
+#include "../components/action_state_component.h"
+
 struct Context;
 
-static void input_consume_input_system(entt::registry& registry, Context* /*ctx*/, float /*dt*/) {
+static void input_consume_input_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 	auto& net = registry.ctx().get<NetComponent>();
 	if (net.frame_id < 0) return;
 
@@ -45,25 +47,24 @@ static void input_consume_input_system(entt::registry& registry, Context* /*ctx*
 			}
 		}
 
-		// 更新动画参数：将原始方向位掩码翻译为 anim_params_t.dir / speed / attack
-		if (registry.all_of<anim_params_t, ActionStateComponent>(player)) {
-			auto& params = registry.get<anim_params_t>(player);
-			auto& act    = registry.get<ActionStateComponent>(player);
+		// 更新动作状态：attack_timer 驱动攻击持续（替代动画状态机复位），
+		// 其余由移动位掩码决定 WALK/IDLE 与朝向
+		if (registry.all_of<ActionStateComponent>(player)) {
+			auto& act = registry.get<ActionStateComponent>(player);
+			if (act.attack_timer > 0.0f) act.attack_timer -= ctx->FIXED_TIMESTEP;
 
 			int  dir_idx = input_to_dir(input.dir);
 			bool moving  = has_dir(input.dir);
 
 			if (input.attack) {
-				act.state     = ActionStateComponent::ATTACK;
-				params.attack = true;
-				params.speed  = 1.0f;
-				if (moving) params.dir = dir_idx;
+				act.state        = ActionStateComponent::ATTACK;
+				act.attack_timer = ActionStateComponent::ATTACK_DURATION;
+				if (moving) act.dir = dir_idx;
 			} else {
-				act.state  = moving ? ActionStateComponent::WALK
-				                    : ActionStateComponent::IDLE;
-				params.speed = moving ? 1.0f : 0.0f;
-				if (moving) params.dir = dir_idx;
-				params.attack = false;
+				act.state = act.attack_timer > 0.0f ? ActionStateComponent::ATTACK
+				                                    : (moving ? ActionStateComponent::WALK
+				                                              : ActionStateComponent::IDLE);
+				if (moving) act.dir = dir_idx;
 			}
 		}
 	}

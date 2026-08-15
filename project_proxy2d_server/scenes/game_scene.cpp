@@ -8,7 +8,6 @@
 #include "../context.h"
 #include "../layers/debug_layer.h"
 #include "../../project_proxy2d_shared/systems/interpolate_position_system.h"
-#include "../../project_proxy2d_shared/systems/animator_update_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../systems/spawn_enemy_system.h"
@@ -16,7 +15,6 @@
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
-#include "../factory/animator_def_factory.h"
 #include "../systems/snapshot_system.h"
 #include "../../project_proxy2d_shared/systems/movement_system.h"
 #include "../../project_proxy2d_shared/systems/cleanup_system.h"
@@ -49,9 +47,6 @@ static void on_load(scene_p s)
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
         ctx->ecs.ctx().emplace<GlobalState>();
-        create_warrior_anim_def(ctx->ecs, "project_proxy2d_server/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(ctx->ecs, "project_proxy2d_server/textures/goblins/troops/torch/torch_blue.png");
-
         // 注册 system
         add_system(ctx, OnStart, "map_spawn", map_spawn_system);
         add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
@@ -62,7 +57,6 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate, "pathfinding", pathfinding_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);
-        add_system(ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(ctx, OnUpdate, "cleanup", cleanup_system);
         add_system(ctx, PostUpdate, "snapshot", snapshot_system);
 

@@ -2,7 +2,7 @@
 #define INPUT_CONSUME_JOIN_SYSTEM_H
 
 #include "../components/global_state_component.h"
-#include "../components/animator_def.h"
+#include "../components/action_state_component.h"
 
 struct Context;
 
@@ -23,12 +23,8 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		// 碰撞盒为 1x1，position 取碰撞盒中心（渲染以中心为原点）
 		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x) + 0.5f, fp_to_float(join.position_y) + 0.5f, 0.0f, 1.0f, 1.0f);
 
-		// 挂载动画组件（如果 WarriorBlueAnimDefComponent 已注册）
-		if (registry.ctx().contains<WarriorBlueAnimDefComponent>()) {
-			registry.emplace<AnimatorComponent>(player);
-			registry.emplace<AnimParamsComponent>(player);
-			registry.emplace<ActionStateComponent>(player);
-		}
+		// 挂载动作状态组件（几何渲染的朝向 / 攻击表现依赖它）
+		registry.emplace<ActionStateComponent>(player);
 
 		// 首次加入的玩家作为摄像机跟随目标
 		if (gs.camera_follow_conv < 0) {

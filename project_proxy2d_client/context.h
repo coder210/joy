@@ -10,8 +10,6 @@
 #include <joy/joy.h>
 #include "../project_proxy2d_shared/protocol.h"
 #include "../project_proxy2d_shared/components/action_state_component.h"
-#include "../project_proxy2d_shared/components/animator_def.h"
-#include "../project_proxy2d_shared/components/animator_component.h"
 #include "../project_proxy2d_shared/components/id_component.h"
 #include "../project_proxy2d_shared/components/ai_component.h"
 #include "../project_proxy2d_shared/components/logic_rect_component.h"

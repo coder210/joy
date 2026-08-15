@@ -5,8 +5,6 @@
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../project_proxy2d_shared/protocol.h"
-#include "../project_proxy2d_shared/systems/animator_update_system.h"
-#include "../factory/animator_def_factory.h"
 #include "../project_proxy2d_shared/systems/interpolate_position_system.h"
 #include "../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
@@ -25,10 +23,6 @@
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
-
-// 动画定义现在由 animator_def_factory.h 提供
-
-// 玩家状态机（使用 ECS ActionStateComponent）
 
 struct game_scene {
         scene_p scene;
@@ -55,12 +49,6 @@ static void on_load(scene_p s)
         self->ctx->ecs.ctx().emplace<NetComponent>();
         self->ctx->ecs.ctx().emplace<GlobalState>();
 
-        // 注册动画定义（全局单例，仅一次）
-        create_warrior_anim_def(self->ctx->ecs,
-                "project_proxy2d_client/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(self->ctx->ecs,
-                "project_proxy2d_client/textures/goblins/troops/torch/torch_blue.png");
-
         // 注册 system
         add_system(self->ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
@@ -69,7 +57,6 @@ static void on_load(scene_p s)
         add_system(self->ctx, OnUpdate, "pathfinding", pathfinding_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
-        add_system(self->ctx, OnUpdate, "animator_update", animator_update_system);
         add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);
 
         // 执行 OnStart phase
@@ -199,7 +186,6 @@ static void on_update(scene_p s, float dt) {
         }
 
         // 视觉相关 system 用实时 dt 每帧更新（不放在固定步长内）
-        //animator_update_system(self->ctx->ecs, self->ctx, dt);
         interpolate_position_system(self->ctx->ecs, self->ctx, dt);
         camera_follow_system(self->ctx->ecs, self->ctx, dt);
 
