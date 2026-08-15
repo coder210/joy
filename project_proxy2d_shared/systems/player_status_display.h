@@ -4,6 +4,7 @@
 #include "../components/player_component.h"
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
+#include "../components/health_component.h"
 
 // ============================================================
 // 玩家状态 HUD（纯视觉，只读组件，不影响帧同步/ECS 逻辑）
@@ -16,6 +17,7 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
         const char* st     = "--";
         const char* dirstr = "-";
         float px = 0.0f, py = 0.0f;
+        float hp = -1.0f, max_hp = PLAYER_MAX_HP;
         bool found = false;
 
         auto view = ecs.view<PlayerComponent, TransformComponent, ActionStateComponent>();
@@ -26,6 +28,10 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
                 auto& ac = view.get<ActionStateComponent>(e);
                 px = t.position.x;
                 py = t.position.y;
+                if (ecs.all_of<HealthComponent>(e)) {
+                        hp     = ecs.get<HealthComponent>(e).hp;
+                        max_hp = ecs.get<HealthComponent>(e).max_hp;
+                }
                 found = true;
                 switch (ac.state) {
                 case ActionStateComponent::IDLE:   st = "IDLE";   break;
@@ -45,9 +51,12 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
 
         char buf[128];
         if (found) {
-                // HP 暂无数据源（未实现伤害结算），显示 --；接入结算后改为读取 S2CEntity.hp / HealthComponent
-                snprintf(buf, sizeof(buf), "HP: --  POS:(%.1f, %.1f)  ST:%s %s",
-                        px, py, st, dirstr);
+                if (hp >= 0.0f)
+                        snprintf(buf, sizeof(buf), "HP: %.0f/%.0f  POS:(%.1f, %.1f)  ST:%s %s",
+                                hp, max_hp, px, py, st, dirstr);
+                else
+                        snprintf(buf, sizeof(buf), "HP: --  POS:(%.1f, %.1f)  ST:%s %s",
+                                px, py, st, dirstr);
         } else {
                 snprintf(buf, sizeof(buf), "HP: --  POS:(--, --)  ST: --");
         }

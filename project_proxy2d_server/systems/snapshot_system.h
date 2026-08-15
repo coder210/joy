@@ -1,6 +1,8 @@
 #ifndef SNAPSHOT_SYSTEM_H
 #define SNAPSHOT_SYSTEM_H
 #include "../context.h"
+#include "../../project_proxy2d_shared/components/bullet_component.h"
+#include "../../project_proxy2d_shared/components/health_component.h"
 
 static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
         (void)dt;
@@ -9,6 +11,9 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
         auto body_view = registry.view<IdComponent, LogicRectComponent, LogicPositionComponent>();
         for (auto e : body_view) {
                 if (registry.all_of<LocalOnlyComponent>(e))
+                        continue;
+                // 子弹为帧同步瞬时实体，不进入快照，避免客户端加载时重复创建
+                if (registry.all_of<BulletComponent>(e))
                         continue;
                 if (ctx->num_entities >= 512)
                         return;
@@ -31,6 +36,8 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                         ent.type = S2C_TYPE_NORMAL;
                 }
                 ent.hp = 0;
+                if (registry.all_of<HealthComponent>(e))
+                    ent.hp = (int64_t)registry.get<HealthComponent>(e).hp;
                 ent.position_x = pos.x;
                 ent.position_y = pos.y;
                 ent.width = rect.width;

@@ -6,6 +6,7 @@
 #include "../components/id_component.h"
 #include "../components/player_component.h"
 #include "../components/enemy_component.h"
+#include "../components/bullet_component.h"
 #include "../components/logic_rect_component.h"
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
@@ -175,12 +176,34 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
 
         bool is_player = ctx->ecs.all_of<PlayerComponent>(e);
         bool is_enemy  = ctx->ecs.all_of<EnemyComponent>(e);
-        if (!is_player && !is_enemy) return;   // 只渲染玩家/敌人
+        bool is_bullet = ctx->ecs.all_of<BulletComponent>(e);
+        if (!is_player && !is_enemy && !is_bullet) return;   // 只渲染玩家/敌人/子弹
 
         auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
         vec2_t c;
         c.x = (t.position.x - cam.x) * SERVER_PPM;
         c.y = (t.position.y - cam.y) * SERVER_PPM;
+
+        // ---- 子弹：发光旋转菱形（金红色，不画轨道环/攻击射线）----
+        if (is_bullet) {
+                float bs = 7.0f;   // 视觉半边长（像素）
+                float bspin = ctx->visual_time * 6.0f;
+                vec2_t pts[4];
+                for (int i = 0; i < 4; i++) {
+                        float a = bspin + i * (GD_PI * 0.5f);
+                        pts[i].x = c.x + cosf(a) * bs;
+                        pts[i].y = c.y + sinf(a) * bs;
+                }
+                shape_draw_polygon(ctx->r2d, "fill", pts, 4, { 255, 150, 60, 90 });  // 辉光
+                for (int i = 0; i < 4; i++) {
+                        float a = bspin + i * (GD_PI * 0.5f);
+                        pts[i].x = c.x + cosf(a) * bs * 0.6f;
+                        pts[i].y = c.y + sinf(a) * bs * 0.6f;
+                }
+                shape_draw_polygon(ctx->r2d, "fill", pts, 4, { 255, 205, 95, 255 });   // 主体
+                shape_draw_polygon(ctx->r2d, "line", pts, 4, { 255, 130, 35, 255 });   // 描边
+                return;
+        }
 
         // 视觉方块半边长：以碰撞盒较长边为准（旋转后角部略超碰撞盒，碰撞体以红框为准）
         float w = fp_to_float(rect.width);

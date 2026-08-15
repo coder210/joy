@@ -8,12 +8,20 @@ struct SpawnDef {
     float patrol_radius;  // 巡逻半径
     float detect_radius;  // 检测范围
     float attack_radius;  // 攻击范围
+    bool  ranged;         // 是否远程敌人
+    float bullet_speed;   // 子弹速度（m/s）
+    float bullet_interval;// 射击间隔（秒）
+    float bullet_damage;  // 子弹伤害
 };
 
 inline const SpawnDef ENEMY_SPAWNS[] = {
-    // 暂时只保留 1 个敌人（出生区附近），排查不同步问题
-    {  6.5f,  2.5f, 3.0f, 6.0f, 1.5f }, // 1
+    // 近战（出生区附近）
+    {  6.5f,  2.5f, 3.0f, 6.0f, 1.5f, false, 0.0f, 0.0f, 0.0f }, // 1
+    // 远程（地图右侧开阔区）
+    { 22.5f,  3.5f, 2.0f, 10.0f, 6.0f, true, 6.0f, 1.5f, 10.0f }, // 2
+    // 远程（地图左下角）
+    {  8.5f, 17.5f, 2.0f, 10.0f, 6.0f, true, 6.0f, 1.5f, 10.0f }, // 3
 };
-inline constexpr int ENEMY_SPAWN_COUNT = 1;
+inline constexpr int ENEMY_SPAWN_COUNT = 3;
 
 #endif

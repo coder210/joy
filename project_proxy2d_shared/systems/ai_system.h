@@ -5,12 +5,48 @@
 #include "../components/enemy_component.h"
 #include "../components/player_component.h"
 #include "../components/logic_position_component.h"
+#include "../components/logic_rect_component.h"
+#include "../components/transform_component.h"
+#include "../components/id_component.h"
+#include "../components/bullet_component.h"
 #include "../components/action_state_component.h"
 #include "../components/player_event_input.h"
 #include "../components/pathfinding_component.h"
 #include <cmath>
 
 struct Context;
+
+// 远程敌人发射子弹：帧同步下两端用 get_entity_id 分配相同 ID，无需网络同步。
+static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
+                               fp_t ex, fp_t ey, fp_t px, fp_t py,
+                               const AIComponent& ai)
+{
+    // 从敌人中心指向玩家中心（LogicPosition 均为碰撞盒左上角）
+    float exf = fp_to_float(ex) + 0.5f;
+    float eyf = fp_to_float(ey) + 0.5f;
+    float pxf = fp_to_float(px) + 0.5f;
+    float pyf = fp_to_float(py) + 0.5f;
+    float dx = pxf - exf;
+    float dy = pyf - eyf;
+    float len = sqrtf(dx * dx + dy * dy);
+    if (len < 0.001f) len = 1.0f;
+    float speed = fp_to_float(ai.bullet_speed);
+    float vx = dx / len * speed;
+    float vy = dy / len * speed;
+
+    // 出生点：敌人中心（子弹碰撞盒左上角 = 中心 - 半尺寸）
+    float cxf = exf - BULLET_HALF;
+    float cyf = eyf - BULLET_HALF;
+
+    entt::entity b = registry.create();
+    registry.emplace<IdComponent>(b, get_entity_id(ctx));
+    registry.emplace<BulletComponent>(b,
+        fp_from_float(vx), fp_from_float(vy), ai.bullet_damage, 0, BULLET_LIFE);
+    registry.emplace<LogicPositionComponent>(b, fp_from_float(cxf), fp_from_float(cyf));
+    registry.emplace<LogicRectComponent>(b, fp_from_float(BULLET_SIZE), fp_from_float(BULLET_SIZE));
+    registry.emplace<TransformComponent>(b,
+        cxf + BULLET_HALF, cyf + BULLET_HALF, 0.0f, BULLET_SIZE, BULLET_SIZE);
+}
 
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(ctx->FIXED_TIMESTEP));
@@ -57,6 +93,17 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             ai.state = 2;
             act.state = ActionStateComponent::ATTACK;
             act.attack_timer = ActionStateComponent::ATTACK_DURATION;
+
+            // 远程敌人：射击冷却与子弹生成（近战敌人跳过）
+            if (ai.ranged) {
+                if (ai.shoot_cooldown > 0) {
+                    ai.shoot_cooldown--;
+                } else {
+                    ai.shoot_cooldown = ai.shoot_interval;
+                    spawn_enemy_bullet(registry, ctx, pos.x, pos.y,
+                                       nearest_px, nearest_py, ai);
+                }
+            }
 
             if (!registry.all_of<PlayerEventInput>(e)) {
                 registry.emplace<PlayerEventInput>(e);

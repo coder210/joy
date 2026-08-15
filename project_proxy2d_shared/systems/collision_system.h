@@ -4,6 +4,7 @@
 #include "../components/logic_position_component.h"
 #include "../components/logic_rect_component.h"
 #include "../components/player_component.h"
+#include "../components/bullet_component.h"
 
 struct Context;
 
@@ -41,6 +42,8 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
             if (tile_entity == mover_entity) continue;
             if (registry.all_of<PlayerComponent>(tile_entity)) continue;
             if (registry.all_of<EnemyComponent>(tile_entity)) continue;
+            // 子弹为瞬时实体，碰撞由 bullet_system 自行处理，不应推挤移动体
+            if (registry.all_of<BulletComponent>(tile_entity)) continue;
 
             auto& tile_rect = all_view.get<LogicRectComponent>(tile_entity);
             auto& tile_pos = all_view.get<LogicPositionComponent>(tile_entity);

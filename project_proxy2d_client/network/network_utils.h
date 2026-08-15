@@ -7,6 +7,7 @@
 #include "../../project_proxy2d_shared/protocol.h"
 #include "../../project_proxy2d_shared/components/global_state_component.h"
 #include "../../project_proxy2d_shared/components/ai_component.h"
+#include "../../project_proxy2d_shared/components/health_component.h"
 #include "../../project_proxy2d_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
@@ -35,6 +36,9 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<PlayerComponent>(e, entity.player_conv);
                         // 动作状态组件：几何渲染的朝向 / 攻击表现依赖它
                         ctx->ecs.emplace<ActionStateComponent>(e);
+                        // 血量组件：从快照恢复（服务端子弹伤害结算结果）
+                        ctx->ecs.emplace<HealthComponent>(e,
+                            (float)entity.hp, PLAYER_MAX_HP);
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);
@@ -48,7 +52,12 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                                 fp_from_float(sd.x), fp_from_float(sd.y),
                                 fp_from_float(sd.patrol_radius),
                                 fp_from_float(sd.detect_radius),
-                                fp_from_float(sd.attack_radius));
+                                fp_from_float(sd.attack_radius),
+                                sd.ranged,                                   // 是否远程敌人
+                                fp_from_float(sd.bullet_speed),              // 子弹速度
+                                fp_from_float(sd.bullet_damage),             // 子弹伤害
+                                (int)(sd.bullet_interval * 20.0f + 0.5f),    // 射击间隔（tick）
+                                0);                                          // 射击冷却
                         }
                 }
         }
