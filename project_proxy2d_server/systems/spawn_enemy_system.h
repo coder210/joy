@@ -8,6 +8,7 @@
 #include "../../project_proxy2d_shared/components/logic_rect_component.h"
 #include "../../project_proxy2d_shared/components/transform_component.h"
 #include "../../project_proxy2d_shared/components/action_state_component.h"
+#include "../../project_proxy2d_shared/components/health_component.h"
 #include "../../project_proxy2d_shared/systems/spawn_def.h"
 
 // 在 OnStart 阶段运行，创建初始敌人实体
@@ -26,6 +27,9 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<TransformComponent>(e, s.x + 0.5f, s.y + 0.5f, 0.0f, 1.0f, 1.0f);
 
         registry.emplace<ActionStateComponent>(e);
+        // 血量组件：玩家远程子弹命中扣血；死亡后重生回出生点
+        registry.emplace<HealthComponent>(e, ENEMY_MAX_HP, ENEMY_MAX_HP,
+            false, 0.0f, fp_from_float(s.x), fp_from_float(s.y));
         registry.emplace<AIComponent>(e,
             fp_from_float(s.x), fp_from_float(s.y),  // patrol_center
             fp_from_float(s.patrol_radius),

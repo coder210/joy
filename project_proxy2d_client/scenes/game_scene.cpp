@@ -20,7 +20,9 @@
 #include "../network/network_utils.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/player_shoot_system.h"
 #include "../../project_proxy2d_shared/systems/bullet_system.h"
+#include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
@@ -55,7 +57,9 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(self->ctx, OnUpdate, "ai_system", ai_system);
+        add_system(self->ctx, OnUpdate, "player_shoot", player_shoot_system);
         add_system(self->ctx, OnUpdate, "bullet", bullet_system);
+        add_system(self->ctx, OnUpdate, "player_death", player_death_system);
         add_system(self->ctx, OnUpdate, "pathfinding", pathfinding_system);
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
@@ -86,6 +90,8 @@ static void client_on_keypressed(const char* key, int scancode, bool repeat, boo
         else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+        else if (strcmp(key, "e") == 0) key_mask = INPUT_RANGED;
+        else if (strcmp(key, "E") == 0) key_mask = INPUT_RANGED;
         if (key_mask) {
                 self->ctx->current_input_mask |= key_mask;
                 if (key_mask == INPUT_ATTACK) {
@@ -110,6 +116,8 @@ static void client_on_keyreleased(const char* key, int scancode, void* arg)
         else if (strcmp(key, "d") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "D") == 0) key_mask = INPUT_RIGHT;
         else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+        else if (strcmp(key, "e") == 0) key_mask = INPUT_RANGED;
+        else if (strcmp(key, "E") == 0) key_mask = INPUT_RANGED;
         if (key_mask) self->ctx->current_input_mask &= ~key_mask;
 }
 
@@ -131,6 +139,12 @@ static void on_handle_event(scene_p s, const void* ev)
                 case GAMEPLAY_CONTROL_RELEASE_RIGHT: new_mask &= ~INPUT_RIGHT; break;
                 case GAMEPLAY_CONTROL_ATTACK:
                         self->ctx->attack_triggered = true;
+                        break;
+                case GAMEPLAY_CONTROL_RANGED:
+                        new_mask |= INPUT_RANGED;
+                        break;
+                case GAMEPLAY_CONTROL_RELEASE_RANGED:
+                        new_mask &= ~INPUT_RANGED;
                         break;
                 default:
                         new_mask &= ~(INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT);

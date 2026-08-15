@@ -10,6 +10,7 @@
 #include "../components/logic_rect_component.h"
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
+#include "../components/health_component.h"
 #include "../protocol.h"
 
 struct Context;
@@ -279,10 +280,12 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                 shape_draw_line(ctx->r2d, r1.x, r1.y, r2.x, r2.y);
         }
 
-        // 本体旋转方块
+        // 本体旋转方块（死亡玩家变灰，代表"尸体"）
+        bool player_dead = is_player &&
+                ctx->ecs.all_of<HealthComponent>(e) && ctx->ecs.get<HealthComponent>(e).dead;
         if (is_player) {
-                jcolor_t fill   = { 255, 255, 255, 255 };
-                jcolor_t stroke = { 30, 30, 35, 255 };
+                jcolor_t fill   = player_dead ? jcolor_t{ 168, 170, 175, 200 } : jcolor_t{ 255, 255, 255, 255 };
+                jcolor_t stroke = player_dead ? jcolor_t{ 92, 94, 100, 255 }   : jcolor_t{ 30, 30, 35, 255 };
                 draw_rotated_square(ctx, c, half, rot, fill, stroke);
         } else {
                 jcolor_t fill   = { 22, 22, 26, 255 };
@@ -290,8 +293,10 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                 draw_rotated_square(ctx, c, half, rot, fill, stroke);
         }
 
-        // 朝向指示线（沿移动方向，方块内侧）
-        r2d_set_color(ctx->r2d, is_player ? 90 : 255, is_player ? 140 : 200, is_player ? 255 : 80, 220);
+        // 朝向指示线（沿移动方向，方块内侧；死亡时变暗）
+        r2d_set_color(ctx->r2d, player_dead ? 120 : (is_player ? 90 : 255),
+                player_dead ? 120 : (is_player ? 140 : 200),
+                player_dead ? 125 : (is_player ? 255 : 80), player_dead ? 140 : 220);
         vec2_t tip = { c.x + cosf(dir_rad) * half * 0.8f, c.y + sinf(dir_rad) * half * 0.8f };
         shape_draw_line(ctx->r2d, c.x, c.y, tip.x, tip.y);
 }

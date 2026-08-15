@@ -48,6 +48,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         int si = (int)entity.ai_type;
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {
                             auto& sd = ENEMY_SPAWNS[si];
+                            // 血量组件：从快照恢复（玩家远程子弹伤害结算结果）；出生点用于死亡重生
+                            ctx->ecs.emplace<HealthComponent>(e,
+                                (float)entity.hp, ENEMY_MAX_HP, false, 0.0f,
+                                fp_from_float(sd.x), fp_from_float(sd.y));
                             ctx->ecs.emplace<AIComponent>(e,
                                 fp_from_float(sd.x), fp_from_float(sd.y),
                                 fp_from_float(sd.patrol_radius),
@@ -84,8 +88,9 @@ static void send_input(Context* ctx)
     int dir = ctx->current_input_mask & INPUT_DIR_MASK;
     int attack = (ctx->current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (ctx->attack_triggered) { attack = 1; ctx->attack_triggered = false; }
-    if (dir || attack) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
+    int ranged = (ctx->current_input_mask & INPUT_RANGED) ? 1 : 0;
+    if (dir || attack || ranged) {
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack, ranged);
         netclient_send(ctx->netclient, data.c_str(), (int)data.size());
     }
 }

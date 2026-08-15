@@ -2,6 +2,7 @@
 #define MOVEMENT_SYSTEM_H
 #include "../components/player_state_input.h"
 #include "../components/logic_position_component.h"
+#include "../components/health_component.h"
 #include <joy/jmath.h>
 
 struct Context;
@@ -12,6 +13,8 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
 	auto view = registry.view<PlayerStateInput, LogicPositionComponent>();
 	fp_t step = fp_mul(MOVE_SPEED, fp_from_float(ctx->FIXED_TIMESTEP));
 	for (auto e : view) {
+		// 死亡期间禁止移动（尸体原地）
+		if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) { continue; }
 		auto& psi = view.get<PlayerStateInput>(e);
 		auto& p   = view.get<LogicPositionComponent>(e);
 		if (psi.move_bits == 0) { continue; }

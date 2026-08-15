@@ -2,6 +2,7 @@
 #define INPUT_CONSUME_INPUT_SYSTEM_H
 
 #include "../components/action_state_component.h"
+#include "../protocol.h"
 
 struct Context;
 
@@ -23,7 +24,7 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 		if (player == entt::null) continue;
 
 		PlayerStateInput state_input;
-		state_input.move_bits = input.dir;
+		state_input.move_bits = input.dir | (input.ranged ? INPUT_RANGED : 0);
 
 		log_info("Raw dir: %d\n", input.dir);
 

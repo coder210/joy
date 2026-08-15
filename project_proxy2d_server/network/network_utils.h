@@ -35,10 +35,10 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
         ctx->player_leaves.push_back(l);
 }
 
-static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack)
+static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack, int ranged)
 {
-        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d", conv, dir, attack);
-        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack };
+        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d ranged=%d", conv, dir, attack, ranged);
+        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack, (int8_t)ranged };
         ctx->player_inputs.push_back(i);
 }
 
@@ -78,13 +78,13 @@ static void network_receive(Context* ctx)
                         ctx->player_leaves.push_back(l);
                 }
                 else if (msg.type == NET_TYPE_MESSAGE) {
-                        int cmd, input_dir = 0, input_attack = 0; int64_t join_x = 0, join_y = 0;
-                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack)) {
+                        int cmd, input_dir = 0, input_attack = 0, input_ranged = 0; int64_t join_x = 0, join_y = 0;
+                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack, &input_ranged)) {
                                 switch (cmd) {
                                 case CMD_LOADING:       handle_cmd_loading(ctx, msg.conv); break;
                                 case CMD_PLAYER_JOIN:   handle_cmd_player_join(ctx, msg.conv, join_x, join_y); break;
                                 case CMD_PLAYER_LEAVE:  handle_cmd_player_leave(ctx, msg.conv); break;
-                                case CMD_PLAYER_INPUT:  handle_cmd_player_input(ctx, msg.conv, 0, input_dir, input_attack); break;
+                                case CMD_PLAYER_INPUT:  handle_cmd_player_input(ctx, msg.conv, 0, input_dir, input_attack, input_ranged); break;
                                 case CMD_PLAYER_HEART:  handle_cmd_heartbeat(ctx, msg.conv); break;
                                 }
                         }

@@ -14,7 +14,7 @@ static void setup_button_style(button_p btn) {
 
 struct gameplay_controls_layer {
 	scene_node_p scene_node;
-	button_p btn_up, btn_down, btn_left, btn_right, btn_attack;
+	button_p btn_up, btn_down, btn_left, btn_right, btn_attack, btn_ranged;
 };
 
 
@@ -35,6 +35,7 @@ static void on_event(scene_node_p n, const void* e)
 		if (self->btn_left  && hit(self->btn_left))  send_gameplay_control_event(GAMEPLAY_CONTROL_LEFT);
 		if (self->btn_right && hit(self->btn_right)) send_gameplay_control_event(GAMEPLAY_CONTROL_RIGHT);
 		if (self->btn_attack && hit(self->btn_attack)) {} // 攻击按钮按下只记录状态,松手才触发
+		if (self->btn_ranged && hit(self->btn_ranged)) send_gameplay_control_event(GAMEPLAY_CONTROL_RANGED); // 远程攻击按住置位
 	};
 	cbs.on_mousereleased = [](float x, float y, int btn, void* arg) {
 		auto* self = (gameplay_controls_layer_p)arg;
@@ -49,6 +50,8 @@ static void on_event(scene_node_p n, const void* e)
 			rel(self->btn_right, GAMEPLAY_CONTROL_RELEASE_RIGHT);
 		if (self->btn_attack && button_is_hovered(self->btn_attack, x, y))
 			rel(self->btn_attack, GAMEPLAY_CONTROL_ATTACK);
+		if (self->btn_ranged && button_is_hovered(self->btn_ranged, x, y))
+			rel(self->btn_ranged, GAMEPLAY_CONTROL_RELEASE_RANGED);
 	};
 	cbs.on_mousemoved = [](float x, float y, float dx, float dy, void* arg) {
 		auto* self = (gameplay_controls_layer_p)arg;
@@ -57,6 +60,7 @@ static void on_event(scene_node_p n, const void* e)
 		if (self->btn_left)   button_is_hovered(self->btn_left, x, y);
 		if (self->btn_right)  button_is_hovered(self->btn_right, x, y);
 		if (self->btn_attack) button_is_hovered(self->btn_attack, x, y);
+		if (self->btn_ranged) button_is_hovered(self->btn_ranged, x, y);
 	};
 	dispatch_event(cbs, e, self);
 }
@@ -146,6 +150,12 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 	setup_button_style(self->btn_attack);
 	button_set_textx(self->btn_attack, simhei_font, "A", (int)strlen("A"), { 0, 0, 0, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_attack, 0, 0));
+
+	// 远程攻击按钮（E），按住持续射击
+	self->btn_ranged = button_create(ctx->r2d, 50, 50);
+	setup_button_style(self->btn_ranged);
+	button_set_textx(self->btn_ranged, simhei_font, "E", (int)strlen("E"), { 0, 0, 0, 255 });
+	scene_node_add_child(root_node, make_button_node(self->btn_ranged, 60, 0));
 }
 
 gameplay_controls_layer_p create_gameplay_controls_layer(Context* ctx)

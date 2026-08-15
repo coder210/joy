@@ -12,6 +12,7 @@
 #include "../components/action_state_component.h"
 #include "../components/player_event_input.h"
 #include "../components/pathfinding_component.h"
+#include "../components/health_component.h"
 #include <cmath>
 
 struct Context;
@@ -52,7 +53,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(ctx->FIXED_TIMESTEP));
 
     auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
-    auto player_view = registry.view<PlayerComponent, LogicPositionComponent>();
+    auto player_view = registry.view<PlayerComponent, LogicPositionComponent, HealthComponent>();
 
     if (!ctx->is_server) {
         int i = 10;
@@ -63,6 +64,12 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
 
+        // 死亡敌人不行动（不追击/不攻击/不巡逻），等待 player_death_system 重生
+        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) {
+            if (registry.all_of<PathComponent>(e)) registry.remove<PathComponent>(e);
+            continue;
+        }
+
         // 攻击计时递减（替代动画状态机的攻击复位）
         if (act.attack_timer > 0.0f) act.attack_timer -= ctx->FIXED_TIMESTEP;
 
@@ -72,6 +79,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         fp_t nearest_px = fp_zero(), nearest_py = fp_zero();
 
         for (auto p : player_view) {
+            // 死亡玩家不作为敌人攻击/追击目标（不鞭尸）
+            if (player_view.get<HealthComponent>(p).dead) continue;
             auto& ppos = player_view.get<LogicPositionComponent>(p);
             fp_t dx = fp_sub(ppos.x, pos.x);
             fp_t dy = fp_sub(ppos.y, pos.y);

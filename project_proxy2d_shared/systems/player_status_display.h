@@ -18,6 +18,8 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
         const char* dirstr = "-";
         float px = 0.0f, py = 0.0f;
         float hp = -1.0f, max_hp = PLAYER_MAX_HP;
+        float respawn = 0.0f;
+        bool is_dead = false;
         bool found = false;
 
         auto view = ecs.view<PlayerComponent, TransformComponent, ActionStateComponent>();
@@ -29,8 +31,11 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
                 px = t.position.x;
                 py = t.position.y;
                 if (ecs.all_of<HealthComponent>(e)) {
-                        hp     = ecs.get<HealthComponent>(e).hp;
-                        max_hp = ecs.get<HealthComponent>(e).max_hp;
+                        auto& hc  = ecs.get<HealthComponent>(e);
+                        hp        = hc.hp;
+                        max_hp    = hc.max_hp;
+                        is_dead   = hc.dead;
+                        respawn   = hc.respawn_timer;
                 }
                 found = true;
                 switch (ac.state) {
@@ -51,7 +56,10 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
 
         char buf[128];
         if (found) {
-                if (hp >= 0.0f)
+                if (is_dead)
+                        snprintf(buf, sizeof(buf), "HP: 0/%.0f  POS:(%.1f, %.1f)  ST:DEAD 重生%.1fs",
+                                max_hp, px, py, respawn > 0.0f ? respawn : 0.0f);
+                else if (hp >= 0.0f)
                         snprintf(buf, sizeof(buf), "HP: %.0f/%.0f  POS:(%.1f, %.1f)  ST:%s %s",
                                 hp, max_hp, px, py, st, dirstr);
                 else

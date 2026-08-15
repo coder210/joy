@@ -21,7 +21,9 @@
 #include "../../project_proxy2d_shared/systems/collision_system.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/player_shoot_system.h"
 #include "../../project_proxy2d_shared/systems/bullet_system.h"
+#include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 
 #include "../network/network_utils.h"
@@ -55,7 +57,9 @@ static void on_load(scene_p s)
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(ctx, OnUpdate, "ai_system", ai_system);
+        add_system(ctx, OnUpdate, "player_shoot", player_shoot_system);
         add_system(ctx, OnUpdate, "bullet", bullet_system);
+        add_system(ctx, OnUpdate, "player_death", player_death_system);
         add_system(ctx, OnUpdate, "pathfinding", pathfinding_system);
         add_system(ctx, OnUpdate, "movement", movement_system);
         add_system(ctx, OnUpdate, "collision", collision_system);

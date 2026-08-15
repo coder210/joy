@@ -10,4 +10,8 @@ struct ActionStateComponent {
     // 时长取自原 warrior/goblin 攻击动画（6 帧 × 0.15s）
     float attack_timer = 0.0f;
     static constexpr float ATTACK_DURATION = 0.9f;
+
+    // 远程射击冷却（秒）：玩家按住远程攻击键时以固定间隔发射，由 player_shoot_system 递减
+    float ranged_cooldown = 0.0f;
+    static constexpr float RANGED_COOLDOWN = 0.3f;
 };
