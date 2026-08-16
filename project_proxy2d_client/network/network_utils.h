@@ -8,6 +8,7 @@
 #include "../../project_proxy2d_shared/components/global_state_component.h"
 #include "../../project_proxy2d_shared/components/ai_component.h"
 #include "../../project_proxy2d_shared/components/health_component.h"
+#include "../../project_proxy2d_shared/components/spawn_point_component.h"
 #include "../../project_proxy2d_shared/systems/spawn_def.h"
 
 // ========== 加载数据处理 ==========
@@ -38,7 +39,10 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<ActionStateComponent>(e);
                         // 血量组件：从快照恢复（服务端子弹伤害结算结果）
                         ctx->ecs.emplace<HealthComponent>(e,
-                            (float)entity.hp, PLAYER_MAX_HP);
+                            (int)entity.hp, PLAYER_MAX_HP);
+                        // 出生点：与 server 端 join 位置一致（默认地图中央）
+                        ctx->ecs.emplace<SpawnPointComponent>(e,
+                            DEFAULT_SPAWN_X, DEFAULT_SPAWN_Y);
                 }
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx->ecs.emplace<EnemyComponent>(e);
@@ -48,9 +52,11 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         int si = (int)entity.ai_type;
                         if (si >= 0 && si < ENEMY_SPAWN_COUNT) {
                             auto& sd = ENEMY_SPAWNS[si];
-                            // 血量组件：从快照恢复（玩家远程子弹伤害结算结果）；出生点用于死亡重生
+                            // 血量组件：从快照恢复（玩家远程子弹伤害结算结果）
                             ctx->ecs.emplace<HealthComponent>(e,
-                                (float)entity.hp, ENEMY_MAX_HP, false, 0.0f,
+                                (int)entity.hp, ENEMY_MAX_HP);
+                            // 出生点：从 SpawnDef 恢复（死亡重生传送目标）
+                            ctx->ecs.emplace<SpawnPointComponent>(e,
                                 fp_from_float(sd.x), fp_from_float(sd.y));
                             ctx->ecs.emplace<AIComponent>(e,
                                 fp_from_float(sd.x), fp_from_float(sd.y),

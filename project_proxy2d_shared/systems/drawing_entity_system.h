@@ -155,7 +155,7 @@ static void draw_hp_ring(Context* ctx, vec2_t c, float ring_R, const HealthCompo
 {
         if (hc.dead) return;
 
-        float ratio = hc.hp / hc.max_hp;
+        float ratio = (float)hc.hp / (float)hc.max_hp;
         if (ratio > 1.0f) ratio = 1.0f;
         if (ratio < 0.0f) ratio = 0.0f;
 

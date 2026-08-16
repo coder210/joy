@@ -2,6 +2,7 @@
 #define INPUT_CONSUME_INPUT_SYSTEM_H
 
 #include "../components/action_state_component.h"
+#include "../components/health_component.h"
 #include "../protocol.h"
 
 struct Context;
@@ -22,6 +23,11 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 			}
 		}
 		if (player == entt::null) continue;
+
+		// 死亡期间不消费输入：尸体不转向、不出招、不留移动位。
+		// 帧同步确定性：dead 由两端同一 tick 置位，故此处判定两端一致
+		if (registry.all_of<HealthComponent>(player) &&
+		    registry.get<HealthComponent>(player).dead) continue;
 
 		PlayerStateInput state_input;
 		state_input.move_bits = input.dir | (input.ranged ? INPUT_RANGED : 0);
@@ -52,7 +58,7 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 		// 其余由移动位掩码决定 WALK/IDLE 与朝向
 		if (registry.all_of<ActionStateComponent>(player)) {
 			auto& act = registry.get<ActionStateComponent>(player);
-			if (act.attack_timer > 0.0f) act.attack_timer -= ctx->FIXED_TIMESTEP;
+			if (act.attack_timer > 0) act.attack_timer -= 1;
 
 			int  dir_idx = input_to_dir(input.dir);
 			bool moving  = has_dir(input.dir);
@@ -62,9 +68,9 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 				act.attack_timer = ActionStateComponent::ATTACK_DURATION;
 				if (moving) act.dir = dir_idx;
 			} else {
-				act.state = act.attack_timer > 0.0f ? ActionStateComponent::ATTACK
-				                                    : (moving ? ActionStateComponent::WALK
-				                                              : ActionStateComponent::IDLE);
+				act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
+				                                 : (moving ? ActionStateComponent::WALK
+				                                           : ActionStateComponent::IDLE);
 				if (moving) act.dir = dir_idx;
 			}
 		}

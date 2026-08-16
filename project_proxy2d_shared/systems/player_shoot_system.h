@@ -54,15 +54,15 @@ static void player_shoot_system(entt::registry& registry, Context* ctx, float /*
     auto view = registry.view<PlayerComponent, PlayerStateInput, LogicPositionComponent, ActionStateComponent>();
     for (auto e : view) {
         auto& act = view.get<ActionStateComponent>(e);
-        // 冷却递减（无条件，无论是否按住）
-        if (act.ranged_cooldown > 0.0f) act.ranged_cooldown -= ctx->FIXED_TIMESTEP;
+        // 冷却递减（无条件，无论是否按住），每逻辑 tick 减 1
+        if (act.ranged_cooldown > 0) act.ranged_cooldown -= 1;
 
         auto& psi = view.get<PlayerStateInput>(e);
         if (!(psi.move_bits & INPUT_RANGED)) continue;
 
         // 死亡玩家不能射击
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) continue;
-        if (act.ranged_cooldown > 0.0f) continue;
+        if (act.ranged_cooldown > 0) continue;
 
         act.ranged_cooldown = ActionStateComponent::RANGED_COOLDOWN;
         auto& pos = view.get<LogicPositionComponent>(e);

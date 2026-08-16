@@ -38,7 +38,7 @@ static void handle_cmd_player_leave(Context* ctx, int conv)
 
 static void handle_cmd_player_input(Context* ctx, int conv, uint32_t seq, int dir, int attack, int ranged)
 {
-        log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d ranged=%d", conv, dir, attack, ranged);
+        // log_info("[SERVER] handle_input: conv=%d dir=%d attack=%d ranged=%d", conv, dir, attack, ranged);
         S2CPlayerInput i = { seq, conv, dir, (int8_t)attack, (int8_t)ranged };
         ctx->player_inputs.push_back(i);
 }
@@ -99,17 +99,6 @@ static void network_receive(Context* ctx)
         }
 }
 
-// ========== 帧同步辅助 ==========
-static int get_target_frame_id(int curr_frameid, int context_frameid)
-{
-        int diff = context_frameid - curr_frameid;
-        if (diff >= 50)      return curr_frameid + 9;
-        if (diff >= 30)      return curr_frameid;
-        if (diff >= 10)      return curr_frameid + 4;
-        if (diff > 2)        return curr_frameid + 2;
-        return curr_frameid;
-}
-
 // ========== 收集输入 + 打包命令帧 ==========
 static void collect_input(Context* ctx)
 {
@@ -151,8 +140,11 @@ static void input_forwarding(Context* ctx)
         for (auto e : view) {
                 auto& comp = view.get<ConnectionComponent>(e);
                 if (comp.is_loaded) {
-                        int taget_frameid = get_target_frame_id(comp.frameid,
-                                ctx->ecs.ctx().get<GlobalState>().next_frame_id);
+                        int next_frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id;
+                        // 一次最多补发 2 帧平滑网络；但绝不越过已打包的最新帧，
+                        // 保证客户端严格按序收到全部命令帧（缺帧会让两端状态漂移导致 checksum MISMATCH）
+                        int taget_frameid = next_frame_id;
+                        if (taget_frameid - comp.frameid > 2) taget_frameid = comp.frameid + 2;
                         for (int i = comp.frameid; i < taget_frameid; i++) {
                                 auto it = ctx->commands.find(i);
                                 if (it != ctx->commands.end()) {

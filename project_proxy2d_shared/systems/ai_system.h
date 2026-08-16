@@ -70,8 +70,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             continue;
         }
 
-        // 攻击计时递减（替代动画状态机的攻击复位）
-        if (act.attack_timer > 0.0f) act.attack_timer -= ctx->FIXED_TIMESTEP;
+        // 攻击计时递减（替代动画状态机的攻击复位），每逻辑 tick 减 1
+        if (act.attack_timer > 0) act.attack_timer -= 1;
 
         // 寻找最近玩家
         bool found_player = false;
@@ -103,6 +103,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             act.state = ActionStateComponent::ATTACK;
             act.attack_timer = ActionStateComponent::ATTACK_DURATION;
 
+
             // 远程敌人：射击冷却与子弹生成（近战敌人跳过）
             if (ai.ranged) {
                 if (ai.shoot_cooldown > 0) {
@@ -130,8 +131,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             // 状态 1：追击（实际移动由 pathfinding_system 的 A* 完成）
             ai.state = 1;
             // 攻击计时未结束前保持攻击表现，结束后回到 WALK
-            act.state = act.attack_timer > 0.0f ? ActionStateComponent::ATTACK
-                                                : ActionStateComponent::WALK;
+            act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
+                                             : ActionStateComponent::WALK;
 
             // 记录最近玩家所在格子作为寻路目标，标记需要重算
             if (!registry.all_of<PathComponent>(e)) {
@@ -154,8 +155,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             // 状态 0：巡逻
             ai.state = 0;
             // 攻击计时未结束前保持攻击表现，结束后回到 WALK
-            act.state = act.attack_timer > 0.0f ? ActionStateComponent::ATTACK
-                                                : ActionStateComponent::WALK;
+            act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
+                                             : ActionStateComponent::WALK;
 
             ai.timer--;
             if (ai.timer <= 0) {

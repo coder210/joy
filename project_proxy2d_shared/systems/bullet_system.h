@@ -61,8 +61,8 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
                     by < py + ph && by + BULLET_SIZE > py) {
                     auto& h = player_view.get<HealthComponent>(p);
                     if (h.dead) continue;   // 已死亡玩家不结算子弹伤害
-                    h.hp -= fp_to_float(b.damage);
-                    if (h.hp < 0.0f) h.hp = 0.0f;
+                    h.hp -= (int)fp_to_float(b.damage);
+                    if (h.hp < 0) h.hp = 0;
                     to_destroy.push_back(e);
                     break;
                 }
@@ -80,8 +80,8 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
                     by < ey + eh && by + BULLET_SIZE > ey) {
                     auto& h = enemy_view.get<HealthComponent>(en);
                     if (h.dead) continue;   // 已死亡敌人不结算子弹伤害
-                    h.hp -= fp_to_float(b.damage);
-                    if (h.hp < 0.0f) h.hp = 0.0f;
+                    h.hp -= (int)fp_to_float(b.damage);
+                    if (h.hp < 0) h.hp = 0;
                     to_destroy.push_back(e);
                     break;
                 }

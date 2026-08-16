@@ -37,7 +37,7 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                 }
                 ent.hp = 0;
                 if (registry.all_of<HealthComponent>(e))
-                    ent.hp = (int64_t)registry.get<HealthComponent>(e).hp;
+                    ent.hp = registry.get<HealthComponent>(e).hp;
                 ent.position_x = pos.x;
                 ent.position_y = pos.y;
                 ent.width = rect.width;

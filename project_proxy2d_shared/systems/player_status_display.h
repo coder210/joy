@@ -17,8 +17,8 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
         const char* st     = "--";
         const char* dirstr = "-";
         float px = 0.0f, py = 0.0f;
-        float hp = -1.0f, max_hp = PLAYER_MAX_HP;
-        float respawn = 0.0f;
+        float hp = -1.0f, max_hp = (float)PLAYER_MAX_HP;
+        int   respawn = 0;   // 重生剩余 tick，显示时换算为秒
         bool is_dead = false;
         bool found = false;
 
@@ -58,7 +58,7 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
         if (found) {
                 if (is_dead)
                         snprintf(buf, sizeof(buf), "HP: 0/%.0f  POS:(%.1f, %.1f)  ST:DEAD 重生%.1fs",
-                                max_hp, px, py, respawn > 0.0f ? respawn : 0.0f);
+                                max_hp, px, py, respawn > 0 ? respawn / 20.0f : 0.0f);
                 else if (hp >= 0.0f)
                         snprintf(buf, sizeof(buf), "HP: %.0f/%.0f  POS:(%.1f, %.1f)  ST:%s %s",
                                 hp, max_hp, px, py, st, dirstr);
