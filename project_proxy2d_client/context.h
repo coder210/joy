@@ -29,11 +29,6 @@ struct state_snapshot {
         fp_t position_x, position_y;
 };
 
-//struct Session {
-//    entt::entity player_entity = entt::null;  // 对应的玩家实体（加载完成后才赋值）
-//};
-
-
 
 struct Context {
         bool is_server = false;
@@ -51,7 +46,7 @@ struct Context {
         audio_bgm_p         bgm = NULL;
         int local_dir = 0; // 本地玩家方向
         // 远程玩家方向追踪
-        std::map<entt::entity, int>  remote_dirs;
+        //std::map<entt::entity, int>  remote_dirs;
 
         std::map<int, int> server_inputs;
         bool ready = false;
@@ -65,8 +60,6 @@ struct Context {
         bool attack_triggered = false;          // 按钮 tap 攻击，发送一次后自动复位
         float heartbeatTimer = 0.0f;
 
-        //std::unordered_map<int, Session> sessions;   // key = conv
-
         std::queue<std::string> command_queue;
 
         // ========== 预测回滚相关 ==========
@@ -76,7 +69,7 @@ struct Context {
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 20.0f;
+        float FIXED_TIMESTEP = 1.0f / 50.0f;
 
         // 视觉时间（仅渲染用，不参与帧同步）：
         // 驱动"浑天仪式"轨道环的自旋/变形相位

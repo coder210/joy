@@ -22,9 +22,9 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<EnemyComponent>(e);
         registry.emplace<SpawnIdxComponent>(e, i);
         registry.emplace<LogicPositionComponent>(e, fp_from_float(s.x), fp_from_float(s.y));
-        registry.emplace<LogicRectComponent>(e, fp_from_float(1), fp_from_float(1));
-        // 碰撞盒为 1x1，position 取碰撞盒中心（渲染以中心为原点）
-        registry.emplace<TransformComponent>(e, s.x + 0.5f, s.y + 0.5f, 0.0f, 1.0f, 1.0f);
+        registry.emplace<LogicRectComponent>(e, fp_from_float(0.8f), fp_from_float(0.8f));
+        // 碰撞盒为 0.8x0.8（原 1x1 的 80%），position 取碰撞盒中心（渲染以中心为原点）
+        registry.emplace<TransformComponent>(e, s.x + 0.4f, s.y + 0.4f, 0.0f, 1.0f, 1.0f);
 
         registry.emplace<ActionStateComponent>(e);
         // 血量组件：玩家远程子弹命中扣血；死亡后重生回出生点

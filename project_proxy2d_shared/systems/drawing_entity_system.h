@@ -43,92 +43,94 @@ static bool  g_ring_vt_init  = false;
 
 // ---- 三角形 ↔ 正方形 逐点插值，生成形态环采样点 ----
 // blend ∈ [0,1]：0=三角形，1=正方形；rot 为环整体旋转角
-static void morph_ring_points(vec2_t center, float R, float blend, float rot, vec2_t* pts)
-{
-        vec2_t tri[GD_RING_POINTS], quad[GD_RING_POINTS];
-        for (int i = 0; i < GD_RING_POINTS; i++) {
-                // 三角形：3 条边，每边 12 个采样点
-                int e = i / 12;
-                int s = i % 12;
-                float a0 = rot + e * (2.0f * GD_PI / 3.0f);
-                float a1 = rot + (e + 1) * (2.0f * GD_PI / 3.0f);
-                float t  = (float)s / 11.0f;
-                vec2_t p0 = { center.x + R * cosf(a0), center.y + R * sinf(a0) };
-                vec2_t p1 = { center.x + R * cosf(a1), center.y + R * sinf(a1) };
-                tri[i].x = p0.x + (p1.x - p0.x) * t;
-                tri[i].y = p0.y + (p1.y - p0.y) * t;
+// [已注释] 轨道环暂时停用（2026-08-16）：玩家/敌人的双轨道环不再绘制
+// static void morph_ring_points(vec2_t center, float R, float blend, float rot, vec2_t* pts)
+// {
+//         vec2_t tri[GD_RING_POINTS], quad[GD_RING_POINTS];
+//         for (int i = 0; i < GD_RING_POINTS; i++) {
+//                 // 三角形：3 条边，每边 12 个采样点
+//                 int e = i / 12;
+//                 int s = i % 12;
+//                 float a0 = rot + e * (2.0f * GD_PI / 3.0f);
+//                 float a1 = rot + (e + 1) * (2.0f * GD_PI / 3.0f);
+//                 float t  = (float)s / 11.0f;
+//                 vec2_t p0 = { center.x + R * cosf(a0), center.y + R * sinf(a0) };
+//                 vec2_t p1 = { center.x + R * cosf(a1), center.y + R * sinf(a1) };
+//                 tri[i].x = p0.x + (p1.x - p0.x) * t;
+//                 tri[i].y = p0.y + (p1.y - p0.y) * t;
 
-                // 正方形：4 条边，每边 9 个采样点（+45° 起始，rot=0 时角朝上）
-                int qe = i / 9;
-                int qs = i % 9;
-                float b0 = rot + 0.785398f + qe * (GD_PI * 0.5f);
-                float b1 = rot + 0.785398f + (qe + 1) * (GD_PI * 0.5f);
-                float q  = (float)qs / 8.0f;
-                vec2_t q0 = { center.x + R * cosf(b0), center.y + R * sinf(b0) };
-                vec2_t q1 = { center.x + R * cosf(b1), center.y + R * sinf(b1) };
-                quad[i].x = q0.x + (q1.x - q0.x) * q;
-                quad[i].y = q0.y + (q1.y - q0.y) * q;
+//                 // 正方形：4 条边，每边 9 个采样点（+45° 起始，rot=0 时角朝上）
+//                 int qe = i / 9;
+//                 int qs = i % 9;
+//                 float b0 = rot + 0.785398f + qe * (GD_PI * 0.5f);
+//                 float b1 = rot + 0.785398f + (qe + 1) * (GD_PI * 0.5f);
+//                 float q  = (float)qs / 8.0f;
+//                 vec2_t q0 = { center.x + R * cosf(b0), center.y + R * sinf(b0) };
+//                 vec2_t q1 = { center.x + R * cosf(b1), center.y + R * sinf(b1) };
+//                 quad[i].x = q0.x + (q1.x - q0.x) * q;
+//                 quad[i].y = q0.y + (q1.y - q0.y) * q;
 
-                pts[i].x = tri[i].x + (quad[i].x - tri[i].x) * blend;
-                pts[i].y = tri[i].y + (quad[i].y - tri[i].y) * blend;
-        }
-}
+//                 pts[i].x = tri[i].x + (quad[i].x - tri[i].x) * blend;
+//                 pts[i].y = tri[i].y + (quad[i].y - tri[i].y) * blend;
+//         }
+// }
 
 // ---- 双轨道环（浑天仪式）：内外环反向自旋，随速度变亮变大，三角↔方形变形 ----
-static void draw_orbits(Context* ctx, vec2_t c, float speed_ratio, bool is_player,
-        float visual_time, float seed)
-{
-        jcolor_t deep, bright;
-        if (is_player) {
-                deep   = { 45, 65, 140, 255 };   // 深蓝
-                bright = { 90, 140, 255, 255 };  // 亮蓝
-        } else {
-                deep   = { 155, 115, 30, 255 };  // 深金
-                bright = { 255, 200, 80, 255 };  // 亮金
-        }
+// [已注释] 轨道环暂时停用（2026-08-16）：玩家/敌人的双轨道环不再绘制
+// static void draw_orbits(Context* ctx, vec2_t c, float speed_ratio, bool is_player,
+//         float visual_time, float seed)
+// {
+//         jcolor_t deep, bright;
+//         if (is_player) {
+//                 deep   = { 45, 65, 140, 255 };   // 深蓝
+//                 bright = { 90, 140, 255, 255 };  // 亮蓝
+//         } else {
+//                 deep   = { 155, 115, 30, 255 };  // 深金
+//                 bright = { 255, 200, 80, 255 };  // 亮金
+//         }
 
-        float alpha = 0.5f + speed_ratio * 0.35f;      // 速度越快越亮
-        float grow  = 1.0f + speed_ratio * 0.6f;       // 速度越快越大
-        // 内外环变形相位相差 π：一边接近三角形时另一边接近正方形
-        // 0.05f → 变形周期约 126 秒，呼吸舒缓不易察觉（原 0.25f 每 ~12 秒就回到三角形起点）
-        float morph1 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed);
-        float morph2 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed + GD_PI);
-        // 内外环反向自旋，速度越快转得越快
-        float rot_in  = visual_time * (0.6f + speed_ratio * 1.4f);
-        float rot_out = -visual_time * (0.45f + speed_ratio * 1.1f);
+//         float alpha = 0.5f + speed_ratio * 0.35f;      // 速度越快越亮
+//         float grow  = 1.0f + speed_ratio * 0.6f;       // 速度越快越大
+//         // 内外环变形相位相差 π：一边接近三角形时另一边接近正方形
+//         // 0.05f → 变形周期约 126 秒，呼吸舒缓不易察觉（原 0.25f 每 ~12 秒就回到三角形起点）
+//         float morph1 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed);
+//         float morph2 = 0.5f + 0.5f * sinf(visual_time * 0.05f + seed + GD_PI);
+//         // 内外环反向自旋，速度越快转得越快
+//         float rot_in  = visual_time * (0.6f + speed_ratio * 1.4f);
+//         float rot_out = -visual_time * (0.45f + speed_ratio * 1.1f);
 
-        vec2_t ring[GD_RING_POINTS];
+//         vec2_t ring[GD_RING_POINTS];
 
-        // ---- 外环（亮色）----
-        // 发光晕圈：向外扩 4px，半透明
-        morph_ring_points(c, (GD_RING_OUT + 4.0f) * grow, morph1, rot_out, ring);
-        r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(60 * alpha));
-        for (int i = 0; i < GD_RING_POINTS; i++) {
-                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
-                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
-        }
-        // 主环
-        morph_ring_points(c, GD_RING_OUT * grow, morph1, rot_out, ring);
-        r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(255 * alpha));
-        for (int i = 0; i < GD_RING_POINTS; i++) {
-                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
-                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
-        }
+//         // ---- 外环（亮色）----
+//         // 发光晕圈：向外扩 4px，半透明
+//         morph_ring_points(c, (GD_RING_OUT + 4.0f) * grow, morph1, rot_out, ring);
+//         r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(60 * alpha));
+//         for (int i = 0; i < GD_RING_POINTS; i++) {
+//                 vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+//                 shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+//         }
+//         // 主环
+//         morph_ring_points(c, GD_RING_OUT * grow, morph1, rot_out, ring);
+//         r2d_set_color(ctx->r2d, bright.r, bright.g, bright.b, (uint8_t)(255 * alpha));
+//         for (int i = 0; i < GD_RING_POINTS; i++) {
+//                 vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+//                 shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+//         }
 
-        // ---- 内环（深色）----
-        morph_ring_points(c, (GD_RING_IN + 3.0f) * grow, morph2, rot_in, ring);
-        r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(55 * alpha));
-        for (int i = 0; i < GD_RING_POINTS; i++) {
-                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
-                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
-        }
-        morph_ring_points(c, GD_RING_IN * grow, morph2, rot_in, ring);
-        r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(255 * alpha));
-        for (int i = 0; i < GD_RING_POINTS; i++) {
-                vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
-                shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
-        }
-}
+//         // ---- 内环（深色）----
+//         morph_ring_points(c, (GD_RING_IN + 3.0f) * grow, morph2, rot_in, ring);
+//         r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(55 * alpha));
+//         for (int i = 0; i < GD_RING_POINTS; i++) {
+//                 vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+//                 shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+//         }
+//         morph_ring_points(c, GD_RING_IN * grow, morph2, rot_in, ring);
+//         r2d_set_color(ctx->r2d, deep.r, deep.g, deep.b, (uint8_t)(255 * alpha));
+//         for (int i = 0; i < GD_RING_POINTS; i++) {
+//                 vec2_t a = ring[i], b = ring[(i + 1) % GD_RING_POINTS];
+//                 shape_draw_line(ctx->r2d, a.x, a.y, b.x, b.y);
+//         }
+// }
 
 // ---- 旋转正方形本体（4 顶点，fill + 描边）----
 static void draw_rotated_square(Context* ctx, vec2_t c, float half, float rot,
@@ -142,6 +144,59 @@ static void draw_rotated_square(Context* ctx, vec2_t c, float half, float rot,
         }
         shape_draw_polygon(ctx->r2d, "fill", pts, 4, fill);
         shape_draw_polygon(ctx->r2d, "line", pts, 4, stroke);
+}
+
+// ---- 环形血条：围绕本体的一圈弧线，弧长 = 当前血量比例 ----
+//   ratio>50% 保持阵营色（蓝=玩家 / 金=敌人）、25%~50% 变黄、<25% 变红并呼吸闪烁
+//   死亡不画（尸体灰块已表达状态）。纯视觉，不参与帧同步。
+//   ring_R：血环半径（像素），由调用方按碰撞框宽传入，保证环直径 ≡ 碰撞框宽
+static void draw_hp_ring(Context* ctx, vec2_t c, float ring_R, const HealthComponent& hc,
+        bool is_player)
+{
+        if (hc.dead) return;
+
+        float ratio = hc.hp / hc.max_hp;
+        if (ratio > 1.0f) ratio = 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+
+        const float R    = ring_R;          // 直径 = 碰撞框宽
+        const int   segs = 24;             // 弧线采样段
+        const float a0   = -GD_PI * 0.5f;  // 起始于正上方，顺时针扫过
+
+        // 底色环：一圈浅灰半透明，表示最大血量（缺角即缺口，信息可读）
+        jcolor_t dim = is_player ? jcolor_t{ 60, 80, 150, 70 } : jcolor_t{ 150, 120, 50, 70 };
+        r2d_set_color(ctx->r2d, dim.r, dim.g, dim.b, dim.a);
+        for (int i = 0; i < segs; i++) {
+                float a1 = a0 + (float)i * (2.0f * GD_PI / segs);
+                float a2 = a0 + (float)(i + 1) * (2.0f * GD_PI / segs);
+                vec2_t p1 = { c.x + cosf(a1) * R, c.y + sinf(a1) * R };
+                vec2_t p2 = { c.x + cosf(a2) * R, c.y + sinf(a2) * R };
+                shape_draw_line(ctx->r2d, p1.x, p1.y, p2.x, p2.y);
+        }
+
+        if (ratio <= 0.0f) return;
+
+        // 血量弧：颜色分级 + 低血量呼吸
+        jcolor_t col;
+        if      (ratio > 0.50f) col = is_player ? jcolor_t{ 90, 140, 255, 255 } : jcolor_t{ 255, 200, 80, 255 };
+        else if (ratio > 0.25f) col = jcolor_t{ 240, 200, 60, 255 };
+        else                    col = jcolor_t{ 230, 60, 50, 255 };
+        if (ratio < 0.25f) {
+                float pulse = 0.55f + 0.45f * sinf(ctx->visual_time * 6.0f);
+                col.a = (uint8_t)(255 * pulse);
+        }
+        r2d_set_color(ctx->r2d, col.r, col.g, col.b, col.a);
+
+        float sweep = ratio * (2.0f * GD_PI);
+        int   n     = (int)ceilf(sweep / (2.0f * GD_PI) * segs);
+        for (int i = 0; i < n; i++) {
+                float a1 = a0 + (float)i * (2.0f * GD_PI / segs);
+                float a2 = a0 + (float)(i + 1) * (2.0f * GD_PI / segs);
+                if (a2 - a0 > sweep) a2 = a0 + sweep;
+                vec2_t p1 = { c.x + cosf(a1) * R, c.y + sinf(a1) * R };
+                vec2_t p2 = { c.x + cosf(a2) * R, c.y + sinf(a2) * R };
+                shape_draw_line(ctx->r2d, p1.x, p1.y, p2.x, p2.y);
+        }
 }
 
 // ---- 白色画布 + 浅灰网格（随相机滚动）----
@@ -259,15 +314,15 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
         if (fabsf(smooth - target_ratio) < 0.01f) smooth = target_ratio;
         float speed_ratio = smooth;
 
-        // 轨道环相位种子：同一实体稳定、不同实体错开
-        float seed = t.position.x * 1.7f + t.position.y * 3.1f + (is_player ? 0.0f : 13.37f);
+        // [已注释] 轨道环相位种子：同一实体稳定、不同实体错开（环停用，暂无消费）
+        // float seed = t.position.x * 1.7f + t.position.y * 3.1f + (is_player ? 0.0f : 13.37f);
 
         // 自旋角：静止慢转、移动加快；基础 45° 使方块呈菱形（官方造型）
         float spin = 0.7f + speed_ratio * 1.8f;
         float rot  = 0.785398f + ctx->visual_time * spin;
 
-        // 先画轨道环，本体压在其上
-        draw_orbits(ctx, c, speed_ratio, is_player, ctx->visual_time, seed);
+        // [已注释] 轨道环暂时停用：本体直接压上来
+        // draw_orbits(ctx, c, speed_ratio, is_player, ctx->visual_time, seed);
 
         // 攻击：沿朝向画发光射线（两层线模拟辉光）
         if (is_attack) {
@@ -299,4 +354,11 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                 player_dead ? 125 : (is_player ? 255 : 80), player_dead ? 140 : 220);
         vec2_t tip = { c.x + cosf(dir_rad) * half * 0.8f, c.y + sinf(dir_rad) * half * 0.8f };
         shape_draw_line(ctx->r2d, c.x, c.y, tip.x, tip.y);
+
+        // 环形血条：直径 ≡ 碰撞框宽，弧长=血量比例，颜色分级（死亡不画）
+        if (ctx->ecs.all_of<HealthComponent>(e)) {
+                auto& hc = ctx->ecs.get<HealthComponent>(e);
+                float ring_R = fp_to_float(rect.width) * SERVER_PPM * 0.5f;
+                draw_hp_ring(ctx, c, ring_R, hc, is_player);
+        }
 }

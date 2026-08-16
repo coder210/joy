@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../project_proxy2d_shared/protocol.h"
@@ -26,6 +27,7 @@
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
+#include "../../project_proxy2d_shared/systems/state_checksum.h"
 
 struct game_scene {
         scene_p scene;
@@ -185,14 +187,33 @@ static void on_update(scene_p s, float dt) {
                 S2CPlayerJoin joins[32];
                 S2CPlayerLeave leaves[32];
                 S2CPlayerInput inputs[64];
+                char server_checksum[64] = { 0 };
                 bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
-                        &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
+                        &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in,
+                        server_checksum, sizeof(server_checksum));
                 if (ok) {
                         auto& cmd = self->ctx->ecs.ctx().get<NetComponent>();
                         cmd.frame_id = ok ? frame_id : -1;
                         cmd.num_joins = jn;  memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
                         cmd.num_leaves = ln; memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
                         cmd.num_inputs = in; memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
+
+                        // 帧同步校验：模拟本帧前，用与服务端相同公式计算本地玩家状态 MD5 并对比
+                        std::vector<ChecksumEntry> entries;
+                        auto pv = self->ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
+                        for (auto e : pv) {
+                                auto& idc = pv.get<IdComponent>(e);
+                                auto& lpc = pv.get<LogicPositionComponent>(e);
+                                entries.push_back({ idc.id, lpc.x, lpc.y });
+                        }
+                        char local_checksum[64] = { 0 };
+                        compute_players_md5(entries, local_checksum, sizeof(local_checksum));
+                        if (strcmp(local_checksum, server_checksum) == 0) {
+                                log_info("[CHECKSUM] frame=%d OK %s", frame_id, local_checksum);
+                        } else {
+                                log_error("[CHECKSUM] frame=%d MISMATCH server=%s local=%s",
+                                        frame_id, server_checksum, local_checksum);
+                        }
                 }
 
                 // 统一 system 调度（PreUpdate → OnUpdate → PostUpdate）

@@ -1,6 +1,7 @@
 #ifndef NETWORK_UTILS_H
 #define NETWORK_UTILS_H
 #include "../context.h"
+#include "../../project_proxy2d_shared/systems/state_checksum.h"
 
 // ========== 网络命令处理（handle_cmd_*）==========
 static void handle_cmd_loading(Context* ctx, int conv)
@@ -123,25 +124,16 @@ static void collect_input(Context* ctx)
         for (auto& inp : ctx->player_inputs)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
-        std::vector<std::pair<int, std::pair<fp_t, fp_t>>> player_positions;
+        // 帧同步状态指纹：与客户端共用同一公式（state_checksum.h）
+        std::vector<ChecksumEntry> entries;
         auto pos_view = ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
         for (auto e : pos_view) {
                 auto& idc = pos_view.get<IdComponent>(e);
                 auto& lpc = pos_view.get<LogicPositionComponent>(e);
-                player_positions.push_back({ idc.id, { lpc.x, lpc.y } });
-        }
-        std::sort(player_positions.begin(), player_positions.end());
-
-        std::string checksum_input;
-        for (auto& player : player_positions) {
-                char buf[64];
-                int n = snprintf(buf, sizeof(buf), "%d:%lld:%lld,",
-                        player.first, (long long)player.second.first,
-                        (long long)player.second.second);
-                checksum_input.append(buf, n);
+                entries.push_back({ idc.id, lpc.x, lpc.y });
         }
         char checksum[64] = { 0 };
-        utils_md5x(checksum_input.c_str(), checksum_input.size(), checksum);
+        compute_players_md5(entries, checksum, sizeof(checksum));
 
         auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, num_joins, leaves, num_leaves, inputs, num_inputs, checksum);
         ctx->commands[frame_id] = command_data;

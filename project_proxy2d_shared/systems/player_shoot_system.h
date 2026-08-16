@@ -23,9 +23,9 @@ static void spawn_player_bullet(entt::registry& registry, Context* ctx,
     const float speed  = 9.0f;
     const fp_t  damage = fp_from_float(25.0f);
 
-    // 玩家碰撞盒 1x1，中心 = 左上角 + 0.5
-    float cx = fp_to_float(px) + 0.5f;
-    float cy = fp_to_float(py) + 0.5f;
+    // 玩家碰撞盒 0.8x0.8，中心 = 左上角 + 0.4
+    float cx = fp_to_float(px) + 0.4f;
+    float cy = fp_to_float(py) + 0.4f;
     float vx = 0.0f, vy = 0.0f;
     switch (dir) {
         case 0:  vy =  speed; break; // 下

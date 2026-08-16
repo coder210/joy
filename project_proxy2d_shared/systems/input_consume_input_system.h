@@ -26,7 +26,7 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 		PlayerStateInput state_input;
 		state_input.move_bits = input.dir | (input.ranged ? INPUT_RANGED : 0);
 
-		log_info("Raw dir: %d\n", input.dir);
+		// log_info("Raw dir: %d\n", input.dir);
 
 		if (registry.all_of<PlayerStateInput>(player)) {
 			auto& state = registry.get<PlayerStateInput>(player);

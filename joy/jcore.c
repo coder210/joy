@@ -173,8 +173,8 @@ void dispatch_event(jevent_callbacks_t cbs,
 		int sc = event->key.scancode;
 		if (cbs.on_keyreleased)
 			cbs.on_keyreleased(name, sc, arg);
-		else
-			log_error("unhandled SDL_EVENT_KEY_UP");
+		// else
+		// 	log_error("unhandled SDL_EVENT_KEY_UP");
 		break;
 	}
 	case SDL_EVENT_TEXT_INPUT: {

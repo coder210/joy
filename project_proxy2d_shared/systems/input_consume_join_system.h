@@ -37,9 +37,9 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<IdComponent>(player, get_entity_id(ctx));
 		registry.emplace<PlayerComponent>(player, join.conv);
 		registry.emplace<LogicPositionComponent>(player, join.position_x, join.position_y);
-		registry.emplace<LogicRectComponent>(player, fp_from_float(1), fp_from_float(1));
-		// 碰撞盒为 1x1，position 取碰撞盒中心（渲染以中心为原点）
-		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x) + 0.5f, fp_to_float(join.position_y) + 0.5f, 0.0f, 1.0f, 1.0f);
+		registry.emplace<LogicRectComponent>(player, fp_from_float(0.8f), fp_from_float(0.8f));
+		// 碰撞盒为 0.8x0.8（原 1x1 的 80%），position 取碰撞盒中心（渲染以中心为原点）
+		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x) + 0.4f, fp_to_float(join.position_y) + 0.4f, 0.0f, 1.0f, 1.0f);
 
 		// 挂载动作状态组件（几何渲染的朝向 / 攻击表现依赖它）
 		registry.emplace<ActionStateComponent>(player);

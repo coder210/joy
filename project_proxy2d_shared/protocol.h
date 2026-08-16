@@ -253,12 +253,13 @@ static inline int unpack_loading(const char* data, int len,
 
 /* 解包 S2C command 消息（通用版，服务端/客户端均可用）
  * 返回 1 成功，0 失败。
- * 通过出参返回 frame_id / joins / leaves / inputs */
+ * 通过出参返回 frame_id / joins / leaves / inputs / checksum */
 static inline int unpack_command(const char* data, int len,
     int* frame_id,
     S2CPlayerJoin* joins, int max_jn, int* jn,
     S2CPlayerLeave* leaves, int max_ln, int* ln,
-    S2CPlayerInput* inputs, int max_in, int* in)
+    S2CPlayerInput* inputs, int max_in, int* in,
+    char* checksum = nullptr, int checksum_cap = 0)
 {
     if (jn)  memset(joins,  0, max_jn * sizeof(S2CPlayerJoin));
     if (ln)  memset(leaves, 0, max_ln * sizeof(S2CPlayerLeave));
@@ -312,6 +313,20 @@ static inline int unpack_command(const char* data, int len,
     read_arr(1, joins,  max_jn, *jn);
     read_arr(2, leaves, max_ln, *ln);
     read_arr(3, inputs, max_in, *in);
+
+    // 第 5 个元素：状态指纹 checksum（服务端打包，客户端校验）
+    if (checksum && checksum_cap > 0) {
+        checksum[0] = '\0';
+        if (pl->via.array.size >= 5) {
+            auto* c = &pl->via.array.ptr[4];
+            if (c->type == JMSGPACK_OBJECT_STR && c->via.str.ptr) {
+                int n = (int)c->via.str.size;
+                if (n > checksum_cap - 1) n = checksum_cap - 1;
+                memcpy(checksum, c->via.str.ptr, n);
+                checksum[n] = '\0';
+            }
+        }
+    }
 
     jmsgpack_unpacked_destroy(&r);
     return 1;

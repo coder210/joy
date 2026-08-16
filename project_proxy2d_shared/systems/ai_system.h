@@ -22,11 +22,11 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
                                fp_t ex, fp_t ey, fp_t px, fp_t py,
                                const AIComponent& ai)
 {
-    // 从敌人中心指向玩家中心（LogicPosition 均为碰撞盒左上角）
-    float exf = fp_to_float(ex) + 0.5f;
-    float eyf = fp_to_float(ey) + 0.5f;
-    float pxf = fp_to_float(px) + 0.5f;
-    float pyf = fp_to_float(py) + 0.5f;
+    // 从敌人中心指向玩家中心（LogicPosition 均为碰撞盒左上角，0.8 盒中心 = +0.4）
+    float exf = fp_to_float(ex) + 0.4f;
+    float eyf = fp_to_float(ey) + 0.4f;
+    float pxf = fp_to_float(px) + 0.4f;
+    float pyf = fp_to_float(py) + 0.4f;
     float dx = pxf - exf;
     float dy = pyf - eyf;
     float len = sqrtf(dx * dx + dy * dy);
