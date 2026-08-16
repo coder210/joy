@@ -14,16 +14,19 @@ static void interpolate_position_system(entt::registry& registry, Context* /*ctx
 	// LogicPositionComponent.x/y 是碰撞盒左上角（rectanglef_t 语义），
 	// TransformComponent.position 定义为碰撞盒中心，故插值目标 = 左上角 + 半宽高
 	auto view = registry.view<IdComponent, LogicPositionComponent, LogicRectComponent, TransformComponent>();
+	(void)dt;
 	for (auto e : view) {
 		auto& lp   = view.get<LogicPositionComponent>(e);
 		auto& rect = view.get<LogicRectComponent>(e);
 		auto& t    = view.get<TransformComponent>(e);
 		float target_x = fp_to_float(lp.x) + fp_to_float(rect.width) * 0.5f;
 		float target_y = fp_to_float(lp.y) + fp_to_float(rect.height) * 0.5f;
-		float alpha = dt * 10.0f;
-		if (alpha > 1.0f) alpha = 1.0f;
-		t.position.x = ft_lerp(t.position.x, target_x, alpha);
-		t.position.y = ft_lerp(t.position.y, target_y, alpha);
+		// 玩家/敌人/子弹统一硬对齐逻辑位置：
+		// 指数平滑的稳态滞后与速度成正比（τ=0.1s 时：玩家 5m/s→滞后 0.5m、玩家子弹 9m/s→0.9m），
+		// 滞后过大会让视觉位置与命中判定脱节。直接对齐后，20Hz 逻辑 tick 下渲染 60fps
+		// 每帧最多移动约 0.15m，视觉依旧连续。
+		t.position.x = target_x;
+		t.position.y = target_y;
 	}
 }
 

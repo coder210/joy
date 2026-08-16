@@ -69,7 +69,7 @@ struct Context {
 
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
-        float FIXED_TIMESTEP = 1.0f / 50.0f;
+        float FIXED_TIMESTEP = 1.0f / 20.0f;
 
         // 视觉时间（仅渲染用，不参与帧同步）：
         // 驱动"浑天仪式"轨道环的自旋/变形相位
