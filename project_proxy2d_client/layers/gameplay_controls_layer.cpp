@@ -141,21 +141,23 @@ static void load_action_panel(gameplay_controls_layer_p self, Context* ctx)
 	int logical_width, logical_height;
 	r2d_get_logical_presentation(ctx->r2d, &logical_width, &logical_height, NULL);
 
+	// 王者荣耀式技能键布局：普攻（A）在右下角（主攻击键，尺寸略大），
+	// 远程（E）沿弧形排在普攻左上方
 	scene_node_p root_node = scene_node_create();
-	scene_node_set_position(root_node, logical_width - 100, logical_height - 100);
+	scene_node_set_position(root_node, logical_width - 90, logical_height - 100);
 	scene_node_set_zorder(root_node, 100);
 	scene_node_add_child(self->scene_node, root_node);
 
-	self->btn_attack = button_create(ctx->r2d, 50, 50);
+	self->btn_attack = button_create(ctx->r2d, 64, 64);
 	setup_button_style(self->btn_attack);
 	button_set_textx(self->btn_attack, simhei_font, "A", (int)strlen("A"), { 0, 0, 0, 255 });
 	scene_node_add_child(root_node, make_button_node(self->btn_attack, 0, 0));
 
-	// 远程攻击按钮（E），按住持续射击
-	self->btn_ranged = button_create(ctx->r2d, 50, 50);
+	// 远程攻击按钮（E），按住持续射击，位于普攻左上方
+	self->btn_ranged = button_create(ctx->r2d, 56, 56);
 	setup_button_style(self->btn_ranged);
 	button_set_textx(self->btn_ranged, simhei_font, "E", (int)strlen("E"), { 0, 0, 0, 255 });
-	scene_node_add_child(root_node, make_button_node(self->btn_ranged, 60, 0));
+	scene_node_add_child(root_node, make_button_node(self->btn_ranged, -70, -38));
 }
 
 gameplay_controls_layer_p create_gameplay_controls_layer(Context* ctx)

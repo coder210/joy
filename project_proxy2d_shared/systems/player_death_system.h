@@ -45,6 +45,7 @@ static void player_death_system(entt::registry& registry, Context* ctx, float /*
                     act.state           = ActionStateComponent::IDLE;
                     act.attack_timer    = 0;
                     act.ranged_cooldown = 0;   // 清射击冷却，防重生瞬间立刻开火
+                    act.melee_cooldown  = 0;   // 清近战冷却，防重生瞬间立刻挥击
                 }
                 // 同步渲染坐标（碰撞盒中心 = 左上角 + 半宽高），避免插值缓慢漂移
                 if (registry.all_of<TransformComponent>(e)) {
@@ -77,6 +78,13 @@ static void player_death_system(entt::registry& registry, Context* ctx, float /*
                 const auto& sp = registry.get<SpawnPointComponent>(e);
                 pos.x = sp.x;
                 pos.y = sp.y;
+                // 清近战冷却与攻击状态，防复活瞬间立刻挥击
+                if (registry.all_of<ActionStateComponent>(e)) {
+                    auto& act = registry.get<ActionStateComponent>(e);
+                    act.state          = ActionStateComponent::IDLE;
+                    act.attack_timer   = 0;
+                    act.melee_cooldown = 0;
+                }
                 if (registry.all_of<TransformComponent>(e)) {
                     auto& t    = registry.get<TransformComponent>(e);
                     auto& rect = registry.get<LogicRectComponent>(e);

@@ -10,6 +10,7 @@
 #include "../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/player_status_display.h"
+#include "../project_proxy2d_shared/systems/frame_display.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
 #include "../project_proxy2d_shared/systems/movement_system.h"
@@ -21,6 +22,7 @@
 #include "../network/network_utils.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/melee_attack_system.h"
 #include "../../project_proxy2d_shared/systems/player_shoot_system.h"
 #include "../../project_proxy2d_shared/systems/bullet_system.h"
 #include "../../project_proxy2d_shared/systems/player_death_system.h"
@@ -45,7 +47,7 @@ static void on_load(scene_p s)
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
         //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.31", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.5", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.22", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -59,6 +61,7 @@ static void on_load(scene_p s)
         add_system(self->ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(self->ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(self->ctx, OnUpdate, "ai_system", ai_system);
+        add_system(self->ctx, OnUpdate, "melee_attack", melee_attack_system);
         add_system(self->ctx, OnUpdate, "player_shoot", player_shoot_system);
         add_system(self->ctx, OnUpdate, "bullet", bullet_system);
         add_system(self->ctx, OnUpdate, "player_death", player_death_system);
@@ -252,6 +255,11 @@ static void on_render(scene_p s) {
         // ---- 玩家状态 HUD（仅游戏场景显示）----
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
                 AssetManager::GetInstance()->GetSimheiFont24());
+
+        // ---- 当前逻辑帧号（帧同步调试信息）----
+        int frame_id = self->ctx->ecs.ctx().get<NetComponent>().frame_id;
+        frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
+                frame_id, 8.0f, 60.0f);
 }
 
 static void on_destroy(scene_p s) {

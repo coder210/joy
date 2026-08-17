@@ -21,10 +21,12 @@
 #include "../../project_proxy2d_shared/systems/collision_system.h"
 #include "../../project_proxy2d_shared/systems/camera_follow_system.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
+#include "../../project_proxy2d_shared/systems/melee_attack_system.h"
 #include "../../project_proxy2d_shared/systems/player_shoot_system.h"
 #include "../../project_proxy2d_shared/systems/bullet_system.h"
 #include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
+#include "../../project_proxy2d_shared/systems/frame_display.h"
 
 #include "../network/network_utils.h"
 #include "../asset_manager.h"
@@ -42,7 +44,7 @@ static void on_load(scene_p s)
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
         //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.31", 30000);
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.5", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.22", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -57,6 +59,7 @@ static void on_load(scene_p s)
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
         add_system(ctx, OnUpdate, "ai_system", ai_system);
+        add_system(ctx, OnUpdate, "melee_attack", melee_attack_system);
         add_system(ctx, OnUpdate, "player_shoot", player_shoot_system);
         add_system(ctx, OnUpdate, "bullet", bullet_system);
         add_system(ctx, OnUpdate, "player_death", player_death_system);
@@ -159,6 +162,11 @@ static void on_render(scene_p s)
                 auto& t = draw_view.get<TransformComponent>(e);
                 drawing_entity_system(ctx, e, id, rect, t);
         }
+
+        // ---- 当前逻辑帧号（帧同步调试信息）----
+        int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;
+        frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
+                frame_id, 8.0f, 60.0f);
 }
 
 static void on_destroy(scene_p s)

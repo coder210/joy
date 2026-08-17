@@ -131,6 +131,12 @@ static void collect_input(Context* ctx)
         ctx->player_joins.clear();
         ctx->player_leaves.clear();
         ctx->player_inputs.clear();
+
+        // 只保留最近 300 帧命令（≈15s @20Hz），防止无玩家时内存线性增长。
+        // std::map 按帧号有序，begin() 即最旧帧；补帧最多追 2 帧、新玩家对齐
+        // 用 lower_bound 命中最近帧即可，因此 300 帧缓冲完全够用。
+        if (ctx->commands.size() > 300)
+                ctx->commands.erase(ctx->commands.begin());
 }
 
 // ========== 转发命令帧给客户端 ==========

@@ -14,4 +14,9 @@ struct ActionStateComponent {
     // 远程射击冷却（tick 数）：玩家按住远程攻击键时以固定间隔发射，由 player_shoot_system 每 tick 递减
     int ranged_cooldown = 0;
     static constexpr int RANGED_COOLDOWN = 6;   // 0.3s @ 20Hz
+
+    // 近战攻击冷却（tick 数）：攻击事件结算后置满，由 melee_attack_system 每 tick 递减，
+    // 防止按住攻击键 / 敌人每 tick 产生攻击事件导致高频结算。
+    int melee_cooldown = 0;
+    static constexpr int MELEE_COOLDOWN = 18;   // 0.9s @ 20Hz（与 ATTACK_DURATION 一致）
 };

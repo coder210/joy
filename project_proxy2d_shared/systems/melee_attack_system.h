@@ -1,0 +1,108 @@
+#ifndef MELEE_ATTACK_SYSTEM_H
+#define MELEE_ATTACK_SYSTEM_H
+
+#include "../components/player_event_input.h"
+#include "../components/action_state_component.h"
+#include "../components/logic_position_component.h"
+#include "../components/logic_rect_component.h"
+#include "../components/player_component.h"
+#include "../components/enemy_component.h"
+#include "../components/ai_component.h"
+#include "../components/health_component.h"
+
+struct Context;
+
+// 近战攻击参数
+static constexpr float PLAYER_MELEE_RANGE  = 1.0f;  // 玩家攻击盒向前延伸距离（米）
+static constexpr int   PLAYER_MELEE_DAMAGE = 25;    // ENEMY_MAX_HP=50，两刀击杀
+static constexpr int   ENEMY_MELEE_DAMAGE  = 20;    // PLAYER_MAX_HP=100，五刀击杀
+
+// 近战攻击结算：消费 PlayerEventInput.pending_actions（玩家由 input_consume_input_system
+// 生产、敌人由 ai_system 生产），按朝向生成攻击盒（自身碰撞盒沿 dir 向前延伸 range）
+// 做 AABB 命中判定并扣血，跳过死亡目标。帧同步确定性要求两端注册顺序一致：
+// ai_system 之后、player_death 之前。
+static void melee_attack_system(entt::registry& registry, Context* ctx, float /*dt*/)
+{
+    (void)ctx;
+    auto view = registry.view<PlayerEventInput, ActionStateComponent,
+                              LogicPositionComponent, LogicRectComponent>();
+    auto player_view = registry.view<PlayerComponent, LogicPositionComponent,
+                                     LogicRectComponent, HealthComponent>();
+    auto enemy_view  = registry.view<EnemyComponent, LogicPositionComponent,
+                                     LogicRectComponent, HealthComponent>();
+
+    for (auto attacker : view) {
+        auto& events = view.get<PlayerEventInput>(attacker);
+        auto& act    = view.get<ActionStateComponent>(attacker);
+
+        // 冷却自然流逝；无事件直接跳过（敌人每 tick 推事件，靠冷却节流攻击频率）
+        if (act.melee_cooldown > 0) act.melee_cooldown -= 1;
+        if (events.pending_actions.empty()) continue;
+
+        bool is_player = registry.all_of<PlayerComponent>(attacker);
+
+        // 远程敌人不产生近战命中（其攻击走子弹），事件直接丢弃
+        if (!is_player && registry.all_of<AIComponent>(attacker) &&
+            registry.get<AIComponent>(attacker).ranged) {
+            events.pending_actions.clear();
+            continue;
+        }
+
+        // 冷却中：本次攻击被吞
+        if (act.melee_cooldown > 0) {
+            events.pending_actions.clear();
+            continue;
+        }
+
+        auto& apos  = view.get<LogicPositionComponent>(attacker);
+        auto& arect = view.get<LogicRectComponent>(attacker);
+
+        // 攻击盒 = 自身碰撞盒沿朝向 dir 向前延伸 range
+        const float ax = fp_to_float(apos.x), ay = fp_to_float(apos.y);
+        const float aw = fp_to_float(arect.width), ah = fp_to_float(arect.height);
+        const float range = is_player ? PLAYER_MELEE_RANGE
+                                      : fp_to_float(registry.get<AIComponent>(attacker).attack_radius);
+        float hx = ax, hy = ay, hw = aw, hh = ah;
+        switch (act.dir) {
+            case 0: hy = ay + ah; hh = range; break;              // 下
+            case 1: hx = ax - range; hw = range; break;           // 左
+            case 2: hx = ax + aw;   hw = range; break;            // 右
+            default: hy = ay - range; hh = range; break;          // 上
+        }
+
+        const float damage = is_player ? (float)PLAYER_MELEE_DAMAGE : (float)ENEMY_MELEE_DAMAGE;
+        if (is_player) {
+            for (auto target : enemy_view) {
+                auto& h = enemy_view.get<HealthComponent>(target);
+                if (h.dead) continue;
+                auto& tp  = enemy_view.get<LogicPositionComponent>(target);
+                auto& tr  = enemy_view.get<LogicRectComponent>(target);
+                float tx = fp_to_float(tp.x), ty = fp_to_float(tp.y);
+                float tw = fp_to_float(tr.width), th = fp_to_float(tr.height);
+                if (hx < tx + tw && hx + hw > tx && hy < ty + th && hy + hh > ty) {
+                    h.hp -= (int)damage; if (h.hp < 0) h.hp = 0;
+                    break;
+                }
+            }
+        } else {
+            for (auto target : player_view) {
+                auto& h = player_view.get<HealthComponent>(target);
+                if (h.dead) continue;
+                auto& tp  = player_view.get<LogicPositionComponent>(target);
+                auto& tr  = player_view.get<LogicRectComponent>(target);
+                float tx = fp_to_float(tp.x), ty = fp_to_float(tp.y);
+                float tw = fp_to_float(tr.width), th = fp_to_float(tr.height);
+                if (hx < tx + tw && hx + hw > tx && hy < ty + th && hy + hh > ty) {
+                    h.hp -= (int)damage; if (h.hp < 0) h.hp = 0;
+                    break;
+                }
+            }
+        }
+
+        // 挥出攻击即进入冷却（无论是否命中），控制攻击频率
+        act.melee_cooldown = ActionStateComponent::MELEE_COOLDOWN;
+        events.pending_actions.clear();
+    }
+}
+
+#endif
