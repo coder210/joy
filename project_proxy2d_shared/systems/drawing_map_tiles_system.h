@@ -37,7 +37,7 @@ static void draw_map_tiles(Context* ctx)
 			if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) continue;
 			char c = map_tile_at(x, y);
 			int type = map_tile_type(c);
-			if (type == MAP_TILE_EMPTY) continue;
+			if (type == MAP_TILE_EMPTY || type == MAP_TILE_WALL) continue;
 
 			float px = x * SERVER_PPM - cx;   // 格子左上角（屏幕坐标）
 			float py = y * SERVER_PPM - cy;
