@@ -23,6 +23,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
 
         for (int i = 0; i < ec; i++) {
                 auto& entity = entities[i];
+                // 地图(S2C_TYPE_NORMAL)由客户端本地 map_spawn_system 生成，不通过网络同步
+                if (entity.type == S2C_TYPE_NORMAL) continue;
                 auto e = ctx->ecs.create();
                 ctx->ecs.emplace<IdComponent>(e, entity.id);
                 ctx->ecs.emplace<LogicRectComponent>(e, entity.width, entity.height);

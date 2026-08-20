@@ -21,6 +21,7 @@
 #include "../project_proxy2d_shared/components/player_component.h"
 #include "../project_proxy2d_shared/components/transform_component.h"
 #include "../project_proxy2d_shared/components/net_component.h"
+#include "../project_proxy2d_shared/components/local_only_component.h"
 
 
 

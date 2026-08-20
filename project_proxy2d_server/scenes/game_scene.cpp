@@ -11,7 +11,7 @@
 #include "../../project_proxy2d_shared/systems/drawing_entity_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../systems/spawn_enemy_system.h"
-#include "../systems/map_spawn_system.h"
+#include "../project_proxy2d_shared/systems/map_spawn_system.h"
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
@@ -43,7 +43,7 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.31", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
         //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.22", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
@@ -54,7 +54,7 @@ static void on_load(scene_p s)
         ctx->ecs.ctx().emplace<GlobalState>();
         // 注册 system
         add_system(ctx, OnStart, "map_spawn", map_spawn_system);
-        add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
+        //add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);

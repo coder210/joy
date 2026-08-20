@@ -30,6 +30,7 @@
 #include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../../project_proxy2d_shared/systems/state_checksum.h"
+#include "../../project_proxy2d_shared/systems/map_spawn_system.h"
 
 struct game_scene {
         scene_p scene;
@@ -46,7 +47,7 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.31", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
         //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.22", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
@@ -69,6 +70,9 @@ static void on_load(scene_p s)
         add_system(self->ctx, OnUpdate,  "movement",           movement_system);
         add_system(self->ctx, OnUpdate,  "collision",          collision_system);
         add_system(self->ctx, OnUpdate,  "cleanup",            cleanup_system);
+
+        // 本地生成地图碰撞体（不再从服务端网络同步）
+        add_system(self->ctx, OnStart, "map_spawn", map_spawn_system);
 
         // 执行 OnStart phase
         run_phase(self->ctx, OnStart, 0);
