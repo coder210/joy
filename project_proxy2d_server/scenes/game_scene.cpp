@@ -12,6 +12,7 @@
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../systems/spawn_enemy_system.h"
 #include "../project_proxy2d_shared/systems/map_spawn_system.h"
+#include "../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
 #include "../../project_proxy2d_shared/systems/input_consume_join_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
@@ -162,6 +163,9 @@ static void on_render(scene_p s)
                 auto& t = draw_view.get<TransformComponent>(e);
                 drawing_entity_system(ctx, e, id, rect, t);
         }
+
+        // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
+        drawing_collision_debug_system(ctx);
 
         // ---- 当前逻辑帧号（帧同步调试信息）----
         int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;

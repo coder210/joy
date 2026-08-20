@@ -27,7 +27,7 @@
 #include "../../project_proxy2d_shared/systems/bullet_system.h"
 #include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
-#include "../../project_proxy2d_shared/systems/drawing_collision_debug_system.h"
+
 #include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
 #include "../../project_proxy2d_shared/systems/state_checksum.h"
 #include "../../project_proxy2d_shared/systems/map_spawn_system.h"
@@ -252,9 +252,6 @@ static void on_render(scene_p s) {
                 auto& t = draw_view.get<TransformComponent>(e);
                 drawing_entity_system(self->ctx, e, id, rect, t);
         }
-
-        // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
-        drawing_collision_debug_system(self->ctx);
 
         // ---- 玩家状态 HUD（仅游戏场景显示）----
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
