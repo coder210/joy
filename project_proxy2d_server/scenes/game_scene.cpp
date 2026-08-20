@@ -104,13 +104,14 @@ static void on_update(scene_p s, float dt)
         network_receive(ctx);
 
         // === 固定步长逻辑 Tick（20Hz）===
+        // 注意：next_frame_id 的递增由 collect_input() 内部负责（每 tick 一次），
+        // 此处不再重复递增，否则帧序号会翻倍（之前 LogicFPS≈39 即此 bug 所致）。
         ctx->accumulator += dt;
         auto& gs = ctx->ecs.ctx().get<GlobalState>();
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
                 collect_input(ctx);
                 input_forwarding(ctx);
-                gs.next_frame_id++;   // 每跑一个逻辑 tick，权威帧序号 +1
         }
 
         // ---- 逻辑帧率测量（每秒统计一次实际跑了几个逻辑 tick）----
@@ -187,7 +188,7 @@ static void on_render(scene_p s)
         // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
         int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;
         int logic_fps = ctx->ecs.ctx().get<GlobalState>().logic_fps;
-        frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
+        frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont12(),
                 frame_id, logic_fps, 8.0f, 60.0f);
 }
 

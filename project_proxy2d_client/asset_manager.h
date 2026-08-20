@@ -16,6 +16,7 @@ public:
 	~AssetManager();
 
 	font_p GetSimheiFont24();
+	font_p GetSimheiFont12();
 
 	// 清空纹理缓存（释放所有纹理）
 	void tex_cache_clear();
@@ -25,6 +26,7 @@ private:
 
 	static AssetManager* instance_;
 	font_p simheiFont24_;
+	font_p simheiFont12_;
 	std::unordered_map<std::string, image_p> tex_cache_;
 };
 

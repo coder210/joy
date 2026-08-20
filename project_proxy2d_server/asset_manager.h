@@ -16,6 +16,7 @@ public:
 	~AssetManager();
 
 	font_p GetSimheiFont24();
+	font_p GetSimheiFont12();
 
 	// 纹理缓存：获取/加载纹理
 	image_p tex_cache_get(jr2d_p r2d, const char* path);
@@ -27,6 +28,7 @@ private:
 
 	static AssetManager* instance_;
 	font_p simheiFont24_;
+	font_p simheiFont12_;
 	std::unordered_map<std::string, image_p> tex_cache_;
 };
 

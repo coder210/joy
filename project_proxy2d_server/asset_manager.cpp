@@ -5,12 +5,15 @@ AssetManager* AssetManager::instance_ = nullptr;
 AssetManager::AssetManager()
 {
         simheiFont24_ = font_create("project_proxy2d_server/fonts/simhei.ttf", 24);
+        simheiFont12_ = font_create("project_proxy2d_server/fonts/simhei.ttf", 12);
 }
 
 AssetManager::~AssetManager()
 {
         if (simheiFont24_)
                 font_destroy(simheiFont24_);
+        if (simheiFont12_)
+                font_destroy(simheiFont12_);
         tex_cache_clear();
 }
 
@@ -29,6 +32,11 @@ AssetManager* AssetManager::GetInstance()
 font_p AssetManager::GetSimheiFont24()
 {
         return simheiFont24_;
+}
+
+font_p AssetManager::GetSimheiFont12()
+{
+        return simheiFont12_;
 }
 
 image_p AssetManager::tex_cache_get(jr2d_p r2d, const char* path)

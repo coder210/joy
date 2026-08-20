@@ -277,7 +277,7 @@ static void on_render(scene_p s) {
         // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
         int frame_id = self->ctx->ecs.ctx().get<NetComponent>().frame_id;
         int logic_fps = self->ctx->ecs.ctx().get<GlobalState>().logic_fps;
-        frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
+        frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont12(),
                 frame_id, logic_fps, 8.0f, 60.0f);
 }
 
