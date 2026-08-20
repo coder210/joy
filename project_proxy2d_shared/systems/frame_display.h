@@ -8,10 +8,10 @@
 //   - 在指定坐标绘制当前逻辑帧号（帧同步 lockstep 的帧计数）
 //   - 需在 r2d_begin/r2d_end 之间调用
 // ============================================================
-static void frame_display_draw(jr2d_p r2d, font_p font, int frame_id, float x, float y)
+static void frame_display_draw(jr2d_p r2d, font_p font, int frame_id, int logic_fps, float x, float y)
 {
-        char text[32];
-        snprintf(text, sizeof(text), "Frame: %d", frame_id);
+        char text[48];
+        snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d", frame_id, logic_fps);
         jcolor_t c = { 60, 60, 70, 235 };   // 深灰，适配白底背景
         jtext_printx(r2d, font, text, (int)strlen(text), c, x, y);
 }

@@ -36,6 +36,9 @@ struct game_scene {
         scene_p scene;
         Context* ctx;
         float step_timer = 0;
+        // 逻辑帧率测量
+        uint32_t fps_measure_time = 0;   // 上次统计时刻（ms）
+        int      fps_measure_frame = 0;  // 上次统计时的 next_frame_id
 };
 
 static void on_load(scene_p s)
@@ -180,9 +183,23 @@ static void on_update(scene_p s, float dt) {
 
         // === 固定步长逻辑 Tick（20Hz）===
         self->ctx->accumulator += dt;
+        auto& gs = self->ctx->ecs.ctx().get<GlobalState>();
         while (self->ctx->accumulator >= self->ctx->FIXED_TIMESTEP) {
             self->ctx->accumulator -= self->ctx->FIXED_TIMESTEP;
             send_input(self->ctx);
+            gs.next_frame_id++;   // 每跑一个逻辑 tick，帧序号 +1
+        }
+
+        // ---- 逻辑帧率测量（每秒统计一次实际跑了几个逻辑 tick）----
+        uint32_t now_ms = get_ticks();
+        if (self->fps_measure_time == 0) {
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
+        } else if (now_ms - self->fps_measure_time >= 1000) {
+                int elapsed_frames = gs.next_frame_id - self->fps_measure_frame;
+                gs.logic_fps = (int)(elapsed_frames * 1000 / (now_ms - self->fps_measure_time));
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
         }
 
         // 从队列取出命令，解析后写到 ECS 组件上
@@ -257,10 +274,11 @@ static void on_render(scene_p s) {
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
                 AssetManager::GetInstance()->GetSimheiFont24());
 
-        // ---- 当前逻辑帧号（帧同步调试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
         int frame_id = self->ctx->ecs.ctx().get<NetComponent>().frame_id;
+        int logic_fps = self->ctx->ecs.ctx().get<GlobalState>().logic_fps;
         frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
-                frame_id, 8.0f, 60.0f);
+                frame_id, logic_fps, 8.0f, 60.0f);
 }
 
 static void on_destroy(scene_p s) {

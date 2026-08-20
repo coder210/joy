@@ -20,13 +20,13 @@ static void spawn_player_bullet(entt::registry& registry, Context* ctx,
                                 fp_t px, fp_t py, int conv, int dir)
 {
     // 玩家子弹参数（几何 m，速度 m/s，伤害直接作用于敌人 HP）
-    const float speed  = 9.0f;
+    const fp_t speed  = fp_from_float(9.0f);
     const fp_t  damage = fp_from_float(25.0f);
 
     // 玩家碰撞盒 0.8x0.8，中心 = 左上角 + 0.4
-    float cx = fp_to_float(px) + 0.4f;
-    float cy = fp_to_float(py) + 0.4f;
-    float vx = 0.0f, vy = 0.0f;
+    fp_t cx = fp_add(px, fp_from_float(0.4f));
+    fp_t cy = fp_add(py, fp_from_float(0.4f));
+    fp_t vx = 0, vy = 0;
     switch (dir) {
         case 0:  vy =  speed; break; // 下
         case 1:  vx = -speed; break; // 左
@@ -35,18 +35,20 @@ static void spawn_player_bullet(entt::registry& registry, Context* ctx,
     }
 
     // 出生点：从玩家中心沿朝向推进 0.4m，避免子弹出生即与玩家/墙体重叠
-    cx += vx * 0.04f;
-    cy += vy * 0.04f;
+    cx = fp_add(cx, fp_mul(vx, fp_from_float(0.04f)));
+    cy = fp_add(cy, fp_mul(vy, fp_from_float(0.04f)));
+
+    vec2_t position = { fp_to_float(cx), fp_to_float(cy) };
+    vec2_t scale = { BULLET_SIZE, BULLET_SIZE };
 
     entt::entity b = registry.create();
     registry.emplace<IdComponent>(b, get_entity_id(ctx));
     // owner_conv = 玩家 conv + 1（0 保留给敌人子弹，bullet_system 按 owner==0 区分阵营）
     registry.emplace<BulletComponent>(b,
-        fp_from_float(vx), fp_from_float(vy), damage, conv + 1, BULLET_LIFE);
-    registry.emplace<LogicPositionComponent>(b, fp_from_float(cx - BULLET_HALF), fp_from_float(cy - BULLET_HALF));
+        vx, vy, damage, conv + 1, BULLET_LIFE_TICKS);
+    registry.emplace<LogicPositionComponent>(b, fp_sub(cx,  fp_from_float(BULLET_HALF)), fp_sub(cy, fp_from_float(BULLET_HALF)));
     registry.emplace<LogicRectComponent>(b, fp_from_float(BULLET_SIZE), fp_from_float(BULLET_SIZE));
-    registry.emplace<TransformComponent>(b,
-        cx, cy, 0.0f, BULLET_SIZE, BULLET_SIZE);
+    registry.emplace<TransformComponent>(b, position, 0.0f, scale);
 }
 
 static void player_shoot_system(entt::registry& registry, Context* ctx, float /*dt*/)

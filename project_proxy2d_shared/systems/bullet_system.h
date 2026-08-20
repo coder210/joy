@@ -33,9 +33,9 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
         pos.x = fp_add(pos.x, fp_mul(b.vx, fp_from_float(ctx->FIXED_TIMESTEP)));
         pos.y = fp_add(pos.y, fp_mul(b.vy, fp_from_float(ctx->FIXED_TIMESTEP)));
 
-        // 2) 生命周期
-        b.life -= ctx->FIXED_TIMESTEP;
-        if (b.life <= 0.0f) { to_destroy.push_back(e); continue; }
+        // 2) 生命周期（整数 tick 倒计时，确定性优于 float 秒累加）
+        b.life_ticks--;
+        if (b.life_ticks <= 0) { to_destroy.push_back(e); continue; }
 
         // 3) 地图碰撞：检测子弹中心所在格
         float cx = fp_to_float(pos.x) + BULLET_HALF;

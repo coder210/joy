@@ -31,16 +31,6 @@ static const float GD_RING_IN    = 36.0f;    // 内环半径（官方 52，按�
 static const float GD_RING_OUT   = 48.0f;    // 外环半径（官方 72，按视口比例缩小）
 static const int   GD_RING_POINTS = 36;      // 环采样点（三角 3 边×12，方形 4 边×9）
 
-// 每个实体的平滑速度比：走/停切换时环的速度/大小/亮度渐变过渡，消除突变观感
-static std::unordered_map<entt::entity, float> g_ring_smooth;
-
-// 每个实体上一渲染帧的视觉位置（逻辑单位）：用于以"真实位移速度"驱动环动画，
-// 而非依赖 act.state 标签（ai_system/pathfinding_system 交替写 WALK/IDLE 会导致
-// 静止也全速转 + 忽快忽慢抖动；位移速度天然与标签解耦、平滑无抖动）
-static std::unordered_map<entt::entity, vec2_t> g_ring_last_pos;
-static float g_ring_last_vt = 0.0f;
-static bool  g_ring_vt_init  = false;
-
 // ---- 三角形 ↔ 正方形 逐点插值，生成形态环采样点 ----
 // blend ∈ [0,1]：0=三角形，1=正方形；rot 为环整体旋转角
 // [已注释] 轨道环暂时停用（2026-08-16）：玩家/敌人的双轨道环不再绘制
@@ -240,8 +230,22 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
         c.x = (t.position.x - cam.x) * SERVER_PPM;
         c.y = (t.position.y - cam.y) * SERVER_PPM;
 
-        // ---- 子弹：发光旋转菱形（金红色，不画轨道环/攻击射线）----
+        // ---- 子弹：发光旋转菱形（不画轨道环/攻击射线）----
+        // 灰调画风下用冷暖区分阵营：玩家=冷蓝灰，敌人=暖橙灰，均配白描边。
         if (is_bullet) {
+                auto& bc = ctx->ecs.get<BulletComponent>(e);
+                bool is_enemy_bullet = (bc.owner_conv == 0);
+                // 辉光 / 主体 / 描边 三色（按阵营切换）
+                jcolor_t glow, body, edge;
+                if (is_enemy_bullet) {            // 敌人：暖橙灰
+                        glow = { 120, 80, 40, 80 };
+                        body = { 90, 55, 30, 255 };
+                        edge = { 255, 230, 200, 255 };
+                } else {                          // 玩家：冷蓝灰
+                        glow = { 50, 80, 110, 80 };
+                        body = { 35, 55, 80, 255 };
+                        edge = { 210, 235, 255, 255 };
+                }
                 float bs = 7.0f;   // 视觉半边长（像素）
                 float bspin = ctx->visual_time * 6.0f;
                 vec2_t pts[4];
@@ -250,14 +254,14 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                         pts[i].x = c.x + cosf(a) * bs;
                         pts[i].y = c.y + sinf(a) * bs;
                 }
-                shape_draw_polygon(ctx->r2d, "fill", pts, 4, { 255, 150, 60, 90 });  // 辉光
+                shape_draw_polygon(ctx->r2d, "fill", pts, 4, glow);  // 辉光
                 for (int i = 0; i < 4; i++) {
                         float a = bspin + i * (GD_PI * 0.5f);
                         pts[i].x = c.x + cosf(a) * bs * 0.6f;
                         pts[i].y = c.y + sinf(a) * bs * 0.6f;
                 }
-                shape_draw_polygon(ctx->r2d, "fill", pts, 4, { 255, 205, 95, 255 });   // 主体
-                shape_draw_polygon(ctx->r2d, "line", pts, 4, { 255, 130, 35, 255 });   // 描边
+                shape_draw_polygon(ctx->r2d, "fill", pts, 4, body);   // 主体
+                shape_draw_polygon(ctx->r2d, "line", pts, 4, edge);   // 描边
                 return;
         }
 
@@ -280,44 +284,8 @@ static void drawing_entity_system(Context* ctx, entt::entity e,
                 }
         }
 
-        // ---- 环速度比：由真实位移速度驱动（逻辑单位/秒），与 act.state 标签解耦 ----
-        // 修复：玩家未加入时 command_queue 为空 → ai_system 不运行 → act.state 恒为 IDLE
-        // → 环慢转"正常"；玩家加入后 ai_system 把敌人写成 WALK（即使静止）→ 环全速自旋
-        // → 且 pathfinding_system 又回写 IDLE → speed_ratio 0↔1 抖动。
-        // 现在改为量测每帧实际位移，动则快、静则慢，任何 AI 标签都不再干扰视觉节奏。
-        float dt = 0.0f;
-        if (g_ring_vt_init) {
-                dt = ctx->visual_time - g_ring_last_vt;
-                if (dt < 0.0f) dt = 0.0f;
-        }
-        g_ring_last_vt = ctx->visual_time;
-        g_ring_vt_init = true;
+        float speed_ratio = 5.0f;
 
-        float target_ratio = 0.0f;
-        auto it = g_ring_last_pos.find(e);
-        if (dt > 0.0001f && it != g_ring_last_pos.end()) {
-                float dx = t.position.x - it->second.x;
-                float dy = t.position.y - it->second.y;
-                float move_speed = sqrtf(dx * dx + dy * dy) / dt;   // 逻辑单位/秒
-                float max_speed = is_player ? 5.0f : 2.5f;          // 玩家 MOVE_SPEED=5.0 / 敌人步速 2.5
-                target_ratio = move_speed / max_speed;
-                if (target_ratio > 1.0f) target_ratio = 1.0f;
-                it->second = { t.position.x, t.position.y };
-        } else {
-                // 首次记录位置：首帧视为静止，避免实体初生/复用 ID 时位移跳变
-                g_ring_last_pos[e] = { t.position.x, t.position.y };
-        }
-
-        // 指数平滑趋近目标值：走/停切换时环渐变，不再 0↔1 硬切
-        float& smooth = g_ring_smooth[e];
-        smooth += (target_ratio - smooth) * 0.15f;
-        if (fabsf(smooth - target_ratio) < 0.01f) smooth = target_ratio;
-        float speed_ratio = smooth;
-
-        // [已注释] 轨道环相位种子：同一实体稳定、不同实体错开（环停用，暂无消费）
-        // float seed = t.position.x * 1.7f + t.position.y * 3.1f + (is_player ? 0.0f : 13.37f);
-
-        // 自旋角：静止慢转、移动加快；基础 45° 使方块呈菱形（官方造型）
         float spin = 0.7f + speed_ratio * 1.8f;
         float rot  = 0.785398f + ctx->visual_time * spin;
 

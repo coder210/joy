@@ -8,12 +8,12 @@ struct BulletComponent {
     fp_t vx, vy;        // 速度（m/s）
     fp_t damage;        // 命中伤害
     int  owner_conv;    // 发射者 conv（0 = 敌人发射）
-    float life;         // 剩余存活秒数
+    int  life_ticks;    // 剩余存活 tick 数（替代原 float 秒，避免两端 float 累加误差）
 };
 
 // 子弹几何常量（逻辑单位 m）
 static constexpr float BULLET_SIZE = 0.2f;   // 碰撞盒宽高
 static constexpr float BULLET_HALF = 0.1f;   // 半宽高
-static constexpr float BULLET_LIFE = 2.5f;   // 最大存活时间（秒）
+static constexpr int   BULLET_LIFE_TICKS = 50;  // 最大存活时间（tick）：2.5s @ 20Hz = 50 ticks
 
 #endif

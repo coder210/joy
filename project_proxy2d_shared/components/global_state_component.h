@@ -6,7 +6,10 @@
 struct GlobalState {
     // 帧同步
     int next_entity_id = 1;
-    int next_frame_id  = 1;
+    int next_frame_id  = 1;       // 逻辑帧序号：每个固定步长 tick +1（两端确定性一致）
+
+    // 实际逻辑帧率（每秒统计一次，仅用于调试显示）
+    int logic_fps = 0;
 
     // 摄像机
     vec2_t camera_position = { 0.0f, 0.0f };

@@ -37,6 +37,9 @@ struct game_scene {
         scene_p scene;
         simple_fps_counter_p sample_fps;
         Context* ctx;
+        // 逻辑帧率测量
+        uint32_t fps_measure_time = 0;   // 上次统计时刻（ms）
+        int      fps_measure_frame = 0;  // 上次统计时的 next_frame_id
 };
 
 static void on_load(scene_p s)
@@ -102,10 +105,24 @@ static void on_update(scene_p s, float dt)
 
         // === 固定步长逻辑 Tick（20Hz）===
         ctx->accumulator += dt;
+        auto& gs = ctx->ecs.ctx().get<GlobalState>();
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
                 collect_input(ctx);
                 input_forwarding(ctx);
+                gs.next_frame_id++;   // 每跑一个逻辑 tick，权威帧序号 +1
+        }
+
+        // ---- 逻辑帧率测量（每秒统计一次实际跑了几个逻辑 tick）----
+        uint32_t now_ms = get_ticks();
+        if (self->fps_measure_time == 0) {
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
+        } else if (now_ms - self->fps_measure_time >= 1000) {
+                int elapsed_frames = gs.next_frame_id - self->fps_measure_frame;
+                gs.logic_fps = (int)(elapsed_frames * 1000 / (now_ms - self->fps_measure_time));
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
         }
 
         // 从队列取出命令，解析后写到 ECS 组件上
@@ -167,10 +184,11 @@ static void on_render(scene_p s)
         // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
         drawing_collision_debug_system(ctx);
 
-        // ---- 当前逻辑帧号（帧同步调试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
         int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;
+        int logic_fps = ctx->ecs.ctx().get<GlobalState>().logic_fps;
         frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(),
-                frame_id, 8.0f, 60.0f);
+                frame_id, logic_fps, 8.0f, 60.0f);
 }
 
 static void on_destroy(scene_p s)

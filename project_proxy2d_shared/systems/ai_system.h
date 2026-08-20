@@ -42,7 +42,7 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
     entt::entity b = registry.create();
     registry.emplace<IdComponent>(b, get_entity_id(ctx));
     registry.emplace<BulletComponent>(b,
-        fp_from_float(vx), fp_from_float(vy), ai.bullet_damage, 0, BULLET_LIFE);
+        fp_from_float(vx), fp_from_float(vy), ai.bullet_damage, 0, BULLET_LIFE_TICKS);
     registry.emplace<LogicPositionComponent>(b, fp_from_float(cxf), fp_from_float(cyf));
     registry.emplace<LogicRectComponent>(b, fp_from_float(BULLET_SIZE), fp_from_float(BULLET_SIZE));
     registry.emplace<TransformComponent>(b,
