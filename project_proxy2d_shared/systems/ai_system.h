@@ -52,7 +52,7 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(ctx->FIXED_TIMESTEP));
 
-    auto view = registry.view<EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
+    auto view = registry.view<IdComponent, EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent, HealthComponent>();
 
     if (!ctx->is_server) {
@@ -60,6 +60,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     }
 
     for (auto e : view) {
+        auto& id =  view.get<IdComponent>(e);
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
@@ -100,9 +101,11 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         if (in_attack_range) {
             // 状态 2：攻击
             ai.state = 2;
+            // 首次进入攻击范围时设置攻击计时器
+            if (act.attack_timer == 0) {
+                    act.attack_timer = ActionStateComponent::ATTACK_DURATION;
+            }
             act.state = ActionStateComponent::ATTACK;
-            act.attack_timer = ActionStateComponent::ATTACK_DURATION;
-
 
             // 远程敌人：射击冷却与子弹生成（近战敌人跳过）
             if (ai.ranged) {
@@ -158,9 +161,9 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
                                              : ActionStateComponent::WALK;
 
+            // 巡逻目标更新逻辑（仅当 timer 归零时生成新目标）
             ai.timer--;
             if (ai.timer <= 0) {
-                //int seed = (int)e;
                 int seed = 0;
                 fp_t rx = fp_from_float((fp_to_float(ai.patrol_radius) * ((seed % 7) - 3) / 3.0f));
                 fp_t ry = fp_from_float((fp_to_float(ai.patrol_radius) * (((seed * 13) % 9) - 4) / 4.0f));
@@ -171,12 +174,24 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 
             fp_t dx = fp_sub(ai.target_x, pos.x);
             fp_t dy = fp_sub(ai.target_y, pos.y);
+            // 距离阈值：小于0.2个单位则认为到达
             if (fp_abs(dx) > fp_from_float(0.2f) || fp_abs(dy) > fp_from_float(0.2f)) {
-                if (fp_abs(dx) > fp_abs(dy)) {
-                    pos.x = dx > fp_zero() ? fp_add(pos.x, step) : fp_sub(pos.x, step);
-                } else {
-                    pos.y = dy > fp_zero() ? fp_add(pos.y, step) : fp_sub(pos.y, step);
-                }
+                    // 确保有 PathComponent
+                    if (!registry.all_of<PathComponent>(e)) {
+                            registry.emplace<PathComponent>(e);
+                    }
+                    auto& pc = registry.get<PathComponent>(e);
+                    // 将目标点转换为网格坐标（假设格子大小为 TILE_SIZE）
+                    constexpr float TILE_SIZE = 1.0f; // 请根据实际情况定义
+                    pc.target_gx = (int)(fp_to_float(ai.target_x) / TILE_SIZE);
+                    pc.target_gy = (int)(fp_to_float(ai.target_y) / TILE_SIZE);
+                    pc.dirty = true;
+            }
+            else {
+                    // 到达目标，清除路径组件（可选）
+                    if (registry.all_of<PathComponent>(e)) {
+                            registry.remove<PathComponent>(e);
+                    }
             }
 
             act.dir = (fp_abs(dx) > fp_abs(dy))
