@@ -42,4 +42,14 @@ static inline void compute_players_md5(std::vector<ChecksumEntry>& entries, char
         utils_md5x(s.c_str(), s.size(), out);
 }
 
+// 严格版状态指纹：把"所有带 IdComponent + LogicPositionComponent 的实体"（玩家 + 敌人）
+// 的 (id, x, y) 都作为原料，检测范围比 compute_players_md5 更广——敌人位置/数量不一致
+// 也能立刻暴露（例如中途加入者漏建/多建敌人、敌人 AI 推进错位等）。
+// 公式与 compute_players_md5 完全一致（按 id 升序拼接），仅输入集合更大。
+static inline void compute_full_md5(std::vector<ChecksumEntry>& entries, char* out, int out_cap)
+{
+        // 与玩家版共用同一排序/拼接/哈希公式，保证只在"集合"维度变严格。
+        compute_players_md5(entries, out, out_cap);
+}
+
 #endif

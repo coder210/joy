@@ -113,16 +113,18 @@ static void collect_input(Context* ctx)
         for (auto& inp : ctx->player_inputs)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
-        // 帧同步状态指纹：与客户端共用同一公式（state_checksum.h）
+        // 帧同步状态指纹（严格版）：与客户端共用同一公式（state_checksum.h）。
+        // 纳入所有带 IdComponent + LogicPositionComponent 的实体（玩家 + 敌人），
+        // 敌人 id/位置不一致也能立刻暴露。
         std::vector<ChecksumEntry> entries;
-        auto pos_view = ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
+        auto pos_view = ctx->ecs.view<IdComponent, LogicPositionComponent>();
         for (auto e : pos_view) {
                 auto& idc = pos_view.get<IdComponent>(e);
                 auto& lpc = pos_view.get<LogicPositionComponent>(e);
                 entries.push_back({ idc.id, lpc.x, lpc.y });
         }
         char checksum[64] = { 0 };
-        compute_players_md5(entries, checksum, sizeof(checksum));
+        compute_full_md5(entries, checksum, sizeof(checksum));
 
         auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, num_joins, leaves, num_leaves, inputs, num_inputs, checksum);
         ctx->commands[frame_id] = command_data;

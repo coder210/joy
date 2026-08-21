@@ -222,16 +222,17 @@ static void on_update(scene_p s, float dt) {
                         cmd.num_leaves = ln; memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
                         cmd.num_inputs = in; memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
 
-                        // 帧同步校验：模拟本帧前，用与服务端相同公式计算本地玩家状态 MD5 并对比
+                        // 帧同步校验（严格版）：模拟本帧前，用与服务端相同公式
+                        // （玩家 + 敌人 id/position 均纳入）计算本地状态 MD5 并对比
                         std::vector<ChecksumEntry> entries;
-                        auto pv = self->ctx->ecs.view<IdComponent, PlayerComponent, LogicPositionComponent>();
+                        auto pv = self->ctx->ecs.view<IdComponent, LogicPositionComponent>();
                         for (auto e : pv) {
                                 auto& idc = pv.get<IdComponent>(e);
                                 auto& lpc = pv.get<LogicPositionComponent>(e);
                                 entries.push_back({ idc.id, lpc.x, lpc.y });
                         }
                         char local_checksum[64] = { 0 };
-                        compute_players_md5(entries, local_checksum, sizeof(local_checksum));
+                        compute_full_md5(entries, local_checksum, sizeof(local_checksum));
                         if (strcmp(local_checksum, server_checksum) == 0) {
                                 log_info("[CHECKSUM] frame=%d OK %s", frame_id, local_checksum);
                         } else {
