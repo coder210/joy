@@ -50,8 +50,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.22", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -275,11 +275,12 @@ static void on_render(scene_p s) {
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
                 AssetManager::GetInstance()->GetSimheiFont28());
 
-        // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量（帧同步调试/压力测试信息）----
         int frame_id = self->ctx->ecs.ctx().get<NetComponent>().frame_id;
         int logic_fps = self->ctx->ecs.ctx().get<GlobalState>().logic_fps;
+        int enemy_count = (int)self->ctx->ecs.view<EnemyComponent>().size();
         frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
-                frame_id, logic_fps, 8.0f, 60.0f);
+                frame_id, logic_fps, 8.0f, 60.0f, enemy_count);
 }
 
 static void on_destroy(scene_p s) {

@@ -27,12 +27,16 @@ static void player_death_system(entt::registry& registry, Context* ctx, float /*
             h.respawn_timer = PLAYER_RESPAWN_TICKS;
         }
 
+        // 无敌保护倒计时（玩家可能未被判定死亡，但重生后有无敌窗口）
+        if (h.spawn_invuln > 0) h.spawn_invuln -= 1;
+
         // 重生计时与传送回出生点
         if (h.dead) {
             h.respawn_timer -= 1;   // 每逻辑 tick 减 1
             if (h.respawn_timer <= 0) {
                 h.dead = false;
                 h.hp = h.max_hp;
+                h.spawn_invuln = SPAWN_INVULN_TICKS;  // 重生无敌，防出生点被围殴"重生即死"
                 const auto& sp = registry.get<SpawnPointComponent>(e);
                 pos.x = sp.x;
                 pos.y = sp.y;

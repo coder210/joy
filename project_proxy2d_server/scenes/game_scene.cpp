@@ -47,8 +47,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.22", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -191,11 +191,12 @@ static void on_render(scene_p s)
         // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
         drawing_collision_debug_system(ctx);
 
-        // ---- 当前逻辑帧号 + 实测逻辑帧率（帧同步调试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量（帧同步调试/压力测试信息）----
         int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;
         int logic_fps = ctx->ecs.ctx().get<GlobalState>().logic_fps;
+        int enemy_count = (int)ctx->ecs.view<EnemyComponent>().size();
         frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
-                frame_id, logic_fps, 8.0f, 60.0f);
+                frame_id, logic_fps, 8.0f, 60.0f, enemy_count);
 }
 
 static void on_destroy(scene_p s)

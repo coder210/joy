@@ -88,6 +88,7 @@ static void melee_attack_system(entt::registry& registry, Context* ctx, float /*
             for (auto target : player_view) {
                 auto& h = player_view.get<HealthComponent>(target);
                 if (h.dead) continue;
+                if (h.spawn_invuln > 0) continue;   // 重生无敌期间免疫伤害
                 auto& tp  = player_view.get<LogicPositionComponent>(target);
                 auto& tr  = player_view.get<LogicRectComponent>(target);
                 float tx = fp_to_float(tp.x), ty = fp_to_float(tp.y);

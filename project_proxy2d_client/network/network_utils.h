@@ -43,7 +43,7 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                         ctx->ecs.emplace<ActionStateComponent>(e);
                         // 血量组件：从快照恢复（服务端子弹伤害结算结果）
                         ctx->ecs.emplace<HealthComponent>(e,
-                            (int)entity.hp, PLAYER_MAX_HP);
+                            (int)entity.hp, PLAYER_MAX_HP, false, 0, SPAWN_INVULN_TICKS);
                         // 出生点：与 server 端 join 位置一致（默认地图中央）
                         ctx->ecs.emplace<SpawnPointComponent>(e,
                             DEFAULT_SPAWN_X, DEFAULT_SPAWN_Y);

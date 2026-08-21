@@ -46,8 +46,9 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		// 挂载动作状态组件（几何渲染的朝向 / 攻击表现依赖它）
 		registry.emplace<ActionStateComponent>(player);
 
-		// 挂载血量组件（远程敌人子弹命中扣血）
-		registry.emplace<HealthComponent>(player, PLAYER_MAX_HP, PLAYER_MAX_HP);
+		// 挂载血量组件（远程敌人子弹命中扣血）；初次加入也带重生无敌，防出生点被围殴
+		registry.emplace<HealthComponent>(player, PLAYER_MAX_HP, PLAYER_MAX_HP,
+			false, 0, SPAWN_INVULN_TICKS);
 		// 出生点 = join 位置（重生传送目标）
 		registry.emplace<SpawnPointComponent>(player, join.position_x, join.position_y);
 

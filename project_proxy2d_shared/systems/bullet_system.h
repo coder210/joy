@@ -60,7 +60,8 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
                 if (bx < px + pw && bx + BULLET_SIZE > px &&
                     by < py + ph && by + BULLET_SIZE > py) {
                     auto& h = player_view.get<HealthComponent>(p);
-                    if (h.dead) continue;   // 已死亡玩家不结算子弹伤害
+                    if (h.dead) continue;           // 已死亡玩家不结算子弹伤害
+                    if (h.spawn_invuln > 0) continue; // 重生无敌期间免疫伤害
                     h.hp -= (int)fp_to_float(b.damage);
                     if (h.hp < 0) h.hp = 0;
                     to_destroy.push_back(e);
