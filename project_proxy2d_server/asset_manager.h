@@ -17,6 +17,7 @@ public:
 
 	font_p GetSimheiFont24();
 	font_p GetSimheiFont12();
+	font_p GetSimheiFont28();   // 超采样字体：28px 栅格化，绘制时缩到 14px，文字更锐利
 
 	// 纹理缓存：获取/加载纹理
 	image_p tex_cache_get(jr2d_p r2d, const char* path);
@@ -29,6 +30,7 @@ private:
 	static AssetManager* instance_;
 	font_p simheiFont24_;
 	font_p simheiFont12_;
+	font_p simheiFont28_;
 	std::unordered_map<std::string, image_p> tex_cache_;
 };
 

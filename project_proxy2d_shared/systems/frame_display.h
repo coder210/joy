@@ -13,5 +13,9 @@ static void frame_display_draw(jr2d_p r2d, font_p font, int frame_id, int logic_
         char text[48];
         snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d", frame_id, logic_fps);
         jcolor_t c = { 60, 60, 70, 235 };   // 深灰，适配白底背景
-        jtext_printx(r2d, font, text, (int)strlen(text), c, x, y);
+        // 超采样：28px 字体在 scale=0.5 下缩到 14px 显示，文字边缘更锐利。
+        // 因 scale 会同时缩放坐标，故传入坐标需翻倍（x*2, y*2）以保持在原位置。
+        r2d_set_scale(r2d, 0.5f, 0.5f);
+        jtext_printx(r2d, font, text, (int)strlen(text), c, x * 2.0f, y * 2.0f);
+        r2d_set_scale(r2d, 1.0f, 1.0f);   // 恢复，避免影响后续绘制
 }

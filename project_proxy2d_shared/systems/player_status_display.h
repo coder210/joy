@@ -70,5 +70,8 @@ static void player_status_display_draw(entt::registry& ecs, uint32_t local_conv,
         }
 
         jcolor_t c = { 40, 60, 110, 235 };   // 深蓝，适配白底背景（与 FPS 深灰区分）
-        jtext_printx(r2d, font, buf, (int)strlen(buf), c, 8.0f, 32.0f);
+        // 超采样：28px 字体在 scale=0.5 下缩到 14px，坐标翻倍以保持在原位置 (16,64)。
+        r2d_set_scale(r2d, 0.5f, 0.5f);
+        jtext_printx(r2d, font, buf, (int)strlen(buf), c, 16.0f, 64.0f);
+        r2d_set_scale(r2d, 1.0f, 1.0f);   // 恢复，避免影响后续绘制
 }
