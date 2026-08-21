@@ -55,10 +55,16 @@ static void on_load(scene_p s)
 
         // 注册全局单例（通过 registry.ctx() 访问）
         ctx->ecs.ctx().emplace<NetComponent>();
-        ctx->ecs.ctx().emplace<GlobalState>();
+        auto& gs = ctx->ecs.ctx().emplace<GlobalState>();
+        // 服务端生成确定性随机种子并创建随机序列；seed 通过 loading 协议下发给客户端，
+        // 两端用同一 seed 创建同一序列，保证 AI/巡逻等行为帧同步一致。
+        gs.random_seed = (int)(get_ticks() ^ ((uintptr_t)&gs & 0xFFFF));
+        gs.random = utils_random_create((uint32_t)gs.random_seed);
         // 注册 system
         add_system(ctx, OnStart, "map_spawn", map_spawn_system);
-        //add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
+        // 服务端生成初始敌人（带 SpawnIdx）；客户端不本地 spawn，开局敌人通过首帧快照
+        // (handle_loading) 下发，中途加入者也据此按 SpawnIdx 重建当前活着的敌人集合。
+        add_system(ctx, OnStart, "spawn_enemy", spawn_enemy_system);
         add_system(ctx, PreUpdate, "input_consume_join", input_consume_join_system);
         add_system(ctx, PreUpdate, "input_consume_leave", input_consume_leave_system);
         add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);

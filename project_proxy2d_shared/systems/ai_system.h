@@ -13,6 +13,7 @@
 #include "../components/player_event_input.h"
 #include "../components/pathfinding_component.h"
 #include "../components/health_component.h"
+#include "../components/global_state_component.h"
 #include <cmath>
 
 struct Context;
@@ -164,9 +165,15 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             // 巡逻目标更新逻辑（仅当 timer 归零时生成新目标）
             ai.timer--;
             if (ai.timer <= 0) {
-                int seed = 0;
-                fp_t rx = fp_from_float((fp_to_float(ai.patrol_radius) * ((seed % 7) - 3) / 3.0f));
-                fp_t ry = fp_from_float((fp_to_float(ai.patrol_radius) * (((seed * 13) % 9) - 4) / 4.0f));
+                // 用确定性随机种子生成巡逻偏移（两端同 seed → 同序列 → 行为一致）。
+                // utils_random_next 返回 [0,2^32)，除以 2^32 得到 [0,1)，再映射到 [-1,1]。
+                auto& gs = ctx->ecs.ctx().get<GlobalState>();
+                uint32_t r1 = utils_random_next(gs.random);
+                uint32_t r2 = utils_random_next(gs.random);
+                float fx = ((float)r1 / 4294967296.0f) * 2.0f - 1.0f;
+                float fy = ((float)r2 / 4294967296.0f) * 2.0f - 1.0f;
+                fp_t rx = fp_from_float(fp_to_float(ai.patrol_radius) * fx);
+                fp_t ry = fp_from_float(fp_to_float(ai.patrol_radius) * fy);
                 ai.target_x = fp_add(ai.patrol_center_x, rx);
                 ai.target_y = fp_add(ai.patrol_center_y, ry);
                 ai.timer = 120;

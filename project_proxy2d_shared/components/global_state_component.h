@@ -1,6 +1,7 @@
 #ifndef GLOBAL_STATE_COMPONENT_H
 #define GLOBAL_STATE_COMPONENT_H
 #include <joy/jmath.h>
+#include <joy/joy.h>
 
 // 全局单例状态（通过 registry.ctx().get<GlobalState>() 访问）
 struct GlobalState {
@@ -14,6 +15,11 @@ struct GlobalState {
     // 摄像机
     vec2_t camera_position = { 0.0f, 0.0f };
     int camera_follow_conv = -1;  // 要跟随的玩家 conv，-1 表示不跟随
+
+    // 确定性随机数（帧同步用）：seed 由服务端生成并通过 loading 协议下发，
+    // 两端以同一 seed 创建同一序列，保证 AI/巡逻等行为完全一致。
+    int random_seed = 0;
+    random_num_p random = NULL;   // utils_random_create(seed) 创建，帧同步期间共享推进
 };
 
 #endif

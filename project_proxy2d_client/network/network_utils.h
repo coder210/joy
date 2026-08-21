@@ -19,6 +19,8 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
         ctx->local_conv = conv;
         ctx->ecs.ctx().get<GlobalState>().camera_follow_conv = conv;
         ctx->server_frameid = frame_id;
+        // eid 即服务端 spawn 完敌人后的 next_entity_id（已跳过敌人占用的 id 区间），
+        // 作为客户端 get_entity_id 的起点，保证玩家/子弹 id 与服务端对齐、不重叠。
         ctx->server_entity_id = eid;
 
         for (int i = 0; i < ec; i++) {
@@ -127,11 +129,17 @@ static void network_receive(Context* ctx)
                 jmsgpack_unpacked_destroy(&r);
 
                 if (is_loading) {
-                    int conv, frame_id, eid;
+                    int conv, frame_id, eid, seed;
                     S2CEntity entities[512];
-                    int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, entities, 512);
-                    if (ec >= 0)
+                    int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, &seed, entities, 512);
+                    if (ec >= 0) {
+                        // 用服务端下发的 seed 创建确定性随机序列（与 server 完全一致）
+                        auto& gs = ctx->ecs.ctx().get<GlobalState>();
+                        if (gs.random) utils_random_destroy(gs.random);
+                        gs.random_seed = seed;
+                        gs.random = utils_random_create((uint32_t)seed);
                         handle_loading(ctx, conv, frame_id, eid, entities, ec);
+                    }
                 }
                 else {
                     ctx->command_queue.push(std::string(msg.data, msg.len));

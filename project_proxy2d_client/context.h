@@ -105,6 +105,12 @@ inline void run_phase(Context* ctx, Phase phase, float dt)
 }
 
 
+// 客户端实体 id 分配：与服务端完全对齐。
+// server_entity_id 在 handle_loading 时被设为 loading 下发的 world_eid，而该值等于
+// 服务端在 OnStart 阶段 spawn 完敌人之后的 GlobalState.next_entity_id（已跳过敌人占用的
+// 1..N 区间）。因此客户端玩家/子弹的 id 起点也被推到敌人区间之后，与服务端一致，不会重叠。
+// 注意：两端必须在每个 tick 以相同顺序、相同次数调用 get_entity_id（玩家 join、子弹发射等），
+// 否则 id 序列会错位导致帧同步 mismatch——这是帧同步的固有前提，不是 id 起点问题。
 static int get_entity_id(Context* ctx)
 {
     return ctx->server_entity_id++;

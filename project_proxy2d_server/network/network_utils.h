@@ -195,7 +195,8 @@ static void input_forwarding(Context* ctx)
                                 if (it == ctx->world_snapshots.begin()) {
                                         log_info("WARNING: no snapshot cache found for frame %d (client %d), sending empty loading", comp.frameid, comp.conv);
                                         auto data = pack_s2c_loading(comp.conv, comp.frameid,
-                                                ctx->ecs.ctx().get<GlobalState>().next_entity_id, nullptr, 0);
+                                                ctx->ecs.ctx().get<GlobalState>().next_entity_id, nullptr, 0,
+                                                (int32_t)ctx->ecs.ctx().get<GlobalState>().random_seed);
                                         netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
                                         return;
                                 }
@@ -204,7 +205,8 @@ static void input_forwarding(Context* ctx)
                         S2CEntity entities[512];
                         int ec = 0, eid = 0;
                         ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
-                        auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec);
+                        auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec,
+                                (int32_t)ctx->ecs.ctx().get<GlobalState>().random_seed);
                         netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
                         comp.is_loaded = true;
                 }
