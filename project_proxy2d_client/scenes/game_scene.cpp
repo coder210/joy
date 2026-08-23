@@ -223,10 +223,12 @@ static void on_update(scene_p s, float dt) {
                         cmd.num_inputs = in; memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
 
                         // 帧同步校验（严格版）：模拟本帧前，用与服务端相同公式
-                        // （玩家 + 敌人 id/position 均纳入）计算本地状态 MD5 并对比
+                        // 纳入玩家 + 敌人，排除 BulletComponent（与服务端一致，避免瞬时子弹
+                        // 因 get_entity_id 分配错位导致误报 MISMATCH）。
                         std::vector<ChecksumEntry> entries;
                         auto pv = self->ctx->ecs.view<IdComponent, LogicPositionComponent>();
                         for (auto e : pv) {
+                                if (self->ctx->ecs.all_of<BulletComponent>(e)) continue;  // 排除瞬时子弹
                                 auto& idc = pv.get<IdComponent>(e);
                                 auto& lpc = pv.get<LogicPositionComponent>(e);
                                 entries.push_back({ idc.id, lpc.x, lpc.y });

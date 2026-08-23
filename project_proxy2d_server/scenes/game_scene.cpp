@@ -116,7 +116,37 @@ static void on_update(scene_p s, float dt)
         auto& gs = ctx->ecs.ctx().get<GlobalState>();
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
+                // 先收集输入并打包命令（checksum 反映"本帧模拟前"状态）
                 collect_input(ctx);
+                // 再消费本帧命令并模拟（input_consume_join_system 在此创建新玩家，
+                // 确保 checksum 打包与本帧模拟严格对齐——否则 join 会差一帧导致 MISMATCH）
+                if (!ctx->command_queue.empty()) {
+                        std::string command_data = ctx->command_queue.front();
+                        ctx->command_queue.pop();
+
+                        int frame_id, jn = 0, ln = 0, in = 0;
+                        S2CPlayerJoin joins[32];
+                        S2CPlayerLeave leaves[32];
+                        S2CPlayerInput inputs[64];
+                        bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
+                                &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
+                        if (ok) {
+                                auto& cmd = ctx->ecs.ctx().get<NetComponent>();
+                                cmd.frame_id = ok ? frame_id : -1;
+                                cmd.num_joins = jn;
+                                cmd.num_leaves = ln;
+                                cmd.num_inputs = in;
+                                memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
+                                memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
+                                if (cmd.num_inputs > 0) {
+                                    memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
+                                }
+                        }
+
+                        run_phase(ctx, PreUpdate, ctx->FIXED_TIMESTEP);
+                        run_phase(ctx, OnUpdate, ctx->FIXED_TIMESTEP);
+                        run_phase(ctx, PostUpdate, ctx->FIXED_TIMESTEP);
+                }
                 input_forwarding(ctx);
         }
 
@@ -130,36 +160,6 @@ static void on_update(scene_p s, float dt)
                 gs.logic_fps = (int)(elapsed_frames * 1000 / (now_ms - self->fps_measure_time));
                 self->fps_measure_time  = now_ms;
                 self->fps_measure_frame = gs.next_frame_id;
-        }
-
-        // 从队列取出命令，解析后写到 ECS 组件上
-        if (!ctx->command_queue.empty()) {
-                std::string command_data = ctx->command_queue.front();
-                ctx->command_queue.pop();
-
-                int frame_id, jn = 0, ln = 0, in = 0;
-                S2CPlayerJoin joins[32];
-                S2CPlayerLeave leaves[32];
-                S2CPlayerInput inputs[64];
-                bool ok = unpack_command(command_data.c_str(), (int)command_data.size(),
-                        &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in);
-                if (ok) {
-                        auto& cmd = ctx->ecs.ctx().get<NetComponent>();
-                        cmd.frame_id = ok ? frame_id : -1;
-                        cmd.num_joins = jn;
-                        cmd.num_leaves = ln;
-                        cmd.num_inputs = in;
-                        memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
-                        memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
-                        if (cmd.num_inputs > 0) {
-                            memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
-                        }
-                }
-
-                // 自动调度逻辑 tick
-                run_phase(ctx, PreUpdate, ctx->FIXED_TIMESTEP);
-                run_phase(ctx, OnUpdate, ctx->FIXED_TIMESTEP);
-                run_phase(ctx, PostUpdate, ctx->FIXED_TIMESTEP);
         }
 
 
