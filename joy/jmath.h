@@ -103,6 +103,26 @@ JOY_INLINE float fp_to_float(fp_t a)
 	return a * 1.0f / FP_ONE;
 }
 
+// 无符号 32 位整数值 → 定点数（与 fp_from_int 对称，语义为整数部分）。
+// 注意值域：a 接近 2^32 时 (fp_t)a<<32 可能溢出 int64，请保证 a 不接近 2^32。纯整数、帧同步确定性。
+JOY_INLINE fp_t fp_from_uint(uint32_t a)
+{
+	return (fp_t)a << FP_FRACTIONAL_PLACES;
+}
+
+// 有符号 32 位整数值 → 定点数，纯整数、帧同步确定性。
+JOY_INLINE fp_t fp_from_int(int32_t a)
+{
+	return (fp_t)a << FP_FRACTIONAL_PLACES;
+}
+
+// 32 位小数 → 定点数：把 a∈[0,2^32) 当作定点数 [0,1.0) 的小数部分（整数部分为 0）。
+// 常用于将 utils_random_next（返回普通 uint32_t）映射为 [0,1.0) 的定点数。纯整数、帧同步确定性。
+JOY_INLINE fp_t fp_from_fraction(uint32_t a)
+{
+	return (fp_t)a;
+}
+
 #define FPFF fp_from_float
 #define FPTF fp_to_float
 

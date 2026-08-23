@@ -125,6 +125,44 @@ static void collect_input(Context* ctx)
         char checksum[64] = { 0 };
         compute_full_md5(entries, checksum, sizeof(checksum));
 
+        // ===== checksum 追踪开关：开启后每帧把参与校验的实体写入文件 =====
+        // 用于调试帧同步 mismatch：两端跑相同场景后，对比
+        //   server: checksum_trace_server.txt
+        //   client: checksum_trace_client.txt
+        // 即可定位差异帧和具体实体。
+#define PROXY2D_CHECKSUM_TRACE 1
+#ifdef PROXY2D_CHECKSUM_TRACE
+        {
+                static int trace_init = 0;
+                if (!trace_init) {
+                        // 每次启动清空旧文件
+                        FILE* f = fopen("checksum_trace_server.txt", "w");
+                        if (f) fclose(f);
+                        trace_init = 1;
+                }
+                // 写入"本帧模拟前"的实体集合（与 checksum 计算一致）
+                FILE* f = fopen("checksum_trace_server.txt", "a");
+                if (f) {
+                        char line[160];
+                        int n = snprintf(line, sizeof(line), "===== frame=%d =====\n", frame_id);
+                        fwrite(line, 1, (size_t)n, f);
+                        auto iv = ctx->ecs.view<IdComponent, LogicPositionComponent>();
+                        for (auto e : iv) {
+                                auto& idc = iv.get<IdComponent>(e);
+                                auto& lpc = iv.get<LogicPositionComponent>(e);
+                                const char* ty = "?";
+                                if (ctx->ecs.all_of<PlayerComponent>(e)) ty = "P";
+                                else if (ctx->ecs.all_of<EnemyComponent>(e)) ty = "E";
+                                else if (ctx->ecs.all_of<BulletComponent>(e)) ty = "B";
+                                n = snprintf(line, sizeof(line), "id=%d t=%s x=%lld y=%lld\n",
+                                        idc.id, ty, (long long)lpc.x, (long long)lpc.y);
+                                fwrite(line, 1, (size_t)n, f);
+                        }
+                        fclose(f);
+                }
+        }
+#endif
+
         auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, num_joins, leaves, num_leaves, inputs, num_inputs, checksum);
         ctx->commands[frame_id] = command_data;
         ctx->command_queue.push(command_data);
@@ -195,21 +233,27 @@ static void input_forwarding(Context* ctx)
                         if (it == ctx->world_snapshots.end() || it->first > comp.frameid) {
                                 if (it == ctx->world_snapshots.begin()) {
                                         log_info("WARNING: no snapshot cache found for frame %d (client %d), sending empty loading", comp.frameid, comp.conv);
+                                        auto& gs = ctx->ecs.ctx().get<GlobalState>();
+                                        uint32_t mt[JOY_MT_N]; int mt_idx = 0;
+                                        utils_random_get_state(gs.random, mt, &mt_idx);
                                         auto data = pack_s2c_loading(comp.conv, comp.frameid,
-                                                ctx->ecs.ctx().get<GlobalState>().next_entity_id, nullptr, 0,
-                                                (int32_t)ctx->ecs.ctx().get<GlobalState>().random_seed);
+                                                gs.next_entity_id, nullptr, 0,
+                                                (int32_t)gs.random_seed, mt_idx, mt);
                                         netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
                                         return;
                                 }
                                 --it;
-                        }
-                        S2CEntity entities[512];
-                        int ec = 0, eid = 0;
-                        ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
-                        auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec,
-                                (int32_t)ctx->ecs.ctx().get<GlobalState>().random_seed);
-                        netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
-                        comp.is_loaded = true;
+                                }
+                                S2CEntity entities[512];
+                                int ec = 0, eid = 0;
+                                ec = unpack_world(it->second.c_str(), (int)it->second.size(), &eid, entities, 512);
+                                auto& gs = ctx->ecs.ctx().get<GlobalState>();
+                                uint32_t mt[JOY_MT_N]; int mt_idx = 0;
+                                utils_random_get_state(gs.random, mt, &mt_idx);
+                                auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec,
+                                (int32_t)gs.random_seed, mt_idx, mt);
+                                netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
+                                comp.is_loaded = true;
                 }
         }
 }

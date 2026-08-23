@@ -57,30 +57,32 @@ static void melee_attack_system(entt::registry& registry, Context* ctx, float /*
         auto& apos  = view.get<LogicPositionComponent>(attacker);
         auto& arect = view.get<LogicRectComponent>(attacker);
 
-        // 攻击盒 = 自身碰撞盒沿朝向 dir 向前延伸 range
-        const float ax = fp_to_float(apos.x), ay = fp_to_float(apos.y);
-        const float aw = fp_to_float(arect.width), ah = fp_to_float(arect.height);
-        const float range = is_player ? PLAYER_MELEE_RANGE
-                                      : fp_to_float(registry.get<AIComponent>(attacker).attack_radius);
-        float hx = ax, hy = ay, hw = aw, hh = ah;
+        // 攻击盒 = 自身碰撞盒沿朝向 dir 向前延伸 range（纯定点数，帧同步确定性）
+        const fp_t ax = apos.x, ay = apos.y;
+        const fp_t aw = arect.width, ah = arect.height;
+        const fp_t range = is_player ? fp_from_float(PLAYER_MELEE_RANGE)
+                                     : registry.get<AIComponent>(attacker).attack_radius;
+        fp_t hx = ax, hy = ay, hw = aw, hh = ah;
         switch (act.dir) {
-            case 0: hy = ay + ah; hh = range; break;              // 下
-            case 1: hx = ax - range; hw = range; break;           // 左
-            case 2: hx = ax + aw;   hw = range; break;            // 右
-            default: hy = ay - range; hh = range; break;          // 上
+            case 0: hy = fp_add(ay, ah); hh = range; break;              // 下
+            case 1: hx = fp_sub(ax, range); hw = range; break;           // 左
+            case 2: hx = fp_add(ax, aw);   hw = range; break;            // 右
+            default: hy = fp_sub(ay, range); hh = range; break;          // 上
         }
 
-        const float damage = is_player ? (float)PLAYER_MELEE_DAMAGE : (float)ENEMY_MELEE_DAMAGE;
+        const int damage = is_player ? PLAYER_MELEE_DAMAGE : ENEMY_MELEE_DAMAGE;
         if (is_player) {
             for (auto target : enemy_view) {
                 auto& h = enemy_view.get<HealthComponent>(target);
                 if (h.dead) continue;
                 auto& tp  = enemy_view.get<LogicPositionComponent>(target);
                 auto& tr  = enemy_view.get<LogicRectComponent>(target);
-                float tx = fp_to_float(tp.x), ty = fp_to_float(tp.y);
-                float tw = fp_to_float(tr.width), th = fp_to_float(tr.height);
-                if (hx < tx + tw && hx + hw > tx && hy < ty + th && hy + hh > ty) {
-                    h.hp -= (int)damage; if (h.hp < 0) h.hp = 0;
+                const fp_t tx = tp.x, ty = tp.y;
+                const fp_t tw = tr.width, th = tr.height;
+                // AABB 相交判定（纯定点数）
+                if (hx < fp_add(tx, tw) && fp_add(hx, hw) > tx &&
+                    hy < fp_add(ty, th) && fp_add(hy, hh) > ty) {
+                    h.hp -= damage; if (h.hp < 0) h.hp = 0;
                     break;
                 }
             }
@@ -91,10 +93,12 @@ static void melee_attack_system(entt::registry& registry, Context* ctx, float /*
                 if (h.spawn_invuln > 0) continue;   // 重生无敌期间免疫伤害
                 auto& tp  = player_view.get<LogicPositionComponent>(target);
                 auto& tr  = player_view.get<LogicRectComponent>(target);
-                float tx = fp_to_float(tp.x), ty = fp_to_float(tp.y);
-                float tw = fp_to_float(tr.width), th = fp_to_float(tr.height);
-                if (hx < tx + tw && hx + hw > tx && hy < ty + th && hy + hh > ty) {
-                    h.hp -= (int)damage; if (h.hp < 0) h.hp = 0;
+                const fp_t tx = tp.x, ty = tp.y;
+                const fp_t tw = tr.width, th = tr.height;
+                // AABB 相交判定（纯定点数）
+                if (hx < fp_add(tx, tw) && fp_add(hx, hw) > tx &&
+                    hy < fp_add(ty, th) && fp_add(hy, hh) > ty) {
+                    h.hp -= damage; if (h.hp < 0) h.hp = 0;
                     break;
                 }
             }

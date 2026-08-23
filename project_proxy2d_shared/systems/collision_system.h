@@ -6,9 +6,14 @@
 #include "../components/player_component.h"
 #include "../components/bullet_component.h"
 #include "map_def.h"
-#include <cmath>
 
 struct Context;
+
+// 定点数向下取整转 int（算术右移即 floor，负向负无穷），纯整数、帧同步确定性。
+static inline int collision_fp_floor_to_int(fp_t x)
+{
+    return (int)(x >> FP_FRACTIONAL_PLACES);
+}
 
 // 玩家/敌人与地图碰撞处理 system。
 // 在 OnUpdate 阶段运行，在 movement_system 之后。
@@ -35,19 +40,20 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
         auto& mover_rect = mover_view.get<LogicRectComponent>(mover_entity);
         auto& mover_pos = mover_view.get<LogicPositionComponent>(mover_entity);
 
-        // 移动体 AABB 的浮点边界（m/s 单位）
-        float x0 = fp_to_float(mover_pos.x);
-        float y0 = fp_to_float(mover_pos.y);
-        float w  = fp_to_float(mover_rect.width);
-        float h  = fp_to_float(mover_rect.height);
-        float x1 = x0 + w;
-        float y1 = y0 + h;
+        // 移动体 AABB 边界（纯定点数，帧同步确定性）
+        const fp_t x0 = mover_pos.x;
+        const fp_t y0 = mover_pos.y;
+        const fp_t w  = mover_rect.width;
+        const fp_t h  = mover_rect.height;
+        const fp_t x1 = fp_add(x0, w);
+        const fp_t y1 = fp_add(y0, h);
+        const fp_t EPS = fp_from_float(0.001f);
 
         // 计算移动体覆盖的格子范围（含边缘），越界视为墙
-        int gx0 = (int)std::floor(x0);
-        int gx1 = (int)std::floor(x1 - 0.001f);
-        int gy0 = (int)std::floor(y0);
-        int gy1 = (int)std::floor(y1 - 0.001f);
+        int gx0 = collision_fp_floor_to_int(x0);
+        int gx1 = collision_fp_floor_to_int(fp_sub(x1, EPS));
+        int gy0 = collision_fp_floor_to_int(y0);
+        int gy1 = collision_fp_floor_to_int(fp_sub(y1, EPS));
 
         // 对覆盖的每个格子做碰撞推挤（沿最小渗透方向）
         for (int gy = gy0; gy <= gy1; gy++) {
@@ -61,10 +67,9 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
                 if (!blocked) continue;
 
                 // 墙格矩形 [gx, gy]~[gx+1, gy+1]，与移动体 AABB 求最小渗透方向并推出
-                rectanglef_t mover_box = { fp_from_float(x0), fp_from_float(y0),
-                                           fp_from_float(w), fp_from_float(h) };
-                rectanglef_t tile_box  = { fp_from_float((float)gx), fp_from_float((float)gy),
-                                           fp_from_float(1.0f), fp_from_float(1.0f) };
+                rectanglef_t mover_box = { x0, y0, w, h };
+                rectanglef_t tile_box  = { fp_from_int(gx), fp_from_int(gy),
+                                           fp_one(), fp_one() };
                 contact2df_t contact;
                 if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
                     fp_t depth = contact.depth;
@@ -73,13 +78,11 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
                     fp_t ny = fp_sub(fp_zero(), contact.normal.y);
                     mover_pos.x = fp_add(mover_pos.x, fp_mul(nx, depth));
                     mover_pos.y = fp_add(mover_pos.y, fp_mul(ny, depth));
-                    // 推出后更新浮点边界，继续检查下一格
-                    x0 = fp_to_float(mover_pos.x);
-                    y0 = fp_to_float(mover_pos.y);
-                    gx0 = (int)std::floor(x0);
-                    gx1 = (int)std::floor(x0 + w - 0.001f);
-                    gy0 = (int)std::floor(y0);
-                    gy1 = (int)std::floor(y0 + h - 0.001f);
+                    // 推出后更新边界与格子范围，继续检查下一格
+                    gx0 = collision_fp_floor_to_int(mover_pos.x);
+                    gx1 = collision_fp_floor_to_int(fp_sub(fp_add(mover_pos.x, w), EPS));
+                    gy0 = collision_fp_floor_to_int(mover_pos.y);
+                    gy1 = collision_fp_floor_to_int(fp_sub(fp_add(mover_pos.y, h), EPS));
                 }
             }
         }

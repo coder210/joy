@@ -142,10 +142,17 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         typedef struct random_num random_num_t, * random_num_p;
 
+        // Mersenne Twister 内部状态大小（624 个 uint32 + 1 个 index）
+        #define JOY_MT_N 624
+
         // 可重置随机数（Mersenne Twister），用于帧同步保证 server/client 随机序列一致
         JOY_API random_num_p utils_random_create(uint32_t seed);
         JOY_API void         utils_random_destroy(random_num_p rnum);
         JOY_API uint32_t     utils_random_next(random_num_p rnum);
+        // 导出/恢复随机数内部状态（帧同步：客户端 join 时需用服务端当前状态恢复，
+        // 仅同步 seed 会让已推进的 random 与初始状态不同步，导致 AI 随机序列分叉）
+        JOY_API void         utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out);
+        JOY_API void         utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in);
 
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct jtimer jtimer_t, *jtimer_p;

@@ -12,6 +12,12 @@
 
 struct Context;
 
+// 定点数向下取整转 int（算术右移即 floor(x/2^32)，负数向负无穷），纯整数运算，帧同步确定性。
+static inline int fp_floor_to_int(fp_t x)
+{
+    return (int)(x >> FP_FRACTIONAL_PLACES);
+}
+
 /* ============================================================
  * 敌人 A* 寻路系统
  *  - 网格 = MAP_LAYOUT（30x20），障碍 = map_is_collidable 的格子
@@ -169,8 +175,8 @@ static void pathfinding_system(entt::registry& registry, Context* ctx, float /*d
             pc.dirty = false;
             if (pc.recompute_cooldown <= 0) {
                 pc.recompute_cooldown = PF_RECOMPUTE_INTERVAL;
-                int sx = (int)std::floor(fp_to_float(pos.x));
-                int sy = (int)std::floor(fp_to_float(pos.y));
+                int sx = fp_floor_to_int(pos.x);
+                int sy = fp_floor_to_int(pos.y);
                 pc.path_len = pathfind_astar(sx, sy, pc.target_gx, pc.target_gy,
                                              pc.path, (int)(sizeof(pc.path) / sizeof(pc.path[0])));
                 pc.next_idx = 0;

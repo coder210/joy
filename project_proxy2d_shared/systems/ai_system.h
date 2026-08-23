@@ -18,36 +18,47 @@
 
 struct Context;
 
+// 定点数向零截断转 int（等价于 (int)(x / 2^32) 的 C 语义），纯整数运算，帧同步确定性。
+static inline int fp_trunc_to_int(fp_t x)
+{
+    int64_t q = x >> FP_FRACTIONAL_PLACES;   // 负数时偏小（floor 方向）
+    if (x < 0 && (x & (FP_ONE - 1)) != 0) q += 1;  // 向零修正
+    return (int)q;
+}
+
 // 远程敌人发射子弹：帧同步下两端用 get_entity_id 分配相同 ID，无需网络同步。
 static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
                                fp_t ex, fp_t ey, fp_t px, fp_t py,
                                const AIComponent& ai)
 {
-    // 从敌人中心指向玩家中心（LogicPosition 均为碰撞盒左上角，0.8 盒中心 = +0.4）
-    float exf = fp_to_float(ex) + 0.4f;
-    float eyf = fp_to_float(ey) + 0.4f;
-    float pxf = fp_to_float(px) + 0.4f;
-    float pyf = fp_to_float(py) + 0.4f;
-    float dx = pxf - exf;
-    float dy = pyf - eyf;
-    float len = sqrtf(dx * dx + dy * dy);
-    if (len < 0.001f) len = 1.0f;
-    float speed = fp_to_float(ai.bullet_speed);
-    float vx = dx / len * speed;
-    float vy = dy / len * speed;
+    // 敌人/玩家碰撞盒 0.8x0.8，中心 = 左上角 + 0.4。全程纯定点数，帧同步确定性。
+    fp_t exf = fp_add(ex, fp_from_float(0.4f));
+    fp_t eyf = fp_add(ey, fp_from_float(0.4f));
+    fp_t pxf = fp_add(px, fp_from_float(0.4f));
+    fp_t pyf = fp_add(py, fp_from_float(0.4f));
+    // 从敌人中心指向玩家中心的方向向量
+    fp_t dx = fp_sub(pxf, exf);
+    fp_t dy = fp_sub(pyf, eyf);
+    // 归一化方向并乘以速度（fp_sqrt/fp_div 均为纯整数实现，两端结果一致）
+    fp_t len_sq = fp_add(fp_mul(dx, dx), fp_mul(dy, dy));
+    fp_t len = fp_sqrt(len_sq);
+    if (len < fp_from_float(0.001f)) len = fp_one();
+    fp_t vx = fp_div(fp_mul(dx, ai.bullet_speed), len);
+    fp_t vy = fp_div(fp_mul(dy, ai.bullet_speed), len);
 
     // 出生点：敌人中心（子弹碰撞盒左上角 = 中心 - 半尺寸）
-    float cxf = exf - BULLET_HALF;
-    float cyf = eyf - BULLET_HALF;
+    fp_t cxf = fp_sub(exf, fp_from_float(BULLET_HALF));
+    fp_t cyf = fp_sub(eyf, fp_from_float(BULLET_HALF));
 
     entt::entity b = registry.create();
     registry.emplace<IdComponent>(b, get_entity_id(ctx));
     registry.emplace<BulletComponent>(b,
-        fp_from_float(vx), fp_from_float(vy), ai.bullet_damage, 0, BULLET_LIFE_TICKS);
-    registry.emplace<LogicPositionComponent>(b, fp_from_float(cxf), fp_from_float(cyf));
+        vx, vy, ai.bullet_damage, 0, BULLET_LIFE_TICKS);
+    registry.emplace<LogicPositionComponent>(b, cxf, cyf);
     registry.emplace<LogicRectComponent>(b, fp_from_float(BULLET_SIZE), fp_from_float(BULLET_SIZE));
-    registry.emplace<TransformComponent>(b,
-        cxf + BULLET_HALF, cyf + BULLET_HALF, 0.0f, BULLET_SIZE, BULLET_SIZE);
+    vec2_t tpos  = { fp_to_float(cxf), fp_to_float(cyf) };
+    vec2_t tscale = { BULLET_SIZE, BULLET_SIZE };
+    registry.emplace<TransformComponent>(b, tpos, 0.0f, tscale);
 }
 
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
@@ -55,9 +66,19 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 
     auto view = registry.view<IdComponent, EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent, HealthComponent>();
+    auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
-    if (!ctx->is_server) {
-        int i = 10;
+    // [AI TIMER TRACE] 临时诊断：记录敌人 ai.timer 两端是否同步（帧同步排查用）
+    // 注意：is_server 分支本身无害（未使用变量），此处保留结构仅用于 trace。
+    FILE* ai_trace_f = NULL;
+    if (ctx->is_server) {
+        static bool ai_trace_init = false;
+        if (!ai_trace_init) { FILE* f = fopen("ai_timer_trace_server.txt", "w"); if (f) fclose(f); ai_trace_init = true; }
+        ai_trace_f = fopen("ai_timer_trace_server.txt", "a");
+    } else {
+        static bool ai_trace_init = false;
+        if (!ai_trace_init) { FILE* f = fopen("ai_timer_trace_client.txt", "w"); if (f) fclose(f); ai_trace_init = true; }
+        ai_trace_f = fopen("ai_timer_trace_client.txt", "a");
     }
 
     for (auto e : view) {
@@ -65,6 +86,16 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
+        (void)id;
+
+        if (ai_trace_f && id.id == 5) {
+            char tbuf[160];
+            int tn = snprintf(tbuf, sizeof(tbuf), "f=%lld eid=%d state=%d timer=%d target=(%.3f,%.3f) pos=(%.3f,%.3f)\n",
+                (long long)gs.next_frame_id, id.id, ai.state, ai.timer,
+                fp_to_float(ai.target_x), fp_to_float(ai.target_y),
+                fp_to_float(pos.x), fp_to_float(pos.y));
+            fwrite(tbuf, 1, (size_t)tn, ai_trace_f);
+        }
 
         // 死亡敌人不行动（不追击/不攻击/不巡逻），等待 player_death_system 重生
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) {
@@ -142,8 +173,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 registry.emplace<PathComponent>(e);
             }
             auto& pc = registry.get<PathComponent>(e);
-            pc.target_gx = (int)(fp_to_float(nearest_px));
-            pc.target_gy = (int)(fp_to_float(nearest_py));
+            pc.target_gx = fp_trunc_to_int(nearest_px);
+            pc.target_gy = fp_trunc_to_int(nearest_py);
             pc.dirty = true;
 
             fp_t dx = fp_sub(nearest_px, pos.x);
@@ -164,18 +195,30 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             // 巡逻目标更新逻辑（仅当 timer 归零时生成新目标）
             ai.timer--;
             if (ai.timer <= 0) {
-                // 用确定性随机种子生成巡逻偏移（两端同 seed → 同序列 → 行为一致）。
-                // utils_random_next 返回 [0,2^32)，除以 2^32 得到 [0,1)，再映射到 [-1,1]。
+                // 纯定点数生成巡逻偏移（帧同步确定性，两端同 seed → 同序列 → 行为一致）。
+                // utils_random_next 返回普通 uint32_t（[0,2^32)），经 fp_from_fraction 映射为 [0,1.0) 定点数。
+                // 再 *2-1 得 [-1,1)，乘巡逻半径即得偏移（与原 float 版本偏移范围一致）。
                 auto& gs = ctx->ecs.ctx().get<GlobalState>();
                 uint32_t r1 = utils_random_next(gs.random);
                 uint32_t r2 = utils_random_next(gs.random);
-                float fx = ((float)r1 / 4294967296.0f) * 2.0f - 1.0f;
-                float fy = ((float)r2 / 4294967296.0f) * 2.0f - 1.0f;
-                fp_t rx = fp_from_float(fp_to_float(ai.patrol_radius) * fx);
-                fp_t ry = fp_from_float(fp_to_float(ai.patrol_radius) * fy);
+                fp_t fx = fp_sub(fp_mul(fp_from_fraction(r1), fp_from_float(2.0f)), fp_one());
+                fp_t fy = fp_sub(fp_mul(fp_from_fraction(r2), fp_from_float(2.0f)), fp_one());
+                fp_t rx = fp_mul(ai.patrol_radius, fx);
+                fp_t ry = fp_mul(ai.patrol_radius, fy);
                 ai.target_x = fp_add(ai.patrol_center_x, rx);
                 ai.target_y = fp_add(ai.patrol_center_y, ry);
                 ai.timer = 120;
+
+                // [AI RANDOM TRACE] 记录首次/每次生成巡逻目标用的原始随机值，对比两端 random 序列
+                if (ai_trace_f) {
+                    static int gen_count = 0;  // 注意：static 在 client/server 各自进程独立，仅用于日志计数
+                    gen_count++;
+                    char rbuf[160];
+                    int rn = snprintf(rbuf, sizeof(rbuf), "GEN#%d f=%lld r1=%u r2=%u target=(%.3f,%.3f)\n",
+                        gen_count, (long long)gs.next_frame_id, r1, r2,
+                        fp_to_float(ai.target_x), fp_to_float(ai.target_y));
+                    fwrite(rbuf, 1, (size_t)rn, ai_trace_f);
+                }
             }
 
             fp_t dx = fp_sub(ai.target_x, pos.x);
@@ -187,10 +230,9 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                             registry.emplace<PathComponent>(e);
                     }
                     auto& pc = registry.get<PathComponent>(e);
-                    // 将目标点转换为网格坐标（假设格子大小为 TILE_SIZE）
-                    constexpr float TILE_SIZE = 1.0f; // 请根据实际情况定义
-                    pc.target_gx = (int)(fp_to_float(ai.target_x) / TILE_SIZE);
-                    pc.target_gy = (int)(fp_to_float(ai.target_y) / TILE_SIZE);
+                    // 将目标点转换为网格坐标（格子大小 TILE_SIZE=1，纯整数向下取整，帧同步确定性）
+                    pc.target_gx = fp_trunc_to_int(ai.target_x);
+                    pc.target_gy = fp_trunc_to_int(ai.target_y);
                     pc.dirty = true;
             }
             else {
@@ -205,6 +247,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 : (dy > fp_zero() ? 0 : 3);
         }
     }
+
+    if (ai_trace_f) fclose(ai_trace_f);
 }
 
 #endif

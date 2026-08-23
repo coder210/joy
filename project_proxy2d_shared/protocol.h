@@ -144,17 +144,19 @@ static inline std::string pack_world(int entity_id, const S2CEntity* entities, i
     return out;
 }
 
-/* S2C loading 打包: [S2C_CMD_LOADING, [conv, frame_id, [world_eid, [entity...]], seed]] */
-/* seed: 确定性随机种子，由服务端生成并下发，两端以同种子创建随机序列保证帧同步一致 */
+/* S2C loading 打包: [S2C_CMD_LOADING, [conv, frame_id, [world_eid, [entity...]], seed, random_index, [mt...]]]
+ * seed: 确定性随机种子；random_index + mt: 服务端当前 Mersenne Twister 内部状态。
+ * 仅同步 seed 会让客户端 random 回到初始状态，而服务端已推进，导致 AI 随机序列分叉，故须同步完整状态。 */
 static inline std::string pack_s2c_loading(int32_t conv, int32_t frame_id, int32_t world_eid,
-    const S2CEntity* entities, int ec, int32_t seed)
+    const S2CEntity* entities, int ec, int32_t seed,
+    int32_t random_index, const uint32_t* mt_state)
 {
     std::string out;
     jmsgpack_packer_t pk;
     jmsgpack_packer_init(&pk, &out, mp_write_cb);
     jmsgpack_pack_array(&pk, 2);
     jmsgpack_pack_int(&pk, S2C_CMD_LOADING);
-    jmsgpack_pack_array(&pk, 4);
+    jmsgpack_pack_array(&pk, 6);
     jmsgpack_pack_int(&pk, conv);
     jmsgpack_pack_int(&pk, frame_id);
     jmsgpack_pack_array(&pk, 2);
@@ -163,6 +165,14 @@ static inline std::string pack_s2c_loading(int32_t conv, int32_t frame_id, int32
     for (int i = 0; i < ec; i++)
         pack_entity(&pk, entities[i]);
     jmsgpack_pack_int(&pk, seed);
+    jmsgpack_pack_int(&pk, random_index);
+    if (mt_state) {
+        jmsgpack_pack_array(&pk, JOY_MT_N);
+        for (int i = 0; i < JOY_MT_N; i++)
+            jmsgpack_pack_int(&pk, (int64_t)mt_state[i]);
+    } else {
+        jmsgpack_pack_nil(&pk);
+    }
     return out;
 }
 
@@ -228,9 +238,11 @@ static inline int unpack_world(const char* data, int len, int* eid, S2CEntity* e
     return n;
 }
 
-/* 解包 S2C loading 消息: 返回实体数，通过出参返回 conv/frame_id/eid/seed */
+/* 解包 S2C loading 消息: 返回实体数，通过出参返回 conv/frame_id/eid/seed，
+ * 以及 random 当前状态（index + mt[JOY_MT_N]，mt_state 可空表示不需要/无状态） */
 static inline int unpack_loading(const char* data, int len,
     int* conv, int* frame_id, int* eid, int* seed,
+    int* random_index, uint32_t* mt_state,
     S2CEntity* entities, int max_ec)
 {
     jmsgpack_unpacked_t r;
@@ -250,6 +262,18 @@ static inline int unpack_loading(const char* data, int len,
     for (int i = 0; i < n; i++)
         unpack_entity(&arr->via.array.ptr[i], &entities[i]);
     if (seed) *seed = (int)jmp_int(&pl->via.array.ptr[3]);
+    // 第 5 个元素：random_index；第 6 个元素：[mt...]（可能有，也可能为 nil）
+    if (random_index && pl->via.array.size >= 5)
+        *random_index = (int)jmp_int(&pl->via.array.ptr[4]);
+    if (mt_state && pl->via.array.size >= 6) {
+        auto* m = &pl->via.array.ptr[5];
+        if (m->type == JMSGPACK_OBJECT_ARRAY) {
+            int mcnt = (int)m->via.array.size;
+            if (mcnt > JOY_MT_N) mcnt = JOY_MT_N;
+            for (int i = 0; i < mcnt; i++)
+                mt_state[i] = (uint32_t)jmp_int(&m->via.array.ptr[i]);
+        }
+    }
     jmsgpack_unpacked_destroy(&r);
     return n;
 }

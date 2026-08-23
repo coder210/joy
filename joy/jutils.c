@@ -392,6 +392,24 @@ utils_random_next(random_num_p rnum)
 	return y;
 }
 
+void
+utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out)
+{
+	if (rnum) {
+		if (mt_out) SDL_memcpy(mt_out, rnum->mt, sizeof(uint32_t) * MT_N);
+		if (index_out) *index_out = rnum->index;
+	}
+}
+
+void
+utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in)
+{
+	if (rnum) {
+		if (mt_in) SDL_memcpy(rnum->mt, mt_in, sizeof(uint32_t) * MT_N);
+		rnum->index = index_in % MT_N;
+	}
+}
+
 unsigned long sdbm_hash(const char* str, int size)
 {
 	unsigned long hash = 0;
