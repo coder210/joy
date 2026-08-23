@@ -182,28 +182,18 @@ static void on_update(scene_p s, float dt) {
         }
 
         // === 固定步长逻辑 Tick（20Hz）===
+        // 每个逻辑 tick：发送输入 → 消费一条命令 → 模拟一帧（run_phase）。
+        // 与服务端对齐——服务端每 tick 都 collect_input + run_phase，客户端若只在
+        // command_queue 非空时模拟一次，会造成两端 AI（射击冷却等）推进帧数不一致，
+        // 导致子弹等瞬时实体集合不同步（checksum MISMATCH）。
         self->ctx->accumulator += dt;
         auto& gs = self->ctx->ecs.ctx().get<GlobalState>();
         while (self->ctx->accumulator >= self->ctx->FIXED_TIMESTEP) {
             self->ctx->accumulator -= self->ctx->FIXED_TIMESTEP;
             send_input(self->ctx);
-            gs.next_frame_id++;   // 每跑一个逻辑 tick，帧序号 +1
-        }
 
-        // ---- 逻辑帧率测量（每秒统计一次实际跑了几个逻辑 tick）----
-        uint32_t now_ms = get_ticks();
-        if (self->fps_measure_time == 0) {
-                self->fps_measure_time  = now_ms;
-                self->fps_measure_frame = gs.next_frame_id;
-        } else if (now_ms - self->fps_measure_time >= 1000) {
-                int elapsed_frames = gs.next_frame_id - self->fps_measure_frame;
-                gs.logic_fps = (int)(elapsed_frames * 1000 / (now_ms - self->fps_measure_time));
-                self->fps_measure_time  = now_ms;
-                self->fps_measure_frame = gs.next_frame_id;
-        }
-
-        // 从队列取出命令，解析后写到 ECS 组件上
-        if (!self->ctx->command_queue.empty()) {
+            // 消费一条服务端命令（模拟前先写 NetComponent）
+            if (!self->ctx->command_queue.empty()) {
                 std::string command_data = self->ctx->command_queue.front();
                 self->ctx->command_queue.pop();
 
@@ -217,18 +207,16 @@ static void on_update(scene_p s, float dt) {
                         server_checksum, sizeof(server_checksum));
                 if (ok) {
                         auto& cmd = self->ctx->ecs.ctx().get<NetComponent>();
-                        cmd.frame_id = ok ? frame_id : -1;
+                        cmd.frame_id = frame_id;
                         cmd.num_joins = jn;  memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));
                         cmd.num_leaves = ln; memcpy(cmd.leaves, leaves, ln * sizeof(S2CPlayerLeave));
                         cmd.num_inputs = in; memcpy(cmd.inputs, inputs, in * sizeof(S2CPlayerInput));
 
                         // 帧同步校验（严格版）：模拟本帧前，用与服务端相同公式
-                        // 纳入玩家 + 敌人，排除 BulletComponent（与服务端一致，避免瞬时子弹
-                        // 因 get_entity_id 分配错位导致误报 MISMATCH）。
+                        // 纳入所有带 IdComponent + LogicPositionComponent 的实体（玩家 + 敌人 + 子弹）。
                         std::vector<ChecksumEntry> entries;
                         auto pv = self->ctx->ecs.view<IdComponent, LogicPositionComponent>();
                         for (auto e : pv) {
-                                if (self->ctx->ecs.all_of<BulletComponent>(e)) continue;  // 排除瞬时子弹
                                 auto& idc = pv.get<IdComponent>(e);
                                 auto& lpc = pv.get<LogicPositionComponent>(e);
                                 entries.push_back({ idc.id, lpc.x, lpc.y });
@@ -241,12 +229,38 @@ static void on_update(scene_p s, float dt) {
                                 log_error("[CHECKSUM] frame=%d MISMATCH server=%s local=%s",
                                         frame_id, server_checksum, local_checksum);
                         }
+                        // [DEBUG] 打印客户端当前所有子弹 id（frame_id 精确对齐）
+                        {
+                                static int dbg = 0;
+                                if (dbg++ < 200 && frame_id >= 36 && frame_id <= 64) {
+                                        auto cbv = self->ctx->ecs.view<BulletComponent, IdComponent>();
+                                        for (auto e : cbv) {
+                                                auto& idc = cbv.get<IdComponent>(e);
+                                                log_error("[C BULLET] frame=%d bid=%d", frame_id, idc.id);
+                                        }
+                                }
+                        }
                 }
 
-                // 统一 system 调度（PreUpdate → OnUpdate → PostUpdate）
+                // 每个 tick 模拟一帧（与服务端同步推进 AI/子弹）
                 run_phase(self->ctx, PreUpdate, self->ctx->FIXED_TIMESTEP);
                 run_phase(self->ctx, OnUpdate, self->ctx->FIXED_TIMESTEP);
                 run_phase(self->ctx, PostUpdate, self->ctx->FIXED_TIMESTEP);
+
+                gs.next_frame_id++;   // 每跑一个逻辑 tick，帧序号 +1
+            }
+        }
+
+        // ---- 逻辑帧率测量（每秒统计一次实际跑了几个逻辑 tick）----
+        uint32_t now_ms = get_ticks();
+        if (self->fps_measure_time == 0) {
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
+        } else if (now_ms - self->fps_measure_time >= 1000) {
+                int elapsed_frames = gs.next_frame_id - self->fps_measure_frame;
+                gs.logic_fps = (int)(elapsed_frames * 1000 / (now_ms - self->fps_measure_time));
+                self->fps_measure_time  = now_ms;
+                self->fps_measure_frame = gs.next_frame_id;
         }
 
         // 视觉相关 system 用实时 dt 每帧更新（不放在固定步长内）

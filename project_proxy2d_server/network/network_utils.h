@@ -114,12 +114,10 @@ static void collect_input(Context* ctx)
                 if (num_inputs < 64) inputs[num_inputs++] = inp;
 
         // 帧同步状态指纹（严格版）：与客户端共用同一公式（state_checksum.h）。
-        // 纳入玩家 + 敌人，排除 BulletComponent（子弹为瞬时实体，其 get_entity_id 分配
-        // 两端因玩家加入时序错位，且子弹 id 不影响玩家/敌人位置模拟，故不纳入指纹）。
+        // 纳入所有带 IdComponent + LogicPositionComponent 的实体（玩家 + 敌人 + 子弹）。
         std::vector<ChecksumEntry> entries;
         auto pos_view = ctx->ecs.view<IdComponent, LogicPositionComponent>();
         for (auto e : pos_view) {
-                if (ctx->ecs.all_of<BulletComponent>(e)) continue;  // 排除瞬时子弹
                 auto& idc = pos_view.get<IdComponent>(e);
                 auto& lpc = pos_view.get<LogicPositionComponent>(e);
                 entries.push_back({ idc.id, lpc.x, lpc.y });
