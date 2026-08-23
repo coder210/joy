@@ -6,6 +6,7 @@
 #include "../components/enemy_component.h"
 #include "../components/logic_position_component.h"
 #include "../components/action_state_component.h"
+#include "../components/global_state_component.h"
 #include "map_def.h"
 #include <joy/jmath.h>
 #include <cmath>
@@ -26,25 +27,26 @@ static inline int fp_floor_to_int(fp_t x)
  *  - 路径点 = 格子左上角（敌人碰撞盒 1x1，正好占满一格）
  * ============================================================ */
 
-// 地图可通行性预计算缓存（30x20 地图，避免 A* 每次访问格重复调用 map_tile_at/map_is_collidable）
-static bool pf_walkable[MAP_W * MAP_H];
-static bool pf_walkable_init = false;
-static inline void pf_init_walkable()
+// 地图可通行性预计算缓存初始化（写入 GlobalState.astar_work.walkable，避免函数 static 跨单元/可重入问题）
+static inline void pf_init_walkable(GlobalState::AstarWork& work)
 {
-    if (pf_walkable_init) return;
+    if (work.walkable_init) return;
     for (int y = 0; y < MAP_H; y++)
         for (int x = 0; x < MAP_W; x++)
-            pf_walkable[y * MAP_W + x] = !map_is_collidable(map_tile_at(x, y));
-    pf_walkable_init = true;
+            work.walkable[y * MAP_W + x] = !map_is_collidable(map_tile_at(x, y));
+    work.walkable_init = true;
 }
 
 // 起点/终点格子坐标 → 路径格子索引序列（不含起点，含终点），返回路径点数
 // 性能优化：二叉堆取最小 f（O(log N)）+ in_open 布尔数组 O(1) 查重 + 可通行性查表 O(1)。
 // 30 个敌人同时追击时，A* 从 O(N²) 降到 O(N log N)，避免 LogicFPS 因寻路开销暴跌。
-static int pathfind_astar(int sx, int sy, int tx, int ty, int* out, int max_out)
+// 工作数组取自 GlobalState.astar_work（ECS 单例，避免函数 static 跨编译单元/可重入隐患）。
+static int pathfind_astar(GlobalState::AstarWork& work, int sx, int sy, int tx, int ty,
+                          int* out, int max_out)
 {
-    pf_init_walkable();
+    pf_init_walkable(work);
     const int N = MAP_W * MAP_H;
+    const bool* pf_walkable = work.walkable;
 
     // 起点/终点合法性
     if (sx < 0 || sy < 0 || sx >= MAP_W || sy >= MAP_H) return 0;
@@ -53,13 +55,14 @@ static int pathfind_astar(int sx, int sy, int tx, int ty, int* out, int max_out)
     int goal  = ty * MAP_W + tx;
     if (!pf_walkable[start] || !pf_walkable[goal]) return 0;
 
-    static int gscore[N], fscore[N], came[N];
-    static bool closed[N], in_open[N];
-    static int heap[N];          // 二叉堆：存节点 id，按 fscore 最小堆
+    int* gscore = work.gscore;
+    int* fscore = work.fscore;
+    int* came   = work.came;
+    bool* closed = work.closed;
+    bool* in_open = work.in_open;
+    int* heap    = work.heap;     // 二叉堆：存节点 id，按 fscore 最小堆
     int heap_len = 0;
 
-    // 惰性重置：只重置本次用到的节点（open/closed 集合内的），避免每次全量清零 N 个数组
-    // 通过 generation 标记 + 接触列表实现，或直接全量重置（N=600 成本可接受）。
     for (int i = 0; i < N; i++) {
         gscore[i] = 0x3fffffff;
         fscore[i] = 0x3fffffff;
@@ -157,6 +160,9 @@ static void pathfinding_system(entt::registry& registry, Context* ctx, float /*d
     auto view = registry.view<EnemyComponent, AIComponent, PathComponent,
                               LogicPositionComponent, ActionStateComponent>();
 
+    // A* 工作区取 GlobalState.astar_work（随 GlobalState 一起 emplace/get，进程内唯一单例）
+    auto& work = registry.ctx().get<GlobalState>().astar_work;
+
     for (auto e : view) {
         auto& ai  = view.get<AIComponent>(e);
         auto& pc  = view.get<PathComponent>(e);
@@ -177,7 +183,7 @@ static void pathfinding_system(entt::registry& registry, Context* ctx, float /*d
                 pc.recompute_cooldown = PF_RECOMPUTE_INTERVAL;
                 int sx = fp_floor_to_int(pos.x);
                 int sy = fp_floor_to_int(pos.y);
-                pc.path_len = pathfind_astar(sx, sy, pc.target_gx, pc.target_gy,
+                pc.path_len = pathfind_astar(work, sx, sy, pc.target_gx, pc.target_gy,
                                              pc.path, (int)(sizeof(pc.path) / sizeof(pc.path[0])));
                 pc.next_idx = 0;
             } else {
