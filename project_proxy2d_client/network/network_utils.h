@@ -129,19 +129,19 @@ static void network_receive(Context* ctx)
                 jmsgpack_unpacked_destroy(&r);
 
                 if (is_loading) {
-                    int conv, frame_id, eid, seed, random_index;
-                    uint32_t mt_state[JOY_MT_N];
+                    int conv, frame_id, eid, seed;
+                    int64_t random_state = 0;
                     S2CEntity entities[512];
                     int ec = unpack_loading((const char*)msg.data, (int)msg.len, &conv, &frame_id, &eid, &seed,
-                                            &random_index, mt_state, entities, 512);
+                                            &random_state, entities, 512);
                     if (ec >= 0) {
-                        // 用服务端下发的 seed 创建确定性随机序列，再用服务端当前内部状态恢复，
+                        // 用服务端下发的 seed 创建确定性随机序列，再用服务端当前单状态恢复，
                         // 保证与 server 的 random 推进位置完全一致（否则已推进的随机序列会分叉）。
                         auto& gs = ctx->ecs.ctx().get<GlobalState>();
-                        if (gs.random) utils_random_destroy(gs.random);
+                        if (gs.random) lcg_random_destroy(gs.random);
                         gs.random_seed = seed;
-                        gs.random = utils_random_create((uint32_t)seed);
-                        utils_random_set_state(gs.random, mt_state, random_index);
+                        gs.random = lcg_random_create((uint64_t)(uint32_t)seed);
+                        lcg_random_set_state(gs.random, (uint64_t)random_state);
                         handle_loading(ctx, conv, frame_id, eid, entities, ec);
                     }
                 }

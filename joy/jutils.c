@@ -410,6 +410,52 @@ utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in)
 	}
 }
 
+/* ============================================================
+ * 单状态 LCG（64 位线性同余）。状态仅 1 个 uint64，
+ * 帧同步时同步量最小（8 字节），替换 Mersenne Twister 用。
+ * 算法：state = A*state + C（mod 2^64），返回值取高 32 位。
+ * ============================================================ */
+#define LCG_A 6364136223846793005ULL
+#define LCG_C 1442695040888963407ULL
+
+struct lcg_num {
+	uint64_t state;
+};
+
+lcg_num_p
+lcg_random_create(uint64_t seed)
+{
+	lcg_num_p lcg = (lcg_num_p)SDL_malloc(sizeof(lcg_num_t));
+	SDL_assert(lcg);
+	lcg->state = seed ? seed : 0x9e3779b97f4a7c15ULL; // 0 种子退化为默认非零初值
+	return lcg;
+}
+
+void
+lcg_random_destroy(lcg_num_p lcg)
+{
+	SDL_free(lcg);
+}
+
+uint32_t
+lcg_random_next(lcg_num_p lcg)
+{
+	lcg->state = LCG_A * lcg->state + LCG_C;
+	return (uint32_t)(lcg->state >> 32); // 取高 32 位，避免低位的短周期相关
+}
+
+void
+lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out)
+{
+	if (lcg && state_out) *state_out = lcg->state;
+}
+
+void
+lcg_random_set_state(lcg_num_p lcg, uint64_t state)
+{
+	if (lcg) lcg->state = state;
+}
+
 unsigned long sdbm_hash(const char* str, int size)
 {
 	unsigned long hash = 0;

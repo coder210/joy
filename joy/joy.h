@@ -154,6 +154,19 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void         utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out);
         JOY_API void         utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in);
 
+        typedef struct lcg_num lcg_num_t, * lcg_num_p;
+
+        // 单状态线性同余随机数（LCG，64 位状态）。状态仅 1 个 uint64，
+        // 帧同步时"每帧快照"只需同步 8 字节，比 Mersenne Twister（mt[624]+index≈2.5KB）
+        // 小得多。用法与 utils_random_* 一致。
+        JOY_API lcg_num_p   lcg_random_create(uint64_t seed);
+        JOY_API void        lcg_random_destroy(lcg_num_p lcg);
+        JOY_API uint32_t    lcg_random_next(lcg_num_p lcg);
+        // 导出/恢复 LCG 当前状态（单值）。帧同步：客户端 join 时用服务端当前状态恢复，
+        // 保证两端从同一推进位置继续，随机序列一致。
+        JOY_API void        lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out);
+        JOY_API void        lcg_random_set_state(lcg_num_p lcg, uint64_t state);
+
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct jtimer jtimer_t, *jtimer_p;
 

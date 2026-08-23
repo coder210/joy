@@ -18,8 +18,9 @@ struct GlobalState {
 
     // 确定性随机数（帧同步用）：seed 由服务端生成并通过 loading 协议下发，
     // 两端以同一 seed 创建同一序列，保证 AI/巡逻等行为完全一致。
+    // 用单状态 LCG（lcg_random_*）：状态仅 1 个 uint64，loading 同步量最小。
     int random_seed = 0;
-    random_num_p random = NULL;   // utils_random_create(seed) 创建，帧同步期间共享推进
+    lcg_num_p random = NULL;      // lcg_random_create(seed) 创建，帧同步期间共享推进
 
     // A* 寻路工作区（存放 pathfind_astar 搜索过程的临时缓冲，含地图可通行性缓存）。
     // 仅作临时计算缓冲，不是帧同步状态、不参与 checksum，不随网络序列化。

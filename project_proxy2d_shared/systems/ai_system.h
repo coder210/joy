@@ -196,11 +196,11 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             ai.timer--;
             if (ai.timer <= 0) {
                 // 纯定点数生成巡逻偏移（帧同步确定性，两端同 seed → 同序列 → 行为一致）。
-                // utils_random_next 返回普通 uint32_t（[0,2^32)），经 fp_from_fraction 映射为 [0,1.0) 定点数。
+                // lcg_random_next 返回普通 uint32_t（[0,2^32)），经 fp_from_fraction 映射为 [0,1.0) 定点数。
                 // 再 *2-1 得 [-1,1)，乘巡逻半径即得偏移（与原 float 版本偏移范围一致）。
                 auto& gs = ctx->ecs.ctx().get<GlobalState>();
-                uint32_t r1 = utils_random_next(gs.random);
-                uint32_t r2 = utils_random_next(gs.random);
+                uint32_t r1 = lcg_random_next(gs.random);
+                uint32_t r2 = lcg_random_next(gs.random);
                 fp_t fx = fp_sub(fp_mul(fp_from_fraction(r1), fp_from_float(2.0f)), fp_one());
                 fp_t fy = fp_sub(fp_mul(fp_from_fraction(r2), fp_from_float(2.0f)), fp_one());
                 fp_t rx = fp_mul(ai.patrol_radius, fx);

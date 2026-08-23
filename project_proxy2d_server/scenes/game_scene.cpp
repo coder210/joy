@@ -59,7 +59,7 @@ static void on_load(scene_p s)
         // 服务端生成确定性随机种子并创建随机序列；seed 通过 loading 协议下发给客户端，
         // 两端用同一 seed 创建同一序列，保证 AI/巡逻等行为帧同步一致。
         gs.random_seed = (int)(get_ticks() ^ ((uintptr_t)&gs & 0xFFFF));
-        gs.random = utils_random_create((uint32_t)gs.random_seed);
+        gs.random = lcg_random_create((uint64_t)(uint32_t)gs.random_seed);
         // 注册 system
         add_system(ctx, OnStart, "map_spawn", map_spawn_system);
         // 服务端生成初始敌人（带 SpawnIdx）；客户端不本地 spawn，开局敌人通过首帧快照
