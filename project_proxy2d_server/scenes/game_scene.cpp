@@ -190,12 +190,13 @@ static void on_render(scene_p s)
         // ---- 真实碰撞体红框调试（与 collision_system 的 AABB 完全一致）----
         drawing_collision_debug_system(ctx);
 
-        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量（帧同步调试/压力测试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量 + 全局实体 id（帧同步调试信息）----
         int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id - 1;
         int logic_fps = ctx->ecs.ctx().get<GlobalState>().logic_fps;
         int enemy_count = (int)ctx->ecs.view<EnemyComponent>().size();
+        int entity_id = ctx->ecs.ctx().get<GlobalState>().next_entity_id;
         frame_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
-                frame_id, logic_fps, 8.0f, 60.0f, enemy_count);
+                frame_id, logic_fps, 8.0f, 60.0f, enemy_count, entity_id);
 }
 
 static void on_destroy(scene_p s)

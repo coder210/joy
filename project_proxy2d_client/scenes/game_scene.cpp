@@ -291,12 +291,13 @@ static void on_render(scene_p s) {
         player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
                 AssetManager::GetInstance()->GetSimheiFont28());
 
-        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量（帧同步调试/压力测试信息）----
+        // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量 + 全局实体 id（帧同步调试信息）----
         int frame_id = self->ctx->ecs.ctx().get<NetComponent>().frame_id;
         int logic_fps = self->ctx->ecs.ctx().get<GlobalState>().logic_fps;
         int enemy_count = (int)self->ctx->ecs.view<EnemyComponent>().size();
+        int entity_id = self->ctx->server_entity_id;
         frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
-                frame_id, logic_fps, 8.0f, 60.0f, enemy_count);
+                frame_id, logic_fps, 8.0f, 60.0f, enemy_count, entity_id);
 }
 
 static void on_destroy(scene_p s) {

@@ -10,14 +10,15 @@
 //   - 需在 r2d_begin/r2d_end 之间调用
 // ============================================================
 static void frame_display_draw(jr2d_p r2d, font_p font, int frame_id, int logic_fps,
-        float x, float y, int enemy_count = -1)
+        float x, float y, int enemy_count = -1, int entity_id = -1)
 {
-        char text[64];
+        char text[96];
         if (enemy_count >= 0)
-            snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d  Enemies: %d",
-                     frame_id, logic_fps, enemy_count);
+            snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d  Enemies: %d  EID: %d",
+                     frame_id, logic_fps, enemy_count, entity_id);
         else
-            snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d", frame_id, logic_fps);
+            snprintf(text, sizeof(text), "Frame: %d  LogicFPS: %d  EID: %d",
+                     frame_id, logic_fps, entity_id);
         jcolor_t c = { 60, 60, 70, 235 };   // 深灰，适配白底背景
         // 超采样：28px 字体在 scale=0.5 下缩到 14px 显示，文字边缘更锐利。
         // 因 scale 会同时缩放坐标，故传入坐标需翻倍（x*2, y*2）以保持在原位置。

@@ -52,7 +52,6 @@ struct Context {
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 20.0f; // 20Hz
 
-        // 视觉时间（仅渲染用，不参与帧同步）：驱动"浑天仪式"轨道环自旋/变形相位
         float visual_time = 0.0f;
 
         std::vector<struct SystemEntry> systems;
@@ -75,8 +74,18 @@ inline void add_system(Context* ctx, Phase phase, const char* name,
 
 inline void run_phase(Context* ctx, Phase phase, float dt) {
         for (auto& sys : ctx->systems) {
-                if (sys.phase == phase)
+                if (sys.phase == phase) {
+                        uint64_t t0 = get_ticks();
                         sys.fn(ctx->ecs, ctx, dt);
+                        uint64_t t1 = get_ticks();
+                        // [DEBUG] 打印单系统耗时（>0ms 的才打，避免刷屏）
+                        if (t1 > t0) {
+                                static int dbg = 0;
+                                if (dbg++ < 80)
+                                        log_info("[SYS] %s: %llu ms", sys.name.c_str(),
+                                                (unsigned long long)(t1 - t0));
+                        }
+                }
         }
 }
 

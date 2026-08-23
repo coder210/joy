@@ -114,8 +114,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                     ai.shoot_cooldown--;
                 } else {
                     ai.shoot_cooldown = ai.shoot_interval;
-                    spawn_enemy_bullet(registry, ctx, pos.x, pos.y,
-                                       nearest_px, nearest_py, ai);
+                    //spawn_enemy_bullet(registry, ctx, pos.x, pos.y, nearest_px, nearest_py, ai);
                 }
             }
 

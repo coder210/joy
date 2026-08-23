@@ -5,21 +5,27 @@
 #include "../components/logic_rect_component.h"
 #include "../components/player_component.h"
 #include "../components/bullet_component.h"
+#include "map_def.h"
+#include <cmath>
 
 struct Context;
 
-// 玩家与碰撞体碰撞处理 system（通用碰撞，碰撞体为带 LogicRect 的实体）
-// 在 OnUpdate 阶段运行，在 movement_system 之后
-// 检测所有玩家与碰撞层的碰撞，修正玩家位置
+// 玩家/敌人与地图碰撞处理 system。
+// 在 OnUpdate 阶段运行，在 movement_system 之后。
+//
+// 性能优化（修复 LogicFPS 过低）：
+// 原实现遍历"所有带 LogicRect 的实体"作为碰撞体，而 map_spawn_system 为每格障碍
+// 创建了实体，地图障碍格有数百个 → 每 tick 移动体(玩家+敌人+子弹) × 数百障碍 =
+// 上万次矩形碰撞判定，单 tick 耗时 100~220ms，导致 LogicFPS 跌到 ~6。
+//
+// 地图碰撞体位置即格子坐标，直接用 MAP_LAYOUT 网格判断即可（O(1) 查表），
+// 无需遍历数百个 tile 实体。改为网格碰撞：检测移动体 AABB 覆盖到的格子是否不可通行。
 static void collision_system(entt::registry& registry, Context* ctx, float dt) {
     (void)ctx;
     (void)dt;
 
     // 移动体视图：所有玩家/敌人（同时需有 LogicRectComponent + LogicPositionComponent）
     auto mover_view = registry.view<LogicRectComponent, LogicPositionComponent>();
-
-    // 地图碰撞体视图：所有带 LogicRectComponent + LogicPositionComponent 的实体
-    auto all_view = registry.view<LogicRectComponent, LogicPositionComponent>();
 
     for (auto mover_entity : mover_view) {
         // 只对玩家/敌人做碰撞修正，静态碰撞体本身不参与
@@ -29,56 +35,53 @@ static void collision_system(entt::registry& registry, Context* ctx, float dt) {
         auto& mover_rect = mover_view.get<LogicRectComponent>(mover_entity);
         auto& mover_pos = mover_view.get<LogicPositionComponent>(mover_entity);
 
-        // 记录 movement 修改后的坐标（用于监测哪些移动体被修正）
-        fp_t orig_x = mover_pos.x;
-        fp_t orig_y = mover_pos.y;
-        bool was_corrected = false;
+        // 移动体 AABB 的浮点边界（m/s 单位）
+        float x0 = fp_to_float(mover_pos.x);
+        float y0 = fp_to_float(mover_pos.y);
+        float w  = fp_to_float(mover_rect.width);
+        float h  = fp_to_float(mover_rect.height);
+        float x1 = x0 + w;
+        float y1 = y0 + h;
 
-        // 构建移动体碰撞盒子（x/y 跟随 LogicPositionComponent）
-        rectanglef_t mover_box = { mover_pos.x, mover_pos.y, mover_rect.width, mover_rect.height };
+        // 计算移动体覆盖的格子范围（含边缘），越界视为墙
+        int gx0 = (int)std::floor(x0);
+        int gx1 = (int)std::floor(x1 - 0.001f);
+        int gy0 = (int)std::floor(y0);
+        int gy1 = (int)std::floor(y1 - 0.001f);
 
-        for (auto tile_entity : all_view) {
-            // 跳过移动体自身、其他玩家/敌人实体（保持现状：玩家与敌人互不碰撞）
-            if (tile_entity == mover_entity) continue;
-            if (registry.all_of<PlayerComponent>(tile_entity)) continue;
-            if (registry.all_of<EnemyComponent>(tile_entity)) continue;
-            // 子弹为瞬时实体，碰撞由 bullet_system 自行处理，不应推挤移动体
-            if (registry.all_of<BulletComponent>(tile_entity)) continue;
+        // 对覆盖的每个格子做碰撞推挤（沿最小渗透方向）
+        for (int gy = gy0; gy <= gy1; gy++) {
+            for (int gx = gx0; gx <= gx1; gx++) {
+                // 格子可通行则跳过；越界视为墙
+                bool blocked;
+                if (gx < 0 || gy < 0 || gx >= MAP_W || gy >= MAP_H)
+                    blocked = true;
+                else
+                    blocked = map_is_collidable(map_tile_at(gx, gy));
+                if (!blocked) continue;
 
-            auto& tile_rect = all_view.get<LogicRectComponent>(tile_entity);
-            auto& tile_pos = all_view.get<LogicPositionComponent>(tile_entity);
-
-            if (tile_rect.width == fp_zero() || tile_rect.height == fp_zero()) continue;
-
-            rectanglef_t tile_box = { tile_pos.x, tile_pos.y, tile_rect.width, tile_rect.height };
-
-            contact2df_t contact;
-            if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
-                // 碰撞发生，沿法线方向将移动体推出
-                fp_t depth = contact.depth;
-                if (depth < fp_zero()) {
-                    depth = fp_sub(fp_zero(), depth);
+                // 墙格矩形 [gx, gy]~[gx+1, gy+1]，与移动体 AABB 求最小渗透方向并推出
+                rectanglef_t mover_box = { fp_from_float(x0), fp_from_float(y0),
+                                           fp_from_float(w), fp_from_float(h) };
+                rectanglef_t tile_box  = { fp_from_float((float)gx), fp_from_float((float)gy),
+                                           fp_from_float(1.0f), fp_from_float(1.0f) };
+                contact2df_t contact;
+                if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
+                    fp_t depth = contact.depth;
+                    if (depth < fp_zero()) depth = fp_sub(fp_zero(), depth);
+                    fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+                    fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+                    mover_pos.x = fp_add(mover_pos.x, fp_mul(nx, depth));
+                    mover_pos.y = fp_add(mover_pos.y, fp_mul(ny, depth));
+                    // 推出后更新浮点边界，继续检查下一格
+                    x0 = fp_to_float(mover_pos.x);
+                    y0 = fp_to_float(mover_pos.y);
+                    gx0 = (int)std::floor(x0);
+                    gx1 = (int)std::floor(x0 + w - 0.001f);
+                    gy0 = (int)std::floor(y0);
+                    gy1 = (int)std::floor(y0 + h - 0.001f);
                 }
-                fp_t nx = fp_sub(fp_zero(), contact.normal.x);
-                fp_t ny = fp_sub(fp_zero(), contact.normal.y);
-                mover_pos.x = fp_add(mover_pos.x, fp_mul(nx, depth));
-                mover_pos.y = fp_add(mover_pos.y, fp_mul(ny, depth));
-
-                // 更新 mover_box 以继续与其他 tile 碰撞检测
-                mover_box.x = mover_pos.x;
-                mover_box.y = mover_pos.y;
-
-                was_corrected = true;
             }
-        }
-
-        // 监测：该移动体的 movement 坐标被碰撞修正
-        if (was_corrected) {
-            /*
-            log_info("COLLISION: mover entity %d collision corrected (moved from (%.2f, %.2f) to (%.2f, %.2f))",
-                (int)mover_entity, fp_to_float(orig_x), fp_to_float(orig_y),
-                fp_to_float(mover_pos.x), fp_to_float(mover_pos.y));
-                */
         }
     }
 }

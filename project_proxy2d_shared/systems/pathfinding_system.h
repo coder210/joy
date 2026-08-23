@@ -20,44 +20,82 @@ struct Context;
  *  - 路径点 = 格子左上角（敌人碰撞盒 1x1，正好占满一格）
  * ============================================================ */
 
+// 地图可通行性预计算缓存（30x20 地图，避免 A* 每次访问格重复调用 map_tile_at/map_is_collidable）
+static bool pf_walkable[MAP_W * MAP_H];
+static bool pf_walkable_init = false;
+static inline void pf_init_walkable()
+{
+    if (pf_walkable_init) return;
+    for (int y = 0; y < MAP_H; y++)
+        for (int x = 0; x < MAP_W; x++)
+            pf_walkable[y * MAP_W + x] = !map_is_collidable(map_tile_at(x, y));
+    pf_walkable_init = true;
+}
+
 // 起点/终点格子坐标 → 路径格子索引序列（不含起点，含终点），返回路径点数
+// 性能优化：二叉堆取最小 f（O(log N)）+ in_open 布尔数组 O(1) 查重 + 可通行性查表 O(1)。
+// 30 个敌人同时追击时，A* 从 O(N²) 降到 O(N log N)，避免 LogicFPS 因寻路开销暴跌。
 static int pathfind_astar(int sx, int sy, int tx, int ty, int* out, int max_out)
 {
+    pf_init_walkable();
     const int N = MAP_W * MAP_H;
-    int gscore[N], fscore[N], came[N];
-    bool closed[N];
-    int open[N];
-    int open_len = 0;
 
+    // 起点/终点合法性
+    if (sx < 0 || sy < 0 || sx >= MAP_W || sy >= MAP_H) return 0;
+    if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return 0;
+    int start = sy * MAP_W + sx;
+    int goal  = ty * MAP_W + tx;
+    if (!pf_walkable[start] || !pf_walkable[goal]) return 0;
+
+    static int gscore[N], fscore[N], came[N];
+    static bool closed[N], in_open[N];
+    static int heap[N];          // 二叉堆：存节点 id，按 fscore 最小堆
+    int heap_len = 0;
+
+    // 惰性重置：只重置本次用到的节点（open/closed 集合内的），避免每次全量清零 N 个数组
+    // 通过 generation 标记 + 接触列表实现，或直接全量重置（N=600 成本可接受）。
     for (int i = 0; i < N; i++) {
         gscore[i] = 0x3fffffff;
         fscore[i] = 0x3fffffff;
         came[i] = -1;
         closed[i] = false;
+        in_open[i] = false;
     }
 
-    // 起点/终点合法性
-    if (sx < 0 || sy < 0 || sx >= MAP_W || sy >= MAP_H) return 0;
-    if (map_is_collidable(map_tile_at(sx, sy))) return 0;
-    if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return 0;
-    if (map_is_collidable(map_tile_at(tx, ty))) return 0;
-
-    int start = sy * MAP_W + sx;
-    int goal  = ty * MAP_W + tx;
     gscore[start] = 0;
     fscore[start] = (sx > tx ? sx - tx : tx - sx) + (sy > ty ? sy - ty : ty - sy);
-    open[open_len++] = start;
+
+    // 二叉堆上浮
+    auto heap_up = [&](int i) {
+        while (i > 0) {
+            int p = (i - 1) >> 1;
+            if (fscore[heap[p]] <= fscore[heap[i]]) break;
+            int t = heap[i]; heap[i] = heap[p]; heap[p] = t;
+            i = p;
+        }
+    };
+    // 二叉堆下沉
+    auto heap_down = [&](int i) {
+        for (;;) {
+            int l = i * 2 + 1, r = i * 2 + 2, m = i;
+            if (l < heap_len && fscore[heap[l]] < fscore[heap[m]]) m = l;
+            if (r < heap_len && fscore[heap[r]] < fscore[heap[m]]) m = r;
+            if (m == i) break;
+            int t = heap[i]; heap[i] = heap[m]; heap[m] = t;
+            i = m;
+        }
+    };
+
+    heap[heap_len++] = start;
+    in_open[start] = true;
 
     const int dirs[4][2] = { {1,0}, {-1,0}, {0,1}, {0,-1} };
 
-    while (open_len > 0) {
-        // 线性取 f 最小（600 格规模足够）
-        int best_i = 0;
-        for (int i = 1; i < open_len; i++) {
-            if (fscore[open[i]] < fscore[open[best_i]]) best_i = i;
-        }
-        int cur = open[best_i];
-        open[best_i] = open[--open_len];
+    while (heap_len > 0) {
+        int cur = heap[0];
+        in_open[cur] = false;
+        heap[0] = heap[--heap_len];
+        if (heap_len > 0) heap_down(0);
 
         if (cur == goal) {
             // 回溯路径（goal → start），再反转
@@ -78,8 +116,8 @@ static int pathfind_astar(int sx, int sy, int tx, int ty, int* out, int max_out)
         for (int d = 0; d < 4; d++) {
             int nx = cx + dirs[d][0], ny = cy + dirs[d][1];
             if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
-            if (map_is_collidable(map_tile_at(nx, ny))) continue;
             int ni = ny * MAP_W + nx;
+            if (!pf_walkable[ni]) continue;
             if (closed[ni]) continue;
 
             int ng = gscore[cur] + 1;
@@ -87,11 +125,16 @@ static int pathfind_astar(int sx, int sy, int tx, int ty, int* out, int max_out)
                 gscore[ni] = ng;
                 fscore[ni] = ng + (nx > tx ? nx - tx : tx - nx) + (ny > ty ? ny - ty : ty - ny);
                 came[ni] = cur;
-                bool in_open = false;
-                for (int i = 0; i < open_len; i++) {
-                    if (open[i] == ni) { in_open = true; break; }
+                if (!in_open[ni]) {
+                    in_open[ni] = true;
+                    heap[heap_len++] = ni;
+                    heap_up(heap_len - 1);
+                } else {
+                    // 已在堆中：f 可能变小，需从当前位置上浮
+                    for (int i = 0; i < heap_len; i++) {
+                        if (heap[i] == ni) { heap_up(i); break; }
+                    }
                 }
-                if (!in_open) open[open_len++] = ni;
             }
         }
     }
