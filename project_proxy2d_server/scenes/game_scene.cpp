@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <cstdlib>
 #include <joy/joy.h>
+// 测试辅助开关：定义后，服务端在没有玩家事件（输入/加入/离开）时不新增逻辑帧，
+// 便于用 checksum_log.txt 逐帧对齐。正式发布时注释掉本行即可恢复"始终推进"。
+#define SKIP_EMPTY_TICK
 #include "../../project_proxy2d_shared/protocol.h"
 #include "../context.h"
 #include "../layers/debug_layer.h"
@@ -47,8 +50,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -110,13 +113,24 @@ static void on_update(scene_p s, float dt)
         network_receive(ctx);
 
         // === 固定步长逻辑 Tick（20Hz）===
-        // 注意：next_frame_id 的递增由 collect_input() 内部负责（每 tick 一次），
+        // 注意：next_frame_id 的递增由 on_update 在"决定推进本帧"时负责（每 tick 一次），
         // 此处不再重复递增，否则帧序号会翻倍（之前 LogicFPS≈39 即此 bug 所致）。
         ctx->accumulator += dt;
         auto& gs = ctx->ecs.ctx().get<GlobalState>();
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
-                collect_input(ctx);
+                // 测试辅助：没有任何玩家事件（输入/加入/离开）时不新增逻辑帧，
+                // 服务端不前进、不下发 command 帧 → 客户端也静止，便于用 checksum_log.txt 逐帧对齐。
+                // 正式环境可注释掉下方 SKIP_EMPTY_TICK 分支恢复"始终推进"（敌人 AI/子弹照常运行）。
+#ifdef SKIP_EMPTY_TICK
+                bool has_event = !ctx->player_inputs.empty()
+                              || !ctx->player_joins.empty()
+                              || !ctx->player_leaves.empty();
+                if (!has_event)
+                        continue;   // 无用户发帧 → 跳过本 tick，frame_id 不前进
+#endif
+                int frame_id = gs.next_frame_id++;
+                collect_input(ctx, frame_id);
                 input_forwarding(ctx);
         }
 
@@ -206,6 +220,21 @@ static void on_destroy(scene_p s)
         simple_fps_destory(self->sample_fps);
         netserver_destroy(ctx->net_server);
         AssetManager::GetInstance()->tex_cache_clear();
+
+        // 退出时统一落盘帧同步校验记录（与客户端 checksum_log.txt 对称）
+        if (!ctx->checksum_records.empty()) {
+                FILE* fp = fopen("checksum_log_server.txt", "w");
+                if (fp) {
+                        // inputs 格式: conv:dir:attack:ranged;   entities 格式: id,x,y;id,x,y;
+                        fprintf(fp, "frame\tchecksum\tinputs\tentities\n");
+                        for (auto& r : ctx->checksum_records) {
+                                fprintf(fp, "%d\t%s\t%s\t%s\n",
+                                        r.frame_id, r.checksum,
+                                        r.inputs.c_str(), r.entities.c_str());
+                        }
+                        fclose(fp);
+                }
+        }
 }
 
 game_scene_p game_scene_create(Context* ctx)

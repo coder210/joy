@@ -129,7 +129,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousepressed)
 			cbs.on_mousepressed(x, y, b, arg);
 		else
-			log_error("unhandled SDL_EVENT_MOUSE_BUTTON_DOWN");
+			;//log_error("unhandled SDL_EVENT_MOUSE_BUTTON_DOWN");
 		break;
 	}
 	case SDL_EVENT_MOUSE_BUTTON_UP: {
@@ -139,7 +139,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousereleased)
 			cbs.on_mousereleased(x, y, b, arg);
 		else
-			log_error("unhandled SDL_EVENT_MOUSE_BUTTON_UP");
+			;//log_error("unhandled SDL_EVENT_MOUSE_BUTTON_UP");
 		break;
 	}
 	case SDL_EVENT_MOUSE_MOTION: {
@@ -164,7 +164,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_keypressed)
 			cbs.on_keypressed(name, sc, rep, ctrl, shift, alt, arg);
 		else
-			log_error("unhandled SDL_EVENT_KEY_DOWN");
+			;//log_error("unhandled SDL_EVENT_KEY_DOWN");
 		break;
 	}
 	case SDL_EVENT_KEY_UP: {
@@ -182,7 +182,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_textinput)
 			cbs.on_textinput(text, arg);
 		else
-			log_error("unhandled SDL_EVENT_TEXT_INPUT");
+			;//log_error("unhandled SDL_EVENT_TEXT_INPUT");
 		break;
 	}
 	case SDL_EVENT_WINDOW_RESIZED: {
@@ -191,7 +191,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_resize)
 			cbs.on_resize(w, h, arg);
 		else
-			log_error("unhandled SDL_EVENT_WINDOW_RESIZED");
+			;//log_error("unhandled SDL_EVENT_WINDOW_RESIZED");
 		break;
 	}
 	case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {

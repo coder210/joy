@@ -52,4 +52,35 @@ static inline void compute_full_md5(std::vector<ChecksumEntry>& entries, char* o
         compute_players_md5(entries, out, out_cap);
 }
 
+// 把实体列表编成可读字符串 "id,x,y;id,x,y;..."（按 id 升序），用于校验记录落盘，
+// 便于退出后 diff 出"多了/少了哪个玩家或敌人、位置差多少"。
+static inline std::string checksum_entries_string(std::vector<ChecksumEntry>& entries)
+{
+        std::sort(entries.begin(), entries.end(),
+                [](const ChecksumEntry& a, const ChecksumEntry& b) {
+                        return a.id < b.id;
+                });
+        std::string s;
+        char buf[64];
+        for (auto& e : entries) {
+                int n = snprintf(buf, sizeof(buf), "%d,%lld,%lld;",
+                        e.id, (long long)e.x, (long long)e.y);
+                s.append(buf, n);
+        }
+        return s;
+}
+
+// 帧同步校验记录（缓存用，退出时落盘）。两端共用同一结构，字段对齐便于 diff：
+//   frame_id  逻辑帧号
+//   checksum  本帧校验值（客户端填本地重算值；服务端填自己算的权威值）
+//   inputs    本帧输入指纹 "conv:dir:atk:rng;..."（server 用本帧实际 inputs；client 用收到的 inputs）
+//   entities  本帧所有玩家+敌人的 "id,x,y;..." 快照，用于定位集合/位置差异
+// 注：不一致由客户端运行时用 printf 打到控制台，不进本记录；故只存一列 checksum。
+struct ChecksumRecord {
+        int      frame_id;
+        char     checksum[64];
+        std::string inputs;
+        std::string entities;
+};
+
 #endif

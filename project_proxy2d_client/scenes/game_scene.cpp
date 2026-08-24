@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../project_proxy2d_shared/protocol.h"
@@ -50,8 +51,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -228,11 +229,32 @@ static void on_update(scene_p s, float dt) {
                         }
                         char local_checksum[64] = { 0 };
                         compute_full_md5(entries, local_checksum, sizeof(local_checksum));
-                        if (strcmp(local_checksum, server_checksum) == 0) {
-                                log_info("[CHECKSUM] frame=%d OK %s", frame_id, local_checksum);
-                        } else {
-                                log_error("[CHECKSUM] frame=%d MISMATCH server=%s local=%s",
-                                        frame_id, server_checksum, local_checksum);
+
+                        // 本帧输入指纹（conv:dir:atk:rng;...）：排查"输入集不一致"导致的状态错位
+                        std::string input_finger;
+                        for (int k = 0; k < in; k++) {
+                                char b[64];
+                                snprintf(b, sizeof(b), "%d:%d:%d:%d;",
+                                        inputs[k].conv, inputs[k].dir,
+                                        (int)inputs[k].attack, (int)inputs[k].ranged);
+                                input_finger += b;
+                        }
+
+                        // 性能优化：不实时打印，全部缓存在 checksum_records，退出时统一落盘。
+                        // 仅 MISMATCH 帧实时告警（异常才打日志，正常帧零开销）。
+                        int mismatched = (strcmp(local_checksum, server_checksum) != 0) ? 1 : 0;
+                        self->ctx->checksum_records.push_back(
+                                { frame_id, "", input_finger,
+                                  checksum_entries_string(entries) });
+                        auto& rec = self->ctx->checksum_records.back();
+                        memcpy(rec.checksum, local_checksum, sizeof(rec.checksum));
+                        if (mismatched) {
+                                // 不一致时实时告警：用 printf 直接打到 stdout 控制台，不进日志系统。
+                                // 同时打印本帧实体快照（id,x,y），便于立刻看出多了/少了哪个、位置差多少。
+                                printf("[CHECKSUM] frame=%d MISMATCH server=%s local=%s inputs=%s entities=%s\n",
+                                        frame_id, server_checksum, local_checksum,
+                                        input_finger.c_str(), checksum_entries_string(entries).c_str());
+                                fflush(stdout);
                         }
                 }
 
@@ -304,6 +326,21 @@ static void on_destroy(scene_p s) {
         audio_shot_destroy(self->ctx->step_sound);
         audio_bgm_destroy(self->ctx->bgm);
         if (self->ctx->audio_dev) audio_close_device(self->ctx->audio_dev);
+
+        // 退出时统一落盘帧同步校验记录（性能优化：运行期不实时写盘，攒在内存里）
+        if (!self->ctx->checksum_records.empty()) {
+                FILE* fp = fopen("checksum_log.txt", "w");
+                if (fp) {
+                        // inputs 格式: conv:dir:attack:ranged;   entities 格式: id,x,y;id,x,y;
+                        fprintf(fp, "frame\tchecksum\tinputs\tentities\n");
+                        for (auto& r : self->ctx->checksum_records) {
+                                fprintf(fp, "%d\t%s\t%s\t%s\n",
+                                        r.frame_id, r.checksum,
+                                        r.inputs.c_str(), r.entities.c_str());
+                        }
+                        fclose(fp);
+                }
+        }
         delete self;
 }
 

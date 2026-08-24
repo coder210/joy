@@ -25,6 +25,7 @@
 #include "../project_proxy2d_shared/components/net_component.h"
 #include "../project_proxy2d_shared/components/global_state_component.h"
 #include "../project_proxy2d_shared/protocol.h"
+#include "../project_proxy2d_shared/systems/state_checksum.h"
 #include <joy/joy.h>
 
 struct Context {
@@ -55,6 +56,11 @@ struct Context {
         float visual_time = 0.0f;
 
         std::vector<struct SystemEntry> systems;
+
+        // ========== 帧同步校验记录缓冲（性能优化：不实时打印，退出时落盘）==========
+        // 与服务端对称：每帧一条，含 frame_id / server checksum / 本帧 inputs / 本帧实体快照。
+        // local 字段服务端不填（权威端无"本地重算"概念），落盘时留空。
+        std::vector<ChecksumRecord> checksum_records;
 };
 
 // ---- System 调度（自由函数） ----

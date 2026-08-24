@@ -100,9 +100,9 @@ static void network_receive(Context* ctx)
 }
 
 // ========== 收集输入 + 打包命令帧 ==========
-static void collect_input(Context* ctx)
+// frame_id 由调用方在"决定推进本帧"时分配（见 game_scene.cpp on_update 的空 tick 跳过逻辑）。
+static void collect_input(Context* ctx, int frame_id)
 {
-        int frame_id = ctx->ecs.ctx().get<GlobalState>().next_frame_id++;
         S2CPlayerJoin joins[32]; int num_joins = 0;
         for (auto& j : ctx->player_joins)
                 if (num_joins < 32) joins[num_joins++] = j;
@@ -128,6 +128,25 @@ static void collect_input(Context* ctx)
         auto command_data = pack_s2c(S2C_CMD_COMMAND, frame_id, joins, num_joins, leaves, num_leaves, inputs, num_inputs, checksum);
         ctx->commands[frame_id] = command_data;
         ctx->command_queue.push(command_data);
+
+        // 缓存本帧校验记录（退出时落盘 checksum_log_server.txt，与客户端对称）：
+        // checksum 填服务端权威值；inputs 用本帧实际 inputs；entities 用本帧实体快照。
+        {
+                std::string input_finger;
+                for (int k = 0; k < num_inputs; k++) {
+                        char b[64];
+                        snprintf(b, sizeof(b), "%d:%d:%d:%d;",
+                                inputs[k].conv, inputs[k].dir,
+                                (int)inputs[k].attack, (int)inputs[k].ranged);
+                        input_finger += b;
+                }
+                ChecksumRecord rec;
+                rec.frame_id = frame_id;
+                rec.inputs = input_finger;
+                rec.entities = checksum_entries_string(entries);
+                memcpy(rec.checksum, checksum, sizeof(rec.checksum));
+                ctx->checksum_records.push_back(rec);
+        }
 
         ctx->player_joins.clear();
         ctx->player_leaves.clear();

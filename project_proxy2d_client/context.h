@@ -22,6 +22,7 @@
 #include "../project_proxy2d_shared/components/transform_component.h"
 #include "../project_proxy2d_shared/components/net_component.h"
 #include "../project_proxy2d_shared/components/local_only_component.h"
+#include "../project_proxy2d_shared/systems/state_checksum.h"
 
 
 
@@ -71,6 +72,12 @@ struct Context {
         // ---- 固定步长逻辑 ----
         float accumulator = 0.0f;
         float FIXED_TIMESTEP = 1.0f / 20.0f;
+
+        // ========== 帧同步校验记录缓冲（性能优化：不实时打印，退出时落盘）==========
+        // 每帧一条：帧号、服务端下发 checksum、本地校验 checksum、本帧各玩家输入、本帧实体快照。
+        // 正常帧静默追加，仅 MISMATCH 帧实时 log_error 告警；全部攒在内存，退出时写文件。
+        // 结构定义见 state_checksum.h（client/server 共用同一 ChecksumRecord）。
+        std::vector<ChecksumRecord> checksum_records;
 
         // 视觉时间（仅渲染用，不参与帧同步）：
         // 驱动"浑天仪式"轨道环的自旋/变形相位
