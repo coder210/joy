@@ -75,16 +75,7 @@ inline void add_system(Context* ctx, Phase phase, const char* name,
 inline void run_phase(Context* ctx, Phase phase, float dt) {
         for (auto& sys : ctx->systems) {
                 if (sys.phase == phase) {
-                        uint64_t t0 = get_ticks();
                         sys.fn(ctx->ecs, ctx, dt);
-                        uint64_t t1 = get_ticks();
-                        // [DEBUG] 打印单系统耗时（>0ms 的才打，避免刷屏）
-                        if (t1 > t0) {
-                                static int dbg = 0;
-                                if (dbg++ < 80)
-                                        log_info("[SYS] %s: %llu ms", sys.name.c_str(),
-                                                (unsigned long long)(t1 - t0));
-                        }
                 }
         }
 }

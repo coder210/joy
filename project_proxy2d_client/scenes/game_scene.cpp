@@ -234,38 +234,6 @@ static void on_update(scene_p s, float dt) {
                                 log_error("[CHECKSUM] frame=%d MISMATCH server=%s local=%s",
                                         frame_id, server_checksum, local_checksum);
                         }
-
-                        // ===== checksum 追踪开关：每帧把参与校验的实体写入文件 =====
-                        // 与服务端 checksum_trace_server.txt 对比，定位差异帧/实体。
-#define PROXY2D_CHECKSUM_TRACE 1
-#ifdef PROXY2D_CHECKSUM_TRACE
-                        {
-                                static int trace_init = 0;
-                                if (!trace_init) {
-                                        FILE* f = fopen("checksum_trace_client.txt", "w");
-                                        if (f) fclose(f);
-                                        trace_init = 1;
-                                }
-                                FILE* f = fopen("checksum_trace_client.txt", "a");
-                                if (f) {
-                                        char line[160];
-                                        int n = snprintf(line, sizeof(line), "===== frame=%d =====\n", frame_id);
-                                        fwrite(line, 1, (size_t)n, f);
-                                        for (auto e : pv) {
-                                                auto& idc = pv.get<IdComponent>(e);
-                                                auto& lpc = pv.get<LogicPositionComponent>(e);
-                                                const char* ty = "?";
-                                                if (self->ctx->ecs.all_of<PlayerComponent>(e)) ty = "P";
-                                                else if (self->ctx->ecs.all_of<EnemyComponent>(e)) ty = "E";
-                                                else if (self->ctx->ecs.all_of<BulletComponent>(e)) ty = "B";
-                                                n = snprintf(line, sizeof(line), "id=%d t=%s x=%lld y=%lld\n",
-                                                        idc.id, ty, (long long)lpc.x, (long long)lpc.y);
-                                                fwrite(line, 1, (size_t)n, f);
-                                        }
-                                        fclose(f);
-                                }
-                        }
-#endif
                 }
 
                 // 每个 tick 模拟一帧（与服务端同步推进 AI/子弹）

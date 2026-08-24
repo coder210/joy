@@ -68,34 +68,12 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent, HealthComponent>();
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
-    // [AI TIMER TRACE] 临时诊断：记录敌人 ai.timer 两端是否同步（帧同步排查用）
-    // 注意：is_server 分支本身无害（未使用变量），此处保留结构仅用于 trace。
-    FILE* ai_trace_f = NULL;
-    if (ctx->is_server) {
-        static bool ai_trace_init = false;
-        if (!ai_trace_init) { FILE* f = fopen("ai_timer_trace_server.txt", "w"); if (f) fclose(f); ai_trace_init = true; }
-        ai_trace_f = fopen("ai_timer_trace_server.txt", "a");
-    } else {
-        static bool ai_trace_init = false;
-        if (!ai_trace_init) { FILE* f = fopen("ai_timer_trace_client.txt", "w"); if (f) fclose(f); ai_trace_init = true; }
-        ai_trace_f = fopen("ai_timer_trace_client.txt", "a");
-    }
-
     for (auto e : view) {
         auto& id =  view.get<IdComponent>(e);
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
         (void)id;
-
-        if (ai_trace_f) {
-            char tbuf[160];
-            int tn = snprintf(tbuf, sizeof(tbuf), "f=%lld eid=%d state=%d timer=%d target=(%.3f,%.3f) pos=(%.3f,%.3f)\n",
-                (long long)gs.next_frame_id, id.id, ai.state, ai.timer,
-                fp_to_float(ai.target_x), fp_to_float(ai.target_y),
-                fp_to_float(pos.x), fp_to_float(pos.y));
-            fwrite(tbuf, 1, (size_t)tn, ai_trace_f);
-        }
 
         // 死亡敌人不行动（不追击/不攻击/不巡逻），等待 player_death_system 重生
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) {
@@ -208,17 +186,6 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 ai.target_x = fp_add(ai.patrol_center_x, rx);
                 ai.target_y = fp_add(ai.patrol_center_y, ry);
                 ai.timer = 120;
-
-                // [AI RANDOM TRACE] 记录首次/每次生成巡逻目标用的原始随机值，对比两端 random 序列
-                if (ai_trace_f) {
-                    static int gen_count = 0;  // 注意：static 在 client/server 各自进程独立，仅用于日志计数
-                    gen_count++;
-                    char rbuf[160];
-                    int rn = snprintf(rbuf, sizeof(rbuf), "GEN#%d f=%lld r1=%u r2=%u target=(%.3f,%.3f)\n",
-                        gen_count, (long long)gs.next_frame_id, r1, r2,
-                        fp_to_float(ai.target_x), fp_to_float(ai.target_y));
-                    fwrite(rbuf, 1, (size_t)rn, ai_trace_f);
-                }
             }
 
             fp_t dx = fp_sub(ai.target_x, pos.x);
@@ -247,8 +214,6 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 : (dy > fp_zero() ? 0 : 3);
         }
     }
-
-    if (ai_trace_f) fclose(ai_trace_f);
 }
 
 #endif
