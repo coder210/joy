@@ -72,6 +72,14 @@ static void handle_loading(Context *ctx, int conv, int frame_id, int eid, const 
                                 fp_from_float(sd.bullet_damage),             // 子弹伤害
                                 (int)(sd.bullet_interval * 20.0f + 0.5f),    // 射击间隔（tick）
                                 0);                                          // 射击冷却
+                            // 恢复服务端下发的 AI 运行时状态（timer/state/target/shoot_cooldown），
+                            // 否则这些持续累积的状态从 0/出生点开始，与服务端接入时值不同步
+                            auto& ai = ctx->ecs.get<AIComponent>(e);
+                            ai.timer          = entity.ai_timer;
+                            ai.state          = entity.ai_state;
+                            ai.target_x       = (fp_t)entity.ai_target_x;
+                            ai.target_y       = (fp_t)entity.ai_target_y;
+                            ai.shoot_cooldown = entity.ai_shoot_cooldown;
                         }
                 }
         }

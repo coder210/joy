@@ -206,6 +206,11 @@ static void on_update(scene_p s, float dt) {
                         &frame_id, joins, 32, &jn, leaves, 32, &ln, inputs, 64, &in,
                         server_checksum, sizeof(server_checksum));
                 if (ok) {
+                        // 跳过 <= server_frameid 的帧：loading 快照已把状态初始化到 server_frameid，
+                        // 这些更早/等于的帧不应再演算（否则会基于错误状态重复推进，导致 AI 错位）。
+                        if (frame_id <= self->ctx->server_frameid) {
+                                continue;
+                        }
                         auto& cmd = self->ctx->ecs.ctx().get<NetComponent>();
                         cmd.frame_id = frame_id;
                         cmd.num_joins = jn;  memcpy(cmd.joins, joins, jn * sizeof(S2CPlayerJoin));

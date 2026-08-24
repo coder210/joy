@@ -88,7 +88,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         auto& act = view.get<ActionStateComponent>(e);
         (void)id;
 
-        if (ai_trace_f && id.id == 5) {
+        if (ai_trace_f) {
             char tbuf[160];
             int tn = snprintf(tbuf, sizeof(tbuf), "f=%lld eid=%d state=%d timer=%d target=(%.3f,%.3f) pos=(%.3f,%.3f)\n",
                 (long long)gs.next_frame_id, id.id, ai.state, ai.timer,

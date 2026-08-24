@@ -250,9 +250,14 @@ static void input_forwarding(Context* ctx)
                                 auto& gs = ctx->ecs.ctx().get<GlobalState>();
                                 uint64_t lcg_state = 0;
                                 lcg_random_get_state(gs.random, &lcg_state);
-                                auto data = pack_s2c_loading(comp.conv, comp.frameid, eid, entities, ec,
+                                // 关键：loading 快照是帧 it->first 的，上报的 frame_id 必须也是 it->first，
+                                // 客户端才能用它精确初始化 AI 状态并从 it->first+1 开始演算。
+                                // 之前误用 comp.frameid 导致"快照帧 ≠ 上报帧"，AI 状态初始化错位。
+                                int snap_frame = it->first;
+                                auto data = pack_s2c_loading(comp.conv, snap_frame, eid, entities, ec,
                                 (int32_t)gs.random_seed, (int64_t)lcg_state);
                                 netserver_send(ctx->net_server, comp.conv, data.c_str(), data.size());
+                                comp.frameid = snap_frame + 1;   // 客户端已初始化到 snap_frame，下一个要发的是 snap_frame+1
                                 comp.is_loaded = true;
                 }
         }
