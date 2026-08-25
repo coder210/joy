@@ -13,15 +13,14 @@ static void camera_follow_pass(entt::registry& registry, Context* /*ctx*/, float
     auto& gs = registry.ctx().get<GlobalState>();
     if (gs.camera_follow_conv < 0) return;
 
-    auto view = registry.view<PlayerComponent, TransformComponent>();
-    for (auto e : view) {
-        if (registry.get<PlayerComponent>(e).conv == gs.camera_follow_conv) {
-            auto& t = registry.get<TransformComponent>(e);
+    registry.view<PlayerComponent, TransformComponent>().each(
+        [&gs](auto /*e*/, PlayerComponent& pc, TransformComponent& t)
+    {
+        if (pc.conv == gs.camera_follow_conv) {
             gs.camera_position.x = t.position.x - 4.8f;
             gs.camera_position.y = t.position.y - 3.2f;
-            return;
         }
-    }
+    });
 }
 
 #endif
