@@ -13,7 +13,7 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../project_proxy2d_shared/*.h" "../project_proxy2d_shared/components/*.h" "../project_proxy2d_shared/systems/*.h")
+file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "*.h" "../project_proxy2d_shared/*.h" "../project_proxy2d_shared/components/*.h" "../project_proxy2d_shared/systems/*.h" "../project_proxy2d_shared/passes/*.h")
 
 # 合并所有源文件
 set(PROJECT_FILES

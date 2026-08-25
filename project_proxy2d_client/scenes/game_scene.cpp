@@ -7,11 +7,11 @@
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../project_proxy2d_shared/protocol.h"
-#include "../../project_proxy2d_shared/systems/interpolate_pass.h"
-#include "../project_proxy2d_shared/systems/drawing_entity_pass.h"
+#include "../../project_proxy2d_shared/passes/interpolate_pass.h"
+#include "../project_proxy2d_shared/passes/drawing_entity_pass.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
-#include "../project_proxy2d_shared/systems/player_status_hud_pass.h"
-#include "../project_proxy2d_shared/systems/frame_display_pass.h"
+#include "../project_proxy2d_shared/passes/player_status_hud_pass.h"
+#include "../project_proxy2d_shared/passes/frame_display_pass.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
 #include "../project_proxy2d_shared/systems/movement_system.h"
@@ -21,7 +21,7 @@
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
 #include "../network/network_utils.h"
-#include "../../project_proxy2d_shared/systems/camera_follow_pass.h"
+#include "../../project_proxy2d_shared/passes/camera_follow_pass.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
 #include "../../project_proxy2d_shared/systems/melee_attack_system.h"
 #include "../../project_proxy2d_shared/systems/player_shoot_system.h"
@@ -29,7 +29,7 @@
 #include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 
-#include "../../project_proxy2d_shared/systems/drawing_map_pass.h"
+#include "../../project_proxy2d_shared/passes/drawing_map_pass.h"
 #include "../../project_proxy2d_shared/systems/state_checksum.h"
 #include "../../project_proxy2d_shared/systems/map_spawn_system.h"
 

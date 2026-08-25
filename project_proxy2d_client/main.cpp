@@ -6,7 +6,7 @@
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
 #include "layers/menu_layer.h"
-#include "../project_proxy2d_shared/systems/draw_fps_pass.h"
+#include "../project_proxy2d_shared/passes/draw_fps_pass.h"
 
 
 static scene_manager_p g_mgr;

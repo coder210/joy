@@ -4,7 +4,7 @@
 #include <math.h>
 #include <joy/joy.h>
 #include "../components/global_state_component.h"
-#include "map_def.h"
+#include "../systems/map_def.h"
 #include "../protocol.h"
 
 struct Context;

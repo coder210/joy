@@ -4,7 +4,7 @@
 #include "scenes/game_scene.h"
 #include "asset_manager.h"
 #include "context.h"
-#include "../project_proxy2d_shared/systems/draw_fps_pass.h"
+#include "../project_proxy2d_shared/passes/draw_fps_pass.h"
 
 static scene_manager_p g_mgr;
 static Context* ctx;
