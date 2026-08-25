@@ -9,7 +9,7 @@
 //   - 内部用指数移动平均平滑帧率，每 0.5s 刷新一次文本
 //   - 需在 r2d_begin/r2d_end 之间调用
 // ============================================================
-static void fps_display_draw(jr2d_p r2d, font_p font, float dt)
+static void draw_fps_pass(jr2d_p r2d, font_p font, float dt)
 {
         static float ema      = 60.0f;
         static float accum    = 0.0f;

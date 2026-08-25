@@ -1,5 +1,5 @@
-#ifndef DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
-#define DRAWING_ATTACK_RAY_EFFECT_SYSTEM_H
+#ifndef DRAWING_ATTACK_RAY_EFFECT_PASS_H
+#define DRAWING_ATTACK_RAY_EFFECT_PASS_H
 #include "../components/attack_ray_effect_component.h"
 #include "../components/global_state_component.h"
 #include "../protocol.h"
@@ -7,7 +7,7 @@
 struct Context;
 
 static void 
-drawing_attack_ray_effect_system(Context* ctx, 
+drawing_attack_ray_effect_pass(Context* ctx, 
         AttackRayEffectComponent& effect)
 {
         auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;

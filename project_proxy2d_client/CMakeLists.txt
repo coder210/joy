@@ -51,6 +51,7 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 
 # 添加 project_proxy2d_shared 共享目录
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../project_proxy2d_shared")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # ------------------- 资产处理 -------------------
 # 资产目录位于根目录的 assets/，使用 PROJECT_SOURCE_DIR 定位

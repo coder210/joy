@@ -7,11 +7,11 @@
 #include <joy/joy.h>
 #include "game_scene.h"
 #include "../../project_proxy2d_shared/protocol.h"
-#include "../project_proxy2d_shared/systems/interpolate_position_system.h"
-#include "../project_proxy2d_shared/systems/drawing_entity_system.h"
+#include "../../project_proxy2d_shared/systems/interpolate_pass.h"
+#include "../project_proxy2d_shared/systems/drawing_entity_pass.h"
 #include "../project_proxy2d_shared/systems/input_consume_join_system.h"
-#include "../project_proxy2d_shared/systems/player_status_display.h"
-#include "../project_proxy2d_shared/systems/frame_display.h"
+#include "../project_proxy2d_shared/systems/player_status_hud_pass.h"
+#include "../project_proxy2d_shared/systems/frame_display_pass.h"
 #include "../project_proxy2d_shared/systems/input_consume_leave_system.h"
 #include "../project_proxy2d_shared/systems/input_consume_input_system.h"
 #include "../project_proxy2d_shared/systems/movement_system.h"
@@ -21,7 +21,7 @@
 #include "../layers/gameplay_controls_layer.h"
 #include "../asset_manager.h"
 #include "../network/network_utils.h"
-#include "../../project_proxy2d_shared/systems/camera_follow_system.h"
+#include "../../project_proxy2d_shared/systems/camera_follow_pass.h"
 #include "../../project_proxy2d_shared/systems/ai_system.h"
 #include "../../project_proxy2d_shared/systems/melee_attack_system.h"
 #include "../../project_proxy2d_shared/systems/player_shoot_system.h"
@@ -29,7 +29,7 @@
 #include "../../project_proxy2d_shared/systems/player_death_system.h"
 #include "../../project_proxy2d_shared/systems/pathfinding_system.h"
 
-#include "../../project_proxy2d_shared/systems/drawing_map_tiles_system.h"
+#include "../../project_proxy2d_shared/systems/drawing_map_pass.h"
 #include "../../project_proxy2d_shared/systems/state_checksum.h"
 #include "../../project_proxy2d_shared/systems/map_spawn_system.h"
 
@@ -51,8 +51,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -282,9 +282,9 @@ static void on_update(scene_p s, float dt) {
                 self->fps_measure_frame = gs.next_frame_id;
         }
 
-        // 视觉相关 system 用实时 dt 每帧更新（不放在固定步长内）
-        interpolate_position_system(self->ctx->ecs, self->ctx, dt);
-        camera_follow_system(self->ctx->ecs, self->ctx, dt);
+        // 视觉相关 pass 用实时 dt 每帧更新（不放在固定步长内）
+        interpolate_pass(self->ctx->ecs, self->ctx, dt);
+        camera_follow_pass(self->ctx->ecs, self->ctx, dt);
 
         // 视觉时间推进（仅渲染用，驱动"浑天仪式"轨道环自旋/变形，不参与帧同步）
         self->ctx->visual_time += dt;
@@ -295,7 +295,7 @@ static void on_render(scene_p s) {
 
         // ---- 几何网格背景 + 地形装饰（纯视觉，自绘白底+浅灰网格）----
         draw_grid_background(self->ctx);
-        draw_map_tiles(self->ctx);
+        draw_map_pass(self->ctx);
 
         // ---- ECS 实体几何渲染（纯视觉，不参与帧同步逻辑）----
         auto draw_view = self->ctx->ecs.view<IdComponent, LogicRectComponent, TransformComponent>();
@@ -303,11 +303,11 @@ static void on_render(scene_p s) {
                 auto& id = draw_view.get<IdComponent>(e);
                 auto& rect = draw_view.get<LogicRectComponent>(e);
                 auto& t = draw_view.get<TransformComponent>(e);
-                drawing_entity_system(self->ctx, e, id, rect, t);
+                drawing_entity_pass(self->ctx, e, id, rect, t);
         }
 
         // ---- 玩家状态 HUD（仅游戏场景显示）----
-        player_status_display_draw(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
+        player_status_hud_pass(self->ctx->ecs, self->ctx->local_conv, self->ctx->r2d,
                 AssetManager::GetInstance()->GetSimheiFont28());
 
         // ---- 当前逻辑帧号 + 实测逻辑帧率 + 敌人数量 + 全局实体 id（帧同步调试信息）----
@@ -315,7 +315,7 @@ static void on_render(scene_p s) {
         int logic_fps = self->ctx->ecs.ctx().get<GlobalState>().logic_fps;
         int enemy_count = (int)self->ctx->ecs.view<EnemyComponent>().size();
         int entity_id = self->ctx->server_entity_id;
-        frame_display_draw(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
+        frame_display_pass(self->ctx->r2d, AssetManager::GetInstance()->GetSimheiFont28(),
                 frame_id, logic_fps, 8.0f, 60.0f, enemy_count, entity_id);
 }
 

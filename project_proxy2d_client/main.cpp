@@ -6,7 +6,7 @@
 #include "scenes/loading_scene.h"
 #include "scenes/game_scene.h"
 #include "layers/menu_layer.h"
-#include "../project_proxy2d_shared/systems/fps_display.h"
+#include "../project_proxy2d_shared/systems/draw_fps_pass.h"
 
 
 static scene_manager_p g_mgr;
@@ -90,7 +90,7 @@ SDL_AppResult SDL_AppIterate(void*)
         r2d_set_color(ctx->r2d, 255, 255, 255, 255);
         r2d_begin(ctx->r2d);
         scene_manager_render(g_mgr, ctx->r2d);
-        fps_display_draw(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(), dt);
+        draw_fps_pass(ctx->r2d, AssetManager::GetInstance()->GetSimheiFont24(), dt);
         r2d_end(ctx->r2d);
         return SDL_APP_CONTINUE;
 }
