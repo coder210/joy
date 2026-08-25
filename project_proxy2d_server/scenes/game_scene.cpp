@@ -4,9 +4,10 @@
 #include <algorithm>
 #include <cstdlib>
 #include <joy/joy.h>
-// 测试辅助开关：定义后，服务端在没有玩家事件（输入/加入/离开）时不新增逻辑帧，
-// 便于用 checksum_log.txt 逐帧对齐。正式发布时注释掉本行即可恢复"始终推进"。
-#define SKIP_EMPTY_TICK
+// 服务端始终以固定步长（20Hz）推进逻辑帧，无论是否有玩家输入。
+// （历史遗留的 SKIP_EMPTY_TICK 开关已移除：它会在无玩家事件时跳过 tick、不递增
+//  frame_id，导致敌人 AI/子弹在无输入时静止；现改为始终推进。）
+// #define SKIP_EMPTY_TICK
 #include "../../project_proxy2d_shared/protocol.h"
 #include "../context.h"
 #include "../layers/debug_layer.h"
@@ -50,8 +51,8 @@ static void on_load(scene_p s)
         game_scene_p self = (game_scene_p)scene_get_userdata(s);
         self->sample_fps = simple_fps_create();
         Context* ctx = self->ctx;
-        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
-        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 30000);
+        //ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.2.28", 30000);
+        ctx->net_server = netserver_create(NET_SERVER_WEBSOCKET, "192.168.1.25", 30000);
 
         debug_layer_p debug_layer = create_debug_layer();
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
@@ -119,16 +120,8 @@ static void on_update(scene_p s, float dt)
         auto& gs = ctx->ecs.ctx().get<GlobalState>();
         while (ctx->accumulator >= ctx->FIXED_TIMESTEP) {
                 ctx->accumulator -= ctx->FIXED_TIMESTEP;
-                // 测试辅助：没有任何玩家事件（输入/加入/离开）时不新增逻辑帧，
-                // 服务端不前进、不下发 command 帧 → 客户端也静止，便于用 checksum_log.txt 逐帧对齐。
-                // 正式环境可注释掉下方 SKIP_EMPTY_TICK 分支恢复"始终推进"（敌人 AI/子弹照常运行）。
-#ifdef SKIP_EMPTY_TICK
-                bool has_event = !ctx->player_inputs.empty()
-                              || !ctx->player_joins.empty()
-                              || !ctx->player_leaves.empty();
-                if (!has_event)
-                        continue;   // 无用户发帧 → 跳过本 tick，frame_id 不前进
-#endif
+                // 始终推进逻辑帧：无论是否有玩家输入，服务端都按固定步长（20Hz）前进，
+                // 敌人 AI / 子弹 / 寻路等照常运行，frame_id 每 tick 递增并下发 command。
                 int frame_id = gs.next_frame_id++;
                 collect_input(ctx, frame_id);
                 input_forwarding(ctx);

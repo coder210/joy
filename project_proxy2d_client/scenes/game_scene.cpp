@@ -51,8 +51,8 @@ static void on_load(scene_p s)
         gameplay_controls_layer_p gameplay_controls_layer = create_gameplay_controls_layer(self->ctx);
         scene_add_root_node(self->scene, debug_layer_get_node(debug_layer));
         scene_add_root_node(self->scene, gameplay_controls_layer_get_node(gameplay_controls_layer));
-        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
-        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
+        //self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.2.28", 30000);
+        self->ctx->netclient = netclient_create(NET_CLIENT_WEBSOCKET, "192.168.1.25", 30000);
 
         // entt 不需要显式注册组件，也不需要 set_ctx
         // 创建 NetComponent 作为 singleton（既作为实体组件，也注册到 registry 上下文）
@@ -258,7 +258,10 @@ static void on_update(scene_p s, float dt) {
                         }
                 }
 
-                // 每个 tick 模拟一帧（与服务端同步推进 AI/子弹）
+                // 模拟推进：每个逻辑 tick 无条件跑一帧（与服务端同步推进 AI/子弹）。
+                // 注意：run_phase 必须在 command 消费的 if 之外 —— 即使某帧 command_queue 瞬时为空，
+                // 客户端仍按固定步长（20Hz）前进一帧，保证帧计数与服务端始终严格对齐；
+                // 若本帧没有新命令，NetComponent 沿用上一帧输入（等价于"该帧无新输入"）。
                 run_phase(self->ctx, PreUpdate, self->ctx->FIXED_TIMESTEP);
                 run_phase(self->ctx, OnUpdate, self->ctx->FIXED_TIMESTEP);
                 run_phase(self->ctx, PostUpdate, self->ctx->FIXED_TIMESTEP);
