@@ -1464,6 +1464,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void checkbox_destroy(checkbox_p checkbox);
         JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
         JOY_API checkbox_state_t checkbox_get_state(checkbox_p checkbox);
+        JOY_API void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover);
         JOY_API void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d);
         JOY_API void checkbox_toggle(checkbox_p checkbox);
         JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
@@ -1513,6 +1514,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void slider_destroy(slider_p s);
         JOY_API void slider_set_value(slider_p s, float v);
         JOY_API float slider_get_value(slider_p s);
+        JOY_API void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover);
         JOY_API void slider_set_range(slider_p s, float min, float max);
         JOY_API void slider_draw(slider_p s);
         JOY_API bool slider_is_pressed(slider_p s, float x, float y);

@@ -1069,6 +1069,14 @@ void checkbox_set_hovered(checkbox_p cb, bool v)
         if (cb) cb->hover = v;
 }
 
+void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover)
+{
+        if (!checkbox) return;
+        checkbox->box_color = box;
+        checkbox->check_color = check;
+        checkbox->hover_color = hover;
+}
+
 void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 {
         if (!checkbox) return;
@@ -1079,24 +1087,24 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 
         uint8_t alpha = checkbox->enabled ? 255 : 100;
 
-        // === 框体背景（蓝色填充）===
-        r2d_set_color(r2d, 50, 130, 230, alpha);
+        // === 框体背景 ===
+        r2d_set_color(r2d, checkbox->box_color.r, checkbox->box_color.g, checkbox->box_color.b, alpha);
         jrect_t fill_rect = { cx, cy, sz, sz };
         shape_draw_rectangle(r2d, "fill", fill_rect);
 
-        // === 悬停时更亮 ===
+        // === 悬停时变色 ===
         if (checkbox->hover && checkbox->enabled) {
-                r2d_set_color(r2d, 80, 160, 250, 255);
+                r2d_set_color(r2d, checkbox->hover_color.r, checkbox->hover_color.g, checkbox->hover_color.b, 255);
                 shape_draw_rectangle(r2d, "fill", fill_rect);
         }
 
-        // === 白色边框 ===
+        // === 边框 ===
         r2d_set_color(r2d, 255, 255, 255, alpha);
         shape_draw_rectangle(r2d, "line", fill_rect);
 
-        // === 选中状态：白色对勾 ===
+        // === 选中状态 ===
         if (checkbox->state == JOY_CHECKBOX_CHECKED && checkbox->enabled) {
-                r2d_set_color(r2d, 255, 255, 255, 255);
+                r2d_set_color(r2d, checkbox->check_color.r, checkbox->check_color.g, checkbox->check_color.b, 255);
                 float p = sz * 0.18f;
                 float m = sz * 0.5f;
                 float e = sz - p;
@@ -1890,8 +1898,12 @@ static float slider_thumb_x(slider_p s)
 static jrect_t slider_thumb_rect(slider_p s)
 {
         float tx = slider_thumb_x(s);
+        float half = s->thumb_width * 0.5f;
+        // 限制滑块方块不超出滑轨边界
+        if (tx - half < s->track.x) tx = s->track.x + half;
+        if (tx + half > s->track.x + s->track.w) tx = s->track.x + s->track.w - half;
         jrect_t r;
-        r.x = tx - s->thumb_width * 0.5f;
+        r.x = tx - half;
         r.y = s->track.y;
         r.w = s->thumb_width;
         r.h = s->track.h;
@@ -1963,6 +1975,15 @@ void slider_set_range(slider_p s, float min, float max)
         s->max = max;
         if (s->value < min) s->value = min;
         if (s->value > max) s->value = max;
+}
+
+void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
+{
+        if (!s) return;
+        s->track_color = track;
+        s->fill_color = fill;
+        s->thumb_color = thumb;
+        s->thumb_hover_color = thumb_hover;
 }
 
 void slider_draw(slider_p s)
