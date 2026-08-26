@@ -89,6 +89,7 @@ struct radio {
 };
 
 struct checkbox {
+        jr2d_p r2d;                 // 渲染器（坐标转换用）
         int x, y;                   // 位置
         int size;                   // 大小
         checkbox_state_t state;     // 当前状态
@@ -977,6 +978,7 @@ checkbox_p checkbox_create(int x, int y, int size, const char* label)
         cb->x = x;
         cb->y = y;
         cb->size = size;
+        cb->r2d = NULL;
         cb->state = JOY_CHECKBOX_UNCHECKED;
         cb->label = label ? utils_strdup(label, NULL) : NULL;
         cb->hover = false;
@@ -1019,6 +1021,17 @@ void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state)
         checkbox->state = state;
 }
 
+checkbox_state_t checkbox_get_state(checkbox_p checkbox)
+{
+        return checkbox ? checkbox->state : JOY_CHECKBOX_UNCHECKED;
+}
+
+void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d)
+{
+        if (!checkbox) return;
+        checkbox->r2d = r2d;
+}
+
 void checkbox_toggle(checkbox_p checkbox)
 {
         if (!checkbox || !checkbox->enabled) return;
@@ -1037,6 +1050,8 @@ bool checkbox_is_pressed(checkbox_p cb, float x, float y)
 {
         if (!cb || !cb->enabled) return false;
         vec2_t pt = { x, y };
+        // 与 button/slider/inputbox 一致：窗口坐标转逻辑坐标，保证全屏下命中正确
+        if (cb->r2d) pt = r2d_coordinates_from_window(cb->r2d, x, y);
         rectangle_t hit_area;
         hit_area.x = cb->hit_area.x;
         hit_area.y = cb->hit_area.y;
@@ -1123,7 +1138,7 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
         // === 标签文本 ===
         if (checkbox->label && font) {
                 font_p f = (font_p)font;
-                jcolor_t tc = checkbox->enabled ? (jcolor_t){ 255, 255, 255, 255 } : (jcolor_t){ 160, 160, 160, 255 };
+                jcolor_t tc = checkbox->enabled ? checkbox->text_color : (jcolor_t){ 160, 160, 160, 255 };
                 jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
                         cx + sz + 8,
                         cy + (sz - (float)font_get_size(f)) / 2);

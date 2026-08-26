@@ -1461,6 +1461,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
         JOY_API void checkbox_destroy(checkbox_p checkbox);
         JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
+        JOY_API checkbox_state_t checkbox_get_state(checkbox_p checkbox);
+        JOY_API void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d);
         JOY_API void checkbox_toggle(checkbox_p checkbox);
         JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
         JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
