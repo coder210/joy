@@ -84,6 +84,17 @@ void* get_raw_window(jwindow_p win)
 	return win->sdl_window;
 }
 
+void window_set_fullscreen(jwindow_p win, bool fullscreen)
+{
+	if (win) SDL_SetWindowFullscreen(win->sdl_window, fullscreen);
+}
+
+bool window_get_fullscreen(jwindow_p win)
+{
+	if (!win) return false;
+	return (SDL_GetWindowFlags(win->sdl_window) & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
 static const char* key_name(SDL_Keycode k)
 {
 	static char buf[2];

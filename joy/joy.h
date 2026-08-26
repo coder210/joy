@@ -906,6 +906,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API jwindow_p create_window(const char* title, int w, int h);
         JOY_API void destroy_window(jwindow_p win);
         JOY_API void* get_raw_window(jwindow_p win);
+        JOY_API void window_set_fullscreen(jwindow_p win, bool fullscreen);
+        JOY_API bool window_get_fullscreen(jwindow_p win);
 
         JOY_API void dispatch_event(jevent_callbacks_t cbs,
                 const void* event, void* arg);
