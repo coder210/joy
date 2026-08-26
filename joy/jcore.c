@@ -1,4 +1,5 @@
 #include "joy.h"
+#include "external/stb_image.h"
 #include <SDL3/SDL.h>
 
 union jwindow {
@@ -91,8 +92,46 @@ void window_set_fullscreen(jwindow_p win, bool fullscreen)
 
 bool window_get_fullscreen(jwindow_p win)
 {
-	if (!win) return false;
-	return (SDL_GetWindowFlags(win->sdl_window) & SDL_WINDOW_FULLSCREEN) != 0;
+        if (!win) return false;
+        return (SDL_GetWindowFlags(win->sdl_window) & SDL_WINDOW_FULLSCREEN) != 0;
+}
+
+void window_set_icon(jwindow_p win, const char* png_path)
+{
+        if (!win || !png_path) return;
+
+        stbi_uc* filedata;
+        size_t sz;
+        int w, h, channels;
+        unsigned char* pixels;
+        SDL_Surface* surface;
+
+        filedata = (stbi_uc*)SDL_LoadFile(png_path, &sz);
+        if (!filedata) {
+                SDL_Log("Failed to load icon file: %s", png_path);
+                return;
+        }
+
+        pixels = stbi_load_from_memory(filedata, (int)sz, &w, &h, &channels, STBI_rgb_alpha);
+        if (!pixels) {
+                SDL_free(filedata);
+                SDL_Log("Failed to decode icon PNG: %s", png_path);
+                return;
+        }
+
+        surface = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, pixels, w * 4);
+        if (!surface) {
+                stbi_image_free(pixels);
+                SDL_free(filedata);
+                SDL_Log("Failed to create surface for icon: %s", png_path);
+                return;
+        }
+
+        SDL_SetWindowIcon(win->sdl_window, surface);
+
+        SDL_DestroySurface(surface);
+        stbi_image_free(pixels);
+        SDL_free(filedata);
 }
 
 static const char* key_name(SDL_Keycode k)
