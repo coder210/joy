@@ -632,6 +632,480 @@ void combobox_draw(combobox_p combobox)
 }
 
 
+/* ===== 可输入下拉列表框 (combobox_input) ===== */
+
+struct combobox_input {
+        jr2d_p r2d;
+        jrect_t rect;               // 整体控件区域
+        jcolor_t bg_color;          // 背景色
+        jcolor_t border_color;      // 边框色
+        jcolor_t text_color;        // 文字色
+        jcolor_t cursor_color;      // 光标色
+        jcolor_t sel_color;         // 选中背景色
+        jcolor_t focus_border_color; // 聚焦时边框色
+        font_p font;
+
+        // 文本输入
+        char* buffer;
+        int buf_len;
+        int text_len;
+        int cursor_pos;
+        int sel_start, sel_end;
+        int scroll_offset;
+        bool focused;
+        uint64_t cursor_timer;
+        bool cursor_visible;
+
+        // 下拉列表
+        char items[20][JOY_MAX_IP];
+        int item_count;
+        int selected_index;
+        bool is_open;
+        int item_height;
+
+        // 箭头按钮区域（右侧）
+        jrect_t arrow_rect;
+        bool arrow_hovered;
+
+        // 回调
+        void (*on_change)(struct combobox_input* ci, void* userdata);
+        void* cb_userdata;
+
+        // 弹层节点（展开时自动挂载，关闭时自动卸载）
+        scene_node_p popup_node;
+};
+
+combobox_input_p combobox_input_create(jr2d_p r2d, jrect_t rect, font_p font, int buf_len)
+{
+        combobox_input_p ci = (combobox_input_p)calloc(1, sizeof(combobox_input_t));
+        if (!ci) return NULL;
+        ci->r2d = r2d;
+        ci->rect = rect;
+        ci->font = font;
+        ci->buf_len = buf_len > 0 ? buf_len : 256;
+        ci->buffer = (char*)malloc(ci->buf_len);
+        ci->buffer[0] = '\0';
+        ci->text_len = 0;
+        ci->cursor_pos = 0;
+        ci->sel_start = -1;
+        ci->sel_end = -1;
+        ci->scroll_offset = 0;
+        ci->focused = false;
+        ci->cursor_timer = 0;
+        ci->cursor_visible = false;
+        ci->item_count = 0;
+        ci->selected_index = -1;
+        ci->is_open = false;
+        ci->item_height = 24;
+        ci->arrow_hovered = false;
+        // 箭头按钮在右侧 20px
+        ci->arrow_rect.x = rect.x + rect.w - 20;
+        ci->arrow_rect.y = rect.y;
+        ci->arrow_rect.w = 20;
+        ci->arrow_rect.h = rect.h;
+        // 配色
+        ci->bg_color = (jcolor_t){ 255, 255, 255, 255 };
+        ci->border_color = (jcolor_t){ 80, 80, 80, 255 };
+        ci->text_color = (jcolor_t){ 0, 0, 0, 255 };
+        ci->cursor_color = (jcolor_t){ 0, 0, 0, 255 };
+        ci->sel_color = (jcolor_t){ 100, 150, 255, 100 };
+        ci->focus_border_color = (jcolor_t){ 50, 100, 200, 255 };
+        return ci;
+}
+
+void combobox_input_destroy(combobox_input_p ci)
+{
+        if (ci) {
+                free(ci->buffer);
+                free(ci);
+        }
+}
+
+void combobox_input_add_item(combobox_input_p ci, const char* str, int len)
+{
+        if (!ci || ci->item_count >= 20) return;
+        if (len <= 0) len = (int)strlen(str);
+        if (len >= JOY_MAX_IP) len = JOY_MAX_IP - 1;
+        memcpy(ci->items[ci->item_count], str, len);
+        ci->items[ci->item_count][len] = '\0';
+        ci->item_count++;
+}
+
+void combobox_input_clear_items(combobox_input_p ci)
+{
+        if (ci) ci->item_count = 0;
+}
+
+const char* combobox_input_get_text(combobox_input_p ci)
+{
+        return ci ? ci->buffer : "";
+}
+
+void combobox_input_set_text(combobox_input_p ci, const char* str)
+{
+        if (!ci) return;
+        int len = (int)strlen(str);
+        if (len >= ci->buf_len) len = ci->buf_len - 1;
+        memcpy(ci->buffer, str, len);
+        ci->buffer[len] = '\0';
+        ci->text_len = len;
+        ci->cursor_pos = len;
+        ci->scroll_offset = 0;
+}
+
+static void ci_inputbox_focus(combobox_input_p ci)
+{
+        if (!ci || ci->focused) return;
+        ci->focused = true;
+        ci->cursor_timer = get_ticks();
+        ci->cursor_visible = true;
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ci->r2d));
+        if (win) SDL_StartTextInput(win);
+}
+
+static void ci_inputbox_defocus(combobox_input_p ci)
+{
+        if (!ci || !ci->focused) return;
+        ci->focused = false;
+        ci->sel_start = -1;
+        ci->sel_end = -1;
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ci->r2d));
+        if (win) SDL_StopTextInput(win);
+}
+
+static int ci_cursor_x(combobox_input_p ci)
+{
+        if (ci->cursor_pos <= 0 || !ci->font) return 0;
+        jcolor_t c = { 0,0,0,255 };
+        jtext_p tex = text_createx(ci->r2d, ci->font, ci->buffer, ci->cursor_pos, c);
+        if (!tex) return 0;
+        int w = text_get_width(tex);
+        text_destroy(tex);
+        return w;
+}
+
+static int ci_cursor_x_at(combobox_input_p ci, int pos)
+{
+        if (pos <= 0 || !ci->font) return 0;
+        jcolor_t c = { 0,0,0,255 };
+        jtext_p tex = text_createx(ci->r2d, ci->font, ci->buffer, pos, c);
+        if (!tex) return 0;
+        int w = text_get_width(tex);
+        text_destroy(tex);
+        return w;
+}
+
+static int ci_pos_from_x(combobox_input_p ci, float local_x)
+{
+        if (!ci || ci->text_len <= 0 || local_x <= 0) return 0;
+        int total_w = ci_cursor_x_at(ci, ci->text_len);
+        if (local_x >= total_w) return ci->text_len;
+        for (int i = 0; i < ci->text_len; ) {
+                int next = i + 1;
+                while (next < ci->text_len && ((unsigned char)ci->buffer[next] & 0xC0) == 0x80)
+                        next++;
+                int w = ci_cursor_x_at(ci, next);
+                if (w >= local_x) {
+                        int prev_w = ci_cursor_x_at(ci, i);
+                        return (local_x - prev_w < w - local_x) ? i : next;
+                }
+                i = next;
+        }
+        return ci->text_len;
+}
+
+static void ci_scroll_to_cursor(combobox_input_p ci)
+{
+        if (!ci) return;
+        int cx = ci_cursor_x(ci);
+        float text_area_w = ci->rect.w - 24; // 减去箭头按钮区域
+        if (cx - ci->scroll_offset < 0)
+                ci->scroll_offset = cx;
+        else if (cx - ci->scroll_offset > text_area_w)
+                ci->scroll_offset = cx - (int)text_area_w;
+}
+
+static void ci_insert(combobox_input_p ci, const char* text, int len)
+{
+        if (!ci || !text || len <= 0) return;
+        if (ci->text_len + len >= ci->buf_len) return;
+        memmove(ci->buffer + ci->cursor_pos + len, ci->buffer + ci->cursor_pos,
+                ci->text_len - ci->cursor_pos);
+        memcpy(ci->buffer + ci->cursor_pos, text, len);
+        ci->cursor_pos += len;
+        ci->text_len += len;
+        ci->buffer[ci->text_len] = '\0';
+        ci_scroll_to_cursor(ci);
+        if (ci->on_change) ci->on_change(ci, ci->cb_userdata);
+}
+
+static void ci_backspace(combobox_input_p ci)
+{
+        if (ci->cursor_pos <= 0) return;
+        int pos = ci->cursor_pos - 1;
+        while (pos > 0 && ((unsigned char)ci->buffer[pos] & 0xC0) == 0x80)
+                pos--;
+        int ch_len = ci->cursor_pos - pos;
+        memmove(ci->buffer + pos, ci->buffer + ci->cursor_pos,
+                ci->text_len - ci->cursor_pos);
+        ci->text_len -= ch_len;
+        ci->cursor_pos = pos;
+        ci->buffer[ci->text_len] = '\0';
+        ci_scroll_to_cursor(ci);
+        if (ci->on_change) ci->on_change(ci, ci->cb_userdata);
+}
+
+void combobox_input_draw(combobox_input_p ci)
+{
+        if (!ci) return;
+        jr2d_p r = ci->r2d;
+        jrect_t rect = ci->rect;
+
+        // 背景
+        r2d_set_color(r, ci->bg_color.r, ci->bg_color.g, ci->bg_color.b, ci->bg_color.a);
+        shape_draw_rectangle(r, "fill", rect);
+
+        // 边框（聚焦时高亮）
+        jcolor_t border = ci->focused ? ci->focus_border_color : ci->border_color;
+        r2d_set_color(r, border.r, border.g, border.b, border.a);
+        shape_draw_rectangle(r, "line", rect);
+
+        // 裁剪区域（文字区域，排除箭头按钮）
+        SDL_Renderer* sdl_r = (SDL_Renderer*)r2d_unwrap(r);
+        SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 24, (int)rect.h };
+        bool clip_was_enabled = SDL_RenderClipEnabled(sdl_r);
+        SDL_Rect old_clip;
+        if (clip_was_enabled) SDL_GetRenderClipRect(sdl_r, &old_clip);
+        SDL_SetRenderClipRect(sdl_r, &clip_rect);
+
+        // 文字
+        if (ci->text_len > 0 && ci->font) {
+                float text_x = rect.x + 4;
+                float text_y = rect.y + (rect.h - (float)font_get_size(ci->font)) / 2.0f;
+                float ox = text_x - (float)ci->scroll_offset;
+                jtext_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
+        }
+
+        // 恢复裁剪
+        if (clip_was_enabled)
+                SDL_SetRenderClipRect(sdl_r, &old_clip);
+        else
+                SDL_SetRenderClipRect(sdl_r, NULL);
+
+        // 光标
+        if (ci->focused) {
+                uint64_t now = get_ticks();
+                if (now - ci->cursor_timer >= 530) {
+                        ci->cursor_visible = !ci->cursor_visible;
+                        ci->cursor_timer = now;
+                }
+                if (ci->cursor_visible) {
+                        int cx = ci_cursor_x(ci) - ci->scroll_offset + (int)rect.x + 4;
+                        if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 22) {
+                                float cy = rect.y + 3;
+                                float ch = rect.h - 6;
+                                r2d_set_color(r, ci->cursor_color.r, ci->cursor_color.g, ci->cursor_color.b, ci->cursor_color.a);
+                                shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+                        }
+                }
+        }
+
+        // 箭头按钮（右侧 20px 宽）
+        float arrow_cx = ci->arrow_rect.x + ci->arrow_rect.w / 2.0f;
+        float arrow_cy = ci->arrow_rect.y + ci->arrow_rect.h / 2.0f;
+        if (ci->is_open) {
+                // 上箭头
+                vec2_t pts[3] = {
+                    {arrow_cx - 5, arrow_cy + 3},
+                    {arrow_cx + 5, arrow_cy + 3},
+                    {arrow_cx,     arrow_cy - 3}
+                };
+                shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
+        } else {
+                // 下箭头
+                vec2_t pts[3] = {
+                    {arrow_cx - 5, arrow_cy - 3},
+                    {arrow_cx + 5, arrow_cy - 3},
+                    {arrow_cx,     arrow_cy + 3}
+                };
+                shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
+        }
+
+        // 竖线分隔箭头区域
+        r2d_set_color(r, ci->border_color.r, ci->border_color.g, ci->border_color.b, ci->border_color.a);
+        shape_draw_line(r, ci->arrow_rect.x, rect.y + 2, ci->arrow_rect.x, rect.y + rect.h - 2);
+}
+
+void combobox_input_draw_dropdown(combobox_input_p ci)
+{
+        if (!ci || !ci->is_open || ci->item_count <= 0) return;
+        jr2d_p r = ci->r2d;
+        jrect_t rect = ci->rect;
+        jrect_t drop_rect = {
+            rect.x, rect.y + rect.h,
+            rect.w, (float)(ci->item_count * ci->item_height)
+        };
+        // 背景
+        jcolor_t drop_bg = { 255, 255, 255, 255 };
+        r2d_set_color(r, drop_bg.r, drop_bg.g, drop_bg.b, drop_bg.a);
+        shape_draw_rectangle(r, "fill", drop_rect);
+        // 边框
+        r2d_set_color(r, 0, 0, 0, 255);
+        shape_draw_rectangle(r, "line", drop_rect);
+
+        for (int i = 0; i < ci->item_count; i++) {
+                jrect_t item_rect = {
+                    drop_rect.x, drop_rect.y + i * ci->item_height,
+                    drop_rect.w, (float)ci->item_height
+                };
+                // 选中项高亮
+                if (i == ci->selected_index) {
+                        jcolor_t hl = { 200, 220, 255, 255 };
+                        r2d_set_color(r, hl.r, hl.g, hl.b, hl.a);
+                        shape_draw_rectangle(r, "fill", item_rect);
+                }
+                // 分隔线
+                r2d_set_color(r, 220, 220, 220, 255);
+                shape_draw_line(r, item_rect.x, item_rect.y + item_rect.h,
+                        item_rect.x + item_rect.w, item_rect.y + item_rect.h);
+                // 文字
+                jtext_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
+                        ci->text_color, item_rect.x + 4, item_rect.y + 2);
+        }
+}
+
+bool combobox_input_is_open(combobox_input_p ci)
+{
+        return ci ? ci->is_open : false;
+}
+
+void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node)
+{
+        if (ci) ci->popup_node = node;
+}
+
+/* 弹层节点渲染回调：绘制下拉列表 */
+static void ci_popup_render(scene_node_p node, const void* arg)
+{
+        (void)arg;
+        combobox_input_p ci = (combobox_input_p)scene_node_get_userdata(node);
+        if (ci) combobox_input_draw_dropdown(ci);
+}
+
+/* 展开下拉列表时挂载到弹层节点 */
+static void ci_open_dropdown(combobox_input_p ci)
+{
+        if (!ci || ci->is_open) return;
+        ci->is_open = true;
+        if (ci->popup_node) {
+                scene_node_set_userdata(ci->popup_node, ci);
+                scene_node_set_render_callback(ci->popup_node, ci_popup_render);
+        }
+}
+
+/* 关闭下拉列表时从弹层节点卸载 */
+static void ci_close_dropdown(combobox_input_p ci)
+{
+        if (!ci || !ci->is_open) return;
+        ci->is_open = false;
+        if (ci->popup_node) {
+                scene_node_set_render_callback(ci->popup_node, NULL);
+                scene_node_set_userdata(ci->popup_node, NULL);
+        }
+}
+
+void combobox_input_process_event(combobox_input_p ci, const void* ev)
+{
+        if (!ci || !ev) return;
+        const SDL_Event* e = (const SDL_Event*)ev;
+        if (e->type == SDL_EVENT_MOUSE_MOTION) {
+                vec2_t logic = r2d_coordinates_from_window(ci->r2d, e->motion.x, e->motion.y);
+                ci->arrow_hovered = (logic.x >= ci->arrow_rect.x && logic.x <= ci->arrow_rect.x + ci->arrow_rect.w
+                        && logic.y >= ci->arrow_rect.y && logic.y <= ci->arrow_rect.y + ci->arrow_rect.h);
+        }
+        else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                vec2_t logic = r2d_coordinates_from_window(ci->r2d, e->button.x, e->button.y);
+                bool in_rect = (logic.x >= ci->rect.x && logic.x <= ci->rect.x + ci->rect.w
+                        && logic.y >= ci->rect.y && logic.y <= ci->rect.y + ci->rect.h);
+                bool in_arrow = (logic.x >= ci->arrow_rect.x && logic.x <= ci->arrow_rect.x + ci->arrow_rect.w
+                        && logic.y >= ci->arrow_rect.y && logic.y <= ci->arrow_rect.y + ci->arrow_rect.h);
+
+                if (in_arrow) {
+                        // 点击箭头：切换下拉列表
+                        if (ci->is_open)
+                                ci_close_dropdown(ci);
+                        else
+                                ci_open_dropdown(ci);
+                        ci_inputbox_focus(ci);
+                }
+                else if (in_rect) {
+                        // 点击文字区域：聚焦并定位光标
+                        ci_inputbox_focus(ci);
+                        float local_x = logic.x - ci->rect.x - 2 + ci->scroll_offset;
+                        ci->cursor_pos = ci_pos_from_x(ci, local_x);
+                        ci_scroll_to_cursor(ci);
+                        ci_close_dropdown(ci);
+                }
+                else {
+                        // 点击外部：关闭列表并失焦
+                        ci_close_dropdown(ci);
+                        ci_inputbox_defocus(ci);
+                }
+        }
+        else if (e->type == SDL_EVENT_TEXT_INPUT) {
+                if (ci->focused) {
+                        ci_insert(ci, e->text.text, (int)strlen(e->text.text));
+                }
+        }
+        else if (e->type == SDL_EVENT_KEY_DOWN) {
+                if (!ci->focused) return;
+                switch (e->key.scancode) {
+                case SDL_SCANCODE_BACKSPACE: ci_backspace(ci); break;
+                case SDL_SCANCODE_LEFT:
+                        if (ci->cursor_pos > 0) ci->cursor_pos--;
+                        ci_scroll_to_cursor(ci);
+                        break;
+                case SDL_SCANCODE_RIGHT:
+                        if (ci->cursor_pos < ci->text_len) ci->cursor_pos++;
+                        ci_scroll_to_cursor(ci);
+                        break;
+                case SDL_SCANCODE_DOWN:
+                        if (ci->is_open && ci->selected_index < ci->item_count - 1)
+                                ci->selected_index++;
+                        break;
+                case SDL_SCANCODE_UP:
+                        if (ci->is_open && ci->selected_index > 0)
+                                ci->selected_index--;
+                        break;
+                case SDL_SCANCODE_RETURN:
+                case SDL_SCANCODE_KP_ENTER:
+                        if (ci->is_open && ci->selected_index >= 0 && ci->selected_index < ci->item_count) {
+                                combobox_input_set_text(ci, ci->items[ci->selected_index]);
+                                ci_close_dropdown(ci);
+                        }
+                        break;
+                default: break;
+                }
+        }
+}
+
+int combobox_input_hit_item(combobox_input_p ci, float x, float y)
+{
+        if (!ci || !ci->is_open) return -1;
+        vec2_t logic = r2d_coordinates_from_window(ci->r2d, x, y);
+        for (int i = 0; i < ci->item_count; i++) {
+                jrect_t item_rect = {
+                    ci->rect.x, ci->rect.y + ci->rect.h + i * ci->item_height,
+                    ci->rect.w, (float)ci->item_height
+                };
+                if (logic.x >= item_rect.x && logic.x <= item_rect.x + item_rect.w
+                        && logic.y >= item_rect.y && logic.y <= item_rect.y + item_rect.h)
+                        return i;
+        }
+        return -1;
+}
+
+
 datagrid_p
 datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font)
 {

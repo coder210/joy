@@ -273,6 +273,7 @@ struct scene {
     scene_node_p* root_nodes;
     int root_count;
     int root_capacity;
+    scene_node_p popup_node;   // 弹层节点，渲染时保证在最上层
 
     scene_load_fn    on_load;
     scene_update_fn  on_update;
@@ -307,6 +308,7 @@ void scene_destroy(scene_p scene)
     for (int i = 0; i < scene->root_count; i++) {
         scene_node_destroy(scene->root_nodes[i]);
     }
+    if (scene->popup_node) scene_node_destroy(scene->popup_node);
     SDL_free(scene->root_nodes);
     SDL_free(scene);
 }
@@ -381,6 +383,8 @@ void scene_render(scene_p scene, const void* arg)
     for (int i = 0; i < scene->root_count; i++) {
         scene_node_render(scene->root_nodes[i], arg);
     }
+    // 弹层节点最后渲染，保证在所有普通节点之上
+    if (scene->popup_node) scene_node_render(scene->popup_node, arg);
 }
 
 void scene_handle_event(scene_p scene, const void* e)
@@ -403,6 +407,9 @@ void scene_set_event_callback(scene_p scene, scene_event_fn cb) { if (scene) sce
 void scene_set_userdata(scene_p scene, void* ud) { if (scene) scene->userdata = ud; }
 void* scene_get_userdata(scene_p scene) { return scene ? scene->userdata : NULL; }
 const char* scene_get_name(scene_p scene) { return scene ? scene->name : ""; }
+
+void scene_set_popup_node(scene_p scene, scene_node_p node) { if (scene) scene->popup_node = node; }
+scene_node_p scene_get_popup_node(scene_p scene) { return scene ? scene->popup_node : NULL; }
 
 // ============================================================
 // 场景管理器结构体

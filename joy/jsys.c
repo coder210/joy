@@ -973,3 +973,35 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 }
 
 #endif // JOY_WIN
+
+int get_local_ips(char ips[][JOY_MAX_IP], int max_count)
+{
+        if (!ips || max_count <= 0) return 0;
+#if defined(JOY_WIN)
+        char hostname[256];
+        if (gethostname(hostname, sizeof(hostname)) != 0) return 0;
+        struct addrinfo hints, *res, *rp;
+        memset(&hints, 0, sizeof(hints));
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        if (getaddrinfo(hostname, NULL, &hints, &res) != 0) return 0;
+        int count = 0;
+        for (rp = res; rp && count < max_count; rp = rp->ai_next) {
+                void* addr = NULL;
+                if (rp->ai_family == AF_INET)
+                        addr = &((struct sockaddr_in*)rp->ai_addr)->sin_addr;
+                else if (rp->ai_family == AF_INET6)
+                        addr = &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr;
+                else
+                        continue;
+                if (inet_ntop(rp->ai_family, addr, ips[count], JOY_MAX_IP))
+                        count++;
+        }
+        freeaddrinfo(res);
+        return count;
+#else
+        (void)ips;
+        (void)max_count;
+        return 0;
+#endif
+}

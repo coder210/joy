@@ -497,6 +497,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct button button_t, * button_p;
         typedef struct combobox_item combobox_item_t, * combobox_item_p;
         typedef struct combobox combobox_t, * combobox_p;
+        typedef struct combobox_input combobox_input_t, * combobox_input_p;
         typedef struct datagrid datagrid_t, * datagrid_p;
         typedef struct radio radio_t, * radio_p;
         typedef enum checkbox_state {
@@ -950,6 +951,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         JOY_API bool sys_init_netenv(void);
         JOY_API bool sys_release_netenv(void);
+        JOY_API int get_local_ips(char ips[][JOY_MAX_IP], int max_count);
         JOY_API int sys_anyaddr(void);
         JOY_API bool sys_closesocket(int64_t sockfd);
         JOY_API int sys_set_sock_sndtimeo(int64_t sockfd, int ms);
@@ -1444,6 +1446,21 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int combobox_get_selected(combobox_p combobox);
         JOY_API void combobox_draw(combobox_p combobox);
         JOY_API void combobox_process_event(combobox_p cb, const void* event);
+
+        // 可输入下拉列表框
+        JOY_API combobox_input_p combobox_input_create(jr2d_p r2d, jrect_t rect, font_p font, int buf_len);
+        JOY_API void combobox_input_destroy(combobox_input_p ci);
+        JOY_API void combobox_input_add_item(combobox_input_p ci, const char* str, int len);
+        JOY_API void combobox_input_clear_items(combobox_input_p ci);
+        JOY_API const char* combobox_input_get_text(combobox_input_p ci);
+        JOY_API void combobox_input_set_text(combobox_input_p ci, const char* str);
+        JOY_API void combobox_input_draw(combobox_input_p ci);
+        JOY_API void combobox_input_draw_dropdown(combobox_input_p ci);
+        JOY_API bool combobox_input_is_open(combobox_input_p ci);
+        JOY_API void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node);
+        JOY_API void combobox_input_process_event(combobox_input_p ci, const void* ev);
+        JOY_API int combobox_input_hit_item(combobox_input_p ci, float x, float y);
+
         JOY_API datagrid_p datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font);
         JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
         JOY_API void datagrid_setheader(datagrid_p grid, int index, const char* header);
@@ -1691,7 +1708,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void scene_set_render_callback(scene_p scene, scene_render_fn cb);
         JOY_API void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb);
         JOY_API void scene_set_event_callback(scene_p scene, scene_event_fn cb);
-        JOY_API void scene_set_userdata(scene_p scene, void* userdata);
+        JOY_API void scene_set_popup_node(scene_p scene, scene_node_p node);
+        JOY_API scene_node_p scene_get_popup_node(scene_p scene);
+        JOY_API void scene_set_userdata(scene_p scene, void* ud);
         JOY_API void* scene_get_userdata(scene_p scene);
         JOY_API const char* scene_get_name(scene_p scene);
         JOY_API scene_manager_p scene_manager_create(void);
