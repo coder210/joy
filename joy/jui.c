@@ -1730,6 +1730,26 @@ static int inputbox_cursor_x_at(inputbox_p ti, int pos)
         return w;
 }
 
+/* 根据点击的局部 x 坐标计算光标位置 */
+static int inputbox_pos_from_x(inputbox_p ti, float local_x)
+{
+        if (!ti || ti->text_len <= 0 || local_x <= 0) return 0;
+        int total_w = inputbox_cursor_x_at(ti, ti->text_len);
+        if (local_x >= total_w) return ti->text_len;
+        for (int i = 0; i < ti->text_len; ) {
+                int next = i + 1;
+                while (next < ti->text_len && ((unsigned char)ti->buffer[next] & 0xC0) == 0x80)
+                        next++;
+                int w = inputbox_cursor_x_at(ti, next);
+                if (w >= local_x) {
+                        int prev_w = inputbox_cursor_x_at(ti, i);
+                        return (local_x - prev_w < w - local_x) ? i : next;
+                }
+                i = next;
+        }
+        return ti->text_len;
+}
+
 void inputbox_focus(inputbox_p ti)
 {
         if (!ti || ti->focused) return;
@@ -1858,6 +1878,10 @@ bool inputbox_is_pressed(inputbox_p ti, float x, float y)
         logic = r2d_coordinates_from_window(ti->r2d, x, y);
         if (collision2d_check_point_rectangle(logic, rect)) {
                 inputbox_focus(ti);
+                inputbox_clear_sel(ti);
+                float local_x = logic.x - ti->rect.x - 2 + ti->scroll_offset;
+                ti->cursor_pos = inputbox_pos_from_x(ti, local_x);
+                inputbox_scroll_to_cursor(ti);
                 return true;
         }
         inputbox_defocus(ti);
