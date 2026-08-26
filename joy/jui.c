@@ -24,6 +24,7 @@ struct button {
         jcolor_t normal_color;   // 正常状态颜色
         jcolor_t hover_color;    // 悬停状态颜色
         jcolor_t pressed_color;  // 按下状态颜色
+        jcolor_t display_color;  // 实际渲染颜色（平滑过渡用）
         vec2_t text_pos;      // 文本相对位置
         image_p image;            // 按钮正常纹理（可选）
         image_p pressed_image;    // 按钮按下纹理（可选）
@@ -271,6 +272,7 @@ button_create(jr2d_p r2d, float width, float height)
         btn->pressed_image = NULL;
         btn->text = NULL;
         btn->is_hovered = btn->is_pressed = false;
+        btn->display_color = btn->normal_color;
         return btn;
 }
 
@@ -406,13 +408,22 @@ void button_draw(button_p btn)
                 color = btn->hover_color;
         }
 
+        // 平滑过渡：display_color 每帧向目标颜色靠拢 15%
+        #define LERP_CHANNEL(a, b, t) ((uint8_t)((float)(a) + ((float)(b) - (float)(a)) * (t)))
+        float t = 0.15f;
+        btn->display_color.r = LERP_CHANNEL(btn->display_color.r, color.r, t);
+        btn->display_color.g = LERP_CHANNEL(btn->display_color.g, color.g, t);
+        btn->display_color.b = LERP_CHANNEL(btn->display_color.b, color.b, t);
+        btn->display_color.a = LERP_CHANNEL(btn->display_color.a, color.a, t);
+        #undef LERP_CHANNEL
+
         rect.x = btn->position.x;
         rect.y = btn->position.y;
         rect.w = btn->width;
         rect.h = btn->height;
 
         r2d = btn->r2d;
-        r2d_set_color(r2d, color.r, color.g, color.b, color.a);
+        r2d_set_color(r2d, btn->display_color.r, btn->display_color.g, btn->display_color.b, btn->display_color.a);
         shape_draw_rectangle(r2d, "fill", rect);
         r2d_set_color(r2d, 0, 0, 0, 255);
         shape_draw_rectangle(r2d, "line", rect);
