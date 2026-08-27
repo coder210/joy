@@ -1291,8 +1291,8 @@ void r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy)
 /* 内部: 窗口像素坐标 -> 逻辑坐标(供各 2D UI 命中测试函数使用) */
 static void r3d_ui_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
 {
-	if (r->ui_sx > 0) *lx = wx / r->ui_sx; else *lx = wx;
-	if (r->ui_sy > 0) *ly = wy / r->ui_sy; else *ly = wy;
+	if (lx) { if (r->ui_sx > 0) *lx = wx / r->ui_sx; else *lx = wx; }
+	if (ly) { if (r->ui_sy > 0) *ly = wy / r->ui_sy; else *ly = wy; }
 }
 
 /* ================================================================
