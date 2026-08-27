@@ -2300,6 +2300,148 @@ void r3d_slider_set_hovered(jr3d_slider_p s, bool v)
 	if (s) s->hovered = v;
 }
 
+/* ================================================================
+ * 2D UI: checkbox (仿 jr2d checkbox, 屏幕像素坐标, 不随相机变化)
+ * ================================================================ */
+/* 用小方块点阵画粗线段(近似斜线, 兼容仅 axis-aligned 矩形的 2D 绘制) */
+static void draw_line_dots(jr3d_p r, render_mesh_p m, float x0, float y0, float x1, float y1,
+	float thickness, Uint8 cr, Uint8 cg, Uint8 cb, float winW, float winH)
+{
+	float dx = x1 - x0, dy = y1 - y0;
+	float len = sqrtf(dx * dx + dy * dy);
+	if (len <= 0) return;
+	int steps = (int)(len / thickness) + 1;
+	for (int i = 0; i <= steps; i++) {
+		float t = (float)i / steps;
+		float px = x0 + dx * t - thickness * 0.5f;
+		float py = y0 + dy * t - thickness * 0.5f;
+		draw_rect_2d(r, m, px, py, thickness, thickness, cr, cg, cb, winW, winH);
+	}
+}
+
+jr3d_checkbox_p r3d_checkbox_create(float x, float y, float size, const char* label)
+{
+	jr3d_checkbox_p cb = (jr3d_checkbox_p)SDL_malloc(sizeof(jr3d_checkbox_t));
+	if (!cb) return NULL;
+	cb->x = x; cb->y = y; cb->size = size;
+	cb->state = JOY_R3D_CHECKBOX_UNCHECKED;
+	cb->hovered = false;
+	cb->enabled = true;
+	cb->label = label ? utils_strdup(label, NULL) : NULL;
+	cb->label_w = label ? (float)strlen(label) * 8.0f : 0.0f;
+	cb->box_color = (jcolor_t){ 0, 0, 0, 255 };
+	cb->check_color = (jcolor_t){ 0, 120, 0, 255 };
+	cb->text_color = (jcolor_t){ 200, 200, 200, 255 };
+	cb->hover_color = (jcolor_t){ 200, 200, 200, 255 };
+	return cb;
+}
+
+void r3d_checkbox_destroy(jr3d_checkbox_p cb)
+{
+	if (!cb) return;
+	if (cb->label) SDL_free(cb->label);
+	SDL_free(cb);
+}
+
+void r3d_checkbox_set_state(jr3d_checkbox_p cb, jr3d_checkbox_state_t state)
+{
+	if (cb) cb->state = state;
+}
+
+jr3d_checkbox_state_t r3d_checkbox_get_state(jr3d_checkbox_p cb)
+{
+	return cb ? cb->state : JOY_R3D_CHECKBOX_UNCHECKED;
+}
+
+void r3d_checkbox_toggle(jr3d_checkbox_p cb)
+{
+	if (!cb || !cb->enabled) return;
+	cb->state = (cb->state == JOY_R3D_CHECKBOX_UNCHECKED)
+		? JOY_R3D_CHECKBOX_CHECKED : JOY_R3D_CHECKBOX_UNCHECKED;
+}
+
+bool r3d_checkbox_is_pressed(jr3d_checkbox_p cb, float x, float y)
+{
+	if (!cb || !cb->enabled) return false;
+	float hit_w = cb->size + 5.0f + cb->label_w;
+	if (x >= cb->x && x <= cb->x + hit_w
+		&& y >= cb->y && y <= cb->y + cb->size) {
+		r3d_checkbox_toggle(cb);
+		return true;
+	}
+	return false;
+}
+
+void r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v)
+{
+	if (cb) cb->hovered = v;
+}
+
+bool r3d_checkbox_is_hovered(jr3d_checkbox_p cb, float x, float y)
+{
+	if (!cb) return false;
+	float hit_w = cb->size + 5.0f + cb->label_w;
+	cb->hovered = (x >= cb->x && x <= cb->x + hit_w
+		&& y >= cb->y && y <= cb->y + cb->size);
+	return cb->hovered;
+}
+
+void r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, jcolor_t hover)
+{
+	if (!cb) return;
+	cb->box_color = box;
+	cb->check_color = check;
+	cb->hover_color = hover;
+}
+
+void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW, float winH)
+{
+	if (!r || !m || !cb || winW <= 0 || winH <= 0) return;
+
+	float cx = cb->x, cy = cb->y, sz = cb->size;
+	Uint8 alpha = cb->enabled ? 255 : 100;
+
+	/* 框体背景 */
+	draw_rect_2d(r, m, cx, cy, sz, sz,
+		cb->box_color.r, cb->box_color.g, cb->box_color.b, winW, winH);
+
+	/* 悬停变色 */
+	if (cb->hovered && cb->enabled) {
+		draw_rect_2d(r, m, cx, cy, sz, sz,
+			cb->hover_color.r, cb->hover_color.g, cb->hover_color.b, winW, winH);
+	}
+
+	/* 白色边框 */
+	draw_rect_2d(r, m, cx, cy, sz, 1.0f, 255, 255, 255, winW, winH);
+	draw_rect_2d(r, m, cx, cy + sz - 1.0f, sz, 1.0f, 255, 255, 255, winW, winH);
+	draw_rect_2d(r, m, cx, cy, 1.0f, sz, 255, 255, 255, winW, winH);
+	draw_rect_2d(r, m, cx + sz - 1.0f, cy, 1.0f, sz, 255, 255, 255, winW, winH);
+
+	/* 勾选状态: 用点阵画勾(仿 jr2d 的 3 点折线) */
+	if (cb->state == JOY_R3D_CHECKBOX_CHECKED && cb->enabled) {
+		float p = sz * 0.18f;
+		float mh = sz * 0.5f;
+		float e = sz - p;
+		float h1 = sz * 0.38f;
+		float h2 = sz - p;
+		float thick = sz * 0.16f;
+		draw_line_dots(r, m, cx + p, cy + mh, cx + h1, cy + h2, thick,
+			cb->check_color.r, cb->check_color.g, cb->check_color.b, winW, winH);
+		draw_line_dots(r, m, cx + h1, cy + h2, cx + e, cy + p, thick,
+			cb->check_color.r, cb->check_color.g, cb->check_color.b, winW, winH);
+	}
+	else if (cb->state == JOY_R3D_CHECKBOX_INDETERMINATE && cb->enabled) {
+		float p = sz * 0.25f;
+		draw_line_dots(r, m, cx + p, cy + sz * 0.5f, cx + sz - p, cy + sz * 0.5f, sz * 0.16f,
+			255, 255, 255, winW, winH);
+	}
+
+	/* 标签文本 */
+	if (cb->label && cb->label[0] && r->font_ttf_buf) {
+		r3d_font_draw_2d(r, m, cb->label, cx + sz + 5.0f, cy + 1.0f, sz * 0.8f, winW, winH);
+	}
+}
+
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
    UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
 render_mesh_p r3d_mesh_quad(jr3d_p r)

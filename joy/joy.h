@@ -1323,6 +1323,47 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 设置悬停状态 */
         JOY_API void r3d_slider_set_hovered(jr3d_slider_p s, bool v);
 
+        /* ---------- 2D UI: checkbox (仿 jr2d checkbox, 屏幕像素坐标, 不随相机变化) ---------- */
+        typedef enum jr3d_checkbox_state {
+            JOY_R3D_CHECKBOX_UNCHECKED = 0,
+            JOY_R3D_CHECKBOX_CHECKED,
+            JOY_R3D_CHECKBOX_INDETERMINATE
+        } jr3d_checkbox_state_t;
+
+        typedef struct jr3d_checkbox jr3d_checkbox_t, * jr3d_checkbox_p;
+        struct jr3d_checkbox {
+            float x, y;                 /* 方框左上角(像素) */
+            float size;                 /* 方框边长 */
+            jr3d_checkbox_state_t state;
+            bool  hovered;
+            bool  enabled;
+            char* label;                /* 标签文本 */
+            float label_w;              /* 标签宽度(命中区域用) */
+            jcolor_t box_color;         /* 框体背景色 */
+            jcolor_t check_color;       /* 勾选颜色 */
+            jcolor_t text_color;        /* 标签颜色 */
+            jcolor_t hover_color;       /* 悬停色 */
+        };
+
+        /* 创建复选框(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_checkbox_p r3d_checkbox_create(float x, float y, float size, const char* label);
+        /* 销毁复选框 */
+        JOY_API void r3d_checkbox_destroy(jr3d_checkbox_p cb);
+        /* 设置/获取状态 */
+        JOY_API void r3d_checkbox_set_state(jr3d_checkbox_p cb, jr3d_checkbox_state_t state);
+        JOY_API jr3d_checkbox_state_t r3d_checkbox_get_state(jr3d_checkbox_p cb);
+        /* 切换勾选状态 */
+        JOY_API void r3d_checkbox_toggle(jr3d_checkbox_p cb);
+        /* 按下测试: 命中方框或标签时切换状态 */
+        JOY_API bool r3d_checkbox_is_pressed(jr3d_checkbox_p cb, float x, float y);
+        /* 设置/获取悬停状态 */
+        JOY_API void r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v);
+        JOY_API bool r3d_checkbox_is_hovered(jr3d_checkbox_p cb, float x, float y);
+        /* 设置配色: 框体 / 勾选 / 悬停 */
+        JOY_API void r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, jcolor_t hover);
+        /* 绘制复选框(m 为单位 quad) */
+        JOY_API void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW, float winH);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
