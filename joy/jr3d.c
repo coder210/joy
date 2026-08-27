@@ -50,7 +50,7 @@ struct jr3d {
 	float              far_;
 
 	/* 颜色纹理缓存 */
-	struct { Uint8 r, g, b; SDL_GPUTexture* tex; } color_cache[MAX_COLOR_CACHE];
+	struct { Uint8 r, g, b, a; SDL_GPUTexture* tex; } color_cache[MAX_COLOR_CACHE];
 	int                color_count;
 
 	/* 光照渲染（可选, 由 r3d_create 探测 lighting.vert/frag.spv 自动启用） */
@@ -467,7 +467,7 @@ static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 }
 
 void* r3d_create_solid_texture(void* device,
-	unsigned char r, unsigned char g, unsigned char b)
+	unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	const int tw = 16, th = 16;
@@ -476,7 +476,7 @@ void* r3d_create_solid_texture(void* device,
 	if (!pixels) return NULL;
 	for (int i = 0; i < tw * th; i++) {
 		pixels[i * 4 + 0] = r; pixels[i * 4 + 1] = g;
-		pixels[i * 4 + 2] = b; pixels[i * 4 + 3] = 255;
+		pixels[i * 4 + 2] = b; pixels[i * 4 + 3] = a;
 	}
 	SDL_GPUTexture* tex = upload_pixels_to_texture(dev, pixels, tw, th,
 		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, 0);
@@ -523,22 +523,24 @@ void r3d_mat44_to_float16(const mat44_t* m, float out[16])
  * 高级 API (v3.0) — 可重入
  * ================================================================ */
 
-/* ---- 内部：查/创建颜色纹理 ---- */
-static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb)
+/* ---- 内部：查/创建颜色纹理（含 alpha，供半透明绘制） ---- */
+static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb, Uint8 ca)
 {
 	for (int i = 0; i < r->color_count; i++) {
-		if (r->color_cache[i].r == cr && r->color_cache[i].g == cg && r->color_cache[i].b == cb)
+		if (r->color_cache[i].r == cr && r->color_cache[i].g == cg &&
+			r->color_cache[i].b == cb && r->color_cache[i].a == ca)
 			return r->color_cache[i].tex;
 	}
 	if (r->color_count >= MAX_COLOR_CACHE) {
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d: color cache full");
 		return NULL;
 	}
-	SDL_GPUTexture* tex = (SDL_GPUTexture*)r3d_create_solid_texture(r->dev, cr, cg, cb);
+	SDL_GPUTexture* tex = (SDL_GPUTexture*)r3d_create_solid_texture(r->dev, cr, cg, cb, ca);
 	if (tex) {
 		r->color_cache[r->color_count].r = cr;
 		r->color_cache[r->color_count].g = cg;
 		r->color_cache[r->color_count].b = cb;
+		r->color_cache[r->color_count].a = ca;
 		r->color_cache[r->color_count].tex = tex;
 		r->color_count++;
 	}
@@ -1323,7 +1325,7 @@ static void draw_rect_2d(jr3d_p r, render_mesh_p m,
 	proj.m13 =  1.0f;
 	proj.m15 =  1.0f;
 
-	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb);
+	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb, 255);
 	draw_mesh_internal_proj(r, m, &model, &proj, tex);
 }
 
@@ -2984,7 +2986,7 @@ void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
 	model.m15 = 1;
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, 255);
 	draw_mesh_internal(r, m, &model, tex);
 }
 
@@ -3026,7 +3028,7 @@ void r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
 	model.m15 = 1;
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, 255);
 
 	SDL_BindGPUGraphicsPipeline(r->rp, r->line_pipeline);
 	draw_mesh_internal(r, m, &model, tex);
@@ -3038,7 +3040,7 @@ void r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor
 	SDL_GPUTexture* tex;
 	if (!r || !r->rp || !r->line_pipeline || !m) return;
 
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, 255);
 
 	SDL_BindGPUGraphicsPipeline(r->rp, r->line_pipeline);
 	draw_mesh_internal(r, m, (mat44_t*)model, tex);
@@ -3063,7 +3065,7 @@ void r3d_draw_mesh_solid(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jc
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
 	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
 	model.m15 = 1;
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, 255);
 
 	SDL_BindGPUGraphicsPipeline(r->rp, r->solid_pipeline);
 	draw_mesh_internal(r, m, &model, tex);
@@ -3075,7 +3077,7 @@ void r3d_draw_mesh_solid_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, 
 	SDL_GPUTexture* tex;
 	if (!r || !r->rp || !r->solid_pipeline || !m) return;
 
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, color.a);
 
 	SDL_BindGPUGraphicsPipeline(r->rp, r->solid_pipeline);
 	draw_mesh_internal(r, m, (mat44_t*)model, tex);
@@ -3127,7 +3129,7 @@ void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jc
 {
 	SDL_GPUTexture* tex;
 	if (!r) return;
-	tex = get_color_texture(r, color.r, color.g, color.b);
+	tex = get_color_texture(r, color.r, color.g, color.b, 255);
 	r3d_draw_mesh_lit(r, m, model, tex);
 }
 
@@ -3180,7 +3182,7 @@ void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width)
 	render_mesh_t mz;
 	mat44_t id;
 	half = slices * spacing * 0.5f;
-	gray_tex = get_color_texture(r, 100, 100, 120);
+	gray_tex = get_color_texture(r, 100, 100, 120, 255);
 	hw = line_width;
 
 	for (i = 0; i <= slices; i++) {

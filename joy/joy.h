@@ -1072,7 +1072,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 int swapchain_format, int depth_format);
         JOY_API void* r3d_upload_buffer(void* device, const void* data, size_t size);
         JOY_API void* r3d_create_solid_texture(void* device,
-                unsigned char r, unsigned char g, unsigned char b);
+                unsigned char r, unsigned char g, unsigned char b, unsigned char a);
         JOY_API void* r3d_create_depth_texture(void* device, int width, int height);
         JOY_API void* r3d_create_sampler(void* device);
         JOY_API void  r3d_mat44_to_float16(const mat44_t* m, float out[16]);
