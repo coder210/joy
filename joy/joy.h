@@ -1138,6 +1138,11 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
                                       float pixelX, float pixelY, float fontSize,
                                       float winW, float winH);
+        /* 带颜色的 2D HUD 文字(其余参数同 r3d_font_draw_2d) */
+        JOY_API bool r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
+                                            float pixelX, float pixelY, float fontSize,
+                                            float winW, float winH,
+                                            Uint8 cr, Uint8 cg, Uint8 cb);
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
@@ -1185,6 +1190,12 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my);
         /* 销毁按钮 */
         JOY_API void r3d_button_destroy(jr3d_button_p btn);
+
+        /* 2D 实心矩形绘制(逻辑/窗口像素坐标, 左上角 x,y 尺寸 w,h, 颜色 cr,cg,cb) */
+        JOY_API void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
+                                      float x, float y, float w, float h,
+                                      Uint8 cr, Uint8 cg, Uint8 cb,
+                                      float winW, float winH);
 
         /* ---------- 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置) ---------- */
         typedef struct jr3d_label jr3d_label_t, * jr3d_label_p;

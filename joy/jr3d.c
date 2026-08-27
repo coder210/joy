@@ -70,6 +70,8 @@ struct jr3d {
 	int                font_tex_w;
 	int                font_tex_h;
 	char               font_cache[256]; /* 已烘焙的字符串缓存 */
+	Uint8              font_color_r, font_color_g, font_color_b; /* 烘焙文字颜色(默认白) */
+	Uint8              font_cache_r, font_cache_g, font_cache_b; /* 已烘焙颜色缓存 */
 
 	/* 延迟释放队列: r3d_mesh_destroy 不再立即释放 GPU buffer,
 	   而是延迟到 r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
@@ -572,6 +574,9 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	r->logical_w = 0; r->logical_h = 0;
 	r->ui_sx = 1.0f; r->ui_sy = 1.0f;
 
+	/* 字体默认白色 */
+	r->font_color_r = 255; r->font_color_g = 255; r->font_color_b = 255;
+
 	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符, nullptr 视为空串） */
 	const char* sd = shader_dir ? shader_dir : "";
 	size_t dirlen = strlen(sd);
@@ -1042,8 +1047,10 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 static bool r3d_font_bake(jr3d_p r, const char* str)
 {
 	if (str == NULL) return false;
-	// 字符串未变则不重建
-	if (r->font_tex && SDL_strcmp(str, r->font_cache) == 0) return true;
+	// 字符串与颜色都未变则不重建
+	if (r->font_tex && SDL_strcmp(str, r->font_cache) == 0 &&
+		r->font_color_r == r->font_cache_r && r->font_color_g == r->font_cache_g && r->font_color_b == r->font_cache_b)
+		return true;
 
 	int n = (int)SDL_strlen(str);
 	if (n <= 0) { r->font_tex_w = 1; r->font_tex_h = (int)r->font_pix_h; return false; }
@@ -1089,7 +1096,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	}
 	int final_w = x > 0 ? x : 1;
 
-	// 转成 RGBA32(白字 + alpha)。位图第 0 行=顶部, 但 quad UV 是 (0,0)=左上对应纹理顶行,
+	// 转成 RGBA32(文字颜色 + alpha)。位图第 0 行=顶部, 但 quad UV 是 (0,0)=左上对应纹理顶行,
 	// 而 GPU 纹理第 0 行在底部, 这里把行上下翻转写入, 使纹理内容正确为正向。
 	unsigned char* rgba = (unsigned char*)SDL_malloc((size_t)final_w * real_height * 4);
 	if (!rgba) { SDL_free(bitmap); return false; }
@@ -1098,9 +1105,9 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 		for (int xx = 0; xx < final_w; xx++) {
 			unsigned char a = bitmap[src_y * real_width + xx];
 			int idx = (yy * final_w + xx) * 4;
-			rgba[idx + 0] = 255;
-			rgba[idx + 1] = 255;
-			rgba[idx + 2] = 255;
+			rgba[idx + 0] = r->font_color_r;
+			rgba[idx + 1] = r->font_color_g;
+			rgba[idx + 2] = r->font_color_b;
 			rgba[idx + 3] = a;
 		}
 	}
@@ -1112,6 +1119,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	r->font_tex_w = final_w;
 	r->font_tex_h = real_height;
 	SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
+	r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
 	SDL_Log("font: baked text '%s' %dx%d tex=%p", str, final_w, real_height, r->font_tex);
 	return true;
 }
@@ -1181,12 +1189,14 @@ bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 /* 在屏幕(窗口)坐标绘制文字, 像 2D HUD 一样固定在窗口左上角, 不随相机旋转/移动。
    pixelX/pixelY: 文字左上角在窗口中的像素坐标(原点左上, Y 向下);
    fontSize: 文字像素高度; winW/winH: 窗口像素尺寸(通常传 r->ww/r->wh)。 */
-bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
-					  float pixelX, float pixelY, float fontSize,
-					  float winW, float winH)
+static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
+								  float pixelX, float pixelY, float fontSize,
+								  float winW, float winH)
 {
 	if (!r || !m || !text || fontSize <= 0 || winW <= 0 || winH <= 0) return false;
 	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_2d: font not init"); return false; }
+
+	/* 使用当前 r->font_color_* 作为烘焙颜色(由 r3d_font_draw_2d / _color 设置) */
 
 	if (SDL_strcmp(r->font_cache, text) != 0) {
 		if (!r3d_font_bake(r, text)) return false;
@@ -1217,6 +1227,27 @@ bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
 
 	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)r->font_tex);
 	return true;
+}
+
+/* 无颜色版本默认白色(避免残留上一次 r3d_font_draw_2d_color 的颜色) */
+bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
+					  float pixelX, float pixelY, float fontSize,
+					  float winW, float winH)
+{
+	if (!r) return false;
+	r->font_color_r = 255; r->font_color_g = 255; r->font_color_b = 255;
+	return r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY, fontSize, winW, winH);
+}
+
+/* 带颜色的 2D 文字绘制: 设置烘焙颜色后走公共绘制逻辑(不能被 draw_2d 重置为白色) */
+bool r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
+						  float pixelX, float pixelY, float fontSize,
+						  float winW, float winH,
+						  Uint8 cr, Uint8 cg, Uint8 cb)
+{
+	if (!r) return false;
+	r->font_color_r = cr; r->font_color_g = cg; r->font_color_b = cb;
+	return r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY, fontSize, winW, winH);
 }
 
 void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
@@ -1296,6 +1327,15 @@ static void draw_rect_2d(jr3d_p r, render_mesh_p m,
 	draw_mesh_internal_proj(r, m, &model, &proj, tex);
 }
 
+/* 公开的 2D 实心矩形绘制(逻辑/窗口像素坐标, 由调用方保证与 winW/winH 一致) */
+void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
+					  float x, float y, float w, float h,
+					  Uint8 cr, Uint8 cg, Uint8 cb,
+					  float winW, float winH)
+{
+	draw_rect_2d(r, m, x, y, w, h, cr, cg, cb, winW, winH);
+}
+
 jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text)
 {
 	jr3d_button_p b = (jr3d_button_p)SDL_malloc(sizeof(jr3d_button_t));
@@ -1352,10 +1392,10 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 {
 	if (!r || !m || !btn || winW <= 0 || winH <= 0) return;
 
-	/* 配色(仿 jr2d button): normal 灰 / hover 浅灰 / pressed 深灰, 黑边框 */
-	Uint8 fr = 130, fg = 130, fb = 130;
-	if (btn->state == JR3D_BTN_HOVER)   { fr = 160; fg = 160; fb = 160; }
-	if (btn->state == JR3D_BTN_PRESSED) { fr = 90;  fg = 90;  fb = 90;  }
+	/* 配色(仿 project_proxy2d 主菜单按钮): normal 白 / hover 浅灰 / pressed 灰, 黑边框 + 黑文字 */
+	Uint8 fr = 255, fg = 255, fb = 255;
+	if (btn->state == JR3D_BTN_HOVER)   { fr = 220; fg = 225; fb = 235; }
+	if (btn->state == JR3D_BTN_PRESSED) { fr = 200; fg = 200; fb = 210; }
 
 	/* 按钮坐标与 winW/winH 同为逻辑坐标(窗口缩放自适应由 r3d_begin 的 ui_sx/ui_sy 决定,
 	   绘制时直接以逻辑尺寸做正交投影, 无需再缩放矩形) */
@@ -1381,7 +1421,7 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
 		float tx = x + (w - textW) * 0.5f;
 		float ty = y + (h - fontSize) * 0.5f;
-		r3d_font_draw_2d(r, m, btn->text, tx, ty, fontSize, winW, winH);
+		r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
 		(void)aspect;
 	}
 }
@@ -1417,7 +1457,9 @@ void r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float
 {
 	if (!r || !m || !l || winW <= 0 || winH <= 0) return;
 	if (!r->font_ttf_buf || !l->text[0]) return;
-	r3d_font_draw_2d(r, m, l->text, l->x, l->y, l->fontSize, winW, winH);
+	/* 使用 label 创建时的颜色(白底 UI 需深色文字, 不能再固定白色) */
+	r3d_font_draw_2d_color(r, m, l->text, l->x, l->y, l->fontSize, winW, winH,
+		l->r, l->g, l->b);
 }
 
 void r3d_label_destroy(jr3d_label_p l)
@@ -1880,16 +1922,16 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 {
 	if (!r || !m || !inp || winW <= 0 || winH <= 0) return;
 
-	/* 背景: 深色(字体纹理为白字, 深色底才看得清); 聚焦时略亮偏蓝灰 */
-	Uint8 br = 40, bg = 40, bb = 40;
-	if (inp->focused) { br = 50; bg = 54; bb = 64; }
+	/* 背景: 白底 UI, 输入框用近白; 聚焦时略偏蓝 */
+	Uint8 br = 250, bg = 250, bb = 250;
+	if (inp->focused) { br = 244; bg = 246; bb = 252; }
 	draw_rect_2d(r, m, inp->x, inp->y, inp->w, inp->h, br, bg, bb, winW, winH);
 
-	/* 边框: 2px; 聚焦时蓝, 否则灰 */
+	/* 边框: 2px; 聚焦时蓝, 否则深灰 */
 	float bw = 2.0f;
-	Uint8 bor_r = inp->focused ? 70 : 120;
-	Uint8 bor_g = inp->focused ? 130 : 120;
-	Uint8 bor_b = inp->focused ? 230 : 120;
+	Uint8 bor_r = inp->focused ? 60 : 90;
+	Uint8 bor_g = inp->focused ? 120 : 90;
+	Uint8 bor_b = inp->focused ? 220 : 100;
 	draw_rect_2d(r, m, inp->x,            inp->y,                inp->w, bw,     bor_r, bor_g, bor_b, winW, winH);
 	draw_rect_2d(r, m, inp->x,            inp->y + inp->h - bw,  inp->w, bw,     bor_r, bor_g, bor_b, winW, winH);
 	draw_rect_2d(r, m, inp->x,            inp->y,                bw,    inp->h,  bor_r, bor_g, bor_b, winW, winH);
@@ -1969,7 +2011,8 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 	   故子串起点 = x+padX-scroll+pre_w (注意: 先减 scroll 再加 pre_w, 不能写成 -(pre_w-scroll)) */
 	float draw_x = inp->x + padX - (float)inp->scroll + pre_w;
 	if (vis_start < len) {
-		r3d_font_draw_2d(r, m, inp->text + vis_start, draw_x, ty, fontSize, winW, winH);
+		r3d_font_draw_2d_color(r, m, inp->text + vis_start, draw_x, ty, fontSize, winW, winH,
+			inp->r, inp->g, inp->b);
 	}
 
 	/* 光标: 聚焦时闪烁, 限制绘制在框内 */
@@ -1984,7 +2027,7 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 			float caret_x = inp->x + padX + (cw - (float)inp->scroll);
 			/* 仅在框内绘制光标 */
 			if (caret_x >= inp->x + bw && caret_x <= inp->x + inp->w - bw) {
-				draw_rect_2d(r, m, caret_x, ty, 2.0f, fontSize, 255, 255, 255, winW, winH);
+				draw_rect_2d(r, m, caret_x, ty, 2.0f, fontSize, 60, 60, 70, winW, winH);
 			}
 		}
 	} else {
@@ -2160,14 +2203,14 @@ void r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci
 	/* 内部输入框 */
 	if (ci->input) r3d_input_draw(r, m, ci->input, winW, winH);
 
-	/* 箭头区域背景 */
+	/* 箭头区域背景(白底 UI) */
 	float ax = ci->x + ci->w - ci->arrow_w;
-	Uint8 ar = 55, ag = 55, ab = 62;
-	if (ci->arrow_hovered) { ar = 75; ag = 75; ab = 85; }
+	Uint8 ar = 245, ag = 245, ab = 245;
+	if (ci->arrow_hovered) { ar = 232; ag = 232; ab = 238; }
 	draw_rect_2d(r, m, ax, ci->y, ci->arrow_w, ci->h, ar, ag, ab, winW, winH);
 
 	/* 箭头分隔线 */
-	draw_rect_2d(r, m, ax, ci->y + 2, 1.0f, ci->h - 4, 120, 120, 120, winW, winH);
+	draw_rect_2d(r, m, ax, ci->y + 2, 1.0f, ci->h - 4, 90, 90, 100, winW, winH);
 
 	/* 三角箭头: 用矩形条带近似实心三角形(不依赖字体符号, 避免编码/字形问题) */
 	{
@@ -2175,14 +2218,14 @@ void r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci
 		float acy = ci->y + ci->h * 0.5f;      /* 箭头垂直中心 */
 		if (ci->is_open) {
 			/* 上箭头 ▲: 顶部宽、底部窄 */
-			draw_rect_2d(r, m, acx - 5.0f, acy - 4.0f, 10.0f, 2.0f, 255, 255, 255, winW, winH);
-			draw_rect_2d(r, m, acx - 3.0f, acy - 2.0f,  6.0f, 2.0f, 255, 255, 255, winW, winH);
-			draw_rect_2d(r, m, acx - 1.0f, acy,         2.0f, 2.0f, 255, 255, 255, winW, winH);
+			draw_rect_2d(r, m, acx - 5.0f, acy - 4.0f, 10.0f, 2.0f, 60, 60, 70, winW, winH);
+			draw_rect_2d(r, m, acx - 3.0f, acy - 2.0f,  6.0f, 2.0f, 60, 60, 70, winW, winH);
+			draw_rect_2d(r, m, acx - 1.0f, acy,         2.0f, 2.0f, 60, 60, 70, winW, winH);
 		} else {
 			/* 下箭头 ▼: 顶部窄、底部宽 */
-			draw_rect_2d(r, m, acx - 1.0f, acy - 2.0f,  2.0f, 2.0f, 255, 255, 255, winW, winH);
-			draw_rect_2d(r, m, acx - 3.0f, acy,         6.0f, 2.0f, 255, 255, 255, winW, winH);
-			draw_rect_2d(r, m, acx - 5.0f, acy + 2.0f, 10.0f, 2.0f, 255, 255, 255, winW, winH);
+			draw_rect_2d(r, m, acx - 1.0f, acy - 2.0f,  2.0f, 2.0f, 60, 60, 70, winW, winH);
+			draw_rect_2d(r, m, acx - 3.0f, acy,         6.0f, 2.0f, 60, 60, 70, winW, winH);
+			draw_rect_2d(r, m, acx - 5.0f, acy + 2.0f, 10.0f, 2.0f, 60, 60, 70, winW, winH);
 		}
 	}
 }
@@ -2195,14 +2238,14 @@ void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_i
 	if (!ci->is_open || ci->item_count <= 0) return;
 
 	float drop_h = ci->item_count * ci->item_height;
-	/* 背景 */
-	draw_rect_2d(r, m, ci->x, ci->y + ci->h, ci->w, drop_h, 45, 45, 55, winW, winH);
+	/* 背景(白底 UI) */
+	draw_rect_2d(r, m, ci->x, ci->y + ci->h, ci->w, drop_h, 250, 250, 250, winW, winH);
 	/* 边框 */
 	float bw = 1.0f;
-	draw_rect_2d(r, m, ci->x, ci->y + ci->h, ci->w, bw, 120, 120, 120, winW, winH);
-	draw_rect_2d(r, m, ci->x, ci->y + ci->h + drop_h - bw, ci->w, bw, 120, 120, 120, winW, winH);
-	draw_rect_2d(r, m, ci->x, ci->y + ci->h, bw, drop_h, 120, 120, 120, winW, winH);
-	draw_rect_2d(r, m, ci->x + ci->w - bw, ci->y + ci->h, bw, drop_h, 120, 120, 120, winW, winH);
+	draw_rect_2d(r, m, ci->x, ci->y + ci->h, ci->w, bw, 90, 90, 100, winW, winH);
+	draw_rect_2d(r, m, ci->x, ci->y + ci->h + drop_h - bw, ci->w, bw, 90, 90, 100, winW, winH);
+	draw_rect_2d(r, m, ci->x, ci->y + ci->h, bw, drop_h, 90, 90, 100, winW, winH);
+	draw_rect_2d(r, m, ci->x + ci->w - bw, ci->y + ci->h, bw, drop_h, 90, 90, 100, winW, winH);
 
 	for (int i = 0; i < ci->item_count; i++) {
 		float iy = ci->y + ci->h + i * ci->item_height;
@@ -2210,7 +2253,8 @@ void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_i
 			draw_rect_2d(r, m, ci->x + 1, iy, ci->w - 2, ci->item_height, 70, 110, 200, winW, winH);
 		}
 		if (r->font_ttf_buf && ci->items[i][0]) {
-			r3d_font_draw_2d(r, m, ci->items[i], ci->x + 4, iy + 3, ci->fontSize, winW, winH);
+			r3d_font_draw_2d_color(r, m, ci->items[i], ci->x + 4, iy + 3, ci->fontSize, winW, winH,
+				50, 50, 60);
 		}
 	}
 }
@@ -2409,7 +2453,8 @@ jr3d_checkbox_p r3d_checkbox_create(float x, float y, float size, const char* la
 void r3d_checkbox_destroy(jr3d_checkbox_p cb)
 {
 	if (!cb) return;
-	if (cb->label) SDL_free(cb->label);
+	/* label 由 utils_strdup(malloc) 分配, 必须用 free 释放(与 jui.c 一致), 避免跨堆(SDL_free 走 SDL3.dll 的 CRT 堆) */
+	if (cb->label) free(cb->label);
 	SDL_free(cb);
 }
 
@@ -2485,11 +2530,11 @@ void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW
 			cb->hover_color.r, cb->hover_color.g, cb->hover_color.b, winW, winH);
 	}
 
-	/* 白色边框 */
-	draw_rect_2d(r, m, cx, cy, sz, 1.0f, 255, 255, 255, winW, winH);
-	draw_rect_2d(r, m, cx, cy + sz - 1.0f, sz, 1.0f, 255, 255, 255, winW, winH);
-	draw_rect_2d(r, m, cx, cy, 1.0f, sz, 255, 255, 255, winW, winH);
-	draw_rect_2d(r, m, cx + sz - 1.0f, cy, 1.0f, sz, 255, 255, 255, winW, winH);
+	/* 深灰边框 */
+	draw_rect_2d(r, m, cx, cy, sz, 1.0f, 60, 60, 70, winW, winH);
+	draw_rect_2d(r, m, cx, cy + sz - 1.0f, sz, 1.0f, 60, 60, 70, winW, winH);
+	draw_rect_2d(r, m, cx, cy, 1.0f, sz, 60, 60, 70, winW, winH);
+	draw_rect_2d(r, m, cx + sz - 1.0f, cy, 1.0f, sz, 60, 60, 70, winW, winH);
 
 	/* 勾选状态: 用点阵画勾(仿 jr2d 的 3 点折线) */
 	if (cb->state == JOY_R3D_CHECKBOX_CHECKED && cb->enabled) {
@@ -2507,12 +2552,13 @@ void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW
 	else if (cb->state == JOY_R3D_CHECKBOX_INDETERMINATE && cb->enabled) {
 		float p = sz * 0.25f;
 		draw_line_dots(r, m, cx + p, cy + sz * 0.5f, cx + sz - p, cy + sz * 0.5f, sz * 0.16f,
-			255, 255, 255, winW, winH);
+			60, 60, 70, winW, winH);
 	}
 
 	/* 标签文本 */
 	if (cb->label && cb->label[0] && r->font_ttf_buf) {
-		r3d_font_draw_2d(r, m, cb->label, cx + sz + 5.0f, cy + 1.0f, sz * 0.8f, winW, winH);
+		r3d_font_draw_2d_color(r, m, cb->label, cx + sz + 5.0f, cy + 1.0f, sz * 0.8f, winW, winH,
+			50, 50, 60);
 	}
 }
 
