@@ -1,7 +1,7 @@
 #ifndef SPAWN_OBSTACLES_SYSTEM_H
 #define SPAWN_OBSTACLES_SYSTEM_H
-#include "../context.h"
-#include "../project_proxy3d_shared/components/static_mesh_component.h"
+#include "context.h"
+#include "components/static_mesh_component.h"
 #include <joy/joy.h>
 #include <cmath>
 

@@ -17,8 +17,7 @@ option(BUILD_JOY_BEAT "Build joy_beat" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
-option(BUILD_PROJECT_PROXY3D_SERVER "Build project_proxy3d_server" OFF)
-option(BUILD_PROJECT_PROXY3D_CLIENT "Build project_proxy3d_client" OFF)
+option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -69,12 +68,8 @@ if(BUILD_PROJECT_PROXY2D)
     add_subdirectory(project_proxy2d)
 endif()
 
-if(BUILD_PROJECT_PROXY3D_SERVER)
-    add_subdirectory(project_proxy3d_server)
-endif()
-
-if(BUILD_PROJECT_PROXY3D_CLIENT)
-    add_subdirectory(project_proxy3d_client)
+if(BUILD_PROJECT_PROXY3D)
+    add_subdirectory(project_proxy3d)
 endif()
 
 # 可选：CPack 打包配置（如果原来有）
