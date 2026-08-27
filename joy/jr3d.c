@@ -38,6 +38,10 @@ struct jr3d {
 	int                last_ww, last_wh;  /* 上次已处理的渲染尺寸（resize 检测基准） */
 	Uint8              clear_r, clear_g, clear_b;  /* 清屏色 */
 
+	/* 2D UI 逻辑分辨率(仿 jr2d logical presentation, 窗口缩放自适应) */
+	int                logical_w, logical_h;  /* 逻辑分辨率(0=关闭, 直接用窗口像素) */
+	float              ui_sx, ui_sy;          /* UI 缩放系数: 窗口像素/逻辑像素(在 r3d_begin 更新) */
+
 	/* 相机/投影 */
 	mat44_t            viewProj;
 	float              fovy;
@@ -564,6 +568,10 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	/* 默认清屏色 = 深蓝黑 {13,15,26}, 与 UI 场景背景一致; 游戏场景可调用 r3d_set_clear_color 改为白底 */
 	r->clear_r = 13; r->clear_g = 15; r->clear_b = 26;
 
+	/* 2D UI 逻辑分辨率默认关闭(直接用窗口像素), 缩放系数初始为 1 */
+	r->logical_w = 0; r->logical_h = 0;
+	r->ui_sx = 1.0f; r->ui_sy = 1.0f;
+
 	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符, nullptr 视为空串） */
 	const char* sd = shader_dir ? shader_dir : "";
 	size_t dirlen = strlen(sd);
@@ -688,6 +696,10 @@ bool r3d_begin(jr3d_p r)
 
 	SDL_GetWindowSize(r->win, &r->ww, &r->wh);
 	if (r->ww < 1 || r->wh < 1) { SDL_SubmitGPUCommandBuffer(r->cmd); r->cmd = NULL; return false; }
+
+	/* 更新 2D UI 缩放系数(窗口像素/逻辑像素) */
+	r->ui_sx = (r->logical_w > 0) ? (float)r->ww / (float)r->logical_w : 1.0f;
+	r->ui_sy = (r->logical_h > 0) ? (float)r->wh / (float)r->logical_h : 1.0f;
 
 	SDL_GPUTexture* swapchain = NULL;
 	Uint32 sw, sh;
@@ -1215,6 +1227,44 @@ void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 }
 
 /* ================================================================
+ * 2D UI 逻辑分辨率(仿 jr2d logical presentation, 窗口缩放自适应)
+ * ================================================================ */
+void r3d_set_logical_presentation(jr3d_p r, int w, int h)
+{
+	if (!r) return;
+	r->logical_w = w;
+	r->logical_h = h;
+}
+
+void r3d_get_logical_presentation(jr3d_p r, int* w, int* h)
+{
+	if (!r) return;
+	if (w) *w = r->logical_w;
+	if (h) *h = r->logical_h;
+}
+
+void r3d_window_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
+{
+	if (!r) return;
+	if (lx) *lx = (r->ui_sx > 0) ? wx / r->ui_sx : wx;
+	if (ly) *ly = (r->ui_sy > 0) ? wy / r->ui_sy : wy;
+}
+
+void r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy)
+{
+	if (!r) return;
+	if (wx) *wx = lx * r->ui_sx;
+	if (wy) *wy = ly * r->ui_sy;
+}
+
+/* 内部: 窗口像素坐标 -> 逻辑坐标(供各 2D UI 命中测试函数使用) */
+static void r3d_ui_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
+{
+	if (r->ui_sx > 0) *lx = wx / r->ui_sx; else *lx = wx;
+	if (r->ui_sy > 0) *ly = wy / r->ui_sy; else *ly = wy;
+}
+
+/* ================================================================
  * 2D UI: button (仿 jr2d, 用屏幕正交投影渲染, 不随相机变化)
  * ================================================================ */
 
@@ -1264,17 +1314,19 @@ void r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p))
 	if (btn) btn->onClick = cb;
 }
 
-bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my)
+bool r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my)
 {
 	if (!btn) return false;
-	return (mx >= btn->x && mx <= btn->x + btn->w &&
-			my >= btn->y && my <= btn->y + btn->h);
+	float lx = mx, ly = my;
+	r3d_ui_to_logical(r, mx, my, &lx, &ly);
+	return (lx >= btn->x && lx <= btn->x + btn->w &&
+			ly >= btn->y && ly <= btn->y + btn->h);
 }
 
-bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float my)
+bool r3d_button_is_pressed(jr3d_p r, jr3d_button_p btn, bool mouse_down, float mx, float my)
 {
 	if (!btn) return false;
-	bool hover = r3d_button_is_hovered(btn, mx, my);
+	bool hover = r3d_button_is_hovered(r, btn, mx, my);
 	if (hover && mouse_down) {
 		btn->state = JR3D_BTN_PRESSED;
 		btn->pressedInside = true;
@@ -1284,10 +1336,10 @@ bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float m
 	return false;
 }
 
-void r3d_button_release(jr3d_button_p btn, float mx, float my)
+void r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my)
 {
 	if (!btn) return;
-	bool hover = r3d_button_is_hovered(btn, mx, my);
+	bool hover = r3d_button_is_hovered(r, btn, mx, my);
 	/* 完整 click: 按下在按钮内 且 松开也在按钮内 -> 触发回调 */
 	if (btn->pressedInside && hover && btn->onClick) {
 		btn->onClick(btn);
@@ -1305,26 +1357,30 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 	if (btn->state == JR3D_BTN_HOVER)   { fr = 160; fg = 160; fb = 160; }
 	if (btn->state == JR3D_BTN_PRESSED) { fr = 90;  fg = 90;  fb = 90;  }
 
+	/* 按钮坐标与 winW/winH 同为逻辑坐标(窗口缩放自适应由 r3d_begin 的 ui_sx/ui_sy 决定,
+	   绘制时直接以逻辑尺寸做正交投影, 无需再缩放矩形) */
+	float x = btn->x, y = btn->y, w = btn->w, h = btn->h;
+
 	/* 填充矩形 */
-	draw_rect_2d(r, m, btn->x, btn->y, btn->w, btn->h, fr, fg, fb, winW, winH);
+	draw_rect_2d(r, m, x, y, w, h, fr, fg, fb, winW, winH);
 	/* 黑边框(4 条 2px 粗) */
 	float bw = 2.0f;
-	draw_rect_2d(r, m, btn->x,                btn->y,                btn->w, bw,     0, 0, 0, winW, winH);
-	draw_rect_2d(r, m, btn->x,                btn->y + btn->h - bw,  btn->w, bw,     0, 0, 0, winW, winH);
-	draw_rect_2d(r, m, btn->x,                btn->y,                bw,    btn->h,  0, 0, 0, winW, winH);
-	draw_rect_2d(r, m, btn->x + btn->w - bw,  btn->y,                bw,    btn->h,  0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, x,                y,                w, bw,     0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, x,                y + h - bw,       w, bw,     0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, x,                y,                bw, h,     0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, x + w - bw,       y,                bw, h,     0, 0, 0, winW, winH);
 
 	/* 按钮文字: 居中绘制 */
 	if (r->font_ttf_buf && btn->text[0]) {
-		float fontSize = btn->h * 0.5f;                 // 字号约为按钮高度一半
+		float fontSize = h * 0.5f;                 // 字号约为按钮高度一半
 		float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
 		/* 用最新烘焙的文字测宽(若缓存的不是本按钮文字, 先烘焙) */
 		if (SDL_strcmp(r->font_cache, btn->text) != 0) {
 			r3d_font_bake(r, btn->text);
 		}
 		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
-		float tx = btn->x + (btn->w - textW) * 0.5f;
-		float ty = btn->y + (btn->h - fontSize) * 0.5f;
+		float tx = x + (w - textW) * 0.5f;
+		float ty = y + (h - fontSize) * 0.5f;
 		r3d_font_draw_2d(r, m, btn->text, tx, ty, fontSize, winW, winH);
 		(void)aspect;
 	}
@@ -1446,11 +1502,13 @@ const char* r3d_input_get_text(jr3d_input_p inp)
 	return inp ? inp->text : "";
 }
 
-bool r3d_input_is_hovered(const jr3d_input_p inp, float mx, float my)
+bool r3d_input_is_hovered(jr3d_p r, const jr3d_input_p inp, float mx, float my)
 {
 	if (!inp) return false;
-	return (mx >= inp->x && mx <= inp->x + inp->w &&
-			my >= inp->y && my <= inp->y + inp->h);
+	float lx = mx, ly = my;
+	r3d_ui_to_logical(r, mx, my, &lx, &ly);
+	return (lx >= inp->x && lx <= inp->x + inp->w &&
+			ly >= inp->y && ly <= inp->y + inp->h);
 }
 
 void r3d_input_focus(jr3d_input_p inp)
@@ -1531,10 +1589,12 @@ void r3d_input_cursor_end(jr3d_input_p inp)
 void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
 {
 	if (!inp) return;
+	float lx = mx, ly = my;
+	r3d_ui_to_logical(r, mx, my, &lx, &ly);
 	inp->focused = true;
 	inp->cursor_timer = SDL_GetTicks();
 	inp->cursor_visible = true;
-	if (!r3d_input_is_hovered(inp, mx, my)) return;
+	if (!r3d_input_is_hovered(r, inp, mx, my)) return;
 
 	float padX = 4.0f;
 	/* 换算系数: 让 measure(bake 像素宽) 与 r3d_font_draw_2d(整图按 fontSize 缩放) 的屏幕像素宽一致。
@@ -1543,7 +1603,7 @@ void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
 	float k = r->font_tex_h > 0 ? (fontSize / (float)r->font_tex_h) : 1.0f;
 
 	/* 点击位置对应文本屏幕像素(已含 scroll, 单位与 draw 一致) */
-	float px = (mx - (inp->x + padX)) + (float)inp->scroll * k;
+	float px = (lx - (inp->x + padX)) + (float)inp->scroll * k;
 
 	int len = (int)SDL_strlen(inp->text);
 	int pos = 0;
@@ -1740,13 +1800,13 @@ bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 
 	if (event->type == SDL_EVENT_MOUSE_MOTION) {
 		/* 仅更新 hover 状态(选中拖拽扩展可选, 此处保持简单) */
-		r3d_input_is_hovered(inp, event->motion.x, event->motion.y);
+		r3d_input_is_hovered(r, inp, event->motion.x, event->motion.y);
 		return false;
 	}
 	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (event->button.button != SDL_BUTTON_LEFT)
 			return false;
-		if (r3d_input_is_hovered(inp, event->button.x, event->button.y)) {
+		if (r3d_input_is_hovered(r, inp, event->button.x, event->button.y)) {
 			/* 聚焦 + 点击定位光标 + 启动文本输入 */
 			bool was_focused = inp->focused;
 			inp->focused = true;
@@ -2013,19 +2073,23 @@ bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Eve
 
 	if (event->type == SDL_EVENT_MOUSE_MOTION) {
 		float mx = event->motion.x, my = event->motion.y;
+		float lx = mx, ly = my;
+		r3d_ui_to_logical(r, mx, my, &lx, &ly);
 		float ax = ci->x + ci->w - ci->arrow_w;
-		ci->arrow_hovered = (mx >= ax && mx <= ax + ci->arrow_w &&
-							 my >= ci->y && my <= ci->y + ci->h);
+		ci->arrow_hovered = (lx >= ax && lx <= ax + ci->arrow_w &&
+							 ly >= ci->y && ly <= ci->y + ci->h);
 		return false;
 	}
 	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (event->button.button != SDL_BUTTON_LEFT) return false;
 		float mx = event->button.x, my = event->button.y;
+		float lx = mx, ly = my;
+		r3d_ui_to_logical(r, mx, my, &lx, &ly);
 		float ax = ci->x + ci->w - ci->arrow_w;
-		bool in_arrow = (mx >= ax && mx <= ax + ci->arrow_w &&
-						 my >= ci->y && my <= ci->y + ci->h);
-		bool in_rect = (mx >= ci->x && mx <= ci->x + ci->w &&
-						my >= ci->y && my <= ci->y + ci->h);
+		bool in_arrow = (lx >= ax && lx <= ax + ci->arrow_w &&
+						 ly >= ci->y && ly <= ci->y + ci->h);
+		bool in_rect = (lx >= ci->x && lx <= ci->x + ci->w &&
+						ly >= ci->y && ly <= ci->y + ci->h);
 
 		if (in_arrow) {
 			ci->is_open = !ci->is_open;
@@ -2033,7 +2097,7 @@ bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Eve
 			return true;
 		}
 		else if (ci->is_open) {
-			int hit = r3d_combobox_input_hit_item(ci, mx, my);
+			int hit = r3d_combobox_input_hit_item(ci, lx, ly);
 			if (hit >= 0) {
 				r3d_combobox_input_set_text(ci, ci->items[hit]);
 				ci->selected_index = hit;
@@ -2259,17 +2323,19 @@ void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, flo
 	draw_rect_2d(r, m, sx + s->thumb_width - bw, s->y, bw, s->h, 0, 0, 0, winW, winH);
 }
 
-bool r3d_slider_is_pressed(jr3d_slider_p s, float x, float y)
+bool r3d_slider_is_pressed(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	if (!s) return false;
-	if (r3d_slider_thumb_hit(s, x, y)) {
+	float lx = x, ly = y;
+	r3d_ui_to_logical(r, x, y, &lx, &ly);
+	if (r3d_slider_thumb_hit(s, lx, ly)) {
 		s->is_dragging = true;
 		return true;
 	}
 	/* 点击滑轨时跳转到该位置 */
-	if (x >= s->x && x <= s->x + s->w
-		&& y >= s->y && y <= s->y + s->h) {
-		r3d_slider_update_value_from_x(s, x);
+	if (lx >= s->x && lx <= s->x + s->w
+		&& ly >= s->y && ly <= s->y + s->h) {
+		r3d_slider_update_value_from_x(s, lx);
 		s->is_dragging = true;
 		return true;
 	}
@@ -2281,17 +2347,21 @@ void r3d_slider_set_pressed(jr3d_slider_p s, bool v)
 	if (s) s->is_dragging = v;
 }
 
-void r3d_slider_drag_move(jr3d_slider_p s, float x, float y)
+void r3d_slider_drag_move(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	(void)y;
 	if (!s || !s->is_dragging) return;
-	r3d_slider_update_value_from_x(s, x);
+	float lx = x;
+	r3d_ui_to_logical(r, x, 0, &lx, NULL);
+	r3d_slider_update_value_from_x(s, lx);
 }
 
-bool r3d_slider_is_hovered(jr3d_slider_p s, float x, float y)
+bool r3d_slider_is_hovered(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	if (!s) return false;
-	s->hovered = r3d_slider_thumb_hit(s, x, y);
+	float lx = x, ly = y;
+	r3d_ui_to_logical(r, x, y, &lx, &ly);
+	s->hovered = r3d_slider_thumb_hit(s, lx, ly);
 	return s->hovered;
 }
 
@@ -2360,12 +2430,14 @@ void r3d_checkbox_toggle(jr3d_checkbox_p cb)
 		? JOY_R3D_CHECKBOX_CHECKED : JOY_R3D_CHECKBOX_UNCHECKED;
 }
 
-bool r3d_checkbox_is_pressed(jr3d_checkbox_p cb, float x, float y)
+bool r3d_checkbox_is_pressed(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 {
 	if (!cb || !cb->enabled) return false;
+	float lx = x, ly = y;
+	r3d_ui_to_logical(r, x, y, &lx, &ly);
 	float hit_w = cb->size + 5.0f + cb->label_w;
-	if (x >= cb->x && x <= cb->x + hit_w
-		&& y >= cb->y && y <= cb->y + cb->size) {
+	if (lx >= cb->x && lx <= cb->x + hit_w
+		&& ly >= cb->y && ly <= cb->y + cb->size) {
 		r3d_checkbox_toggle(cb);
 		return true;
 	}
@@ -2377,12 +2449,14 @@ void r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v)
 	if (cb) cb->hovered = v;
 }
 
-bool r3d_checkbox_is_hovered(jr3d_checkbox_p cb, float x, float y)
+bool r3d_checkbox_is_hovered(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 {
 	if (!cb) return false;
+	float lx = x, ly = y;
+	r3d_ui_to_logical(r, x, y, &lx, &ly);
 	float hit_w = cb->size + 5.0f + cb->label_w;
-	cb->hovered = (x >= cb->x && x <= cb->x + hit_w
-		&& y >= cb->y && y <= cb->y + cb->size);
+	cb->hovered = (lx >= cb->x && lx <= cb->x + hit_w
+		&& ly >= cb->y && ly <= cb->y + cb->size);
 	return cb->hovered;
 }
 

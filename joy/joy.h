@@ -1141,6 +1141,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
+        /* ---------- 2D UI 逻辑分辨率(仿 jr2d r2d_set_logical_presentation, 窗口缩放自适应) ---------- */
+        /* 设置逻辑分辨率: 所有 2D UI(按钮/输入框/滑块/复选框/文字)以逻辑坐标布局,
+           渲染时按 窗口尺寸/逻辑尺寸 等比缩放, 命中测试自动把窗口坐标换算回逻辑坐标。
+           传 0 表示关闭(直接用窗口像素坐标)。 */
+        JOY_API void r3d_set_logical_presentation(jr3d_p r, int w, int h);
+        /* 获取逻辑分辨率 */
+        JOY_API void r3d_get_logical_presentation(jr3d_p r, int* w, int* h);
+        /* 窗口像素坐标 -> 逻辑坐标 */
+        JOY_API void r3d_window_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly);
+        /* 逻辑坐标 -> 窗口像素坐标 */
+        JOY_API void r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy);
+
         /* ---------- 2D UI: button (仿 jr2d, 用屏幕正交投影渲染, 不随相机变化) ---------- */
         /* 按钮状态 */
         typedef enum {
@@ -1164,13 +1176,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 绘制按钮(需先 r3d_font_init; m 为单位 quad)。按钮会自己处理 normal/hover/pressed 配色 */
         JOY_API void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH);
         /* 命中测试: 屏幕像素坐标 (mx,my) 是否在按钮内 */
-        JOY_API bool r3d_button_is_hovered(const jr3d_button_p btn, float mx, float my);
+        JOY_API bool r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my);
         /* 按下测试: 鼠标在按钮内且 mouse_down 为 true 时返回 true(并置为 pressed 状态) */
-        JOY_API bool r3d_button_is_pressed(jr3d_button_p btn, bool mouse_down, float mx, float my);
+        JOY_API bool r3d_button_is_pressed(jr3d_p r, jr3d_button_p btn, bool mouse_down, float mx, float my);
         /* 设置点击回调(按下并松开均在按钮内时触发) */
         JOY_API void r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p));
         /* 释放按钮: 更新状态为 hover/normal */
-        JOY_API void r3d_button_release(jr3d_button_p btn, float mx, float my);
+        JOY_API void r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my);
         /* 销毁按钮 */
         JOY_API void r3d_button_destroy(jr3d_button_p btn);
 
@@ -1217,7 +1229,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void   r3d_input_set_text(jr3d_input_p inp, const char* text);
         JOY_API const char* r3d_input_get_text(jr3d_input_p inp);
         /* 命中测试: 屏幕像素坐标 (mx,my) 是否在输入框内 */
-        JOY_API bool   r3d_input_is_hovered(const jr3d_input_p inp, float mx, float my);
+        JOY_API bool   r3d_input_is_hovered(jr3d_p r, const jr3d_input_p inp, float mx, float my);
         /* 聚焦/失焦 */
         JOY_API void   r3d_input_focus(jr3d_input_p inp);
         JOY_API void   r3d_input_defocus(jr3d_input_p inp);
@@ -1277,7 +1289,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API const char* r3d_combobox_input_get_text(jr3d_combobox_input_p ci);
         JOY_API void r3d_combobox_input_set_text(jr3d_combobox_input_p ci, const char* str);
         /* 命中测试: 返回点击的下拉列表项索引, 未展开或未命中返回 -1 */
-        JOY_API int r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y);
+        JOY_API int r3d_combobox_input_hit_item(jr3d_p r, jr3d_combobox_input_p ci, float x, float y);
         /* 统一事件处理: 鼠标(箭头切换/列表选中/外部关闭) + 键盘(上下导航/回车选中) + 文本输入 */
         JOY_API bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Event* event);
         /* 绘制(输入框 + 箭头 + 展开的下拉列表) */
@@ -1313,13 +1325,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 绘制滑块(m 为单位 quad) */
         JOY_API void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, float winH);
         /* 按下测试: 命中滑块或滑轨时更新值并进入拖动 */
-        JOY_API bool r3d_slider_is_pressed(jr3d_slider_p s, float x, float y);
+        JOY_API bool r3d_slider_is_pressed(jr3d_p r, jr3d_slider_p s, float x, float y);
         /* 设置拖动状态 */
         JOY_API void r3d_slider_set_pressed(jr3d_slider_p s, bool v);
         /* 拖动中更新值 */
-        JOY_API void r3d_slider_drag_move(jr3d_slider_p s, float x, float y);
+        JOY_API void r3d_slider_drag_move(jr3d_p r, jr3d_slider_p s, float x, float y);
         /* 悬停测试: 命中滑块时置 hovered */
-        JOY_API bool r3d_slider_is_hovered(jr3d_slider_p s, float x, float y);
+        JOY_API bool r3d_slider_is_hovered(jr3d_p r, jr3d_slider_p s, float x, float y);
         /* 设置悬停状态 */
         JOY_API void r3d_slider_set_hovered(jr3d_slider_p s, bool v);
 
@@ -1355,10 +1367,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 切换勾选状态 */
         JOY_API void r3d_checkbox_toggle(jr3d_checkbox_p cb);
         /* 按下测试: 命中方框或标签时切换状态 */
-        JOY_API bool r3d_checkbox_is_pressed(jr3d_checkbox_p cb, float x, float y);
+        JOY_API bool r3d_checkbox_is_pressed(jr3d_p r, jr3d_checkbox_p cb, float x, float y);
         /* 设置/获取悬停状态 */
         JOY_API void r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v);
-        JOY_API bool r3d_checkbox_is_hovered(jr3d_checkbox_p cb, float x, float y);
+        JOY_API bool r3d_checkbox_is_hovered(jr3d_p r, jr3d_checkbox_p cb, float x, float y);
         /* 设置配色: 框体 / 勾选 / 悬停 */
         JOY_API void r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, jcolor_t hover);
         /* 绘制复选框(m 为单位 quad) */
