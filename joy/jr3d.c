@@ -28,6 +28,7 @@ struct jr3d {
 	SDL_GPUShader*     vs;
 	SDL_GPUShader*     fs;
 	SDL_GPUGraphicsPipeline* pipeline;
+	SDL_GPUGraphicsPipeline* line_pipeline;  /* 线框渲染: LINELIST 基元 */
 	SDL_GPUSampler*    sampler;
 	SDL_GPUTexture*    depth;
 	SDL_GPUCommandBuffer* cmd;
@@ -157,6 +158,71 @@ void* r3d_create_pipeline(void* device,
 	ds.enable_stencil_test = false;
 	ds.compare_mask = 0xFF;
 	ds.write_mask = 0xFF;
+	ci.depth_stencil_state = ds;
+
+	SDL_GPUColorTargetDescription desc = { 0 };
+	desc.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+	desc.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+	desc.blend_state.color_write_mask = SDL_GPU_COLORCOMPONENT_R | SDL_GPU_COLORCOMPONENT_G | SDL_GPU_COLORCOMPONENT_B | SDL_GPU_COLORCOMPONENT_A;
+	desc.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	desc.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+	desc.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+	desc.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+	desc.blend_state.enable_blend = true;
+	desc.blend_state.enable_color_write_mask = false;
+	desc.format = (SDL_GPUTextureFormat)swapchain_format;
+	ci.target_info.color_target_descriptions = &desc;
+
+	return (void*)SDL_CreateGPUGraphicsPipeline(dev, &ci);
+}
+
+/* 线框 pipeline: 与非 lit 完全相同的 vertex format 和 shader, 仅 primitive type 改为 LINELIST */
+void* r3d_create_line_pipeline(void* device,
+	void* vertex_shader, void* fragment_shader,
+	int swapchain_format, int depth_format)
+{
+	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
+	SDL_GPUShader* vs = (SDL_GPUShader*)vertex_shader;
+	SDL_GPUShader* fs = (SDL_GPUShader*)fragment_shader;
+
+	SDL_GPUGraphicsPipelineCreateInfo ci = { 0 };
+	SDL_GPUVertexAttribute attributes[2];
+	attributes[0].location = 0;
+	attributes[0].buffer_slot = 0;
+	attributes[0].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3;
+	attributes[0].offset = 0;
+	attributes[1].location = 1;
+	attributes[1].buffer_slot = 0;
+	attributes[1].format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2;
+	attributes[1].offset = sizeof(float) * 3;
+
+	ci.vertex_input_state.vertex_attributes = attributes;
+	ci.vertex_input_state.num_vertex_attributes = 2;
+
+	SDL_GPUVertexBufferDescription buffer_desc = { 0 };
+	buffer_desc.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX;
+	buffer_desc.instance_step_rate = 0;
+	buffer_desc.slot = 0;
+	buffer_desc.pitch = sizeof(float) * 5;
+
+	ci.vertex_input_state.num_vertex_buffers = 1;
+	ci.vertex_input_state.vertex_buffer_descriptions = &buffer_desc;
+	ci.primitive_type = SDL_GPU_PRIMITIVETYPE_LINELIST;
+	ci.vertex_shader = vs;
+	ci.fragment_shader = fs;
+	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
+	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.multisample_state.enable_mask = false;
+	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
+	ci.target_info.num_color_targets = 1;
+	ci.target_info.has_depth_stencil_target = true;
+	ci.target_info.depth_stencil_format = (SDL_GPUTextureFormat)depth_format;
+
+	SDL_GPUDepthStencilState ds = { 0 };
+	ds.compare_op = SDL_GPU_COMPAREOP_LESS;
+	ds.enable_depth_test = true;
+	ds.enable_depth_write = false;
+	ds.enable_stencil_test = false;
 	ci.depth_stencil_state = ds;
 
 	SDL_GPUColorTargetDescription desc = { 0 };
@@ -448,6 +514,10 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 	if (!r->pipeline) { r3d_destroy(r); return NULL; }
 
+	/* 线框 pipeline（与非 lit 共用 shader, 仅 primitive type 不同） */
+	r->line_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_line_pipeline(r->dev,
+		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
+
 	r->sampler = (SDL_GPUSampler*)r3d_create_sampler(r->dev);
 	if (!r->sampler) { r3d_destroy(r); return NULL; }
 
@@ -514,6 +584,7 @@ void r3d_destroy(jr3d_p r)
 	if (r->depth)    SDL_ReleaseGPUTexture(r->dev, r->depth);
 	if (r->sampler)  SDL_ReleaseGPUSampler(r->dev, r->sampler);
 	if (r->pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->pipeline);
+	if (r->line_pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->line_pipeline);
 	if (r->lighting_pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->lighting_pipeline);
 	if (r->vs)       SDL_ReleaseGPUShader(r->dev, r->vs);
 	if (r->fs)       SDL_ReleaseGPUShader(r->dev, r->fs);
@@ -1825,6 +1896,118 @@ render_mesh_p r3d_mesh_quad(jr3d_p r)
 	return m;
 }
 
+/* ---- 线框网格（pos FLOAT3 + uv FLOAT2, 5 float/顶点, LINELIST） ---- */
+
+render_mesh_p r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d)
+{
+	float hw = w * 0.5f, hh = h * 0.5f, hd = d * 0.5f;
+	float verts[24 * 5];
+	int vi = 0;
+#define WIRE_V(PX,PY,PZ) do { \
+		verts[vi++]=(PX); verts[vi++]=(PY); verts[vi++]=(PZ); \
+		verts[vi++]=0;    verts[vi++]=0; \
+	} while (0)
+	/* 底面 4 条边 */
+	WIRE_V(-hw,-hh,-hd); WIRE_V( hw,-hh,-hd);
+	WIRE_V( hw,-hh,-hd); WIRE_V( hw,-hh, hd);
+	WIRE_V( hw,-hh, hd); WIRE_V(-hw,-hh, hd);
+	WIRE_V(-hw,-hh, hd); WIRE_V(-hw,-hh,-hd);
+	/* 顶面 4 条边 */
+	WIRE_V(-hw, hh,-hd); WIRE_V( hw, hh,-hd);
+	WIRE_V( hw, hh,-hd); WIRE_V( hw, hh, hd);
+	WIRE_V( hw, hh, hd); WIRE_V(-hw, hh, hd);
+	WIRE_V(-hw, hh, hd); WIRE_V(-hw, hh,-hd);
+	/* 4 条竖边 */
+	WIRE_V(-hw,-hh,-hd); WIRE_V(-hw, hh,-hd);
+	WIRE_V( hw,-hh,-hd); WIRE_V( hw, hh,-hd);
+	WIRE_V( hw,-hh, hd); WIRE_V( hw, hh, hd);
+	WIRE_V(-hw,-hh, hd); WIRE_V(-hw, hh, hd);
+#undef WIRE_V
+
+	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	if (!m) return NULL;
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = 24;
+	return m;
+}
+
+render_mesh_p r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stacks)
+{
+	/* 纬度环 (stacks-1) * slices * 2 + 经度线 slices * stacks * 2 */
+	int lat_verts = (stacks - 1) * slices * 2;
+	int lon_verts = slices * stacks * 2;
+	int total = lat_verts + lon_verts;
+	float* verts = (float*)SDL_malloc((size_t)total * 5 * sizeof(float));
+	if (!verts) return NULL;
+	int vi = 0;
+
+	/* 纬度环: 在每个 phi 高度画一圈线段 */
+	for (int i = 1; i < stacks; i++) {
+		float phi = -90.0f + (float)i * 180.0f / stacks;
+		float rad = radius * cosf(phi * (float)M_PI / 180.0f);
+		float y   = radius * sinf(phi * (float)M_PI / 180.0f);
+		for (int j = 0; j < slices; j++) {
+			float t1 = (float)j       * 360.0f / slices * (float)M_PI / 180.0f;
+			float t2 = (float)(j + 1) * 360.0f / slices * (float)M_PI / 180.0f;
+			verts[vi++] = rad * cosf(t1); verts[vi++] = y; verts[vi++] = rad * sinf(t1); verts[vi++] = 0; verts[vi++] = 0;
+			verts[vi++] = rad * cosf(t2); verts[vi++] = y; verts[vi++] = rad * sinf(t2); verts[vi++] = 0; verts[vi++] = 0;
+		}
+	}
+	/* 经度线: 从北极到南极 */
+	for (int j = 0; j < slices; j++) {
+		float theta = (float)j * 360.0f / slices * (float)M_PI / 180.0f;
+		for (int i = 0; i < stacks; i++) {
+			float p1 = -90.0f + (float)i       * 180.0f / stacks;
+			float p2 = -90.0f + (float)(i + 1) * 180.0f / stacks;
+			float r1 = radius * cosf(p1 * (float)M_PI / 180.0f);
+			float r2 = radius * cosf(p2 * (float)M_PI / 180.0f);
+			float y1 = radius * sinf(p1 * (float)M_PI / 180.0f);
+			float y2 = radius * sinf(p2 * (float)M_PI / 180.0f);
+			verts[vi++] = r1 * cosf(theta); verts[vi++] = y1; verts[vi++] = r1 * sinf(theta); verts[vi++] = 0; verts[vi++] = 0;
+			verts[vi++] = r2 * cosf(theta); verts[vi++] = y2; verts[vi++] = r2 * sinf(theta); verts[vi++] = 0; verts[vi++] = 0;
+		}
+	}
+
+	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	if (!m) { SDL_free(verts); return NULL; }
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
+	SDL_free(verts);
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = total;
+	return m;
+}
+
+render_mesh_p r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs)
+{
+	/* (segs+1) 条 X 方向线 + (segs+1) 条 Z 方向线, 每条 2 顶点 */
+	int total = (segs + 1) * 2 * 2;
+	float* verts = (float*)SDL_malloc((size_t)total * 5 * sizeof(float));
+	if (!verts) return NULL;
+	int vi = 0;
+	float hw = w * 0.5f, hd = d * 0.5f;
+	float step_x = w / segs, step_z = d / segs;
+
+	for (int i = 0; i <= segs; i++) {
+		float z = -hd + i * step_z;
+		verts[vi++] = -hw; verts[vi++] = 0; verts[vi++] = z; verts[vi++] = 0; verts[vi++] = 0;
+		verts[vi++] =  hw; verts[vi++] = 0; verts[vi++] = z; verts[vi++] = 0; verts[vi++] = 0;
+	}
+	for (int i = 0; i <= segs; i++) {
+		float x = -hw + i * step_x;
+		verts[vi++] = x; verts[vi++] = 0; verts[vi++] = -hd; verts[vi++] = 0; verts[vi++] = 0;
+		verts[vi++] = x; verts[vi++] = 0; verts[vi++] =  hd; verts[vi++] = 0; verts[vi++] = 0;
+	}
+
+	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	if (!m) { SDL_free(verts); return NULL; }
+	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
+	SDL_free(verts);
+	if (!m->buffer) { SDL_free(m); return NULL; }
+	m->vertex_count = total;
+	return m;
+}
+
 /* ---- 光照网格（pos FLOAT3 + normal FLOAT3 + uv FLOAT2, 8 float/顶点, 无索引） ---- */
 
 render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
@@ -2105,6 +2288,37 @@ void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
 	model.m12 = center.x; model.m13 = center.y; model.m14 = center.z;
 	model.m15 = 1;
 	draw_mesh_internal(r, m, &model, (SDL_GPUTexture*)tex);
+}
+
+/* ---- 线框绘制（需在 r3d_begin/r3d_end 之间调用） ---- */
+
+void r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
+{
+	mat44_t model;
+	SDL_GPUTexture* tex;
+	if (!r || !r->rp || !r->line_pipeline || !m) return;
+
+	memset(&model, 0, sizeof(model));
+	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
+	model.m12 = pos.x;   model.m13 = pos.y;   model.m14 = pos.z;
+	model.m15 = 1;
+	tex = get_color_texture(r, color.r, color.g, color.b);
+
+	SDL_BindGPUGraphicsPipeline(r->rp, r->line_pipeline);
+	draw_mesh_internal(r, m, &model, tex);
+	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
+}
+
+void r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
+{
+	SDL_GPUTexture* tex;
+	if (!r || !r->rp || !r->line_pipeline || !m) return;
+
+	tex = get_color_texture(r, color.r, color.g, color.b);
+
+	SDL_BindGPUGraphicsPipeline(r->rp, r->line_pipeline);
+	draw_mesh_internal(r, m, (mat44_t*)model, tex);
+	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
 /* ---- 光照绘制（需在 r3d_begin/r3d_end 之间调用） ---- */

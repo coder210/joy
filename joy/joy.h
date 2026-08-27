@@ -1103,6 +1103,11 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count);
         /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5] */
         JOY_API render_mesh_p r3d_mesh_quad(jr3d_p r);
+        /* 线框网格 (pos FLOAT3 + uv FLOAT2, 5 float/顶点, LINELIST 基元, 无索引)
+           仅包含边缘线段, 无对角线, 适合纯线框画风 */
+        JOY_API render_mesh_p r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d);
+        JOY_API render_mesh_p r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stacks);
+        JOY_API render_mesh_p r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs);
         JOY_API void         r3d_mesh_destroy(jr3d_p r, render_mesh_p m);
 
         /* ---------- 纹理 ---------- */
@@ -1246,6 +1251,16 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
                 vec3_t center, vec3_t right, vec3_t up, float size, void* tex);
         JOY_API void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width);
+
+        /* ---------- 线框渲染（LINELIST 基元, 需在 r3d_begin/r3d_end 之间调用） ---------- */
+        /* 绘制线框网格, 使用纯色填充(内部通过颜色纹理实现) */
+        JOY_API void r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
+        /* 用 mat44 模型矩阵绘制线框, 适合 ECS 系统中直接传入 transform */
+        JOY_API void r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color);
+        /* 线框 pipeline 创建（与非 lit pipeline 共用 shader, 仅 primitive type 为 LINELIST） */
+        JOY_API void* r3d_create_line_pipeline(void* device,
+                void* vertex_shader, void* fragment_shader,
+                int swapchain_format, int depth_format);
 
         /* ---------- 光照渲染（顶点格式 pos+normal+uv, pitch=32） ---------- */
         /* 创建光照管线: 顶点 uniform slot0 = render_mvp_t(MVP),
