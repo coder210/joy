@@ -1090,6 +1090,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* ---------- 帧管理 ---------- */
         JOY_API bool r3d_begin(jr3d_p r);
         JOY_API void r3d_end(jr3d_p r);
+        /* 设置清屏色（默认深色 0.05/0.06/0.10），游戏场景可改为白底蓝图风 */
+        JOY_API void r3d_set_clear_color(jr3d_p r, uint8_t cr, uint8_t cg, uint8_t cb);
 
         /* ---------- 相机 ---------- */
         JOY_API void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fovy);
@@ -1108,6 +1110,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API render_mesh_p r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d);
         JOY_API render_mesh_p r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stacks);
         JOY_API render_mesh_p r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs);
+        JOY_API render_mesh_p r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h);
         JOY_API void         r3d_mesh_destroy(jr3d_p r, render_mesh_p m);
 
         /* ---------- 纹理 ---------- */
@@ -1244,6 +1247,44 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 销毁输入框 */
         JOY_API void   r3d_input_destroy(jr3d_input_p inp);
 
+        /* ---------- 2D UI: combobox_input (可输入下拉列表框, 仿 jr2d combobox_input) ---------- */
+        /* 可输入下拉列表框: 左侧为文本输入框, 右侧为下拉箭头, 展开后显示列表项 */
+        typedef struct jr3d_combobox_input jr3d_combobox_input_t, * jr3d_combobox_input_p;
+        struct jr3d_combobox_input {
+            jr3d_input_p input;          /* 内部输入框(文本编辑复用 r3d_input) */
+            float x, y, w, h;            /* 整体区域(像素) */
+            float fontSize;              /* 字号(像素) */
+            char items[20][JOY_MAX_IP];  /* 下拉列表项 */
+            int item_count;
+            int selected_index;
+            bool is_open;                /* 下拉列表是否展开 */
+            int item_height;             /* 每项高度(像素) */
+            float arrow_w;               /* 右侧箭头宽度(像素) */
+            bool arrow_hovered;
+            void (*on_change)(jr3d_combobox_input_p);  /* 文本变化回调 */
+        };
+
+        /* 创建可输入下拉列表框(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_combobox_input_p r3d_combobox_input_create(float x, float y, float w, float h,
+                float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text);
+        /* 销毁 */
+        JOY_API void r3d_combobox_input_destroy(jr3d_combobox_input_p ci);
+        /* 添加下拉列表项 */
+        JOY_API void r3d_combobox_input_add_item(jr3d_combobox_input_p ci, const char* str);
+        /* 清空下拉列表项 */
+        JOY_API void r3d_combobox_input_clear_items(jr3d_combobox_input_p ci);
+        /* 获取/设置文本 */
+        JOY_API const char* r3d_combobox_input_get_text(jr3d_combobox_input_p ci);
+        JOY_API void r3d_combobox_input_set_text(jr3d_combobox_input_p ci, const char* str);
+        /* 命中测试: 返回点击的下拉列表项索引, 未展开或未命中返回 -1 */
+        JOY_API int r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y);
+        /* 统一事件处理: 鼠标(箭头切换/列表选中/外部关闭) + 键盘(上下导航/回车选中) + 文本输入 */
+        JOY_API bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Event* event);
+        /* 绘制(输入框 + 箭头 + 展开的下拉列表) */
+        JOY_API void r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH);
+        /* 仅绘制展开的下拉列表(供场景在最后调用, 保证列表在最上层不被其他控件遮挡) */
+        JOY_API void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
@@ -1251,6 +1292,11 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
                 vec3_t center, vec3_t right, vec3_t up, float size, void* tex);
         JOY_API void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width);
+
+        /* ---------- 实体填充渲染（纯色填充 + 深度写入, 用于"填充+描边"画风） ---------- */
+        /* 用写深度的实体管线绘制纯色网格, 提供遮挡与层次; 再叠加 r3d_draw_wire 描边 */
+        JOY_API void r3d_draw_mesh_solid(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
+        JOY_API void r3d_draw_mesh_solid_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color);
 
         /* ---------- 线框渲染（LINELIST 基元, 需在 r3d_begin/r3d_end 之间调用） ---------- */
         /* 绘制线框网格, 使用纯色填充(内部通过颜色纹理实现) */
