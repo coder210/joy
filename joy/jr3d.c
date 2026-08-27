@@ -2151,6 +2151,155 @@ void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_i
 	}
 }
 
+/* ================================================================
+ * 2D UI: slider (仿 jr2d slider, 屏幕像素坐标, 不随相机变化)
+ * ================================================================ */
+static float r3d_slider_thumb_x(jr3d_slider_p s)
+{
+	float range = s->max - s->min;
+	if (range <= 0) return s->x;
+	float ratio = (s->value - s->min) / range;
+	return s->x + ratio * s->w;
+}
+
+static void r3d_slider_update_value_from_x(jr3d_slider_p s, float mx)
+{
+	float ratio = (mx - s->x) / s->w;
+	float v = s->min + ratio * (s->max - s->min);
+	if (v < s->min) v = s->min;
+	if (v > s->max) v = s->max;
+	s->value = v;
+}
+
+static bool r3d_slider_thumb_hit(jr3d_slider_p s, float mx, float my)
+{
+	float tx = r3d_slider_thumb_x(s);
+	float half = s->thumb_width * 0.5f;
+	if (tx - half < s->x) tx = s->x + half;
+	if (tx + half > s->x + s->w) tx = s->x + s->w - half;
+	return mx >= tx - half && mx <= tx + half
+		&& my >= s->y && my <= s->y + s->h;
+}
+
+jr3d_slider_p r3d_slider_create(float x, float y, float w, float h, float min, float max, float initial)
+{
+	jr3d_slider_p s = (jr3d_slider_p)SDL_malloc(sizeof(jr3d_slider_t));
+	if (!s) return NULL;
+	s->x = x; s->y = y; s->w = w; s->h = h;
+	s->min = min; s->max = max;
+	s->value = initial;
+	if (s->value < min) s->value = min;
+	if (s->value > max) s->value = max;
+	s->thumb_width = h;
+	s->is_dragging = false;
+	s->hovered = false;
+	s->track_color = (jcolor_t){ 80, 80, 80, 255 };
+	s->fill_color = (jcolor_t){ 66, 133, 244, 255 };
+	s->thumb_color = (jcolor_t){ 200, 200, 200, 255 };
+	s->thumb_hover_color = (jcolor_t){ 240, 240, 240, 255 };
+	return s;
+}
+
+void r3d_slider_destroy(jr3d_slider_p s)
+{
+	if (s) SDL_free(s);
+}
+
+void r3d_slider_set_value(jr3d_slider_p s, float v)
+{
+	if (!s) return;
+	if (v < s->min) v = s->min;
+	if (v > s->max) v = s->max;
+	s->value = v;
+}
+
+float r3d_slider_get_value(jr3d_slider_p s)
+{
+	return s ? s->value : 0;
+}
+
+void r3d_slider_set_colors(jr3d_slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
+{
+	if (!s) return;
+	s->track_color = track;
+	s->fill_color = fill;
+	s->thumb_color = thumb;
+	s->thumb_hover_color = thumb_hover;
+}
+
+void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, float winH)
+{
+	if (!r || !m || !s || winW <= 0 || winH <= 0) return;
+
+	/* 滑轨背景 */
+	draw_rect_2d(r, m, s->x, s->y, s->w, s->h,
+		s->track_color.r, s->track_color.g, s->track_color.b, winW, winH);
+
+	/* 已填充部分(从 track.x 到滑块中心) */
+	float tx = r3d_slider_thumb_x(s);
+	float fill_w = tx - s->x;
+	if (fill_w > 0) {
+		draw_rect_2d(r, m, s->x, s->y, fill_w, s->h,
+			s->fill_color.r, s->fill_color.g, s->fill_color.b, winW, winH);
+	}
+
+	/* 滑块(悬停时亮色) */
+	float half = s->thumb_width * 0.5f;
+	float sx = tx - half;
+	if (sx < s->x) sx = s->x;
+	if (sx + s->thumb_width > s->x + s->w) sx = s->x + s->w - s->thumb_width;
+	jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
+	draw_rect_2d(r, m, sx, s->y, s->thumb_width, s->h,
+		tc.r, tc.g, tc.b, winW, winH);
+	/* 滑块黑边框 */
+	float bw = 1.0f;
+	draw_rect_2d(r, m, sx, s->y, s->thumb_width, bw, 0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, sx, s->y + s->h - bw, s->thumb_width, bw, 0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, sx, s->y, bw, s->h, 0, 0, 0, winW, winH);
+	draw_rect_2d(r, m, sx + s->thumb_width - bw, s->y, bw, s->h, 0, 0, 0, winW, winH);
+}
+
+bool r3d_slider_is_pressed(jr3d_slider_p s, float x, float y)
+{
+	if (!s) return false;
+	if (r3d_slider_thumb_hit(s, x, y)) {
+		s->is_dragging = true;
+		return true;
+	}
+	/* 点击滑轨时跳转到该位置 */
+	if (x >= s->x && x <= s->x + s->w
+		&& y >= s->y && y <= s->y + s->h) {
+		r3d_slider_update_value_from_x(s, x);
+		s->is_dragging = true;
+		return true;
+	}
+	return false;
+}
+
+void r3d_slider_set_pressed(jr3d_slider_p s, bool v)
+{
+	if (s) s->is_dragging = v;
+}
+
+void r3d_slider_drag_move(jr3d_slider_p s, float x, float y)
+{
+	(void)y;
+	if (!s || !s->is_dragging) return;
+	r3d_slider_update_value_from_x(s, x);
+}
+
+bool r3d_slider_is_hovered(jr3d_slider_p s, float x, float y)
+{
+	if (!s) return false;
+	s->hovered = r3d_slider_thumb_hit(s, x, y);
+	return s->hovered;
+}
+
+void r3d_slider_set_hovered(jr3d_slider_p s, bool v)
+{
+	if (s) s->hovered = v;
+}
+
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
    UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
 render_mesh_p r3d_mesh_quad(jr3d_p r)

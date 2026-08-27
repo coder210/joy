@@ -1285,6 +1285,44 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 仅绘制展开的下拉列表(供场景在最后调用, 保证列表在最上层不被其他控件遮挡) */
         JOY_API void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH);
 
+        /* ---------- 2D UI: slider (仿 jr2d slider, 屏幕像素坐标, 不随相机变化) ---------- */
+        /* 滑块对象(屏幕像素坐标, 原点左上) */
+        typedef struct jr3d_slider jr3d_slider_t, * jr3d_slider_p;
+        struct jr3d_slider {
+            float x, y, w, h;          /* 滑轨区域(像素) */
+            float min, max;            /* 取值范围 */
+            float value;               /* 当前值 */
+            float thumb_width;         /* 滑块宽度(高度 = track.h) */
+            bool  is_dragging;         /* 是否在拖动 */
+            bool  hovered;             /* 滑块是否悬停 */
+            jcolor_t track_color;      /* 滑轨背景色 */
+            jcolor_t fill_color;       /* 已填充部分颜色 */
+            jcolor_t thumb_color;      /* 滑块颜色 */
+            jcolor_t thumb_hover_color;/* 滑块悬停颜色 */
+        };
+
+        /* 创建滑块(屏幕像素坐标, 原点左上) */
+        JOY_API jr3d_slider_p r3d_slider_create(float x, float y, float w, float h, float min, float max, float initial);
+        /* 销毁滑块 */
+        JOY_API void r3d_slider_destroy(jr3d_slider_p s);
+        /* 设置/获取值(自动夹在 [min,max] 内) */
+        JOY_API void  r3d_slider_set_value(jr3d_slider_p s, float v);
+        JOY_API float r3d_slider_get_value(jr3d_slider_p s);
+        /* 设置配色: 滑轨 / 已填充 / 滑块 / 滑块悬停 */
+        JOY_API void r3d_slider_set_colors(jr3d_slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover);
+        /* 绘制滑块(m 为单位 quad) */
+        JOY_API void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, float winH);
+        /* 按下测试: 命中滑块或滑轨时更新值并进入拖动 */
+        JOY_API bool r3d_slider_is_pressed(jr3d_slider_p s, float x, float y);
+        /* 设置拖动状态 */
+        JOY_API void r3d_slider_set_pressed(jr3d_slider_p s, bool v);
+        /* 拖动中更新值 */
+        JOY_API void r3d_slider_drag_move(jr3d_slider_p s, float x, float y);
+        /* 悬停测试: 命中滑块时置 hovered */
+        JOY_API bool r3d_slider_is_hovered(jr3d_slider_p s, float x, float y);
+        /* 设置悬停状态 */
+        JOY_API void r3d_slider_set_hovered(jr3d_slider_p s, bool v);
+
         /* ---------- 绘制 ---------- */
         JOY_API void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color);
         JOY_API void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex);
