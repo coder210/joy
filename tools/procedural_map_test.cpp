@@ -38,8 +38,9 @@ static bool layout_valid(const PmLayout& L, int* reach, int* total)
         if (o.x10 * o.x10 + o.z10 * o.z10 < PM_CLEAR * PM_CLEAR) return false;
         int dxe = o.x10 - 100, dze = o.z10 - 100;
         if (dxe * dxe + dze * dze < PM_CLEAR * PM_CLEAR) return false;
-        // 边界
-        if (o.x10 < -PM_REGION || o.x10 > PM_REGION || o.z10 < -PM_REGION || o.z10 > PM_REGION) return false;
+        // 格子边界：占用的格子必须在 [0, 19]
+        if (o.gx0 < 0 || o.gx0 + o.gw > PF_GRID_N) return false;
+        if (o.gz0 < 0 || o.gz0 + o.gh > PF_GRID_N) return false;
         // 起终点格可走
         bool w2[PF_CELLS];
         layout_to_walkable(w2, L);
@@ -69,7 +70,8 @@ int main()
             for (int k = 0; k < a.count; k++) {
                 const PmObstacle& x = a.obs[k], & y = b.obs[k];
                 if (x.x10 != y.x10 || x.z10 != y.z10 || x.hx10 != y.hx10 ||
-                    x.hz10 != y.hz10 || x.sy10 != y.sy10 || x.sphere != y.sphere) { same = false; break; }
+                    x.hz10 != y.hz10 || x.sy10 != y.sy10 ||
+                    x.gx0 != y.gx0 || x.gz0 != y.gz0 || x.gw != y.gw || x.gh != y.gh) { same = false; break; }
             }
             if (!same) { CHECK(false, "determinism: same seed -> same layout (obs)"); return 1; }
         }
@@ -142,6 +144,29 @@ int main()
             if (L.count < 1 || L.count > PM_MAX_OBS) { ok = false; break; }
         }
         CHECK(ok, "count: obstacle count within [1, PM_MAX_OBS] (200 seeds)");
+    }
+
+    // 用例 6：格子对齐 + 纯方盒——所有障碍为格子对齐方盒、统一高度
+    {
+        bool ok = true;
+        for (int s = 1; s <= 200; s++) {
+            random_num_p r = utils_random_create((uint32_t)s);
+            PmLayout L;
+            pmap_generate(r, &L);
+            utils_random_destroy(r);
+            for (int k = 0; k < L.count; k++) {
+                const PmObstacle& o = L.obs[k];
+                // 尺寸 = 整格（1~2 格），格子对齐
+                if (o.gw < 1 || o.gw > 2 || o.gh < 1 || o.gh > 2) { ok = false; break; }
+                if (o.hx10 != 5 * o.gw || o.hz10 != 5 * o.gh) { ok = false; break; }
+                if (o.x10 != (o.gx0 - 10) * 10 + 5 * o.gw) { ok = false; break; }
+                if (o.z10 != (o.gz0 - 10) * 10 + 5 * o.gh) { ok = false; break; }
+                // 统一高度
+                if (o.sy10 != PM_HEIGHT10) { ok = false; break; }
+            }
+            if (!ok) break;
+        }
+        CHECK(ok, "grid: all obstacles are grid-aligned boxes, uniform height (200 seeds)");
     }
 
     printf("\n%d passed, %d failed\n", g_pass, g_fail);
