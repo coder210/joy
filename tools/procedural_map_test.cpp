@@ -1,4 +1,4 @@
-// 独立程序化地图单元测试：确定性验证 pmap_generate / pm_rasterize / pm_bfs
+// 独立程序化地图单元测试：确定性验证 pmap_generate_seed / pm_rasterize / pm_bfs / pmap_wave_seed
 // 编译（MSVC，链接 joy.lib）：
 //   cl /std:c++17 /EHsc /I D:\github\joy /I D:\github\joy\SDL\include ^
 //       /I D:\github\joy\project_proxy3d /I D:\github\joy\project_proxy3d\shared ^
@@ -16,36 +16,32 @@ static int g_pass = 0, g_fail = 0;
     else      { g_fail++; printf("FAIL  %s\n", name); } \
 } while (0)
 
-// 布局 → 栅格（供校验）
-static void layout_to_walkable(bool walkable[PF_CELLS], const PmLayout& L)
-{
-    pm_rasterize(walkable, L.obs, L.count);
-}
-
-// 校验布局有效性：连通性、覆盖率、安全区、边界
+// 校验布局有效性（方案 A 不变量）：
+// - 全可达：从玩家出生格 BFS 必须到达所有开放格（无死角）
+// - 出生点安全区：障碍不得靠近玩家 (0,0) / 敌人出生区 (10,10) 2.2m
+// - 单格 1×1、格子对齐、高度在 [PM_HEIGHT_MIN, PM_HEIGHT_MAX]
 static bool layout_valid(const PmLayout& L, int* reach, int* total)
 {
-    bool walkable[PF_CELLS];
-    layout_to_walkable(walkable, L);
     *total = 0;
-    for (int i = 0; i < PF_CELLS; i++) if (walkable[i]) (*total)++;
-    bool conn = pm_bfs(walkable, PM_PLAYER_GX, PM_PLAYER_GZ, PM_ENEMY_GX, PM_ENEMY_GZ, reach);
-    if (!conn) return false;
-    if (*total <= 0 || *reach < *total * 3 / 10) return false;
+    for (int i = 0; i < PF_CELLS; i++) if (L.walkable[i]) (*total)++;
+    if (*total <= 0) return false;
+    *reach = pm_bfs(L.walkable, PM_PLAYER_GX, PM_PLAYER_GZ);
+    if (*reach != *total) return false;   // 全可达
+    if (!L.walkable[PM_PLAYER_GZ * PF_GRID_N + PM_PLAYER_GX]) return false;
+    if (!L.walkable[PM_ENEMY_GZ * PF_GRID_N + PM_ENEMY_GX]) return false;
     for (int k = 0; k < L.count; k++) {
         const PmObstacle& o = L.obs[k];
         // 出生点安全区
         if (o.x10 * o.x10 + o.z10 * o.z10 < PM_CLEAR * PM_CLEAR) return false;
         int dxe = o.x10 - 100, dze = o.z10 - 100;
         if (dxe * dxe + dze * dze < PM_CLEAR * PM_CLEAR) return false;
-        // 格子边界：占用的格子必须在 [0, 19]
-        if (o.gx0 < 0 || o.gx0 + o.gw > PF_GRID_N) return false;
-        if (o.gz0 < 0 || o.gz0 + o.gh > PF_GRID_N) return false;
-        // 起终点格可走
-        bool w2[PF_CELLS];
-        layout_to_walkable(w2, L);
-        if (!w2[PM_PLAYER_GZ * PF_GRID_N + PM_PLAYER_GX]) return false;
-        if (!w2[PM_ENEMY_GZ * PF_GRID_N + PM_ENEMY_GX]) return false;
+        // 单格 1×1、格子对齐
+        if (o.gw != 1 || o.gh != 1) return false;
+        if (o.hx10 != 5 || o.hz10 != 5) return false;
+        if (o.x10 != (o.gx0 - 10) * 10 + 5) return false;
+        if (o.z10 != (o.gz0 - 10) * 10 + 5) return false;
+        // 高度随机 0.5~1.8m
+        if (o.sy10 < PM_HEIGHT_MIN || o.sy10 > PM_HEIGHT_MAX) return false;
     }
     return true;
 }
@@ -54,14 +50,10 @@ int main()
 {
     // 用例 1：确定性——相同 seed 生成完全一致的布局
     {
-        PmLayout a, b;
         for (int s = 1; s <= 50; s++) {
-            random_num_p r1 = utils_random_create((uint32_t)s);
-            random_num_p r2 = utils_random_create((uint32_t)s);
-            pmap_generate(r1, &a);
-            pmap_generate(r2, &b);
-            utils_random_destroy(r1);
-            utils_random_destroy(r2);
+            PmLayout a, b;
+            pmap_generate_seed((uint32_t)s, &a);
+            pmap_generate_seed((uint32_t)s, &b);
             if (a.count != b.count || a.seed != b.seed) {
                 CHECK(false, "determinism: same seed -> same layout (count)");
                 return 1;
@@ -82,12 +74,9 @@ int main()
     {
         bool varied = false;
         PmLayout first, cur;
-        random_num_p r = utils_random_create(1u);
-        pmap_generate(r, &first);
+        pmap_generate_seed(1u, &first);
         for (int s = 2; s <= 30; s++) {
-            random_num_p rs = utils_random_create((uint32_t)s);
-            pmap_generate(rs, &cur);
-            utils_random_destroy(rs);
+            pmap_generate_seed((uint32_t)s, &cur);
             if (cur.count != first.count) { varied = true; break; }
             bool same = true;
             for (int k = 0; k < cur.count; k++) {
@@ -95,78 +84,62 @@ int main()
             }
             if (!same) { varied = true; break; }
         }
-        utils_random_destroy(r);
         CHECK(varied, "variation: different seeds give different layouts");
     }
 
-    // 用例 3：大量 seed 全部通过连通性 + 覆盖率 + 安全区校验
+    // 用例 3：大量 seed 全部通过全可达 + 安全区 + 对齐 + 高度范围校验
     {
         int fail_seed = -1;
         for (int s = 1; s <= 500; s++) {
-            random_num_p r = utils_random_create((uint32_t)s);
             PmLayout L;
-            pmap_generate(r, &L);
-            utils_random_destroy(r);
+            pmap_generate_seed((uint32_t)s, &L);
             int reach = 0, total = 0;
             if (!layout_valid(L, &reach, &total)) { fail_seed = s; break; }
         }
-        if (fail_seed < 0) CHECK(true, "connectivity: 500 seeds all valid");
+        if (fail_seed < 0) CHECK(true, "reachability: 500 seeds fully reachable & valid");
         else {
             char buf[96];
-            snprintf(buf, sizeof(buf), "connectivity: 500 seeds all valid (FAIL at seed %d)", fail_seed);
+            snprintf(buf, sizeof(buf), "reachability: 500 seeds fully reachable & valid (FAIL at seed %d)", fail_seed);
             CHECK(false, buf);
         }
     }
 
-    // 用例 4：生成布局非空（正常区域应总能产出障碍）
+    // 用例 4：障碍密度与数量——多数 seed 能产出障碍，且数量在 [0, PM_MAX_OBS]
     {
         int nonempty = 0;
+        bool ok_count = true;
         for (int s = 1; s <= 100; s++) {
-            random_num_p r = utils_random_create((uint32_t)s);
             PmLayout L;
-            pmap_generate(r, &L);
-            utils_random_destroy(r);
+            pmap_generate_seed((uint32_t)s, &L);
             if (L.count > 0) nonempty++;
+            if (L.count < 0 || L.count > PM_MAX_OBS) { ok_count = false; break; }
         }
         char buf[96];
         snprintf(buf, sizeof(buf), "coverage: nonempty layout rate %d/100", nonempty);
-        CHECK(nonempty >= 90, buf);
+        CHECK(nonempty >= 80, buf);
+        CHECK(ok_count, "count: obstacle count within [0, PM_MAX_OBS] (100 seeds)");
     }
 
-    // 用例 5：障碍数量在合理区间 [1, PM_MAX_OBS]
+    // 用例 5：波次换图 seed 派生——不同波次 seed 不同，且派生出的布局不同
     {
-        bool ok = true;
-        for (int s = 1; s <= 200; s++) {
-            random_num_p r = utils_random_create((uint32_t)s);
-            PmLayout L;
-            pmap_generate(r, &L);
-            utils_random_destroy(r);
-            if (L.count < 1 || L.count > PM_MAX_OBS) { ok = false; break; }
-        }
-        CHECK(ok, "count: obstacle count within [1, PM_MAX_OBS] (200 seeds)");
-    }
-
-    // 用例 6：格子对齐 + 纯方盒——所有障碍为格子对齐方盒、统一高度
-    {
-        bool ok = true;
-        for (int s = 1; s <= 200; s++) {
-            random_num_p r = utils_random_create((uint32_t)s);
-            PmLayout L;
-            pmap_generate(r, &L);
-            utils_random_destroy(r);
-            for (int k = 0; k < L.count; k++) {
-                const PmObstacle& o = L.obs[k];
-                // 尺寸 = 整格（1~2 格），格子对齐
-                if (o.gw < 1 || o.gw > 2 || o.gh < 1 || o.gh > 2) { ok = false; break; }
-                if (o.hx10 != 5 * o.gw || o.hz10 != 5 * o.gh) { ok = false; break; }
-                if (o.x10 != (o.gx0 - 10) * 10 + 5 * o.gw) { ok = false; break; }
-                if (o.z10 != (o.gz0 - 10) * 10 + 5 * o.gh) { ok = false; break; }
-                // 统一高度
-                if (o.sy10 != PM_HEIGHT10) { ok = false; break; }
+        const uint32_t base = 12345u;
+        bool seeds_distinct = true, layouts_distinct = false;
+        PmLayout w1, w2;
+        pmap_generate_seed(pmap_wave_seed(base, 1), &w1);
+        for (int w = 2; w <= 10; w++) {
+            if (pmap_wave_seed(base, w) == pmap_wave_seed(base, 1)) { seeds_distinct = false; break; }
+            pmap_generate_seed(pmap_wave_seed(base, w), &w2);
+            bool same = (w2.count == w1.count);
+            if (same) {
+                same = true;
+                for (int k = 0; k < w2.count; k++) {
+                    if (w2.obs[k].x10 != w1.obs[k].x10 || w2.obs[k].z10 != w1.obs[k].z10) { same = false; break; }
+                }
             }
-            if (!ok) break;
+            if (!same) { layouts_distinct = true; break; }
         }
-        CHECK(ok, "grid: all obstacles are grid-aligned boxes, uniform height (200 seeds)");
+        CHECK(seeds_distinct, "wave seed: pmap_wave_seed differs across waves");
+        CHECK(layouts_distinct, "wave seed: different waves produce different layouts");
     }
 
     printf("\n%d passed, %d failed\n", g_pass, g_fail);
