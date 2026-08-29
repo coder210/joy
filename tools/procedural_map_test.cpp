@@ -1,6 +1,7 @@
 // 独立程序化地图单元测试：确定性验证 pmap_generate_seed / pm_rasterize / pm_bfs / pmap_wave_seed
-// 编译（MSVC，链接 joy.lib）：
-//   cl /std:c++17 /EHsc /I D:\github\joy /I D:\github\joy\SDL\include ^
+// 编译（MSVC，链接 joy.lib）。源码/头文件含中文注释，务必加 /utf-8，
+// 否则 MSVC 按系统代码页误读多字节字符可能导致括号错乱、编译失败：
+//   cl /utf-8 /std:c++17 /EHsc /I D:\github\joy /I D:\github\joy\SDL\include ^
 //       /I D:\github\joy\project_proxy3d /I D:\github\joy\project_proxy3d\shared ^
 //       procedural_map_test.cpp /link /LIBPATH:D:\github\joy\build\Debug joy.lib
 // 运行：procedural_map_test.exe → 输出每个用例 PASS/FAIL

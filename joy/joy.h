@@ -167,6 +167,79 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void        lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out);
         JOY_API void        lcg_random_set_state(lcg_num_p lcg, uint64_t state);
 
+        // ============ 泛洪聚团程序化地图生成（jprocmap） ============
+        // 程序化生成"带连片掩体的开放竞技场"地图：若干锚点（开放且远离出生安全区的格）
+        // 各自做有限泛洪，随机成长成 5~10 格连片的掩体群，中间留开放通道；生成后从玩家
+        // 主区做多源 BFS 连通性修复，把封死通道的整块障碍移除，保证所有开放格可达。
+        // 只由 seed 决定 → 完全确定性，可用作帧同步依据。所有坐标用"十分之一米"整数。
+        //
+        // 参数全部可配置（网格尺寸、出生点/安全区、障碍密度/高度、簇大小范围）。
+
+        // 网格/容量上限（固定数组，避免动态分配；实际尺寸由 jpm_config_t.grid_n 决定）
+        #define JPM_MAX_GRID_N 64          // 网格边长上限（格）
+        #define JPM_MAX_CELLS  (JPM_MAX_GRID_N*JPM_MAX_GRID_N)
+        #define JPM_MAX_OBS    160         // 障碍物数量上限
+        #define JPM_MAX_SPAWN  8           // 出生安全区数量上限
+
+        // 单个障碍实体（世界坐标用十分之一米整数）
+        typedef struct jpm_obstacle {
+                int x10, z10;    // 中心坐标（十分之一米，格子对齐）
+                int hx10, hz10;  // XZ 半尺寸（十分之一米，单格 = 5）
+                int sy10;        // 高度（十分之一米）
+                int gx0, gz0;    // 占用格子（左/下角格）
+                int gw, gh;      // 占用格子数（宽/深，恒 1）
+        } jpm_obstacle_t, * jpm_obstacle_p;
+
+        // 出生安全区：以世界坐标（十分之一米）为圆心、radius10 为半径的保护区
+        typedef struct jpm_spawn {
+                int cx10, cz10;  // 安全区圆心（世界坐标，十分之一米）
+                int radius10;    // 安全区半径（十分之一米）
+        } jpm_spawn_t;
+
+        // 生成配置（可配置参数集中于此）。BSP 模式复用 density 作为房间分块粒度的参考
+        typedef struct jpm_config {
+                int grid_n;        // 网格边长（格），默认 20
+                int offset10;      // 世界坐标 → 网格坐标平移（十分之一米），默认 100（10m）
+                int pad10;         // 障碍外扩边距（十分之一米），默认 6（0.6m）
+                int density;       // 目标障碍密度（%），默认 25
+                int max_obs;       // 障碍物数量上限，默认 160
+                int height_min10;  // 障碍最低高度（十分之一米），默认 5（0.5m）
+                int height_max10;  // 障碍最高高度（十分之一米），默认 18（1.8m）
+                int cluster_min;   // 每簇最小格数，默认 5
+                int cluster_max;   // 每簇最大格数，默认 10
+                int spawn_count;               // 出生安全区数量
+                jpm_spawn_t spawns[JPM_MAX_SPAWN];  // 出生安全区列表（spawns[0] = 玩家区）
+        } jpm_config_t, * jpm_config_p;
+
+        // 生成结果布局
+        typedef struct jpm_layout {
+                jpm_obstacle_t obs[JPM_MAX_OBS];
+                int  count;                     // 实际障碍数
+                int  seed;                      // 实际使用的生成 seed（调试用）
+                bool walkable[JPM_MAX_CELLS];   // 生成后的可通行栅格（含 pad 外扩）
+        } jpm_layout_t, * jpm_layout_p;
+
+        // 默认配置：填充一组与游戏一致的默认参数（20×20、玩家(0,0)+敌人(10m,10m) 安全区等）
+        JOY_API void jpm_config_default(jpm_config_t* cfg);
+        // 追加一个出生安全区（世界坐标圆心 + 半径，十分之一米）
+        JOY_API void jpm_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10);
+        // 波次换图 seed：由初始 seed 与波次号确定性派生（纯函数，不依赖随机流）
+        JOY_API uint32_t jpm_wave_seed(uint32_t base_seed, int wave);
+        // 由给定 seed 确定性生成布局
+        JOY_API void jpm_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out);
+        // 从上层随机流抽取 1 个 seed 生成布局（初始生成用）
+        JOY_API void jpm_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out);
+        // 整数栅格化：按配置从障碍实体重建可通行栅格（含 pad 外扩）
+        JOY_API void jpm_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+                                   const jpm_obstacle_t* obs, int n);
+        // 4 方向 BFS：返回从起点可达的格子总数（用于连通性校验）
+        JOY_API int jpm_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz);
+        // 从布局开放格中随机采样 count 个格子（洗牌取前 count），返回实际采样数；
+        // min_dist10 限制距玩家区（spawns[0] 圆心）的最小距离（十分之一米）。
+        JOY_API int jpm_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
+                                          const jpm_layout_t* L, int count, int min_dist10,
+                                          int* out_tiles);
+
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct jtimer jtimer_t, *jtimer_p;
 
