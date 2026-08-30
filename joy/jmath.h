@@ -582,6 +582,40 @@ static fp_t fp_powi(fp_t x, int64_t n)
 	return fp_mul(x, y);
 }
 
+// Fix64.Sin（插值版）：对 SIN_LUT 相邻两点做线性插值，精度高于 fp_sin（Fast 版）。
+// 帧同步确定性两端一致；fp_sin / fp_cos 为 LUT 直取（Fast），本函数为插值（精确）。
+static fp_t fp_sin_interp(fp_t x)
+{
+	bool flip_horizontal = false;
+	bool flip_vertical = false;
+	fp_t clamped = clamp_sin_value(x, &flip_horizontal, &flip_vertical);
+	int64_t len = (int64_t)(sizeof(SIN_LUT) / sizeof(SIN_LUT[0]));
+	fp_t lut_interval = fp_div(fp_from_int((int)(len - 1)), FP_PI_OVER_2);
+	fp_t raw_index = fp_mul(clamped, lut_interval);
+	fp_t rounded = fp_round(raw_index);
+	fp_t index_error = fp_sub(raw_index, rounded);
+	int64_t base = rounded >> FP_FRACTIONAL_PLACES;
+	int sign = index_error > 0 ? 1 : (index_error < 0 ? -1 : 0);
+	if (base >= len - 1) base = len - 1;
+	if (base < 0) base = 0;
+	int64_t ni = flip_horizontal ? (len - 1 - base) : base;
+	int64_t oi = flip_horizontal ? (len - 1 - base - sign) : (base + sign);
+	if (oi < 0) oi = 0;
+	if (oi > len - 1) oi = len - 1;
+	fp_t nearest = SIN_LUT[ni];
+	fp_t second = SIN_LUT[oi];
+	fp_t delta = fp_mul(index_error, fp_abs(fp_sub(nearest, second)));
+	fp_t interp = flip_horizontal ? fp_sub(nearest, delta) : fp_add(nearest, delta);
+	return flip_vertical ? -interp : interp;
+}
+
+// Fix64.Cos（插值版）：角度偏移后复用 fp_sin_interp
+static fp_t fp_cos_interp(fp_t x)
+{
+	fp_t angle = x + (x > 0 ? -FP_PI - FP_PI_OVER_2 : FP_PI_OVER_2);
+	return fp_sin_interp(angle);
+}
+
 
 JOY_INLINE vec2f_t vec2f_negate(vec2f_t a)
 {
