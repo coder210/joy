@@ -27,6 +27,12 @@ History:
 #define FP_PI_TIMES_2 0x6487ED511
 #define FP_PI 0x3243F6A88
 #define FP_PI_OVER_2 0x1921FB544
+#define FP_PI_OVER_4 0xC90FDAA2
+#define FP_E 0x2B7E15162
+#define FP_EPOW4 0x3699205C4E
+#define FP_LN2 0xB17217F7
+#define FP_LNMAX 0x157CD0E702
+#define FP_LNMIN (-0x162E42FEFA)
 #define FP_LUT_SIZE (int)(FP_PI >> 16)
 
 #define fp_t int64_t
@@ -392,6 +398,188 @@ JOY_INLINE fp_t fp_clamp(fp_t a, fp_t low, fp_t high)
 JOY_INLINE fp_t fp_lerp(fp_t a, fp_t b, fp_t t)
 {
 	return fp_add(fp_mul(fp_sub(0, t), a), fp_mul(b, t));
+}
+
+/* ===================== Fix64.cs 对齐补充函数 =====================
+ * 以下函数与 JoySharp/FixMath/Fix64.cs 逐一对齐，补全引擎缺失的
+ * 三角函数 / 指对数运算。全程定点（Q31.32），无浮点，保证帧同步确定性。
+ * tan_lut 取自 jlut.h（与 SIN_LUT 同构，都用于插值）。 */
+
+// Fix64.Floor：截断到不大于自身的整数（按 Q32 整数部分取整）
+static fp_t fp_floor(fp_t value)
+{
+	return (fp_t)((uint64_t)value & 0xFFFFFFFF00000000ULL);
+}
+
+// Fix64.Ceiling：不小于自身的最小整数
+static fp_t fp_ceil(fp_t value)
+{
+	bool has_fractional = (value & 0x00000000FFFFFFFFLL) != 0;
+	return has_fractional ? fp_floor(value) + FP_ONE : value;
+}
+
+// Fix64.Round：四舍五入到最近整数，恰为 .5 时取偶数（银行家舍入）
+static fp_t fp_round(fp_t value)
+{
+	uint64_t fractional = (uint64_t)(value & 0x00000000FFFFFFFFLL);
+	fp_t integral = fp_floor(value);
+	if (fractional < 0x80000000ULL) return integral;
+	if (fractional > 0x80000000ULL) return integral + FP_ONE;
+	return (integral & FP_ONE) == 0 ? integral : integral + FP_ONE;
+}
+
+// Fix64.% / FastMod：定点取模（raw 取模即小数取模）
+static fp_t fp_mod(fp_t x, fp_t y)
+{
+	if (x == FP_MIN_VALUE && y == -1) return 0;
+	return x % y;
+}
+
+// Fix64.Tan：切线（tan_lut 线性插值，π/2 处由表内最大值饱和）
+static fp_t fp_tan(fp_t x)
+{
+	int64_t lut_len = (int64_t)(sizeof(tan_lut) / sizeof(tan_lut[0]));
+	fp_t clampedPi = fp_mod(x, FP_PI);
+	bool flip = false;
+	if (clampedPi < 0) { clampedPi = -clampedPi; flip = true; }
+	if (clampedPi > FP_PI_OVER_2) {
+		flip = !flip;
+		clampedPi = FP_PI_OVER_2 - (clampedPi - FP_PI_OVER_2);
+	}
+	fp_t lut_interval = fp_div(fp_from_int((int)(lut_len - 1)), FP_PI_OVER_2);
+	fp_t raw_index = fp_mul(clampedPi, lut_interval);
+	fp_t rounded = fp_round(raw_index);
+	fp_t index_error = fp_sub(raw_index, rounded);
+	int64_t idx = rounded >> FP_FRACTIONAL_PLACES;
+	int sign = index_error > 0 ? 1 : (index_error < 0 ? -1 : 0);
+	if (idx >= lut_len - 1) idx = lut_len - 1;
+	if (idx < 0) idx = 0;
+	fp_t nearest = tan_lut[idx];
+	int64_t second = idx + sign;
+	if (second < 0) second = 0;
+	if (second > lut_len - 1) second = lut_len - 1;
+	fp_t delta = fp_mul(index_error, fp_abs(fp_sub(nearest, tan_lut[second])));
+	fp_t interp = fp_add(nearest, delta);
+	return flip ? -interp : interp;
+}
+
+// Fix64.Atan：反正切（欧拉级数，收敛到 [0,π/2)）
+static fp_t fp_atan(fp_t z)
+{
+	if (z == 0) return 0;
+	bool neg = z < 0;
+	if (neg) z = -z;
+	fp_t result;
+	if (z == fp_one()) {
+		result = FP_PI_OVER_4;
+	} else {
+		bool invert = z > fp_one();
+		if (invert) z = fp_div(fp_one(), z);
+		result = fp_one();
+		fp_t term = fp_one();
+		fp_t zSq = fp_mul(z, z);
+		fp_t zSq2 = fp_mul(zSq, fp_from_int(2));
+		fp_t zSqPlusOne = fp_add(zSq, fp_one());
+		fp_t zSq12 = fp_mul(zSqPlusOne, fp_from_int(2));
+		fp_t dividend = zSq2;
+		fp_t divisor = fp_mul(zSqPlusOne, fp_from_int(3));
+		for (int i = 2; i < 30; i++) {
+			term = fp_mul(term, fp_div(dividend, divisor));
+			result = fp_add(result, term);
+			dividend = fp_add(dividend, zSq2);
+			divisor = fp_add(divisor, zSq12);
+			if (term == 0) break;
+		}
+		result = fp_div(fp_mul(result, z), zSqPlusOne);
+		if (invert) result = fp_sub(FP_PI_OVER_2, result);
+	}
+	if (neg) result = -result;
+	return result;
+}
+
+// Fix64.Atan2：四象限反正切（基于 Atan）
+static fp_t fp_atan2(fp_t y, fp_t x)
+{
+	if (x == 0) {
+		if (y > 0) return FP_PI_OVER_2;
+		if (y == 0) return 0;
+		return -FP_PI_OVER_2;
+	}
+	fp_t atan = fp_atan(fp_div(y, x));
+	if (x < 0) {
+		if (y < 0) return fp_sub(atan, FP_PI);
+		return fp_add(atan, FP_PI);
+	}
+	return atan;
+}
+
+// Fix64.Acos：反余弦（基于 Atan + Sqrt）
+static fp_t fp_acos(fp_t x)
+{
+	if (x == 0) return FP_PI_OVER_2;
+	fp_t result = fp_atan(fp_div(fp_sqrt(fp_sub(fp_one(), fp_mul(x, x))), x));
+	if (x < 0) return fp_add(result, FP_PI);
+	return result;
+}
+
+// Fix64.Exp：e^x（幂级数展开）
+static fp_t fp_exp(fp_t x)
+{
+	if (x == 0) return fp_one();
+	if (x == fp_one()) return FP_E;
+	if (x >= FP_LNMAX) return fp_max_value();
+	if (x <= FP_LNMIN) return 0;
+	bool neg = x < 0;
+	if (neg) x = -x;
+	fp_t result = fp_add(x, fp_one());
+	fp_t term = x;
+	for (int i = 2; i < 40; i++) {
+		term = fp_div(fp_mul(x, term), fp_from_int(i));
+		result = fp_add(result, term);
+		if (term == 0) break;
+	}
+	if (neg) result = fp_div(fp_one(), result);
+	return result;
+}
+
+// Fix64.Ln：自然对数（牛顿迭代）
+static fp_t fp_ln(fp_t x)
+{
+	if (x <= 0) return 0;
+	int scaling = 0;
+	while (x > FP_EPOW4) { x = fp_div(x, FP_EPOW4); scaling += 4; }
+	while (x < fp_one()) { x = fp_mul(x, FP_EPOW4); scaling -= 4; }
+	fp_t guess = fp_from_int(2);
+	fp_t delta = 0;
+	int count = 0;
+	do {
+		fp_t e = fp_exp(guess);
+		delta = fp_div(fp_sub(x, e), e);
+		if (delta > fp_from_int(3)) delta = fp_from_int(3);
+		guess = fp_add(guess, delta);
+	} while ((count++ < 10) && (delta != 0));
+	return fp_add(guess, fp_from_int(scaling));
+}
+
+// Fix64.Pow(b, exp)：b^exp = e^(exp·ln b)
+static fp_t fp_pow(fp_t b, fp_t exp)
+{
+	if (b == fp_one()) return fp_one();
+	if (exp == 0) return fp_one();
+	if (b == 0) return 0;
+	return fp_exp(fp_mul(exp, fp_ln(b)));
+}
+
+// Fix64.Pow(x, n)：正整数次幂（快速幂）
+static fp_t fp_powi(fp_t x, int64_t n)
+{
+	if (n == 0) return fp_one();
+	fp_t y = fp_one();
+	while (n > 1) {
+		if ((n & 1LL) == 0) { x = fp_mul(x, x); n >>= 1; }
+		else { y = fp_mul(x, y); x = fp_mul(x, x); n = (n - 1) >> 1; }
+	}
+	return fp_mul(x, y);
 }
 
 
