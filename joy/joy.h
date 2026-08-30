@@ -1203,6 +1203,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
            right/up 由 yaw/pitch 推得, 保证文字直立不斜切。 */
         JOY_API bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
                                        vec3_t topLeft, float yaw, float pitch, float size);
+        /* 设置 3D 世界文字颜色(RGB 烘焙进下一段 bake 的纹理, 需在 draw_3d 前调用) */
+        JOY_API void r3d_font_set_color(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb);
         /* 固定朝向绘制文字(不随相机变化): 始终水平直立、正对 -Z。
            topLeft 为左上角锚点(世界坐标), size 为文字世界高度。 */
         JOY_API bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
@@ -1254,6 +1256,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text);
         /* 绘制按钮(需先 r3d_font_init; m 为单位 quad)。按钮会自己处理 normal/hover/pressed 配色 */
         JOY_API void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH);
+        /* 圆形按钮: 视觉为圆形(直径=min(w,h), 黑描边+填充), 击打/文字处理同矩形按钮 */
+        JOY_API void r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH);
         /* 命中测试: 屏幕像素坐标 (mx,my) 是否在按钮内 */
         JOY_API bool r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my);
         /* 按下测试: 鼠标在按钮内且 mouse_down 为 true 时返回 true(并置为 pressed 状态) */
@@ -1268,6 +1272,12 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 2D 实心矩形绘制(逻辑/窗口像素坐标, 左上角 x,y 尺寸 w,h, 颜色 cr,cg,cb) */
         JOY_API void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
                                       float x, float y, float w, float h,
+                                      Uint8 cr, Uint8 cg, Uint8 cb,
+                                      float winW, float winH);
+
+        /* 2D 自定义实心色 mesh 绘制(逻辑坐标, 中心 cx,cy 缩放 sx,sy, 用于环形/扇形等) */
+        JOY_API void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
+                                      float cx, float cy, float sx, float sy,
                                       Uint8 cr, Uint8 cg, Uint8 cb,
                                       float winW, float winH);
 

@@ -1,0 +1,14 @@
+﻿适用于 .NET Framework MSBuild 版本 17.12.12+1cce77968
+
+  Checking File Globs
+  SDL_uclibc.vcxproj -> E:\c++\joy\build\Debug\SDL_uclibc.lib
+  SDL3-shared.vcxproj -> E:\c++\joy\build\Debug\SDL3.dll
+  msgpack-c-static.vcxproj -> E:\c++\joy\build\Debug\msgpack-c.lib
+  jr3d.c
+E:\c++\joy\joy\jr3d.c(2239,55): warning C4028: 形参 1 与声明不同 [E:\c++\joy\build\joy\joy.vcxproj]
+E:\c++\joy\joy\jr3d.c(2239,65): warning C4028: 形参 2 与声明不同 [E:\c++\joy\build\joy\joy.vcxproj]
+E:\c++\joy\joy\jr3d.c(2239,5): warning C4029: 声明的形参表不同于定义 [E:\c++\joy\build\joy\joy.vcxproj]
+  janimator.c
+  janimator.c
+  joystick.c
+LINK : fatal error LNK1168: 无法打开 E:\c++\joy\build\Debug\joy.dll 进行写入 [E:\c++\joy\build\joy\joy.vcxproj]

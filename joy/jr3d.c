@@ -1051,6 +1051,13 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 	return true;
 }
 
+/* 设置 3D 世界文字颜色(RGB 烘焙进下一段 bake 的纹理, 需在 draw_3d 前调用) */
+void r3d_font_set_color(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb)
+{
+	if (!r) return;
+	r->font_color_r = cr; r->font_color_g = cg; r->font_color_b = cb;
+}
+
 /* 把整段字符串烘焙成一张 RGBA 纹理(白字 + alpha), 逐行照抄原版 bake_text_texture,
    仅 gFont 系列全局变量 -> r->font 结构体字段, gTextTex -> r->font_tex
    (固定宽度 gFontPixH*n, 原版对齐/裁剪, flip=0) */
@@ -1219,9 +1226,11 @@ bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 		if (!r3d_font_bake(r, text)) return false;
 	}
 
-	/* 固定基向量: right 沿世界 -X, up 沿世界 +Y, 文字方向恒定 */
+	/* 固定基向量: 让文字水平横卧于 XZ 地面平面、字形朝上(对俯视相机可读)。
+	   摄像机视角下屏幕右≈世界 -X, 屏幕上方≈世界 +Z(字形顶), 故取 right=-X, up=-Z。
+	   若取 up=+Y 会得到竖直 XY 平面, 在俯视角下字形横竖颠倒。 */
 	vec3_t right = { -1.0f, 0.0f, 0.0f };
-	vec3_t up    = {  0.0f, 1.0f, 0.0f };
+	vec3_t up    = {  0.0f, 0.0f, -1.0f };
 
 	float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
 	float worldH = size;
@@ -1386,6 +1395,37 @@ void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
 	draw_rect_2d(r, m, x, y, w, h, cr, cg, cb, winW, winH);
 }
 
+/* 在屏幕(逻辑)坐标绘制自定义实心色 mesh(2D 正交, 原点左上, Y 向下)。
+   cx/cy: mesh 中心逻辑坐标; sx/sy: 缩放(逻辑像素);
+   用于环形/扇形/拱形等非矩形图元(如按钮倒计时环形圈)。
+   与 r3d_draw_rect_2d 使用同一套 proj 映射, 保证与按钮/文字坐标对齐。 */
+void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
+					  float cx, float cy, float sx, float sy,
+					  Uint8 cr, Uint8 cg, Uint8 cb,
+					  float winW, float winH)
+{
+	if (!r || !m || winW <= 0 || winH <= 0) return;
+
+	mat44_t model; memset(&model, 0, sizeof(model));
+	model.m0  = sx;
+	model.m5  = sy;
+	model.m10 = 1.0f;
+	model.m12 = cx;
+	model.m13 = cy;
+	model.m15 = 1.0f;
+
+	mat44_t proj; memset(&proj, 0, sizeof(proj));
+	proj.m0  =  2.0f / winW;
+	proj.m5  = -2.0f / winH;
+	proj.m10 =  1.0f;
+	proj.m12 = -1.0f;
+	proj.m13 =  1.0f;
+	proj.m15 =  1.0f;
+
+	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb, 255);
+	draw_mesh_internal_proj(r, m, &model, &proj, tex);
+}
+
 jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text)
 {
 	jr3d_button_p b = (jr3d_button_p)SDL_malloc(sizeof(jr3d_button_t));
@@ -1479,6 +1519,54 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 void r3d_button_destroy(jr3d_button_p btn)
 {
 	if (btn) SDL_free(btn);
+}
+
+/* 单位圆盘 mesh(半径1), 供圆形按钮/圆环等 2D 绘制复用, 惰性创建一次 */
+static render_mesh_p r3d_unit_disc(jr3d_p r)
+{
+	static render_mesh_p disc = NULL;
+	if (disc) return disc;
+	enum { SEGS = 40 };
+	float rim[SEGS * 2];
+	for (int i = 0; i < SEGS; i++) {
+		float a = (float)i / SEGS * 6.2831853f;
+		rim[i*2] = sinf(a); rim[i*2+1] = -cosf(a);   // 从正上方逆时针? 用 -cos 使顶点从上方起
+	}
+	float verts[SEGS * 3 * 5];
+	int vi = 0;
+	for (int i = 0; i < SEGS; i++) {
+		int j = (i + 1) % SEGS;
+		verts[vi++]=0; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
+		verts[vi++]=rim[i*2]; verts[vi++]=rim[i*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
+		verts[vi++]=rim[j*2]; verts[vi++]=rim[j*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
+	}
+	disc = r3d_mesh_custom(r, verts, vi / 5);
+	return disc;
+}
+
+/* 圆形按钮: 深色描边圆 + 填充圆(圆形版 r3d_button_draw), 文字处理同矩形按钮。
+   击打区仍用 btn 矩形(64x64), 但视觉为直径=min(w,h) 的圆。 */
+void r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
+{
+	if (!r || !btn || winW <= 0 || winH <= 0) return;
+	Uint8 fr = 255, fg = 255, fb = 255;
+	if (btn->state == JR3D_BTN_HOVER)   { fr = 220; fg = 225; fb = 235; }
+	if (btn->state == JR3D_BTN_PRESSED) { fr = 200; fg = 200; fb = 210; }
+	render_mesh_p disc = r3d_unit_disc(r);
+	if (!disc) return;
+	float cx = btn->x + btn->w * 0.5f, cy = btn->y + btn->h * 0.5f;
+	float R = (btn->w < btn->h ? btn->w : btn->h) * 0.5f;
+	r3d_draw_mesh_2d(r, disc, cx, cy, R + 3.0f, R + 3.0f, 0, 0, 0, winW, winH); // 黑描边
+	r3d_draw_mesh_2d(r, disc, cx, cy, R, R, fr, fg, fb, winW, winH);            // 填充
+	/* 文字居中(与 r3d_button_draw 一致) */
+	if (r->font_ttf_buf && btn->text[0]) {
+		float fontSize = btn->h * 0.5f;
+		if (SDL_strcmp(r->font_cache, btn->text) != 0) r3d_font_bake(r, btn->text);
+		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
+		float tx = btn->x + (btn->w - textW) * 0.5f;
+		float ty = btn->y + (btn->h - fontSize) * 0.5f;
+		r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
+	}
 }
 
 /* ================================================================
