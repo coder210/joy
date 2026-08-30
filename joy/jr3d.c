@@ -1,4 +1,4 @@
-﻿#include "joy.h"
+#include "joy.h"
 #include <SDL3/SDL.h>
 
 #ifndef M_PI
@@ -69,9 +69,15 @@ struct jr3d {
 	SDL_GPUTexture*    font_tex;       /* 当前字符串烘焙的整张纹理 */
 	int                font_tex_w;
 	int                font_tex_h;
-	char               font_cache[256]; /* 已烘焙的字符串缓存 */
+	char               font_cache[256]; /* 已烘焙的字符串缓存(最近一次) */
 	Uint8              font_color_r, font_color_g, font_color_b; /* 烘焙文字颜色(默认白) */
-	Uint8              font_cache_r, font_cache_g, font_cache_b; /* 已烘焙颜色缓存 */
+	Uint8              font_cache_r, font_cache_g, font_cache_b; /* 已烘焙颜色缓存(最近一次) */
+
+	/* 多槽烘焙缓存: 同一 (字符串,颜色) 只光栅化一次, 之后直接复用纹理。
+	   解决 splash/菜单/HUD 每帧交替绘制多句文字、单槽缓存反复失效导致每帧重烘焙+刷日志的问题。
+	   槽数取 32: 让 FPS/HP 这类频繁变化的字符串挤兑(抖动)时不会把固定按键文字从缓存挤掉。 */
+	int  font_slots_used;
+	struct { char str[256]; int w, h; Uint8 r, g, b; SDL_GPUTexture* tex; } font_slots[32];
 
 	/* 延迟释放队列: r3d_mesh_destroy 不再立即释放 GPU buffer,
 	   而是延迟到 r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
@@ -1039,6 +1045,8 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 	r->font_pix_h  = pixel_height;
 	r->font_tex    = NULL;
 	r->font_cache[0] = '\0';
+	r->font_slots_used = 0;
+	memset(r->font_slots, 0, sizeof(r->font_slots));
 	SDL_Log("font: ready scale=%.3f ascent=%d", r->font_scale, r->font_ascent);
 	return true;
 }
@@ -1049,8 +1057,24 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 static bool r3d_font_bake(jr3d_p r, const char* str)
 {
 	if (str == NULL) return false;
-	// 字符串与颜色都未变则不重建
-	if (r->font_tex && SDL_strcmp(str, r->font_cache) == 0 &&
+
+	/* 多槽缓存命中: 已有同 (字符串,颜色) 的烘焙纹理则直接复用, 不再光栅化/上传 */
+	for (int i = 0; i < r->font_slots_used; i++) {
+		if (r->font_slots[i].tex &&
+			r->font_slots[i].r == r->font_color_r &&
+			r->font_slots[i].g == r->font_color_g &&
+			r->font_slots[i].b == r->font_color_b &&
+			SDL_strcmp(r->font_slots[i].str, str) == 0) {
+			r->font_tex   = r->font_slots[i].tex;
+			r->font_tex_w = r->font_slots[i].w;
+			r->font_tex_h = r->font_slots[i].h;
+			SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
+			r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
+			return true;
+		}
+	}
+	// 兼容旧单槽路径(槽缓存为空时)
+	if (r->font_slots_used == 0 && r->font_tex && SDL_strcmp(str, r->font_cache) == 0 &&
 		r->font_color_r == r->font_cache_r && r->font_color_g == r->font_cache_g && r->font_color_b == r->font_cache_b)
 		return true;
 
@@ -1115,13 +1139,37 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	}
 	SDL_free(bitmap);
 
-	if (r->font_tex) { SDL_ReleaseGPUTexture(r->dev, r->font_tex); r->font_tex = NULL; }
+	// 注意: 不能在此释放旧的 r->font_tex——它已被存入某个缓存槽并被引用,
+	// 生命周期交由槽的 LRU 淘汰统一管理。这里仅创建新纹理。
 	r->font_tex = (SDL_GPUTexture*)r3d_create_texture(r, final_w, real_height, rgba, 0);
 	SDL_free(rgba);
 	r->font_tex_w = final_w;
 	r->font_tex_h = real_height;
 	SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
 	r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
+
+	/* 存入多槽缓存(满 8 槽则 LRU 淘汰最早槽并释放其 GPU 纹理) */
+	if (r->font_slots_used < 8) {
+		r->font_slots[r->font_slots_used].tex = r->font_tex;
+		r->font_slots[r->font_slots_used].w = final_w;
+		r->font_slots[r->font_slots_used].h = real_height;
+		r->font_slots[r->font_slots_used].r = r->font_color_r;
+		r->font_slots[r->font_slots_used].g = r->font_color_g;
+		r->font_slots[r->font_slots_used].b = r->font_color_b;
+		SDL_strlcpy(r->font_slots[r->font_slots_used].str, str, sizeof(r->font_slots[r->font_slots_used].str));
+		r->font_slots_used++;
+	} else {
+		if (r->font_slots[0].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[0].tex);
+		for (int i = 0; i < 7; i++) r->font_slots[i] = r->font_slots[i + 1];
+		r->font_slots[7].tex = r->font_tex;
+		r->font_slots[7].w = final_w;
+		r->font_slots[7].h = real_height;
+		r->font_slots[7].r = r->font_color_r;
+		r->font_slots[7].g = r->font_color_g;
+		r->font_slots[7].b = r->font_color_b;
+		SDL_strlcpy(r->font_slots[7].str, str, sizeof(r->font_slots[7].str));
+	}
+
 	SDL_Log("font: baked text '%s' %dx%d tex=%p", str, final_w, real_height, r->font_tex);
 	return true;
 }

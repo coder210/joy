@@ -281,6 +281,10 @@ struct scene {
     scene_destroy_fn on_destroy;
     scene_event_fn   on_event;
 
+    scene_fixed_update_fn on_fixed_update; /* 固定步长更新回调(Unity FixedUpdate 对应)，NULL=不用 */
+    float fixed_step;                      /* 固定步长(s)；<=0 表示关闭固定步长调度 */
+    float fixed_accum;                     /* 固定步长累加器 */
+
     void* userdata;
     char name[JOY_MAX_BUFFER];
 };
@@ -370,6 +374,13 @@ int scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* o
 void scene_update(scene_p scene, float delta_time)
 {
     if (!scene) return;
+    if (scene->fixed_step > 0.0f) {
+        scene->fixed_accum += delta_time;
+        while (scene->fixed_accum >= scene->fixed_step) {
+            scene->fixed_accum -= scene->fixed_step;
+            if (scene->on_fixed_update) scene->on_fixed_update(scene, scene->fixed_step);
+        }
+    }
     if (scene->on_update) scene->on_update(scene, delta_time);
     for (int i = 0; i < scene->root_count; i++) {
         scene_node_update(scene->root_nodes[i], delta_time);
@@ -404,6 +415,15 @@ void scene_set_update_callback(scene_p scene, scene_update_fn cb)
 void scene_set_render_callback(scene_p scene, scene_render_fn cb) { if (scene) scene->on_render = cb; }
 void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
 void scene_set_event_callback(scene_p scene, scene_event_fn cb) { if (scene) scene->on_event = cb; }
+
+/* 启用固定步长更新(Unity FixedUpdate 对应)。step<=0 关闭，回调可传 NULL */
+void scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float step) {
+	if (scene) {
+		scene->on_fixed_update = cb;
+		scene->fixed_step = step;
+		scene->fixed_accum = 0.0f;
+	}
+}
 void scene_set_userdata(scene_p scene, void* ud) { if (scene) scene->userdata = ud; }
 void* scene_get_userdata(scene_p scene) { return scene ? scene->userdata : NULL; }
 const char* scene_get_name(scene_p scene) { return scene ? scene->name : ""; }

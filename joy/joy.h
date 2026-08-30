@@ -657,6 +657,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef void (*scene_render_fn)(scene_p);
         typedef void (*scene_destroy_fn)(scene_p);
         typedef void (*scene_event_fn)(scene_p, const void*);
+        typedef void (*scene_fixed_update_fn)(scene_p, float); /* 固定步长更新(Unity FixedUpdate 对应) */
 
 
 
@@ -1945,6 +1946,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void scene_set_render_callback(scene_p scene, scene_render_fn cb);
         JOY_API void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb);
         JOY_API void scene_set_event_callback(scene_p scene, scene_event_fn cb);
+        JOY_API void scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float fixed_step);
         JOY_API void scene_set_popup_node(scene_p scene, scene_node_p node);
         JOY_API scene_node_p scene_get_popup_node(scene_p scene);
         JOY_API void scene_set_userdata(scene_p scene, void* ud);

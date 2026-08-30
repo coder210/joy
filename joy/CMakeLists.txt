@@ -135,3 +135,9 @@ endif()
 
 target_include_directories(${LIB_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/..)
 source_group(TREE "${CMAKE_SOURCE_DIR}" FILES ${PROJECT_FILES})
+
+# 源码含 UTF-8 中文注释，MSVC 默认按 GBK(936) 读取会导致括号错配(C2143/C1075)，
+# 加 /utf-8 以 UTF-8 解析源码字符串，避免误读。
+if(MSVC)
+    target_compile_options(${LIB_NAME} PRIVATE /utf-8)
+endif()
