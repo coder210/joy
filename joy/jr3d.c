@@ -1190,7 +1190,10 @@ bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
 	if (!r || !m || !text || size <= 0) return false;
 	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_3d: font not init"); return false; }
 
-	if (SDL_strcmp(r->font_cache, text) != 0) {
+	if (SDL_strcmp(r->font_cache, text) != 0 ||
+		r->font_color_r != r->font_cache_r ||
+		r->font_color_g != r->font_cache_g ||
+		r->font_color_b != r->font_cache_b) {
 		if (!r3d_font_bake(r, text)) return false;
 	}
 
@@ -1222,7 +1225,10 @@ bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 	if (!r || !m || !text || size <= 0) return false;
 	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_fixed: font not init"); return false; }
 
-	if (SDL_strcmp(r->font_cache, text) != 0) {
+	if (SDL_strcmp(r->font_cache, text) != 0 ||
+		r->font_color_r != r->font_cache_r ||
+		r->font_color_g != r->font_cache_g ||
+		r->font_color_b != r->font_cache_b) {
 		if (!r3d_font_bake(r, text)) return false;
 	}
 
@@ -1245,6 +1251,32 @@ bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 	return true;
 }
 
+/* 在 3D 空间绘制文字 billboard: 文字平面由 right/up 基向量张成(通常取相机基向量,
+   使文字始终面向相机、不因俯视角压扁), 文字沿 right 横向、沿 up 纵向, 字形正向同 2D 文字。 */
+bool r3d_font_draw_billboard(jr3d_p r, render_mesh_p m, const char* text,
+							 vec3_t topLeft, vec3_t right, vec3_t up, float size)
+{
+	if (!r || !m || !text || size <= 0) return false;
+	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_billboard: font not init"); return false; }
+
+	if (SDL_strcmp(r->font_cache, text) != 0 ||
+		r->font_color_r != r->font_cache_r ||
+		r->font_color_g != r->font_cache_g ||
+		r->font_color_b != r->font_cache_b) {
+		if (!r3d_font_bake(r, text)) return false;
+	}
+
+	float aspect = (float)r->font_tex_w / (float)r->font_tex_h;
+	vec3_t rightScaled = { right.x * aspect, right.y * aspect, right.z * aspect };
+	vec3_t center = {
+		topLeft.x + rightScaled.x * (size * 0.5f) + up.x * (size * 0.5f),
+		topLeft.y + rightScaled.y * (size * 0.5f) + up.y * (size * 0.5f),
+		topLeft.z + rightScaled.z * (size * 0.5f) + up.z * (size * 0.5f),
+	};
+	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, size, (void*)r->font_tex);
+	return true;
+}
+
 /* 在屏幕(窗口)坐标绘制文字, 像 2D HUD 一样固定在窗口左上角, 不随相机旋转/移动。
    pixelX/pixelY: 文字左上角在窗口中的像素坐标(原点左上, Y 向下);
    fontSize: 文字像素高度; winW/winH: 窗口像素尺寸(通常传 r->ww/r->wh)。 */
@@ -1257,7 +1289,10 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 
 	/* 使用当前 r->font_color_* 作为烘焙颜色(由 r3d_font_draw_2d / _color 设置) */
 
-	if (SDL_strcmp(r->font_cache, text) != 0) {
+	if (SDL_strcmp(r->font_cache, text) != 0 ||
+		r->font_color_r != r->font_cache_r ||
+		r->font_color_g != r->font_cache_g ||
+		r->font_color_b != r->font_cache_b) {
 		if (!r3d_font_bake(r, text)) return false;
 	}
 
@@ -1696,6 +1731,18 @@ void r3d_input_focus(jr3d_input_p inp)
 	if (inp) { inp->focused = true; inp->cursor_visible = true; inp->cursor_timer = SDL_GetTicks(); }
 }
 
+void r3d_input_start_text_input(jr3d_p r, jr3d_input_p inp)
+{
+	if (!r || !inp) return;
+	if (inp->focused && r->win) SDL_StartTextInput(r->win);
+}
+
+void r3d_input_stop_text_input(jr3d_p r, jr3d_input_p inp)
+{
+	if (!r || !inp) return;
+	if (r->win) SDL_StopTextInput(r->win);
+}
+
 void r3d_input_defocus(jr3d_input_p inp)
 {
 	if (inp) inp->focused = false;
@@ -1987,13 +2034,12 @@ bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 		if (event->button.button != SDL_BUTTON_LEFT)
 			return false;
 		if (r3d_input_is_hovered(r, inp, event->button.x, event->button.y)) {
-			/* 聚焦 + 点击定位光标 + 启动文本输入 */
-			bool was_focused = inp->focused;
+			/* 聚焦 + 点击定位光标 + 启动文本输入(幂等, 重复调用无害) */
 			inp->focused = true;
 			inp->cursor_visible = true;
 			inp->cursor_timer = SDL_GetTicks();
 			r3d_input_click(r, inp, event->button.x, event->button.y);
-			if (!was_focused && r->win) SDL_StartTextInput(r->win);
+			if (r->win) SDL_StartTextInput(r->win);
 			return true;   /* 消费: 调用方不应再旋转相机 */
 		} else {
 			if (inp->focused) {

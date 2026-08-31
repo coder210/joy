@@ -1209,6 +1209,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
            topLeft 为左上角锚点(世界坐标), size 为文字世界高度。 */
         JOY_API bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
                                          vec3_t topLeft, float size);
+        /* 相机朝向 billboard 绘制文字: 文字平面由 right/up 基向量张成(取相机基向量),
+           文字沿 right 横向、沿 up 纵向, 字形正向同 2D 文字。 */
+        JOY_API bool r3d_font_draw_billboard(jr3d_p r, render_mesh_p m, const char* text,
+                                             vec3_t topLeft, vec3_t right, vec3_t up, float size);
         /* 屏幕 2D HUD 文字: 固定在窗口像素坐标(pixelX,pixelY 左上, Y向下), 不随相机变化。
            fontSize 为像素高度, winW/winH 为窗口像素尺寸。 */
         JOY_API bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
@@ -1329,6 +1333,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void   r3d_input_focus(jr3d_input_p inp);
         JOY_API void   r3d_input_defocus(jr3d_input_p inp);
         JOY_API bool   r3d_input_is_focused(const jr3d_input_p inp);
+        /* 启用系统文本输入(需聚焦后调用, 否则 SDL 不产生 TEXT_INPUT 事件) */
+        JOY_API void   r3d_input_start_text_input(jr3d_p r, jr3d_input_p inp);
+        /* 停止系统文本输入 */
+        JOY_API void   r3d_input_stop_text_input(jr3d_p r, jr3d_input_p inp);
         /* 在光标处插入字符串(支持中文等多字节) */
         JOY_API void   r3d_input_insert(jr3d_input_p inp, const char* s);
         /* 删除光标前/后的 UTF-8 字符(退格/Delete) */
