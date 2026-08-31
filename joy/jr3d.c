@@ -1307,6 +1307,7 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 	model.m10 = 1.0f;
 	model.m12 = pixelX + worldW * 0.5f;
 	model.m13 = pixelY + worldH * 0.5f;
+	model.m14 = -1.0f;  /* Z=-1 使正交投影后 NDC_Z=-1 → 深度 0, 不被 3D 场景遮挡 */
 	model.m15 = 1.0f;
 
 	/* 屏幕像素正交投影: 原点左上, X 向右, Y 向下, 覆盖整个窗口。
@@ -1349,6 +1350,28 @@ void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 	if (!r) return;
 	if (outW) *outW = r->last_ww;
 	if (outH) *outH = r->last_wh;
+}
+
+/* 世界坐标投影到屏幕像素坐标(原点左上, Y 向下)。
+   用 viewProj 矩阵变换后做透视除法, 再映射到窗口像素。
+   返回 false 表示点在相机后面(clip.w <= 0), 调用方应跳过绘制。 */
+bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY)
+{
+	if (!r || !screenX || !screenY) return false;
+
+	/* clip = viewProj * vec4(world, 1)  (列主序) */
+	float cx = r->viewProj.m0 * world.x + r->viewProj.m4 * world.y + r->viewProj.m8  * world.z + r->viewProj.m12;
+	float cy = r->viewProj.m1 * world.x + r->viewProj.m5 * world.y + r->viewProj.m9  * world.z + r->viewProj.m13;
+	float cw = r->viewProj.m3 * world.x + r->viewProj.m7 * world.y + r->viewProj.m11 * world.z + r->viewProj.m15;
+
+	if (cw <= 0.0f) return false;
+
+	float ndcX = cx / cw;
+	float ndcY = cy / cw;
+
+	*screenX = (ndcX + 1.0f) * 0.5f * (float)r->last_ww;
+	*screenY = (1.0f - ndcY) * 0.5f * (float)r->last_wh;
+	return true;
 }
 
 /* ================================================================

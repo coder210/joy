@@ -1226,6 +1226,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
+        /* 世界坐标 -> 屏幕像素坐标(原点左上, Y 向下)。返回 false 表示点在相机后面或视锥外 */
+        JOY_API bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY);
+
         /* ---------- 2D UI 逻辑分辨率(仿 jr2d r2d_set_logical_presentation, 窗口缩放自适应) ---------- */
         /* 设置逻辑分辨率: 所有 2D UI(按钮/输入框/滑块/复选框/文字)以逻辑坐标布局,
            渲染时按 窗口尺寸/逻辑尺寸 等比缩放, 命中测试自动把窗口坐标换算回逻辑坐标。
