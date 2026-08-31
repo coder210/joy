@@ -1,9 +1,0 @@
-[32msettings loaded: ip=192.168.2.28 port=30000 bgm=0.500000 sfx=1.000000 fullscreen=0[0m
-[32m[Gametimer] Initialized. Last time: 47873900 ns[0m
-[32m[Gametimer] Target FPS set to: 60 (Frame time: 0.016667 s)[0m
-[32mFailed to load font file: project_proxy2d/fonts/simhei.ttf[0m
-[32mFailed to load font file: project_proxy2d/fonts/simhei.ttf[0m
-[32mFailed to load font file: project_proxy2d/fonts/simhei.ttf[0m
-[32m[game scene] start... mode=3[0m
-[32mwsnetserver listening on tcp://192.168.2.28:30000[0m
-[32mserver start[0m
