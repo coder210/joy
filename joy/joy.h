@@ -1164,6 +1164,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* ---------- 帧管理 ---------- */
         JOY_API bool r3d_begin(jr3d_p r);
         JOY_API void r3d_end(jr3d_p r);
+        /* 返回本帧已提交的 draw call 数（r3d_begin 清零, 供性能诊断） */
+        JOY_API int r3d_get_draw_calls(jr3d_p r);
         /* 设置清屏色（默认深色 0.05/0.06/0.10），游戏场景可改为白底蓝图风 */
         JOY_API void r3d_set_clear_color(jr3d_p r, uint8_t cr, uint8_t cg, uint8_t cb);
 

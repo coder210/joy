@@ -79,6 +79,9 @@ struct jr3d {
 	int  font_slots_used;
 	struct { char str[256]; int w, h; Uint8 r, g, b; SDL_GPUTexture* tex; } font_slots[32];
 
+	/* 每帧 draw call 计数: r3d_begin 清零, draw_mesh_internal_proj 自增, 供 render3d_pass 输出诊断 */
+	int  draw_calls;
+
 	/* 延迟释放队列: r3d_mesh_destroy 不再立即释放 GPU buffer,
 	   而是延迟到 r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
 	SDL_GPUBuffer**    pending_buffers;
@@ -704,6 +707,7 @@ void r3d_destroy(jr3d_p r)
 bool r3d_begin(jr3d_p r)
 {
 	if (!r) return false;
+	r->draw_calls = 0;
 	r->cmd = SDL_AcquireGPUCommandBuffer(r->dev);
 	if (!r->cmd) return false;
 
@@ -764,6 +768,11 @@ void r3d_end(jr3d_p r)
 	if (r->cmd) { SDL_SubmitGPUCommandBuffer(r->cmd); r->cmd = NULL; }
 	/* 帧提交后再释放上一帧遗留的旧 buffer, 此时 GPU 已完成渲染 */
 	r3d_flush_pending(r);
+}
+
+int r3d_get_draw_calls(jr3d_p r)
+{
+	return r ? r->draw_calls : 0;
 }
 
 /* ---- 相机 ---- */
@@ -1155,8 +1164,8 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
 	r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
 
-	/* 存入多槽缓存(满 8 槽则 LRU 淘汰最早槽并释放其 GPU 纹理) */
-	if (r->font_slots_used < 8) {
+	/* 存入多槽缓存(满 32 槽则 LRU 淘汰最早槽并释放其 GPU 纹理) */
+	if (r->font_slots_used < 32) {
 		r->font_slots[r->font_slots_used].tex = r->font_tex;
 		r->font_slots[r->font_slots_used].w = final_w;
 		r->font_slots[r->font_slots_used].h = real_height;
@@ -1167,17 +1176,16 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 		r->font_slots_used++;
 	} else {
 		if (r->font_slots[0].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[0].tex);
-		for (int i = 0; i < 7; i++) r->font_slots[i] = r->font_slots[i + 1];
-		r->font_slots[7].tex = r->font_tex;
-		r->font_slots[7].w = final_w;
-		r->font_slots[7].h = real_height;
-		r->font_slots[7].r = r->font_color_r;
-		r->font_slots[7].g = r->font_color_g;
-		r->font_slots[7].b = r->font_color_b;
-		SDL_strlcpy(r->font_slots[7].str, str, sizeof(r->font_slots[7].str));
+		for (int i = 0; i < 31; i++) r->font_slots[i] = r->font_slots[i + 1];
+		r->font_slots[31].tex = r->font_tex;
+		r->font_slots[31].w = final_w;
+		r->font_slots[31].h = real_height;
+		r->font_slots[31].r = r->font_color_r;
+		r->font_slots[31].g = r->font_color_g;
+		r->font_slots[31].b = r->font_color_b;
+		SDL_strlcpy(r->font_slots[31].str, str, sizeof(r->font_slots[31].str));
 	}
 
-	SDL_Log("font: baked text '%s' %dx%d tex=%p", str, final_w, real_height, r->font_tex);
 	return true;
 }
 
@@ -3202,6 +3210,7 @@ static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, m
 	} else {
 		SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
 	}
+	r->draw_calls++;
 }
 
 /* ---- 公开绘制 API ---- */
