@@ -1223,6 +1223,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                             float pixelX, float pixelY, float fontSize,
                                             float winW, float winH,
                                             Uint8 cr, Uint8 cg, Uint8 cb);
+        /* 带描边的 2D HUD 文字: 主色 + 描边色(4 方向偏移), 任何背景下可读 */
+        JOY_API bool r3d_font_draw_2d_outline(jr3d_p r, render_mesh_p m, const char* text,
+                                              float pixelX, float pixelY, float fontSize,
+                                              float winW, float winH,
+                                              Uint8 cr, Uint8 cg, Uint8 cb,
+                                              Uint8 or_, Uint8 og, Uint8 ob,
+                                              float outline);
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 

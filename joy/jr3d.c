@@ -1345,6 +1345,29 @@ bool r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
 	return r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY, fontSize, winW, winH);
 }
 
+/* 带描边的 2D HUD 文字: 先烘焙描边色绘制 4 个方向偏移, 再烘焙主色绘制原位。
+   描边宽度 outline 为像素。任何背景下均可读(如浅色地面上的黑色昵称加白描边)。 */
+bool r3d_font_draw_2d_outline(jr3d_p r, render_mesh_p m, const char* text,
+							  float pixelX, float pixelY, float fontSize,
+							  float winW, float winH,
+							  Uint8 cr, Uint8 cg, Uint8 cb,     /* 主色 */
+							  Uint8 or_, Uint8 og, Uint8 ob,    /* 描边色 */
+							  float outline)
+{
+	if (!r || !m || !text || fontSize <= 0 || outline <= 0) return false;
+
+	/* 描边: 烘焙描边色, 4 个方向各偏移 outline 像素(同色不重复烘焙) */
+	r->font_color_r = or_; r->font_color_g = og; r->font_color_b = ob;
+	r3d_font_draw_2d_impl(r, m, text, pixelX - outline, pixelY, fontSize, winW, winH);
+	r3d_font_draw_2d_impl(r, m, text, pixelX + outline, pixelY, fontSize, winW, winH);
+	r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY - outline, fontSize, winW, winH);
+	r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY + outline, fontSize, winW, winH);
+
+	/* 主色原位 */
+	r->font_color_r = cr; r->font_color_g = cg; r->font_color_b = cb;
+	return r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY, fontSize, winW, winH);
+}
+
 void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 {
 	if (!r) return;
