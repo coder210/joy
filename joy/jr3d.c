@@ -13,7 +13,7 @@
  * 内部结构 — 完整 SDL3 GPU 类型
  * ================================================================ */
 
-#define MAX_COLOR_CACHE 64
+#define MAX_COLOR_CACHE 256
 
 struct render_mesh {
 	SDL_GPUBuffer* buffer;
@@ -541,8 +541,10 @@ static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb,
 			return r->color_cache[i].tex;
 	}
 	if (r->color_count >= MAX_COLOR_CACHE) {
-		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d: color cache full");
-		return NULL;
+		/* LRU: 淘汰最旧槽(0), 前移, 新颜色放最后, 避免缓存满后返回 NULL 导致颜色错乱 */
+		if (r->color_cache[0].tex) SDL_ReleaseGPUTexture(r->dev, r->color_cache[0].tex);
+		for (int i = 0; i < MAX_COLOR_CACHE - 1; i++) r->color_cache[i] = r->color_cache[i + 1];
+		r->color_count = MAX_COLOR_CACHE - 1;
 	}
 	SDL_GPUTexture* tex = (SDL_GPUTexture*)r3d_create_solid_texture(r->dev, cr, cg, cb, ca);
 	if (tex) {
