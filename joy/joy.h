@@ -1277,6 +1277,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int  r3d_font_cache_get_count(jr3d_p r);
         /* 清空缓存并释放全部缓存纹理(字体销毁前调用) */
         JOY_API void r3d_font_cache_clear(jr3d_p r);
+        /* 回收闲置超过 max_idle_frames 帧的缓存条目并释放其纹理(单位: 渲染帧,
+           由 r3d_begin 推进)。对齐 jtext_cache_sweep 的语义, 供周期性调用清理
+           一次性文本(如滚动的聊天记录), 避免缓存长期被历史文本占满。 */
+        JOY_API void r3d_font_cache_sweep(jr3d_p r, int max_idle_frames);
 
         /* 世界坐标 -> 屏幕像素坐标(原点左上, Y 向下)。返回 false 表示点在相机后面或视锥外 */
         JOY_API bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY);

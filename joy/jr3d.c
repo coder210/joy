@@ -80,10 +80,12 @@ struct jr3d {
 	int  font_slots_used;
 	int  font_cache_limit;         /* 缓存上限(默认 32), 可经 r3d_font_cache_set_limit 调整 */
 	Uint64 font_cache_tick;        /* 每次烘焙操作的单调计数, 用作 LRU 时间戳 */
+	Uint64 font_cache_frame;       /* 渲染帧计数(r3d_begin 递增), 供 sweep 判断闲置帧数 */
 	struct {
 		char str[256]; int w, h; Uint8 r, g, b;
 		SDL_GPUTexture* tex;
-		Uint64 last_use;           /* 最近一次命中/创建的时刻 */
+		Uint64 last_use;           /* 最近一次命中/创建的时刻(bake 计数) */
+		Uint64 last_frame;         /* 最近一次命中/创建所在的渲染帧 */
 	} font_slots[64];              /* 物理数组上限 64(可配置上限 <= 64) */
 
 	/* 每帧 draw call 计数: r3d_begin 清零, draw_mesh_internal_proj 自增, 供 render3d_pass 输出诊断 */
@@ -597,9 +599,10 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	/* 字体默认白色 */
 	r->font_color_r = 255; r->font_color_g = 255; r->font_color_b = 255;
 
-	/* 文字烘焙缓存默认上限 32 条, LRU 计时从 0 开始 */
+	/* 文字烘焙缓存默认上限 32 条, LRU 计时与帧计数从 0 开始 */
 	r->font_cache_limit = 32;
 	r->font_cache_tick = 0;
+	r->font_cache_frame = 0;
 
 	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符, nullptr 视为空串） */
 	const char* sd = shader_dir ? shader_dir : "";
@@ -733,6 +736,7 @@ bool r3d_begin(jr3d_p r)
 {
 	if (!r) return false;
 	r->draw_calls = 0;
+	r->font_cache_frame++;   /* 渲染帧计数, 供文字缓存 sweep 判断闲置帧数 */
 	r->cmd = SDL_AcquireGPUCommandBuffer(r->dev);
 	if (!r->cmd) return false;
 
@@ -1111,6 +1115,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 			r->font_tex_w = r->font_slots[i].w;
 			r->font_tex_h = r->font_slots[i].h;
 			r->font_slots[i].last_use = ++r->font_cache_tick;
+			r->font_slots[i].last_frame = r->font_cache_frame;
 			SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
 			r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
 			return true;
@@ -1203,6 +1208,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 		r->font_slots[r->font_slots_used].g = r->font_color_g;
 		r->font_slots[r->font_slots_used].b = r->font_color_b;
 		r->font_slots[r->font_slots_used].last_use = tick;
+		r->font_slots[r->font_slots_used].last_frame = r->font_cache_frame;
 		SDL_strlcpy(r->font_slots[r->font_slots_used].str, str, sizeof(r->font_slots[r->font_slots_used].str));
 		r->font_slots_used++;
 	} else {
@@ -1218,6 +1224,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 		r->font_slots[victim].g = r->font_color_g;
 		r->font_slots[victim].b = r->font_color_b;
 		r->font_slots[victim].last_use = tick;
+		r->font_slots[victim].last_frame = r->font_cache_frame;
 		SDL_strlcpy(r->font_slots[victim].str, str, sizeof(r->font_slots[victim].str));
 	}
 
@@ -1443,17 +1450,53 @@ int r3d_font_cache_get_count(jr3d_p r)
 	return r ? r->font_slots_used : 0;
 }
 
-/* 清空缓存并释放全部缓存纹理(但保留 font_tex 单槽引用, 由 r3d_destroy 统一处理) */
+/* 清空缓存并释放全部缓存纹理。font_tex 若指向被释放的纹理也一并置空失效,
+   保证后续调用不会用到悬空纹理(r3d_font_draw_* 在 font_tex 为空时会走 bake 重建)。 */
 void r3d_font_cache_clear(jr3d_p r)
 {
 	if (!r) return;
 	for (int i = 0; i < r->font_slots_used; i++) {
+		if (r->font_slots[i].tex == r->font_tex) r->font_tex = NULL;
 		if (r->font_slots[i].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[i].tex);
 	}
 	r->font_slots_used = 0;
 	memset(r->font_slots, 0, sizeof(r->font_slots));
+	r->font_tex = NULL;
 	/* 单槽缓存也失效 */
 	r->font_cache[0] = '\0';
+}
+
+/* 回收闲置超过 max_idle_frames 帧的缓存条目并释放其纹理。
+   单位是渲染帧(r3d_begin 推进的 font_cache_frame)。
+   对一次性文本(如滚动的聊天记录)很有用: 它们用完即闲置, 周期性 sweep 会释放,
+   避免缓存长期被历史文本占满、把固定 UI 文字挤出去。 */
+void r3d_font_cache_sweep(jr3d_p r, int max_idle_frames)
+{
+	int i;
+	if (!r || max_idle_frames < 0) return;
+
+	i = 0;
+	while (i < r->font_slots_used) {
+		if ((r->font_cache_frame - r->font_slots[i].last_frame) > (Uint64)max_idle_frames) {
+			/* 若释放的正是单槽 font_tex 引用的纹理, 一并失效, 避免悬空 */
+			if (r->font_slots[i].tex == r->font_tex) {
+				r->font_tex = NULL;
+				r->font_cache[0] = '\0';
+			}
+			if (r->font_slots[i].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[i].tex);
+			/* 用末尾元素覆盖, 保持数组紧凑 */
+			r->font_slots[i] = r->font_slots[r->font_slots_used - 1];
+			r->font_slots_used--;
+			/* 不递增 i: 换过来的末尾元素也需要检查 */
+		} else {
+			i++;
+		}
+	}
+	/* 若全部清空, 单槽 font_tex 也一并失效, 避免悬空 */
+	if (r->font_slots_used == 0 && r->font_tex) {
+		r->font_tex = NULL;
+		r->font_cache[0] = '\0';
+	}
 }
 
 /* 世界坐标投影到屏幕像素坐标(原点左上, Y 向下)。
