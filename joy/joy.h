@@ -1267,6 +1267,17 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void r3d_get_window_size(jr3d_p r, int* outW, int* outH);
 
+        /* 文字烘焙缓存控制
+         * 3D UI 的每句文字会烘焙成一张 GPU 纹理并按 (字符串,颜色) 缓存(LRU)。
+         * 当不同文本组合超过上限时, 最久未使用的条目会被淘汰并释放其纹理。
+         * 编辑器/HUD 这类有大量不同文本的场景, 默认上限 32 可能偏小导致缓存颠簸
+         * (固定文字被频繁变化的文本挤掉后每帧重建纹理), 可按需调大。
+         */
+        JOY_API void r3d_font_cache_set_limit(jr3d_p r, int max_entries);
+        JOY_API int  r3d_font_cache_get_count(jr3d_p r);
+        /* 清空缓存并释放全部缓存纹理(字体销毁前调用) */
+        JOY_API void r3d_font_cache_clear(jr3d_p r);
+
         /* 世界坐标 -> 屏幕像素坐标(原点左上, Y 向下)。返回 false 表示点在相机后面或视锥外 */
         JOY_API bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY);
 

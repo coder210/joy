@@ -75,9 +75,16 @@ struct jr3d {
 
 	/* 多槽烘焙缓存: 同一 (字符串,颜色) 只光栅化一次, 之后直接复用纹理。
 	   解决 splash/菜单/HUD 每帧交替绘制多句文字、单槽缓存反复失效导致每帧重烘焙+刷日志的问题。
-	   槽数取 32: 让 FPS/HP 这类频繁变化的字符串挤兑(抖动)时不会把固定按键文字从缓存挤掉。 */
+	   采用 LRU 淘汰 + 可配置上限(font_cache_limit): 当不同 (字符串,颜色) 组合超过上限时,
+	   优先淘汰最久未使用的条目, 避免固定文字被频繁变化的文本挤掉后每帧重建纹理(缓存颠簸)。 */
 	int  font_slots_used;
-	struct { char str[256]; int w, h; Uint8 r, g, b; SDL_GPUTexture* tex; } font_slots[32];
+	int  font_cache_limit;         /* 缓存上限(默认 32), 可经 r3d_font_cache_set_limit 调整 */
+	Uint64 font_cache_tick;        /* 每次烘焙操作的单调计数, 用作 LRU 时间戳 */
+	struct {
+		char str[256]; int w, h; Uint8 r, g, b;
+		SDL_GPUTexture* tex;
+		Uint64 last_use;           /* 最近一次命中/创建的时刻 */
+	} font_slots[64];              /* 物理数组上限 64(可配置上限 <= 64) */
 
 	/* 每帧 draw call 计数: r3d_begin 清零, draw_mesh_internal_proj 自增, 供 render3d_pass 输出诊断 */
 	int  draw_calls;
@@ -590,6 +597,10 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	/* 字体默认白色 */
 	r->font_color_r = 255; r->font_color_g = 255; r->font_color_b = 255;
 
+	/* 文字烘焙缓存默认上限 32 条, LRU 计时从 0 开始 */
+	r->font_cache_limit = 32;
+	r->font_cache_tick = 0;
+
 	/* 加载着色器（兼容 shader_dir 带/不带尾部分隔符, nullptr 视为空串） */
 	const char* sd = shader_dir ? shader_dir : "";
 	size_t dirlen = strlen(sd);
@@ -692,7 +703,19 @@ void r3d_destroy(jr3d_p r)
 	if (r->fs)       SDL_ReleaseGPUShader(r->dev, r->fs);
 	if (r->lvs)      SDL_ReleaseGPUShader(r->dev, r->lvs);
 	if (r->lfs)      SDL_ReleaseGPUShader(r->dev, r->lfs);
-	if (r->font_tex) SDL_ReleaseGPUTexture(r->dev, r->font_tex);
+	/* 释放文字烘焙缓存里所有 GPU 纹理。注意 font_tex 与某个 font_slots[i].tex
+	   常常指向同一纹理(每次 bake 后新纹理被存入槽, 无额外 acquire), 因此
+	   先释放所有槽, 再单独释放 font_tex——但跳过已在槽中出现过的指针, 避免双重释放。 */
+	for (int i = 0; i < r->font_slots_used; i++) {
+		if (r->font_slots[i].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[i].tex);
+	}
+	if (r->font_tex) {
+		int in_slot = 0;
+		for (int i = 0; i < r->font_slots_used; i++) {
+			if (r->font_slots[i].tex == r->font_tex) { in_slot = 1; break; }
+		}
+		if (!in_slot) SDL_ReleaseGPUTexture(r->dev, r->font_tex);
+	}
 	if (r->dev) {
 		r3d_flush_pending(r); /* 释放所有延迟队列中的 buffer */
 		if (r->pending_buffers) SDL_free(r->pending_buffers);
@@ -1076,7 +1099,8 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 {
 	if (str == NULL) return false;
 
-	/* 多槽缓存命中: 已有同 (字符串,颜色) 的烘焙纹理则直接复用, 不再光栅化/上传 */
+	/* 多槽缓存命中: 已有同 (字符串,颜色) 的烘焙纹理则直接复用, 不再光栅化/上传。
+	   命中时刷新 last_use 以支持 LRU 淘汰。 */
 	for (int i = 0; i < r->font_slots_used; i++) {
 		if (r->font_slots[i].tex &&
 			r->font_slots[i].r == r->font_color_r &&
@@ -1086,6 +1110,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 			r->font_tex   = r->font_slots[i].tex;
 			r->font_tex_w = r->font_slots[i].w;
 			r->font_tex_h = r->font_slots[i].h;
+			r->font_slots[i].last_use = ++r->font_cache_tick;
 			SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
 			r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
 			return true;
@@ -1166,26 +1191,34 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	SDL_strlcpy(r->font_cache, str, sizeof(r->font_cache));
 	r->font_cache_r = r->font_color_r; r->font_cache_g = r->font_color_g; r->font_cache_b = r->font_color_b;
 
-	/* 存入多槽缓存(满 32 槽则 LRU 淘汰最早槽并释放其 GPU 纹理) */
-	if (r->font_slots_used < 32) {
+	/* 存入多槽缓存。槽满(达到上限)时淘汰 last_use 最小的条目(LRU), 并释放其 GPU 纹理。
+	   用 LRU 而非 FIFO: 固定的按钮/HUD 文字频繁命中, 不会被偶尔变化的文本(FPS/HP)挤掉,
+	   避免每帧重建固定文字的 GPU 纹理(缓存颠簸)。 */
+	Uint64 tick = ++r->font_cache_tick;
+	if (r->font_slots_used < r->font_cache_limit) {
 		r->font_slots[r->font_slots_used].tex = r->font_tex;
 		r->font_slots[r->font_slots_used].w = final_w;
 		r->font_slots[r->font_slots_used].h = real_height;
 		r->font_slots[r->font_slots_used].r = r->font_color_r;
 		r->font_slots[r->font_slots_used].g = r->font_color_g;
 		r->font_slots[r->font_slots_used].b = r->font_color_b;
+		r->font_slots[r->font_slots_used].last_use = tick;
 		SDL_strlcpy(r->font_slots[r->font_slots_used].str, str, sizeof(r->font_slots[r->font_slots_used].str));
 		r->font_slots_used++;
 	} else {
-		if (r->font_slots[0].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[0].tex);
-		for (int i = 0; i < 31; i++) r->font_slots[i] = r->font_slots[i + 1];
-		r->font_slots[31].tex = r->font_tex;
-		r->font_slots[31].w = final_w;
-		r->font_slots[31].h = real_height;
-		r->font_slots[31].r = r->font_color_r;
-		r->font_slots[31].g = r->font_color_g;
-		r->font_slots[31].b = r->font_color_b;
-		SDL_strlcpy(r->font_slots[31].str, str, sizeof(r->font_slots[31].str));
+		int victim = 0;
+		for (int i = 1; i < r->font_slots_used; i++) {
+			if (r->font_slots[i].last_use < r->font_slots[victim].last_use) victim = i;
+		}
+		if (r->font_slots[victim].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[victim].tex);
+		r->font_slots[victim].tex = r->font_tex;
+		r->font_slots[victim].w = final_w;
+		r->font_slots[victim].h = real_height;
+		r->font_slots[victim].r = r->font_color_r;
+		r->font_slots[victim].g = r->font_color_g;
+		r->font_slots[victim].b = r->font_color_b;
+		r->font_slots[victim].last_use = tick;
+		SDL_strlcpy(r->font_slots[victim].str, str, sizeof(r->font_slots[victim].str));
 	}
 
 	return true;
@@ -1383,6 +1416,44 @@ void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 	if (!r) return;
 	if (outW) *outW = r->last_ww;
 	if (outH) *outH = r->last_wh;
+}
+
+/* 设置文字烘焙缓存上限(最小 4, 最大 64, 超出物理数组容量会被截断) */
+void r3d_font_cache_set_limit(jr3d_p r, int max_entries)
+{
+	int i, victim;
+	if (!r) return;
+	if (max_entries < 4) max_entries = 4;
+	if (max_entries > 64) max_entries = 64;
+	/* 缩小上限: 释放超出部分的条目(淘汰 last_use 最小的) */
+	while (r->font_slots_used > max_entries) {
+		victim = 0;
+		for (i = 1; i < r->font_slots_used; i++) {
+			if (r->font_slots[i].last_use < r->font_slots[victim].last_use) victim = i;
+		}
+		if (r->font_slots[victim].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[victim].tex);
+		r->font_slots[victim] = r->font_slots[r->font_slots_used - 1];
+		r->font_slots_used--;
+	}
+	r->font_cache_limit = max_entries;
+}
+
+int r3d_font_cache_get_count(jr3d_p r)
+{
+	return r ? r->font_slots_used : 0;
+}
+
+/* 清空缓存并释放全部缓存纹理(但保留 font_tex 单槽引用, 由 r3d_destroy 统一处理) */
+void r3d_font_cache_clear(jr3d_p r)
+{
+	if (!r) return;
+	for (int i = 0; i < r->font_slots_used; i++) {
+		if (r->font_slots[i].tex) SDL_ReleaseGPUTexture(r->dev, r->font_slots[i].tex);
+	}
+	r->font_slots_used = 0;
+	memset(r->font_slots, 0, sizeof(r->font_slots));
+	/* 单槽缓存也失效 */
+	r->font_cache[0] = '\0';
 }
 
 /* 世界坐标投影到屏幕像素坐标(原点左上, Y 向下)。
