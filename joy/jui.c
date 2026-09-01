@@ -345,6 +345,13 @@ vec2_t button_get_position(button_p btn)
         return btn->position;
 }
 
+void button_set_size(button_p btn, float width, float height)
+{
+        if (!btn) return;
+        btn->width = width;
+        btn->height = height;
+}
+
 static bool button_hit_test(button_p btn, float x, float y)
 {
         vec2_t logic = r2d_coordinates_from_window(btn->r2d, x, y);
@@ -1517,6 +1524,23 @@ void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d)
         checkbox->r2d = r2d;
 }
 
+void checkbox_set_position(checkbox_p checkbox, int x, int y)
+{
+        if (!checkbox) return;
+        int dx = x - checkbox->x;
+        int dy = y - checkbox->y;
+        checkbox->x = x;
+        checkbox->y = y;
+        checkbox->hit_area.x += dx;
+        checkbox->hit_area.y += dy;
+}
+
+void checkbox_set_text_color(checkbox_p checkbox, jcolor_t color)
+{
+        if (!checkbox) return;
+        checkbox->text_color = color;
+}
+
 void checkbox_toggle(checkbox_p checkbox)
 {
         if (!checkbox || !checkbox->enabled) return;
@@ -2493,6 +2517,16 @@ void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb
         s->fill_color = fill;
         s->thumb_color = thumb;
         s->thumb_hover_color = thumb_hover;
+}
+
+void slider_set_rect(slider_p s, float x, float y, float w, float h)
+{
+        if (!s) return;
+        s->track.x = x;
+        s->track.y = y;
+        s->track.w = w;
+        s->track.h = h;
+        s->thumb_width = h;
 }
 
 void slider_draw(slider_p s)

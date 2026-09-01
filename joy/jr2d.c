@@ -5,8 +5,23 @@
 #include "external/klib/kvec.h"
 #include "joy.h"
 
-union jr2d {
+/* 裁剪栈最大深度：嵌套面板（窗口 > 面板 > 滚动区 > 列表项）足够用 */
+#define R2D_CLIP_STACK_MAX 32
+
+/* 帧计数，由 r2d_begin() 递增。文字缓存用它做 LRU 的时间基准，
+ * 定义在文件顶部是因为 r2d_begin() 的位置在缓存实现之前。 */
+static Uint64 g_frame = 0;
+
+struct jr2d {
         SDL_Renderer* sdl;
+
+        /* 裁剪状态。clip_enabled 为 false 时表示无裁剪。
+         * 栈保存 push 之前的 (enabled, rect)，pop 时原样恢复。 */
+        bool     clip_enabled;
+        jrect_t  clip_rect;
+        int      clip_top;
+        bool     stack_enabled[R2D_CLIP_STACK_MAX];
+        jrect_t  stack_rect[R2D_CLIP_STACK_MAX];
 };
 
 struct image {
@@ -48,7 +63,8 @@ jr2d_p r2d_create(jwindow_p win)
         SDL_Window* raw = (SDL_Window*)get_raw_window(win);
         SDL_GetWindowSize(raw, &w, &h);
         if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
-        jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
+        jr2d_p r2d = (jr2d_p)SDL_calloc(1, sizeof(jr2d_t));
+        if (!r2d) return NULL;
         r2d->sdl = SDL_CreateRenderer(raw, NULL);
         if (!r2d->sdl) {
                 SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: SDL_CreateRenderer failed: %s", SDL_GetError());
@@ -61,7 +77,8 @@ jr2d_p r2d_create(jwindow_p win)
 
 jr2d_p r2d_wrap(void* sdl_renderer)
 {
-        jr2d_p r2d = (jr2d_p)SDL_malloc(sizeof(jr2d_t));
+        jr2d_p r2d = (jr2d_p)SDL_calloc(1, sizeof(jr2d_t));
+        if (!r2d) return NULL;
         r2d->sdl = (SDL_Renderer*)sdl_renderer;
         return r2d;
 }
@@ -81,7 +98,11 @@ vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y)
 
 void r2d_destroy(jr2d_p r2d)
 {
-        if (r2d) { SDL_DestroyRenderer(r2d->sdl); SDL_free(r2d); }
+        if (!r2d) return;
+        /* 缓存的纹理隶属于这个 renderer，必须整体释放，否则会留下悬空纹理 */
+        jtext_cache_clear();
+        SDL_DestroyRenderer(r2d->sdl);
+        SDL_free(r2d);
 }
 
 bool r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a)
@@ -94,7 +115,8 @@ bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
         return SDL_SetRenderDrawColor(r2d->sdl, r, g, b, a);
 }
 
-void r2d_begin(jr2d_p r2d) { SDL_RenderClear(r2d->sdl); }
+/* 递增帧计数：文字缓存以帧为单位判断条目是否闲置 */
+void r2d_begin(jr2d_p r2d) { g_frame++; SDL_RenderClear(r2d->sdl); }
 void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
 bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h)
@@ -834,14 +856,204 @@ void jtext_print(jr2d_p r2d,
         SDL_RenderTexture(r2d->sdl, text->texture, NULL, &raw_dest);
 }
 
+/* ===================== 文字纹理缓存 =====================
+ *
+ * 旧实现里 jtext_printx() 是 text_createx() -> jtext_print() -> text_destroy()，
+ * 每次调用都新建并销毁一张 SDL 纹理。inputbox / datagrid / popup / tooltip /
+ * combobox_input 都走这条路径；其中 inputbox_draw 还会为测量子串宽度额外
+ * 创建两张纹理，一个带选区的 inputbox 每帧要建 3~4 张。
+ *
+ * 这里按 (font, color, 内容字节) 缓存纹理并 LRU 复用。
+ * 注意只有 jtext_printx 走缓存；text_createx 仍由调用方自行持有与释放，
+ * 因此 label / button 这类自己缓存 jtext 的控件不受影响。
+ */
+
+#define JTEXT_CACHE_BUCKETS       1024
+#define JTEXT_CACHE_DEFAULT_LIMIT 900
+
+typedef struct jtext_entry {
+        struct jtext_entry* hash_next;
+        struct jtext_entry* lru_prev;
+        struct jtext_entry* lru_next;
+        font_p    font;
+        jcolor_t  color;
+        int       len;
+        char*     str;          /* 内容拷贝，len 字节，额外补一个 '\0' 便于调试 */
+        jtext_p   tex;
+        Uint64    last_frame;
+} jtext_entry_t;
+
+static jtext_entry_t* g_buckets[JTEXT_CACHE_BUCKETS];
+static jtext_entry_t* g_lru_head;    /* 最近使用 */
+static jtext_entry_t* g_lru_tail;    /* 最久未用 */
+static int            g_cache_count = 0;
+static int            g_cache_limit = JTEXT_CACHE_DEFAULT_LIMIT;
+
+static Uint64 jtext_hash(font_p font, jcolor_t c, const char* s, int len)
+{
+        Uint64 h = 1469598103934665603ULL;          /* FNV-1a 64 */
+        const unsigned char* p;
+        int i;
+#define JTEXT_HASH_BYTES(pv, n) do {                        \
+                p = (const unsigned char*)(pv);             \
+                for (i = 0; i < (int)(n); i++) {            \
+                        h ^= (Uint64)p[i];                  \
+                        h *= 1099511628211ULL;              \
+                }                                           \
+        } while (0)
+        JTEXT_HASH_BYTES(&font, sizeof(font));
+        JTEXT_HASH_BYTES(&c, sizeof(c));
+        if (s && len > 0) JTEXT_HASH_BYTES(s, len);
+#undef JTEXT_HASH_BYTES
+        return h;
+}
+
+static void jtext_lru_unlink(jtext_entry_t* e)
+{
+        if (e->lru_prev) e->lru_prev->lru_next = e->lru_next;
+        else             g_lru_head = e->lru_next;
+        if (e->lru_next) e->lru_next->lru_prev = e->lru_prev;
+        else             g_lru_tail = e->lru_prev;
+        e->lru_prev = NULL;
+        e->lru_next = NULL;
+}
+
+static void jtext_lru_push_front(jtext_entry_t* e)
+{
+        e->lru_prev = NULL;
+        e->lru_next = g_lru_head;
+        if (g_lru_head) g_lru_head->lru_prev = e;
+        g_lru_head = e;
+        if (!g_lru_tail) g_lru_tail = e;
+}
+
+static void jtext_entry_free(jtext_entry_t* e)
+{
+        if (!e) return;
+        if (e->tex) text_destroy(e->tex);
+        if (e->str) SDL_free(e->str);
+        SDL_free(e);
+}
+
+/* 淘汰最久未使用的条目 */
+static void jtext_evict_one(void)
+{
+        jtext_entry_t* victim = g_lru_tail;
+        jtext_entry_t** pp;
+        Uint64 bucket;
+        if (!victim) return;
+
+        bucket = jtext_hash(victim->font, victim->color, victim->str, victim->len)
+                 % JTEXT_CACHE_BUCKETS;
+        pp = &g_buckets[bucket];
+        while (*pp) {
+                if (*pp == victim) { *pp = victim->hash_next; break; }
+                pp = &(*pp)->hash_next;
+        }
+        jtext_lru_unlink(victim);
+        jtext_entry_free(victim);
+        g_cache_count--;
+}
+
+static jtext_p jtext_cache_get(jr2d_p r2d, font_p font,
+        const char* str, int len, jcolor_t color)
+{
+        jtext_entry_t* e;
+        jtext_p tex;
+        Uint64 bucket;
+
+        if (!r2d || !font || !str || len <= 0) return NULL;
+
+        bucket = jtext_hash(font, color, str, len) % JTEXT_CACHE_BUCKETS;
+
+        for (e = g_buckets[bucket]; e; e = e->hash_next) {
+                if (e->font == font && e->len == len
+                        && e->color.r == color.r && e->color.g == color.g
+                        && e->color.b == color.b && e->color.a == color.a
+                        && SDL_memcmp(e->str, str, (size_t)len) == 0) {
+                        e->last_frame = g_frame;
+                        jtext_lru_unlink(e);
+                        jtext_lru_push_front(e);
+                        return e->tex;
+                }
+        }
+
+        tex = text_createx(r2d, font, str, len, color);
+        if (!tex) return NULL;
+
+        while (g_cache_count >= g_cache_limit) jtext_evict_one();
+
+        e = (jtext_entry_t*)SDL_calloc(1, sizeof(jtext_entry_t));
+        if (!e) { text_destroy(tex); return NULL; }
+        e->str = (char*)SDL_malloc((size_t)len + 1);
+        if (!e->str) { SDL_free(e); text_destroy(tex); return NULL; }
+        SDL_memcpy(e->str, str, (size_t)len);
+        e->str[len] = '\0';
+
+        e->font       = font;
+        e->color      = color;
+        e->len        = len;
+        e->tex        = tex;
+        e->last_frame = g_frame;
+
+        e->hash_next = g_buckets[bucket];
+        g_buckets[bucket] = e;
+        jtext_lru_push_front(e);
+        g_cache_count++;
+        return e->tex;
+}
+
+void jtext_cache_clear(void)
+{
+        while (g_lru_head) jtext_evict_one();
+}
+
+void jtext_cache_set_limit(int max_entries)
+{
+        if (max_entries < 16) max_entries = 16;
+        g_cache_limit = max_entries;
+        while (g_cache_count > g_cache_limit) jtext_evict_one();
+}
+
+int jtext_cache_get_count(void)
+{
+        return g_cache_count;
+}
+
+/* 回收空闲超过 max_idle_frames 帧的条目（单位：帧，由 r2d_begin 推进） */
+void jtext_cache_sweep(int max_idle_frames)
+{
+        if (max_idle_frames < 0) return;
+        while (g_lru_tail
+               && (g_frame - g_lru_tail->last_frame) > (Uint64)max_idle_frames) {
+                jtext_evict_one();
+        }
+}
+
 void jtext_printx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color, float x, float y)
 {
-        jtext_p t = text_createx(r2d, font, str, len, color);
+        jtext_p t = jtext_cache_get(r2d, font, str, len, color);
         if (t) {
                 jtext_print(r2d, t, x, y);
-                text_destroy(t);
         }
+}
+
+bool jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
+        jcolor_t color, int* out_w, int* out_h)
+{
+        jtext_p t;
+        if (out_w) *out_w = 0;
+        if (out_h) *out_h = 0;
+        if (!r2d || !font || !str || len <= 0) return false;
+
+        /* 走同一套缓存：命中时不产生任何纹理创建开销 */
+        t = jtext_cache_get(r2d, font, str, len, color);
+        if (!t) return false;
+
+        if (out_w) *out_w = text_get_width(t);
+        if (out_h) *out_h = text_get_height(t);
+        return true;
 }
 
 int text_get_width(jtext_p jtext_tex)
@@ -963,6 +1175,132 @@ void animation_draw(animation_p animation, jrect_t* camera)
 
         animation_clip = &kv_A(animation->clips, animation->idx_frame);
         image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
+}
+
+/* ===== 裁剪 ===== */
+
+/* 把当前裁剪矩形下发给 SDL。注意 jrect_t 是浮点、SDL_Rect 是整数，
+ * 这里向下取整左上角、向上取整尺寸，避免裁剪区比预期小一圈。 */
+static void r2d_apply_clip(jr2d_p r2d)
+{
+        SDL_Rect cr;
+        if (!r2d) return;
+        if (!r2d->clip_enabled) {
+                SDL_SetRenderClipRect(r2d->sdl, NULL);
+                return;
+        }
+        cr.x = (int)floorf(r2d->clip_rect.x);
+        cr.y = (int)floorf(r2d->clip_rect.y);
+        cr.w = (int)ceilf(r2d->clip_rect.w);
+        cr.h = (int)ceilf(r2d->clip_rect.h);
+        if (cr.w <= 0 || cr.h <= 0) {
+                /* 退化成空矩形：仍然设裁剪，效果是全部不绘制 */
+                cr.w = 0; cr.h = 0;
+        }
+        SDL_SetRenderClipRect(r2d->sdl, &cr);
+}
+
+bool r2d_set_clip_rect(jr2d_p r2d, jrect_t rect)
+{
+        if (!r2d) return false;
+        r2d->clip_enabled = true;
+        r2d->clip_rect = rect;
+        if (rect.w < 0) r2d->clip_rect.w = 0;
+        if (rect.h < 0) r2d->clip_rect.h = 0;
+        r2d_apply_clip(r2d);
+        return true;
+}
+
+bool r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect)
+{
+        if (!r2d) return false;
+        if (out_rect && r2d->clip_enabled) *out_rect = r2d->clip_rect;
+        return r2d->clip_enabled;
+}
+
+void r2d_clear_clip(jr2d_p r2d)
+{
+        if (!r2d) return;
+        r2d->clip_enabled = false;
+        r2d->clip_rect = (jrect_t){ 0, 0, 0, 0 };
+        r2d_apply_clip(r2d);
+}
+
+bool r2d_push_clip_rect(jr2d_p r2d, jrect_t rect)
+{
+        jrect_t out;
+        if (!r2d) return false;
+        if (r2d->clip_top >= R2D_CLIP_STACK_MAX) {
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER,
+                        "r2d_push_clip_rect: stack overflow (max %d)", R2D_CLIP_STACK_MAX);
+                return false;
+        }
+
+        /* 保存上一层状态 */
+        r2d->stack_enabled[r2d->clip_top] = r2d->clip_enabled;
+        r2d->stack_rect[r2d->clip_top]    = r2d->clip_rect;
+        r2d->clip_top++;
+
+        out = rect;
+        if (out.w < 0) out.w = 0;
+        if (out.h < 0) out.h = 0;
+
+        /* 与父级求交，保证嵌套时不会越出外层 */
+        if (r2d->clip_enabled) {
+                float x0 = rect.x;
+                float y0 = rect.y;
+                float x1 = rect.x + out.w;
+                float y1 = rect.y + out.h;
+                float px0 = r2d->clip_rect.x;
+                float py0 = r2d->clip_rect.y;
+                float px1 = r2d->clip_rect.x + r2d->clip_rect.w;
+                float py1 = r2d->clip_rect.y + r2d->clip_rect.h;
+
+                if (x0 < px0) x0 = px0;
+                if (y0 < py0) y0 = py0;
+                if (x1 > px1) x1 = px1;
+                if (y1 > py1) y1 = py1;
+
+                out.x = x0;
+                out.y = y0;
+                out.w = x1 - x0;
+                out.h = y1 - y0;
+                if (out.w < 0) out.w = 0;
+                if (out.h < 0) out.h = 0;
+        }
+
+        r2d->clip_enabled = true;
+        r2d->clip_rect = out;
+        r2d_apply_clip(r2d);
+        return true;
+}
+
+void r2d_pop_clip_rect(jr2d_p r2d)
+{
+        if (!r2d || r2d->clip_top <= 0) return;
+        r2d->clip_top--;
+        r2d->clip_enabled = r2d->stack_enabled[r2d->clip_top];
+        r2d->clip_rect    = r2d->stack_rect[r2d->clip_top];
+        r2d_apply_clip(r2d);
+}
+
+void r2d_reset_clip_stack(jr2d_p r2d)
+{
+        if (!r2d) return;
+        r2d->clip_top = 0;
+        r2d->clip_enabled = false;
+        r2d->clip_rect = (jrect_t){ 0, 0, 0, 0 };
+        r2d_apply_clip(r2d);
+}
+
+bool r2d_point_in_clip(jr2d_p r2d, float x, float y)
+{
+        if (!r2d) return true;              /* 无渲染器时不拦截 */
+        if (!r2d->clip_enabled) return true;
+        return x >= r2d->clip_rect.x
+            && x <  r2d->clip_rect.x + r2d->clip_rect.w
+            && y >= r2d->clip_rect.y
+            && y <  r2d->clip_rect.y + r2d->clip_rect.h;
 }
 
 /* ===== Blend mode ===== */

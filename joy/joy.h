@@ -296,7 +296,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct iocp_server iocp_server_t, * iocp_server_p;
 
         typedef struct jfont font_t, * font_p;
-        typedef union jr2d jr2d_t, * jr2d_p;
+        typedef struct jr2d jr2d_t, * jr2d_p;
         typedef struct image image_t, * image_p;
         typedef struct jtext jtext_t, * jtext_p;
         typedef struct animation animation_t, * animation_p;
@@ -1089,6 +1089,19 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool r2d_draw_point(jr2d_p r2d, float x, float y);
         JOY_API bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count);
 
+        /* 裁剪
+         * SDL_Renderer 同时只支持一个裁剪矩形，因此这里额外维护一个栈：
+         * push 会与父级矩形求交，pop 恢复上一层。UI 的滚动面板需要它，
+         * 否则滚动时内容会绘制到面板外面。
+         */
+        JOY_API bool r2d_set_clip_rect(jr2d_p r2d, jrect_t rect);
+        JOY_API bool r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect);
+        JOY_API void r2d_clear_clip(jr2d_p r2d);
+        JOY_API bool r2d_push_clip_rect(jr2d_p r2d, jrect_t rect);
+        JOY_API void r2d_pop_clip_rect(jr2d_p r2d);
+        JOY_API void r2d_reset_clip_stack(jr2d_p r2d);
+        JOY_API bool r2d_point_in_clip(jr2d_p r2d, float x, float y);
+
         /* 形状绘制 */
         JOY_API bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2);
         JOY_API bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count);
@@ -1121,6 +1134,25 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
         JOY_API int text_get_width(jtext_p jtext_tex);
         JOY_API int text_get_height(jtext_p jtext_tex);
+
+        /* 文字纹理缓存
+         * jtext_printx() 以前的实现是 text_createx() -> jtext_print() -> text_destroy()，
+         * 即每次调用都创建并销毁一张 SDL 纹理。inputbox、datagrid、popup、tooltip、
+         * combobox_input 等控件都走这条路径，一个带选区的 inputbox 每帧要建 3~4 张纹理。
+         * 现在 jtext_printx 改为按 (font, color, 内容) 缓存并 LRU 复用。
+         *
+         * 帧计数由 r2d_begin() 递增，因此 sweep 的 idle 单位是“帧”。
+         * 注意：这只影响 jtext_printx；text_createx 仍由调用方自行持有与释放。
+         */
+        JOY_API void jtext_cache_clear(void);
+        JOY_API void jtext_cache_set_limit(int max_entries);
+        JOY_API int  jtext_cache_get_count(void);
+        JOY_API void jtext_cache_sweep(int max_idle_frames);
+
+        /* 测量文本尺寸，同样走缓存（命中缓存时不产生任何纹理开销）。
+         * jtext_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
+        JOY_API bool jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
+                jcolor_t color, int* out_w, int* out_h);
 
         /* 简单动画 */
         JOY_API animation_p animation_create(jr2d_p r2d);
@@ -1683,6 +1715,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void button_destroy(button_p btn);
         JOY_API void button_set_position(button_p btn, float x, float y);
         JOY_API vec2_t button_get_position(button_p btn);
+        /* 布局需要：复用同一个 button 时改变尺寸（旧 API 只能在 create 时定尺寸） */
+        JOY_API void button_set_size(button_p btn, float width, float height);
         JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
         JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
         JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
@@ -1751,6 +1785,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API checkbox_state_t checkbox_get_state(checkbox_p checkbox);
         JOY_API void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover);
         JOY_API void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d);
+        /* 布局需要：移动复选框（旧 API 只能在 create 时定位置） */
+        JOY_API void checkbox_set_position(checkbox_p checkbox, int x, int y);
+        JOY_API void checkbox_set_text_color(checkbox_p checkbox, jcolor_t color);
         JOY_API void checkbox_toggle(checkbox_p checkbox);
         JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
         JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
@@ -1800,6 +1837,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void slider_set_value(slider_p s, float v);
         JOY_API float slider_get_value(slider_p s);
         JOY_API void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover);
+        /* 布局需要：移动/缩放滑轨（旧 API 只能在 create 时定位置与尺寸） */
+        JOY_API void slider_set_rect(slider_p s, float x, float y, float w, float h);
         JOY_API void slider_set_range(slider_p s, float min, float max);
         JOY_API void slider_draw(slider_p s);
         JOY_API bool slider_is_pressed(slider_p s, float x, float y);
@@ -1829,6 +1868,89 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void tooltip_draw(tooltip_p t, font_p font);
         JOY_API void tooltip_process_event(tooltip_p t, const void* event);
         JOY_API void jui_process_event(void** widgets, int count, const void* event);
+
+        /* ======================================================================
+         * 即时模式 UI 层（jui_im）
+         *
+         * jui 原有控件是 retained 模式：create / set / draw / process_event 分离，
+         * 适合固定布局的游戏 HUD。但层级树、控制台、资源列表这类**行数动态变化**
+         * 的界面，retained 需要手工管理每一行的创建与销毁。
+         *
+         * 这层提供即时模式写法：调用方每帧只描述“这里有个按钮”，控件实例由 ctx
+         * 按 id 池化复用——既保留了 button 的颜色过渡动画、slider 的拖拽状态，
+         * 又不必由调用方管理生命周期。
+         *
+         * 关键依赖：r2d_push_clip_rect / r2d_pop_clip_rect。
+         * jui 原本完全没有裁剪，而滚动面板是编辑器的基础，缺了它内容会溢出面板。
+         * ====================================================================== */
+
+        typedef struct jui_ctx jui_ctx_t, * jui_ctx_p;
+
+        /* 即时模式层用到的配色 */
+        typedef struct jui_theme {
+                jcolor_t text;
+                jcolor_t btn_normal, btn_hover, btn_pressed, btn_text;
+                jcolor_t cb_box, cb_check, cb_hover, cb_text;
+                jcolor_t sl_track, sl_fill, sl_thumb, sl_thumb_hover;
+                jcolor_t panel, panel_title, border;
+        } jui_theme_t;
+
+        JOY_API jui_ctx_p jui_ctx_create(jr2d_p r2d, font_p font);
+        JOY_API void      jui_ctx_destroy(jui_ctx_p ctx);
+        JOY_API void      jui_set_theme(jui_ctx_p ctx, const jui_theme_t* theme);
+
+        /* 每帧开始 / 结束。begin 会转存一次性输入（按下/抬起/滚轮），end 清零。 */
+        JOY_API void jui_begin(jui_ctx_p ctx);
+        JOY_API void jui_end(jui_ctx_p ctx);
+
+        /* 输入：从 SDL 事件喂进来。坐标为**窗口坐标**，内部转成逻辑坐标。 */
+        JOY_API void jui_input_motion(jui_ctx_p ctx, float win_x, float win_y);
+        JOY_API void jui_input_down(jui_ctx_p ctx, int button);
+        JOY_API void jui_input_up(jui_ctx_p ctx, int button);
+        JOY_API void jui_input_wheel(jui_ctx_p ctx, float dy);
+        JOY_API void jui_input_key(jui_ctx_p ctx, bool shift, bool ctrl);
+
+        /* 逻辑鼠标坐标（供调用方自行做命中判断，例如视口拾取） */
+        JOY_API void  jui_get_mouse(jui_ctx_p ctx, float* out_x, float* out_y);
+        JOY_API bool  jui_is_down(jui_ctx_p ctx);
+        JOY_API bool  jui_is_pressed(jui_ctx_p ctx);
+        JOY_API bool  jui_is_released(jui_ctx_p ctx);
+        JOY_API float jui_take_wheel(jui_ctx_p ctx);   /* 取走并标记已消费 */
+        JOY_API bool  jui_is_shift(jui_ctx_p ctx);
+        JOY_API bool  jui_is_ctrl(jui_ctx_p ctx);
+
+        /* 裁剪：内部委托 r2d_push/pop_clip_rect，同时记录当前矩形用于命中测试 */
+        JOY_API void jui_push_clip(jui_ctx_p ctx, jrect_t rect);
+        JOY_API void jui_pop_clip(jui_ctx_p ctx);
+        JOY_API void jui_reset_clip(jui_ctx_p ctx);
+        /* 命中测试：既要在矩形内，也要在当前裁剪区内（否则滚动区域外会误触） */
+        JOY_API bool jui_hit(jui_ctx_p ctx, jrect_t rect);
+
+        /* 绘制辅助 */
+        JOY_API void jui_fill_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
+        JOY_API void jui_stroke_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
+        JOY_API void jui_line(jui_ctx_p ctx, float x1, float y1, float x2, float y2, jcolor_t c);
+        JOY_API int  jui_text(jui_ctx_p ctx, float x, float y, const char* s, jcolor_t c);
+        JOY_API bool jui_text_measure(jui_ctx_p ctx, const char* s, jcolor_t c, int* out_w, int* out_h);
+        JOY_API int  jui_text_centered(jui_ctx_p ctx, jrect_t r, const char* s, jcolor_t c);
+
+        /* 面板（标题栏 + 内容裁剪区）*/
+        JOY_API void jui_panel_begin(jui_ctx_p ctx, jrect_t r, const char* title);
+        JOY_API void jui_panel_end(jui_ctx_p ctx);
+        JOY_API void jui_panel_frame(jui_ctx_p ctx, jrect_t r);
+
+        /* 滚动：id 用于在 ctx 内保存各自的滚动偏移 */
+        JOY_API float jui_scroll_begin(jui_ctx_p ctx, int id, jrect_t view, float content_h);
+        JOY_API void  jui_scroll_end(jui_ctx_p ctx);
+        JOY_API void  jui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off);
+        /* 强制设置滚动偏移（控制台贴底跟随用）；content_h 传 0 时仅设偏移 */
+        JOY_API void  jui_scroll_set_offset(jui_ctx_p ctx, int id, float off, float content_h, float view_h);
+
+        /* 控件：复用 button / checkbox / slider，按 id 池化 */
+        JOY_API bool jui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text);
+        JOY_API bool jui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* label);
+        /* rect 是滑轨区域；标签与数值文本由调用方自行绘制（格式各异） */
+        JOY_API bool jui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv);
 
         JOY_API jtilemap_p jtilemap_load_file(const char* filename);
         JOY_API void jtilemap_destroy(jtilemap_p tm);
