@@ -352,19 +352,19 @@ void audio_shot_play(audio_shot_p shot)
 {
         if (!shot || !shot->data) return;
 
-        /* 清理上一轮播放流（如果有） */
+        /* 复用一条常驻流：初次创建一次，之后每次播放只清空重灌，
+         * 避免命中/击杀时高频新建/销毁 SDL_AudioStream 造成的音频管道抖动与掉帧卡顿。
+         * 重触发时 ClearAudioStream 会打断上一次播放（一次只播一份，天然去重）。 */
         if (shot->stream) {
-                SDL_UnbindAudioStream(shot->stream);
                 SDL_ClearAudioStream(shot->stream);
-                SDL_DestroyAudioStream(shot->stream);
+        } else {
+                shot->stream = SDL_CreateAudioStream(&shot->spec, NULL);
+                if (!shot->stream) return;
+                SDL_SetAudioStreamGain(shot->stream, shot->gain);
+                SDL_BindAudioStream(shot->device_id, shot->stream);
         }
 
-        SDL_AudioStream* stream = SDL_CreateAudioStream(&shot->spec, NULL);
-        if (!stream) return;
-        SDL_SetAudioStreamGain(stream, shot->gain);
-        SDL_BindAudioStream(shot->device_id, stream);
-        SDL_PutAudioStreamData(stream, shot->data, shot->len);
-        shot->stream = stream;  /* 保持流存活到播放完成 */
+        SDL_PutAudioStreamData(shot->stream, shot->data, shot->len);
 }
 
 void audio_shot_set_gain(audio_shot_p shot, float gain)
