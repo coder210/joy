@@ -902,7 +902,159 @@ collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
         return result;
 }
 
-bool 
+/* 列主序 mat44f_t 对方向向量做旋转(忽略平移分量) —— 与 jgjk.c 内 OBB 辅助一致 */
+static vec3f_t jcoll_obb_mat44f_rotate_dir(mat44f_t m, vec3f_t v) {
+        vec3f_t r;
+        r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m4, v.y)), fp_mul(m.m8,  v.z));
+        r.y = fp_add(fp_add(fp_mul(m.m1, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m9,  v.z));
+        r.z = fp_add(fp_add(fp_mul(m.m2, v.x), fp_mul(m.m6, v.y)), fp_mul(m.m10, v.z));
+        return r;
+}
+
+/* 列主序 mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
+static vec3f_t jcoll_obb_mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
+        vec3f_t r;
+        r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m1, v.y)), fp_mul(m.m2,  v.z));
+        r.y = fp_add(fp_add(fp_mul(m.m4, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m6,  v.z));
+        r.z = fp_add(fp_add(fp_mul(m.m8, v.x), fp_mul(m.m9, v.y)), fp_mul(m.m10, v.z));
+        return r;
+}
+
+/* 欧拉角(弧度) -> 组合旋转矩阵, 顺序: R = Rz * Ry * Rx（与 jgjk.c euler_to_rot 一致） */
+static mat44f_t jcoll_obb_euler_to_rot(vec3f_t euler) {
+        mat44f_t rx = mat44f_rotate_x(euler.x);
+        mat44f_t ry = mat44f_rotate_y(euler.y);
+        mat44f_t rz = mat44f_rotate_z(euler.z);
+        mat44f_t tmp = mat44f_mul(ry, rx);
+        return mat44f_mul(rz, tmp);
+}
+
+/* OBB(旋转盒)射线检测: 把射线变换到 OBB 局部坐标系(用旋转矩阵的转置做逆旋转),
+ * 在局部系内做 slab(AABB) 求交, 再把命中点与法线旋回世界空间。
+ * 全程定点(fp_t), 帧同步确定。 */
+ray3d_collisionf_t
+collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_size, vec3f_t rotation)
+{
+        ray3d_collisionf_t result = {0};
+        const fp_t EPSILON = fp_from_float(0.0001f);
+
+        mat44f_t R = jcoll_obb_euler_to_rot(rotation);   /* 世界旋转矩阵 M = R */
+
+        /* 射线原点与方向变换到 OBB 局部系: M^-1 = M^T (正交矩阵) */
+        vec3f_t rel = vec3f_sub(ray.position, position);
+        vec3f_t local_origin = jcoll_obb_mat44f_rotate_dir_t(R, rel);
+        vec3f_t local_dir    = jcoll_obb_mat44f_rotate_dir_t(R, ray.direction);
+
+        /* t_min 初值取最小值: 便于区分"起点在盒内"(t_min<0)和"起点在盒外"(t_min>0) */
+        fp_t t_min = fp_min_value();
+        fp_t t_max = fp_max_value();
+        fp_t t1, t2, tmp, inv_dir;
+
+        /* X slab */
+        if (fp_abs(local_dir.x) < EPSILON) {
+                if (local_origin.x < fp_sub(fp_zero(), half_size.x)
+                        || local_origin.x > half_size.x)
+                        return result;
+        }
+        else {
+                inv_dir = fp_div(fp_one(), local_dir.x);
+                t1 = fp_mul(fp_sub(fp_sub(fp_zero(), half_size.x), local_origin.x), inv_dir);
+                t2 = fp_mul(fp_sub(half_size.x, local_origin.x), inv_dir);
+                if (t1 > t2) { SWAP(t1, t2); }
+                t_min = fp_max(t_min, t1);
+                t_max = fp_min(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+
+        /* Y slab */
+        if (fp_abs(local_dir.y) < EPSILON) {
+                if (local_origin.y < fp_sub(fp_zero(), half_size.y)
+                        || local_origin.y > half_size.y)
+                        return result;
+        }
+        else {
+                inv_dir = fp_div(fp_one(), local_dir.y);
+                t1 = fp_mul(fp_sub(fp_sub(fp_zero(), half_size.y), local_origin.y), inv_dir);
+                t2 = fp_mul(fp_sub(half_size.y, local_origin.y), inv_dir);
+                if (t1 > t2) { SWAP(t1, t2); }
+                t_min = fp_max(t_min, t1);
+                t_max = fp_min(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+
+        /* Z slab */
+        if (fp_abs(local_dir.z) < EPSILON) {
+                if (local_origin.z < fp_sub(fp_zero(), half_size.z)
+                        || local_origin.z > half_size.z)
+                        return result;
+        }
+        else {
+                inv_dir = fp_div(fp_one(), local_dir.z);
+                t1 = fp_mul(fp_sub(fp_sub(fp_zero(), half_size.z), local_origin.z), inv_dir);
+                t2 = fp_mul(fp_sub(half_size.z, local_origin.z), inv_dir);
+                if (t1 > t2) { SWAP(t1, t2); }
+                t_min = fp_max(t_min, t1);
+                t_max = fp_min(t_max, t2);
+                if (t_min > t_max) return result;
+        }
+
+        if (t_max < fp_zero()) return result;          /* 盒子在射线反方向 */
+
+        fp_t t = t_min >= fp_zero() ? t_min : t_max;
+        if (t < EPSILON) return result;                 /* 起点恰好贴盒面之类: 容差避免自命中 */
+
+        /* 局部命中点 */
+        vec3f_t local_hit;
+        local_hit.x = fp_add(local_origin.x, fp_mul(local_dir.x, t));
+        local_hit.y = fp_add(local_origin.y, fp_mul(local_dir.y, t));
+        local_hit.z = fp_add(local_origin.z, fp_mul(local_dir.z, t));
+
+        /* 局部法线: 判定命中哪一面(slab法) */
+        vec3f_t local_normal = { fp_zero(), fp_zero(), fp_zero() };
+        if (fp_abs(fp_sub(fp_abs(local_hit.x), half_size.x)) < fp_mul(half_size.x, fp_from_float(0.01f)))
+                local_normal.x = local_hit.x > fp_zero() ? fp_one() : fp_from_float(-1);
+        if (fp_abs(fp_sub(fp_abs(local_hit.y), half_size.y)) < fp_mul(half_size.y, fp_from_float(0.01f)))
+                local_normal.y = local_hit.y > fp_zero() ? fp_one() : fp_from_float(-1);
+        if (fp_abs(fp_sub(fp_abs(local_hit.z), half_size.z)) < fp_mul(half_size.z, fp_from_float(0.01f)))
+                local_normal.z = local_hit.z > fp_zero() ? fp_one() : fp_from_float(-1);
+        /* 若命中两条以上(角/边), 取离面最近的那个轴向 */
+        int n_count = (local_normal.x != fp_zero() ? 1 : 0)
+                    + (local_normal.y != fp_zero() ? 1 : 0)
+                    + (local_normal.z != fp_zero() ? 1 : 0);
+        while (n_count > 1) {
+                fp_t dm = fp_max_value();
+                int drop = -1;
+                if (local_normal.x != fp_zero()) {
+                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.x), half_size.x));
+                        if (d < dm) { dm = d; drop = 0; }
+                }
+                if (local_normal.y != fp_zero()) {
+                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.y), half_size.y));
+                        if (d < dm) { dm = d; drop = 1; }
+                }
+                if (local_normal.z != fp_zero()) {
+                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.z), half_size.z));
+                        if (d < dm) { dm = d; drop = 2; }
+                }
+                if (drop == 0) local_normal.x = fp_zero();
+                else if (drop == 1) local_normal.y = fp_zero();
+                else if (drop == 2) local_normal.z = fp_zero();
+                n_count--;
+        }
+
+        /* 旋回世界空间: hit point 需要旋转 + 平移, normal 只需旋转 */
+        vec3f_t world_hit = jcoll_obb_mat44f_rotate_dir(R, local_hit);
+        world_hit = vec3f_add(world_hit, position);
+
+        result.hit = true;
+        result.point = world_hit;
+        result.normal = vec3f_normalize(jcoll_obb_mat44f_rotate_dir(R, local_normal));
+        result.distance = vec3f_length(vec3f_sub(world_hit, ray.position));
+
+        return result;
+}
+
+bool
 collision3df_check_spheres(spheref_t a, spheref_t b)
 {
         vec3f_t diff = vec3f_sub(b.position, a.position);

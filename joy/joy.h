@@ -1650,6 +1650,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 spheref_t sphere);
         JOY_API ray3d_collisionf_t collision3df_get_ray_box(ray3df_t ray,
                 bounding_boxf_t box);
+        /* OBB(旋转盒)射线检测: position=中心, half_size=半边长, rotation=欧拉角(弧度) */
+        JOY_API ray3d_collisionf_t collision3df_get_ray_obb(ray3df_t ray,
+                vec3f_t position, vec3f_t half_size, vec3f_t rotation);
         JOY_API bool collision3df_check_spheres(spheref_t a, spheref_t b);
         JOY_API bool collision3df_check_boxes(bounding_boxf_t a,
                 bounding_boxf_t b);
