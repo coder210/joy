@@ -3476,6 +3476,11 @@ void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* te
 	bind.buffer = m->buffer; bind.offset = 0;
 	SDL_BindGPUVertexBuffers(r->rp, 0, &bind, 1);
 	SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
+
+	/* 恢复默认 pipeline, 与 r3d_draw_wire / r3d_draw_solid 保持一致:
+	   否则后续用 draw_mesh_internal(如网格、2D 文字) 会误用 lighting_pipeline,
+	   顶点布局(pos+normal+uv)不匹配 5-float 网格/quad, 导致文字变成白块 */
+	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
 void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
