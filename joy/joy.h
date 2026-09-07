@@ -176,7 +176,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         // 参数全部可配置（网格尺寸、出生点/安全区、障碍密度/高度、簇大小范围）。
 
         // 网格/容量上限（固定数组，避免动态分配；实际尺寸由 jpm_config_t.grid_n 决定）
-        #define JPM_MAX_GRID_N 64          // 网格边长上限（格）
+        #define JPM_MAX_GRID_N 128         // 网格边长上限（格，对齐 128×128 手绘大图容量）
         #define JPM_MAX_CELLS  (JPM_MAX_GRID_N*JPM_MAX_GRID_N)
         #define JPM_MAX_OBS    160         // 障碍物数量上限
         #define JPM_MAX_SPAWN  8           // 出生安全区数量上限

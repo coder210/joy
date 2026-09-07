@@ -1,0 +1,10 @@
+prefix=D:/github/joy/build_proxy3d
+exec_prefix=D:/github/joy/build_proxy3d
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: MessagePack
+Description: Binary-based efficient object serialization library
+Version: 7.0.0
+Libs: -L${libdir} -lmsgpack-c
+Cflags: -I${includedir}
