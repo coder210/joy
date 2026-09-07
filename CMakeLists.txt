@@ -14,6 +14,7 @@ project(joy C CXX)
 
 option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
 option(BUILD_JOY_BEAT "Build joy_beat" OFF)
+option(BUILD_ADVENTURE "Build adventure (single binary: single/host/client/server)" OFF)
 option(BUILD_ADVENTURE_SERVER "Build adventure_server" OFF)
 option(BUILD_ADVENTURE_CLIENT "Build adventure_client" OFF)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
@@ -56,6 +57,10 @@ if(BUILD_JOY_BEAT)
 endif()
 
 # examples
+if(BUILD_ADVENTURE)
+    add_subdirectory(adventure)
+endif()
+
 if(BUILD_ADVENTURE_SERVER)
     add_subdirectory(adventure_server)
 endif()
