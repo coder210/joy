@@ -57,19 +57,23 @@ target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DI
 
 # ------------------- 资产处理 -------------------
 # 资产分散在 adventure_client/assets 与 adventure_server/assets 两个目录，
-# 复制到可执行文件同目录以统一访问路径（代码中以 "adventure_client/..."/"adventure_server/..." 引用）
-set(ASSETS_ROOTS
-    "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_client/assets"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_server/assets"
+# 顶层另有一层与项目名同名的命名空间目录（adventure_client/、adventure_server/）。
+# 复制时剥掉这层命名空间，统一以 "textures/..."/"tilemap/..." 等简洁路径访问。
+set(ASSET_ROOTS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_client/assets|adventure_client"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../adventure_server/assets|adventure_server"
 )
 
 set(ASSET_FILES "")
-foreach(ASSETS_ROOT ${ASSETS_ROOTS})
-    file(GLOB_RECURSE ALL_ASSET_FILES "${ASSETS_ROOT}/*")
+foreach(ASSET_ROOT_ENTRY ${ASSET_ROOTS})
+    string(REPLACE "|" ";" root_parts "${ASSET_ROOT_ENTRY}")
+    list(GET root_parts 0 ASSETS_ROOT)
+    list(GET root_parts 1 NAMESPACE)
+    file(GLOB_RECURSE ALL_ASSET_FILES "${ASSETS_ROOT}/${NAMESPACE}/*")
     foreach(file ${ALL_ASSET_FILES})
         if(NOT file MATCHES "\\.svn/" AND NOT file MATCHES "\\.git/")
-            file(RELATIVE_PATH rel_path "${ASSETS_ROOT}" "${file}")
-            list(APPEND ASSET_FILES "${ASSETS_ROOT}|${rel_path}")
+            file(RELATIVE_PATH rel_path "${ASSETS_ROOT}/${NAMESPACE}" "${file}")
+            list(APPEND ASSET_FILES "${file}|${rel_path}")
         endif()
     endforeach()
 endforeach()

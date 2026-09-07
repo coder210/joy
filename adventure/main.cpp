@@ -77,7 +77,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         r2d_set_logical_presentation(ctx->r2d, 480, 320);
 
         // 设置窗口图标
-        window_set_icon(ctx->window, "adventure_client/textures/logo.png");
+        window_set_icon(ctx->window, "textures/logo.png");
 
         // 应用全屏设置
         if (ctx->settings.fullscreen) {

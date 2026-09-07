@@ -4,8 +4,8 @@
 #include "../components/transform_component.h"
 
 // 包含 IdComponent，各端的 IdComponent 在不同位置
-// 客户端：adventure_client/components/player_component.h
-// 服务端：adventure_server/components/connection_component.h
+// 客户端：components/player_component.h
+// 服务端：components/connection_component.h
 // 此处统一用前向声明避免冲突，由调用方确保 IdComponent 已包含
 #include "../components/id_component.h"
 

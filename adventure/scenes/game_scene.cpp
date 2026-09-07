@@ -61,8 +61,8 @@ static void on_load(scene_p s)
         add_system(ctx, OnUpdate,  "cleanup",            cleanup_system);
 
         // 注册动画定义（全局单例）
-        create_warrior_anim_def(ctx->ecs, "adventure_client/textures/knights/troops/warrior/warrior_blue.png");
-        create_goblin_anim_def(ctx->ecs, "adventure_client/textures/goblins/troops/torch/torch_blue.png");
+        create_warrior_anim_def(ctx->ecs, "textures/knights/troops/warrior/warrior_blue.png");
+        create_goblin_anim_def(ctx->ecs, "textures/goblins/troops/torch/torch_blue.png");
 
         // 模式特有初始化（可能追加 OnStart 阶段 system，如 spawn_enemy）
         g_mode->init(self);

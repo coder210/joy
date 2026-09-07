@@ -16,7 +16,7 @@ struct splash_scene {
 
 static void on_load(scene_p s) {
         splash_scene_p self = (splash_scene_p)scene_get_userdata(s);
-        self->logo = image_create(self->ctx->r2d, "adventure_client/textures/logo.png");
+        self->logo = image_create(self->ctx->r2d, "textures/logo.png");
         log_info("[splash scene] start");
 }
 
