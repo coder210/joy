@@ -3437,6 +3437,135 @@ void r3d_draw_mesh_solid_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, 
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
+/* ================================================================
+ * FOV 视野(战争迷雾): 逐角射线遮挡检测 + 羽化软边网格绘制
+ * 通用引擎能力, 不依赖具体游戏数据; 遮挡矩形与观察点由调用方提供
+ * ================================================================ */
+
+#define JOY_FOV_DEG2RAD 0.0174532925f
+
+float joy_fov_ray_dist(const joy_fov_rect* blocks, int n,
+                       float px, float pz, float dx, float dz)
+{
+	float best = 1e9f;
+	if (blocks == NULL || n <= 0) return best;
+	for (int i = 0; i < n; i++) {
+		const joy_fov_rect* a = &blocks[i];
+		float tn = 0.0f, tf = 1e9f;
+		if (fabsf(dx) < 1e-9f) {
+			if (px < a->x - a->hx || px > a->x + a->hx) continue;
+		} else {
+			float t1 = (a->x - a->hx - px) / dx, t2 = (a->x + a->hx - px) / dx;
+			if (t1 > t2) { float tt = t1; t1 = t2; t2 = tt; }
+			if (t1 > tn) tn = t1;
+			if (t2 < tf) tf = t2;
+		}
+		if (fabsf(dz) < 1e-9f) {
+			if (pz < a->z - a->hz || pz > a->z + a->hz) continue;
+		} else {
+			float t1 = (a->z - a->hz - pz) / dz, t2 = (a->z + a->hz - pz) / dz;
+			if (t1 > t2) { float tt = t1; t1 = t2; t2 = tt; }
+			if (t1 > tn) tn = t1;
+			if (t2 < tf) tf = t2;
+		}
+		if (tf < tn) continue;
+		float t = tn >= 0.0f ? tn : tf;
+		if (t > 1e-4f && t < best) best = t;
+	}
+	return best;
+}
+
+bool joy_fov_compute_radii(const joy_fov_rect* blocks, int n,
+                           float px, float pz, float vis_radius,
+                           float angle_start, float angle_step, int seg,
+                           float* out)
+{
+	if (out == NULL || seg <= 0) return false;
+	for (int i = 0; i < seg; i++) {
+		float a = (angle_start + angle_step * i) * JOY_FOV_DEG2RAD;
+		float dx = sinf(a), dz = cosf(a);
+		float rd = joy_fov_ray_dist(blocks, n, px, pz, dx, dz);
+		out[i] = (rd < vis_radius) ? rd : vis_radius;
+	}
+	return true;
+}
+
+/* 渐变纹理: v=0 透明 → v=1 全浓, 每帧复用采样以实现软边(一次性惰性创建) */
+static void* joy_fov_gradient_texture(jr3d_p r)
+{
+	static void* s_tex = NULL;
+	if (s_tex) return s_tex;
+	const int H = 256;
+	unsigned char* px = (unsigned char*)SDL_malloc((size_t)H * 4);
+	if (!px) return NULL;
+	for (int y = 0; y < H; y++) {
+		unsigned char a = (unsigned char)(205.0f * (float)y / (float)(H - 1) + 0.5f);
+		px[(size_t)y * 4 + 0] = 54; px[(size_t)y * 4 + 1] = 56;
+		px[(size_t)y * 4 + 2] = 62; px[(size_t)y * 4 + 3] = a;
+	}
+	s_tex = r3d_create_texture(r, 1, H, px, 0);
+	SDL_free(px);
+	return s_tex;
+}
+
+void joy_fov_draw(jr3d_p r, float px, float py, float pz,
+                  const float* radii, int seg,
+                  float feather, float outer_radius)
+{
+	if (!r || !r->rp || !radii || seg <= 0) return;
+
+	const float STEP = 360.0f / seg;
+	const int vcount = seg * 4 * 3;                 /* 每段 4 三角 × 3 顶点 */
+	float* verts = (float*)SDL_malloc((size_t)vcount * 5 * sizeof(float));
+	if (!verts) return;
+	int vi = 0;
+	for (int i = 0; i < seg; i++) {
+		int ni = (i + 1) % seg;
+		float a0 = STEP * i * JOY_FOV_DEG2RAD, a1 = STEP * (ni) * JOY_FOV_DEG2RAD;
+		float s0x = sinf(a0), c0z = cosf(a0);
+		float s1x = sinf(a1), c1z = cosf(a1);
+		float rA0 = radii[i],       rB0 = radii[i] + feather, rC0 = outer_radius;
+		float rA1 = radii[ni],      rB1 = radii[ni] + feather, rC1 = outer_radius;
+		float a0x = px + s0x*rA0, a0z = pz + c0z*rA0;
+		float b0x = px + s0x*rB0, b0z = pz + c0z*rB0;
+		float c0x = px + s0x*rC0, w0z = pz + c0z*rC0;
+		float a1x = px + s1x*rA1, a1z = pz + c1z*rA1;
+		float b1x = px + s1x*rB1, b1z = pz + c1z*rB1;
+		float c1x = px + s1x*rC1, w1z = pz + c1z*rC1;
+
+		/* 羽化带 A→B: alpha 0→1 渐变 */
+		verts[vi]=a0x; verts[vi+1]=py; verts[vi+2]=a0z; verts[vi+3]=0.5f; verts[vi+4]=0.0f; vi+=5;
+		verts[vi]=b0x; verts[vi+1]=py; verts[vi+2]=b0z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=b1x; verts[vi+1]=py; verts[vi+2]=b1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=a0x; verts[vi+1]=py; verts[vi+2]=a0z; verts[vi+3]=0.5f; verts[vi+4]=0.0f; vi+=5;
+		verts[vi]=b1x; verts[vi+1]=py; verts[vi+2]=b1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=a1x; verts[vi+1]=py; verts[vi+2]=a1z; verts[vi+3]=0.5f; verts[vi+4]=0.0f; vi+=5;
+		/* 实心带 B→C: 全浓 */
+		verts[vi]=b0x; verts[vi+1]=py; verts[vi+2]=b0z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=c0x; verts[vi+1]=py; verts[vi+2]=w0z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=c1x; verts[vi+1]=py; verts[vi+2]=w1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=b0x; verts[vi+1]=py; verts[vi+2]=b0z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=c1x; verts[vi+1]=py; verts[vi+2]=w1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+		verts[vi]=b1x; verts[vi+1]=py; verts[vi+2]=b1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
+	}
+
+	render_mesh_p mesh = r3d_mesh_custom(r, verts, vi / 5);
+	SDL_free(verts);
+	if (!mesh) return;
+
+	/* 上一帧 mesh 在本帧绘制后延迟释放, 避免 GPU buffer 在被引用时销毁悬空 */
+	static render_mesh_p s_prev = NULL;
+	if (s_prev) { r3d_mesh_destroy(r, s_prev); s_prev = NULL; }
+	s_prev = mesh;
+
+	void* tex = joy_fov_gradient_texture(r);
+	if (!tex) return;
+	/* 主动绑定 base pipeline(采样纹理 alpha 混合), 单位模型矩阵, 雾面顶点已是世界坐标 */
+	mat44_t idm = mat44_identity();
+	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
+	draw_mesh_internal(r, mesh, &idm, (SDL_GPUTexture*)tex);
+}
+
 /* ---- 光照绘制（需在 r3d_begin/r3d_end 之间调用） ---- */
 
 void r3d_set_light_block(jr3d_p r, const jr3d_light_block_t* block)

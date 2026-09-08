@@ -1403,3 +1403,101 @@ bool r2d_render_geometry(jr2d_p r2d, void* texture,
         SDL_free(verts);
         return ok;
 }
+
+/* =====================================================================
+ * 2D FOV 视野(战争迷雾): 复用 3D 的逐角射线遮挡 + 渐变纹理羽化软边。
+ * 在 2D 像素平面上构造 A/B/C 三环径向多边形, 由渐变纹理驱动 alpha，
+ * 使可见边界在 feather 宽度内由透明渐变到全浓，消除硬边/锯齿。
+ * ===================================================================== */
+
+#define JOY_FOV_2D_DEG2RAD 0.0174532925f
+
+/* 一次性渐变纹理: v=0 透明 → v=1 全浓(墨雾 alpha 205)。惰性创建并缓存复用 */
+static SDL_Texture* joy_fov_gradient_tex_2d(jr2d_p r)
+{
+    static SDL_Texture* s_tex = NULL;
+    if (s_tex) return s_tex;
+    const int H = 256;
+    SDL_Surface* surf = SDL_CreateSurface(1, H, SDL_PIXELFORMAT_RGBA32);
+    if (!surf) return NULL;
+    unsigned char* px = (unsigned char*)surf->pixels;
+    for (int y = 0; y < H; y++) {
+        uint8_t a = (uint8_t)(205.0f * (float)y / (float)(H - 1) + 0.5f);
+        px[(size_t)y * surf->pitch + 0] = 54;
+        px[(size_t)y * surf->pitch + 1] = 56;
+        px[(size_t)y * surf->pitch + 2] = 62;
+        px[(size_t)y * surf->pitch + 3] = a;
+    }
+    s_tex = SDL_CreateTextureFromSurface(r->sdl, surf);
+    SDL_DestroySurface(surf);
+    if (s_tex) SDL_SetTextureBlendMode(s_tex, SDL_BLENDMODE_BLEND);
+    return s_tex;
+}
+
+/* px/py: 观察点在输出像素坐标; radii[seg] 每方向可见半径(像素);
+   feather/outer_radius 亦为像素。需在 r2d_begin/r2d_end 与地图绘制的同一
+   坐标系下调用(相机相对像素)。 */
+void joy_fov_draw_2d(jr2d_p r, float px, float py,
+                     const float* radii, int seg,
+                     float feather, float outer_radius)
+{
+    if (!r || !radii || seg <= 0) return;
+
+    const float STEP = 360.0f / seg;
+    const int tri_count = seg * 4;                     /* 每段 4 三角 */
+    const int vcount = seg * 6;                        /* 每段 6 顶点 */
+    float* vert = (float*)SDL_malloc((size_t)vcount * 8 * sizeof(float));
+    int*   idx  = (int*)SDL_malloc((size_t)tri_count * 3 * sizeof(int));
+    if (!vert || !idx) { SDL_free(vert); SDL_free(idx); return; }
+
+    int vi = 0, ii = 0;
+    for (int i = 0; i < seg; i++) {
+        int ni = (i + 1) % seg;
+        float a0 = STEP * i  * JOY_FOV_2D_DEG2RAD;
+        float a1 = STEP * ni * JOY_FOV_2D_DEG2RAD;
+        float s0x = sinf(a0), c0y = cosf(a0);
+        float s1x = sinf(a1), c1y = cosf(a1);
+        float rA0 = radii[i],                   rB0 = radii[i] + feather, rC0 = outer_radius;
+        float rA1 = radii[ni],                  rB1 = radii[ni] + feather, rC1 = outer_radius;
+        /* A: 可见边界(uv.y=0 透明), B: 羽化外沿(uv.y=1 全浓), C: 完全遮蔽外径 */
+        float a0x = px + s0x*rA0, a0y = py + c0y*rA0;
+        float b0x = px + s0x*rB0, b0y = py + c0y*rB0;
+        float c0x = px + s0x*rC0, c0w = py + c0y*rC0;
+        float a1x = px + s1x*rA1, a1y = py + c1y*rA1;
+        float b1x = px + s1x*rB1, b1y = py + c1y*rB1;
+        float c1x = px + s1x*rC1, c1w = py + c1y*rC1;
+
+        /* 顶点色全白(opaque)，alpha 由纹理渐变决定 */
+        int base = vi;
+        float* v = vert + (size_t)vi * 8;
+#define PUT_VERT(xx, yy, uu) do { \
+            v[0] = (xx); v[1] = (yy); v[2] = 1.f; v[3] = 1.f; v[4] = 1.f; v[5] = 1.f; \
+            v[6] = (uu); v[7] = 1.f; v += 8; \
+        } while (0)
+        PUT_VERT(a1x, a1y, 0.0f);   /* A1 (vi+0) */
+        PUT_VERT(a0x, a0y, 0.0f);   /* A0 (vi+1) */
+        PUT_VERT(b0x, b0y, 1.0f);   /* B0 (vi+2) */
+        PUT_VERT(b1x, b1y, 1.0f);   /* B1 (vi+3) */
+        PUT_VERT(c0x, c0w, 1.0f);   /* C0 (vi+4) */
+        PUT_VERT(c1x, c1w, 1.0f);   /* C1 (vi+5) */
+#undef PUT_VERT
+
+        /* 羽化带 A→B: alpha 0→1 */
+        idx[ii++] = base + 1; idx[ii++] = base + 2; idx[ii++] = base + 3;
+        idx[ii++] = base + 1; idx[ii++] = base + 3; idx[ii++] = base + 0;
+        /* 实心带 B→C: 全浓 */
+        idx[ii++] = base + 2; idx[ii++] = base + 4; idx[ii++] = base + 5;
+        idx[ii++] = base + 2; idx[ii++] = base + 5; idx[ii++] = base + 3;
+
+        vi += 6;
+    }
+
+    SDL_Texture* tex = joy_fov_gradient_tex_2d(r);
+    if (tex)
+        r2d_render_geometry(r, tex, vert, vcount, idx, tri_count * 3);
+    else
+        r2d_render_geometry(r, NULL, vert, vcount, idx, tri_count * 3);
+
+    SDL_free(vert);
+    SDL_free(idx);
+}

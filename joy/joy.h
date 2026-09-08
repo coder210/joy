@@ -1580,6 +1580,37 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color);
 
         ///////////////////////////////////////////////////////////////////////
+       //////////////////////  field-of-view (FOV)  /////////////////////////
+       ///////////////////////////////////////////////////////////////////////
+       /* 通用战争迷雾/视野遮挡。纯引擎能力：调用方提供遮挡矩形与观察点，
+          引擎负责逐角精确射线遮挡检测 + 羽化软边视野网格绘制，不依赖游戏数据。 */
+
+        /* 水平遮挡矩形(包围盒): 中心(x,z), 半宽(hx/hz) */
+        typedef struct joy_fov_rect { float x, z, hx, hz; } joy_fov_rect;
+
+        /* 从 (px,pz) 沿归一化方向 (dx,dz) 求最近遮挡距离；无命中返回 1e9。
+           blockers 为 NULL 或 n==0 时视为无遮挡(返回 1e9)。 */
+        JOY_API float joy_fov_ray_dist(const joy_fov_rect* blockers, int n,
+                float px, float pz, float dx, float dz);
+        /* 计算观察点周围 seg 个方向的可见半径(每方向=min(视距,遮挡距离), 逐角精确射线)。
+           angle_start/angle_step 单位度；out 长度 seg。返回 false 仅当入参非法。 */
+        JOY_API bool joy_fov_compute_radii(const joy_fov_rect* blockers, int n,
+                float px, float pz, float vis_radius,
+                float angle_start, float angle_step, int seg, float* out);
+        /* 绘制羽化视野网格: 观察点(py 为雾面高度), radii[seg] 每方向可见半径,
+           feather=可见边界的羽化宽度(alpha 渐变), outer_radius=完全遮蔽的雾外径。
+           需在 r3d_begin/r3d_end 之间调用。 */
+        JOY_API void joy_fov_draw(jr3d_p r, float px, float py, float pz,
+                const float* radii, int seg, float feather, float outer_radius);
+        /* 2D 视野绘制: 在像素平面构造 A/B/C 三环羽化多边形, 复刻 3D 的渐变纹理软边。
+           px/py 为观察点在输出像素坐标, radii[seg] 每方向可见半径(像素),
+           feather/outer_radius 亦为像素。需在 r2d_begin/r2d_end 与地图同一坐标系(相机相对像素)下调用。
+           射线遮挡仍用上方的 joy_fov_compute_radii 计算(其 px/pz 即 2D 的 x/y。若担心模板冲突,
+           2D 侧也可直接以世界米为单位计算后乘以 PPM 得到像素半径)。 */
+        JOY_API void joy_fov_draw_2d(jr2d_p r, float px, float py,
+                const float* radii, int seg, float feather, float outer_radius);
+
+        ///////////////////////////////////////////////////////////////////////
        ////////////////////////////  collision ///////////////////////////////
        ///////////////////////////////////////////////////////////////////////
 
