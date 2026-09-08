@@ -1,0 +1,10 @@
+^D:\GITHUB\JOY\SDL\CMAKELISTS.TXT
+setlocal
+"D:\Program Files\CMake\bin\cmake.exe" -SD:/github/joy -BD:/github/joy/build_proxy3d --check-stamp-file D:/github/joy/build_proxy3d/SDL/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

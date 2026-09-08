@@ -2749,6 +2749,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="D:\github\joy\project_proxy3d\passes\camera_pass.h" />
     <ClCompile Include="D:\github\joy\project_proxy3d\passes\damage_pass.cpp" />
     <ClInclude Include="D:\github\joy\project_proxy3d\passes\damage_pass.h" />
+    <ClCompile Include="D:\github\joy\project_proxy3d\passes\decor_pass.cpp" />
+    <ClInclude Include="D:\github\joy\project_proxy3d\passes\decor_pass.h" />
     <ClCompile Include="D:\github\joy\project_proxy3d\passes\entities_pass.cpp" />
     <ClInclude Include="D:\github\joy\project_proxy3d\passes\entities_pass.h" />
     <ClCompile Include="D:\github\joy\project_proxy3d\passes\floor_pass.cpp" />

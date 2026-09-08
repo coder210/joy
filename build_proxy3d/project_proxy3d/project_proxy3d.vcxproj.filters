@@ -22,6 +22,9 @@
     <ClCompile Include="D:\github\joy\project_proxy3d\passes\damage_pass.cpp">
       <Filter>project_proxy3d\passes</Filter>
     </ClCompile>
+    <ClCompile Include="D:\github\joy\project_proxy3d\passes\decor_pass.cpp">
+      <Filter>project_proxy3d\passes</Filter>
+    </ClCompile>
     <ClCompile Include="D:\github\joy\project_proxy3d\passes\entities_pass.cpp">
       <Filter>project_proxy3d\passes</Filter>
     </ClCompile>
@@ -112,6 +115,9 @@
       <Filter>project_proxy3d\passes</Filter>
     </ClInclude>
     <ClInclude Include="D:\github\joy\project_proxy3d\passes\damage_pass.h">
+      <Filter>project_proxy3d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\project_proxy3d\passes\decor_pass.h">
       <Filter>project_proxy3d\passes</Filter>
     </ClInclude>
     <ClInclude Include="D:\github\joy\project_proxy3d\passes\entities_pass.h">

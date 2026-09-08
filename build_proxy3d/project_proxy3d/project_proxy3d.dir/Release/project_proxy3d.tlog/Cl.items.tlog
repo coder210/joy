@@ -5,6 +5,7 @@ D:\github\joy\project_proxy3d\main.cpp;D:\github\joy\build_proxy3d\project_proxy
 D:\github\joy\project_proxy3d\passes\bullet_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\bullet_pass.obj
 D:\github\joy\project_proxy3d\passes\camera_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\camera_pass.obj
 D:\github\joy\project_proxy3d\passes\damage_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\damage_pass.obj
+D:\github\joy\project_proxy3d\passes\decor_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\decor_pass.obj
 D:\github\joy\project_proxy3d\passes\entities_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\entities_pass.obj
 D:\github\joy\project_proxy3d\passes\floor_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\floor_pass.obj
 D:\github\joy\project_proxy3d\passes\fog_pass.cpp;D:\github\joy\build_proxy3d\project_proxy3d\project_proxy3d.dir\Release\fog_pass.obj
