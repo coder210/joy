@@ -1422,10 +1422,14 @@ static SDL_Texture* joy_fov_gradient_tex_2d(jr2d_p r)
     if (!surf) return NULL;
     unsigned char* px = (unsigned char*)surf->pixels;
     for (int y = 0; y < H; y++) {
-        uint8_t a = (uint8_t)(205.0f * (float)y / (float)(H - 1) + 0.5f);
-        px[(size_t)y * surf->pitch + 0] = 54;
-        px[(size_t)y * surf->pitch + 1] = 56;
-        px[(size_t)y * surf->pitch + 2] = 62;
+        /* t=0 为视野边界(透明), t=1 为描边外沿。用 smoothstep 3t²-2t³ 让细墨线
+           两缘柔和；alpha 峰值刻意压低调淡，只做范围标记、不遮挡场景。 */
+        float t = (float)y / (float)(H - 1);
+        float s = t * t * (3.0f - 2.0f * t);
+        uint8_t a = (uint8_t)(100.0f * s + 0.5f);       // 淡墨标记线
+        px[(size_t)y * surf->pitch + 0] = 30;           // 淡墨色
+        px[(size_t)y * surf->pitch + 1] = 32;
+        px[(size_t)y * surf->pitch + 2] = 38;
         px[(size_t)y * surf->pitch + 3] = a;
     }
     s_tex = SDL_CreateTextureFromSurface(r->sdl, surf);
@@ -1442,10 +1446,11 @@ void joy_fov_draw_2d(jr2d_p r, float px, float py,
                      float feather, float outer_radius)
 {
     if (!r || !radii || seg <= 0) return;
+    (void)outer_radius;   /* 现在只画视野范围描边，不再向远处做遮蔽填充 */
 
     const float STEP = 360.0f / seg;
-    const int tri_count = seg * 4;                     /* 每段 4 三角 */
-    const int vcount = seg * 6;                        /* 每段 6 顶点 */
+    const int tri_count = seg * 2;                     /* 每段 2 三角（只画羽化描边带） */
+    const int vcount = seg * 4;                        /* 每段 4 顶点 */
     float* vert = (float*)SDL_malloc((size_t)vcount * 8 * sizeof(float));
     int*   idx  = (int*)SDL_malloc((size_t)tri_count * 3 * sizeof(int));
     if (!vert || !idx) { SDL_free(vert); SDL_free(idx); return; }
@@ -1457,15 +1462,14 @@ void joy_fov_draw_2d(jr2d_p r, float px, float py,
         float a1 = STEP * ni * JOY_FOV_2D_DEG2RAD;
         float s0x = sinf(a0), c0y = cosf(a0);
         float s1x = sinf(a1), c1y = cosf(a1);
-        float rA0 = radii[i],                   rB0 = radii[i] + feather, rC0 = outer_radius;
-        float rA1 = radii[ni],                  rB1 = radii[ni] + feather, rC1 = outer_radius;
-        /* A: 可见边界(uv.y=0 透明), B: 羽化外沿(uv.y=1 全浓), C: 完全遮蔽外径 */
+        float rA0 = radii[i],             rB0 = radii[i] + feather;
+        float rA1 = radii[ni],            rB1 = radii[ni] + feather;
+        /* A: 视野可见边界(uv.y=0 透明), B: 边界外羽化带外沿(uv.y=1 全浓)。
+           B→外不再填充——视野只是一个"范围/方向描边"标记，不遮挡场景。 */
         float a0x = px + s0x*rA0, a0y = py + c0y*rA0;
         float b0x = px + s0x*rB0, b0y = py + c0y*rB0;
-        float c0x = px + s0x*rC0, c0w = py + c0y*rC0;
         float a1x = px + s1x*rA1, a1y = py + c1y*rA1;
         float b1x = px + s1x*rB1, b1y = py + c1y*rB1;
-        float c1x = px + s1x*rC1, c1w = py + c1y*rC1;
 
         /* 顶点色全白(opaque)，alpha 由纹理渐变决定 */
         int base = vi;
@@ -1476,20 +1480,15 @@ void joy_fov_draw_2d(jr2d_p r, float px, float py,
         } while (0)
         PUT_VERT(a1x, a1y, 0.0f);   /* A1 (vi+0) */
         PUT_VERT(a0x, a0y, 0.0f);   /* A0 (vi+1) */
-        PUT_VERT(b0x, b0y, 1.0f);   /* B0 (vi+2) */
-        PUT_VERT(b1x, b1y, 1.0f);   /* B1 (vi+3) */
-        PUT_VERT(c0x, c0w, 1.0f);   /* C0 (vi+4) */
-        PUT_VERT(c1x, c1w, 1.0f);   /* C1 (vi+5) */
+        PUT_VERT(b1x, b1y, 1.0f);   /* B1 (vi+2) */
+        PUT_VERT(b0x, b0y, 1.0f);   /* B0 (vi+3) */
 #undef PUT_VERT
 
-        /* 羽化带 A→B: alpha 0→1 */
-        idx[ii++] = base + 1; idx[ii++] = base + 2; idx[ii++] = base + 3;
-        idx[ii++] = base + 1; idx[ii++] = base + 3; idx[ii++] = base + 0;
-        /* 实心带 B→C: 全浓 */
-        idx[ii++] = base + 2; idx[ii++] = base + 4; idx[ii++] = base + 5;
-        idx[ii++] = base + 2; idx[ii++] = base + 5; idx[ii++] = base + 3;
+        /* A→B 羽化描边带：视野边界一圈柔和的"范围/方向轮廓" */
+        idx[ii++] = base + 0; idx[ii++] = base + 1; idx[ii++] = base + 2;
+        idx[ii++] = base + 1; idx[ii++] = base + 3; idx[ii++] = base + 2;
 
-        vi += 6;
+        vi += 4;
     }
 
     SDL_Texture* tex = joy_fov_gradient_tex_2d(r);
