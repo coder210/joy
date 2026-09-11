@@ -1,8 +1,0 @@
-﻿适用于 .NET Framework MSBuild 版本 17.12.12+1cce77968
-
-  Checking File Globs
-  SDL_uclibc.vcxproj -> E:\c++\joy\build\Debug\SDL_uclibc.lib
-  SDL3-shared.vcxproj -> E:\c++\joy\build\Debug\SDL3.dll
-  msgpack-c-static.vcxproj -> E:\c++\joy\build\Debug\msgpack-c.lib
-  joy.vcxproj -> E:\c++\joy\build\Debug\joy.dll
-  project_proxy3d.vcxproj -> E:\c++\joy\build\Debug\project_proxy3d.exe
