@@ -1,0 +1,240 @@
+﻿
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{185A02C6-3755-38D7-B7E8-AD69556849BF}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <Configurations>Debug;Release;MinSizeRel;RelWithDebInfo</Configurations>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+    <ManagedAssembly>true</ManagedAssembly>
+    <TargetFramework>net8.0</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>D:\github\joy\build_l4d2d\Debug\</OutputPath>
+    <AssemblyName>SpireXlsTest</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <Optimize>false</Optimize>
+    <Platform>x64</Platform>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>D:\github\joy\build_l4d2d\Release\</OutputPath>
+    <AssemblyName>SpireXlsTest</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>queue</ErrorReport>
+    <Optimize>true</Optimize>
+    <Platform>x64</Platform>
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'MinSizeRel'">
+    <OutputPath>D:\github\joy\build_l4d2d\MinSizeRel\</OutputPath>
+    <AssemblyName>SpireXlsTest</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <Platform>x64</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'RelWithDebInfo'">
+    <OutputPath>D:\github\joy\build_l4d2d\RelWithDebInfo\</OutputPath>
+    <AssemblyName>SpireXlsTest</AssemblyName>
+    <AdditionalOptions>/MP</AdditionalOptions>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+    <Platform>x64</Platform>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="D:\github\joy\joy_cslib\CMakeLists.txt">
+      <Link>CMakeLists.txt</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'Debug'"
+    Name="CustomCommand_Debug_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_l4d2d\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_l4d2d --check-stamp-file D:/github/joy/build_l4d2d/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'Release'"
+    Name="CustomCommand_Release_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_l4d2d\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_l4d2d --check-stamp-file D:/github/joy/build_l4d2d/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'MinSizeRel'"
+    Name="CustomCommand_MinSizeRel_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_l4d2d\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_l4d2d --check-stamp-file D:/github/joy/build_l4d2d/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake" />
+  </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Include="D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs" />
+  </ItemGroup>
+  <Target Condition="'$(Configuration)' == 'RelWithDebInfo'"
+    Name="CustomCommand_RelWithDebInfo_c7ee60eef337562493e08a75a822dca1"
+    Inputs="D:/github/joy/joy_cslib/CMakeLists.txt;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpCompiler.cmake.in;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCSharpInformation.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeCompilerIdDetection.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeDetermineCompilerId.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCSharpCompiler.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CMakeTestCompilerCommon.cmake;D:\Program Files\CMake\share\cmake-4.4\Modules\CompilerId\VS-10.csproj.in;D:\github\joy\build_l4d2d\CMakeFiles\4.4.2\CMakeCSharpCompiler.cmake;D:\github\joy\build_l4d2d\CMakeFiles\cmake.verify_globs"
+    Outputs="D:\github\joy\build_l4d2d\joy_cslib\CMakeFiles\generate.stamp"
+    BeforeTargets="CoreCompile"
+    DependsOnTargets="PrepareForBuild">
+    <Exec Command="echo Building Custom Rule D:/github/joy/joy_cslib/CMakeLists.txt" />
+    <Exec Command="setlocal&#10;&quot;D:\Program Files\CMake\bin\cmake.exe&quot; -SD:/github/joy -BD:/github/joy/build_l4d2d --check-stamp-file D:/github/joy/build_l4d2d/joy_cslib/CMakeFiles/generate.stamp&#10;if %errorlevel% neq 0 goto :cmEnd&#10;:cmEnd&#10;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#10;:cmErrorLevel&#10;exit /b %1&#10;:cmDone&#10;if %errorlevel% neq 0 goto :VCEnd&#10;:VCEnd" />
+  </Target>
+  <ItemGroup>
+    <Compile Include="D:\github\joy\joy_cslib\SpireXlsTest\Program.cs">
+      <Link>SpireXlsTest\Program.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\github\joy\build_l4d2d\ZERO_CHECK.vcxproj">
+      <Project>{6B98B2CD-C220-304C-A503-E5CB0DF66CF5}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

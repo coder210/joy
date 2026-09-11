@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\github\joy\l4d_2d\asset_manager.cpp">
+      <Filter>l4d_2d</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\client.cpp">
+      <Filter>l4d_2d</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\layers\debug_layer.cpp">
+      <Filter>l4d_2d\layers</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\layers\gameplay_controls_layer.cpp">
+      <Filter>l4d_2d\layers</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\layers\menu_layer.cpp">
+      <Filter>l4d_2d\layers</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\main.cpp">
+      <Filter>l4d_2d</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\character_select_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\game_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\level_select_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\loading_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\main_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\online_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\settings_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\splash_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\scenes\victory_scene.cpp">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\github\joy\l4d_2d\server.cpp">
+      <Filter>l4d_2d</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\github\joy\l4d_2d\asset_manager.h">
+      <Filter>l4d_2d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\action_state_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\ai_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\attack_ray_effect_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\bullet_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\connection_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\enemy_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\global_state_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\health_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\id_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\local_only_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\logic_position_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\logic_rect_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\logic_velocity_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\net_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\pathfinding_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\player_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\player_event_input.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\player_state_input.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\spawn_point_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\components\transform_component.h">
+      <Filter>l4d_2d\components</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\context.h">
+      <Filter>l4d_2d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\entt.hpp">
+      <Filter>l4d_2d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\game_mode.h">
+      <Filter>l4d_2d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\layers\debug_layer.h">
+      <Filter>l4d_2d\layers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\layers\gameplay_controls_layer.h">
+      <Filter>l4d_2d\layers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\layers\menu_layer.h">
+      <Filter>l4d_2d\layers</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\network\network_utils.h">
+      <Filter>l4d_2d\network</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\camera_follow_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\draw_fps_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\drawing_attack_ray_effect_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\drawing_collision_debug_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\drawing_entity_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\drawing_map_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\drawing_minimap_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\fog_pass_2d.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\frame_display_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\interpolate_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\passes\player_status_hud_pass.h">
+      <Filter>l4d_2d\passes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\protocol.h">
+      <Filter>l4d_2d</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\character_select_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\game_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\level_select_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\loading_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\main_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\online_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\settings_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\splash_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\scenes\victory_scene.h">
+      <Filter>l4d_2d\scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\ai_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\bullet_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\character_def.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\cleanup_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\collision_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\input_consume_input_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\input_consume_join_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\input_consume_leave_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\level_sources.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\map_def.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\map_spawn_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\melee_attack_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\movement_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\pathfinding_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\player_death_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\player_ray_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\player_shoot_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\snapshot_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\spawn_def.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\spawn_enemy_system.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\github\joy\l4d_2d\systems\state_checksum.h">
+      <Filter>l4d_2d\systems</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\github\joy\l4d_2d\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="D:\github\joy\l4d_2d\iosLaunchScreen.storyboard">
+      <Filter>Resources</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{6DFD7721-5AB9-3752-8554-0FA86B2DB1AC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d">
+      <UniqueIdentifier>{EA156228-55D6-30AE-A9C2-A0BFE7AE016A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\components">
+      <UniqueIdentifier>{F280B961-E378-3645-A286-BBAFD0026768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\layers">
+      <UniqueIdentifier>{2D293401-6B24-3343-A68F-EBDCBF419B54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\network">
+      <UniqueIdentifier>{382AC3C6-1619-392C-BF38-EAF063BC29DC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\passes">
+      <UniqueIdentifier>{CE259868-29F4-32B8-8D61-7433DE38342A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\scenes">
+      <UniqueIdentifier>{D138148E-37E1-3148-8EBE-613ACE4D098C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="l4d_2d\systems">
+      <UniqueIdentifier>{E024525A-C949-38FF-A156-B9331CCAD26A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
