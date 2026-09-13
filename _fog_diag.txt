@@ -1,4 +1,0 @@
-hits=18 verts=4800 tri=320
-player=(-14.46,-24.66)  visR=14.0 outR=46.0
-x[-60.42,31.54] z[-70.66,21.31]
-vertexDist min=2.684 max=46.000

@@ -1,4 +1,4 @@
-/************************************************
+﻿/************************************************
 Copyright: 2021-2028, lanchong.xyz/Ltd.
 File name: joy.h
 Description:
@@ -1123,6 +1123,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void  image_set_blend_mode(image_p image, int mode);
         JOY_API bool  image_get_size(image_p image, float* w, float* h);
         JOY_API void  image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch);
+        JOY_API void  image_set_scale_mode(image_p image, int nearest);
 
         /* 文字 */
         JOY_API jtext_p text_createx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color);
@@ -2005,6 +2006,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void jtilemap_destroy(jtilemap_p tm);
         JOY_API int jtilemap_get_width(const jtilemap_p tm);
         JOY_API int jtilemap_get_height(const jtilemap_p tm);
+	JOY_API int jtilemap_get_tile_width(const jtilemap_p tm);
+	JOY_API int jtilemap_get_tile_height(const jtilemap_p tm);
         JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
         JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
         JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id, int* out_w, int* out_h);

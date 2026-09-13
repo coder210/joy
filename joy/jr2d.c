@@ -1,4 +1,4 @@
-﻿#include "external/stb_image.h"
+#include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
@@ -587,6 +587,12 @@ void image_draw1(image_p image,
 		dst_ptr = &raw_dest;
 	}
 	SDL_RenderTexture(renderer, image->texture, src_ptr, dst_ptr);
+}
+
+void image_set_scale_mode(image_p image, int nearest)
+{
+	SDL_SetTextureScaleMode(image->texture,
+		nearest ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
 }
 
 void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,

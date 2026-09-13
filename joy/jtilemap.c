@@ -704,6 +704,19 @@ int jtilemap_get_height(const jtilemap_p tm) {
     return tm ? tm->height : 0;
 }
 
+/* 返回主 tileset 的 tilewidth/tileheight（画布像素/格）。
+ * 用于调用者把"世界米"换算成传给 jtilemap_render_all 的 cam 画布像素。
+ * 取第一个 tileset 的值（绝大多数地图 tileset 统一 tilewidth）。
+ */
+int jtilemap_get_tile_width(const jtilemap_p tm) {
+    if (!tm || kv_size(tm->tilesets) == 0) return 0;
+    return kv_A(tm->tilesets, 0).tilewidth;
+}
+int jtilemap_get_tile_height(const jtilemap_p tm) {
+    if (!tm || kv_size(tm->tilesets) == 0) return 0;
+    return kv_A(tm->tilesets, 0).tileheight;
+}
+
 void jtilemap_destroy(jtilemap_p tm)
 {
     if (!tm) return;
@@ -964,9 +977,14 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         jtilemap_gid_resolve_t res = jtilemap_resolve_gid(tm, gid);
                         if (!res.tileset) continue;
 
-                        float dst_x = tx * tilew - cam_x, dst_y = ty * tileh - cam_y;
+                        /* dst_x/y 步长取 tileset 的 tilewidth/tileheight（画布像素/格），
+                         * 而非 map 的 tilewidth/tileheight。两者在多数地图一致，
+                         * 但 Tiled 允许 map.tilewidth != tileset.tilewidth（如对齐模式），
+                         * 此时用 map.tilewidth 会让 tile 互相重叠。
+                         */
                         float dst_w = (float)res.tileset->tilewidth;
                         float dst_h = (float)res.tileset->tileheight;
+                        float dst_x = tx * dst_w - cam_x, dst_y = ty * dst_h - cam_y;
 
                         const char* deco_img = jtilemap_get_tile_image(res.tileset, res.local_id);
                         if (deco_img) {
@@ -993,13 +1011,40 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         image_set_alpha(timg, alpha);
                         jrect_t src = { uv[0], uv[1], uv[2], uv[3] };
 
-                        int flip = JR2D_FLIP_NONE;
-                        if (flags & JTILEMAP_FLIP_H) flip |= JR2D_FLIP_H;
-                        if (flags & JTILEMAP_FLIP_V) flip |= JR2D_FLIP_V;
+                        /* Tiled 翻转标志（bit D/H/V）→ SDL 旋转角 + 水平/垂直翻转
+                         * 官方语义（正交地图）：先对角镜像（anti-diagonal flip = 转置），
+                         * 再水平翻转，再垂直翻转。SDL 旋转+翻转组合能精确表达这 8 种组合：
+                         *   D=0:  angle=0°，H/V 正常用 flip flag
+                         *   D=1:  angle=90°，H/V 组合调整（推导见 _test_flip.py）
+                         * 旋转单位：jtilemap 传弧度（jr2d 内部 *180/π 转角度给 SDL）。
+                         */
+                        bool tiled_h = (flags & JTILEMAP_FLIP_H) != 0;
+                        bool tiled_v = (flags & JTILEMAP_FLIP_V) != 0;
+                        bool tiled_d = (flags & JTILEMAP_FLIP_D) != 0;
+
+                        bool sdl_flip_h, sdl_flip_v;
+                        float angle_rad;
+                        if (!tiled_d) {
+                                angle_rad = 0.0f;
+                                sdl_flip_h = tiled_h;
+                                sdl_flip_v = tiled_v;
+                        } else {
+                                angle_rad = 90.0f * 3.1415926f / 180.0f;
+                                /* 四种 (D, H, V) 组合 → SDL (90°, H, V)：
+                                 *   100 → (90°, 0, V)   101 → (90°, H, V)
+                                 *   110 → (90°, 0, 0)   111 → (90°, H, 0)
+                                 */
+                                sdl_flip_h = tiled_h && !tiled_v;   // D 位存在时，H 变"只在 V=0 时翻转"
+                                sdl_flip_v = tiled_h != tiled_v;   // D 位时 V= H XOR V
+                        }
+
+                        int flip_mask = (sdl_flip_h ? JR2D_FLIP_H : JR2D_FLIP_NONE)
+                                      | (sdl_flip_v ? JR2D_FLIP_V : JR2D_FLIP_NONE);
                         image_draw_ex(timg, &src, (vec2_t) { dst_x, dst_y },
-                                (flags & JTILEMAP_FLIP_D) ? 90.0f : 0.0f,
+                                angle_rad,
                                 (vec2_t) {
-                                flip& JR2D_FLIP_H ? -1 : 1, flip& JR2D_FLIP_V ? -1 : 1
+                                flip_mask & JR2D_FLIP_H ? -1 : 1,
+                                flip_mask & JR2D_FLIP_V ? -1 : 1
                         },
                                 (vec2_t) {
                                 0, 0
