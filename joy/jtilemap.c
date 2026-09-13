@@ -149,6 +149,7 @@ struct jtilemap_render_t {
         jtilemap_path_remap_t  remap;
         float                  view_w;
         float                  view_h;
+        float                  tile_px;   /* 每格目标像素；<=0 时用 map.tilewidth（兼容默认） */
         khash_t(tex_cache)* tex_cache;
 };
 
@@ -704,19 +705,6 @@ int jtilemap_get_height(const jtilemap_p tm) {
     return tm ? tm->height : 0;
 }
 
-/* 返回主 tileset 的 tilewidth/tileheight（画布像素/格）。
- * 用于调用者把"世界米"换算成传给 jtilemap_render_all 的 cam 画布像素。
- * 取第一个 tileset 的值（绝大多数地图 tileset 统一 tilewidth）。
- */
-int jtilemap_get_tile_width(const jtilemap_p tm) {
-    if (!tm || kv_size(tm->tilesets) == 0) return 0;
-    return kv_A(tm->tilesets, 0).tilewidth;
-}
-int jtilemap_get_tile_height(const jtilemap_p tm) {
-    if (!tm || kv_size(tm->tilesets) == 0) return 0;
-    return kv_A(tm->tilesets, 0).tileheight;
-}
-
 void jtilemap_destroy(jtilemap_p tm)
 {
     if (!tm) return;
@@ -957,7 +945,10 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
         float cam_x, float cam_y, uint32_t time_ms)
 {
         if (!layer->base.visible) return;
-        float tilew = (float)tm->tilewidth, tileh = (float)tm->tileheight;
+        /* 每个格子的画布像素：tile_px 预设 >0 时以它为准（调用者可设成游戏 PPM），
+         * 否则回退到 map.tilewidth（Tiled 默认网格），保证两种调用都正确。 */
+        float tilew = (r->tile_px > 0.0f) ? r->tile_px : (float)tm->tilewidth;
+        float tileh = (r->tile_px > 0.0f) ? r->tile_px : (float)tm->tileheight;
         cam_x = cam_x * layer->base.parallaxx - layer->base.offsetx;
         cam_y = cam_y * layer->base.parallaxy - layer->base.offsety;
 
@@ -977,14 +968,19 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         jtilemap_gid_resolve_t res = jtilemap_resolve_gid(tm, gid);
                         if (!res.tileset) continue;
 
-                        /* dst_x/y 步长取 tileset 的 tilewidth/tileheight（画布像素/格），
-                         * 而非 map 的 tilewidth/tileheight。两者在多数地图一致，
-                         * 但 Tiled 允许 map.tilewidth != tileset.tilewidth（如对齐模式），
-                         * 此时用 map.tilewidth 会让 tile 互相重叠。
+                        /* 瓦片网格步长取 map 的 tilewidth/tileheight（这是 Tiled 里
+                         * 相邻格子的画布间距），而不是 tileset 的。Tiled 允许二者不同
+                         * （map.tilewidth 决定网格，tileset.tilewidth 是瓦片原始像素），
+                         * 此时瓦片按 map 网格排布、并缩放到 map.tile 尺寸显示。
                          */
-                        float dst_w = (float)res.tileset->tilewidth;
-                        float dst_h = (float)res.tileset->tileheight;
-                        float dst_x = tx * dst_w - cam_x, dst_y = ty * dst_h - cam_y;
+                        float ts_tw = (float)res.tileset->tilewidth;   /* 瓦片原始像素 */
+                        float ts_th = (float)res.tileset->tileheight;
+                        float scale_x = tilew / ts_tw;                 /* map.grid / tile 像素，Tiled 会拉伸瓦片 */
+                        float scale_y = tileh / ts_th;
+                        float dst_x = tx * tilew - cam_x;
+                        float dst_y = ty * tileh - cam_y;
+                        float dst_w = ts_tw * scale_x;                 /* 缩放后目标尺寸 = map.tile 尺寸 */
+                        float dst_h = ts_th * scale_y;
 
                         const char* deco_img = jtilemap_get_tile_image(res.tileset, res.local_id);
                         if (deco_img) {
@@ -1011,12 +1007,13 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         image_set_alpha(timg, alpha);
                         jrect_t src = { uv[0], uv[1], uv[2], uv[3] };
 
-                        /* Tiled 翻转标志（bit D/H/V）→ SDL 旋转角 + 水平/垂直翻转
-                         * 官方语义（正交地图）：先对角镜像（anti-diagonal flip = 转置），
-                         * 再水平翻转，再垂直翻转。SDL 旋转+翻转组合能精确表达这 8 种组合：
-                         *   D=0:  angle=0°，H/V 正常用 flip flag
-                         *   D=1:  angle=90°，H/V 组合调整（推导见 _test_flip.py）
-                         * 旋转单位：jtilemap 传弧度（jr2d 内部 *180/π 转角度给 SDL）。
+                        /* Tiled 翻转标志（bit D/H/V）→ SDL 旋转角 + 水平/垂直翻转。
+                         * 官方语义（正交地图）：先对角镜像（transpose，x/y 互换），
+                         * 再水平翻转，再垂直翻转。用 (angle, flip_h, flip_v) 精确表达
+                         * 这 8 种组合（暴力枚举见 _test_flip.py）：
+                         *   D=0:  angle=0°，flip_h=H, flip_v=V
+                         *   D=1:  angle=90°，flip_h=V, flip_v=!H
+                         * image_draw_ex 的 rotation 参数按弧度处理（内部 *180/π）。
                          */
                         bool tiled_h = (flags & JTILEMAP_FLIP_H) != 0;
                         bool tiled_v = (flags & JTILEMAP_FLIP_V) != 0;
@@ -1030,25 +1027,18 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                                 sdl_flip_v = tiled_v;
                         } else {
                                 angle_rad = 90.0f * 3.1415926f / 180.0f;
-                                /* 四种 (D, H, V) 组合 → SDL (90°, H, V)：
-                                 *   100 → (90°, 0, V)   101 → (90°, H, V)
-                                 *   110 → (90°, 0, 0)   111 → (90°, H, 0)
-                                 */
-                                sdl_flip_h = tiled_h && !tiled_v;   // D 位存在时，H 变"只在 V=0 时翻转"
-                                sdl_flip_v = tiled_h != tiled_v;   // D 位时 V= H XOR V
+                                sdl_flip_h = tiled_v;
+                                sdl_flip_v = !tiled_h;
                         }
 
-                        int flip_mask = (sdl_flip_h ? JR2D_FLIP_H : JR2D_FLIP_NONE)
-                                      | (sdl_flip_v ? JR2D_FLIP_V : JR2D_FLIP_NONE);
-                        image_draw_ex(timg, &src, (vec2_t) { dst_x, dst_y },
-                                angle_rad,
-                                (vec2_t) {
-                                flip_mask & JR2D_FLIP_H ? -1 : 1,
-                                flip_mask & JR2D_FLIP_V ? -1 : 1
-                        },
-                                (vec2_t) {
-                                0, 0
-                        });
+                        /* 旋转/翻转绕瓦片中心：position 传目标中心，origin 传源中心。 */
+                        vec2_t pos = { dst_x + dst_w * 0.5f, dst_y + dst_h * 0.5f };
+                        vec2_t org = { ts_tw * 0.5f, ts_th * 0.5f };
+                        vec2_t scl = {
+                                scale_x * (sdl_flip_h ? -1.0f : 1.0f),
+                                scale_y * (sdl_flip_v ? -1.0f : 1.0f)
+                        };
+                        image_draw_ex(timg, &src, pos, angle_rad, scl, org);
                 }
         }
 }
@@ -1107,8 +1097,14 @@ jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
         r->asset_base = asset_base_path ? utils_strdup(asset_base_path, NULL) : NULL;
         r->view_w = 1024.0f;
         r->view_h = 760.0f;
+        r->tile_px = 0.0f;   /* 默认 0：用 map.tilewidth 做每格像素 */
         r->tex_cache = kh_init(tex_cache);
         return r;
+}
+
+void jtilemap_render_set_tile_px(jtilemap_render_p r, float px)
+{
+        if (r) r->tile_px = px;
 }
 
 void jtilemap_render_all(jtilemap_render_p r, jtilemap_p tm,
