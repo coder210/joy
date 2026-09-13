@@ -2006,6 +2006,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void jtilemap_destroy(jtilemap_p tm);
         JOY_API int jtilemap_get_width(const jtilemap_p tm);
         JOY_API int jtilemap_get_height(const jtilemap_p tm);
+        JOY_API int jtilemap_get_tilewidth(const jtilemap_p tm);
+        JOY_API int jtilemap_get_tileheight(const jtilemap_p tm);
         JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
         JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
         JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id, int* out_w, int* out_h);
@@ -2017,12 +2019,17 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 const char* name);
         JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm, const char* name);
         JOY_API void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
+        JOY_API void jtilemap_object_layer_foreach_all(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
         JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer,
                 int tx, int ty);
         JOY_API jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
                 const char* asset_base_path,
                 jtilemap_path_remap_t remap);
         JOY_API void jtilemap_render_all(jtilemap_render_p r,
+                jtilemap_p tm,
+                float camera_x, float camera_y,
+                uint32_t time_ms);
+        JOY_API void jtilemap_render_tiles(jtilemap_render_p r,
                 jtilemap_p tm,
                 float camera_x, float camera_y,
                 uint32_t time_ms);

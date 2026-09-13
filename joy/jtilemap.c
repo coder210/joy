@@ -705,6 +705,14 @@ int jtilemap_get_height(const jtilemap_p tm) {
     return tm ? tm->height : 0;
 }
 
+int jtilemap_get_tilewidth(const jtilemap_p tm) {
+    return tm ? tm->tilewidth : 0;
+}
+
+int jtilemap_get_tileheight(const jtilemap_p tm) {
+    return tm ? tm->tileheight : 0;
+}
+
 void jtilemap_destroy(jtilemap_p tm)
 {
     if (!tm) return;
@@ -876,6 +884,17 @@ void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(
             callback(obj, arg);
         }
         log_info("[tilemap] loaded %zu collision walls", kv_size(ol->objects));
+    }
+}
+
+/* 遍历对象层内全部对象（不过滤形状：point/ellipse/polyline 等也回调；用于出生点解析） */
+void jtilemap_object_layer_foreach_all(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void* arg), void* arg)
+{
+    if (ol) {
+        for (size_t i = 0; i < kv_size(ol->objects); i++) {
+            jtilemap_object_t* obj = &kv_A(ol->objects, i);
+            callback(obj, arg);
+        }
     }
 }
 
@@ -1135,6 +1154,30 @@ void jtilemap_render_all(jtilemap_render_p r, jtilemap_p tm,
                         render_image_layer_internal(r, (jtilemap_image_layer_p)base, camera_x, camera_y);
                         break;
                 }
+        }
+}
+
+/* 只渲染瓦片层（Ground/Object 等），跳过对象层（Collision/Player 的调试线框）与图片层。
+ * 运行时关卡渲染应使用本接口：对象的碰撞/出生线框属于编辑期辅助，不该出现在游戏画面里。 */
+void jtilemap_render_tiles(jtilemap_render_p r, jtilemap_p tm,
+        float camera_x, float camera_y,
+        uint32_t time_ms)
+{
+        if (!r || !tm || !r->r2d) return;
+
+        {
+                int vp_w = 0, vp_h = 0, mode;
+                r2d_get_logical_presentation(r->r2d, &vp_w, &vp_h, &mode);
+                if (vp_w <= 0 || vp_h <= 0)
+                        r2d_get_size(r->r2d, &vp_w, &vp_h);
+                r->view_w = (float)vp_w;
+                r->view_h = (float)vp_h;
+        }
+
+        for (size_t i = 0; i < kv_size(tm->layers); i++) {
+                jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+                if (base->type == JTILEMAP_LAYER_TILE)
+                        render_tile_layer_internal(r, tm, (jtilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
         }
 }
 
