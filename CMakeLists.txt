@@ -39,7 +39,7 @@ endif()
 # 添加子目录
 add_subdirectory(msgpack)   # msgpack 库
 add_subdirectory(SDL)          # SDL3 库
-add_subdirectory(joy)   # joy 核心库
+# joy 不再作为独立库子目录：源码由各游戏项目通过 joy/joy_add.cmake 直接编入
 
 if (WIN32)
 	add_subdirectory(joy_cslib)

@@ -49,10 +49,9 @@ if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
 endif()
 
-# 链接依赖库（由根目录的 add_subdirectory 引入）
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC
-    joy
-)
+# 引入 joy 框架源码（纯文件引入，不再构建独立库 target）
+include(${CMAKE_SOURCE_DIR}/joy/joy_add.cmake)
+joy_add_sources(${EXECUTABLE_NAME})
 
 # 添加项目自身目录为头文件搜索路径
 target_include_directories(${EXECUTABLE_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
