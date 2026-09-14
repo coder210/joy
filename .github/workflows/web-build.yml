@@ -8,14 +8,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [joy_editor, adventure_server, adventure_client]
+        project: [project_proxy2d, adventure2d, project_proxy3d]
         include:
-          - project: joy_editor
-            build_macro: "BUILD_JOY_EDITOR"
-          - project: adventure_server
-            build_macro: "BUILD_ADVENTURE_SERVER"
-          - project: adventure_client
-            build_macro: "BUILD_ADVENTURE_CLIENT"
+          - project: project_proxy2d
+            build_macro: "BUILD_PROJECT_PROXY2D"
+          - project: adventure2d
+            build_macro: "BUILD_ADVENTURE2D"
+          - project: project_proxy3d
+            build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
       - name: Checkout code
@@ -94,8 +94,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages (editor only)
+      - name: Deploy to GitHub Pages (project_proxy2d only)
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: adventure_client-web   # 必须与上传时 editor 项目的 artifact 名称一致
+          artifact_name: project_proxy2d-web   # 必须与上传时 project_proxy2d 项目的 artifact 名称一致

@@ -10,14 +10,14 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [joy_editor, adventure_server, adventure_client]
+        project: [project_proxy2d, adventure2d, project_proxy3d]
         include:
-          - project: joy_editor
-            build_macro: "BUILD_JOY_EDITOR"
-          - project: adventure_server
-            build_macro: "BUILD_ADVENTURE_SERVER"
-          - project: adventure_client
-            build_macro: "BUILD_ADVENTURE_CLIENT"
+          - project: project_proxy2d
+            build_macro: "BUILD_PROJECT_PROXY2D"
+          - project: adventure2d
+            build_macro: "BUILD_ADVENTURE2D"
+          - project: project_proxy3d
+            build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
       - uses: actions/checkout@v4
@@ -50,14 +50,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [joy2d_editor, adventure_server, adventure_client]
+        project: [project_proxy2d, adventure2d, project_proxy3d]
         include:
-          - project: joy2d_editor
-            build_macro: "BUILD_JOY2D_EDITOR"
-          - project: adventure_server
-            build_macro: "BUILD_ADVENTURE_SERVER"
-          - project: adventure_client
-            build_macro: "BUILD_ADVENTURE_CLIENT"
+          - project: project_proxy2d
+            build_macro: "BUILD_PROJECT_PROXY2D"
+          - project: adventure2d
+            build_macro: "BUILD_ADVENTURE2D"
+          - project: project_proxy3d
+            build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
       - uses: actions/checkout@v4
@@ -89,28 +89,22 @@ jobs:
         with:
           name: ${{ matrix.project }}-Linux
           path: |
-            build/Release/${{ matrix.project }}
-            build/Release/*.so
-            build/Release/fonts/
-            build/Release/shaders/
-            build/Release/sounds/
-            build/Release/textures/
+            build/Release/**
 
   build-mac:
-    name: Build for Apple (${{ matrix.project }}-${{ matrix.target == '' && 'desktop' || matrix.target }})
+    name: Build for macOS (${{ matrix.project }})
     runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
-        target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
-        project: [joy2d_editor, adventure_server, adventure_client]
+        project: [project_proxy2d, adventure2d, project_proxy3d]
         include:
-          - project: joy2d_editor
-            build_macro: "BUILD_JOY2D_EDITOR"
-          - project: adventure_server
-            build_macro: "BUILD_ADVENTURE_SERVER"
-          - project: adventure_client
-            build_macro: "BUILD_ADVENTURE_CLIENT"
+          - project: project_proxy2d
+            build_macro: "BUILD_PROJECT_PROXY2D"
+          - project: adventure2d
+            build_macro: "BUILD_ADVENTURE2D"
+          - project: project_proxy3d
+            build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +120,6 @@ jobs:
         run: |
           cmake -G "Xcode" \
                 -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO \
-                -DCMAKE_SYSTEM_NAME=${{ matrix.target }} \
                 -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
                 -D${{ matrix.build_macro }}=ON \
                 -S . -B build
@@ -134,19 +127,23 @@ jobs:
       - name: Build
         run: cmake --build build --target ${{ matrix.project }} --config Release
 
+      # 仅 proxy2d/proxy3d 生成 .app（MACOSX_BUNDLE）；adventure2d 为普通可执行文件
       - name: Ad-Hoc Codesign
+        if: ${{ matrix.project != 'adventure2d' }}
         run: |
           codesign -s - -f "./build/Release/${{ matrix.project }}.app" --deep
 
       - name: Create DMG
+        if: ${{ matrix.project != 'adventure2d' }}
         run: |
           cd build
           hdiutil create -size 2g -srcfolder Release \
-            -volname ${{ matrix.project }}_apple_${{ matrix.target }} \
-            ${{ matrix.project }}_apple_${{ matrix.target }}.dmg
+            -volname ${{ matrix.project }}_apple \
+            ${{ matrix.project }}_apple.dmg
 
       - name: Upload Build
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.project }}-apple-${{ matrix.target }}
-          path: build/*.dmg
+          name: ${{ matrix.project }}-apple
+          path: |
+            build/Release/**
