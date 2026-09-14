@@ -53,6 +53,8 @@ function(joy_add_sources TARGET)
     list(REMOVE_ITEM JOY_ALL_FILES "${JOY_SOURCE_DIR}/jmodule.c")
 
     target_sources(${TARGET} PRIVATE ${JOY_ALL_FILES})
+    # IDE 显示分组：joy 源码在目标下以 joy/... 目录树展示（TREE 到 joy 的父目录）
+    source_group(TREE "${JOY_SOURCE_DIR}/.." FILES ${JOY_ALL_FILES})
     # 使 #include <joy/joy.h> 可用（joy 源码位于 <根>/joy/，根由 SDL/msgpack 等项目约定）
     target_include_directories(${TARGET} PRIVATE "${JOY_SOURCE_DIR}/..")
 
