@@ -1,5 +1,5 @@
 name: Build joy For Web
-on: [pull_request]
+on: [push]
 
 jobs:
   build-web:
