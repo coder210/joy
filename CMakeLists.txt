@@ -15,7 +15,7 @@ project(joy C CXX)
 # 仅保留三个游戏项目（其它目标按需注释停用，目录与 CMakeLists 保留）
 # option(BUILD_JOY_EDITOR "Build joy_editor" OFF)
 # option(BUILD_JOY_BEAT "Build joy_beat" OFF)
-option(BUILD_ADVENTURE2D "Build adventure2d (single binary: single/host/client/server)" OFF)
+# option(BUILD_ADVENTURE2D "Build adventure2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
 # option(BUILD_L4D_2D "Build l4d_2d (copy of project_proxy2d, single binary: single/host/client/server)" OFF)
@@ -57,9 +57,9 @@ endif()
 # endif()
 
 # examples
-if(BUILD_ADVENTURE2D)
-    add_subdirectory(adventure2d)
-endif()
+# if(BUILD_ADVENTURE2D)
+#     add_subdirectory(adventure2d)
+# endif()
 
 if(BUILD_PROJECT_PROXY2D)
     add_subdirectory(project_proxy2d)

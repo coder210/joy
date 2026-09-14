@@ -10,12 +10,10 @@ jobs:
       matrix:
         arch: [x64, ARM64]
         target: [Windows]
-        project: [project_proxy2d, adventure2d, project_proxy3d]
+        project: [project_proxy2d, project_proxy3d]
         include:
           - project: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - project: adventure2d
-            build_macro: "BUILD_ADVENTURE2D"
           - project: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
 
@@ -50,12 +48,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [project_proxy2d, adventure2d, project_proxy3d]
+        project: [project_proxy2d, project_proxy3d]
         include:
           - project: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - project: adventure2d
-            build_macro: "BUILD_ADVENTURE2D"
           - project: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
 

@@ -6,12 +6,10 @@ jobs:
   build:
     strategy:
       matrix:
-        target: [project_proxy2d, adventure2d, project_proxy3d]   # 并行构建三个目标
+        target: [project_proxy2d, project_proxy3d]   # 并行构建两个目标
         include:
           - target: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: adventure2d
-            build_macro: "BUILD_ADVENTURE2D"
           - target: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
       fail-fast: false                   # 一个失败不影响另一个
