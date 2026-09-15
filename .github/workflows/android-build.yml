@@ -135,6 +135,7 @@ jobs:
 
       # 7. 上传 APK 产物，文件名区分目标
       - name: Upload APK artifact
+        if: ${{ vars.UPLOAD_ARTIFACTS == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-debug
