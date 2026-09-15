@@ -138,4 +138,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-debug
+          retention-days: 7
           path: SDL/android-project/app/build/outputs/apk/debug/${{ matrix.target }}-debug.apk

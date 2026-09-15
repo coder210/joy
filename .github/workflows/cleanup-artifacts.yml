@@ -1,0 +1,35 @@
+name: Cleanup old artifacts
+
+on:
+  schedule:
+    - cron: "0 20 * * *"   # 每 20:00 UTC（次日 04:00 北京时间）运行
+  workflow_dispatch: {}       # 允许手动触发
+
+permissions:
+  actions: write               # 需要删除 artifact 的权限
+
+jobs:
+  cleanup:
+    name: Delete artifacts older than 7 days
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete expired artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          # 列举全部 artifact，取其 id + 创建时间戳，删除创建早于 7 天的
+          now=$(date +%s)
+          cutoff=$(( now - 7*24*3600 ))
+          deleted=0
+          gh api "/repos/$GH_REPO/actions/artifacts?per_page=100" --paginate \
+            --jq '.artifacts[] | [.id, .created_at] | @tsv' \
+            | while IFS=$'\t' read -r id created; do
+                created_ts=$(date -d "$created" +%s)
+                if [ "$created_ts" -lt "$cutoff" ]; then
+                  gh api -X DELETE "/repos/$GH_REPO/actions/artifacts/$id" >/dev/null && \
+                    echo "deleted artifact #$id ($created)" && deleted=$((deleted+1))
+                fi
+              done
+          echo "Done. (deleted count printed above)"

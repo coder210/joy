@@ -80,6 +80,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           name: ${{ matrix.project }}-web   # 为每个项目指定唯一名称
+          retention-days: 7
           path: _site_${{ matrix.project }}/
 
   deploy:
