@@ -1,5 +1,5 @@
 name: Build joy
-on: [push]
+on: []
 
 jobs:
   build-win:

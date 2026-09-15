@@ -1,6 +1,6 @@
 name: Build joy for Android
 
-on: [push]
+on: []
 
 jobs:
   build:
