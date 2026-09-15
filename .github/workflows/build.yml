@@ -12,9 +12,9 @@ jobs:
         target: [Windows]
         project: [project_proxy2d, project_proxy3d]
         include:
-          - target: project_proxy2d
+          - project: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: project_proxy3d
+          - project: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
@@ -50,9 +50,9 @@ jobs:
       matrix:
         project: [project_proxy2d, project_proxy3d]
         include:
-          - target: project_proxy2d
+          - project: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: project_proxy3d
+          - project: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
@@ -101,9 +101,9 @@ jobs:
         target: [iOS, tvOS, visionOS, '']      # '' 表示 macOS 本地
         project: [project_proxy2d, project_proxy3d]
         include:
-          - target: project_proxy2d
+          - project: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: project_proxy3d
+          - project: project_proxy3d
             build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:

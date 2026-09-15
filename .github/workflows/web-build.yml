@@ -1,141 +1,99 @@
-name: Build joy for Android
-
-on: []
+name: Build joy2d For Web
+on: [push, pull_request]
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        target: [project_proxy2d, project_proxy3d]      # 并行构建两个目标
-        include:
-          - target: project_proxy2d
-            build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: project_proxy3d
-            build_macro: "BUILD_PROJECT_PROXY3D"
-      fail-fast: false                   # 一个失败不影响另一个
-
-    name: Build ${{ matrix.target }} APK
+  build-web:
+    name: Build joy2d for Web (${{ matrix.project }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [project_proxy2d, project_proxy3d]
+        include:
+          - project: project_proxy2d
+            build_macro: "BUILD_PROJECT_PROXY2D"
+          - project: project_proxy3d
+            build_macro: "BUILD_PROJECT_PROXY3D"
 
     steps:
-      # 1. 检出代码（包含子模块）
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 2. 设置 JDK 17（Gradle 需要）
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # 3. 将项目根目录下的 build.gradle 复制到 SDL 的 Android 项目模板中
-      - name: Copy build.gradle to SDL project
+      - name: Get Emscripten
         run: |
-          cp build.gradle SDL/android-project/app/
+          git clone https://github.com/emscripten-core/emsdk.git --depth=1
+          cd emsdk
+          ./emsdk install 3.1.64
+          ./emsdk activate 3.1.64
 
-      # 4. 根据目标修改 build.gradle 中的 CMake 参数（使用矩阵中定义的变量）
-      - name: Modify CMake arguments in build.gradle
+      - name: Configure with Emscripten
         run: |
-          cd SDL/android-project/app/
-          # 备份原文件
-          cp build.gradle build.gradle.bak
+          source emsdk/emsdk_env.sh
+          emcmake cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB" \
+            -DCMAKE_C_FLAGS="-s USE_PTHREADS=0" \
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0" \
+            -D${{ matrix.build_macro }}=ON
 
-          # 构建新的 arguments 字符串（包含原有矩阵宏和新增参数）
-          # 使用单引号保护 ${System.getProperty(...)} 不被 Shell 展开
-          NEW_ARGS='arguments "-D'"${{ matrix.build_macro }}"'=ON", "-DANDROID_APP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DCMAKE_VERBOSE_MAKEFILE=ON", "-DMOBILE_MAIN_DIR=${System.getProperty("user.dir")}/app/src/main"'
+      - name: Build
+        run: |
+          source emsdk/emsdk_env.sh
+          cmake --build build --parallel --verbose
 
-          # 尝试替换已有的 arguments 行（使用 # 作为分隔符，避免与路径中的 / 冲突）
-          sed -i -E "s#arguments[[:space:]]+\".*\"#${NEW_ARGS}#" build.gradle
+      - name: List build directory (debug)
+        run: ls -la build/
 
-          # 如果替换失败（文件中没有 arguments 行），则在 defaultConfig 块内插入
-          if ! grep -q "arguments" build.gradle; then
-            # 注意：原插入逻辑可能不符合 Groovy 语法，但保持与原脚本一致
-            sed -i "/defaultConfig {/a \\        externalNativeBuild.cmake.${NEW_ARGS}" build.gradle
+      - name: Prepare for upload (per project)
+        run: |
+          mkdir -p _site_${{ matrix.project }}
+          # 复制所有 Web 相关文件（跟随符号链接）
+          # 注意：如果文件不存在，cp 会报错并导致步骤失败，便于及时发现缺失文件
+          cp -L build/Release/*.wasm build/Release/*.js build/Release/*.html build/Release/*.data _site_${{ matrix.project }}/ || true
+          # 将主 HTML 重命名为 index.html（如果存在）
+          if [ -f "_site_${{ matrix.project }}/${{ matrix.project }}.html" ]; then
+            mv "_site_${{ matrix.project }}/${{ matrix.project }}.html" "_site_${{ matrix.project }}/index.html"
+          fi
+          # 删除任何残留的符号链接（确保安全）
+          find _site_${{ matrix.project }} -type l -delete
+
+      - name: Verify no symlinks remain
+        run: |
+          if [ $(find _site_${{ matrix.project }} -type l | wc -l) -ne 0 ]; then
+            echo "::error::Symlinks still exist in artifact"
+            exit 1
           fi
 
-          # 打印修改后的内容以便调试
-          cat build.gradle
+      - name: List upload directory content
+        run: ls -la _site_${{ matrix.project }}/
 
-      # 5. 添加 copyIcons 任务到 build.gradle，确保图标在资源合并前更新
-      - name: Add copyIcons task to build.gradle
+      - name: Fix permissions
         run: |
-          cd SDL/android-project/app/
-          cat >> build.gradle << 'EOF'
+          chmod -c -R +rX "_site_${{ matrix.project }}" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
 
-          // 复制图标到所有 mipmap 目录，确保资源合并前更新
-          task copyIcons {
-              doLast {
-                  def densities = ['hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
-                  def sourceFile = file('../../../${{ matrix.target }}/logo.png')
-                  if (!sourceFile.exists()) {
-                      throw new GradleException("logo.png not found at ${sourceFile.absolutePath}")
-                  }
-                  densities.each { density ->
-                      def targetDir = file("src/main/res/mipmap-${density}")
-                      if (!targetDir.exists()) {
-                          targetDir.mkdirs()
-                      }
-                      copy {
-                          from sourceFile
-                          into targetDir
-                          rename '.*', 'ic_launcher.png'
-                      }
-                      println "Copied logo.png to ${targetDir}/ic_launcher.png"
-                  }
-              }
-          }
-
-          preBuild.dependsOn copyIcons
-
-          // 动态设置应用显示名称
-          if (project.hasProperty('appDisplayName')) {
-              android.defaultConfig {
-                  resValue "string", "app_name", project.appDisplayName
-              }
-          }
-
-          // 根据传入参数动态设置包名(applicationId)
-          if (project.hasProperty('applicationId')) {
-              android.defaultConfig {
-                  applicationId project.applicationId
-              }
-              println "Application ID set to: ${project.applicationId}"
-          } else if (project.hasProperty('packageSuffix')) {
-              // 如果只传了后缀，组合出完整包名(假设基础包名为 com.joy2d)
-              def basePackage = "com.joy2d"
-              android.defaultConfig {
-                  applicationId "${basePackage}.${project.packageSuffix}"
-              }
-              println "Application ID set to: ${basePackage}.${project.packageSuffix}"
-          } else {
-              // 未传参数时使用默认值(如 org.libsdl.app)
-              println "Using default application ID from manifest"
-          }
-
-          // 动态设置 APK 输出文件名
-          android.applicationVariants.all { variant ->
-              variant.outputs.all { output ->
-                  def targetName = project.hasProperty('targetName') ? project.targetName : 'Game'
-                  def buildType = variant.buildType.name
-                  outputFileName = "${targetName}-${buildType}.apk"
-              }
-          }
-
-          EOF
-
-      # 6. 构建 APK
-      - name: Build APK
-        run: |
-          cd SDL/android-project/
-          chmod +x gradlew
-          ./gradlew assembleDebug -PtargetName=${{ matrix.target }} -PappDisplayName="${{ matrix.target }}" -PpackageSuffix=${{ matrix.target }}
-
-      # 7. 上传 APK 产物，文件名区分目标
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+      # 使用专为 GitHub Pages 设计的 artifact 上传 action
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: ${{ matrix.target }}-debug
-          path: SDL/android-project/app/build/outputs/apk/debug/${{ matrix.target }}-debug.apk
+          name: ${{ matrix.project }}-web   # 为每个项目指定唯一名称
+          path: _site_${{ matrix.project }}/
+
+  deploy:
+    needs: build-web
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages (proxy2d web client)
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: project_proxy2d-web   # 必须与上传时该项目的 artifact 名称一致
