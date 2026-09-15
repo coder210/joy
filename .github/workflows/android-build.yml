@@ -1,12 +1,12 @@
 name: Build joy for Android
 
-on: [push]
+on: []
 
 jobs:
   build:
     strategy:
       matrix:
-        target: [project_proxy2d, project_proxy3d]   # 并行构建两个目标
+        target: [project_proxy2d, project_proxy3d]      # 并行构建两个目标
         include:
           - target: project_proxy2d
             build_macro: "BUILD_PROJECT_PROXY2D"
