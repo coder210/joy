@@ -50,6 +50,13 @@ typedef struct {
 	size_t a, b;
 } epa_edge_f_t;
 
+/* kvec_t 展开为匿名 struct, 直接用匿名类型作为形参/传址会让 MSVC 判定为
+   互不兼容的匿名类型(C4116/C4133)。起具名别名后同一类型身份, 告警消除。 */
+typedef kvec_t(size_t)       size_buf_t;
+typedef kvec_t(vec3f_t)      vec3f_buf_t;
+typedef kvec_t(epa_face_f_t) epa_face_f_buf_t;
+typedef kvec_t(epa_edge_f_t) epa_edge_f_buf_t;
+
 /* ============ 单纯形操作 ============ */
 
 static void simplex_init1_f(simplex3d_f_t *s, vec3f_t p0) {
@@ -288,8 +295,8 @@ static bool next_simplex_f(simplex3d_f_t *s, vec3f_t *dir) {
 /* ============ EPA (扩展多面体算法) ============ */
 
 /* 计算所有面法线和最近面索引 */
-static void get_face_normals_f(kvec_t(vec3f_t) *polytope, kvec_t(size_t) *faces,
-	kvec_t(epa_face_f_t) *normals, size_t *min_triangle) {
+static void get_face_normals_f(vec3f_buf_t *polytope, size_buf_t *faces,
+	epa_face_f_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
 	fp_t min_distance = fp_max_value();
 
@@ -324,7 +331,7 @@ static void get_face_normals_f(kvec_t(vec3f_t) *polytope, kvec_t(size_t) *faces,
 }
 
 /* 添加不重复边(EPA用) */
-static void add_unique_edge_f(kvec_t(epa_edge_f_t) *edges, kvec_t(size_t) *faces, size_t a, size_t b) {
+static void add_unique_edge_f(epa_edge_f_buf_t *edges, size_buf_t *faces, size_t a, size_t b) {
 	size_t fa = kv_A(*faces, a);
 	size_t fb = kv_A(*faces, b);
 	/* 查找是否存在反向边 */
@@ -342,9 +349,9 @@ static void add_unique_edge_f(kvec_t(epa_edge_f_t) *edges, kvec_t(size_t) *faces
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
 static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
-	kvec_t(vec3f_t) polytope;
-	kvec_t(size_t) faces;
-	kvec_t(epa_face_f_t) normals;
+	vec3f_buf_t polytope;
+	size_buf_t faces;
+	epa_face_f_buf_t normals;
 
 	kv_init(polytope);
 	kv_init(faces);
@@ -386,7 +393,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			min_distance = fp_max_value();
 
 			/* 找到需要移除的面,收集边界边 */
-			kvec_t(epa_edge_f_t) unique_edges;
+			epa_edge_f_buf_t unique_edges;
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
@@ -407,7 +414,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			}
 
 			/* 用边界边创建新面 */
-			kvec_t(size_t) new_faces;
+			size_buf_t new_faces;
 			kv_init(new_faces);
 			size_t new_vertex_index = polytope.n;
 			for (size_t i = 0; i < unique_edges.n; i++) {
@@ -418,7 +425,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			kv_push(vec3f_t, polytope, support);
 
 			/* 计算新面的法线 */
-			kvec_t(epa_face_f_t) new_normals;
+			epa_face_f_buf_t new_normals;
 			kv_init(new_normals);
 			size_t new_min_face = 0;
 			get_face_normals_f(&polytope, &new_faces, &new_normals, &new_min_face);
@@ -656,6 +663,11 @@ typedef struct {
 	size_t a, b;
 } epa_edge_t;
 
+/* EPA kvec 具名别名(size_buf_t 已在定点段定义, 此处复用) */
+typedef kvec_t(vec3_t)     vec3_buf_t;
+typedef kvec_t(epa_face_t) epa_face_buf_t;
+typedef kvec_t(epa_edge_t) epa_edge_buf_t;
+
 /* ============ 单纯形操作 ============ */
 
 static void simplex_init1(simplex3d_t *s, vec3_t p0) {
@@ -880,8 +892,8 @@ static bool next_simplex(simplex3d_t *s, vec3_t *dir) {
 /* ============ EPA (扩展多面体算法) ============ */
 
 /* 计算所有面法线和最近面索引 */
-static void get_face_normals(kvec_t(vec3_t) *polytope, kvec_t(size_t) *faces,
-	kvec_t(epa_face_t) *normals, size_t *min_triangle) {
+static void get_face_normals(vec3_buf_t *polytope, size_buf_t *faces,
+	epa_face_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
 	ft_t min_distance = ft_max_value();
 
@@ -916,7 +928,7 @@ static void get_face_normals(kvec_t(vec3_t) *polytope, kvec_t(size_t) *faces,
 }
 
 /* 添加不重复边(EPA用) */
-static void add_unique_edge(kvec_t(epa_edge_t) *edges, kvec_t(size_t) *faces, size_t a, size_t b) {
+static void add_unique_edge(epa_edge_buf_t *edges, size_buf_t *faces, size_t a, size_t b) {
 	size_t fa = kv_A(*faces, a);
 	size_t fb = kv_A(*faces, b);
 	/* 查找是否存在反向边 */
@@ -934,9 +946,9 @@ static void add_unique_edge(kvec_t(epa_edge_t) *edges, kvec_t(size_t) *faces, si
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
 static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
-	kvec_t(vec3_t) polytope;
-	kvec_t(size_t) faces;
-	kvec_t(epa_face_t) normals;
+	vec3_buf_t polytope;
+	size_buf_t faces;
+	epa_face_buf_t normals;
 
 	kv_init(polytope);
 	kv_init(faces);
@@ -978,7 +990,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			min_distance = ft_max_value();
 
 			/* 找到需要移除的面,收集边界边 */
-			kvec_t(epa_edge_t) unique_edges;
+			epa_edge_buf_t unique_edges;
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
@@ -999,7 +1011,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			}
 
 			/* 用边界边创建新面 */
-			kvec_t(size_t) new_faces;
+			size_buf_t new_faces;
 			kv_init(new_faces);
 			size_t new_vertex_index = polytope.n;
 			for (size_t i = 0; i < unique_edges.n; i++) {
@@ -1010,7 +1022,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			kv_push(vec3_t, polytope, support);
 
 			/* 计算新面的法线 */
-			kvec_t(epa_face_t) new_normals;
+			epa_face_buf_t new_normals;
 			kv_init(new_normals);
 			size_t new_min_face = 0;
 			get_face_normals(&polytope, &new_faces, &new_normals, &new_min_face);
