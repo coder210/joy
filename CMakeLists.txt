@@ -18,6 +18,7 @@ project(joy C CXX)
 # option(BUILD_ADVENTURE2D "Build adventure2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
+option(BUILD_SPINE_SDL3_TEST "Build spine_sdl3_test (spine-c + SDL3 render test)" ON)
 # option(BUILD_L4D_2D "Build l4d_2d (copy of project_proxy2d, single binary: single/host/client/server)" OFF)
 
 
@@ -68,6 +69,10 @@ endif()
 
 if(BUILD_PROJECT_PROXY3D)
     add_subdirectory(project_proxy3d)
+endif()
+
+if(BUILD_SPINE_SDL3_TEST)
+    add_subdirectory(spine_sdl3_test)
 endif()
 
 # if(BUILD_L4D_2D)

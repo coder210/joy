@@ -1756,6 +1756,74 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void janimator_set_on_exit(janimator_p anim, janim_state_cb cb, void* userdata);
 
 
+        /* ==================== Spine 骨骼动画（jspine，可选模块） ====================
+         * 启用方式：定义 JOY_USE_SPINE 并链接 spine-c，见 joy_add_sources(<target> SPINE)。
+         * 分两层，便于 ECS 使用：
+         *   jspine_asset_t    —— 共享资源（atlas + skeletonData），多实体复用，由资源管理器持有
+         *   jspine_instance_t —— 每实体一份的"组件"，纯数据结构，可直接 emplace 到 ECS
+         */
+#ifdef JOY_USE_SPINE
+#include <spine/spine.h>
+
+        typedef struct jspine_asset jspine_asset_t, * jspine_asset_p;
+
+#define JSPINE_NAME_MAX 64
+
+        /* ECS 组件：ecs.emplace<jspine_instance_t>(e) 后调用 jspine_instance_init，
+         * 销毁前必须调用 jspine_instance_free（不会释放 asset）。 */
+        typedef struct jspine_instance {
+                jspine_asset_p asset;              /* 共享资源（不拥有） */
+                spSkeleton *skeleton;              /* 拥有的实例数据 */
+                spAnimationState *state;
+                spSkeletonClipping *clipper;
+                void *draw_cache;                  /* 内部顶点/索引缓存（不透明，避免暴露 SDL 类型） */
+
+                float x, y;                        /* 位置（y 向下：模块内已 spBone_setYDown） */
+                float scale_x, scale_y;            /* 缩放 */
+                float rotation;                    /* 整体旋转（度） */
+                float time_scale;                  /* 播放速度倍率 */
+                float alpha;                       /* 整体透明度 0~1 */
+                jcolor_t tint;                     /* 染色（与贴图颜色相乘） */
+                bool flip_x;                       /* 水平翻转 */
+                bool visible;                      /* 是否参与绘制 */
+                int zorder;                        /* 绘制排序（system 侧使用） */
+                char animation[JSPINE_NAME_MAX];   /* 当前动画名 */
+        } jspine_instance_t, * jspine_instance_p;
+
+        /* ---- 共享资源 ---- */
+        JOY_API jspine_asset_p jspine_asset_load(jr2d_p r2d, const char *atlas_path,
+                                                 const char *skeleton_path, float scale);
+        JOY_API void jspine_asset_free(jspine_asset_p asset);
+        JOY_API spSkeletonData *jspine_asset_data(jspine_asset_p asset);
+        JOY_API int jspine_asset_animation_count(jspine_asset_p asset);
+        JOY_API const char *jspine_asset_animation_name(jspine_asset_p asset, int index);
+        JOY_API float jspine_asset_animation_duration(jspine_asset_p asset, int index);
+
+        /* ---- 组件（实例） ---- */
+        JOY_API bool jspine_instance_init(jspine_instance_p inst, jspine_asset_p asset);
+        JOY_API void jspine_instance_free(jspine_instance_p inst);
+        JOY_API void jspine_instance_reset(jspine_instance_p inst);
+        JOY_API bool jspine_instance_set_animation(jspine_instance_p inst, int track,
+                                                   const char *name, bool loop);
+        JOY_API bool jspine_instance_add_animation(jspine_instance_p inst, int track,
+                                                   const char *name, bool loop, float delay);
+        JOY_API void jspine_instance_update(jspine_instance_p inst, float dt);
+        JOY_API void jspine_instance_draw(jr2d_p r2d, jspine_instance_p inst);
+
+        /* 变换/状态：写组件字段，下一次 update 生效 */
+        JOY_API void jspine_instance_set_position(jspine_instance_p inst, float x, float y);
+        JOY_API void jspine_instance_set_scale(jspine_instance_p inst, float sx, float sy);
+        JOY_API void jspine_instance_set_rotation(jspine_instance_p inst, float degrees);
+        JOY_API void jspine_instance_set_flip_x(jspine_instance_p inst, bool flip);
+        JOY_API void jspine_instance_set_alpha(jspine_instance_p inst, float alpha);
+        JOY_API void jspine_instance_set_tint(jspine_instance_p inst, jcolor_t tint);
+
+        /* 包围盒（y 向下坐标系）：便于 ECS 做视口剔除/碰撞粗筛 */
+        JOY_API bool jspine_instance_bounds(jspine_instance_p inst, float *out_x, float *out_y,
+                                            float *out_w, float *out_h);
+        JOY_API const char *jspine_instance_animation(jspine_instance_p inst);
+#endif /* JOY_USE_SPINE */
+
         JOY_API label_p label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
         JOY_API void label_destroy(label_p label);
         JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);

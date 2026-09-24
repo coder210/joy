@@ -24,7 +24,9 @@ if(NOT DEFINED JOY_SOURCE_DIR)
 endif()
 
 function(joy_add_sources TARGET)
-    cmake_parse_arguments(JAS "" "" "EXCLUDE" ${ARGN})
+    # SPINE 为可选开关：启用后编译 joy/jspine.c（Spine 骨骼动画模块）并链接 spine-c。
+    # 用法：joy_add_sources(${TARGET} SPINE)
+    cmake_parse_arguments(JAS "SPINE" "" "EXCLUDE" ${ARGN})
 
     file(GLOB JOY_CORE_FILES     CONFIGURE_DEPENDS "${JOY_SOURCE_DIR}/*.h"  "${JOY_SOURCE_DIR}/*.c")
     file(GLOB JOY_EXTERNAL_FILES CONFIGURE_DEPENDS
@@ -67,6 +69,13 @@ function(joy_add_sources TARGET)
 
     # 纯源码引入：清空导出宏，不产生库导出符号
     target_compile_definitions(${TARGET} PRIVATE JOY_STATIC)
+
+    # 可选：Spine 骨骼动画模块（joy/jspine.c）
+    if(JAS_SPINE)
+        target_compile_definitions(${TARGET} PRIVATE JOY_USE_SPINE)
+        target_link_libraries(${TARGET} PRIVATE spine-c)
+        target_include_directories(${TARGET} PRIVATE "${JOY_SOURCE_DIR}/../spine/spine-c/include")
+    endif()
 
     # ---- 平台特定配置（从原 joy/CMakeLists.txt 迁移）----
     if(APPLE)
