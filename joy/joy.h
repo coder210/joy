@@ -1807,7 +1807,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                                    const char *name, bool loop);
         JOY_API bool jspine_instance_add_animation(jspine_instance_p inst, int track,
                                                    const char *name, bool loop, float delay);
+        /* update = 同步字段 + 推进动画 + 世界变换；
+         * sync  = 只同步字段与世界变换（暂停、或改完字段想立刻生效时用） */
         JOY_API void jspine_instance_update(jspine_instance_p inst, float dt);
+        JOY_API void jspine_instance_sync(jspine_instance_p inst);
         JOY_API void jspine_instance_draw(jr2d_p r2d, jspine_instance_p inst);
 
         /* 变换/状态：写组件字段，下一次 update 生效 */

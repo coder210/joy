@@ -293,7 +293,7 @@ void jspine_instance_reset(jspine_instance_p inst) {
 
 bool jspine_instance_set_animation(jspine_instance_p inst, int track, const char *name, bool loop) {
         spAnimation *animation;
-        if (!inst || !inst->state || !name) return false;
+        if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
         animation = spSkeletonData_findAnimation(inst->asset->data, name);
         if (!animation) return false;
         spAnimationState_setAnimation(inst->state, track, animation, loop ? 1 : 0);
@@ -305,19 +305,16 @@ bool jspine_instance_set_animation(jspine_instance_p inst, int track, const char
 bool jspine_instance_add_animation(jspine_instance_p inst, int track, const char *name, bool loop,
                                    float delay) {
         spAnimation *animation;
-        if (!inst || !inst->state || !name) return false;
+        if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
         animation = spSkeletonData_findAnimation(inst->asset->data, name);
         if (!animation) return false;
         spAnimationState_addAnimation(inst->state, track, animation, loop ? 1 : 0, delay);
         return true;
 }
 
-void jspine_instance_update(jspine_instance_p inst, float dt) {
-        spSkeleton *skeleton;
-        if (!inst || !inst->skeleton) return;
-        skeleton = inst->skeleton;
-
-        /* 组件字段 -> spine 骨架 */
+/* 组件字段 -> spine 骨架（不推进动画、不算世界变换） */
+static void jspine_sync_fields(jspine_instance_p inst) {
+        spSkeleton *skeleton = inst->skeleton;
         skeleton->x = inst->x;
         skeleton->y = inst->y;
         skeleton->scaleX = inst->scale_x * (inst->flip_x ? -1.0f : 1.0f);
@@ -327,6 +324,21 @@ void jspine_instance_update(jspine_instance_p inst, float dt) {
         skeleton->color.g = inst->tint.g / 255.0f;
         skeleton->color.b = inst->tint.b / 255.0f;
         skeleton->color.a = inst->alpha * (inst->tint.a / 255.0f);
+}
+
+/* 只同步变换（不推进动画）：暂停、或改完字段想立刻生效时调用 */
+void jspine_instance_sync(jspine_instance_p inst) {
+        if (!inst || !inst->skeleton) return;
+        jspine_sync_fields(inst);
+        spSkeleton_updateWorldTransform(inst->skeleton);
+}
+
+void jspine_instance_update(jspine_instance_p inst, float dt) {
+        spSkeleton *skeleton;
+        if (!inst || !inst->skeleton) return;
+        skeleton = inst->skeleton;
+
+        jspine_sync_fields(inst);
 
         if (inst->state) {
                 spAnimationState_update(inst->state, dt * inst->time_scale);
