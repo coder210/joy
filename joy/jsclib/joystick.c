@@ -7,7 +7,7 @@
 static duk_ret_t jjoystick_create(duk_context* ctx)
 {
 	jr2d_p r2d = (jr2d_p)PTR(0);
-	duk_push_pointer(ctx, joystick_create(r2d, NUM(1), NUM(2), NUM(3)));
+	duk_push_pointer(ctx, joystick_create(r2d, NUM(1) / 480.0f, NUM(2) / 320.0f, NUM(3) / 480.0f));
 	return 1;
 }
 

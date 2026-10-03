@@ -241,31 +241,31 @@ static void load_dpad_panel(gameplay_controls_layer_p self, Context* ctx)
 	scene_node_set_zorder(root_node, 100);
 	scene_node_add_child(self->scene_node, root_node);
 
-	self->btn_up = button_create(ctx->r2d, 50, 50);
+	self->btn_up = button_create(ctx->r2d, 0.0f, 0.0f, 50.0f / 480.0f, 50.0f / 320.0f);
 	setup_button_style(self->btn_up);
 	scene_node_add_child(root_node, make_button_node(self->btn_up, 50, 170, ctx, 50, 50, "上", "W", 0));
 
-	self->btn_down = button_create(ctx->r2d, 50, 50);
+	self->btn_down = button_create(ctx->r2d, 0.0f, 0.0f, 50.0f / 480.0f, 50.0f / 320.0f);
 	setup_button_style(self->btn_down);
 	scene_node_add_child(root_node, make_button_node(self->btn_down, 50, 270, ctx, 50, 50, "下", "S", 0));
 
-	self->btn_left = button_create(ctx->r2d, 50, 50);
+	self->btn_left = button_create(ctx->r2d, 0.0f, 0.0f, 50.0f / 480.0f, 50.0f / 320.0f);
 	setup_button_style(self->btn_left);
 	scene_node_add_child(root_node, make_button_node(self->btn_left, 0, 220, ctx, 50, 50, "左", "A", 0));
 
-	self->btn_right = button_create(ctx->r2d, 50, 50);
+	self->btn_right = button_create(ctx->r2d, 0.0f, 0.0f, 50.0f / 480.0f, 50.0f / 320.0f);
 	setup_button_style(self->btn_right);
 	scene_node_add_child(root_node, make_button_node(self->btn_right, 100, 220, ctx, 50, 50, "右", "D", 0));
 
-	self->btn_attack = button_create(ctx->r2d, 64, 64);
+	self->btn_attack = button_create(ctx->r2d, 0.0f, 0.0f, 64.0f / 480.0f, 64.0f / 320.0f);
 	setup_button_style(self->btn_attack);
 	scene_node_add_child(root_node, make_button_node(self->btn_attack, 412, 254, ctx, 64, 64, "攻", "J", 1));
 
-	self->btn_ranged = button_create(ctx->r2d, 58, 58);
+	self->btn_ranged = button_create(ctx->r2d, 0.0f, 0.0f, 58.0f / 480.0f, 58.0f / 320.0f);
 	setup_button_style(self->btn_ranged);
 	scene_node_add_child(root_node, make_button_node(self->btn_ranged, 340, 254, ctx, 58, 58, "射", "K", 2));
 
-	self->btn_ray = button_create(ctx->r2d, 58, 58);
+	self->btn_ray = button_create(ctx->r2d, 0.0f, 0.0f, 58.0f / 480.0f, 58.0f / 320.0f);
 	setup_button_style(self->btn_ray);
 	scene_node_add_child(root_node, make_button_node(self->btn_ray, 408, 176, ctx, 58, 58, "线", "L", 3));
 }

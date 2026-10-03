@@ -172,7 +172,7 @@ static void on_load(scene_p s) {
         const float cx0 = (w - (cw * CHAR_COUNT + gap * (CHAR_COUNT - 1))) / 2.0f;
         const float cy = 74.0f;
         for (int i = 0; i < CHAR_COUNT; i++) {
-                self->btn_cards[i] = button_create(ctx->r2d, cw, ch);
+                self->btn_cards[i] = button_create(ctx->r2d, 0.0f, 0.0f, cw / 480.0f, ch / 320.0f);
                 setup_button_style(self->btn_cards[i]);
                 button_set_position(self->btn_cards[i], cx0 + i * (cw + gap), cy);
         }
@@ -180,18 +180,17 @@ static void on_load(scene_p s) {
                 ? ctx->selected_char_id : 0;
 
         // 昵称输入框（标题下方、卡片上方）
-        jrect_t nick_rect = { 55, 38, 200, 24 };
-        self->nickname_input = inputbox_create(ctx->r2d, nick_rect, font24);
+                self->nickname_input = inputbox_create(ctx->r2d, 0.11458f, 0.11875f, 0.41667f, 0.075f, font24);
         inputbox_set_text(self->nickname_input, ctx->selected_nickname);
 
         // 确认 / 返回
-        self->btn_confirm = button_create(ctx->r2d, 120, 40);
+        self->btn_confirm = button_create(ctx->r2d, 0.0f, 0.0f, 120.0f / 480.0f, 40.0f / 320.0f);
         setup_button_style(self->btn_confirm);
         button_set_text_offset(self->btn_confirm, 0, 3.0f);
         button_set_textx(self->btn_confirm, font24, "开始游戏", (int)strlen("开始游戏"), { 0, 0, 0, 255 });
         button_set_position(self->btn_confirm, 180, 244);
 
-        self->btn_back = button_create(ctx->r2d, 80, 40);
+        self->btn_back = button_create(ctx->r2d, 0.0f, 0.0f, 80.0f / 480.0f, 40.0f / 320.0f);
         setup_button_style(self->btn_back);
         button_set_text_offset(self->btn_back, 0, 3.0f);
         button_set_textx(self->btn_back, font24, "返回", (int)strlen("返回"), { 0, 0, 0, 255 });

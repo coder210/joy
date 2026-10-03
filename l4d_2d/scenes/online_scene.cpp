@@ -104,28 +104,28 @@ static void on_load(scene_p s) {
         scene_add_root_node(self->scene, title_node);
 
         // 房主按钮
-        self->btn_host = button_create(self->ctx->r2d, (float)btn_w, (float)btn_h);
+        self->btn_host = button_create(self->ctx->r2d, 0.0f, 0.0f, (float)btn_w / 480.0f, (float)btn_h / 320.0f);
         setup_button_style(self->btn_host);
         button_set_text_offset(self->btn_host, 0, 3.0f);
         button_set_textx(self->btn_host, font, "房主", (int)strlen("房主"), { 0, 0, 0, 255 });
         scene_node_add_child(self->ui_node, make_button_node(self->btn_host, btn_x, start_y));
 
         // 客户端按钮
-        self->btn_client = button_create(self->ctx->r2d, (float)btn_w, (float)btn_h);
+        self->btn_client = button_create(self->ctx->r2d, 0.0f, 0.0f, (float)btn_w / 480.0f, (float)btn_h / 320.0f);
         setup_button_style(self->btn_client);
         button_set_text_offset(self->btn_client, 0, 3.0f);
         button_set_textx(self->btn_client, font, "客户端", (int)strlen("客户端"), { 0, 0, 0, 255 });
         scene_node_add_child(self->ui_node, make_button_node(self->btn_client, btn_x, start_y + (btn_h + gap)));
 
         // 服务端按钮
-        self->btn_server = button_create(self->ctx->r2d, (float)btn_w, (float)btn_h);
+        self->btn_server = button_create(self->ctx->r2d, 0.0f, 0.0f, (float)btn_w / 480.0f, (float)btn_h / 320.0f);
         setup_button_style(self->btn_server);
         button_set_text_offset(self->btn_server, 0, 3.0f);
         button_set_textx(self->btn_server, font, "服务端", (int)strlen("服务端"), { 0, 0, 0, 255 });
         scene_node_add_child(self->ui_node, make_button_node(self->btn_server, btn_x, start_y + (btn_h + gap) * 2));
 
         // 返回按钮
-        self->btn_back = button_create(self->ctx->r2d, (float)btn_w, (float)btn_h);
+        self->btn_back = button_create(self->ctx->r2d, 0.0f, 0.0f, (float)btn_w / 480.0f, (float)btn_h / 320.0f);
         setup_button_style(self->btn_back);
         button_set_text_offset(self->btn_back, 0, 3.0f);
         button_set_textx(self->btn_back, font, "返回", (int)strlen("返回"), { 0, 0, 0, 255 });

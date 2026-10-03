@@ -102,25 +102,25 @@ static void load_menu_buttons(menu_layer_p self, Context* ctx)
 		int start_y = (logical_height - btn_height * 4 - 60) / 2;
 		int gap = 20;
 
-		self->btn_start = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
+		self->btn_start = button_create(ctx->r2d, 0.0f, 0.0f, (float)btn_width / 480.0f, (float)btn_height / 320.0f);
 		setup_button_style(self->btn_start);
 		button_set_text_offset(self->btn_start, 0, 3.0f);
 		button_set_textx(self->btn_start, simhei_font, "单人游戏", (int)strlen("单人游戏"), { 0, 0, 0, 255 });
 		scene_node_add_child(self->scene_node, make_button_node(self->btn_start, btn_x, start_y));
 
-		self->btn_online = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
+		self->btn_online = button_create(ctx->r2d, 0.0f, 0.0f, (float)btn_width / 480.0f, (float)btn_height / 320.0f);
 		setup_button_style(self->btn_online);
 		button_set_text_offset(self->btn_online, 0, 3.0f);
 		button_set_textx(self->btn_online, simhei_font, "联机游戏", (int)strlen("联机游戏"), { 0, 0, 0, 255 });
 		scene_node_add_child(self->scene_node, make_button_node(self->btn_online, btn_x, start_y + (btn_height + gap)));
 
-		self->btn_settings = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
+		self->btn_settings = button_create(ctx->r2d, 0.0f, 0.0f, (float)btn_width / 480.0f, (float)btn_height / 320.0f);
 		setup_button_style(self->btn_settings);
 		button_set_text_offset(self->btn_settings, 0, 3.0f);
 		button_set_textx(self->btn_settings, simhei_font, "设置", (int)strlen("设置"), { 0, 0, 0, 255 });
 		scene_node_add_child(self->scene_node, make_button_node(self->btn_settings, btn_x, start_y + (btn_height + gap) * 2));
 
-		self->btn_exit = button_create(ctx->r2d, (float)btn_width, (float)btn_height);
+		self->btn_exit = button_create(ctx->r2d, 0.0f, 0.0f, (float)btn_width / 480.0f, (float)btn_height / 320.0f);
 		setup_button_style(self->btn_exit);
 		button_set_text_offset(self->btn_exit, 0, 3.0f);
 		button_set_textx(self->btn_exit, simhei_font, "退出", (int)strlen("退出"), { 0, 0, 0, 255 });

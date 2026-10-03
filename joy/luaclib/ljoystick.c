@@ -13,7 +13,7 @@ static int l_joystick_create(lua_State* L)
         x = (float)luaL_checknumber(L, 2);
         y = (float)luaL_checknumber(L, 3);
         radius = (float)luaL_checknumber(L, 4);
-        joystick = joystick_create(r2d, x, y, radius);
+        joystick = joystick_create(r2d, x / 480.0f, y / 320.0f, radius / 480.0f);
         lua_pushlightuserdata(L, joystick);
         return 1;
 }

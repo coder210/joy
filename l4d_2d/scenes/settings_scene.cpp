@@ -181,8 +181,7 @@ static void on_load(scene_p s) {
         scene_add_root_node(self->scene, self->ui_node);
 
         // 可输入下拉列表框（服务器 IP）
-        jrect_t ip_rect = { 110, 48, 250, 24 };
-        self->ip_input = combobox_input_create(ctx->r2d, ip_rect, font24, 256);
+                self->ip_input = combobox_input_create(ctx->r2d, 0.22917f, 0.15f, 0.52083f, 0.075f, font24, 256);
         combobox_input_set_text(self->ip_input, ctx->settings.server_ip);
         // 创建弹层节点并注册到场景
         scene_node_p popup = scene_node_create();
@@ -195,27 +194,26 @@ static void on_load(scene_p s) {
                 combobox_input_add_item(self->ip_input, ips[i], (int)strlen(ips[i]));
 
         // 端口输入框
-        jrect_t port_rect = { 110, 88, 100, 24 };
-        self->port_input = inputbox_create(ctx->r2d, port_rect, font24);
+                self->port_input = inputbox_create(ctx->r2d, 0.22917f, 0.275f, 0.20833f, 0.075f, font24);
         char port_str[16];
         snprintf(port_str, sizeof(port_str), "%d", ctx->settings.server_port);
         inputbox_set_text(self->port_input, port_str);
 
         // 音量滑块
-        self->bgm_slider = slider_create(ctx->r2d, 110, 137, 200, 14, 0.0f, 1.0f, ctx->settings.bgm_volume);
-        self->sfx_slider = slider_create(ctx->r2d, 110, 177, 200, 14, 0.0f, 1.0f, ctx->settings.sfx_volume);
+        self->bgm_slider = slider_create(ctx->r2d, 0.22917f, 0.42813f, 0.41667f, 0.04375f, 0.0f, 1.0f, ctx->settings.bgm_volume);
+        self->sfx_slider = slider_create(ctx->r2d, 0.22917f, 0.55313f, 0.41667f, 0.04375f, 0.0f, 1.0f, ctx->settings.sfx_volume);
         slider_set_colors(self->bgm_slider, {200,200,200,255}, {50,50,60,255}, {80,80,80,255}, {100,100,100,255});
         slider_set_colors(self->sfx_slider, {200,200,200,255}, {50,50,60,255}, {80,80,80,255}, {100,100,100,255});
 
         // 全屏复选框
-        self->fullscreen_cb = checkbox_create(110, 212, 20, "全屏");
+        self->fullscreen_cb = checkbox_create(0.22917f, 0.66250f, 0.04167f, "全屏");
         checkbox_set_r2d(self->fullscreen_cb, ctx->r2d);
         checkbox_set_colors(self->fullscreen_cb, {200,200,200,255}, {50,50,60,255}, {180,180,180,255});
         checkbox_set_state(self->fullscreen_cb,
                 ctx->settings.fullscreen ? JOY_CHECKBOX_CHECKED : JOY_CHECKBOX_UNCHECKED);
 
         // 返回按钮
-        self->btn_back = button_create(ctx->r2d, 100, 36);
+        self->btn_back = button_create(ctx->r2d, 0.0f, 0.0f, 100.0f / 480.0f, 36.0f / 320.0f);
         setup_button_style(self->btn_back);
         button_set_text_offset(self->btn_back, 0, 3.0f);
         button_set_textx(self->btn_back, font24, "返回", (int)strlen("返回"), { 0, 0, 0, 255 });

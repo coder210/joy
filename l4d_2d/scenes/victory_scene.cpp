@@ -74,13 +74,13 @@ static void on_load(scene_p s) {
         scene_node_set_zorder(self->ui_node, 100);
         scene_add_root_node(self->scene, self->ui_node);
 
-        self->btn_replay = button_create(ctx->r2d, 160, 50);
+        self->btn_replay = button_create(ctx->r2d, 0.0f, 0.0f, 160.0f / 480.0f, 50.0f / 320.0f);
         setup_button_style(self->btn_replay);
         button_set_text_offset(self->btn_replay, 0, 3.0f);
         button_set_textx(self->btn_replay, font24, "再战一局", (int)strlen("再战一局"), { 0, 0, 0, 255 });
         button_set_position(self->btn_replay, 70, 250);
 
-        self->btn_menu = button_create(ctx->r2d, 160, 50);
+        self->btn_menu = button_create(ctx->r2d, 0.0f, 0.0f, 160.0f / 480.0f, 50.0f / 320.0f);
         setup_button_style(self->btn_menu);
         button_set_text_offset(self->btn_menu, 0, 3.0f);
         button_set_textx(self->btn_menu, font24, "回主菜单", (int)strlen("回主菜单"), { 0, 0, 0, 255 });

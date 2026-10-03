@@ -139,18 +139,18 @@ static void on_load(scene_p s) {
         // 关卡按钮：左侧竖列（5 关），确认/返回移右侧竖排，避免纵向重叠
         const float bx = 40.0f;
         for (int i = 0; i < LEVEL_META_COUNT; i++) {
-                self->btn_levels[i] = button_create(ctx->r2d, LEVEL_W, LEVEL_H);
+                self->btn_levels[i] = button_create(ctx->r2d, 0.0f, 0.0f, LEVEL_W / 480.0f, LEVEL_H / 320.0f);
                 setup_button_style(self->btn_levels[i]);
                 button_set_position(self->btn_levels[i], bx, 74.0f + (float)i * 48.0f);
         }
 
-        self->btn_confirm = button_create(ctx->r2d, 120, 45);
+        self->btn_confirm = button_create(ctx->r2d, 0.0f, 0.0f, 120.0f / 480.0f, 45.0f / 320.0f);
         setup_button_style(self->btn_confirm);
         button_set_text_offset(self->btn_confirm, 0, 3.0f);
         button_set_textx(self->btn_confirm, font24, "开始", (int)strlen("开始"), { 0, 0, 0, 255 });
         button_set_position(self->btn_confirm, 360, 156);
 
-        self->btn_back = button_create(ctx->r2d, 90, 45);
+        self->btn_back = button_create(ctx->r2d, 0.0f, 0.0f, 90.0f / 480.0f, 45.0f / 320.0f);
         setup_button_style(self->btn_back);
         button_set_text_offset(self->btn_back, 0, 3.0f);
         button_set_textx(self->btn_back, font24, "返回", (int)strlen("返回"), { 0, 0, 0, 255 });

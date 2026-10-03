@@ -432,7 +432,7 @@ bool jui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
         if (!s) return false;
 
         if (!s->btn) {
-                s->btn = button_create(ctx->r2d, r.w, r.h);
+                s->btn = button_create(ctx->r2d, 0.0f, 0.0f, r.w / 480.0f, r.h / 320.0f);
                 if (!s->btn) return false;
                 button_set_textx(s->btn, ctx->font, text, (int)SDL_strlen(text), ctx->theme.btn_text);
         }
@@ -465,7 +465,7 @@ bool jui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* lab
 
         /* 复用 checkbox：label 只在创建时定，之后位置由 set_position 移动 */
         if (!s->cb) {
-                s->cb = checkbox_create((int)r.x, (int)r.y, 14, label);
+                s->cb = checkbox_create(r.x / 480.0f, r.y / 320.0f, 14.0f / 480.0f, label);
                 if (!s->cb) return false;
         }
         checkbox_p cb = s->cb;
@@ -498,7 +498,7 @@ bool jui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, 
         if (!s) return false;
 
         if (!s->sl) {
-                s->sl = slider_create(ctx->r2d, track.x, track.y, track.w, track.h,
+                s->sl = slider_create(ctx->r2d, track.x / 480.0f, track.y / 320.0f, track.w / 480.0f, track.h / 320.0f,
                                       minv, maxv, *value);
                 if (!s->sl) return false;
         }
