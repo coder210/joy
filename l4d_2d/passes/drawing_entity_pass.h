@@ -88,8 +88,8 @@ static void draw_hp_ring(Context* ctx, vec2_t c, float ring_R, const HealthCompo
 static void draw_grid_background(Context* ctx)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    float cx = gs.camera_position.x * SERVER_PPM;
-    float cy = gs.camera_position.y * SERVER_PPM;
+    float cx = gs.camera_position.x * PIXELS_PER_METER;
+    float cy = gs.camera_position.y * PIXELS_PER_METER;
 
     r2d_set_color(ctx->r2d, 255, 255, 255, 255);
     jrect_t bg = { 0, 0, 480, 320 };
@@ -119,8 +119,8 @@ static void drawing_entity_pass(Context* ctx, entt::entity e,
 
     auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
     vec2_t c;
-    c.x = (t.position.x - cam.x) * SERVER_PPM;
-    c.y = (t.position.y - cam.y) * SERVER_PPM;
+    c.x = (t.position.x - cam.x) * PIXELS_PER_METER;
+    c.y = (t.position.y - cam.y) * PIXELS_PER_METER;
 
     if (is_bullet) {
         auto& bc = ctx->ecs.get<BulletComponent>(e);
@@ -158,7 +158,7 @@ static void drawing_entity_pass(Context* ctx, entt::entity e,
 
     // 视觉角色半径：紧凑固定值(约 0.3m)，避免按碰撞盒全尺寸画出遮挡地图的巨大方块；
     // 真实碰撞范围由 drawing_collision_debug_pass 的红/绿线框单独标出。
-    float half = 0.30f * SERVER_PPM;
+    float half = 0.30f * PIXELS_PER_METER;
     if (half < 8.0f) half = 8.0f;
 
     float dir_rad = -GD_PI * 0.5f;
@@ -213,7 +213,7 @@ static void drawing_entity_pass(Context* ctx, entt::entity e,
 
     if (ctx->ecs.all_of<HealthComponent>(e)) {
         auto& hc = ctx->ecs.get<HealthComponent>(e);
-        float ring_R = fp_to_float(rect.width) * SERVER_PPM * 0.25f;  // 玩家/敌人血环半径（减半）
+        float ring_R = fp_to_float(rect.width) * PIXELS_PER_METER * 0.25f;  // 玩家/敌人血环半径（减半）
         draw_hp_ring(ctx, c, ring_R, hc, is_player);
     }
 }

@@ -26,10 +26,10 @@ static void drawing_collision_debug_pass(Context* ctx)
         float h = fp_to_float(rect.height);
         if (w <= 0.0f || h <= 0.0f) continue;
         jrect_t r;
-        r.x = (fp_to_float(pos.x) - cam.x) * SERVER_PPM;
-        r.y = (fp_to_float(pos.y) - cam.y) * SERVER_PPM;
-        r.w = w * SERVER_PPM;
-        r.h = h * SERVER_PPM;
+        r.x = (fp_to_float(pos.x) - cam.x) * PIXELS_PER_METER;
+        r.y = (fp_to_float(pos.y) - cam.y) * PIXELS_PER_METER;
+        r.w = w * PIXELS_PER_METER;
+        r.h = h * PIXELS_PER_METER;
         shape_draw_rectangle(ctx->r2d, "line", r);
     }
 
@@ -43,10 +43,10 @@ static void drawing_collision_debug_pass(Context* ctx)
         float h = fp_to_float(rect.height);
         if (w <= 0.0f || h <= 0.0f) continue;
         jrect_t r;
-        r.x = (fp_to_float(pos.x) - cam.x) * SERVER_PPM;
-        r.y = (fp_to_float(pos.y) - cam.y) * SERVER_PPM;
-        r.w = w * SERVER_PPM;
-        r.h = h * SERVER_PPM;
+        r.x = (fp_to_float(pos.x) - cam.x) * PIXELS_PER_METER;
+        r.y = (fp_to_float(pos.y) - cam.y) * PIXELS_PER_METER;
+        r.w = w * PIXELS_PER_METER;
+        r.h = h * PIXELS_PER_METER;
         shape_draw_rectangle(ctx->r2d, "line", r);
     }
 }

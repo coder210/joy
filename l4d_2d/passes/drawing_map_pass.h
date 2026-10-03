@@ -12,15 +12,15 @@ struct Context;
 static void draw_map_pass(Context* ctx)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    float cx = gs.camera_position.x * SERVER_PPM;
-    float cy = gs.camera_position.y * SERVER_PPM;
+    float cx = gs.camera_position.x * PIXELS_PER_METER;
+    float cy = gs.camera_position.y * PIXELS_PER_METER;
 
     const float VP_W = 480.0f, VP_H = 320.0f;
 
-    int x0 = (int)floorf(cx / SERVER_PPM) - 1;
-    int y0 = (int)floorf(cy / SERVER_PPM) - 1;
-    int x1 = (int)ceilf((cx + VP_W) / SERVER_PPM) + 1;
-    int y1 = (int)ceilf((cy + VP_H) / SERVER_PPM) + 1;
+    int x0 = (int)floorf(cx / PIXELS_PER_METER) - 1;
+    int y0 = (int)floorf(cy / PIXELS_PER_METER) - 1;
+    int x1 = (int)ceilf((cx + VP_W) / PIXELS_PER_METER) + 1;
+    int y1 = (int)ceilf((cy + VP_H) / PIXELS_PER_METER) + 1;
 
     for (int y = y0; y <= y1; y++) {
         for (int x = x0; x <= x1; x++) {
@@ -29,50 +29,50 @@ static void draw_map_pass(Context* ctx)
             int type = map_tile_type(c);
             if (type == MAP_TILE_EMPTY) continue;
 
-            float px = x * SERVER_PPM - cx;
-            float py = y * SERVER_PPM - cy;
-            vec2_t center = { px + SERVER_PPM * 0.5f, py + SERVER_PPM * 0.5f };
+            float px = x * PIXELS_PER_METER - cx;
+            float py = y * PIXELS_PER_METER - cy;
+            vec2_t center = { px + PIXELS_PER_METER * 0.5f, py + PIXELS_PER_METER * 0.5f };
 
             switch (type) {
             case MAP_TILE_WALL: {
                 /* 白底 + 墨色描边（图纸风，对齐 3D 墙体） */
                 r2d_set_color(ctx->r2d, 250, 248, 244, 255);
-                jrect_t r = { px, py, SERVER_PPM, SERVER_PPM };
+                jrect_t r = { px, py, PIXELS_PER_METER, PIXELS_PER_METER };
                 shape_draw_rectangle(ctx->r2d, "fill", r);
                 r2d_set_color(ctx->r2d, 40, 40, 45, 255);
-                float mx = px + SERVER_PPM * 0.5f;
-                float my = py + SERVER_PPM * 0.5f;
-                shape_draw_line(ctx->r2d, mx, py, mx, py + SERVER_PPM);
-                shape_draw_line(ctx->r2d, px, my, px + SERVER_PPM, my);
-                jrect_t b = { px + 1.0f, py + 1.0f, SERVER_PPM - 2.0f, SERVER_PPM - 2.0f };
+                float mx = px + PIXELS_PER_METER * 0.5f;
+                float my = py + PIXELS_PER_METER * 0.5f;
+                shape_draw_line(ctx->r2d, mx, py, mx, py + PIXELS_PER_METER);
+                shape_draw_line(ctx->r2d, px, my, px + PIXELS_PER_METER, my);
+                jrect_t b = { px + 1.0f, py + 1.0f, PIXELS_PER_METER - 2.0f, PIXELS_PER_METER - 2.0f };
                 shape_draw_rectangle(ctx->r2d, "line", b);
                 break;
             }
             case MAP_TILE_TREE: {
                 /* 墨色树：淡墨圈 + 实心墨点 */
                 r2d_set_color(ctx->r2d, 90, 90, 98, 255);
-                shape_draw_circle(ctx->r2d, "line", center, SERVER_PPM * 0.36f, 16);
+                shape_draw_circle(ctx->r2d, "line", center, PIXELS_PER_METER * 0.36f, 16);
                 r2d_set_color(ctx->r2d, 90, 90, 98, 255);
-                shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.12f, 12);
+                shape_draw_circle(ctx->r2d, "fill", center, PIXELS_PER_METER * 0.12f, 12);
                 break;
             }
             case MAP_TILE_ROCK: {
                 r2d_set_color(ctx->r2d, 168, 166, 160, 255);
-                shape_draw_circle(ctx->r2d, "fill", center, SERVER_PPM * 0.32f, 12);
+                shape_draw_circle(ctx->r2d, "fill", center, PIXELS_PER_METER * 0.32f, 12);
                 r2d_set_color(ctx->r2d, 40, 40, 45, 255);
-                shape_draw_circle(ctx->r2d, "line", center, SERVER_PPM * 0.32f, 12);
+                shape_draw_circle(ctx->r2d, "line", center, PIXELS_PER_METER * 0.32f, 12);
                 break;
             }
             case MAP_TILE_WATER: {
                 /* 水：淡宣纸底 + 淡墨波纹（去蓝，改图纸灰） */
                 r2d_set_color(ctx->r2d, 228, 228, 232, 255);
-                jrect_t wr = { px, py, SERVER_PPM, SERVER_PPM };
+                jrect_t wr = { px, py, PIXELS_PER_METER, PIXELS_PER_METER };
                 shape_draw_rectangle(ctx->r2d, "fill", wr);
                 r2d_set_color(ctx->r2d, 150, 152, 162, 255);
-                float w = SERVER_PPM * 0.66f;
+                float w = PIXELS_PER_METER * 0.66f;
                 float hw = w * 0.5f;
                 for (int k = -1; k <= 1; k++) {
-                    float yy = center.y + k * SERVER_PPM * 0.18f;
+                    float yy = center.y + k * PIXELS_PER_METER * 0.18f;
                     shape_draw_line(ctx->r2d, center.x - hw, yy, center.x + hw, yy);
                 }
                 break;
@@ -101,7 +101,7 @@ static void draw_map_pass(Context* ctx)
                 break;
             case MAP_TILE_PATH: {
                 r2d_set_color(ctx->r2d, 176, 176, 184, 255);
-                jrect_t r = { px + 8.0f, py + 8.0f, SERVER_PPM - 16.0f, SERVER_PPM - 16.0f };
+                jrect_t r = { px + 8.0f, py + 8.0f, PIXELS_PER_METER - 16.0f, PIXELS_PER_METER - 16.0f };
                 shape_draw_rectangle(ctx->r2d, "line", r);
                 break;
             }

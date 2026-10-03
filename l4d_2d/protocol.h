@@ -7,7 +7,7 @@
 #include <cstdlib>
 
 /* ================================ 常量 ================================ */
-enum { SERVER_PPM = 50, PIXELS_PER_METER = 50 };
+/* PIXELS_PER_METER 现由 joy/joy.h 统一提供，不再在此定义。 */
 
 /* 输入位掩码 */
 enum {

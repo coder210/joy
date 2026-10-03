@@ -48,6 +48,15 @@ extern "C" {
 #define JR2D_FLIP_V    2
 #define JR2D_FLIP_HV   3
 
+/* ===================== 单位换算（米 ↔ 像素） ===================== */
+/* 1 米 = PIXELS_PER_METER 屏幕像素；渲染坐标 = 世界坐标(米) × PIXELS_PER_METER。
+ * 作为唯一真源放入 joy，project_proxy2d / adventure2d 共用，避免重复定义。 */
+enum { PIXELS_PER_METER = 50 };
+
+/* 世界坐标(米) ↔ 屏幕像素 互换；参数为浮点，避免整数截断。 */
+static inline float meters_to_pixels(float meters) { return meters * (float)PIXELS_PER_METER; }
+static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXELS_PER_METER; }
+
 #define POPUP_MAX_TITLE 128
 #define POPUP_MAX_CONTENT 2048
 #define TOOLTIP_MAX_TEXT 256
