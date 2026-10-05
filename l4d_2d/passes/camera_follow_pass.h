@@ -8,32 +8,48 @@
 
 struct Context;
 
-// 将摄像机跟随指定玩家，使玩家居中于屏幕
-// 逻辑屏幕 480x320，PPM=50，偏移量 = (480/2/50, 320/2/50) = (4.8, 3.2)
+// 将摄像机跟随指定玩家，使玩家尽量居中于屏幕。
+// 逻辑屏幕 480x320，PPM=50，半视口（米） = (480/2/50, 320/2/50) = (4.8, 3.2)。
+// 相机做"边界夹取"：跟随后再把视口夹进 [0, MAP_W]×[0, MAP_H]，避免视口越出地图
+// 而把背景底色（宣纸白）露出来。地图比视口小时退化为居中（两侧等量底色，无法完全避免）。
 static void camera_follow_pass(entt::registry& registry, Context* /*ctx*/, float /*dt*/) {
     auto& gs = registry.ctx().get<GlobalState>();
     if (gs.camera_follow_conv < 0) return;
 
+    const float view_w = 9.6f;   // 480 / 50
+    const float view_h = 6.4f;   // 320 / 50
+
     registry.view<PlayerComponent, TransformComponent>().each(
-        [&gs](auto /*e*/, PlayerComponent& pc, TransformComponent& t)
+        [&gs, view_w, view_h](auto /*e*/, PlayerComponent& pc, TransformComponent& t)
     {
         if (pc.conv == gs.camera_follow_conv) {
-            // X：始终跟随 + 前视偏置（横版看前方）
-            gs.camera_position.x = t.position.x - 4.8f + gs.camera_bias_x;
-            // Y：side_view 自动锁走廊中线（首次跟随取玩家 Y）；否则 camera_lock_y 手动锁；否则随玩家上下
+            // ---- X：跟随 + 前视偏置 → 夹取到地图边界 ----
+            float cx = t.position.x - view_w * 0.5f + gs.camera_bias_x;
+            const float max_x = (float)MAP_W - view_w;
+            if (max_x <= 0.0f) {
+                cx = max_x * 0.5f;                       // 地图比视口窄：居中
+            } else {
+                if (cx < 0.0f) cx = 0.0f;
+                if (cx > max_x) cx = max_x;
+            }
+            gs.camera_position.x = cx;
+
+            // ---- Y：side_view 跟随玩家；否则用 camera_lock_y 手动锁 / 随玩家上下 ----
+            float cy;
             if (gs.side_view) {
-                // 横版：垂直跟随玩家，但夹取到地图范围内（不露出地图外）
-                const float view_h = 6.4f;                        // 320 / 50 = 6.4m
-                float cy = t.position.y - view_h * 0.5f;
-                const float max_y = ((float)MAP_H > view_h) ? ((float)MAP_H - view_h) : 0.0f;
+                cy = t.position.y - view_h * 0.5f;
+            } else {
+                cy = (gs.camera_lock_y >= 0.0f) ? (gs.camera_lock_y - view_h * 0.5f)
+                                                : (t.position.y - view_h * 0.5f);
+            }
+            const float max_y = (float)MAP_H - view_h;
+            if (max_y <= 0.0f) {
+                cy = max_y * 0.5f;                       // 地图比视口矮：居中
+            } else {
                 if (cy < 0.0f) cy = 0.0f;
                 if (cy > max_y) cy = max_y;
-                gs.camera_position.y = cy;
-            } else {
-                gs.camera_position.y = (gs.camera_lock_y >= 0.0f)
-                        ? (gs.camera_lock_y - 3.2f)
-                        : (t.position.y - 3.2f);
             }
+            gs.camera_position.y = cy;
         }
     });
 }
