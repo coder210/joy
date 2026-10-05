@@ -155,7 +155,7 @@ static const int PF_RECOMPUTE_INTERVAL = 30;
 
 static void pathfinding_system(entt::registry& registry, Context* ctx, float /*dt*/)
 {
-    fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(ctx->FIXED_TIMESTEP));
+    fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(game_runtime(ctx).FIXED_TIMESTEP));
 
     auto view = registry.view<EnemyComponent, AIComponent, PathComponent,
                               LogicPositionComponent, ActionStateComponent>();

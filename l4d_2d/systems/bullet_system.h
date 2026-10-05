@@ -42,8 +42,8 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
         auto& pos = bullet_view.get<LogicPositionComponent>(e);
 
         // 1) 移动（LogicPosition 为碰撞盒左上角，速度 * 固定步长）
-        pos.x = fp_add(pos.x, fp_mul(b.vx, fp_from_float(ctx->FIXED_TIMESTEP)));
-        pos.y = fp_add(pos.y, fp_mul(b.vy, fp_from_float(ctx->FIXED_TIMESTEP)));
+        pos.x = fp_add(pos.x, fp_mul(b.vx, fp_from_float(game_runtime(ctx).FIXED_TIMESTEP)));
+        pos.y = fp_add(pos.y, fp_mul(b.vy, fp_from_float(game_runtime(ctx).FIXED_TIMESTEP)));
 
         // 2) 生命周期（整数 tick 倒计时，确定性优于 float 秒累加）
         b.life_ticks--;

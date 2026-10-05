@@ -73,7 +73,7 @@ static bool fog2d_ensure_walls(std::vector<joy_fov_rect>& out)
 static bool fog2d_find_player(Context* ctx, float& px, float& py, int& out_dir)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    int follow_conv = (ctx->local_conv > 0) ? (int)ctx->local_conv : gs.camera_follow_conv;
+    int follow_conv = (net_session(ctx).local_conv > 0) ? (int)net_session(ctx).local_conv : gs.camera_follow_conv;
     if (follow_conv < 0) return false;
     auto pv = ctx->ecs.view<PlayerComponent, TransformComponent, ActionStateComponent>();
     for (auto e : pv) {
@@ -112,21 +112,21 @@ static void fog_pass_2d(Context* ctx)
         px, py, FOV2D_VIS_RADIUS, 0.0f, STEP, SEG, R_world.data());
 
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    float cxp = px * PIXELS_PER_METER - gs.camera_position.x * PIXELS_PER_METER;
-    float cyp = py * PIXELS_PER_METER - gs.camera_position.y * PIXELS_PER_METER;
+    float cxp = meters_to_pixels(px) - meters_to_pixels(gs.camera_position.x);
+    float cyp = meters_to_pixels(py) - meters_to_pixels(gs.camera_position.y);
     float facing = fog2d_dir_to_angle(pdir);
     float half = FOV2D_VIEW_ANGLE * 0.5f;
-    float near_px = FOV2D_NEAR_RADIUS * PIXELS_PER_METER;
+    float near_px = meters_to_pixels(FOV2D_NEAR_RADIUS);
     for (int i = 0; i < SEG; i++) {
         // 视野扇形中轴 = 面朝方向；扇形外方向只保留身周近视角，形成"看不到身后"
         if (fabsf(fog2d_angle_diff(STEP * (float)i, facing)) <= half + 1e-4f)
-            R_px[i] = R_world[i] * PIXELS_PER_METER;
+            R_px[i] = meters_to_pixels(R_world[i]);
         else
             R_px[i] = near_px;
     }
 
     joy_fov_draw_2d(ctx->r2d, cxp, cyp, R_px.data(), SEG,
-        FOV2D_FEATHER_PX, FOV2D_OUTER_RADIUS * PIXELS_PER_METER);
+        FOV2D_FEATHER_PX, meters_to_pixels(FOV2D_OUTER_RADIUS));
 }
 
 // 判定世界坐标 (ex,ey) 上的实体在本地玩家全向视野内是否可见（距离 + 墙遮挡）。

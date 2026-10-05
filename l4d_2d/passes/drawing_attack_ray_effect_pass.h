@@ -12,10 +12,10 @@ static void drawing_attack_ray_effect_pass(entt::registry& registry, Context* ct
 {
         /*auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
         jrect_t line;
-        line.x = (effect.x - cam.x) * PIXELS_PER_METER;
-        line.y = (effect.y - cam.y) * PIXELS_PER_METER;
-        line.w = effect.w * PIXELS_PER_METER;
-        line.h = effect.h * PIXELS_PER_METER;
+        line.x = meters_to_pixels(effect.x - cam.x);
+        line.y = meters_to_pixels(effect.y - cam.y);
+        line.w = meters_to_pixels(effect.w);
+        line.h = meters_to_pixels(effect.h);
         r2d_set_color(ctx->r2d, 40, 40, 55, 210);
         shape_draw_rectangle(ctx->r2d, "fill", line);*/
 }

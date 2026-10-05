@@ -4,12 +4,16 @@
 #include "../components/logic_position_component.h"
 #include "../components/logic_rect_component.h"
 #include "../components/health_component.h"
+#include "../components/player_component.h"
+#include "character_catalog.h"
 #include "map_def.h"
 #include <joy/jmath.h>
 
 struct Context;
 
-static const fp_t MOVE_SPEED = fp_from_float(5.0f);
+// 移速兜底：异常实体（无 PlayerComponent）时使用。
+// 正常玩家移速取自角色 stats.speed（characters.json），见 movement_system 内。
+static const fp_t MOVE_SPEED_FALLBACK = fp_from_float(2.4f);
 
 // 定点数向下取整转 int（算术右移即 floor，负向负无穷），与 collision_system 一致。
 static inline int movement_fp_floor_to_int(fp_t x)
@@ -63,20 +67,30 @@ static inline fp_t movement_snap_axis(fp_t pos, fp_t size, fp_t cand, int dir)
 // 先沿 Y（上/下）移动，再沿 X（左/右），对角移动时被挡的轴停下、未挡的轴继续滑动。
 static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     auto view = registry.view<PlayerStateInput, LogicPositionComponent>();
-    fp_t step = fp_mul(MOVE_SPEED, fp_from_float(ctx->FIXED_TIMESTEP));
+    const fp_t tick = fp_from_float(game_runtime(ctx).FIXED_TIMESTEP);
 
     for (auto e : view) {
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) { continue; }
         auto& psi = view.get<PlayerStateInput>(e);
         auto& p   = view.get<LogicPositionComponent>(e);
-        if (psi.move_bits == 0) { continue; }
+        // 俯视模式：允许上/下/左/右全四向移动（bit0..3）；双端同码，帧同步确定
+        const uint8_t bits = (uint8_t)(psi.move_bits & 0x0Fu);
+        if (bits == 0) { continue; }
+
+        // 移速按角色取（stats.speed，米/秒）。
+        // 注意：不要把 PlayerComponent 加进 view —— 改变 view 组成会改变 entt 迭代顺序，
+        // 帧同步下遍历顺序必须严格一致，故在循环内按需取。
+        fp_t speed = MOVE_SPEED_FALLBACK;
+        if (registry.all_of<PlayerComponent>(e))
+            speed = g_characterCatalog.get(registry.get<PlayerComponent>(e).char_id).move_speed;
+        const fp_t step = fp_mul(speed, tick);
 
         // 无碰撞盒（异常实体）时退化为直接位移，保持原有行为
         if (!registry.all_of<LogicRectComponent>(e)) {
-            if (psi.move_bits & 0b0001) p.y = fp_sub(p.y, step);
-            if (psi.move_bits & 0b0010) p.y = fp_add(p.y, step);
-            if (psi.move_bits & 0b0100) p.x = fp_sub(p.x, step);
-            if (psi.move_bits & 0b1000) p.x = fp_add(p.x, step);
+            if (bits & 0x1) p.y = fp_sub(p.y, step);
+            if (bits & 0x2) p.y = fp_add(p.y, step);
+            if (bits & 0x4) p.x = fp_sub(p.x, step);
+            if (bits & 0x8) p.x = fp_add(p.x, step);
             continue;
         }
 
@@ -84,20 +98,20 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         const fp_t h = registry.get<LogicRectComponent>(e).height;
 
         // Y 轴
-        if ((psi.move_bits & 0b0001) || (psi.move_bits & 0b0010)) {
+        if ((bits & 0x1) || (bits & 0x2)) {
             fp_t cand = p.y;
             int dy = 0;
-            if (psi.move_bits & 0b0001) { cand = fp_sub(cand, step); dy = -1; }   // 上
-            if (psi.move_bits & 0b0010) { cand = fp_add(cand, step); dy = +1; }   // 下
+            if (bits & 0x1) { cand = fp_sub(cand, step); dy = -1; }   // 上
+            if (bits & 0x2) { cand = fp_add(cand, step); dy = +1; }   // 下
             if (!movement_box_blocked(p.x, cand, w, h)) p.y = cand;        // 无障碍则正常移动
             else p.y = movement_snap_axis(p.y, h, cand, dy);               // 撞墙则贴齐墙格边界
         }
         // X 轴
-        if ((psi.move_bits & 0b0100) || (psi.move_bits & 0b1000)) {
+        if ((bits & 0x4) || (bits & 0x8)) {
             fp_t cand = p.x;
             int dx = 0;
-            if (psi.move_bits & 0b0100) { cand = fp_sub(cand, step); dx = -1; }   // 左
-            if (psi.move_bits & 0b1000) { cand = fp_add(cand, step); dx = +1; }   // 右
+            if (bits & 0x4) { cand = fp_sub(cand, step); dx = -1; }   // 左
+            if (bits & 0x8) { cand = fp_add(cand, step); dx = +1; }   // 右
             if (!movement_box_blocked(cand, p.y, w, h)) p.x = cand;        // 无障碍则正常移动
             else p.x = movement_snap_axis(p.x, w, cand, dx);               // 撞墙则贴齐墙格边界
         }

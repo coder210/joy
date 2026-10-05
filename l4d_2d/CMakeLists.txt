@@ -13,11 +13,124 @@ else()
     add_executable(${EXECUTABLE_NAME})
 endif()
 
-file(GLOB SRC_FILES  "*.h"  "*.c" "*.hpp" "*.cpp" "scenes/*.h" "scenes/*.cpp" "layers/*.h" "layers/*.cpp" "systems/*.h" "systems/*.cpp" "components/*.h" "components/*.cpp" "network/*.h" "network/*.cpp" "passes/*.h" "passes/*.cpp")
-
-# 合并所有源文件
+# 源文件与头文件显式列出（不依赖 GLOB）：重命名/删除某文件时若漏改此列表，
+# configure 阶段即报错，不会出现"忘了重新 cmake 导致 vcxproj 仍指向已删文件"的静默失败；
+# 头文件列入后也会出现在 IDE 工程树中（systems 等纯头文件实现亦可浏览）。
+# 新增文件时请在此手动追加。entt.hpp 为第三方大文件，不列入以免 IDE 卡顿。
 set(PROJECT_FILES
-    ${SRC_FILES}
+    # ---- 根目录 ----
+    main.cpp
+    asset_manager.cpp
+    settings.cpp
+    asset_manager.h
+    context.h
+    events.h
+    profiler.h
+    protocol.h
+    settings.h
+    ui_style.h
+    # ---- components ----
+    components/action_state_component.h
+    components/ai_component.h
+    components/anim_state_component.h
+    components/attack_ray_effect_component.h
+    components/bullet_component.h
+    components/connection_component.h
+    components/enemy_component.h
+    components/game_runtime_component.h
+    components/global_state_component.h
+    components/health_component.h
+    components/id_component.h
+    components/local_only_component.h
+    components/logic_position_component.h
+    components/logic_rect_component.h
+    components/logic_velocity_component.h
+    components/net_component.h
+    components/net_session_component.h
+    components/pathfinding_component.h
+    components/player_component.h
+    components/player_event_input.h
+    components/player_state_input.h
+    components/spawn_point_component.h
+    components/system_registry_component.h
+    components/transform_component.h
+    # ---- layers ----
+    layers/debug_layer.cpp
+    layers/gameplay_controls_layer.cpp
+    layers/menu_layer.cpp
+    layers/debug_layer.h
+    layers/gameplay_controls_layer.h
+    layers/layer.h
+    layers/menu_layer.h
+    # ---- network ----
+    network/network_manager.cpp
+    network/network_manager.h
+    # ---- passes ----
+    passes/camera_follow_pass.h
+    passes/drawing_attack_ray_effect_pass.h
+    passes/drawing_collision_debug_pass.h
+    passes/drawing_map_pass.h
+    passes/drawing_minimap_pass.h
+    passes/draw_bullet_pass.h
+    passes/draw_enemy_pass.h
+    passes/draw_fps_pass.h
+    passes/draw_player_pass.h
+    passes/fog_pass_2d.h
+    passes/frame_display_pass.h
+    passes/interpolate_pass.h
+    passes/player_status_hud_pass.h
+    passes/render_math.h
+    # ---- scenes ----
+    scenes/character_select_scene.cpp
+    scenes/game_scene.cpp
+    scenes/game_scene_common.cpp
+    scenes/level_select_scene.cpp
+    scenes/loading_scene.cpp
+    scenes/main_scene.cpp
+    scenes/online_scene.cpp
+    scenes/scene.cpp
+    scenes/scene_manager.cpp
+    scenes/settings_scene.cpp
+    scenes/splash_scene.cpp
+    scenes/victory_scene.cpp
+    scenes/character_select_scene.h
+    scenes/game_scene.h
+    scenes/game_scene_common.h
+    scenes/level_select_scene.h
+    scenes/loading_scene.h
+    scenes/main_scene.h
+    scenes/online_scene.h
+    scenes/scene.h
+    scenes/scene_manager.h
+    scenes/settings_scene.h
+    scenes/splash_scene.h
+    scenes/victory_scene.h
+    # ---- systems ----
+    systems/character_catalog.cpp
+    systems/map_def.cpp
+    systems/weapon_catalog.cpp
+    systems/ai_system.h
+    systems/bullet_system.h
+    systems/character_catalog.h
+    systems/weapon_catalog.h
+    systems/cleanup_system.h
+    systems/collision_system.h
+    systems/input_consume_input_system.h
+    systems/input_consume_join_system.h
+    systems/input_consume_leave_system.h
+    systems/level_sources.h
+    systems/map_def.h
+    systems/map_spawn_system.h
+    systems/melee_attack_system.h
+    systems/movement_system.h
+    systems/pathfinding_system.h
+    systems/player_death_system.h
+    systems/player_ray_system.h
+    systems/player_shoot_system.h
+    systems/snapshot_system.h
+    systems/spawn_def.h
+    systems/spawn_enemy_system.h
+    systems/state_checksum.h
 )
 
 # 添加源文件到目标
@@ -33,7 +146,8 @@ if(APPLE)
     target_sources(${EXECUTABLE_NAME} PRIVATE logo.png)
 endif()
 
-# 设置语言标准
+# 设置语言标准：编译标准保持 C++17（entt.hpp 等第三方库依赖 C++17 特性，无法降级）。
+# 但项目自身业务代码约定只用 C++11 语法与库（见 map_def/protocol 等文件），便于阅读维护。
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON

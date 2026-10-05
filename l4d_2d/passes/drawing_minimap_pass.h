@@ -22,10 +22,12 @@ static void drawing_minimap_pass(Context* ctx)
 {
     if (!ctx->r2d) return;
 
-    // 方形视口等比映射：地图 64×64 正方形 → 128×128，每格 2px（整数像素，避免缩放射像错位）
+    // 视口按地图宽高比适配（MAP_W/MAP_H 已随 tilemap 动态更新），非方形地图不拉伸。
     const float mm_size = 128.0f;
-    const float mm_x = 480.0f - mm_size - 8.0f, mm_y = 8.0f;
-    const float mm_w = mm_size, mm_h = mm_size;
+    float mm_w = mm_size, mm_h = mm_size;
+    if (MAP_W > MAP_H)      { mm_w = mm_size; mm_h = mm_size * (float)MAP_H / (float)MAP_W; }
+    else if (MAP_H > MAP_W) { mm_h = mm_size; mm_w = mm_size * (float)MAP_W / (float)MAP_H; }
+    const float mm_x = 480.0f - mm_w - 8.0f, mm_y = 8.0f;
 
     // 本地玩家位置与朝向；无本地玩家(服务端/观战)则揭示全图
     float ppx = 0.0f, ppy = 0.0f;
@@ -95,7 +97,7 @@ static void drawing_minimap_pass(Context* ctx)
     auto pv = ctx->ecs.view<PlayerComponent, TransformComponent>();
     for (auto e : pv) {
         auto& t = pv.get<TransformComponent>(e);
-        bool local = pv.get<PlayerComponent>(e).conv == (int)ctx->local_conv;
+        bool local = pv.get<PlayerComponent>(e).conv == (int)net_session(ctx).local_conv;
         if (!local && !revealed(t.position.x, t.position.y, ppx, ppy)) continue;
         float mx, my;
         to_map(t.position.x, t.position.y, mx, my);

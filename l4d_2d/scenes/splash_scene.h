@@ -2,10 +2,22 @@
 #define SPLASH_SCENE_H
 #include <joy/joy.h>
 #include "../context.h"
+#include "scene.h"
 
-typedef struct splash_scene splash_scene_t, *splash_scene_p;
-
-splash_scene_p splash_scene_create(Context* ctx);
-scene_p splash_scene_get_scene(splash_scene_p s);
+// 开场场景：继承 Scene 基类。
+class SplashScene : public Scene {
+public:
+    explicit SplashScene(Context* ctx);
+    void Load() override;
+    void Update(float dt) override;
+    void Render() override;
+    void Destroy() override;
+private:
+    image_p logo = NULL;
+    float   elapsed = 0;
+    float   alpha = 0;          // 透明度：0→1（淡入）→1→0（淡出）
+    bool    faded_in = false;
+    bool    fading_out = false;
+};
 
 #endif

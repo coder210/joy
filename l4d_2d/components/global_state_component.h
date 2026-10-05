@@ -16,6 +16,13 @@ struct GlobalState {
     vec2_t camera_position = { 0.0f, 0.0f };
     int camera_follow_conv = -1;  // 要跟随的玩家 conv，-1 表示不跟随
 
+    // 横版清关：把世界 Y 锁到屏幕垂直中心（<0 = 不锁，随玩家上下跟随，保持原俯视行为）
+    float camera_lock_y = -1.0f;
+    // 横版清关：水平前视偏置（世界单位，正值 = 多看前方、角色偏屏幕左侧）
+    float camera_bias_x = 0.0f;
+    // 横版清关：side_view 开启后相机 Y 自动锁到走廊中线（首次跟随时取玩家 Y），不再上下滚
+    bool side_view = false;
+
     // 确定性随机数（帧同步用）：seed 由服务端生成并通过 loading 协议下发，
     // 两端以同一 seed 创建同一序列，保证 AI/巡逻等行为完全一致。
     // 用单状态 LCG（lcg_random_*）：状态仅 1 个 uint64，loading 同步量最小。

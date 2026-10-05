@@ -1,0 +1,16 @@
+{
+    "fonts": {
+        "simhei": "l4d_2d/fonts/simhei.ttf"
+    },
+    "maps": {
+        "level1": "l4d_2d/levels/level1.lua",
+        "level2": "l4d_2d/levels/level2.lua",
+        "level3": "l4d_2d/levels/level3.lua",
+        "level4": "l4d_2d/levels/level4.lua",
+        "level5": "l4d_2d/levels/level5.lua"
+    },
+    "config": {
+        "characters": "l4d_2d/data/characters.json",
+        "weapons": "l4d_2d/data/weapons.json"
+    }
+}

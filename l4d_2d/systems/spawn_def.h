@@ -21,7 +21,7 @@ struct SpawnDef {
 // 服务端/客户端解析同一关卡 + 同一 i 规则 → 生成的出生列表逐位一致，
 // 保证帧同步初态一致；ai_type(=SpawnIdxComponent.idx) 即该数组下标。
 // ============================================================
-inline constexpr int ENEMY_SPAWN_COUNT = 256;   // 出生表容量上限
+constexpr int ENEMY_SPAWN_COUNT = 256;   // 出生表容量上限（C++11 constexpr 常量）
 
 static inline const SpawnDef* level_enemy_defs(int level, int& count)
 {

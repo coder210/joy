@@ -7,6 +7,7 @@
 #include "../components/local_only_component.h"
 #include "../components/global_state_component.h"
 #include "../protocol.h"
+#include "../context.h"
 
 struct Context;
 
@@ -14,6 +15,9 @@ struct Context;
 // 标注实体真实占位（LogicPosition 左上角 + LogicRect 宽高），避免喧宾夺主。
 static void drawing_collision_debug_pass(Context* ctx)
 {
+    // 开关：设置界面"显示碰撞框"勾选项，关闭时跳过（帧同步无关，仅渲染辅助）
+    if (!ctx->settings.show_collision) return;
+
     auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
 
     // 玩家碰撞盒：红色线框
@@ -26,10 +30,10 @@ static void drawing_collision_debug_pass(Context* ctx)
         float h = fp_to_float(rect.height);
         if (w <= 0.0f || h <= 0.0f) continue;
         jrect_t r;
-        r.x = (fp_to_float(pos.x) - cam.x) * PIXELS_PER_METER;
-        r.y = (fp_to_float(pos.y) - cam.y) * PIXELS_PER_METER;
-        r.w = w * PIXELS_PER_METER;
-        r.h = h * PIXELS_PER_METER;
+        r.x = meters_to_pixels(fp_to_float(pos.x) - cam.x);
+        r.y = meters_to_pixels(fp_to_float(pos.y) - cam.y);
+        r.w = meters_to_pixels(w);
+        r.h = meters_to_pixels(h);
         shape_draw_rectangle(ctx->r2d, "line", r);
     }
 
@@ -43,10 +47,10 @@ static void drawing_collision_debug_pass(Context* ctx)
         float h = fp_to_float(rect.height);
         if (w <= 0.0f || h <= 0.0f) continue;
         jrect_t r;
-        r.x = (fp_to_float(pos.x) - cam.x) * PIXELS_PER_METER;
-        r.y = (fp_to_float(pos.y) - cam.y) * PIXELS_PER_METER;
-        r.w = w * PIXELS_PER_METER;
-        r.h = h * PIXELS_PER_METER;
+        r.x = meters_to_pixels(fp_to_float(pos.x) - cam.x);
+        r.y = meters_to_pixels(fp_to_float(pos.y) - cam.y);
+        r.w = meters_to_pixels(w);
+        r.h = meters_to_pixels(h);
         shape_draw_rectangle(ctx->r2d, "line", r);
     }
 }

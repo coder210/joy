@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""为 project_proxy2d 生成 5 关不同的 Tiled .lua 关卡(map)文件。
+"""为 l4d_2d 生成 5 关不同的 Tiled .lua 关卡(map)文件。
 
 布局思路（契合"边杀边逃离" + 帧同步确定性）：
   - 64x64，外边界为墙('#', GID=1)，空地('.', GID=0)。

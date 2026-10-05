@@ -1,7 +1,7 @@
 #ifndef DRAWING_MAP_PASS_H
 #define DRAWING_MAP_PASS_H
 
-#include <math.h>
+#include <cmath>
 #include <joy/joy.h>
 #include "../components/global_state_component.h"
 #include "../systems/map_def.h"
@@ -9,105 +9,47 @@
 
 struct Context;
 
+// 地图地形色块渲染：不再使用 Kenney tilesheet 图集，改为按 64×64 网格逐格画纯色块。
+// 墙（'#'）=墨色块，地面（'.'/'P'/'E' 等）=浅宣纸色块。视觉为黑白水墨风；
+// 格子尺寸每格 1 米（=50px），与实体/相机渲染的 1米=50px 精确一致，保证对齐。
 static void draw_map_pass(Context* ctx)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    float cx = gs.camera_position.x * PIXELS_PER_METER;
-    float cy = gs.camera_position.y * PIXELS_PER_METER;
+    float cx = meters_to_pixels(gs.camera_position.x);
+    float cy = meters_to_pixels(gs.camera_position.y);
 
-    const float VP_W = 480.0f, VP_H = 320.0f;
+    // 地面底色：先整屏铺浅宣纸色（可通行区域）
+    r2d_set_color(ctx->r2d, 250, 248, 244, 255);
+    jrect_t floor = { 0, 0, 480.0f, 320.0f };
+    shape_draw_rectangle(ctx->r2d, "fill", floor);
 
-    int x0 = (int)floorf(cx / PIXELS_PER_METER) - 1;
-    int y0 = (int)floorf(cy / PIXELS_PER_METER) - 1;
-    int x1 = (int)ceilf((cx + VP_W) / PIXELS_PER_METER) + 1;
-    int y1 = (int)ceilf((cy + VP_H) / PIXELS_PER_METER) + 1;
+    // 首选：Tiled 瓦片渲染（关卡 .lua 带 tileset 时按 GID 贴图绘制）
+    // 每格画布像素强制为 1 米(=50px)，与实体/相机/碰撞网格精确对齐；相机传画布像素。
+    if (g_map_info.tilemap) {
+        if (!g_map_info.tilemap_render)
+                g_map_info.tilemap_render = jtilemap_render_create(ctx->r2d, MAP_ASSET_BASE, NULL);
+        if (g_map_info.tilemap_render) {
+                jtilemap_render_set_tile_px(g_map_info.tilemap_render, meters_to_pixels(1.0f));
+                jtilemap_render_tiles(g_map_info.tilemap_render, g_map_info.tilemap, cx, cy, (uint32_t)get_ticks());
+                return;
+        }
+    }
 
-    for (int y = y0; y <= y1; y++) {
-        for (int x = x0; x <= x1; x++) {
-            if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) continue;
-            char c = map_tile_at(x, y);
-            int type = map_tile_type(c);
-            if (type == MAP_TILE_EMPTY) continue;
+    // 墙色块：遍历 64×64 网格，'#' 画墨色方块；仅绘制落在可视画布内的格子
+    for (int y = 0; y < MAP_H; y++) {
+        for (int x = 0; x < MAP_W; x++) {
+            if (!map_is_collidable(map_tile_at(x, y))) continue;
+            // 格心世界坐标 → 画布像素
+            float wx = meters_to_pixels((float)(x + 1)) - cx;      // 格左上/左界
+            float wy = meters_to_pixels((float)(y + 1)) - cy;
+            // 屏幕外快速剔除
+            if (wx + meters_to_pixels(1.0f) < 0.0f || wx - meters_to_pixels(1.0f) > 480.0f) continue;
+            if (wy + meters_to_pixels(1.0f) < 0.0f || wy - meters_to_pixels(1.0f) > 320.0f) continue;
 
-            float px = x * PIXELS_PER_METER - cx;
-            float py = y * PIXELS_PER_METER - cy;
-            vec2_t center = { px + PIXELS_PER_METER * 0.5f, py + PIXELS_PER_METER * 0.5f };
-
-            switch (type) {
-            case MAP_TILE_WALL: {
-                /* 白底 + 墨色描边（图纸风，对齐 3D 墙体） */
-                r2d_set_color(ctx->r2d, 250, 248, 244, 255);
-                jrect_t r = { px, py, PIXELS_PER_METER, PIXELS_PER_METER };
-                shape_draw_rectangle(ctx->r2d, "fill", r);
-                r2d_set_color(ctx->r2d, 40, 40, 45, 255);
-                float mx = px + PIXELS_PER_METER * 0.5f;
-                float my = py + PIXELS_PER_METER * 0.5f;
-                shape_draw_line(ctx->r2d, mx, py, mx, py + PIXELS_PER_METER);
-                shape_draw_line(ctx->r2d, px, my, px + PIXELS_PER_METER, my);
-                jrect_t b = { px + 1.0f, py + 1.0f, PIXELS_PER_METER - 2.0f, PIXELS_PER_METER - 2.0f };
-                shape_draw_rectangle(ctx->r2d, "line", b);
-                break;
-            }
-            case MAP_TILE_TREE: {
-                /* 墨色树：淡墨圈 + 实心墨点 */
-                r2d_set_color(ctx->r2d, 90, 90, 98, 255);
-                shape_draw_circle(ctx->r2d, "line", center, PIXELS_PER_METER * 0.36f, 16);
-                r2d_set_color(ctx->r2d, 90, 90, 98, 255);
-                shape_draw_circle(ctx->r2d, "fill", center, PIXELS_PER_METER * 0.12f, 12);
-                break;
-            }
-            case MAP_TILE_ROCK: {
-                r2d_set_color(ctx->r2d, 168, 166, 160, 255);
-                shape_draw_circle(ctx->r2d, "fill", center, PIXELS_PER_METER * 0.32f, 12);
-                r2d_set_color(ctx->r2d, 40, 40, 45, 255);
-                shape_draw_circle(ctx->r2d, "line", center, PIXELS_PER_METER * 0.32f, 12);
-                break;
-            }
-            case MAP_TILE_WATER: {
-                /* 水：淡宣纸底 + 淡墨波纹（去蓝，改图纸灰） */
-                r2d_set_color(ctx->r2d, 228, 228, 232, 255);
-                jrect_t wr = { px, py, PIXELS_PER_METER, PIXELS_PER_METER };
-                shape_draw_rectangle(ctx->r2d, "fill", wr);
-                r2d_set_color(ctx->r2d, 150, 152, 162, 255);
-                float w = PIXELS_PER_METER * 0.66f;
-                float hw = w * 0.5f;
-                for (int k = -1; k <= 1; k++) {
-                    float yy = center.y + k * PIXELS_PER_METER * 0.18f;
-                    shape_draw_line(ctx->r2d, center.x - hw, yy, center.x + hw, yy);
-                }
-                break;
-            }
-            case MAP_TILE_GRASS:
-                r2d_set_color(ctx->r2d, 150, 150, 158, 255);
-                {
-                    float s = 5.0f;
-                    jrect_t grass = { center.x - s, center.y - s, s * 2, s * 2 };
-                    shape_draw_rectangle(ctx->r2d, "fill", grass);
-                }
-                break;
-            case MAP_TILE_FLOWER:
-                r2d_set_color(ctx->r2d, 205, 205, 212, 255);
-                {
-                    float s = 4.0f;
-                    vec2_t pts[4] = {
-                        { center.x,         center.y - s * 1.5f },
-                        { center.x + s,     center.y },
-                        { center.x,         center.y + s * 1.5f },
-                        { center.x - s,     center.y },
-                    };
-                    jcolor_t flower = { 205, 205, 212, 255 };
-                    shape_draw_polygon(ctx->r2d, "fill", pts, 4, flower);
-                }
-                break;
-            case MAP_TILE_PATH: {
-                r2d_set_color(ctx->r2d, 176, 176, 184, 255);
-                jrect_t r = { px + 8.0f, py + 8.0f, PIXELS_PER_METER - 16.0f, PIXELS_PER_METER - 16.0f };
-                shape_draw_rectangle(ctx->r2d, "line", r);
-                break;
-            }
-            default:
-                break;
-            }
+            // 墨色墙体块 + 稍淡描边（水墨风）
+            r2d_set_color(ctx->r2d, 40, 40, 45, 255);
+            jrect_t cell = { wx - meters_to_pixels(1.0f), wy - meters_to_pixels(1.0f), meters_to_pixels(1.0f), meters_to_pixels(1.0f) };
+            shape_draw_rectangle(ctx->r2d, "fill", cell);
         }
     }
 }
