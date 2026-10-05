@@ -31,7 +31,10 @@ static inline int movement_fp_floor_to_int(fp_t x)
 }
 
 // 判断 AABB(x0,y0,w,h) 是否触碰不可通行格（含越界视为墙）。
-// 纯定点整数查 MAP_LAYOUT，帧同步确定性；与 collision_system 的网格覆盖规则保持一致。
+// 复用 joy 的 collision2df_check_rectangles（定点数，帧同步确定性），与 collision_system 一致：
+// 对覆盖到的每个格子，若该格越界或不可通行，则与其实体 AABB 做重叠判定。
+// 因覆盖范围是 EPS 收缩后的严格内部，被覆盖的不可通行格必然与移动体严格重叠，
+// 故判定结果与原来的"网格覆盖"完全等价。
 static inline bool movement_box_blocked(fp_t x0, fp_t y0, fp_t w, fp_t h)
 {
     const fp_t x1 = fp_add(x0, w);
@@ -43,33 +46,55 @@ static inline bool movement_box_blocked(fp_t x0, fp_t y0, fp_t w, fp_t h)
     int gy0 = movement_fp_floor_to_int(y0);
     int gy1 = movement_fp_floor_to_int(fp_sub(y1, EPS));
 
+    rectanglef_t mover_box = { x0, y0, w, h };
     for (int gy = gy0; gy <= gy1; gy++) {
         for (int gx = gx0; gx <= gx1; gx++) {
-            if (gx < 0 || gy < 0 || gx >= MAP_W || gy >= MAP_H)
-                return true;                     // 越界视为墙
-            if (map_is_collidable(map_tile_at(gx, gy)))
-                return true;
+            if (gx >= 0 && gy >= 0 && gx < MAP_W && gy < MAP_H &&
+                !map_is_collidable(map_tile_at(gx, gy))) continue;   // 越界或不可通行格才判定
+            rectanglef_t tile_box = { fp_from_int(gx), fp_from_int(gy), fp_one(), fp_one() };
+            if (collision2df_check_rectangles(mover_box, tile_box)) return true;
         }
     }
     return false;
 }
 
-// 撞墙时把移动体 AABB 贴齐到墙格边界，消除"碰撞盒与墙之间仍留空隙"的视觉误差。
-// 纯定点/整数运算，帧同步确定性。
-// dir<0 表示向负轴移动（上/左），dir>0 表示向正轴移动（下/右）。
-// 前缘（负轴：pos；正轴：pos+size）撞到墙格 g 后，贴齐到该墙格的近侧边界。
-static inline fp_t movement_snap_axis(fp_t pos, fp_t size, fp_t cand, int dir)
+// 把移动体 AABB 推出所有不可通行格（含越界，越界视为墙），就地修改 pos，返回是否发生碰撞修正。
+// 复用 joy 的 collision2df_get_rectangles（法线 + 穿透深度，定点数，帧同步确定性）：
+// 对覆盖到的每个格子逐个求 EPA 接触并沿法线推出，与 collision_system 完全一致。
+// 轴对齐 AABB 对 AABB 时，EPA 法线即整数轴方向、深度即精确穿透量，故贴齐等价于原 movement_snap_axis。
+static inline bool movement_resolve_tilemap(fp_t& px, fp_t& py, fp_t w, fp_t h)
 {
     const fp_t EPS = fp_from_float(0.001f);
-    if (dir < 0) {
-        // 上/左：前缘 = pos，贴齐到墙格 g 的下/右边界 g+1
-        int g = movement_fp_floor_to_int(cand);
-        return fp_from_int(g + 1);
-    } else {
-        // 下/右：后缘 = pos+size，贴齐到墙格 g 的上/左边界 g
-        int g = movement_fp_floor_to_int(fp_sub(fp_add(cand, size), EPS));
-        return fp_sub(fp_from_int(g), size);
+    bool hit = false;
+    int gx0 = movement_fp_floor_to_int(px);
+    int gx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
+    int gy0 = movement_fp_floor_to_int(py);
+    int gy1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
+    rectanglef_t mover_box = { px, py, w, h };
+    for (int gy = gy0; gy <= gy1; gy++) {
+        for (int gx = gx0; gx <= gx1; gx++) {
+            if (gx >= 0 && gy >= 0 && gx < MAP_W && gy < MAP_H &&
+                !map_is_collidable(map_tile_at(gx, gy))) continue;   // 越界或不可通行格才推出
+            rectanglef_t tile_box = { fp_from_int(gx), fp_from_int(gy), fp_one(), fp_one() };
+            contact2df_t contact;
+            if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
+                fp_t depth = contact.depth;
+                if (depth < fp_zero()) depth = fp_sub(fp_zero(), depth);
+                fp_t nx = fp_sub(fp_zero(), contact.normal.x);
+                fp_t ny = fp_sub(fp_zero(), contact.normal.y);
+                px = fp_add(px, fp_mul(nx, depth));
+                py = fp_add(py, fp_mul(ny, depth));
+                hit = true;
+                // 推出后更新覆盖范围，继续检查剩余格
+                gx0 = movement_fp_floor_to_int(px);
+                gx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
+                gy0 = movement_fp_floor_to_int(py);
+                gy1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
+                mover_box.x = px; mover_box.y = py;
+            }
+        }
     }
+    return hit;
 }
 
 // 横版（side-view）玩家移动：
@@ -116,11 +141,10 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         // ---- X 轴：左右 ----
         if ((bits & 0x4) || (bits & 0x8)) {
             fp_t cand = p.x;
-            int dx = 0;
-            if (bits & 0x4) { cand = fp_sub(cand, step); dx = -1; }   // 左
-            if (bits & 0x8) { cand = fp_add(cand, step); dx = +1; }   // 右
-            if (!movement_box_blocked(cand, p.y, w, h)) p.x = cand;        // 无障碍则正常移动
-            else p.x = movement_snap_axis(p.x, w, cand, dx);               // 撞墙则贴齐墙格边界
+            if (bits & 0x4) cand = fp_sub(cand, step);   // 左
+            if (bits & 0x8) cand = fp_add(cand, step);   // 右
+            p.x = cand;
+            movement_resolve_tilemap(p.x, p.y, w, h);    // 撞墙则沿 joy 法线贴齐墙格边界
         }
 
         // ---- Y 轴：重力 + 跳跃（仅对挂有速度组件的实体）----
@@ -141,14 +165,8 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         // 竖直位移 + 碰撞
         const fp_t move = fp_mul(vy, tick);
         if (move != fp_zero()) {
-            const fp_t cand = fp_add(p.y, move);
-            if (!movement_box_blocked(p.x, cand, w, h)) {
-                p.y = cand;
-            } else {
-                const int dir = (move > fp_zero()) ? +1 : -1;
-                p.y = movement_snap_axis(p.y, h, cand, dir);
-                vy = fp_zero();      // 落地 / 撞顶：速度归零
-            }
+            p.y = fp_add(p.y, move);
+            if (movement_resolve_tilemap(p.x, p.y, w, h)) vy = fp_zero();  // 落地 / 撞顶：速度归零
         }
         registry.get<LogicVelocityComponent>(e).y = vy;
     }
