@@ -14,6 +14,8 @@
 #include "../components/pathfinding_component.h"
 #include "../components/health_component.h"
 #include "../components/global_state_component.h"
+#include "../components/logic_velocity_component.h"
+#include "movement_system.h"     // 复用横版碰撞判定 movement_box_blocked / movement_snap_axis
 #include <cmath>
 
 struct Context;
@@ -61,33 +63,38 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
     registry.emplace<TransformComponent>(b, tpos, 0.0f, tscale);
 }
 
+// 横版（side-view）敌人 AI：
+//  - 受重力、落到地面/平台（与玩家共用 movement_box_blocked / movement_snap_axis）
+//  - 追击：只做水平（左右）逼近玩家；进入攻击范围则攻击
+//  - 巡逻：围绕出生点水平游走（定时用 LCG 选新目标 x，帧同步确定）
+//  - 不再使用 A* 寻路（横版不需要，也与重力垂直移动冲突）
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
-    fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(game_runtime(ctx).FIXED_TIMESTEP));
+    const fp_t tick     = fp_from_float(game_runtime(ctx).FIXED_TIMESTEP);
+    const fp_t step     = fp_mul(fp_from_float(2.5f), tick);
+    const fp_t gravity  = fp_from_float(SIDE_GRAVITY);
+    const fp_t max_fall = fp_from_float(SIDE_MAX_FALL);
+    const fp_t EPS      = fp_from_float(0.001f);
 
     auto view = registry.view<IdComponent, EnemyComponent, AIComponent, LogicPositionComponent, ActionStateComponent>();
     auto player_view = registry.view<PlayerComponent, LogicPositionComponent, HealthComponent>();
-    auto& gs = ctx->ecs.ctx().get<GlobalState>();
 
     for (auto e : view) {
-        auto& id =  view.get<IdComponent>(e);
+        auto& id  = view.get<IdComponent>(e);
         auto& ai  = view.get<AIComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
         auto& act = view.get<ActionStateComponent>(e);
         (void)id;
 
-        // 死亡敌人不行动（不追击/不攻击/不巡逻），等待 player_death_system 重生
-        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) {
-            if (registry.all_of<PathComponent>(e)) registry.remove<PathComponent>(e);
-            continue;
-        }
+        // 死亡敌人不行动（等待 player_death_system 重生）
+        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) continue;
 
         // 攻击计时递减（替代动画状态机的攻击复位），每逻辑 tick 减 1
         if (act.attack_timer > 0) act.attack_timer -= 1;
 
-        // 寻找最近玩家
+        // 寻找最近玩家（检测/攻击沿用欧氏距离；横版朝向只看水平）
         bool found_player = false;
         fp_t nearest_dist_sq = fp_mul(ai.detect_radius, ai.detect_radius);
-        fp_t nearest_px = fp_zero(), nearest_py = fp_zero();
+        fp_t nearest_px = fp_zero();
 
         for (auto p : player_view) {
             // 死亡玩家不作为敌人攻击/追击目标（不鞭尸）
@@ -100,118 +107,94 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 nearest_dist_sq = dist_sq;
                 found_player = true;
                 nearest_px = ppos.x;
-                nearest_py = ppos.y;
             }
         }
 
         // 攻击半径判断
-        fp_t attack_dist_sq = fp_mul(ai.attack_radius, ai.attack_radius);
-        bool in_attack_range = found_player && (nearest_dist_sq < attack_dist_sq);
+        const bool in_attack_range =
+            found_player && (nearest_dist_sq < fp_mul(ai.attack_radius, ai.attack_radius));
+
+        // 水平移动意图（横版：只左右）
+        fp_t vx = fp_zero();
 
         if (in_attack_range) {
             // 状态 2：攻击
             ai.state = 2;
-            // 首次进入攻击范围时设置攻击计时器
-            if (act.attack_timer == 0) {
-                    act.attack_timer = ActionStateComponent::ATTACK_DURATION;
-            }
+            if (act.attack_timer == 0) act.attack_timer = ActionStateComponent::ATTACK_DURATION;
             act.state = ActionStateComponent::ATTACK;
 
-            // 远程敌人：射击冷却与子弹生成（近战敌人跳过）
+            // 远程敌人：射击冷却（子弹生成暂关，与原型一致）
             if (ai.ranged) {
-                if (ai.shoot_cooldown > 0) {
-                    ai.shoot_cooldown--;
-                } else {
-                    ai.shoot_cooldown = ai.shoot_interval;
-                    //spawn_enemy_bullet(registry, ctx, pos.x, pos.y, nearest_px, nearest_py, ai);
-                }
+                if (ai.shoot_cooldown > 0) ai.shoot_cooldown--;
+                else ai.shoot_cooldown = ai.shoot_interval;
             }
 
-            if (!registry.all_of<PlayerEventInput>(e)) {
-                registry.emplace<PlayerEventInput>(e);
-            }
-            auto& events = registry.get<PlayerEventInput>(e);
-            events.pending_actions.push_back({ 0, 0 });
+            if (!registry.all_of<PlayerEventInput>(e)) registry.emplace<PlayerEventInput>(e);
+            registry.get<PlayerEventInput>(e).pending_actions.push_back({ 0, 0 });
 
-            fp_t dx = fp_sub(nearest_px, pos.x);
-            fp_t dy = fp_sub(nearest_py, pos.y);
-            act.dir = (fp_abs(dx) > fp_abs(dy))
-                ? (dx > fp_zero() ? 2 : 1)
-                : (dy > fp_zero() ? 0 : 3);
+            act.dir = (nearest_px > pos.x) ? 2 : 1;   // 面向玩家（左右）
         }
         else if (found_player) {
-            // 状态 1：追击（实际移动由 pathfinding_system 的 A* 完成）
+            // 状态 1：追击（横版：水平逼近，直接在本系统移动）
             ai.state = 1;
-            // 攻击计时未结束前保持攻击表现，结束后回到 WALK
+            ai.timer = 0;
             act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
                                              : ActionStateComponent::WALK;
-
-            // 记录最近玩家所在格子作为寻路目标，标记需要重算
-            if (!registry.all_of<PathComponent>(e)) {
-                registry.emplace<PathComponent>(e);
-            }
-            auto& pc = registry.get<PathComponent>(e);
-            pc.target_gx = fp_trunc_to_int(nearest_px);
-            pc.target_gy = fp_trunc_to_int(nearest_py);
-            pc.dirty = true;
-
             fp_t dx = fp_sub(nearest_px, pos.x);
-            fp_t dy = fp_sub(nearest_py, pos.y);
-            act.dir = (fp_abs(dx) > fp_abs(dy))
-                ? (dx > fp_zero() ? 2 : 1)
-                : (dy > fp_zero() ? 0 : 3);
-
-            ai.timer = 0;
+            if (dx > fp_from_float(0.1f))       { vx = step;                    act.dir = 2; }
+            else if (dx < fp_from_float(-0.1f)) { vx = fp_sub(fp_zero(), step); act.dir = 1; }
         }
         else {
-            // 状态 0：巡逻
+            // 状态 0：巡逻（横版：围绕出生点水平游走）
             ai.state = 0;
-            // 攻击计时未结束前保持攻击表现，结束后回到 WALK
             act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
                                              : ActionStateComponent::WALK;
-
-            // 巡逻目标更新逻辑（仅当 timer 归零时生成新目标）
             ai.timer--;
             if (ai.timer <= 0) {
-                // 纯定点数生成巡逻偏移（帧同步确定性，两端同 seed → 同序列 → 行为一致）。
-                // lcg_random_next 返回普通 uint32_t（[0,2^32)），经 fp_from_fraction 映射为 [0,1.0) 定点数。
-                // 再 *2-1 得 [-1,1)，乘巡逻半径即得偏移（与原 float 版本偏移范围一致）。
-                auto& gs = ctx->ecs.ctx().get<GlobalState>();
-                uint32_t r1 = lcg_random_next(gs.random);
-                uint32_t r2 = lcg_random_next(gs.random);
+                // 纯定点 LCG → 巡逻目标 x（帧同步确定，两端同 seed 同序列 → 行为一致）
+                auto& gsref = ctx->ecs.ctx().get<GlobalState>();
+                uint32_t r1 = lcg_random_next(gsref.random);
                 fp_t fx = fp_sub(fp_mul(fp_from_fraction(r1), fp_from_float(2.0f)), fp_one());
-                fp_t fy = fp_sub(fp_mul(fp_from_fraction(r2), fp_from_float(2.0f)), fp_one());
-                fp_t rx = fp_mul(ai.patrol_radius, fx);
-                fp_t ry = fp_mul(ai.patrol_radius, fy);
-                ai.target_x = fp_add(ai.patrol_center_x, rx);
-                ai.target_y = fp_add(ai.patrol_center_y, ry);
+                ai.target_x = fp_add(ai.patrol_center_x, fp_mul(ai.patrol_radius, fx));
+                ai.target_y = ai.patrol_center_y;
                 ai.timer = 120;
             }
-
             fp_t dx = fp_sub(ai.target_x, pos.x);
-            fp_t dy = fp_sub(ai.target_y, pos.y);
-            // 距离阈值：小于0.2个单位则认为到达
-            if (fp_abs(dx) > fp_from_float(0.2f) || fp_abs(dy) > fp_from_float(0.2f)) {
-                    // 确保有 PathComponent
-                    if (!registry.all_of<PathComponent>(e)) {
-                            registry.emplace<PathComponent>(e);
-                    }
-                    auto& pc = registry.get<PathComponent>(e);
-                    // 将目标点转换为网格坐标（格子大小 TILE_SIZE=1，纯整数向下取整，帧同步确定性）
-                    pc.target_gx = fp_trunc_to_int(ai.target_x);
-                    pc.target_gy = fp_trunc_to_int(ai.target_y);
-                    pc.dirty = true;
-            }
-            else {
-                    // 到达目标，清除路径组件（可选）
-                    if (registry.all_of<PathComponent>(e)) {
-                            registry.remove<PathComponent>(e);
-                    }
-            }
+            if (dx > fp_from_float(0.2f))       { vx = step;                    act.dir = 2; }
+            else if (dx < fp_from_float(-0.2f)) { vx = fp_sub(fp_zero(), step); act.dir = 1; }
+        }
 
-            act.dir = (fp_abs(dx) > fp_abs(dy))
-                ? (dx > fp_zero() ? 2 : 1)
-                : (dy > fp_zero() ? 0 : 3);
+        // ---- 应用移动：水平（带碰撞）+ 重力（竖直带碰撞）----
+        if (!registry.all_of<LogicRectComponent>(e)) { pos.x = fp_add(pos.x, vx); continue; }
+
+        const fp_t w = registry.get<LogicRectComponent>(e).width;
+        const fp_t h = registry.get<LogicRectComponent>(e).height;
+
+        if (vx != fp_zero()) {
+            fp_t cand = fp_add(pos.x, vx);
+            const int dir = (vx > fp_zero()) ? +1 : -1;
+            if (!movement_box_blocked(cand, pos.y, w, h)) pos.x = cand;
+            else pos.x = movement_snap_axis(pos.x, w, cand, dir);
+        }
+
+        if (registry.all_of<LogicVelocityComponent>(e)) {
+            fp_t vy = registry.get<LogicVelocityComponent>(e).y;
+            // 是否站在地面：脚下 1mm 处被阻挡即为着地
+            const bool grounded = movement_box_blocked(pos.x, fp_add(pos.y, EPS), w, h);
+            if (grounded && vy > fp_zero()) vy = fp_zero();
+            vy = fp_add(vy, fp_mul(gravity, tick));
+            if (vy > max_fall) vy = max_fall;
+            const fp_t move = fp_mul(vy, tick);
+            if (move != fp_zero()) {
+                fp_t cand = fp_add(pos.y, move);
+                if (!movement_box_blocked(pos.x, cand, w, h)) {
+                    pos.y = cand;
+                } else {
+                    pos.y = movement_snap_axis(pos.y, h, cand, (move > fp_zero()) ? +1 : -1);
+                    vy = fp_zero();     // 落地 / 撞顶：速度归零
+                }
+            }
+            registry.get<LogicVelocityComponent>(e).y = vy;
         }
     }
 }

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="8" nextobjectid="22">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="23">
+ <editorsettings>
+  <export target="../levels/level1.lua" format="lua"/>
+ </editorsettings>
  <tileset firstgid="1" name="Terrain (32x32)" tilewidth="32" tileheight="32" tilecount="247" columns="19">
   <image source="Terrain (32x32).png" width="608" height="416"/>
  </tileset>
- <objectgroup id="2" name="Player" locked="1">
-  <object id="2" x="448" y="256">
+ <objectgroup id="8" name="Player">
+  <object id="22" x="576" y="192">
    <point/>
   </object>
  </objectgroup>

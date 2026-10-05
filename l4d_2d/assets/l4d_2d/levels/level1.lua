@@ -9,8 +9,8 @@ return {
   height = 14,
   tilewidth = 32,
   tileheight = 32,
-  nextlayerid = 8,
-  nextobjectid = 22,
+  nextlayerid = 9,
+  nextobjectid = 23,
   properties = {},
   tilesets = {
     {
@@ -47,7 +47,7 @@ return {
     {
       type = "objectgroup",
       draworder = "topdown",
-      id = 2,
+      id = 8,
       name = "Player",
       class = "",
       visible = true,
@@ -59,12 +59,12 @@ return {
       properties = {},
       objects = {
         {
-          id = 2,
+          id = 22,
           name = "",
           type = "",
           shape = "point",
-          x = 448,
-          y = 256,
+          x = 576,
+          y = 192,
           width = 0,
           height = 0,
           rotation = 0,

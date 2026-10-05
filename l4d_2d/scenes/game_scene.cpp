@@ -57,8 +57,8 @@ void GameScene::Load()
     auto& gs = ctx->ecs.ctx().emplace<GlobalState>();
     gs.level = ctx->selected_level;   // 应用选关页选定的固定地图关卡
     map_load_level(gs.level);         // 装入当前关卡 64x64 ASCII 网格（墙+出生）
-    // 俯视模式（资源原始设计）：相机 X/Y 同时跟随玩家，支持全向移动
-    gs.side_view = false;
+    // 横版（side-view）：相机水平跟随 + 垂直夹取到地图范围；玩法只支持左右移动 + 跳跃
+    gs.side_view = true;
     gs.camera_lock_y = -1.0f;
     gs.camera_bias_x = 0.0f;
 

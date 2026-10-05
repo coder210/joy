@@ -5,6 +5,7 @@
 #include "../components/action_state_component.h"
 #include "../components/health_component.h"
 #include "../components/spawn_point_component.h"
+#include "../components/logic_velocity_component.h"   // 横版重力/跳跃垂直速度
 #include "../systems/character_catalog.h"
 #include "../systems/weapon_catalog.h"
 
@@ -86,6 +87,9 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 			false, 0, SPAWN_INVULN_TICKS);
 		// 出生点 = join 位置（重生传送目标）
 		registry.emplace<SpawnPointComponent>(player, join.position_x, join.position_y);
+
+		// 横版重力/跳跃：垂直速度状态（两端由相同输入确定性推进 → 帧同步一致）
+		registry.emplace<LogicVelocityComponent>(player, fp_from_float(0), fp_from_float(0));
 
 		// 首次加入的玩家作为摄像机跟随目标
 		if (gs.camera_follow_conv < 0) {

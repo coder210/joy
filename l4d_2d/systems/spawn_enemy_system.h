@@ -9,6 +9,7 @@
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
 #include "../components/health_component.h"
+#include "../components/logic_velocity_component.h"
 #include "../components/spawn_point_component.h"
 #include "../systems/spawn_def.h"
 
@@ -30,6 +31,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<TransformComponent>(e, s.x, s.y, 0.0f, 1.0f, 1.0f);
 
         registry.emplace<ActionStateComponent>(e);
+        // 横版重力：敌人挂垂直速度组件（落到地面/平台）
+        registry.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
         // 血量组件：玩家远程子弹命中扣血；死亡后重生回出生点
         registry.emplace<HealthComponent>(e, ENEMY_MAX_HP, ENEMY_MAX_HP);
         registry.emplace<SpawnPointComponent>(e, fp_from_float(s.x), fp_from_float(s.y));

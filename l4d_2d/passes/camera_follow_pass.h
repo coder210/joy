@@ -4,6 +4,7 @@
 #include "../components/player_component.h"
 #include "../components/transform_component.h"
 #include "../protocol.h"
+#include "../systems/map_def.h"   // MAP_H：横版相机垂直夹取用
 
 struct Context;
 
@@ -21,8 +22,13 @@ static void camera_follow_pass(entt::registry& registry, Context* /*ctx*/, float
             gs.camera_position.x = t.position.x - 4.8f + gs.camera_bias_x;
             // Y：side_view 自动锁走廊中线（首次跟随取玩家 Y）；否则 camera_lock_y 手动锁；否则随玩家上下
             if (gs.side_view) {
-                if (gs.camera_lock_y < 0.0f) gs.camera_lock_y = t.position.y;  // 首次捕获走廊中线
-                gs.camera_position.y = gs.camera_lock_y - 3.2f;
+                // 横版：垂直跟随玩家，但夹取到地图范围内（不露出地图外）
+                const float view_h = 6.4f;                        // 320 / 50 = 6.4m
+                float cy = t.position.y - view_h * 0.5f;
+                const float max_y = ((float)MAP_H > view_h) ? ((float)MAP_H - view_h) : 0.0f;
+                if (cy < 0.0f) cy = 0.0f;
+                if (cy > max_y) cy = max_y;
+                gs.camera_position.y = cy;
             } else {
                 gs.camera_position.y = (gs.camera_lock_y >= 0.0f)
                         ? (gs.camera_lock_y - 3.2f)

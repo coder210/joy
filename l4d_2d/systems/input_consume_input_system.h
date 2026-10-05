@@ -91,8 +91,10 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 			auto& act = registry.get<ActionStateComponent>(player);
 
 
-			int  dir_idx = input_to_dir(input.dir);
-			bool moving  = has_dir(input.dir);
+			// 横版：朝向只取左右（bit2=左 bit3=右）；上(bit0)=跳、下(bit1)=预留，不再改变朝向
+			const int horiz = input.dir & (INPUT_LEFT | INPUT_RIGHT);
+			bool moving  = (horiz != 0);
+			int  dir_idx = (horiz & INPUT_LEFT) ? 1 : 2;
 
 			if (input.attack) {
 				act.state        = ActionStateComponent::ATTACK;

@@ -63,6 +63,8 @@ void NetworkManager::HandleLoading(int conv, int frame_id, int eid, const S2CEnt
                 else if (entity.type == S2C_TYPE_ENEMY) {
                         ctx_->ecs.emplace<EnemyComponent>(e);
                         ctx_->ecs.emplace<ActionStateComponent>(e);
+                        // 横版重力：敌人同样需要垂直速度组件（落到地面/平台）
+                        ctx_->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         // 使用服务端打包的 ai_type 作为 SpawnDef 索引（按当前关卡 'E' 格确定性派生）
                         int si = (int)entity.ai_type;
                         int e_cnt = 0;
