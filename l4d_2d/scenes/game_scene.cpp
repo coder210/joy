@@ -43,6 +43,16 @@
 #include "victory_scene.h"
 #include "scene.h"
 
+// ============================================================
+// 横版视口缩放（唯一调节参数）
+//   0.0f = 自动适配：整张地图缩进一屏（全览；相机基本不动）
+//   1.0f = 原生比例：只显示部分内容，相机随玩家滚动
+//   其它 >0 = 手动缩放（越小看得越多，越大越近；例如 0.5）
+// 相机与所有世界 pass 都只读 GlobalState.view_zoom，改这一个值即可在
+// "全览 / 滚动"之间切换——二者是同一套代码的两个极端，无需改别处。
+// ============================================================
+static const float SIDE_VIEW_ZOOM = 0.0f;
+
 // 运行模式由 cfg_（kModeConfigs 中按 ctx->mode 取的能力配置）驱动，见 game_scene_common.h
 
 void GameScene::Load()
@@ -61,14 +71,16 @@ void GameScene::Load()
     gs.side_view = true;
     gs.camera_lock_y = -1.0f;
     gs.camera_bias_x = 0.0f;
-    // 单屏适配：把整张地图缩进 480×320（两轴取较小缩放 = 等比、可能留边；<1 才缩）
-    {
+    // 视口缩放：由 SIDE_VIEW_ZOOM 决定（0 = 自动适配整图；>0 = 手动，1.0 = 原生滚动）
+    gs.view_zoom = SIDE_VIEW_ZOOM;
+    if (gs.view_zoom <= 0.0f) {
+        // 自动：整张地图缩进 480×320（等比取较小轴 = 必然完整可见）
         const float zx = 480.0f / ((float)MAP_W * 50.0f);
         const float zy = 320.0f / ((float)MAP_H * 50.0f);
         gs.view_zoom = (zx < zy) ? zx : zy;
-        if (gs.view_zoom > 1.0f) gs.view_zoom = 1.0f;
-        if (gs.view_zoom < 0.2f) gs.view_zoom = 0.2f;
     }
+    if (gs.view_zoom < 0.1f) gs.view_zoom = 0.1f;   // 安全下限
+    if (gs.view_zoom > 4.0f) gs.view_zoom = 4.0f;   // 安全上限
 
     // 游戏场景共享运行量（默认构造）：
     // GameRuntime / NetSession 原本内嵌于 Context(game/ net)，现按引擎的
