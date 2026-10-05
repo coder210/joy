@@ -8,6 +8,22 @@
 #include "../network/network_manager.h"
 #include "../systems/spawn_enemy_system.h"
 #include "../systems/snapshot_system.h"
+#include "../components/global_state_component.h"   // 视口缩放（Z 热键）
+#include "../systems/map_def.h"                     // MAP_W/MAP_H（自动缩放计算）
+
+// ============================================================
+// 视口缩放"自动适配整图"取值（与 game_scene 初始化同一套公式）
+// ============================================================
+static float side_auto_view_zoom()
+{
+    const float ppm = meters_to_pixels(1.0f);
+    const float zx = 480.0f / ((float)MAP_W * ppm);
+    const float zy = 320.0f / ((float)MAP_H * ppm);
+    float z = (zx < zy) ? zx : zy;
+    if (z < 0.1f) z = 0.1f;
+    if (z > 4.0f) z = 4.0f;
+    return z;
+}
 
 // ============================================================
 // 本机玩家键盘回调（单机/客户端/Host 共用）
@@ -32,6 +48,18 @@ void GameSceneCommon::playKeyPressed(const char* key, int scancode, bool repeat,
     else if (strcmp(key, "e") == 0 || strcmp(key, "E") == 0) { game_runtime(self->ctx()).bullet_triggered = true; return; }
     else if (strcmp(key, "l") == 0 || strcmp(key, "L") == 0) { game_runtime(self->ctx()).ray_triggered = true; return; }
     else if (strcmp(key, "q") == 0 || strcmp(key, "Q") == 0) { game_runtime(self->ctx()).weapon_switch_triggered = true; return; }
+    else if (strcmp(key, "z") == 0 || strcmp(key, "Z") == 0) {
+        // Z：循环视口缩放（调试）——自动适配 → 原生1.0 → 0.7 → 0.5 → 自动。
+        //    只改相机/渲染参数（不进快照、不进 checksum），不影响帧同步。
+        static const float kPresets[] = { 0.0f, 1.0f, 0.7f, 0.5f };
+        static int s_idx = 0;
+        s_idx = (s_idx + 1) % (int)(sizeof(kPresets) / sizeof(kPresets[0]));
+        const float preset = kPresets[s_idx];
+        const float z = (preset <= 0.0f) ? side_auto_view_zoom() : preset;
+        self->ctx()->ecs.ctx().get<GlobalState>().view_zoom = z;
+        log_info("[view] view_zoom = %.3f (%s)", z, (preset <= 0.0f) ? "auto-fit" : "manual");
+        return;
+    }
     if (key_mask) {
         game_runtime(self->ctx()).current_input_mask |= key_mask;
         if (key_mask & INPUT_DIR_MASK)
