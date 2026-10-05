@@ -151,19 +151,6 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
             }
         }
         registry.get<LogicVelocityComponent>(e).y = vy;
-
-        // ==== 临时诊断（排查"不受重力"）：写 move_debug.log，每 40 次一条 ====
-        {
-            static int s_dbg = 0;
-            if ((s_dbg++ % 40) == 0) {
-                if (FILE* f = std::fopen("move_debug.log", "a")) {
-                    std::fprintf(f, "y=%.4f vy=%.4f bits=%u grounded=%d\n",
-                                 fp_to_float(p.y), fp_to_float(vy), (unsigned)bits,
-                                 grounded ? 1 : 0);
-                    std::fclose(f);
-                }
-            }
-        }
     }
 }
 
