@@ -61,6 +61,14 @@ void GameScene::Load()
     gs.side_view = true;
     gs.camera_lock_y = -1.0f;
     gs.camera_bias_x = 0.0f;
+    // 单屏适配：把整张地图缩进 480×320（两轴取较小缩放 = 等比、可能留边；<1 才缩）
+    {
+        const float zx = 480.0f / ((float)MAP_W * 50.0f);
+        const float zy = 320.0f / ((float)MAP_H * 50.0f);
+        gs.view_zoom = (zx < zy) ? zx : zy;
+        if (gs.view_zoom > 1.0f) gs.view_zoom = 1.0f;
+        if (gs.view_zoom < 0.2f) gs.view_zoom = 0.2f;
+    }
 
     // 游戏场景共享运行量（默认构造）：
     // GameRuntime / NetSession 原本内嵌于 Context(game/ net)，现按引擎的
@@ -237,6 +245,9 @@ void GameScene::Update(float dt)
 void GameScene::Render()
 {
     Context* ctx = this->ctx();
+
+    // 单屏缩放（view_zoom）由各世界 pass 直接乘进坐标/尺寸，不用 SDL 渲染缩放——
+    // 后者会把整幅画面缩小并裁在 480×320 逻辑屏内，导致地图缩到左上角。
 
     // 几何网格背景 + 地形装饰
     //draw_grid_background(ctx);

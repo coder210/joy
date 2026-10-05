@@ -165,10 +165,11 @@ static void draw_held_weapon(Context* ctx, int weapon_id, float cx, float cy, bo
         if (cell.h <= 0.0f) return;
 
         const float scale = role_scale * wd.hold_scale;
-        // 手持偏移以"米"计（与角色世界坐标同单位），用 meters_to_pixels 转屏幕像素，与 cx/cy 一致；
-        // 翻转时 dx 自动取反（武器随角色镜像）。
-        const float dx = meters_to_pixels(wd.hold_dx);
-        const float dy = meters_to_pixels(wd.hold_dy);
+        // 手持偏移以"米"计；屏幕像素含世界缩放 zoom，与角色坐标同一换算。
+        const float gz = (ctx->ecs.ctx().get<GlobalState>().view_zoom > 0.0f)
+                ? ctx->ecs.ctx().get<GlobalState>().view_zoom : 1.0f;
+        const float dx = meters_to_pixels(wd.hold_dx) * gz;
+        const float dy = meters_to_pixels(wd.hold_dy) * gz;
         vec2_t pos = { cx + (flip_h ? dx : -dx), cy + dy };
         vec2_t scl = { flip_h ? scale : -scale, scale };   // 武器与角色原生朝向相反：镜像/偏移取反，保证在前方且朝前
         vec2_t origin = { cell.w * 0.5f, cell.h * 0.5f };
@@ -182,7 +183,9 @@ static void draw_held_weapon(Context* ctx, int weapon_id, float cx, float cy, bo
 
 static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
 {
-        auto& cam = registry.ctx().get<GlobalState>().camera_position;
+        auto& gs_p = registry.ctx().get<GlobalState>();
+        auto& cam = gs_p.camera_position;
+        const float z = (gs_p.view_zoom > 0.0f) ? gs_p.view_zoom : 1.0f;
         auto view = registry.view<PlayerComponent, ActionStateComponent, TransformComponent>();
 
         for (auto e : view) {
@@ -233,13 +236,13 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 image_p img = sprite_get_image(ctx, clip.path);
                 if (!img) continue;
 
-                // 逻辑坐标(米) → 屏幕像素
-                float sx = meters_to_pixels(t.position.x - cam.x);
-                float sy = meters_to_pixels(t.position.y - cam.y);
+                // 逻辑坐标(米) → 屏幕像素（含世界缩放）
+                float sx = meters_to_pixels(t.position.x - cam.x) * z;
+                float sy = meters_to_pixels(t.position.y - cam.y) * z;
 
-                // 素材帧高 32px；按 50 PPM 缩放到约 1 格，避免角色过小
+                // 素材帧高 32px；按 50 PPM（含缩放）缩放到约 1 格
                 const float scale = (clip.src_rect.h > 0.0f)
-                        ? (50.0f / clip.src_rect.h) : 1.0f;
+                        ? (50.0f * z / clip.src_rect.h) : 1.0f;
                 vec2_t pos = { sx, sy };
                 // image_draw_ex 会把负 scale 转为 SDL_FLIP_HORIZONTAL（见 jr2d.c），
                 // 因此朝右时传负的 x 缩放即可实现镜像，无需引擎新增 flip 参数。

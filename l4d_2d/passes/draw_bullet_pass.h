@@ -18,10 +18,12 @@ static void draw_bullet_pass(Context* ctx)
         if (!ctx->ecs.valid(e)) continue;
         auto& bc = view.get<BulletComponent>(e);
         auto& t  = view.get<TransformComponent>(e);
-        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
+        auto& gsb = ctx->ecs.ctx().get<GlobalState>();
+        const float zb = (gsb.view_zoom > 0.0f) ? gsb.view_zoom : 1.0f;
+        auto& cam = gsb.camera_position;
         vec2_t c;
-        c.x = meters_to_pixels(t.position.x - cam.x);
-        c.y = meters_to_pixels(t.position.y - cam.y);
+        c.x = meters_to_pixels(t.position.x - cam.x) * zb;
+        c.y = meters_to_pixels(t.position.y - cam.y) * zb;
 
         bool is_enemy_bullet = (bc.owner_conv == 0);
         jcolor_t glow, body, edge;
@@ -36,7 +38,7 @@ static void draw_bullet_pass(Context* ctx)
             body = jcolor_t{ 60, 220, 230, 255 };
             edge = jcolor_t{ 30, 180, 200, 255 };
         }
-        float bs = 7.0f;
+        float bs = 7.0f * zb;
         float bspin = game_runtime(ctx).visual_time * 6.0f;
         vec2_t pts[4];
         for (int i = 0; i < 4; i++) {

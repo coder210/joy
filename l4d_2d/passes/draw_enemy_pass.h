@@ -28,18 +28,21 @@ static void draw_rotated_square(Context* ctx, vec2_t c, float half, float rot,
 // 渲染所有敌人实体（墨色方块 + 朝向线，临时占位美术）
 static void draw_enemy_pass(Context* ctx)
 {
+    auto& gs = ctx->ecs.ctx().get<GlobalState>();
+    const float z = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
+
     auto view = ctx->ecs.view<EnemyComponent, TransformComponent>();
     for (auto e : view) {
         if (!ctx->ecs.valid(e)) continue;
         auto& t = view.get<TransformComponent>(e);
-        auto& cam = ctx->ecs.ctx().get<GlobalState>().camera_position;
+        auto& cam = gs.camera_position;
         vec2_t c;
-        c.x = meters_to_pixels(t.position.x - cam.x);
-        c.y = meters_to_pixels(t.position.y - cam.y);
+        c.x = meters_to_pixels(t.position.x - cam.x) * z;
+        c.y = meters_to_pixels(t.position.y - cam.y) * z;
 
-        // 视觉半径：紧凑固定值，避免按碰撞盒全尺寸画出遮挡地图的巨大方块。
-        float half = meters_to_pixels(0.30f);
-        if (half < 8.0f) half = 8.0f;
+        // 视觉半径随缩放（与地图同比例），下限防过小
+        float half = meters_to_pixels(0.30f) * z;
+        if (half < 4.0f) half = 4.0f;
 
         // 朝向（由 ActionStateComponent.dir 推导）
         float dir_rad = -GD_PI * 0.5f;

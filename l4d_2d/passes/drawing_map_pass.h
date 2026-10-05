@@ -12,43 +12,52 @@ struct Context;
 // 地图地形色块渲染：不再使用 Kenney tilesheet 图集，改为按 64×64 网格逐格画纯色块。
 // 墙（'#'）=墨色块，地面（'.'/'P'/'E' 等）=浅宣纸色块。视觉为黑白水墨风；
 // 格子尺寸每格 1 米（=50px），与实体/相机渲染的 1米=50px 精确一致，保证对齐。
+// 地图地形渲染。世界缩放 view_zoom 直接乘进坐标与尺寸：
+// 屏幕像素 = (世界米 - 相机米) * 50 * zoom，使整张地图能落进 480×320 逻辑屏。
 static void draw_map_pass(Context* ctx)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    float cx = meters_to_pixels(gs.camera_position.x);
-    float cy = meters_to_pixels(gs.camera_position.y);
+    const float z   = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
+    const float ppm = meters_to_pixels(1.0f) * z;   // 每米屏幕像素（含缩放）
 
-    // 地面底色：先整屏铺浅宣纸色（可通行区域）
+    float cx = meters_to_pixels(gs.camera_position.x) * z;
+    float cy = meters_to_pixels(gs.camera_position.y) * z;
+
+    int lw = 480, lh = 320;
+    r2d_get_logical_presentation(ctx->r2d, &lw, &lh, NULL);
+
+    // 1) 地图外区域：整屏"界外"暗色（地图小于视口时不留白）
+    r2d_set_color(ctx->r2d, 26, 26, 30, 255);
+    jrect_t full = { 0, 0, (float)lw, (float)lh };
+    shape_draw_rectangle(ctx->r2d, "fill", full);
+
+    // 2) 地图范围内：浅宣纸底色（= 可通行地面）
     r2d_set_color(ctx->r2d, 250, 248, 244, 255);
-    jrect_t floor = { 0, 0, 480.0f, 320.0f };
+    jrect_t floor = { -cx, -cy, ppm * (float)MAP_W, ppm * (float)MAP_H };
     shape_draw_rectangle(ctx->r2d, "fill", floor);
 
-    // 首选：Tiled 瓦片渲染（关卡 .lua 带 tileset 时按 GID 贴图绘制）
-    // 每格画布像素强制为 1 米(=50px)，与实体/相机/碰撞网格精确对齐；相机传画布像素。
+    // 首选：Tiled 瓦片渲染（每格 ppm 像素，相机同为屏幕像素单位，缩放精确对齐）
     if (g_map_info.tilemap) {
         if (!g_map_info.tilemap_render)
                 g_map_info.tilemap_render = jtilemap_render_create(ctx->r2d, MAP_ASSET_BASE, NULL);
         if (g_map_info.tilemap_render) {
-                jtilemap_render_set_tile_px(g_map_info.tilemap_render, meters_to_pixels(1.0f));
+                jtilemap_render_set_tile_px(g_map_info.tilemap_render, ppm);
                 jtilemap_render_tiles(g_map_info.tilemap_render, g_map_info.tilemap, cx, cy, (uint32_t)get_ticks());
                 return;
         }
     }
 
-    // 墙色块：遍历 64×64 网格，'#' 画墨色方块；仅绘制落在可视画布内的格子
+    // 回退：逐格色块（墙 = 墨色）
     for (int y = 0; y < MAP_H; y++) {
         for (int x = 0; x < MAP_W; x++) {
             if (!map_is_collidable(map_tile_at(x, y))) continue;
-            // 格心世界坐标 → 画布像素
-            float wx = meters_to_pixels((float)(x + 1)) - cx;      // 格左上/左界
-            float wy = meters_to_pixels((float)(y + 1)) - cy;
-            // 屏幕外快速剔除
-            if (wx + meters_to_pixels(1.0f) < 0.0f || wx - meters_to_pixels(1.0f) > 480.0f) continue;
-            if (wy + meters_to_pixels(1.0f) < 0.0f || wy - meters_to_pixels(1.0f) > 320.0f) continue;
+            float wx = ppm * (float)(x + 1) - cx;
+            float wy = ppm * (float)(y + 1) - cy;
+            if (wx + ppm < 0.0f || wx - ppm > (float)lw) continue;
+            if (wy + ppm < 0.0f || wy - ppm > (float)lh) continue;
 
-            // 墨色墙体块 + 稍淡描边（水墨风）
             r2d_set_color(ctx->r2d, 40, 40, 45, 255);
-            jrect_t cell = { wx - meters_to_pixels(1.0f), wy - meters_to_pixels(1.0f), meters_to_pixels(1.0f), meters_to_pixels(1.0f) };
+            jrect_t cell = { wx - ppm, wy - ppm, ppm, ppm };
             shape_draw_rectangle(ctx->r2d, "fill", cell);
         }
     }

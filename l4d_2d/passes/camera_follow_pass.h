@@ -16,8 +16,10 @@ static void camera_follow_pass(entt::registry& registry, Context* /*ctx*/, float
     auto& gs = registry.ctx().get<GlobalState>();
     if (gs.camera_follow_conv < 0) return;
 
-    const float view_w = 9.6f;   // 480 / 50
-    const float view_h = 6.4f;   // 320 / 50
+    // 视口在世界里的实际尺寸（米）= 逻辑屏 / PPM / zoom
+    const float z      = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
+    const float view_w = 9.6f / z;   // 480 / 50 / zoom
+    const float view_h = 6.4f / z;   // 320 / 50 / zoom
 
     registry.view<PlayerComponent, TransformComponent>().each(
         [&gs, view_w, view_h](auto /*e*/, PlayerComponent& pc, TransformComponent& t)
