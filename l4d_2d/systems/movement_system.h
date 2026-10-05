@@ -9,6 +9,7 @@
 #include "character_catalog.h"
 #include "map_def.h"
 #include <joy/jmath.h>
+#include <cstdio>   // 临时诊断日志（move_debug.log）
 
 struct Context;
 
@@ -77,7 +78,9 @@ static inline fp_t movement_snap_axis(fp_t pos, fp_t size, fp_t cand, int dir)
 //  - 跳跃键 = move_bits 的 bit0（W / 方向键上 / 触屏上），仅地面可跳
 //  - on_ground 由碰撞实时推导（不另存标志），全程定点运算，帧同步确定
 static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/) {
-    auto view = registry.view<PlayerStateInput, LogicPositionComponent>();
+    // 视图用 PlayerComponent+LogicPosition（二者随玩家创建即存在）：避免"玩家还没收到输入、
+    // 尚未挂 PlayerStateInput 时不被模拟（不受重力）"的问题。move_bits 缺省按 0 处理。
+    auto view = registry.view<PlayerComponent, LogicPositionComponent>();
     const fp_t tick     = fp_from_float(game_runtime(ctx).FIXED_TIMESTEP);
     const fp_t gravity  = fp_from_float(SIDE_GRAVITY);
     const fp_t jump_spd = fp_from_float(SIDE_JUMP_SPEED);
@@ -86,11 +89,11 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
 
     for (auto e : view) {
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) { continue; }
-        auto& psi = view.get<PlayerStateInput>(e);
-        auto& p   = view.get<LogicPositionComponent>(e);
+        auto& p = view.get<LogicPositionComponent>(e);
 
         // 横版：bit0=上=跳，bit2=左，bit3=右（bit1=下 预留）；不再自由上下移动
-        const uint8_t bits = psi.move_bits;
+        const uint8_t bits = registry.all_of<PlayerStateInput>(e)
+                           ? registry.get<PlayerStateInput>(e).move_bits : 0;
 
         // 移速按角色取（stats.speed，米/秒）。
         // 注意：不要把 PlayerComponent 加进 view —— 改变 view 组成会改变 entt 迭代顺序，
@@ -148,6 +151,19 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
             }
         }
         registry.get<LogicVelocityComponent>(e).y = vy;
+
+        // ==== 临时诊断（排查"不受重力"）：写 move_debug.log，每 40 次一条 ====
+        {
+            static int s_dbg = 0;
+            if ((s_dbg++ % 40) == 0) {
+                if (FILE* f = std::fopen("move_debug.log", "a")) {
+                    std::fprintf(f, "y=%.4f vy=%.4f bits=%u grounded=%d\n",
+                                 fp_to_float(p.y), fp_to_float(vy), (unsigned)bits,
+                                 grounded ? 1 : 0);
+                    std::fclose(f);
+                }
+            }
+        }
     }
 }
 

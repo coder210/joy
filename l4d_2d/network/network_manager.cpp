@@ -12,6 +12,7 @@
 #include "components/logic_position_component.h"
 #include "components/logic_rect_component.h"
 #include "components/logic_velocity_component.h"
+#include "components/player_state_input.h"
 #include "components/player_component.h"
 #include "components/spawn_point_component.h"
 #include "components/transform_component.h"
@@ -50,6 +51,8 @@ void NetworkManager::HandleLoading(int conv, int frame_id, int eid, const S2CEnt
                 if (entity.type == S2C_TYPE_PLAYER) {
                         ctx_->ecs.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
                         ctx_->ecs.emplace<PlayerComponent>(e, entity.player_conv, entity.player_char_id);
+                        // 输入状态组件：随玩家创建，保证出生即进入 movement 视图（受重力）
+                        ctx_->ecs.emplace<PlayerStateInput>(e);
                         // 动作状态组件：几何渲染的朝向 / 攻击表现依赖它
                         ctx_->ecs.emplace<ActionStateComponent>(e);
                         // 血量组件：从快照恢复（服务端子弹伤害结算结果）

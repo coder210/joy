@@ -29,6 +29,11 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 		// 下方“本帧有输入”的分支会覆盖这里的值。
 		pact.state = (pact.attack_timer > 0) ? ActionStateComponent::ATTACK
 		                                     : ActionStateComponent::IDLE;
+
+		// 兜底 2：本帧无输入 → 清空移动位。否则 move_bits 会滞留上一次的方向/跳跃位，
+		// 导致松开键后仍持续移动，或反复起跳（横版里尤其明显）。
+		if (registry.all_of<PlayerStateInput>(pe))
+			registry.get<PlayerStateInput>(pe).move_bits = 0;
 	}
 
 	auto view = registry.view<PlayerComponent>();

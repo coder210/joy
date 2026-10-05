@@ -6,6 +6,7 @@
 #include "../components/health_component.h"
 #include "../components/spawn_point_component.h"
 #include "../components/logic_velocity_component.h"   // 横版重力/跳跃垂直速度
+#include "../components/player_state_input.h"          // 移动位（需随玩家创建）
 #include "../systems/character_catalog.h"
 #include "../systems/weapon_catalog.h"
 
@@ -90,6 +91,10 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 
 		// 横版重力/跳跃：垂直速度状态（两端由相同输入确定性推进 → 帧同步一致）
 		registry.emplace<LogicVelocityComponent>(player, fp_from_float(0), fp_from_float(0));
+		// 输入状态组件：必须随玩家一同创建。否则在"第一帧输入到来之前"该玩家不在
+		// movement_system 的 view(PlayerStateInput+LogicPosition) 里 → 不受重力，
+		// 会一直悬在出生点（半空）。
+		registry.emplace<PlayerStateInput>(player);
 
 		// 首次加入的玩家作为摄像机跟随目标
 		if (gs.camera_follow_conv < 0) {
