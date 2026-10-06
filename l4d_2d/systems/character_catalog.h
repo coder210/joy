@@ -32,7 +32,7 @@ struct CharacterAnim {
 
 struct CharacterDef {
     int         id = 0;              // 整数 id（协议 char_id），按 JSON 中出现顺序分配
-    std::string key;                 // "survivor_a"
+    std::string key;                 // "warrior"
     std::string name;                // 展示名
     int         max_hp = 100;        // stats.hp
     fp_t        move_speed = 0;      // stats.speed（米/秒，已定点化）
@@ -54,7 +54,7 @@ public:
     // 按整数 id 取角色定义；越界回退 id=0。至少含 1 项。
     const CharacterDef& get(int id);
 
-    // 按 key 字符串（如 "survivor_a"）反查；找不到返回 nullptr。
+    // 按 key 字符串（如 "warrior"）反查；找不到返回 nullptr。
     const CharacterDef* findByName(const std::string& key);
 
     // 角色数量（至少 1）
@@ -65,7 +65,7 @@ public:
     std::string animPath(const CharacterDef& def, CharacterAnimId anim) const;
 
 private:
-    void setBuiltinDefault();                        // 兜底内置表（survivor_a）
+    void setBuiltinDefault();                        // 兜底内置表（warrior）
 
     std::vector<CharacterDef> defs_;                 // 稠密，按 char_id 索引
     std::unordered_map<std::string, int> byKey_;     // key → id 反查

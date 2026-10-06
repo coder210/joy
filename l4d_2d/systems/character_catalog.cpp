@@ -13,18 +13,19 @@ static const float kSpeedMax = 15.0f;
 static const char* kAnimKeys[ANIM_COUNT] = { "idle", "walk", "attack", "hit", "death", "knocked" };
 
 // 内置默认表：characters.json 缺失/解析失败时的兜底。
-// 必须与 resources 中 survivor_a 的语义保持一致，且两端相同。
+// 必须与 characters.json 中 warrior 的语义保持一致，且两端相同
+// （素材指向打包后的 bomb_buy 横向精灵表：idle / run / hit / death / ground）。
 void CharacterCatalog::setBuiltinDefault()
 {
     defs_.clear();
     byKey_.clear();
     CharacterDef d;
     d.id   = 0;
-    d.key  = "survivor_a";
-    d.name = "Survivor A";
+    d.key  = "warrior";
+    d.name = "战士";
     d.max_hp = 100;
     d.move_speed = fp_from_float(2.4f);
-    d.sprite_dir = "l4d_2d/sprites/characters/survivor_a/";
+    d.sprite_dir = "l4d_2d/sprites/characters/bomb_buy_sheet/";
     d.starting_weapon = "knife";
     d.weapons.push_back("dagger");   // 兜底内置表仅授权匕首（与真实 weapons.json 的 key 一致）
     d.anims[ANIM_IDLE].file   = "idle";
@@ -32,7 +33,7 @@ void CharacterCatalog::setBuiltinDefault()
     d.anims[ANIM_ATTACK].file = "";       // 素材缺失，渲染降级 idle
     d.anims[ANIM_HIT].file    = "hit";
     d.anims[ANIM_DEATH].file  = "death";
-    d.anims[ANIM_KNOCKED].file = "knocked";
+    d.anims[ANIM_KNOCKED].file = "ground";  // 素材实为 ground.png
     defs_.push_back(d);
     byKey_[d.key] = d.id;
 }
