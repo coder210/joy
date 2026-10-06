@@ -48,7 +48,7 @@ static void spawn_player_bomb(entt::registry& registry, Context* ctx,
     entt::entity b = registry.create();
     registry.emplace<IdComponent>(b, get_entity_id(ctx));
     registry.emplace<BombComponent>(b,
-        BOMB_ST_OFF, conv, vx, vy, BOMB_FLIGHT_TICKS, BOMB_FUSE_TICKS, BOMB_EXPLODE_TICKS);
+        BOMB_ST_OFF, conv, vx, vy, BOMB_FUSE_TICKS, BOMB_EXPLODE_TICKS);
     registry.emplace<LogicPositionComponent>(b, fp_sub(cx,  fp_from_float(BOMB_HALF)), fp_sub(cy, fp_from_float(BOMB_HALF)));
     registry.emplace<LogicRectComponent>(b, fp_from_float(BOMB_SIZE), fp_from_float(BOMB_SIZE));
     registry.emplace<TransformComponent>(b, position, 0.0f, scale);

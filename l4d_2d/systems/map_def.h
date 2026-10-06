@@ -272,6 +272,13 @@ static inline bool map_is_collidable(char c)
     return c == '#';
 }
 
+// 供 joy 扫掠碰撞（joy_tilemap_sweep_x/y）使用的「该格是否不可通行」回调：
+// 越界视为墙（map_tile_at 越界已返回 '#'）。
+static inline bool map_solid_at(int col, int row)
+{
+    return map_is_collidable(map_tile_at(col, row));
+}
+
 // 日志：诊断地图加载结果写到 map_load_debug.log
 static void map_log_load(const char* source, int level)
 {

@@ -58,108 +58,8 @@ static inline bool movement_box_blocked(fp_t x0, fp_t y0, fp_t w, fp_t h)
     return false;
 }
 
-// ============ 逐轴扫掠（swept AABB on tilemap）============
-// 与"先推进到底、再按最小穿透方向推出"的根本区别：
-// 扫掠先算出"沿运动方向会撞到哪一格"，只推进到接触点，全程**不产生穿透**，
-// 因此不存在"从哪一侧顶出"的歧义，任意速度都不会穿墙，也没有可调参数。
-// 格边界是整数且轴对齐，故扫掠退化为整数行/列扫描：无需 slab 除法，也无需 EPA。
-//
-// 覆盖格约定（与 movement_box_blocked 一致）：近端用 floor、远端用 floor(v - EPS)，
-// 使"恰好贴边"不算阻挡；越界一律视为墙。
-//
-// 注：扫掠只处理"本次移动新跨越的格"。若实体先天陷在墙里（如出生点异常），
-// 由紧随其后的 collision_system 做推出修正（game_scene.cpp 中 movement → collision）。
-
-// 扫掠用：行 r 在列跨度 [cx0,cx1] 内是否存在不可通行格
-static inline bool movement_row_blocked(int r, int cx0, int cx1)
-{
-    for (int c = cx0; c <= cx1; c++) {
-        if (c < 0 || r < 0 || c >= MAP_W || r >= MAP_H) return true;   // 越界视为墙
-        if (map_is_collidable(map_tile_at(c, r))) return true;
-    }
-    return false;
-}
-
-// 扫掠用：列 c 在行跨度 [ry0,ry1] 内是否存在不可通行格
-static inline bool movement_col_blocked(int c, int ry0, int ry1)
-{
-    for (int r = ry0; r <= ry1; r++) {
-        if (c < 0 || r < 0 || c >= MAP_W || r >= MAP_H) return true;   // 越界视为墙
-        if (map_is_collidable(map_tile_at(c, r))) return true;
-    }
-    return false;
-}
-
-// 水平扫掠：沿 X 推进 dx（可正可负），撞墙则贴齐到墙格边界并返回 true。
-// 纯定点整数运算，帧同步确定性。
-static inline bool movement_sweep_x(fp_t& px, fp_t& py, fp_t dx, fp_t w, fp_t h)
-{
-    if (dx == fp_zero()) return false;
-    const fp_t EPS = fp_from_float(0.001f);
-    // X 扫掠期间行跨度保持不变
-    const int ry0 = movement_fp_floor_to_int(py);
-    const int ry1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
-
-    if (dx > fp_zero()) {                                   // 向右：右缘向右跨列
-        const fp_t r_old = fp_add(px, w);
-        const int c0 = movement_fp_floor_to_int(fp_sub(r_old, EPS)) + 1;
-        const int c1 = movement_fp_floor_to_int(fp_sub(fp_add(r_old, dx), EPS));
-        for (int c = c0; c <= c1; c++) {                    // 由近及远，首个阻挡即最先接触
-            if (movement_col_blocked(c, ry0, ry1)) {
-                px = fp_sub(fp_from_int(c), w);             // 贴到该列左边界
-                return true;
-            }
-        }
-    } else {                                                // 向左：左缘向左跨列
-        const int c0 = movement_fp_floor_to_int(px) - 1;
-        const int c1 = movement_fp_floor_to_int(fp_add(px, dx));
-        for (int c = c0; c >= c1; c--) {                    // 由近及远
-            if (movement_col_blocked(c, ry0, ry1)) {
-                px = fp_from_int(c + 1);                    // 贴到该列右边界
-                return true;
-            }
-        }
-    }
-    px = fp_add(px, dx);                                    // 无阻挡，完整推进
-    return false;
-}
-
-// 竖直扫掠：沿 Y 推进 vy*tick（y 轴向下为正，故 >0 下落、<0 上升）。
-// 撞到则贴齐并把 vy 归零，返回 true。纯定点整数运算，帧同步确定性。
-static inline bool movement_sweep_y(fp_t& px, fp_t& py, fp_t& vy, fp_t tick, fp_t w, fp_t h)
-{
-    const fp_t dy = fp_mul(vy, tick);
-    if (dy == fp_zero()) return false;
-    const fp_t EPS = fp_from_float(0.001f);
-    // Y 扫掠期间列跨度保持不变
-    const int cx0 = movement_fp_floor_to_int(px);
-    const int cx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
-
-    if (dy > fp_zero()) {                                   // 下落：底边向下跨行
-        const fp_t b_old = fp_add(py, h);
-        const int r0 = movement_fp_floor_to_int(fp_sub(b_old, EPS)) + 1;
-        const int r1 = movement_fp_floor_to_int(fp_sub(fp_add(b_old, dy), EPS));
-        for (int r = r0; r <= r1; r++) {                    // 自上而下，首个阻挡即最先接触
-            if (movement_row_blocked(r, cx0, cx1)) {
-                py = fp_sub(fp_from_int(r), h);             // 贴到该行顶边（落地）
-                vy = fp_zero();
-                return true;
-            }
-        }
-    } else {                                                // 上升：顶边向上跨行
-        const int r0 = movement_fp_floor_to_int(py) - 1;
-        const int r1 = movement_fp_floor_to_int(fp_add(py, dy));
-        for (int r = r0; r >= r1; r--) {                    // 自下而上，首个阻挡即最先接触
-            if (movement_row_blocked(r, cx0, cx1)) {
-                py = fp_from_int(r + 1);                    // 贴到该行底边（撞顶）
-                vy = fp_zero();
-                return true;
-            }
-        }
-    }
-    py = fp_add(py, dy);                                    // 无阻挡，完整推进
-    return false;
-}
+// 逐轴扫掠碰撞已下沉到 joy 引擎：joy_tilemap_sweep_x / joy_tilemap_sweep_y（见 joy.h / jcollision.c）。
+// 系统内通过 map_solid_at 回调（map_def.h）接入本关地图。撞墙贴齐、撞顶/落地清 vy 等行为不变。
 
 // 横版（side-view）玩家移动：
 //  - X 轴：左/右位移 + 撞墙贴齐（沿用旧逻辑，bit2=左 bit3=右）
@@ -207,7 +107,7 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
             fp_t dx = fp_zero();
             if (bits & 0x4) dx = fp_sub(dx, step);   // 左
             if (bits & 0x8) dx = fp_add(dx, step);   // 右
-            movement_sweep_x(p.x, p.y, dx, w, h);
+            joy_tilemap_sweep_x(&p.x, &p.y, dx, w, h, map_solid_at);
         }
 
         // ---- Y 轴：重力 + 跳跃（仅对挂有速度组件的实体）----
@@ -226,7 +126,7 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         if (vy > max_fall) vy = max_fall;
 
         // 竖直位移 + 碰撞（扫掠推进，落地 / 撞顶时内部速度归零）
-        movement_sweep_y(p.x, p.y, vy, tick, w, h);
+        joy_tilemap_sweep_y(&p.x, &p.y, &vy, tick, w, h, map_solid_at);
         registry.get<LogicVelocityComponent>(e).y = vy;
     }
 }

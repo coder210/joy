@@ -14,30 +14,7 @@
 
 struct Context;
 
-// 定点数向下取整转 int（与 bullet_system 一致）
-static inline int bomb_fp_floor_to_int(fp_t x)
-{
-    return (int)(x >> FP_FRACTIONAL_PLACES);
-}
-
-// 炸弹碰撞盒是否与不可通行格重叠（EPS 收缩后查覆盖格，纯定点数、帧同步确定性）。
-static inline bool bomb_box_blocked(fp_t x0, fp_t y0, fp_t w, fp_t h)
-{
-    const fp_t x1 = fp_add(x0, w);
-    const fp_t y1 = fp_add(y0, h);
-    const fp_t EPS = fp_from_float(0.001f);
-    int gx0 = bomb_fp_floor_to_int(x0);
-    int gx1 = bomb_fp_floor_to_int(fp_sub(x1, EPS));
-    int gy0 = bomb_fp_floor_to_int(y0);
-    int gy1 = bomb_fp_floor_to_int(fp_sub(y1, EPS));
-    for (int gy = gy0; gy <= gy1; gy++)
-        for (int gx = gx0; gx <= gx1; gx++)
-            if (map_is_collidable(map_tile_at(gx, gy)))
-                return true;
-    return false;
-}
-
-// 炸弹推进系统：飞行（重力 + 地图碰撞）→ 引信倒计时 → 爆炸（范围伤害）→ 销毁
+// 炸弹推进系统：飞行（重力 + joy 扫掠碰撞）→ 引信倒计时 → 爆炸（范围伤害）→ 销毁
 // 两端确定性运行：逻辑只依赖相同输入与相同物理步进，无需网络同步（实体由 get_entity_id 本地生成）。
 static void bomb_system(entt::registry& registry, Context* ctx, float /*dt*/)
 {
@@ -54,26 +31,24 @@ static void bomb_system(entt::registry& registry, Context* ctx, float /*dt*/)
         auto& rect = bomb_view.get<LogicRectComponent>(e);
 
         if (bomb.state == BOMB_ST_OFF) {
-            // ---- 飞行阶段：重力 + 逐轴地图碰撞 ----
+            // ---- 飞行阶段：重力 + 扫掠碰撞（joy 引擎 joy_tilemap_sweep_x/y，与玩家同一套）----
+            // 扫掠逐行检查跨越的格、精确贴到平台顶，高速下落也不会穿透，稳定落在地板平面。
             bomb.vy = fp_add(bomb.vy, fp_mul(g, dt));
+            if (bomb.vy > fp_from_float(BOMB_MAX_FALL)) bomb.vy = fp_from_float(BOMB_MAX_FALL);
+
             bool landed = false;
 
-            // X 轴
-            fp_t nx = fp_add(pos.x, fp_mul(bomb.vx, dt));
-            if (bomb_box_blocked(nx, pos.y, rect.width, rect.height)) { nx = pos.x; bomb.vx = 0; }
-            pos.x = nx;
+            // X 轴：扫掠推进，撞墙贴齐并清水平速度
+            fp_t dx = fp_mul(bomb.vx, dt);
+            if (joy_tilemap_sweep_x(&pos.x, &pos.y, dx, rect.width, rect.height, map_solid_at)) bomb.vx = fp_zero();
 
-            // Y 轴
-            fp_t ny = fp_add(pos.y, fp_mul(bomb.vy, dt));
-            if (bomb_box_blocked(pos.x, ny, rect.width, rect.height)) {
-                if (bomb.vy > 0) landed = true;   // 向下撞到地面
-                ny = pos.y; bomb.vy = 0;
+            // Y 轴：扫掠推进，落地/撞顶都贴齐并清 vy；下落撞到实体才视为落板
+            bool was_falling = bomb.vy > fp_zero();
+            if (joy_tilemap_sweep_y(&pos.x, &pos.y, &bomb.vy, dt, rect.width, rect.height, map_solid_at)) {
+                if (was_falling) landed = true;
             }
-            pos.y = ny;
 
-            bomb.flight_ticks--;
-            // 落地或飞行超时 → 进入引信态
-            if (landed || bomb.flight_ticks <= 0) {
+            if (landed) {
                 bomb.state = BOMB_ST_ON;
                 bomb.fuse_ticks = BOMB_FUSE_TICKS;
                 bomb.vx = 0; bomb.vy = 0;

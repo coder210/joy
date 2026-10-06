@@ -1683,6 +1683,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 vec2f_t* axis, vec2f_t* point);
         JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
                 contact2df_t* contact);
+
+        /* ---- 瓦片地图扫掠碰撞（定点数，帧同步确定）----
+         * solid(col,row) 返回 true 表示该格不可通行；实现须对越界格也返回 true（视为墙）。
+         * joy_tilemap_sweep_x: 沿 X 推进 dx（可负）；撞墙则把 *px 贴到该格边界并返回 true。
+         * joy_tilemap_sweep_y: 沿 Y 推进 vy*tick（vy>0 下落、<0 上升）；撞到则把 *py 贴到格边界、
+         *                      并把 *vy 清零，返回 true。 */
+        typedef bool (*joy_tilemap_solid_fn)(int col, int row);
+        JOY_API bool joy_tilemap_sweep_x(fp_t* px, fp_t* py, fp_t dx, fp_t w, fp_t h,
+                joy_tilemap_solid_fn solid);
+        JOY_API bool joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h,
+                joy_tilemap_solid_fn solid);
+
         JOY_API ray3d_collisionf_t collision3df_get_ray_triangle(ray3df_t ray,
                 vec3f_t p1, vec3f_t p2, vec3f_t p3);
         JOY_API ray3d_collisionf_t collision3df_get_ray_quad(ray3df_t ray,
