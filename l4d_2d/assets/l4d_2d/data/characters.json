@@ -5,6 +5,6 @@
     "starting_weapon": "dagger",
     "weapons": ["dagger", "pistol", "shotgun"],
     "stats": { "hp": 140, "speed": 2.4 },
-    "anims": { "idle": "idle", "knocked":"ground", "walk": "run", "attack": "", "hit": "hit", "death": "death" }
+    "anims": { "idle": "idle", "knocked":"hit", "walk": "run", "attack": "", "hit": "hit", "death": "death" }
   }
 }

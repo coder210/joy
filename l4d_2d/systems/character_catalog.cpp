@@ -33,7 +33,7 @@ void CharacterCatalog::setBuiltinDefault()
     d.anims[ANIM_ATTACK].file = "";       // 素材缺失，渲染降级 idle
     d.anims[ANIM_HIT].file    = "hit";
     d.anims[ANIM_DEATH].file  = "death";
-    d.anims[ANIM_KNOCKED].file = "ground";  // 素材实为 ground.png
+    d.anims[ANIM_KNOCKED].file = "hit";     // 受击/硬直：素材实为 hit.png（bomb_buy 7-Hit）
     defs_.push_back(d);
     byKey_[d.key] = d.id;
 }

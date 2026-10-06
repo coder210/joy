@@ -111,6 +111,11 @@ static void melee_attack_system(entt::registry& registry, Context* ctx, float /*
                 if (hx < fp_add(tx, tw) && fp_add(hx, hw) > tx &&
                     hy < fp_add(ty, th) && fp_add(hy, hh) > ty) {
                     h.hp -= damage; if (h.hp < 0) h.hp = 0;
+                    // 受击反应：置满硬直计时，驱动 janim 的 knocked 动画。
+                    // 不修改 view 组成（会改变 entt 迭代顺序），故在循环内按需取。
+                    if (registry.all_of<ActionStateComponent>(target))
+                        registry.get<ActionStateComponent>(target).knockback_timer =
+                            ActionStateComponent::KNOCKED_DURATION;
                     break;
                 }
             }

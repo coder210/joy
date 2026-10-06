@@ -101,9 +101,9 @@ static const anim_def_t& sprite_anim_def(Context* ctx, int char_id)
         int s_death = anim_add_state(&def, "death", false);
         int s_knocked = anim_add_state(&def, "knocked", false);
         (void)s_hit;
-        // hit / knocked 目前是"已定义但无触发源"的休眠状态：项目暂无伤害/击退结算点去置触发
-        // （hit 无过渡；knocked 的 knockback_timer 未被置满），故两者现都不播放。
-        // 日后想让"受击"有反应，二选一接上即可（hit 直接复用 / knocked 置 knockback_timer）。
+        // hit 仍是"已定义但无触发源"的休眠状态（未加任何过渡），故不播放。
+        // knocked 已接线：bullet_system / melee_attack_system 在玩家受伤时把
+        // ActionStateComponent::knockback_timer 置满 KNOCKED_DURATION，渲染端据此触发（见 p.knocked）。
 
         sprite_add_clips(ctx, &def, s_idle, g_characterCatalog.animPath(cd, ANIM_IDLE));
         sprite_add_clips(ctx, &def, s_walk, g_characterCatalog.animPath(cd, ANIM_WALK));
@@ -222,11 +222,11 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
 
                 anim_update(&a, &def, &p, dt);
 
-                // 朝向：图集只有朝左的一套，故向右走时需要水平翻转。
+                // 朝向：bomb_buy 图集默认朝右（survivor_a 朝左，已弃用），故向左走才需要水平翻转。
                 // 上/下沿用上一次的朝向，避免上下走时左右抖动。
                 // dir: 0=下 1=左 2=右 3=上（见 input_to_dir）
-                if (ac.dir == 2)      a.flip_h = true;    // 右：翻转朝右
-                else if (ac.dir == 1) a.flip_h = false;   // 左：图集本就朝左
+                if (ac.dir == 1)      a.flip_h = true;    // 左：镜像朝左
+                else if (ac.dir == 2) a.flip_h = false;   // 右：图集默认朝右，无需翻转
                 // 上/下：保持 a.flip_h 不变
 
                 // ---- 绘制 ----

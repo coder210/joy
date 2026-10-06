@@ -7,6 +7,7 @@
 #include "../components/enemy_component.h"
 #include "../components/logic_position_component.h"
 #include "../components/logic_rect_component.h"
+#include "../components/action_state_component.h"
 #include "./map_def.h"
 #include <vector>
 
@@ -75,6 +76,12 @@ static void bullet_system(entt::registry& registry, Context* ctx, float /*dt*/)
                     if (h.spawn_invuln > 0) continue; // 重生无敌期间免疫伤害
                     h.hp -= dmg;
                     if (h.hp < 0) h.hp = 0;
+                    // 受击反应：置满硬直计时，驱动 janim 的 knocked 动画。
+                    // 整数 tick 计数，两端一致（帧同步安全）；纯渲染表现，不进快照。
+                    // 不修改 view 组成（会改变 entt 迭代顺序），故在循环内按需取。
+                    if (registry.all_of<ActionStateComponent>(p))
+                        registry.get<ActionStateComponent>(p).knockback_timer =
+                            ActionStateComponent::KNOCKED_DURATION;
                     to_destroy.push_back(e);
                     break;
                 }

@@ -15,7 +15,7 @@
 #include "../components/health_component.h"
 #include "../components/global_state_component.h"
 #include "../components/logic_velocity_component.h"
-#include "movement_system.h"     // 复用横版碰撞判定 movement_box_blocked / movement_resolve_tilemap（均基于 joy 的 collision2df_*）
+#include "movement_system.h"     // 复用横版碰撞：着地判定 movement_box_blocked（基于 joy 的 collision2df_check_rectangles）+ 移动扫掠 movement_sweep_x / movement_sweep_y
 #include <cmath>
 
 struct Context;
@@ -64,7 +64,7 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
 }
 
 // 横版（side-view）敌人 AI：
-//  - 受重力、落到地面/平台（与玩家共用 movement_box_blocked / movement_resolve_tilemap）
+//  - 受重力、落到地面/平台（与玩家共用 movement_box_blocked / movement_sweep_x / movement_sweep_y）
 //  - 追击：只做水平（左右）逼近玩家；进入攻击范围则攻击
 //  - 巡逻：围绕出生点水平游走（定时用 LCG 选新目标 x，帧同步确定）
 //  - 不再使用 A* 寻路（横版不需要，也与重力垂直移动冲突）
@@ -171,8 +171,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         const fp_t h = registry.get<LogicRectComponent>(e).height;
 
         if (vx != fp_zero()) {
-            pos.x = fp_add(pos.x, vx);
-            movement_resolve_tilemap(pos.x, pos.y, w, h);    // 撞墙则沿 joy 法线贴齐墙格边界
+            movement_sweep_x(pos.x, pos.y, vx, w, h);        // 扫掠推进，撞墙则贴齐墙格边界
         }
 
         if (registry.all_of<LogicVelocityComponent>(e)) {
@@ -182,11 +181,8 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             if (grounded && vy > fp_zero()) vy = fp_zero();
             vy = fp_add(vy, fp_mul(gravity, tick));
             if (vy > max_fall) vy = max_fall;
-            const fp_t move = fp_mul(vy, tick);
-            if (move != fp_zero()) {
-                pos.y = fp_add(pos.y, move);
-                if (movement_resolve_tilemap(pos.x, pos.y, w, h)) vy = fp_zero();  // 落地 / 撞顶：速度归零
-            }
+            // 竖直位移 + 碰撞（扫掠推进，落地 / 撞顶时内部速度归零）
+            movement_sweep_y(pos.x, pos.y, vy, tick, w, h);
             registry.get<LogicVelocityComponent>(e).y = vy;
         }
     }

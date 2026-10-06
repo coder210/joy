@@ -58,43 +58,107 @@ static inline bool movement_box_blocked(fp_t x0, fp_t y0, fp_t w, fp_t h)
     return false;
 }
 
-// 把移动体 AABB 推出所有不可通行格（含越界，越界视为墙），就地修改 pos，返回是否发生碰撞修正。
-// 复用 joy 的 collision2df_get_rectangles（法线 + 穿透深度，定点数，帧同步确定性）：
-// 对覆盖到的每个格子逐个求 EPA 接触并沿法线推出，与 collision_system 完全一致。
-// 轴对齐 AABB 对 AABB 时，EPA 法线即整数轴方向、深度即精确穿透量，故贴齐等价于原 movement_snap_axis。
-static inline bool movement_resolve_tilemap(fp_t& px, fp_t& py, fp_t w, fp_t h)
+// ============ 逐轴扫掠（swept AABB on tilemap）============
+// 与"先推进到底、再按最小穿透方向推出"的根本区别：
+// 扫掠先算出"沿运动方向会撞到哪一格"，只推进到接触点，全程**不产生穿透**，
+// 因此不存在"从哪一侧顶出"的歧义，任意速度都不会穿墙，也没有可调参数。
+// 格边界是整数且轴对齐，故扫掠退化为整数行/列扫描：无需 slab 除法，也无需 EPA。
+//
+// 覆盖格约定（与 movement_box_blocked 一致）：近端用 floor、远端用 floor(v - EPS)，
+// 使"恰好贴边"不算阻挡；越界一律视为墙。
+//
+// 注：扫掠只处理"本次移动新跨越的格"。若实体先天陷在墙里（如出生点异常），
+// 由紧随其后的 collision_system 做推出修正（game_scene.cpp 中 movement → collision）。
+
+// 扫掠用：行 r 在列跨度 [cx0,cx1] 内是否存在不可通行格
+static inline bool movement_row_blocked(int r, int cx0, int cx1)
 {
+    for (int c = cx0; c <= cx1; c++) {
+        if (c < 0 || r < 0 || c >= MAP_W || r >= MAP_H) return true;   // 越界视为墙
+        if (map_is_collidable(map_tile_at(c, r))) return true;
+    }
+    return false;
+}
+
+// 扫掠用：列 c 在行跨度 [ry0,ry1] 内是否存在不可通行格
+static inline bool movement_col_blocked(int c, int ry0, int ry1)
+{
+    for (int r = ry0; r <= ry1; r++) {
+        if (c < 0 || r < 0 || c >= MAP_W || r >= MAP_H) return true;   // 越界视为墙
+        if (map_is_collidable(map_tile_at(c, r))) return true;
+    }
+    return false;
+}
+
+// 水平扫掠：沿 X 推进 dx（可正可负），撞墙则贴齐到墙格边界并返回 true。
+// 纯定点整数运算，帧同步确定性。
+static inline bool movement_sweep_x(fp_t& px, fp_t& py, fp_t dx, fp_t w, fp_t h)
+{
+    if (dx == fp_zero()) return false;
     const fp_t EPS = fp_from_float(0.001f);
-    bool hit = false;
-    int gx0 = movement_fp_floor_to_int(px);
-    int gx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
-    int gy0 = movement_fp_floor_to_int(py);
-    int gy1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
-    rectanglef_t mover_box = { px, py, w, h };
-    for (int gy = gy0; gy <= gy1; gy++) {
-        for (int gx = gx0; gx <= gx1; gx++) {
-            if (gx >= 0 && gy >= 0 && gx < MAP_W && gy < MAP_H &&
-                !map_is_collidable(map_tile_at(gx, gy))) continue;   // 越界或不可通行格才推出
-            rectanglef_t tile_box = { fp_from_int(gx), fp_from_int(gy), fp_one(), fp_one() };
-            contact2df_t contact;
-            if (collision2df_get_rectangles(mover_box, fp_zero(), tile_box, fp_zero(), &contact)) {
-                fp_t depth = contact.depth;
-                if (depth < fp_zero()) depth = fp_sub(fp_zero(), depth);
-                fp_t nx = fp_sub(fp_zero(), contact.normal.x);
-                fp_t ny = fp_sub(fp_zero(), contact.normal.y);
-                px = fp_add(px, fp_mul(nx, depth));
-                py = fp_add(py, fp_mul(ny, depth));
-                hit = true;
-                // 推出后更新覆盖范围，继续检查剩余格
-                gx0 = movement_fp_floor_to_int(px);
-                gx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
-                gy0 = movement_fp_floor_to_int(py);
-                gy1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
-                mover_box.x = px; mover_box.y = py;
+    // X 扫掠期间行跨度保持不变
+    const int ry0 = movement_fp_floor_to_int(py);
+    const int ry1 = movement_fp_floor_to_int(fp_sub(fp_add(py, h), EPS));
+
+    if (dx > fp_zero()) {                                   // 向右：右缘向右跨列
+        const fp_t r_old = fp_add(px, w);
+        const int c0 = movement_fp_floor_to_int(fp_sub(r_old, EPS)) + 1;
+        const int c1 = movement_fp_floor_to_int(fp_sub(fp_add(r_old, dx), EPS));
+        for (int c = c0; c <= c1; c++) {                    // 由近及远，首个阻挡即最先接触
+            if (movement_col_blocked(c, ry0, ry1)) {
+                px = fp_sub(fp_from_int(c), w);             // 贴到该列左边界
+                return true;
+            }
+        }
+    } else {                                                // 向左：左缘向左跨列
+        const int c0 = movement_fp_floor_to_int(px) - 1;
+        const int c1 = movement_fp_floor_to_int(fp_add(px, dx));
+        for (int c = c0; c >= c1; c--) {                    // 由近及远
+            if (movement_col_blocked(c, ry0, ry1)) {
+                px = fp_from_int(c + 1);                    // 贴到该列右边界
+                return true;
             }
         }
     }
-    return hit;
+    px = fp_add(px, dx);                                    // 无阻挡，完整推进
+    return false;
+}
+
+// 竖直扫掠：沿 Y 推进 vy*tick（y 轴向下为正，故 >0 下落、<0 上升）。
+// 撞到则贴齐并把 vy 归零，返回 true。纯定点整数运算，帧同步确定性。
+static inline bool movement_sweep_y(fp_t& px, fp_t& py, fp_t& vy, fp_t tick, fp_t w, fp_t h)
+{
+    const fp_t dy = fp_mul(vy, tick);
+    if (dy == fp_zero()) return false;
+    const fp_t EPS = fp_from_float(0.001f);
+    // Y 扫掠期间列跨度保持不变
+    const int cx0 = movement_fp_floor_to_int(px);
+    const int cx1 = movement_fp_floor_to_int(fp_sub(fp_add(px, w), EPS));
+
+    if (dy > fp_zero()) {                                   // 下落：底边向下跨行
+        const fp_t b_old = fp_add(py, h);
+        const int r0 = movement_fp_floor_to_int(fp_sub(b_old, EPS)) + 1;
+        const int r1 = movement_fp_floor_to_int(fp_sub(fp_add(b_old, dy), EPS));
+        for (int r = r0; r <= r1; r++) {                    // 自上而下，首个阻挡即最先接触
+            if (movement_row_blocked(r, cx0, cx1)) {
+                py = fp_sub(fp_from_int(r), h);             // 贴到该行顶边（落地）
+                vy = fp_zero();
+                return true;
+            }
+        }
+    } else {                                                // 上升：顶边向上跨行
+        const int r0 = movement_fp_floor_to_int(py) - 1;
+        const int r1 = movement_fp_floor_to_int(fp_add(py, dy));
+        for (int r = r0; r >= r1; r--) {                    // 自下而上，首个阻挡即最先接触
+            if (movement_row_blocked(r, cx0, cx1)) {
+                py = fp_from_int(r + 1);                    // 贴到该行底边（撞顶）
+                vy = fp_zero();
+                return true;
+            }
+        }
+    }
+    py = fp_add(py, dy);                                    // 无阻挡，完整推进
+    return false;
 }
 
 // 横版（side-view）玩家移动：
@@ -138,13 +202,12 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         const fp_t w = registry.get<LogicRectComponent>(e).width;
         const fp_t h = registry.get<LogicRectComponent>(e).height;
 
-        // ---- X 轴：左右 ----
+        // ---- X 轴：左右（扫掠推进，撞墙则贴齐墙格边界）----
         if ((bits & 0x4) || (bits & 0x8)) {
-            fp_t cand = p.x;
-            if (bits & 0x4) cand = fp_sub(cand, step);   // 左
-            if (bits & 0x8) cand = fp_add(cand, step);   // 右
-            p.x = cand;
-            movement_resolve_tilemap(p.x, p.y, w, h);    // 撞墙则沿 joy 法线贴齐墙格边界
+            fp_t dx = fp_zero();
+            if (bits & 0x4) dx = fp_sub(dx, step);   // 左
+            if (bits & 0x8) dx = fp_add(dx, step);   // 右
+            movement_sweep_x(p.x, p.y, dx, w, h);
         }
 
         // ---- Y 轴：重力 + 跳跃（仅对挂有速度组件的实体）----
@@ -162,12 +225,8 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
         vy = fp_add(vy, fp_mul(gravity, tick));
         if (vy > max_fall) vy = max_fall;
 
-        // 竖直位移 + 碰撞
-        const fp_t move = fp_mul(vy, tick);
-        if (move != fp_zero()) {
-            p.y = fp_add(p.y, move);
-            if (movement_resolve_tilemap(p.x, p.y, w, h)) vy = fp_zero();  // 落地 / 撞顶：速度归零
-        }
+        // 竖直位移 + 碰撞（扫掠推进，落地 / 撞顶时内部速度归零）
+        movement_sweep_y(p.x, p.y, vy, tick, w, h);
         registry.get<LogicVelocityComponent>(e).y = vy;
     }
 }
