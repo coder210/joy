@@ -356,11 +356,14 @@ void NetworkManager::CollectInput(int frame_id)
 }
 
 // ========== 帧同步辅助 ==========
+// 落后越多、单次转发越多（单调递增），让晚加入/掉队客户端尽快拿到积压帧。
+// 注意：原实现 diff>=30 时返回 curr_frameid（本 tick 一帧都不发），落后越多反而不发，
+// 直接拖慢追帧——已改为随落后量递增。
 int NetworkManager::GetTargetFrameId(int curr_frameid, int context_frameid)
 {
     int diff = context_frameid - curr_frameid;
-    if (diff >= 50)      return curr_frameid + 9;
-    if (diff >= 30)      return curr_frameid;
+    if (diff >= 50)      return curr_frameid + 12;
+    if (diff >= 30)      return curr_frameid + 8;
     if (diff >= 10)      return curr_frameid + 4;
     if (diff >= 2)       return curr_frameid + 2;
     return curr_frameid;

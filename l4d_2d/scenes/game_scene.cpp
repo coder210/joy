@@ -57,6 +57,16 @@
 // ============================================================
 static const float SIDE_VIEW_ZOOM = 0.0f;
 
+// ---- 追帧（catch-up）参数 ----
+// 锁步下客户端每渲染帧最多按实时速率模拟 1 帧（1 步 / FIXED_TIMESTEP），
+// 晚加入玩家从快照帧开始重放、落后 10+ 帧时需约 0.5s 才追平，期间视角始终落后 → 明显延迟感。
+// 故落后时开启"冲刺排空"：单渲染帧多消费几条命令帧，把追平时长压到几帧内。
+// kCatchupQueueKeep：排空后保留的缓冲条数（稳态锁步固有延迟即 1~2 条，留 2 条保证下帧仍有帧可模拟，不卡顿）。
+static const size_t kCatchupQueueKeep = 2;
+// kMaxCatchupSprint：单渲染帧最多额外冲刺的逻辑帧数（16 帧 ≈ 0.8s @20Hz），
+// 上限防止"积压越多越追"的螺旋死亡。
+static const int    kMaxCatchupSprint = 16;
+
 // 运行模式由 cfg_（kModeConfigs 中按 ctx->mode 取的能力配置）驱动，见 game_scene_common.h
 
 void GameScene::Load()
@@ -185,8 +195,9 @@ void GameScene::Update(float dt)
         s_diag_frames = 0; s_diag_dtsum = 0; s_diag_ticks = 0; s_diag_t0 = get_ticks();
     }
     s_diag_frames++; s_diag_dtsum += dt;
-    while (this->accumulator >= game_runtime(ctx).FIXED_TIMESTEP) {
-        this->accumulator -= game_runtime(ctx).FIXED_TIMESTEP;
+    // 单步"逻辑推进"：模式特有 tick + 消费一条命令帧 + 模拟推进。
+    // 抽成本地 lambda 供"实时步进"与"追帧冲刺"两条路径复用，保证步序完全一致。
+    auto step_once = [&]() {
         s_diag_ticks++;
 
         // 模式特有 tick：帧号分配、输入收集、命令打包/转发、输入发送
@@ -200,6 +211,25 @@ void GameScene::Update(float dt)
             run_phase(ctx, PreUpdate, game_runtime(ctx).FIXED_TIMESTEP);
             run_phase(ctx, OnUpdate, game_runtime(ctx).FIXED_TIMESTEP);
             run_phase(ctx, PostUpdate, game_runtime(ctx).FIXED_TIMESTEP);
+        }
+    };
+
+    // ---- 实时步进（保手感：1 步 / FIXED_TIMESTEP）----
+    while (this->accumulator >= game_runtime(ctx).FIXED_TIMESTEP) {
+        this->accumulator -= game_runtime(ctx).FIXED_TIMESTEP;
+        step_once();
+    }
+
+    // ---- 追帧冲刺（仅非权威端：MODE_CLIENT）----
+    // 命令帧缓冲超过稳态值（1~2 条）即判定落后服务端，快速排空至 kCatchupQueueKeep，
+    // 把"落后 10+ 帧需约 0.5s 追平"压到几帧内，消除晚加入玩家的延迟感。
+    // 冲刺只加快本机模拟节奏，消费的仍是同一条命令帧、同顺序 → 不影响帧同步确定性。
+    if (!cfg_.authoritative) {
+        int sprint = 0;
+        while (game_runtime(ctx).command_queue.size() > kCatchupQueueKeep
+               && sprint < kMaxCatchupSprint) {
+            step_once();
+            sprint++;
         }
     }
 
