@@ -9,4 +9,8 @@ struct EnemyAnimComponent {
     float elapsed = 0.0f;   // 当前帧已播放时长（秒）
     bool  flip_h  = false;  // 水平镜像（朝左时置 true）
     float total   = 0.0f;   // 当前动画已播放总时长（秒），用于死亡动画播完判定
+    // 一次性动画（attack/hit/dead/dead_ground）是否已播到末帧。
+    // 死亡表现用：Dead Hit → Dead Ground 整段播完后渲染层不再绘制该实体（视觉"消失"），
+    // 但实体仍以 dead 保留在逻辑世界（胜利判定 / checksum 不受影响，见 draw_enemy_pass）。
+    bool  finished = false;
 };

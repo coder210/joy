@@ -9,6 +9,8 @@
 #include "../systems/spawn_enemy_system.h"
 #include "../systems/snapshot_system.h"
 #include "../components/global_state_component.h"   // 视口缩放（Z 热键）
+#include "../components/enemy_component.h"          // 校验取集合需判定死亡敌人
+#include "../components/health_component.h"
 #include "../systems/map_def.h"                     // MAP_W/MAP_H（自动缩放计算）
 
 // ============================================================
@@ -183,6 +185,12 @@ void GameSceneCommon::verifyFrameSyncImpl(GameScene* self, int frame_id,
     std::vector<ChecksumEntry> entries;
     auto pv = ctx->ecs.view<IdComponent, LogicPositionComponent>();
     for (auto e : pv) {
+        // 必须与服务端 NetworkManager::CollectInput 的取集合规则完全一致：
+        // 死亡敌人不纳入校验。原因见 CollectInput 注释——尸体销毁以权威帧号为基准，
+        // 中途加入的客户端会晚几帧销毁，该差异是良性的，故排除以免误报 mismatch。
+        if (ctx->ecs.all_of<EnemyComponent>(e) && ctx->ecs.all_of<HealthComponent>(e)
+            && ctx->ecs.get<HealthComponent>(e).dead) continue;
+
         auto& idc = pv.get<IdComponent>(e);
         auto& lpc = pv.get<LogicPositionComponent>(e);
         entries.push_back({ idc.id, lpc.x, lpc.y });

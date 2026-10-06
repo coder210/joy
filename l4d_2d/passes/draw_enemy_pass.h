@@ -70,11 +70,21 @@ static void draw_enemy_pass(Context* ctx, float dt)
 
         int want;
         if (dead) {
-            // 死亡动画播完一遍后切"倒地"，并停在末帧
-            int   dn  = g_enemyCatalog.frameCount(def, ENEMY_ANIM_DEAD);
-            float dur = (dn > 0) ? (float)dn / kEnemySpriteFPS : 0.0f;
-            want = (anim.anim == ENEMY_ANIM_DEAD && dur > 0.0f && anim.total >= dur)
-                 ? ENEMY_ANIM_DEAD_GROUND : ENEMY_ANIM_DEAD;
+            // 死亡表现分两段：先播一次 "Dead Hit"（倒地过程），播完切到 "Dead Ground"
+            // （尸体）并停在末帧。
+            // 注意必须显式判定当前槽：若写成「在 DEAD 且播完 → DEAD_GROUND，否则 → DEAD」，
+            // 一旦切到 DEAD_GROUND，条件里的 anim.anim == DEAD 就不成立，want 又被算回 DEAD，
+            // 切槽会重置 total → 死亡动画反复重播，永远停不下来（Dead Hit 一直循环）。
+            if (anim.anim == ENEMY_ANIM_DEAD_GROUND) {
+                want = ENEMY_ANIM_DEAD_GROUND;          // 已在尸体态：保持
+            } else if (anim.anim == ENEMY_ANIM_DEAD) {
+                int   dn  = g_enemyCatalog.frameCount(def, ENEMY_ANIM_DEAD);
+                float dur = (dn > 0) ? (float)dn / kEnemySpriteFPS : 0.0f;
+                want = (dur > 0.0f && anim.total >= dur)
+                     ? ENEMY_ANIM_DEAD_GROUND : ENEMY_ANIM_DEAD;   // 播完一遍才切尸体
+            } else {
+                want = ENEMY_ANIM_DEAD;                 // 刚死：进入死亡动画
+            }
         } else if (knockback > 0) {
             want = ENEMY_ANIM_HIT;
         } else if (state == ActionStateComponent::ATTACK) {
@@ -88,6 +98,7 @@ static void draw_enemy_pass(Context* ctx, float dt)
         // 切槽：重置帧号与计时
         if (want != anim.anim) {
             anim.anim = want; anim.frame = 0; anim.elapsed = 0.0f; anim.total = 0.0f;
+            anim.finished = false;
         }
 
         int frames = g_enemyCatalog.frameCount(def, (EnemyAnimId)anim.anim);
@@ -103,12 +114,18 @@ static void draw_enemy_pass(Context* ctx, float dt)
             anim.elapsed -= frame_dur;
             if (oneshot) {
                 if (anim.frame < frames - 1) anim.frame++;      // 播到末帧
-                else { anim.elapsed = 0.0f; break; }            // 停在末帧
+                else { anim.elapsed = 0.0f; anim.finished = true; break; }  // 停在末帧并标记播完
             } else {
                 anim.frame = (anim.frame + 1) % frames;         // 循环（idle / run）
             }
         }
-        if (anim.frame >= frames) anim.frame = frames - 1;
+        if (anim.frame >= frames) { anim.frame = frames - 1; if (oneshot) anim.finished = true; }
+
+        // ---- 死亡表现播完 → 不再绘制（视觉"消失"）----
+        // 整段 = Dead Hit（倒地过程）→ Dead Ground（尸体），后者播完后隐藏。
+        // 实体本身仍在逻辑世界且 dead=true：胜利判定（全部 dead 即通关）与
+        // checksum（按实体集合计算）都不受影响，避免了"销毁时机两端不一致"的 desync 风险。
+        if (dead && anim.anim == ENEMY_ANIM_DEAD_GROUND && anim.finished) continue;
 
         // ---- 朝向：dir 0=下 1=左 2=右 3=上；上/下沿用上一次朝向（与玩家一致）----
         if (ctx->ecs.all_of<ActionStateComponent>(e)) {

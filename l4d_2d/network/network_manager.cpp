@@ -318,9 +318,16 @@ void NetworkManager::CollectInput(int frame_id)
         std::vector<ChecksumEntry> entries;
         auto pos_view = ctx_->ecs.view<IdComponent, LogicPositionComponent>();
         for (auto e : pos_view) {
-                auto& idc = pos_view.get<IdComponent>(e);
-                auto& lpc = pos_view.get<LogicPositionComponent>(e);
-                entries.push_back({ idc.id, lpc.x, lpc.y });
+            // 死亡敌人不纳入校验（客户端 verifyFrameSyncImpl 必须用同一规则）：
+            // 尸体销毁以"权威帧号"为倒计时基准，中途加入的客户端从快照接管时
+            // 拿不到原始死亡帧、会晚几帧销毁；死亡敌人是惰性的（不移动/不攻击/
+            // 不参与判定），故排除不影响同步正确性，只容忍这个良性时间差。
+            if (ctx_->ecs.all_of<EnemyComponent>(e) && ctx_->ecs.all_of<HealthComponent>(e)
+                && ctx_->ecs.get<HealthComponent>(e).dead) continue;
+
+            auto& idc = pos_view.get<IdComponent>(e);
+            auto& lpc = pos_view.get<LogicPositionComponent>(e);
+            entries.push_back({ idc.id, lpc.x, lpc.y });
         }
         char checksum[64] = { 0 };
         compute_full_md5(entries, checksum, sizeof(checksum));

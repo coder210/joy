@@ -9,8 +9,30 @@
 #include "../components/action_state_component.h"
 #include "../components/player_state_input.h"
 #include "../components/transform_component.h"
+#include <vector>
+#include "../context.h"                           // GameModeKind（判定是否权威端）
+#include "../components/global_state_component.h" // GlobalState.next_frame_id（权威端帧号）
+#include "../components/net_component.h"          // NetComponent.frame_id（客户端的服务器权威帧号）
 
 struct Context;
+
+// 当前"权威逻辑帧号"：锁步下帧 N 两端含义完全一致，可安全作为倒计时基准。
+//   - 权威端（单机/Host/服务端）：GlobalState.next_frame_id - 1
+//     （tick() 里是 next_frame_id++ 分配本帧号后推进，故当前帧 = 值 - 1）
+//   - 客户端：NetComponent.frame_id，即服务端下发的权威帧号
+// 与 game_scene.cpp Render 里取帧号显示的口径一致。
+static inline int current_logic_frame(Context* ctx)
+{
+    if (!ctx) return 0;
+    if (ctx->mode != MODE_CLIENT) {
+        auto& c = ctx->ecs.ctx();
+        if (!c.contains<GlobalState>()) return 0;
+        return c.get<GlobalState>().next_frame_id - 1;
+    }
+    auto& c = ctx->ecs.ctx();
+    if (!c.contains<NetComponent>()) return 0;
+    return c.get<NetComponent>().frame_id;
+}
 
 // 玩家死亡 / 重生（帧同步确定性：两端同一 tick 判定与传送，无需网络同步）
 // 注册在 bullet_system 之后：子弹扣血 → 死亡判定 → 重生计时
@@ -64,15 +86,33 @@ static void player_death_system(entt::registry& registry, Context* ctx, float /*
         }
     }
 
-    // 敌人死亡：标记死亡后保持死亡（不重生），达到"肃清全关"通关条件。
-    // 敌人 body 保留在场景中（dead 标记），渲染/血环/寻路均跳过死亡敌人。
+    // 敌人死亡：标记死亡（不重生），达到"肃清全关"通关条件。
+    // 尸体只保留 ENEMY_CORPSE_TICKS 个逻辑 tick（够播完死亡动画），随后销毁实体使其消失。
+    //
+    // 倒计时基准用"权威逻辑帧号"而非渲染时间/本地 tick 计数：
+    //   两端都在同一逻辑帧把 hp 打到 0 → 记下同一个 death_frame → 同一帧销毁，确定性一致，
+    //   且无需在协议里同步倒计时（帧号本身就是已同步的量）。
+    // 唯一不一致是"中途加入的客户端"：它从快照接管尸体时拿不到原始死亡帧，
+    //   以接管帧为起点，会比服务端晚几帧销毁；该差异是良性的——
+    //   死亡敌人已排除出帧同步校验（CollectInput / verifyFrameSyncImpl），且尸体是惰性的。
+    const int cur_frame = current_logic_frame(ctx);
     auto eview = registry.view<EnemyComponent, HealthComponent>();
+    std::vector<entt::entity> corpses_to_destroy;
     for (auto e : eview) {
         auto& h = eview.get<HealthComponent>(e);
         if (!h.dead && h.hp <= 0) {
             h.dead = true;
+            h.death_frame = cur_frame;      // 记录死亡帧（两端同一帧置位）
+        }
+        if (h.dead) {
+            if (h.death_frame < 0) h.death_frame = cur_frame;   // 快照接管的尸体：以接管帧为起点
+            if (cur_frame - h.death_frame >= ENEMY_CORPSE_TICKS)
+                corpses_to_destroy.push_back(e);
         }
     }
+    // 迭代外销毁（entt 不允许在 view 遍历中 destroy）
+    for (auto e : corpses_to_destroy)
+        registry.destroy(e);
 }
 
 #endif
