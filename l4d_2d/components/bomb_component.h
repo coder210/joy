@@ -22,7 +22,7 @@ struct BombComponent {
 // 炸弹几何/逻辑常量（逻辑单位 m / tick）
 static constexpr float BOMB_SIZE        = 0.6f;   // 碰撞盒宽高
 static constexpr float BOMB_HALF        = 0.3f;   // 半宽高
-static constexpr float BOMB_THROW_SPEED = 10.0f;  // 投掷水平初速（m/s）
+static constexpr float BOMB_THROW_SPEED = 4.0f;  // 投掷水平初速（m/s）
 static constexpr float BOMB_THROW_UP    = 3.0f;   // 投掷上抛初速（m/s）
 static constexpr float BOMB_GRAVITY     = 14.0f;  // 重力加速度（炸弹专用较缓弧线，帧同步确定性）
 static constexpr float BOMB_MAX_FALL    = 24.0f;  // 下落终端速度（与玩家 SIDE_MAX_FALL 一致，防高速穿透）

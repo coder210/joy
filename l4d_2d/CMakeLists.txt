@@ -34,6 +34,7 @@ set(PROJECT_FILES
     components/ai_component.h
     components/anim_state_component.h
     components/attack_ray_effect_component.h
+    components/bomb_component.h
     components/bullet_component.h
     components/connection_component.h
     components/enemy_component.h
