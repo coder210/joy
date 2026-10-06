@@ -70,7 +70,6 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 					pc.w_ids[pc.weapon_count++] = wd->id;
 			}
 			if (pc.weapon_count > 0) {
-				pc.weapon_index = 0;
 				pc.weapon_id = pc.w_ids[0];
 			}
 		}

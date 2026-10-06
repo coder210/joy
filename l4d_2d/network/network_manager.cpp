@@ -131,10 +131,8 @@ void NetworkManager::SendInput()
     if (game_runtime(ctx_).bullet_triggered) { ranged = 1; game_runtime(ctx_).bullet_triggered = false; }
     int ray = (game_runtime(ctx_).current_input_mask & INPUT_RAY) ? 1 : 0;
     if (game_runtime(ctx_).ray_triggered) { ray = 1; game_runtime(ctx_).ray_triggered = false; }
-    int wswitch = 0;
-    if (game_runtime(ctx_).weapon_switch_triggered) { wswitch = 1; game_runtime(ctx_).weapon_switch_triggered = false; }
-    if (dir || attack || ranged || ray || wswitch) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack, ranged, ray, wswitch);
+    if (dir || attack || ranged || ray) {
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack, ranged, ray);
         netclient_send(ctx_->netclient, data.c_str(), (int)data.size());
     }
 }
@@ -226,9 +224,9 @@ void NetworkManager::HandleCmdPlayerLeave(int conv)
         net_session(ctx_).player_leaves.push_back(l);
 }
 
-void NetworkManager::HandleCmdPlayerInput(int conv, uint32_t seq, int dir, int attack, int ranged, int ray, int weapon_switch)
+void NetworkManager::HandleCmdPlayerInput(int conv, uint32_t seq, int dir, int attack, int ranged, int ray)
 {
-        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack, (int8_t)ranged, (int8_t)ray, (int8_t)weapon_switch };
+        S2CPlayerInput i = { seq, conv, dir, (int8_t)attack, (int8_t)ranged, (int8_t)ray };
         net_session(ctx_).player_inputs.push_back(i);
 }
 
@@ -268,13 +266,13 @@ void NetworkManager::ServerReceive()
                         net_session(ctx_).player_leaves.push_back(l);
                 }
                 else if (msg.type == NET_TYPE_MESSAGE) {
-                        int cmd, input_dir = 0, input_attack = 0, input_ranged = 0, input_ray = 0, input_weapon_switch = 0, char_id = 0; int64_t join_x = 0, join_y = 0;
-                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack, &input_ranged, &input_ray, &char_id, &input_weapon_switch)) {
+                        int cmd, input_dir = 0, input_attack = 0, input_ranged = 0, input_ray = 0, char_id = 0; int64_t join_x = 0, join_y = 0;
+                        if (unpack_c2s((const char*)msg.data, (int)msg.len, &cmd, &join_x, &join_y, &input_dir, &input_attack, &input_ranged, &input_ray, &char_id)) {
                                 switch (cmd) {
                                 case CMD_LOADING:       HandleCmdLoading(msg.conv); break;
                                 case CMD_PLAYER_JOIN:   HandleCmdPlayerJoin(msg.conv, join_x, join_y, char_id); break;
                                 case CMD_PLAYER_LEAVE:  HandleCmdPlayerLeave(msg.conv); break;
-                                case CMD_PLAYER_INPUT:  HandleCmdPlayerInput(msg.conv, 0, input_dir, input_attack, input_ranged, input_ray, input_weapon_switch); break;
+                                case CMD_PLAYER_INPUT:  HandleCmdPlayerInput(msg.conv, 0, input_dir, input_attack, input_ranged, input_ray); break;
                                 case CMD_PLAYER_HEART:  HandleCmdHeartbeat(msg.conv); break;
                                 }
                         }
@@ -447,10 +445,8 @@ void NetworkManager::CollectLocalInput()
         if (game_runtime(ctx_).bullet_triggered) { ranged = 1; game_runtime(ctx_).bullet_triggered = false; }
         int ray = (game_runtime(ctx_).current_input_mask & INPUT_RAY) ? 1 : 0;
         if (game_runtime(ctx_).ray_triggered) { ray = 1; game_runtime(ctx_).ray_triggered = false; }
-        int wswitch = 0;
-        if (game_runtime(ctx_).weapon_switch_triggered) { wswitch = 1; game_runtime(ctx_).weapon_switch_triggered = false; }
-        if (dir || attack || ranged || ray || wswitch) {
-                S2CPlayerInput i = { 0, (int32_t)net_session(ctx_).local_conv, dir, (int8_t)attack, (int8_t)ranged, (int8_t)ray, (int8_t)wswitch };
+        if (dir || attack || ranged || ray) {
+                S2CPlayerInput i = { 0, (int32_t)net_session(ctx_).local_conv, dir, (int8_t)attack, (int8_t)ranged, (int8_t)ray };
                 net_session(ctx_).player_inputs.push_back(i);
         }
 }

@@ -19,7 +19,6 @@ struct GameRuntime {
     bool  attack_triggered = false;        // 近战 tap
     bool  bullet_triggered = false;        // "射" tap
     bool  ray_triggered = false;           // "线" tap
-    bool  weapon_switch_triggered = false; // 切换武器 tap
 
     bool  ready = false;
     int   server_frameid = 0;

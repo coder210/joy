@@ -84,11 +84,6 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 		if (input.attack) push_action(PlayerEventInput::ATTACK_MELEE);
 		if (input.ranged) push_action(PlayerEventInput::ATTACK_BULLET);
 		if (input.ray)    push_action(PlayerEventInput::ATTACK_RAY);
-		// 切换武器：离散触发，按库存固定顺序轮转到下一把持有武器（空手/单把不移动）。
-		if (input.weapon_switch) {
-			auto& pc = registry.get<PlayerComponent>(player);
-			pc_select_next_weapon(pc);
-		}
 
 		// 更新动作状态：attack_timer 驱动攻击持续（替代动画状态机复位），
 		// 其余由移动位掩码决定 WALK/IDLE 与朝向
