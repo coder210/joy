@@ -53,8 +53,11 @@ void SceneManager::Render(jr2d_p r2d) {
 }
 
 void SceneManager::reset() {
-    current_.reset();
-    pending_.reset();
+    // 必须先 Destroy 再释放：否则旧场景（如 GameScene）的资源不会被清理，
+    // 其 static 纹理缓存会留下指向已释放纹理的悬空指针（与 push/change 的
+    // adopt() 行为保持一致）。原实现只 reset 指针，导致 R 键"重建场景"时泄漏。
+    if (current_) { current_->Destroy(); current_.reset(); }
+    if (pending_) { pending_.reset(); }
 }
 
 const char* SceneManager::currentName() const {

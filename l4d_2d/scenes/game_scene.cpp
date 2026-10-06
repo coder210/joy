@@ -358,6 +358,9 @@ void GameScene::Destroy()
     }
     AssetManager::GetInstance()->ClearTexCache();
     player_anim_cache_clear();   // 释放玩家动画定义缓存
+    // 炸弹精灵表是跨场景存活的 static 指针，纹理已被上一行释放，
+    // 必须一同置空，否则重开游戏后会拿悬空指针绘制（炸弹变乱码/崩溃）。
+    bomb_render_cache_clear();
 
     // 模式特有清理（音频等）
     destroy();

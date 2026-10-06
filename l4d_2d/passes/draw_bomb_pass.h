@@ -13,17 +13,31 @@ struct Context;
 // 渲染所有炸弹实体（objects/bomb_sheet 序列帧：off/on/explosion）。
 // 纯渲染层：仅推进 BombComponent.anim_time（dt 驱动，不进快照、不参与帧同步），
 // 绝不回写任何逻辑组件。
+// 炸弹三态精灵表（懒加载缓存；路径稳定，整局不变）。
+// 放在文件作用域而非函数内 static，是为了让 bomb_render_cache_clear() 能重置它们——
+// 见下方清理函数的说明：不重置会导致重开游戏后使用悬空指针。
+static image_p g_bomb_off = NULL, g_bomb_on = NULL, g_bomb_exp = NULL;
+
+// 清空炸弹精灵表缓存（必须与 AssetManager::ClearTexCache() 配对调用）。
+// 背景：纹理本体由 AssetManager 持有，场景销毁时 ClearTexCache() 会释放它们；
+// 而这三个指针是跨场景存活的 static，若不置空，下次进入游戏场景时
+// `if (!g_bomb_off)` 会误判为"已有缓存"从而跳过重新加载，
+// 直接拿已释放的悬空指针去 image_draw_ex → 炸弹渲染成乱码/别的贴图，
+// 反复投掷还可能访问已释放内存而崩溃。玩家侧同理（见 player_anim_cache_clear）。
+static void bomb_render_cache_clear()
+{
+        g_bomb_off = NULL; g_bomb_on = NULL; g_bomb_exp = NULL;
+}
+
 static void draw_bomb_pass(Context* ctx, float dt)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
     const float z = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
 
-    // 懒加载三张精灵表（路径稳定，整局不变）
-    static image_p g_off = NULL, g_on = NULL, g_exp = NULL;
     auto* am = AssetManager::GetInstance();
-    if (am && !g_off) g_off = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/off.png");
-    if (am && !g_on)  g_on  = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/on.png");
-    if (am && !g_exp) g_exp = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/explosion.png");
+    if (am && !g_bomb_off) g_bomb_off = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/off.png");
+    if (am && !g_bomb_on)  g_bomb_on  = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/on.png");
+    if (am && !g_bomb_exp) g_bomb_exp = am->GetImage(ctx->r2d, "l4d_2d/sprites/objects/bomb_sheet/explosion.png");
 
     const float TILE = 108.0f;                 // 正方形帧边长（与打包一致）
     const float kFPS = 12.0f;                  // 与角色动画一致
@@ -40,9 +54,9 @@ static void draw_bomb_pass(Context* ctx, float dt)
 
         image_p img = NULL;
         int frames = 1;
-        if (bomb.state == BOMB_ST_OFF)       { img = g_off; frames = 1; }
-        else if (bomb.state == BOMB_ST_ON)  { img = g_on;  frames = 10; }
-        else                                { img = g_exp; frames = 9; }
+        if (bomb.state == BOMB_ST_OFF)       { img = g_bomb_off; frames = 1; }
+        else if (bomb.state == BOMB_ST_ON)  { img = g_bomb_on;  frames = 10; }
+        else                                { img = g_bomb_exp; frames = 9; }
         if (!img) continue;
 
         // 尺寸：爆炸态按伤圈直径放大，其余按炸弹本体
