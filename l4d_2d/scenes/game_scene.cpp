@@ -14,6 +14,7 @@
 #include "../passes/draw_player_pass.h"
 #include "../passes/draw_enemy_pass.h"
 #include "../passes/draw_bullet_pass.h"
+#include "../passes/draw_bomb_pass.h"
 #include "../systems/input_consume_join_system.h"
 #include "../passes/player_status_hud_pass.h"
 #include "../passes/frame_display_pass.h"
@@ -31,6 +32,8 @@
 #include "../systems/player_shoot_system.h"
 #include "../systems/player_ray_system.h"
 #include "../systems/bullet_system.h"
+#include "../systems/bomb_shoot_system.h"
+#include "../systems/bomb_system.h"
 #include "../systems/player_death_system.h"
 #include "../systems/pathfinding_system.h"
 
@@ -100,8 +103,10 @@ void GameScene::Load()
     add_system(ctx, OnUpdate, "ai_system", ai_system);
     add_system(ctx, OnUpdate, "melee_attack", melee_attack_system);
     add_system(ctx, OnUpdate, "player_shoot", player_shoot_system);
+    add_system(ctx, OnUpdate, "bomb_shoot", bomb_shoot_system);
     add_system(ctx, OnUpdate, "player_ray", player_ray_system);
     add_system(ctx, OnUpdate, "bullet", bullet_system);
+    add_system(ctx, OnUpdate, "bomb", bomb_system);
     add_system(ctx, OnUpdate, "player_death", player_death_system);
     add_system(ctx, OnUpdate, "pathfinding", pathfinding_system);
     add_system(ctx, OnUpdate, "movement", movement_system);
@@ -269,6 +274,7 @@ void GameScene::Render()
     // 按对象分 pass 渲染（每个 pass 只负责一类实体的绘制，职责清晰）
     draw_enemy_pass(ctx);              // 敌人：墨色方块占位
     draw_bullet_pass(ctx);             // 子弹：旋转方块占位
+    draw_bomb_pass(ctx, this->render_dt_);   // 炸弹：objects/bomb_sheet 序列帧
     player_render_pass(ctx->ecs, ctx, this->render_dt_);   // 玩家：动画推进 + 绘制（characters.json 序列帧）
 
     // 2D 战争迷雾：覆盖地图与实体，仅暴露视野附近，墙后与远端被墨雾遮蔽

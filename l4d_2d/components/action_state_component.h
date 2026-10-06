@@ -31,6 +31,11 @@ struct ActionStateComponent {
     int melee_cooldown = 0;
     static constexpr int MELEE_COOLDOWN = 18;   // 0.9s @ 20Hz（与 ATTACK_DURATION 一致）
 
+    // 投掷炸弹冷却（tick 数）：玩家完成一次"攻"点击投掷炸弹后进入冷却，
+    // 由 bomb_shoot_system 每 tick 递减，防止连点高频投掷。
+    int bomb_cooldown = 0;
+    static constexpr int BOMB_COOLDOWN = 18;    // 0.9s @ 20Hz
+
     // 射线大招冷却（tick 数）："线"按钮完整点击后沿朝向发射 hitscan 并进入冷却，
     // 由 player_ray_system 每 tick 递减。玩家专属，瞬发高穿透，冷却比子弹稍长。
     int ray_cooldown = 0;

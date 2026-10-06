@@ -44,7 +44,7 @@ void GameSceneCommon::playKeyPressed(const char* key, int scancode, bool repeat,
     else if (strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
     else if (strcmp(key, "up") == 0) key_mask = INPUT_UP;
     else if (strcmp(key, "down") == 0) key_mask = INPUT_DOWN;
-    else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+    else if (strcmp(key, "j") == 0 || strcmp(key, "J") == 0) key_mask = INPUT_ATTACK;
     else if (strcmp(key, "e") == 0 || strcmp(key, "E") == 0) { game_runtime(self->ctx()).bullet_triggered = true; return; }
     else if (strcmp(key, "l") == 0 || strcmp(key, "L") == 0) { game_runtime(self->ctx()).ray_triggered = true; return; }
     else if (strcmp(key, "z") == 0 || strcmp(key, "Z") == 0) {
@@ -81,7 +81,7 @@ void GameSceneCommon::playKeyReleased(const char* key, int scancode, void* arg)
     else if (strcmp(key, "S") == 0) key_mask = INPUT_DOWN;
     else if (strcmp(key, "up") == 0) key_mask = INPUT_UP;
     else if (strcmp(key, "down") == 0) key_mask = INPUT_DOWN;
-    else if (strcmp(key, "space") == 0) key_mask = INPUT_ATTACK;
+    else if (strcmp(key, "j") == 0 || strcmp(key, "J") == 0) key_mask = INPUT_ATTACK;
     else if (strcmp(key, "e") == 0 || strcmp(key, "E") == 0) { game_runtime(self->ctx()).bullet_triggered = true; return; }
     else if (strcmp(key, "l") == 0 || strcmp(key, "L") == 0) { game_runtime(self->ctx()).ray_triggered = true; return; }
     if (key_mask) game_runtime(self->ctx()).current_input_mask &= ~key_mask;

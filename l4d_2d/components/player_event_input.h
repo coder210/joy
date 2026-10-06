@@ -9,6 +9,7 @@ struct PlayerEventInput {
         ATTACK_MELEE  = 0,   // 近战（含敌人 Melee 事件，ai_system 默认推 0）
         ATTACK_BULLET = 1,   // 射击：玩家"射"按钮发射单颗子弹
         ATTACK_RAY    = 2,   // 射线：玩家"线"按钮沿朝向 hitscan 大招
+        ATTACK_BOMB   = 3,   // 投掷炸弹：玩家"攻"按钮投掷炸弹（替代近战作为主武器）
     };
 
     // 单个动作定义

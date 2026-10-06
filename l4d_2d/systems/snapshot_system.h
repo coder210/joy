@@ -3,6 +3,7 @@
 #include "../context.h"
 #include "../components/ai_component.h"
 #include "../components/bullet_component.h"
+#include "../components/bomb_component.h"
 #include "../components/health_component.h"
 #include "../components/local_only_component.h"
 
@@ -16,6 +17,9 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                         continue;
                 // 子弹为帧同步瞬时实体，不进入快照，避免客户端加载时重复创建
                 if (registry.all_of<BulletComponent>(e))
+                        continue;
+                // 炸弹同上：帧同步瞬时实体（本地 get_entity_id 生成），不进快照，否则客户端重复创建
+                if (registry.all_of<BombComponent>(e))
                         continue;
                 if (game_runtime(ctx).num_entities >= 512)
                         return;

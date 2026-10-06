@@ -81,7 +81,8 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 			}
 		};
 		// 攻/射/线：均为"完整点击"离散触发。射改单发（对齐 3D），线为大招 hitscan。
-		if (input.attack) push_action(PlayerEventInput::ATTACK_MELEE);
+		// 攻：投掷炸弹（主武器，替代近战；敌人近战仍由 ai_system 推 ATTACK_MELEE）。
+		if (input.attack) push_action(PlayerEventInput::ATTACK_BOMB);
 		if (input.ranged) push_action(PlayerEventInput::ATTACK_BULLET);
 		if (input.ray)    push_action(PlayerEventInput::ATTACK_RAY);
 
