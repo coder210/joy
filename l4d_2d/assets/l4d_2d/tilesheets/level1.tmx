@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="26">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="31">
  <editorsettings>
   <export target="../levels/level1.lua" format="lua"/>
  </editorsettings>
  <tileset firstgid="1" name="Terrain (32x32)" tilewidth="32" tileheight="32" tilecount="247" columns="19">
   <image source="Terrain (32x32).png" width="608" height="416"/>
  </tileset>
+ <objectgroup id="9" name="Enemies">
+  <object id="26" name="bald_pirate" x="128" y="96">
+   <point/>
+  </object>
+  <object id="27" name="big_guy" x="448" y="128">
+   <point/>
+  </object>
+  <object id="28" name="captain" x="768" y="96">
+   <point/>
+  </object>
+  <object id="29" name="cucumber" x="864" y="96">
+   <point/>
+  </object>
+  <object id="30" name="whale" x="192" y="96">
+   <point/>
+  </object>
+ </objectgroup>
  <objectgroup id="8" name="Player">
   <object id="22" x="576" y="192">
    <point/>

@@ -155,8 +155,6 @@ static const int PF_RECOMPUTE_INTERVAL = 30;
 
 static void pathfinding_system(entt::registry& registry, Context* ctx, float /*dt*/)
 {
-    fp_t step = fp_mul(fp_from_float(2.5f), fp_from_float(game_runtime(ctx).FIXED_TIMESTEP));
-
     auto view = registry.view<EnemyComponent, AIComponent, PathComponent,
                               LogicPositionComponent, ActionStateComponent>();
 
@@ -167,6 +165,13 @@ static void pathfinding_system(entt::registry& registry, Context* ctx, float /*d
         auto& ai  = view.get<AIComponent>(e);
         auto& pc  = view.get<PathComponent>(e);
         auto& pos = view.get<LogicPositionComponent>(e);
+
+        // 每 tick 步长 = 该敌人的移速（enemies.json stats.speed，按种类）× 固定步长。
+        // 原先是全局硬编码 2.5 m/s，5 种敌人无法区分快慢；现按种类取值。
+        // 兜底：移速未配置（<=0）时沿用原默认 2.5，避免敌人彻底不动。
+        fp_t spd = ai.move_speed;
+        if (spd <= fp_zero()) spd = fp_from_float(2.5f);
+        fp_t step = fp_mul(spd, fp_from_float(game_runtime(ctx).FIXED_TIMESTEP));
 
         // 非追击状态：清空路径，移动由 ai_system（巡逻）负责
         if (ai.state != 1) {

@@ -38,6 +38,7 @@ set(PROJECT_FILES
     components/bullet_component.h
     components/connection_component.h
     components/enemy_component.h
+    components/enemy_anim_component.h
     components/game_runtime_component.h
     components/global_state_component.h
     components/health_component.h
@@ -108,11 +109,13 @@ set(PROJECT_FILES
     scenes/victory_scene.h
     # ---- systems ----
     systems/character_catalog.cpp
+    systems/enemy_catalog.cpp
     systems/map_def.cpp
     systems/weapon_catalog.cpp
     systems/ai_system.h
     systems/bullet_system.h
     systems/character_catalog.h
+    systems/enemy_catalog.h
     systems/weapon_catalog.h
     systems/cleanup_system.h
     systems/collision_system.h

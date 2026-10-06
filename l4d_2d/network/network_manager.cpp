@@ -75,9 +75,12 @@ void NetworkManager::HandleLoading(int conv, int frame_id, int eid, const S2CEnt
                             ctx_->ecs.ctx().get<GlobalState>().level, e_cnt);
                         if (si >= 0 && si < e_cnt) {
                             auto& sd = e_defs[si];
-                            // 血量组件：从快照恢复（玩家远程子弹伤害结算结果）
+                            // 种类：与服务端一致（同关卡 + 同 SpawnDef 下标确定性派生），供渲染取素材
+                            ctx_->ecs.emplace<EnemyTypeComponent>(e, sd.type);
+                            // 血量组件：从快照恢复（玩家远程子弹伤害结算结果）；
+                            // 上限按该种类的 max_hp（enemies.json stats.hp），不再用全局 ENEMY_MAX_HP
                             ctx_->ecs.emplace<HealthComponent>(e,
-                                (int)entity.hp, ENEMY_MAX_HP);
+                                (int)entity.hp, sd.max_hp);
                             // 出生点：从 SpawnDef 恢复（死亡重生传送目标）
                             ctx_->ecs.emplace<SpawnPointComponent>(e,
                                 fp_from_float(sd.x), fp_from_float(sd.y));
@@ -90,7 +93,9 @@ void NetworkManager::HandleLoading(int conv, int frame_id, int eid, const S2CEnt
                                 fp_from_float(sd.bullet_speed),              // 子弹速度
                                 fp_from_float(sd.bullet_damage),             // 子弹伤害
                                 (int)(sd.bullet_interval * 20.0f + 0.5f),    // 射击间隔（tick）
-                                0);                                          // 射击冷却
+                                0,                                          // 射击冷却
+                                fp_from_float(sd.move_speed),               // 移动速度（按种类）
+                                sd.melee_damage);                           // 近战伤害（按种类）
                             // 恢复服务端下发的 AI 运行时状态（timer/state/target/shoot_cooldown），
                             // 否则这些持续累积的状态从 0/出生点开始，与服务端接入时值不同步
                             auto& ai = ctx_->ecs.get<AIComponent>(e);

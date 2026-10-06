@@ -9,8 +9,8 @@ return {
   height = 14,
   tilewidth = 32,
   tileheight = 32,
-  nextlayerid = 9,
-  nextobjectid = 26,
+  nextlayerid = 10,
+  nextobjectid = 31,
   properties = {},
   tilesets = {
     {
@@ -44,6 +44,87 @@ return {
     }
   },
   layers = {
+    {
+      type = "objectgroup",
+      draworder = "topdown",
+      id = 9,
+      name = "Enemies",
+      class = "",
+      visible = true,
+      opacity = 1,
+      offsetx = 0,
+      offsety = 0,
+      parallaxx = 1,
+      parallaxy = 1,
+      properties = {},
+      objects = {
+        {
+          id = 26,
+          name = "bald_pirate",
+          type = "",
+          shape = "point",
+          x = 128,
+          y = 96,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 27,
+          name = "big_guy",
+          type = "",
+          shape = "point",
+          x = 448,
+          y = 128,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 28,
+          name = "captain",
+          type = "",
+          shape = "point",
+          x = 768,
+          y = 96,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 29,
+          name = "cucumber",
+          type = "",
+          shape = "point",
+          x = 864,
+          y = 96,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 30,
+          name = "whale",
+          type = "",
+          shape = "point",
+          x = 192,
+          y = 96,
+          width = 0,
+          height = 0,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        }
+      }
+    },
     {
       type = "objectgroup",
       draworder = "topdown",

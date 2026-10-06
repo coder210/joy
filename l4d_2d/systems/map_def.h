@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstring>   // std::memcpy
 #include "level_sources.h"
+#include "enemy_catalog.h"      // 敌人种类：按 Tiled 对象的 type/name 反查敌人目录
 #include "../asset_manager.h"   // 关卡 .lua 路径走资源索引单点查询
 
 // 诊断日志（定义见文件末尾）
@@ -52,6 +53,7 @@ struct MapLevelInfo {
     int level = -1;
     int player_cell = -1;      // 'P' / spawn 点格子索引 (y*MAP_W + x)，-1=缺失
     int enemy_cells[256];      // 'E' / enemy 格子索引（行主序扫描，双端同序）
+    int enemy_types[256];      // 与 enemy_cells 一一对应的敌人种类 id（EnemyCatalog 下标）
     int enemy_n = 0;
     jtilemap_p  tilemap = nullptr;      // jtilemap 句柄，由 jtilemap_load_file 持有
     jtilemap_render_p tilemap_render = nullptr; // 渲染句柄
@@ -109,17 +111,19 @@ static bool map_tm_probe_path(const char* path)
 }
 
 // 出生点解析上下文：对象坐标是 Tiled 像素（每瓦片 tw×th 像素），换算成玩法格子。
-// point 形状取坐标本身，矩形取中心；type=="enemy" 归敌人，否则归玩家出生点。
+// point 形状取坐标本身，矩形取中心。
 struct map_spawn_ctx_t {
     int tw, th;          // tilewidth/tileheight（对象坐标单位）
     int mw, mh;          // 玩法网格宽高（= MAP_W/MAP_H）
     int player_cell = -1;
     int enemy_n = 0;
     int enemy_cells[256];
+    int enemy_types[256];
 };
-static void map_parse_spawn_obj(jtilemap_object_p obj, void* arg)
+
+// 对象坐标 → 玩法格子索引
+static int map_obj_cell(jtilemap_object_p obj, const map_spawn_ctx_t* s)
 {
-    map_spawn_ctx_t* s = (map_spawn_ctx_t*)arg;
     float cx, cy;
     if (obj->shape == JTILEMAP_SHAPE_POINT) { cx = obj->x; cy = obj->y; }
     else                                    { cx = obj->x + obj->width * 0.5f; cy = obj->y + obj->height * 0.5f; }
@@ -127,17 +131,72 @@ static void map_parse_spawn_obj(jtilemap_object_p obj, void* arg)
     int row = (int)floorf(cy / (float)s->th);
     if (col < 0) col = 0; else if (col >= s->mw) col = s->mw - 1;
     if (row < 0) row = 0; else if (row >= s->mh) row = s->mh - 1;
-    int cell = row * s->mw + col;
-    if (obj->type && strcmp(obj->type, "enemy") == 0) {
-        if (s->enemy_n < 256) s->enemy_cells[s->enemy_n++] = cell;
+    return row * s->mw + col;
+}
+
+// 由对象的 type / name 反查敌人种类 id（Tiled 里把 Type 或 Name 填成敌人 key，
+// 如 "bald_pirate"）。命中返回 >=0，未命中返回 -1。
+// 两端解析同一份 .lua、同一遍历顺序 → 结果一致，帧同步安全。
+static int map_obj_enemy_type(jtilemap_object_p obj)
+{
+    if (obj->type) {
+        if (const EnemyDef* d = g_enemyCatalog.findByName(obj->type)) return d->id;
+    }
+    if (obj->name) {
+        if (const EnemyDef* d = g_enemyCatalog.findByName(obj->name)) return d->id;
+    }
+    return -1;
+}
+
+static void map_add_enemy(map_spawn_ctx_t* s, int cell, int etype)
+{
+    if (s->enemy_n >= 256) return;
+    s->enemy_cells[s->enemy_n] = cell;
+    s->enemy_types[s->enemy_n] = etype;
+    s->enemy_n++;
+}
+
+// Player/spawn 层：按优先级分类
+//   1) type/name 命中敌人 key → 敌人（种类=该 key）
+//   2) type=="enemy"          → 敌人（种类取默认 0）
+//   3) 其余                   → 玩家出生点
+static void map_parse_spawn_obj(jtilemap_object_p obj, void* arg)
+{
+    map_spawn_ctx_t* s = (map_spawn_ctx_t*)arg;
+    int cell = map_obj_cell(obj, s);
+    int etype = map_obj_enemy_type(obj);
+    if (etype >= 0) {
+        map_add_enemy(s, cell, etype);
+    } else if (obj->type && strcmp(obj->type, "enemy") == 0) {
+        map_add_enemy(s, cell, 0);
     } else {
         s->player_cell = cell;
     }
 }
+
+// 专用敌人层：层内所有对象都视为敌人，种类由 type/name 反查（未命中取默认 0）。
+static void map_parse_enemy_obj(jtilemap_object_p obj, void* arg)
+{
+    map_spawn_ctx_t* s = (map_spawn_ctx_t*)arg;
+    int cell = map_obj_cell(obj, s);
+    int etype = map_obj_enemy_type(obj);
+    map_add_enemy(s, cell, (etype >= 0) ? etype : 0);
+}
+
 // 查找出生对象层：优先 Tiled 里新增的 "Player"，兼容旧名 "player"/"spawn"。
 static jtilemap_object_layer_p map_find_spawn_layer(jtilemap_p tm)
 {
     static const char* names[] = { "Player", "player", "spawn" };
+    for (const char* n : names) {
+        jtilemap_object_layer_p ol = jtilemap_find_object_layer(tm, n);
+        if (ol) return ol;
+    }
+    return nullptr;
+}
+// 查找专用敌人出生层（与 Player 层对称，用户在 Tiled 里新增）：兼容常见命名。
+static jtilemap_object_layer_p map_find_enemy_layer(jtilemap_p tm)
+{
+    static const char* names[] = { "Enemies", "Enemy", "enemies", "enemy", "SpawnEnemy" };
     for (const char* n : names) {
         jtilemap_object_layer_p ol = jtilemap_find_object_layer(tm, n);
         if (ol) return ol;
@@ -186,22 +245,32 @@ static bool map_load_from_tilemap(int level)
         }
     }
 
-    // 出生/敌人点：Player/spawn 对象层（对象坐标为 Tiled 像素，用 tilewidth 换算成格子）
+    // 出生/敌人点（对象坐标为 Tiled 像素，用 tilewidth 换算成格子）
+    //   1) 专用敌人层 "Enemies"/"Enemy"/...：层内对象全是敌人，种类取对象的 type/name
+    //   2) "Player"/"spawn" 层：type/name 命中敌人 key、或 type=="enemy" 的归敌人，其余归玩家
+    // 两层可并存（先敌人层后出生层，统一追加到同一列表）。
     const int tw = jtilemap_get_tilewidth(tm);
     const int th = jtilemap_get_tileheight(tm);
     g_map_info.player_cell = -1;
     g_map_info.enemy_n = 0;
-    if (jtilemap_object_layer_p pl = map_find_spawn_layer(tm)) {
-        map_spawn_ctx_t sctx;
-        sctx.tw = (tw > 0) ? tw : 60;
-        sctx.th = (th > 0) ? th : 60;
-        sctx.mw = MAP_W;
-        sctx.mh = MAP_H;
-        jtilemap_object_layer_foreach_all(pl, map_parse_spawn_obj, &sctx);
-        g_map_info.player_cell = sctx.player_cell;
-        g_map_info.enemy_n = sctx.enemy_n;
-        std::memcpy(g_map_info.enemy_cells, sctx.enemy_cells, (size_t)sctx.enemy_n * sizeof(int));
+
+    map_spawn_ctx_t sctx;
+    sctx.tw = (tw > 0) ? tw : 60;
+    sctx.th = (th > 0) ? th : 60;
+    sctx.mw = MAP_W;
+    sctx.mh = MAP_H;
+
+    if (jtilemap_object_layer_p el = map_find_enemy_layer(tm)) {
+        jtilemap_object_layer_foreach_all(el, map_parse_enemy_obj, &sctx);
     }
+    if (jtilemap_object_layer_p pl = map_find_spawn_layer(tm)) {
+        jtilemap_object_layer_foreach_all(pl, map_parse_spawn_obj, &sctx);
+    }
+
+    g_map_info.player_cell = sctx.player_cell;
+    g_map_info.enemy_n = sctx.enemy_n;
+    std::memcpy(g_map_info.enemy_cells, sctx.enemy_cells, (size_t)sctx.enemy_n * sizeof(int));
+    std::memcpy(g_map_info.enemy_types, sctx.enemy_types, (size_t)sctx.enemy_n * sizeof(int));
 
     g_map_info.tilemap = tm;   // 玩法数据源与渲染源合一；切关时由 map_load_level 销毁
     return true;
@@ -242,8 +311,15 @@ static void map_build_ascii_grid(int level)
         if (ch == 'P') {
             g_map_info.player_cell = r * MAP_W + c;
         } else if (ch == 'E') {
-            if (g_map_info.enemy_n < 256)
-                g_map_info.enemy_cells[g_map_info.enemy_n++] = r * MAP_W + c;
+            if (g_map_info.enemy_n < 256) {
+                // ASCII 回退路径没有 Tiled 对象可携带种类：按序号轮流分配，
+                // 让 5 种敌人都能出现。两端同一份 ASCII + 同一规则 → 一致，帧同步安全。
+                int n = (int)g_enemyCatalog.size();
+                if (n <= 0) n = 1;
+                g_map_info.enemy_cells[g_map_info.enemy_n] = r * MAP_W + c;
+                g_map_info.enemy_types[g_map_info.enemy_n] = g_map_info.enemy_n % n;
+                g_map_info.enemy_n++;
+            }
         }
         c++;
     }

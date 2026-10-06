@@ -11,6 +11,7 @@
     },
     "config": {
         "characters": "l4d_2d/data/characters.json",
-        "weapons": "l4d_2d/data/weapons.json"
+        "weapons": "l4d_2d/data/weapons.json",
+        "enemies": "l4d_2d/data/enemies.json"
     }
 }

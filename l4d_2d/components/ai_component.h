@@ -16,14 +16,19 @@ struct AIComponent {
     fp_t bullet_damage;   // 子弹伤害
     int  shoot_interval;  // 射击间隔（tick）
     int  shoot_cooldown;  // 射击冷却倒计时
+    // ---- 按敌人种类取值（enemies.json）----
+    fp_t move_speed;      // 移动速度（m/s）：pathfinding_system 用它算每 tick 步长
+    int  melee_damage;    // 近战伤害：melee_attack_system 结算敌人攻击时用
 
     AIComponent() = default;
     AIComponent(fp_t cx, fp_t cy, fp_t pr, fp_t dr, fp_t ar,
-                bool rng, fp_t bs, fp_t bd, int si, int sc)
+                bool rng, fp_t bs, fp_t bd, int si, int sc,
+                fp_t ms, int md)
         : patrol_center_x(cx), patrol_center_y(cy), patrol_radius(pr),
           detect_radius(dr), attack_radius(ar), state(0), timer(0),
           target_x(cx), target_y(cy), ranged(rng), bullet_speed(bs),
-          bullet_damage(bd), shoot_interval(si), shoot_cooldown(sc) {}
+          bullet_damage(bd), shoot_interval(si), shoot_cooldown(sc),
+          move_speed(ms), melee_damage(md) {}
 };
 
 #endif

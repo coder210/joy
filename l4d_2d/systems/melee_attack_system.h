@@ -82,7 +82,14 @@ static void melee_attack_system(entt::registry& registry, Context* ctx, float /*
             default: hy = fp_sub(ay, range); hh = range; break;          // 上
         }
 
-        const int damage = is_player ? PLAYER_MELEE_DAMAGE : ENEMY_MELEE_DAMAGE;
+        // 伤害按攻击者取值：玩家用全局常量；敌人用其种类配的近战伤害（enemies.json stats.melee_damage）。
+        // 原先敌人统一用 ENEMY_MELEE_DAMAGE 常量，5 种敌人无法区分威力。
+        int enemy_dmg = ENEMY_MELEE_DAMAGE;   // 兜底：无 AIComponent 时沿用原常量
+        if (!is_player && registry.all_of<AIComponent>(attacker)) {
+            int d = registry.get<AIComponent>(attacker).melee_damage;
+            if (d > 0) enemy_dmg = d;
+        }
+        const int damage = is_player ? PLAYER_MELEE_DAMAGE : enemy_dmg;
         if (is_player) {
             for (auto target : enemy_view) {
                 auto& h = enemy_view.get<HealthComponent>(target);

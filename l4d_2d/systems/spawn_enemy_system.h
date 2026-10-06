@@ -24,6 +24,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<IdComponent>(e, get_entity_id(ctx));
         registry.emplace<EnemyComponent>(e);
         registry.emplace<SpawnIdxComponent>(e, i);
+        // 种类：渲染层按它取 enemies.json 里的精灵目录与动画帧数
+        registry.emplace<EnemyTypeComponent>(e, s.type);
         // 出生格中心 s.x/s.y；碰撞盒 0.8×0.8 以出生点居中，
         // LogicPosition(左上角) = 中心 - 半宽(0.4)，Transform(渲染中心) = 出生点
         registry.emplace<LogicPositionComponent>(e, fp_from_float(s.x - 0.4f), fp_from_float(s.y - 0.4f));
@@ -33,8 +35,8 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         registry.emplace<ActionStateComponent>(e);
         // 横版重力：敌人挂垂直速度组件（落到地面/平台）
         registry.emplace<LogicVelocityComponent>(e, fp_from_float(0), fp_from_float(0));
-        // 血量组件：玩家远程子弹命中扣血；死亡后重生回出生点
-        registry.emplace<HealthComponent>(e, ENEMY_MAX_HP, ENEMY_MAX_HP);
+        // 血量组件：按敌人种类取最大血量（enemies.json stats.hp）
+        registry.emplace<HealthComponent>(e, s.max_hp, s.max_hp);
         registry.emplace<SpawnPointComponent>(e, fp_from_float(s.x), fp_from_float(s.y));
         registry.emplace<AIComponent>(e,
             fp_from_float(s.x), fp_from_float(s.y),  // patrol_center
@@ -45,7 +47,9 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
             fp_from_float(s.bullet_speed),              // 子弹速度
             fp_from_float(s.bullet_damage),             // 子弹伤害
             (int)(s.bullet_interval * 20.0f + 0.5f),    // 射击间隔（tick）
-            0                                           // 射击冷却
+            0,                                          // 射击冷却
+            fp_from_float(s.move_speed),                // 移动速度（按种类）
+            s.melee_damage                              // 近战伤害（按种类）
         );
     }
 }

@@ -302,7 +302,7 @@ void GameScene::Render()
     draw_map_pass(ctx);
 
     // 按对象分 pass 渲染（每个 pass 只负责一类实体的绘制，职责清晰）
-    draw_enemy_pass(ctx);              // 敌人：墨色方块占位
+    draw_enemy_pass(ctx, this->render_dt_);   // 敌人：按种类播序列帧（enemies.json）
     draw_bullet_pass(ctx);             // 子弹：旋转方块占位
     draw_bomb_pass(ctx, this->render_dt_);   // 炸弹：objects/bomb_sheet 序列帧
     player_render_pass(ctx->ecs, ctx, this->render_dt_);   // 玩家：动画推进 + 绘制（characters.json 序列帧）

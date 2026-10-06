@@ -10,6 +10,7 @@
 #include "scenes/scene_manager.h"
 #include "systems/character_catalog.h"
 #include "systems/weapon_catalog.h"
+#include "systems/enemy_catalog.h"
 #include "scenes/main_scene.h"
 #include "scenes/splash_scene.h"
 #include "scenes/loading_scene.h"
@@ -104,6 +105,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         g_characterCatalog.load();
         // 武器表同理（路径经资源索引 config.weapons 取得）
         g_weaponCatalog.load();
+        // 敌人表同理（路径经资源索引 config.enemies 取得）。
+        // 必须在 map_load_level 之前：关卡解析敌人出生点时要按 key 反查种类 id。
+        g_enemyCatalog.load();
 
         ctx->window = create_window("l4d_2d", 480, 320);
         ctx->r2d = r2d_create(ctx->window);
