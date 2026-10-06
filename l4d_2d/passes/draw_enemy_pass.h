@@ -29,6 +29,9 @@ struct Context;
 
 // 播放帧率（帧/秒）。素材未携带帧率，统一取 12 FPS（与玩家一致）。
 static const float kEnemySpriteFPS = 12.0f;
+// 受击表现时长（秒）。Hit 动画多为 7~8 帧 @12fps（≈0.6s），这里取 0.5s：
+// 够看清受击反馈，又不至于长时间打断攻击/移动表现。
+static const float kEnemyHitDuration = 0.5f;
 // 精灵标尺：与玩家渲染一致用 50 PPM。不可沿用 meters_to_pixels（那是地图 PPM，
 // 会把精灵缩到约 1/4）。
 static const float kEnemyRenderPPM = 50.0f;
@@ -57,8 +60,27 @@ static void draw_enemy_pass(Context* ctx, float dt)
         auto& anim = ctx->ecs.get_or_emplace<EnemyAnimComponent>(e);
 
         // ---- 选定目标动画槽 ----
-        bool dead = ctx->ecs.all_of<HealthComponent>(e)
-                 && ctx->ecs.get<HealthComponent>(e).dead;
+        bool dead = false;
+        int  hp   = 0;
+        if (ctx->ecs.all_of<HealthComponent>(e)) {
+            auto& h = ctx->ecs.get<HealthComponent>(e);
+            dead = h.dead;
+            hp   = h.hp;
+        }
+
+        // 受击检测（纯渲染）：本渲染帧 hp 比上次低 → 触发一次 Hit 表现。
+        // 不用逻辑侧 knockback_timer：它只给玩家置位，且递减逻辑也只写在玩家分支，
+        // 给敌人置位会永远卡在受击态。渲染侧自检测则完全没有帧同步风险。
+        if (anim.prev_hp < 0) {
+            anim.prev_hp = hp;                    // 首次采样，不误触发
+        } else if (hp < anim.prev_hp && !dead) {
+            anim.hit_time = kEnemyHitDuration;    // 掉血 → 播受击
+        }
+        anim.prev_hp = hp;
+        if (anim.hit_time > 0.0f) {
+            anim.hit_time -= dt;
+            if (anim.hit_time < 0.0f) anim.hit_time = 0.0f;
+        }
 
         int state = ActionStateComponent::IDLE;
         int knockback = 0;
@@ -85,8 +107,8 @@ static void draw_enemy_pass(Context* ctx, float dt)
             } else {
                 want = ENEMY_ANIM_DEAD;                 // 刚死：进入死亡动画
             }
-        } else if (knockback > 0) {
-            want = ENEMY_ANIM_HIT;
+        } else if (knockback > 0 || anim.hit_time > 0.0f) {
+            want = ENEMY_ANIM_HIT;                      // 硬直（罕见）或刚掉血 → 受击
         } else if (state == ActionStateComponent::ATTACK) {
             want = ENEMY_ANIM_ATTACK;
         } else if (state == ActionStateComponent::WALK) {

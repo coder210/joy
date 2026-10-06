@@ -13,4 +13,12 @@ struct EnemyAnimComponent {
     // 死亡表现用：Dead Hit → Dead Ground 整段播完后渲染层不再绘制该实体（视觉"消失"），
     // 但实体仍以 dead 保留在逻辑世界（胜利判定 / checksum 不受影响，见 draw_enemy_pass）。
     bool  finished = false;
+
+    // ---- 受击表现（渲染侧自检测，不改逻辑组件）----
+    // 敌人被玩家打时，逻辑侧并没有给它置"硬直"标记（那是玩家专属的 knockback_timer），
+    // 且 ActionStateComponent.knockback_timer 的递减只写在玩家分支里（input_consume_input_system），
+    // 给敌人置位会导致它永不递减、卡在受击态。
+    // 故改为渲染侧比对血量：hp 下降即触发一次受击动画，纯表现、零帧同步风险。
+    int   prev_hp  = -1;    // 上一渲染帧的 hp（-1 = 尚未采样）
+    float hit_time = 0.0f;  // 剩余受击表现时长（秒），>0 时播 Hit 动画
 };
