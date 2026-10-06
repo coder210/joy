@@ -17,6 +17,7 @@
 static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     int count = 0;
     const SpawnDef* ENEMY_SPAWNS = level_enemy_defs(ctx->selected_level, count);
+    log_info("[spawn_enemy] level=%d enemy_count=%d", ctx->selected_level, count);
 
     for (int i = 0; i < count; i++) {
         auto& s = ENEMY_SPAWNS[i];

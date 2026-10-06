@@ -210,6 +210,18 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                         a.frame_elapsed = 0;
                         a.state_elapsed = 0;
                 }
+                // 复活：死亡态必须由渲染端主动退出。
+                // player_death_system 重生时只把 HealthComponent.dead 置回 false、
+                // 并复位 ActionStateComponent 等逻辑状态；但 janim 的 anim_t.current_state
+                // 是纯渲染态，没有逻辑系统会改它，且 anim_def 里也没有 death→idle 的过渡
+                // （只有 idle↔walk / any→attack / attack→idle / any→knocked / knocked→idle），
+                // 因此不在这里复位的话，玩家复活后动画会永远停在 death（“尸体姿势复活”）。
+                if (!dead && a.current_state == ANIM_DEATH) {
+                        a.current_state = ANIM_IDLE;
+                        a.current_frame = 0;
+                        a.frame_elapsed = 0;
+                        a.state_elapsed = 0;
+                }
 
                 anim_params_t p;
                 p.speed = (!dead && ac.state == ActionStateComponent::WALK) ? 1.0f : 0.0f;

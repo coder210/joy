@@ -123,11 +123,14 @@ void GameScene::Load()
     add_system(ctx, OnUpdate, "collision", collision_system);
     add_system(ctx, OnUpdate, "cleanup", cleanup_system);
 
-    // 执行 OnStart phase（生成地图）
-    run_phase(ctx, OnStart, 0);
-
     // 模式特有初始化（多态分派到子类）
+    // 注意：必须先于 run_phase(OnStart)。initAuthoritative 会把 spawn_enemy_system
+    // 注册到 OnStart 阶段；若先跑 OnStart 再 init，敌人生成系统注册晚了且 OnStart
+    // 不会再执行第二次 → 地图解析到出生点却一个敌人都不生成（enemy_n>0 但实体为 0）。
     init();
+
+    // 执行 OnStart phase（生成地图 + 敌人）
+    run_phase(ctx, OnStart, 0);
 }
 
 void GameScene::HandleEvent(const void* ev)
