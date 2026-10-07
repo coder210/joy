@@ -17,14 +17,14 @@ struct Context;
 static void draw_map_pass(Context* ctx)
 {
     auto& gs = ctx->ecs.ctx().get<GlobalState>();
-    const float z   = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
+    int lw = 480, lh = 320;
+    r2d_get_logical_presentation(ctx->r2d, &lw, &lh, NULL);
+    // 自动模式(view_zoom<=0)按当前窗口尺寸重算，使地图高度铺满窗口（与相机一致）。
+    const float z   = (gs.view_zoom > 0.0f) ? gs.view_zoom : side_auto_view_zoom(lw, lh);
     const float ppm = meters_to_pixels(1.0f) * z;   // 每米屏幕像素（含缩放）
 
     float cx = meters_to_pixels(gs.camera_position.x) * z;
     float cy = meters_to_pixels(gs.camera_position.y) * z;
-
-    int lw = 480, lh = 320;
-    r2d_get_logical_presentation(ctx->r2d, &lw, &lh, NULL);
 
     // 1) 地图外区域：整屏"界外"暗色（地图小于视口时不留白）
     r2d_set_color(ctx->r2d, 26, 26, 30, 255);

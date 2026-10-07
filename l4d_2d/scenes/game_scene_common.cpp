@@ -16,12 +16,13 @@
 // ============================================================
 // 视口缩放"自动适配整图"取值（与 game_scene 初始化同一套公式）
 // ============================================================
-static float side_auto_view_zoom()
+// 自动适配：以"窗口高度"为基准，使地图高度恰好铺满窗口（消除上下黑边）；
+// 宽度随窗口比例自适应（可横向滚动或留侧边，均不影响需求）。lw 仅作占位，不用于缩放。
+float side_auto_view_zoom(int lw, int lh)
 {
+    (void)lw;
     const float ppm = meters_to_pixels(1.0f);
-    const float zx = 480.0f / ((float)MAP_W * ppm);
-    const float zy = 320.0f / ((float)MAP_H * ppm);
-    float z = (zx < zy) ? zx : zy;
+    float z = (float)lh / ((float)MAP_H * ppm);   // 高度铺满 = 窗口高 / (地图高*每米像素)
     if (z < 0.1f) z = 0.1f;
     if (z > 4.0f) z = 4.0f;
     return z;
@@ -54,9 +55,17 @@ void GameSceneCommon::playKeyPressed(const char* key, int scancode, bool repeat,
         static int s_idx = 0;
         s_idx = (s_idx + 1) % (int)(sizeof(kPresets) / sizeof(kPresets[0]));
         const float preset = kPresets[s_idx];
-        const float z = (preset <= 0.0f) ? side_auto_view_zoom() : preset;
-        self->ctx()->ecs.ctx().get<GlobalState>().view_zoom = z;
-        log_info("[view] view_zoom = %.3f (%s)", z, (preset <= 0.0f) ? "auto-fit" : "manual");
+        auto& gs = self->ctx()->ecs.ctx().get<GlobalState>();
+        if (preset <= 0.0f) {
+            // 自动：保持哨兵 0，camera_follow_pass 每帧按当前窗口尺寸重算（适配全屏/窗口缩放）
+            gs.view_zoom = 0.0f;
+            int lw = 480, lh = 320;
+            r2d_get_logical_presentation(self->ctx()->r2d, &lw, &lh, NULL);
+            log_info("[view] view_zoom = auto (窗口高 %d → 约 %.3f)", lh, side_auto_view_zoom(lw, lh));
+        } else {
+            gs.view_zoom = preset;
+            log_info("[view] view_zoom = %.3f (manual)", preset);
+        }
         return;
     }
     if (key_mask) {

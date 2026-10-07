@@ -3,6 +3,11 @@
 #include <joy/jmath.h>
 #include <joy/joy.h>
 
+// 视口自动缩放：以"窗口高度"为基准，使地图高度恰好铺满窗口（消除上下黑边），
+// 宽度随窗口比例自适应（可横向滚动或留侧边，均不影响需求）。lw/lh = 实际逻辑分辨率。
+// 由 camera_follow_pass / drawing_map_pass / 初始化共用（非 static，跨编译单元链接）。
+float side_auto_view_zoom(int lw, int lh);
+
 // 全局单例状态（通过 registry.ctx().get<GlobalState>() 访问）
 struct GlobalState {
     // 帧同步
@@ -23,8 +28,9 @@ struct GlobalState {
     // 横版清关：side_view 开启后相机 Y 自动锁到走廊中线（首次跟随时取玩家 Y），不再上下滚
     bool side_view = false;
     // 世界缩放（唯一视口调节参数）：
-    //   0 = 自动适配（整张地图缩进一屏，全览）；1 = 原生 50px/米（部分内容 + 相机滚动）；
-    //   其它 >0 = 手动缩放。由 game_scene 的 SIDE_VIEW_ZOOM 常量 / 初始化计算赋值。
+    //   0 = 自动适配（以"窗口高度"为基准，使地图高度恰好铺满窗口、无上下黑边；
+    //         宽度随窗口比例自适应），由 camera_follow_pass 每帧按当前窗口尺寸重算；
+    //   >0 = 手动缩放（1.0 = 原生 50px/米、部分内容+相机滚动；0.7/0.5 看更多）。Z 键可循环切换。
     // 相机与所有世界 pass 均以它换算：屏幕像素 = (世界 - 相机) * 50 * view_zoom。
     float view_zoom = 1.0f;
 

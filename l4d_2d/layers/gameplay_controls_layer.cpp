@@ -138,11 +138,10 @@ void GameplayControlsLayer::add_button(int idx, button_p* slot,
 
 void GameplayControlsLayer::load_dpad_panel()
 {
-        // 俯视十字方向键（左/右/上/下），其余为技能键
-        add_button(0, &btn_left,   0.09000f, 0.82000f, 0.09000f, 0.14000f, "左", "A", 0);
-        add_button(1, &btn_right,0.27000f, 0.82000f, 0.09000f, 0.14000f, "右", "D", 0);
-        add_button(2, &btn_up,   0.18000f, 0.71000f, 0.09000f, 0.14000f, "上", "W", 0);
-        add_button(3, &btn_down, 0.18000f, 0.90000f, 0.09000f, 0.14000f, "下", "S", 0);
+        // 横版操作：仅 左 / 右 移动 + 跳（原上/下十字方向键去掉，上即跳跃）。
+        add_button(0, &btn_left,  0.09000f, 0.82000f, 0.09000f, 0.14000f, "左", "A", 0);
+        add_button(1, &btn_right, 0.27000f, 0.82000f, 0.09000f, 0.14000f, "右", "D", 0);
+        add_button(2, &btn_jump,  0.50000f, 0.87000f, 0.13000f, 0.19000f, "跳", "W", 0);
         add_button(4, &btn_attack,0.92500f, 0.89375f, 0.13333f, 0.20000f, "攻", "J", 1);
         // 注：原"射"(枪械子弹)与"线"(射线大招)两个按钮及其功能已移除，玩家仅保留"攻"(投掷炸弹)。
 }
@@ -161,12 +160,9 @@ void GameplayControlsLayer::HandleEvent(const void* ev)
                 } else if (self->btn_right && hit(self->btn_right)) {
                         self->pressed_btn = self->btn_right; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_RIGHT;
                         GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_RIGHT);
-                } else if (self->btn_up && hit(self->btn_up)) {
-                        self->pressed_btn = self->btn_up; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_UP;
+                } else if (self->btn_jump && hit(self->btn_jump)) {
+                        self->pressed_btn = self->btn_jump; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_UP;
                         GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_UP);
-                } else if (self->btn_down && hit(self->btn_down)) {
-                        self->pressed_btn = self->btn_down; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_DOWN;
-                        GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_DOWN);
                 } else if (self->btn_attack && hit(self->btn_attack) && self->localCoolRatio(1) <= 0.0f) {
                         self->pressed_btn = self->btn_attack; self->pressed_code = GAMEPLAY_CONTROL_ATTACK;
                 }
@@ -198,7 +194,7 @@ void GameplayControlsLayer::Destroy()
         for (int i = 0; i < 8; i++) {
                 if (metas[i].btn) { button_destroy(metas[i].btn); metas[i].btn = NULL; }
         }
-        btn_left = btn_right = btn_up = btn_down = NULL;
+        btn_left = btn_right = btn_jump = NULL;
         btn_attack = NULL;
         pressed_btn = NULL;
         pressed_code = 0;

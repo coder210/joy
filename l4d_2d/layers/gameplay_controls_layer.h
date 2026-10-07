@@ -21,8 +21,8 @@ struct gc_button_meta {
         button_p btn;
         Context* ctx;
         float w, h, x, y;
-        const char* label;      // 圆心文字（上/下/左/右/攻/射/线）
-        const char* keyLabel;   // 键盘角标字符（W/S/A/D/J/K/L）
+        const char* label;      // 圆心文字（左/右/跳/攻）
+        const char* keyLabel;   // 键盘角标字符（A/D/W/J）
         int coolType;
 };
 
@@ -38,7 +38,7 @@ public:
 
 private:
     button_p btn_left = NULL, btn_right = NULL;
-    button_p btn_up = NULL, btn_down = NULL;
+    button_p btn_jump = NULL;     // 跳跃（发送 GAMEPLAY_CONTROL_UP，对应 INPUT_UP）
     button_p btn_attack = NULL;
     button_p pressed_btn = NULL;   // 当前按住中的按钮（方向键或技能键）
     int      pressed_code = 0;     // 松开时的事件码：技能=触发码，方向=RELEASE_*

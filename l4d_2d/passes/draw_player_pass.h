@@ -14,10 +14,127 @@
 #include "../systems/character_catalog.h"
 #include "../systems/weapon_catalog.h"
 #include "../components/anim_state_component.h"
+#include "../components/logic_velocity_component.h"
 #include "../asset_manager.h"
 #include "../protocol.h"
+#include <vector>
+#include <cstdlib>
+#include <cmath>
 
 struct Context;
+
+// ============================================================
+// 玩家脚部粒子（跑/跳/落尘土）—— 纯渲染，挂 PlayerParticleComponent 于玩家实体。
+// 素材为 6 张独立 PNG（l4d_2d/sprites/objects/13~15-* Particles/1..6.png），
+// 按寿命推进帧、按 alpha 淡出；不影响帧同步、不进快照。
+// ============================================================
+#ifndef PLAYER_PARTICLE_FRAMES
+#define PLAYER_PARTICLE_FRAMES 6
+#endif
+
+struct PParticle {
+    float wx = 0, wy = 0;          // 世界坐标（米）
+    float vx = 0, vy = 0;          // 世界速度（米/秒，+y 向下）
+    float life = 0, max_life = 1;
+    float size = 0.5f;             // 目标高（米），按种类调，避免跳跃尘过大像白气
+    int   frame = 0;
+    int   type = 0;                // 0=跑 1=跳 2=落
+    bool  flip = false;
+};
+
+struct PlayerParticleComponent {
+    float prev_vy = 0.0f;          // 上一帧垂直速度（检测起跳瞬间用）
+    std::vector<PParticle> parts;
+};
+
+static std::unordered_map<std::string, image_p> g_particle_img_cache;
+
+static image_p get_particle_image(Context* ctx, int type, int frame)
+{
+    static const char* kDirs[3] = {
+        "13-Run Particles", "14-Jump Particles", "15-Fall Particles"
+    };
+    if (type < 0 || type > 2) type = 0;
+    if (frame < 0) frame = 0;
+    if (frame >= PLAYER_PARTICLE_FRAMES) frame = PLAYER_PARTICLE_FRAMES - 1;
+    char buf[160];
+    snprintf(buf, sizeof(buf), "l4d_2d/sprites/objects/%s/%d.png", kDirs[type], frame + 1);
+    std::string key(buf);
+    auto it = g_particle_img_cache.find(key);
+    if (it != g_particle_img_cache.end()) return it->second;
+    auto* am = AssetManager::GetInstance();
+    image_p img = (am && ctx) ? am->GetImage(ctx->r2d, key.c_str()) : NULL;
+    if (img) image_set_blend_mode(img, JR2D_BLEND_BLEND);   // 启用透明混合（一次性）
+    return g_particle_img_cache[key] = img;
+}
+
+// 在脚下 (wx,wy) 发射一个粒子；back = 朝向后方（+1 右 / -1 左 / 0 无），跑动尘向后扬。
+static void player_emit_particle(PlayerParticleComponent& ppc, float wx, float wy,
+                                 int type, float back)
+{
+    if (ppc.parts.size() >= 80) return;
+    PParticle p;
+    p.wx = wx + ((float)rand() / RAND_MAX - 0.5f) * 0.18f;
+    p.wy = wy;
+    p.type = type;
+    p.flip = ((float)rand() / RAND_MAX < 0.5f);
+    if (type == 1) {                 // 起跳：脚下小迸发，偏小且贴地，避免两侧像白气
+        float ang = (float)rand() / RAND_MAX * 3.1415926f * 2.0f;
+        float spd = 0.4f + (float)rand() / RAND_MAX * 0.5f;
+        p.vx = cosf(ang) * spd;
+        p.vy = -(0.3f + (float)rand() / RAND_MAX * 0.4f);   // 向上（-y），幅度收敛
+        p.size = 0.25f;
+    } else if (type == 2) {          // 落地：脚下短促小尘，快速消散
+        p.vx = back * 0.4f + ((float)rand() / RAND_MAX - 0.5f) * 0.6f;
+        p.vy = -(0.1f + (float)rand() / RAND_MAX * 0.2f);
+        p.size = 0.25f;
+    } else {                         // 跑动：向后扬尘
+        p.vx = back * 0.8f + ((float)rand() / RAND_MAX - 0.5f) * 0.3f;
+        p.vy = -(0.2f + (float)rand() / RAND_MAX * 0.4f);
+        p.size = 0.45f;
+    }
+    p.max_life = (type == 1) ? 0.35f : (type == 0 ? 0.35f : 0.3f);
+    p.life = p.max_life;
+    p.frame = 0;
+    ppc.parts.push_back(p);
+}
+
+// 推进并绘制玩家粒子（在角色精灵之下绘制，呈现脚下尘土）。每粒子绘制前设自身 alpha。
+static void player_update_draw_particles(Context* ctx, GlobalState& gs,
+                                         PlayerParticleComponent& ppc, float z, float dt)
+{
+    auto& cam = gs.camera_position;
+    for (size_t i = 0; i < ppc.parts.size(); ) {
+        PParticle& p = ppc.parts[i];
+        p.life -= dt;
+        if (p.life <= 0.0f) { ppc.parts.erase(ppc.parts.begin() + i); continue; }
+        p.wx += p.vx * dt;
+        p.wy += p.vy * dt;
+        p.vy += 1.5f * dt;             // 轻微重力（尘先上飘后回落）
+        float tt = 1.0f - p.life / p.max_life;
+        p.frame = (int)(tt * PLAYER_PARTICLE_FRAMES);
+        if (p.frame < 0) p.frame = 0;
+        if (p.frame >= PLAYER_PARTICLE_FRAMES) p.frame = PLAYER_PARTICLE_FRAMES - 1;
+
+        image_p img = get_particle_image(ctx, p.type, p.frame);
+        if (img) {
+            float sx = meters_to_pixels(p.wx - cam.x) * z;
+            float sy = meters_to_pixels(p.wy - cam.y) * z;
+            float iw = 0, ih = 0;
+            image_get_size(img, &iw, &ih);
+            float scale = (ih > 0.0f) ? (p.size * 50.0f * z / ih) : 1.0f;  // 按每粒 size 高
+            jrect_t sr = { 0, 0, iw, ih };
+            vec2_t pos = { sx, sy };
+            vec2_t scl = { p.flip ? -scale : scale, scale };
+            vec2_t origin = { iw * 0.5f, ih * 0.5f };
+            int a = (int)(255.0f * p.life / p.max_life);
+            if (a < 0) a = 0; if (a > 255) a = 255;
+            image_set_alpha(img, (uint8_t)a);   // 共享纹理：绘制前设自身 alpha
+            image_draw_ex(img, &sr, pos, 0.0f, scl, origin);
+        }
+        i++;
+    }
+}
 
 /* ============================================================
  * 玩家序列帧渲染（characters.json 驱动）
@@ -240,6 +357,35 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 if (ac.dir == 1)      a.flip_h = true;    // 左：镜像朝左
                 else if (ac.dir == 2) a.flip_h = false;   // 右：图集默认朝右，无需翻转
                 // 上/下：保持 a.flip_h 不变
+
+                // ---- 脚部粒子（跑/跳/落尘土，纯渲染）----
+                // 垂直速度来自 LogicVelocityComponent.y：负=起跳、0=地面、正=下落。
+                auto& ppc = registry.get_or_emplace<PlayerParticleComponent>(e);
+                float pv_y = 0.0f;
+                if (registry.all_of<LogicVelocityComponent>(e))
+                    pv_y = fp_to_float(registry.get<LogicVelocityComponent>(e).y);
+                bool grounded = (pv_y > -0.05f && pv_y < 0.05f);
+                float back = (ac.dir == 1) ? 1.0f : (ac.dir == 2) ? -1.0f : 0.0f;
+                float feet_x = t.position.x;
+                float feet_y = t.position.y + 0.5f;     // 盒底（盒高 1.0，中心=position）
+                if (!dead) {
+                    if (grounded && ac.state == ActionStateComponent::WALK) {
+                        if ((float)rand() / RAND_MAX < 0.5f)
+                            player_emit_particle(ppc, feet_x, feet_y, 0, back);   // 跑
+                    }
+                    if (ppc.prev_vy > -0.5f && pv_y < -1.0f) {                    // 起跳瞬间
+                        for (int k = 0; k < 6; k++)
+                            player_emit_particle(ppc, feet_x, feet_y, 1, back);
+                    }
+                    // 落地瞬间才冒尘（上一帧还在下落、本帧着地）。
+                    // 不做"持续下落尾迹"：下落快时粒子会被拉成一条白气尾巴。
+                    if (grounded && ppc.prev_vy > 2.0f) {
+                        for (int k = 0; k < 5; k++)
+                            player_emit_particle(ppc, feet_x, feet_y, 2, back);
+                    }
+                }
+                ppc.prev_vy = pv_y;
+                player_update_draw_particles(ctx, gs_p, ppc, z, dt);   // 画在角色之下
 
                 // ---- 绘制 ----
                 anim_clip_t clip;

@@ -83,16 +83,11 @@ void GameScene::Load()
     gs.side_view = true;
     gs.camera_lock_y = -1.0f;
     gs.camera_bias_x = 0.0f;
-    // 视口缩放：由 SIDE_VIEW_ZOOM 决定（0 = 自动适配整图；>0 = 手动，1.0 = 原生滚动）
+    // 视口缩放：0 = 自动适配（以窗口高度为基准，使地图高度恰好铺满窗口、无上下黑边，
+    // 宽度随比例自适应）；>0 = 手动缩放（如 1.0 原生滚动、0.7/0.5 看更多）。
+    // 自动模式 view_zoom 保持哨兵 0，由 camera_follow_pass 每帧按当前窗口尺寸重算
+    // （适配全屏/窗口缩放），无需在此写死分辨率。
     gs.view_zoom = SIDE_VIEW_ZOOM;
-    if (gs.view_zoom <= 0.0f) {
-        // 自动：整张地图缩进 480×320（等比取较小轴 = 必然完整可见）
-        const float zx = 480.0f / ((float)MAP_W * 50.0f);
-        const float zy = 320.0f / ((float)MAP_H * 50.0f);
-        gs.view_zoom = (zx < zy) ? zx : zy;
-    }
-    if (gs.view_zoom < 0.1f) gs.view_zoom = 0.1f;   // 安全下限
-    if (gs.view_zoom > 4.0f) gs.view_zoom = 4.0f;   // 安全上限
 
     // 游戏场景共享运行量（默认构造）：
     // GameRuntime / NetSession 原本内嵌于 Context(game/ net)，现按引擎的

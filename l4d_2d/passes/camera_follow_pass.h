@@ -4,22 +4,26 @@
 #include "../components/player_component.h"
 #include "../components/transform_component.h"
 #include "../protocol.h"
-#include "../systems/map_def.h"   // MAP_H：横版相机垂直夹取用
-
-struct Context;
+#include "../context.h"
+#include "../systems/map_def.h"   // MAP_W/MAP_H：横版相机夹取与自动缩放用
 
 // 将摄像机跟随指定玩家，使玩家尽量居中于屏幕。
-// 逻辑屏幕 480x320，PPM=50，半视口（米） = (480/2/50, 320/2/50) = (4.8, 3.2)。
-// 相机做"边界夹取"：跟随后再把视口夹进 [0, MAP_W]×[0, MAP_H]，避免视口越出地图
-// 而把背景底色（宣纸白）露出来。地图比视口小时退化为居中（两侧等量底色，无法完全避免）。
-static void camera_follow_pass(entt::registry& registry, Context* /*ctx*/, float /*dt*/) {
+// 视口尺寸（米）= 实际窗口 / (PPM*zoom)，zoom 由"窗口高度"推导使地图高度恰好铺满窗口
+// （消除上下黑边）；宽度随窗口比例自适应。相机做"边界夹取"把视口夹进 [0,MAP_W]×[0,MAP_H]，
+// 避免露出界外底色。地图比视口窄时退化为居中（两侧等量底色）。
+static void camera_follow_pass(entt::registry& registry, Context* ctx, float /*dt*/) {
     auto& gs = registry.ctx().get<GlobalState>();
     if (gs.camera_follow_conv < 0) return;
 
-    // 视口在世界里的实际尺寸（米）= 逻辑屏 / PPM / zoom
-    const float z      = (gs.view_zoom > 0.0f) ? gs.view_zoom : 1.0f;
-    const float view_w = 9.6f / z;   // 480 / 50 / zoom
-    const float view_h = 6.4f / z;   // 320 / 50 / zoom
+    // 自动模式(view_zoom<=0)按当前窗口尺寸重算，使地图高度铺满窗口（适配全屏/缩放）。
+    int lw = 480, lh = 320;
+    r2d_get_logical_presentation(ctx->r2d, &lw, &lh, NULL);
+    const float ppm = meters_to_pixels(1.0f);
+    if (gs.view_zoom <= 0.0f) gs.view_zoom = side_auto_view_zoom(lw, lh);
+    const float z = gs.view_zoom;
+    // 视口在世界里的实际尺寸（米）= 窗口 / (每米像素 * zoom)
+    const float view_w = (float)lw / (ppm * z);
+    const float view_h = (float)lh / (ppm * z);
 
     registry.view<PlayerComponent, TransformComponent>().each(
         [&gs, view_w, view_h](auto /*e*/, PlayerComponent& pc, TransformComponent& t)
