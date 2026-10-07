@@ -28,9 +28,15 @@ static void spawn_enemy_system(entt::registry& registry, Context* ctx, float /*d
         // 种类：渲染层按它取 enemies.json 里的精灵目录与动画帧数
         registry.emplace<EnemyTypeComponent>(e, s.type);
         // 出生格中心 s.x/s.y；碰撞盒 0.8×0.8 以出生点居中，
-        // LogicPosition(左上角) = 中心 - 半宽(0.4)，Transform(渲染中心) = 出生点
-        registry.emplace<LogicPositionComponent>(e, fp_from_float(s.x - 0.4f), fp_from_float(s.y - 0.4f));
-        registry.emplace<LogicRectComponent>(e, fp_from_float(0.8f), fp_from_float(0.8f));
+        // 碰撞盒高度按各敌人可视高度(render_height)对齐，避免下半身穿入地面（穿模）。
+        // 碰撞盒中心保持 = 出生点(s.x, s.y) = Transform 渲染中心（精灵以中心绘制），
+        // 故 height = render_height 后盒底恰落在精灵脚底；宽度维持 0.8 不变（按需求只调高度）。
+        fp_t ehw = fp_from_float(g_enemyCatalog.get(s.type).render_height);
+        if (ehw <= fp_zero()) ehw = fp_from_float(0.8f);
+        registry.emplace<LogicPositionComponent>(e,
+            fp_from_float(s.x - 0.4f),                       // 左上角 x = 中心 - 半宽(0.4)
+            fp_sub(fp_from_float(s.y), fp_mul(ehw, fp_from_float(0.5f))));  // 左上角 y = 中心 - 半高
+        registry.emplace<LogicRectComponent>(e, fp_from_float(0.8f), ehw);
         registry.emplace<TransformComponent>(e, s.x, s.y, 0.0f, 1.0f, 1.0f);
 
         registry.emplace<ActionStateComponent>(e);
