@@ -8,6 +8,12 @@
 // 由 camera_follow_pass / drawing_map_pass / 初始化共用（非 static，跨编译单元链接）。
 float side_auto_view_zoom(int lw, int lh);
 
+// 实体渲染放大系数：地图图集改为 64×64 后 1 格 = 1 米，而玩家/敌人/炸弹原本只有
+// 约 1 格高（1.0~1.3 米），相对 64px 瓷砖显得偏小。统一按此系数放大渲染尺寸，
+// 保持彼此相对比例（玩家 1.0→1.5 格、炸弹 1.3→1.95 格）。
+// 只作用于渲染（draw_player / draw_enemy / draw_bomb / 玩家粒子），不改碰撞盒与玩法数值。
+static constexpr float kEntityRenderScale = 1.5f;
+
 // 全局单例状态（通过 registry.ctx().get<GlobalState>() 访问）
 struct GlobalState {
     // 帧同步

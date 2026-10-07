@@ -46,11 +46,14 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		// 碰撞盒高度与玩家可视高度(1.0m)对齐，避免下半身穿入地面（穿模）。
 		// 玩家精灵以中心绘制、中心 = 出生点；盒高取 1.0m 后盒底恰落在脚底。
 		// （玩家绘制归一化到 50px = 1m，见 draw_player_pass 的 scale = 50/src_rect.h）
-		const float kPlayerBoxH = 1.0f;
+		// 碰撞盒高度随实体渲染放大同步（宽度维持 0.8，保证仍能通过 1 格宽通道）
+		// 逻辑层统一 fp_ 运算：半宽/半高用 fp_mul 取半，不写死 0.4、不做浮点相减/相乘。
+		const fp_t kPlayerBoxW = fp_from_float(0.8f);
+		const fp_t kPlayerBoxH = fp_from_float(1.0f * kEntityRenderScale);
 		registry.emplace<LogicPositionComponent>(player,
-			fp_sub(join.position_x, fp_from_float(0.4f)),
-			fp_sub(join.position_y, fp_from_float(kPlayerBoxH * 0.5f)));
-		registry.emplace<LogicRectComponent>(player, fp_from_float(0.8f), fp_from_float(kPlayerBoxH));
+			fp_sub(join.position_x, fp_mul(kPlayerBoxW, fp_from_float(0.5f))),
+			fp_sub(join.position_y, fp_mul(kPlayerBoxH, fp_from_float(0.5f))));
+		registry.emplace<LogicRectComponent>(player, kPlayerBoxW, kPlayerBoxH);
 		registry.emplace<TransformComponent>(player, fp_to_float(join.position_x), fp_to_float(join.position_y), 0.0f, 1.0f, 1.0f);
 
 		// 挂载动作状态组件（几何渲染的朝向 / 攻击表现依赖它）

@@ -1,6 +1,7 @@
 #ifndef BOMB_COMPONENT_H
 #define BOMB_COMPONENT_H
 #include <joy/jmath.h>
+#include "global_state_component.h"   // kEntityRenderScale：碰撞盒与渲染尺寸同步
 
 // 炸弹组件：玩家投掷武器（攻击键触发）。帧同步（lockstep）下由 bomb_shoot_system
 // 确定性生成，服务端/客户端两端使用 get_entity_id 分配相同 ID，无需网络同步。
@@ -20,8 +21,8 @@ struct BombComponent {
 };
 
 // 炸弹几何/逻辑常量（逻辑单位 m / tick）
-static constexpr float BOMB_SIZE        = 0.6f;   // 碰撞盒宽高
-static constexpr float BOMB_HALF        = 0.3f;   // 半宽高
+static constexpr float BOMB_SIZE        = 0.6f * kEntityRenderScale;   // 碰撞盒宽高（随渲染放大同步）
+static constexpr float BOMB_HALF        = 0.3f * kEntityRenderScale;   // 半宽高
 static constexpr float BOMB_THROW_SPEED = 4.0f;  // 投掷水平初速（m/s）
 static constexpr float BOMB_THROW_UP    = 3.0f;   // 投掷上抛初速（m/s）
 static constexpr float BOMB_GRAVITY     = 14.0f;  // 重力加速度（炸弹专用较缓弧线，帧同步确定性）

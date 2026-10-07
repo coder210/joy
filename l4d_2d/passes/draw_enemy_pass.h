@@ -168,7 +168,7 @@ static void draw_enemy_pass(Context* ctx, float dt)
         if (!image_get_size(img, &iw, &ih) || ih <= 0.0f) continue;
 
         // 目标高度 = 该种类渲染高度（米）× 精灵标尺 × 世界缩放
-        const float sizePx = def.render_height * kEnemyRenderPPM * z;
+        const float sizePx = def.render_height * kEntityRenderScale * kEnemyRenderPPM * z;
         const float scale  = sizePx / ih;
 
         float sx = meters_to_pixels(t.position.x - gs.camera_position.x) * z;

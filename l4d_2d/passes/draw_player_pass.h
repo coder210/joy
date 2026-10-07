@@ -43,6 +43,8 @@ struct PParticle {
 
 struct PlayerParticleComponent {
     float prev_vy = 0.0f;          // 上一帧垂直速度（检测起跳瞬间用）
+    // 跑动尘按"每秒个数"累积发射（与渲染帧率无关）：累加器存不足 1 个的余量。
+    float run_emit_acc = 0.0f;
     std::vector<PParticle> parts;
 };
 
@@ -129,7 +131,7 @@ static void player_update_draw_particles(Context* ctx, GlobalState& gs,
             float sy = meters_to_pixels(p.wy - cam.y) * z;
             float iw = 0, ih = 0;
             image_get_size(img, &iw, &ih);
-            float scale = (ih > 0.0f) ? (p.size * 50.0f * z / ih) : 1.0f;  // 按每粒 size 高
+            float scale = (ih > 0.0f) ? (kEntityRenderScale * p.size * 50.0f * z / ih) : 1.0f;  // 按每粒 size 高（随角色同步放大）
             jrect_t sr = { 0, 0, iw, ih };
             vec2_t pos = { sx, sy };
             vec2_t scl = { p.flip ? -scale : scale, scale };
@@ -337,8 +339,16 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 float feet_y = t.position.y + 0.5f;     // 盒底（盒高 1.0，中心=position）
                 if (!dead) {
                     if (grounded && ac.state == ActionStateComponent::WALK) {
-                        if ((float)rand() / RAND_MAX < 0.5f)
+                        // 按时间累积发射（每秒 kRunEmitRate 个），与渲染帧率无关：
+                        // 原先按帧 50% 概率，60fps≈30/s、144fps≈72/s，叠加后尘量过大。
+                        const float kRunEmitRate = 2.5f;
+                        ppc.run_emit_acc += dt * kRunEmitRate;
+                        while (ppc.run_emit_acc >= 1.0f) {
+                            ppc.run_emit_acc -= 1.0f;
                             player_emit_particle(ppc, feet_x, feet_y, 0, back);   // 跑
+                        }
+                    } else {
+                        ppc.run_emit_acc = 0.0f;   // 停止移动时不累积，避免起步瞬间喷一大团
                     }
                     if (ppc.prev_vy > -0.5f && pv_y < -1.0f) {                    // 起跳瞬间
                         for (int k = 0; k < 6; k++)
@@ -365,9 +375,10 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 float sx = meters_to_pixels(t.position.x - cam.x) * z;
                 float sy = meters_to_pixels(t.position.y - cam.y) * z;
 
-                // 素材帧高 32px；按 50 PPM（含缩放）缩放到约 1 格
+                // 素材帧高 32px；按 50 PPM（含缩放）缩放到目标渲染高度。
+                // 乘 kEntityRenderScale：64×64 图集下让角色约占 1.5 格，与地图比例协调。
                 const float scale = (clip.src_rect.h > 0.0f)
-                        ? (50.0f * z / clip.src_rect.h) : 1.0f;
+                        ? (kEntityRenderScale * 50.0f * z / clip.src_rect.h) : 1.0f;
                 vec2_t pos = { sx, sy };
                 // image_draw_ex 会把负 scale 转为 SDL_FLIP_HORIZONTAL（见 jr2d.c），
                 // 因此朝右时传负的 x 缩放即可实现镜像，无需引擎新增 flip 参数。

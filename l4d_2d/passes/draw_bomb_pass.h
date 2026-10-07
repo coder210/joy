@@ -43,7 +43,7 @@ static void draw_bomb_pass(Context* ctx, float dt)
     const float kFPS = 12.0f;                  // 与角色动画一致
     const float RENDER_PPM = 50.0f;            // 与玩家精灵同标尺（玩家用硬编码 50 PPM @z=1）；
                                               // 不沿用 meters_to_pixels（那是地图 PPM，会让炸弹缩到约 1/4）
-    const float bomb_world    = 1.3f;          // 炸弹本体世界尺寸（m），明显大于碰撞盒、比玩家醒目
+    const float bomb_world    = 1.3f * kEntityRenderScale;  // 炸弹本体世界尺寸（m），明显大于碰撞盒、比玩家醒目
     const float explode_world = BOMB_RADIUS * 2.0f;  // 爆炸覆盖伤圈直径（2.5→5.0m），显著放大
 
     auto view = ctx->ecs.view<BombComponent, TransformComponent>();
