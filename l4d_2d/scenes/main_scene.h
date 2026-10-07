@@ -39,6 +39,11 @@ private:
     struct particle particles[MAX_PARTICLES];
     float elapsed = 0;
     MenuLayer* menu = NULL;   // 纯 button 菜单层（不依赖 joy scene_node）
+
+    // 背景 tilemap：Tiled 导出的 levels/main_scene.lua。
+    // 仅作主菜单装饰背景，不参与玩法逻辑、不进快照/帧同步。
+    jtilemap_p         tilemap = nullptr;
+    jtilemap_render_p  tilemap_render = nullptr;
 };
 
 #endif
