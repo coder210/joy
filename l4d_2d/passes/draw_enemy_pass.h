@@ -150,10 +150,12 @@ static void draw_enemy_pass(Context* ctx, float dt)
         if (dead && anim.anim == ENEMY_ANIM_DEAD_GROUND && anim.finished) continue;
 
         // ---- 朝向：dir 0=下 1=左 2=右 3=上；上/下沿用上一次朝向（与玩家一致）----
+        // 镜像判定取决于素材默认朝向：默认朝右(dir==1 左才镜像)；素材本身朝左
+        // (def.src_faces_left) 则反转(dir==2 右才镜像)，否则鲸鱼这类朝左素材会左右反。
         if (ctx->ecs.all_of<ActionStateComponent>(e)) {
             int dir = ctx->ecs.get<ActionStateComponent>(e).dir;
-            if (dir == 1)      anim.flip_h = true;    // 左：镜像（素材默认朝右）
-            else if (dir == 2) anim.flip_h = false;   // 右：不翻转
+            bool want_flip = def.src_faces_left ? (dir == 2) : (dir == 1);
+            anim.flip_h = want_flip;
         }
 
         // ---- 取帧图并绘制 ----

@@ -97,6 +97,13 @@ void EnemyCatalog::load()
         v = cJSON_GetObjectItem(ch, "sprite_dir");
         if (v && v->type == cJSON_String && v->valuestring) d.sprite_dir = v->valuestring;
 
+        // 素材默认朝向：faces_left=true 表示精灵本身朝左（镜像判定反转）。
+        v = cJSON_GetObjectItem(ch, "faces_left");
+        if (v) {
+            if (v->type == cJSON_True)       d.src_faces_left = true;
+            else if (v->type == cJSON_False) d.src_faces_left = false;
+        }
+
         cJSON* stats = cJSON_GetObjectItem(ch, "stats");
         if (stats) {
             cJSON* hp = cJSON_GetObjectItem(stats, "hp");

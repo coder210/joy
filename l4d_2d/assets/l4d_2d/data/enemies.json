@@ -90,6 +90,7 @@
     "whale": {
         "name": "鲸鱼",
         "sprite_dir": "l4d_2d/sprites/enemies/whale/",
+        "faces_left": true,
         "stats": { "hp": 200, "speed": 1.2, "melee_damage": 45, "render_height": 1.7 },
         "ai": {
             "ranged": false,

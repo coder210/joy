@@ -42,6 +42,9 @@ struct EnemyDef {
     fp_t        move_speed = 0;      // stats.speed（米/秒，已定点化）
     int         melee_damage = 0;    // stats.melee_damage（近战伤害）
     float       render_height = 1.0f;// stats.render_height（渲染高度，米；体型区分，纯表现）
+    // 素材默认朝向：false=默认朝右(原行为，dir==1 左才镜像)；true=素材本身朝左，
+    // 镜像条件反转（dir==2 右才镜像）。whale 等素材朝左需在 enemies.json 标 faces_left:true。
+    bool        src_faces_left = false;
 
     // ---- AI ----
     bool        ranged = false;      // 是否远程敌人
