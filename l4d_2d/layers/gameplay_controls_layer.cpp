@@ -77,19 +77,18 @@ void GameplayControlsLayer::drawButton(const gc_button_meta* m)
         float cy = m->y + m->h * 0.5f;
         float R  = (m->w < m->h ? m->w : m->h) * 0.5f;
 
-        // 方形按钮：透明填充（低 alpha，透出游戏场景）+ 暗墨方边框；字体黑色。
+        // 方形按钮：不透明宣纸色底（原底色是暗墨，与黑字同色系导致文字看不清，
+        // 改为浅底 + 黑字形成高对比）+ 暗墨方边框。
         bool pressed = (m->btn == pressed_btn);   // 当前按住中的按钮（方向/技能）
-        int fillA = pressed ? 110 : 51;           // 非按下 51/255 ≈ 20% 不透明度，按下加深作反馈
         jrect_t rect = { m->x, m->y, m->w, m->h };
-        if (fillA > 0) {                                       // 全透明时不画填充，省一次绘制
-                r2d_set_color(r2d, 34, 34, 38, fillA);
-                shape_draw_rectangle(r2d, "fill", rect);
-        }
-        r2d_set_color(r2d, 34, 34, 38, 200);                   // 方形暗墨边框
+        if (pressed) r2d_set_color(r2d, 222, 220, 213, 255);   // 按下：略压深作反馈
+        else         r2d_set_color(r2d, 248, 246, 240, 255);   // 常态：宣纸色（不透明）
+        shape_draw_rectangle(r2d, "fill", rect);
+        r2d_set_color(r2d, 34, 34, 38, 220);                   // 方形暗墨边框
         shape_draw_rectangle(r2d, "line", rect);
         float out = R + 2.0f;
 
-        // 按钮文字：黑色（配合透明底，作用于浅色游戏场景）
+        // 按钮文字：黑色（浅底上清晰可辨）
         if (m->label && m->label[0]) {
                 font_p f = AssetManager::GetInstance()->GetSimheiFont24();
                 jcolor_t tc = { 20, 20, 24, 255 };
@@ -144,12 +143,12 @@ void GameplayControlsLayer::load_dpad_panel()
 {
         // 操作：左下角 WASD 倒 T 组合（左手拇指）——W(跳) 居中上方，A(左)/S(下)/D(右) 同排；
         // 攻(J) 单独放右侧（右手拇指）。S 键恢复占位，发 GAMEPLAY_CONTROL_DOWN（功能后续接入）。
-        // 方向键尺寸统一 0.100×0.155，行列各留 0.005 间隙，互不重叠。
-        add_button(2, &btn_jump,  0.19000f, 0.70000f, 0.10000f, 0.15500f, "跳", "W", 0);
-        add_button(0, &btn_left,  0.08500f, 0.86000f, 0.10000f, 0.15500f, "左", "A", 0);
-        add_button(3, &btn_down,  0.19000f, 0.86000f, 0.10000f, 0.15500f, "下", "S", 0);
-        add_button(1, &btn_right, 0.29500f, 0.86000f, 0.10000f, 0.15500f, "右", "D", 0);
-        add_button(4, &btn_attack,0.93500f, 0.66000f, 0.12000f, 0.18000f, "攻", "J", 1);
+        // 尺寸收至 80%（0.100×0.155 → 0.080×0.124），行列间距同步收紧，保持紧凑不重叠。
+        add_button(2, &btn_jump,  0.19000f, 0.72600f, 0.08000f, 0.12400f, "跳", "W", 0);
+        add_button(0, &btn_left,  0.10000f, 0.86000f, 0.08000f, 0.12400f, "左", "A", 0);
+        add_button(3, &btn_down,  0.19000f, 0.86000f, 0.08000f, 0.12400f, "下", "S", 0);
+        add_button(1, &btn_right, 0.28000f, 0.86000f, 0.08000f, 0.12400f, "右", "D", 0);
+        add_button(4, &btn_attack,0.93500f, 0.66000f, 0.09600f, 0.14400f, "攻", "J", 1);
         // 注：原"射"(枪械子弹)与"线"(射线大招)两个按钮及其功能已移除，玩家仅保留"攻"(投掷炸弹)。
 }
 
