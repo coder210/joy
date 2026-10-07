@@ -48,6 +48,10 @@ static void snapshot_system(entt::registry& registry, Context* ctx, float dt) {
                             ent.ai_target_x       = ai.target_x;
                             ent.ai_target_y       = ai.target_y;
                             ent.ai_shoot_cooldown = ai.shoot_cooldown;
+                            // 追击记忆 / 卡住计数：同为持续累积状态，必须随快照下发，
+                            // 否则晚加入端会以不同起点演算（一端追击、一端巡逻）→ 位置分叉。
+                            ent.ai_alert          = ai.alert_timer;
+                            ent.ai_stuck          = ai.stuck_timer;
                         }
                 } else {
                         ent.type = S2C_TYPE_NORMAL;

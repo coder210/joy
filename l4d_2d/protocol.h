@@ -62,6 +62,10 @@ struct S2CEntity {
     int64_t ai_target_x;       // 当前移动目标
     int64_t ai_target_y;
     int32_t ai_shoot_cooldown; // 远程射击冷却
+    // 追击记忆 / 卡住检测（同样属于"持续累积的 AI 状态"，必须同步：
+    // 否则晚加入端从 0 起步，会出现"一端在追、一端在巡逻"→ 位置分叉 → checksum mismatch）
+    int32_t ai_alert;          // 追击记忆倒计时（>0 = 失去目标后仍在追最后已知位置）
+    int32_t ai_stuck;          // 连续卡住计数
 };
 
 /* ======================== 辅助函数 ======================== */
@@ -93,7 +97,7 @@ static int mp_write_cb(void* data, const char* buf, size_t len) {
 
 /* --- 子对象打包 --- */
 static inline void pack_entity(jmsgpack_packer_t* pk, const S2CEntity& e) {
-    jmsgpack_pack_array(pk, 15);
+    jmsgpack_pack_array(pk, 17);
     jmsgpack_pack_int(pk, e.id);    jmsgpack_pack_int(pk, e.type);
     jmsgpack_pack_int64(pk, e.position_x); jmsgpack_pack_int64(pk, e.position_y);
     jmsgpack_pack_int64(pk, e.width);      jmsgpack_pack_int64(pk, e.height);
@@ -103,6 +107,7 @@ static inline void pack_entity(jmsgpack_packer_t* pk, const S2CEntity& e) {
     jmsgpack_pack_int(pk, e.ai_timer);  jmsgpack_pack_int(pk, e.ai_state);
     jmsgpack_pack_int64(pk, e.ai_target_x); jmsgpack_pack_int64(pk, e.ai_target_y);
     jmsgpack_pack_int(pk, e.ai_shoot_cooldown);
+    jmsgpack_pack_int(pk, e.ai_alert); jmsgpack_pack_int(pk, e.ai_stuck);
 }
 static inline void pack_join(jmsgpack_packer_t* pk, const S2CPlayerJoin& j) {
     jmsgpack_pack_array(pk, 4);
@@ -236,6 +241,8 @@ static inline void unpack_entity(const jmsgpack_object_t* o, S2CEntity* e) {
     e->ai_target_x = jmp_int(&o->via.array.ptr[12]);
     e->ai_target_y = jmp_int(&o->via.array.ptr[13]);
     e->ai_shoot_cooldown = (int)jmp_int(&o->via.array.ptr[14]);
+    e->ai_alert = (int)jmp_int(&o->via.array.ptr[15]);
+    e->ai_stuck = (int)jmp_int(&o->via.array.ptr[16]);
 }
 
 /* 解包 S2C 世界快照: [eid, [entity...]]，返回实体数 */

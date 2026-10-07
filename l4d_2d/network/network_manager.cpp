@@ -104,6 +104,10 @@ void NetworkManager::HandleLoading(int conv, int frame_id, int eid, const S2CEnt
                             ai.target_x       = (fp_t)entity.ai_target_x;
                             ai.target_y       = (fp_t)entity.ai_target_y;
                             ai.shoot_cooldown = entity.ai_shoot_cooldown;
+                            // 追击记忆 / 卡住计数：与服务端对齐，避免晚加入端演算起点不同
+                            ai.alert_timer    = entity.ai_alert;
+                            ai.stuck_timer    = entity.ai_stuck;
+                            ai.prev_x         = ai.target_x;   // 卡住检测的基准，避免首 tick 误判
                         }
                 }
         }

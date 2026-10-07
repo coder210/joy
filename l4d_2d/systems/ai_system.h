@@ -63,6 +63,34 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
     registry.emplace<TransformComponent>(b, tpos, 0.0f, tscale);
 }
 
+// 视线检测：从 (x0,y0) 到 (x1,y1) 的连线是否被墙挡住（隔墙看不见玩家）。
+// 定点数线性采样 + map_solid_at，全程整数运算 → 两端一致，帧同步安全。
+// 只采样中间点（不含起止点）：避免敌人/玩家自身贴墙时把自己所在格误判为阻挡。
+static bool ai_line_of_sight(fp_t x0, fp_t y0, fp_t x1, fp_t y1)
+{
+    const fp_t dx = fp_sub(x1, x0);
+    const fp_t dy = fp_sub(y1, y0);
+    const fp_t dist = fp_sqrt(fp_add(fp_mul(dx, dx), fp_mul(dy, dy)));
+    if (dist <= fp_zero()) return true;
+
+    // 采样步长 0.25m；限制步数上限，避免超长距离拖慢逻辑帧
+    const fp_t seg = fp_from_float(0.25f);
+    int steps = fp_trunc_to_int(fp_div(dist, seg));
+    if (steps < 2) return true;          // 太近：无需检测
+    if (steps > 160) steps = 160;
+
+    const fp_t n = fp_from_float((float)steps);
+    for (int i = 1; i < steps; i++) {
+        const fp_t t  = fp_div(fp_from_float((float)i), n);
+        const fp_t sx = fp_add(x0, fp_mul(dx, t));
+        const fp_t sy = fp_add(y0, fp_mul(dy, t));
+        // 注意：floor 取整用 movement_system.h 的 movement_fp_floor_to_int
+        // （fp_floor_to_int 是 pathfinding_system.h 里的局部函数，本文件不可见）
+        if (map_solid_at(movement_fp_floor_to_int(sx), movement_fp_floor_to_int(sy))) return false;
+    }
+    return true;
+}
+
 // 横版（side-view）敌人 AI：
 //  - 受重力、落到地面/平台（与玩家共用 movement_box_blocked / joy_tilemap_sweep_x / joy_tilemap_sweep_y）
 //  - 追击：只做水平（左右）逼近玩家；进入攻击范围则攻击
@@ -70,7 +98,8 @@ static void spawn_enemy_bullet(entt::registry& registry, Context* ctx,
 //  - 不再使用 A* 寻路（横版不需要，也与重力垂直移动冲突）
 static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
     const fp_t tick     = fp_from_float(game_runtime(ctx).FIXED_TIMESTEP);
-    const fp_t step     = fp_mul(fp_from_float(2.5f), tick);
+    // 注意：step（每 tick 水平步长）不能在这里算——它按敌人种类取 ai.move_speed，
+    // 每个敌人不同，已移到循环内。原先硬编码 2.5 m/s，导致 enemies.json 的 speed 全部失效。
     const fp_t gravity  = fp_from_float(SIDE_GRAVITY);
     const fp_t max_fall = fp_from_float(SIDE_MAX_FALL);
     const fp_t EPS      = fp_from_float(0.001f);
@@ -88,6 +117,12 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         // 死亡敌人不行动（等待 player_death_system 重生）
         if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) continue;
 
+        // 每 tick 水平步长 = 该敌人的移速（enemies.json stats.speed）× 固定步长。
+        // 兜底：未配置（<=0）时沿用原默认 2.5，避免敌人彻底不动。
+        fp_t spd = ai.move_speed;
+        if (spd <= fp_zero()) spd = fp_from_float(2.5f);
+        const fp_t step = fp_mul(spd, tick);
+
         // 攻击计时递减（替代动画状态机的攻击复位），每逻辑 tick 减 1
         if (act.attack_timer > 0) act.attack_timer -= 1;
 
@@ -95,6 +130,7 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         bool found_player = false;
         fp_t nearest_dist_sq = fp_mul(ai.detect_radius, ai.detect_radius);
         fp_t nearest_px = fp_zero();
+        fp_t nearest_py = fp_zero();
 
         for (auto p : player_view) {
             // 死亡玩家不作为敌人攻击/追击目标（不鞭尸）
@@ -107,12 +143,31 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
                 nearest_dist_sq = dist_sq;
                 found_player = true;
                 nearest_px = ppos.x;
+                nearest_py = ppos.y;   // 远程敌人射击需要玩家纵坐标
             }
         }
 
-        // 攻击半径判断
+        // ---- 视线：被墙挡住就看不见（隔墙不追）----
+        const bool visible = found_player
+                          && ai_line_of_sight(pos.x, pos.y, nearest_px, nearest_py);
+
+        // ---- 追击记忆 ----
+        // 看得见：记录最后已知位置（复用 target_x/y，巡逻与追击不同时发生）并刷满警戒；
+        // 看不见：警戒倒计时递减，期间仍朝"最后已知位置"追，避免一出范围就秒变巡逻。
+        // 警戒归零时把 ai.timer 置 0，让巡逻分支立即重摇巡逻点（否则会朝旧目标走很久）。
+        if (visible) {
+            ai.target_x    = nearest_px;
+            ai.target_y    = nearest_py;
+            ai.alert_timer = AI_ALERT_TICKS;
+        } else if (ai.alert_timer > 0) {
+            ai.alert_timer--;
+            if (ai.alert_timer == 0) ai.timer = 0;
+        }
+        const bool chasing = visible || (ai.alert_timer > 0);
+
+        // 攻击半径判断：必须看得见才出手，避免隔墙挥空 / 隔墙射击
         const bool in_attack_range =
-            found_player && (nearest_dist_sq < fp_mul(ai.attack_radius, ai.attack_radius));
+            visible && (nearest_dist_sq < fp_mul(ai.attack_radius, ai.attack_radius));
 
         // 水平移动意图（横版：只左右）
         fp_t vx = fp_zero();
@@ -123,10 +178,18 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             if (act.attack_timer == 0) act.attack_timer = ActionStateComponent::ATTACK_DURATION;
             act.state = ActionStateComponent::ATTACK;
 
-            // 远程敌人：射击冷却（子弹生成暂关，与原型一致）
+            // 远程敌人：冷却到点即朝最近玩家发射一颗子弹。
+            // 注意：原实现只维护冷却、从不生成子弹（spawn_enemy_bullet 定义了却没人调用），
+            // 而 melee_attack_system 又会丢弃远程敌人的近战事件 → 远程敌人完全不出手，形同木桩。
+            // 子弹用 get_entity_id 分配 ID，两端同 tick 同序 → 帧同步确定性不变。
             if (ai.ranged) {
-                if (ai.shoot_cooldown > 0) ai.shoot_cooldown--;
-                else ai.shoot_cooldown = ai.shoot_interval;
+                if (ai.shoot_cooldown > 0) {
+                    ai.shoot_cooldown--;
+                } else {
+                    ai.shoot_cooldown = ai.shoot_interval;
+                    spawn_enemy_bullet(registry, ctx, pos.x, pos.y,
+                                       nearest_px, nearest_py, ai);
+                }
             }
 
             if (!registry.all_of<PlayerEventInput>(e)) registry.emplace<PlayerEventInput>(e);
@@ -134,13 +197,14 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
 
             act.dir = (nearest_px > pos.x) ? 2 : 1;   // 面向玩家（左右）
         }
-        else if (found_player) {
+        else if (chasing) {
             // 状态 1：追击（横版：水平逼近，直接在本系统移动）
             ai.state = 1;
-            ai.timer = 0;
             act.state = act.attack_timer > 0 ? ActionStateComponent::ATTACK
                                              : ActionStateComponent::WALK;
-            fp_t dx = fp_sub(nearest_px, pos.x);
+            // 看得见就追玩家的实时位置；只剩记忆时追"最后已知位置"（ai.target_x）
+            const fp_t goal_x = visible ? nearest_px : ai.target_x;
+            fp_t dx = fp_sub(goal_x, pos.x);
             if (dx > fp_from_float(0.1f))       { vx = step;                    act.dir = 2; }
             else if (dx < fp_from_float(-0.1f)) { vx = fp_sub(fp_zero(), step); act.dir = 1; }
         }
@@ -184,6 +248,29 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
             // 竖直位移 + 碰撞（扫掠推进，落地 / 撞顶时内部速度归零）
             joy_tilemap_sweep_y(&pos.x, &pos.y, &vy, tick, w, h, map_solid_at);
             registry.get<LogicVelocityComponent>(e).y = vy;
+        }
+
+        // ---- 卡住检测：有移动意图却几乎没有实际位移（贴着墙/台阶干推）----
+        if (vx != fp_zero()) {
+            fp_t moved = fp_sub(pos.x, ai.prev_x);
+            if (moved < fp_zero()) moved = fp_sub(fp_zero(), moved);   // 取绝对值
+            if (moved < fp_from_float(0.01f)) ai.stuck_timer++;
+            else ai.stuck_timer = 0;
+        } else {
+            ai.stuck_timer = 0;
+        }
+        ai.prev_x = pos.x;
+
+        if (ai.stuck_timer >= AI_STUCK_TICKS) {
+            ai.stuck_timer = 0;
+            if (ai.state == 0) {
+                ai.timer = 0;                     // 巡逻被卡：立刻重摇一个巡逻点
+            } else if (ai.state == 1 && registry.all_of<LogicVelocityComponent>(e)) {
+                // 追击被卡：着地时起跳，尝试翻越矮墙 / 台阶（横版可跨越地形）
+                if (movement_box_blocked(pos.x, fp_add(pos.y, EPS), w, h))
+                    registry.get<LogicVelocityComponent>(e).y =
+                        fp_sub(fp_zero(), fp_from_float(AI_JUMP_SPEED));
+            }
         }
     }
 }
