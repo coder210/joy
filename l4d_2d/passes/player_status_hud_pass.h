@@ -19,6 +19,10 @@ static void player_status_hud_pass(entt::registry& ecs, uint32_t local_conv,
         bool is_dead = false;
         bool found = false;
 
+        // 取实际逻辑窗口尺寸：HUD 位置按\"窗口百分比\"换算像素，不同分辨率都不越界/错位。
+        int scr_w = 480, scr_h = 320;
+        r2d_get_logical_presentation(r2d, &scr_w, &scr_h, NULL);
+
         ecs.view<PlayerComponent, TransformComponent, ActionStateComponent>().each(
                 [&](auto e, PlayerComponent& pc, TransformComponent& t, ActionStateComponent& ac)
                 {
@@ -66,7 +70,10 @@ static void player_status_hud_pass(entt::registry& ecs, uint32_t local_conv,
 
         // ---- 玩家图形血量条（左上角，使用 11-Health Bar/Health Bar.png）----
         // 暗淡全条作底槽，按 hp/max_hp 裁左段填充；纯渲染、不进快照。
-        float bx = 14.0f, by = 14.0f, barH = 28.0f;
+        // 位置以\"窗口百分比\"表达：左上 2%/3%，宽 30%（上限 360px），任何分辨率都在窗口内。
+        float bx = scr_w * 0.02f;
+        float by = scr_h * 0.03f;
+        float barH = 28.0f;
         if (found && hp >= 0.0f) {
                 auto* am = AssetManager::GetInstance();
                 // 路径走 AssetManager 资源索引（resources.json 的 ui/health_bar），
@@ -78,7 +85,7 @@ static void player_status_hud_pass(entt::registry& ecs, uint32_t local_conv,
                         image_set_blend_mode(hb, JR2D_BLEND_BLEND);
                         float iw = 0, ih = 0;
                         image_get_size(hb, &iw, &ih);
-                        float barW = 240.0f;
+                        float barW = (scr_w * 0.30f > 360.0f) ? 360.0f : scr_w * 0.30f;
                         barH = (ih > 0.0f) ? (barW * ih / iw) : 28.0f;
                         float ratio = (max_hp > 0.0f) ? (hp / max_hp) : 0.0f;
                         if (ratio < 0.0f) ratio = 0.0f;
@@ -103,7 +110,7 @@ static void player_status_hud_pass(entt::registry& ecs, uint32_t local_conv,
         // 调试文字（血量条下方）
         jcolor_t c = { 40, 40, 45, 235 };
         r2d_set_color(r2d, c.r, c.g, c.b, c.a);
-        jtext_printx(r2d, font, buf, (int)strlen(buf), c, bx, by + barH + 6.0f);
+        jtext_printx(r2d, font, buf, (int)strlen(buf), c, bx, by + barH + scr_h * 0.015f);
 }
 
 #endif
