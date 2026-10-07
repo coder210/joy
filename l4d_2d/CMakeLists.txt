@@ -109,12 +109,10 @@ set(PROJECT_FILES
     systems/character_catalog.cpp
     systems/enemy_catalog.cpp
     systems/map_def.cpp
-    systems/weapon_catalog.cpp
     systems/ai_system.h
     systems/bullet_system.h
     systems/character_catalog.h
     systems/enemy_catalog.h
-    systems/weapon_catalog.h
     systems/cleanup_system.h
     systems/collision_system.h
     systems/input_consume_input_system.h

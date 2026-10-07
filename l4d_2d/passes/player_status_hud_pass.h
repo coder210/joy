@@ -68,49 +68,81 @@ static void player_status_hud_pass(entt::registry& ecs, uint32_t local_conv,
                 snprintf(buf, sizeof(buf), "HP: --  POS:(--, --)  ST: --");
         }
 
-        // ---- 玩家图形血量条（左上角，使用 11-Health Bar/Health Bar.png）----
-        // 暗淡全条作底槽，按 hp/max_hp 裁左段填充；纯渲染、不进快照。
-        // 位置以\"窗口百分比\"表达：左上 2%/3%，宽 30%（上限 360px），任何分辨率都在窗口内。
+        // ---- 玩家血量：底图 Health Bar.png（自带 3 个心形空槽）+ 3 个 Heart.png 填充 ----
+        // 底图作血槽框，亮心按 hp/max_hp 逐颗裁剪填入 3 个槽（支持半心）；满血 100 → 3 颗全亮。
+        // 位置以\"窗口百分比\"表达：左上 2%/3%，任何分辨率都在窗口内。纯渲染、不进快照。
         float bx = scr_w * 0.02f;
         float by = scr_h * 0.03f;
-        float barH = 28.0f;
+        float gfxH = 28.0f;   // 图形区域高度（文字基线用）
         if (found && hp >= 0.0f) {
                 auto* am = AssetManager::GetInstance();
-                // 路径走 AssetManager 资源索引（resources.json 的 ui/health_bar），
-                // 缺失时回退内置默认，不在此硬编码路径。
+                float ratio = (max_hp > 0.0f) ? (hp / max_hp) : 0.0f;
+                if (ratio < 0.0f) ratio = 0.0f;
+                if (ratio > 1.0f) ratio = 1.0f;
+                const int N = 3;   // 满血 3 颗
+
+                // 底框：Health Bar.png（含 3 个心形空槽）
                 const char* hb_path = am ? am->GetResourcePath(AssetManager::kCatUI, "health_bar") : nullptr;
                 if (!hb_path) hb_path = "l4d_2d/sprites/objects/11-Health Bar/Health Bar.png";
                 image_p hb = am ? am->GetImage(r2d, hb_path) : NULL;
+                float baseW = 0.0f, baseH = gfxH;
                 if (hb) {
                         image_set_blend_mode(hb, JR2D_BLEND_BLEND);
-                        float iw = 0, ih = 0;
-                        image_get_size(hb, &iw, &ih);
-                        float barW = (scr_w * 0.30f > 360.0f) ? 360.0f : scr_w * 0.30f;
-                        barH = (ih > 0.0f) ? (barW * ih / iw) : 28.0f;
-                        float ratio = (max_hp > 0.0f) ? (hp / max_hp) : 0.0f;
-                        if (ratio < 0.0f) ratio = 0.0f;
-                        if (ratio > 1.0f) ratio = 1.0f;
-                        vec2_t pos = { bx, by };
-                        vec2_t scl = { barW / iw, barH / ih };
-                        vec2_t origin = { 0.0f, 0.0f };
-                        // 底槽（暗淡）
-                        image_set_alpha(hb, 70);
-                        jrect_t sr_full = { 0.0f, 0.0f, iw, ih };
-                        image_draw_ex(hb, &sr_full, pos, 0.0f, scl, origin);
-                        // 当前血量（裁左段）
-                        if (ratio > 0.001f) {
-                                image_set_alpha(hb, 255);
-                                jrect_t sr_fill = { 0.0f, 0.0f, iw * ratio, ih };
-                                image_draw_ex(hb, &sr_fill, pos, 0.0f, scl, origin);
-                        }
+                        float hiw = 0, hih = 0;
+                        image_get_size(hb, &hiw, &hih);
+                        // 底框高：窗口高的 9%（限 34~90px），宽按原图比例（154:62）。
+                        baseH = scr_h * 0.09f;
+                        if (baseH < 34.0f) baseH = 34.0f;
+                        if (baseH > 90.0f) baseH = 90.0f;
+                        baseW = (hih > 0.0f) ? (baseH * hiw / hih) : baseH * 2.5f;
                         image_set_alpha(hb, 255);
+                        vec2_t origin = { 0.0f, 0.0f };
+                        vec2_t scl = { baseW / hiw, baseH / hih };
+                        jrect_t sr = { 0.0f, 0.0f, hiw, hih };
+                        image_draw_ex(hb, &sr, { bx, by }, 0.0f, scl, origin);
+                }
+                gfxH = baseH;
+
+                // 填充：3 个 Heart.png 落在底框 3 个槽位（暗淡作底、亮心裁剪填充）
+                const char* heart_path = "l4d_2d/sprites/objects/11-Health Bar/Heart.png";
+                image_p heart = am ? am->GetImage(r2d, heart_path) : NULL;
+                if (heart && baseW > 0.0f) {
+                        image_set_blend_mode(heart, JR2D_BLEND_BLEND);
+                        float iw = 0, ih = 0;
+                        image_get_size(heart, &iw, &ih);
+                        // 亮心尺寸与底框中心形对齐：宽 = 底框宽 * (22/154)，高按原图比例。
+                        float heartW = baseW * (22.0f / 154.0f);
+                        float heartH = (ih > 0.0f) ? (heartW * ih / iw) : heartW;
+                        float y = by + (baseH - heartH) * 0.5f;   // 垂直居中于槽
+                        vec2_t origin = { 0.0f, 0.0f };
+                        for (int i = 0; i < N; ++i) {
+                                // 每颗水平居中于底框第 i 个均分列
+                                float cx = bx + baseW * ((float)i + 0.5f) / (float)N;
+                                float x = cx - heartW * 0.5f;
+                                float fill = ratio * (float)N - (float)i;
+                                if (fill > 1.0f) fill = 1.0f;
+                                // 暗淡底心
+                                image_set_alpha(heart, 70);
+                                vec2_t scl = { heartW / iw, heartH / ih };
+                                jrect_t sr_full = { 0.0f, 0.0f, iw, ih };
+                                image_draw_ex(heart, &sr_full, { x, y }, 0.0f, scl, origin);
+                                // 亮心（裁左段，支持半心）
+                                if (fill > 0.001f) {
+                                        image_set_alpha(heart, 255);
+                                        float w = heartW * fill;
+                                        jrect_t sr_fill = { 0.0f, 0.0f, iw * fill, ih };
+                                        vec2_t sclf = { w / iw, heartH / ih };
+                                        image_draw_ex(heart, &sr_fill, { x, y }, 0.0f, sclf, origin);
+                                }
+                        }
+                        image_set_alpha(heart, 255);
                 }
         }
 
-        // 调试文字（血量条下方）
+        // 调试文字（血量图形下方）
         jcolor_t c = { 40, 40, 45, 235 };
         r2d_set_color(r2d, c.r, c.g, c.b, c.a);
-        jtext_printx(r2d, font, buf, (int)strlen(buf), c, bx, by + barH + scr_h * 0.015f);
+        jtext_printx(r2d, font, buf, (int)strlen(buf), c, bx, by + gfxH + scr_h * 0.015f);
 }
 
 #endif

@@ -8,7 +8,6 @@
 #include "../components/logic_velocity_component.h"   // 横版重力/跳跃垂直速度
 #include "../components/player_state_input.h"          // 移动位（需随玩家创建）
 #include "../systems/character_catalog.h"
-#include "../systems/weapon_catalog.h"
 
 struct Context;
 
@@ -33,19 +32,6 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 					sp.x = join.position_x;
 					sp.y = join.position_y;
 				}
-				// 快照重建的玩家若尚未授权武器（重连/晚加入），按角色授权补齐库存（幂等）。
-				{
-					auto& pc = registry.get<PlayerComponent>(pe);
-					if (pc.weapon_count == 0) {
-						const auto& cd = g_characterCatalog.get(join.char_id);
-						if (!cd.weapons.empty()) {
-							for (const auto& wk : cd.weapons) pc_grant_weapon(pc, wk.c_str());
-						} else {
-							pc_grant_weapon(pc, cd.starting_weapon.c_str());
-						}
-						if (pc.weapon_id < 0) pc.weapon_id = pc.weapon_count > 0 ? pc.w_ids[0] : -1;
-					}
-				}
 				exists = true;
 				break;
 			}
@@ -56,23 +42,6 @@ static void input_consume_join_system(entt::registry& registry, Context* ctx, fl
 		registry.emplace<IdComponent>(player, get_entity_id(ctx));
 		registry.emplace<PlayerComponent>(player, join.conv, join.char_id);
 
-		// 初始武器库存：由角色的 weapons 列表解析到武器 id（空则回落 starting_weapon）。
-		// 列表来自 characters.json，两端加载同一份文件 → 结果一致，帧同步安全。
-		// 查不到（键拼错 / 未登记进武器表）的条目静默跳过；全查不到则空手（weapon_id=-1）。
-		{
-			auto& pc = registry.get<PlayerComponent>(player);
-			const auto& def = g_characterCatalog.get(join.char_id);
-			std::vector<std::string> keys = def.weapons;
-			if (keys.empty()) keys.push_back(def.starting_weapon);
-			for (const auto& k : keys) {
-				const WeaponDef* wd = g_weaponCatalog.findByName(k);
-				if (wd && pc.weapon_count < 8)
-					pc.w_ids[pc.weapon_count++] = wd->id;
-			}
-			if (pc.weapon_count > 0) {
-				pc.weapon_id = pc.w_ids[0];
-			}
-		}
 		// join.position 是出生格中心；碰撞盒 0.8×0.8 以出生点居中，
 		// 碰撞盒高度与玩家可视高度(1.0m)对齐，避免下半身穿入地面（穿模）。
 		// 玩家精灵以中心绘制、中心 = 出生点；盒高取 1.0m 后盒底恰落在脚底。

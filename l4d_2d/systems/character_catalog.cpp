@@ -26,8 +26,6 @@ void CharacterCatalog::setBuiltinDefault()
     d.max_hp = 100;
     d.move_speed = fp_from_float(2.4f);
     d.sprite_dir = "l4d_2d/sprites/characters/bomb_buy_sheet/";
-    d.starting_weapon = "knife";
-    d.weapons.push_back("dagger");   // 兜底内置表仅授权匕首（与真实 weapons.json 的 key 一致）
     d.anims[ANIM_IDLE].file   = "idle";
     d.anims[ANIM_WALK].file   = "run";    // 素材实为 run.png
     d.anims[ANIM_ATTACK].file = "";       // 素材缺失，渲染降级 idle
@@ -93,17 +91,6 @@ void CharacterCatalog::load()
 
         v = cJSON_GetObjectItem(ch, "sprite_dir");
         if (v && v->type == cJSON_String && v->valuestring) d.sprite_dir = v->valuestring;
-
-        v = cJSON_GetObjectItem(ch, "starting_weapon");
-        if (v && v->type == cJSON_String && v->valuestring) d.starting_weapon = v->valuestring;
-
-        cJSON* wl = cJSON_GetObjectItem(ch, "weapons");
-        if (wl && wl->type == cJSON_Array) {
-            for (cJSON* w = wl->child; w; w = w->next) {
-                if (w->type == cJSON_String && w->valuestring && w->valuestring[0])
-                    d.weapons.push_back(w->valuestring);
-            }
-        }
 
         cJSON* stats = cJSON_GetObjectItem(ch, "stats");
         if (stats) {

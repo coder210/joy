@@ -37,8 +37,6 @@ struct CharacterDef {
     int         max_hp = 100;        // stats.hp
     fp_t        move_speed = 0;      // stats.speed（米/秒，已定点化）
     std::string sprite_dir;          // 精灵目录（运行时相对路径）
-    std::string starting_weapon;     // 初始武器（如 "knife"）
-    std::vector<std::string> weapons; // 持有的武器 key 列表（如 ["dagger","pistol"]）；空则回落 [starting_weapon]
     CharacterAnim anims[ANIM_COUNT]; // 按 CharacterAnimId 索引
 };
 

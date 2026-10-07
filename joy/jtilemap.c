@@ -1000,6 +1000,12 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         float dst_y = ty * tileh - cam_y;
                         float dst_w = ts_tw * scale_x;                 /* 缩放后目标尺寸 = map.tile 尺寸 */
                         float dst_h = ts_th * scale_y;
+                        /* 抗缝隙：瓦片quad取整并各边+1px 重叠，避免非整数 ppm 下
+                         * 相邻瓦片间露出底色形成白线/网格（近白地面透出）。 */
+                        int dst_ix = (int)floorf(dst_x + 0.5f);
+                        int dst_iy = (int)floorf(dst_y + 0.5f);
+                        int dst_iw = (int)floorf(dst_w + 0.5f) + 1;
+                        int dst_ih = (int)floorf(dst_h + 0.5f) + 1;
 
                         const char* deco_img = jtilemap_get_tile_image(res.tileset, res.local_id);
                         if (deco_img) {
@@ -1007,9 +1013,9 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                                 image_p timg = load_texture_internal(r, mapped);
                                 if (!timg) continue;
                                 image_set_alpha(timg, alpha);
-                                int dw = (int)dst_w, dh = (int)dst_h;
+                                int dw = dst_iw, dh = dst_ih;
                                 jtilemap_get_tile_def_size(res.tileset, res.local_id, &dw, &dh);
-                                image_draw1(timg, NULL, &(jrect_t){ dst_x, dst_y, (float)dw, (float)dh });
+                                image_draw1(timg, NULL, &(jrect_t){ (float)dst_ix, (float)dst_iy, (float)dw, (float)dh });
                                 continue;
                         }
 
@@ -1019,7 +1025,7 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         image_p timg = load_tileset_tex(r, res.tileset);
                         if (!timg) {
                                 r2d_set_color(r->r2d, 255, 0, 255, 255);
-                                shape_draw_rectangle(r->r2d, "fill", (jrect_t) { dst_x, dst_y, dst_w, dst_h });
+                                shape_draw_rectangle(r->r2d, "fill", (jrect_t) { (float)dst_ix, (float)dst_iy, (float)dst_iw, (float)dst_ih });
                                 continue;
                         }
 
@@ -1051,11 +1057,11 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         }
 
                         /* 旋转/翻转绕瓦片中心：position 传目标中心，origin 传源中心。 */
-                        vec2_t pos = { dst_x + dst_w * 0.5f, dst_y + dst_h * 0.5f };
+                        vec2_t pos = { (float)dst_ix + dst_iw * 0.5f, (float)dst_iy + dst_ih * 0.5f };
                         vec2_t org = { ts_tw * 0.5f, ts_th * 0.5f };
                         vec2_t scl = {
-                                scale_x * (sdl_flip_h ? -1.0f : 1.0f),
-                                scale_y * (sdl_flip_v ? -1.0f : 1.0f)
+                                (sdl_flip_h ? -1.0f : 1.0f) * ((float)dst_iw / ts_tw),
+                                (sdl_flip_v ? -1.0f : 1.0f) * ((float)dst_ih / ts_th)
                         };
                         image_draw_ex(timg, &src, pos, angle_rad, scl, org);
                 }

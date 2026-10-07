@@ -75,8 +75,6 @@ void CharacterSelectScene::draw_card(int i) {
     jtext_printx(r2d, font12, buf, (int)strlen(buf), attr_c, x + 12.0f, y + 44.0f);
     snprintf(buf, sizeof(buf), "移速 %.1f m/s", fp_to_float(cd.move_speed));
     jtext_printx(r2d, font12, buf, (int)strlen(buf), attr_c, x + 12.0f, y + 62.0f);
-    snprintf(buf, sizeof(buf), "武器 %s", cd.starting_weapon.c_str());
-    jtext_printx(r2d, font12, buf, (int)strlen(buf), attr_c, x + 12.0f, y + 80.0f);
     snprintf(buf, sizeof(buf), "%s", cd.key.c_str());
     jtext_printx(r2d, font12, buf, (int)strlen(buf), attr_c, x + 12.0f, y + 98.0f);
 }

@@ -12,7 +12,6 @@
 #include "../components/health_component.h"
 #include "../components/transform_component.h"
 #include "../systems/character_catalog.h"
-#include "../systems/weapon_catalog.h"
 #include "../components/anim_state_component.h"
 #include "../components/logic_velocity_component.h"
 #include "../asset_manager.h"
@@ -265,46 +264,6 @@ static const anim_def_t& sprite_anim_def(Context* ctx, int char_id)
 // 玩家序列帧：推进动画状态机 + 绘制（合并原 player_anim_pass 与 draw_player_pass，
 // 单次遍历玩家实体，省去两次 view 迭代与两次动画定义查表；纯渲染、不参与帧同步、不进快照）。
 // dt 为渲染帧真实步长（由 GameScene 在 Update 阶段存下，Render 阶段传入）。
-// 绘制玩家所持武器（叠加画在角色 sprite 之上）。
-// 武器取合图中该武器所在的格子；大小与手持偏移由每把武器在 weapons.json 里
-// 单独配置（hold_scale / hold_dx / hold_dy），短刀小而靠外、长枪大而平端。
-// 位置相对角色中心，偏移以米计（最终用 meters_to_pixels 转像素，与角色世界坐标同单位）。
-// 注意：武器图集原生朝右、角色图集原生朝左，两者朝向相反，故武器的镜像与前后偏移
-// 都取与角色相反的方向 —— 角色朝左（flip_h=false）时武器被镜像并画在前方（左侧）。
-// hold_angle 是额外姿态角（度，顺时针为正）：0 = 横向朝前（枪/刀默认），-90 = 竖放刀尖朝上；
-// 武器被镜像的一侧（flip_h=false）角度自动取反，保证左右两个朝向下姿态一致。
-// weapon_id < 0 表示空手。纯渲染，不参与帧同步、不进快照。
-static void draw_held_weapon(Context* ctx, int weapon_id, float cx, float cy, bool flip_h, float role_scale)
-{
-        if (weapon_id < 0) return;
-        auto* am = AssetManager::GetInstance();
-        if (!am) return;
-
-        const std::string atlas = g_weaponCatalog.atlasPath();
-        if (atlas.empty()) return;
-        image_p img = am->GetImage(ctx->r2d, atlas.c_str());
-        if (!img) return;
-
-        const WeaponDef& wd = g_weaponCatalog.get(weapon_id);
-        jrect_t cell = g_weaponCatalog.cellRect(wd);
-        if (cell.h <= 0.0f) return;
-
-        const float scale = role_scale * wd.hold_scale;
-        // 手持偏移以"米"计；屏幕像素含世界缩放 zoom，与角色坐标同一换算。
-        const float gz = (ctx->ecs.ctx().get<GlobalState>().view_zoom > 0.0f)
-                ? ctx->ecs.ctx().get<GlobalState>().view_zoom : 1.0f;
-        const float dx = meters_to_pixels(wd.hold_dx) * gz;
-        const float dy = meters_to_pixels(wd.hold_dy) * gz;
-        vec2_t pos = { cx + (flip_h ? dx : -dx), cy + dy };
-        vec2_t scl = { flip_h ? scale : -scale, scale };   // 武器与角色原生朝向相反：镜像/偏移取反，保证在前方且朝前
-        vec2_t origin = { cell.w * 0.5f, cell.h * 0.5f };
-
-        // 旋转（度→弧度；image_draw_ex 的角度按弧度处理，见 jtilemap.c:1035 用法）。
-        // SDL 语义为先水平翻转再顺时针旋转，故武器被镜像的一侧（flip_h=false）角度取反，
-        const float ang = (flip_h ? wd.hold_angle_deg : -wd.hold_angle_deg)
-                * 3.1415926f / 180.0f;
-        image_draw_ex(img, &cell, pos, ang, scl, origin);
-}
 
 static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
 {
@@ -416,9 +375,6 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 vec2_t origin = { clip.src_rect.w * 0.5f, clip.src_rect.h * 0.5f };
 
                 image_draw_ex(img, &clip.src_rect, pos, 0.0f, scl, origin);
-
-                // 所持武器：叠加在角色之上示意握持；空手（weapon_id < 0）时不绘制
-                draw_held_weapon(ctx, pc.weapon_id, sx, sy, a.flip_h, scale);
         }
 }
 

@@ -2,8 +2,6 @@
   "warrior": {
     "name": "战士",
     "sprite_dir": "l4d_2d/sprites/characters/bomb_buy_sheet/",
-    "starting_weapon": "dagger",
-    "weapons": ["dagger", "pistol", "shotgun"],
     "stats": { "hp": 140, "speed": 2.4 },
     "anims": { "idle": "idle", "knocked":"hit", "walk": "run", "attack": "", "hit": "hit", "death": "death" }
   }

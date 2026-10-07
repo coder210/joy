@@ -9,7 +9,6 @@
 #include "scenes/scene.h"
 #include "scenes/scene_manager.h"
 #include "systems/character_catalog.h"
-#include "systems/weapon_catalog.h"
 #include "systems/enemy_catalog.h"
 #include "scenes/main_scene.h"
 #include "scenes/splash_scene.h"
@@ -103,15 +102,13 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         AssetManager::Init();
         // 角色表必须在 AssetManager 之后加载（其路径经资源索引 config.characters 取得）
         g_characterCatalog.load();
-        // 武器表同理（路径经资源索引 config.weapons 取得）
-        g_weaponCatalog.load();
         // 敌人表同理（路径经资源索引 config.enemies 取得）。
         // 必须在 map_load_level 之前：关卡解析敌人出生点时要按 key 反查种类 id。
         g_enemyCatalog.load();
 
-        ctx->window = create_window("l4d_2d", 480, 320);
+        ctx->window = create_window("l4d_2d", 1920, 1080);
         ctx->r2d = r2d_create(ctx->window);
-        r2d_set_logical_presentation(ctx->r2d, 480, 320);
+        r2d_set_logical_presentation(ctx->r2d, 1920, 1080);
 
         window_set_icon(ctx->window, AssetManager::kPathBrandingLogo);
 
