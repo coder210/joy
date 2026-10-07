@@ -106,9 +106,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         // 必须在 map_load_level 之前：关卡解析敌人出生点时要按 key 反查种类 id。
         g_enemyCatalog.load();
 
-        ctx->window = create_window("l4d_2d", 1920, 1080);
+        ctx->window = create_window("l4d_2d", 1024, 768);
         ctx->r2d = r2d_create(ctx->window);
-        r2d_set_logical_presentation(ctx->r2d, 1920, 1080);
+        r2d_set_logical_presentation(ctx->r2d, 1024, 768);
 
         window_set_icon(ctx->window, AssetManager::kPathBrandingLogo);
 

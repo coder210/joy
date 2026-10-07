@@ -62,7 +62,7 @@ void GameplayControlsLayer::drawKeyBadge(font_p font, const char* key,
         if (!r2d || !font || !key || !key[0]) return;
         float size = 14.0f;                          // 角标像素高度（与 font 实际字号一致）
         float tw = size * 0.5f;                      // 单字符宽≈fontSize/2
-        jcolor_t c = { 236, 234, 228, 235 };
+        jcolor_t c = { 20, 20, 24, 235 };
         float px = floorf(bx - tw * 0.5f + 0.5f);    // 对齐到最近整数像素
         float py = floorf(by - size * 0.5f + 0.5f);
         jtext_printx(r2d, font, key, (int)strlen(key), c, px, py);
@@ -77,22 +77,20 @@ void GameplayControlsLayer::drawButton(const gc_button_meta* m)
         float cy = m->y + m->h * 0.5f;
         float R  = (m->w < m->h ? m->w : m->h) * 0.5f;
 
-        // 水墨风：半透明墨色填充 + 宣纸色细环（外圈再压一道墨环），贴合黑白水墨主题，
-        // 不再用刺眼的纯白底；纸面/暗场都清晰可辨。
+        // 方形按钮：透明填充（低 alpha，透出游戏场景）+ 暗墨方边框；字体黑色。
         bool pressed = (m->btn == pressed_btn);   // 当前按住中的按钮（方向/技能）
-        int fillA = pressed ? 180 : 110;
-        r2d_set_color(r2d, 34, 34, 38, fillA);                 // 半透明墨
-        shape_draw_circle(r2d, "fill", { cx, cy }, R, 40);
-        r2d_set_color(r2d, 248, 246, 240, 220);                // 宣纸色细环
-        shape_draw_circle(r2d, "line", { cx, cy }, R, 40);
+        int fillA = pressed ? 90 : 30;            // 非按下时近乎透明，可见下方游戏场景
+        jrect_t rect = { m->x, m->y, m->w, m->h };
+        r2d_set_color(r2d, 34, 34, 38, fillA);                 // 半透明墨（透明底）
+        shape_draw_rectangle(r2d, "fill", rect);
+        r2d_set_color(r2d, 34, 34, 38, 200);                   // 方形暗墨边框
+        shape_draw_rectangle(r2d, "line", rect);
         float out = R + 2.0f;
-        r2d_set_color(r2d, 34, 34, 38, 200);                   // 外墨环
-        shape_draw_circle(r2d, "line", { cx, cy }, out, 40);
 
-        // 圆心内容：画文字（宣纸色，配合墨色填充）
+        // 按钮文字：黑色（配合透明底，作用于浅色游戏场景）
         if (m->label && m->label[0]) {
                 font_p f = AssetManager::GetInstance()->GetSimheiFont24();
-                jcolor_t tc = { 248, 246, 240, 255 };
+                jcolor_t tc = { 20, 20, 24, 255 };
                 jtext_printx(r2d, f, m->label, (int)strlen(m->label), tc,
                         cx - 12.0f, cy - 12.0f);
         }
