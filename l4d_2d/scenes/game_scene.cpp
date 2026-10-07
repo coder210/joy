@@ -29,8 +29,6 @@
 #include "../passes/camera_follow_pass.h"
 #include "../systems/ai_system.h"
 #include "../systems/melee_attack_system.h"
-#include "../systems/player_shoot_system.h"
-#include "../systems/player_ray_system.h"
 #include "../systems/bullet_system.h"
 #include "../systems/bomb_shoot_system.h"
 #include "../systems/bomb_system.h"
@@ -112,9 +110,7 @@ void GameScene::Load()
     add_system(ctx, PreUpdate, "input_consume_input", input_consume_input_system);
     add_system(ctx, OnUpdate, "ai_system", ai_system);
     add_system(ctx, OnUpdate, "melee_attack", melee_attack_system);
-    add_system(ctx, OnUpdate, "player_shoot", player_shoot_system);
     add_system(ctx, OnUpdate, "bomb_shoot", bomb_shoot_system);
-    add_system(ctx, OnUpdate, "player_ray", player_ray_system);
     add_system(ctx, OnUpdate, "bullet", bullet_system);
     add_system(ctx, OnUpdate, "bomb", bomb_system);
     add_system(ctx, OnUpdate, "player_death", player_death_system);

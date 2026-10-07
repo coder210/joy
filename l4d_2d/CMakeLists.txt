@@ -33,7 +33,6 @@ set(PROJECT_FILES
     components/action_state_component.h
     components/ai_component.h
     components/anim_state_component.h
-    components/attack_ray_effect_component.h
     components/bomb_component.h
     components/bullet_component.h
     components/connection_component.h
@@ -69,7 +68,6 @@ set(PROJECT_FILES
     network/network_manager.h
     # ---- passes ----
     passes/camera_follow_pass.h
-    passes/drawing_attack_ray_effect_pass.h
     passes/drawing_collision_debug_pass.h
     passes/drawing_map_pass.h
     passes/drawing_minimap_pass.h
@@ -129,8 +127,6 @@ set(PROJECT_FILES
     systems/movement_system.h
     systems/pathfinding_system.h
     systems/player_death_system.h
-    systems/player_ray_system.h
-    systems/player_shoot_system.h
     systems/snapshot_system.h
     systems/spawn_def.h
     systems/spawn_enemy_system.h

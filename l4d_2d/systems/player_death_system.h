@@ -72,7 +72,6 @@ static void player_death_system(entt::registry& registry, Context* ctx, float /*
                     auto& act = registry.get<ActionStateComponent>(e);
                     act.state           = ActionStateComponent::IDLE;
                     act.attack_timer    = 0;
-                    act.ranged_cooldown = 0;   // 清射击冷却，防重生瞬间立刻开火
                     act.melee_cooldown  = 0;   // 清近战冷却，防重生瞬间立刻挥击
                 }
                 // 同步渲染坐标（碰撞盒中心 = 出生格中心），避免插值缓慢漂移

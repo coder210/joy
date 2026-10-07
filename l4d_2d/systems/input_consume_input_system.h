@@ -80,11 +80,9 @@ static void input_consume_input_system(entt::registry& registry, Context* ctx, f
 				registry.emplace<PlayerEventInput>(player, ev);
 			}
 		};
-		// 攻/射/线：均为"完整点击"离散触发。射改单发（对齐 3D），线为大招 hitscan。
 		// 攻：投掷炸弹（主武器，替代近战；敌人近战仍由 ai_system 推 ATTACK_MELEE）。
+		// 原"射"(枪械子弹)与"线"(射线大招)按钮及功能已移除，不再产生对应事件。
 		if (input.attack) push_action(PlayerEventInput::ATTACK_BOMB);
-		if (input.ranged) push_action(PlayerEventInput::ATTACK_BULLET);
-		if (input.ray)    push_action(PlayerEventInput::ATTACK_RAY);
 
 		// 更新动作状态：attack_timer 驱动攻击持续（替代动画状态机复位），
 		// 其余由移动位掩码决定 WALK/IDLE 与朝向

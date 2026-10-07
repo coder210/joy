@@ -16,9 +16,8 @@ struct GameRuntime {
 
     int   local_dir = 0;                   // 本地玩家方向
     int   current_input_mask = 0;
-    bool  attack_triggered = false;        // 近战 tap
-    bool  bullet_triggered = false;        // "射" tap
-    bool  ray_triggered = false;           // "线" tap
+    bool  attack_triggered = false;        // 攻（投掷炸弹）tap
+    // 注：原 bullet_triggered("射") 与 ray_triggered("线") 已随对应功能移除。
 
     bool  ready = false;
     int   server_frameid = 0;

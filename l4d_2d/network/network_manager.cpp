@@ -136,12 +136,10 @@ void NetworkManager::SendInput()
     int dir = game_runtime(ctx_).current_input_mask & INPUT_DIR_MASK;
     int attack = (game_runtime(ctx_).current_input_mask & INPUT_ATTACK) ? 1 : 0;
     if (game_runtime(ctx_).attack_triggered) { attack = 1; game_runtime(ctx_).attack_triggered = false; }
-    int ranged = (game_runtime(ctx_).current_input_mask & INPUT_RANGED) ? 1 : 0;
-    if (game_runtime(ctx_).bullet_triggered) { ranged = 1; game_runtime(ctx_).bullet_triggered = false; }
-    int ray = (game_runtime(ctx_).current_input_mask & INPUT_RAY) ? 1 : 0;
-    if (game_runtime(ctx_).ray_triggered) { ray = 1; game_runtime(ctx_).ray_triggered = false; }
-    if (dir || attack || ranged || ray) {
-        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack, ranged, ray);
+    // 玩家仅保留"攻"(投掷炸弹)。原"射"(枪械子弹)与"线"(射线大招)功能已移除；
+    // pack_c2s 的 ranged/ray 取默认值 0，线/射两端恒为 0，协议格式不变 → 帧同步不受影响。
+    if (dir || attack) {
+        auto data = pack_c2s(CMD_PLAYER_INPUT, 0, 0, dir, attack);
         netclient_send(ctx_->netclient, data.c_str(), (int)data.size());
     }
 }
@@ -460,12 +458,9 @@ void NetworkManager::CollectLocalInput()
         int dir = game_runtime(ctx_).current_input_mask & INPUT_DIR_MASK;
         int attack = (game_runtime(ctx_).current_input_mask & INPUT_ATTACK) ? 1 : 0;
         if (game_runtime(ctx_).attack_triggered) { attack = 1; game_runtime(ctx_).attack_triggered = false; }
-        int ranged = (game_runtime(ctx_).current_input_mask & INPUT_RANGED) ? 1 : 0;
-        if (game_runtime(ctx_).bullet_triggered) { ranged = 1; game_runtime(ctx_).bullet_triggered = false; }
-        int ray = (game_runtime(ctx_).current_input_mask & INPUT_RAY) ? 1 : 0;
-        if (game_runtime(ctx_).ray_triggered) { ray = 1; game_runtime(ctx_).ray_triggered = false; }
-        if (dir || attack || ranged || ray) {
-                S2CPlayerInput i = { 0, (int32_t)net_session(ctx_).local_conv, dir, (int8_t)attack, (int8_t)ranged, (int8_t)ray };
+        // 玩家仅保留"攻"(投掷炸弹)。原"射"/"线"功能已移除，ranged/ray 恒为 0。
+        if (dir || attack) {
+                S2CPlayerInput i = { 0, (int32_t)net_session(ctx_).local_conv, dir, (int8_t)attack, 0, 0 };
                 net_session(ctx_).player_inputs.push_back(i);
         }
 }

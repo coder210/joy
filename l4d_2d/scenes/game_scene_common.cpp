@@ -47,8 +47,6 @@ void GameSceneCommon::playKeyPressed(const char* key, int scancode, bool repeat,
     else if (strcmp(key, "up") == 0) key_mask = INPUT_UP;
     else if (strcmp(key, "down") == 0) key_mask = INPUT_DOWN;
     else if (strcmp(key, "j") == 0 || strcmp(key, "J") == 0) key_mask = INPUT_ATTACK;
-    else if (strcmp(key, "e") == 0 || strcmp(key, "E") == 0) { game_runtime(self->ctx()).bullet_triggered = true; return; }
-    else if (strcmp(key, "l") == 0 || strcmp(key, "L") == 0) { game_runtime(self->ctx()).ray_triggered = true; return; }
     else if (strcmp(key, "z") == 0 || strcmp(key, "Z") == 0) {
         // Z：循环视口缩放（调试）——自动适配 → 原生1.0 → 0.7 → 0.5 → 自动。
         //    只改相机/渲染参数（不进快照、不进 checksum），不影响帧同步。
@@ -84,8 +82,6 @@ void GameSceneCommon::playKeyReleased(const char* key, int scancode, void* arg)
     else if (strcmp(key, "up") == 0) key_mask = INPUT_UP;
     else if (strcmp(key, "down") == 0) key_mask = INPUT_DOWN;
     else if (strcmp(key, "j") == 0 || strcmp(key, "J") == 0) key_mask = INPUT_ATTACK;
-    else if (strcmp(key, "e") == 0 || strcmp(key, "E") == 0) { game_runtime(self->ctx()).bullet_triggered = true; return; }
-    else if (strcmp(key, "l") == 0 || strcmp(key, "L") == 0) { game_runtime(self->ctx()).ray_triggered = true; return; }
     if (key_mask) game_runtime(self->ctx()).current_input_mask &= ~key_mask;
 }
 
@@ -108,12 +104,6 @@ void GameSceneCommon::playableHandleEvent(GameScene* self, const void* ev)
         case GAMEPLAY_CONTROL_RELEASE_DOWN:  new_mask &= ~INPUT_DOWN; break;
         case GAMEPLAY_CONTROL_ATTACK:
             game_runtime(ctx).attack_triggered = true;
-            break;
-        case GAMEPLAY_CONTROL_RANGED:
-            game_runtime(ctx).bullet_triggered = true;
-            break;
-        case GAMEPLAY_CONTROL_RAY:
-            game_runtime(ctx).ray_triggered = true;
             break;
         default:
             new_mask &= ~(INPUT_UP | INPUT_DOWN | INPUT_LEFT | INPUT_RIGHT);

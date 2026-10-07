@@ -10,7 +10,7 @@
 static const float GC_PI = 3.14159265f;
 
 // 本地玩家某项冷却剩余比例（0..1 = 剩余/总量）。无本地玩家或未冷却返回 0。
-// coolType: 0=无冷却(方向), 1=近战, 2=射击, 3=射线。
+// coolType: 1=攻(炸弹)。（原"射"枪械/"线"射线已移除，无对应冷却）
 float GameplayControlsLayer::localCoolRatio(int coolType)
 {
         if (!ctx_ || net_session(ctx_).local_conv == 0) return 0.0f;
@@ -21,8 +21,6 @@ float GameplayControlsLayer::localCoolRatio(int coolType)
                 auto& act = view.get<ActionStateComponent>(e);
                 int cd = 0, max = 1;
                 if (coolType == 1)      { cd = act.melee_cooldown;   max = ActionStateComponent::MELEE_COOLDOWN; }
-                else if (coolType == 2) { cd = act.ranged_cooldown;  max = ActionStateComponent::RANGED_COOLDOWN; }
-                else if (coolType == 3) { cd = act.ray_cooldown;     max = ActionStateComponent::RAY_COOLDOWN; }
                 else return 0.0f;
                 if (cd <= 0) return 0.0f;
                 return (float)cd / (float)max;
@@ -146,8 +144,7 @@ void GameplayControlsLayer::load_dpad_panel()
         add_button(2, &btn_up,   0.18000f, 0.71000f, 0.09000f, 0.14000f, "上", "W", 0);
         add_button(3, &btn_down, 0.18000f, 0.90000f, 0.09000f, 0.14000f, "下", "S", 0);
         add_button(4, &btn_attack,0.92500f, 0.89375f, 0.13333f, 0.20000f, "攻", "J", 1);
-        add_button(5, &btn_ranged,0.76875f, 0.88438f, 0.12083f, 0.18125f, "射", "K", 2);
-        add_button(6, &btn_ray,   0.91042f, 0.64063f, 0.12083f, 0.18125f, "线", "L", 3);
+        // 注：原"射"(枪械子弹)与"线"(射线大招)两个按钮及其功能已移除，玩家仅保留"攻"(投掷炸弹)。
 }
 
 void GameplayControlsLayer::HandleEvent(const void* ev)
@@ -172,10 +169,6 @@ void GameplayControlsLayer::HandleEvent(const void* ev)
                         GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_DOWN);
                 } else if (self->btn_attack && hit(self->btn_attack) && self->localCoolRatio(1) <= 0.0f) {
                         self->pressed_btn = self->btn_attack; self->pressed_code = GAMEPLAY_CONTROL_ATTACK;
-                } else if (self->btn_ranged && hit(self->btn_ranged) && self->localCoolRatio(2) <= 0.0f) {
-                        self->pressed_btn = self->btn_ranged; self->pressed_code = GAMEPLAY_CONTROL_RANGED;
-                } else if (self->btn_ray && hit(self->btn_ray) && self->localCoolRatio(3) <= 0.0f) {
-                        self->pressed_btn = self->btn_ray; self->pressed_code = GAMEPLAY_CONTROL_RAY;
                 }
         };
         cbs.on_mousereleased = [](float x, float y, int btn, void* arg) {
@@ -187,11 +180,10 @@ void GameplayControlsLayer::HandleEvent(const void* ev)
                 self->pressed_btn = NULL;
                 self->pressed_code = 0;
                 button_set_pressed(b, false);
-                if (b == self->btn_attack || b == self->btn_ranged || b == self->btn_ray) {
+                if (b == self->btn_attack) {
                         // 技能：完整点击（松开仍在按钮内）才触发一次
                         if (!button_is_hovered(b, x, y)) return;
-                        int coolType = (b == self->btn_attack) ? 1 : (b == self->btn_ranged) ? 2 : 3;
-                        if (self->localCoolRatio(coolType) > 0.0f) return;
+                        if (self->localCoolRatio(1) > 0.0f) return;
                         GameplayControlsLayer::sendGameplayControlEvent(code);
                 } else {
                         // 方向键：松开即清除对应位移位
@@ -207,7 +199,7 @@ void GameplayControlsLayer::Destroy()
                 if (metas[i].btn) { button_destroy(metas[i].btn); metas[i].btn = NULL; }
         }
         btn_left = btn_right = btn_up = btn_down = NULL;
-        btn_attack = btn_ranged = btn_ray = NULL;
+        btn_attack = NULL;
         pressed_btn = NULL;
         pressed_code = 0;
 }

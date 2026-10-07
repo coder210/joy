@@ -11,8 +11,6 @@ enum gameplay_control_event_k {
         GAMEPLAY_CONTROL_LEFT = 1 << 3,
         GAMEPLAY_CONTROL_RIGHT = 1 << 4,
         GAMEPLAY_CONTROL_ATTACK = 1 << 5,
-        GAMEPLAY_CONTROL_RANGED = 1 << 6,
-        GAMEPLAY_CONTROL_RAY = 1 << 7,
         GAMEPLAY_CONTROL_RELEASE_UP = 1 << 9,
         GAMEPLAY_CONTROL_RELEASE_DOWN = 1 << 10,
         GAMEPLAY_CONTROL_RELEASE_LEFT = 1 << 11,
@@ -41,7 +39,7 @@ public:
 private:
     button_p btn_left = NULL, btn_right = NULL;
     button_p btn_up = NULL, btn_down = NULL;
-    button_p btn_attack = NULL, btn_ranged = NULL, btn_ray = NULL;
+    button_p btn_attack = NULL;
     button_p pressed_btn = NULL;   // 当前按住中的按钮（方向键或技能键）
     int      pressed_code = 0;     // 松开时的事件码：技能=触发码，方向=RELEASE_*
     gc_button_meta metas[8] = {};
