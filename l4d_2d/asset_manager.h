@@ -17,6 +17,8 @@ public:
 	static constexpr const char* kCatFonts  = "fonts";
 	static constexpr const char* kCatMaps   = "maps";
 	static constexpr const char* kCatConfig = "config";   // 配置类资源（如角色表）
+	static constexpr const char* kCatUI = "ui";       // HUD/界面素材（如血量条）
+	static constexpr const char* kCatParticles = "particles";  // 玩家脚部粒子目录（跑/跳/落）
 
 	// 品牌资源：不进索引（直接访问），但路径同样收敛到此处一处常量，
 	// 避免同一路径在多个场景里重复书写。

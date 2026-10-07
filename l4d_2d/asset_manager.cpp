@@ -16,6 +16,16 @@ AssetManager::AssetManager()
 	// 内置默认路径：resources.json 缺失/解析失败时的兜底，保证游戏仍可运行。
 	// 真源是 resources.json，加载成功后会逐条覆盖这里的值。
 	resource_paths_[std::string(kCatFonts) + "/simhei"] = "l4d_2d/fonts/simhei.ttf";
+	// HUD/界面素材：路径真源在 resources.json，此处为兜底默认。
+	resource_paths_[std::string(kCatUI) + "/health_bar"] =
+			"l4d_2d/sprites/objects/11-Health Bar/Health Bar.png";
+	// 玩家脚部粒子目录：路径真源在 resources.json，此处为兜底默认。
+	resource_paths_[std::string(kCatParticles) + "/run"]  =
+			"l4d_2d/sprites/objects/13-Run Particles";
+	resource_paths_[std::string(kCatParticles) + "/jump"] =
+			"l4d_2d/sprites/objects/14-Jump Particles";
+	resource_paths_[std::string(kCatParticles) + "/fall"] =
+			"l4d_2d/sprites/objects/15-Fall Particles";
 	for (int i = 1; i <= kDefaultLevelCount; i++) {
 		char key[32], val[128];
 		snprintf(key, sizeof(key), "%s/level%d", kCatMaps, i);

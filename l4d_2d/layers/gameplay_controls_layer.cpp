@@ -62,7 +62,7 @@ void GameplayControlsLayer::drawKeyBadge(font_p font, const char* key,
         if (!r2d || !font || !key || !key[0]) return;
         float size = 14.0f;                          // 角标像素高度（与 font 实际字号一致）
         float tw = size * 0.5f;                      // 单字符宽≈fontSize/2
-        jcolor_t c = { 60, 60, 70, 255 };
+        jcolor_t c = { 236, 234, 228, 235 };
         float px = floorf(bx - tw * 0.5f + 0.5f);    // 对齐到最近整数像素
         float py = floorf(by - size * 0.5f + 0.5f);
         jtext_printx(r2d, font, key, (int)strlen(key), c, px, py);
@@ -77,18 +77,22 @@ void GameplayControlsLayer::drawButton(const gc_button_meta* m)
         float cy = m->y + m->h * 0.5f;
         float R  = (m->w < m->h ? m->w : m->h) * 0.5f;
 
-        // 白底圆 + 墨色描边（显式设色，避免继承上层残留颜色导致红/杂色边框）
-        r2d_set_color(r2d, 255, 255, 255, 255);
+        // 水墨风：半透明墨色填充 + 宣纸色细环（外圈再压一道墨环），贴合黑白水墨主题，
+        // 不再用刺眼的纯白底；纸面/暗场都清晰可辨。
+        bool pressed = (m->btn == pressed_btn);   // 当前按住中的按钮（方向/技能）
+        int fillA = pressed ? 180 : 110;
+        r2d_set_color(r2d, 34, 34, 38, fillA);                 // 半透明墨
         shape_draw_circle(r2d, "fill", { cx, cy }, R, 40);
-        r2d_set_color(r2d, 0, 0, 0, 255);
+        r2d_set_color(r2d, 248, 246, 240, 220);                // 宣纸色细环
         shape_draw_circle(r2d, "line", { cx, cy }, R, 40);
         float out = R + 2.0f;
+        r2d_set_color(r2d, 34, 34, 38, 200);                   // 外墨环
         shape_draw_circle(r2d, "line", { cx, cy }, out, 40);
 
-        // 圆心内容：画文字
+        // 圆心内容：画文字（宣纸色，配合墨色填充）
         if (m->label && m->label[0]) {
                 font_p f = AssetManager::GetInstance()->GetSimheiFont24();
-                jcolor_t tc = { 30, 30, 35, 255 };
+                jcolor_t tc = { 248, 246, 240, 255 };
                 jtext_printx(r2d, f, m->label, (int)strlen(m->label), tc,
                         cx - 12.0f, cy - 12.0f);
         }
@@ -139,10 +143,12 @@ void GameplayControlsLayer::add_button(int idx, button_p* slot,
 void GameplayControlsLayer::load_dpad_panel()
 {
         // 横版操作：仅 左 / 右 移动 + 跳（原上/下十字方向键去掉，上即跳跃）。
-        add_button(0, &btn_left,  0.09000f, 0.82000f, 0.09000f, 0.14000f, "左", "A", 0);
-        add_button(1, &btn_right, 0.27000f, 0.82000f, 0.09000f, 0.14000f, "右", "D", 0);
-        add_button(2, &btn_jump,  0.50000f, 0.87000f, 0.13000f, 0.19000f, "跳", "W", 0);
-        add_button(4, &btn_attack,0.92500f, 0.89375f, 0.13333f, 0.20000f, "攻", "J", 1);
+        // 布局：左/右 贴左下角并排（左手拇指）；跳 与 攻 放右下角（右手拇指），
+        // 跳在更低更大、攻在其上方偏右，互不重叠且都好够到。
+        add_button(0, &btn_left,  0.08500f, 0.82000f, 0.11000f, 0.17000f, "左", "A", 0);
+        add_button(1, &btn_right, 0.25500f, 0.82000f, 0.11000f, 0.17000f, "右", "D", 0);
+        add_button(2, &btn_jump,  0.80000f, 0.88000f, 0.15000f, 0.22000f, "跳", "W", 0);
+        add_button(4, &btn_attack,0.93500f, 0.66000f, 0.12000f, 0.18000f, "攻", "J", 1);
         // 注：原"射"(枪械子弹)与"线"(射线大招)两个按钮及其功能已移除，玩家仅保留"攻"(投掷炸弹)。
 }
 

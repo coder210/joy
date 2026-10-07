@@ -51,18 +51,26 @@ static std::unordered_map<std::string, image_p> g_particle_img_cache;
 
 static image_p get_particle_image(Context* ctx, int type, int frame)
 {
-    static const char* kDirs[3] = {
-        "13-Run Particles", "14-Jump Particles", "15-Fall Particles"
+    // 目录走 AssetManager 资源索引（resources.json 的 particles/run|jump|fall），
+    // 缺失时回退内置默认目录，不在此硬编码对象文件夹路径。
+    static const char* kPartIds[3] = { "run", "jump", "fall" };
+    static const char* kDefDirs[3] = {
+        "l4d_2d/sprites/objects/13-Run Particles",
+        "l4d_2d/sprites/objects/14-Jump Particles",
+        "l4d_2d/sprites/objects/15-Fall Particles"
     };
     if (type < 0 || type > 2) type = 0;
     if (frame < 0) frame = 0;
     if (frame >= PLAYER_PARTICLE_FRAMES) frame = PLAYER_PARTICLE_FRAMES - 1;
+    const char* dir = NULL;
+    auto* am = AssetManager::GetInstance();
+    if (am) dir = am->GetResourcePath(AssetManager::kCatParticles, kPartIds[type]);
+    if (!dir) dir = kDefDirs[type];
     char buf[160];
-    snprintf(buf, sizeof(buf), "l4d_2d/sprites/objects/%s/%d.png", kDirs[type], frame + 1);
+    snprintf(buf, sizeof(buf), "%s/%d.png", dir, frame + 1);
     std::string key(buf);
     auto it = g_particle_img_cache.find(key);
     if (it != g_particle_img_cache.end()) return it->second;
-    auto* am = AssetManager::GetInstance();
     image_p img = (am && ctx) ? am->GetImage(ctx->r2d, key.c_str()) : NULL;
     if (img) image_set_blend_mode(img, JR2D_BLEND_BLEND);   // 启用透明混合（一次性）
     return g_particle_img_cache[key] = img;

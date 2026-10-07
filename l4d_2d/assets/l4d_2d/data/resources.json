@@ -13,5 +13,13 @@
         "characters": "l4d_2d/data/characters.json",
         "weapons": "l4d_2d/data/weapons.json",
         "enemies": "l4d_2d/data/enemies.json"
+    },
+    "ui": {
+        "health_bar": "l4d_2d/sprites/objects/11-Health Bar/Health Bar.png"
+    },
+    "particles": {
+        "run": "l4d_2d/sprites/objects/13-Run Particles",
+        "jump": "l4d_2d/sprites/objects/14-Jump Particles",
+        "fall": "l4d_2d/sprites/objects/15-Fall Particles"
     }
 }
