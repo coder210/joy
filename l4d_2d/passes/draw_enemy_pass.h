@@ -9,6 +9,7 @@
 #include "../components/transform_component.h"
 #include "../components/action_state_component.h"
 #include "../components/health_component.h"
+#include "../components/logic_velocity_component.h"   // 垂直速度：判定是否着地（死亡动画需落地后才播）
 #include "../systems/enemy_catalog.h"
 #include "../asset_manager.h"
 #include "../protocol.h"
@@ -68,6 +69,14 @@ static void draw_enemy_pass(Context* ctx, float dt)
             hp   = h.hp;
         }
 
+        // 是否着地：半空中被击杀时先由重力把身体落到地面（见 ai_system 死亡仍受重力），
+        // 落地后才进入死亡动画，避免"尸体挂在半空"。
+        bool grounded = true;
+        if (ctx->ecs.all_of<LogicVelocityComponent>(e)) {
+            const float vy = fp_to_float(ctx->ecs.get<LogicVelocityComponent>(e).y);
+            grounded = (vy > -0.05f && vy < 0.05f);
+        }
+
         // 受击检测（纯渲染）：本渲染帧 hp 比上次低 → 触发一次 Hit 表现。
         // 不用逻辑侧 knockback_timer：它只给玩家置位，且递减逻辑也只写在玩家分支，
         // 给敌人置位会永远卡在受击态。渲染侧自检测则完全没有帧同步风险。
@@ -104,8 +113,10 @@ static void draw_enemy_pass(Context* ctx, float dt)
                 float dur = (dn > 0) ? (float)dn / kEnemySpriteFPS : 0.0f;
                 want = (dur > 0.0f && anim.total >= dur)
                      ? ENEMY_ANIM_DEAD_GROUND : ENEMY_ANIM_DEAD;   // 播完一遍才切尸体
+            } else if (!grounded) {
+                want = ENEMY_ANIM_HIT;                  // 半空中被击杀：先受击坠落，落地后再进死亡动画
             } else {
-                want = ENEMY_ANIM_DEAD;                 // 刚死：进入死亡动画
+                want = ENEMY_ANIM_DEAD;                 // 刚死（已着地）：进入死亡动画
             }
         } else if (knockback > 0 || anim.hit_time > 0.0f) {
             want = ENEMY_ANIM_HIT;                      // 硬直（罕见）或刚掉血 → 受击

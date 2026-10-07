@@ -79,10 +79,12 @@ void GameplayControlsLayer::drawButton(const gc_button_meta* m)
 
         // 方形按钮：透明填充（低 alpha，透出游戏场景）+ 暗墨方边框；字体黑色。
         bool pressed = (m->btn == pressed_btn);   // 当前按住中的按钮（方向/技能）
-        int fillA = pressed ? 90 : 30;            // 非按下时近乎透明，可见下方游戏场景
+        int fillA = pressed ? 110 : 51;           // 非按下 51/255 ≈ 20% 不透明度，按下加深作反馈
         jrect_t rect = { m->x, m->y, m->w, m->h };
-        r2d_set_color(r2d, 34, 34, 38, fillA);                 // 半透明墨（透明底）
-        shape_draw_rectangle(r2d, "fill", rect);
+        if (fillA > 0) {                                       // 全透明时不画填充，省一次绘制
+                r2d_set_color(r2d, 34, 34, 38, fillA);
+                shape_draw_rectangle(r2d, "fill", rect);
+        }
         r2d_set_color(r2d, 34, 34, 38, 200);                   // 方形暗墨边框
         shape_draw_rectangle(r2d, "line", rect);
         float out = R + 2.0f;
@@ -140,12 +142,13 @@ void GameplayControlsLayer::add_button(int idx, button_p* slot,
 
 void GameplayControlsLayer::load_dpad_panel()
 {
-        // 横版操作：仅 左 / 右 移动 + 跳（原上/下十字方向键去掉，上即跳跃）。
-        // 布局：左/右 贴左下角并排（左手拇指）；跳 与 攻 放右下角（右手拇指），
-        // 跳在更低更大、攻在其上方偏右，互不重叠且都好够到。
-        add_button(0, &btn_left,  0.08500f, 0.82000f, 0.11000f, 0.17000f, "左", "A", 0);
-        add_button(1, &btn_right, 0.25500f, 0.82000f, 0.11000f, 0.17000f, "右", "D", 0);
-        add_button(2, &btn_jump,  0.80000f, 0.88000f, 0.15000f, 0.22000f, "跳", "W", 0);
+        // 操作：左下角 WASD 倒 T 组合（左手拇指）——W(跳) 居中上方，A(左)/S(下)/D(右) 同排；
+        // 攻(J) 单独放右侧（右手拇指）。S 键恢复占位，发 GAMEPLAY_CONTROL_DOWN（功能后续接入）。
+        // 方向键尺寸统一 0.100×0.155，行列各留 0.005 间隙，互不重叠。
+        add_button(2, &btn_jump,  0.19000f, 0.70000f, 0.10000f, 0.15500f, "跳", "W", 0);
+        add_button(0, &btn_left,  0.08500f, 0.86000f, 0.10000f, 0.15500f, "左", "A", 0);
+        add_button(3, &btn_down,  0.19000f, 0.86000f, 0.10000f, 0.15500f, "下", "S", 0);
+        add_button(1, &btn_right, 0.29500f, 0.86000f, 0.10000f, 0.15500f, "右", "D", 0);
         add_button(4, &btn_attack,0.93500f, 0.66000f, 0.12000f, 0.18000f, "攻", "J", 1);
         // 注：原"射"(枪械子弹)与"线"(射线大招)两个按钮及其功能已移除，玩家仅保留"攻"(投掷炸弹)。
 }
@@ -167,6 +170,9 @@ void GameplayControlsLayer::HandleEvent(const void* ev)
                 } else if (self->btn_jump && hit(self->btn_jump)) {
                         self->pressed_btn = self->btn_jump; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_UP;
                         GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_UP);
+                } else if (self->btn_down && hit(self->btn_down)) {
+                        self->pressed_btn = self->btn_down; self->pressed_code = GAMEPLAY_CONTROL_RELEASE_DOWN;
+                        GameplayControlsLayer::sendGameplayControlEvent(GAMEPLAY_CONTROL_DOWN);
                 } else if (self->btn_attack && hit(self->btn_attack) && self->localCoolRatio(1) <= 0.0f) {
                         self->pressed_btn = self->btn_attack; self->pressed_code = GAMEPLAY_CONTROL_ATTACK;
                 }
@@ -198,7 +204,7 @@ void GameplayControlsLayer::Destroy()
         for (int i = 0; i < 8; i++) {
                 if (metas[i].btn) { button_destroy(metas[i].btn); metas[i].btn = NULL; }
         }
-        btn_left = btn_right = btn_jump = NULL;
+        btn_left = btn_right = btn_jump = btn_down = NULL;
         btn_attack = NULL;
         pressed_btn = NULL;
         pressed_code = 0;

@@ -286,11 +286,18 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 const anim_def_t& def = *asc.def;
                 anim_t& a = asc.anim;
 
+                // 垂直速度与着地判定：半空中死亡时先由重力把身体落到地面（见 movement_system），
+                // 落地后再切死亡动画，避免"定格在半空播死亡动画"。
+                float pv_y = 0.0f;
+                if (registry.all_of<LogicVelocityComponent>(e))
+                        pv_y = fp_to_float(registry.get<LogicVelocityComponent>(e).y);
+                const bool grounded = (pv_y > -0.05f && pv_y < 0.05f);
+
                 // 死亡：janim 的 params 只有 speed/dir/attack，无 death 条件，
                 // 故由外部强制切到 death 状态（janim 会挡住从 death 误触发 attack）。
                 bool dead = registry.all_of<HealthComponent>(e)
                         && registry.get<HealthComponent>(e).dead;
-                if (dead && a.current_state != ANIM_DEATH) {
+                if (dead && grounded && a.current_state != ANIM_DEATH) {   // 需落地才播死亡动画
                         a.current_state = ANIM_DEATH;
                         a.current_frame = 0;
                         a.frame_elapsed = 0;
@@ -330,13 +337,10 @@ static void player_render_pass(entt::registry& registry, Context* ctx, float dt)
                 // ---- 脚部粒子（跑/跳/落尘土，纯渲染）----
                 // 垂直速度来自 LogicVelocityComponent.y：负=起跳、0=地面、正=下落。
                 auto& ppc = registry.get_or_emplace<PlayerParticleComponent>(e);
-                float pv_y = 0.0f;
-                if (registry.all_of<LogicVelocityComponent>(e))
-                    pv_y = fp_to_float(registry.get<LogicVelocityComponent>(e).y);
-                bool grounded = (pv_y > -0.05f && pv_y < 0.05f);
                 float back = (ac.dir == 1) ? 1.0f : (ac.dir == 2) ? -1.0f : 0.0f;
                 float feet_x = t.position.x;
-                float feet_y = t.position.y + 0.5f;     // 盒底（盒高 1.0，中心=position）
+                // 盒底：盒高随渲染放大（1.0 → kEntityRenderScale 倍），半高即盒底偏移。
+                float feet_y = t.position.y + 0.5f * kEntityRenderScale;
                 if (!dead) {
                     if (grounded && ac.state == ActionStateComponent::WALK) {
                         // 按时间累积发射（每秒 kRunEmitRate 个），与渲染帧率无关：

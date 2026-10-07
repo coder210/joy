@@ -114,8 +114,22 @@ static void ai_system(entt::registry& registry, Context* ctx, float /*dt*/) {
         auto& act = view.get<ActionStateComponent>(e);
         (void)id;
 
-        // 死亡敌人不行动（等待 player_death_system 重生）
-        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) continue;
+        // 死亡敌人不行动（等待 player_death_system 重生），但仍受重力落地：
+        // 若直接 continue，半空中被击杀会定格在空中播死亡动画（与玩家同款问题）。
+        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) {
+            if (registry.all_of<LogicRectComponent>(e) && registry.all_of<LogicVelocityComponent>(e)) {
+                const fp_t w = registry.get<LogicRectComponent>(e).width;
+                const fp_t h = registry.get<LogicRectComponent>(e).height;
+                fp_t vy = registry.get<LogicVelocityComponent>(e).y;
+                if (movement_box_blocked(pos.x, fp_add(pos.y, EPS), w, h) && vy > fp_zero())
+                    vy = fp_zero();                     // 已着地：清除下落速度
+                vy = fp_add(vy, fp_mul(gravity, tick));
+                if (vy > max_fall) vy = max_fall;
+                joy_tilemap_sweep_y(&pos.x, &pos.y, &vy, tick, w, h, map_solid_at);
+                registry.get<LogicVelocityComponent>(e).y = vy;
+            }
+            continue;   // 追击 / 攻击 / 跳跃 / 卡住检测一律不执行
+        }
 
         // 每 tick 水平步长 = 该敌人的移速（enemies.json stats.speed）× 固定步长。
         // 兜底：未配置（<=0）时沿用原默认 2.5，避免敌人彻底不动。

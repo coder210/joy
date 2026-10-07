@@ -77,11 +77,15 @@ static void movement_system(entt::registry& registry, Context* ctx, float /*dt*/
     const fp_t EPS      = fp_from_float(0.001f);
 
     for (auto e : view) {
-        if (registry.all_of<HealthComponent>(e) && registry.get<HealthComponent>(e).dead) { continue; }
+        // 死亡玩家：不再响应输入（不左右移动、不跳），但仍继续下方的重力积分与竖直碰撞，
+        // 否则半空中死亡会因不受重力而定格在空中播放死亡动画（"人死在半空"）。
+        const bool dead = registry.all_of<HealthComponent>(e)
+                        && registry.get<HealthComponent>(e).dead;
         auto& p = view.get<LogicPositionComponent>(e);
 
         // 横版：bit0=上=跳，bit2=左，bit3=右（bit1=下 预留）；不再自由上下移动
-        const uint8_t bits = registry.all_of<PlayerStateInput>(e)
+        // 死亡后输入位按 0 处理（等价于松开所有键），其余物理照常。
+        const uint8_t bits = (!dead && registry.all_of<PlayerStateInput>(e))
                            ? registry.get<PlayerStateInput>(e).move_bits : 0;
 
         // 移速按角色取（stats.speed，米/秒）。
