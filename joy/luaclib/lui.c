@@ -113,7 +113,7 @@ static int l_button_create(lua_State* L)
         r2d = (jr2d_p)lua_touserdata(L, 1);
         float w = (float)luaL_checknumber(L, 2);
         float h = (float)luaL_checknumber(L, 3);
-        btn = button_create(r2d, w, h);
+        btn = button_create(r2d, 0.0f, 0.0f, w / 480.0f, h / 320.0f);
         lua_pushlightuserdata(L, btn);
         return 1;
 }
@@ -276,7 +276,7 @@ static int lcombobox_create(lua_State* L)
         rect.y = (float)luaL_checknumber(L, 3);
         rect.w = (float)luaL_checknumber(L, 4);
         rect.h = (float)luaL_checknumber(L, 5);
-        combobox = combobox_create(r2d, rect);
+        combobox = combobox_create(r2d, rect.x / 480.0f, rect.y / 320.0f, rect.w / 480.0f, rect.h / 320.0f);
         lua_pushlightuserdata(L, combobox);
         return 1;
 }
@@ -351,7 +351,7 @@ static int l_checkbox_create(lua_State* L)
         y = luaL_checkinteger(L, 2);
         size = luaL_checkinteger(L, 3);
         label = luaL_checkstring(L, 4);
-        checkbox = checkbox_create(x, y, size, label);
+        checkbox = checkbox_create(x / 480.0f, y / 320.0f, size / 480.0f, label);
         lua_pushlightuserdata(L, checkbox);
         return 1;
 }
@@ -395,7 +395,7 @@ static int l_radio_create(lua_State* L)
         font_size = luaL_checkinteger(L, 3);
         text = luaL_checkstring(L, 4);
         group_id = luaL_checkinteger(L, 5);
-        btn = radio_create(x, y, font_size, text, group_id);
+        btn = radio_create(x / 480.0f, y / 320.0f, font_size / 480.0f, text, group_id);
         lua_pushlightuserdata(L, btn);
         return 1;
 }
@@ -449,7 +449,7 @@ static int ldatagrid_create(lua_State* L)
         has_header = lua_toboolean(L, 4);
         font_p dgfont = (font_p)lua_touserdata(L, 5);
 
-        datagrid = datagrid_create(r2d, rect, col_count, has_header, dgfont);
+        datagrid = datagrid_create(r2d, rect.x / 480.0f, rect.y / 320.0f, rect.w / 480.0f, rect.h / 320.0f, col_count, has_header, dgfont);
         lua_pushlightuserdata(L, datagrid);
         return 1;
 }
@@ -552,7 +552,7 @@ static int l_inputbox_create(lua_State* L) {
         rect.y = (float)luaL_checknumber(L, 4);
         rect.w = (float)luaL_checknumber(L, 5);
         rect.h = (float)luaL_checknumber(L, 6);
-        inputbox_p ti = inputbox_create(r, rect, font);
+        inputbox_p ti = inputbox_create(r, rect.x / 480.0f, rect.y / 320.0f, rect.w / 480.0f, rect.h / 320.0f, font);
         lua_pushlightuserdata(L, ti);
         return 1;
 }
@@ -698,7 +698,7 @@ static int l_slider_create(lua_State* L) {
         float min = (float)luaL_checknumber(L, 6);
         float max = (float)luaL_checknumber(L, 7);
         float init = (float)luaL_checknumber(L, 8);
-        slider_p s = slider_create(r, x, y, w, h, min, max, init);
+        slider_p s = slider_create(r, x / 480.0f, y / 320.0f, w / 480.0f, h / 320.0f, min, max, init);
         lua_pushlightuserdata(L, s);
         return 1;
 }
@@ -756,7 +756,7 @@ static int l_slider_set_hovered(lua_State* L) {
 static int l_popup_create(lua_State* L) {
         jr2d_p r2d = (jr2d_p)lua_touserdata(L, 1);
         float w = (float)luaL_checknumber(L, 2), h = (float)luaL_checknumber(L, 3);
-        lua_pushlightuserdata(L, popup_create(r2d, w, h));
+        lua_pushlightuserdata(L, popup_create(r2d, w / 480.0f, h / 320.0f));
         return 1;
 }
 static int l_popup_destroy(lua_State* L) { popup_destroy((popup_p)lua_touserdata(L, 1)); return 0; }

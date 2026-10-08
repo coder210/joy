@@ -48,7 +48,7 @@ static duk_ret_t jui_label_draw(duk_context* ctx)
 
 static duk_ret_t jui_button_create(duk_context* ctx)
 {
-	duk_push_pointer(ctx, button_create(REN(0), NUM(1), NUM(2)));
+	duk_push_pointer(ctx, button_create(REN(0), 0.0f, 0.0f, NUM(1) / 480.0f, NUM(2) / 320.0f));
 	return 1;
 }
 
@@ -109,8 +109,7 @@ static duk_ret_t jui_button_draw(duk_context* ctx)
 static duk_ret_t jui_combobox_create(duk_context* ctx)
 {
 	jr2d_p r = REN(0);
-	jrect_t rect = { NUM(1),NUM(2),NUM(3),NUM(4) };
-	duk_push_pointer(ctx, combobox_create(r, rect));
+		duk_push_pointer(ctx, combobox_create(r, NUM(1) / 480.0f, NUM(2) / 320.0f, NUM(3) / 480.0f, NUM(4) / 320.0f));
 	return 1;
 }
 
@@ -163,18 +162,18 @@ static duk_ret_t jui_combobox_hit_item(duk_context* ctx) { duk_push_number(ctx, 
 static duk_ret_t jui_combobox_set_selected(duk_context* ctx) { combobox_set_selected((combobox_p)PTR(0), INT(1)); return 0; }
 static duk_ret_t jui_combobox_get_selected(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)combobox_get_selected((combobox_p)PTR(0))); return 1; }
 
-static duk_ret_t jui_checkbox_create(duk_context* ctx) { duk_push_pointer(ctx, checkbox_create(NUM(0), NUM(1), NUM(2), STR(3))); return 1; }
+static duk_ret_t jui_checkbox_create(duk_context* ctx) { duk_push_pointer(ctx, checkbox_create(NUM(0) / 480.0f, NUM(1) / 320.0f, NUM(2) / 480.0f, STR(3))); return 1; }
 static duk_ret_t jui_checkbox_destroy(duk_context* ctx) { checkbox_destroy((checkbox_p)PTR(0)); return 0; }
 static duk_ret_t jui_checkbox_draw(duk_context* ctx) { checkbox_draw((checkbox_p)PTR(0), REN(1), NULL); return 0; }
 static duk_ret_t jui_checkbox_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, checkbox_is_pressed((checkbox_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_checkbox_set_hovered(duk_context* ctx) { checkbox_set_hovered((checkbox_p)PTR(0), BOOL(1)); return 0; }
 
-static duk_ret_t jui_radio_create(duk_context* ctx) { duk_push_pointer(ctx, radio_create(NUM(0), NUM(1), NUM(2), STR(3), INT(4))); return 1; }
+static duk_ret_t jui_radio_create(duk_context* ctx) { duk_push_pointer(ctx, radio_create(NUM(0) / 480.0f, NUM(1) / 320.0f, NUM(2) / 480.0f, STR(3), INT(4))); return 1; }
 static duk_ret_t jui_radio_destroy(duk_context* ctx) { radio_destroy((radio_p)PTR(0)); return 0; }
 static duk_ret_t jui_radio_is_pressed(duk_context* ctx) { duk_push_boolean(ctx, radio_is_pressed((radio_p)PTR(0), NUM(1), NUM(2))); return 1; }
 static duk_ret_t jui_radio_set_hovered(duk_context* ctx) { radio_set_hovered((radio_p)PTR(0), BOOL(1)); return 0; }
 
-static duk_ret_t jui_datagrid_create(duk_context* ctx) { jr2d_p r = REN(0); jrect_t rect = { INT(1),INT(2),INT(3),INT(4) }; duk_push_pointer(ctx, datagrid_create(r, rect, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
+static duk_ret_t jui_datagrid_create(duk_context* ctx) { jr2d_p r = REN(0); duk_push_pointer(ctx, datagrid_create(r, INT(1) / 480.0f, INT(2) / 320.0f, INT(3) / 480.0f, INT(4) / 320.0f, INT(5), BOOL(6), (font_p)PTR(7))); return 1; }
 static duk_ret_t jui_datagrid_destroy(duk_context* ctx) { datagrid_destroy((datagrid_p)PTR(0)); return 0; }
 static duk_ret_t jui_datagrid_draw(duk_context* ctx) { datagrid_draw((datagrid_p)PTR(0), REN(1)); return 0; }
 static duk_ret_t jui_datagrid_setheaders(duk_context* ctx) {
@@ -199,7 +198,7 @@ static duk_ret_t jui_datagrid_get_cell(duk_context* ctx) {
 	return 1;
 }
 
-static duk_ret_t jui_inputbox_create(duk_context* ctx) { jr2d_p r = REN(0); font_p fp = (font_p)PTR(1); jrect_t rect = { NUM(2),NUM(3),NUM(4),NUM(5) }; duk_push_pointer(ctx, inputbox_create(r, rect, fp)); return 1; }
+static duk_ret_t jui_inputbox_create(duk_context* ctx) { jr2d_p r = REN(0); font_p fp = (font_p)PTR(1); duk_push_pointer(ctx, inputbox_create(r, NUM(2) / 480.0f, NUM(3) / 320.0f, NUM(4) / 480.0f, NUM(5) / 320.0f, fp)); return 1; }
 static duk_ret_t jui_inputbox_destroy(duk_context* ctx) { inputbox_destroy((inputbox_p)PTR(0)); return 0; }
 static duk_ret_t jui_inputbox_set_text(duk_context* ctx) { inputbox_set_text((inputbox_p)PTR(0), STR(1)); return 0; }
 static duk_ret_t jui_inputbox_get_text(duk_context* ctx) { duk_push_string(ctx, inputbox_get_text((inputbox_p)PTR(0))); return 1; }
@@ -223,7 +222,7 @@ static duk_ret_t jui_inputbox_copy(duk_context* ctx) { inputbox_copy((inputbox_p
 static duk_ret_t jui_inputbox_cut(duk_context* ctx) { inputbox_cut((inputbox_p)PTR(0)); return 0; }
 static duk_ret_t jui_inputbox_is_focused(duk_context* ctx) { duk_push_boolean(ctx, inputbox_is_focused((inputbox_p)PTR(0))); return 1; }
 
-static duk_ret_t jui_slider_create(duk_context* ctx) { duk_push_pointer(ctx, slider_create(REN(0), NUM(1), NUM(2), NUM(3), NUM(4), NUM(5), NUM(6), NUM(7))); return 1; }
+static duk_ret_t jui_slider_create(duk_context* ctx) { duk_push_pointer(ctx, slider_create(REN(0), NUM(1) / 480.0f, NUM(2) / 320.0f, NUM(3) / 480.0f, NUM(4) / 320.0f, NUM(5), NUM(6), NUM(7))); return 1; }
 static duk_ret_t jui_slider_destroy(duk_context* ctx) { slider_destroy((slider_p)PTR(0)); return 0; }
 static duk_ret_t jui_slider_set_value(duk_context* ctx) { slider_set_value((slider_p)PTR(0), NUM(1)); return 0; }
 static duk_ret_t jui_slider_get_value(duk_context* ctx) { duk_push_number(ctx, (duk_double_t)slider_get_value((slider_p)PTR(0))); return 1; }
@@ -238,7 +237,7 @@ static duk_ret_t jui_slider_set_hovered(duk_context* ctx) { slider_set_hovered((
 /* ===== Popup ===== */
 static duk_ret_t jui_popup_create(duk_context* ctx) {
 	jr2d_p r2d = REN(0);
-	duk_push_pointer(ctx, popup_create(r2d, (float)duk_to_number(ctx, 1), (float)duk_to_number(ctx, 2)));
+	duk_push_pointer(ctx, popup_create(r2d, (float)duk_to_number(ctx, 1) / 480.0f, (float)duk_to_number(ctx, 2) / 320.0f));
 	return 1;
 }
 static duk_ret_t jui_popup_destroy(duk_context* ctx) { popup_destroy((popup_p)PTR(0)); return 0; }

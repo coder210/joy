@@ -716,23 +716,70 @@ jtext_p text_create(jr2d_p r2d, font_p font,
         font_ascent = font_get_ascent(font);
 
         text = (jtext_p)SDL_malloc(sizeof(jtext_t));
-        text->real_width = font_size * num_codepoints;
-        text->real_height = font_size;
-        bitmap = SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
+        if (!text) return NULL;
 
+        /* 第一遍：测量真实绘制范围。
+           原实现直接按 font_size*num_codepoints 估算位图，负的左边距（byte_offset<0）、
+           超出字身的下行部（c_y2-c_y1 > font_size）以及最后一个字形越过 real_width
+           的列，都会让 stbtt 的 blit 写穿 bitmap —— 即堆越界写。 */
+        int min_x = 0, max_x = 0, min_y = 0, max_y = 0;
+        int mx = 0;
         for (int i = 0; i < num_codepoints; ++i) {
                 stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
                 stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
-                y = font_ascent + c_y1;
-
-                int byte_offset = x + roundf(left_side_bearing * scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byte_offset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, scale, scale, codepoints[i]);
-                x += roundf(advance_width * scale);
-                kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
-                x += roundf(kern * scale);
+                int px = mx + (int)roundf(left_side_bearing * scale);
+                int py = font_ascent + c_y1;
+                if (px < min_x) min_x = px;
+                if (px + (c_x2 - c_x1) > max_x) max_x = px + (c_x2 - c_x1);
+                if (py < min_y) min_y = py;
+                if (py + (c_y2 - c_y1) > max_y) max_y = py + (c_y2 - c_y1);
+                mx += (int)roundf(advance_width * scale);
+                if (i + 1 < num_codepoints) {
+                        kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
+                        mx += (int)roundf(kern * scale);
+                }
         }
 
-        int bitmap_width = text->real_width;
+        /* 平移原点，保证所有 blit 偏移非负；位图按真实范围分配
+           （多出来的行/列不进纹理，可见输出与原来一致）。 */
+        int ox = (min_x < 0) ? -min_x : 0;
+        int oy = (min_y < 0) ? -min_y : 0;
+
+        int stride = font_size * num_codepoints;   /* 旧估算，仅作下界 */
+        if (stride < max_x + ox)     stride = max_x + ox;
+        if (stride < mx)             stride = mx;
+        if (stride < 1)              stride = 1;
+        int bitmap_h = font_size;
+        if (bitmap_h < max_y + oy)   bitmap_h = max_y + oy;
+        if (bitmap_h < 1)            bitmap_h = 1;
+
+        bitmap = SDL_calloc((size_t)stride * (size_t)bitmap_h + 1, sizeof(unsigned char));
+        if (!bitmap) { SDL_free(text); return NULL; }
+
+        /* 第二遍：绘制。所有写入都落在 [0, stride*bitmap_h) 内。 */
+        x = 0;
+        for (int i = 0; i < num_codepoints; ++i) {
+                stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], scale, scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                int px = x + (int)roundf(left_side_bearing * scale);
+                int py = font_ascent + c_y1;
+                int gw = c_x2 - c_x1, gh = c_y2 - c_y1;
+                int byte_offset = ox + px + (oy + py) * stride;
+                if (gw > 0 && gh > 0
+                    && byte_offset >= 0
+                    && byte_offset + (gh - 1) * stride + gw <= stride * bitmap_h) {
+                        stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byte_offset,
+                                                  gw, gh, stride, scale, scale, codepoints[i]);
+                }
+                x += (int)roundf(advance_width * scale);
+                if (i + 1 < num_codepoints) {
+                        kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
+                        x += (int)roundf(kern * scale);
+                }
+        }
+
+        text->real_height = font_size;
+        int bitmap_width = stride;
         text->real_width = x > 0 ? x : 1;
         surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);
         if (!surface) { SDL_free(bitmap); return NULL; }
@@ -789,24 +836,64 @@ void text_update(jtext_p text, font_p font,
         font_size = font_get_size(font);
         font_ascent = font_get_ascent(font);
 
-        text->real_width = font_size * num_codepoints;
-        text->real_height = font_size;
-
-        bitmap = (unsigned char*)SDL_calloc(text->real_width * text->real_height + 1, sizeof(unsigned char));
-
+        /* 第一遍：测量真实绘制范围（与 text_create 同一套修复：
+           避免负左边距 / 下行部 / 末字形越列导致 blit 写穿 bitmap）。 */
+        int min_x = 0, max_x = 0, min_y = 0, max_y = 0;
+        int mx = 0;
         for (int i = 0; i < num_codepoints; ++i) {
                 stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
                 stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], font_scale, font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
-                y = font_ascent + c_y1;
-
-                int byteOffset = x + roundf(left_side_bearing * font_scale) + (y * text->real_width);
-                stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byteOffset, c_x2 - c_x1, c_y2 - c_y1, text->real_width, font_scale, font_scale, codepoints[i]);
-                x += roundf(advance_width * font_scale);
-                kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
-                x += roundf(kern * font_scale);
+                int px = mx + (int)roundf(left_side_bearing * font_scale);
+                int py = font_ascent + c_y1;
+                if (px < min_x) min_x = px;
+                if (px + (c_x2 - c_x1) > max_x) max_x = px + (c_x2 - c_x1);
+                if (py < min_y) min_y = py;
+                if (py + (c_y2 - c_y1) > max_y) max_y = py + (c_y2 - c_y1);
+                mx += (int)roundf(advance_width * font_scale);
+                if (i + 1 < num_codepoints) {
+                        kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
+                        mx += (int)roundf(kern * font_scale);
+                }
         }
 
-        int old_bitmap_width = text->real_width;
+        int ox = (min_x < 0) ? -min_x : 0;
+        int oy = (min_y < 0) ? -min_y : 0;
+
+        int stride = font_size * num_codepoints;   /* 旧估算，仅作下界 */
+        if (stride < max_x + ox)     stride = max_x + ox;
+        if (stride < mx)             stride = mx;
+        if (stride < 1)              stride = 1;
+        int bitmap_h = font_size;
+        if (bitmap_h < max_y + oy)   bitmap_h = max_y + oy;
+        if (bitmap_h < 1)            bitmap_h = 1;
+
+        bitmap = (unsigned char*)SDL_calloc((size_t)stride * (size_t)bitmap_h + 1, sizeof(unsigned char));
+        if (!bitmap) return;
+
+        /* 第二遍：绘制。所有写入都落在 [0, stride*bitmap_h) 内。 */
+        x = 0;
+        for (int i = 0; i < num_codepoints; ++i) {
+                stbtt_GetCodepointHMetrics((stbtt_fontinfo*)font, codepoints[i], &advance_width, &left_side_bearing);
+                stbtt_GetCodepointBitmapBox((stbtt_fontinfo*)font, codepoints[i], font_scale, font_scale, &c_x1, &c_y1, &c_x2, &c_y2);
+                int px = x + (int)roundf(left_side_bearing * font_scale);
+                int py = font_ascent + c_y1;
+                int gw = c_x2 - c_x1, gh = c_y2 - c_y1;
+                int byteOffset = ox + px + (oy + py) * stride;
+                if (gw > 0 && gh > 0
+                    && byteOffset >= 0
+                    && byteOffset + (gh - 1) * stride + gw <= stride * bitmap_h) {
+                        stbtt_MakeCodepointBitmap((stbtt_fontinfo*)font, bitmap + byteOffset,
+                                                  gw, gh, stride, font_scale, font_scale, codepoints[i]);
+                }
+                x += (int)roundf(advance_width * font_scale);
+                if (i + 1 < num_codepoints) {
+                        kern = stbtt_GetCodepointKernAdvance((stbtt_fontinfo*)font, codepoints[i], codepoints[i + 1]);
+                        x += (int)roundf(kern * font_scale);
+                }
+        }
+
+        text->real_height = font_size;
+        int old_bitmap_width = stride;
         text->real_width = x > 0 ? x : 1;
 
         SDL_Surface* surface = SDL_CreateSurface(text->real_width, text->real_height, SDL_PIXELFORMAT_RGBA32);

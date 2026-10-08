@@ -6,6 +6,21 @@
 #define JOYSTICK_HANDLE_COLOR 0x888888FF
 #define JOYSTICK_HANDLE_ACTIVE_COLOR 0x4CAF50FF
 
+static jrect_t jui_frect(jr2d_p r2d, float fx, float fy, float fw, float fh)
+{
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        jrect_t r = { fx * (float)lw, fy * (float)lh, fw * (float)lw, fh * (float)lh };
+        return r;
+}
+static void jui_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh, float* x, float* y, float* w, float* h)
+{
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        *x = fx * (float)lw; *y = fy * (float)lh;
+        *w = fw * (float)lw; *h = fh * (float)lh;
+}
+
 typedef kvec_t(char*) dg_row_t;
 
 typedef struct label {
@@ -256,14 +271,18 @@ void label_handle_event(label_p label, void* event)
 }
 
 button_p
-button_create(jr2d_p r2d, float width, float height)
+button_create(jr2d_p r2d, float cx, float cy, float wf, float hf)
 {
         button_p btn = (button_p)malloc(sizeof(button_t));
         if (!btn) return NULL;
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        float w = wf * (float)lw, h = hf * (float)lh;
+        float x = (cx - wf * 0.5f) * (float)lw, y = (cy - hf * 0.5f) * (float)lh;
         btn->r2d = r2d;
-        btn->position = (vec2_t){ 0, 0 };
-        btn->width = width;
-        btn->height = height;
+        btn->position = (vec2_t){ x, y };
+        btn->width = w;
+        btn->height = h;
         btn->normal_color = (jcolor_t){ 100, 100, 200, 255 };
         btn->hover_color = (jcolor_t){ 150, 150, 250, 255 };
         btn->pressed_color = (jcolor_t){ 50, 50, 150, 255 };
@@ -462,8 +481,9 @@ void button_draw(button_p btn)
 
 /* 事件处理已移至 Lua 层，见 joy.lua 中的 joy.mousepressed/mousereleased/mousemoved */
 
-combobox_p combobox_create(jr2d_p r2d, jrect_t rect)
+combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
 {
+        jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         combobox_p combobox;
         combobox = (combobox_p)malloc(sizeof(combobox_t));
         combobox->r2d = r2d;
@@ -693,8 +713,9 @@ struct combobox_input {
         scene_node_p popup_node;
 };
 
-combobox_input_p combobox_input_create(jr2d_p r2d, jrect_t rect, font_p font, int buf_len)
+combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len)
 {
+        jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         combobox_input_p ci = (combobox_input_p)calloc(1, sizeof(combobox_input_t));
         if (!ci) return NULL;
         ci->r2d = r2d;
@@ -1125,8 +1146,9 @@ int combobox_input_hit_item(combobox_input_p ci, float x, float y)
 
 
 datagrid_p
-datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font)
+datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font)
 {
+        jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         datagrid_p grid;
         grid = (datagrid_p)malloc(sizeof(datagrid_t));
         if (!grid) return NULL;
@@ -1345,8 +1367,10 @@ void datagrid_set_selected_row(datagrid_p grid, int row)
         if (grid) grid->selected_row = row;
 }
 
-radio_p radio_create(int x, int y, int size, const char* label, int group_id)
+radio_p radio_create(float fx, float fy, float size_frac, const char* label, int group_id)
 {
+        int lw = 480, lh = 320;
+        int x = (int)(fx * (float)lw), y = (int)(fy * (float)lh), size = (int)(size_frac * (float)lw);
         radio_p radio;
         radio = (radio_p)malloc(sizeof(radio_t));
         if (!radio) return NULL;
@@ -1461,8 +1485,10 @@ void radio_set_hovered(radio_p radio, bool v)
 }
 
 
-checkbox_p checkbox_create(int x, int y, int size, const char* label)
+checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* label)
 {
+        int lw = 480, lh = 320;
+        int x = (int)(fx * (float)lw), y = (int)(fy * (float)lh), size = (int)(size_frac * (float)lw);
         checkbox_p cb;
         cb = malloc(sizeof(checkbox_t));
         if (!cb) return NULL;
@@ -1666,8 +1692,11 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 
 
 // 初始化摇杆
-joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius)
+joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
 {
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        float x = cx * (float)lw, y = cy * (float)lh, radius = radius_frac * (float)lw;
         joystick_p joystick;
         joystick = (joystick_p)malloc(sizeof(joystick_t));
 
@@ -1889,8 +1918,9 @@ float joystick_get_magnitude(joystick_p joystick)
 
 #define INPUTBOX_BUF_INIT 256
 
-inputbox_p inputbox_create(jr2d_p r2d, jrect_t rect, font_p font)
+inputbox_p inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font)
 {
+        jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         inputbox_p ti = (inputbox_p)calloc(1, sizeof(inputbox_t));
         if (!ti) return NULL;
         ti->r2d = r2d;
@@ -2459,8 +2489,10 @@ static bool slider_thumb_hit(slider_p s, float logic_x, float logic_y)
                 && logic_y >= tr.y && logic_y <= tr.y + tr.h;
 }
 
-slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial)
+slider_p slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial)
 {
+        float x, y, w, h;
+        jui_fpx(r2d, fx, fy, fw, fh, &x, &y, &w, &h);
         slider_p s = (slider_p)calloc(1, sizeof(slider_t));
         if (!s) return NULL;
         s->r2d = r2d;
@@ -2604,8 +2636,11 @@ void slider_set_hovered(slider_p s, bool v)
 #define POPUP_PADDING 12
 #define POPUP_TITLE_HEIGHT 32
 
-popup_p popup_create(jr2d_p r2d, float w, float h)
+popup_p popup_create(jr2d_p r2d, float fw, float fh)
 {
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        float w = fw * (float)lw, h = fh * (float)lh;
         popup_p p = (popup_p)calloc(1, sizeof(popup_t));
         if (!p) return NULL;
         p->r2d = r2d;

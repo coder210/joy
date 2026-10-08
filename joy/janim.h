@@ -124,6 +124,7 @@ typedef struct anim_params {
     float speed;
     int dir;
     bool attack;  /* trigger，消费后复位 */
+    bool knocked; /* trigger（击退/硬直），消费后复位 */
 } anim_params_t;
 
 /* ==================== 输出（给渲染用） ==================== */
@@ -288,6 +289,7 @@ static bool check_cond_list(const anim_cond_t* conds, int num, const anim_params
         if      (strcmp(c->param_name, "speed")   == 0) val = params->speed;
         else if (strcmp(c->param_name, "dir")     == 0) val = (float)params->dir;
         else if (strcmp(c->param_name, "attack")  == 0) val = params->attack ? 1.0f : 0.0f;
+        else if (strcmp(c->param_name, "knocked") == 0) val = params->knocked ? 1.0f : 0.0f;
         if (!check_anim_cond(val, c->mode, c->threshold))
             return false;
     }

@@ -48,6 +48,15 @@ extern "C" {
 #define JR2D_FLIP_V    2
 #define JR2D_FLIP_HV   3
 
+/* ===================== 单位换算（米 ↔ 像素） ===================== */
+/* 1 米 = PIXELS_PER_METER 屏幕像素；渲染坐标 = 世界坐标(米) × PIXELS_PER_METER。
+ * 作为唯一真源放入 joy，project_proxy2d / adventure2d 共用，避免重复定义。 */
+enum { PIXELS_PER_METER = 50 };
+
+/* 世界坐标(米) ↔ 屏幕像素 互换；参数为浮点，避免整数截断。 */
+static inline float meters_to_pixels(float meters) { return meters * (float)PIXELS_PER_METER; }
+static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXELS_PER_METER; }
+
 #define POPUP_MAX_TITLE 128
 #define POPUP_MAX_CONTENT 2048
 #define TOOLTIP_MAX_TEXT 256
@@ -1674,6 +1683,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 vec2f_t* axis, vec2f_t* point);
         JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
                 contact2df_t* contact);
+
+        /* ---- 瓦片地图扫掠碰撞（定点数，帧同步确定）----
+         * solid(col,row) 返回 true 表示该格不可通行；实现须对越界格也返回 true（视为墙）。
+         * joy_tilemap_sweep_x: 沿 X 推进 dx（可负）；撞墙则把 *px 贴到该格边界并返回 true。
+         * joy_tilemap_sweep_y: 沿 Y 推进 vy*tick（vy>0 下落、<0 上升）；撞到则把 *py 贴到格边界、
+         *                      并把 *vy 清零，返回 true。 */
+        typedef bool (*joy_tilemap_solid_fn)(int col, int row);
+        JOY_API bool joy_tilemap_sweep_x(fp_t* px, fp_t* py, fp_t dx, fp_t w, fp_t h,
+                joy_tilemap_solid_fn solid);
+        JOY_API bool joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h,
+                joy_tilemap_solid_fn solid);
+
         JOY_API ray3d_collisionf_t collision3df_get_ray_triangle(ray3df_t ray,
                 vec3f_t p1, vec3f_t p2, vec3f_t p3);
         JOY_API ray3d_collisionf_t collision3df_get_ray_quad(ray3df_t ray,
@@ -1832,7 +1853,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
         JOY_API void label_draw(label_p label);
         JOY_API void label_process_event(label_p label, const void* event);
-        JOY_API button_p button_create(jr2d_p r2d, float width, float height);
+        JOY_API button_p button_create(jr2d_p r2d, float cx, float cy, float wf, float hf);
         JOY_API void button_destroy(button_p btn);
         JOY_API void button_set_position(button_p btn, float x, float y);
         JOY_API vec2_t button_get_position(button_p btn);
@@ -1852,7 +1873,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void button_set_text_offset(button_p btn, float x, float y);
         JOY_API void button_draw(button_p btn);
         JOY_API void button_process_event(button_p btn, const void* event);
-        JOY_API combobox_p combobox_create(jr2d_p r2d, jrect_t rect);
+        JOY_API combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
         JOY_API void combobox_destroy(combobox_p combobox);
         JOY_API void combobox_set_text(combobox_p combobox, font_p font,
                 const int* codepoints, int len, jcolor_t color);
@@ -1871,7 +1892,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void combobox_process_event(combobox_p cb, const void* event);
 
         // 可输入下拉列表框
-        JOY_API combobox_input_p combobox_input_create(jr2d_p r2d, jrect_t rect, font_p font, int buf_len);
+        JOY_API combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len);
         JOY_API void combobox_input_destroy(combobox_input_p ci);
         JOY_API void combobox_input_add_item(combobox_input_p ci, const char* str, int len);
         JOY_API void combobox_input_clear_items(combobox_input_p ci);
@@ -1884,7 +1905,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void combobox_input_process_event(combobox_input_p ci, const void* ev);
         JOY_API int combobox_input_hit_item(combobox_input_p ci, float x, float y);
 
-        JOY_API datagrid_p datagrid_create(jr2d_p r2d, jrect_t rect, int col_count, bool has_header, void* font);
+        JOY_API datagrid_p datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font);
         JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
         JOY_API void datagrid_setheader(datagrid_p grid, int index, const char* header);
         JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
@@ -1895,12 +1916,12 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void datagrid_scroll(datagrid_p grid, int lines);
         JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
         JOY_API void datagrid_process_event(datagrid_p dg, const void* event);
-        JOY_API radio_p radio_create(int x, int y, int size, const char* label, int group_id);
+        JOY_API radio_p radio_create(float fx, float fy, float size_frac, const char* label, int group_id);
         JOY_API void radio_destroy(radio_p radio);
         JOY_API bool radio_is_pressed(radio_p radio, float x, float y);
         JOY_API void radio_set_hovered(radio_p radio, bool v);
         JOY_API void radio_process_event(radio_p rb, const void* event);
-        JOY_API checkbox_p checkbox_create(int x, int y, int size, const char* label);
+        JOY_API checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* label);
         JOY_API void checkbox_destroy(checkbox_p checkbox);
         JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
         JOY_API checkbox_state_t checkbox_get_state(checkbox_p checkbox);
@@ -1914,7 +1935,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
         JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
         JOY_API void checkbox_process_event(checkbox_p cb, const void* event);
-        JOY_API joystick_p joystick_create(jr2d_p r2d, float x, float y, float radius);
+        JOY_API joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
         JOY_API void joystick_destroy(joystick_p joystick);
         JOY_API void joystick_draw(joystick_p joystick);
         JOY_API void joystick_reset(joystick_p joystick);
@@ -1926,7 +1947,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API vec2_t joystick_get_direction(joystick_p joystick);
         JOY_API float joystick_get_magnitude(joystick_p joystick);
         JOY_API void joystick_process_event(joystick_p js, const void* event);
-        JOY_API inputbox_p inputbox_create(jr2d_p r2d, jrect_t rect, font_p font);
+        JOY_API inputbox_p inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font);
         JOY_API void inputbox_destroy(inputbox_p ti);
         JOY_API void inputbox_set_text(inputbox_p ti, const char* text);
         JOY_API const char* inputbox_get_text(inputbox_p ti);
@@ -1953,7 +1974,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void inputbox_cut(inputbox_p ti);
         JOY_API bool inputbox_is_focused(inputbox_p ti);
         JOY_API void inputbox_process_event(inputbox_p ti, const void* event);
-        JOY_API slider_p slider_create(jr2d_p r2d, float x, float y, float w, float h, float min, float max, float initial);
+        JOY_API slider_p slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial);
         JOY_API void slider_destroy(slider_p s);
         JOY_API void slider_set_value(slider_p s, float v);
         JOY_API float slider_get_value(slider_p s);
@@ -1968,7 +1989,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool slider_is_hovered(slider_p s, float x, float y);
         JOY_API void slider_set_hovered(slider_p s, bool v);
         JOY_API void slider_process_event(slider_p s, const void* event);
-        JOY_API popup_p popup_create(jr2d_p r2d, float w, float h);
+        JOY_API popup_p popup_create(jr2d_p r2d, float fw, float fh);
         JOY_API void popup_destroy(popup_p p);
         JOY_API void popup_set_title(popup_p p, const char* text, int len);
         JOY_API void popup_set_content(popup_p p, const char* text, int len);
