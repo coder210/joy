@@ -19,7 +19,7 @@ project(joy C CXX)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
 option(BUILD_SPINE_SDL3_TEST "Build spine_sdl3_test (spine-c + SDL3 render test)" ON)
-option(BUILD_L4D_2D "Build l4d_2d (copy of project_proxy2d, single binary: single/host/client/server)" ON)
+option(BUILD_JOY_SIDE_TEMPLATE "Build joy_side_template (copy of project_proxy2d, single binary: single/host/client/server)" ON)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -75,8 +75,8 @@ if(BUILD_SPINE_SDL3_TEST)
     add_subdirectory(spine_sdl3_test)
 endif()
 
-if(BUILD_L4D_2D)
-    add_subdirectory(l4d_2d)
+if(BUILD_JOY_SIDE_TEMPLATE)
+    add_subdirectory(joy_side_template)
 endif()
 
 # 可选：CPack 打包配置（如果原来有）
