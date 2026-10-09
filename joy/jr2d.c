@@ -121,7 +121,12 @@ void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
 bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h)
 {
-        return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, SDL_LOGICAL_PRESENTATION_STRETCH);
+        return r2d_set_logical_presentation_mode(r2d, w, h, SDL_LOGICAL_PRESENTATION_STRETCH);
+}
+
+bool r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode)
+{
+        return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
 }
 
 bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)

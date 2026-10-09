@@ -53,6 +53,13 @@ extern "C" {
  * 作为唯一真源放入 joy，project_proxy2d / adventure2d 共用，避免重复定义。 */
 enum { PIXELS_PER_METER = 50 };
 
+/* 逻辑分辨率呈现模式（对标 SDL_RendererLogicalPresentation）。
+ * 项目层用这些常量，避免直接依赖 SDL render 头。 */
+#define JOY_LOGICAL_PRESENTATION_DISABLED       0
+#define JOY_LOGICAL_PRESENTATION_STRETCH        1
+#define JOY_LOGICAL_PRESENTATION_LETTERBOX      2
+#define JOY_LOGICAL_PRESENTATION_INTEGER_SCALE  3
+
 /* 世界坐标(米) ↔ 屏幕像素 互换；参数为浮点，避免整数截断。 */
 static inline float meters_to_pixels(float meters) { return meters * (float)PIXELS_PER_METER; }
 static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXELS_PER_METER; }
@@ -1088,6 +1095,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void r2d_begin(jr2d_p r2d);
         JOY_API void r2d_end(jr2d_p r2d);
         JOY_API bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h);
+        JOY_API bool r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode);
         JOY_API bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode);
         JOY_API void r2d_get_size(jr2d_p r2d, int* w, int* h);
         JOY_API bool r2d_set_vsync(jr2d_p r2d, int vsync);
