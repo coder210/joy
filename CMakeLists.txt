@@ -20,6 +20,7 @@ option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/
 option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
 option(BUILD_SPINE_SDL3_TEST "Build spine_sdl3_test (spine-c + SDL3 render test)" ON)
 option(BUILD_JOY_SIDE_TEMPLATE "Build joy_side_template (copy of project_proxy2d, single binary: single/host/client/server)" ON)
+option(BUILD_JOY_TOPDOWN_TEMPLATE "Build joy_topdown_template (top-down 2D project template, copy of project_proxy2d)" OFF)
 
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -77,6 +78,10 @@ endif()
 
 if(BUILD_JOY_SIDE_TEMPLATE)
     add_subdirectory(joy_side_template)
+endif()
+
+if(BUILD_JOY_TOPDOWN_TEMPLATE)
+    add_subdirectory(joy_topdown_template)
 endif()
 
 # 可选：CPack 打包配置（如果原来有）
