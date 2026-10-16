@@ -35,6 +35,15 @@ static duk_ret_t jjoystick_set_dir_mode(duk_context* ctx)
 	return 0;
 }
 
+static duk_ret_t jjoystick_set_vector(duk_context* ctx)
+{
+	joystick_p joy = (joystick_p)PTR(0);
+	float dx = (float)duk_get_number(ctx, 1);
+	float dy = (float)duk_get_number(ctx, 2);
+	if (joy) joystick_set_vector(joy, dx, dy);
+	return 0;
+}
+
 static duk_ret_t jjoystick_set_textures_for_mode(duk_context* ctx)
 {
 	joystick_p joy = (joystick_p)PTR(0);
@@ -125,6 +134,7 @@ void jsopen_joystick(duk_context* ctx)
 	duk_push_c_function(ctx, jjoystick_destroy, 1); duk_put_prop_string(ctx, -2, "destroy");
 	duk_push_c_function(ctx, jjoystick_set_textures, 3); duk_put_prop_string(ctx, -2, "set_textures");
 	duk_push_c_function(ctx, jjoystick_set_dir_mode, 2); duk_put_prop_string(ctx, -2, "set_dir_mode");
+	duk_push_c_function(ctx, jjoystick_set_vector, 3); duk_put_prop_string(ctx, -2, "set_vector");
 	duk_push_c_function(ctx, jjoystick_set_textures_for_mode, 4); duk_put_prop_string(ctx, -2, "set_textures_for_mode");
 	duk_push_c_function(ctx, jjoystick_draw, 1); duk_put_prop_string(ctx, -2, "draw");
 	duk_push_c_function(ctx, jjoystick_is_dragging, 1); duk_put_prop_string(ctx, -2, "is_dragging");

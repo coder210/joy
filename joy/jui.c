@@ -1811,6 +1811,28 @@ void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
         joystick->thumb_image = joystick->mode_thumb[(int)mode] ? joystick->mode_thumb[(int)mode] : joystick->thumb_default;
 }
 
+// 前向声明（定义见下方）；供 joystick_set_vector 在定义前调用，避免 static 函数“定义前使用”被当成隐式声明
+static void joystick_apply_dir_mode(joystick_dir_mode mode, vec2_t* d);
+
+// 以方向向量驱动摇杆（无需触摸），用于键盘/外部输入同步显示。
+// (dx,dy) 为方向（屏幕坐标，y 向下）；长度>0 即视为按下（满量程），为 0 则回中。
+// 同样受 dir_mode 约束（小圆只沿允许方向滑动），视觉与触摸一致。
+void joystick_set_vector(joystick_p j, float dx, float dy)
+{
+        if (!j) return;
+        if (dx == 0.0f && dy == 0.0f) { joystick_reset(j); return; }
+        j->is_dragging = true;
+        j->is_touch_active = true;
+        float len = sqrtf(dx * dx + dy * dy);
+        vec2_t d = { dx / len, dy / len };
+        joystick_apply_dir_mode(j->dir_mode, &d);   // 同样受方向约束
+        j->direction.x = d.x;
+        j->direction.y = d.y;
+        j->magnitude = 1.0f;
+        j->handle.x = j->center.x + d.x * j->radius - j->handle_radius;
+        j->handle.y = j->center.y + d.y * j->radius - j->handle_radius;
+}
+
 // 按方向模式吸附/约束方向向量 d（屏幕坐标，y 向下；保留其长度=强度）
 static void joystick_apply_dir_mode(joystick_dir_mode mode, vec2_t* d)
 {
