@@ -210,6 +210,9 @@ struct joystick {
         bool is_dragging;
         bool is_touch_active;
         int touch_id;
+        image_p base_image;     // 底圈纹理（可选；为 NULL 时退回纯绘制）
+        image_p thumb_image;    // 摇杆头纹理（可选）
+        joystick_dir_mode dir_mode;  // 方向约束模式（默认全方向）
 };
 
 static float distance_squared(float x1, float y1, float x2, float y2) {
@@ -1723,12 +1726,31 @@ joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
         joystick->is_dragging = false;
         joystick->is_touch_active = false;
         joystick->touch_id = -1;
+        joystick->base_image = NULL;
+        joystick->thumb_image = NULL;
+        joystick->dir_mode = JOYSTICK_DIR_OMNI;
         return joystick;
 }
 
 void joystick_destroy(joystick_p joystick)
 {
+        if (!joystick) return;
+        if (joystick->base_image) image_destroy(joystick->base_image);
+        if (joystick->thumb_image) image_destroy(joystick->thumb_image);
         free(joystick);
+}
+
+// 设置摇杆纹理：底圈(base) 与摇杆头(thumb)。传空串 / NULL 则清除（退回纯绘制）。
+// 纹理由内部按 r2d 加载，调用方无需管理生命周期（destroy 时自动释放）。
+void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path)
+{
+        if (!joystick) return;
+        if (joystick->base_image) { image_destroy(joystick->base_image); joystick->base_image = NULL; }
+        if (joystick->thumb_image) { image_destroy(joystick->thumb_image); joystick->thumb_image = NULL; }
+        if (base_path && base_path[0])
+                joystick->base_image = image_create(joystick->r2d, base_path);
+        if (thumb_path && thumb_path[0])
+                joystick->thumb_image = image_create(joystick->r2d, thumb_path);
 }
 
 // 设置摇杆位置
@@ -1744,6 +1766,35 @@ void joystick_set_position(joystick_p joystick, float x, float y)
                 joystick->handle.x = x - joystick->handle_radius;
                 joystick->handle.y = y - joystick->handle_radius;
         }
+}
+
+// 设置方向约束模式（全方向/四向/八向/仅上/下/左/右）
+void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
+{
+        if (!joystick) return;
+        joystick->dir_mode = mode;
+}
+
+// 按方向模式吸附/约束方向向量 d（屏幕坐标，y 向下；保留其长度=强度）
+static void joystick_apply_dir_mode(joystick_dir_mode mode, vec2_t* d)
+{
+        float len = sqrtf(d->x * d->x + d->y * d->y);
+        if (len < 1e-6f) return;
+        if (mode == JOYSTICK_DIR_OMNI) return;
+        float nx = d->x / len, ny = d->y / len;          // 单位方向
+        if (mode == JOYSTICK_DIR_VERTICAL) {
+                nx = 0.0f; ny = (ny < 0.0f) ? -1.0f : 1.0f;
+        } else if (mode == JOYSTICK_DIR_HORIZONTAL) {
+                ny = 0.0f; nx = (nx < 0.0f) ? -1.0f : 1.0f;
+        } else {
+                int steps = (mode == JOYSTICK_DIR_4WAY) ? 4 : 8;
+                float step = 2.0f * 3.1415926f / (float)steps;
+                float ang = atan2f(ny, nx);
+                float snap = roundf(ang / step) * step;   // 对齐到最近离散方向
+                nx = cosf(snap); ny = sinf(snap);
+        }
+        d->x = nx * len;                                  // 保留原强度
+        d->y = ny * len;
 }
 
 // 更新摇杆拖拽逻辑
@@ -1777,9 +1828,10 @@ static void joystick_update_drag(joystick_p joystick, float touch_x, float touch
                 joystick->handle.y = joystick->center.y - joystick->handle_radius;
         }
         else {
-                // 非死区时更新方向
+                // 非死区时更新方向（并应用方向约束模式）
                 joystick->direction.x = dx / joystick->radius;
                 joystick->direction.y = dy / joystick->radius;
+                joystick_apply_dir_mode(joystick->dir_mode, &joystick->direction);
 
                 // 更新手柄位置
                 joystick->handle.x = joystick->center.x + dx - joystick->handle_radius;
@@ -1834,70 +1886,70 @@ void joystick_reset(joystick_p joystick)
         joystick->handle.y = joystick->center.y - joystick->handle_radius;
 }
 
-// 绘制摇杆
+// 绘制摇杆：优先使用纹理（底圈 base_image + 摇杆头 thumb_image），
+// 未设置纹理时退回原纯绘制（圆形背景 + 十字 + 圆形手柄），保持向后兼容。
 void joystick_draw(joystick_p joystick)
 {
+        if (!joystick) return;
         jr2d_p r2d = joystick->r2d;
 
-        // 绘制背景圆环
-        r2d_set_color(r2d,
-                (JOYSTICK_BG_COLOR >> 24) & 0xFF,
-                (JOYSTICK_BG_COLOR >> 16) & 0xFF,
-                (JOYSTICK_BG_COLOR >> 8) & 0xFF,
-                JOYSTICK_BG_COLOR & 0xFF);
-        // 绘制圆形背景, 使用多段模拟圆形
-        shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
+        // ---- 底圈 ----
+        if (joystick->base_image) {
+                image_draw1(joystick->base_image, NULL, &joystick->background);
+        } else {
+                r2d_set_color(r2d,
+                        (JOYSTICK_BG_COLOR >> 24) & 0xFF,
+                        (JOYSTICK_BG_COLOR >> 16) & 0xFF,
+                        (JOYSTICK_BG_COLOR >> 8) & 0xFF,
+                        JOYSTICK_BG_COLOR & 0xFF);
+                // 绘制圆形背景, 使用多段模拟圆形
+                shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
 
-        // 绘制十字线
-        r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
+                // 绘制十字线
+                r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
+                shape_draw_line(r2d,
+                        joystick->center.x - joystick->radius, joystick->center.y,
+                        joystick->center.x + joystick->radius, joystick->center.y);
+                shape_draw_line(r2d,
+                        joystick->center.x, joystick->center.y - joystick->radius,
+                        joystick->center.x, joystick->center.y + joystick->radius);
+        }
 
-        shape_draw_line(r2d,
-                joystick->center.x - joystick->radius, joystick->center.y,
-                joystick->center.x + joystick->radius, joystick->center.y);
-        shape_draw_line(r2d,
-                joystick->center.x, joystick->center.y - joystick->radius,
-                joystick->center.x, joystick->center.y + joystick->radius);
-
-        // 绘制手柄
-        jcolor_t handle_color = joystick->is_dragging ?
-                (jcolor_t) {
-                0x4C, 0xAF, 0x50, 0xFF
-        } :
-                (jcolor_t) {
-                0x88, 0x88, 0x88, 0xFF
-        };
-
+        // ---- 摇杆头 ----
+        if (joystick->thumb_image) {
+                image_draw1(joystick->thumb_image, NULL, &joystick->handle);
+        } else {
+                jcolor_t handle_color = joystick->is_dragging ?
+                        (jcolor_t) { 0x4C, 0xAF, 0x50, 0xFF } :
+                        (jcolor_t) { 0x88, 0x88, 0x88, 0xFF };
                 r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
 
                 // 绘制圆形手柄
-
                 vec2_t handle_center = {
-                joystick->handle.x + joystick->handle_radius,
-                joystick->handle.y + joystick->handle_radius
+                        joystick->handle.x + joystick->handle_radius,
+                        joystick->handle.y + joystick->handle_radius
                 };
                 shape_draw_circle(r2d, "fill", handle_center, joystick->radius * 0.5f, 24);
 
-                // 绘制手柄
+                // 绘制手柄内框
                 r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
-
                 jrect_t handle_fill = {
-                    joystick->handle.x + 2,
-                    joystick->handle.y + 2,
-                    joystick->handle.w - 4,
-                    joystick->handle.h - 4
+                        joystick->handle.x + 2, joystick->handle.y + 2,
+                        joystick->handle.w - 4, joystick->handle.h - 4
                 };
                 shape_draw_rectangle(r2d, "fill", handle_fill);
+        }
 
-
-                if (joystick_get_magnitude(joystick) > 0) {
-                        vec2_t dir = joystick_get_direction(joystick);
-                        r2d_set_color(r2d, 0, 0, 0, 100);
-                        shape_draw_line(r2d,
-                                joystick->center.x,
-                                joystick->center.y,
-                                joystick->center.x + dir.x * joystick->radius,
-                                joystick->center.y + dir.y * joystick->radius);
-                }
+        // ---- 方向指示线（仅纯绘制时；纹理已用摇杆头位移表达方向）----
+        if (!joystick->thumb_image && joystick_get_magnitude(joystick) > 0) {
+                vec2_t dir = joystick_get_direction(joystick);
+                r2d_set_color(r2d, 0, 0, 0, 100);
+                shape_draw_line(r2d,
+                        joystick->center.x,
+                        joystick->center.y,
+                        joystick->center.x + dir.x * joystick->radius,
+                        joystick->center.y + dir.y * joystick->radius);
+        }
 }
 
 // 获取摇杆方向

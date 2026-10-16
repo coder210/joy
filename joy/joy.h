@@ -1944,7 +1944,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
         JOY_API void checkbox_process_event(checkbox_p cb, const void* event);
         JOY_API joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
+        // 摇杆方向模式：约束/量化 joystick_get_direction 输出的方向
+        typedef enum {
+                JOYSTICK_DIR_OMNI = 0,       // 全方向（模拟，默认）
+                JOYSTICK_DIR_4WAY,           // 上/下/左/右 四向
+                JOYSTICK_DIR_8WAY,           // 四向 + 四个斜角（八向）
+                JOYSTICK_DIR_VERTICAL,       // 仅 上/下
+                JOYSTICK_DIR_HORIZONTAL,     // 仅 左/右
+        } joystick_dir_mode;
+
         JOY_API void joystick_destroy(joystick_p joystick);
+        JOY_API void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path);
+        JOY_API void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode);
         JOY_API void joystick_draw(joystick_p joystick);
         JOY_API void joystick_reset(joystick_p joystick);
         JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
