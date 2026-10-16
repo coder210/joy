@@ -210,8 +210,12 @@ struct joystick {
         bool is_dragging;
         bool is_touch_active;
         int touch_id;
-        image_p base_image;     // 底圈纹理（可选；为 NULL 时退回纯绘制）
-        image_p thumb_image;    // 摇杆头纹理（可选）
+        image_p base_image;     // 当前显示的底圈纹理（指向 default 或某 mode 的纹理，不单独拥有）
+        image_p thumb_image;    // 当前显示的摇杆头纹理
+        image_p base_default;   // 默认底圈（joystick_set_textures 设置）
+        image_p thumb_default;  // 默认摇杆头
+        image_p mode_base[5];   // 各方向模式专属底圈（NULL=回退默认）
+        image_p mode_thumb[5];  // 各方向模式专属摇杆头
         joystick_dir_mode dir_mode;  // 方向约束模式（默认全方向）
 };
 
@@ -1728,6 +1732,9 @@ joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
         joystick->touch_id = -1;
         joystick->base_image = NULL;
         joystick->thumb_image = NULL;
+        joystick->base_default = NULL;
+        joystick->thumb_default = NULL;
+        for (int i = 0; i < 5; i++) { joystick->mode_base[i] = NULL; joystick->mode_thumb[i] = NULL; }
         joystick->dir_mode = JOYSTICK_DIR_OMNI;
         return joystick;
 }
@@ -1735,22 +1742,48 @@ joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
 void joystick_destroy(joystick_p joystick)
 {
         if (!joystick) return;
-        if (joystick->base_image) image_destroy(joystick->base_image);
-        if (joystick->thumb_image) image_destroy(joystick->thumb_image);
+        // base_image/thumb_image 只是指向 default 或某 mode 纹理的指针，不单独释放，避免重复释放
+        if (joystick->base_default) image_destroy(joystick->base_default);
+        if (joystick->thumb_default) image_destroy(joystick->thumb_default);
+        for (int i = 0; i < 5; i++) {
+                if (joystick->mode_base[i]) image_destroy(joystick->mode_base[i]);
+                if (joystick->mode_thumb[i]) image_destroy(joystick->mode_thumb[i]);
+        }
         free(joystick);
 }
 
-// 设置摇杆纹理：底圈(base) 与摇杆头(thumb)。传空串 / NULL 则清除（退回纯绘制）。
-// 纹理由内部按 r2d 加载，调用方无需管理生命周期（destroy 时自动释放）。
+// 设置摇杆默认纹理：底圈(base) 与摇杆头(thumb)。传空串 / NULL 则清除（退回纯绘制）。
+// 设为默认集合，并立即作为当前显示（除非后续有模式专属纹理）。
 void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path)
 {
         if (!joystick) return;
-        if (joystick->base_image) { image_destroy(joystick->base_image); joystick->base_image = NULL; }
-        if (joystick->thumb_image) { image_destroy(joystick->thumb_image); joystick->thumb_image = NULL; }
+        if (joystick->base_default) { image_destroy(joystick->base_default); joystick->base_default = NULL; }
+        if (joystick->thumb_default) { image_destroy(joystick->thumb_default); joystick->thumb_default = NULL; }
         if (base_path && base_path[0])
-                joystick->base_image = image_create(joystick->r2d, base_path);
+                joystick->base_default = image_create(joystick->r2d, base_path);
         if (thumb_path && thumb_path[0])
-                joystick->thumb_image = image_create(joystick->r2d, thumb_path);
+                joystick->thumb_default = image_create(joystick->r2d, thumb_path);
+        // 立即作为当前显示（若当前模式无专属纹理，则显示默认）
+        joystick->base_image = joystick->base_default;
+        joystick->thumb_image = joystick->thumb_default;
+}
+
+// 为某个方向模式注册专属纹理；切换该模式时自动换上，未注册则回退默认纹理。
+void joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path)
+{
+        if (!joystick) return;
+        if (mode < 0 || mode > JOYSTICK_DIR_HORIZONTAL) return;
+        if (joystick->mode_base[(int)mode]) { image_destroy(joystick->mode_base[(int)mode]); joystick->mode_base[(int)mode] = NULL; }
+        if (joystick->mode_thumb[(int)mode]) { image_destroy(joystick->mode_thumb[(int)mode]); joystick->mode_thumb[(int)mode] = NULL; }
+        if (base_path && base_path[0])
+                joystick->mode_base[(int)mode] = image_create(joystick->r2d, base_path);
+        if (thumb_path && thumb_path[0])
+                joystick->mode_thumb[(int)mode] = image_create(joystick->r2d, thumb_path);
+        // 若当前正好是该模式，立即切换显示
+        if (joystick->dir_mode == mode) {
+                joystick->base_image = joystick->mode_base[(int)mode] ? joystick->mode_base[(int)mode] : joystick->base_default;
+                joystick->thumb_image = joystick->mode_thumb[(int)mode] ? joystick->mode_thumb[(int)mode] : joystick->thumb_default;
+        }
 }
 
 // 设置摇杆位置
@@ -1773,6 +1806,9 @@ void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
 {
         if (!joystick) return;
         joystick->dir_mode = mode;
+        // 切换显示纹理：优先该模式专属，否则默认
+        joystick->base_image = joystick->mode_base[(int)mode] ? joystick->mode_base[(int)mode] : joystick->base_default;
+        joystick->thumb_image = joystick->mode_thumb[(int)mode] ? joystick->mode_thumb[(int)mode] : joystick->thumb_default;
 }
 
 // 按方向模式吸附/约束方向向量 d（屏幕坐标，y 向下；保留其长度=强度）
@@ -1833,9 +1869,9 @@ static void joystick_update_drag(joystick_p joystick, float touch_x, float touch
                 joystick->direction.y = dy / joystick->radius;
                 joystick_apply_dir_mode(joystick->dir_mode, &joystick->direction);
 
-                // 更新手柄位置
-                joystick->handle.x = joystick->center.x + dx - joystick->handle_radius;
-                joystick->handle.y = joystick->center.y + dy - joystick->handle_radius;
+                // 更新手柄位置（同样受方向约束：由受限后的方向反推，小圆只沿允许方向滑动）
+                joystick->handle.x = joystick->center.x + joystick->direction.x * joystick->radius - joystick->handle_radius;
+                joystick->handle.y = joystick->center.y + joystick->direction.y * joystick->radius - joystick->handle_radius;
         }
 }
 

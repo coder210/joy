@@ -44,6 +44,16 @@ static int l_joystick_set_dir_mode(lua_State* L)
         return 0;
 }
 
+static int l_joystick_set_textures_for_mode(lua_State* L)
+{
+        joystick_p j = (joystick_p)lua_touserdata(L, 1);
+        int m = (int)luaL_optinteger(L, 2, 0);
+        const char* base = luaL_optstring(L, 3, "");
+        const char* thumb = luaL_optstring(L, 4, "");
+        if (j) joystick_set_textures_for_mode(j, (joystick_dir_mode)m, base, thumb);
+        return 0;
+}
+
 static int l_joystick_draw(lua_State* L)
 {
         joystick_p joystick;
@@ -138,6 +148,7 @@ int luaopen_joystick(lua_State* L)
             {"destroy", l_joystick_destroy},
             {"set_textures", l_joystick_set_textures},
             {"set_dir_mode", l_joystick_set_dir_mode},
+            {"set_textures_for_mode", l_joystick_set_textures_for_mode},
             {"draw", l_joystick_draw},
             {"is_dragging", l_joystick_is_dragging},
             {"touch_down", l_joystick_touch_down},

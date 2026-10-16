@@ -35,6 +35,16 @@ static duk_ret_t jjoystick_set_dir_mode(duk_context* ctx)
 	return 0;
 }
 
+static duk_ret_t jjoystick_set_textures_for_mode(duk_context* ctx)
+{
+	joystick_p joy = (joystick_p)PTR(0);
+	int m = duk_get_int(ctx, 1);
+	const char* base = duk_get_string(ctx, 2);
+	const char* thumb = duk_get_string(ctx, 3);
+	if (joy) joystick_set_textures_for_mode(joy, (joystick_dir_mode)m, base ? base : "", thumb ? thumb : "");
+	return 0;
+}
+
 static duk_ret_t jjoystick_draw(duk_context* ctx)
 {
 	joystick_p joy = (joystick_p)PTR(0);
@@ -115,6 +125,7 @@ void jsopen_joystick(duk_context* ctx)
 	duk_push_c_function(ctx, jjoystick_destroy, 1); duk_put_prop_string(ctx, -2, "destroy");
 	duk_push_c_function(ctx, jjoystick_set_textures, 3); duk_put_prop_string(ctx, -2, "set_textures");
 	duk_push_c_function(ctx, jjoystick_set_dir_mode, 2); duk_put_prop_string(ctx, -2, "set_dir_mode");
+	duk_push_c_function(ctx, jjoystick_set_textures_for_mode, 4); duk_put_prop_string(ctx, -2, "set_textures_for_mode");
 	duk_push_c_function(ctx, jjoystick_draw, 1); duk_put_prop_string(ctx, -2, "draw");
 	duk_push_c_function(ctx, jjoystick_is_dragging, 1); duk_put_prop_string(ctx, -2, "is_dragging");
 	duk_push_c_function(ctx, jjoystick_touch_down, 3); duk_put_prop_string(ctx, -2, "touch_down");

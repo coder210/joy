@@ -1956,6 +1956,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void joystick_destroy(joystick_p joystick);
         JOY_API void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path);
         JOY_API void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode);
+        JOY_API void joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path);
         JOY_API void joystick_draw(joystick_p joystick);
         JOY_API void joystick_reset(joystick_p joystick);
         JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
