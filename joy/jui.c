@@ -416,6 +416,11 @@ void button_set_pressed(button_p btn, bool v)
         if (btn) btn->is_pressed = v;
 }
 
+bool button_get_pressed(button_p btn)
+{
+        return btn ? btn->is_pressed : false;
+}
+
 void button_destroy(button_p btn)
 {
         if (!btn) return;

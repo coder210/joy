@@ -1878,6 +1878,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool button_is_pressed(button_p btn, float x, float y);
         JOY_API void button_set_hovered(button_p btn, bool v);
         JOY_API void button_set_pressed(button_p btn, bool v);
+        JOY_API bool button_get_pressed(button_p btn);
         JOY_API void button_set_text_offset(button_p btn, float x, float y);
         JOY_API void button_draw(button_p btn);
         JOY_API void button_process_event(button_p btn, const void* event);
