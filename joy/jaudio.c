@@ -369,7 +369,12 @@ void audio_shot_play(audio_shot_p shot)
 
 void audio_shot_set_gain(audio_shot_p shot, float gain)
 {
-        if (shot) shot->gain = gain;
+        if (!shot) return;
+        shot->gain = gain;
+        // 复用常驻流：若流已建（首次播放后），必须同步改流增益，否则音量滑块改了不生效；
+        // 与 audio_bgm_set_gain 行为一致。
+        if (shot->stream)
+                SDL_SetAudioStreamGain(shot->stream, gain);
 }
 
 void audio_shot_destroy(audio_shot_p shot)
