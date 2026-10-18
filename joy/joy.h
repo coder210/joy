@@ -600,6 +600,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct slider slider_t, * slider_p;
         typedef struct popup popup_t, * popup_p;
         typedef struct tooltip tooltip_t, * tooltip_p;
+        typedef struct scrollview scrollview_t, * scrollview_p;
 
 
         /* ---------- 对象（碰撞体/实体） ---------- */
@@ -1882,6 +1883,45 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void button_set_text_offset(button_p btn, float x, float y);
         JOY_API void button_draw(button_p btn);
         JOY_API void button_process_event(button_p btn, const void* event);
+
+        /* ============ 滚动层 scrollview（可拖拽滚动的容器）============
+         * 横向 + 纵向滚动；鼠标拖拽 / 触摸滑动 / 滚轮都支持（触摸在 SDL 里也走鼠标事件）。
+         * 与保留模式子控件（button/inputbox 等）配合的典型用法：
+         *
+         *   scrollview_p v = scrollview_create(r2d, fx, fy, fw, fh);  // 归一化视口
+         *   scrollview_set_content(v, 内容总宽, 内容总高);
+         *
+         *   // ① 事件：先问滚动层。返回 true = 本次手势是滚动，调用方应忽略点击
+         *   //   （否则"滑动一下"会误触发子控件；故点击判定建议放到松手，见下）
+         *   if (scrollview_process_event(v, ev)) return;   // 已作为滚动消费
+         *   ...你原有的点击/悬停逻辑...
+         *
+         *   // ② 每帧绘制：begin/end 之间画子控件，超出视口的部分被裁掉
+         *   scrollview_begin(v);
+         *   for (i) button_set_position(child[i],
+         *               base_x[i] + scrollview_get_offset_x(v),
+         *               base_y[i] + scrollview_get_offset_y(v));
+         *   for (i) button_draw(child[i]);
+         *   scrollview_end(v);      // 恢复裁剪 + 画滚动条
+         *
+         * 偏移恒 ≤0（子控件整体向左/上移 = 用户向右/下看），并夹紧在内容范围内；
+         * 内容不大于视口时偏移恒 0、不画滚动条、拖拽与滚轮均无效。
+         */
+        JOY_API scrollview_p scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
+        JOY_API void  scrollview_destroy(scrollview_p v);
+        JOY_API void  scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h);
+        JOY_API void  scrollview_set_content(scrollview_p v, float content_w, float content_h);
+        JOY_API void  scrollview_set_offset(scrollview_p v, float ox, float oy);
+        JOY_API void  scrollview_clamp(scrollview_p v);
+        JOY_API float scrollview_get_offset_x(scrollview_p v);
+        JOY_API float scrollview_get_offset_y(scrollview_p v);
+        JOY_API void  scrollview_set_show_bar(scrollview_p v, bool show);
+        JOY_API bool  scrollview_dragging(scrollview_p v);
+        JOY_API bool  scrollview_hit(scrollview_p v, float win_x, float win_y);
+        JOY_API void  scrollview_begin(scrollview_p v);
+        JOY_API void  scrollview_end(scrollview_p v);
+        /* 返回 true = 该事件已被滚动层消费（拖拽中/滑动结束/滚轮），调用方不要再当点击 */
+        JOY_API bool  scrollview_process_event(scrollview_p v, const void* event);
         JOY_API combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
         JOY_API void combobox_destroy(combobox_p combobox);
         JOY_API void combobox_set_text(combobox_p combobox, font_p font,

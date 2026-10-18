@@ -3020,6 +3020,195 @@ void button_process_event(button_p btn, const void* ev)
         }
 }
 
+/* ===================== 滚动层 scrollview =====================
+ * 见 joy.h 中的用法说明。要点：
+ *  - 事件坐标是"窗口坐标"，拖拽增量必须经 r2d_coordinates_from_window 转逻辑坐标，
+ *    否则窗口与逻辑分辨率不同（letterbox 缩放）时滚动速度和手指不一致；
+ *  - 点击/滑动用"本次按下累计位移"区分，位移小=点击、大=滑动；
+ *  - 裁剪用 r2d_set_clip_rect（替换语义，非入栈），故 begin 时保存旧裁剪、end 时还原。
+ */
+struct scrollview {
+        jr2d_p r2d;
+        jrect_t view;               // 视口（逻辑像素）
+        float content_w, content_h; // 内容尺寸（逻辑像素）
+        float off_x, off_y;         // 滚动偏移（≤0）
+        bool  dragging;             // 正在拖拽
+        float last_x, last_y;       // 上一帧拖拽点（逻辑坐标）
+        float moved;                // 本次按下累计位移（点击/滑动判定）
+        bool  show_bar;             // 是否绘制滚动条
+        jcolor_t bar_bg, bar_fg;
+        bool  saved_had_clip;       // begin/end 保存&还原裁剪
+        jrect_t saved_clip;
+};
+
+#define SCROLLVIEW_BAR_T      3.0f    // 滚动条厚度（像素）
+#define SCROLLVIEW_BAR_MIN    24.0f   // 滑块最小长度（像素）
+#define SCROLLVIEW_DRAG_EPS   6.0f    // 拖拽判定阈值（逻辑像素）
+#define SCROLLVIEW_WHEEL_STEP 48.0f   // 滚轮每格滚动距离（像素）
+
+scrollview_p scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
+{
+        if (!r2d) return NULL;
+        scrollview_p v = (scrollview_p)malloc(sizeof(scrollview_t));
+        if (!v) return NULL;
+        memset(v, 0, sizeof(scrollview_t));
+        v->r2d      = r2d;
+        v->view     = jui_frect(r2d, fx, fy, fw, fh);
+        v->show_bar = true;
+        v->bar_bg   = (jcolor_t){ 205, 205, 212, 255 };
+        v->bar_fg   = (jcolor_t){ 90, 90, 98, 255 };
+        return v;
+}
+
+void scrollview_destroy(scrollview_p v)
+{
+        if (v) free(v);
+}
+
+void scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h)
+{
+        if (!v) return;
+        v->view = (jrect_t){ x, y, w, h };
+        scrollview_clamp(v);
+}
+
+void scrollview_set_content(scrollview_p v, float content_w, float content_h)
+{
+        if (!v) return;
+        v->content_w = content_w;
+        v->content_h = content_h;
+        scrollview_clamp(v);
+}
+
+void scrollview_clamp(scrollview_p v)
+{
+        if (!v) return;
+        const float minx = (v->content_w > v->view.w) ? -(v->content_w - v->view.w) : 0.0f;
+        const float miny = (v->content_h > v->view.h) ? -(v->content_h - v->view.h) : 0.0f;
+        if (v->off_x > 0.0f) v->off_x = 0.0f;
+        if (v->off_x < minx) v->off_x = minx;
+        if (v->off_y > 0.0f) v->off_y = 0.0f;
+        if (v->off_y < miny) v->off_y = miny;
+}
+
+void scrollview_set_offset(scrollview_p v, float ox, float oy)
+{
+        if (!v) return;
+        v->off_x = ox;
+        v->off_y = oy;
+        scrollview_clamp(v);
+}
+
+float scrollview_get_offset_x(scrollview_p v) { return v ? v->off_x : 0.0f; }
+float scrollview_get_offset_y(scrollview_p v) { return v ? v->off_y : 0.0f; }
+
+void scrollview_set_show_bar(scrollview_p v, bool show) { if (v) v->show_bar = show; }
+bool scrollview_dragging(scrollview_p v) { return v ? v->dragging : false; }
+
+bool scrollview_hit(scrollview_p v, float win_x, float win_y)
+{
+        if (!v) return false;
+        vec2_t p = r2d_coordinates_from_window(v->r2d, win_x, win_y);
+        return p.x >= v->view.x && p.x < v->view.x + v->view.w
+            && p.y >= v->view.y && p.y < v->view.y + v->view.h;
+}
+
+void scrollview_begin(scrollview_p v)
+{
+        if (!v) return;
+        v->saved_had_clip = r2d_get_clip_rect(v->r2d, &v->saved_clip);
+        r2d_set_clip_rect(v->r2d, v->view);
+}
+
+void scrollview_end(scrollview_p v)
+{
+        if (!v) return;
+        if (v->saved_had_clip) r2d_set_clip_rect(v->r2d, v->saved_clip);
+        else                    r2d_reset_clip_stack(v->r2d);
+        if (!v->show_bar) return;
+
+        const bool hbar = (v->content_w > v->view.w);
+        const bool vbar = (v->content_h > v->view.h);
+        // 横条贴视口底边、竖条贴右边；两者同存时各让出对方厚度，避免角上重叠
+        if (hbar) {
+                const float x0 = v->view.x;
+                const float w0 = v->view.w - (vbar ? (SCROLLVIEW_BAR_T + 1.0f) : 0.0f);
+                const float y0 = v->view.y + v->view.h - SCROLLVIEW_BAR_T - 1.0f;
+                r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
+                shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, w0, SCROLLVIEW_BAR_T });
+                float bw = w0 * (v->view.w / v->content_w);
+                if (bw < SCROLLVIEW_BAR_MIN) bw = SCROLLVIEW_BAR_MIN;
+                if (bw > w0) bw = w0;
+                const float k = -v->off_x / (v->content_w - v->view.w);   // 0..1
+                r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
+                shape_draw_rectangle(v->r2d, "fill",
+                        (jrect_t){ x0 + k * (w0 - bw), y0, bw, SCROLLVIEW_BAR_T });
+        }
+        if (vbar) {
+                const float y0 = v->view.y;
+                const float h0 = v->view.h - (hbar ? (SCROLLVIEW_BAR_T + 1.0f) : 0.0f);
+                const float x0 = v->view.x + v->view.w - SCROLLVIEW_BAR_T - 1.0f;
+                r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
+                shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, SCROLLVIEW_BAR_T, h0 });
+                float bh = h0 * (v->view.h / v->content_h);
+                if (bh < SCROLLVIEW_BAR_MIN) bh = SCROLLVIEW_BAR_MIN;
+                if (bh > h0) bh = h0;
+                const float k = -v->off_y / (v->content_h - v->view.h);   // 0..1
+                r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
+                shape_draw_rectangle(v->r2d, "fill",
+                        (jrect_t){ x0, y0 + k * (h0 - bh), SCROLLVIEW_BAR_T, bh });
+        }
+}
+
+bool scrollview_process_event(scrollview_p v, const void* ev)
+{
+        if (!v || !ev) return false;
+        const SDL_Event* e = (const SDL_Event*)ev;
+
+        if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                if (!scrollview_hit(v, e->button.x, e->button.y)) {
+                        v->dragging = false;              // 视口外按下：不接管
+                        return false;
+                }
+                vec2_t p = r2d_coordinates_from_window(v->r2d, e->button.x, e->button.y);
+                v->dragging = true;
+                v->last_x  = p.x;
+                v->last_y  = p.y;
+                v->moved   = 0.0f;
+                return false;                             // 不消费：子控件仍可拿到按下反馈
+        }
+        if (e->type == SDL_EVENT_MOUSE_MOTION) {
+                if (!v->dragging) return false;
+                vec2_t p = r2d_coordinates_from_window(v->r2d, e->motion.x, e->motion.y);
+                const float dx = p.x - v->last_x;
+                const float dy = p.y - v->last_y;
+                v->last_x = p.x;
+                v->last_y = p.y;
+                v->off_x += dx;
+                v->off_y += dy;
+                scrollview_clamp(v);
+                v->moved += (dx < 0.0f ? -dx : dx) + (dy < 0.0f ? -dy : dy);
+                return v->moved > SCROLLVIEW_DRAG_EPS;     // 已进入滚动 → 调用方忽略点击
+        }
+        if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
+                const bool was_drag = v->dragging && (v->moved > SCROLLVIEW_DRAG_EPS);
+                v->dragging = false;
+                return was_drag;                          // 本次是滑动 → 调用方不要当点击
+        }
+        if (e->type == SDL_EVENT_MOUSE_WHEEL) {
+                if (!scrollview_hit(v, e->wheel.mouse_x, e->wheel.mouse_y)) return false;
+                if (v->content_h > v->view.h)
+                        v->off_y -= e->wheel.y * SCROLLVIEW_WHEEL_STEP;   // 纵向优先
+                else if (v->content_w > v->view.w)
+                        v->off_x -= e->wheel.x * SCROLLVIEW_WHEEL_STEP;
+                else
+                        return false;                     // 没有可滚方向：不消费
+                scrollview_clamp(v);
+                return true;
+        }
+        return false;
+}
+
 void inputbox_process_event(inputbox_p ti, const void* ev)
 {
         if (!ti || !ev) return;
