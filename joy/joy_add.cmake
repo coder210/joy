@@ -60,8 +60,22 @@ function(joy_add_sources TARGET)
     # 使 #include <joy/joy.h> 可用（joy 源码位于 <根>/joy/，根由 SDL/msgpack 等项目约定）
     target_include_directories(${TARGET} PRIVATE "${JOY_SOURCE_DIR}/..")
 
-    # 原 joy 库 target 的 PUBLIC 链接（SDL3、msgpack-c-static）
-    target_link_libraries(${TARGET} PUBLIC SDL3::SDL3 msgpack-c-static)
+    # 原 joy 库 target 的 PUBLIC 链接（SDL3、msgpack）。
+    #
+    # 注意：msgpack 仅在 MSGPACK_ENABLE_SHARED 与 MSGPACK_ENABLE_STATIC 同时为 ON 时
+    # 才创建 msgpack-c-static 目标（见 msgpack/CMakeLists.txt:146）。Emscripten 等平台
+    # 把 BUILD_SHARED_LIBS 设为 OFF 时，MSGPACK_ENABLE_SHARED 被置 OFF，该目标不存在；
+    # 此时写死的 "msgpack-c-static" 会被 CMake 当成普通库名，include 目录不会传递，
+    # 于是 joy/jmsgpack.c 报 'msgpack/pack.h' file not found。
+    # 故按目标实际是否存在选择，并显式补上 include 目录兜底。
+    if (TARGET msgpack-c-static)
+        target_link_libraries(${TARGET} PUBLIC SDL3::SDL3 msgpack-c-static)
+    else()
+        target_link_libraries(${TARGET} PUBLIC SDL3::SDL3 msgpack-c)
+    endif()
+    target_include_directories(${TARGET} PRIVATE
+        "${CMAKE_SOURCE_DIR}/msgpack/include"
+        "${CMAKE_BINARY_DIR}/msgpack/include")
 
     # C 源码统一按 C99 编译
     set_property(TARGET ${TARGET} PROPERTY C_STANDARD 99)
