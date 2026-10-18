@@ -1,17 +1,31 @@
 name: Build joy for Android
 
-on: []
+# 仅本项目（joy_topdown_template）的安卓 CI：手动可触发，且仅在触及本项目或共享构建基础设施时自动跑。
+on:
+  workflow_dispatch:        # 在 Actions 标签页手动触发
+  push:
+    paths:
+      - 'joy_topdown_template/**'
+      - '.github/workflows/android-build.yml'
+      - 'SDL/**'
+      - 'build.gradle'
+      - 'CMakeLists.txt'
+  pull_request:
+    paths:
+      - 'joy_topdown_template/**'
+      - '.github/workflows/android-build.yml'
+      - 'SDL/**'
+      - 'build.gradle'
+      - 'CMakeLists.txt'
 
 jobs:
   build:
     strategy:
       matrix:
-        target: [project_proxy2d, project_proxy3d]      # 并行构建两个目标
+        target: [joy_topdown_template]                  # 仅本项目的安卓 CI
         include:
-          - target: project_proxy2d
-            build_macro: "BUILD_PROJECT_PROXY2D"
-          - target: project_proxy3d
-            build_macro: "BUILD_PROJECT_PROXY3D"
+          - target: joy_topdown_template
+            build_macro: "BUILD_JOY_TOPDOWN_TEMPLATE"   # 对应根 CMakeLists 的 option
       fail-fast: false                   # 一个失败不影响另一个
 
     name: Build ${{ matrix.target }} APK

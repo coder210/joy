@@ -18,8 +18,8 @@ project(joy C CXX)
 # option(BUILD_ADVENTURE2D "Build adventure2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY2D "Build project_proxy2d (single binary: single/host/client/server)" OFF)
 option(BUILD_PROJECT_PROXY3D "Build project_proxy3d (merged client/server single binary)" OFF)
-option(BUILD_SPINE_SDL3_TEST "Build spine_sdl3_test (spine-c + SDL3 render test)" ON)
-option(BUILD_JOY_SIDE_TEMPLATE "Build joy_side_template (copy of project_proxy2d, single binary: single/host/client/server)" ON)
+option(BUILD_SPINE_SDL3_TEST "Build spine_sdl3_test (spine-c + SDL3 render test)" OFF)
+option(BUILD_JOY_SIDE_TEMPLATE "Build joy_side_template (copy of project_proxy2d, single binary: single/host/client/server)" OFF)
 option(BUILD_JOY_TOPDOWN_TEMPLATE "Build joy_topdown_template (top-down 2D project template, copy of project_proxy2d)" OFF)
 
 
