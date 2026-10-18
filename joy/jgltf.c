@@ -125,14 +125,21 @@ static mat44_t mat_from_float16(const float f[16]) {
 
 /* ==================== glb 归一化重建（照抄 norm_test.c） ==================== */
 
+/* 走 SDL IO（不是 fopen）：安卓上资源打包在 APK 内，fopen 读不到。
+ * 仍用 malloc 分配，保持调用方 free() 的原有契约。 */
 static unsigned char* read_file(const char* path, long* out_len) {
-        FILE* f = fopen(path, "rb");
-        if (!f) return NULL;
-        fseek(f, 0, SEEK_END); long n = ftell(f); fseek(f, 0, SEEK_SET);
+        SDL_IOStream* io = SDL_IOFromFile(path, "rb");
+        if (!io) return NULL;
+        Sint64 n = SDL_GetIOSize(io);
+        if (n < 0) { SDL_CloseIO(io); return NULL; }
         unsigned char* b = (unsigned char*)malloc(n ? (size_t)n : 1);
-        if (n) fread(b, 1, (size_t)n, f);
-        fclose(f);
-        *out_len = n;
+        if (!b) { SDL_CloseIO(io); return NULL; }
+        if (n) {
+                size_t got = SDL_ReadIO(io, b, (size_t)n);
+                if (got != (size_t)n) { free(b); SDL_CloseIO(io); return NULL; }
+        }
+        SDL_CloseIO(io);
+        *out_len = (long)n;
         return b;
 }
 

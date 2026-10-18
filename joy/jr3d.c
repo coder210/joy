@@ -1063,15 +1063,11 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 	if (!r || !ttf_path || pixel_height <= 0) return false;
 
 	// 读取 ttf (工作目录为 build/<config>, 字体在 joy_editor/fonts/arial.ttf)
-	FILE* f = fopen(ttf_path, "rb");
-	if (!f) { SDL_Log("font: open %s failed", ttf_path); return false; }
-	fseek(f, 0, SEEK_END);
-	long sz = ftell(f);
-	fseek(f, 0, SEEK_SET);
-	r->font_ttf_buf = (unsigned char*)SDL_malloc(sz);
-	if (!r->font_ttf_buf) { fclose(f); return false; }
-	fread(r->font_ttf_buf, 1, sz, f);
-	fclose(f);
+	// 走 SDL_LoadFile：安卓上资源在 APK 内，fopen 读不到。
+	// 注意: stbtt_fontinfo 内部保存指向 font_ttf_buf 的偏移指针, 该缓冲必须存活到程序结束, 不能 free
+	size_t ttf_sz = 0;
+	r->font_ttf_buf = (unsigned char*)SDL_LoadFile(ttf_path, &ttf_sz);
+	if (!r->font_ttf_buf) { SDL_Log("font: open %s failed", ttf_path); return false; }
 
 	// 注意: stbtt_fontinfo 内部保存指向 font_ttf_buf 的偏移指针, 该缓冲必须存活到程序结束, 不能 free
 	if (!stbtt_InitFont(&r->font_info, r->font_ttf_buf, 0)) { SDL_Log("font: InitFont failed"); return false; }

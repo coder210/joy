@@ -16,6 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* SDL IO：loadfile/dofile 改走 SDL，安卓上才能读到 APK 内的脚本资源
+ *（stdio 的 fopen 在安卓读不到打包资源）。 */
+#include <SDL3/SDL.h>
+
 
 /*
 ** This file uses only the official API of Lua.
@@ -709,11 +713,21 @@ LUALIB_API void luaL_unref (lua_State *L, int t, int ref) {
 ** =======================================================
 */
 
+/* 文件读取改走 SDL IO（不是 stdio fopen）：安卓上资源打包在 APK 内，
+ * 不是文件系统路径，fopen 读不到（关卡/脚本会静默加载失败）。 */
 typedef struct LoadF {
   int n;  /* number of pre-read characters */
-  FILE *f;  /* file being read */
+  SDL_IOStream *f;  /* file being read */
   char buff[BUFSIZ];  /* area for reading file */
 } LoadF;
+
+
+/* 替代 getc：从 SDL IO 读 1 字节，失败返回 EOF */
+static int io_getc (SDL_IOStream *f) {
+  unsigned char c;
+  if (SDL_ReadIO(f, &c, 1) != 1) return EOF;
+  return (int)c;
+}
 
 
 static const char *getF (lua_State *L, void *ud, size_t *size) {
@@ -724,11 +738,9 @@ static const char *getF (lua_State *L, void *ud, size_t *size) {
     lf->n = 0;  /* no more pre-read characters */
   }
   else {  /* read a block from file */
-    /* 'fread' can return > 0 *and* set the EOF flag. If next call to
-       'getF' called 'fread', it might still wait for user input.
-       The next check avoids this problem. */
-    if (feof(lf->f)) return NULL;
-    *size = fread(lf->buff, 1, sizeof(lf->buff), lf->f);  /* read block */
+    /* 对应原实现的 feof 检查：避免读到 EOF 后仍继续。 */
+    if (SDL_GetIOStatus(lf->f) == SDL_IO_STATUS_EOF) return NULL;
+    *size = SDL_ReadIO(lf->f, lf->buff, sizeof(lf->buff));  /* read block */
   }
   return lf->buff;
 }
@@ -752,10 +764,10 @@ static int errfile (lua_State *L, const char *what, int fnameindex) {
 ** not), returns the first character anyway to force an error
 ** (as no chunk can start with 0xEF).
 */
-static int skipBOM (FILE *f) {
-  int c = getc(f);  /* read first character */
-  if (c == 0xEF && getc(f) == 0xBB && getc(f) == 0xBF)  /* correct BOM? */
-    return getc(f);  /* ignore BOM and return next char */
+static int skipBOM (SDL_IOStream *f) {
+  int c = io_getc(f);  /* read first character */
+  if (c == 0xEF && io_getc(f) == 0xBB && io_getc(f) == 0xBF)  /* correct BOM? */
+    return io_getc(f);  /* ignore BOM and return next char */
   else  /* no (valid) BOM */
     return c;  /* return first character */
 }
@@ -768,13 +780,13 @@ static int skipBOM (FILE *f) {
 ** first "valid" character of the file (after the optional BOM and
 ** a first-line comment).
 */
-static int skipcomment (FILE *f, int *cp) {
+static int skipcomment (SDL_IOStream *f, int *cp) {
   int c = *cp = skipBOM(f);
   if (c == '#') {  /* first line is a comment (Unix exec. file)? */
     do {  /* skip first line */
-      c = getc(f);
+      c = io_getc(f);
     } while (c != EOF && c != '\n');
-    *cp = getc(f);  /* next character after comment, if present */
+    *cp = io_getc(f);  /* next character after comment, if present */
     return 1;  /* there was a comment */
   }
   else return 0;  /* no comment */
@@ -788,13 +800,17 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   int c;
   int fnameindex = lua_gettop(L) + 1;  /* index of filename on the stack */
   if (filename == NULL) {
+    /* SDL IO 没有与 stdin 等价的封装（无 SDL_IOFromFP），且游戏内不会从 stdin
+     * 加载脚本，这里直接按打开失败处理。 */
     lua_pushliteral(L, "=stdin");
-    lf.f = stdin;
+    return errfile(L, "open", fnameindex);
   }
   else {
     lua_pushfstring(L, "@%s", filename);
     errno = 0;
-    lf.f = fopen(filename, "r");
+    /* SDL IO（不是 fopen）：安卓上资源在 APK 内，fopen 读不到。
+     * SDL IO 无文本/二进制模式之分，统一用 "rb"。 */
+    lf.f = SDL_IOFromFile(filename, "rb");
     if (lf.f == NULL) return errfile(L, "open", fnameindex);
   }
   lf.n = 0;
@@ -804,8 +820,9 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
     lf.n = 0;  /* remove possible newline */
     if (filename) {  /* "real" file? */
       errno = 0;
-      lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
-      if (lf.f == NULL) return errfile(L, "reopen", fnameindex);
+      /* 原实现用 freopen 切成二进制模式重开；SDL IO 无需重开，回到文件头重读即可 */
+      if (SDL_SeekIO(lf.f, 0, SDL_IO_SEEK_SET) < 0)
+        return errfile(L, "reopen", fnameindex);
       skipcomment(lf.f, &c);  /* re-read initial portion */
     }
   }
@@ -813,8 +830,8 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
     lf.buff[lf.n++] = c;  /* 'c' is the first character of the stream */
   errno = 0;
   status = lua_load(L, getF, &lf, lua_tostring(L, -1), mode);
-  readstatus = ferror(lf.f);
-  if (filename) fclose(lf.f);  /* close file (even in case of errors) */
+  readstatus = (SDL_GetIOStatus(lf.f) == SDL_IO_STATUS_ERROR);
+  if (filename) SDL_CloseIO(lf.f);  /* close file (even in case of errors) */
   if (readstatus) {
     lua_settop(L, fnameindex);  /* ignore results from 'lua_load' */
     return errfile(L, "read", fnameindex);

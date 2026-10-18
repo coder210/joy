@@ -932,8 +932,21 @@ static image_p load_texture_internal(jtilemap_render_p r, const char* path)
         else
                 snprintf(full_path, sizeof(full_path), "%s", path);
 
+        /* 走 SDL_LoadFile + stbi_load_from_memory，而不是 stbi_load(路径) ——
+         * stbi_load 内部是 stdio 的 fopen，安卓上图集打包在 APK 内读不到，
+         * 结果是每个 tileset 纹理都加载失败（渲染时退化成同一张/空白）。 */
+        size_t file_sz = 0;
+        stbi_uc* filedata = (stbi_uc*)SDL_LoadFile(full_path, &file_sz);
+        if (!filedata) {
+                int ret;
+                khiter_t ki = kh_put(tex_cache, r->tex_cache, path, &ret);
+                kh_value(r->tex_cache, ki) = NULL;
+                return NULL;
+        }
+
         int w = 0, h = 0, ch = 0;
-        unsigned char* data = stbi_load(full_path, &w, &h, &ch, 4);
+        unsigned char* data = stbi_load_from_memory(filedata, (int)file_sz, &w, &h, &ch, 4);
+        SDL_free(filedata);
         if (!data) {
                 int ret;
                 khiter_t ki = kh_put(tex_cache, r->tex_cache, path, &ret);
