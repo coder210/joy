@@ -12,6 +12,9 @@
  * 并污染 joy.h 里名为 L 的参数。因此这里只手动声明本文件用到的这个函数，
  * 实现由 jimpl.c 提供。strict C99 的 clang（Android NDK）下不能依赖隐式声明。 */
 extern int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
+/* 同上：手动声明（不能 include 实现头）。用 decode_memory 而非 decode_filename ——
+ * *_filename 版内部走 stdio fopen，安卓上资源在 APK 内读不到，会静默返回 0（没声音）。 */
+extern int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
 
 /* ==================== 内部辅助 ==================== */
 
@@ -103,7 +106,16 @@ static Uint8* decode_ogg(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
 {
         int channels, sampleRate;
         short* s16 = NULL;
-        int frames = stb_vorbis_decode_filename(path, &channels, &sampleRate, &s16);
+        int frames;
+
+        /* 先用 SDL_LoadFile 读进内存再解码：安卓资源打包在 APK 内，
+         * stb_vorbis_decode_filename 内部的 fopen 读不到（会静默返回 0 → 没声音）。 */
+        size_t file_len = 0;
+        Uint8* filedata = (Uint8*)SDL_LoadFile(path, &file_len);
+        if (!filedata) return NULL;
+
+        frames = stb_vorbis_decode_memory(filedata, (int)file_len, &channels, &sampleRate, &s16);
+        SDL_free(filedata);
         if (frames == 0) return NULL;
 
         /* frames = 每声道帧数，总样本数 = frames * channels */
