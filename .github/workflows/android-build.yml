@@ -1,22 +1,26 @@
 name: Build joy for Android
 
-# 仅本项目（joy_topdown_template）的安卓 CI：手动可触发，且仅在触及本项目或共享构建基础设施时自动跑。
+# 仅本项目（joy_topdown_template）的安卓 CI：手动可触发，且仅在触及本项目或其编译依赖时自动跑。
+# 注意：安卓构建会编译共享引擎 joy/**（joy.h、janim.h 等都在其编译链里），
+# 所以路径过滤必须包含 joy/**，否则改了引擎头（如 joy/janim.h）不会触发安卓 CI。
 on:
   workflow_dispatch:        # 在 Actions 标签页手动触发
   push:
     paths:
       - 'joy_topdown_template/**'
-      - '.github/workflows/android-build.yml'
+      - 'joy/**'
       - 'SDL/**'
       - 'build.gradle'
       - 'CMakeLists.txt'
+      - '.github/workflows/android-build.yml'
   pull_request:
     paths:
       - 'joy_topdown_template/**'
-      - '.github/workflows/android-build.yml'
+      - 'joy/**'
       - 'SDL/**'
       - 'build.gradle'
       - 'CMakeLists.txt'
+      - '.github/workflows/android-build.yml'
 
 jobs:
   build:
