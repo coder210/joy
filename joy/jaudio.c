@@ -6,6 +6,13 @@
 
 #define HAVE_OGG 1
 
+/* OGG 解码函数声明。
+ * 注意：external/stb_vorbis.h 是"头文件内含实现"的版本（无 STB_VORBIS_IMPLEMENTATION 守卫，
+ * 且内部定义了 L / PLAYBACK_* 等宏），若在此 include 会与 jimpl.c 的实现重复定义，
+ * 并污染 joy.h 里名为 L 的参数。因此这里只手动声明本文件用到的这个函数，
+ * 实现由 jimpl.c 提供。strict C99 的 clang（Android NDK）下不能依赖隐式声明。 */
+extern int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
+
 /* ==================== 内部辅助 ==================== */
 
 typedef struct {

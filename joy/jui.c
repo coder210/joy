@@ -2127,6 +2127,7 @@ void inputbox_set_callback(inputbox_p ti,
 }
 
 static int inputbox_cursor_x(inputbox_p ti);
+static int inputbox_cursor_x_at(inputbox_p ti, int pos);
 
 /* 滚动到光标可见，并尽量填充右侧空白 */
 static void inputbox_scroll_to_cursor(inputbox_p ti)

@@ -2,6 +2,12 @@
 #include <SDL3/SDL.h>
 #include "joy.h"
 
+/* r2d_render_geometry 定义在 jr2d.c，本文件复用；joy.h 未公开该符号。
+ * 这里显式声明原型，避免 strict C99（Android clang）把它当成隐式声明。 */
+extern bool r2d_render_geometry(jr2d_p r2d, void* texture,
+                const float* vert_data, int vertex_count,
+                const int* indices, int index_count);
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif

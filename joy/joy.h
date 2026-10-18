@@ -1470,7 +1470,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API const char* r3d_combobox_input_get_text(jr3d_combobox_input_p ci);
         JOY_API void r3d_combobox_input_set_text(jr3d_combobox_input_p ci, const char* str);
         /* 命中测试: 返回点击的下拉列表项索引, 未展开或未命中返回 -1 */
-        JOY_API int r3d_combobox_input_hit_item(jr3d_p r, jr3d_combobox_input_p ci, float x, float y);
+        JOY_API int r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y);
         /* 统一事件处理: 鼠标(箭头切换/列表选中/外部关闭) + 键盘(上下导航/回车选中) + 文本输入 */
         JOY_API bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Event* event);
         /* 绘制(输入框 + 箭头 + 展开的下拉列表) */
