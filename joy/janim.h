@@ -135,17 +135,20 @@ typedef struct anim_clip {
 } anim_clip_t;
 
 /* ==================== 共享 API 声明（实现见文件末尾） ==================== */
+/* 注：声明与文件末尾的 static 定义必须同为 static（同一内部链接），否则在严格编译器
+ * （如 Android NDK 的 clang）下会报 "static declaration follows non-static declaration"。
+ * 这里与定义保持一致用 static，仍包裹在 extern "C" 内，C/C++ 互包含均安全。 */
 
-int anim_add_state(anim_def_t* def, const char* name, bool loop);
-void anim_add_clip(anim_def_t* def, int state_idx, const char* img_path, float duration, jrect_t src_rect);
-void anim_set_default_state(anim_def_t* def, int idx);
-int anim_add_transition(anim_def_t* def, int from_state, int to_state);
-void anim_transition_add_cond(anim_def_t* def, int trans_idx, const char* param_name, int mode, float threshold);
-void anim_transition_set_exit_time(anim_def_t* def, int trans_idx, float seconds);
+static int anim_add_state(anim_def_t* def, const char* name, bool loop);
+static void anim_add_clip(anim_def_t* def, int state_idx, const char* img_path, float duration, jrect_t src_rect);
+static void anim_set_default_state(anim_def_t* def, int idx);
+static int anim_add_transition(anim_def_t* def, int from_state, int to_state);
+static void anim_transition_add_cond(anim_def_t* def, int trans_idx, const char* param_name, int mode, float threshold);
+static void anim_transition_set_exit_time(anim_def_t* def, int trans_idx, float seconds);
 
-void anim_init(anim_t* a);
-bool anim_update(anim_t* a, const anim_def_t* def, const anim_params_t* params, float dt);
-bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_clip_t* out_clip);
+static void anim_init(anim_t* a);
+static bool anim_update(anim_t* a, const anim_def_t* def, const anim_params_t* params, float dt);
+static bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_clip_t* out_clip);
 
 /* ==================== JANIM_DEFINE：生成具名定义类型 ==================== */
 /* klib 风格宏。每个 name 生成一套独立类型与转发函数：
@@ -192,10 +195,6 @@ bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_clip_t* 
     static inline bool janim_##name##_get_current_clip(                                     \
         const anim_t* a, const janim_##name##_def_t* def, anim_clip_t* out)                 \
     { return anim_get_current_clip(a, &def->layout, out); }
-
-#ifdef __cplusplus
-}
-#endif
 
 /* ==================== 实现 ==================== */
 
@@ -383,5 +382,9 @@ static bool anim_get_current_clip(const anim_t* a, const anim_def_t* def, anim_c
     out_clip->duration = clip->duration;
     return true;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* JOY_JANIM_H */
