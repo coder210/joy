@@ -1,5 +1,20 @@
 #include "joy.h"
 
+/* backtrace() 可用性（crashHandler 用它采集调用栈）：
+ *  - Linux / macOS / Unix(glic 系) 的 <execinfo.h> 提供 backtrace / backtrace_symbols_fd；
+ *  - Android(bionic) 直到 API 33 才在 <execinfo.h> 公开这两个函数，本项目按 API 21 构建，
+ *    因此在 Android 上跳过栈回溯（仍然打印信号信息），否则 C99 下会被判为隐式函数声明。 */
+#if defined(__ANDROID__)
+#  ifndef __ANDROID_API__
+#    define JOY_HAVE_BACKTRACE 0
+#  elif __ANDROID_API__ >= 33
+#    define JOY_HAVE_BACKTRACE 1
+#  else
+#    define JOY_HAVE_BACKTRACE 0
+#  endif
+#else
+#  define JOY_HAVE_BACKTRACE 1
+#endif
 
 #if defined(JOY_WIN)
 #	include <time.h>
@@ -56,12 +71,14 @@ static void crashHandler(int sig)
         write(STDERR_FILENO, msg, strlen(msg));
 
         // 采集调用堆栈
+#if JOY_HAVE_BACKTRACE
         void* buffer[128];
         int frames = backtrace(buffer, 128);
         backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+#endif
 
         // 写入日志文件
-        time_t t = time(nullptr);
+        time_t t = time(NULL);
         struct tm* lt = localtime(&t);
         char logPath[256];
         snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
@@ -71,7 +88,9 @@ static void crashHandler(int sig)
         int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
         if (fd >= 0) {
                 write(fd, msg, strlen(msg));
+#if JOY_HAVE_BACKTRACE
                 backtrace_symbols_fd(buffer, frames, fd);
+#endif
                 close(fd);
         }
 
@@ -100,11 +119,13 @@ static void crashHandler(int sig)
                 sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
         write(STDERR_FILENO, msg, strlen(msg));
 
+#if JOY_HAVE_BACKTRACE
         void* buffer[128];
         int frames = backtrace(buffer, 128);
         backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+#endif
 
-        time_t t = time(nullptr);
+        time_t t = time(NULL);
         struct tm* lt = localtime(&t);
         char logPath[256];
         snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
@@ -114,7 +135,9 @@ static void crashHandler(int sig)
         int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
         if (fd >= 0) {
                 write(fd, msg, strlen(msg));
+#if JOY_HAVE_BACKTRACE
                 backtrace_symbols_fd(buffer, frames, fd);
+#endif
                 close(fd);
         }
 
@@ -143,11 +166,13 @@ static void crashHandler(int sig)
                 sig, sig == SIGSEGV ? "SIGSEGV" : sig == SIGABRT ? "SIGABRT" : "other");
         write(STDERR_FILENO, msg, strlen(msg));
 
+#if JOY_HAVE_BACKTRACE
         void* buffer[128];
         int frames = backtrace(buffer, 128);
         backtrace_symbols_fd(buffer, frames, STDERR_FILENO);
+#endif
 
-        time_t t = time(nullptr);
+        time_t t = time(NULL);
         struct tm* lt = localtime(&t);
         char logPath[256];
         snprintf(logPath, sizeof(logPath), "crash_%04d%02d%02d_%02d%02d%02d.log",
@@ -157,7 +182,9 @@ static void crashHandler(int sig)
         int fd = open(logPath, O_CREAT | O_WRONLY, 0644);
         if (fd >= 0) {
                 write(fd, msg, strlen(msg));
+#if JOY_HAVE_BACKTRACE
                 backtrace_symbols_fd(buffer, frames, fd);
+#endif
                 close(fd);
         }
 
