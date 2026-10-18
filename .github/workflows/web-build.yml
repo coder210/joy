@@ -1,5 +1,23 @@
 name: Build joy2d For Web
-on: []
+
+# 仅本项目（joy_topdown_template）的 Web CI：手动可触发，且仅在触及本项目或其编译依赖时自动跑。
+# 产物经 upload-pages-artifact 上传，再由 deploy job 发布到默认 GitHub Pages 地址。
+on:
+  workflow_dispatch:        # Actions 页手动触发
+  push:
+    paths:
+      - 'joy_topdown_template/**'
+      - 'joy/**'
+      - 'SDL/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/web-build.yml'
+  pull_request:
+    paths:
+      - 'joy_topdown_template/**'
+      - 'joy/**'
+      - 'SDL/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/web-build.yml'
 
 jobs:
   build-web:
@@ -8,12 +26,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [project_proxy2d, project_proxy3d]
+        project: [joy_topdown_template]                    # 仅本项目
         include:
-          - project: project_proxy2d
-            build_macro: "BUILD_PROJECT_PROXY2D"
-          - project: project_proxy3d
-            build_macro: "BUILD_PROJECT_PROXY3D"
+          - project: joy_topdown_template
+            build_macro: "BUILD_JOY_TOPDOWN_TEMPLATE"      # 对应根 CMakeLists 的 option
 
     steps:
       - name: Checkout code
@@ -76,17 +92,16 @@ jobs:
           done
 
       # 使用专为 GitHub Pages 设计的 artifact 上传 action
+      # 始终上传：不再依赖仓库变量 vars.UPLOAD_ARTIFACTS（未设置该变量时原条件恒为 false，从不上传）
       - name: Upload Pages artifact
-        if: ${{ vars.UPLOAD_ARTIFACTS == 'true' }}
         uses: actions/upload-pages-artifact@v3
         with:
-          name: ${{ matrix.project }}-web   # 为每个项目指定唯一名称
+          name: ${{ matrix.project }}-web   # 需与 deploy job 的 artifact_name 一致
           retention-days: 7
           path: _site_${{ matrix.project }}/
 
   deploy:
     needs: build-web
-    if: ${{ vars.UPLOAD_ARTIFACTS == 'true' }}
     permissions:
       pages: write
       id-token: write
@@ -95,8 +110,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages (proxy2d web client)
+      - name: Deploy to GitHub Pages (joy_topdown_template web client)
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_name: project_proxy2d-web   # 必须与上传时该项目的 artifact 名称一致
+          artifact_name: joy_topdown_template-web   # 必须与上传时该项目的 artifact 名称一致

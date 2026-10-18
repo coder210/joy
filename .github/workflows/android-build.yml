@@ -151,9 +151,9 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug -PtargetName=${{ matrix.target }} -PappDisplayName="${{ matrix.target }}" -PpackageSuffix=${{ matrix.target }}
 
-      # 7. 上传 APK 产物，文件名区分目标
+      # 7. 上传 APK 产物，文件名区分目标。
+      #    始终上传：不再依赖仓库变量 vars.UPLOAD_ARTIFACTS（未设置该变量时原条件恒为 false，APK 从不留档）。
       - name: Upload APK artifact
-        if: ${{ vars.UPLOAD_ARTIFACTS == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-debug
