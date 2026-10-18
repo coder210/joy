@@ -48,41 +48,40 @@ utils_current_datetime(const char* fmt, char* buf, size_t len)
 	strftime(buf, len, fmt, now);
 }
 
+/* 读整个文件。走 SDL_LoadFile（不是 fopen）——
+ * 安卓上资源打包在 APK 内部，不是文件系统路径，fopen 读不到，
+ * 只有 SDL 的 IO 层会接到 AAssetManager 从 APK 里取。
+ * 返回 SDL_malloc 出来的缓冲（末尾带 '\0'），调用方用 SDL_free 释放；
+ * 失败返回 NULL 且 *sz 置 0。契约与改动前一致。 */
 char* 
 utils_read_file(const char* filename, size_t* sz)
 {
-	FILE* fp;
+	size_t size = 0;
 	char* buf;
-	long total_size;
 
-	fp = fopen(filename, "rb");
-	if (!fp) {
-		*sz = 0;
-		return NULL;
-	}
-	fseek(fp, 0, SEEK_END);
-	total_size = ftell(fp);
-	rewind(fp);
-	buf = (char*)SDL_malloc((total_size + 1) * sizeof(char));
-	if (buf)
-		*sz = fread(buf, 1, total_size, fp);
-	else
-		*sz = 0;
-	fclose(fp);
+	if (!sz) return NULL;
+	*sz = 0;
+	if (!filename || !*filename) return NULL;
+
+	buf = (char*)SDL_LoadFile(filename, &size);
+	if (!buf) return NULL;
+	*sz = size;
 	return buf;
 }
 
+/* 文件是否存在。同样走 SDL IO，理由同 utils_read_file。 */
 bool 
 utils_check_file(const char* filename)
 {
-	FILE* file = fopen(filename, "r");
-	if (file) {
-		fclose(file);
+	SDL_IOStream* io;
+
+	if (!filename || !*filename) return false;
+	io = SDL_IOFromFile(filename, "rb");
+	if (io) {
+		SDL_CloseIO(io);
 		return true;
 	}
-	else {
-		return false;
-	}
+	return false;
 }
 
 void 
