@@ -92,8 +92,13 @@ struct datagrid {
 };
 
 struct radio {
+        jr2d_p r2d;                // 渲染器（布局换算用）
         int x, y;                  // 位置
         int size;                  // 大小
+        /* 创建时传入的比例（fx=较宽, fy=较高, size_frac=较宽）。保存下来，
+         * 渲染/命中前按"当前"逻辑分辨率重算（同 checkbox），否则分辨率改变后
+         * 单选框会停在旧像素位置且相对屏幕偏小。 */
+        float fx, fy, size_frac;
         bool checked;              // 是否选中
         char* label;               // 标签文本
         int group_id;              // 所属组ID
@@ -104,10 +109,19 @@ struct radio {
         jcolor_t r3_color;
 };
 
+/* 布局重算（实现见下）：把创建时保存的比例按"当前"逻辑分辨率换算成像素，
+ * 使逻辑分辨率改变后控件仍保持原有的相对位置与大小。 */
+static void checkbox_update_layout(checkbox_p cb);
+static void radio_update_layout(radio_p rb);
+
 struct checkbox {
         jr2d_p r2d;                 // 渲染器（坐标转换用）
         int x, y;                   // 位置
         int size;                   // 大小
+        /* 创建时传入的比例（fx=较宽, fy=较高, size_frac=较宽）。
+         * 保存下来，在绘制/命中前用"当前"逻辑分辨率重算 x/y/size —— 否则逻辑分辨率
+         * 改变（如 480x320 → 960x640）后复选框会停在旧像素位置且相对屏幕偏小。 */
+        float fx, fy, size_frac;
         checkbox_state_t state;     // 当前状态
         char* label;                // 标签文本
         jcolor_t box_color;         // 框的颜色
@@ -1390,6 +1404,11 @@ radio_p radio_create(float fx, float fy, float size_frac, const char* label, int
         radio->x = x;
         radio->y = y;
         radio->size = size;
+        // 记住比例：拿到 r2d 后按真实逻辑分辨率重算（见 radio_update_layout）
+        radio->fx = fx;
+        radio->fy = fy;
+        radio->size_frac = size_frac;
+        radio->r2d = NULL;
         radio->checked = false;
         radio->group_id = group_id;
         radio->hover = false;
@@ -1424,15 +1443,45 @@ void radio_destroy(radio_p radio)
 }
 
 
+/* 按"当前"逻辑分辨率把比例换算成像素（位置/尺寸/命中区），同 checkbox_update_layout。
+ * radio_create 拿不到 r2d（只能拿到比例），真正的换算推迟到这里。 */
+static void radio_update_layout(radio_p rb)
+{
+        if (!rb || !rb->r2d) return;
+
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(rb->r2d, &lw, &lh, NULL);
+        if (lw <= 0 || lh <= 0) return;
+
+        const float scale = (float)lw / 480.0f;      // 相对设计稿 480x320 的缩放
+        rb->x    = (int)(rb->fx * (float)lw);
+        rb->y    = (int)(rb->fy * (float)lh);
+        rb->size = (int)(rb->size_frac * (float)lw);
+
+        int label_width = rb->label ? (int)(strlen(rb->label) * 10 * scale) : 0;
+        rb->hit_area.x = rb->x;
+        rb->hit_area.y = rb->y;
+        rb->hit_area.w = rb->size + (int)(5.0f * scale) + label_width;
+        rb->hit_area.h = rb->size;
+}
+
 void radio_render(radio_p radio, jr2d_p r2d)
 {
         if (!radio) return;
 
+        // 可能刚拿到 r2d：先按当前逻辑分辨率重算布局
+        if (r2d) radio->r2d = r2d;
+        radio_update_layout(radio);
+
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        const float scale = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
+
         float center_x = radio->x + radio->size / 2;
         float center_y = radio->y + radio->size / 2;
         float r1 = radio->size / 2;
-        float r2 = r1 - 2;
-        float r3 = r2 - 4;
+        float r2 = r1 - 2.0f * scale;    // 描边/内圈厚度是设计稿像素，按分辨率换算
+        float r3 = r2 - 4.0f * scale;
 
         // 使用足够大的分段数绘制平滑圆形
         const int segments = 99; // 增加分段数使圆形平滑
@@ -1508,6 +1557,10 @@ checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* labe
         cb->x = x;
         cb->y = y;
         cb->size = size;
+        // 记住比例：拿到 r2d 后会按真实逻辑分辨率重算（见 checkbox_update_layout）
+        cb->fx = fx;
+        cb->fy = fy;
+        cb->size_frac = size_frac;
         cb->r2d = NULL;
         cb->state = JOY_CHECKBOX_UNCHECKED;
         cb->label = label ? utils_strdup(label, NULL) : NULL;
@@ -1596,6 +1649,8 @@ void checkbox_toggle(checkbox_p checkbox)
 bool checkbox_is_pressed(checkbox_p cb, float x, float y)
 {
         if (!cb || !cb->enabled) return false;
+        // 命中前先按当前逻辑分辨率重算命中区，否则分辨率改变后点击位置对不上
+        checkbox_update_layout(cb);
         vec2_t pt = { x, y };
         // 与 button/slider/inputbox 一致：窗口坐标转逻辑坐标，保证全屏下命中正确
         if (cb->r2d) pt = r2d_coordinates_from_window(cb->r2d, x, y);
@@ -1624,9 +1679,37 @@ void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcol
         checkbox->hover_color = hover;
 }
 
+/* 按"当前"逻辑分辨率把比例换算成像素（位置/尺寸/命中区）。
+ * 创建时只能拿到比例（没有 r2d），所以真正的换算推迟到这里。
+ * 逻辑分辨率改变后，复选框仍保持原有的相对位置与大小。 */
+static void checkbox_update_layout(checkbox_p cb)
+{
+        if (!cb || !cb->r2d) return;
+
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(cb->r2d, &lw, &lh, NULL);
+        if (lw <= 0 || lh <= 0) return;
+
+        const float scale = (float)lw / 480.0f;      // 相对设计稿 480x320 的缩放
+        cb->x    = (int)(cb->fx * (float)lw);
+        cb->y    = (int)(cb->fy * (float)lh);
+        cb->size = (int)(cb->size_frac * (float)lw);
+
+        int label_width = 0;
+        if (cb->label) label_width = (int)(strlen(cb->label) * 8 * scale);
+        cb->hit_area.x = cb->x;
+        cb->hit_area.y = cb->y;
+        cb->hit_area.w = cb->size + (int)(5.0f * scale) + label_width;
+        cb->hit_area.h = cb->size;
+}
+
 void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 {
         if (!checkbox) return;
+
+        // 可能刚 set_r2d：先按当前逻辑分辨率重算布局
+        if (r2d) checkbox->r2d = r2d;
+        checkbox_update_layout(checkbox);
 
         float cx = (float)checkbox->x;
         float cy = (float)checkbox->y;
@@ -1694,8 +1777,12 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
         if (checkbox->label && font) {
                 font_p f = (font_p)font;
                 jcolor_t tc = checkbox->enabled ? checkbox->text_color : (jcolor_t){ 160, 160, 160, 255 };
+                // 标签与框的间距 8 是设计稿像素，按分辨率换算
+                int lw = 0, lh = 0;
+                r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+                const float scale = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
                 jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
-                        cx + sz + 8,
+                        cx + sz + 8.0f * scale,
                         cy + (sz - (float)font_get_size(f)) / 2);
         }
 }

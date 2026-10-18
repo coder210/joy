@@ -50,8 +50,14 @@ extern "C" {
 
 /* ===================== 单位换算（米 ↔ 像素） ===================== */
 /* 1 米 = PIXELS_PER_METER 屏幕像素；渲染坐标 = 世界坐标(米) × PIXELS_PER_METER。
- * 作为唯一真源放入 joy，project_proxy2d / adventure2d 共用，避免重复定义。 */
+ * 作为唯一真源放入 joy，project_proxy2d / adventure2d 共用，避免重复定义。
+ *
+ * 允许单个项目在编译期覆盖（默认 50，不覆盖时行为与以前完全一致）：
+ *   逻辑分辨率提高后，若要保持"可视世界范围 + 角色显示大小"不变，
+ *   需让 PPM 同比例提高 —— 例如 480x320 → 960x640 时配 -DPIXELS_PER_METER=100。 */
+#ifndef PIXELS_PER_METER
 enum { PIXELS_PER_METER = 50 };
+#endif
 
 /* 逻辑分辨率呈现模式（对标 SDL_RendererLogicalPresentation）。
  * 项目层用这些常量，避免直接依赖 SDL render 头。 */
