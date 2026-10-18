@@ -152,6 +152,35 @@ bool r2d_set_scale(jr2d_p r2d, float sx, float sy)
         return SDL_SetRenderScale(r2d->sdl, sx, sy);
 }
 
+/* ===================== 比例坐标（0~1）基础转换 =====================
+ *
+ * 与 jui 里 button_create / joystick_create 等控件的百分比语义一致：
+ *   x / w → 逻辑分辨率的宽；y / h → 逻辑分辨率的高。
+ * 未启用逻辑分辨率时回退到渲染输出尺寸，保证任何配置下都有效。
+ */
+void r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
+             float* x, float* y, float* w, float* h)
+{
+        int bw = 0, bh = 0;
+        if (!r2d) { bw = bh = 0; }
+        else {
+                r2d_get_logical_presentation(r2d, &bw, &bh, NULL);
+                if (bw <= 0 || bh <= 0) r2d_get_size(r2d, &bw, &bh);   /* 回退：输出尺寸 */
+        }
+        const float W = (float)bw, H = (float)bh;
+        if (x) *x = fx * W;
+        if (y) *y = fy * H;
+        if (w) *w = fw * W;
+        if (h) *h = fh * H;
+}
+
+jrect_t r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh)
+{
+        jrect_t r = { 0.0f, 0.0f, 0.0f, 0.0f };
+        r2d_fpx(r2d, fx, fy, fw, fh, &r.x, &r.y, &r.w, &r.h);
+        return r;
+}
+
 void r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a)
 {
         SDL_SetRenderDrawColorFloat(r2d->sdl, r, g, b, a);
@@ -952,6 +981,60 @@ void jtext_print(jr2d_p r2d,
 {
         SDL_FRect raw_dest = { x, y, (float)text->real_width, (float)text->real_height };
         SDL_RenderTexture(r2d->sdl, text->texture, NULL, &raw_dest);
+}
+
+/* ===================== 比例坐标（0~1）绘制封装 =====================
+ *
+ * 全部建立在 r2d_fpx / r2d_frect 之上，语义与控件层的百分比参数一致。
+ * 逻辑分辨率改变时，用这些接口绘制的内容自动等比适配，无需改任何常量。
+ */
+bool r2d_draw_point_f(jr2d_p r2d, float fx, float fy)
+{
+        float x = 0.0f, y = 0.0f;
+        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        return r2d_draw_point(r2d, x, y);
+}
+
+bool shape_draw_rectangle_f(jr2d_p r2d, const char* mode, float fx, float fy, float fw, float fh)
+{
+        return shape_draw_rectangle(r2d, mode, r2d_frect(r2d, fx, fy, fw, fh));
+}
+
+bool shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2)
+{
+        float x1 = 0.0f, y1 = 0.0f, x2 = 0.0f, y2 = 0.0f;
+        r2d_fpx(r2d, fx1, fy1, 0.0f, 0.0f, &x1, &y1, NULL, NULL);
+        r2d_fpx(r2d, fx2, fy2, 0.0f, 0.0f, &x2, &y2, NULL, NULL);
+        return shape_draw_line(r2d, x1, y1, x2, y2);
+}
+
+void image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
+        float fx, float fy, float fw, float fh)
+{
+        jrect_t dest = r2d_frect(r2d, fx, fy, fw, fh);
+        image_draw1(image, srcrect, &dest);
+}
+
+void jtext_printf(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
+        float fx, float fy)
+{
+        float x = 0.0f, y = 0.0f;
+        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        jtext_printx(r2d, font, str, len, color, x, y);
+}
+
+/* 位置为比例，且绘制尺寸 = 字号 × scale（用于需要按屏幕比例缩放字号的场合）。
+ * 不走 jtext_printx 的纹理缓存（缓存条目尺寸固定），这里按次创建再释放。 */
+void jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
+        float fx, float fy, float scale)
+{
+        jtext_p tex = text_createx(r2d, font, str, len, color);
+        if (!tex) return;
+        float x = 0.0f, y = 0.0f;
+        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        SDL_FRect dest = { x, y, (float)tex->real_width * scale, (float)tex->real_height * scale };
+        SDL_RenderTexture(r2d->sdl, tex->texture, NULL, &dest);
+        text_destroy(tex);
 }
 
 /* ===================== 文字纹理缓存 =====================

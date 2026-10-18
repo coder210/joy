@@ -1151,6 +1151,33 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void text_destroy(jtext_p jtext_tex);
         JOY_API void jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
         JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
+
+        /* ==================== 比例坐标（0~1）绘制接口 ====================
+         *
+         * 语义与 button_create / joystick_create / popup_create 等控件的百分比参数完全一致：
+         *   x / w 相对"逻辑分辨率的宽"，y / h 相对"逻辑分辨率的高"。
+         *
+         * 这样绘制层(shape/image/text)与控件层用同一套坐标：逻辑分辨率变化时
+         * 无需改动任何常量（原来绘制层只认像素，分辨率一改就全部挤在左上）。
+         *
+         * 只新增、不改动上面的像素版接口，既有项目不受影响。
+         */
+        JOY_API jrect_t r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh);
+        JOY_API void    r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
+                                float* x, float* y, float* w, float* h);
+
+        JOY_API bool    r2d_draw_point_f(jr2d_p r2d, float fx, float fy);
+        JOY_API bool    shape_draw_rectangle_f(jr2d_p r2d, const char* mode,
+                                               float fx, float fy, float fw, float fh);
+        JOY_API bool    shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2);
+        JOY_API void    image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
+                                      float fx, float fy, float fw, float fh);
+
+        /* 文字位置用比例（字号仍由 font 的烘焙尺寸决定；*_scaled 可再乘一个缩放系数） */
+        JOY_API void    jtext_printf(jr2d_p r2d, font_p font, const char* str, int len,
+                                     jcolor_t color, float fx, float fy);
+        JOY_API void    jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len,
+                                            jcolor_t color, float fx, float fy, float scale);
         JOY_API int text_get_width(jtext_p jtext_tex);
         JOY_API int text_get_height(jtext_p jtext_tex);
 
