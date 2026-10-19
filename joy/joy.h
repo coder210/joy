@@ -2035,6 +2035,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void joystick_draw(joystick_p joystick);
         JOY_API void joystick_reset(joystick_p joystick);
         JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
+        /* 布局需要：逻辑分辨率变化（自适应宽高比/旋转）时改变摇杆半径，保持设计尺寸 */
+        JOY_API void joystick_set_radius(joystick_p joystick, float radius);
         JOY_API bool joystick_is_dragging(joystick_p joystick);
         JOY_API void joystick_touch_down(joystick_p joystick, float x, float y);
         JOY_API void joystick_touch_move(joystick_p joystick, float x, float y);

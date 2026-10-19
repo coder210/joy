@@ -1893,6 +1893,26 @@ void joystick_set_position(joystick_p joystick, float x, float y)
         }
 }
 
+// 设置摇杆半径（底圈与手柄同步缩放）。用于逻辑分辨率变化时保持设计尺寸。
+void joystick_set_radius(joystick_p joystick, float radius)
+{
+        if (!joystick || radius <= 0.0f) return;
+        joystick->radius = radius;
+        joystick->handle_radius = radius * 0.4f;
+
+        joystick->background.x = joystick->center.x - radius;
+        joystick->background.y = joystick->center.y - radius;
+        joystick->background.w = radius * 2.0f;
+        joystick->background.h = radius * 2.0f;
+
+        if (!joystick->is_dragging) {
+                joystick->handle.x = joystick->center.x - joystick->handle_radius;
+                joystick->handle.y = joystick->center.y - joystick->handle_radius;
+                joystick->handle.w = joystick->handle_radius * 2.0f;
+                joystick->handle.h = joystick->handle_radius * 2.0f;
+        }
+}
+
 // 设置方向约束模式（全方向/四向/八向/仅上/下/左/右）
 void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
 {
