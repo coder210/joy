@@ -2494,11 +2494,16 @@ static int inputbox_pos_from_x(inputbox_p ti, float local_x)
 
 void inputbox_focus(inputbox_p ti)
 {
-        if (!ti || ti->focused) return;
+        if (!ti) return;
         ti->focused = true;
         ti->cursor_timer = get_ticks();
         ti->cursor_visible = true;
-        /* 从 r2d 获取 window 并启用文本输入 */
+        /* 从 r2d 获取 window 并启用文本输入。
+         * 注意：即使已经处于聚焦态也要调用 SDL_StartTextInput——用户可能用系统返回键
+         * 手动收起了输入法（此时 SDL 会把 text_input_active / screen_keyboard_shown
+         * 复位为 false，但 inputbox 自身的 focused 仍是 true）。再次点击该框时需要重新
+         * 拉起键盘，否则表现为"点一下没反应、要再点一下"。
+         * 键盘本来就开着时，SDL_StartTextInput 内部是 no-op（不会重复 show/start）。 */
         SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
         if (win) SDL_StartTextInput(win);
 }
@@ -2510,6 +2515,22 @@ void inputbox_defocus(inputbox_p ti)
         inputbox_clear_sel(ti);
         SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
         if (win) SDL_StopTextInput(win);
+}
+
+/* 仅清除焦点，不调用 SDL_StopTextInput。
+ * 用于在两个输入框之间切换焦点：保持软键盘/IME 不收起。
+ * 为什么不能直接走 inputbox_defocus：
+ *   切换焦点时若先 SDL_StopTextInput(隐藏键盘)、同一帧内紧接着另一框
+ *   SDL_StartTextInput(显示键盘)，Android 的 IME hide/show 是异步投递到 UI 线程的，
+ *   show 会与尚未完成的 hide 竞态被吞掉，表现为"从 A 直接点 B 唤不起输入法，
+ *   必须先点输入框外让 A 失焦、隔一帧再点 B 才行"。
+ * 因此：框间切换用本函数只转移焦点（键盘保持），点到所有框之外才用
+ * inputbox_defocus 真正收起键盘。 */
+void inputbox_blur(inputbox_p ti)
+{
+        if (!ti || !ti->focused) return;
+        ti->focused = false;
+        inputbox_clear_sel(ti);
 }
 
 void inputbox_draw(inputbox_p ti)

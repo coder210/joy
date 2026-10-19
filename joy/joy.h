@@ -2052,6 +2052,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API bool inputbox_is_hovered(inputbox_p ti, float x, float y);
         JOY_API void inputbox_focus(inputbox_p ti);
         JOY_API void inputbox_defocus(inputbox_p ti);
+        /* 仅清除焦点，不调用 SDL_StopTextInput。用于多输入框之间切换焦点时保持软键盘不收起，
+         * 避免 Android IME hide/show 同帧竞态导致新的输入框唤不起键盘。 */
+        JOY_API void inputbox_blur(inputbox_p ti);
         JOY_API void inputbox_insert(inputbox_p ti, const char* s, int len);
         JOY_API void inputbox_backspace(inputbox_p ti);
         JOY_API void inputbox_delete(inputbox_p ti);
