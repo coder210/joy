@@ -29,8 +29,21 @@ typedef struct {
 
 uint32_t audio_open_device()
 {
-        SDL_AudioDeviceID device_id;
-        device_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
+        /* 降低 Android 端输出延迟：
+         * - 用 SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES 请求较小的设备缓冲（采样帧数），
+         *   直接压低输出延迟（SDL3 里缓冲大小不走 SDL_AudioSpec.samples，而是通过此 hint 设置，
+         *   且必须在打开设备前设置）；
+         * - 显式指定标准采样率/格式，减少与资源文件格式不一致带来的转换开销；
+         * - 打开后立即 Resume，确保设备处于运行态、首次灌数据即出声。
+         * 该 hint 对所有经此函数打开的设备（UI 音效、BGM）都生效。 */
+        SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, "512");
+        SDL_AudioSpec spec;
+        SDL_zero(spec);
+        spec.freq     = 44100;
+        spec.format   = SDL_AUDIO_F32;
+        spec.channels = 2;
+        SDL_AudioDeviceID device_id = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
+        if (device_id) SDL_ResumeAudioDevice(device_id);
         return device_id;
 }
 
