@@ -60,6 +60,7 @@ struct combobox {
         combobox_item_t items[20];
         int item_count;
         int item_height;
+        float ui_scale;             /* 相对 480x320 设计稿的缩放，供绘制换算固定像素 */
         int selected_index;
         bool is_open;
         jtext_p text;
@@ -519,8 +520,14 @@ combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
         combobox->dropdown_rect.y = rect.y + rect.h;
         combobox->dropdown_rect.w = rect.w;
         combobox->dropdown_rect.h = 0;
+        // item_height 原为 480x320 设计稿下的固定 30px，不随逻辑分辨率换算 ——
+        // 高分辨率下会出现"文字比列表项还高、溢出到列表背景外"，这里按分辨率缩放。
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
+        combobox->ui_scale = s;
         combobox->item_count = 0;
-        combobox->item_height = 30;
+        combobox->item_height = (int)(30.0f * s);
         combobox->selected_index = -1;
         combobox->is_open = false;
         combobox->bg_color = (jcolor_t){ 240, 240, 240, 255 };
@@ -632,10 +639,15 @@ void combobox_draw(combobox_p combobox)
         r2d_set_color(r2d, 0, 0, 0, 255);
         shape_draw_rectangle(r2d, "line", combobox->main_rect);
 
-        // 渲染当前选中的文本
+        const float s = (combobox->ui_scale > 0.0f) ? combobox->ui_scale : 1.0f;
+
+        // 渲染当前选中的文本（左边距按分辨率换算，垂直居中）
         if (combobox->selected_index >= 0 && combobox->items[combobox->selected_index].text) {
-                jtext_print(r2d, combobox->items[combobox->selected_index].text,
-                        combobox->main_rect.x + 5, combobox->main_rect.y);
+                // 注：jtext 的内部结构（real_height）在 jui.c 不可见，无法精确垂直居中，
+                // 这里用按分辨率换算的顶部偏移（设计稿 2px）。
+                jtext_p t = combobox->items[combobox->selected_index].text;
+                jtext_print(r2d, t, combobox->main_rect.x + 5.0f * s,
+                            combobox->main_rect.y + 2.0f * s);
         }
 
 
@@ -644,10 +656,16 @@ void combobox_draw(combobox_p combobox)
                 // 渲染下拉箭头
                 jcolor_t color = { 0, 0, 0, 255 };
                 r2d_set_color(r2d, 0, 0, 0, 255);
+                // 箭头各偏移是设计稿像素（25/10/5/15/20），按分辨率换算并垂直居中
+                float ax = combobox->main_rect.x + combobox->main_rect.w;
+                float ay = combobox->main_rect.y;
+                float ah = 10.0f * s;
+                float ao = (combobox->main_rect.h - ah) * 0.5f;
+                if (ao < 0.0f) ao = 0.0f;
                 vec2_t arrow_points[3] = {
-                    {combobox->main_rect.x + combobox->main_rect.w - 25, combobox->main_rect.y + 10},
-                    {combobox->main_rect.x + combobox->main_rect.w - 5, combobox->main_rect.y + 10},
-                    {combobox->main_rect.x + combobox->main_rect.w - 15, combobox->main_rect.y + 20}
+                    {ax - 25.0f * s, ay + ao},
+                    {ax - 5.0f * s,  ay + ao},
+                    {ax - 15.0f * s, ay + ao + ah}
                 };
                 shape_draw_polygon(r2d, "line", arrow_points, 3, color);
 
@@ -679,17 +697,25 @@ void combobox_draw(combobox_p combobox)
 
                         item = combobox->items + i;
                         if (item->text) {
-                                jtext_print(r2d, item->text, item_rect.x + 5, item_rect.y);
+                                // 顶部偏移按分辨率换算（设计稿 2px）：
+                                // item_height 已同步放大，文字不会溢出到下一项
+                                jtext_print(r2d, item->text, item_rect.x + 5.0f * s,
+                                            item_rect.y + 2.0f * s);
                         }
                 }
         }
         else {
                 // 渲染下拉箭头
                 jcolor_t color = { 0, 0, 0, 255 };
+                float ax = combobox->main_rect.x + combobox->main_rect.w;
+                float ay = combobox->main_rect.y;
+                float ah = 10.0f * s;
+                float ao = (combobox->main_rect.h - ah) * 0.5f;
+                if (ao < 0.0f) ao = 0.0f;
                 vec2_t arrow_points[3] = {
-                    {combobox->main_rect.x + combobox->main_rect.w - 15, combobox->main_rect.y + 10},
-                    {combobox->main_rect.x + combobox->main_rect.w - 25, combobox->main_rect.y + 20},
-                    {combobox->main_rect.x + combobox->main_rect.w - 5, combobox->main_rect.y + 20}
+                    {ax - 15.0f * s, ay + ao},
+                    {ax - 25.0f * s, ay + ao + ah},
+                    {ax - 5.0f * s,  ay + ao + ah}
                 };
                 shape_draw_polygon(r2d, "line", arrow_points, 3, color);
         }
@@ -761,12 +787,19 @@ combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw,
         ci->item_count = 0;
         ci->selected_index = -1;
         ci->is_open = false;
-        ci->item_height = 24;
+        /* item_height / 箭头宽度原本是 480x320 设计稿下的固定像素（24 / 20），
+         * 逻辑分辨率提高后不跟着放大 —— 表现为"字号比列表项还高"、文字溢出到
+         * 列表背景外面（与下方控件重叠看不清）。这里按逻辑分辨率换算。 */
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
+
+        ci->item_height = (int)(24.0f * s);
         ci->arrow_hovered = false;
-        // 箭头按钮在右侧 20px
-        ci->arrow_rect.x = rect.x + rect.w - 20;
+        // 箭头按钮在右侧（设计稿 20px）
+        ci->arrow_rect.w = 20.0f * s;
+        ci->arrow_rect.x = rect.x + rect.w - ci->arrow_rect.w;
         ci->arrow_rect.y = rect.y;
-        ci->arrow_rect.w = 20;
         ci->arrow_rect.h = rect.h;
         // 配色
         ci->bg_color = (jcolor_t){ 255, 255, 255, 255 };
@@ -937,7 +970,9 @@ void combobox_input_draw(combobox_input_p ci)
 
         // 裁剪区域（文字区域，排除箭头按钮）
         SDL_Renderer* sdl_r = (SDL_Renderer*)r2d_unwrap(r);
-        SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 24, (int)rect.h };
+        // 裁剪区排除箭头按钮（宽度随分辨率换算，原来写死 24）
+        SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y,
+                (int)(rect.w - ci->arrow_rect.w - 4.0f), (int)rect.h };
         bool clip_was_enabled = SDL_RenderClipEnabled(sdl_r);
         SDL_Rect old_clip;
         if (clip_was_enabled) SDL_GetRenderClipRect(sdl_r, &old_clip);
@@ -975,23 +1010,34 @@ void combobox_input_draw(combobox_input_p ci)
                 }
         }
 
-        // 箭头按钮（右侧 20px 宽）
+        /* 箭头按钮：展开时朝上、收起时朝下。
+         * 三角原本是设计稿下的固定像素（半宽 5、半高 3），逻辑分辨率提高后不换算
+         * —— 960x640 下只有 10x6 px，小到几乎看不见（像是"没有展开/收起标识"）。
+         * 这里按逻辑分辨率缩放，并跟随箭头区大小。 */
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r, &lw, &lh, NULL);
+        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
         float arrow_cx = ci->arrow_rect.x + ci->arrow_rect.w / 2.0f;
         float arrow_cy = ci->arrow_rect.y + ci->arrow_rect.h / 2.0f;
+        float aw = 5.0f * s, ah = 3.0f * s;          // 半宽 / 半高（设计稿 5 / 3）
+        // 用箭头区实际高度再兜一层，避免控件本身很高时三角仍偏小
+        float min_h = ci->arrow_rect.h * 0.18f;
+        if (ah < min_h) { ah = min_h; aw = ah * (5.0f / 3.0f); }
+
         if (ci->is_open) {
                 // 上箭头
                 vec2_t pts[3] = {
-                    {arrow_cx - 5, arrow_cy + 3},
-                    {arrow_cx + 5, arrow_cy + 3},
-                    {arrow_cx,     arrow_cy - 3}
+                    {arrow_cx - aw, arrow_cy + ah},
+                    {arrow_cx + aw, arrow_cy + ah},
+                    {arrow_cx,      arrow_cy - ah}
                 };
                 shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
         } else {
                 // 下箭头
                 vec2_t pts[3] = {
-                    {arrow_cx - 5, arrow_cy - 3},
-                    {arrow_cx + 5, arrow_cy - 3},
-                    {arrow_cx,     arrow_cy + 3}
+                    {arrow_cx - aw, arrow_cy - ah},
+                    {arrow_cx + aw, arrow_cy - ah},
+                    {arrow_cx,      arrow_cy + ah}
                 };
                 shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
         }
@@ -1006,6 +1052,10 @@ void combobox_input_draw_dropdown(combobox_input_p ci)
         if (!ci || !ci->is_open || ci->item_count <= 0) return;
         jr2d_p r = ci->r2d;
         jrect_t rect = ci->rect;
+        /* 设计稿像素（文字左边距等）按逻辑分辨率换算，理由同 create 中的 item_height */
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r, &lw, &lh, NULL);
+        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
         jrect_t drop_rect = {
             rect.x, rect.y + rect.h,
             rect.w, (float)(ci->item_count * ci->item_height)
@@ -1033,15 +1083,32 @@ void combobox_input_draw_dropdown(combobox_input_p ci)
                 r2d_set_color(r, 220, 220, 220, 255);
                 shape_draw_line(r, item_rect.x, item_rect.y + item_rect.h,
                         item_rect.x + item_rect.w, item_rect.y + item_rect.h);
-                // 文字
+                // 文字：垂直居中 + 左边距按分辨率换算
+                //（原来是固定 +4 / +2，字号变大后会顶出列表项、溢出到列表外）
+                float th = (float)font_get_size(ci->font);
+                float ty = item_rect.y + (item_rect.h - th) * 0.5f;
+                if (ty < item_rect.y) ty = item_rect.y;
                 jtext_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
-                        ci->text_color, item_rect.x + 4, item_rect.y + 2);
+                        ci->text_color, item_rect.x + 4.0f * s, ty);
         }
 }
 
 bool combobox_input_is_open(combobox_input_p ci)
 {
         return ci ? ci->is_open : false;
+}
+
+/* 下面两个内部函数在后面才定义，这里提前声明以便 combobox_input_set_open 使用 */
+static void ci_open_dropdown(combobox_input_p ci);
+static void ci_close_dropdown(combobox_input_p ci);
+
+/* 主动展开/收起下拉列表：调用方用 hit_item 选中某项后需要收起列表，
+ * 原来没有这个接口（内部 ci_open_dropdown / ci_close_dropdown 是 static）。 */
+void combobox_input_set_open(combobox_input_p ci, bool v)
+{
+        if (!ci) return;
+        if (v) ci_open_dropdown(ci);
+        else   ci_close_dropdown(ci);
 }
 
 void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node)

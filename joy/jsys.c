@@ -1001,34 +1001,64 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 
 #endif // JOY_WIN
 
+/* 枚举网卡在 Android 上需要 API >= 24；更低版本退回到"主机名解析"兜底。
+ * （Android NDK 的 getifaddrs 从 API 24 起可用。） */
+#if defined(__ANDROID__)
+#  if defined(__ANDROID_API__) && __ANDROID_API__ >= 24
+#    define JOY_HAVE_IFADDRS 1
+#  endif
+#elif !defined(JOY_WIN)
+#  define JOY_HAVE_IFADDRS 1
+#endif
+
+#if defined(JOY_HAVE_IFADDRS)
+#  include <ifaddrs.h>
+#  include <net/if.h>
+#endif
+
+/* 只收 IPv4 —— 调用方（如服务器 IP 下拉列表）一般只要 IPv4，
+ * 混进 fe80:: 之类的链路本地 IPv6 会干扰选择。
+ *
+ * 原来的实现有两个问题：
+ *   1) 只有 Windows 分支，其它平台直接 return 0（安卓上列表是空的）；
+ *   2) AF_UNSPEC 会把 IPv6 一起收进来。
+ */
 int get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 {
         if (!ips || max_count <= 0) return 0;
-#if defined(JOY_WIN)
+        int count = 0;
+
+#if defined(JOY_HAVE_IFADDRS)
+        /* POSIX / Android：直接枚举网卡。比"解析本机名"可靠得多 ——
+         * 安卓上 gethostname 往往拿不到主机名，解析不出局域网 IP。 */
+        struct ifaddrs* ifa = NULL;
+        if (getifaddrs(&ifa) == 0) {
+                struct ifaddrs* p;
+                for (p = ifa; p && count < max_count; p = p->ifa_next) {
+                        if (!p->ifa_addr || p->ifa_addr->sa_family != AF_INET) continue;
+                        void* addr = &((struct sockaddr_in*)p->ifa_addr)->sin_addr;
+                        if (inet_ntop(AF_INET, addr, ips[count], JOY_MAX_IP))
+                                count++;
+                }
+                freeifaddrs(ifa);
+        }
+        if (count > 0) return count;
+#endif
+
+        /* Windows，或上面没取到时的兜底：用本机名解析 */
         char hostname[256];
         if (gethostname(hostname, sizeof(hostname)) != 0) return 0;
         struct addrinfo hints, *res, *rp;
         memset(&hints, 0, sizeof(hints));
-        hints.ai_family = AF_UNSPEC;
+        hints.ai_family = AF_INET;              /* 只要 IPv4 */
         hints.ai_socktype = SOCK_STREAM;
         if (getaddrinfo(hostname, NULL, &hints, &res) != 0) return 0;
-        int count = 0;
         for (rp = res; rp && count < max_count; rp = rp->ai_next) {
-                void* addr = NULL;
-                if (rp->ai_family == AF_INET)
-                        addr = &((struct sockaddr_in*)rp->ai_addr)->sin_addr;
-                else if (rp->ai_family == AF_INET6)
-                        addr = &((struct sockaddr_in6*)rp->ai_addr)->sin6_addr;
-                else
-                        continue;
-                if (inet_ntop(rp->ai_family, addr, ips[count], JOY_MAX_IP))
+                if (rp->ai_family != AF_INET) continue;
+                void* addr = &((struct sockaddr_in*)rp->ai_addr)->sin_addr;
+                if (inet_ntop(AF_INET, addr, ips[count], JOY_MAX_IP))
                         count++;
         }
         freeaddrinfo(res);
         return count;
-#else
-        (void)ips;
-        (void)max_count;
-        return 0;
-#endif
 }

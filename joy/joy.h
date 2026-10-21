@@ -1986,6 +1986,8 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node);
         JOY_API void combobox_input_process_event(combobox_input_p ci, const void* ev);
         JOY_API int combobox_input_hit_item(combobox_input_p ci, float x, float y);
+        /* 主动展开/收起下拉列表（原来只有 is_open，选中某项后无法收起）。 */
+        JOY_API void combobox_input_set_open(combobox_input_p ci, bool v);
 
         JOY_API datagrid_p datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font);
         JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
