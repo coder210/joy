@@ -53,6 +53,7 @@ static LONG WINAPI crashHandler(EXCEPTION_POINTERS* ep)
 #	include<sys/time.h>
 #	include<sys/socket.h>
 #	include<arpa/inet.h>
+#	include<netdb.h>        // getaddrinfo / struct addrinfo / freeaddrinfo（安卓 bionic 不会自动包含）
 #	include<errno.h>
 #	include<sys/ioctl.h>
 #	include<sys/fcntl.h>
