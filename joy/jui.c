@@ -3587,3 +3587,106 @@ void jui_process_event(void** widgets, int count, const void* event)
                 (void)e;
         }
 }
+
+/* =================================================================
+ * 栅格布局 jlayout
+ * 纯几何计算 + 可选标签绘制，不持有任何控件；矩形以“逻辑像素”表示
+ * （场景用 s = lh/320 把设计像素换算成逻辑像素后传入）。
+ * ================================================================= */
+struct jlayout_grid {
+        float ox, oy, width, row_h, pad;
+        int   ncols;
+        float* col_fracs;
+        int   row;
+};
+
+jlayout_grid_t* jlayout_grid_create(float ox, float oy, float width, float row_h,
+                                    int ncols, const float* col_fracs, float pad)
+{
+        if (ncols <= 0 || !col_fracs) return NULL;
+        jlayout_grid_t* g = (jlayout_grid_t*)malloc(sizeof(jlayout_grid_t));
+        if (!g) return NULL;
+        g->col_fracs = (float*)malloc(sizeof(float) * (size_t)ncols);
+        if (!g->col_fracs) { free(g); return NULL; }
+        for (int i = 0; i < ncols; i++) g->col_fracs[i] = col_fracs[i];
+        g->ox = ox; g->oy = oy; g->width = width; g->row_h = row_h; g->pad = pad;
+        g->ncols = ncols; g->row = 0;
+        return g;
+}
+
+void jlayout_grid_destroy(jlayout_grid_t* g)
+{
+        if (!g) return;
+        if (g->col_fracs) free(g->col_fracs);
+        free(g);
+}
+
+void jlayout_grid_next_row(jlayout_grid_t* g)
+{
+        if (g) g->row++;
+}
+
+void jlayout_grid_set_row(jlayout_grid_t* g, int row)
+{
+        if (g) g->row = row;
+}
+
+void jlayout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h)
+{
+        if (!g || col < 0 || col >= g->ncols) {
+                if (x) *x = 0.0f; if (y) *y = 0.0f; if (w) *w = 0.0f; if (h) *h = 0.0f;
+                return;
+        }
+        float colx = g->ox;
+        for (int i = 0; i < col; i++) colx += g->col_fracs[i] * g->width;
+        float colw = g->col_fracs[col] * g->width;
+        if (x) *x = colx + g->pad;
+        if (y) *y = g->oy + (float)g->row * g->row_h + g->pad;
+        if (w) *w = colw - 2.0f * g->pad;
+        if (h) *h = g->row_h - 2.0f * g->pad;
+        if (w && *w < 0.0f) *w = 0.0f;
+        if (h && *h < 0.0f) *h = 0.0f;
+}
+
+void jlayout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+                        const char* text, int n, jcolor_t c, int col,
+                        float* cx, float* cy, float* cw, float* ch)
+{
+        float lx, ly, lw, lh;
+        jlayout_grid_cell(g, col, &lx, &ly, &lw, &lh);
+        int tw = 0, th = 0;
+        jtext_measurex(r2d, font, text, n, c, &tw, &th);
+        int wl = 0, hl = 0;
+        r2d_get_logical_presentation(r2d, &wl, &hl, NULL);
+        float text_x = lx;                                   // 左对齐
+        float text_y = ly + ((lh - (float)th) * 0.5f);       // 垂直居中
+        jtext_printf(r2d, font, text, n, c,
+                     (wl > 0 ? text_x / (float)wl : 0.0f),
+                     (hl > 0 ? text_y / (float)hl : 0.0f));
+        if (cx) *cx = lx; if (cy) *cy = ly; if (cw) *cw = lw; if (ch) *ch = lh;
+}
+
+/* 在当前行创建 n 个等宽按钮（横向按钮条/菜单），各占一列。
+ * 按钮尺寸取单元格的 0.86×0.7 居中，避免贴边；指针写入 out[]（调用方分配 n 个）。
+ * 列数受栅格 ncols 限制（多出的 label 被忽略）。创建后自动换到下一行。 */
+void jlayout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+                             const char** labels, int n, button_p* out)
+{
+        if (!g || !r2d || n <= 0 || !out) return;
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        const float LW = (lw > 0) ? (float)lw : 960.0f;
+        const float LH = (lh > 0) ? (float)lh : 640.0f;
+        const int cnt = (n < g->ncols) ? n : g->ncols;
+        for (int i = 0; i < cnt; i++) {
+                float cx, cy, cw, ch;
+                jlayout_grid_cell(g, i, &cx, &cy, &cw, &ch);
+                float bw = cw * 0.86f, bh = ch * 0.7f;
+                float bx = cx + (cw - bw) * 0.5f, by = cy + (ch - bh) * 0.5f;
+                button_p b = button_create(r2d, bx / LW, by / LH, bw / LW, bh / LH);
+                if (labels && labels[i])
+                        button_set_textx(b, font, labels[i], (int)strlen(labels[i]), (jcolor_t){ 0, 0, 0, 255 });
+                out[i] = b;
+        }
+        jlayout_grid_next_row(g);
+}

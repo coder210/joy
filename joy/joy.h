@@ -322,6 +322,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct image image_t, * image_p;
         typedef struct jtext jtext_t, * jtext_p;
         typedef struct animation animation_t, * animation_p;
+        typedef struct jlayout_grid jlayout_grid_t;   // 栅格布局（见下方 jlayout_*）
         typedef struct jr3d   jr3d_t, * jr3d_p;          /* 3D 渲染上下文 */
         typedef struct render_mesh render_mesh_t, * render_mesh_p;  /* 网格 */
         /* ---------- MVP 结构（无 SDL 依赖） ---------- */
@@ -1980,6 +1981,27 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int combobox_get_selected(combobox_p combobox);
         JOY_API void combobox_draw(combobox_p combobox);
         JOY_API void combobox_process_event(combobox_p cb, const void* event);
+
+        /* ===== 栅格布局 jlayout（纯几何计算 + 可选标签绘制，不持有任何控件） =====
+         * 场景按“逻辑像素”创建栅格：ox/oy/width 由逻辑宽计算，row_h 由高度基准 s 计算。
+         * 每行：用 jlayout_grid_label() 在左列画标签、用 jlayout_grid_cell() 取右列矩形，
+         * 再用各控件 *_create(r2d, px/LW, py/LH, pw/LW, ph/LH, ...) 创建控件。
+         * col_fracs 为各列宽占比（和≈1），pad 为单元格内边距（像素）。 */
+        JOY_API jlayout_grid_t* jlayout_grid_create(float ox, float oy, float width, float row_h,
+                int ncols, const float* col_fracs, float pad);
+        JOY_API void jlayout_grid_destroy(jlayout_grid_t* g);
+        JOY_API void jlayout_grid_next_row(jlayout_grid_t* g);
+        JOY_API void jlayout_grid_set_row(jlayout_grid_t* g, int row);
+        /* 取第 col 列的像素矩形（已含内边距）。x/y/w/h 可为 NULL。 */
+        JOY_API void jlayout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h);
+        /* 在第 col 列画左对齐、垂直居中的标签，并返回该列像素矩形（cx/cy/cw/ch 可为 NULL）。 */
+        JOY_API void jlayout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+                const char* text, int n, jcolor_t c, int col,
+                float* cx, float* cy, float* cw, float* ch);
+        /* 在当前行创建 n 个等宽按钮（横向按钮条/菜单），各占一列；
+         * 按钮指针写入 out[]（调用方分配 n 个），创建后自动换到下一行。 */
+        JOY_API void jlayout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+                const char** labels, int n, button_p* out);
 
         // 可输入下拉列表框
         JOY_API combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len);
