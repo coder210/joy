@@ -166,7 +166,7 @@ utils_md5(const char* input, size_t len, char* output)
 char* 
 utils_b64_encode(const char* input, size_t len)
 {
-	char* result = b64_encode(input, len);
+	char* result = b64_encode((const unsigned char*)input, len);
 	return result;
 }
 
@@ -247,7 +247,7 @@ utils_des_crypt(const char* key, const char* text,
 	uint8_t tail[8];
 
 	keysz = (int)SDL_strlen(key);
-	des_main_ks(SK, key);
+	des_main_ks(SK, (const uint8_t*)key);
 	utext = (const uint8_t*)text;
 	chunksz = (textsz + 8) & ~7;
 	buf = SDL_malloc(sizeof(uint8_t) * chunksz);
@@ -268,7 +268,7 @@ utils_des_crypt(const char* key, const char* text,
 	}
 	des_crypt(SK, tail, buf + i);
 	*out_len = chunksz;
-	return buf;
+	return (char*)buf;
 }
 
 char*
@@ -283,7 +283,7 @@ utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_
 
 	padding = 1;
 	keysz = (int)SDL_strlen(key);
-	des_main_ks(ESK, key);
+	des_main_ks(ESK, (const uint8_t*)key);
 	utext = (const uint8_t*)text;
 
 	for (i = 0; i < 32; i += 2) {
@@ -315,7 +315,7 @@ utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_
 		return NULL;
 	}
 	*out_len = textsz - padding;
-	return buf;
+	return (char*)buf;
 }
 
 char*

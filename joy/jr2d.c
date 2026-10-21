@@ -300,7 +300,7 @@ draw_polygon_filled(jr2d_p r2d,
         int* indices = NULL;
         int indices_count = 0;
 
-        vertex_count = point_count - 1;
+        vertex_count = point_count;
         vertices = SDL_malloc(sizeof(SDL_Vertex) * vertex_count);
 
         if (vertex_count >= 3) {

@@ -44,7 +44,7 @@ typedef struct {
 typedef jtilemap_tile_def_t* jtilemap_tile_def_p;
 
 /* ---------- 图块集 ---------- */
-typedef struct jtilemap_tileset {
+struct jtilemap_tileset {
         char* name;
         int    firstgid;
         int    tilewidth;
@@ -66,7 +66,7 @@ typedef struct jtilemap_tileset {
         /* 运行时加速：局部瓦片 id -> anims[] 下标，-1 表示无动画 */
         int* tile_anim_map;   /* 数组长度 = tilecount，仅在加载后有效 */
         int  tile_anim_map_alloced;
-} jtilemap_tileset_t, * jtilemap_tileset_p;
+};
 
 
 
@@ -132,13 +132,7 @@ struct jtilemap {
         kvec_t(jtilemap_anim_state_t) anim_states;
 };
 
-/* ---------- GID 解析结果 ---------- */
-struct jtilemap_gid_resolve {
-        jtilemap_tileset_p tileset;
-        int local_id;               /* tileset 内局部 ID */
-        bool has_anim;
-        int  anim_idx;              /* tileset->anims[] 下标，仅 has_anim 时有效 */
-};
+/* GID 解析结果类型已在 joy.h 中完整定义（jtilemap_gid_resolve_t），此处不再重复定义 */
 
 
 KHASH_MAP_INIT_STR(tex_cache, image_p)

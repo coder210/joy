@@ -23,7 +23,7 @@ typedef struct jlight_occluder {
 } jlight_occluder_t;
 
 /* ---------- 灯光系统 ---------- */
-typedef struct jlight_sys {
+struct jlight_sys {
         int width, height;
         image_p lightmap;
         image_p gradient;
@@ -33,7 +33,7 @@ typedef struct jlight_sys {
         uint8_t ambient_r, ambient_g, ambient_b;
         jlight_occluder_t occluders[JLIGHT_OCCLUDER_MAX];
         int occluder_count;
-} jlight_sys_t, * jlight_sys_p;
+};
 
 typedef struct { float x, y; } v2;
 static v2 v2f(float x, float y) { v2 v={x,y}; return v; }

@@ -620,11 +620,19 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
             float  rotation;
             bool   visible;
         }jtilemap_object_t, * jtilemap_object_p;
-        typedef struct jtilemap_gid_resolve jtilemap_gid_resolve_t;
         typedef struct jtilemap jtilemap_t, * jtilemap_p;
         typedef struct jtilemap_tileset jtilemap_tileset_t, * jtilemap_tileset_p;
         typedef struct jtilemap_tile_layer jtilemap_tile_layer_t, * jtilemap_tile_layer_p;
         typedef struct jtilemap_object_layer jtilemap_object_layer_t, * jtilemap_object_layer_p;
+
+        /* GID 解析结果：在此给出完整定义，使 C++ TU（模板 .cpp）也能看到完整类型，
+           从而消除 jtilemap_resolve_gid 的 -Wreturn-type-c-linkage 告警 */
+        typedef struct jtilemap_gid_resolve {
+                jtilemap_tileset_p tileset;
+                int local_id;               /* tileset 内局部 ID */
+                bool has_anim;
+                int  anim_idx;              /* tileset->anims[] 下标，仅 has_anim 时有效 */
+        } jtilemap_gid_resolve_t;
 
         /* ---------- 路径映射回调 ---------- */
         typedef const char* (*jtilemap_path_remap_t)(const char* original_path);
@@ -885,7 +893,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 const char* ptr;
         } jmsgpack_object_str_t;
 
-        typedef struct jmsgpack_object {
+        struct jmsgpack_object {
                 jmsgpack_object_type_t type;
                 union {
                         bool boolean;
@@ -895,7 +903,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                         jmsgpack_object_array_t array;
                         jmsgpack_object_str_t str;
                 } via;
-        } jmsgpack_object_t;
+        };
 
         typedef struct {
                 jmsgpack_zone_t* zone;

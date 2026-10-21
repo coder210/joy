@@ -23,12 +23,12 @@ static void jui_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh, float* x
 
 typedef kvec_t(char*) dg_row_t;
 
-typedef struct label {
+struct label {
         jr2d_p r2d;
         vec2_t position;
         jtext_p text;
         jcolor_t color;
-}label_t, * label_p;
+};
 
 
 struct button {

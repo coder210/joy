@@ -18,7 +18,7 @@ static int lcurrent_datetime(lua_State *L)
 static int lcurrent_time(lua_State *L)
 {
         int64_t time;
-        utils_get_current_time(&time);
+        utils_get_current_time((uint64_t*)&time);
         lua_pushinteger(L, time);
         return 1;
 }

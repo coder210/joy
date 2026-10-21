@@ -136,10 +136,9 @@ void jparticle_update(jparticle_p p, float dt) {
     }
 
     /* 更新每个粒子 */
-    kvec_t(particle_inner_t)* parts = &p->particles;
     size_t w = 0;
-    for (size_t i = 0; i < parts->n; i++) {
-        particle_inner_t* pt = &kv_A(*parts, i);
+    for (size_t i = 0; i < p->particles.n; i++) {
+        particle_inner_t* pt = &kv_A(p->particles, i);
         pt->life -= dt;
         if (pt->life <= 0) continue; /* 死亡 */
 
@@ -161,18 +160,17 @@ void jparticle_update(jparticle_p p, float dt) {
         pt->size = c->size_start + (c->size_end - c->size_start) * t;
 
         /* 保留 */
-        if (w != i) kv_A(*parts, w) = kv_A(*parts, i);
+        if (w != i) kv_A(p->particles, w) = kv_A(p->particles, i);
         w++;
     }
-    parts->n = w;
+    p->particles.n = w;
 }
 
 /* ======================== 渲染 ======================== */
 void jparticle_render(jparticle_p p, jr2d_p r2d) {
     if (!p || !r2d) return;
-    kvec_t(particle_inner_t)* parts = &p->particles;
-    for (size_t i = 0; i < parts->n; i++) {
-        particle_inner_t* pt = &kv_A(*parts, i);
+    for (size_t i = 0; i < p->particles.n; i++) {
+        particle_inner_t* pt = &kv_A(p->particles, i);
         float half = pt->size * 0.5f;
         jrect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
         r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);

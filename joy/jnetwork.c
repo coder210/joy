@@ -1604,7 +1604,7 @@ int wsnetclient_send(wsnetclient_p wc, const char* data, int len)
                 return -1;
         }
 
-        int result = emscripten_websocket_send_binary(wc->ws_socket, data, (size_t)len);
+        int result = emscripten_websocket_send_binary(wc->ws_socket, (void*)data, (size_t)len);
         if (result == 0) {
                 return len;
         }

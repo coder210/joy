@@ -201,6 +201,16 @@ static void crashHandler(int sig)
 
 #endif
 
+// 统一为非 Windows（POSIX-like，含 Emscripten / Web）补充网络相关头文件。
+// 各平台分支只包含了其中一部分；Emscripten 走上面的 #else（不含任何头文件），
+// 导致 getaddrinfo / inet_ntop / gethostname 等未声明，Web CI 编译失败。
+// 这里集中补齐，重复包含（含 Linux/macOS/UNIX 已包含的）无害（头文件有 include guard）。
+#if !defined(JOY_WIN)
+#	include <unistd.h>        // gethostname
+#	include <sys/socket.h>    // AF_INET / SOCK_STREAM
+#	include <arpa/inet.h>     // inet_ntop
+#	include <netdb.h>         // getaddrinfo / struct addrinfo / freeaddrinfo
+#endif
 
 bool sys_init_netenv(void)
 {
@@ -402,7 +412,11 @@ int64_t sys_accept(int64_t sockfd, char* ip, int* port)
 	int64_t acceptfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	struct sockaddr_in client;
-	int len = sizeof(client);
+#if defined(JOY_WIN)
+	int len = (int)sizeof(client);
+#else
+	socklen_t len = sizeof(client);
+#endif
 	acceptfd = accept(sockfd, (struct sockaddr*)&client, &len);
 	strncpy(ip, inet_ntoa(client.sin_addr), JOY_MAX_IP);
 	*port = ntohs(client.sin_port);
@@ -437,7 +451,12 @@ int sys_recv(int64_t sockfd, char* buf)
 
 int sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 {
-	int n, len;
+	int n;
+#if defined(JOY_WIN)
+	int len;
+#else
+	socklen_t len;
+#endif
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	struct sockaddr_in peer;
 	len = sizeof(peer);
@@ -1008,6 +1027,9 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 #  if defined(__ANDROID_API__) && __ANDROID_API__ >= 24
 #    define JOY_HAVE_IFADDRS 1
 #  endif
+#elif defined(__EMSCRIPTEN__)
+// 浏览器内没有真实网卡，getifaddrs 既未实现（链接会报 undefined symbol）也没意义，
+// 直接走下面的"本机名解析"兜底即可。
 #elif !defined(JOY_WIN)
 #  define JOY_HAVE_IFADDRS 1
 #endif
@@ -1027,6 +1049,14 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 int get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 {
         if (!ips || max_count <= 0) return 0;
+
+        // 浏览器内没有真实网卡/本地 IP，原始 socket 与 bind 也不可用；
+        // Web 联机走 WebSocket/WebRTC 到外部服务器，故此处直接返回 0。
+        // （getifaddrs 在 Emscripten 也未实现，会在链接期报错，这里一并规避。）
+#if defined(__EMSCRIPTEN__)
+        return 0;
+#endif
+
         int count = 0;
 
 #if defined(JOY_HAVE_IFADDRS)
