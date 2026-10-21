@@ -1,5 +1,13 @@
 #include "joy.h"
 
+#if defined(__ANDROID__)
+#  include <unistd.h>
+#  include <net/if.h>
+#  include <sys/ioctl.h>
+#  include <sys/socket.h>
+#  include <arpa/inet.h>
+#endif
+
 /* backtrace() 可用性（crashHandler 用它采集调用栈）：
  *  - Linux / macOS / Unix(glic 系) 的 <execinfo.h> 提供 backtrace / backtrace_symbols_fd；
  *  - Android(bionic) 直到 API 33 才在 <execinfo.h> 公开这两个函数，本项目按 API 21 构建，
@@ -23,8 +31,10 @@
 #	include <Windows.h>
 #	include <ws2tcpip.h>
 #       include <DbgHelp.h>
+#	include <Iphlpapi.h>
 #	pragma comment(lib, "ws2_32.lib")
 #       pragma comment(lib, "DbgHelp.lib")
+#	pragma comment(lib, "Iphlpapi.lib")
 
 
 
@@ -1058,6 +1068,76 @@ int get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 #endif
 
         int count = 0;
+
+#if defined(__ANDROID__) && !defined(JOY_HAVE_IFADDRS)
+        /* Android 在 NDK 平台 < 24 时没有 getifaddrs，且 gethostname 兜底只能拿到
+         * 127.0.0.1。这里用 /proc/net/dev 枚举接口 + ioctl(SIOCGIFADDR) 取 IPv4，
+         * 无需权限、不限 API 等级，从而能拿到 wlan0 的 192.168.x.x 等局域网地址。 */
+#ifndef SIOCGIFADDR
+#  define SIOCGIFADDR 0x8915
+#endif
+        FILE* f = fopen("/proc/net/dev", "r");
+        if (f) {
+                char line[256];
+                int sock = socket(AF_INET, SOCK_DGRAM, 0);
+                while (count < max_count && fgets(line, sizeof(line), f)) {
+                        char* p = line;
+                        while (*p == ' ' || *p == '\t') p++;
+                        if (*p == '\0' || *p == '|' || *p == '\n') continue; /* 表头 */
+                        char* colon = strchr(p, ':');
+                        if (!colon) continue;
+                        *colon = '\0';
+                        char name[IFNAMSIZ];
+                        strncpy(name, p, IFNAMSIZ - 1);
+                        name[IFNAMSIZ - 1] = '\0';
+                        if (strncmp(name, "lo", 2) == 0) continue; /* 跳过回环 */
+                        if (sock >= 0) {
+                                struct ifreq ifr;
+                                memset(&ifr, 0, sizeof(ifr));
+                                strncpy(ifr.ifr_name, name, IFNAMSIZ - 1);
+                                if (ioctl(sock, SIOCGIFADDR, &ifr) == 0) {
+                                        struct sockaddr_in* sin = (struct sockaddr_in*)&ifr.ifr_addr;
+                                        if (inet_ntop(AF_INET, &sin->sin_addr, ips[count], JOY_MAX_IP))
+                                                count++;
+                                }
+                        }
+                }
+                if (sock >= 0) close(sock);
+                fclose(f);
+        }
+        if (count > 0) return count;
+#endif
+
+#if defined(JOY_WIN)
+        /* Windows 无 getifaddrs：用 IP Helper 枚举网卡单播 IPv4 地址。
+         * 下面的 gethostname+getaddrinfo 兜底只会把本机名解析成回环 127.0.0.1，
+         * 拿不到真实局域网 IP，所以 Windows 必须走这条路径。 */
+        ULONG abufLen = 0;
+        DWORD adr = GetAdaptersAddresses(AF_INET,
+                        GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
+                        NULL, NULL, &abufLen);
+        if (adr == ERROR_BUFFER_OVERFLOW && abufLen > 0) {
+                PIP_ADAPTER_ADDRESSES addrs = (PIP_ADAPTER_ADDRESSES)malloc(abufLen);
+                if (addrs) {
+                        adr = GetAdaptersAddresses(AF_INET,
+                                        GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER,
+                                        NULL, addrs, &abufLen);
+                        if (adr == NO_ERROR) {
+                                for (PIP_ADAPTER_ADDRESSES a = addrs; a && count < max_count; a = a->Next) {
+                                        for (PIP_ADAPTER_UNICAST_ADDRESS u = a->FirstUnicastAddress;
+                                             u && count < max_count; u = u->Next) {
+                                                if (u->Address.lpSockaddr->sa_family != AF_INET) continue;
+                                                void* addr = &((struct sockaddr_in*)u->Address.lpSockaddr)->sin_addr;
+                                                if (inet_ntop(AF_INET, addr, ips[count], JOY_MAX_IP))
+                                                        count++;
+                                        }
+                                }
+                        }
+                        free(addrs);
+                }
+        }
+        if (count > 0) return count;
+#endif
 
 #if defined(JOY_HAVE_IFADDRS)
         /* POSIX / Android：直接枚举网卡。比"解析本机名"可靠得多 ——
