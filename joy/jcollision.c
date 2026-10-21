@@ -555,6 +555,96 @@ collision2df_check_polygons(polygonf_t a, polygonf_t b)
         return true;
 }
 
+/* OBB 沿 (dx,dy) 平移的扫掠凸包（Andrew monotone chain，8 点）。
+ * 语义/绕序约定见 joy.h 中 collision2df_swept_obb 的注释。 */
+void 
+collision2df_swept_obb(vec2f_t center, vec2f_t axis,
+        fp_t half_long, fp_t half_short, fp_t dx, fp_t dy,
+        vec2f_t* out, int* out_count)
+{
+        if (!out || !out_count) return;
+        *out_count = 0;
+
+        const fp_t one = fp_one();
+        const fp_t neg = fp_sub(fp_zero(), one);
+
+        /* 长轴分量 pl，短轴分量 ps（axis 逆时针 90° = (-ay, ax)） */
+        vec2f_t pl, ps;
+        pl.x = fp_mul(axis.x, half_long);
+        pl.y = fp_mul(axis.y, half_long);
+        ps.x = fp_mul(fp_sub(fp_zero(), axis.y), half_short);
+        ps.y = fp_mul(axis.x, half_short);
+
+        /* 起点盒 4 顶点 + 终点盒 4 顶点（终点 = 起点 + 位移） */
+        const fp_t sx[4] = { one, neg, neg, one };
+        const fp_t sy[4] = { one, one, neg, neg };
+        vec2f_t p[8];
+        for (int i = 0; i < 4; i++) {
+                p[i].x = fp_add(fp_add(center.x, fp_mul(sx[i], pl.x)), fp_mul(sy[i], ps.x));
+                p[i].y = fp_add(fp_add(center.y, fp_mul(sx[i], pl.y)), fp_mul(sy[i], ps.y));
+                p[i + 4].x = fp_add(p[i].x, dx);
+                p[i + 4].y = fp_add(p[i].y, dy);
+        }
+
+        /* 按 x、再按 y 排序（n=8，插入排序足够） */
+        for (int i = 1; i < 8; i++) {
+                vec2f_t key = p[i];
+                int j = i - 1;
+                while (j >= 0 && (p[j].x > key.x
+                        || (p[j].x == key.x && p[j].y > key.y))) {
+                        p[j + 1] = p[j];
+                        j--;
+                }
+                p[j + 1] = key;
+        }
+
+        vec2f_t h[8];
+        int n = 0;
+
+        /* 下凸壳 */
+        for (int i = 0; i < 8; i++) {
+                while (n >= 2) {
+                        vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
+                        vec2f_t v = vec2f_sub(p[i], h[n - 2]);
+                        if (vec2f_cross(u, v) > fp_zero()) break;
+                        n--;
+                }
+                h[n++] = p[i];
+        }
+        /* 上凸壳 */
+        const int lower = n + 1;
+        for (int i = 6; i >= 0; i--) {
+                while (n >= lower) {
+                        vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
+                        vec2f_t v = vec2f_sub(p[i], h[n - 2]);
+                        if (vec2f_cross(u, v) > fp_zero()) break;
+                        n--;
+                }
+                h[n++] = p[i];
+        }
+        if (n > 1) n--;                 /* 末点与起点重合，去掉 */
+        if (n > 8) n = 8;
+
+        /* 统一绕序为「y 向下坐标系的顺时针」（有向面积 > 0）：
+         * vec2f_normal 对这种绕序给出外法线，find_min_separation 依赖它。 */
+        fp_t area = fp_zero();
+        for (int i = 0; i < n; i++) {
+                vec2f_t a = h[i];
+                vec2f_t b = h[(i + 1) % n];
+                area = fp_add(area, fp_sub(fp_mul(a.x, b.y), fp_mul(b.x, a.y)));
+        }
+        if (area < fp_zero()) {
+                for (int i = 0; i < n / 2; i++) {
+                        vec2f_t t = h[i];
+                        h[i] = h[n - 1 - i];
+                        h[n - 1 - i] = t;
+                }
+        }
+
+        for (int i = 0; i < n; i++) out[i] = h[i];
+        *out_count = n;
+}
+
 /* Circle vs AABB: find closest point on rect to circle center */
 bool 
 collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)

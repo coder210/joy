@@ -916,7 +916,8 @@ static void ci_scroll_to_cursor(combobox_input_p ci)
 {
         if (!ci) return;
         int cx = ci_cursor_x(ci);
-        float text_area_w = ci->rect.w - 24; // 减去箭头按钮区域
+        // 文字区宽度 = 总宽 - 箭头按钮区（箭头宽度已按分辨率缩放，不再写死 24）
+        float text_area_w = ci->rect.w - ci->arrow_rect.w - 4.0f;
         if (cx - ci->scroll_offset < 0)
                 ci->scroll_offset = cx;
         else if (cx - ci->scroll_offset > text_area_w)
@@ -959,6 +960,12 @@ void combobox_input_draw(combobox_input_p ci)
         jr2d_p r = ci->r2d;
         jrect_t rect = ci->rect;
 
+        // 设计稿像素（文字左边距 4、光标边界、分隔线等）按逻辑分辨率换算，
+        // 理由同 item_height：不换算在 960x640 下会偏小/偏移。
+        int lw = 0, lh = 0;
+        r2d_get_logical_presentation(r, &lw, &lh, NULL);
+        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
+
         // 背景
         r2d_set_color(r, ci->bg_color.r, ci->bg_color.g, ci->bg_color.b, ci->bg_color.a);
         shape_draw_rectangle(r, "fill", rect);
@@ -980,7 +987,7 @@ void combobox_input_draw(combobox_input_p ci)
 
         // 文字
         if (ci->text_len > 0 && ci->font) {
-                float text_x = rect.x + 4;
+                float text_x = rect.x + 4.0f * s;
                 float text_y = rect.y + (rect.h - (float)font_get_size(ci->font)) / 2.0f;
                 float ox = text_x - (float)ci->scroll_offset;
                 jtext_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
@@ -1000,10 +1007,11 @@ void combobox_input_draw(combobox_input_p ci)
                         ci->cursor_timer = now;
                 }
                 if (ci->cursor_visible) {
-                        int cx = ci_cursor_x(ci) - ci->scroll_offset + (int)rect.x + 4;
-                        if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 22) {
-                                float cy = rect.y + 3;
-                                float ch = rect.h - 6;
+                        int cx = ci_cursor_x(ci) - ci->scroll_offset + (int)rect.x + (int)(4.0f * s);
+                        // 光标右边界 = 文字区右缘（总宽 - 箭头按钮区），原来写死 22
+                        if (cx >= rect.x + 2 && cx <= rect.x + rect.w - (int)(ci->arrow_rect.w + 4.0f)) {
+                                float cy = rect.y + 3.0f * s;
+                                float ch = rect.h - 6.0f * s;
                                 r2d_set_color(r, ci->cursor_color.r, ci->cursor_color.g, ci->cursor_color.b, ci->cursor_color.a);
                                 shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
                         }
@@ -1013,10 +1021,7 @@ void combobox_input_draw(combobox_input_p ci)
         /* 箭头按钮：展开时朝上、收起时朝下。
          * 三角原本是设计稿下的固定像素（半宽 5、半高 3），逻辑分辨率提高后不换算
          * —— 960x640 下只有 10x6 px，小到几乎看不见（像是"没有展开/收起标识"）。
-         * 这里按逻辑分辨率缩放，并跟随箭头区大小。 */
-        int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r, &lw, &lh, NULL);
-        const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
+         * 这里按逻辑分辨率缩放（s 已在函数开头算好），并跟随箭头区大小。 */
         float arrow_cx = ci->arrow_rect.x + ci->arrow_rect.w / 2.0f;
         float arrow_cy = ci->arrow_rect.y + ci->arrow_rect.h / 2.0f;
         float aw = 5.0f * s, ah = 3.0f * s;          // 半宽 / 半高（设计稿 5 / 3）
@@ -1044,7 +1049,7 @@ void combobox_input_draw(combobox_input_p ci)
 
         // 竖线分隔箭头区域
         r2d_set_color(r, ci->border_color.r, ci->border_color.g, ci->border_color.b, ci->border_color.a);
-        shape_draw_line(r, ci->arrow_rect.x, rect.y + 2, ci->arrow_rect.x, rect.y + rect.h - 2);
+        shape_draw_line(r, ci->arrow_rect.x, rect.y + 2.0f * s, ci->arrow_rect.x, rect.y + rect.h - 2.0f * s);
 }
 
 void combobox_input_draw_dropdown(combobox_input_p ci)

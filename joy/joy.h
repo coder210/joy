@@ -1735,6 +1735,29 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
                 contact2df_t* contact);
 
+        /* OBB（旋转矩形）沿 (dx,dy) 平移的「扫掠体」-> 凸包顶点（世界坐标）。
+         *
+         * 注意输出一般是六边形而不是矩形：矩形斜向平移时，起点盒与终点盒的凸包
+         * 有 6 个顶点；只有位移平行于矩形某条边时才退化为矩形（4 顶点）。
+         * 故这里以多边形输出，调用方缓冲区 out 容量至少 8。
+         *
+         * center     : OBB 中心（起点位置；终点 = center + (dx,dy)）
+         * axis       : 长轴单位向量（短轴取其逆时针 90°，无需三角函数）
+         * half_long  : 沿长轴的半长
+         * half_short : 沿短轴的半宽
+         * dx, dy     : 本步位移
+         * out        : 输出顶点（容量 >= 8）
+         * out_count  : 输出顶点数（4~8）
+         *
+         * 绕序：统一输出为「y 向下坐标系下的顺时针」，此时 vec2f_normal 给出外法线，
+         * 与 find_min_separation 的约定一致 —— 绕序反了会让分离距离符号反转、
+         * 判定结果完全相反。
+         *
+         * 典型用法：把 out/out_count 包成 polygonf_t，再交给 collision2df_check_polygons。 */
+        JOY_API void collision2df_swept_obb(vec2f_t center, vec2f_t axis,
+                fp_t half_long, fp_t half_short, fp_t dx, fp_t dy,
+                vec2f_t* out, int* out_count);
+
         /* ---- 瓦片地图扫掠碰撞（定点数，帧同步确定）----
          * solid(col,row) 返回 true 表示该格不可通行；实现须对越界格也返回 true（视为墙）。
          * joy_tilemap_sweep_x: 沿 X 推进 dx（可负）；撞墙则把 *px 贴到该格边界并返回 true。
