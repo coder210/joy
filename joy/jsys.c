@@ -354,6 +354,36 @@ int sys_set_sock_accpettimeo(int64_t sockfd, int ms)
 	return r;
 }
 
+int sys_set_sock_broadcast(int64_t sockfd)
+{
+	int r;
+#if defined(JOY_WIN)
+	int on = 1;
+	r = setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, (const char*)&on, (int)sizeof(on));
+#elif defined(JOY_LINUX)
+	int on = 1;
+	r = setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &on, (socklen_t)sizeof(on));
+#else
+	r = -1;
+#endif
+	return r;
+}
+
+int sys_set_sock_reuseaddr(int64_t sockfd)
+{
+	int r;
+#if defined(JOY_WIN)
+	int on = 1;
+	r = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, (int)sizeof(on));
+#elif defined(JOY_LINUX)
+	int on = 1;
+	r = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, (socklen_t)sizeof(on));
+#else
+	r = -1;
+#endif
+	return r;
+}
+
 int64_t sys_tcp()
 {
 	int64_t sockfd;

@@ -1064,6 +1064,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API int sys_set_sock_sndtimeo(int64_t sockfd, int ms);
         JOY_API int sys_set_sock_rcvtimeo(int64_t sockfd, int ms);
         JOY_API int sys_set_sock_accpettimeo(int64_t sockfd, int ms);
+        /* UDP 广播 / 地址复用开关（局域网房间发现用）：成功返回 0 */
+        JOY_API int sys_set_sock_broadcast(int64_t sockfd);
+        JOY_API int sys_set_sock_reuseaddr(int64_t sockfd);
         JOY_API int64_t sys_tcp();
         JOY_API int64_t sys_udp();
         JOY_API bool sys_bind(int64_t sockfd, const char* ip, int port);
