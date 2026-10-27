@@ -73,8 +73,13 @@ function(joy_add_sources TARGET)
     else()
         target_link_libraries(${TARGET} PUBLIC SDL3::SDL3 msgpack-c)
     endif()
+    # msgpack 位置：默认与 joy/ 同级（单仓根目录、或引擎仓库根目录都成立）。
+    # 拆仓后第三方若在别处，可 -DJOY_MSGPACK_DIR=... 覆盖。
+    if(NOT DEFINED JOY_MSGPACK_DIR)
+        set(JOY_MSGPACK_DIR "${JOY_SOURCE_DIR}/../msgpack")
+    endif()
     target_include_directories(${TARGET} PRIVATE
-        "${CMAKE_SOURCE_DIR}/msgpack/include"
+        "${JOY_MSGPACK_DIR}/include"
         "${CMAKE_BINARY_DIR}/msgpack/include")
 
     # C 源码统一按 C99 编译
