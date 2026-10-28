@@ -894,6 +894,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 const char* ptr;
         } jmsgpack_object_str_t;
 
+        /* 与 msgpack_object_ext 保持完全相同布局。
+         * 关键：msgpack_object 的 union 含 ext({int8,uint32,ptr})，在 wasm32 下该成员为 12 字节，
+         * 叠加 u64/f64 的 8 字节对齐后 union 被撑到 16 字节，使 msgpack_object 共 24 字节；
+         * 若 jmsgpack_object 的 union 缺少此成员，union 仅 8 字节、结构体仅 16 字节，
+         * 于是外层把 msgpack 分配的 msgpack_object[] 当 jmsgpack_object_t 按 16 字节步进读取时错位，
+         * 嵌套数组解包失败（Windows 64 位下两者恰好都是 24 字节所以正常）。补上后两端尺寸一致。 */
+        typedef struct {
+                int8_t type;
+                uint32_t size;
+                const char* ptr;
+        } jmsgpack_object_ext_t;
+
         struct jmsgpack_object {
                 jmsgpack_object_type_t type;
                 union {
@@ -903,6 +915,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                         double f64;
                         jmsgpack_object_array_t array;
                         jmsgpack_object_str_t str;
+                        jmsgpack_object_ext_t ext;
                 } via;
         };
 
