@@ -884,44 +884,16 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 JMSGPACK_OBJECT_MAP = 0x07,
         } jmsgpack_object_type_t;
 
-        typedef struct {
-                uint32_t size;
-                const jmsgpack_object_t* ptr;
-        } jmsgpack_object_array_t;
-
-        typedef struct {
-                uint32_t size;
-                const char* ptr;
-        } jmsgpack_object_str_t;
-
-        /* 与 msgpack_object_ext 保持完全相同布局。
-         * 关键：msgpack_object 的 union 含 ext({int8,uint32,ptr})，在 wasm32 下该成员为 12 字节，
-         * 叠加 u64/f64 的 8 字节对齐后 union 被撑到 16 字节，使 msgpack_object 共 24 字节；
-         * 若 jmsgpack_object 的 union 缺少此成员，union 仅 8 字节、结构体仅 16 字节，
-         * 于是外层把 msgpack 分配的 msgpack_object[] 当 jmsgpack_object_t 按 16 字节步进读取时错位，
-         * 嵌套数组解包失败（Windows 64 位下两者恰好都是 24 字节所以正常）。补上后两端尺寸一致。 */
-        typedef struct {
-                int8_t type;
-                uint32_t size;
-                const char* ptr;
-        } jmsgpack_object_ext_t;
-
-        struct jmsgpack_object {
-                jmsgpack_object_type_t type;
-                union {
-                        bool boolean;
-                        uint64_t u64;
-                        int64_t i64;
-                        double f64;
-                        jmsgpack_object_array_t array;
-                        jmsgpack_object_str_t str;
-                        jmsgpack_object_ext_t ext;
-                } via;
-        };
+        /* jmsgpack_object_t 为不透明句柄（opaque）。
+         * 外部不再直接访问其字段，一律通过下方 jmsgpack_object_* 访问器读取；
+         * 结构体定义与到 msgpack_object 的转换全部封装在 jmsgpack.c 内部。
+         * 这样彻底消除"手写镜像 + 强转"带来的跨平台布局耦合（32/64 位尺寸差异静默出错）。
+         * 历史的 bug：联盟体缺 ext 成员导致 wasm32 下 jmsgpack_object 比 msgpack_object 小 8 字节，
+         * ptr[1] 按错误步进读取 → 嵌套解包失败（仅在 wasm 上暴露）。改成不透明后此类问题不可能再现。 */
 
         typedef struct {
                 jmsgpack_zone_t* zone;
-                jmsgpack_object_t data;
+                const jmsgpack_object_t* data;   /* 指向 zone 内的根对象（不透明） */
         } jmsgpack_unpacked_t;
 
 
@@ -2573,6 +2545,18 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void jmsgpack_unpacked_destroy(jmsgpack_unpacked_t* result);
         /* 返回值: >0 成功, 0 需要更多数据, <0 错误 */
         JOY_API int  jmsgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off);
+
+        /* ---- jmsgpack_object_t 不透明访问器（替代直接读结构体字段） ---- */
+        JOY_API const jmsgpack_object_t* jmsgpack_unpacked_data(const jmsgpack_unpacked_t* u);
+        JOY_API jmsgpack_object_type_t jmsgpack_object_type(const jmsgpack_object_t* o);
+        JOY_API uint32_t             jmsgpack_object_array_size(const jmsgpack_object_t* o);
+        JOY_API const jmsgpack_object_t* jmsgpack_object_array_at(const jmsgpack_object_t* o, uint32_t i);
+        JOY_API uint32_t             jmsgpack_object_str_size(const jmsgpack_object_t* o);
+        JOY_API const char*          jmsgpack_object_str_ptr(const jmsgpack_object_t* o);
+        JOY_API uint64_t             jmsgpack_object_u64(const jmsgpack_object_t* o);
+        JOY_API int64_t              jmsgpack_object_i64(const jmsgpack_object_t* o);
+        JOY_API bool                 jmsgpack_object_boolean(const jmsgpack_object_t* o);
+        JOY_API double               jmsgpack_object_f64(const jmsgpack_object_t* o);
 
 
         JOY_API luax_p luax_create(void);
