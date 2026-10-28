@@ -582,7 +582,26 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	if (!r) return NULL;
 
 	r->win = window;
-	r->dev = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
+	/* 创建 GPU 设备：用 properties 放宽可选特性要求，提升 Android / Mali 等移动 GPU 兼容性。
+	   SDL_GPU 的 Vulkan 后端默认要求 shaderClipDistance、depthClamp、drawIndirectFirstInstance、
+	   sampleRateShading 等特性，许多移动 GPU 不满足，PrepareDriver 会失败并报
+	   "No supported SDL_GPU backend found!"。按 SDL 官方指引关闭这四项可选特性
+	   （CLIP_DISTANCE / DEPTH_CLAMPING / INDIRECT_DRAW_FIRST_INSTANCE / ANISOTROPY），
+	   即可在更多安卓设备上创建成功。 */
+	SDL_PropertiesID dev_props = SDL_CreateProperties();
+	if (dev_props) {
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, true);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN, true);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
+		SDL_SetBooleanProperty(dev_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
+		r->dev = SDL_CreateGPUDeviceWithProperties(dev_props);
+		SDL_DestroyProperties(dev_props);
+	} else {
+		r->dev = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
+	}
 	if (!r->dev) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: CreateGPUDevice failed: %s", SDL_GetError()); SDL_free(r); return NULL; }
 	if (!SDL_ClaimWindowForGPUDevice(r->dev, r->win)) {
 		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: ClaimWindow failed");
