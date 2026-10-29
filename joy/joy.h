@@ -1393,6 +1393,12 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                       Uint8 cr, Uint8 cg, Uint8 cb,
                                       float winW, float winH);
 
+        /* 2D 贴图 quad 绘制(逻辑坐标左上 (x,y) 尺寸 w,h, 单位 quad 自带 UV)。
+           tex 为 r3d_load_texture_png 返回的 SDL_GPUTexture*。 */
+        JOY_API void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
+                                     float x, float y, float w, float h,
+                                     void* tex, float winW, float winH);
+
         /* ---------- 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置) ---------- */
         typedef struct jr3d_label jr3d_label_t, * jr3d_label_p;
         struct jr3d_label {

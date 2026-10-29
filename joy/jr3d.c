@@ -1046,20 +1046,54 @@ void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip)
 /* 从 PNG 文件加载并创建 GPU 纹理: SDL_LoadPNG -> RGBA32 -> r3d_create_texture(flip=1)
    返回 SDL_GPUTexture* (void*)。失败返回 NULL 并通过 SDL_GetError 暴露原因。
    统一封装了图片文件加载, 供各 app 复用, 避免重复手写 SDL_LoadPNG 流程。 */
+/* 纹理缺失兜底：按路径哈希生成稳定的纯色（不同缺失资源得到不同但确定的颜色，便于定位缺哪些贴图） */
+static void r3d_missing_tex_color(const char* path, unsigned char* out)
+{
+	unsigned long h = 2166136261u;
+	for (const char* p = path; *p; p++) { h ^= (unsigned char)(*p); h *= 16777619u; }
+	out[0] = (unsigned char)(48 + (h & 0xBF));
+	out[1] = (unsigned char)(48 + ((h >> 8) & 0xBF));
+	out[2] = (unsigned char)(48 + ((h >> 16) & 0xBF));
+}
+
 void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 {
 	if (!r || !path) return NULL;
 	SDL_Surface* surf = SDL_LoadPNG(path);
 	if (!surf) {
-		SDL_Log("r3d_load_texture_png: load %s failed: %s", path, SDL_GetError());
-		return NULL;
+		/* 兜底：运行时 CWD 未必是构建输出目录（直接双击 exe / 从其它目录启动），
+		   尝试相对可执行文件所在目录解析，确保贴图能被找到。
+		   注意: SDL_GetBasePath() 返回 SDL 内部缓存指针，由 SDL 退出时释放，调用方不能 SDL_free。 */
+		const char* base = SDL_GetBasePath();
+		if (base) {
+			char alt[1024];
+			SDL_snprintf(alt, sizeof(alt), "%s%s", base, path);
+			surf = SDL_LoadPNG(alt);
+			if (!surf) {
+				SDL_snprintf(alt, sizeof(alt), "%sassets/%s", base, path);
+				surf = SDL_LoadPNG(alt);
+			}
+		}
+	}
+	if (!surf) {
+		/* 纹理文件缺失：返回纯色纹理(色块)，避免引用该纹理的网格消失/崩溃 */
+		unsigned char c[3];
+		r3d_missing_tex_color(path, c);
+		SDL_Log("r3d_load_texture_png: %s 缺失, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
+		if (outW) *outW = 1;
+		if (outH) *outH = 1;
+		return r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
 	}
 	SDL_Surface* rgba = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
 	int w = surf->w, h = surf->h;
 	SDL_DestroySurface(surf);
 	if (!rgba) {
-		SDL_Log("r3d_load_texture_png: convert %s failed: %s", path, SDL_GetError());
-		return NULL;
+		unsigned char c[3];
+		r3d_missing_tex_color(path, c);
+		SDL_Log("r3d_load_texture_png: convert %s failed, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
+		if (outW) *outW = 1;
+		if (outH) *outH = 1;
+		return r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
 	}
 	void* tex = r3d_create_texture(r, rgba->w, rgba->h, rgba->pixels, 1);
 	SDL_DestroySurface(rgba);
@@ -1376,7 +1410,9 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 	model.m10 = 1.0f;
 	model.m12 = pixelX + worldW * 0.5f;
 	model.m13 = pixelY + worldH * 0.5f;
-	model.m14 = -1.0f;  /* Z=-1 使正交投影后 NDC_Z=-1 → 深度 0, 不被 3D 场景遮挡 */
+	model.m14 = 0.0f;   /* SDL_GPU 的 NDC 深度范围是 [0,1]（Vulkan/D3D 惯例），不是 OpenGL 的 [-1,1]。
+	                       原先 -1 超出 [0,1]，引擎打开 enable_depth_clip 后整个文字四边形被深度裁剪丢弃→文字不可见。
+	                       改为 0：NDC.z=0 落在范围内、且为最靠前（depth 0），不被 3D 场景遮挡，与 draw_rect_2d 一致。 */
 	model.m15 = 1.0f;
 
 	/* 屏幕像素正交投影: 原点左上, X 向右, Y 向下, 覆盖整个窗口。
@@ -1648,6 +1684,35 @@ void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
 
 	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb, 255);
 	draw_mesh_internal_proj(r, m, &model, &proj, tex);
+}
+
+/* 在屏幕(逻辑)坐标绘制贴图 quad(2D 正交, 原点左上, Y 向下)。
+   (x,y,w,h): 目标矩形(逻辑像素); tex: SDL_GPUTexture*(由 r3d_load_texture_png 返回);
+   单位 quad 自带 UV(0,0)-(1,1), 与 r3d_font_draw_2d_impl / r3d_draw_mesh_2d 同一套 proj 映射,
+   保证与按钮/文字/矩形坐标对齐。用于摇杆底纹/按钮图标等贴图 UI。 */
+void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
+					 float x, float y, float w, float h,
+					 void* tex, float winW, float winH)
+{
+	if (!r || !m || !tex || winW <= 0 || winH <= 0) return;
+
+	mat44_t model; memset(&model, 0, sizeof(model));
+	model.m0  = w;
+	model.m5  = h;
+	model.m10 = 1.0f;
+	model.m12 = x + w * 0.5f;
+	model.m13 = y + h * 0.5f;
+	model.m15 = 1.0f;
+
+	mat44_t proj; memset(&proj, 0, sizeof(proj));
+	proj.m0  =  2.0f / winW;
+	proj.m5  = -2.0f / winH;
+	proj.m10 =  1.0f;
+	proj.m12 = -1.0f;
+	proj.m13 =  1.0f;
+	proj.m15 =  1.0f;
+
+	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)tex);
 }
 
 jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text)
