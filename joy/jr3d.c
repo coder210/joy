@@ -525,7 +525,7 @@ void* r3d_create_sampler(void* device)
 	ci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
 	ci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
 	ci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-	ci.enable_anisotropy = true; ci.max_anisotropy = 4.0f;
+	ci.enable_anisotropy = false; ci.max_anisotropy = 1.0f; /* 关闭 FEATURE_ANISOTROPY 后必须关闭各向异性（SDL_GPU 断言要求） */
 	ci.compare_op = SDL_GPU_COMPAREOP_ALWAYS; ci.enable_compare = false;
 	ci.mag_filter = SDL_GPU_FILTER_LINEAR; ci.min_filter = SDL_GPU_FILTER_LINEAR;
 	ci.max_lod = 10.0f; ci.min_lod = 0.0f; ci.mip_lod_bias = 0.0f;
