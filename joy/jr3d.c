@@ -167,6 +167,7 @@ void* r3d_create_pipeline(void* device,
 	ci.fragment_shader = fs;
 	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
 	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	ci.target_info.num_color_targets = 1;
@@ -238,6 +239,7 @@ void* r3d_create_line_pipeline(void* device,
 	ci.fragment_shader = fs;
 	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
 	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	ci.target_info.num_color_targets = 1;
@@ -304,6 +306,7 @@ void* r3d_create_solid_pipeline(void* device,
 	ci.fragment_shader = fs;
 	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
 	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	ci.target_info.num_color_targets = 1;
@@ -373,6 +376,7 @@ void* r3d_create_lighting_pipeline(void* device,
 	ci.fragment_shader = fs;
 	ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
 	ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+	ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后 SDL_GPU 要求 enable_depth_clip 必须为 true */
 	ci.multisample_state.enable_mask = false;
 	ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
 	ci.target_info.num_color_targets = 1;

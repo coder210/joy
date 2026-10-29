@@ -358,6 +358,7 @@ static int lcreate_graphics_pipeline(lua_State *L)
 
         ci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
         ci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+        ci.rasterizer_state.enable_depth_clip = true; /* 关闭 FEATURE_DEPTH_CLAMPING 后必须开启 depth clip */
 
         ci.multisample_state.enable_mask = false;
         ci.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
