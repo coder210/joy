@@ -1339,6 +1339,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
            渲染时按 窗口尺寸/逻辑尺寸 等比缩放, 命中测试自动把窗口坐标换算回逻辑坐标。
            传 0 表示关闭(直接用窗口像素坐标)。 */
         JOY_API void r3d_set_logical_presentation(jr3d_p r, int w, int h);
+        /* 设置逻辑分辨率 + 呈现模式。
+           mode=JOY_LOGICAL_PRESENTATION_STRETCH:   分别按 x/y 拉伸铺满(默认, 旧行为, 非 3:2 屏圆会变形);
+           mode=JOY_LOGICAL_PRESENTATION_LETTERBOX: 等比缩放并居中, 圆/文字在任意屏宽比下都不拉伸(推荐移动端)。 */
+        JOY_API void r3d_set_logical_presentation_mode(jr3d_p r, int w, int h, int mode);
         /* 获取逻辑分辨率 */
         JOY_API void r3d_get_logical_presentation(jr3d_p r, int* w, int* h);
         /* 窗口像素坐标 -> 逻辑坐标 */

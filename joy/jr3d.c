@@ -40,7 +40,9 @@ struct jr3d {
 
 	/* 2D UI 逻辑分辨率(仿 jr2d logical presentation, 窗口缩放自适应) */
 	int                logical_w, logical_h;  /* 逻辑分辨率(0=关闭, 直接用窗口像素) */
-	float              ui_sx, ui_sy;          /* UI 缩放系数: 窗口像素/逻辑像素(在 r3d_begin 更新) */
+	int                logical_mode;          /* 呈现模式: STRETCH / LETTERBOX(见 joy.h 常量) */
+	float              ui_sx, ui_sy;          /* UI 缩放系数: 窗口像素/逻辑像素(LETTERBOX 下 x==y) */
+	float              ui_offx, ui_offy;      /* UI letterbox 居中偏移(像素, 在 r3d_begin 更新) */
 
 	/* 相机/投影 */
 	mat44_t            viewProj;
@@ -617,7 +619,9 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 
 	/* 2D UI 逻辑分辨率默认关闭(直接用窗口像素), 缩放系数初始为 1 */
 	r->logical_w = 0; r->logical_h = 0;
+	r->logical_mode = JOY_LOGICAL_PRESENTATION_STRETCH;
 	r->ui_sx = 1.0f; r->ui_sy = 1.0f;
+	r->ui_offx = 0.0f; r->ui_offy = 0.0f;
 
 	/* 字体默认白色 */
 	r->font_color_r = 255; r->font_color_g = 255; r->font_color_b = 255;
@@ -766,9 +770,7 @@ bool r3d_begin(jr3d_p r)
 	SDL_GetWindowSize(r->win, &r->ww, &r->wh);
 	if (r->ww < 1 || r->wh < 1) { SDL_SubmitGPUCommandBuffer(r->cmd); r->cmd = NULL; return false; }
 
-	/* 更新 2D UI 缩放系数(窗口像素/逻辑像素) */
-	r->ui_sx = (r->logical_w > 0) ? (float)r->ww / (float)r->logical_w : 1.0f;
-	r->ui_sy = (r->logical_h > 0) ? (float)r->wh / (float)r->logical_h : 1.0f;
+	/* 2D UI 缩放系数(ui_sx/ui_sy/ui_offx/ui_offy)在下方 resize 检测之后统一计算, 使用最终 swapchain 尺寸 */
 
 	SDL_GPUTexture* swapchain = NULL;
 	Uint32 sw, sh;
@@ -786,6 +788,28 @@ bool r3d_begin(jr3d_p r)
 		r->aspect = (float)r->ww / (float)r->wh;
 		if (r->depth) SDL_ReleaseGPUTexture(r->dev, r->depth);
 		r->depth = (SDL_GPUTexture*)r3d_create_depth_texture(r->dev, r->ww, r->wh);
+	}
+
+	/* 2D UI 逻辑分辨率: 根据呈现模式计算等比缩放系数 + letterbox 居中偏移(使用最终 swapchain 尺寸) */
+	if (r->logical_w > 0 && r->logical_h > 0) {
+		if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
+			float sx = (float)r->ww / (float)r->logical_w;
+			float sy = (float)r->wh / (float)r->logical_h;
+			float s  = (sx < sy) ? sx : sy;          /* 取较小者: 逻辑分辨率完整可见, 等比 letterbox */
+			r->ui_sx = s;
+			r->ui_sy = s;
+			r->ui_offx = ((float)r->ww - (float)r->logical_w * s) * 0.5f;
+			r->ui_offy = ((float)r->wh - (float)r->logical_h * s) * 0.5f;
+		} else {
+			/* STRETCH(默认, 保持旧行为): 分别按 x/y 拉伸铺满 */
+			r->ui_sx = (float)r->ww / (float)r->logical_w;
+			r->ui_sy = (float)r->wh / (float)r->logical_h;
+			r->ui_offx = 0.0f;
+			r->ui_offy = 0.0f;
+		}
+	} else {
+		r->ui_sx = 1.0f; r->ui_sy = 1.0f;
+		r->ui_offx = 0.0f; r->ui_offy = 0.0f;
 	}
 
 	SDL_GPUColorTargetInfo color = { 0 };
@@ -1418,12 +1442,22 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 	/* 屏幕像素正交投影: 原点左上, X 向右, Y 向下, 覆盖整个窗口。
 	   这是纯屏幕坐标映射, 不修正文字朝向——文字朝向由纹理内容保证。 */
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	proj.m0  =  2.0f / winW;
-	proj.m5  = -2.0f / winH;
-	proj.m10 =  1.0f;
-	proj.m12 = -1.0f;
-	proj.m13 =  1.0f;
-	proj.m15 =  1.0f;
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
+		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
+		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
+		proj.m10 =  1.0f;
+		proj.m12 =  2.0f * r->ui_offx / (float)r->ww - 1.0f;
+		proj.m13 =  1.0f - 2.0f * r->ui_offy / (float)r->wh;
+		proj.m15 =  1.0f;
+	} else {
+		proj.m0  =  2.0f / winW;
+		proj.m5  = -2.0f / winH;
+		proj.m10 =  1.0f;
+		proj.m12 = -1.0f;
+		proj.m13 =  1.0f;
+		proj.m15 =  1.0f;
+	}
 
 	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)r->font_tex);
 	return true;
@@ -1584,6 +1618,18 @@ void r3d_set_logical_presentation(jr3d_p r, int w, int h)
 	if (!r) return;
 	r->logical_w = w;
 	r->logical_h = h;
+	r->logical_mode = JOY_LOGICAL_PRESENTATION_STRETCH;
+}
+
+/* 设置逻辑分辨率 + 呈现模式(对标 jr2d 的 r2d_set_logical_presentation_mode)。
+   STRETCH:   分别按 x/y 拉伸铺满(旧行为, 非 3:2 屏圆会变形);
+   LETTERBOX: 等比缩放并居中, 圆/文字在任意屏宽比下都不拉伸(推荐移动端使用)。 */
+void r3d_set_logical_presentation_mode(jr3d_p r, int w, int h, int mode)
+{
+	if (!r) return;
+	r->logical_w = w;
+	r->logical_h = h;
+	r->logical_mode = mode;
 }
 
 void r3d_get_logical_presentation(jr3d_p r, int* w, int* h)
@@ -1596,22 +1642,22 @@ void r3d_get_logical_presentation(jr3d_p r, int* w, int* h)
 void r3d_window_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
 {
 	if (!r) return;
-	if (lx) *lx = (r->ui_sx > 0) ? wx / r->ui_sx : wx;
-	if (ly) *ly = (r->ui_sy > 0) ? wy / r->ui_sy : wy;
+	if (lx) *lx = (r->ui_sx > 0) ? (wx - r->ui_offx) / r->ui_sx : wx;
+	if (ly) *ly = (r->ui_sy > 0) ? (wy - r->ui_offy) / r->ui_sy : wy;
 }
 
 void r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy)
 {
 	if (!r) return;
-	if (wx) *wx = lx * r->ui_sx;
-	if (wy) *wy = ly * r->ui_sy;
+	if (wx) *wx = lx * r->ui_sx + r->ui_offx;
+	if (wy) *wy = ly * r->ui_sy + r->ui_offy;
 }
 
-/* 内部: 窗口像素坐标 -> 逻辑坐标(供各 2D UI 命中测试函数使用) */
+/* 内部: 窗口像素坐标 -> 逻辑坐标(供各 2D UI 命中测试函数使用, 含 letterbox 居中偏移) */
 static void r3d_ui_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
 {
-	if (lx) { if (r->ui_sx > 0) *lx = wx / r->ui_sx; else *lx = wx; }
-	if (ly) { if (r->ui_sy > 0) *ly = wy / r->ui_sy; else *ly = wy; }
+	if (lx) { if (r->ui_sx > 0) *lx = (wx - r->ui_offx) / r->ui_sx; else *lx = wx; }
+	if (ly) { if (r->ui_sy > 0) *ly = (wy - r->ui_offy) / r->ui_sy; else *ly = wy; }
 }
 
 /* ================================================================
@@ -1635,12 +1681,22 @@ static void draw_rect_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	proj.m0  =  2.0f / winW;
-	proj.m5  = -2.0f / winH;
-	proj.m10 =  1.0f;
-	proj.m12 = -1.0f;
-	proj.m13 =  1.0f;
-	proj.m15 =  1.0f;
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
+		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
+		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
+		proj.m10 =  1.0f;
+		proj.m12 =  2.0f * r->ui_offx / (float)r->ww - 1.0f;
+		proj.m13 =  1.0f - 2.0f * r->ui_offy / (float)r->wh;
+		proj.m15 =  1.0f;
+	} else {
+		proj.m0  =  2.0f / winW;
+		proj.m5  = -2.0f / winH;
+		proj.m10 =  1.0f;
+		proj.m12 = -1.0f;
+		proj.m13 =  1.0f;
+		proj.m15 =  1.0f;
+	}
 
 	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb, 255);
 	draw_mesh_internal_proj(r, m, &model, &proj, tex);
@@ -1675,12 +1731,22 @@ void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	proj.m0  =  2.0f / winW;
-	proj.m5  = -2.0f / winH;
-	proj.m10 =  1.0f;
-	proj.m12 = -1.0f;
-	proj.m13 =  1.0f;
-	proj.m15 =  1.0f;
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
+		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
+		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
+		proj.m10 =  1.0f;
+		proj.m12 =  2.0f * r->ui_offx / (float)r->ww - 1.0f;
+		proj.m13 =  1.0f - 2.0f * r->ui_offy / (float)r->wh;
+		proj.m15 =  1.0f;
+	} else {
+		proj.m0  =  2.0f / winW;
+		proj.m5  = -2.0f / winH;
+		proj.m10 =  1.0f;
+		proj.m12 = -1.0f;
+		proj.m13 =  1.0f;
+		proj.m15 =  1.0f;
+	}
 
 	SDL_GPUTexture* tex = get_color_texture(r, cr, cg, cb, 255);
 	draw_mesh_internal_proj(r, m, &model, &proj, tex);
@@ -1705,12 +1771,22 @@ void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	proj.m0  =  2.0f / winW;
-	proj.m5  = -2.0f / winH;
-	proj.m10 =  1.0f;
-	proj.m12 = -1.0f;
-	proj.m13 =  1.0f;
-	proj.m15 =  1.0f;
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
+		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
+		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
+		proj.m10 =  1.0f;
+		proj.m12 =  2.0f * r->ui_offx / (float)r->ww - 1.0f;
+		proj.m13 =  1.0f - 2.0f * r->ui_offy / (float)r->wh;
+		proj.m15 =  1.0f;
+	} else {
+		proj.m0  =  2.0f / winW;
+		proj.m5  = -2.0f / winH;
+		proj.m10 =  1.0f;
+		proj.m12 = -1.0f;
+		proj.m13 =  1.0f;
+		proj.m15 =  1.0f;
+	}
 
 	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)tex);
 }
