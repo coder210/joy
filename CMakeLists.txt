@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE INTERNAL "")
 
 # 项目声明：本仓库只包含 joy 引擎本体 + 第三方依赖。
-# 游戏项目均为独立仓库，通过 submodule 引入本仓库，再用 joy/joy_add.cmake 把源码编入自身目标。
+# 游戏项目均为独立仓库，通过 submodule 引入本仓库，再用 src/joy_add.cmake 把源码编入自身目标。
 project(joy C CXX)
 
 # 平台相关共享库设置（可能影响所有子目录）
@@ -34,6 +34,6 @@ add_subdirectory(spine)
 add_subdirectory(SDL)
 
 # 说明：joy 不再作为独立库构建（无 DLL/SO、无导出符号）。
-# 使用方式（见 joy/joy_add.cmake）：
-#   include(<joy 仓库>/joy/joy_add.cmake)
+# 使用方式（见 src/joy_add.cmake）：
+#   include(<joy 仓库>/src/joy_add.cmake)
 #   joy_add_sources(<你的可执行目标>)

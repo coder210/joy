@@ -14,7 +14,7 @@
 #ifndef JOY_JSPINE_HPP
 #define JOY_JSPINE_HPP
 
-#include <joy/joy.h>
+#include <src/joy.h>
 
 #ifdef JOY_USE_SPINE
 

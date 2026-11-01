@@ -29,6 +29,6 @@
 #define JOY_JGLTF_H
 
 /* glTF 模块为可选：定义 JOY_USE_GLTF 时 joy.h 会提供本模块全部 C API */
-#include <joy/joy.h>
+#include <src/joy.h>
 
 #endif /* JOY_JGLTF_H */

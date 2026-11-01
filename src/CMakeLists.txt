@@ -4,7 +4,7 @@
 # joy 已改为"纯文件引入"：此处不再是库，不产 DLL/SO、无导出符号。
 # 使用方式：各游戏项目的 CMakeLists.txt 里
 #
-#     include(${CMAKE_SOURCE_DIR}/joy/joy_add.cmake)
+#     include(${CMAKE_SOURCE_DIR}/src/joy_add.cmake)
 #     joy_add_sources(<游戏目标>)
 #
 # 即把 joy 全部源码（含 external/test）编入该目标，
