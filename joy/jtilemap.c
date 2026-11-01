@@ -342,8 +342,13 @@ static jtilemap_tile_layer_p parse_tile_layer_cjson(cJSON* j)
         int m = (count > 0 ? count : 0);
         for (int i = 0; i < n && i < m; i++) {
             cJSON* v = cJSON_GetArrayItem(data, i);
-            if (v && v->type == cJSON_Number)
-                layer->data[i] = (int)v->valuedouble;
+            if (!v || v->type != cJSON_Number) continue;
+            /* Tiled 的 GID 是 32 位无符号：高 3 位为水平/垂直/对角翻转标志。
+             * 直接 (int)double 转换时，带 0x80000000/0x40000000/0x20000000 的
+             * GID（如 3221225483 = 0xC000000B）会因超过 INT_MAX 溢出成 INT_MIN，
+             * 清位后变 0 → 该瓦片被当作空格跳过，表现为"部分墙的贴图不显示"。
+             * 这里先按 int64 截取低 32 位再转 int，保证翻转位与 GID 都不丢。 */
+            layer->data[i] = (int)(uint32_t)(int64_t)v->valuedouble;
         }
     }
     return layer;
