@@ -19,8 +19,11 @@
 #    在这里一并链接，调用方无需再单独处理。
 # ============================================================
 
-if(NOT DEFINED JOY_SOURCE_DIR)
-    set(JOY_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "joy 源码根目录")
+# 目录改名（joy/ → src/）后，旧 build 目录里的 CMakeCache 可能仍指向已不存在的
+# .../joy/joy，导致 GLOB 收不到任何源文件、最终链接报一堆未解析符号。
+# 这里顺带校验 joy.h 是否存在，陈旧 cache 自动按当前文件位置纠正。
+if(NOT DEFINED JOY_SOURCE_DIR OR NOT EXISTS "${JOY_SOURCE_DIR}/joy.h")
+    set(JOY_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "joy 源码根目录（含 joy.h）" FORCE)
 endif()
 
 function(joy_add_sources TARGET)
