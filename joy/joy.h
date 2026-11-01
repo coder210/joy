@@ -898,6 +898,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
 
 
+
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  utils  //////////////////////////////////
         ///////////////////////////////////////////////////////////////////////
@@ -2243,7 +2244,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         /* rect 是滑轨区域；标签与数值文本由调用方自行绘制（格式各异） */
         JOY_API bool jui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv);
 
-        JOY_API jtilemap_p jtilemap_load_file(const char* filename);
+        JOY_API jtilemap_p jtilemap_load_file_json(const char* filename);
         JOY_API void jtilemap_destroy(jtilemap_p tm);
         JOY_API int jtilemap_get_width(const jtilemap_p tm);
         JOY_API int jtilemap_get_height(const jtilemap_p tm);

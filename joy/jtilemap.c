@@ -10,9 +10,9 @@ History:
 #include "external/stb_image.h"
 #include "external/klib/kvec.h"
 #include "external/klib/khash.h"
-#include "external/lua/lua.h"
-#include "external/lua/lauxlib.h"
-#include "external/lua/lualib.h"
+#include "external/cJSON.h"
+#include <stdlib.h>
+#include <string.h>
 #include "joy.h"
 
 
@@ -153,275 +153,6 @@ JOY_INLINE int jtilemap_clean_gid(int raw_gid) { return raw_gid & JTILEMAP_GID_M
 /* 提取翻转标志 */
 JOY_INLINE int jtilemap_gid_flags(int raw_gid) { return raw_gid & ~JTILEMAP_GID_MASK; }
 
-/* ==================== 辅助：读取 Lua table 字段 ==================== */
-
-static int lua_get_integer(struct lua_State* L, int idx, const char* key, int def)
-{
-    int val = def;
-    int t = lua_getfield(L, idx, key);
-    if (t == LUA_TNUMBER)
-        val = (int)lua_tointeger(L, -1);
-    lua_pop(L, 1);
-    return val;
-}
-
-static float lua_get_number(struct lua_State* L, int idx, const char* key, float def)
-{
-    float val = def;
-    int t = lua_getfield(L, idx, key);
-    if (t == LUA_TNUMBER)
-        val = (float)lua_tonumber(L, -1);
-    lua_pop(L, 1);
-    return val;
-}
-
-static bool lua_get_boolean(struct lua_State* L, int idx, const char* key, bool def)
-{
-    bool val = def;
-    int t = lua_getfield(L, idx, key);
-    if (t == LUA_TBOOLEAN)
-        val = lua_toboolean(L, -1) != 0;
-    lua_pop(L, 1);
-    return val;
-}
-
-static char* lua_get_string(struct lua_State* L, int idx, const char* key)
-{
-    char* val = NULL;
-    int t = lua_getfield(L, idx, key);
-    if (t == LUA_TSTRING) {
-        const char* s = lua_tostring(L, -1);
-        if (s)
-            val = utils_strdup(s, NULL);
-    }
-    lua_pop(L, 1);
-    return val;
-}
-
-/* 当字段可能是字符串或数字时，统一返回字符串 */
-static char* lua_get_string_or_number(struct lua_State* L, int idx, const char* key)
-{
-    char* val = NULL;
-    int t = lua_getfield(L, idx, key);
-    if (t == LUA_TSTRING) {
-        const char* s = lua_tostring(L, -1);
-        if (s) val = utils_strdup(s, NULL);
-    } else if (t == LUA_TNUMBER) {
-        /* 数字转为字符串 */
-        char buf[64];
-        snprintf(buf, sizeof(buf), "%lld", (long long)lua_tointeger(L, -1));
-        val = utils_strdup(buf, NULL);
-    }
-    lua_pop(L, 1);
-    return val;
-}
-
-/* ==================== 解析动画帧 ==================== */
-
-static void parse_animation(struct lua_State* L, int tbl_idx, jtilemap_anim_t* anim)
-{
-    kv_init(anim->frames);
-    anim->total_duration = 0;
-
-    lua_pushnil(L);
-    while (lua_next(L, tbl_idx) != 0) {
-        /* key 在 -2，value（动画帧 table）在 -1 */
-        if (lua_istable(L, -1)) {
-            jtilemap_anim_frame_t frame;
-            frame.tileid   = lua_get_integer(L, -1, "tileid", 0);
-            frame.duration = lua_get_integer(L, -1, "duration", 100);
-            kv_push(jtilemap_anim_frame_t, anim->frames, frame);
-            anim->total_duration += frame.duration;
-        }
-        lua_pop(L, 1);
-    }
-}
-
-/* ==================== 解析 tileset ==================== */
-
-static bool parse_tileset(struct lua_State* L, int idx, jtilemap_tileset_t* ts)
-{
-    memset(ts, 0, sizeof(*ts));
-    kv_init(ts->anims);
-    kv_init(ts->tile_defs);
-    ts->tile_anim_map = NULL;
-    ts->tile_anim_map_alloced = 0;
-
-    ts->name        = lua_get_string(L, idx, "name");
-    ts->firstgid    = lua_get_integer(L, idx, "firstgid", 1);
-    ts->tilewidth   = lua_get_integer(L, idx, "tilewidth", 64);
-    ts->tileheight  = lua_get_integer(L, idx, "tileheight", 64);
-    ts->spacing     = lua_get_integer(L, idx, "spacing", 0);
-    ts->margin      = lua_get_integer(L, idx, "margin", 0);
-    ts->columns     = lua_get_integer(L, idx, "columns", 0);
-    ts->tilecount   = lua_get_integer(L, idx, "tilecount", 0);
-    ts->image       = lua_get_string(L, idx, "image");
-    ts->imagewidth  = lua_get_integer(L, idx, "imagewidth", 0);
-    ts->imageheight = lua_get_integer(L, idx, "imageheight", 0);
-
-    /* 解析 tiles 数组（单个瓦片属性，含动画 + 独立图片） */
-    int tiles_type = lua_getfield(L, idx, "tiles");
-    if (tiles_type == LUA_TTABLE) {
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0) {
-            /* value 在 -1，应当是每个瓦片属性的 table */
-            if (lua_istable(L, -1)) {
-                int tile_id = lua_get_integer(L, -1, "id", -1);
-
-                /* 检查是否有动画 */
-                int anim_type = lua_getfield(L, -1, "animation");
-                if (anim_type == LUA_TTABLE) {
-                    jtilemap_anim_t anim;
-                    parse_animation(L, lua_gettop(L), &anim);
-                    kv_push(jtilemap_anim_t, ts->anims, anim);
-                }
-                lua_pop(L, 1);
-
-                /* 检查是否有独立图片（用于 columns=0 的 deco 类 tileset） */
-                int img_type = lua_getfield(L, -1, "image");
-                if (img_type == LUA_TSTRING) {
-                    jtilemap_tile_def_t def;
-                    def.id = tile_id;
-                    def.image = utils_strdup(lua_tostring(L, -1), NULL);
-                    def.width  = lua_get_integer(L, -2, "width", 64);
-                    def.height = lua_get_integer(L, -2, "height", 64);
-                    kv_push(jtilemap_tile_def_t, ts->tile_defs, def);
-                }
-                lua_pop(L, 1);
-            }
-            lua_pop(L, 1);
-        }
-    }
-    lua_pop(L, 1);
-
-    return true;
-}
-
-/* ==================== 解析 tile layer ==================== */
-
-static jtilemap_tile_layer_p parse_tile_layer(struct lua_State* L, int idx)
-{
-    jtilemap_tile_layer_p layer = (jtilemap_tile_layer_p)calloc(1, sizeof(jtilemap_tile_layer_t));
-    if (!layer) return NULL;
-
-    layer->base.type = JTILEMAP_LAYER_TILE;
-    layer->base.name = lua_get_string(L, idx, "name");
-    layer->base.visible = lua_get_boolean(L, idx, "visible", true);
-    layer->base.opacity = lua_get_number(L, idx, "opacity", 1.0f);
-    layer->base.offsetx = lua_get_number(L, idx, "offsetx", 0.0f);
-    layer->base.offsety = lua_get_number(L, idx, "offsety", 0.0f);
-    layer->base.parallaxx = lua_get_number(L, idx, "parallaxx", 1.0f);
-    layer->base.parallaxy = lua_get_number(L, idx, "parallaxy", 1.0f);
-
-    layer->width  = lua_get_integer(L, idx, "width", 0);
-    layer->height = lua_get_integer(L, idx, "height", 0);
-
-    /* 解析 data 数组 */
-    int count = layer->width * layer->height;
-    layer->data = (int*)calloc((size_t)count, sizeof(int));
-
-    int data_type = lua_getfield(L, idx, "data");
-    if (data_type == LUA_TTABLE) {
-        int n = 0;
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0) {
-            if (lua_type(L, -1) == LUA_TNUMBER && n < count) {
-                layer->data[n++] = (int)lua_tointeger(L, -1);
-            }
-            lua_pop(L, 1);
-        }
-    }
-    lua_pop(L, 1);
-
-    return layer;
-}
-
-/* ==================== 解析 object layer ==================== */
-
-static jtilemap_object_layer_p parse_object_layer(struct lua_State* L, int idx)
-{
-    jtilemap_object_layer_p layer = (jtilemap_object_layer_p)calloc(1, sizeof(jtilemap_object_layer_t));
-    if (!layer) return NULL;
-
-    layer->base.type = JTILEMAP_LAYER_OBJECT;
-    layer->base.name = lua_get_string(L, idx, "name");
-    layer->base.visible = lua_get_boolean(L, idx, "visible", true);
-    layer->base.opacity = lua_get_number(L, idx, "opacity", 1.0f);
-    layer->base.offsetx = lua_get_number(L, idx, "offsetx", 0.0f);
-    layer->base.offsety = lua_get_number(L, idx, "offsety", 0.0f);
-    layer->base.parallaxx = lua_get_number(L, idx, "parallaxx", 1.0f);
-    layer->base.parallaxy = lua_get_number(L, idx, "parallaxy", 1.0f);
-
-    kv_init(layer->objects);
-
-    /* 解析 objects 数组 */
-    int obj_type = lua_getfield(L, idx, "objects");
-    if (obj_type == LUA_TTABLE) {
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0) {
-            if (lua_istable(L, -1)) {
-                jtilemap_object_t obj;
-                memset(&obj, 0, sizeof(obj));
-
-                obj.id      = lua_get_integer(L, -1, "id", 0);
-                obj.name    = lua_get_string(L, -1, "name");
-                obj.type    = lua_get_string(L, -1, "type");
-                obj.x       = (float)lua_get_number(L, -1, "x", 0.0);
-                obj.y       = (float)lua_get_number(L, -1, "y", 0.0);
-                obj.width   = (float)lua_get_number(L, -1, "width", 0.0);
-                obj.height  = (float)lua_get_number(L, -1, "height", 0.0);
-                obj.rotation = (float)lua_get_number(L, -1, "rotation", 0.0);
-                obj.visible = lua_get_boolean(L, -1, "visible", true);
-
-                /* 形状 */
-                char* shape_str = lua_get_string(L, -1, "shape");
-                if (shape_str) {
-                    if (strcmp(shape_str, "rectangle") == 0)
-                        obj.shape = JTILEMAP_SHAPE_RECT;
-                    else if (strcmp(shape_str, "ellipse") == 0)
-                        obj.shape = JTILEMAP_SHAPE_ELLIPSE;
-                    else if (strcmp(shape_str, "polygon") == 0)
-                        obj.shape = JTILEMAP_SHAPE_POLYGON;
-                    else if (strcmp(shape_str, "polyline") == 0)
-                        obj.shape = JTILEMAP_SHAPE_POLYLINE;
-                    else if (strcmp(shape_str, "point") == 0)
-                        obj.shape = JTILEMAP_SHAPE_POINT;
-                    free(shape_str);
-                }
-
-                kv_push(jtilemap_object_t, layer->objects, obj);
-            }
-            lua_pop(L, 1);
-        }
-    }
-    lua_pop(L, 1);
-
-    return layer;
-}
-
-/* ==================== 解析 image layer ==================== */
-
-static jtilemap_image_layer_p parse_image_layer(struct lua_State* L, int idx)
-{
-    jtilemap_image_layer_p layer = (jtilemap_image_layer_p)calloc(1, sizeof(jtilemap_image_layer_t));
-    if (!layer) return NULL;
-
-    layer->base.type = JTILEMAP_LAYER_IMAGE;
-    layer->base.name = lua_get_string(L, idx, "name");
-    layer->base.visible = lua_get_boolean(L, idx, "visible", true);
-    layer->base.opacity = lua_get_number(L, idx, "opacity", 1.0f);
-    layer->base.offsetx = lua_get_number(L, idx, "offsetx", 0.0f);
-    layer->base.offsety = lua_get_number(L, idx, "offsety", 0.0f);
-    layer->base.parallaxx = lua_get_number(L, idx, "parallaxx", 1.0f);
-    layer->base.parallaxy = lua_get_number(L, idx, "parallaxy", 1.0f);
-
-    layer->image   = lua_get_string(L, idx, "image");
-    layer->repeatx = lua_get_boolean(L, idx, "repeatx", false);
-    layer->repeaty = lua_get_boolean(L, idx, "repeaty", false);
-
-    return layer;
-}
-
 /* ==================== 构建 tileset 动画加速表 ==================== */
 
 static void build_tileset_anim_map(jtilemap_tileset_t* ts)
@@ -474,140 +205,333 @@ static void collect_anim_gids(jtilemap_p tm)
     }
 }
 
-/* ==================== 主加载函数 ==================== */
+/* ==================== JSON 解析后端（cJSON，无需 Lua VM） ==================== */
+/* 与上方 Lua 后端字段一一对应：Tiled 的 Lua 导出与 JSON 导出结构同构，
+   此处用现成的 cJSON 解析，使地图加载摆脱对 Lua 虚拟机的依赖。 */
 
-jtilemap_p jtilemap_load_lua(struct lua_State* L, int idx)
+static int cj_get_integer(cJSON* obj, const char* key, int def)
 {
-    if (!L) return NULL;
+    cJSON* it = cJSON_GetObjectItem(obj, key);
+    if (it && it->type == cJSON_Number) return (int)it->valuedouble;
+    return def;
+}
+static float cj_get_number(cJSON* obj, const char* key, float def)
+{
+    cJSON* it = cJSON_GetObjectItem(obj, key);
+    if (it && it->type == cJSON_Number) return (float)it->valuedouble;
+    return def;
+}
+static bool cj_get_boolean(cJSON* obj, const char* key, bool def)
+{
+    cJSON* it = cJSON_GetObjectItem(obj, key);
+    if (!it) return def;
+    if (it->type == cJSON_True)  return true;
+    if (it->type == cJSON_False) return false;
+    return def;
+}
+static char* cj_get_string(cJSON* obj, const char* key)
+{
+    cJSON* it = cJSON_GetObjectItem(obj, key);
+    if (it && it->type == cJSON_String && it->valuestring)
+        return utils_strdup(it->valuestring, NULL);
+    return NULL;
+}
+/* 当字段可能是字符串或数字时，统一返回字符串（renderorder 等） */
+static char* cj_get_string_or_number(cJSON* obj, const char* key)
+{
+    cJSON* it = cJSON_GetObjectItem(obj, key);
+    if (!it) return NULL;
+    if (it->type == cJSON_String && it->valuestring) return utils_strdup(it->valuestring, NULL);
+    if (it->type == cJSON_Number) {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "%lld", (long long)(int)it->valuedouble);
+        return utils_strdup(buf, NULL);
+    }
+    return NULL;
+}
 
-    /* 确保 idx 是 table */
-    if (lua_type(L, idx) != LUA_TTABLE) {
-        log_error("jtilemap_load_lua: argument is not a table");
+static void parse_animation_cjson(cJSON* arr, jtilemap_anim_t* anim)
+{
+    kv_init(anim->frames);
+    anim->total_duration = 0;
+    if (!arr || arr->type != cJSON_Array) return;
+    int n = cJSON_GetArraySize(arr);
+    for (int i = 0; i < n; i++) {
+        cJSON* f = cJSON_GetArrayItem(arr, i);
+        if (!f || f->type != cJSON_Object) continue;
+        jtilemap_anim_frame_t frame;
+        frame.tileid   = cj_get_integer(f, "tileid", 0);
+        frame.duration = cj_get_integer(f, "duration", 100);
+        kv_push(jtilemap_anim_frame_t, anim->frames, frame);
+        anim->total_duration += frame.duration;
+    }
+}
+
+static bool parse_tileset_cjson(cJSON* j, jtilemap_tileset_t* ts)
+{
+    memset(ts, 0, sizeof(*ts));
+    kv_init(ts->anims);
+    kv_init(ts->tile_defs);
+    ts->tile_anim_map = NULL;
+    ts->tile_anim_map_alloced = 0;
+
+    ts->name        = cj_get_string(j, "name");
+    ts->firstgid    = cj_get_integer(j, "firstgid", 1);
+    ts->tilewidth   = cj_get_integer(j, "tilewidth", 64);
+    ts->tileheight  = cj_get_integer(j, "tileheight", 64);
+    ts->spacing     = cj_get_integer(j, "spacing", 0);
+    ts->margin      = cj_get_integer(j, "margin", 0);
+    ts->columns     = cj_get_integer(j, "columns", 0);
+    ts->tilecount   = cj_get_integer(j, "tilecount", 0);
+    ts->image       = cj_get_string(j, "image");
+    ts->imagewidth  = cj_get_integer(j, "imagewidth", 0);
+    ts->imageheight = cj_get_integer(j, "imageheight", 0);
+
+    cJSON* tiles = cJSON_GetObjectItem(j, "tiles");
+    if (tiles && tiles->type == cJSON_Array) {
+        int n = cJSON_GetArraySize(tiles);
+        for (int i = 0; i < n; i++) {
+            cJSON* t = cJSON_GetArrayItem(tiles, i);
+            if (!t || t->type != cJSON_Object) continue;
+            int tile_id = cj_get_integer(t, "id", -1);
+
+            cJSON* anim = cJSON_GetObjectItem(t, "animation");
+            if (anim && anim->type == cJSON_Array) {
+                jtilemap_anim_t a;
+                parse_animation_cjson(anim, &a);
+                kv_push(jtilemap_anim_t, ts->anims, a);
+            }
+
+            cJSON* img = cJSON_GetObjectItem(t, "image");
+            if (img && img->type == cJSON_String && img->valuestring) {
+                jtilemap_tile_def_t def;
+                def.id = tile_id;
+                def.image = utils_strdup(img->valuestring, NULL);
+                def.width  = cj_get_integer(t, "width", 64);
+                def.height = cj_get_integer(t, "height", 64);
+                kv_push(jtilemap_tile_def_t, ts->tile_defs, def);
+            }
+        }
+    }
+    return true;
+}
+
+static jtilemap_tile_layer_p parse_tile_layer_cjson(cJSON* j)
+{
+    jtilemap_tile_layer_p layer = (jtilemap_tile_layer_p)calloc(1, sizeof(jtilemap_tile_layer_t));
+    if (!layer) return NULL;
+
+    layer->base.type = JTILEMAP_LAYER_TILE;
+    layer->base.name      = cj_get_string(j, "name");
+    layer->base.visible   = cj_get_boolean(j, "visible", true);
+    layer->base.opacity   = cj_get_number(j, "opacity", 1.0f);
+    layer->base.offsetx   = cj_get_number(j, "offsetx", 0.0f);
+    layer->base.offsety   = cj_get_number(j, "offsety", 0.0f);
+    layer->base.parallaxx = cj_get_number(j, "parallaxx", 1.0f);
+    layer->base.parallaxy = cj_get_number(j, "parallaxy", 1.0f);
+
+    layer->width  = cj_get_integer(j, "width", 0);
+    layer->height = cj_get_integer(j, "height", 0);
+
+    int count = layer->width * layer->height;
+    layer->data = (int*)calloc((size_t)(count > 0 ? count : 0), sizeof(int));
+
+    cJSON* data = cJSON_GetObjectItem(j, "data");
+    if (data && data->type == cJSON_Array) {
+        int n = cJSON_GetArraySize(data);
+        int m = (count > 0 ? count : 0);
+        for (int i = 0; i < n && i < m; i++) {
+            cJSON* v = cJSON_GetArrayItem(data, i);
+            if (v && v->type == cJSON_Number)
+                layer->data[i] = (int)v->valuedouble;
+        }
+    }
+    return layer;
+}
+
+static jtilemap_object_layer_p parse_object_layer_cjson(cJSON* j)
+{
+    jtilemap_object_layer_p layer = (jtilemap_object_layer_p)calloc(1, sizeof(jtilemap_object_layer_t));
+    if (!layer) return NULL;
+
+    layer->base.type = JTILEMAP_LAYER_OBJECT;
+    layer->base.name      = cj_get_string(j, "name");
+    layer->base.visible   = cj_get_boolean(j, "visible", true);
+    layer->base.opacity   = cj_get_number(j, "opacity", 1.0f);
+    layer->base.offsetx   = cj_get_number(j, "offsetx", 0.0f);
+    layer->base.offsety   = cj_get_number(j, "offsety", 0.0f);
+    layer->base.parallaxx = cj_get_number(j, "parallaxx", 1.0f);
+    layer->base.parallaxy = cj_get_number(j, "parallaxy", 1.0f);
+
+    kv_init(layer->objects);
+
+    cJSON* objs = cJSON_GetObjectItem(j, "objects");
+    if (objs && objs->type == cJSON_Array) {
+        int n = cJSON_GetArraySize(objs);
+        for (int i = 0; i < n; i++) {
+            cJSON* o = cJSON_GetArrayItem(objs, i);
+            if (!o || o->type != cJSON_Object) continue;
+            jtilemap_object_t obj;
+            memset(&obj, 0, sizeof(obj));
+
+            obj.id       = cj_get_integer(o, "id", 0);
+            obj.name     = cj_get_string(o, "name");
+            obj.type     = cj_get_string(o, "type");
+            obj.x        = cj_get_number(o, "x", 0.0f);
+            obj.y        = cj_get_number(o, "y", 0.0f);
+            obj.width    = cj_get_number(o, "width", 0.0f);
+            obj.height   = cj_get_number(o, "height", 0.0f);
+            obj.rotation = cj_get_number(o, "rotation", 0.0f);
+            obj.visible  = cj_get_boolean(o, "visible", true);
+
+            /* 形状：优先读 Tiled Lua 导出的 shape 字符串（与 Lua 后端一致），
+               否则按 Tiled JSON 原生的 point/ellipse/polygon/polyline 标志判定。 */
+            char* shape_str = cj_get_string(o, "shape");
+            if (shape_str) {
+                if      (strcmp(shape_str, "rectangle") == 0) obj.shape = JTILEMAP_SHAPE_RECT;
+                else if (strcmp(shape_str, "ellipse") == 0)   obj.shape = JTILEMAP_SHAPE_ELLIPSE;
+                else if (strcmp(shape_str, "polygon") == 0)   obj.shape = JTILEMAP_SHAPE_POLYGON;
+                else if (strcmp(shape_str, "polyline") == 0)  obj.shape = JTILEMAP_SHAPE_POLYLINE;
+                else if (strcmp(shape_str, "point") == 0)     obj.shape = JTILEMAP_SHAPE_POINT;
+                free(shape_str);
+            } else if (cj_get_boolean(o, "point", false))      obj.shape = JTILEMAP_SHAPE_POINT;
+            else if (cj_get_boolean(o, "ellipse", false))     obj.shape = JTILEMAP_SHAPE_ELLIPSE;
+            else if (cJSON_GetObjectItem(o, "polygon"))       obj.shape = JTILEMAP_SHAPE_POLYGON;
+            else if (cJSON_GetObjectItem(o, "polyline"))      obj.shape = JTILEMAP_SHAPE_POLYLINE;
+            else                                             obj.shape = JTILEMAP_SHAPE_RECT;
+
+            kv_push(jtilemap_object_t, layer->objects, obj);
+        }
+    }
+    return layer;
+}
+
+static jtilemap_image_layer_p parse_image_layer_cjson(cJSON* j)
+{
+    jtilemap_image_layer_p layer = (jtilemap_image_layer_p)calloc(1, sizeof(jtilemap_image_layer_t));
+    if (!layer) return NULL;
+
+    layer->base.type = JTILEMAP_LAYER_IMAGE;
+    layer->base.name      = cj_get_string(j, "name");
+    layer->base.visible   = cj_get_boolean(j, "visible", true);
+    layer->base.opacity   = cj_get_number(j, "opacity", 1.0f);
+    layer->base.offsetx   = cj_get_number(j, "offsetx", 0.0f);
+    layer->base.offsety   = cj_get_number(j, "offsety", 0.0f);
+    layer->base.parallaxx = cj_get_number(j, "parallaxx", 1.0f);
+    layer->base.parallaxy = cj_get_number(j, "parallaxy", 1.0f);
+
+    layer->image   = cj_get_string(j, "image");
+    layer->repeatx = cj_get_boolean(j, "repeatx", false);
+    layer->repeaty = cj_get_boolean(j, "repeaty", false);
+
+    return layer;
+}
+
+jtilemap_p jtilemap_load_cjson(cJSON* root)
+{
+    if (!root || root->type != cJSON_Object) {
+        log_error("jtilemap_load_cjson: root is not an object");
         return NULL;
     }
 
     jtilemap_p tm = (jtilemap_p)calloc(1, sizeof(jtilemap_t));
     if (!tm) {
-        log_error("jtilemap_load_lua: out of memory");
+        log_error("jtilemap_load_cjson: out of memory");
         return NULL;
     }
 
     kv_init(tm->tilesets);
     kv_init(tm->layers);
 
-    /* 读取地图元信息 */
-    tm->version       = lua_get_string(L, idx, "version");
-    tm->tiledversion  = lua_get_string(L, idx, "tiledversion");
-    tm->orientation   = lua_get_string(L, idx, "orientation");
-    tm->renderorder   = lua_get_string_or_number(L, idx, "renderorder");
-    tm->width         = lua_get_integer(L, idx, "width", 0);
-    tm->height        = lua_get_integer(L, idx, "height", 0);
-    tm->tilewidth     = lua_get_integer(L, idx, "tilewidth", 64);
-    tm->tileheight    = lua_get_integer(L, idx, "tileheight", 64);
+    tm->version      = cj_get_string(root, "version");
+    tm->tiledversion = cj_get_string(root, "tiledversion");
+    tm->orientation  = cj_get_string(root, "orientation");
+    tm->renderorder  = cj_get_string_or_number(root, "renderorder");
+    tm->width        = cj_get_integer(root, "width", 0);
+    tm->height       = cj_get_integer(root, "height", 0);
+    tm->tilewidth    = cj_get_integer(root, "tilewidth", 64);
+    tm->tileheight   = cj_get_integer(root, "tileheight", 64);
 
     log_info("jtilemap: loading %s map %dx%d, tile %dx%d",
              tm->orientation ? tm->orientation : "unknown",
              tm->width, tm->height, tm->tilewidth, tm->tileheight);
 
-    /* ===== 解析 tilesets ===== */
-    int ts_type = lua_getfield(L, idx, "tilesets");
-    if (ts_type == LUA_TTABLE) {
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0) {
-            if (lua_istable(L, -1)) {
-                jtilemap_tileset_t ts;
-                if (parse_tileset(L, lua_gettop(L), &ts)) {
-                    build_tileset_anim_map(&ts);
-                    kv_push(jtilemap_tileset_t, tm->tilesets, ts);
-                }
+    cJSON* ts_arr = cJSON_GetObjectItem(root, "tilesets");
+    if (ts_arr && ts_arr->type == cJSON_Array) {
+        int n = cJSON_GetArraySize(ts_arr);
+        for (int i = 0; i < n; i++) {
+            cJSON* tj = cJSON_GetArrayItem(ts_arr, i);
+            if (!tj || tj->type != cJSON_Object) continue;
+            jtilemap_tileset_t ts;
+            if (parse_tileset_cjson(tj, &ts)) {
+                build_tileset_anim_map(&ts);
+                kv_push(jtilemap_tileset_t, tm->tilesets, ts);
             }
-            lua_pop(L, 1);
         }
     }
-    lua_pop(L, 1);
     log_info("jtilemap: parsed %zu tilesets", kv_size(tm->tilesets));
 
-    /* ===== 解析 layers ===== */
-    int layer_type = lua_getfield(L, idx, "layers");
-    if (layer_type == LUA_TTABLE) {
-        lua_pushnil(L);
-        while (lua_next(L, -2) != 0) {
-            if (lua_istable(L, -1)) {
-                /* 读取层类型 */
-                char* layer_type_str = lua_get_string(L, -1, "type");
-                void* layer_obj = NULL;
+    cJSON* ly_arr = cJSON_GetObjectItem(root, "layers");
+    if (ly_arr && ly_arr->type == cJSON_Array) {
+        int n = cJSON_GetArraySize(ly_arr);
+        for (int i = 0; i < n; i++) {
+            cJSON* lj = cJSON_GetArrayItem(ly_arr, i);
+            if (!lj || lj->type != cJSON_Object) continue;
+            char* layer_type_str = cj_get_string(lj, "type");
+            void* layer_obj = NULL;
 
-                if (layer_type_str) {
-                    if (strcmp(layer_type_str, "tilelayer") == 0) {
-                        layer_obj = parse_tile_layer(L, lua_gettop(L));
-                    } else if (strcmp(layer_type_str, "objectgroup") == 0) {
-                        layer_obj = parse_object_layer(L, lua_gettop(L));
-                    } else if (strcmp(layer_type_str, "imagelayer") == 0) {
-                        layer_obj = parse_image_layer(L, lua_gettop(L));
-                    } else if (strcmp(layer_type_str, "group") == 0) {
-                        /* 暂不处理 group 嵌套层 */
-                        log_info("jtilemap: skipping group layer");
-                    }
-                    free(layer_type_str);
+            if (layer_type_str) {
+                if (strcmp(layer_type_str, "tilelayer") == 0) {
+                    layer_obj = parse_tile_layer_cjson(lj);
+                } else if (strcmp(layer_type_str, "objectgroup") == 0) {
+                    layer_obj = parse_object_layer_cjson(lj);
+                } else if (strcmp(layer_type_str, "imagelayer") == 0) {
+                    layer_obj = parse_image_layer_cjson(lj);
+                } else if (strcmp(layer_type_str, "group") == 0) {
+                    log_info("jtilemap: skipping group layer");
                 }
-
-                if (layer_obj)
-                    kv_push(void*, tm->layers, layer_obj);
+                free(layer_type_str);
             }
-            lua_pop(L, 1);
+
+            if (layer_obj)
+                kv_push(void*, tm->layers, layer_obj);
         }
     }
-    lua_pop(L, 1);
     log_info("jtilemap: parsed %zu layers", kv_size(tm->layers));
 
-    /* ===== 构建运行时动画表 ===== */
     collect_anim_gids(tm);
-
     return tm;
 }
 
-/* ==================== 从文件直接加载（封装 Lua） ==================== */
-
-jtilemap_p jtilemap_load_file(const char* filename)
+jtilemap_p jtilemap_load_file_json(const char* filename)
 {
     if (!filename) {
-        log_error("jtilemap_load_file: filename is NULL");
+        log_error("jtilemap_load_file_json: filename is NULL");
         return NULL;
     }
 
-    lua_State* L = luaL_newstate();
-    if (!L) {
-        log_error("jtilemap_load_file: failed to create Lua state");
+    size_t sz = 0;
+    void* raw = SDL_LoadFile(filename, &sz);
+    if (!raw) {
+        log_error("jtilemap_load_file_json: cannot read %s", filename);
         return NULL;
     }
-    luaL_openlibs(L);
+    char* buf = (char*)malloc(sz + 1);
+    if (!buf) { SDL_free(raw); return NULL; }
+    memcpy(buf, raw, sz);
+    buf[sz] = '\0';
+    SDL_free(raw);
 
-    /* 加载 Lua 文件（map.lua 以 return { ... } 结尾） */
-    if (luaL_loadfile(L, filename) != LUA_OK) {
-        log_error("jtilemap_load_file: load error: %s",
-                  lua_tostring(L, -1) ? lua_tostring(L, -1) : "?");
-        lua_close(L);
-        return NULL;
-    }
-
-    if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-        log_error("jtilemap_load_file: execute error: %s",
-                  lua_tostring(L, -1) ? lua_tostring(L, -1) : "?");
-        lua_close(L);
-        return NULL;
-    }
-
-    if (!lua_istable(L, -1)) {
-        log_error("jtilemap_load_file: file did not return a table");
-        lua_close(L);
+    cJSON* root = cJSON_Parse(buf);
+    free(buf);
+    if (!root) {
+        const char* err = cJSON_GetErrorPtr();
+        log_error("jtilemap_load_file_json: parse error: %s", err ? err : "?");
         return NULL;
     }
 
-    /* 解析 Lua table */
-    jtilemap_p tm = jtilemap_load_lua(L, -1);
-    lua_pop(L, 1);
-    lua_close(L);
-
+    jtilemap_p tm = jtilemap_load_cjson(root);
+    cJSON_Delete(root);
     return tm;
 }
 

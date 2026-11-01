@@ -29,11 +29,11 @@ function(joy_add_sources TARGET)
     cmake_parse_arguments(JAS "SPINE" "" "EXCLUDE" ${ARGN})
 
     file(GLOB JOY_CORE_FILES     CONFIGURE_DEPENDS "${JOY_SOURCE_DIR}/*.h"  "${JOY_SOURCE_DIR}/*.c")
-    # external/lua 保留：jtilemap.c 仍用 Lua 解析地图（json 后端尚未接管）。
-    # duktape / lua_cjson 已随脚本后端迁出到 joy_js / joy_lua 独立仓库。
+    # 脚本后端（lua/luaclib/jsclib/csclib/duktape/lua_cjson）已全部迁出到
+    # joy_lua / joy_js / joy_csharp 独立仓库；jtilemap.c 改用 cJSON 解析地图，
+    # 核心不再携带 Lua VM，故这里只收集 external/ 顶层的第三方源码。
     file(GLOB JOY_EXTERNAL_FILES CONFIGURE_DEPENDS
-        "${JOY_SOURCE_DIR}/external/*.h"  "${JOY_SOURCE_DIR}/external/*.c"
-        "${JOY_SOURCE_DIR}/external/lua/*.h"       "${JOY_SOURCE_DIR}/external/lua/*.c")
+        "${JOY_SOURCE_DIR}/external/*.h"  "${JOY_SOURCE_DIR}/external/*.c")
     file(GLOB JOY_TEST_FILES     CONFIGURE_DEPENDS "${JOY_SOURCE_DIR}/test/*.h"  "${JOY_SOURCE_DIR}/test/*.c")
 
     set(JOY_ALL_FILES
