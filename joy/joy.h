@@ -897,10 +897,6 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } jmsgpack_unpacked_t;
 
 
-        typedef struct luax luax_t, * luax_p;
-        typedef struct jsx jsx_t, * jsx_p;
-        typedef struct csx csx_t, * csx_p;
-
 
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  utils  //////////////////////////////////
@@ -2569,38 +2565,14 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API double               jmsgpack_object_f64(const jmsgpack_object_t* o);
 
 
-        JOY_API luax_p luax_create(void);
-        JOY_API bool luax_dofile(luax_p luax, const char* filename);
-        JOY_API void luax_release(luax_p luax);
-        void* luax_get_state(luax_p luax);
-        JOY_API bool luax_reload(luax_p luax, const char* filename);
-        JOY_API bool luax_call_joy(luax_p luax, const char* func, int argc, float dt);
-        JOY_API void luax_dispatch_event(luax_p luax, const void* event);
-        JOY_API void luax_set_watch(luax_p luax, const char* filename);
-        JOY_API bool luax_poll_reload(luax_p luax);
-        JOY_API const char* luax_get_watch(luax_p luax);
-        JOY_API void luax_set_args(luax_p luax, int argc, char* argv[]);
+        /*
+         * 脚本宿主（luax_* / jsx_* / csx_*）已迁移到独立仓库：
+         *   Lua      -> joy_lua/joy_lua.h
+         *   JS       -> joy_js/joy_js.h
+         *   C#(Mono) -> joy_csharp/joy_csharp.h
+         * joy 核心不再声明、也不链接任何脚本后端。
+         */
 
-
-        JOY_API jsx_p jsx_create(void);
-        JOY_API bool jsx_dofile(jsx_p jsx, const char* filename);
-        JOY_API void jsx_release(jsx_p jsx);
-        JOY_API void jsx_dispatch_event(jsx_p jsx, const void* event);
-        JOY_API bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt);
-        JOY_API bool jsx_reload(jsx_p jsx, const char* filename);
-        JOY_API void jsx_set_watch(jsx_p jsx, const char* filename);
-        JOY_API bool jsx_poll_reload(jsx_p jsx);
-        JOY_API const char* jsx_get_watch(jsx_p jsx);
-        JOY_API void jsx_set_args(jsx_p jsx, int argc, char* argv[]);
-
-#ifdef ENABLED_CSHARP_SCRIPT
-        JOY_API csx_p csx_create(void);
-        JOY_API bool csx_load_assembly(csx_p csx, const char* filename);
-        JOY_API MonoClass* csx_find_class(csx_p csx, const char* namespace_name, const char* class_name);
-        JOY_API MonoObject* csx_invoke_static_method(csx_p csx, const char* namespace_name, const char* class_name, const char* method_name, void** args);
-        JOY_API void csx_register_internal_call(const char* name, const void* method);
-        JOY_API void csx_release(csx_p csx);
-#endif // ENABLED_CSHARP_SCRIPT
 #ifdef __cplusplus
 }
 #endif
