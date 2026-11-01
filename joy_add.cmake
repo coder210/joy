@@ -7,7 +7,7 @@
 # 即可把 joy 全部源码直接编入 <target>。
 #
 # 用法示例（在 add_executable 之后）：
-#   include(${CMAKE_SOURCE_DIR}/src/joy_add.cmake)
+#   include(${CMAKE_SOURCE_DIR}/joy_add.cmake)
 #   joy_add_sources(${TARGET_NAME})
 #
 # 说明：
@@ -56,7 +56,7 @@ function(joy_add_sources TARGET)
     target_sources(${TARGET} PRIVATE ${JOY_ALL_FILES})
     # IDE 显示分组：joy 源码在目标下以 joy/... 目录树展示（TREE 到 joy 的父目录）
     source_group(TREE "${JOY_SOURCE_DIR}/.." FILES ${JOY_ALL_FILES})
-    # 使 #include <src/joy.h> 可用（joy 源码位于 <根>/src/，根由 SDL/msgpack 等项目约定）
+    # 使 #include <joy/joy.h> 可用（joy 源码位于 <根>/，根由 SDL/msgpack 等项目约定）
     target_include_directories(${TARGET} PRIVATE "${JOY_SOURCE_DIR}/..")
 
     # 原 joy 库 target 的 PUBLIC 链接（SDL3、msgpack）。

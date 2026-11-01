@@ -14,7 +14,7 @@
 #ifndef JOY_JGLTF_HPP
 #define JOY_JGLTF_HPP
 
-#include <src/joy.h>
+#include <joy/joy.h>
 
 #ifdef JOY_USE_GLTF
 
