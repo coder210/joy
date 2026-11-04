@@ -41,6 +41,9 @@ MonoObject* csx_invoke_static_method(csx_p csx, const char* namespace_name,
                                      void** args);
 void csx_register_internal_call(const char* name, const void* method);
 
+/* 工作线程调用 managed 代码前确保已 attach（幂等；csx_invoke_static_method 内部已自动处理） */
+void csx_thread_attach(csx_p csx);
+
 #ifdef __cplusplus
 }
 #endif

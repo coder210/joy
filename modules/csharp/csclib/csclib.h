@@ -1,5 +1,5 @@
-#ifndef JOY_CSHARP_GLUE_H
-#define JOY_CSHARP_GLUE_H
+#ifndef JOY_CSCLIB_H
+#define JOY_CSCLIB_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,4 +17,4 @@ void csopen_utils(void);
 #endif
 
 
-#endif // !JOY_CSHARP_GLUE_H
+#endif // !JOY_CSCLIB_H

@@ -1,3 +1,62 @@
+/* C# ↔ joy C API 胶水层：utils 模块（POC）。
+ *
+ * wrapper 负责 MonoString ↔ char* 转换，再调用 joy 原始 API。
+ * 注册名格式 Joy.<类>::<方法>，与 C# 侧 [MethodImpl(InternalCall)] 对应。
+ * 下方保留的注释是旧实现参考（livS_ 前缀，未启用）。 */
+#include <stdint.h>
+#include <stdlib.h>
+#include <mono/metadata/object.h>
+#include <mono/metadata/appdomain.h>
+#include <SDL3/SDL_stdinc.h>
+#include "csclib.h"
+#include "joy_csharp.h"
+#include <joy/joy.h>
+
+static bool w_utils_check_file(MonoString* filename)
+{
+        char* s = mono_string_to_utf8(filename);
+        bool r = utils_check_file(s);
+        mono_free(s);
+        return r;
+}
+
+static MonoString* w_utils_read_file(MonoString* filename)
+{
+        char* s = mono_string_to_utf8(filename);
+        size_t n = 0;
+        char* data = utils_read_file(s, &n);
+        mono_free(s);
+        if (!data) return NULL;
+        MonoString* ret = mono_string_new_len(mono_domain_get(), data, (uint32_t)n);
+        SDL_free(data);
+        return ret;
+}
+
+static intptr_t w_utils_random_create(uint32_t seed)
+{
+        return (intptr_t)utils_random_create(seed);
+}
+
+static uint32_t w_utils_random_next(intptr_t rnum)
+{
+        return utils_random_next((random_num_p)rnum);
+}
+
+static void w_utils_random_destroy(intptr_t rnum)
+{
+        utils_random_destroy((random_num_p)rnum);
+}
+
+void csopen_utils(void)
+{
+        csx_register_internal_call("Joy.Utils::utils_check_file", (const void*)w_utils_check_file);
+        csx_register_internal_call("Joy.Utils::utils_read_file", (const void*)w_utils_read_file);
+        csx_register_internal_call("Joy.Utils::utils_random_create", (const void*)w_utils_random_create);
+        csx_register_internal_call("Joy.Utils::utils_random_next", (const void*)w_utils_random_next);
+        csx_register_internal_call("Joy.Utils::utils_random_destroy", (const void*)w_utils_random_destroy);
+}
+
+// ---- 以下为旧实现参考（livS_ 前缀，未启用）----
 //#include <stdbool.h>
 //#include "../mono.h"
 //#include "../utils.h"

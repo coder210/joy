@@ -1,5 +1,5 @@
 //#include "../mono.h"
-#include "joy_csharp_glue.h"
+#include "csclib.h"
 //
 //static int
 //set_window_icon(SDL_Window* window, const char* bmp)

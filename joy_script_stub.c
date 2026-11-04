@@ -62,6 +62,7 @@ MonoObject* csx_invoke_static_method(csx_p csx, const char* namespace_name,
 void csx_register_internal_call(const char* name, const void* method) {
         (void)name; (void)method;
 }
+void csx_thread_attach(csx_p csx) { (void)csx; }
 
 /* 胶水层同理：未启用时不注册任何 internal call（glue/ 目前为空实现） */
 void csopen_sdl(void) {}

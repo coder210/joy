@@ -18,7 +18,7 @@ if(NOT JOY_MODULE_CSHARP)
     # 链接到 src/joy_script_stub.c 提供的空实现。
     target_include_directories(joy_module_csharp INTERFACE
         "${CMAKE_CURRENT_LIST_DIR}"
-        "${CMAKE_CURRENT_LIST_DIR}/glue")
+        "${CMAKE_CURRENT_LIST_DIR}/csclib")
     message(STATUS "joy: 模块 csharp 未启用（桩实现）")
     return()
 endif()
@@ -38,22 +38,30 @@ if(NOT JOY_SCRIPT_EXTRA_INCLUDES)
     set(JOY_SCRIPT_EXTRA_INCLUDES "${JOY_SCRIPT_INCLUDE_ROOT}")
 endif()
 
-file(GLOB JOY_CS_GLUE CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_LIST_DIR}/glue/*.c")
+file(GLOB JOY_CS_CLIB CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_LIST_DIR}/csclib/*.c"
+    "${CMAKE_CURRENT_LIST_DIR}/csclib/generated/*.c")
 
 add_library(joy_module_csharp OBJECT
     "${CMAKE_CURRENT_LIST_DIR}/joy_csharp.c"
-    ${JOY_CS_GLUE})
+    ${JOY_CS_CLIB})
 
 target_include_directories(joy_module_csharp PUBLIC
     "${CMAKE_CURRENT_LIST_DIR}"
-    "${CMAKE_CURRENT_LIST_DIR}/glue")
+    "${CMAKE_CURRENT_LIST_DIR}/csclib"
+    "${CMAKE_CURRENT_LIST_DIR}/csclib/generated")
 target_include_directories(joy_module_csharp PRIVATE
     ${JOY_SCRIPT_EXTRA_INCLUDES}
     ${MONO_INCLUDE_DIR})
 
 # 开关宏以 PUBLIC 传递：宿主的 src/joy_script_stub.c 据此关闭桩实现
 target_compile_definitions(joy_module_csharp PUBLIC ENABLED_CSHARP_SCRIPT JOY_STATIC)
+
+# joy.h 会 #include <SDL3/SDL_events.h>：借用宿主工程已创建的 SDL3 目标传递 include 目录。
+# 独立构建（没有 SDL3 目标）时由使用方自行提供 include 路径。
+if(TARGET SDL3::SDL3)
+    target_link_libraries(joy_module_csharp PUBLIC SDL3::SDL3)
+endif()
 
 target_link_libraries(joy_module_csharp PUBLIC ${MONO_LIBRARIES})
 
@@ -63,11 +71,11 @@ set_target_properties(joy_module_csharp PROPERTIES
 
 if(MSVC)
     target_compile_options(joy_module_csharp PRIVATE /utf-8)
-    # glue/ 当前为空翻译单元（全注释），抑制 C4206
+    # csclib/ 当前为空翻译单元（全注释），抑制 C4206
     target_compile_options(joy_module_csharp PRIVATE /wd4206)
 endif()
 
 source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES
-    "${CMAKE_CURRENT_LIST_DIR}/joy_csharp.c" ${JOY_CS_GLUE})
+    "${CMAKE_CURRENT_LIST_DIR}/joy_csharp.c" ${JOY_CS_CLIB})
 
 message(STATUS "joy: 模块 csharp 已启用")

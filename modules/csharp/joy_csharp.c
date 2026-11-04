@@ -4,7 +4,10 @@
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
+#include <mono/metadata/threads.h>
 #include "joy_csharp.h"
+#include "csclib.h"
+#include "csclib_generated.h"
 #include <joy/joy.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -18,6 +21,7 @@ typedef struct assembly_list {
 
 struct csx {
         MonoDomain* domain;
+        MonoThread* thread;           // 主线程 attach 句柄（其它线程见 csx_thread_attach）
         assembly_list_t assemblies;   // 所有已加载的程序集
         void* userdata;
 };
@@ -60,6 +64,12 @@ csx_p csx_create(void) {
                 free(csx);
                 return NULL;
         }
+        /* Mono 要求调用 managed 代码的线程先 attach 到 domain；
+         * 主线程在这里 attach，其它工作线程用 csx_thread_attach()。 */
+        csx->thread = mono_thread_attach(csx->domain);
+        /* 注册 C# → C 的 internal call（utils 手写 + 其余自动生成） */
+        csopen_utils();
+        csopen_generated();
         assembly_list_init(&csx->assemblies);
         csx->userdata = NULL;
         return csx;
@@ -119,6 +129,8 @@ MonoObject*
 csx_invoke_static_method(csx_p csx, const char* namespace_name, 
         const char* class_name, const char* method_name, void** args)
 {
+        /* 允许任意线程调用：先确保当前线程已 attach（已 attach 时幂等） */
+        mono_thread_attach(csx->domain);
         MonoClass* klass = csx_find_class(csx, namespace_name, class_name);
         if (!klass) return NULL;
         /* -1 表示忽略参数数量（简单查找） */
@@ -132,8 +144,13 @@ csx_invoke_static_method(csx_p csx, const char* namespace_name,
         MonoObject* result = mono_runtime_invoke(method, NULL, args, &exception);
         if (exception) {
                 MonoString* exc_str = mono_object_to_string(exception, NULL);
-                char* exc_cstr = mono_string_to_utf8(exc_str);
-                log_error("Exception: %s", exc_cstr);
+                if (exc_str) {
+                        char* exc_cstr = mono_string_to_utf8(exc_str);
+                        log_error("Exception: %s", exc_cstr);
+                        mono_free(exc_cstr);   /* mono_string_to_utf8 的返回值须手动释放 */
+                } else {
+                        log_error("Exception (unprintable)");
+                }
                 return NULL;
         }
         return result;
@@ -144,12 +161,21 @@ void csx_register_internal_call(const char* name, const void* method)
         mono_add_internal_call(name, method);
 }
 
+/* 供工作线程在调用 managed 代码前显式 attach；已 attach 时幂等。
+ * csx_invoke_static_method 内部已自动调用，一般无需手动。 */
+void csx_thread_attach(csx_p csx)
+{
+        if (!csx || !csx->domain) return;
+        mono_thread_attach(csx->domain);
+}
+
 void csx_release(csx_p csx)
 {
         if (!csx) return;
         // 程序集会随 domain 卸载自动释放，不需要手动关闭
         assembly_list_free(&csx->assemblies);
-        mono_domain_unload(csx->domain);
+        /* mono_jit_cleanup 会卸载 domain 并关闭 JIT；单 domain 场景不要再调
+         * mono_domain_unload，否则重复卸载。 */
         mono_jit_cleanup(csx->domain);
         free(csx);
 }
