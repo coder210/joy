@@ -64,11 +64,26 @@ void csx_register_internal_call(const char* name, const void* method) {
 }
 void csx_thread_attach(csx_p csx) { (void)csx; }
 
-/* 胶水层同理：未启用时不注册任何 internal call（glue/ 目前为空实现） */
+csx_method_p csx_find_method(csx_p csx, const char* namespace_name, const char* class_name,
+                             const char* method_name, int param_count) {
+        (void)csx; (void)namespace_name; (void)class_name; (void)method_name; (void)param_count;
+        return NULL;
+}
+MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args) {
+        (void)csx; (void)method; (void)args;
+        return NULL;
+}
+void csx_method_free(csx_method_p method) { (void)method; }
+
+/* 胶水层同理：未启用时不注册任何 internal call（实现位于 modules/csharp/csclib） */
 void csopen_sdl(void) {}
 void csopen_kcp(void) {}
 void csopen_math(void) {}
 void csopen_collision(void) {}
 void csopen_sys(void) {}
 void csopen_utils(void) {}
+void csopen_generated(void) {}
+void csopen_draw(void) {}
+void csopen_input(void) {}
+void csopen_host(void) {}
 #endif /* ENABLED_CSHARP_SCRIPT */

@@ -71,7 +71,7 @@ set_target_properties(joy_module_csharp PROPERTIES
 
 if(MSVC)
     target_compile_options(joy_module_csharp PRIVATE /utf-8)
-    # csclib/ 当前为空翻译单元（全注释），抑制 C4206
+    # 守卫空翻译单元告警（历史遗留：csclib/ 早期只有注释）
     target_compile_options(joy_module_csharp PRIVATE /wd4206)
 endif()
 

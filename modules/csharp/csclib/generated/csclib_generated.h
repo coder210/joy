@@ -1,4 +1,4 @@
-/* 自动生成，勿手改：modules/csharp/tools/gen_csclib.js */
+/* 自动生成，勿手改：tools/gen_csclib.js */
 #ifndef JOY_CSCLIB_GENERATED_H
 #define JOY_CSCLIB_GENERATED_H
 
