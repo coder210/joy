@@ -26,10 +26,17 @@ if(NOT DEFINED JOY_SOURCE_DIR OR NOT EXISTS "${JOY_SOURCE_DIR}/joy.h")
     set(JOY_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "joy 源码根目录（含 joy.h）" FORCE)
 endif()
 
+# 本文件所在目录（joy 仓库根）。函数体里的 CMAKE_CURRENT_LIST_DIR 指向调用方的
+# listfile，不能用来定位 modules/，故在此固化。
+set(JOY_ADD_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+# 让 MODULES 参数能以普通变量形式覆盖各模块 CMakeLists 里 option() 的默认值
+cmake_policy(SET CMP0077 NEW)
+
 function(joy_add_sources TARGET)
     # SPINE 为可选开关：启用后编译 joy/jspine.c（Spine 骨骼动画模块）并链接 spine-c。
     # 用法：joy_add_sources(${TARGET} SPINE)
-    cmake_parse_arguments(JAS "SPINE" "" "EXCLUDE" ${ARGN})
+    cmake_parse_arguments(JAS "SPINE" "" "EXCLUDE;MODULES" ${ARGN})
 
     file(GLOB JOY_CORE_FILES     CONFIGURE_DEPENDS "${JOY_SOURCE_DIR}/*.h"  "${JOY_SOURCE_DIR}/*.c")
     # 脚本后端（lua/luaclib/jsclib/csclib/duktape/lua_cjson）已全部迁出到
@@ -114,4 +121,37 @@ function(joy_add_sources TARGET)
         # joy 源码含中文注释，MSVC 按 UTF-8 解析避免 GBK 误读
         target_compile_options(${TARGET} PRIVATE /utf-8)
     endif()
+
+    # ---- 脚本后端模块 ----
+    # 用法：joy_add_sources(<target> MODULES lua js csharp)
+    #   列出的模块强制启用；未列出的模块默认关闭（也可用 -DJOY_MODULE_XXX=ON 启用）。
+    # 关闭的模块退化为 INTERFACE 目标，只暴露头文件路径，实现由
+    # joy_script_stub.c 提供的空函数承担——调用点始终可编译、可链接。
+    if(NOT DEFINED JOY_MSGPACK_DIR)
+        set(JOY_MSGPACK_DIR "${JOY_SOURCE_DIR}/../msgpack")
+    endif()
+    # 供各模块子目录继承的编译上下文（include 根为 joy 仓库的父目录，使
+    # #include <joy/joy.h> 成立）
+    set(JOY_SCRIPT_INCLUDE_ROOT "${JOY_SOURCE_DIR}/..")
+    set(JOY_SCRIPT_EXTRA_INCLUDES
+        "${JOY_SCRIPT_INCLUDE_ROOT}"
+        "${JOY_MSGPACK_DIR}/include"
+        "${CMAKE_BINARY_DIR}/msgpack/include")
+
+    set(_joy_known_modules lua js csharp)
+    foreach(_joy_mod ${_joy_known_modules})
+        if(_joy_mod IN_LIST JAS_MODULES)
+            string(TOUPPER "${_joy_mod}" _joy_mod_upper)
+            set(JOY_MODULE_${_joy_mod_upper} ON)
+        endif()
+        set(_joy_mod_dir "${JOY_ADD_CMAKE_DIR}/modules/${_joy_mod}")
+        if(EXISTS "${_joy_mod_dir}/CMakeLists.txt"
+           AND NOT TARGET joy_module_${_joy_mod})
+            add_subdirectory("${_joy_mod_dir}"
+                             "${CMAKE_BINARY_DIR}/joy_modules/${_joy_mod}")
+        endif()
+        if(TARGET joy_module_${_joy_mod})
+            target_link_libraries(${TARGET} PRIVATE joy_module_${_joy_mod})
+        endif()
+    endforeach()
 endfunction()
