@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <mono/metadata/object.h>
-#include "csclib.h"
 #include "joy_csharp.h"
 
 static bool s_quit = false;

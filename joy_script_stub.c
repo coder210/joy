@@ -6,8 +6,8 @@
  *   - 调用方代码里的 luax_* / jsx_* / csx_* 调用依然能编译、能链接；
  *   - 创建必然失败、调用必然返回空，调用方据此跳过脚本逻辑即可。
  *
- * 模块启用后由模块的 CMakeLists 以 PUBLIC 方式定义 ENABLED_XXX_SCRIPT，
- * 对应桩实现被屏蔽，由模块提供真实实现。
+ * 模块启用后由 joy_add.cmake 在调用方 target 上定义 ENABLED_XXX_SCRIPT，
+ * 对应桩实现被屏蔽，由模块源码提供真实实现。
  */
 #include <stdbool.h>
 #include <stddef.h>
@@ -75,15 +75,21 @@ MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args) {
 }
 void csx_method_free(csx_method_p method) { (void)method; }
 
-/* 胶水层同理：未启用时不注册任何 internal call（实现位于 modules/csharp/csclib） */
-void csopen_sdl(void) {}
-void csopen_kcp(void) {}
-void csopen_math(void) {}
-void csopen_collision(void) {}
-void csopen_sys(void) {}
-void csopen_utils(void) {}
+/* 胶水层同理：未启用时不注册任何 internal call（声明见 joy_csharp.h） */
 void csopen_generated(void) {}
 void csopen_draw(void) {}
 void csopen_input(void) {}
 void csopen_host(void) {}
+
+/* 输入桥 / 宿主状态同理：宿主只通过 joy_csharp.h 调用，关闭模块时也要能链接。
+ * csx_create() 会返回 NULL，宿主据此直接退出，不会真正走到这些函数。 */
+void csx_input_key(int scancode, bool down) { (void)scancode; (void)down; }
+void csx_input_mouse_move(float x, float y) { (void)x; (void)y; }
+void csx_input_mouse_button(int button, bool down) { (void)button; (void)down; }
+void csx_input_wheel(float dy) { (void)dy; }
+void csx_input_end_frame(void) {}
+void csx_host_request_quit(void) {}
+bool csx_host_quit_requested(void) { return false; }
+void csx_host_set_exit_code(int code) { (void)code; }
+int  csx_host_exit_code(void) { return 0; }
 #endif /* ENABLED_CSHARP_SCRIPT */

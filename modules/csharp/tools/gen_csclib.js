@@ -9,19 +9,23 @@
  *
  * 产出：
  *     csclib/generated/csclib_generated.c
- *     csclib/generated/csclib_generated.h
  *     csharp/Joy/InternalCalls.cs
+ *
+ * 注册入口（csopen_generated 等）统一声明在 joy_csharp.h，本脚本不再生成
+ * 额外的内部头文件；模块源码与宿主都只包含 joy_csharp.h。
  *
  * 只生成“可安全自动转换”的函数子集：
  *     - 标量（int/uint32/float/double/bool/...）-> 同名 C# 类型
  *     - const char* / char* 入参 -> string（wrapper 内 mono_string_to_utf8）
  *     - 不透明指针 *_p、void* -> IntPtr
  *     - 小结构体（字段全标量、<=16 字节）按值传递 -> C# [StructLayout(Sequential)]
+ * 白名单：只把 ALLOW_NAMES 中登记的 joy.h API 暴露给 C#，避免把
+ *     SDL / KCP / 网络 / 3D / UI 等底层能力整包透出；新增接口需显式登记。
  * 跳过：
  *     - 返回 char*（释放约定因函数而异，需人工指定）
  *     - 结构体指针、结构体返回值、数组、函数指针、可变参数、输出参数（T*）
  *       （绘制热点由 csclib/draw.c 的扁平包装覆盖）
- *     - utils_ 前缀（由 csclib/utils.c 手写 POC 提供，避免重复注册）
+ *     - utils_ 前缀（返回缓冲的释放约定依赖 SDL，业务侧不使用）
  */
 'use strict';
 
@@ -52,7 +56,6 @@ if (!fs.existsSync(JOY_H)) {
   process.exit(1);
 }
 const OUT_C = path.join(MODULE, 'csclib/generated/csclib_generated.c');
-const OUT_H = path.join(MODULE, 'csclib/generated/csclib_generated.h');
 const OUT_CS = path.join(MODULE, 'csharp/Joy/InternalCalls.cs');
 
 // ---- 结构体（按值传递）----------------------------------------------------
@@ -107,8 +110,18 @@ function parseStructs() {
 
 const STRUCTS = parseStructs();
 
+// C# 可见接口白名单：只暴露业务实际用到的 joy.h API。
+// 生成的 wrapper 一律只调用 joy.h 声明的同名函数，绝不直接访问
+// SDL_* / ikcp_* / mongoose / spine 等第三方库接口。
+// 需要新增 C# 接口时在此登记，重新运行本脚本即可。
+const ALLOW_NAMES = ['font_create', 'image_create'];
+
+// 手写层 csclib/draw.c 的 ABI 自检按值使用这两个结构体，
+// 与白名单函数的参数无关，需强制随 InternalCalls.cs 一起生成。
+const EXTRA_STRUCTS = ['jrect_t', 'vec2_t'];
+
 // 跳过的函数前缀：
-//   utils_            —— 由 csclib/utils.c 手工实现（避免重复注册）
+//   utils_            —— 返回缓冲的释放约定依赖 SDL，业务侧不使用
 //   jspine_           —— 声明位于 #ifdef JOY_USE_SPINE 下，未启用时类型不存在
 //   modules_ / module_instance_ —— jmodule.c 默认不参与编译（插件系统停用）
 // 跳过的具体函数名：
@@ -231,6 +244,7 @@ function parseDecls(src) {
     const body = m[1].replace(/\s+/g, ' ').trim();
     const mm = body.match(/^(.+?)\s+([A-Za-z_]\w*)\s*\((.*)\)$/);
     if (!mm) continue;
+    if (!ALLOW_NAMES.includes(mm[2])) continue;  /* 白名单之外的 joy.h API 不暴露给 C# */
     decls.push([normType(mm[1]), mm[2], mm[3]]);
   }
   return decls;
@@ -277,7 +291,6 @@ function gen() {
   c.push('#include <stdint.h>');
   c.push('#include <mono/metadata/object.h>');
   c.push('#include <mono/metadata/appdomain.h>');
-  c.push('#include "csclib.h"');
   c.push('#include "joy_csharp.h"');
   c.push('#include <joy/joy.h>');
   c.push('');
@@ -326,29 +339,9 @@ function gen() {
   c.push('}');
   c.push('');
 
-  // ---- C 头 ----
-  const h = [
-    '/* 自动生成，勿手改：tools/gen_csclib.js */',
-    '#ifndef JOY_CSCLIB_GENERATED_H',
-    '#define JOY_CSCLIB_GENERATED_H',
-    '',
-    '#ifdef __cplusplus',
-    'extern "C" {',
-    '#endif',
-    '',
-    'void csopen_generated(void);',
-    '',
-    '#ifdef __cplusplus',
-    '}',
-    '#endif',
-    '',
-    '#endif /* JOY_CSCLIB_GENERATED_H */',
-    '',
-  ];
-
   // ---- C# 声明 ----
   const groups = new Map();
-  const usedStructs = new Set();
+  const usedStructs = new Set(EXTRA_STRUCTS.filter((n) => STRUCTS.has(n)));
   for (const [ret, name, params] of supported) {
     const cls = className(name);
     if (!groups.has(cls)) groups.set(cls, []);
@@ -381,7 +374,7 @@ function gen() {
     cs.push('');
   }
   for (const cls of [...groups.keys()].sort()) {
-    cs.push(`    internal static class ${cls}`);
+    cs.push(`    public static class ${cls}`);
     cs.push('    {');
     const list = groups.get(cls).slice().sort((a, b) => a[1].localeCompare(b[1]));
     for (const [ret, name, params] of list) {
@@ -399,12 +392,10 @@ function gen() {
   fs.mkdirSync(path.dirname(OUT_C), { recursive: true });
   fs.mkdirSync(path.dirname(OUT_CS), { recursive: true });
   fs.writeFileSync(OUT_C, c.join('\n'), 'utf8');
-  fs.writeFileSync(OUT_H, h.join('\n'), 'utf8');
   fs.writeFileSync(OUT_CS, cs.join('\n'), 'utf8');
 
   console.log(`generated: ${supported.length} functions, skipped: ${skipped.length}`);
   console.log(`  ${OUT_C}`);
-  console.log(`  ${OUT_H}`);
   console.log(`  ${OUT_CS}`);
 }
 
