@@ -1,7 +1,7 @@
 /*
  * C# 后端关闭时的空桩：调用方 csx_* / csopen_* 调用仍可编译、可链接。
  * csx_create() 返回 NULL，宿主据此直接退出，不会真正走到这些函数。
- * 模块启用时 ENABLED_CS_SCRIPT 被定义，本文件内容为空，由 joy_csharp.c 提供实现。
+ * 模块启用时 ENABLED_CS_SCRIPT 被定义，本文件内容为空，由 jcsx.c 提供实现。
  */
 #include <stdbool.h>
 #include <stddef.h>
