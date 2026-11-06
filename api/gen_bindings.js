@@ -23,6 +23,8 @@ const JOY_H = path.join(JOY_REPO, 'joy.h');
 const JMATH_H = path.join(JOY_REPO, 'jmath.h');
 const IDL = path.join(HERE, 'joy.idl');
 const REPORT = path.join(HERE, 'coverage.md');
+const THUNKS = path.join(HERE, 'thunks_generated.c');
+const { buildThunks } = require('./emit_thunks');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
    与 modules/cs/gen_csclib.js 的 SKIP_* 保持一致。 */
@@ -385,8 +387,8 @@ function check(entries) {
     if (names.has(e.name)) errors.push('重复 name: ' + e.name);
     names.add(e.name);
     if (!e.level || !LEVEL_DESC[e.level]) errors.push('缺 level: ' + e.name);
-    if (e.status === 'on' && (e.level === 'L3' || e.level === 'X')) {
-      errors.push('L3/X 不允许直接开放，必须手写 thunk: ' + e.name);
+    if (e.status === 'on' && e.level !== 'L0' && e.level !== 'L1') {
+      errors.push('P1 只支持 L0/L1 自动 thunk，不能 status:on: ' + e.name + '(' + e.level + ')');
     }
   }
   const meta = scanJoyHeader();
@@ -408,6 +410,18 @@ function check(entries) {
   if (normEol(onDisk) !== normEol(expected)) {
     errors.push('coverage.md 已过期，请跑 node gen_bindings.js');
   }
+  let expectedThunks = null;
+  try {
+    expectedThunks = buildThunks(entries);
+  } catch (err) {
+    errors.push('thunk 生成失败: ' + err.message);
+  }
+  if (expectedThunks !== null) {
+    const thunksOnDisk = fs.existsSync(THUNKS) ? fs.readFileSync(THUNKS, 'utf8') : '';
+    if (normEol(thunksOnDisk) !== normEol(expectedThunks)) {
+      errors.push('thunks_generated.c 已过期，请跑 node gen_bindings.js --emit');
+    }
+  }
   return errors;
 }
 
@@ -415,30 +429,38 @@ function check(entries) {
 
 function main() {
   const args = process.argv.slice(2);
-  if (args.includes('--scan')) {
-    const meta = scanJoyHeader();
-    const entries = mergeIdl(meta.fresh);
-    fs.writeFileSync(IDL, idlText(entries), 'utf8');
-    fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');
-    console.log('scan: ' + meta.fresh.length + ' JOY_API decls, ' + entries.length + ' IDL entries');
-    return 0;
-  }
-  const entries = loadIdl();
-  if (args.includes('--check')) {
-    const errors = check(entries);
-    if (errors.length) {
-      for (const e of errors.slice(0, 30)) console.error('  - ' + e);
-      if (errors.length > 30) console.error('  ... 共 ' + errors.length + ' 项');
-      console.error('check FAILED (' + errors.length + ')');
-      return 1;
+  try {
+    if (args.includes('--check')) {
+      const errors = check(loadIdl());
+      if (errors.length) {
+        for (const e of errors.slice(0, 30)) console.error('  - ' + e);
+        if (errors.length > 30) console.error('  ... 共 ' + errors.length + ' 项');
+        console.error('check FAILED (' + errors.length + ')');
+        return 1;
+      }
+      console.log('check OK: ' + loadIdl().length + ' IDL entries, report + thunks up to date');
+      return 0;
     }
-    console.log('check OK: ' + entries.length + ' IDL entries, report up to date');
+    let entries;
+    let meta;
+    if (args.includes('--scan')) {
+      meta = scanJoyHeader();
+      entries = mergeIdl(meta.fresh);
+      fs.writeFileSync(IDL, idlText(entries), 'utf8');
+      console.log('scan: ' + meta.fresh.length + ' JOY_API decls, ' + entries.length + ' IDL entries');
+    } else {
+      entries = loadIdl();
+      meta = scanJoyHeader();
+    }
+    fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');
+    fs.writeFileSync(THUNKS, buildThunks(entries), 'utf8');
+    console.log('emit: open=' + entries.filter(e => e.status === 'on').length
+      + ', report + thunks_generated.c written');
     return 0;
+  } catch (err) {
+    console.error('gen_bindings: ' + err.message);
+    return 1;
   }
-  const meta = scanJoyHeader();
-  fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');
-  console.log('report: ' + entries.length + ' IDL entries -> ' + REPORT);
-  return 0;
 }
 
 process.exit(main());

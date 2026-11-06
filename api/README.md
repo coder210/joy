@@ -12,16 +12,23 @@
 | 文件 | 谁维护 | 作用 |
 |---|---|---|
 | `gen_bindings.js` | 人工 | 解析 `joy.h`、维护 IDL、产出报告。零 npm 依赖，只用 Node 内置 `fs` / `path` |
+| `emit_thunks.js` | 人工 | P1 thunk 生成器（纯字符串函数），由 `gen_bindings.js` 调用 |
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待办、L3 手写清单 |
+| `thunks_generated.c` | 工具生成，勿手改 | 只有 `status: on` 的 L0/L1 条目会生成 thunk 与自检 |
+| `runtime/joy_value.*` | 人工 | 统一值容器（标量 / 字符串 / 句柄） |
+| `runtime/joy_obj.*` | 人工 | 句柄表、引用计数、类型 tag 校验、自动析构 |
+| `runtime/joy_thunk.h` | 人工 | thunk 签名与注册表类型 |
+| `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
 
 ## 命令
 
 在任意目录执行（路径都相对脚本自身）：
 
 ```powershell
-node third_party/joy/api/gen_bindings.js            # 从 joy.idl 重生成 coverage.md
-node third_party/joy/api/gen_bindings.js --scan     # 从 joy.h 更新 joy.idl + 重生成报告
+node third_party/joy/api/gen_bindings.js            # 重生成 coverage.md + thunks_generated.c
+node third_party/joy/api/gen_bindings.js --emit     # 同上（显式写法）
+node third_party/joy/api/gen_bindings.js --scan     # 从 joy.h 更新 joy.idl + 重生成两者
 node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI 门禁用
 ```
 
@@ -45,6 +52,34 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
 `--scan` 按 `name` 合并：自动字段刷新，`status` / `owns` / `note` 原样保留。
 `joy.h` 里删掉的条目不会丢，会保留并标 `orphan: true`，在报告里单列。
 
+## P1：共享运行层与 thunk（进行中）
+
+`runtime/` 是三后端共用的 C 层，`thunks_generated.c` 是 IDL 驱动的生成物：
+
+```text
+脚本 VM 值  →  vm.c（各后端唯一语言相关层）  →  joy_value[]
+                                              ↓
+                                     thunks_generated.c
+                                              ↓
+                    joy_obj（句柄 / refcount / dtor）→ 真正的 joy C API
+```
+
+**首批只开放 4 条零副作用 API**（`status: on`）：`get_ticks`、`jtext_cache_get_count`
+（L0），`lcg_random_create`、`lcg_random_next`（L1，`owns=lcg_random_destroy`，纯 `SDL_malloc`）。
+其余 931 条仍是 `off`。
+
+`thunks_generated.c` 末尾的 `joy_api_selftest()` 验证 L0 标量往返、参数个数校验、
+create→句柄、句柄参数解引用、错误 type tag 被拒绝、`release` 后自动析构与计数配平、
+失效句柄不可复用。宿主只在 `--smoke` 时调用它，输出 `[api] selftest PASS`；
+正常模式与现有 C# 业务链路完全不受影响。
+
+主仓 CMake 目前显式把 `runtime/*.c` + `thunks_generated.c` 编入宿主做 C 层验证；
+等 lua / js 后端接上后，这部分装配会上提到 `joy_add.cmake`。
+
+**当前边界**：`--check` 拒绝把 L2 / L3 / X 设成 `on`；生成 thunk 只覆盖标量、
+`const char*`、不透明指针；结构体展开、记录、数组、回调仍留待后续阶段。
+三个后端尚未接 `vm.c`，所以这套 API 目前只对本仓 C 层自检可见，脚本层还看不到。
+
 ## 分级
 
 | 级别 | 含义 | 处理方式 |
@@ -61,7 +96,7 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
 
 ### 1. 开放一个 API 给脚本
 
-1. 在 `coverage.md` 里确认它的级别不是 L3 / X
+1. 在 `coverage.md` 里确认它的级别是 L0 / L1（其余级别暂不能自动生成 thunk）
 2. 在 `joy.idl` 里把该条 `status` 改成 `on`，必要时补 `note`
 3. `node third_party/joy/api/gen_bindings.js` 重生成报告
 4. 看 `git diff` —— 应只有那一条 `status` 和总览数字变化
@@ -93,7 +128,8 @@ node third_party/joy/api/gen_bindings.js --check
 ```
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
-L3/X 未被直接开放、`joy.h` 与 IDL 同步、`coverage.md` 是最新的。任一项不满足即失败。
+只有 L0/L1 被开放、`joy.h` 与 IDL 同步、`coverage.md` 与 `thunks_generated.c`
+都是最新的。任一项不满足即失败；比较前会统一换行，兼容 Windows CRLF checkout。
 
 ## 已知边界
 

@@ -11,7 +11,7 @@
 | `joy.h` 中 `JOY_API` 声明 | 935 |
 | `joy.h` 中值类型 `typedef struct` | 48 |
 | IDL 条目 | 935 |
-| 默认开放（`status: on`） | 0 |
+| 默认开放（`status: on`） | 4 |
 | 待人工确认 `owns` | 1 |
 | orphan（`joy.h` 中已消失） | 0 |
 
