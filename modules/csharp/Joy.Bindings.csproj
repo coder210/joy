@@ -12,6 +12,9 @@
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- 同目录还有 CMake 编译的 C 源码 / 生成器，别让 SDK 的默认 None glob
+         把它们当项目文件显示在 VS 的 Joy.Bindings 节点下。 -->
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
   <ItemGroup>
     <!-- 自动生成，勿手改：gen_csclib.js -->

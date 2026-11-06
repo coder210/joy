@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 // 手写的 C# → C internal call 声明；对应的 C 实现位于
-// modules/csharp/csclib_draw.c、csclib_input.c、csclib_host.c。
+// modules/csharp/bindings/csclib_{draw,input,host}.c。
 // 这些 API 用标量参数，避免跨 ABI 传递结构体；结构体与自动生成的声明见
 // 同目录的 InternalCalls.cs（两者共同编译进 Joy.Bindings.dll）。
 //

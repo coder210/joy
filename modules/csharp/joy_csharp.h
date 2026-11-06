@@ -5,8 +5,8 @@
  * joy_csharp —— joy 的可选 C# 脚本后端对外唯一入口。
  *
  * 该模块不构建独立的库 / DLL：选中 MODULES csharp 后，joy_add.cmake 会把
- * modules/csharp 下的源码直接编入调用方 target。宿主只需要 #include 本头，
- * 不必（也不应）包含模块内部的 csclib.h / csclib_generated.h。
+ * modules/csharp 下的源码（含 bindings/ 胶水）直接编入调用方 target。
+ * 宿主只需要 #include 本头，不必（也不应）包含 bindings/ 里的实现细节。
  *
  * 未启用模块时，stub.c 依据 ENABLED_CSHARP_SCRIPT 提供空实现，
  * 下述函数依然可编译、可链接（创建必然失败）。
