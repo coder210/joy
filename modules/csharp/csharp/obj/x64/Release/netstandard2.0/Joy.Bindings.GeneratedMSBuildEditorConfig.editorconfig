@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = Joy
+build_property.ProjectDir = E:\c++\joy_csharp_test\third_party\joy\modules\csharp\csharp\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 
