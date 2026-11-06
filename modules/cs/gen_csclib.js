@@ -33,7 +33,7 @@ const fs = require('fs');
 const path = require('path');
 
 // bindings/ = C 侧 wrapper，scripts/ = 语言侧声明，与 lua/js 的目录契约一致。
-const HERE = __dirname;                          // 模块根 modules/csharp
+const HERE = __dirname;                          // 模块根 modules/cs
 const JOY_REPO = path.resolve(HERE, '../..');   // joy 主仓：joy.h 在仓根
 const IN_JOY_REPO = fs.existsSync(path.join(JOY_REPO, 'joy.h'));
 const MODULE = HERE;

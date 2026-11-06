@@ -1,4 +1,4 @@
-#ifdef ENABLED_CSHARP_SCRIPT
+#ifdef ENABLED_CS_SCRIPT
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 #include <mono/metadata/appdomain.h>
@@ -285,9 +285,9 @@ void csx_release(csx_p csx)
         free(csx);
 }
 
-#endif // ENABLED_CSHARP_SCRIPT
+#endif // ENABLED_CS_SCRIPT
 
 /*
- * 未启用本模块时的桩实现已统一移到 modules/csharp/stub.c
+ * 未启用本模块时的桩实现已统一移到 modules/cs/stub.c
  * （模块关闭时本文件不参与编译，桩必须由核心侧提供）。
  */

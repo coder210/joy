@@ -142,7 +142,7 @@ function(joy_add_sources TARGET)
     # 函数内局部变量对 add_subdirectory 子作用域不保证可见，用全局属性传 MODULES
     set_property(GLOBAL PROPERTY JOY_REQUESTED_MODULES ${JAS_MODULES})
 
-    set(_joy_known_modules lua js csharp)
+    set(_joy_known_modules lua js cs)
     foreach(_joy_mod IN LISTS _joy_known_modules)
         set(_joy_mod_dir "${JOY_ADD_CMAKE_DIR}/modules/${_joy_mod}")
         if(EXISTS "${_joy_mod_dir}/CMakeLists.txt" AND NOT TARGET joy_module_${_joy_mod})

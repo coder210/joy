@@ -29,7 +29,7 @@ CMake 会优先取平台目录。正常情况平台目录里只有 `.dll` / `.so
 ## 来源
 
 `coreclr.dll` 是 `dotnet/runtime` 的自定义构建（CoreCLR + 静态链接 Mono 运行时组件），
-同时导出 `coreclr_*` 与 `mono_*` 两套宿主 API，因此 `modules/csharp` 的 `csx_*`
+同时导出 `coreclr_*` 与 `mono_*` 两套宿主 API，因此 `modules/cs` 的 `csx_*`
 嵌入代码无需改写。版本 .NET 8.0.17；**这不是微软官方分发包**，没有官方补丁渠道，
 升级需要从 `dotnet/runtime` 自行重建这套二进制。
 
