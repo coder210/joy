@@ -155,6 +155,8 @@ jsx_p jsx_create(void)
 
 	/* 注册 jsclib 模块 */
 	jsopen_base(jsx->ctx);
+	/* IDL 驱动的新绑定层：全局 Joy.Api.Bindings.*（与 cs / lua 同名） */
+	jsopen_api(jsx->ctx);
 	jsopen_fp(jsx->ctx);
 	jsopen_ft(jsx->ctx);
 	jsopen_vec2f(jsx->ctx);

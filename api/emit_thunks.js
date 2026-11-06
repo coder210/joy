@@ -27,7 +27,7 @@ const SCALAR = {
   'char*':         { kind: 'JOY_V_STR',  acc: 'as.str',  cast: '(const char*)',    wrap: 'joy_v_str',  sample: '""' },
 };
 
-const { isOpaque } = require('./naming');
+const { isOpaque, methodName } = require('./naming');
 function typeInfo(t) { return SCALAR[t] || null; }
 function valueKind(t) {
   if (isOpaque(t)) return 'JOY_V_HANDLE';
@@ -240,9 +240,9 @@ function buildThunks(entries) {
   L.push('');
   L.push('static const joy_thunk_entry s_thunks[] = {');
   for (const e of open) {
-    L.push('        { ' + q(e.domain) + ', ' + q(e.name) + ', t_' + e.name + ', '
-      + e.params.length + ', ' + (e.params.length ? 'k_' + e.name : 'NULL')
-      + ', ' + retKind(e) + ' },');
+    L.push('        { ' + q(e.domain) + ', ' + q(e.name) + ', ' + q(methodName(e.name))
+      + ', t_' + e.name + ', ' + e.params.length + ', '
+      + (e.params.length ? 'k_' + e.name : 'NULL') + ', ' + retKind(e) + ' },');
   }
   L.push('};');
   L.push('');

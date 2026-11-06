@@ -22,4 +22,7 @@ void luax_set_watch(luax_p luax, const char* filename) { (void)luax; (void)filen
 bool luax_poll_reload(luax_p luax) { (void)luax; return false; }
 const char* luax_get_watch(luax_p luax) { (void)luax; return NULL; }
 void luax_set_args(luax_p luax, int argc, char* argv[]) { (void)luax; (void)argc; (void)argv; }
+
+void luax_open_api(void* lua_state) { (void)lua_state; }
+const char* luax_api_selftest(void) { return "lua/disabled"; }
 #endif /* ENABLED_LUA_SCRIPT */

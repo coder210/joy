@@ -41,6 +41,12 @@ const char* luax_get_watch(luax_p luax);
 /* 透传命令行参数给脚本 */
 void luax_set_args(luax_p luax, int argc, char* argv[]);
 
+/* IDL 驱动的新绑定层：在全局注册 Joy.Api.Bindings.*（方法名与 cs / js 一致）。
+ * 参数是 lua_State*，用 void* 以免头文件依赖 lua。 */
+void        luax_open_api(void* lua_state);
+/* 自检：建独立 lua_State 跑内联脚本；成功返回 NULL，失败返回原因 */
+const char* luax_api_selftest(void);
+
 #ifdef __cplusplus
 }
 #endif

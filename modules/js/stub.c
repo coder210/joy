@@ -21,4 +21,7 @@ void jsx_set_watch(jsx_p jsx, const char* filename) { (void)jsx; (void)filename;
 bool jsx_poll_reload(jsx_p jsx) { (void)jsx; return false; }
 const char* jsx_get_watch(jsx_p jsx) { (void)jsx; return NULL; }
 void jsx_set_args(jsx_p jsx, int argc, char* argv[]) { (void)jsx; (void)argc; (void)argv; }
+
+void jsopen_api(void* duk_context) { (void)duk_context; }
+const char* jsopen_api_selftest(void) { return "js/disabled"; }
 #endif /* ENABLED_JS_SCRIPT */

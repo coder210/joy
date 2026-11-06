@@ -17,7 +17,8 @@ typedef joy_value_t (*joy_thunk_fn)(joy_value_t* args, int argc, joy_status_t* s
 
 typedef struct joy_thunk_entry {
         const char* domain;
-        const char* name;
+        const char* name;         /* C API 名（snake_case），供 joy_api_call 查表 */
+        const char* script_name;  /* 脚本层方法名（三端统一 PascalCase），由 naming.js 生成 */
         joy_thunk_fn fn;
         int argc;
         /* 三端共用的类型契约：vm.c 按 arg_kinds[j] 把第 j 个脚本值转成 joy_value，

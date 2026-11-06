@@ -21,6 +21,8 @@
 | `thunks_generated.c` | 工具生成，勿手改 | 只有 `status: on` 的 L0/L1 会生成 thunk、注册表与自检 |
 | `modules/cs/bindings/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
+| `modules/lua/bindings/lapi.c` | 人工 | Lua 薄适配：遍历注册表、`joy_value` ↔ Lua 值、句柄 userdata `__gc` |
+| `modules/js/bindings/japi.c` | 人工 | JS 薄适配：遍历注册表、`joy_value` ↔ duktape 值、句柄对象 finalizer |
 | `runtime/joy_value.*` | 人工 | 统一值容器（标量 / 字符串 / 句柄） |
 | `runtime/joy_obj.*` | 人工 | 句柄表、引用计数、类型 tag 校验、自动析构 |
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
@@ -102,32 +104,41 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
 type tag 被拒绝、`release` 后自动析构与计数配平、失效句柄不可复用等深度自检。
 宿主只在 `--smoke` 时调用它，输出 `[api] selftest PASS`。
 
-主仓 CMake 显式把 `runtime/*.c` + `thunks_generated.c` 编入宿主；cs 侧的
-`api_generated.c` 位于 `modules/cs/bindings/`，由该模块的 GLOB 自动收集，
-它调用的 `joy_api_call()` 来自 `runtime/joy_thunk.c`。等 lua / js 后端也接上后，
-这部分装配会上提到 `joy_add.cmake`。
+主仓 CMake 显式把 `runtime/*.c` + `thunks_generated.c` 编入宿主，并用
+`joy_add_sources(... MODULES cs lua js)` 启用三个后端；各后端的 `bindings/*.c`
+由模块自己的 GLOB 收集。它们都只依赖 `runtime/joy_thunk.c` 的 `joy_api_call()`
+和 `joy_thunks_table()`，不需要各自解析 IDL。
 
-### cs 后端已接通（P1 第二刀）
+### 三端已接通（P1 第二刀 / P2 第三刀）
 
-`csx_create()` 在旧的 `csopen_generated/draw/input/host()` 之后多调一次
-`csopen_api()`，注册 `Joy.Api.Native::*`；旧白名单胶水与 C# 业务调用点一行未改。
+三个后端都在旧注册入口之后多调一次新入口，旧胶水与业务调用点一行未改：
+
+| 后端 | 入口 | 脚本侧写法 | 句柄生命周期 |
+|---|---|---|---|
+| C# | `csopen_api()` | `Joy.Api.Bindings.GetTicks()` | finalizer → `Native.Release()` |
+| Lua | `luax_open_api(L)` | `Joy.Api.Bindings.GetTicks()` | userdata `__gc` |
+| JS | `jsopen_api(ctx)` | `Joy.Api.Bindings.GetTicks()` | object finalizer |
 
 ```text
-Joy.Api.Bindings.*（强类型，无 IntPtr）
-  → Joy.Api.Native.*（internal call）
-  → api_generated.c：Mono 值转 joy_value[]（const char* 走 UTF-8 转换 + mono_free）
-  → joy_api_call()（按名查注册表）
-  → thunks_generated.c：调用真正的 joy C API + joy_obj 句柄
+Joy.Api.Bindings.GetTicks()   ← 三端同名、同参数顺序
+  → 后端薄适配（cs: api_generated.c / lua: lapi.c / js: japi.c）
+  → joy_api_call() / e->fn（按注册表）
+  → thunks_generated.c：真正的 joy C API + joy_obj 句柄
 ```
 
-C 层创建的指针被注册为 `uint64_t` 句柄，C# 侧只拿到 `LcgNum` 这类强类型对象；
-对象的 finalizer 调 `Native.Release()` → `joy_obj_release()` 自动析构。
-`csharp/test/ApiBindingSmoke.cs` 在 `--smoke` 下验证调用链、强类型对象与
-GC 后的计数配平，输出 `[api.cs] PASS ... destroyed=1`，并计入 `[smoke] PASS` 断言。
+Lua / JS 的适配层遍历 `joy_thunks_table()` 直接注册，**不需要为每条 API 生成
+后端代码**：新增 API 只重新生成 `thunks_generated.c`，两个后端自动跟随。
+参数按 `arg_kinds[]` 转换、返回值按 `ret_kind` 转回；句柄只以不透明对象出现，
+脚本拿不到 `uint64_t`，GC 时自动 `joy_obj_release()`。
+
+`--smoke` 依次打印 `[api] selftest PASS`（C 层）、`[api] lua selftest PASS`、
+`[api] js selftest PASS`、`[api.cs] PASS ... destroyed=1`（C# 层），后两者计入
+`[smoke] PASS` 断言。三端自检都验证：调用、句柄创建、传错句柄被拒、
+GC 后 live 归零且 destroyed +1。
 
 **当前边界**：`--check` 拒绝把 L2 / L3 / X 设成 `on`；生成 thunk 只覆盖标量、
 `const char*`、不透明句柄；结构体展开、记录、数组、回调仍留待后续阶段。
-Lua / JS 后端尚未写 `vm.c`，所以这 446 条目前只有 cs 端真正可调用。
+三端都能调用这 446 条，但业务代码尚未迁移到 `Joy.Api.Bindings.*`。
 
 ## 分级
 
@@ -161,11 +172,11 @@ Lua / JS 后端尚未写 `vm.c`，所以这 446 条目前只有 cs 端真正可�
 
 ### 3. 加一个脚本后端
 
-cs 已按此落地：`emit_cs.js` 生成 `bindings/api_generated.c`（注册入口 + 值转换）
-与 `scripts/Api.generated.cs`（强类型对象 + GC 通知），`joy_csharp.h` 登记
-`csopen_api()`，`jcsx.c` 调用它，`stub.c` 提供关闭模块时的空桩。lua / js 将来
-照 `joy_thunks_table()` 的 `arg_kinds` / `ret_kind` 接各自的 `bindings/vm.c`，
-方法名从 `naming.js` 取，即可与 cs 端得到同一套 API 名与参数顺序。
+cs / lua / js 已按此落地。新后端只需要两份东西：一个「VM 值 ↔ `joy_value`」
+的转换表，和一个遍历 `joy_thunks_table()` 的注册循环（方法名取 `script_name`，
+参数类型取 `arg_kinds`，返回类型取 `ret_kind`）。把入口登记到 `joy_<name>.h`，
+在宿主创建时调用一次，`stub.c` 补空桩即可；`thunks_generated.c` 由 IDL 驱动，
+**不需要为每条 API 写后端代码**。
 
 ## CI 门禁
 
@@ -180,15 +191,16 @@ node third_party/joy/api/gen_bindings.js --check
 且 `coverage.md`、`thunks_generated.c`、`modules/cs/bindings/api_generated.c`、
 `modules/cs/scripts/Api.generated.cs` 四个生成物都是最新的。任一项不满足即失败；
 比较前会统一换行，兼容 Windows CRLF checkout。冒烟另需看到
-`[api] selftest PASS` 与 `[api.cs] PASS`。
+`[api] selftest PASS`、`[api] lua selftest PASS`、`[api] js selftest PASS`
+与 `[api.cs] PASS` 四条。
 
 ## 已知边界
 
 - `jmath.h` 是头文件内 `JOY_INLINE` 的值类型数学库，没有 `JOY_API`，不在本次解析范围；
   报告里只给粗统计，需要单独解析并映射成「记录」类型。
 - `level` 是保守推断：不认识的类型一律归 L3，宁可要求手写，也不冒险自动生成。
-- `runtime/` 与 `thunks_generated.c` 由宿主 CMake 显式编入；`api_generated.c` 由 cs
-  模块的 GLOB 自动收集。旧 `MODULES cs` 链路只多了一行 `csopen_api()` 注册。
+- `runtime/` 与 `thunks_generated.c` 由宿主 CMake 显式编入；三端适配层由各模块
+  GLOB 收集。旧链路只多了一行 `csopen_api()` / `luax_open_api()` / `jsopen_api()` 注册。
 - 42 条「所有权待裁决」需要人工判定是拥有还是借用指针；判定前 `--check` 会拦住。
-- L2 的结构体按值展开、L3 的输出参数 / 回调 / 数组、以及 Lua / JS 的 `vm.c`
-  是下一阶段的主要工作。
+- L2 的结构体按值展开、L3 的输出参数 / 回调 / 数组，是下一阶段的主要工作；
+  之后才是把旧 `Joy.*` 业务调用点迁到 `Joy.Api.Bindings.*` 并删除旧胶水。

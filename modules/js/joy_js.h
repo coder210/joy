@@ -38,6 +38,12 @@ const char* jsx_get_watch(jsx_p jsx);
 /* 透传命令行参数给脚本 */
 void  jsx_set_args(jsx_p jsx, int argc, char* argv[]);
 
+/* IDL 驱动的新绑定层：在全局注册 Joy.Api.Bindings.*（方法名与 cs / lua 一致）。
+ * 参数是 duk_context*，用 void* 以免头文件依赖 duktape。 */
+void        jsopen_api(void* duk_context);
+/* 自检：建独立 duktape heap 跑内联脚本；成功返回 NULL，失败返回原因 */
+const char* jsopen_api_selftest(void);
+
 #ifdef __cplusplus
 }
 #endif

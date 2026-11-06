@@ -194,6 +194,9 @@ luax_p luax_create(void)
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");
 
+        /* IDL 驱动的新绑定层：全局 Joy.Api.Bindings.*（与 cs / js 同名） */
+        luax_open_api(luax->L);
+
         /* 注册 set_env / get_env 为全局函数 */
         lua_pushcfunction(luax->L, l_set_env);
         lua_setglobal(luax->L, "set_env");
