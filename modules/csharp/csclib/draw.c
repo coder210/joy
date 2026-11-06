@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mono/metadata/object.h>
-#include "csclib.h"
 #include "joy_csharp.h"
 #include <joy/joy.h>
 
@@ -18,23 +17,6 @@ static void set_color(jr2d_p r2d, int r, int g, int b, int a)
 {
         r2d_set_colorf(r2d, (float)r / 255.0f, (float)g / 255.0f,
                        (float)b / 255.0f, (float)a / 255.0f);
-}
-
-/* 整张图按原尺寸画在 (x, y) */
-static void w_draw_image(intptr_t image, float x, float y)
-{
-        vec2_t pos = { x, y };
-        image_draw((image_p)image, pos);
-}
-
-/* 取源矩形一块，缩放到目标矩形 */
-static void w_draw_image_rect(intptr_t image,
-                              float sx, float sy, float sw, float sh,
-                              float dx, float dy, float dw, float dh)
-{
-        jrect_t src = { sx, sy, sw, sh };
-        jrect_t dst = { dx, dy, dw, dh };
-        image_draw1((image_p)image, &src, &dst);
 }
 
 /* 取源矩形一块，以 (cx, cy) 为中心缩放绘制（便于把精灵中心对齐实体中心） */
@@ -141,8 +123,6 @@ static float w_abi_rect_area(jrect_t r) { return r.w * r.h; }
 
 void csopen_draw(void)
 {
-        csx_register_internal_call("Joy.Draw::draw_image", (const void*)w_draw_image);
-        csx_register_internal_call("Joy.Draw::draw_image_rect", (const void*)w_draw_image_rect);
         csx_register_internal_call("Joy.Draw::draw_image_centered", (const void*)w_draw_image_centered);
         csx_register_internal_call("Joy.Draw::image_width", (const void*)w_image_width);
         csx_register_internal_call("Joy.Draw::image_height", (const void*)w_image_height);

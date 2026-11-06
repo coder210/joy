@@ -1,0 +1,3 @@
+# Joy.Bindings.csproj 的构建产物（dotnet build / VS 解决方案生成）
+bin/
+obj/

@@ -6,8 +6,6 @@
 #include <mono/metadata/object.h>
 #include <mono/metadata/threads.h>
 #include "joy_csharp.h"
-#include "csclib.h"
-#include "csclib_generated.h"
 #include <joy/joy.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,8 +126,7 @@ csx_p csx_create(void) {
         /* Mono 要求调用 managed 代码的线程先 attach 到 domain；
          * 主线程在这里 attach，其它工作线程用 csx_thread_attach()。 */
         csx->thread = mono_thread_attach(csx->domain);
-        /* 注册 C# → C 的 internal call（utils 手写 + 其余自动生成） */
-        csopen_utils();
+        /* 注册 C# → C 的 internal call（白名单自动绑定 + 手写热点） */
         csopen_generated();
         /* 手写的 C# 友好层：绘制热点 / 输入状态 / 宿主服务 */
         csopen_draw();

@@ -8,8 +8,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <mono/metadata/object.h>
-#include "csclib.h"
+#include "joy_csharp.h"
 
 #define CSX_KEY_COUNT 512
 #define CSX_MOUSE_BUTTON_COUNT 8
@@ -60,7 +59,6 @@ static bool w_mouse_button(int button)
 
 static float w_mouse_x(void) { return s_mouse_x; }
 static float w_mouse_y(void) { return s_mouse_y; }
-static float w_wheel(void)   { return s_wheel; }
 
 void csopen_input(void)
 {
@@ -68,5 +66,4 @@ void csopen_input(void)
         csx_register_internal_call("Joy.Input::mouse_button", (const void*)w_mouse_button);
         csx_register_internal_call("Joy.Input::mouse_x", (const void*)w_mouse_x);
         csx_register_internal_call("Joy.Input::mouse_y", (const void*)w_mouse_y);
-        csx_register_internal_call("Joy.Input::wheel", (const void*)w_wheel);
 }

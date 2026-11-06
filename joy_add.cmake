@@ -33,6 +33,9 @@ set(JOY_ADD_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # 让 MODULES 参数能以普通变量形式覆盖各模块 CMakeLists 里 option() 的默认值
 cmake_policy(SET CMP0077 NEW)
 
+# C# 后端不建库 target，其开关在此统一定义（lua/js 的开关仍在各自 CMakeLists）。
+option(JOY_MODULE_CSHARP "C# 脚本模块（源码直接编入调用方 target）" OFF)
+
 function(joy_add_sources TARGET)
     # SPINE 为可选开关：启用后编译 joy/jspine.c（Spine 骨骼动画模块）并链接 spine-c。
     # 用法：joy_add_sources(${TARGET} SPINE)
@@ -145,13 +148,40 @@ function(joy_add_sources TARGET)
             set(JOY_MODULE_${_joy_mod_upper} ON)
         endif()
         set(_joy_mod_dir "${JOY_ADD_CMAKE_DIR}/modules/${_joy_mod}")
-        if(EXISTS "${_joy_mod_dir}/CMakeLists.txt"
-           AND NOT TARGET joy_module_${_joy_mod})
-            add_subdirectory("${_joy_mod_dir}"
-                             "${CMAKE_BINARY_DIR}/joy_modules/${_joy_mod}")
-        endif()
-        if(TARGET joy_module_${_joy_mod})
-            target_link_libraries(${TARGET} PRIVATE joy_module_${_joy_mod})
+
+        if(_joy_mod STREQUAL "csharp")
+            # C# 后端与 joy 核心一样走"纯源码引入"：不建库 target、不产 DLL/LIB。
+            # 选中 MODULES csharp（或 -DJOY_MODULE_CSHARP=ON）后，源码直接编入
+            # 调用方 <target> 并按 joy 源码树在 IDE 里显示；对外只暴露 joy_csharp.h。
+            # 头文件路径始终可用：未启用时 joy_script_stub.c 也要包含它。
+            target_include_directories(${TARGET} PRIVATE "${_joy_mod_dir}")
+            if(JOY_MODULE_CSHARP)
+                if(NOT MONO_INCLUDE_DIR OR NOT MONO_LIBRARIES)
+                    message(FATAL_ERROR
+                        "joy 模块 csharp 需要 Mono/CoreCLR 开发包：请设置 MONO_INCLUDE_DIR 与 MONO_LIBRARIES")
+                endif()
+                file(GLOB _joy_cs_sources CONFIGURE_DEPENDS
+                    "${_joy_mod_dir}/*.c"
+                    "${_joy_mod_dir}/csclib/*.c"
+                    "${_joy_mod_dir}/csclib/generated/*.c")
+                target_sources(${TARGET} PRIVATE ${_joy_cs_sources})
+                source_group(TREE "${JOY_SOURCE_DIR}/.." FILES ${_joy_cs_sources})
+                target_include_directories(${TARGET} PRIVATE ${MONO_INCLUDE_DIR})
+                target_compile_definitions(${TARGET} PRIVATE ENABLED_CSHARP_SCRIPT)
+                target_link_libraries(${TARGET} PRIVATE ${MONO_LIBRARIES})
+                message(STATUS "joy: 模块 csharp 已启用（源码直接编入 ${TARGET}）")
+            else()
+                message(STATUS "joy: 模块 csharp 未启用（桩实现）")
+            endif()
+        else()
+            if(EXISTS "${_joy_mod_dir}/CMakeLists.txt"
+               AND NOT TARGET joy_module_${_joy_mod})
+                add_subdirectory("${_joy_mod_dir}"
+                                 "${CMAKE_BINARY_DIR}/joy_modules/${_joy_mod}")
+            endif()
+            if(TARGET joy_module_${_joy_mod})
+                target_link_libraries(${TARGET} PRIVATE joy_module_${_joy_mod})
+            endif()
         endif()
     endforeach()
 endfunction()
