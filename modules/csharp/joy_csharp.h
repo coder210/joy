@@ -8,7 +8,7 @@
  * modules/csharp 下的源码直接编入调用方 target。宿主只需要 #include 本头，
  * 不必（也不应）包含模块内部的 csclib.h / csclib_generated.h。
  *
- * 未启用模块时，joy_script_stub.c 依据 ENABLED_CSHARP_SCRIPT 提供空实现，
+ * 未启用模块时，stub.c 依据 ENABLED_CSHARP_SCRIPT 提供空实现，
  * 下述函数依然可编译、可链接（创建必然失败）。
  *
  * 依赖：joy 公共 API <joy/joy.h>；Mono 开发包仅模块内部源码需要。
@@ -56,7 +56,7 @@ void csx_method_free(csx_method_p method);
 void csx_thread_attach(csx_p csx);
 
 /* ---- internal call 注册入口 ----
- * 由 csx_create() 内部调用；未启用模块时 joy_script_stub.c 提供空实现。
+ * 由 csx_create() 内部调用；未启用模块时 stub.c 提供空实现。
  * 新增注册分组时在此登记声明，不要在别处另立对外头文件。 */
 void csopen_generated(void);
 void csopen_draw(void);

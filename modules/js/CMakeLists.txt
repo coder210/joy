@@ -1,27 +1,28 @@
 # ============================================================
-# joy 模块：JavaScript (duktape) 脚本后端（原独立仓 joy_js）
+# joy 模块：JavaScript (duktape) 脚本后端
 #
-# 由 joy_add_sources(<target> MODULES js) 自动 add_subdirectory 并链接。
-# 关闭（默认）时只生成空 INTERFACE 目标：核心零成本，duktape 不参与编译。
+# 统一模块契约：始终提供 joy_module_js（INTERFACE），对外只暴露 joy_js.h。
+# 源码经 target_sources(INTERFACE) 直接编入调用方 target，不建库、不产 DLL/LIB。
+# 关闭时只编 stub.c（ENABLED_JS_SCRIPT 未定义），链接符号由空桩承担。
+# 第三方 VM 源码在仓库根 external/duktape，模块内只放胶水。
 # ============================================================
-option(JOY_MODULE_JS "JavaScript (duktape) 脚本模块" OFF)
+if(NOT DEFINED JOY_MODULE_JS)
+    set(JOY_MODULE_JS OFF CACHE BOOL "JavaScript (duktape) 脚本模块")
+endif()
+get_property(_joy_requested GLOBAL PROPERTY JOY_REQUESTED_MODULES)
+if("js" IN_LIST _joy_requested)
+    set(JOY_MODULE_JS ON)
+endif()
 
 if(TARGET joy_module_js)
     return()
 endif()
 
-if(NOT JOY_MODULE_JS)
-    add_library(joy_module_js INTERFACE)
-    # 关闭时仍暴露头文件路径：调用方可以照常 #include "joy_js.h"，
-    # 链接到 src/joy_script_stub.c 提供的空实现。
-    target_include_directories(joy_module_js INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
-    message(STATUS "joy: 模块 js 未启用（桩实现）")
-    return()
+# 独立构建（cmake -S modules/js）时的兜底；由 joy_add_sources 调用时已由上层设置
+if(NOT JOY_EXTERNAL_DIR)
+    set(JOY_EXTERNAL_DIR "${CMAKE_CURRENT_LIST_DIR}/../../external")
 endif()
-
 if(NOT JOY_SCRIPT_INCLUDE_ROOT)
-    # 独立构建（cmake -S modules/js）时的兜底：include 根为 joy 仓库的父目录，
-    # 以 #include <joy/joy.h> 成立为前提。
     set(JOY_SCRIPT_INCLUDE_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../..")
 endif()
 if(NOT JOY_SCRIPT_EXTRA_INCLUDES)
@@ -31,38 +32,37 @@ if(NOT DEFINED JOY_MSGPACK_DIR)
     set(JOY_MSGPACK_DIR "${JOY_SCRIPT_INCLUDE_ROOT}/joy/msgpack")
 endif()
 
-file(GLOB JOY_JS_JSCLIB CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_LIST_DIR}/jsclib/*.c")
+add_library(joy_module_js INTERFACE)
+target_include_directories(joy_module_js INTERFACE
+    "${CMAKE_CURRENT_LIST_DIR}"
+    "${JOY_EXTERNAL_DIR}"
+    ${JOY_SCRIPT_EXTRA_INCLUDES}
+    "${JOY_MSGPACK_DIR}/include")
 
-add_library(joy_module_js OBJECT
-    "${CMAKE_CURRENT_LIST_DIR}/jsx.c"
-    "${CMAKE_CURRENT_LIST_DIR}/external/duktape/duktape.c"
-    ${JOY_JS_JSCLIB})
+target_sources(joy_module_js INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stub.c")
 
-target_include_directories(joy_module_js PUBLIC "${CMAKE_CURRENT_LIST_DIR}")
-target_include_directories(joy_module_js PRIVATE ${JOY_SCRIPT_EXTRA_INCLUDES})
+if(JOY_MODULE_JS)
+    file(GLOB _glue CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_LIST_DIR}/*.c"
+        "${CMAKE_CURRENT_LIST_DIR}/bindings/*.c")
+    list(REMOVE_ITEM _glue "${CMAKE_CURRENT_LIST_DIR}/stub.c")
 
-# 开关宏以 PUBLIC 传递：宿主的 src/joy_script_stub.c 据此关闭桩实现
-target_compile_definitions(joy_module_js PUBLIC ENABLED_JS_SCRIPT JOY_STATIC)
+    target_sources(joy_module_js INTERFACE
+        ${_glue} "${JOY_EXTERNAL_DIR}/duktape/duktape.c")
+    target_compile_definitions(joy_module_js INTERFACE ENABLED_JS_SCRIPT)
 
-if(TARGET SDL3::SDL3)
-    target_link_libraries(joy_module_js PUBLIC SDL3::SDL3)
+    if(TARGET SDL3::SDL3)
+        target_link_libraries(joy_module_js INTERFACE SDL3::SDL3)
+    endif()
+    if(TARGET msgpack-c-static)
+        target_link_libraries(joy_module_js INTERFACE msgpack-c-static)
+    elseif(TARGET msgpack-c)
+        target_link_libraries(joy_module_js INTERFACE msgpack-c)
+    endif()
+
+    source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES ${_glue}
+        "${JOY_EXTERNAL_DIR}/duktape/duktape.c")
+    message(STATUS "joy: 模块 js 已启用（源码直接编入调用方 target）")
+else()
+    message(STATUS "joy: 模块 js 未启用（stub.c 空桩）")
 endif()
-if(TARGET msgpack-c-static)
-    target_link_libraries(joy_module_js PUBLIC msgpack-c-static)
-elseif(TARGET msgpack-c)
-    target_link_libraries(joy_module_js PUBLIC msgpack-c)
-endif()
-
-set_target_properties(joy_module_js PROPERTIES
-    C_STANDARD 99
-    C_STANDARD_REQUIRED ON)
-
-if(MSVC)
-    target_compile_options(joy_module_js PRIVATE /utf-8)
-endif()
-
-source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES
-    "${CMAKE_CURRENT_LIST_DIR}/jsx.c" ${JOY_JS_JSCLIB})
-
-message(STATUS "joy: 模块 js 已启用")

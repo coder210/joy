@@ -1,0 +1,5 @@
+# Joy.Bindings.csproj 的构建产物（dotnet build / VS 解决方案生成）。
+# 工程已扁平到模块根，产物默认落在这里，不要提交。
+bin/
+obj/
+out/

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- joy 提供的 C# 绑定程序集。业务项目通过 ProjectReference 引用，
+       不再把 InternalCalls.cs 以源码链接的方式编进自己的程序集。
+
+       运行时约束：产出的 Joy.Bindings.dll 必须部署到 CLR 搜索路径 lib/ 下
+       （宿主用 mono_set_dirs(lib, lib) 指定目录，依赖程序集只从那里解析，
+       放在 exe 旁会导致加载失败）。主仓 CMake 的 post-build 负责这一步。 -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Joy.Bindings</AssemblyName>
+    <RootNamespace>Joy</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 自动生成，勿手改：gen_csclib.js -->
+    <Compile Include="InternalCalls.cs" />
+    <!-- 手写的绘制 / 输入 / 宿主热点 -->
+    <Compile Include="NativeCalls.cs" />
+  </ItemGroup>
+</Project>

@@ -8,11 +8,11 @@ Date: 2021.12.14
 History:
 *************************************************/
 #include <SDL3/SDL.h>
-#include "external/lua/lapi.h"
-#include "external/lua/lualib.h"
-#include "external/lua/lauxlib.h"
-#include "external/lua_cjson/lua_cjson.h"
-#include "luaclib/luaclib.h"
+#include "lua/lapi.h"
+#include "lua/lualib.h"
+#include "lua/lauxlib.h"
+#include "lua_cjson/lua_cjson.h"
+#include "bindings/luaclib.h"
 #include <joy/joy.h>
 #include "joy_lua.h"
 

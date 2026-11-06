@@ -1,8 +1,8 @@
 #include <SDL3/SDL.h>
-#include "external/duktape/duktape.h"
+#include "duktape/duktape.h"
 #include <joy/joy.h>
 #include "joy_js.h"
-#include "jsclib/jsclib.h"
+#include "bindings/jsclib.h"
 
 /* setEnv / getEnv 前向声明 */
 static duk_ret_t js_set_env(duk_context* ctx);

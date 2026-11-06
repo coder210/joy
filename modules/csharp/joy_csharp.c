@@ -288,6 +288,6 @@ void csx_release(csx_p csx)
 #endif // ENABLED_CSHARP_SCRIPT
 
 /*
- * 未启用本模块时的桩实现已统一移到 src/joy_script_stub.c
+ * 未启用本模块时的桩实现已统一移到 modules/csharp/stub.c
  * （模块关闭时本文件不参与编译，桩必须由核心侧提供）。
  */
