@@ -24,16 +24,14 @@ const MAP = {
   'unsigned long': { cs: 'ulong',  c: 'uint64_t', kind: 'JOY_V_U64',  acc: 'as.u64',  wrap: 'joy_v_u64',  cast: '(uint64_t)' },
   'float':         { cs: 'float',  c: 'float',    kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
   'double':        { cs: 'double', c: 'double',   kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
+  /* const char* 入参：MonoString → UTF-8 → joy_v_str，调用返回后 mono_free。
+   * 返回 char* 的 API 不走这里：所有权（谁 free）必须人工标注。 */
+  'char*':         { cs: 'string', c: 'MonoString*', kind: 'JOY_V_STR', acc: 'as.str',
+                     wrap: 'joy_v_str', cast: '(const char*)', str: true },
 };
 
-function isOpaque(t) {
-  return t === 'void*' || (t.endsWith('_p') && !t.includes('*'));
-}
+const { isOpaque, methodName, handleClass } = require('./naming');
 function q(s) { return '"' + s + '"'; }
-function pascal(s) {
-  return s.split('_').filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join('');
-}
-function handleClass(ret) { return pascal(ret.replace(/_p$/, '')); }
 
 function infoOf(t) {
   if (isOpaque(t)) {
@@ -41,11 +39,21 @@ function infoOf(t) {
       wrap: 'joy_v_handle', cast: '(uint64_t)', handle: true, cls: handleClass(t) };
   }
   const m = MAP[t];
-  if (!m) throw new Error('cs 适配暂不支持类型：' + t + '（字符串 / 结构体 / 数组需手写）');
+  if (!m) throw new Error('cs 适配暂不支持类型：' + t + '（结构体 / 数组需手写）');
   return m;
 }
 
-function methodName(name) { return pascal(name); }
+/* --enable 用：cs 后端能否为这条 API 生成包装。 */
+function canEmitCs(e) {
+  if (e.level !== 'L0' && e.level !== 'L1') return '仅 L0/L1';
+  if (!e.params) return '复杂签名需手写适配';
+  if (e.ret === 'char*') return '字符串返回需人工标注所有权';
+  if (e.ret !== 'void' && !isOpaque(e.ret) && !MAP[e.ret]) return '不支持返回类型：' + e.ret;
+  for (const p of e.params) {
+    if (!isOpaque(p.ctype) && !MAP[p.ctype]) return '不支持参数类型：' + p.ctype;
+  }
+  return null;
+}
 
 /* ------------------------------------------------------------------- C 侧 */
 
@@ -55,18 +63,26 @@ function emitIcall(e) {
   const ret = e.ret === 'void' ? null : infoOf(e.ret);
   const mn = methodName(e.name);
   const decl = e.params.map((p, i) => infoOf(p.ctype).c + ' p' + i).join(', ');
+  const strs = e.params.map((p, i) => (p.ctype === 'char*' ? i : -1)).filter(i => i >= 0);
 
   L.push('static ' + (ret ? ret.c : 'void') + ' icall_' + mn + '(' + (decl || 'void') + ')');
   L.push('{');
   L.push('        joy_status_t st = JOY_OK;');
   if (ret) L.push('        joy_value_t r;');
   if (n) L.push('        joy_value_t args[' + n + '];');
+  for (const i of strs) L.push('        char* s' + i + ' = NULL;');
   e.params.forEach((p, i) => {
     const ti = infoOf(p.ctype);
-    L.push('        args[' + i + '] = ' + ti.wrap + '(' + ti.cast + 'p' + i + ');');
+    if (ti.str) {
+      L.push('        s' + i + ' = p' + i + ' ? mono_string_to_utf8(p' + i + ') : NULL;');
+      L.push('        args[' + i + '] = joy_v_str((const char*)s' + i + ');');
+    } else {
+      L.push('        args[' + i + '] = ' + ti.wrap + '(' + ti.cast + 'p' + i + ');');
+    }
   });
   L.push('        ' + (ret ? 'r = ' : '(void)') + 'joy_api_call('
     + q(e.name) + ', ' + (n ? 'args' : 'NULL') + ', ' + n + ', &st);');
+  for (const i of strs) L.push('        if (s' + i + ') mono_free(s' + i + ');');
   L.push('        if (st != JOY_OK) {');
   L.push('                fprintf(stderr, "[joy.api] %s failed: %s at %s\\n", '
     + q(e.name) + ', joy_status_name(st), joy_last_error_where());');
@@ -91,6 +107,8 @@ function buildC(open) {
   L.push(' * ============================================================ */');
   L.push('#include <stdint.h>');
   L.push('#include <stdio.h>');
+  L.push('#include <mono/metadata/object.h>');
+  L.push('#include <mono/metadata/appdomain.h>');
   L.push('#include <joy/joy.h>');
   L.push('#include <joy/api/runtime/joy_value.h>');
   L.push('#include <joy/api/runtime/joy_obj.h>');
@@ -216,19 +234,10 @@ function buildCs(open) {
 function buildCsGlue(entries) {
   const open = entries.filter(e => e.status === 'on' && !e.orphan);
   for (const e of open) {
-    if (e.level !== 'L0' && e.level !== 'L1') {
-      throw new Error('cs 适配只支持 L0/L1：' + e.name + '(' + e.level + ')');
-    }
-    if (e.ret !== 'void' && !isOpaque(e.ret) && !MAP[e.ret]) {
-      throw new Error('cs 适配暂不支持返回类型：' + e.name + ' -> ' + e.ret);
-    }
-    for (const p of e.params) {
-      if (!isOpaque(p.ctype) && !MAP[p.ctype]) {
-        throw new Error('cs 适配暂不支持参数类型：' + e.name + '.' + p.name + ' -> ' + p.ctype);
-      }
-    }
+    const why = canEmitCs(e);
+    if (why) throw new Error('cs 适配不支持 ' + e.name + '：' + why);
   }
   return { c: buildC(open), cs: buildCs(open) };
 }
 
-module.exports = { buildCsGlue };
+module.exports = { buildCsGlue, canEmitCs };

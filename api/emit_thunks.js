@@ -27,11 +27,43 @@ const SCALAR = {
   'char*':         { kind: 'JOY_V_STR',  acc: 'as.str',  cast: '(const char*)',    wrap: 'joy_v_str',  sample: '""' },
 };
 
-function isOpaque(t) {
-  return t === 'void*' || (t.endsWith('_p') && !t.includes('*'));
-}
+const { isOpaque } = require('./naming');
 function typeInfo(t) { return SCALAR[t] || null; }
+function valueKind(t) {
+  if (isOpaque(t)) return 'JOY_V_HANDLE';
+  const ti = typeInfo(t);
+  return ti ? ti.kind : 'JOY_V_NULL';
+}
+function retKind(e) { return e.ret === 'void' ? 'JOY_V_NULL' : valueKind(e.ret); }
 function q(s) { return '"' + s + '"'; }
+
+/* 所有权校验：dtor 的参数类型必须与 create 的返回类型严格一致。
+ * 只看「是不是指针」不够：owns=r2d_destroy 配 ret=void* 会把错误类型的
+ * 指针交给析构函数，运行时才崩，必须在生成阶段拦住。 */
+function ownsIssue(e, byName) {
+  if (!isOpaque(e.ret)) return null;
+  if (!e.owns) return '返回句柄但缺 owns';
+  const f = byName.get(e.owns);
+  if (!f) return 'owns 指向不存在的函数：' + e.owns;
+  if (!f.params || f.params.length !== 1) return 'owns 目标不是单参数：' + e.owns;
+  if (!isOpaque(f.params[0].ctype)) return 'owns 目标参数不是句柄：' + e.owns;
+  if (f.params[0].ctype !== e.ret) return 'owns 类型不匹配：' + e.ret + ' -> ' + f.params[0].ctype;
+  return null;
+}
+
+/* --enable 用：这条 API 现在能不能安全地自动生成 thunk。 */
+function canThunk(e, byName) {
+  if (e.level !== 'L0' && e.level !== 'L1') return '仅 L0/L1';
+  if (!e.params) return '复杂签名需手写 thunk';
+  const own = ownsIssue(e, byName);
+  if (own) return own;
+  if (e.ret !== 'void' && !isOpaque(e.ret) && !typeInfo(e.ret)) return '不支持返回类型：' + e.ret;
+  for (const p of e.params) {
+    if (!isOpaque(p.ctype) && !typeInfo(p.ctype)) return '不支持参数类型：' + p.ctype;
+    if (p.ctype === 'char*' && !p.isConst) return '非 const char* 输出缓冲';
+  }
+  return null;
+}
 
 function emitThunk(e, dtorName) {
   const L = [];
@@ -42,7 +74,8 @@ function emitThunk(e, dtorName) {
 
   L.push('static joy_value_t t_' + e.name + '(joy_value_t* a, int n, joy_status_t* st)');
   L.push('{');
-  e.params.forEach((p, i) => L.push('        ' + p.ctype + ' p' + i + ';'));
+  e.params.forEach((p, i) => L.push('        '
+    + (p.ctype === 'char*' ? 'const char*' : p.ctype) + ' p' + i + ';'));
   if (e.ret !== 'void') L.push('        ' + e.ret + ' _r;');
   if (retHandle) L.push('        uint64_t _h;');
   L.push('        if (n != ' + n + ') return joy_v_err(st, JOY_ERR_ARGC, ' + q(e.name) + ');');
@@ -99,6 +132,15 @@ function emitSelftest(open) {
   L.push('        uint32_t dead0 = joy_obj_destroy_count();');
   L.push('        joy_value_t r;');
   L.push('        joy_value_t args[4];');
+  L.push('');
+  L.push('        /* 每条开放的 API 都必须在注册表里且 argc 守卫生效。');
+  L.push('         * 故意传错 argc：thunk 第一行就返回，不执行任何 joy 业务函数，');
+  L.push('         * 因此批量开放有副作用 / 需要上下文的 API 也不会在这里被调用。 */');
+  for (const e of open) {
+    L.push('        st = JOY_OK;');
+    L.push('        joy_api_call(' + q(e.name) + ', NULL, ' + (e.params.length + 1) + ', &st);');
+    L.push('        if (st != JOY_ERR_ARGC) return ' + q('registry/' + e.name) + ';');
+  }
   L.push('');
   if (probe) {
     const pi = typeInfo(probe.ret);
@@ -159,13 +201,13 @@ function buildThunks(entries) {
       + bad.slice(0, 5).map(e => e.name + '(' + e.level + ')').join(', '));
   }
   const byName = new Map(entries.map(e => [e.name, e]));
-  const owners = [...new Set(open.filter(e => isOpaque(e.ret)).map(e => e.owns))];
-  for (const o of owners) {
-    const f = byName.get(o);
-    if (!f || !f.params || f.params.length !== 1 || !isOpaque(f.params[0].ctype)) {
-      throw new Error('owns 目标签名不符合单指针析构：' + o);
+  for (const e of open) {
+    if (isOpaque(e.ret)) {
+      const issue = ownsIssue(e, byName);
+      if (issue) throw new Error(e.name + ': ' + issue);
     }
   }
+  const owners = [...new Set(open.filter(e => isOpaque(e.ret)).map(e => e.owns))];
 
   const L = [];
   L.push('/* ============================================================');
@@ -189,10 +231,18 @@ function buildThunks(entries) {
     L.push(emitThunk(e, dtorName));
   }
 
+  for (const e of open) {
+    if (e.params.length) {
+      L.push('static const joy_value_kind k_' + e.name + '[] = { '
+        + e.params.map(p => valueKind(p.ctype)).join(', ') + ' };');
+    }
+  }
+  L.push('');
   L.push('static const joy_thunk_entry s_thunks[] = {');
   for (const e of open) {
     L.push('        { ' + q(e.domain) + ', ' + q(e.name) + ', t_' + e.name + ', '
-      + e.params.length + ' },');
+      + e.params.length + ', ' + (e.params.length ? 'k_' + e.name : 'NULL')
+      + ', ' + retKind(e) + ' },');
   }
   L.push('};');
   L.push('');
@@ -207,4 +257,4 @@ function buildThunks(entries) {
   return L.join('\n');
 }
 
-module.exports = { buildThunks };
+module.exports = { buildThunks, canThunk, ownsIssue };

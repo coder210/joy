@@ -10,11 +10,895 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong LcgRandomCreate(ulong seed);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void LcgRandomDestroy(ulong lcg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern uint LcgRandomNext(ulong lcg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void LcgRandomSetState(ulong lcg, ulong state);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JpmConfigAddSpawn(ulong cfg, int cx10, int cz10, int radius10);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern uint JpmWaveSeed(uint base_seed, int wave);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SdbmHash(string str, int size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong Fnv1aHash(string str, int size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong JenkinsHash(string str, int size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong Murmur3Hash(string str);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong KrHash(string str, int size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtimerDestroy(ulong timer);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtimerTrigger(ulong timer);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtimerSetInterval(ulong timer, int interval);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtimerSetActive(ulong timer, bool active);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtimerReset(ulong timer);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong JtimerGetElapsed(ulong timer);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool InitEnv();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void QuitEnv();
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong GetTicks();
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DestroyWindow(ulong win);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WindowSetFullscreen(ulong win, bool fullscreen);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool WindowGetFullscreen(ulong win);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WindowSetIcon(ulong win, string png_path);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PushUserEvent(int type, int code);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PushQuitEvent();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void LogTitle(int type);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void EnvSet(ulong env, string key, string value);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void EnvDestroy(ulong env);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SimpleFpsDestory(ulong fps);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SimpleFpsUpdate(ulong fps);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SimpleFpsValue(ulong fps);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void GameTimerInit(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void GameTimerUpdate(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float GameTimerGetDeltaTime(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float GameTimerGetUnscaledDeltaTime(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void GameTimerSetTimeScale(ulong clock, float scale);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float GameTimerGetTimeScale(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void GameTimerSetTargetFps(ulong clock, int fps);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int GameTimerGetTargetFps(ulong clock);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SetClipboardText(string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysInitNetenv();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysReleaseNetenv();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysAnyaddr();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysClosesocket(long sockfd);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSetSockSndtimeo(long sockfd, int ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSetSockRcvtimeo(long sockfd, int ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSetSockAccpettimeo(long sockfd, int ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSetSockBroadcast(long sockfd);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSetSockReuseaddr(long sockfd);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long SysTcp();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long SysUdp();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysBind(long sockfd, string ip, int port);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysConnect(long sockfd, string ip, int port);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SysListen(long sockfd);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSend(long sockfd, string buf, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SysSendto(long sockfd, string buf, int len, string ip, int port);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long SysCurrentTime();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SysSleep(int ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SysInstallCrashHandlers();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void IocpServerDestroy(ulong server);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void IocpProcessEvents(ulong server, int timeout_ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void FontDestroy(ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float FontGetScale(ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int FontGetSize(ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int FontGetAscent(ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dDestroy(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetColor(ulong r2d, uint r, uint g, uint b, uint a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dBegin(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dEnd(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetLogicalPresentation(ulong r2d, int w, int h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetLogicalPresentationMode(ulong r2d, int w, int h, int mode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetVsync(ulong r2d, int vsync);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetScale(ulong r2d, float sx, float sy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dSetColorf(ulong r2d, float r, float g, float b, float a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetBlendMode(ulong r2d, int mode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dDrawPoint(ulong r2d, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dClearClip(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dPopClipRect(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R2dResetClipStack(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dPointInClip(ulong r2d, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ShapeDrawLine(ulong r2d, float x1, float y1, float x2, float y2);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ImageDestroy(ulong image);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ImageSetAlpha(ulong image, uint alpha);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ImageSetBlendMode(ulong image, int mode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ImageSetScaleMode(ulong image, int nearest);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TextDestroy(ulong jtext_tex);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextPrint(ulong r2d, ulong jtext_tex, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dDrawPointF(ulong r2d, float fx, float fy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ShapeDrawRectangleF(ulong r2d, string mode, float fx, float fy, float fw, float fh);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ShapeDrawLineF(ulong r2d, float fx1, float fy1, float fx2, float fy2);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int TextGetWidth(ulong jtext_tex);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int TextGetHeight(ulong jtext_tex);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextCacheClear();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextCacheSetLimit(int max_entries);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int JtextCacheGetCount();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextCacheSweep(int max_idle_frames);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationDestroy(ulong animation);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationReset(ulong animation);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AnimationIsFinished(ulong animation);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationSetPosition(ulong animation, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationSetScale(ulong animation, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationSetRotation(ulong animation, float rotation);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationUpdate(ulong animation, float dt);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDestroy(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dBegin(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dEnd(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int R3dGetDrawCalls(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSetClearColor(ulong r, uint cr, uint cg, uint cb);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dMeshDestroy(ulong r, ulong m);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dFontInit(ulong r, string ttf_path, int pixel_height);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dFontDraw2d(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dFontCacheSetLimit(ulong r, int max_entries);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int R3dFontCacheGetCount(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dFontCacheClear(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dFontCacheSweep(ulong r, int max_idle_frames);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSetLogicalPresentation(ulong r, int w, int h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSetLogicalPresentationMode(ulong r, int w, int h, int mode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dButtonDraw(ulong r, ulong m, ulong btn, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dButtonDrawCircle(ulong r, ulong m, ulong btn, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dButtonIsHovered(ulong r, ulong btn, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dButtonIsPressed(ulong r, ulong btn, bool mouse_down, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dButtonRelease(ulong r, ulong btn, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dButtonDestroy(ulong btn);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dLabelSetText(ulong l, string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dLabelDraw(ulong r, ulong m, ulong l, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dLabelDestroy(ulong l);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputSetText(ulong inp, string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dInputIsHovered(ulong r, ulong inp, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputFocus(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputDefocus(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dInputIsFocused(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputStartTextInput(ulong r, ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputStopTextInput(ulong r, ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputInsert(ulong inp, string s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputBackspace(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputDelete(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputCursorLeft(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputCursorRight(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputCursorHome(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputCursorEnd(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputClick(ulong r, ulong inp, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputSubmit(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputDraw(ulong r, ulong m, ulong inp, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dInputDestroy(ulong inp);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputDestroy(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputAddItem(ulong ci, string str);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputClearItems(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputSetText(ulong ci, string str);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int R3dComboboxInputHitItem(ulong ci, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputDraw(ulong r, ulong m, ulong ci, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dComboboxInputDrawDropdown(ulong r, ulong m, ulong ci, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderDestroy(ulong s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderSetValue(ulong s, float v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float R3dSliderGetValue(ulong s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderDraw(ulong r, ulong m, ulong s, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dSliderIsPressed(ulong r, ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderSetPressed(ulong s, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderDragMove(ulong r, ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dSliderIsHovered(ulong r, ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dSliderSetHovered(ulong s, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCheckboxDestroy(ulong cb);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCheckboxToggle(ulong cb);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dCheckboxIsPressed(ulong r, ulong cb, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCheckboxSetHovered(ulong cb, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dCheckboxIsHovered(ulong r, ulong cb, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDrawGrid(ulong r, int slices, float spacing, float line_width);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorDestroy(ulong anim);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetFloat(ulong anim, string name, float v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetInt(ulong anim, string name, int v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetBool(ulong anim, string name, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetTrigger(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JanimatorGetFloat(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JanimatorGetInt(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JanimatorGetBool(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorAddState(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetDefaultState(ulong anim, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateAddColor(ulong anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateSetLoop(ulong anim, string state_name, bool loop);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateSetSpeed(ulong anim, string state_name, float speed);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateSetBlend(ulong anim, string state_name, string param_name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JanimatorAddTransition(ulong anim, string from, string to);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JanimatorAddAnyTransition(ulong anim, string to);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorTransitionAddCond(ulong anim, int trans_idx, string param_name, int mode, float threshold);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorTransitionSetExitTime(ulong anim, int trans_idx, float seconds);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorUpdate(ulong anim, float dt);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorDraw(ulong anim, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorSetFlipH(ulong anim, bool flip);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void LabelDestroy(ulong label);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void LabelDraw(ulong label);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonDestroy(ulong btn);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetPosition(ulong btn, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetSize(ulong btn, float width, float height);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetImage(ulong btn, ulong image);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetPressedImage(ulong btn, ulong image);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ButtonIsHovered(ulong btn, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ButtonIsPressed(ulong btn, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetHovered(ulong btn, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetPressed(ulong btn, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ButtonGetPressed(ulong btn);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetTextOffset(ulong btn, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonDraw(ulong btn);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewDestroy(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewSetViewPx(ulong v, float x, float y, float w, float h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewSetContent(ulong v, float content_w, float content_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewSetOffset(ulong v, float ox, float oy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewClamp(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float ScrollviewGetOffsetX(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float ScrollviewGetOffsetY(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewSetShowBar(ulong v, bool show);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ScrollviewDragging(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ScrollviewHit(ulong v, float win_x, float win_y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewBegin(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ScrollviewEnd(ulong v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxDestroy(ulong combobox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ComboboxIsPressed(ulong combobox, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ComboboxIsOpen(ulong combobox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxSetOpen(ulong combobox, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int ComboboxHitItem(ulong combobox, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxSetSelected(ulong combobox, int index);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int ComboboxGetSelected(ulong combobox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxDraw(ulong combobox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputDestroy(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputAddItem(ulong ci, string str, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputClearItems(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputSetText(ulong ci, string str);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputDraw(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputDrawDropdown(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ComboboxInputIsOpen(ulong ci);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputSetPopupNode(ulong ci, ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int ComboboxInputHitItem(ulong ci, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxInputSetOpen(ulong ci, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridSetheaders(ulong grid, string headers);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridSetheader(ulong grid, int index, string header);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridSetcell(ulong grid, int row_index, int col_index, string data);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridDestroy(ulong grid);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridDraw(ulong grid, ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int DatagridHitRow(ulong grid, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridScroll(ulong grid, int lines);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DatagridSetSelectedRow(ulong grid, int row);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void RadioDestroy(ulong radio);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool RadioIsPressed(ulong radio, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void RadioSetHovered(ulong radio, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxDestroy(ulong checkbox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxSetR2d(ulong checkbox, ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxSetPosition(ulong checkbox, int x, int y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxToggle(ulong checkbox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool CheckboxIsPressed(ulong cb, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxSetHovered(ulong cb, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickDestroy(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickSetTextures(ulong joystick, string base_path, string thumb_path);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickSetVector(ulong joystick, float dx, float dy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickDraw(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickReset(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickSetPosition(ulong joystick, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickSetRadius(ulong joystick, float radius);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JoystickIsDragging(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickTouchDown(ulong joystick, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickTouchMove(ulong joystick, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoystickTouchUp(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JoystickGetMagnitude(ulong joystick);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxDestroy(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSetText(ulong ti, string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxDraw(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool InputboxIsPressed(ulong ti, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool InputboxIsHovered(ulong ti, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxFocus(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxDefocus(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxBlur(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxInsert(ulong ti, string s, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxBackspace(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxDelete(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCursorLeft(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCursorRight(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCursorHome(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCursorEnd(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSelectLeft(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSelectRight(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSelectHome(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSelectEnd(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxSelectAll(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxPaste(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCopy(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void InputboxCut(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool InputboxIsFocused(ulong ti);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderDestroy(ulong s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderSetValue(ulong s, float v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float SliderGetValue(ulong s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderSetRect(ulong s, float x, float y, float w, float h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderSetRange(ulong s, float min, float max);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderDraw(ulong s);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SliderIsPressed(ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderSetPressed(ulong s, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderDragMove(ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool SliderIsHovered(ulong s, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SliderSetHovered(ulong s, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupDestroy(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupSetTitle(ulong p, string text, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupSetContent(ulong p, string text, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupSetPosition(ulong p, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupSetVisible(ulong p, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupSetCloseable(ulong p, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupDraw(ulong p, ulong title_font, ulong content_font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PopupIsCloseClicked(ulong p, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PopupIsTitleClicked(ulong p, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PopupDragMove(ulong p, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PopupIsInside(ulong p, float mx, float my);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TooltipDestroy(ulong t);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TooltipSetText(ulong t, string text, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TooltipSetPosition(ulong t, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TooltipSetVisible(ulong t, bool v);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TooltipDraw(ulong t, ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiCtxDestroy(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiBegin(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiEnd(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiInputMotion(ulong ctx, float win_x, float win_y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiInputDown(ulong ctx, int button);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiInputUp(ulong ctx, int button);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiInputWheel(ulong ctx, float dy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiInputKey(ulong ctx, bool shift, bool ctrl);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiIsDown(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiIsPressed(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiIsReleased(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JuiTakeWheel(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiIsShift(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiIsCtrl(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiPopClip(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiResetClip(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiPanelEnd(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiScrollEnd(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiScrollSetOffset(ulong ctx, int id, float off, float content_h, float view_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtilemapDestroy(ulong tm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetWidth(ulong tm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetHeight(ulong tm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetTilewidth(ulong tm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetTileheight(ulong tm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetAnimTileid(ulong tm, int gid, uint time_ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JtilemapGetTile(ulong layer, int tx, int ty);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtilemapRenderAll(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtilemapRenderTiles(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtilemapRenderSetTilePx(ulong r, float px);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JtilemapRenderLayer(ulong r, ulong tm, string layer_name, float camera_x, float camera_y, uint time_ms);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtilemapRenderDestroy(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int KcpserverDestroy(ulong ks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpserverSend(ulong ks, int conv, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpserverBroadcast(ulong ks, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpserverOffline(ulong ks, int conv);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpserverUpdate(ulong ks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int KcpserverConnectionCount(ulong ks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool KcpserverPollMessage(ulong ks, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpclientDestroy(ulong kc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int KcpclientSend(ulong kc, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void KcpclientUpdate(ulong kc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool KcpclientPollMessage(ulong kc, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int TcpserverDestroy(ulong tcpserver);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpserverSend(ulong tcpserver, int conv, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpserverBroadcast(ulong tcpserver, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpserverOffline(ulong tcpserver, int conv);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpserverUpdate(ulong tcpserver);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int TcpserverConnectionCount(ulong tcpserver);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool TcpserverPollMessage(ulong tcpserver, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpclientDestroy(ulong tcpclient);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int TcpclientSend(ulong tcpclient, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TcpclientUpdate(ulong tcpclient);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool TcpclientPollMessage(ulong tcpclient, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int WsnetserverDestroy(ulong ws);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetserverSend(ulong ws, int conv, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetserverBroadcast(ulong ws, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetserverOffline(ulong ws, int conv);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetserverUpdate(ulong ws);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int WsnetserverConnectionCount(ulong ws);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool WsnetserverPollMessage(ulong ws, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetclientDestroy(ulong wc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int WsnetclientSend(ulong wc, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void WsnetclientUpdate(ulong wc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool WsnetclientPollMessage(ulong wc, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetclientDestroy(ulong nc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int NetclientSend(ulong nc, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetclientUpdate(ulong nc);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool NetclientPollMessage(ulong nc, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetserverDestroy(ulong ns);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetserverSend(ulong ns, int conv, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetserverBroadcast(ulong ns, string data, int len);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetserverOffline(ulong ns, int conv);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetserverUpdate(ulong ns);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int NetserverConnectionCount(ulong ns);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool NetserverPollMessage(ulong ns, ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void NetmessageFreeData(ulong msg);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeDestroy(ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeAddChild(ulong parent, ulong child);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeRemoveChild(ulong parent, ulong child);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SceneNodeGetChildCount(ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetPosition(ulong node, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetWorldPosition(ulong node, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetRotation(ulong node, float radians);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float SceneNodeGetRotation(ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetScale(ulong node, float scale_x, float scale_y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetZorder(ulong node, int zorder);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SceneNodeGetZorder(ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetName(ulong node, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeSetTag(ulong node, string tag);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneNodeUpdate(ulong node, float delta_time);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneDestroy(ulong scene);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneAddRootNode(ulong scene, ulong root);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneRemoveRootNode(ulong scene, ulong root);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SceneGetRootCount(ulong scene);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneUpdate(ulong scene, float delta_time);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneSetPopupNode(ulong scene, ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneManagerDestroy(ulong mgr);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneManagerPush(ulong mgr, ulong scene);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneManagerReplace(ulong mgr, ulong scene);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneManagerPop(ulong mgr);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void SceneManagerUpdate(ulong mgr, float delta_time);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int SceneManagerGetCount(ulong mgr);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleDestroy(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleSetPosition(ulong p, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleEmit(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleClear(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleUpdate(ulong p, float dt);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JparticleRender(ulong p, ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JparticleCount(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JparticleIsActive(ulong p);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightSysDestroy(ulong sys);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightSysResize(ulong sys, int width, int height);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightRemove(ulong sys, int id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightClear(ulong sys);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JlightAddOccluder(ulong sys, float x1, float y1, float x2, float y2);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightClearOccluders(ulong sys);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightSetAmbient(ulong sys, uint r, uint g, uint b);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JlightRender(ulong sys, ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JecsDestroy(ulong world);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JecsProcess(ulong world, float dt);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JecsDefine(ulong world, string name, ulong size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern uint AudioOpenDevice();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioCloseDevice(uint device_id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AudioCreateWav(string filepath, uint device_id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AudioCreateMp3(string filepath, uint device_id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AudioCreateFlac(string filepath, uint device_id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool AudioCreateOgg(string filepath, uint device_id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioShotPlay(ulong shot);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioShotSetGain(ulong shot, float gain);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioShotDestroy(ulong shot);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioBgmStop(ulong bgm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioBgmSetGain(ulong bgm, float gain);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AudioBgmDestroy(ulong bgm);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Release(ulong handle);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -29,11 +913,671 @@ namespace Joy.Api
         public static uint DestroyCount { get { return Native.DebugDestroyCount(); } }
     }
 
+    public sealed class Animation
+    {
+        internal ulong Handle { get; private set; }
+        internal Animation(ulong handle) { Handle = handle; }
+        ~Animation()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class AudioBgm
+    {
+        internal ulong Handle { get; private set; }
+        internal AudioBgm(ulong handle) { Handle = handle; }
+        ~AudioBgm()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class AudioShot
+    {
+        internal ulong Handle { get; private set; }
+        internal AudioShot(ulong handle) { Handle = handle; }
+        ~AudioShot()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Button
+    {
+        internal ulong Handle { get; private set; }
+        internal Button(ulong handle) { Handle = handle; }
+        ~Button()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Checkbox
+    {
+        internal ulong Handle { get; private set; }
+        internal Checkbox(ulong handle) { Handle = handle; }
+        ~Checkbox()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class ComboboxInput
+    {
+        internal ulong Handle { get; private set; }
+        internal ComboboxInput(ulong handle) { Handle = handle; }
+        ~ComboboxInput()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Combobox
+    {
+        internal ulong Handle { get; private set; }
+        internal Combobox(ulong handle) { Handle = handle; }
+        ~Combobox()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Datagrid
+    {
+        internal ulong Handle { get; private set; }
+        internal Datagrid(ulong handle) { Handle = handle; }
+        ~Datagrid()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Env
+    {
+        internal ulong Handle { get; private set; }
+        internal Env(ulong handle) { Handle = handle; }
+        ~Env()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Font
+    {
+        internal ulong Handle { get; private set; }
+        internal Font(ulong handle) { Handle = handle; }
+        ~Font()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class GameTimer
+    {
+        internal ulong Handle { get; private set; }
+        internal GameTimer(ulong handle) { Handle = handle; }
+        ~GameTimer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Image
+    {
+        internal ulong Handle { get; private set; }
+        internal Image(ulong handle) { Handle = handle; }
+        ~Image()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Inputbox
+    {
+        internal ulong Handle { get; private set; }
+        internal Inputbox(ulong handle) { Handle = handle; }
+        ~Inputbox()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class IocpServer
+    {
+        internal ulong Handle { get; private set; }
+        internal IocpServer(ulong handle) { Handle = handle; }
+        ~IocpServer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Janimator
+    {
+        internal ulong Handle { get; private set; }
+        internal Janimator(ulong handle) { Handle = handle; }
+        ~Janimator()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JecsWorld
+    {
+        internal ulong Handle { get; private set; }
+        internal JecsWorld(ulong handle) { Handle = handle; }
+        ~JecsWorld()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JlightSys
+    {
+        internal ulong Handle { get; private set; }
+        internal JlightSys(ulong handle) { Handle = handle; }
+        ~JlightSys()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Joystick
+    {
+        internal ulong Handle { get; private set; }
+        internal Joystick(ulong handle) { Handle = handle; }
+        ~Joystick()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jparticle
+    {
+        internal ulong Handle { get; private set; }
+        internal Jparticle(ulong handle) { Handle = handle; }
+        ~Jparticle()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JpmConfig
+    {
+        internal ulong Handle { get; private set; }
+        internal JpmConfig(ulong handle) { Handle = handle; }
+        ~JpmConfig()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr2d
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr2d(ulong handle) { Handle = handle; }
+        ~Jr2d()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dButton
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dButton(ulong handle) { Handle = handle; }
+        ~Jr3dButton()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dCheckbox
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dCheckbox(ulong handle) { Handle = handle; }
+        ~Jr3dCheckbox()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dComboboxInput
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dComboboxInput(ulong handle) { Handle = handle; }
+        ~Jr3dComboboxInput()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dInput
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dInput(ulong handle) { Handle = handle; }
+        ~Jr3dInput()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dLabel
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dLabel(ulong handle) { Handle = handle; }
+        ~Jr3dLabel()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3d
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3d(ulong handle) { Handle = handle; }
+        ~Jr3d()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jr3dSlider
+    {
+        internal ulong Handle { get; private set; }
+        internal Jr3dSlider(ulong handle) { Handle = handle; }
+        ~Jr3dSlider()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jtext
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtext(ulong handle) { Handle = handle; }
+        ~Jtext()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jtilemap
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtilemap(ulong handle) { Handle = handle; }
+        ~Jtilemap()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapRender
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapRender(ulong handle) { Handle = handle; }
+        ~JtilemapRender()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapTileLayer
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapTileLayer(ulong handle) { Handle = handle; }
+        ~JtilemapTileLayer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jtimer
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtimer(ulong handle) { Handle = handle; }
+        ~Jtimer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JuiCtx
+    {
+        internal ulong Handle { get; private set; }
+        internal JuiCtx(ulong handle) { Handle = handle; }
+        ~JuiCtx()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jwindow
+    {
+        internal ulong Handle { get; private set; }
+        internal Jwindow(ulong handle) { Handle = handle; }
+        ~Jwindow()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Kcpclient
+    {
+        internal ulong Handle { get; private set; }
+        internal Kcpclient(ulong handle) { Handle = handle; }
+        ~Kcpclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Kcpserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Kcpserver(ulong handle) { Handle = handle; }
+        ~Kcpserver()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Label
+    {
+        internal ulong Handle { get; private set; }
+        internal Label(ulong handle) { Handle = handle; }
+        ~Label()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
     public sealed class LcgNum
     {
         internal ulong Handle { get; private set; }
         internal LcgNum(ulong handle) { Handle = handle; }
         ~LcgNum()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class NetMessage
+    {
+        internal ulong Handle { get; private set; }
+        internal NetMessage(ulong handle) { Handle = handle; }
+        ~NetMessage()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Netclient
+    {
+        internal ulong Handle { get; private set; }
+        internal Netclient(ulong handle) { Handle = handle; }
+        ~Netclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Netserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Netserver(ulong handle) { Handle = handle; }
+        ~Netserver()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Popup
+    {
+        internal ulong Handle { get; private set; }
+        internal Popup(ulong handle) { Handle = handle; }
+        ~Popup()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Radio
+    {
+        internal ulong Handle { get; private set; }
+        internal Radio(ulong handle) { Handle = handle; }
+        ~Radio()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class RenderMesh
+    {
+        internal ulong Handle { get; private set; }
+        internal RenderMesh(ulong handle) { Handle = handle; }
+        ~RenderMesh()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class SceneManager
+    {
+        internal ulong Handle { get; private set; }
+        internal SceneManager(ulong handle) { Handle = handle; }
+        ~SceneManager()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class SceneNode
+    {
+        internal ulong Handle { get; private set; }
+        internal SceneNode(ulong handle) { Handle = handle; }
+        ~SceneNode()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Scene
+    {
+        internal ulong Handle { get; private set; }
+        internal Scene(ulong handle) { Handle = handle; }
+        ~Scene()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Scrollview
+    {
+        internal ulong Handle { get; private set; }
+        internal Scrollview(ulong handle) { Handle = handle; }
+        ~Scrollview()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class SimpleFpsCounter
+    {
+        internal ulong Handle { get; private set; }
+        internal SimpleFpsCounter(ulong handle) { Handle = handle; }
+        ~SimpleFpsCounter()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Slider
+    {
+        internal ulong Handle { get; private set; }
+        internal Slider(ulong handle) { Handle = handle; }
+        ~Slider()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Tcpclient
+    {
+        internal ulong Handle { get; private set; }
+        internal Tcpclient(ulong handle) { Handle = handle; }
+        ~Tcpclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Tcpserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Tcpserver(ulong handle) { Handle = handle; }
+        ~Tcpserver()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Tooltip
+    {
+        internal ulong Handle { get; private set; }
+        internal Tooltip(ulong handle) { Handle = handle; }
+        ~Tooltip()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Wsnetclient
+    {
+        internal ulong Handle { get; private set; }
+        internal Wsnetclient(ulong handle) { Handle = handle; }
+        ~Wsnetclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Wsnetserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Wsnetserver(ulong handle) { Handle = handle; }
+        ~Wsnetserver()
         {
             ulong h = Handle;
             Handle = 0;
@@ -49,18 +1593,2247 @@ namespace Joy.Api
             if (h == 0) throw new InvalidOperationException("lcg_random_create failed");
             return new LcgNum(h);
         }
+        public static void LcgRandomDestroy(LcgNum lcg)
+        {
+            if (lcg == null) throw new ArgumentNullException(nameof(lcg));
+            Native.LcgRandomDestroy(lcg.Handle);
+        }
         public static uint LcgRandomNext(LcgNum lcg)
         {
             if (lcg == null) throw new ArgumentNullException(nameof(lcg));
             return Native.LcgRandomNext(lcg.Handle);
         }
+        public static void LcgRandomSetState(LcgNum lcg, ulong state)
+        {
+            if (lcg == null) throw new ArgumentNullException(nameof(lcg));
+            Native.LcgRandomSetState(lcg.Handle, state);
+        }
+        public static void JpmConfigAddSpawn(JpmConfig cfg, int cx10, int cz10, int radius10)
+        {
+            if (cfg == null) throw new ArgumentNullException(nameof(cfg));
+            Native.JpmConfigAddSpawn(cfg.Handle, cx10, cz10, radius10);
+        }
+        public static uint JpmWaveSeed(uint base_seed, int wave)
+        {
+            return Native.JpmWaveSeed(base_seed, wave);
+        }
+        public static ulong SdbmHash(string str, int size)
+        {
+            return Native.SdbmHash(str, size);
+        }
+        public static ulong Fnv1aHash(string str, int size)
+        {
+            return Native.Fnv1aHash(str, size);
+        }
+        public static ulong JenkinsHash(string str, int size)
+        {
+            return Native.JenkinsHash(str, size);
+        }
+        public static ulong Murmur3Hash(string str)
+        {
+            return Native.Murmur3Hash(str);
+        }
+        public static ulong KrHash(string str, int size)
+        {
+            return Native.KrHash(str, size);
+        }
+        public static void JtimerDestroy(Jtimer timer)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            Native.JtimerDestroy(timer.Handle);
+        }
+        public static void JtimerTrigger(Jtimer timer)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            Native.JtimerTrigger(timer.Handle);
+        }
+        public static void JtimerSetInterval(Jtimer timer, int interval)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            Native.JtimerSetInterval(timer.Handle, interval);
+        }
+        public static void JtimerSetActive(Jtimer timer, bool active)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            Native.JtimerSetActive(timer.Handle, active);
+        }
+        public static void JtimerReset(Jtimer timer)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            Native.JtimerReset(timer.Handle);
+        }
+        public static ulong JtimerGetElapsed(Jtimer timer)
+        {
+            if (timer == null) throw new ArgumentNullException(nameof(timer));
+            return Native.JtimerGetElapsed(timer.Handle);
+        }
+        public static bool InitEnv()
+        {
+            return Native.InitEnv();
+        }
+        public static void QuitEnv()
+        {
+            Native.QuitEnv();
+        }
         public static ulong GetTicks()
         {
             return Native.GetTicks();
         }
+        public static void DestroyWindow(Jwindow win)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            Native.DestroyWindow(win.Handle);
+        }
+        public static void WindowSetFullscreen(Jwindow win, bool fullscreen)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            Native.WindowSetFullscreen(win.Handle, fullscreen);
+        }
+        public static bool WindowGetFullscreen(Jwindow win)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            return Native.WindowGetFullscreen(win.Handle);
+        }
+        public static void WindowSetIcon(Jwindow win, string png_path)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            Native.WindowSetIcon(win.Handle, png_path);
+        }
+        public static bool PushUserEvent(int type, int code)
+        {
+            return Native.PushUserEvent(type, code);
+        }
+        public static bool PushQuitEvent()
+        {
+            return Native.PushQuitEvent();
+        }
+        public static void LogTitle(int type)
+        {
+            Native.LogTitle(type);
+        }
+        public static void EnvSet(Env env, string key, string value)
+        {
+            if (env == null) throw new ArgumentNullException(nameof(env));
+            Native.EnvSet(env.Handle, key, value);
+        }
+        public static void EnvDestroy(Env env)
+        {
+            if (env == null) throw new ArgumentNullException(nameof(env));
+            Native.EnvDestroy(env.Handle);
+        }
+        public static void SimpleFpsDestory(SimpleFpsCounter fps)
+        {
+            if (fps == null) throw new ArgumentNullException(nameof(fps));
+            Native.SimpleFpsDestory(fps.Handle);
+        }
+        public static void SimpleFpsUpdate(SimpleFpsCounter fps)
+        {
+            if (fps == null) throw new ArgumentNullException(nameof(fps));
+            Native.SimpleFpsUpdate(fps.Handle);
+        }
+        public static int SimpleFpsValue(SimpleFpsCounter fps)
+        {
+            if (fps == null) throw new ArgumentNullException(nameof(fps));
+            return Native.SimpleFpsValue(fps.Handle);
+        }
+        public static void GameTimerInit(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            Native.GameTimerInit(clock.Handle);
+        }
+        public static void GameTimerUpdate(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            Native.GameTimerUpdate(clock.Handle);
+        }
+        public static float GameTimerGetDeltaTime(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            return Native.GameTimerGetDeltaTime(clock.Handle);
+        }
+        public static float GameTimerGetUnscaledDeltaTime(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            return Native.GameTimerGetUnscaledDeltaTime(clock.Handle);
+        }
+        public static void GameTimerSetTimeScale(GameTimer clock, float scale)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            Native.GameTimerSetTimeScale(clock.Handle, scale);
+        }
+        public static float GameTimerGetTimeScale(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            return Native.GameTimerGetTimeScale(clock.Handle);
+        }
+        public static void GameTimerSetTargetFps(GameTimer clock, int fps)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            Native.GameTimerSetTargetFps(clock.Handle, fps);
+        }
+        public static int GameTimerGetTargetFps(GameTimer clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            return Native.GameTimerGetTargetFps(clock.Handle);
+        }
+        public static void SetClipboardText(string text)
+        {
+            Native.SetClipboardText(text);
+        }
+        public static bool SysInitNetenv()
+        {
+            return Native.SysInitNetenv();
+        }
+        public static bool SysReleaseNetenv()
+        {
+            return Native.SysReleaseNetenv();
+        }
+        public static int SysAnyaddr()
+        {
+            return Native.SysAnyaddr();
+        }
+        public static bool SysClosesocket(long sockfd)
+        {
+            return Native.SysClosesocket(sockfd);
+        }
+        public static int SysSetSockSndtimeo(long sockfd, int ms)
+        {
+            return Native.SysSetSockSndtimeo(sockfd, ms);
+        }
+        public static int SysSetSockRcvtimeo(long sockfd, int ms)
+        {
+            return Native.SysSetSockRcvtimeo(sockfd, ms);
+        }
+        public static int SysSetSockAccpettimeo(long sockfd, int ms)
+        {
+            return Native.SysSetSockAccpettimeo(sockfd, ms);
+        }
+        public static int SysSetSockBroadcast(long sockfd)
+        {
+            return Native.SysSetSockBroadcast(sockfd);
+        }
+        public static int SysSetSockReuseaddr(long sockfd)
+        {
+            return Native.SysSetSockReuseaddr(sockfd);
+        }
+        public static long SysTcp()
+        {
+            return Native.SysTcp();
+        }
+        public static long SysUdp()
+        {
+            return Native.SysUdp();
+        }
+        public static bool SysBind(long sockfd, string ip, int port)
+        {
+            return Native.SysBind(sockfd, ip, port);
+        }
+        public static bool SysConnect(long sockfd, string ip, int port)
+        {
+            return Native.SysConnect(sockfd, ip, port);
+        }
+        public static bool SysListen(long sockfd)
+        {
+            return Native.SysListen(sockfd);
+        }
+        public static int SysSend(long sockfd, string buf, int len)
+        {
+            return Native.SysSend(sockfd, buf, len);
+        }
+        public static int SysSendto(long sockfd, string buf, int len, string ip, int port)
+        {
+            return Native.SysSendto(sockfd, buf, len, ip, port);
+        }
+        public static long SysCurrentTime()
+        {
+            return Native.SysCurrentTime();
+        }
+        public static void SysSleep(int ms)
+        {
+            Native.SysSleep(ms);
+        }
+        public static void SysInstallCrashHandlers()
+        {
+            Native.SysInstallCrashHandlers();
+        }
+        public static void IocpServerDestroy(IocpServer server)
+        {
+            if (server == null) throw new ArgumentNullException(nameof(server));
+            Native.IocpServerDestroy(server.Handle);
+        }
+        public static void IocpProcessEvents(IocpServer server, int timeout_ms)
+        {
+            if (server == null) throw new ArgumentNullException(nameof(server));
+            Native.IocpProcessEvents(server.Handle, timeout_ms);
+        }
+        public static void FontDestroy(Font font)
+        {
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.FontDestroy(font.Handle);
+        }
+        public static float FontGetScale(Font font)
+        {
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            return Native.FontGetScale(font.Handle);
+        }
+        public static int FontGetSize(Font font)
+        {
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            return Native.FontGetSize(font.Handle);
+        }
+        public static int FontGetAscent(Font font)
+        {
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            return Native.FontGetAscent(font.Handle);
+        }
+        public static void R2dDestroy(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dDestroy(r2d.Handle);
+        }
+        public static bool R2dSetColor(Jr2d r2d, uint r, uint g, uint b, uint a)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetColor(r2d.Handle, r, g, b, a);
+        }
+        public static void R2dBegin(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dBegin(r2d.Handle);
+        }
+        public static void R2dEnd(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dEnd(r2d.Handle);
+        }
+        public static bool R2dSetLogicalPresentation(Jr2d r2d, int w, int h)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetLogicalPresentation(r2d.Handle, w, h);
+        }
+        public static bool R2dSetLogicalPresentationMode(Jr2d r2d, int w, int h, int mode)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetLogicalPresentationMode(r2d.Handle, w, h, mode);
+        }
+        public static bool R2dSetVsync(Jr2d r2d, int vsync)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetVsync(r2d.Handle, vsync);
+        }
+        public static bool R2dSetScale(Jr2d r2d, float sx, float sy)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetScale(r2d.Handle, sx, sy);
+        }
+        public static void R2dSetColorf(Jr2d r2d, float r, float g, float b, float a)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dSetColorf(r2d.Handle, r, g, b, a);
+        }
+        public static bool R2dSetBlendMode(Jr2d r2d, int mode)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetBlendMode(r2d.Handle, mode);
+        }
+        public static bool R2dDrawPoint(Jr2d r2d, float x, float y)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dDrawPoint(r2d.Handle, x, y);
+        }
+        public static void R2dClearClip(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dClearClip(r2d.Handle);
+        }
+        public static void R2dPopClipRect(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dPopClipRect(r2d.Handle);
+        }
+        public static void R2dResetClipStack(Jr2d r2d)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.R2dResetClipStack(r2d.Handle);
+        }
+        public static bool R2dPointInClip(Jr2d r2d, float x, float y)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dPointInClip(r2d.Handle, x, y);
+        }
+        public static bool ShapeDrawLine(Jr2d r2d, float x1, float y1, float x2, float y2)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.ShapeDrawLine(r2d.Handle, x1, y1, x2, y2);
+        }
+        public static void ImageDestroy(Image image)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ImageDestroy(image.Handle);
+        }
+        public static void ImageSetAlpha(Image image, uint alpha)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ImageSetAlpha(image.Handle, alpha);
+        }
+        public static void ImageSetBlendMode(Image image, int mode)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ImageSetBlendMode(image.Handle, mode);
+        }
+        public static void ImageSetScaleMode(Image image, int nearest)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ImageSetScaleMode(image.Handle, nearest);
+        }
+        public static void TextDestroy(Jtext jtext_tex)
+        {
+            if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
+            Native.TextDestroy(jtext_tex.Handle);
+        }
+        public static void JtextPrint(Jr2d r2d, Jtext jtext_tex, float x, float y)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
+            Native.JtextPrint(r2d.Handle, jtext_tex.Handle, x, y);
+        }
+        public static bool R2dDrawPointF(Jr2d r2d, float fx, float fy)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dDrawPointF(r2d.Handle, fx, fy);
+        }
+        public static bool ShapeDrawRectangleF(Jr2d r2d, string mode, float fx, float fy, float fw, float fh)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.ShapeDrawRectangleF(r2d.Handle, mode, fx, fy, fw, fh);
+        }
+        public static bool ShapeDrawLineF(Jr2d r2d, float fx1, float fy1, float fx2, float fy2)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.ShapeDrawLineF(r2d.Handle, fx1, fy1, fx2, fy2);
+        }
+        public static int TextGetWidth(Jtext jtext_tex)
+        {
+            if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
+            return Native.TextGetWidth(jtext_tex.Handle);
+        }
+        public static int TextGetHeight(Jtext jtext_tex)
+        {
+            if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
+            return Native.TextGetHeight(jtext_tex.Handle);
+        }
+        public static void JtextCacheClear()
+        {
+            Native.JtextCacheClear();
+        }
+        public static void JtextCacheSetLimit(int max_entries)
+        {
+            Native.JtextCacheSetLimit(max_entries);
+        }
         public static int JtextCacheGetCount()
         {
             return Native.JtextCacheGetCount();
+        }
+        public static void JtextCacheSweep(int max_idle_frames)
+        {
+            Native.JtextCacheSweep(max_idle_frames);
+        }
+        public static void AnimationDestroy(Animation animation)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationDestroy(animation.Handle);
+        }
+        public static void AnimationReset(Animation animation)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationReset(animation.Handle);
+        }
+        public static bool AnimationIsFinished(Animation animation)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            return Native.AnimationIsFinished(animation.Handle);
+        }
+        public static void AnimationSetPosition(Animation animation, float x, float y)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationSetPosition(animation.Handle, x, y);
+        }
+        public static void AnimationSetScale(Animation animation, float x, float y)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationSetScale(animation.Handle, x, y);
+        }
+        public static void AnimationSetRotation(Animation animation, float rotation)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationSetRotation(animation.Handle, rotation);
+        }
+        public static void AnimationUpdate(Animation animation, float dt)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationUpdate(animation.Handle, dt);
+        }
+        public static void R3dDestroy(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dDestroy(r.Handle);
+        }
+        public static bool R3dBegin(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            return Native.R3dBegin(r.Handle);
+        }
+        public static void R3dEnd(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dEnd(r.Handle);
+        }
+        public static int R3dGetDrawCalls(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            return Native.R3dGetDrawCalls(r.Handle);
+        }
+        public static void R3dSetClearColor(Jr3d r, uint cr, uint cg, uint cb)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dSetClearColor(r.Handle, cr, cg, cb);
+        }
+        public static void R3dMeshDestroy(Jr3d r, RenderMesh m)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.R3dMeshDestroy(r.Handle, m.Handle);
+        }
+        public static bool R3dFontInit(Jr3d r, string ttf_path, int pixel_height)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            return Native.R3dFontInit(r.Handle, ttf_path, pixel_height);
+        }
+        public static bool R3dFontDraw2d(Jr3d r, RenderMesh m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            return Native.R3dFontDraw2d(r.Handle, m.Handle, text, pixelX, pixelY, fontSize, winW, winH);
+        }
+        public static void R3dFontCacheSetLimit(Jr3d r, int max_entries)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dFontCacheSetLimit(r.Handle, max_entries);
+        }
+        public static int R3dFontCacheGetCount(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            return Native.R3dFontCacheGetCount(r.Handle);
+        }
+        public static void R3dFontCacheClear(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dFontCacheClear(r.Handle);
+        }
+        public static void R3dFontCacheSweep(Jr3d r, int max_idle_frames)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dFontCacheSweep(r.Handle, max_idle_frames);
+        }
+        public static void R3dSetLogicalPresentation(Jr3d r, int w, int h)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dSetLogicalPresentation(r.Handle, w, h);
+        }
+        public static void R3dSetLogicalPresentationMode(Jr3d r, int w, int h, int mode)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dSetLogicalPresentationMode(r.Handle, w, h, mode);
+        }
+        public static void R3dButtonDraw(Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.R3dButtonDraw(r.Handle, m.Handle, btn.Handle, winW, winH);
+        }
+        public static void R3dButtonDrawCircle(Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.R3dButtonDrawCircle(r.Handle, m.Handle, btn.Handle, winW, winH);
+        }
+        public static bool R3dButtonIsHovered(Jr3d r, Jr3dButton btn, float mx, float my)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            return Native.R3dButtonIsHovered(r.Handle, btn.Handle, mx, my);
+        }
+        public static bool R3dButtonIsPressed(Jr3d r, Jr3dButton btn, bool mouse_down, float mx, float my)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            return Native.R3dButtonIsPressed(r.Handle, btn.Handle, mouse_down, mx, my);
+        }
+        public static void R3dButtonRelease(Jr3d r, Jr3dButton btn, float mx, float my)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.R3dButtonRelease(r.Handle, btn.Handle, mx, my);
+        }
+        public static void R3dButtonDestroy(Jr3dButton btn)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.R3dButtonDestroy(btn.Handle);
+        }
+        public static void R3dLabelSetText(Jr3dLabel l, string text)
+        {
+            if (l == null) throw new ArgumentNullException(nameof(l));
+            Native.R3dLabelSetText(l.Handle, text);
+        }
+        public static void R3dLabelDraw(Jr3d r, RenderMesh m, Jr3dLabel l, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (l == null) throw new ArgumentNullException(nameof(l));
+            Native.R3dLabelDraw(r.Handle, m.Handle, l.Handle, winW, winH);
+        }
+        public static void R3dLabelDestroy(Jr3dLabel l)
+        {
+            if (l == null) throw new ArgumentNullException(nameof(l));
+            Native.R3dLabelDestroy(l.Handle);
+        }
+        public static void R3dInputSetText(Jr3dInput inp, string text)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputSetText(inp.Handle, text);
+        }
+        public static bool R3dInputIsHovered(Jr3d r, Jr3dInput inp, float mx, float my)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            return Native.R3dInputIsHovered(r.Handle, inp.Handle, mx, my);
+        }
+        public static void R3dInputFocus(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputFocus(inp.Handle);
+        }
+        public static void R3dInputDefocus(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputDefocus(inp.Handle);
+        }
+        public static bool R3dInputIsFocused(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            return Native.R3dInputIsFocused(inp.Handle);
+        }
+        public static void R3dInputStartTextInput(Jr3d r, Jr3dInput inp)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputStartTextInput(r.Handle, inp.Handle);
+        }
+        public static void R3dInputStopTextInput(Jr3d r, Jr3dInput inp)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputStopTextInput(r.Handle, inp.Handle);
+        }
+        public static void R3dInputInsert(Jr3dInput inp, string s)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputInsert(inp.Handle, s);
+        }
+        public static void R3dInputBackspace(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputBackspace(inp.Handle);
+        }
+        public static void R3dInputDelete(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputDelete(inp.Handle);
+        }
+        public static void R3dInputCursorLeft(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputCursorLeft(inp.Handle);
+        }
+        public static void R3dInputCursorRight(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputCursorRight(inp.Handle);
+        }
+        public static void R3dInputCursorHome(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputCursorHome(inp.Handle);
+        }
+        public static void R3dInputCursorEnd(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputCursorEnd(inp.Handle);
+        }
+        public static void R3dInputClick(Jr3d r, Jr3dInput inp, float mx, float my)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputClick(r.Handle, inp.Handle, mx, my);
+        }
+        public static void R3dInputSubmit(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputSubmit(inp.Handle);
+        }
+        public static void R3dInputDraw(Jr3d r, RenderMesh m, Jr3dInput inp, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputDraw(r.Handle, m.Handle, inp.Handle, winW, winH);
+        }
+        public static void R3dInputDestroy(Jr3dInput inp)
+        {
+            if (inp == null) throw new ArgumentNullException(nameof(inp));
+            Native.R3dInputDestroy(inp.Handle);
+        }
+        public static void R3dComboboxInputDestroy(Jr3dComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputDestroy(ci.Handle);
+        }
+        public static void R3dComboboxInputAddItem(Jr3dComboboxInput ci, string str)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputAddItem(ci.Handle, str);
+        }
+        public static void R3dComboboxInputClearItems(Jr3dComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputClearItems(ci.Handle);
+        }
+        public static void R3dComboboxInputSetText(Jr3dComboboxInput ci, string str)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputSetText(ci.Handle, str);
+        }
+        public static int R3dComboboxInputHitItem(Jr3dComboboxInput ci, float x, float y)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            return Native.R3dComboboxInputHitItem(ci.Handle, x, y);
+        }
+        public static void R3dComboboxInputDraw(Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputDraw(r.Handle, m.Handle, ci.Handle, winW, winH);
+        }
+        public static void R3dComboboxInputDrawDropdown(Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.R3dComboboxInputDrawDropdown(r.Handle, m.Handle, ci.Handle, winW, winH);
+        }
+        public static void R3dSliderDestroy(Jr3dSlider s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderDestroy(s.Handle);
+        }
+        public static void R3dSliderSetValue(Jr3dSlider s, float v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderSetValue(s.Handle, v);
+        }
+        public static float R3dSliderGetValue(Jr3dSlider s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.R3dSliderGetValue(s.Handle);
+        }
+        public static void R3dSliderDraw(Jr3d r, RenderMesh m, Jr3dSlider s, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderDraw(r.Handle, m.Handle, s.Handle, winW, winH);
+        }
+        public static bool R3dSliderIsPressed(Jr3d r, Jr3dSlider s, float x, float y)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.R3dSliderIsPressed(r.Handle, s.Handle, x, y);
+        }
+        public static void R3dSliderSetPressed(Jr3dSlider s, bool v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderSetPressed(s.Handle, v);
+        }
+        public static void R3dSliderDragMove(Jr3d r, Jr3dSlider s, float x, float y)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderDragMove(r.Handle, s.Handle, x, y);
+        }
+        public static bool R3dSliderIsHovered(Jr3d r, Jr3dSlider s, float x, float y)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.R3dSliderIsHovered(r.Handle, s.Handle, x, y);
+        }
+        public static void R3dSliderSetHovered(Jr3dSlider s, bool v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.R3dSliderSetHovered(s.Handle, v);
+        }
+        public static void R3dCheckboxDestroy(Jr3dCheckbox cb)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.R3dCheckboxDestroy(cb.Handle);
+        }
+        public static void R3dCheckboxToggle(Jr3dCheckbox cb)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.R3dCheckboxToggle(cb.Handle);
+        }
+        public static bool R3dCheckboxIsPressed(Jr3d r, Jr3dCheckbox cb, float x, float y)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            return Native.R3dCheckboxIsPressed(r.Handle, cb.Handle, x, y);
+        }
+        public static void R3dCheckboxSetHovered(Jr3dCheckbox cb, bool v)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.R3dCheckboxSetHovered(cb.Handle, v);
+        }
+        public static bool R3dCheckboxIsHovered(Jr3d r, Jr3dCheckbox cb, float x, float y)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            return Native.R3dCheckboxIsHovered(r.Handle, cb.Handle, x, y);
+        }
+        public static void R3dCheckboxDraw(Jr3d r, RenderMesh m, Jr3dCheckbox cb, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.R3dCheckboxDraw(r.Handle, m.Handle, cb.Handle, winW, winH);
+        }
+        public static void R3dDrawGrid(Jr3d r, int slices, float spacing, float line_width)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dDrawGrid(r.Handle, slices, spacing, line_width);
+        }
+        public static void JanimatorDestroy(Janimator anim)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorDestroy(anim.Handle);
+        }
+        public static void JanimatorSetFloat(Janimator anim, string name, float v)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetFloat(anim.Handle, name, v);
+        }
+        public static void JanimatorSetInt(Janimator anim, string name, int v)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetInt(anim.Handle, name, v);
+        }
+        public static void JanimatorSetBool(Janimator anim, string name, bool v)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetBool(anim.Handle, name, v);
+        }
+        public static void JanimatorSetTrigger(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetTrigger(anim.Handle, name);
+        }
+        public static float JanimatorGetFloat(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            return Native.JanimatorGetFloat(anim.Handle, name);
+        }
+        public static int JanimatorGetInt(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            return Native.JanimatorGetInt(anim.Handle, name);
+        }
+        public static bool JanimatorGetBool(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            return Native.JanimatorGetBool(anim.Handle, name);
+        }
+        public static void JanimatorAddState(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorAddState(anim.Handle, name);
+        }
+        public static void JanimatorSetDefaultState(Janimator anim, string name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetDefaultState(anim.Handle, name);
+        }
+        public static void JanimatorStateAddColor(Janimator anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateAddColor(anim.Handle, state_name, duration, w, h, r, g, b, a);
+        }
+        public static void JanimatorStateSetLoop(Janimator anim, string state_name, bool loop)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateSetLoop(anim.Handle, state_name, loop);
+        }
+        public static void JanimatorStateSetSpeed(Janimator anim, string state_name, float speed)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateSetSpeed(anim.Handle, state_name, speed);
+        }
+        public static void JanimatorStateSetBlend(Janimator anim, string state_name, string param_name)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateSetBlend(anim.Handle, state_name, param_name);
+        }
+        public static int JanimatorAddTransition(Janimator anim, string from, string to)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            return Native.JanimatorAddTransition(anim.Handle, from, to);
+        }
+        public static int JanimatorAddAnyTransition(Janimator anim, string to)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            return Native.JanimatorAddAnyTransition(anim.Handle, to);
+        }
+        public static void JanimatorTransitionAddCond(Janimator anim, int trans_idx, string param_name, int mode, float threshold)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorTransitionAddCond(anim.Handle, trans_idx, param_name, mode, threshold);
+        }
+        public static void JanimatorTransitionSetExitTime(Janimator anim, int trans_idx, float seconds)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorTransitionSetExitTime(anim.Handle, trans_idx, seconds);
+        }
+        public static void JanimatorUpdate(Janimator anim, float dt)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorUpdate(anim.Handle, dt);
+        }
+        public static void JanimatorDraw(Janimator anim, float x, float y)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorDraw(anim.Handle, x, y);
+        }
+        public static void JanimatorSetFlipH(Janimator anim, bool flip)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorSetFlipH(anim.Handle, flip);
+        }
+        public static void LabelDestroy(Label label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            Native.LabelDestroy(label.Handle);
+        }
+        public static void LabelDraw(Label label)
+        {
+            if (label == null) throw new ArgumentNullException(nameof(label));
+            Native.LabelDraw(label.Handle);
+        }
+        public static void ButtonDestroy(Button btn)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonDestroy(btn.Handle);
+        }
+        public static void ButtonSetPosition(Button btn, float x, float y)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetPosition(btn.Handle, x, y);
+        }
+        public static void ButtonSetSize(Button btn, float width, float height)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetSize(btn.Handle, width, height);
+        }
+        public static void ButtonSetImage(Button btn, Image image)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ButtonSetImage(btn.Handle, image.Handle);
+        }
+        public static void ButtonSetPressedImage(Button btn, Image image)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ButtonSetPressedImage(btn.Handle, image.Handle);
+        }
+        public static bool ButtonIsHovered(Button btn, float x, float y)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            return Native.ButtonIsHovered(btn.Handle, x, y);
+        }
+        public static bool ButtonIsPressed(Button btn, float x, float y)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            return Native.ButtonIsPressed(btn.Handle, x, y);
+        }
+        public static void ButtonSetHovered(Button btn, bool v)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetHovered(btn.Handle, v);
+        }
+        public static void ButtonSetPressed(Button btn, bool v)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetPressed(btn.Handle, v);
+        }
+        public static bool ButtonGetPressed(Button btn)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            return Native.ButtonGetPressed(btn.Handle);
+        }
+        public static void ButtonSetTextOffset(Button btn, float x, float y)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetTextOffset(btn.Handle, x, y);
+        }
+        public static void ButtonDraw(Button btn)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonDraw(btn.Handle);
+        }
+        public static void ScrollviewDestroy(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewDestroy(v.Handle);
+        }
+        public static void ScrollviewSetViewPx(Scrollview v, float x, float y, float w, float h)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewSetViewPx(v.Handle, x, y, w, h);
+        }
+        public static void ScrollviewSetContent(Scrollview v, float content_w, float content_h)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewSetContent(v.Handle, content_w, content_h);
+        }
+        public static void ScrollviewSetOffset(Scrollview v, float ox, float oy)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewSetOffset(v.Handle, ox, oy);
+        }
+        public static void ScrollviewClamp(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewClamp(v.Handle);
+        }
+        public static float ScrollviewGetOffsetX(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            return Native.ScrollviewGetOffsetX(v.Handle);
+        }
+        public static float ScrollviewGetOffsetY(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            return Native.ScrollviewGetOffsetY(v.Handle);
+        }
+        public static void ScrollviewSetShowBar(Scrollview v, bool show)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewSetShowBar(v.Handle, show);
+        }
+        public static bool ScrollviewDragging(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            return Native.ScrollviewDragging(v.Handle);
+        }
+        public static bool ScrollviewHit(Scrollview v, float win_x, float win_y)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            return Native.ScrollviewHit(v.Handle, win_x, win_y);
+        }
+        public static void ScrollviewBegin(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewBegin(v.Handle);
+        }
+        public static void ScrollviewEnd(Scrollview v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            Native.ScrollviewEnd(v.Handle);
+        }
+        public static void ComboboxDestroy(Combobox combobox)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            Native.ComboboxDestroy(combobox.Handle);
+        }
+        public static bool ComboboxIsPressed(Combobox combobox, float x, float y)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            return Native.ComboboxIsPressed(combobox.Handle, x, y);
+        }
+        public static bool ComboboxIsOpen(Combobox combobox)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            return Native.ComboboxIsOpen(combobox.Handle);
+        }
+        public static void ComboboxSetOpen(Combobox combobox, bool v)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            Native.ComboboxSetOpen(combobox.Handle, v);
+        }
+        public static int ComboboxHitItem(Combobox combobox, float x, float y)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            return Native.ComboboxHitItem(combobox.Handle, x, y);
+        }
+        public static void ComboboxSetSelected(Combobox combobox, int index)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            Native.ComboboxSetSelected(combobox.Handle, index);
+        }
+        public static int ComboboxGetSelected(Combobox combobox)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            return Native.ComboboxGetSelected(combobox.Handle);
+        }
+        public static void ComboboxDraw(Combobox combobox)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            Native.ComboboxDraw(combobox.Handle);
+        }
+        public static void ComboboxInputDestroy(ComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputDestroy(ci.Handle);
+        }
+        public static void ComboboxInputAddItem(ComboboxInput ci, string str, int len)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputAddItem(ci.Handle, str, len);
+        }
+        public static void ComboboxInputClearItems(ComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputClearItems(ci.Handle);
+        }
+        public static void ComboboxInputSetText(ComboboxInput ci, string str)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputSetText(ci.Handle, str);
+        }
+        public static void ComboboxInputDraw(ComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputDraw(ci.Handle);
+        }
+        public static void ComboboxInputDrawDropdown(ComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputDrawDropdown(ci.Handle);
+        }
+        public static bool ComboboxInputIsOpen(ComboboxInput ci)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            return Native.ComboboxInputIsOpen(ci.Handle);
+        }
+        public static void ComboboxInputSetPopupNode(ComboboxInput ci, SceneNode node)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.ComboboxInputSetPopupNode(ci.Handle, node.Handle);
+        }
+        public static int ComboboxInputHitItem(ComboboxInput ci, float x, float y)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            return Native.ComboboxInputHitItem(ci.Handle, x, y);
+        }
+        public static void ComboboxInputSetOpen(ComboboxInput ci, bool v)
+        {
+            if (ci == null) throw new ArgumentNullException(nameof(ci));
+            Native.ComboboxInputSetOpen(ci.Handle, v);
+        }
+        public static void DatagridSetheaders(Datagrid grid, string headers)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridSetheaders(grid.Handle, headers);
+        }
+        public static void DatagridSetheader(Datagrid grid, int index, string header)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridSetheader(grid.Handle, index, header);
+        }
+        public static void DatagridSetcell(Datagrid grid, int row_index, int col_index, string data)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridSetcell(grid.Handle, row_index, col_index, data);
+        }
+        public static void DatagridDestroy(Datagrid grid)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridDestroy(grid.Handle);
+        }
+        public static void DatagridDraw(Datagrid grid, Jr2d r2d)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.DatagridDraw(grid.Handle, r2d.Handle);
+        }
+        public static int DatagridHitRow(Datagrid grid, float x, float y)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            return Native.DatagridHitRow(grid.Handle, x, y);
+        }
+        public static void DatagridScroll(Datagrid grid, int lines)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridScroll(grid.Handle, lines);
+        }
+        public static void DatagridSetSelectedRow(Datagrid grid, int row)
+        {
+            if (grid == null) throw new ArgumentNullException(nameof(grid));
+            Native.DatagridSetSelectedRow(grid.Handle, row);
+        }
+        public static void RadioDestroy(Radio radio)
+        {
+            if (radio == null) throw new ArgumentNullException(nameof(radio));
+            Native.RadioDestroy(radio.Handle);
+        }
+        public static bool RadioIsPressed(Radio radio, float x, float y)
+        {
+            if (radio == null) throw new ArgumentNullException(nameof(radio));
+            return Native.RadioIsPressed(radio.Handle, x, y);
+        }
+        public static void RadioSetHovered(Radio radio, bool v)
+        {
+            if (radio == null) throw new ArgumentNullException(nameof(radio));
+            Native.RadioSetHovered(radio.Handle, v);
+        }
+        public static void CheckboxDestroy(Checkbox checkbox)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            Native.CheckboxDestroy(checkbox.Handle);
+        }
+        public static void CheckboxSetR2d(Checkbox checkbox, Jr2d r2d)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.CheckboxSetR2d(checkbox.Handle, r2d.Handle);
+        }
+        public static void CheckboxSetPosition(Checkbox checkbox, int x, int y)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            Native.CheckboxSetPosition(checkbox.Handle, x, y);
+        }
+        public static void CheckboxToggle(Checkbox checkbox)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            Native.CheckboxToggle(checkbox.Handle);
+        }
+        public static bool CheckboxIsPressed(Checkbox cb, float x, float y)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            return Native.CheckboxIsPressed(cb.Handle, x, y);
+        }
+        public static void CheckboxSetHovered(Checkbox cb, bool v)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.CheckboxSetHovered(cb.Handle, v);
+        }
+        public static void JoystickDestroy(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickDestroy(joystick.Handle);
+        }
+        public static void JoystickSetTextures(Joystick joystick, string base_path, string thumb_path)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickSetTextures(joystick.Handle, base_path, thumb_path);
+        }
+        public static void JoystickSetVector(Joystick joystick, float dx, float dy)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickSetVector(joystick.Handle, dx, dy);
+        }
+        public static void JoystickDraw(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickDraw(joystick.Handle);
+        }
+        public static void JoystickReset(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickReset(joystick.Handle);
+        }
+        public static void JoystickSetPosition(Joystick joystick, float x, float y)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickSetPosition(joystick.Handle, x, y);
+        }
+        public static void JoystickSetRadius(Joystick joystick, float radius)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickSetRadius(joystick.Handle, radius);
+        }
+        public static bool JoystickIsDragging(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            return Native.JoystickIsDragging(joystick.Handle);
+        }
+        public static void JoystickTouchDown(Joystick joystick, float x, float y)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickTouchDown(joystick.Handle, x, y);
+        }
+        public static void JoystickTouchMove(Joystick joystick, float x, float y)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickTouchMove(joystick.Handle, x, y);
+        }
+        public static void JoystickTouchUp(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            Native.JoystickTouchUp(joystick.Handle);
+        }
+        public static float JoystickGetMagnitude(Joystick joystick)
+        {
+            if (joystick == null) throw new ArgumentNullException(nameof(joystick));
+            return Native.JoystickGetMagnitude(joystick.Handle);
+        }
+        public static void InputboxDestroy(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxDestroy(ti.Handle);
+        }
+        public static void InputboxSetText(Inputbox ti, string text)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSetText(ti.Handle, text);
+        }
+        public static void InputboxDraw(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxDraw(ti.Handle);
+        }
+        public static bool InputboxIsPressed(Inputbox ti, float x, float y)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            return Native.InputboxIsPressed(ti.Handle, x, y);
+        }
+        public static bool InputboxIsHovered(Inputbox ti, float x, float y)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            return Native.InputboxIsHovered(ti.Handle, x, y);
+        }
+        public static void InputboxFocus(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxFocus(ti.Handle);
+        }
+        public static void InputboxDefocus(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxDefocus(ti.Handle);
+        }
+        public static void InputboxBlur(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxBlur(ti.Handle);
+        }
+        public static void InputboxInsert(Inputbox ti, string s, int len)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxInsert(ti.Handle, s, len);
+        }
+        public static void InputboxBackspace(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxBackspace(ti.Handle);
+        }
+        public static void InputboxDelete(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxDelete(ti.Handle);
+        }
+        public static void InputboxCursorLeft(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCursorLeft(ti.Handle);
+        }
+        public static void InputboxCursorRight(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCursorRight(ti.Handle);
+        }
+        public static void InputboxCursorHome(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCursorHome(ti.Handle);
+        }
+        public static void InputboxCursorEnd(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCursorEnd(ti.Handle);
+        }
+        public static void InputboxSelectLeft(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSelectLeft(ti.Handle);
+        }
+        public static void InputboxSelectRight(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSelectRight(ti.Handle);
+        }
+        public static void InputboxSelectHome(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSelectHome(ti.Handle);
+        }
+        public static void InputboxSelectEnd(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSelectEnd(ti.Handle);
+        }
+        public static void InputboxSelectAll(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxSelectAll(ti.Handle);
+        }
+        public static void InputboxPaste(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxPaste(ti.Handle);
+        }
+        public static void InputboxCopy(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCopy(ti.Handle);
+        }
+        public static void InputboxCut(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            Native.InputboxCut(ti.Handle);
+        }
+        public static bool InputboxIsFocused(Inputbox ti)
+        {
+            if (ti == null) throw new ArgumentNullException(nameof(ti));
+            return Native.InputboxIsFocused(ti.Handle);
+        }
+        public static void SliderDestroy(Slider s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderDestroy(s.Handle);
+        }
+        public static void SliderSetValue(Slider s, float v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderSetValue(s.Handle, v);
+        }
+        public static float SliderGetValue(Slider s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.SliderGetValue(s.Handle);
+        }
+        public static void SliderSetRect(Slider s, float x, float y, float w, float h)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderSetRect(s.Handle, x, y, w, h);
+        }
+        public static void SliderSetRange(Slider s, float min, float max)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderSetRange(s.Handle, min, max);
+        }
+        public static void SliderDraw(Slider s)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderDraw(s.Handle);
+        }
+        public static bool SliderIsPressed(Slider s, float x, float y)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.SliderIsPressed(s.Handle, x, y);
+        }
+        public static void SliderSetPressed(Slider s, bool v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderSetPressed(s.Handle, v);
+        }
+        public static void SliderDragMove(Slider s, float x, float y)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderDragMove(s.Handle, x, y);
+        }
+        public static bool SliderIsHovered(Slider s, float x, float y)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            return Native.SliderIsHovered(s.Handle, x, y);
+        }
+        public static void SliderSetHovered(Slider s, bool v)
+        {
+            if (s == null) throw new ArgumentNullException(nameof(s));
+            Native.SliderSetHovered(s.Handle, v);
+        }
+        public static void PopupDestroy(Popup p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupDestroy(p.Handle);
+        }
+        public static void PopupSetTitle(Popup p, string text, int len)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupSetTitle(p.Handle, text, len);
+        }
+        public static void PopupSetContent(Popup p, string text, int len)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupSetContent(p.Handle, text, len);
+        }
+        public static void PopupSetPosition(Popup p, float x, float y)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupSetPosition(p.Handle, x, y);
+        }
+        public static void PopupSetVisible(Popup p, bool v)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupSetVisible(p.Handle, v);
+        }
+        public static void PopupSetCloseable(Popup p, bool v)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupSetCloseable(p.Handle, v);
+        }
+        public static void PopupDraw(Popup p, Font title_font, Font content_font)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            if (title_font == null) throw new ArgumentNullException(nameof(title_font));
+            if (content_font == null) throw new ArgumentNullException(nameof(content_font));
+            Native.PopupDraw(p.Handle, title_font.Handle, content_font.Handle);
+        }
+        public static bool PopupIsCloseClicked(Popup p, float mx, float my)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            return Native.PopupIsCloseClicked(p.Handle, mx, my);
+        }
+        public static bool PopupIsTitleClicked(Popup p, float mx, float my)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            return Native.PopupIsTitleClicked(p.Handle, mx, my);
+        }
+        public static void PopupDragMove(Popup p, float mx, float my)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.PopupDragMove(p.Handle, mx, my);
+        }
+        public static bool PopupIsInside(Popup p, float mx, float my)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            return Native.PopupIsInside(p.Handle, mx, my);
+        }
+        public static void TooltipDestroy(Tooltip t)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            Native.TooltipDestroy(t.Handle);
+        }
+        public static void TooltipSetText(Tooltip t, string text, int len)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            Native.TooltipSetText(t.Handle, text, len);
+        }
+        public static void TooltipSetPosition(Tooltip t, float x, float y)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            Native.TooltipSetPosition(t.Handle, x, y);
+        }
+        public static void TooltipSetVisible(Tooltip t, bool v)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            Native.TooltipSetVisible(t.Handle, v);
+        }
+        public static void TooltipDraw(Tooltip t, Font font)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.TooltipDraw(t.Handle, font.Handle);
+        }
+        public static void JuiCtxDestroy(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiCtxDestroy(ctx.Handle);
+        }
+        public static void JuiBegin(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiBegin(ctx.Handle);
+        }
+        public static void JuiEnd(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiEnd(ctx.Handle);
+        }
+        public static void JuiInputMotion(JuiCtx ctx, float win_x, float win_y)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiInputMotion(ctx.Handle, win_x, win_y);
+        }
+        public static void JuiInputDown(JuiCtx ctx, int button)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiInputDown(ctx.Handle, button);
+        }
+        public static void JuiInputUp(JuiCtx ctx, int button)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiInputUp(ctx.Handle, button);
+        }
+        public static void JuiInputWheel(JuiCtx ctx, float dy)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiInputWheel(ctx.Handle, dy);
+        }
+        public static void JuiInputKey(JuiCtx ctx, bool shift, bool ctrl)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiInputKey(ctx.Handle, shift, ctrl);
+        }
+        public static bool JuiIsDown(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiIsDown(ctx.Handle);
+        }
+        public static bool JuiIsPressed(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiIsPressed(ctx.Handle);
+        }
+        public static bool JuiIsReleased(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiIsReleased(ctx.Handle);
+        }
+        public static float JuiTakeWheel(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiTakeWheel(ctx.Handle);
+        }
+        public static bool JuiIsShift(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiIsShift(ctx.Handle);
+        }
+        public static bool JuiIsCtrl(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiIsCtrl(ctx.Handle);
+        }
+        public static void JuiPopClip(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiPopClip(ctx.Handle);
+        }
+        public static void JuiResetClip(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiResetClip(ctx.Handle);
+        }
+        public static void JuiPanelEnd(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiPanelEnd(ctx.Handle);
+        }
+        public static void JuiScrollEnd(JuiCtx ctx)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiScrollEnd(ctx.Handle);
+        }
+        public static void JuiScrollSetOffset(JuiCtx ctx, int id, float off, float content_h, float view_h)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiScrollSetOffset(ctx.Handle, id, off, content_h, view_h);
+        }
+        public static void JtilemapDestroy(Jtilemap tm)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            Native.JtilemapDestroy(tm.Handle);
+        }
+        public static int JtilemapGetWidth(Jtilemap tm)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapGetWidth(tm.Handle);
+        }
+        public static int JtilemapGetHeight(Jtilemap tm)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapGetHeight(tm.Handle);
+        }
+        public static int JtilemapGetTilewidth(Jtilemap tm)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapGetTilewidth(tm.Handle);
+        }
+        public static int JtilemapGetTileheight(Jtilemap tm)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapGetTileheight(tm.Handle);
+        }
+        public static int JtilemapGetAnimTileid(Jtilemap tm, int gid, uint time_ms)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapGetAnimTileid(tm.Handle, gid, time_ms);
+        }
+        public static int JtilemapGetTile(JtilemapTileLayer layer, int tx, int ty)
+        {
+            if (layer == null) throw new ArgumentNullException(nameof(layer));
+            return Native.JtilemapGetTile(layer.Handle, tx, ty);
+        }
+        public static void JtilemapRenderAll(JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint time_ms)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            Native.JtilemapRenderAll(r.Handle, tm.Handle, camera_x, camera_y, time_ms);
+        }
+        public static void JtilemapRenderTiles(JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint time_ms)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            Native.JtilemapRenderTiles(r.Handle, tm.Handle, camera_x, camera_y, time_ms);
+        }
+        public static void JtilemapRenderSetTilePx(JtilemapRender r, float px)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.JtilemapRenderSetTilePx(r.Handle, px);
+        }
+        public static bool JtilemapRenderLayer(JtilemapRender r, Jtilemap tm, string layer_name, float camera_x, float camera_y, uint time_ms)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            return Native.JtilemapRenderLayer(r.Handle, tm.Handle, layer_name, camera_x, camera_y, time_ms);
+        }
+        public static void JtilemapRenderDestroy(JtilemapRender r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.JtilemapRenderDestroy(r.Handle);
+        }
+        public static int KcpserverDestroy(Kcpserver ks)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            return Native.KcpserverDestroy(ks.Handle);
+        }
+        public static void KcpserverSend(Kcpserver ks, int conv, string data, int len)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            Native.KcpserverSend(ks.Handle, conv, data, len);
+        }
+        public static void KcpserverBroadcast(Kcpserver ks, string data, int len)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            Native.KcpserverBroadcast(ks.Handle, data, len);
+        }
+        public static void KcpserverOffline(Kcpserver ks, int conv)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            Native.KcpserverOffline(ks.Handle, conv);
+        }
+        public static void KcpserverUpdate(Kcpserver ks)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            Native.KcpserverUpdate(ks.Handle);
+        }
+        public static int KcpserverConnectionCount(Kcpserver ks)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            return Native.KcpserverConnectionCount(ks.Handle);
+        }
+        public static bool KcpserverPollMessage(Kcpserver ks, NetMessage msg)
+        {
+            if (ks == null) throw new ArgumentNullException(nameof(ks));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.KcpserverPollMessage(ks.Handle, msg.Handle);
+        }
+        public static void KcpclientDestroy(Kcpclient kc)
+        {
+            if (kc == null) throw new ArgumentNullException(nameof(kc));
+            Native.KcpclientDestroy(kc.Handle);
+        }
+        public static int KcpclientSend(Kcpclient kc, string data, int len)
+        {
+            if (kc == null) throw new ArgumentNullException(nameof(kc));
+            return Native.KcpclientSend(kc.Handle, data, len);
+        }
+        public static void KcpclientUpdate(Kcpclient kc)
+        {
+            if (kc == null) throw new ArgumentNullException(nameof(kc));
+            Native.KcpclientUpdate(kc.Handle);
+        }
+        public static bool KcpclientPollMessage(Kcpclient kc, NetMessage msg)
+        {
+            if (kc == null) throw new ArgumentNullException(nameof(kc));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.KcpclientPollMessage(kc.Handle, msg.Handle);
+        }
+        public static int TcpserverDestroy(Tcpserver tcpserver)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            return Native.TcpserverDestroy(tcpserver.Handle);
+        }
+        public static void TcpserverSend(Tcpserver tcpserver, int conv, string data, int len)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            Native.TcpserverSend(tcpserver.Handle, conv, data, len);
+        }
+        public static void TcpserverBroadcast(Tcpserver tcpserver, string data, int len)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            Native.TcpserverBroadcast(tcpserver.Handle, data, len);
+        }
+        public static void TcpserverOffline(Tcpserver tcpserver, int conv)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            Native.TcpserverOffline(tcpserver.Handle, conv);
+        }
+        public static void TcpserverUpdate(Tcpserver tcpserver)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            Native.TcpserverUpdate(tcpserver.Handle);
+        }
+        public static int TcpserverConnectionCount(Tcpserver tcpserver)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            return Native.TcpserverConnectionCount(tcpserver.Handle);
+        }
+        public static bool TcpserverPollMessage(Tcpserver tcpserver, NetMessage msg)
+        {
+            if (tcpserver == null) throw new ArgumentNullException(nameof(tcpserver));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.TcpserverPollMessage(tcpserver.Handle, msg.Handle);
+        }
+        public static void TcpclientDestroy(Tcpclient tcpclient)
+        {
+            if (tcpclient == null) throw new ArgumentNullException(nameof(tcpclient));
+            Native.TcpclientDestroy(tcpclient.Handle);
+        }
+        public static int TcpclientSend(Tcpclient tcpclient, string data, int len)
+        {
+            if (tcpclient == null) throw new ArgumentNullException(nameof(tcpclient));
+            return Native.TcpclientSend(tcpclient.Handle, data, len);
+        }
+        public static void TcpclientUpdate(Tcpclient tcpclient)
+        {
+            if (tcpclient == null) throw new ArgumentNullException(nameof(tcpclient));
+            Native.TcpclientUpdate(tcpclient.Handle);
+        }
+        public static bool TcpclientPollMessage(Tcpclient tcpclient, NetMessage msg)
+        {
+            if (tcpclient == null) throw new ArgumentNullException(nameof(tcpclient));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.TcpclientPollMessage(tcpclient.Handle, msg.Handle);
+        }
+        public static int WsnetserverDestroy(Wsnetserver ws)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            return Native.WsnetserverDestroy(ws.Handle);
+        }
+        public static void WsnetserverSend(Wsnetserver ws, int conv, string data, int len)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            Native.WsnetserverSend(ws.Handle, conv, data, len);
+        }
+        public static void WsnetserverBroadcast(Wsnetserver ws, string data, int len)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            Native.WsnetserverBroadcast(ws.Handle, data, len);
+        }
+        public static void WsnetserverOffline(Wsnetserver ws, int conv)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            Native.WsnetserverOffline(ws.Handle, conv);
+        }
+        public static void WsnetserverUpdate(Wsnetserver ws)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            Native.WsnetserverUpdate(ws.Handle);
+        }
+        public static int WsnetserverConnectionCount(Wsnetserver ws)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            return Native.WsnetserverConnectionCount(ws.Handle);
+        }
+        public static bool WsnetserverPollMessage(Wsnetserver ws, NetMessage msg)
+        {
+            if (ws == null) throw new ArgumentNullException(nameof(ws));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.WsnetserverPollMessage(ws.Handle, msg.Handle);
+        }
+        public static void WsnetclientDestroy(Wsnetclient wc)
+        {
+            if (wc == null) throw new ArgumentNullException(nameof(wc));
+            Native.WsnetclientDestroy(wc.Handle);
+        }
+        public static int WsnetclientSend(Wsnetclient wc, string data, int len)
+        {
+            if (wc == null) throw new ArgumentNullException(nameof(wc));
+            return Native.WsnetclientSend(wc.Handle, data, len);
+        }
+        public static void WsnetclientUpdate(Wsnetclient wc)
+        {
+            if (wc == null) throw new ArgumentNullException(nameof(wc));
+            Native.WsnetclientUpdate(wc.Handle);
+        }
+        public static bool WsnetclientPollMessage(Wsnetclient wc, NetMessage msg)
+        {
+            if (wc == null) throw new ArgumentNullException(nameof(wc));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.WsnetclientPollMessage(wc.Handle, msg.Handle);
+        }
+        public static void NetclientDestroy(Netclient nc)
+        {
+            if (nc == null) throw new ArgumentNullException(nameof(nc));
+            Native.NetclientDestroy(nc.Handle);
+        }
+        public static int NetclientSend(Netclient nc, string data, int len)
+        {
+            if (nc == null) throw new ArgumentNullException(nameof(nc));
+            return Native.NetclientSend(nc.Handle, data, len);
+        }
+        public static void NetclientUpdate(Netclient nc)
+        {
+            if (nc == null) throw new ArgumentNullException(nameof(nc));
+            Native.NetclientUpdate(nc.Handle);
+        }
+        public static bool NetclientPollMessage(Netclient nc, NetMessage msg)
+        {
+            if (nc == null) throw new ArgumentNullException(nameof(nc));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.NetclientPollMessage(nc.Handle, msg.Handle);
+        }
+        public static void NetserverDestroy(Netserver ns)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            Native.NetserverDestroy(ns.Handle);
+        }
+        public static void NetserverSend(Netserver ns, int conv, string data, int len)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            Native.NetserverSend(ns.Handle, conv, data, len);
+        }
+        public static void NetserverBroadcast(Netserver ns, string data, int len)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            Native.NetserverBroadcast(ns.Handle, data, len);
+        }
+        public static void NetserverOffline(Netserver ns, int conv)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            Native.NetserverOffline(ns.Handle, conv);
+        }
+        public static void NetserverUpdate(Netserver ns)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            Native.NetserverUpdate(ns.Handle);
+        }
+        public static int NetserverConnectionCount(Netserver ns)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            return Native.NetserverConnectionCount(ns.Handle);
+        }
+        public static bool NetserverPollMessage(Netserver ns, NetMessage msg)
+        {
+            if (ns == null) throw new ArgumentNullException(nameof(ns));
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            return Native.NetserverPollMessage(ns.Handle, msg.Handle);
+        }
+        public static void NetmessageFreeData(NetMessage msg)
+        {
+            if (msg == null) throw new ArgumentNullException(nameof(msg));
+            Native.NetmessageFreeData(msg.Handle);
+        }
+        public static void SceneNodeDestroy(SceneNode node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeDestroy(node.Handle);
+        }
+        public static void SceneNodeAddChild(SceneNode parent, SceneNode child)
+        {
+            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (child == null) throw new ArgumentNullException(nameof(child));
+            Native.SceneNodeAddChild(parent.Handle, child.Handle);
+        }
+        public static void SceneNodeRemoveChild(SceneNode parent, SceneNode child)
+        {
+            if (parent == null) throw new ArgumentNullException(nameof(parent));
+            if (child == null) throw new ArgumentNullException(nameof(child));
+            Native.SceneNodeRemoveChild(parent.Handle, child.Handle);
+        }
+        public static int SceneNodeGetChildCount(SceneNode node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            return Native.SceneNodeGetChildCount(node.Handle);
+        }
+        public static void SceneNodeSetPosition(SceneNode node, float x, float y)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetPosition(node.Handle, x, y);
+        }
+        public static void SceneNodeSetWorldPosition(SceneNode node, float x, float y)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetWorldPosition(node.Handle, x, y);
+        }
+        public static void SceneNodeSetRotation(SceneNode node, float radians)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetRotation(node.Handle, radians);
+        }
+        public static float SceneNodeGetRotation(SceneNode node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            return Native.SceneNodeGetRotation(node.Handle);
+        }
+        public static void SceneNodeSetScale(SceneNode node, float scale_x, float scale_y)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetScale(node.Handle, scale_x, scale_y);
+        }
+        public static void SceneNodeSetZorder(SceneNode node, int zorder)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetZorder(node.Handle, zorder);
+        }
+        public static int SceneNodeGetZorder(SceneNode node)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            return Native.SceneNodeGetZorder(node.Handle);
+        }
+        public static void SceneNodeSetName(SceneNode node, string name)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetName(node.Handle, name);
+        }
+        public static void SceneNodeSetTag(SceneNode node, string tag)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeSetTag(node.Handle, tag);
+        }
+        public static void SceneNodeUpdate(SceneNode node, float delta_time)
+        {
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneNodeUpdate(node.Handle, delta_time);
+        }
+        public static void SceneDestroy(Scene scene)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            Native.SceneDestroy(scene.Handle);
+        }
+        public static void SceneAddRootNode(Scene scene, SceneNode root)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            if (root == null) throw new ArgumentNullException(nameof(root));
+            Native.SceneAddRootNode(scene.Handle, root.Handle);
+        }
+        public static void SceneRemoveRootNode(Scene scene, SceneNode root)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            if (root == null) throw new ArgumentNullException(nameof(root));
+            Native.SceneRemoveRootNode(scene.Handle, root.Handle);
+        }
+        public static int SceneGetRootCount(Scene scene)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            return Native.SceneGetRootCount(scene.Handle);
+        }
+        public static void SceneUpdate(Scene scene, float delta_time)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            Native.SceneUpdate(scene.Handle, delta_time);
+        }
+        public static void SceneSetPopupNode(Scene scene, SceneNode node)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            if (node == null) throw new ArgumentNullException(nameof(node));
+            Native.SceneSetPopupNode(scene.Handle, node.Handle);
+        }
+        public static void SceneManagerDestroy(SceneManager mgr)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            Native.SceneManagerDestroy(mgr.Handle);
+        }
+        public static void SceneManagerPush(SceneManager mgr, Scene scene)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            Native.SceneManagerPush(mgr.Handle, scene.Handle);
+        }
+        public static void SceneManagerReplace(SceneManager mgr, Scene scene)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            Native.SceneManagerReplace(mgr.Handle, scene.Handle);
+        }
+        public static void SceneManagerPop(SceneManager mgr)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            Native.SceneManagerPop(mgr.Handle);
+        }
+        public static void SceneManagerUpdate(SceneManager mgr, float delta_time)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            Native.SceneManagerUpdate(mgr.Handle, delta_time);
+        }
+        public static int SceneManagerGetCount(SceneManager mgr)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            return Native.SceneManagerGetCount(mgr.Handle);
+        }
+        public static void JparticleDestroy(Jparticle p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.JparticleDestroy(p.Handle);
+        }
+        public static void JparticleSetPosition(Jparticle p, float x, float y)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.JparticleSetPosition(p.Handle, x, y);
+        }
+        public static void JparticleEmit(Jparticle p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.JparticleEmit(p.Handle);
+        }
+        public static void JparticleClear(Jparticle p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.JparticleClear(p.Handle);
+        }
+        public static void JparticleUpdate(Jparticle p, float dt)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            Native.JparticleUpdate(p.Handle, dt);
+        }
+        public static void JparticleRender(Jparticle p, Jr2d r2d)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.JparticleRender(p.Handle, r2d.Handle);
+        }
+        public static int JparticleCount(Jparticle p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            return Native.JparticleCount(p.Handle);
+        }
+        public static bool JparticleIsActive(Jparticle p)
+        {
+            if (p == null) throw new ArgumentNullException(nameof(p));
+            return Native.JparticleIsActive(p.Handle);
+        }
+        public static void JlightSysDestroy(JlightSys sys)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightSysDestroy(sys.Handle);
+        }
+        public static void JlightSysResize(JlightSys sys, int width, int height)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightSysResize(sys.Handle, width, height);
+        }
+        public static void JlightRemove(JlightSys sys, int id)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightRemove(sys.Handle, id);
+        }
+        public static void JlightClear(JlightSys sys)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightClear(sys.Handle);
+        }
+        public static int JlightAddOccluder(JlightSys sys, float x1, float y1, float x2, float y2)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            return Native.JlightAddOccluder(sys.Handle, x1, y1, x2, y2);
+        }
+        public static void JlightClearOccluders(JlightSys sys)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightClearOccluders(sys.Handle);
+        }
+        public static void JlightSetAmbient(JlightSys sys, uint r, uint g, uint b)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            Native.JlightSetAmbient(sys.Handle, r, g, b);
+        }
+        public static void JlightRender(JlightSys sys, Jr2d r2d)
+        {
+            if (sys == null) throw new ArgumentNullException(nameof(sys));
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            Native.JlightRender(sys.Handle, r2d.Handle);
+        }
+        public static void JecsDestroy(JecsWorld world)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            Native.JecsDestroy(world.Handle);
+        }
+        public static void JecsProcess(JecsWorld world, float dt)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            Native.JecsProcess(world.Handle, dt);
+        }
+        public static void JecsDefine(JecsWorld world, string name, ulong size)
+        {
+            if (world == null) throw new ArgumentNullException(nameof(world));
+            Native.JecsDefine(world.Handle, name, size);
+        }
+        public static uint AudioOpenDevice()
+        {
+            return Native.AudioOpenDevice();
+        }
+        public static void AudioCloseDevice(uint device_id)
+        {
+            Native.AudioCloseDevice(device_id);
+        }
+        public static bool AudioCreateWav(string filepath, uint device_id)
+        {
+            return Native.AudioCreateWav(filepath, device_id);
+        }
+        public static bool AudioCreateMp3(string filepath, uint device_id)
+        {
+            return Native.AudioCreateMp3(filepath, device_id);
+        }
+        public static bool AudioCreateFlac(string filepath, uint device_id)
+        {
+            return Native.AudioCreateFlac(filepath, device_id);
+        }
+        public static bool AudioCreateOgg(string filepath, uint device_id)
+        {
+            return Native.AudioCreateOgg(filepath, device_id);
+        }
+        public static void AudioShotPlay(AudioShot shot)
+        {
+            if (shot == null) throw new ArgumentNullException(nameof(shot));
+            Native.AudioShotPlay(shot.Handle);
+        }
+        public static void AudioShotSetGain(AudioShot shot, float gain)
+        {
+            if (shot == null) throw new ArgumentNullException(nameof(shot));
+            Native.AudioShotSetGain(shot.Handle, gain);
+        }
+        public static void AudioShotDestroy(AudioShot shot)
+        {
+            if (shot == null) throw new ArgumentNullException(nameof(shot));
+            Native.AudioShotDestroy(shot.Handle);
+        }
+        public static void AudioBgmStop(AudioBgm bgm)
+        {
+            if (bgm == null) throw new ArgumentNullException(nameof(bgm));
+            Native.AudioBgmStop(bgm.Handle);
+        }
+        public static void AudioBgmSetGain(AudioBgm bgm, float gain)
+        {
+            if (bgm == null) throw new ArgumentNullException(nameof(bgm));
+            Native.AudioBgmSetGain(bgm.Handle, gain);
+        }
+        public static void AudioBgmDestroy(AudioBgm bgm)
+        {
+            if (bgm == null) throw new ArgumentNullException(nameof(bgm));
+            Native.AudioBgmDestroy(bgm.Handle);
         }
     }
 }

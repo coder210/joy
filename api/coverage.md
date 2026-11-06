@@ -2,6 +2,7 @@
 
 > 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。
 > 生成物（共享 thunk 与 cs 薄适配）只覆盖 `status: on` 的 L0/L1 条目；
+> 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；
 > 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。
 
 ## 总览
@@ -11,8 +12,9 @@
 | `joy.h` 中 `JOY_API` 声明 | 935 |
 | `joy.h` 中值类型 `typedef struct` | 48 |
 | IDL 条目 | 935 |
-| 默认开放（`status: on`） | 4 |
+| 已开放（`status: on`） | 446 |
 | 待人工确认 `owns` | 1 |
+| 所有权待裁决（类型不匹配 / 缺 `owns`） | 42 |
 | orphan（`joy.h` 中已消失） | 0 |
 
 | 级别 | 含义 | 数量 |
@@ -23,8 +25,8 @@
 | L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 229 |
 | X | 有意排除，不进绑定层 | 50 |
 
-默认全部 `status: off`。「能力全覆盖」指每条 API 都有 IDL 条目，
-不等于已对脚本开放；验证过一条才把 `status` 改成 `on`。
+开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与
+缓冲校验的条目，被跳过的原因会在命令输出和下面各节列出；**开放 ≠ 业务已调用**。
 
 ## 按域分布
 
@@ -123,6 +125,57 @@
 | 函数 | 返回 | 位置 |
 |---|---|---|
 | `simple_fps_create` | `simple_fps_counter_p` | joy.h:1021 |
+
+## 待办：所有权待裁决（`owns` 不可信）
+
+返回句柄但自动推断的析构函数与返回类型不一致，或压根没有 `owns`。
+批量开放会跳过它们；`--check` 也禁止把这类条目设成 `on`，
+否则 dtor 会把错误类型的指针交给析构函数，运行时才崩。
+
+| 函数 | 返回 | `owns` | 问题 |
+|---|---|---|---|
+| `create_window` | `jwindow_p` | `create_window` | owns 目标不是单参数：create_window |
+| `get_raw_window` | `void*` | `get_raw_window` | owns 类型不匹配：void* -> jwindow_p |
+| `simple_fps_create` | `simple_fps_counter_p` | （无） | 返回句柄但缺 owns |
+| `r2d_wrap` | `jr2d_p` | `r2d_wrap` | owns 类型不匹配：jr2d_p -> void* |
+| `r2d_unwrap` | `void*` | `r2d_unwrap` | owns 类型不匹配：void* -> jr2d_p |
+| `r3d_load_shader` | `void*` | `r3d_load_shader` | owns 目标不是单参数：r3d_load_shader |
+| `r3d_create_pipeline` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_upload_buffer` | `void*` | `r3d_upload_buffer` | owns 目标不是单参数：r3d_upload_buffer |
+| `r3d_create_solid_texture` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_create_depth_texture` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_create_sampler` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_get_device` | `void*` | `r3d_get_device` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_mesh_cube` | `render_mesh_p` | `r3d_mesh_cube` | owns 目标不是单参数：r3d_mesh_cube |
+| `r3d_mesh_sphere` | `render_mesh_p` | `r3d_mesh_sphere` | owns 目标不是单参数：r3d_mesh_sphere |
+| `r3d_mesh_plane` | `render_mesh_p` | `r3d_mesh_plane` | owns 目标不是单参数：r3d_mesh_plane |
+| `r3d_mesh_ramp` | `render_mesh_p` | `r3d_mesh_ramp` | owns 目标不是单参数：r3d_mesh_ramp |
+| `r3d_mesh_custom` | `render_mesh_p` | `r3d_mesh_custom` | owns 目标不是单参数：r3d_mesh_custom |
+| `r3d_mesh_quad` | `render_mesh_p` | `r3d_mesh_quad` | owns 类型不匹配：render_mesh_p -> jr3d_p |
+| `r3d_mesh_cube_wire` | `render_mesh_p` | `r3d_mesh_cube_wire` | owns 目标不是单参数：r3d_mesh_cube_wire |
+| `r3d_mesh_sphere_wire` | `render_mesh_p` | `r3d_mesh_sphere_wire` | owns 目标不是单参数：r3d_mesh_sphere_wire |
+| `r3d_mesh_plane_wire` | `render_mesh_p` | `r3d_mesh_plane_wire` | owns 目标不是单参数：r3d_mesh_plane_wire |
+| `r3d_mesh_ramp_wire` | `render_mesh_p` | `r3d_mesh_ramp_wire` | owns 目标不是单参数：r3d_mesh_ramp_wire |
+| `r3d_create_texture` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_load_texture_png` | `void*` | `r3d_load_texture_png` | owns 目标不是单参数：r3d_load_texture_png |
+| `r3d_gen_checkerboard` | `void*` | `r3d_gen_checkerboard` | owns 目标不是单参数：r3d_gen_checkerboard |
+| `r3d_create_line_pipeline` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_create_lighting_pipeline` | `void*` | `r3d_destroy` | owns 类型不匹配：void* -> jr3d_p |
+| `r3d_mesh_cube_lit` | `render_mesh_p` | `r3d_mesh_cube_lit` | owns 目标不是单参数：r3d_mesh_cube_lit |
+| `r3d_mesh_sphere_lit` | `render_mesh_p` | `r3d_mesh_sphere_lit` | owns 目标不是单参数：r3d_mesh_sphere_lit |
+| `r3d_mesh_plane_lit` | `render_mesh_p` | `r3d_mesh_plane_lit` | owns 目标不是单参数：r3d_mesh_plane_lit |
+| `r3d_mesh_ramp_lit` | `render_mesh_p` | `r3d_mesh_ramp_lit` | owns 目标不是单参数：r3d_mesh_ramp_lit |
+| `r3d_mesh_custom_lit` | `render_mesh_p` | `r3d_mesh_custom_lit` | owns 目标不是单参数：r3d_mesh_custom_lit |
+| `jtilemap_load_file_json` | `jtilemap_p` | `jtilemap_load_file_json` | owns 目标参数不是句柄：jtilemap_load_file_json |
+| `jtilemap_find_tile_layer` | `jtilemap_tile_layer_p` | `jtilemap_find_tile_layer` | owns 目标不是单参数：jtilemap_find_tile_layer |
+| `jtilemap_find_object_layer` | `jtilemap_object_layer_p` | `jtilemap_find_object_layer` | owns 目标不是单参数：jtilemap_find_object_layer |
+| `scene_node_get_userdata` | `void*` | `scene_node_get_userdata` | owns 类型不匹配：void* -> scene_node_p |
+| `scene_find_node_by_name` | `scene_node_p` | `scene_find_node_by_name` | owns 目标不是单参数：scene_find_node_by_name |
+| `scene_find_node_by_name_deep` | `scene_node_p` | `scene_find_node_by_name_deep` | owns 目标不是单参数：scene_find_node_by_name_deep |
+| `scene_get_root_at` | `scene_node_p` | `scene_get_root_at` | owns 目标不是单参数：scene_get_root_at |
+| `scene_get_popup_node` | `scene_node_p` | `scene_get_popup_node` | owns 类型不匹配：scene_node_p -> scene_p |
+| `scene_get_userdata` | `void*` | `scene_get_userdata` | owns 类型不匹配：void* -> scene_p |
+| `scene_manager_get_current` | `scene_p` | `scene_manager_get_current` | owns 类型不匹配：scene_p -> scene_manager_p |
 
 ## L3 清单（必须手写 thunk）
 

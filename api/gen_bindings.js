@@ -27,8 +27,9 @@ const THUNKS = path.join(HERE, 'thunks_generated.c');
 /* cs 后端薄适配也是入库生成物：由 joy.idl 的 status:on 条目驱动。 */
 const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api_generated.c');
 const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
-const { buildThunks } = require('./emit_thunks');
-const { buildCsGlue } = require('./emit_cs');
+const { buildThunks, canThunk, ownsIssue } = require('./emit_thunks');
+const { buildCsGlue, canEmitCs } = require('./emit_cs');
+const { isOpaque } = require('./naming');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
    与 modules/cs/gen_csclib.js 的 SKIP_* 保持一致。 */
@@ -132,9 +133,7 @@ function parseDecl(raw, line) {
 
 /* -------------------------------------------------------------- classify */
 
-function isOpaque(t) {
-  return t === 'void*' || (t.endsWith('_p') && !t.includes('*'));
-}
+/* isOpaque 统一取自 naming.js，避免三个生成器对「句柄」的判定各说各话。 */
 
 /* create_window / destroy_window 这类通用动词开头的名字，用第二段做域名。 */
 const GENERIC_FIRST = new Set([
@@ -279,9 +278,13 @@ function buildReport(entries, meta) {
     if (!domains.has(e.domain)) domains.set(e.domain, { L0: 0, L1: 0, L2: 0, L3: 0, X: 0 });
     domains.get(e.domain)[e.level]++;
   }
+  const byName = new Map(entries.map(e => [e.name, e]));
   const on = entries.filter(e => e.status === 'on').length;
   const orphan = entries.filter(e => e.orphan);
   const needsOwns = entries.filter(e => e.level !== 'X' && isOpaque(e.ret) && !e.owns);
+  const ownsIssues = entries
+    .filter(e => e.level !== 'X' && isOpaque(e.ret) && ownsIssue(e, byName))
+    .map(e => ({ e, why: ownsIssue(e, byName) }));
   const l3 = entries.filter(e => e.level === 'L3');
   const excluded = entries.filter(e => e.level === 'X');
   const jm = jmathMeta();
@@ -291,6 +294,7 @@ function buildReport(entries, meta) {
   L.push('');
   L.push('> 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。');
   L.push('> 生成物（共享 thunk 与 cs 薄适配）只覆盖 `status: on` 的 L0/L1 条目；');
+  L.push('> 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；');
   L.push('> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。');
   L.push('');
   L.push('## 总览');
@@ -300,8 +304,9 @@ function buildReport(entries, meta) {
   L.push('| `joy.h` 中 `JOY_API` 声明 | ' + meta.fresh.length + ' |');
   L.push('| `joy.h` 中值类型 `typedef struct` | ' + meta.structs.size + ' |');
   L.push('| IDL 条目 | ' + entries.length + ' |');
-  L.push('| 默认开放（`status: on`） | ' + on + ' |');
+  L.push('| 已开放（`status: on`） | ' + on + ' |');
   L.push('| 待人工确认 `owns` | ' + needsOwns.length + ' |');
+  L.push('| 所有权待裁决（类型不匹配 / 缺 `owns`） | ' + ownsIssues.length + ' |');
   L.push('| orphan（`joy.h` 中已消失） | ' + orphan.length + ' |');
   L.push('');
   L.push('| 级别 | 含义 | 数量 |');
@@ -310,8 +315,8 @@ function buildReport(entries, meta) {
     L.push('| ' + k + ' | ' + LEVEL_DESC[k] + ' | ' + counts[k] + ' |');
   }
   L.push('');
-  L.push('默认全部 `status: off`。「能力全覆盖」指每条 API 都有 IDL 条目，');
-  L.push('不等于已对脚本开放；验证过一条才把 `status` 改成 `on`。');
+  L.push('开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与');
+  L.push('缓冲校验的条目，被跳过的原因会在命令输出和下面各节列出；**开放 ≠ 业务已调用**。');
   L.push('');
   L.push('## 按域分布');
   L.push('');
@@ -333,6 +338,23 @@ function buildReport(entries, meta) {
     L.push('| 函数 | 返回 | 位置 |');
     L.push('|---|---|---|');
     for (const e of needsOwns) L.push('| `' + e.name + '` | `' + e.ret + '` | ' + e.source + ' |');
+  }
+  L.push('');
+  L.push('## 待办：所有权待裁决（`owns` 不可信）');
+  L.push('');
+  L.push('返回句柄但自动推断的析构函数与返回类型不一致，或压根没有 `owns`。');
+  L.push('批量开放会跳过它们；`--check` 也禁止把这类条目设成 `on`，');
+  L.push('否则 dtor 会把错误类型的指针交给析构函数，运行时才崩。');
+  L.push('');
+  if (!ownsIssues.length) {
+    L.push('（无）');
+  } else {
+    L.push('| 函数 | 返回 | `owns` | 问题 |');
+    L.push('|---|---|---|---|');
+    for (const x of ownsIssues) {
+      L.push('| `' + x.e.name + '` | `' + x.e.ret + '` | '
+        + (x.e.owns ? '`' + x.e.owns + '`' : '（无）') + ' | ' + x.why + ' |');
+    }
   }
   L.push('');
   L.push('## L3 清单（必须手写 thunk）');
@@ -401,6 +423,12 @@ function check(entries) {
       errors.push('owns 指向 joy.h 中不存在的函数: ' + e.name + ' -> ' + e.owns);
     }
   }
+  const byName = new Map(entries.map(e => [e.name, e]));
+  for (const e of entries) {
+    if (e.status !== 'on') continue;
+    const issue = ownsIssue(e, byName);
+    if (issue) errors.push('所有权不可信: ' + e.name + ' -> ' + issue);
+  }
   const auto = e => JSON.stringify([e.name, e.domain, e.level, e.reason, e.ret, e.params, e.source]);
   for (const f of meta.fresh) {
     const e = entries.find(x => x.name === f.name);
@@ -445,6 +473,52 @@ function check(entries) {
   return errors;
 }
 
+/* ------------------------------------------------ 批量开放 / 关闭（P2） */
+
+function matches(e, spec) {
+  if (spec === 'all') return e.level === 'L0' || e.level === 'L1';
+  if (spec === 'L0' || spec === 'L1') return e.level === spec;
+  if (spec.startsWith('domain:')) return e.domain === spec.slice(7);
+  if (spec.startsWith('name:')) return e.name === spec.slice(5);
+  throw new Error('未知选择子：' + spec + '（可用 L0 / L1 / all / domain:<名> / name:<API>）');
+}
+
+/* 批量开放只放行生成器确定能安全处理的条目。
+ * 返回句柄的还要求人工确认所有权：自动推断的 owns 即使类型匹配，也可能是
+ * 借用指针（get_* / wrap_*），批量模式一律跳过，只能显式 name: 点名开放。 */
+function canOpen(e, byName, explicit) {
+  if (e.orphan) return 'orphan';
+  const t = canThunk(e, byName);
+  if (t) return t;
+  const c = canEmitCs(e);
+  if (c) return c;
+  if (e.params.some(p => p.ctype === 'void*')) return 'void* 缓冲参数需手写适配';
+  if (isOpaque(e.ret) && !explicit) return '返回句柄需人工确认所有权（用 name: 单独开放）';
+  return null;
+}
+
+function applySpecs(entries, args, enable) {
+  const flag = enable ? '--enable' : '--disable';
+  const specs = args.slice(args.indexOf(flag) + 1).filter(a => !a.startsWith('--'));
+  if (!specs.length) throw new Error('用法：' + flag + ' L0|L1|all|domain:<名>|name:<API>');
+  for (const s of specs) matches({ level: '', domain: '', name: '' }, s);
+  const byName = new Map(entries.map(e => [e.name, e]));
+  const changed = [];
+  const skipped = [];
+  for (const e of entries) {
+    if (!specs.some(s => matches(e, s))) continue;
+    const want = enable ? 'on' : 'off';
+    if (e.status === want) continue;
+    if (enable) {
+      const why = canOpen(e, byName, specs.includes('name:' + e.name));
+      if (why) { skipped.push(e.name + '(' + why + ')'); continue; }
+    }
+    e.status = want;
+    changed.push(e.name);
+  }
+  return { changed, skipped };
+}
+
 /* ------------------------------------------------------------------- main */
 
 function main() {
@@ -462,6 +536,9 @@ function main() {
         + ' IDL entries, report + thunks + cs glue up to date');
       return 0;
     }
+    const hasEnable = args.includes('--enable');
+    const hasDisable = args.includes('--disable');
+    if (hasEnable && hasDisable) throw new Error('--enable 与 --disable 不能同时使用');
     let entries;
     let meta;
     if (args.includes('--scan')) {
@@ -472,6 +549,14 @@ function main() {
     } else {
       entries = loadIdl();
       meta = scanJoyHeader();
+    }
+    if (hasEnable || hasDisable) {
+      const r = applySpecs(entries, args, hasEnable);
+      fs.writeFileSync(IDL, idlText(entries), 'utf8');
+      console.log((hasEnable ? 'enable' : 'disable') + ': '
+        + r.changed.length + ' changed, ' + r.skipped.length + ' skipped');
+      for (const s of r.skipped.slice(0, 12)) console.log('  skip ' + s);
+      if (r.skipped.length > 12) console.log('  ... 共 ' + r.skipped.length + ' 项被跳过');
     }
     const glue = buildCsGlue(entries);
     fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');

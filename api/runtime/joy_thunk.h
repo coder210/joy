@@ -20,6 +20,10 @@ typedef struct joy_thunk_entry {
         const char* name;
         joy_thunk_fn fn;
         int argc;
+        /* 三端共用的类型契约：vm.c 按 arg_kinds[j] 把第 j 个脚本值转成 joy_value，
+         * 再交给 fn；ret_kind 决定返回值怎么翻译回脚本。后端不需要各解析一遍 IDL。 */
+        const joy_value_kind* arg_kinds;
+        joy_value_kind ret_kind;
 } joy_thunk_entry;
 
 const joy_thunk_entry* joy_thunks_table(int* count);
