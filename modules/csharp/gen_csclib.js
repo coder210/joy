@@ -7,9 +7,9 @@
  *
  * joy 源码目录（其下须有 joy.h）优先级：--joy 参数 > 环境变量 JOY_DIR > 同级 ../joy。
  *
- * 产出：
+ * 产出（与 lua/js 的目录契约一致）：
  *     bindings/csclib_generated.c   C 侧 wrapper，由 CMake 编入宿主
- *     InternalCalls.cs              C# 侧声明，由 Joy.Bindings.csproj 编译
+ *     scripts/InternalCalls.cs      C# 侧声明，由 Joy.Bindings.csproj 编译
  *
  * 注册入口（csopen_generated 等）统一声明在 joy_csharp.h，本脚本不再生成
  * 额外的内部头文件；模块源码与宿主都只包含 joy_csharp.h。
@@ -32,12 +32,13 @@
 const fs = require('fs');
 const path = require('path');
 
-// C 侧 wrapper 进 bindings/（与 lua/js 的胶水同层），C# 声明留模块根给 csproj。
+// bindings/ = C 侧 wrapper，scripts/ = 语言侧声明，与 lua/js 的目录契约一致。
 const HERE = __dirname;                          // 模块根 modules/csharp
 const JOY_REPO = path.resolve(HERE, '../..');   // joy 主仓：joy.h 在仓根
 const IN_JOY_REPO = fs.existsSync(path.join(JOY_REPO, 'joy.h'));
 const MODULE = HERE;
 const BINDINGS = path.join(MODULE, 'bindings');
+const SCRIPTS = path.join(MODULE, 'scripts');
 
 function resolveJoyDir() {
   const i = process.argv.indexOf('--joy');
@@ -54,7 +55,7 @@ if (!fs.existsSync(JOY_H)) {
   process.exit(1);
 }
 const OUT_C = path.join(BINDINGS, 'csclib_generated.c');
-const OUT_CS = path.join(MODULE, 'InternalCalls.cs');
+const OUT_CS = path.join(SCRIPTS, 'InternalCalls.cs');
 
 // ---- 结构体（按值传递）----------------------------------------------------
 // 只收「字段全为标量且总大小 <= 16 字节」的结构体：这类在 x64 上按值传递最稳，

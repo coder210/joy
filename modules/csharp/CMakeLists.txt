@@ -4,7 +4,8 @@
 # 统一模块契约：始终提供 joy_module_csharp（INTERFACE），对外只暴露 joy_csharp.h。
 # 源码经 target_sources(INTERFACE) 直接编入调用方 target，不建库、不产 DLL/LIB。
 # 关闭时只编 stub.c（ENABLED_CSHARP_SCRIPT 未定义），链接符号由空桩承担。
-# 与 lua/js 同构：bindings/ 放 C# → joy 胶水，根目录放 CLR 宿主与模块契约。
+# 与 lua/js 同构：bindings/ 放 C 侧胶水，scripts/ 放语言侧源码（*.cs），
+# 根目录只放 CLR 宿主、模块契约与 MSBuild 入口。
 # C# 绑定工程 Joy.Bindings.csproj 与本文件同目录；CLR 预编译二进制在仓库根
 # runtimes/，由调用方通过 JOY_CLR_ROOT 定位，不在模块内。
 # ============================================================

@@ -21,9 +21,10 @@ joy_add_sources(${TARGET_NAME} MODULES lua js)   # 需要 C# 再加 csharp
 
 - 三个模块遵循同一契约：各自的 `CMakeLists.txt` 提供 `joy_module_<name>`（INTERFACE），
   源码经 `target_sources(INTERFACE)` 直接编入调用方 target，不建库、不产 DLL/LIB。
-  三个模块的 `bindings/` 统一放「把 joy C API 暴露给该语言」的胶水，根目录放运行时
-  宿主与模块契约；模块内只放 joy 自己的代码。第三方 VM 源码在 `external/`，预编译
-  运行时在 `runtimes/`（详见两个目录的 README）。
+  三个模块统一分两层：`bindings/` 放「把 joy C API 暴露给该语言」的 C 侧胶水，
+  `scripts/` 放语言侧源码（csharp 的 `*.cs`；lua/js 以后按需建立同名目录），
+  根目录只放运行时宿主、模块契约与构建入口；模块内只放 joy 自己的代码。
+  第三方 VM 源码在 `external/`，预编译运行时在 `runtimes/`（详见两个目录的 README）。
 - 未启用的模块仍提供 `INTERFACE` 目标，只暴露头文件路径；实现由模块自带的
   `stub.c` 编译出的空函数承担，`luax_*` / `jsx_*` / `csx_*`
   调用点始终可编译、可链接，创建返回 `NULL`，调用方据此跳过脚本逻辑。
