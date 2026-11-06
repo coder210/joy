@@ -396,14 +396,16 @@ function check(entries) {
     }
   }
   const auto = e => JSON.stringify([e.name, e.domain, e.level, e.reason, e.ret, e.params, e.source]);
-  const freshByName = new Map(meta.fresh.map(f => [f.name, f]));
   for (const f of meta.fresh) {
     const e = entries.find(x => x.name === f.name);
     if (!e) { errors.push('joy.h 新增 API 未进 IDL，请跑 --scan: ' + f.name); continue; }
     if (auto(e) !== auto(f)) errors.push('joy.h 签名已变更，请跑 --scan: ' + f.name);
   }
+  /* Windows checkout（core.autocrlf）会把入库的 LF 转成 CRLF，比较前统一换行。 */
+  const normEol = s => s.replace(/\r\n/g, '\n');
   const expected = buildReport(entries, meta);
-  if (!fs.existsSync(REPORT) || fs.readFileSync(REPORT, 'utf8') !== expected) {
+  const onDisk = fs.existsSync(REPORT) ? fs.readFileSync(REPORT, 'utf8') : '';
+  if (normEol(onDisk) !== normEol(expected)) {
     errors.push('coverage.md 已过期，请跑 node gen_bindings.js');
   }
   return errors;
