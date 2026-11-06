@@ -132,6 +132,8 @@ csx_p csx_create(void) {
         csopen_draw();
         csopen_input();
         csopen_host();
+        /* IDL 驱动的 Joy.Api.* 新链路：与旧白名单胶水并行注册，不改业务调用点。 */
+        csopen_api();
         assembly_list_init(&csx->assemblies);
         csx->userdata = NULL;
         return csx;

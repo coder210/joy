@@ -21,5 +21,7 @@
     <Compile Include="scripts/InternalCalls.cs" />
     <!-- 手写的绘制 / 输入 / 宿主热点 -->
     <Compile Include="scripts/NativeCalls.cs" />
+    <!-- IDL 驱动的 Joy.Api.* 强类型绑定（自动生成，勿手改：api/gen_bindings.js） -->
+    <Compile Include="scripts/Api.generated.cs" />
   </ItemGroup>
 </Project>

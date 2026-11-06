@@ -1,0 +1,234 @@
+/*
+ * cs 后端薄适配生成器（纯字符串函数，不写文件）
+ *
+ * 产出两个入库生成物：
+ *   modules/cs/bindings/api_generated.c   Mono 类型 → joy_value[] → 共享 thunk
+ *   modules/cs/scripts/Api.generated.cs   强类型 C# 包装（脚本层看不到 IntPtr / 裸句柄）
+ *
+ * 这里没有任何 joy API 的业务逻辑：参数校验、句柄、所有权全在共享 thunk 里，
+ * 本文件只做「Mono 值 ↔ joy_value」的翻译。
+ */
+'use strict';
+
+const MAP = {
+  'bool':          { cs: 'bool',   c: 'int32_t',  kind: 'JOY_V_BOOL', acc: 'as.b',    wrap: 'joy_v_bool', cast: '(int32_t)' },
+  'int':           { cs: 'int',    c: 'int32_t',  kind: 'JOY_V_I32',  acc: 'as.i32',  wrap: 'joy_v_i32',  cast: '(int32_t)' },
+  'int32_t':       { cs: 'int',    c: 'int32_t',  kind: 'JOY_V_I32',  acc: 'as.i32',  wrap: 'joy_v_i32',  cast: '(int32_t)' },
+  'uint8_t':       { cs: 'uint',   c: 'uint32_t', kind: 'JOY_V_U32',  acc: 'as.u32',  wrap: 'joy_v_u32',  cast: '(uint32_t)' },
+  'uint16_t':      { cs: 'uint',   c: 'uint32_t', kind: 'JOY_V_U32',  acc: 'as.u32',  wrap: 'joy_v_u32',  cast: '(uint32_t)' },
+  'uint32_t':      { cs: 'uint',   c: 'uint32_t', kind: 'JOY_V_U32',  acc: 'as.u32',  wrap: 'joy_v_u32',  cast: '(uint32_t)' },
+  'unsigned int':  { cs: 'uint',   c: 'uint32_t', kind: 'JOY_V_U32',  acc: 'as.u32',  wrap: 'joy_v_u32',  cast: '(uint32_t)' },
+  'int64_t':       { cs: 'long',   c: 'int64_t',  kind: 'JOY_V_I64',  acc: 'as.i64',  wrap: 'joy_v_i64',  cast: '(int64_t)' },
+  'uint64_t':      { cs: 'ulong',  c: 'uint64_t', kind: 'JOY_V_U64',  acc: 'as.u64',  wrap: 'joy_v_u64',  cast: '(uint64_t)' },
+  'size_t':        { cs: 'ulong',  c: 'uint64_t', kind: 'JOY_V_U64',  acc: 'as.u64',  wrap: 'joy_v_u64',  cast: '(uint64_t)' },
+  'unsigned long': { cs: 'ulong',  c: 'uint64_t', kind: 'JOY_V_U64',  acc: 'as.u64',  wrap: 'joy_v_u64',  cast: '(uint64_t)' },
+  'float':         { cs: 'float',  c: 'float',    kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
+  'double':        { cs: 'double', c: 'double',   kind: 'JOY_V_F64',  acc: 'as.f64',  wrap: 'joy_v_f64',  cast: '(double)' },
+};
+
+function isOpaque(t) {
+  return t === 'void*' || (t.endsWith('_p') && !t.includes('*'));
+}
+function q(s) { return '"' + s + '"'; }
+function pascal(s) {
+  return s.split('_').filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join('');
+}
+function handleClass(ret) { return pascal(ret.replace(/_p$/, '')); }
+
+function infoOf(t) {
+  if (isOpaque(t)) {
+    return { cs: 'ulong', c: 'uint64_t', kind: 'JOY_V_HANDLE', acc: 'as.handle',
+      wrap: 'joy_v_handle', cast: '(uint64_t)', handle: true, cls: handleClass(t) };
+  }
+  const m = MAP[t];
+  if (!m) throw new Error('cs 适配暂不支持类型：' + t + '（字符串 / 结构体 / 数组需手写）');
+  return m;
+}
+
+function methodName(name) { return pascal(name); }
+
+/* ------------------------------------------------------------------- C 侧 */
+
+function emitIcall(e) {
+  const L = [];
+  const n = e.params.length;
+  const ret = e.ret === 'void' ? null : infoOf(e.ret);
+  const mn = methodName(e.name);
+  const decl = e.params.map((p, i) => infoOf(p.ctype).c + ' p' + i).join(', ');
+
+  L.push('static ' + (ret ? ret.c : 'void') + ' icall_' + mn + '(' + (decl || 'void') + ')');
+  L.push('{');
+  L.push('        joy_status_t st = JOY_OK;');
+  if (ret) L.push('        joy_value_t r;');
+  if (n) L.push('        joy_value_t args[' + n + '];');
+  e.params.forEach((p, i) => {
+    const ti = infoOf(p.ctype);
+    L.push('        args[' + i + '] = ' + ti.wrap + '(' + ti.cast + 'p' + i + ');');
+  });
+  L.push('        ' + (ret ? 'r = ' : '(void)') + 'joy_api_call('
+    + q(e.name) + ', ' + (n ? 'args' : 'NULL') + ', ' + n + ', &st);');
+  L.push('        if (st != JOY_OK) {');
+  L.push('                fprintf(stderr, "[joy.api] %s failed: %s at %s\\n", '
+    + q(e.name) + ', joy_status_name(st), joy_last_error_where());');
+  L.push('                return' + (e.ret === 'void' ? ';' : ' 0;'));
+  L.push('        }');
+  if (!ret) {
+    L.push('        return;');
+  } else {
+    L.push('        return (' + ret.c + ')r.' + ret.acc + ';');
+  }
+  L.push('}');
+  L.push('');
+  return L.join('\n');
+}
+
+function buildC(open) {
+  const L = [];
+  L.push('/* ============================================================');
+  L.push(' * 自动生成，勿手改：node api/gen_bindings.js --emit');
+  L.push(' * cs 后端薄适配：Mono 值 → joy_value[] → 共享 thunk（不含业务逻辑）。');
+  L.push(' * 只有 joy.idl 里 status:on 的 L0/L1 条目会出现在这里。');
+  L.push(' * ============================================================ */');
+  L.push('#include <stdint.h>');
+  L.push('#include <stdio.h>');
+  L.push('#include <joy/joy.h>');
+  L.push('#include <joy/api/runtime/joy_value.h>');
+  L.push('#include <joy/api/runtime/joy_obj.h>');
+  L.push('#include <joy/api/runtime/joy_thunk.h>');
+  L.push('#include "joy_csharp.h"');
+  L.push('');
+  for (const e of open) L.push(emitIcall(e));
+  L.push('/* 句柄对象被 GC 时由 C# finalizer 调这里；计数仅供自检。 */');
+  L.push('static void icall_release(uint64_t h) { joy_obj_release((uint64_t)h); }');
+  L.push('static uint32_t icall_live_count(void) { return joy_obj_live_count(); }');
+  L.push('static uint32_t icall_destroy_count(void) { return joy_obj_destroy_count(); }');
+  L.push('');
+  L.push('void csopen_api(void)');
+  L.push('{');
+  for (const e of open) {
+    L.push('        csx_register_internal_call(' + q('Joy.Api.Native::' + methodName(e.name))
+      + ', (const void*)icall_' + methodName(e.name) + ');');
+  }
+  L.push('        csx_register_internal_call("Joy.Api.Native::Release", (const void*)icall_release);');
+  L.push('        csx_register_internal_call("Joy.Api.Native::DebugLiveCount", (const void*)icall_live_count);');
+  L.push('        csx_register_internal_call("Joy.Api.Native::DebugDestroyCount", (const void*)icall_destroy_count);');
+  L.push('}');
+  L.push('');
+  return L.join('\n');
+}
+
+/* ----------------------------------------------------------------- C# 侧 */
+
+function buildCs(open) {
+  const handles = new Set();
+  for (const e of open) {
+    if (isOpaque(e.ret)) handles.add(e.ret);
+    for (const p of e.params) if (isOpaque(p.ctype)) handles.add(p.ctype);
+  }
+
+  const L = [];
+  L.push('// <auto-generated> node api/gen_bindings.js --emit </auto-generated>');
+  L.push('// 强类型包装：脚本层只见对象，不见 IntPtr / 裸句柄。');
+  L.push('using System;');
+  L.push('using System.Runtime.CompilerServices;');
+  L.push('');
+  L.push('namespace Joy.Api');
+  L.push('{');
+  L.push('    internal static class Native');
+  L.push('    {');
+  for (const e of open) {
+    const ret = e.ret === 'void' ? 'void' : infoOf(e.ret).cs;
+    const ps = e.params.map((p, i) => infoOf(p.ctype).cs + ' ' + (p.name || ('arg' + i))).join(', ');
+    L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
+    L.push('        internal static extern ' + ret + ' ' + methodName(e.name) + '(' + ps + ');');
+  }
+  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
+  L.push('        internal static extern void Release(ulong handle);');
+  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
+  L.push('        internal static extern uint DebugLiveCount();');
+  L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
+  L.push('        internal static extern uint DebugDestroyCount();');
+  L.push('    }');
+  L.push('');
+  L.push('    public static class Diagnostics');
+  L.push('    {');
+  L.push('        public static uint LiveCount { get { return Native.DebugLiveCount(); } }');
+  L.push('        public static uint DestroyCount { get { return Native.DebugDestroyCount(); } }');
+  L.push('    }');
+  L.push('');
+  for (const h of [...handles].sort()) {
+    const cls = handleClass(h);
+    L.push('    public sealed class ' + cls);
+    L.push('    {');
+    L.push('        internal ulong Handle { get; private set; }');
+    L.push('        internal ' + cls + '(ulong handle) { Handle = handle; }');
+    L.push('        ~' + cls + '()');
+    L.push('        {');
+    L.push('            ulong h = Handle;');
+    L.push('            Handle = 0;');
+    L.push('            if (h != 0) Native.Release(h);');
+    L.push('        }');
+    L.push('    }');
+    L.push('');
+  }
+  L.push('    public static class Bindings');
+  L.push('    {');
+  for (const e of open) {
+    const mn = methodName(e.name);
+    const retHandle = isOpaque(e.ret);
+    const pubRet = retHandle ? handleClass(e.ret) : (e.ret === 'void' ? 'void' : infoOf(e.ret).cs);
+    const pubParams = e.params.map((p, i) => {
+      const ti = infoOf(p.ctype);
+      const nm = p.name || ('arg' + i);
+      return (ti.handle ? ti.cls : ti.cs) + ' ' + nm;
+    }).join(', ');
+    L.push('        public static ' + pubRet + ' ' + mn + '(' + pubParams + ')');
+    L.push('        {');
+    e.params.forEach((p, i) => {
+      if (isOpaque(p.ctype)) {
+        const nm = p.name || ('arg' + i);
+        L.push('            if (' + nm + ' == null)'
+          + ' throw new ArgumentNullException(nameof(' + nm + '));');
+      }
+    });
+    const callArgs = e.params.map((p, i) => {
+      const nm = p.name || ('arg' + i);
+      return isOpaque(p.ctype) ? nm + '.Handle' : nm;
+    }).join(', ');
+    const call = 'Native.' + mn + '(' + callArgs + ')';
+    if (e.ret === 'void') {
+      L.push('            ' + call + ';');
+    } else if (retHandle) {
+      L.push('            ulong h = ' + call + ';');
+      L.push('            if (h == 0) throw new InvalidOperationException(' + q(e.name + ' failed') + ');');
+      L.push('            return new ' + handleClass(e.ret) + '(h);');
+    } else {
+      L.push('            return ' + call + ';');
+    }
+    L.push('        }');
+  }
+  L.push('    }');
+  L.push('}');
+  L.push('');
+  return L.join('\n');
+}
+
+function buildCsGlue(entries) {
+  const open = entries.filter(e => e.status === 'on' && !e.orphan);
+  for (const e of open) {
+    if (e.level !== 'L0' && e.level !== 'L1') {
+      throw new Error('cs 适配只支持 L0/L1：' + e.name + '(' + e.level + ')');
+    }
+    if (e.ret !== 'void' && !isOpaque(e.ret) && !MAP[e.ret]) {
+      throw new Error('cs 适配暂不支持返回类型：' + e.name + ' -> ' + e.ret);
+    }
+    for (const p of e.params) {
+      if (!isOpaque(p.ctype) && !MAP[p.ctype]) {
+        throw new Error('cs 适配暂不支持参数类型：' + e.name + '.' + p.name + ' -> ' + p.ctype);
+      }
+    }
+  }
+  return { c: buildC(open), cs: buildCs(open) };
+}
+
+module.exports = { buildCsGlue };

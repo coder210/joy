@@ -4,7 +4,7 @@ This is an easy game framework.
 ## 目录
 
 - `joy.h` / `j*.c` / `external/` / `test/` —— 引擎核心。不依赖任何脚本运行时。
-- `api/` —— 与脚本语言无关的绑定 API 契约（`joy.idl` + 覆盖率报告），见 `api/README.md`。
+- `api/` —— 与脚本语言无关的绑定 API 契约：IDL、覆盖率报告、共享 C 运行层与各后端薄适配生成物，见 `api/README.md`。
 - `modules/` —— 可选的脚本后端：`lua`、`js`、`cs`。
 - `SDL/` `msgpack/` `spine/` —— 第三方源码。
 

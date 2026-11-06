@@ -24,7 +24,11 @@ const JMATH_H = path.join(JOY_REPO, 'jmath.h');
 const IDL = path.join(HERE, 'joy.idl');
 const REPORT = path.join(HERE, 'coverage.md');
 const THUNKS = path.join(HERE, 'thunks_generated.c');
+/* cs 后端薄适配也是入库生成物：由 joy.idl 的 status:on 条目驱动。 */
+const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api_generated.c');
+const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
 const { buildThunks } = require('./emit_thunks');
+const { buildCsGlue } = require('./emit_cs');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
    与 modules/cs/gen_csclib.js 的 SKIP_* 保持一致。 */
@@ -286,8 +290,8 @@ function buildReport(entries, meta) {
   L.push('# joy 绑定 API 覆盖率报告');
   L.push('');
   L.push('> 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。');
-  L.push('> **P0 阶段**：本文件与 `joy.idl` 只描述契约，不生成任何会被调用的胶水代码；');
-  L.push('> 现有 `modules/*/bindings/` 未被改动，构建行为不变。');
+  L.push('> 生成物（共享 thunk 与 cs 薄适配）只覆盖 `status: on` 的 L0/L1 条目；');
+  L.push('> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。');
   L.push('');
   L.push('## 总览');
   L.push('');
@@ -422,6 +426,22 @@ function check(entries) {
       errors.push('thunks_generated.c 已过期，请跑 node gen_bindings.js --emit');
     }
   }
+  let expectedCs = null;
+  try {
+    expectedCs = buildCsGlue(entries);
+  } catch (err) {
+    errors.push('cs 适配生成失败: ' + err.message);
+  }
+  if (expectedCs !== null) {
+    const cOnDisk = fs.existsSync(CS_C) ? fs.readFileSync(CS_C, 'utf8') : '';
+    const csOnDisk = fs.existsSync(CS_CS) ? fs.readFileSync(CS_CS, 'utf8') : '';
+    if (normEol(cOnDisk) !== normEol(expectedCs.c)) {
+      errors.push('modules/cs/bindings/api_generated.c 已过期，请跑 node gen_bindings.js --emit');
+    }
+    if (normEol(csOnDisk) !== normEol(expectedCs.cs)) {
+      errors.push('modules/cs/scripts/Api.generated.cs 已过期，请跑 node gen_bindings.js --emit');
+    }
+  }
   return errors;
 }
 
@@ -438,7 +458,8 @@ function main() {
         console.error('check FAILED (' + errors.length + ')');
         return 1;
       }
-      console.log('check OK: ' + loadIdl().length + ' IDL entries, report + thunks up to date');
+      console.log('check OK: ' + loadIdl().length
+        + ' IDL entries, report + thunks + cs glue up to date');
       return 0;
     }
     let entries;
@@ -452,10 +473,13 @@ function main() {
       entries = loadIdl();
       meta = scanJoyHeader();
     }
+    const glue = buildCsGlue(entries);
     fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');
     fs.writeFileSync(THUNKS, buildThunks(entries), 'utf8');
+    fs.writeFileSync(CS_C, glue.c, 'utf8');
+    fs.writeFileSync(CS_CS, glue.cs, 'utf8');
     console.log('emit: open=' + entries.filter(e => e.status === 'on').length
-      + ', report + thunks_generated.c written');
+      + ', report + thunks_generated.c + cs glue written');
     return 0;
   } catch (err) {
     console.error('gen_bindings: ' + err.message);

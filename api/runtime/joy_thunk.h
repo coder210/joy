@@ -24,6 +24,10 @@ typedef struct joy_thunk_entry {
 
 const joy_thunk_entry* joy_thunks_table(int* count);
 
+/* 按 C API 名查注册表并调用。三个后端都只走这个入口，
+ * 不必引用生成物里的 static thunk 函数。找不到名字时返回 NULL 值并写 st。 */
+joy_value_t joy_api_call(const char* name, joy_value_t* args, int argc, joy_status_t* st);
+
 #ifdef __cplusplus
 }
 #endif

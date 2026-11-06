@@ -62,6 +62,7 @@ void csopen_generated(void);
 void csopen_draw(void);
 void csopen_input(void);
 void csopen_host(void);
+void csopen_api(void);            /* IDL 驱动的共享 thunk 薄适配 */
 
 /* ---- 宿主 → 胶水层的输入桥 ----
  * 宿主把 SDL 事件写进来，C# 侧通过 Joy.Input 轮询，因此 C# 不需要接触 SDL_Event。 */

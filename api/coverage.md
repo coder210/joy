@@ -1,8 +1,8 @@
 # joy 绑定 API 覆盖率报告
 
 > 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。
-> **P0 阶段**：本文件与 `joy.idl` 只描述契约，不生成任何会被调用的胶水代码；
-> 现有 `modules/*/bindings/` 未被改动，构建行为不变。
+> 生成物（共享 thunk 与 cs 薄适配）只覆盖 `status: on` 的 L0/L1 条目；
+> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。
 
 ## 总览
 
