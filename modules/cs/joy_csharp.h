@@ -57,12 +57,12 @@ void csx_thread_attach(csx_p csx);
 
 /* ---- internal call 注册入口 ----
  * 由 csx_create() 内部调用；未启用模块时 stub.c 提供空实现。
- * 新增注册分组时在此登记声明，不要在别处另立对外头文件。 */
-void csopen_generated(void);
-void csopen_draw(void);
+ * 新增注册分组时在此登记声明，不要在别处另立对外头文件。
+ * host 组（输入桥 / 宿主服务）不属于脚本胶水，始终参与构建。 */
 void csopen_input(void);
 void csopen_host(void);
 void csopen_api(void);            /* IDL 驱动的共享 thunk 薄适配 */
+void csopen_borrow(void);         /* 宿主自建对象 → 脚本层借用句柄 */
 
 /* ---- 宿主 → 胶水层的输入桥 ----
  * 宿主把 SDL 事件写进来，C# 侧通过 Joy.Input 轮询，因此 C# 不需要接触 SDL_Event。 */

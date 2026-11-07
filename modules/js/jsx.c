@@ -2,7 +2,6 @@
 #include "duktape/duktape.h"
 #include <joy/joy.h>
 #include "joy_js.h"
-#include "bindings/legacy/jsclib.h"
 
 /* setEnv / getEnv 前向声明 */
 static duk_ret_t js_set_env(duk_context* ctx);
@@ -16,6 +15,17 @@ struct jsx {
 	duk_context* env;
 	jevent_callbacks_t cbs;   /* C 层事件回调集合 */
 };
+
+/* 最小 console.log：duktape 没有内置 console，旧胶水 base.c 删除后
+ * 脚本仍需一个打印出口（示例与冒烟输出都靠它）。 */
+static duk_ret_t js_console_log(duk_context* ctx)
+{
+	duk_idx_t i, n = duk_get_top(ctx);
+	for (i = 0; i < n; ++i) {
+		log_info("%s", duk_safe_to_string(ctx, i));
+	}
+	return 0;
+}
 
 /* 查找 joy.func 并调用 args… */
 static bool call_joy_js(duk_context* ctx, const char* func, int nargs)
@@ -153,44 +163,9 @@ jsx_p jsx_create(void)
 	jsx->cbs.on_resize         = default_resize;
 	jsx->cbs.on_process_event  = default_process_event;
 
-	/* 注册 jsclib 模块 */
-#ifdef JOY_ENABLE_LEGACY_BINDINGS
-	jsopen_base(jsx->ctx);
-#endif
-	/* IDL 驱动的新绑定层：全局 Joy.Api.Bindings.*（与 cs / lua 同名） */
+	/* 旧手写模块（r2d / window / keyboard / …）已随 modules/js/bindings/legacy
+	 * 一起移除；IDL 驱动的新绑定层是脚本层唯一入口。 */
 	jsopen_api(jsx->ctx);
-#ifdef JOY_ENABLE_LEGACY_BINDINGS
-	jsopen_fp(jsx->ctx);
-	jsopen_ft(jsx->ctx);
-	jsopen_vec2f(jsx->ctx);
-	jsopen_vec2(jsx->ctx);
-	jsopen_vec3f(jsx->ctx);
-	jsopen_vec3(jsx->ctx);
-	jsopen_mat22f(jsx->ctx);
-	jsopen_mat22(jsx->ctx);
-	jsopen_collision2d(jsx->ctx);
-	jsopen_collision2df(jsx->ctx);
-	jsopen_collision3d(jsx->ctx);
-	jsopen_utils(jsx->ctx);
-	jsopen_event(jsx->ctx);
-	jsopen_sdl(jsx->ctx);
-	jsopen_keyboard(jsx->ctx);
-	jsopen_audio(jsx->ctx);
-	jsopen_animation(jsx->ctx);
-	jsopen_network(jsx->ctx);
-	jsopen_timer(jsx->ctx);
-	jsopen_joystick(jsx->ctx);
-	jsopen_ui(jsx->ctx);
-	jsopen_render2d(jsx->ctx);
-	jsopen_window(jsx->ctx);
-	jsopen_render3d(jsx->ctx);
-	jsopen_gjk3df(jsx->ctx);
-	jsopen_janimator(jsx->ctx);
-	jsopen_behavior(jsx->ctx);
-	jsopen_scene(jsx->ctx);
-	jsopen_msgpack(jsx->ctx);
-	jsopen_font(jsx->ctx);
-#endif
 
 
 	/* 创建全局 joy 对象 */
@@ -202,6 +177,12 @@ jsx_p jsx_create(void)
 	duk_put_global_string(jsx->ctx, "set_env");
 	duk_push_c_function(jsx->ctx, js_get_env, 1);
 	duk_put_global_string(jsx->ctx, "get_env");
+
+	/* 全局 console.log（替代已删除的旧胶水 console） */
+	duk_push_object(jsx->ctx);
+	duk_push_c_function(jsx->ctx, js_console_log, DUK_VARARGS);
+	duk_put_prop_string(jsx->ctx, -2, "log");
+	duk_put_global_string(jsx->ctx, "console");
 
 	return jsx;
 }

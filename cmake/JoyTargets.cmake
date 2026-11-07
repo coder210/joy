@@ -19,8 +19,8 @@ get_filename_component(JOY_INCLUDE_ROOT "${JOY_ROOT}/.." ABSOLUTE)
 option(JOY_ENABLE_GLTF   "编译 jgltf.c（默认关闭：文件整体被 JOY_USE_GLTF 包裹）" OFF)
 option(JOY_ENABLE_SPINE  "编译 jspine.c 并链接 spine-c" OFF)
 option(JOY_ENABLE_PLUGINS "编译 jmodule.c 插件系统（SDL_LoadObject）" OFF)
-# P4 迁移完成前必须保持 ON：旧业务仍调用 Joy.Draw / Input / Host / Image / Font。
-option(JOY_ENABLE_LEGACY_BINDINGS "编译 bindings/legacy/ 旧手写胶水" ON)
+# 旧手写胶水 modules/*/bindings/legacy/ 已整体删除，开关随之移除；
+# 脚本层只剩 IDL 驱动的 Joy.Api.Bindings，宿主接口留在 modules/cs/bindings/host/。
 
 include("${CMAKE_CURRENT_LIST_DIR}/JoySources.cmake")
 joy_collect_sources(_joy_sources)

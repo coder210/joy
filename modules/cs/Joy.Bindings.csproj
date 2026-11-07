@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- joy 提供的 C# 绑定程序集。业务项目通过 ProjectReference 引用，
-       不再把 InternalCalls.cs 以源码链接的方式编进自己的程序集。
+       不再把绑定源码以源码链接的方式编进自己的程序集。
 
        运行时约束：产出的 Joy.Bindings.dll 必须部署到 CLR 搜索路径 lib/ 下
        （宿主用 mono_set_dirs(lib, lib) 指定目录，依赖程序集只从那里解析，
@@ -17,11 +17,11 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
   <ItemGroup>
-    <!-- 自动生成，勿手改：gen_csclib.js -->
-    <Compile Include="scripts/InternalCalls.cs" />
-    <!-- 手写的绘制 / 输入 / 宿主热点 -->
+    <!-- 手写的输入 / 宿主 internal call（绘制类已全部改走生成链路） -->
     <Compile Include="scripts/NativeCalls.cs" />
-    <!-- IDL 驱动的 Joy.Api.* 强类型绑定（自动生成，勿手改：api/gen_bindings.js） -->
+    <!-- IDL 驱动的 Joy.Api.* 强类型绑定（自动生成，勿手改：api/tools/gen_bindings.js） -->
     <Compile Include="scripts/Api.generated.cs" />
+    <!-- 宿主自建对象（窗口 / 渲染器）→ 生成链路句柄的桥 -->
+    <Compile Include="scripts/HostHandles.cs" />
   </ItemGroup>
 </Project>

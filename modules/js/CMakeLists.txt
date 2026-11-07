@@ -6,8 +6,7 @@
 # 关闭时只编 stub.c（ENABLED_JS_SCRIPT 未定义），链接符号由空桩承担。
 # 第三方 VM 源码在 external/duktape，模块内只放胶水。
 #
-# bindings/ 按链路分层：api/ 是 IDL 驱动的新链路，legacy/ 是旧手写胶水。
-# JOY_ENABLE_LEGACY_BINDINGS 控制 legacy/ 是否进构建（默认 ON，P4 迁移完成后可关）。
+# bindings/ 只有一个链路：api/ 是 IDL 驱动的绑定入口；旧手写胶水 legacy/ 已删除。
 # ============================================================
 if(NOT DEFINED JOY_MODULE_JS)
     set(JOY_MODULE_JS OFF CACHE BOOL "JavaScript (duktape) 脚本模块")
@@ -15,9 +14,6 @@ endif()
 get_property(_joy_requested GLOBAL PROPERTY JOY_REQUESTED_MODULES)
 if("js" IN_LIST _joy_requested)
     set(JOY_MODULE_JS ON)
-endif()
-if(NOT DEFINED JOY_ENABLE_LEGACY_BINDINGS)
-    set(JOY_ENABLE_LEGACY_BINDINGS ON)
 endif()
 
 if(TARGET joy_module_js)
@@ -42,7 +38,6 @@ add_library(joy_module_js INTERFACE)
 target_include_directories(joy_module_js INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}"
     "${CMAKE_CURRENT_LIST_DIR}/bindings/api"
-    "${CMAKE_CURRENT_LIST_DIR}/bindings/legacy"
     "${JOY_EXTERNAL_DIR}"
     ${JOY_SCRIPT_EXTRA_INCLUDES}
     "${JOY_MSGPACK_DIR}/include")
@@ -55,12 +50,6 @@ if(JOY_MODULE_JS)
         "${CMAKE_CURRENT_LIST_DIR}/bindings/*.c"
         "${CMAKE_CURRENT_LIST_DIR}/bindings/api/*.c")
     list(REMOVE_ITEM _glue "${CMAKE_CURRENT_LIST_DIR}/stub.c")
-    if(JOY_ENABLE_LEGACY_BINDINGS)
-        file(GLOB _legacy CONFIGURE_DEPENDS
-            "${CMAKE_CURRENT_LIST_DIR}/bindings/legacy/*.c")
-        list(APPEND _glue ${_legacy})
-        target_compile_definitions(joy_module_js INTERFACE JOY_ENABLE_LEGACY_BINDINGS)
-    endif()
 
     target_sources(joy_module_js INTERFACE
         ${_glue} "${JOY_EXTERNAL_DIR}/duktape/duktape.c")
@@ -77,7 +66,7 @@ if(JOY_MODULE_JS)
 
     source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES ${_glue}
         "${JOY_EXTERNAL_DIR}/duktape/duktape.c")
-    message(STATUS "joy: 模块 js 已启用（legacy=${JOY_ENABLE_LEGACY_BINDINGS}）")
+    message(STATUS "joy: 模块 js 已启用")
 else()
     message(STATUS "joy: 模块 js 未启用（stub.c 空桩）")
 endif()

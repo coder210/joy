@@ -12,7 +12,6 @@ History:
 #include "lua/lualib.h"
 #include "lua/lauxlib.h"
 #include "lua_cjson/lua_cjson.h"
-#include "bindings/legacy/luaclib.h"
 #include <joy/joy.h>
 #include "joy_lua.h"
 
@@ -141,60 +140,10 @@ luax_p luax_create(void)
         luax->cbs.on_resize         = default_resize;
         luax->cbs.on_process_event  = default_process_event;
 
-        // 创建 joy 表，所有模块注册在 joy.* 下
+        /* 创建全局 joy 表：旧手写模块表（joy.window / joy.r2d / joy.keyboard …）
+         * 已随 modules/lua/bindings/legacy 一起移除，这里只留空表供脚本挂自己的
+         * init / update / draw 回调与事件处理函数。 */
         lua_newtable(luax->L);
-
-#define JOY_MOD(name, open) \
-        luaL_requiref(luax->L, name, open, 0); \
-        lua_setfield(luax->L, -2, name)
-
-#ifdef JOY_ENABLE_LEGACY_BINDINGS
-        JOY_MOD("window", luaopen_window);
-        JOY_MOD("r2d", luaopen_render2d);
-        JOY_MOD("sdl", luaopen_sdl);
-        JOY_MOD("audio", luaopen_audio);
-        JOY_MOD("keyboard", luaopen_keyboard);
-        JOY_MOD("net", luaopen_net);
-        JOY_MOD("utils", luaopen_utils);
-        JOY_MOD("fp", luaopen_fp);
-        JOY_MOD("ft", luaopen_ft);
-        JOY_MOD("vec2f", luaopen_vec2f);
-        JOY_MOD("vec2", luaopen_vec2);
-        JOY_MOD("vec3f", luaopen_vec3f);
-        JOY_MOD("vec3", luaopen_vec3);
-        JOY_MOD("collision2df", luaopen_collision2df);
-        JOY_MOD("collision2d", luaopen_collision2d);
-        JOY_MOD("collision3d", luaopen_collision3d);
-        JOY_MOD("cjson", luaopen_cjson_safe);
-        JOY_MOD("packagex", luaopen_packagex);
-        JOY_MOD("ui", luaopen_ui);
-        JOY_MOD("c2s", luaopen_c2s);
-        JOY_MOD("s2c", luaopen_s2c);
-        JOY_MOD("ecs", luaopen_ecs);
-        JOY_MOD("mat22f", luaopen_mat22f);
-        JOY_MOD("mat22", luaopen_mat22);
-        JOY_MOD("server", luaopen_server);
-        JOY_MOD("client", luaopen_client);
-        JOY_MOD("timer", luaopen_timer);
-        JOY_MOD("animation", luaopen_animation);
-        JOY_MOD("joystick", luaopen_joystick);
-        JOY_MOD("event", luaopen_event);
-        JOY_MOD("thread", luaopen_thread);
-        JOY_MOD("console", luaopen_console);
-        JOY_MOD("render3d", luaopen_render3d);
-        JOY_MOD("gjk3df", luaopen_gjk3df);
-        JOY_MOD("animator", luaopen_janimator);
-        JOY_MOD("tilemap", luaopen_tilemap);
-        JOY_MOD("behavior", luaopen_behavior);
-        JOY_MOD("scene", luaopen_scene);
-        JOY_MOD("msgpack", luaopen_msgpack);
-        JOY_MOD("font", luaopen_font);
-        lua_getfield(luax->L, -1, "console");   /* 从 joy 表取出 console */
-        lua_setglobal(luax->L, "console");       /* 注册为全局 console */
-
-#endif
-
-#undef JOY_MOD
         lua_setglobal(luax->L, "joy");
 
         /* IDL 驱动的新绑定层：全局 Joy.Api.Bindings.*（与 cs / js 同名） */

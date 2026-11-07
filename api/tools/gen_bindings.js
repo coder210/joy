@@ -38,8 +38,7 @@ const { isOpaque } = require('./naming');
 /* jmath 包装生成器作为模块引入：--check 直接汇总它的错误，不再起子进程。 */
 const { check: checkJmathWrappers } = require('./jmath_wrap');
 
-/* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
-   与 modules/cs/gen_csclib.js 的 SKIP_* 保持一致。 */
+/* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。 */
 const SKIP_PREFIXES = ['utils_', 'jspine_', 'modules_', 'module_instance_'];
 const SKIP_NAMES = new Set(['jecs_test']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];

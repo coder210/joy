@@ -37,11 +37,10 @@ MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args) {
 void csx_method_free(csx_method_p method) { (void)method; }
 
 /* 胶水层同理：未启用时不注册任何 internal call（声明见 joy_csharp.h） */
-void csopen_generated(void) {}
-void csopen_draw(void) {}
 void csopen_input(void) {}
 void csopen_host(void) {}
 void csopen_api(void) {}
+void csopen_borrow(void) {}
 
 /* 输入桥 / 宿主状态同理：宿主只通过 joy_csharp.h 调用，关闭模块时也要能链接 */
 void csx_input_key(int scancode, bool down) { (void)scancode; (void)down; }
