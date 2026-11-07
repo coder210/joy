@@ -2,7 +2,7 @@
 #include "duktape/duktape.h"
 #include <joy/joy.h>
 #include "joy_js.h"
-#include "bindings/jsclib.h"
+#include "bindings/legacy/jsclib.h"
 
 /* setEnv / getEnv 前向声明 */
 static duk_ret_t js_set_env(duk_context* ctx);
@@ -154,9 +154,12 @@ jsx_p jsx_create(void)
 	jsx->cbs.on_process_event  = default_process_event;
 
 	/* 注册 jsclib 模块 */
+#ifdef JOY_ENABLE_LEGACY_BINDINGS
 	jsopen_base(jsx->ctx);
+#endif
 	/* IDL 驱动的新绑定层：全局 Joy.Api.Bindings.*（与 cs / lua 同名） */
 	jsopen_api(jsx->ctx);
+#ifdef JOY_ENABLE_LEGACY_BINDINGS
 	jsopen_fp(jsx->ctx);
 	jsopen_ft(jsx->ctx);
 	jsopen_vec2f(jsx->ctx);
@@ -187,6 +190,7 @@ jsx_p jsx_create(void)
 	jsopen_scene(jsx->ctx);
 	jsopen_msgpack(jsx->ctx);
 	jsopen_font(jsx->ctx);
+#endif
 
 
 	/* 创建全局 joy 对象 */
@@ -202,6 +206,13 @@ jsx_p jsx_create(void)
 	return jsx;
 }
 
+
+/* 与 Lua 的 luax_get_state 对称：把 duk_context 交给宿主做脚本层强交互
+ * （读写全局变量、注册 C 函数）。用 void* 以免头文件依赖 duktape。 */
+void* jsx_get_context(jsx_p jsx)
+{
+	return jsx ? jsx->ctx : NULL;
+}
 
 bool jsx_dofile(jsx_p jsx, const char* filename)
 {

@@ -1,7 +1,7 @@
 #include <SDL3/SDL.h>
 #include "lua/lapi.h"
 #include "lua/lauxlib.h"
-#include <joy/external/kcp.h>
+#include "external/kcp.h"
 #include "luaclib.h"
 #include <joy/joy.h>
 //

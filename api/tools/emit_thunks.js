@@ -1,8 +1,8 @@
 /*
  * P1 thunk 生成器（纯字符串函数，不写文件）
  *
- * 输入：api/joy.idl 里 status:on 的条目（只支持 L0 / L1）
- * 输出：api/thunks_generated.c 的完整文本
+ * 输入：api/idl/joy.idl 里 status:on 的条目（只支持 L0 / L1）
+ * 输出：api/generated/thunks_generated.c 的完整文本
  *
  * 生成的每个 thunk 都是「joy_value[] 进、joy_value 出」的纯 C 函数，
  * 不含任何 VM 类型；句柄由 joy_obj 管理，析构由 IDL 的 owns 驱动。
@@ -295,7 +295,7 @@ function buildThunks(entries) {
 
   const L = [];
   L.push('/* ============================================================');
-  L.push(' * 自动生成，勿手改：node api/gen_bindings.js --emit');
+  L.push(' * 自动生成，勿手改：node api/tools/gen_bindings.js --emit');
   L.push(' * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。');
   L.push(' * ============================================================ */');
   L.push('#include <joy/joy.h>');

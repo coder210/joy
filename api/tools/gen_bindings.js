@@ -2,13 +2,13 @@
 /*
  * joy 绑定 API 契约工具（P0）
  *
- * 只做三件事：解析 joy.h、维护 api/joy.idl、产出 api/coverage.md。
+ * 只做三件事：解析 include/joy/ 分域头、维护 api/idl/joy.idl、产出 api/generated/coverage.md。
  * P0 阶段不生成任何会被调用的胶水代码，现有各模块的 bindings 目录一行不动。
  *
  * 用法（任意目录，零 npm 依赖，只用 Node 内置 fs/path）：
- *   node gen_bindings.js            从 joy.idl 重生成 coverage.md（幂等）
- *   node gen_bindings.js --scan     从 joy.h 更新 joy.idl（保留人工字段）并重生成报告
- *   node gen_bindings.js --check    只校验不写文件，供 CI 做「生成物无 diff」门禁
+ *   node api/tools/gen_bindings.js            从 joy.idl 重生成 coverage.md（幂等）
+ *   node api/tools/gen_bindings.js --scan     从 joy.h 更新 joy.idl（保留人工字段）并重生成报告
+ *   node api/tools/gen_bindings.js --check    只校验不写文件，供 CI 做「生成物无 diff」门禁
  *
  * 三段结构：parse（解析 joy.h）→ classify（分级 / 推断所有权）→ emit（IDL / 报告）。
  */
@@ -17,19 +17,26 @@
 const fs = require('fs');
 const path = require('path');
 
-const HERE = __dirname;
-const JOY_REPO = path.resolve(HERE, '..');
-const JOY_H = path.join(JOY_REPO, 'joy.h');
-const JMATH_H = path.join(JOY_REPO, 'jmath.h');
-const IDL = path.join(HERE, 'joy.idl');
-const REPORT = path.join(HERE, 'coverage.md');
-const THUNKS = path.join(HERE, 'thunks_generated.c');
+const HERE = __dirname;                              /* api/tools */
+const JOY_REPO = path.resolve(HERE, '..', '..');    /* joy 仓库根 */
+const JOY_API = path.join(JOY_REPO, 'api');
+const JOY_H = path.join(JOY_REPO, 'include/joy/joy.h');
+const JMATH_H = path.join(JOY_REPO, 'include/joy/jmath.h');
+/* 第二个契约来源：jmath_wrap.js 生成的数学包装声明。主头只留一行 include，
+ * 生成代码不再混进 joy.h；两者都是 --scan / --check 的输入。
+ * api/ 目录约定：tools/ 人工生成器、idl/ 唯一真相源、generated/ 全部入库产物。 */
+const JMATH_WRAPPERS_H = path.join(JOY_API, 'generated', 'jmath_wrappers.h');
+const IDL = path.join(JOY_API, 'idl', 'joy.idl');
+const REPORT = path.join(JOY_API, 'generated', 'coverage.md');
+const THUNKS = path.join(JOY_API, 'generated', 'thunks_generated.c');
 /* cs 后端薄适配也是入库生成物：由 joy.idl 的 status:on 条目驱动。 */
-const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api_generated.c');
+const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api/api_generated.c');
 const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
 const { buildThunks, canThunk, ownsIssue } = require('./emit_thunks');
 const { buildCsGlue, canEmitCs } = require('./emit_cs');
 const { isOpaque } = require('./naming');
+/* jmath 包装生成器作为模块引入：--check 直接汇总它的错误，不再起子进程。 */
+const { check: checkJmathWrappers } = require('./jmath_wrap');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
    与 modules/cs/gen_csclib.js 的 SKIP_* 保持一致。 */
@@ -196,17 +203,27 @@ function classify(name, ret, params, reason, structs) {
   return { level: 'L0', reason: '纯标量 + const char*' };
 }
 
+/* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「joy.h 原生声明」
+ * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。 */
+const DECL_SOURCES = [
+  { label: 'include/joy/defs.h', file: path.join(JOY_REPO, 'include/joy/defs.h') },
+  { label: 'include/joy/api.h', file: path.join(JOY_REPO, 'include/joy/api.h') },
+  { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },
+];
+
 function scanJoyHeader() {
-  const src = fs.readFileSync(JOY_H, 'utf8');
   const structs = collectStructs();
   const parsed = [];
-  for (const d of collectDecls(src)) {
-    const p = parseDecl(d.decl, d.line);
-    if (p) parsed.push(p);
+  for (const s of DECL_SOURCES) {
+    const src = fs.readFileSync(s.file, 'utf8');
+    for (const d of collectDecls(src)) {
+      const p = parseDecl(d.decl, d.line);
+      if (p) parsed.push({ p, label: s.label });
+    }
   }
   /* 用 Map 而不是名字集合：inferOwns 要核对候选 dtor 的参数类型。 */
-  const declByName = new Map(parsed.map(p => [p.name, p]));
-  const fresh = parsed.map(p => {
+  const declByName = new Map(parsed.map(x => [x.p.name, x.p]));
+  const fresh = parsed.map(({ p, label }) => {
     const c = classify(p.name, p.ret, p.params, p.reason, structs);
     return {
       name: p.name,
@@ -217,7 +234,7 @@ function scanJoyHeader() {
       owns: inferOwns(p.name, p.ret, declByName),
       ret: p.ret,
       params: p.params,
-      source: 'joy.h:' + p.line,
+      source: label + ':' + p.line,
       note: '',
     };
   });
@@ -293,7 +310,7 @@ function buildReport(entries, meta) {
   const L = [];
   L.push('# joy 绑定 API 覆盖率报告');
   L.push('');
-  L.push('> 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。');
+  L.push('> 自动生成，勿手改：由 `api/tools/gen_bindings.js` 从 `include/joy/{defs,api}.h` + `api/idl/joy.idl` 产出。');
   L.push('> 生成物（共享 thunk 与 cs 薄适配）覆盖 `status: on` 的 L0/L1，');
   L.push('> 以及 P2-A 试点里按字段展开成标量序列的 L2 条目；');
   L.push('> 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；');
@@ -398,14 +415,14 @@ function buildReport(entries, meta) {
   L.push('');
   L.push('## 三种常见操作');
   L.push('');
-  L.push('见 `api/README.md`。CI 用 `node api/gen_bindings.js --check` 保证本文件与 IDL 同步。');
+  L.push('见 `api/README.md`。CI 用 `node api/tools/gen_bindings.js --check` 保证本文件与 IDL 同步。');
   L.push('');
   return L.join('\n');
 }
 
 function loadIdl() {
   if (!fs.existsSync(IDL)) {
-    console.error('未找到 ' + IDL + '，先执行 node gen_bindings.js --scan');
+    console.error('未找到 ' + IDL + '，先执行 node api/tools/gen_bindings.js --scan');
     process.exit(1);
   }
   return JSON.parse(fs.readFileSync(IDL, 'utf8'));
@@ -448,7 +465,7 @@ function check(entries) {
   const expected = buildReport(entries, meta);
   const onDisk = fs.existsSync(REPORT) ? fs.readFileSync(REPORT, 'utf8') : '';
   if (normEol(onDisk) !== normEol(expected)) {
-    errors.push('coverage.md 已过期，请跑 node gen_bindings.js');
+    errors.push('coverage.md 已过期，请跑 node api/tools/gen_bindings.js');
   }
   let expectedThunks = null;
   try {
@@ -459,7 +476,7 @@ function check(entries) {
   if (expectedThunks !== null) {
     const thunksOnDisk = fs.existsSync(THUNKS) ? fs.readFileSync(THUNKS, 'utf8') : '';
     if (normEol(thunksOnDisk) !== normEol(expectedThunks)) {
-      errors.push('thunks_generated.c 已过期，请跑 node gen_bindings.js --emit');
+      errors.push('thunks_generated.c 已过期，请跑 node api/tools/gen_bindings.js --emit');
     }
   }
   let expectedCs = null;
@@ -472,12 +489,14 @@ function check(entries) {
     const cOnDisk = fs.existsSync(CS_C) ? fs.readFileSync(CS_C, 'utf8') : '';
     const csOnDisk = fs.existsSync(CS_CS) ? fs.readFileSync(CS_CS, 'utf8') : '';
     if (normEol(cOnDisk) !== normEol(expectedCs.c)) {
-      errors.push('modules/cs/bindings/api_generated.c 已过期，请跑 node gen_bindings.js --emit');
+      errors.push('modules/cs/bindings/api/api_generated.c 已过期，请跑 node api/tools/gen_bindings.js --emit');
     }
     if (normEol(csOnDisk) !== normEol(expectedCs.cs)) {
-      errors.push('modules/cs/scripts/Api.generated.cs 已过期，请跑 node gen_bindings.js --emit');
+      errors.push('modules/cs/scripts/Api.generated.cs 已过期，请跑 node api/tools/gen_bindings.js --emit');
     }
   }
+  /* jmath 包装头是契约输入，它的声明与实现也是生成物，一并纳入同一门禁。 */
+  for (const e of checkJmathWrappers().errors) errors.push('jmath_wrap: ' + e);
   return errors;
 }
 
@@ -541,7 +560,7 @@ function main() {
         return 1;
       }
       console.log('check OK: ' + loadIdl().length
-        + ' IDL entries, report + thunks + cs glue up to date');
+        + ' IDL entries, report + thunks + cs glue + jmath wrappers up to date');
       return 0;
     }
     const hasEnable = args.includes('--enable');

@@ -3,7 +3,7 @@
 #include "lua/lua.h"
 #include <joy/joy.h>
 /* luax_* 宿主声明已随后端迁出 joy 核心，改由本仓 joy_lua.h 提供 */
-#include "../joy_lua.h"
+#include "joy_lua.h"
 #include "luaclib.h"
 
 /* =================================================================

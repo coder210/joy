@@ -1,8 +1,11 @@
-#ifndef LIV_LUT_H
-#define LIV_LUT_H
+/* SIN_LUT / tan_lut 两张查表的唯一定义翻译单元。
+ * 历史上它们是 jlut.h 里的 static 数组，经 jmath.h -> joy.h 被每个 .c 各复制一份
+ * （约 3.3 MB x 数十个 TU）。现在改为 extern 声明 + 单一定义，只读使用。
+ * 本文件是数据文件，只依赖 jlut.h 的声明与长度宏；改数据只改这里，
+ * 并同步 jlut.h 的长度宏。不要 include jmath.h：那是消费方，会形成反向依赖。 */
+#include "jlut.h"
 
-static long long SIN_LUT[] =
-{
+const long long SIN_LUT[JOY_SIN_LUT_LENGTH] = {
     0x0L, 0x8000L, 0x10000L, 0x18000L, 0x20000L, 0x28001L, 0x30001L, 0x38001L,
     0x40001L, 0x48002L, 0x50002L, 0x58002L, 0x60002L, 0x68002L, 0x70003L, 0x78003L,
     0x80003L, 0x88003L, 0x90004L, 0x98004L, 0xA0004L, 0xA8004L, 0xB0004L, 0xB8005L,
@@ -25741,8 +25744,7 @@ static long long SIN_LUT[] =
     0xFFFFFFFBL, 0xFFFFFFFCL, 0xFFFFFFFDL, 0xFFFFFFFEL, 0xFFFFFFFFL, 0xFFFFFFFFL, 0x100000000L,
 };
 
-
-static long long tan_lut[] = {
+const long long tan_lut[JOY_TAN_LUT_LENGTH] = {
     0x0L, 0x8000L, 0x10000L, 0x18000L, 0x20000L, 0x28001L, 0x30001L, 0x38001L,
     0x40001L, 0x48002L, 0x50002L, 0x58002L, 0x60002L, 0x68002L, 0x70003L, 0x78003L,
     0x80003L, 0x88003L, 0x90004L, 0x98004L, 0xA0004L, 0xA8004L, 0xB0004L, 0xB8005L,
@@ -51480,6 +51482,3 @@ static long long tan_lut[] = {
     0x249238A5F888L, 0x27626464505AL, 0x2AAA976D056EL, 0x2E8B8DEBA4A2L, 0x33331C1D2884L, 0x38E374928699L, 0x3FFFE3253264L, 0x4924714F70E5L,
     0x55552EDD09BCL, 0x6666383CD0AFL, 0x7FFFC64C623DL, 0xAAAA5DBB927EL, 0xFFFF8C99BA45L, 0x1FFFF19342BB8L, 0x7FFFFFFFFFFFFFFFL,
 };
-
-
-#endif //!LIV_LUT_H

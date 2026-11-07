@@ -22,6 +22,10 @@ typedef struct jsx jsx_t, * jsx_p;
 jsx_p jsx_create(void);
 void  jsx_release(jsx_p jsx);
 
+/* 底层 duk_context（需要脚本层强交互时使用；与 Lua 的 luax_get_state 对称）。
+ * 参数是 duk_context*，用 void* 以免头文件依赖 duktape。 */
+void* jsx_get_context(jsx_p jsx);
+
 /* 加载 / 热重载脚本 */
 bool  jsx_dofile(jsx_p jsx, const char* filename);
 bool  jsx_reload(jsx_p jsx, const char* filename);

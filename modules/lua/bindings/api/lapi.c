@@ -169,6 +169,14 @@ const char* luax_api_selftest(void)
                 "assert(a ~= b, 'lcg')\n"
                 "local ok = pcall(Joy.Api.Bindings.LcgRandomNext, 1)\n"
                 "assert(not ok, 'type guard')\n"
+                "local vx = Joy.Api.Bindings.JmathVec2AddX(1, 2, 3, 4)\n"
+                "local vy = Joy.Api.Bindings.JmathVec2AddY(1, 2, 3, 4)\n"
+                "assert(vx == 4 and vy == 6, 'jmath/vec2_add')\n"
+                "assert(Joy.Api.Bindings.JmathVec2Dot(1, 2, 3, 4) == 11, 'jmath/vec2_dot')\n"
+                "assert(math.abs(Joy.Api.Bindings.JmathVec2Length(3, 4) - 5) < 0.001, 'jmath/vec2_length')\n"
+                "assert(Joy.Api.Bindings.JmathFtClamp(5, 0, 3) == 3, 'jmath/ft_clamp')\n"
+                "assert(Joy.Api.Bindings.JmathVec3CrossZ(1, 0, 0, 0, 1, 0) == 1, 'jmath/vec3_cross')\n"
+                "assert(math.abs(Joy.Api.Bindings.JmathVec2NormalizeX(3, 4) - 0.6) < 0.01, 'jmath/normalize')\n"
                 "r = nil\n"
                 "collectgarbage('collect')\n") != 0) {
                 const char* msg = lua_tostring(L, -1);

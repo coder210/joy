@@ -12,7 +12,7 @@ History:
 #include "lua/lualib.h"
 #include "lua/lauxlib.h"
 #include "lua_cjson/lua_cjson.h"
-#include "bindings/luaclib.h"
+#include "bindings/legacy/luaclib.h"
 #include <joy/joy.h>
 #include "joy_lua.h"
 
@@ -148,6 +148,7 @@ luax_p luax_create(void)
         luaL_requiref(luax->L, name, open, 0); \
         lua_setfield(luax->L, -2, name)
 
+#ifdef JOY_ENABLE_LEGACY_BINDINGS
         JOY_MOD("window", luaopen_window);
         JOY_MOD("r2d", luaopen_render2d);
         JOY_MOD("sdl", luaopen_sdl);
@@ -190,6 +191,8 @@ luax_p luax_create(void)
         JOY_MOD("font", luaopen_font);
         lua_getfield(luax->L, -1, "console");   /* 从 joy 表取出 console */
         lua_setglobal(luax->L, "console");       /* 注册为全局 console */
+
+#endif
 
 #undef JOY_MOD
         lua_setglobal(luax->L, "joy");

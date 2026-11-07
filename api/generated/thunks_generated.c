@@ -1,5 +1,5 @@
 /* ============================================================
- * 自动生成，勿手改：node api/gen_bindings.js --emit
+ * 自动生成，勿手改：node api/tools/gen_bindings.js --emit
  * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。
  * ============================================================ */
 #include <joy/joy.h>
@@ -6437,6 +6437,4121 @@ static joy_value_t t_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_null();
 }
 
+static joy_value_t t_jmath_fp_from_float(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_from_float");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_from_float.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_fp_from_float(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_to_float(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_to_float");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_to_float.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_fp_to_float(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_fp_from_uint(joy_value_t* a, int n, joy_status_t* st)
+{
+        uint32_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_from_uint");
+        if (a[0].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_from_uint.arg0");
+        p0 = (uint32_t)a[0].as.u32;
+        _r = jmath_fp_from_uint(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_from_int(joy_value_t* a, int n, joy_status_t* st)
+{
+        int32_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_from_int");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_from_int.arg0");
+        p0 = (int32_t)a[0].as.i32;
+        _r = jmath_fp_from_int(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_from_fraction(joy_value_t* a, int n, joy_status_t* st)
+{
+        uint32_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_from_fraction");
+        if (a[0].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_from_fraction.arg0");
+        p0 = (uint32_t)a[0].as.u32;
+        _r = jmath_fp_from_fraction(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_min_value(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_min_value");
+        _r = jmath_fp_min_value();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_max_value(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_max_value");
+        _r = jmath_fp_max_value();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_add(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_add");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_add.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_add.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_fp_add(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_sub(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_sub");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_sub.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_sub.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_fp_sub(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_zero(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_zero");
+        _r = jmath_fp_zero();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_half(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_half");
+        _r = jmath_fp_half();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_one(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_one");
+        _r = jmath_fp_one();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_pi(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_pi");
+        _r = jmath_fp_pi();
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_max(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_max");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_max.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_max.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_fp_max(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_min(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_min");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_min.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_min.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_fp_min(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_pow2(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_pow2");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_pow2.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_fp_pow2(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_sign(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int32_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_sign");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_sign.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_fp_sign(p0);
+        return joy_v_i32((int32_t)_r);
+}
+
+static joy_value_t t_jmath_fp_clamp(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_clamp");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_clamp.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_clamp.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_clamp.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_fp_clamp(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_fp_lerp(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_fp_lerp");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_lerp.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_lerp.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_fp_lerp.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_fp_lerp(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_negate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_negate_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_negate_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_negate_x.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_negate_x(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_negate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_negate_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_negate_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_negate_y.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_negate_y(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_dot(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_dot");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_dot.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_dot.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_dot.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_dot.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_dot(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_cross(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_cross");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_cross(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_cross2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_cross2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_cross2_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_cross2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_cross2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross2_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_cross2_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_cross3_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_cross3_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_cross3_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_cross3_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_cross3_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_cross3_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_cross3_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_add_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_add_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_add_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_add_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_add_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_add_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_add_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_sub_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_sub_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_sub_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_sub_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_sub_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_sub_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_sub_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_scale_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_scale_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_scale_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_scale_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_scale_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_scale_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_scale_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_abs_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_abs_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_abs_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_abs_x.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_abs_x(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_abs_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_abs_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_abs_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_abs_y.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_abs_y(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_length_squared(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_length_squared");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_length_squared.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_length_squared.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_length_squared(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_length");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_length.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_length.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_length(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_normalize_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_normalize_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normalize_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normalize_x.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_normalize_x(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_normalize_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_normalize_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normalize_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normalize_y.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_normalize_y(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_normal_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_normal_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normal_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normal_x.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_normal_x(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_normal_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_normal_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normal_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_normal_y.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = jmath_vec2f_normal_y(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_rotate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_rotate_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_rotate_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_rotate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_rotate_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_rotate_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec2f_rotate_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_lerp_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t _r;
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_lerp_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_x.arg4");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        _r = jmath_vec2f_lerp_x(p0, p1, p2, p3, p4);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_lerp_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t _r;
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_lerp_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_lerp_y.arg4");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        _r = jmath_vec2f_lerp_y(p0, p1, p2, p3, p4);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2f_distance(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2f_distance");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_distance.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_distance.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_distance.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2f_distance.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec2f_distance(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_negate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_negate_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_negate_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_negate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_negate_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_negate_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_negate_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_negate_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_negate_z.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_negate_z(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_add_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_add_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_x.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_add_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_add_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_add_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_y.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_add_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_add_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_add_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_add_z.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_add_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_sub_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_sub_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_x.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_sub_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_sub_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_sub_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_y.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_sub_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_sub_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_sub_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_sub_z.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_sub_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_scale_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_scale_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec3f_scale_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_scale_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_scale_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec3f_scale_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_scale_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_scale_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_z.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_scale_z.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_vec3f_scale_z(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_abs_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_abs_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_abs_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_abs_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_abs_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_abs_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_abs_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_abs_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_abs_z.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_abs_z(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_dot(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_dot");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_dot.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_dot(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_cross_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_cross_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_x.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_cross_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_cross_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_cross_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_y.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_cross_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_cross_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_cross_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_cross_z.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_cross_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_square_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_square_length");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_square_length.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_square_length.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_square_length.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_square_length(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_length");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_length.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_length.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_length.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_length(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_normalize_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_normalize_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_x.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_normalize_x(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_normalize_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_normalize_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_y.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_normalize_y(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_normalize_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_normalize_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_normalize_z.arg2");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        _r = jmath_vec3f_normalize_z(p0, p1, p2);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_lerp_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_lerp_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_x.arg6");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        _r = jmath_vec3f_lerp_x(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_lerp_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_lerp_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_y.arg6");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        _r = jmath_vec3f_lerp_y(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_lerp_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_lerp_z");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_lerp_z.arg6");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        _r = jmath_vec3f_lerp_z(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_vec3f_distance(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3f_distance");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3f_distance.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_vec3f_distance(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_vec2f_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_vec2f_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_x.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_mat22f_mul_vec2f_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_vec2f_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_vec2f_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_vec2f_y.arg5");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        _r = jmath_mat22f_mul_vec2f_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_rotate_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_rotate_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_rotate_col1_x.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_mat22f_rotate_col1_x(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_rotate_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_rotate_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_rotate_col1_y.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_mat22f_rotate_col1_y(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_rotate_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_rotate_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_rotate_col2_x.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_mat22f_rotate_col2_x(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_rotate_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_rotate_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_rotate_col2_y.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = jmath_mat22f_rotate_col2_y(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_transpose_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_transpose_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_transpose_col1_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_transpose_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_transpose_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col1_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_transpose_col1_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_transpose_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_transpose_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_transpose_col2_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_transpose_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_transpose_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_transpose_col2_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_transpose_col2_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_invert_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_invert_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_invert_col1_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_invert_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_invert_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col1_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_invert_col1_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_invert_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_invert_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_invert_col2_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_invert_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_invert_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_invert_col2_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_invert_col2_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_add_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_add_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_x.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_add_col1_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_add_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_add_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col1_y.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_add_col1_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_add_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_add_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_x.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_add_col2_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_add_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_add_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_add_col2_y.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_add_col2_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_x.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_mul_col1_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col1_y.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_mul_col1_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_x.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_mul_col2_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_mul_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t p4;
+        int64_t p5;
+        int64_t p6;
+        int64_t p7;
+        int64_t _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_mul_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg3");
+        if (a[4].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg4");
+        if (a[5].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg5");
+        if (a[6].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg6");
+        if (a[7].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_mul_col2_y.arg7");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        p4 = (int64_t)a[4].as.i64;
+        p5 = (int64_t)a[5].as.i64;
+        p6 = (int64_t)a[6].as.i64;
+        p7 = (int64_t)a[7].as.i64;
+        _r = jmath_mat22f_mul_col2_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_abs_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_abs_col1_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_abs_col1_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_abs_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_abs_col1_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col1_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_abs_col1_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_abs_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_abs_col2_x");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_x.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_x.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_x.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_x.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_abs_col2_x(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22f_abs_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t p2;
+        int64_t p3;
+        int64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22f_abs_col2_y");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_y.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_y.arg1");
+        if (a[2].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_y.arg2");
+        if (a[3].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22f_abs_col2_y.arg3");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        p2 = (int64_t)a[2].as.i64;
+        p3 = (int64_t)a[3].as.i64;
+        _r = jmath_mat22f_abs_col2_y(p0, p1, p2, p3);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_jmath_ft_from_float(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_from_float");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_from_float.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_from_float(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_to_float(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_to_float");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_to_float.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_to_float(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_min_value(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_min_value");
+        _r = jmath_ft_min_value();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_max_value(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_max_value");
+        _r = jmath_ft_max_value();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_add(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_add");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_add.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_add.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_add(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_sub(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_sub");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_sub.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_sub.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_sub(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_mul(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_mul");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_mul.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_mul.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_mul(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_div(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_div");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_div.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_div.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_div(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_abs(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_abs");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_abs.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_abs(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_sqrt(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_sqrt");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_sqrt.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_sqrt(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_sin(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_sin");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_sin.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_sin(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_cos(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_cos");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_cos.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_cos(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_atan2(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_atan2");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_atan2.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_atan2.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_atan2(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_zero(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_zero");
+        _r = jmath_ft_zero();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_half(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_half");
+        _r = jmath_ft_half();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_one(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_one");
+        _r = jmath_ft_one();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_pi(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_pi");
+        _r = jmath_ft_pi();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_max(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_max");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_max.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_max.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_max(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_min(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_min");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_min.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_min.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_ft_min(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_pow2(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_pow2");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_pow2.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_pow2(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_sign(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        int32_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_sign");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_sign.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_sign(p0);
+        return joy_v_i32((int32_t)_r);
+}
+
+static joy_value_t t_jmath_ft_clamp(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_clamp");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_clamp.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_clamp.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_clamp.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_ft_clamp(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_lerp(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_lerp");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_lerp.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_lerp.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_lerp.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_ft_lerp(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_negate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_negate_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate_x.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_negate_x(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_negate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_negate_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate_y.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_negate_y(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_negate(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        uint64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_negate");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_negate.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_negate(p0, p1);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_dot(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_dot");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_dot.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_dot.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_dot.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_dot.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_dot(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_cross(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross2_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross2_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross2(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        uint64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross2");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross2.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross2(p0, p1, p2);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross3_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross3_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross3_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross3_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross3_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross3_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_cross3(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        uint64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_cross3");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_cross3.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_cross3(p0, p1, p2);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_add_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_add_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_add_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_add_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_add_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_add_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_add(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        uint64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_add");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_add.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_add(p0, p1, p2, p3);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_sub_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_sub_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_sub_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_sub_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_sub_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_sub_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_sub(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        uint64_t _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_sub");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_sub.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_sub(p0, p1, p2, p3);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_scale_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_scale_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_scale_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_scale_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_scale_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_scale_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_scale(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        uint64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_scale");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_scale.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_scale(p0, p1, p2);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_abs_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_abs_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs_x.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_abs_x(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_abs_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_abs_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs_y.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_abs_y(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_abs(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        uint64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_abs");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_abs.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_abs(p0, p1);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_length_squared(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_length_squared");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_length_squared.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_length_squared.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_length_squared(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_length");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_length.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_length.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_length(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_normalize_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normalize_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize_x.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normalize_x(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_normalize_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normalize_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize_y.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normalize_y(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_normalize(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        uint64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normalize");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normalize.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normalize(p0, p1);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_normal_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normal_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal_x.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normal_x(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_normal_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normal_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal_y.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normal_y(p0, p1);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_normal(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        uint64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_normal");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_normal.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        _r = jmath_vec2_normal(p0, p1);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_rotate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_rotate_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_rotate_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_rotate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_rotate_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_rotate_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_rotate(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        uint64_t _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_rotate");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_rotate.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec2_rotate(p0, p1, p2);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_lerp_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float _r;
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_lerp_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_x.arg4");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        _r = jmath_vec2_lerp_x(p0, p1, p2, p3, p4);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_lerp_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float _r;
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_lerp_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp_y.arg4");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        _r = jmath_vec2_lerp_y(p0, p1, p2, p3, p4);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec2_lerp(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        uint64_t _r;
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_lerp");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_lerp.arg4");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        _r = jmath_vec2_lerp(p0, p1, p2, p3, p4);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_vec2_distance(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec2_distance");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_distance.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_distance.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_distance.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec2_distance.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec2_distance(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_negate_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_negate_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_negate_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_negate_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_negate_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_negate_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_negate_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_negate_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_negate_z.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_negate_z(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_add_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_add_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_x.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_add_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_add_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_add_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_y.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_add_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_add_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_add_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_add_z.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_add_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_sub_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_sub_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_x.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_sub_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_sub_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_sub_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_y.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_sub_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_sub_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_sub_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_sub_z.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_sub_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_scale_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_scale_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_scale_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_scale_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_scale_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_scale_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_scale_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_scale_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_scale_z.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_scale_z(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_abs_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_abs_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_abs_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_abs_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_abs_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_abs_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_abs_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_abs_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_abs_z.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_abs_z(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_dot(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_dot");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_dot.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_dot(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_cross_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_cross_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_x.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_cross_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_cross_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_cross_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_y.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_cross_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_cross_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_cross_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_cross_z.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_cross_z(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_square_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_square_length");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_square_length.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_square_length.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_square_length.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_square_length(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_length(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_length");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_length.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_length.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_length.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_length(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_normalize_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_normalize_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_x.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_normalize_x(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_normalize_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_normalize_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_y.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_normalize_y(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_normalize_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float _r;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_normalize_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_normalize_z.arg2");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        _r = jmath_vec3_normalize_z(p0, p1, p2);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_lerp_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_lerp_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_x.arg6");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        _r = jmath_vec3_lerp_x(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_lerp_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_lerp_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_y.arg6");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        _r = jmath_vec3_lerp_y(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_lerp_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float _r;
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_lerp_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_lerp_z.arg6");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        _r = jmath_vec3_lerp_z(p0, p1, p2, p3, p4, p5, p6);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_distance(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_distance");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_distance.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_vec3_distance(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_vec2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_vec2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_x.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_mat22_mul_vec2_x(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_vec2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_vec2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2_y.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_mat22_mul_vec2_y(p0, p1, p2, p3, p4, p5);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_vec2(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        uint64_t _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_vec2");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_vec2.arg5");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        _r = jmath_mat22_mul_vec2(p0, p1, p2, p3, p4, p5);
+        return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_jmath_mat22_rotate_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_rotate_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_rotate_col1_x.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_mat22_rotate_col1_x(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_rotate_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_rotate_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_rotate_col1_y.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_mat22_rotate_col1_y(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_rotate_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_rotate_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_rotate_col2_x.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_mat22_rotate_col2_x(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_rotate_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_rotate_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_rotate_col2_y.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_mat22_rotate_col2_y(p0);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_transpose_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_transpose_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_transpose_col1_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_transpose_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_transpose_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col1_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_transpose_col1_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_transpose_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_transpose_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_transpose_col2_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_transpose_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_transpose_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_transpose_col2_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_transpose_col2_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_invert_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_invert_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_invert_col1_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_invert_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_invert_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col1_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_invert_col1_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_invert_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_invert_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_invert_col2_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_invert_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_invert_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_invert_col2_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_invert_col2_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_add_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_add_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_x.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_add_col1_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_add_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_add_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col1_y.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_add_col1_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_add_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_add_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_x.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_add_col2_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_add_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_add_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_add_col2_y.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_add_col2_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_x.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_mul_col1_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col1_y.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_mul_col1_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_x.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_mul_col2_x(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_mul_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float p4;
+        float p5;
+        float p6;
+        float p7;
+        float _r;
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_mul_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_mul_col2_y.arg7");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        p4 = (float)a[4].as.f64;
+        p5 = (float)a[5].as.f64;
+        p6 = (float)a[6].as.f64;
+        p7 = (float)a[7].as.f64;
+        _r = jmath_mat22_mul_col2_y(p0, p1, p2, p3, p4, p5, p6, p7);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_abs_col1_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_abs_col1_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_abs_col1_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_abs_col1_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_abs_col1_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col1_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_abs_col1_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_abs_col2_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_abs_col2_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_abs_col2_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_mat22_abs_col2_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_mat22_abs_col2_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_mat22_abs_col2_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_mat22_abs_col2_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_div_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_div_x");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_x.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_x.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_x.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_x.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_div_x(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_div_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_div_y");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_y.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_y.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_y.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_y.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_div_y(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_vec3_div_z(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        float p2;
+        float p3;
+        float _r;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jmath_vec3_div_z");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_z.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_z.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_z.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_vec3_div_z.arg3");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = jmath_vec3_div_z(p0, p1, p2, p3);
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_jmath_ft_radians(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jmath_ft_radians");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jmath_ft_radians.arg0");
+        p0 = (float)a[0].as.f64;
+        _r = jmath_ft_radians(p0);
+        return joy_v_f64((float)_r);
+}
+
 static const joy_value_kind k_lcg_random_create[] = { JOY_V_U64 };
 static const joy_value_kind k_lcg_random_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_lcg_random_next[] = { JOY_V_HANDLE };
@@ -6871,6 +10986,214 @@ static const joy_value_kind k_audio_shot_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_audio_bgm_stop[] = { JOY_V_HANDLE };
 static const joy_value_kind k_audio_bgm_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_audio_bgm_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_jmath_fp_from_float[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_fp_to_float[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_from_uint[] = { JOY_V_U32 };
+static const joy_value_kind k_jmath_fp_from_int[] = { JOY_V_I32 };
+static const joy_value_kind k_jmath_fp_from_fraction[] = { JOY_V_U32 };
+static const joy_value_kind k_jmath_fp_add[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_sub[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_max[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_min[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_pow2[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_sign[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_clamp[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_fp_lerp[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_negate_x[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_negate_y[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_dot[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_cross[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_cross2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_cross2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_cross3_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_cross3_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_add_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_add_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_sub_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_sub_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_scale_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_scale_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_abs_x[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_abs_y[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_length_squared[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_length[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_normalize_x[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_normalize_y[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_normal_x[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_normal_y[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_rotate_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_rotate_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_lerp_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_lerp_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec2f_distance[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_negate_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_negate_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_negate_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_add_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_add_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_add_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_sub_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_sub_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_sub_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_scale_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_scale_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_scale_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_abs_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_abs_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_abs_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_dot[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_cross_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_cross_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_cross_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_square_length[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_length[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_normalize_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_normalize_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_normalize_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_lerp_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_lerp_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_lerp_z[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_vec3f_distance[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_vec2f_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_vec2f_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_rotate_col1_x[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_rotate_col1_y[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_rotate_col2_x[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_rotate_col2_y[] = { JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_transpose_col1_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_transpose_col1_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_transpose_col2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_transpose_col2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_invert_col1_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_invert_col1_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_invert_col2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_invert_col2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_add_col1_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_add_col1_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_add_col2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_add_col2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_col1_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_col1_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_col2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_mul_col2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_abs_col1_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_abs_col1_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_abs_col2_x[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_mat22f_abs_col2_y[] = { JOY_V_I64, JOY_V_I64, JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_jmath_ft_from_float[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_to_float[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_add[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_sub[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_mul[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_div[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_abs[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_sqrt[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_sin[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_cos[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_atan2[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_max[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_min[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_pow2[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_sign[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_clamp[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_lerp[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_negate_x[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_negate_y[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_negate[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_dot[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross2[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross3_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross3_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_cross3[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_add_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_add_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_add[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_sub_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_sub_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_sub[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_scale_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_scale_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_scale[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_abs_x[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_abs_y[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_abs[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_length_squared[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_length[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normalize_x[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normalize_y[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normalize[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normal_x[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normal_y[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_normal[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_rotate_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_rotate_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_rotate[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_lerp_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_lerp_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_lerp[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec2_distance[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_negate_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_negate_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_negate_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_add_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_add_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_add_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_sub_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_sub_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_sub_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_scale_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_scale_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_scale_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_abs_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_abs_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_abs_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_dot[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_cross_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_cross_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_cross_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_square_length[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_length[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_normalize_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_normalize_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_normalize_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_lerp_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_lerp_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_lerp_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_distance[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_vec2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_vec2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_vec2[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_rotate_col1_x[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_rotate_col1_y[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_rotate_col2_x[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_rotate_col2_y[] = { JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_transpose_col1_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_transpose_col1_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_transpose_col2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_transpose_col2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_invert_col1_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_invert_col1_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_invert_col2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_invert_col2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_add_col1_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_add_col1_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_add_col2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_add_col2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_col1_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_col1_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_col2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_mul_col2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_abs_col1_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_abs_col1_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_abs_col2_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_mat22_abs_col2_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_div_x[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_div_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_vec3_div_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jmath_ft_radians[] = { JOY_V_F64 };
 
 static const joy_thunk_entry s_thunks[] = {
         { "lcg", "lcg_random_create", "LcgRandomCreate", t_lcg_random_create, 1, k_lcg_random_create, JOY_V_HANDLE },
@@ -7321,6 +11644,226 @@ static const joy_thunk_entry s_thunks[] = {
         { "audio", "audio_bgm_stop", "AudioBgmStop", t_audio_bgm_stop, 1, k_audio_bgm_stop, JOY_V_NULL },
         { "audio", "audio_bgm_set_gain", "AudioBgmSetGain", t_audio_bgm_set_gain, 2, k_audio_bgm_set_gain, JOY_V_NULL },
         { "audio", "audio_bgm_destroy", "AudioBgmDestroy", t_audio_bgm_destroy, 1, k_audio_bgm_destroy, JOY_V_NULL },
+        { "jmath", "jmath_fp_from_float", "JmathFpFromFloat", t_jmath_fp_from_float, 1, k_jmath_fp_from_float, JOY_V_I64 },
+        { "jmath", "jmath_fp_to_float", "JmathFpToFloat", t_jmath_fp_to_float, 1, k_jmath_fp_to_float, JOY_V_F64 },
+        { "jmath", "jmath_fp_from_uint", "JmathFpFromUint", t_jmath_fp_from_uint, 1, k_jmath_fp_from_uint, JOY_V_I64 },
+        { "jmath", "jmath_fp_from_int", "JmathFpFromInt", t_jmath_fp_from_int, 1, k_jmath_fp_from_int, JOY_V_I64 },
+        { "jmath", "jmath_fp_from_fraction", "JmathFpFromFraction", t_jmath_fp_from_fraction, 1, k_jmath_fp_from_fraction, JOY_V_I64 },
+        { "jmath", "jmath_fp_min_value", "JmathFpMinValue", t_jmath_fp_min_value, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_max_value", "JmathFpMaxValue", t_jmath_fp_max_value, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_add", "JmathFpAdd", t_jmath_fp_add, 2, k_jmath_fp_add, JOY_V_I64 },
+        { "jmath", "jmath_fp_sub", "JmathFpSub", t_jmath_fp_sub, 2, k_jmath_fp_sub, JOY_V_I64 },
+        { "jmath", "jmath_fp_zero", "JmathFpZero", t_jmath_fp_zero, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_half", "JmathFpHalf", t_jmath_fp_half, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_one", "JmathFpOne", t_jmath_fp_one, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_pi", "JmathFpPi", t_jmath_fp_pi, 0, NULL, JOY_V_I64 },
+        { "jmath", "jmath_fp_max", "JmathFpMax", t_jmath_fp_max, 2, k_jmath_fp_max, JOY_V_I64 },
+        { "jmath", "jmath_fp_min", "JmathFpMin", t_jmath_fp_min, 2, k_jmath_fp_min, JOY_V_I64 },
+        { "jmath", "jmath_fp_pow2", "JmathFpPow2", t_jmath_fp_pow2, 1, k_jmath_fp_pow2, JOY_V_I64 },
+        { "jmath", "jmath_fp_sign", "JmathFpSign", t_jmath_fp_sign, 1, k_jmath_fp_sign, JOY_V_I32 },
+        { "jmath", "jmath_fp_clamp", "JmathFpClamp", t_jmath_fp_clamp, 3, k_jmath_fp_clamp, JOY_V_I64 },
+        { "jmath", "jmath_fp_lerp", "JmathFpLerp", t_jmath_fp_lerp, 3, k_jmath_fp_lerp, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_negate_x", "JmathVec2fNegateX", t_jmath_vec2f_negate_x, 2, k_jmath_vec2f_negate_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_negate_y", "JmathVec2fNegateY", t_jmath_vec2f_negate_y, 2, k_jmath_vec2f_negate_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_dot", "JmathVec2fDot", t_jmath_vec2f_dot, 4, k_jmath_vec2f_dot, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_cross", "JmathVec2fCross", t_jmath_vec2f_cross, 4, k_jmath_vec2f_cross, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_cross2_x", "JmathVec2fCross2X", t_jmath_vec2f_cross2_x, 3, k_jmath_vec2f_cross2_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_cross2_y", "JmathVec2fCross2Y", t_jmath_vec2f_cross2_y, 3, k_jmath_vec2f_cross2_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_cross3_x", "JmathVec2fCross3X", t_jmath_vec2f_cross3_x, 3, k_jmath_vec2f_cross3_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_cross3_y", "JmathVec2fCross3Y", t_jmath_vec2f_cross3_y, 3, k_jmath_vec2f_cross3_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_add_x", "JmathVec2fAddX", t_jmath_vec2f_add_x, 4, k_jmath_vec2f_add_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_add_y", "JmathVec2fAddY", t_jmath_vec2f_add_y, 4, k_jmath_vec2f_add_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_sub_x", "JmathVec2fSubX", t_jmath_vec2f_sub_x, 4, k_jmath_vec2f_sub_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_sub_y", "JmathVec2fSubY", t_jmath_vec2f_sub_y, 4, k_jmath_vec2f_sub_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_scale_x", "JmathVec2fScaleX", t_jmath_vec2f_scale_x, 3, k_jmath_vec2f_scale_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_scale_y", "JmathVec2fScaleY", t_jmath_vec2f_scale_y, 3, k_jmath_vec2f_scale_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_abs_x", "JmathVec2fAbsX", t_jmath_vec2f_abs_x, 2, k_jmath_vec2f_abs_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_abs_y", "JmathVec2fAbsY", t_jmath_vec2f_abs_y, 2, k_jmath_vec2f_abs_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_length_squared", "JmathVec2fLengthSquared", t_jmath_vec2f_length_squared, 2, k_jmath_vec2f_length_squared, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_length", "JmathVec2fLength", t_jmath_vec2f_length, 2, k_jmath_vec2f_length, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_normalize_x", "JmathVec2fNormalizeX", t_jmath_vec2f_normalize_x, 2, k_jmath_vec2f_normalize_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_normalize_y", "JmathVec2fNormalizeY", t_jmath_vec2f_normalize_y, 2, k_jmath_vec2f_normalize_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_normal_x", "JmathVec2fNormalX", t_jmath_vec2f_normal_x, 2, k_jmath_vec2f_normal_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_normal_y", "JmathVec2fNormalY", t_jmath_vec2f_normal_y, 2, k_jmath_vec2f_normal_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_rotate_x", "JmathVec2fRotateX", t_jmath_vec2f_rotate_x, 3, k_jmath_vec2f_rotate_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_rotate_y", "JmathVec2fRotateY", t_jmath_vec2f_rotate_y, 3, k_jmath_vec2f_rotate_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_lerp_x", "JmathVec2fLerpX", t_jmath_vec2f_lerp_x, 5, k_jmath_vec2f_lerp_x, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_lerp_y", "JmathVec2fLerpY", t_jmath_vec2f_lerp_y, 5, k_jmath_vec2f_lerp_y, JOY_V_I64 },
+        { "jmath", "jmath_vec2f_distance", "JmathVec2fDistance", t_jmath_vec2f_distance, 4, k_jmath_vec2f_distance, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_negate_x", "JmathVec3fNegateX", t_jmath_vec3f_negate_x, 3, k_jmath_vec3f_negate_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_negate_y", "JmathVec3fNegateY", t_jmath_vec3f_negate_y, 3, k_jmath_vec3f_negate_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_negate_z", "JmathVec3fNegateZ", t_jmath_vec3f_negate_z, 3, k_jmath_vec3f_negate_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_add_x", "JmathVec3fAddX", t_jmath_vec3f_add_x, 6, k_jmath_vec3f_add_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_add_y", "JmathVec3fAddY", t_jmath_vec3f_add_y, 6, k_jmath_vec3f_add_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_add_z", "JmathVec3fAddZ", t_jmath_vec3f_add_z, 6, k_jmath_vec3f_add_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_sub_x", "JmathVec3fSubX", t_jmath_vec3f_sub_x, 6, k_jmath_vec3f_sub_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_sub_y", "JmathVec3fSubY", t_jmath_vec3f_sub_y, 6, k_jmath_vec3f_sub_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_sub_z", "JmathVec3fSubZ", t_jmath_vec3f_sub_z, 6, k_jmath_vec3f_sub_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_scale_x", "JmathVec3fScaleX", t_jmath_vec3f_scale_x, 4, k_jmath_vec3f_scale_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_scale_y", "JmathVec3fScaleY", t_jmath_vec3f_scale_y, 4, k_jmath_vec3f_scale_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_scale_z", "JmathVec3fScaleZ", t_jmath_vec3f_scale_z, 4, k_jmath_vec3f_scale_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_abs_x", "JmathVec3fAbsX", t_jmath_vec3f_abs_x, 3, k_jmath_vec3f_abs_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_abs_y", "JmathVec3fAbsY", t_jmath_vec3f_abs_y, 3, k_jmath_vec3f_abs_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_abs_z", "JmathVec3fAbsZ", t_jmath_vec3f_abs_z, 3, k_jmath_vec3f_abs_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_dot", "JmathVec3fDot", t_jmath_vec3f_dot, 6, k_jmath_vec3f_dot, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_cross_x", "JmathVec3fCrossX", t_jmath_vec3f_cross_x, 6, k_jmath_vec3f_cross_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_cross_y", "JmathVec3fCrossY", t_jmath_vec3f_cross_y, 6, k_jmath_vec3f_cross_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_cross_z", "JmathVec3fCrossZ", t_jmath_vec3f_cross_z, 6, k_jmath_vec3f_cross_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_square_length", "JmathVec3fSquareLength", t_jmath_vec3f_square_length, 3, k_jmath_vec3f_square_length, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_length", "JmathVec3fLength", t_jmath_vec3f_length, 3, k_jmath_vec3f_length, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_normalize_x", "JmathVec3fNormalizeX", t_jmath_vec3f_normalize_x, 3, k_jmath_vec3f_normalize_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_normalize_y", "JmathVec3fNormalizeY", t_jmath_vec3f_normalize_y, 3, k_jmath_vec3f_normalize_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_normalize_z", "JmathVec3fNormalizeZ", t_jmath_vec3f_normalize_z, 3, k_jmath_vec3f_normalize_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_lerp_x", "JmathVec3fLerpX", t_jmath_vec3f_lerp_x, 7, k_jmath_vec3f_lerp_x, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_lerp_y", "JmathVec3fLerpY", t_jmath_vec3f_lerp_y, 7, k_jmath_vec3f_lerp_y, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_lerp_z", "JmathVec3fLerpZ", t_jmath_vec3f_lerp_z, 7, k_jmath_vec3f_lerp_z, JOY_V_I64 },
+        { "jmath", "jmath_vec3f_distance", "JmathVec3fDistance", t_jmath_vec3f_distance, 6, k_jmath_vec3f_distance, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_vec2f_x", "JmathMat22fMulVec2fX", t_jmath_mat22f_mul_vec2f_x, 6, k_jmath_mat22f_mul_vec2f_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_vec2f_y", "JmathMat22fMulVec2fY", t_jmath_mat22f_mul_vec2f_y, 6, k_jmath_mat22f_mul_vec2f_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_rotate_col1_x", "JmathMat22fRotateCol1X", t_jmath_mat22f_rotate_col1_x, 1, k_jmath_mat22f_rotate_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_rotate_col1_y", "JmathMat22fRotateCol1Y", t_jmath_mat22f_rotate_col1_y, 1, k_jmath_mat22f_rotate_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_rotate_col2_x", "JmathMat22fRotateCol2X", t_jmath_mat22f_rotate_col2_x, 1, k_jmath_mat22f_rotate_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_rotate_col2_y", "JmathMat22fRotateCol2Y", t_jmath_mat22f_rotate_col2_y, 1, k_jmath_mat22f_rotate_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_transpose_col1_x", "JmathMat22fTransposeCol1X", t_jmath_mat22f_transpose_col1_x, 4, k_jmath_mat22f_transpose_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_transpose_col1_y", "JmathMat22fTransposeCol1Y", t_jmath_mat22f_transpose_col1_y, 4, k_jmath_mat22f_transpose_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_transpose_col2_x", "JmathMat22fTransposeCol2X", t_jmath_mat22f_transpose_col2_x, 4, k_jmath_mat22f_transpose_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_transpose_col2_y", "JmathMat22fTransposeCol2Y", t_jmath_mat22f_transpose_col2_y, 4, k_jmath_mat22f_transpose_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_invert_col1_x", "JmathMat22fInvertCol1X", t_jmath_mat22f_invert_col1_x, 4, k_jmath_mat22f_invert_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_invert_col1_y", "JmathMat22fInvertCol1Y", t_jmath_mat22f_invert_col1_y, 4, k_jmath_mat22f_invert_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_invert_col2_x", "JmathMat22fInvertCol2X", t_jmath_mat22f_invert_col2_x, 4, k_jmath_mat22f_invert_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_invert_col2_y", "JmathMat22fInvertCol2Y", t_jmath_mat22f_invert_col2_y, 4, k_jmath_mat22f_invert_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_add_col1_x", "JmathMat22fAddCol1X", t_jmath_mat22f_add_col1_x, 8, k_jmath_mat22f_add_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_add_col1_y", "JmathMat22fAddCol1Y", t_jmath_mat22f_add_col1_y, 8, k_jmath_mat22f_add_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_add_col2_x", "JmathMat22fAddCol2X", t_jmath_mat22f_add_col2_x, 8, k_jmath_mat22f_add_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_add_col2_y", "JmathMat22fAddCol2Y", t_jmath_mat22f_add_col2_y, 8, k_jmath_mat22f_add_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_col1_x", "JmathMat22fMulCol1X", t_jmath_mat22f_mul_col1_x, 8, k_jmath_mat22f_mul_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_col1_y", "JmathMat22fMulCol1Y", t_jmath_mat22f_mul_col1_y, 8, k_jmath_mat22f_mul_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_col2_x", "JmathMat22fMulCol2X", t_jmath_mat22f_mul_col2_x, 8, k_jmath_mat22f_mul_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_mul_col2_y", "JmathMat22fMulCol2Y", t_jmath_mat22f_mul_col2_y, 8, k_jmath_mat22f_mul_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_abs_col1_x", "JmathMat22fAbsCol1X", t_jmath_mat22f_abs_col1_x, 4, k_jmath_mat22f_abs_col1_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_abs_col1_y", "JmathMat22fAbsCol1Y", t_jmath_mat22f_abs_col1_y, 4, k_jmath_mat22f_abs_col1_y, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_abs_col2_x", "JmathMat22fAbsCol2X", t_jmath_mat22f_abs_col2_x, 4, k_jmath_mat22f_abs_col2_x, JOY_V_I64 },
+        { "jmath", "jmath_mat22f_abs_col2_y", "JmathMat22fAbsCol2Y", t_jmath_mat22f_abs_col2_y, 4, k_jmath_mat22f_abs_col2_y, JOY_V_I64 },
+        { "jmath", "jmath_ft_from_float", "JmathFtFromFloat", t_jmath_ft_from_float, 1, k_jmath_ft_from_float, JOY_V_F64 },
+        { "jmath", "jmath_ft_to_float", "JmathFtToFloat", t_jmath_ft_to_float, 1, k_jmath_ft_to_float, JOY_V_F64 },
+        { "jmath", "jmath_ft_min_value", "JmathFtMinValue", t_jmath_ft_min_value, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_max_value", "JmathFtMaxValue", t_jmath_ft_max_value, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_add", "JmathFtAdd", t_jmath_ft_add, 2, k_jmath_ft_add, JOY_V_F64 },
+        { "jmath", "jmath_ft_sub", "JmathFtSub", t_jmath_ft_sub, 2, k_jmath_ft_sub, JOY_V_F64 },
+        { "jmath", "jmath_ft_mul", "JmathFtMul", t_jmath_ft_mul, 2, k_jmath_ft_mul, JOY_V_F64 },
+        { "jmath", "jmath_ft_div", "JmathFtDiv", t_jmath_ft_div, 2, k_jmath_ft_div, JOY_V_F64 },
+        { "jmath", "jmath_ft_abs", "JmathFtAbs", t_jmath_ft_abs, 1, k_jmath_ft_abs, JOY_V_F64 },
+        { "jmath", "jmath_ft_sqrt", "JmathFtSqrt", t_jmath_ft_sqrt, 1, k_jmath_ft_sqrt, JOY_V_F64 },
+        { "jmath", "jmath_ft_sin", "JmathFtSin", t_jmath_ft_sin, 1, k_jmath_ft_sin, JOY_V_F64 },
+        { "jmath", "jmath_ft_cos", "JmathFtCos", t_jmath_ft_cos, 1, k_jmath_ft_cos, JOY_V_F64 },
+        { "jmath", "jmath_ft_atan2", "JmathFtAtan2", t_jmath_ft_atan2, 2, k_jmath_ft_atan2, JOY_V_F64 },
+        { "jmath", "jmath_ft_zero", "JmathFtZero", t_jmath_ft_zero, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_half", "JmathFtHalf", t_jmath_ft_half, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_one", "JmathFtOne", t_jmath_ft_one, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_pi", "JmathFtPi", t_jmath_ft_pi, 0, NULL, JOY_V_F64 },
+        { "jmath", "jmath_ft_max", "JmathFtMax", t_jmath_ft_max, 2, k_jmath_ft_max, JOY_V_F64 },
+        { "jmath", "jmath_ft_min", "JmathFtMin", t_jmath_ft_min, 2, k_jmath_ft_min, JOY_V_F64 },
+        { "jmath", "jmath_ft_pow2", "JmathFtPow2", t_jmath_ft_pow2, 1, k_jmath_ft_pow2, JOY_V_F64 },
+        { "jmath", "jmath_ft_sign", "JmathFtSign", t_jmath_ft_sign, 1, k_jmath_ft_sign, JOY_V_I32 },
+        { "jmath", "jmath_ft_clamp", "JmathFtClamp", t_jmath_ft_clamp, 3, k_jmath_ft_clamp, JOY_V_F64 },
+        { "jmath", "jmath_ft_lerp", "JmathFtLerp", t_jmath_ft_lerp, 3, k_jmath_ft_lerp, JOY_V_F64 },
+        { "jmath", "jmath_vec2_negate_x", "JmathVec2NegateX", t_jmath_vec2_negate_x, 2, k_jmath_vec2_negate_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_negate_y", "JmathVec2NegateY", t_jmath_vec2_negate_y, 2, k_jmath_vec2_negate_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_negate", "JmathVec2Negate", t_jmath_vec2_negate, 2, k_jmath_vec2_negate, JOY_V_U64 },
+        { "jmath", "jmath_vec2_dot", "JmathVec2Dot", t_jmath_vec2_dot, 4, k_jmath_vec2_dot, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross", "JmathVec2Cross", t_jmath_vec2_cross, 4, k_jmath_vec2_cross, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross2_x", "JmathVec2Cross2X", t_jmath_vec2_cross2_x, 3, k_jmath_vec2_cross2_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross2_y", "JmathVec2Cross2Y", t_jmath_vec2_cross2_y, 3, k_jmath_vec2_cross2_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross2", "JmathVec2Cross2", t_jmath_vec2_cross2, 3, k_jmath_vec2_cross2, JOY_V_U64 },
+        { "jmath", "jmath_vec2_cross3_x", "JmathVec2Cross3X", t_jmath_vec2_cross3_x, 3, k_jmath_vec2_cross3_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross3_y", "JmathVec2Cross3Y", t_jmath_vec2_cross3_y, 3, k_jmath_vec2_cross3_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_cross3", "JmathVec2Cross3", t_jmath_vec2_cross3, 3, k_jmath_vec2_cross3, JOY_V_U64 },
+        { "jmath", "jmath_vec2_add_x", "JmathVec2AddX", t_jmath_vec2_add_x, 4, k_jmath_vec2_add_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_add_y", "JmathVec2AddY", t_jmath_vec2_add_y, 4, k_jmath_vec2_add_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_add", "JmathVec2Add", t_jmath_vec2_add, 4, k_jmath_vec2_add, JOY_V_U64 },
+        { "jmath", "jmath_vec2_sub_x", "JmathVec2SubX", t_jmath_vec2_sub_x, 4, k_jmath_vec2_sub_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_sub_y", "JmathVec2SubY", t_jmath_vec2_sub_y, 4, k_jmath_vec2_sub_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_sub", "JmathVec2Sub", t_jmath_vec2_sub, 4, k_jmath_vec2_sub, JOY_V_U64 },
+        { "jmath", "jmath_vec2_scale_x", "JmathVec2ScaleX", t_jmath_vec2_scale_x, 3, k_jmath_vec2_scale_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_scale_y", "JmathVec2ScaleY", t_jmath_vec2_scale_y, 3, k_jmath_vec2_scale_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_scale", "JmathVec2Scale", t_jmath_vec2_scale, 3, k_jmath_vec2_scale, JOY_V_U64 },
+        { "jmath", "jmath_vec2_abs_x", "JmathVec2AbsX", t_jmath_vec2_abs_x, 2, k_jmath_vec2_abs_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_abs_y", "JmathVec2AbsY", t_jmath_vec2_abs_y, 2, k_jmath_vec2_abs_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_abs", "JmathVec2Abs", t_jmath_vec2_abs, 2, k_jmath_vec2_abs, JOY_V_U64 },
+        { "jmath", "jmath_vec2_length_squared", "JmathVec2LengthSquared", t_jmath_vec2_length_squared, 2, k_jmath_vec2_length_squared, JOY_V_F64 },
+        { "jmath", "jmath_vec2_length", "JmathVec2Length", t_jmath_vec2_length, 2, k_jmath_vec2_length, JOY_V_F64 },
+        { "jmath", "jmath_vec2_normalize_x", "JmathVec2NormalizeX", t_jmath_vec2_normalize_x, 2, k_jmath_vec2_normalize_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_normalize_y", "JmathVec2NormalizeY", t_jmath_vec2_normalize_y, 2, k_jmath_vec2_normalize_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_normalize", "JmathVec2Normalize", t_jmath_vec2_normalize, 2, k_jmath_vec2_normalize, JOY_V_U64 },
+        { "jmath", "jmath_vec2_normal_x", "JmathVec2NormalX", t_jmath_vec2_normal_x, 2, k_jmath_vec2_normal_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_normal_y", "JmathVec2NormalY", t_jmath_vec2_normal_y, 2, k_jmath_vec2_normal_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_normal", "JmathVec2Normal", t_jmath_vec2_normal, 2, k_jmath_vec2_normal, JOY_V_U64 },
+        { "jmath", "jmath_vec2_rotate_x", "JmathVec2RotateX", t_jmath_vec2_rotate_x, 3, k_jmath_vec2_rotate_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_rotate_y", "JmathVec2RotateY", t_jmath_vec2_rotate_y, 3, k_jmath_vec2_rotate_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_rotate", "JmathVec2Rotate", t_jmath_vec2_rotate, 3, k_jmath_vec2_rotate, JOY_V_U64 },
+        { "jmath", "jmath_vec2_lerp_x", "JmathVec2LerpX", t_jmath_vec2_lerp_x, 5, k_jmath_vec2_lerp_x, JOY_V_F64 },
+        { "jmath", "jmath_vec2_lerp_y", "JmathVec2LerpY", t_jmath_vec2_lerp_y, 5, k_jmath_vec2_lerp_y, JOY_V_F64 },
+        { "jmath", "jmath_vec2_lerp", "JmathVec2Lerp", t_jmath_vec2_lerp, 5, k_jmath_vec2_lerp, JOY_V_U64 },
+        { "jmath", "jmath_vec2_distance", "JmathVec2Distance", t_jmath_vec2_distance, 4, k_jmath_vec2_distance, JOY_V_F64 },
+        { "jmath", "jmath_vec3_negate_x", "JmathVec3NegateX", t_jmath_vec3_negate_x, 3, k_jmath_vec3_negate_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_negate_y", "JmathVec3NegateY", t_jmath_vec3_negate_y, 3, k_jmath_vec3_negate_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_negate_z", "JmathVec3NegateZ", t_jmath_vec3_negate_z, 3, k_jmath_vec3_negate_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_add_x", "JmathVec3AddX", t_jmath_vec3_add_x, 6, k_jmath_vec3_add_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_add_y", "JmathVec3AddY", t_jmath_vec3_add_y, 6, k_jmath_vec3_add_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_add_z", "JmathVec3AddZ", t_jmath_vec3_add_z, 6, k_jmath_vec3_add_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_sub_x", "JmathVec3SubX", t_jmath_vec3_sub_x, 6, k_jmath_vec3_sub_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_sub_y", "JmathVec3SubY", t_jmath_vec3_sub_y, 6, k_jmath_vec3_sub_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_sub_z", "JmathVec3SubZ", t_jmath_vec3_sub_z, 6, k_jmath_vec3_sub_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_scale_x", "JmathVec3ScaleX", t_jmath_vec3_scale_x, 4, k_jmath_vec3_scale_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_scale_y", "JmathVec3ScaleY", t_jmath_vec3_scale_y, 4, k_jmath_vec3_scale_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_scale_z", "JmathVec3ScaleZ", t_jmath_vec3_scale_z, 4, k_jmath_vec3_scale_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_abs_x", "JmathVec3AbsX", t_jmath_vec3_abs_x, 3, k_jmath_vec3_abs_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_abs_y", "JmathVec3AbsY", t_jmath_vec3_abs_y, 3, k_jmath_vec3_abs_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_abs_z", "JmathVec3AbsZ", t_jmath_vec3_abs_z, 3, k_jmath_vec3_abs_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_dot", "JmathVec3Dot", t_jmath_vec3_dot, 6, k_jmath_vec3_dot, JOY_V_F64 },
+        { "jmath", "jmath_vec3_cross_x", "JmathVec3CrossX", t_jmath_vec3_cross_x, 6, k_jmath_vec3_cross_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_cross_y", "JmathVec3CrossY", t_jmath_vec3_cross_y, 6, k_jmath_vec3_cross_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_cross_z", "JmathVec3CrossZ", t_jmath_vec3_cross_z, 6, k_jmath_vec3_cross_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_square_length", "JmathVec3SquareLength", t_jmath_vec3_square_length, 3, k_jmath_vec3_square_length, JOY_V_F64 },
+        { "jmath", "jmath_vec3_length", "JmathVec3Length", t_jmath_vec3_length, 3, k_jmath_vec3_length, JOY_V_F64 },
+        { "jmath", "jmath_vec3_normalize_x", "JmathVec3NormalizeX", t_jmath_vec3_normalize_x, 3, k_jmath_vec3_normalize_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_normalize_y", "JmathVec3NormalizeY", t_jmath_vec3_normalize_y, 3, k_jmath_vec3_normalize_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_normalize_z", "JmathVec3NormalizeZ", t_jmath_vec3_normalize_z, 3, k_jmath_vec3_normalize_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_lerp_x", "JmathVec3LerpX", t_jmath_vec3_lerp_x, 7, k_jmath_vec3_lerp_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_lerp_y", "JmathVec3LerpY", t_jmath_vec3_lerp_y, 7, k_jmath_vec3_lerp_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_lerp_z", "JmathVec3LerpZ", t_jmath_vec3_lerp_z, 7, k_jmath_vec3_lerp_z, JOY_V_F64 },
+        { "jmath", "jmath_vec3_distance", "JmathVec3Distance", t_jmath_vec3_distance, 6, k_jmath_vec3_distance, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_vec2_x", "JmathMat22MulVec2X", t_jmath_mat22_mul_vec2_x, 6, k_jmath_mat22_mul_vec2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_vec2_y", "JmathMat22MulVec2Y", t_jmath_mat22_mul_vec2_y, 6, k_jmath_mat22_mul_vec2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_vec2", "JmathMat22MulVec2", t_jmath_mat22_mul_vec2, 6, k_jmath_mat22_mul_vec2, JOY_V_U64 },
+        { "jmath", "jmath_mat22_rotate_col1_x", "JmathMat22RotateCol1X", t_jmath_mat22_rotate_col1_x, 1, k_jmath_mat22_rotate_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_rotate_col1_y", "JmathMat22RotateCol1Y", t_jmath_mat22_rotate_col1_y, 1, k_jmath_mat22_rotate_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_rotate_col2_x", "JmathMat22RotateCol2X", t_jmath_mat22_rotate_col2_x, 1, k_jmath_mat22_rotate_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_rotate_col2_y", "JmathMat22RotateCol2Y", t_jmath_mat22_rotate_col2_y, 1, k_jmath_mat22_rotate_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_transpose_col1_x", "JmathMat22TransposeCol1X", t_jmath_mat22_transpose_col1_x, 4, k_jmath_mat22_transpose_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_transpose_col1_y", "JmathMat22TransposeCol1Y", t_jmath_mat22_transpose_col1_y, 4, k_jmath_mat22_transpose_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_transpose_col2_x", "JmathMat22TransposeCol2X", t_jmath_mat22_transpose_col2_x, 4, k_jmath_mat22_transpose_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_transpose_col2_y", "JmathMat22TransposeCol2Y", t_jmath_mat22_transpose_col2_y, 4, k_jmath_mat22_transpose_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_invert_col1_x", "JmathMat22InvertCol1X", t_jmath_mat22_invert_col1_x, 4, k_jmath_mat22_invert_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_invert_col1_y", "JmathMat22InvertCol1Y", t_jmath_mat22_invert_col1_y, 4, k_jmath_mat22_invert_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_invert_col2_x", "JmathMat22InvertCol2X", t_jmath_mat22_invert_col2_x, 4, k_jmath_mat22_invert_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_invert_col2_y", "JmathMat22InvertCol2Y", t_jmath_mat22_invert_col2_y, 4, k_jmath_mat22_invert_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_add_col1_x", "JmathMat22AddCol1X", t_jmath_mat22_add_col1_x, 8, k_jmath_mat22_add_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_add_col1_y", "JmathMat22AddCol1Y", t_jmath_mat22_add_col1_y, 8, k_jmath_mat22_add_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_add_col2_x", "JmathMat22AddCol2X", t_jmath_mat22_add_col2_x, 8, k_jmath_mat22_add_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_add_col2_y", "JmathMat22AddCol2Y", t_jmath_mat22_add_col2_y, 8, k_jmath_mat22_add_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_col1_x", "JmathMat22MulCol1X", t_jmath_mat22_mul_col1_x, 8, k_jmath_mat22_mul_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_col1_y", "JmathMat22MulCol1Y", t_jmath_mat22_mul_col1_y, 8, k_jmath_mat22_mul_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_col2_x", "JmathMat22MulCol2X", t_jmath_mat22_mul_col2_x, 8, k_jmath_mat22_mul_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_mul_col2_y", "JmathMat22MulCol2Y", t_jmath_mat22_mul_col2_y, 8, k_jmath_mat22_mul_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_abs_col1_x", "JmathMat22AbsCol1X", t_jmath_mat22_abs_col1_x, 4, k_jmath_mat22_abs_col1_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_abs_col1_y", "JmathMat22AbsCol1Y", t_jmath_mat22_abs_col1_y, 4, k_jmath_mat22_abs_col1_y, JOY_V_F64 },
+        { "jmath", "jmath_mat22_abs_col2_x", "JmathMat22AbsCol2X", t_jmath_mat22_abs_col2_x, 4, k_jmath_mat22_abs_col2_x, JOY_V_F64 },
+        { "jmath", "jmath_mat22_abs_col2_y", "JmathMat22AbsCol2Y", t_jmath_mat22_abs_col2_y, 4, k_jmath_mat22_abs_col2_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_div_x", "JmathVec3DivX", t_jmath_vec3_div_x, 4, k_jmath_vec3_div_x, JOY_V_F64 },
+        { "jmath", "jmath_vec3_div_y", "JmathVec3DivY", t_jmath_vec3_div_y, 4, k_jmath_vec3_div_y, JOY_V_F64 },
+        { "jmath", "jmath_vec3_div_z", "JmathVec3DivZ", t_jmath_vec3_div_z, 4, k_jmath_vec3_div_z, JOY_V_F64 },
+        { "jmath", "jmath_ft_radians", "JmathFtRadians", t_jmath_ft_radians, 1, k_jmath_ft_radians, JOY_V_F64 },
 };
 
 const joy_thunk_entry* joy_thunks_table(int* count)
@@ -8685,6 +13228,666 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("audio_bgm_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/audio_bgm_destroy";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_from_float", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_from_float";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_to_float", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_to_float";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_from_uint", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_from_uint";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_from_int", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_from_int";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_from_fraction", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_from_fraction";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_min_value", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_min_value";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_max_value", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_max_value";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_add", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_add";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_sub", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_sub";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_zero", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_zero";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_half", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_half";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_one", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_one";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_pi", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_pi";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_max", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_max";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_min", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_min";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_pow2", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_pow2";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_sign", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_sign";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_clamp", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_clamp";
+        st = JOY_OK;
+        joy_api_call("jmath_fp_lerp", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_fp_lerp";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_negate_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_negate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_negate_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_negate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_dot", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_dot";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_cross", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_cross";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_cross2_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_cross2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_cross2_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_cross2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_cross3_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_cross3_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_cross3_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_cross3_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_add_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_add_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_add_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_add_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_sub_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_sub_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_sub_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_sub_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_scale_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_scale_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_scale_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_scale_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_abs_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_abs_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_abs_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_abs_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_length_squared", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_length_squared";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_length", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_normalize_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_normalize_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_normalize_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_normalize_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_normal_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_normal_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_normal_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_normal_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_rotate_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_rotate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_rotate_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_rotate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_lerp_x", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_lerp_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_lerp_y", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_lerp_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2f_distance", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2f_distance";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_negate_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_negate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_negate_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_negate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_negate_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_negate_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_add_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_add_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_add_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_add_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_add_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_add_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_sub_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_sub_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_sub_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_sub_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_sub_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_sub_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_scale_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_scale_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_scale_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_scale_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_scale_z", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_scale_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_abs_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_abs_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_abs_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_abs_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_abs_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_abs_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_dot", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_dot";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_cross_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_cross_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_cross_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_cross_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_cross_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_cross_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_square_length", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_square_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_length", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_normalize_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_normalize_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_normalize_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_normalize_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_normalize_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_normalize_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_lerp_x", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_lerp_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_lerp_y", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_lerp_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_lerp_z", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_lerp_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3f_distance", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3f_distance";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_vec2f_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_vec2f_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_vec2f_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_vec2f_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_rotate_col1_x", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_rotate_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_rotate_col1_y", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_rotate_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_rotate_col2_x", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_rotate_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_rotate_col2_y", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_rotate_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_transpose_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_transpose_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_transpose_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_transpose_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_transpose_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_transpose_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_transpose_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_transpose_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_invert_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_invert_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_invert_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_invert_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_invert_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_invert_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_invert_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_invert_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_add_col1_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_add_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_add_col1_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_add_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_add_col2_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_add_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_add_col2_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_add_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_col1_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_col1_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_col2_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_mul_col2_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_mul_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_abs_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_abs_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_abs_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_abs_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_abs_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_abs_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22f_abs_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22f_abs_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_from_float", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_from_float";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_to_float", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_to_float";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_min_value", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_min_value";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_max_value", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_max_value";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_add", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_add";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_sub", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_sub";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_mul", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_mul";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_div", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_div";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_abs", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_abs";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_sqrt", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_sqrt";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_sin", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_sin";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_cos", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_cos";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_atan2", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_atan2";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_zero", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_zero";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_half", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_half";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_one", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_one";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_pi", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_pi";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_max", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_max";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_min", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_min";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_pow2", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_pow2";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_sign", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_sign";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_clamp", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_clamp";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_lerp", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_lerp";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_negate_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_negate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_negate_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_negate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_negate", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_negate";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_dot", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_dot";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross2_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross2_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross2", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross2";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross3_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross3_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross3_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross3_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_cross3", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_cross3";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_add_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_add_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_add_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_add_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_add", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_add";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_sub_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_sub_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_sub_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_sub_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_sub", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_sub";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_scale_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_scale_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_scale_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_scale_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_scale", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_scale";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_abs_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_abs_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_abs_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_abs_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_abs", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_abs";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_length_squared", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_length_squared";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_length", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normalize_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normalize_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normalize_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normalize_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normalize", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normalize";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normal_x", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normal_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normal_y", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normal_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_normal", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_normal";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_rotate_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_rotate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_rotate_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_rotate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_rotate", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_rotate";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_lerp_x", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_lerp_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_lerp_y", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_lerp_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_lerp", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_lerp";
+        st = JOY_OK;
+        joy_api_call("jmath_vec2_distance", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec2_distance";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_negate_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_negate_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_negate_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_negate_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_negate_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_negate_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_add_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_add_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_add_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_add_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_add_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_add_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_sub_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_sub_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_sub_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_sub_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_sub_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_sub_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_scale_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_scale_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_scale_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_scale_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_scale_z", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_scale_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_abs_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_abs_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_abs_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_abs_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_abs_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_abs_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_dot", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_dot";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_cross_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_cross_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_cross_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_cross_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_cross_z", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_cross_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_square_length", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_square_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_length", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_length";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_normalize_x", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_normalize_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_normalize_y", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_normalize_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_normalize_z", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_normalize_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_lerp_x", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_lerp_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_lerp_y", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_lerp_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_lerp_z", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_lerp_z";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_distance", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_distance";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_vec2_x", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_vec2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_vec2_y", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_vec2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_vec2", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_vec2";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_rotate_col1_x", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_rotate_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_rotate_col1_y", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_rotate_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_rotate_col2_x", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_rotate_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_rotate_col2_y", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_rotate_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_transpose_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_transpose_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_transpose_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_transpose_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_transpose_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_transpose_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_transpose_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_transpose_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_invert_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_invert_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_invert_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_invert_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_invert_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_invert_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_invert_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_invert_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_add_col1_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_add_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_add_col1_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_add_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_add_col2_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_add_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_add_col2_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_add_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_col1_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_col1_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_col2_x", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_mul_col2_y", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_mul_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_abs_col1_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_abs_col1_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_abs_col1_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_abs_col1_y";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_abs_col2_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_abs_col2_x";
+        st = JOY_OK;
+        joy_api_call("jmath_mat22_abs_col2_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_mat22_abs_col2_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_div_x", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_div_x";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_div_y", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_div_y";
+        st = JOY_OK;
+        joy_api_call("jmath_vec3_div_z", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_vec3_div_z";
+        st = JOY_OK;
+        joy_api_call("jmath_ft_radians", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jmath_ft_radians";
 
         /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，
          * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */

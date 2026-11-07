@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const JOY_DIR = path.resolve(__dirname, '..');
+const JOY_DIR = path.resolve(__dirname, '..', '..');
 
 function stripComments(src) {
   return src
@@ -33,7 +33,11 @@ const SCALARS = new Set([
 /* Map<name, fields|null>。null = 布局不可展开，但名字仍参与分级判定。 */
 function collectStructs() {
   const out = new Map();
-  for (const file of [path.join(JOY_DIR, 'joy.h'), path.join(JOY_DIR, 'jmath.h')]) {
+  /* joy.h 已拆成聚合门面 + include/joy/{defs,types}.h；结构体布局分散在前两者，
+   * 加上 jmath.h 的值类型，三者合起来才是完整的类型集合。 */
+  for (const file of [path.join(JOY_DIR, 'include/joy/defs.h'),
+                      path.join(JOY_DIR, 'include/joy/types.h'),
+                      path.join(JOY_DIR, 'include/joy/jmath.h')]) {
     if (!fs.existsSync(file)) continue;
     const src = stripComments(fs.readFileSync(file, 'utf8'));
     const re = /typedef\s+struct\s*\w*\s*\{([^}]*)\}\s*([A-Za-z_]\w*)\s*;/g;

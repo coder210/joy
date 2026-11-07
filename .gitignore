@@ -12,6 +12,11 @@ _deps
 CMakeUserPresets.json
 build
 build*/
+# vendor/SDL/include/build_config/ 是 SDL 的源码头（不是构建产物），上面的
+# build*/ 会误伤：迁移到 vendor/ 后这 10 个原本 tracked 的文件会变成 ignored，
+# 导致 git add -A 只提交删除、丢掉文件。显式放行该目录。
+!vendor/SDL/include/build_config/
+!vendor/SDL/include/build_config/**
 .vs
 .vscode
 

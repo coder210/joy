@@ -108,7 +108,14 @@ static duk_ret_t jg_get_renderer(duk_context* ctx) { duk_push_pointer(ctx, JG_RE
 
 static duk_ret_t jg_create_font(duk_context* ctx)
 { 
-        duk_push_pointer(ctx, font_create(duk_to_string(ctx, 1), (int)duk_to_number(ctx, 2)));
+        /* create_font 是 r2d 里唯一不带 renderer 首参的函数，实参从 index 0 起；
+         * 原先照「renderer 在 0」的偏移写成 1/2，path 实际取到字号，字体永远建不出来
+         * （日志表现为 "Failed to load font file: 12"）。
+         * 失败返回 undefined 而不是 pointer(NULL)：duktape 的 pointer 值恒为真，
+         * 调用方拿到 NULL 指针也无法判空，只能靠 undefined 表达失败。 */
+        font_p f = font_create(duk_to_string(ctx, 0), (int)duk_to_number(ctx, 1));
+        if (!f) { duk_push_undefined(ctx); return 1; }
+        duk_push_pointer(ctx, f);
         return 1;
 }
 

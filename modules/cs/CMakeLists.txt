@@ -8,6 +8,11 @@
 # 根目录只放 CLR 宿主、模块契约与 MSBuild 入口。
 # C# 绑定工程 Joy.Bindings.csproj 与本文件同目录；CLR 预编译二进制在仓库根
 # runtimes/，由调用方通过 JOY_CLR_ROOT 定位，不在模块内。
+#
+# bindings/ 按链路分三层：api/ 是 IDL 驱动的生成胶水；host/ 提供宿主必需的
+# csx_input_* / csx_host_* 入口（main.c 直接调用，必须始终编译）；
+# legacy/ 是旧手写业务胶水。JOY_ENABLE_LEGACY_BINDINGS 只控制 legacy/
+#（默认 ON，P4 迁移完成后可关）。
 # ============================================================
 if(NOT DEFINED JOY_MODULE_CS)
     set(JOY_MODULE_CS OFF CACHE BOOL "C# 脚本模块（源码直接编入调用方 target）")
@@ -16,13 +21,20 @@ get_property(_joy_requested GLOBAL PROPERTY JOY_REQUESTED_MODULES)
 if("cs" IN_LIST _joy_requested)
     set(JOY_MODULE_CS ON)
 endif()
+if(NOT DEFINED JOY_ENABLE_LEGACY_BINDINGS)
+    set(JOY_ENABLE_LEGACY_BINDINGS ON)
+endif()
 
 if(TARGET joy_module_cs)
     return()
 endif()
 
 add_library(joy_module_cs INTERFACE)
-target_include_directories(joy_module_cs INTERFACE "${CMAKE_CURRENT_LIST_DIR}")
+target_include_directories(joy_module_cs INTERFACE
+    "${CMAKE_CURRENT_LIST_DIR}"
+    "${CMAKE_CURRENT_LIST_DIR}/bindings/api"
+    "${CMAKE_CURRENT_LIST_DIR}/bindings/host"
+    "${CMAKE_CURRENT_LIST_DIR}/bindings/legacy")
 target_sources(joy_module_cs INTERFACE "${CMAKE_CURRENT_LIST_DIR}/stub.c")
 
 # 导出给调用方，避免把模块内部路径硬编码到主仓 CMakeLists / CI
@@ -38,8 +50,16 @@ if(JOY_MODULE_CS)
 
     file(GLOB _glue CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_LIST_DIR}/*.c"
-        "${CMAKE_CURRENT_LIST_DIR}/bindings/*.c")
+        "${CMAKE_CURRENT_LIST_DIR}/bindings/*.c"
+        "${CMAKE_CURRENT_LIST_DIR}/bindings/api/*.c"
+        "${CMAKE_CURRENT_LIST_DIR}/bindings/host/*.c")
     list(REMOVE_ITEM _glue "${CMAKE_CURRENT_LIST_DIR}/stub.c")
+    if(JOY_ENABLE_LEGACY_BINDINGS)
+        file(GLOB _legacy CONFIGURE_DEPENDS
+            "${CMAKE_CURRENT_LIST_DIR}/bindings/legacy/*.c")
+        list(APPEND _glue ${_legacy})
+        target_compile_definitions(joy_module_cs INTERFACE JOY_ENABLE_LEGACY_BINDINGS)
+    endif()
 
     target_sources(joy_module_cs INTERFACE ${_glue})
     target_include_directories(joy_module_cs INTERFACE ${MONO_INCLUDE_DIR})
@@ -49,7 +69,7 @@ if(JOY_MODULE_CS)
     if(JOY_SCRIPT_INCLUDE_ROOT)
         source_group(TREE "${JOY_SCRIPT_INCLUDE_ROOT}" FILES ${_glue})
     endif()
-    message(STATUS "joy: 模块 cs 已启用（源码直接编入调用方 target）")
+    message(STATUS "joy: 模块 cs 已启用（legacy=${JOY_ENABLE_LEGACY_BINDINGS}）")
 else()
     message(STATUS "joy: 模块 cs 未启用（stub.c 空桩）")
 endif()

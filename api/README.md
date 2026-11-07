@@ -5,22 +5,25 @@
 
 > **边界**：本目录只产出契约、报告，以及可被三后端共用的 C 运行层 / 薄适配生成物。
 > 旧的 `modules/*/bindings/` 手写胶水一行未删，新旧链路并行；哪些 API 真正开放由
-> `joy.idl` 的 `status: on` 决定（当前 448 / 935，含 L2 试点 2 条）。**开放 ≠ 业务已调用**。
+> `joy.idl` 的 `status: on` 决定（当前 668 / 1155，含 L2 试点 2 条、jmath 包装 220 条）。**开放 ≠ 业务已调用**。
 > 所有生成物都提交进仓，`git diff` 随时能看清改了什么。
 
 ## 文件
 
 | 文件 | 谁维护 | 作用 |
 |---|---|---|
-| `gen_bindings.js` | 人工 | 解析 `joy.h`、维护 IDL、产出全部生成物。零 npm 依赖，只用 Node 内置 `fs` / `path` |
+| `gen_bindings.js` | 人工 | 解析 `include/joy/{defs,api}.h` + `generated/jmath_wrappers.h`、维护 IDL、产出全部生成物。零 npm 依赖，只用 Node 内置 `fs` / `path` |
 | `naming.js` | 人工 | **三端共用**的命名与句柄判定规则，避免各后端长出自己的方言 |
 | `emit_thunks.js` | 人工 | 共享 thunk / 注册表生成器（纯字符串函数） |
 | `emit_cs.js` | 人工 | cs 后端薄适配生成器，产出 C icall 与 C# 强类型包装 |
 | `structs.js` | 人工 | 值类型结构体布局解析 + L2 参数按字段展开，三个生成器共用 |
+| `jmath_wrap.js` | 人工 | 解析 `jmath.h`，生成 `generated/jmath_wrappers.{h,c}`；作为模块被 `--check` 直接调用 |
+| `generated/jmath_wrappers.h` | 工具生成，勿手改 | 220 条全标量 `JOY_API` 声明，第二个契约输入源；`joy.h` 只留一行 include |
+| `generated/jmath_wrappers.c` | 工具生成，勿手改 | jmath 数学函数的外部链接包装实现，由 `cmake/JoySources.cmake` 显式收编 |
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待裁决、L3 手写清单 |
 | `thunks_generated.c` | 工具生成，勿手改 | `status: on` 的 L0/L1 及可展开的 L2 试点会生成 thunk、注册表与自检 |
-| `modules/cs/bindings/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
+| `modules/cs/bindings/api/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
 | `modules/lua/bindings/lapi.c` | 人工 | Lua 薄适配：遍历注册表、`joy_value` ↔ Lua 值、句柄 userdata `__gc` |
 | `modules/js/bindings/japi.c` | 人工 | JS 薄适配：遍历注册表、`joy_value` ↔ duktape 值、句柄对象 finalizer |
@@ -34,17 +37,21 @@
 在任意目录执行（路径都相对脚本自身）：
 
 ```powershell
-node third_party/joy/api/gen_bindings.js            # 重生成报告 + thunks + cs glue
-node third_party/joy/api/gen_bindings.js --emit     # 同上（显式写法）
-node third_party/joy/api/gen_bindings.js --scan     # 从 joy.h 更新 joy.idl + 重生成全部产物
-node third_party/joy/api/gen_bindings.js --enable L0|L1|all|domain:<名>|name:<API>
-node third_party/joy/api/gen_bindings.js --disable <同样的选择子>
-node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI 门禁用
+node third_party/joy/api/tools/gen_bindings.js            # 重生成报告 + thunks + cs glue
+node third_party/joy/api/tools/gen_bindings.js --emit     # 同上（显式写法）
+node third_party/joy/api/tools/gen_bindings.js --scan     # 从两个契约头更新 joy.idl + 重生成全部产物
+node third_party/joy/api/tools/jmath_wrap.js              # 改过 jmath.h 后先跑：重生成 jmath_wrappers.{h,c}
+node third_party/joy/api/tools/gen_bindings.js --enable L0|L1|all|domain:<名>|name:<API>
+node third_party/joy/api/tools/gen_bindings.js --disable <同样的选择子>
+node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文件，CI 门禁用
 ```
 
 默认生成 4 个入库产物：`coverage.md`、`thunks_generated.c`、
-`modules/cs/bindings/api_generated.c`、`modules/cs/scripts/Api.generated.cs`。
-`--scan` 是幂等的：同一份 `joy.h` 连续跑两次，产物字节不变。
+`modules/cs/bindings/api/api_generated.c`、`modules/cs/scripts/Api.generated.cs`。
+另有 `jmath_wrap.js` 单独生成 `generated/jmath_wrappers.{h,c}`：先跑它再跑
+`--scan`，因为 `.h` 是契约输入。`--check` 直接调用该模块的 `check()` 汇总错误，
+不再起子进程；改过 `jmath.h` 后两个生成物任一过期、或 `joy.h` 少了那行 include，
+都会让门禁失败。`--scan` 是幂等的：同一份契约头连续跑两次，产物字节不变。
 
 ### 批量开放
 
@@ -66,18 +73,18 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
 ```json
 {"name":"font_create","domain":"font","level":"L1","reason":"...","status":"off",
  "owns":"font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true}],
- "source":"joy.h:1076","note":""}
+ "source":"include/joy/api.h:1076","note":""}
 ```
 
 | 字段 | 归属 | 说明 |
 |---|---|---|
-| `name` / `domain` / `level` / `reason` / `ret` / `params` / `source` | **自动** | 每次 `--scan` 从 `joy.h` 重新解析并覆盖，不要手改 |
+| `name` / `domain` / `level` / `reason` / `ret` / `params` / `source` | **自动** | 每次 `--scan` 从 `include/joy/{defs,api}.h` 重新解析并覆盖，不要手改 |
 | `status` | **人工** | `off` / `on`。可手改，也可用 `--enable` / `--disable` 批量改 |
 | `owns` | **人工** | 配对析构函数名。`--scan` 首次会推断填充，之后永不覆盖；推断错的会进「所有权待裁决」清单 |
 | `note` | **人工** | 备注，永不覆盖 |
 
 `--scan` 按 `name` 合并：自动字段刷新，`status` / `owns` / `note` 原样保留。
-`joy.h` 里删掉的条目不会丢，会保留并标 `orphan: true`，在报告里单列。
+`include/joy/{defs,api}.h` 里删掉的条目不会丢，会保留并标 `orphan: true`，在报告里单列。
 
 ## P1 / P2：共享运行层与 thunk
 
@@ -91,9 +98,9 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
                     joy_obj（句柄 / refcount / dtor）→ 真正的 joy C API
 ```
 
-**当前开放 448 条**：L0 42 条（另 2 条返回 `char*` 被跳过）、L1 404 条
-（含首批人工验证的 2 条）、L2 试点 2 条，跳过 136 条。其余 487 条 = L2 72 +
-L3 229 + X 50 + 被闸门跳过的 136 条，构成后续阶段的全部工作量。
+**当前开放 668 条**：L0 42 条 + P5 自动生成的 jmath 包装 220 条（另 2 条返回
+`char*` 被跳过）、L1 404 条（含首批人工验证的 2 条）、L2 试点 2 条，跳过 136 条。
+其余 487 条 = L2 72 + L3 229 + X 50 + 被闸门跳过的 136 条，构成后续阶段工作量。
 
 `joy_thunk_entry` 除 `name` / `domain` / `argc` / `fn` 外，还带
 `arg_kinds[]` 与 `ret_kind`：Lua / JS 的 `vm.c` 直接读这张表就知道第 j 个脚本值
@@ -141,7 +148,10 @@ GC 后 live 归零且 destroyed +1。
 **当前边界**：`--check` 放行「字段全是已知标量」的可展开 L2 试点，仍拒绝 L3 / X 与
 返回句柄的 L2；生成 thunk 覆盖标量、`const char*`、不透明句柄，以及按字段展开的
 POD 结构体。记录对象、数组、回调、其余 72 条 L2 仍留待后续阶段。
-三端都能调用这 448 条，但业务代码尚未迁移到 `Joy.Api.Bindings.*`。
+`jmath.h` 的 134 个数学函数里 114 个经 `jmath_wrap.js` 生成 220 条全标量包装
+（结构体入参展开、结构体返回拆分量），声明与实现都在 `generated/`，主头
+`joy.h` 只留一行 include；20 个 mat44 函数因 16 分量超限未接。
+三端都能调用这 668 条，但业务代码尚未迁移到 `Joy.Api.Bindings.*`。
 
 ## 分级
 
@@ -157,7 +167,7 @@ POD 结构体。记录对象、数组、回调、其余 72 条 L2 仍留待后�
 
 ### 1. 开放 API 给脚本
 
-批量：`node third_party/joy/api/gen_bindings.js --enable L0`（或 `L1` / `all` /
+批量：`node third_party/joy/api/tools/gen_bindings.js --enable L0`（或 `L1` / `all` /
 `domain:lcg`），看 `changed / skipped` 与 `git diff`，一起提交 IDL + 4 个生成物。
 
 逐条裁决（返回句柄、缺 `owns`、类型不匹配等）：先在 `coverage.md` 的
@@ -166,7 +176,7 @@ POD 结构体。记录对象、数组、回调、其余 72 条 L2 仍留待后�
 
 ### 2. `joy.h` 改了签名 / 加了新 API
 
-1. `node third_party/joy/api/gen_bindings.js --scan`
+1. `node third_party/joy/api/tools/gen_bindings.js --scan`
 2. 看 `git diff` —— 自动字段被刷新，`status` / `owns` / `note` 应保持不变
 3. 新条目默认 `status: off`；需要开放的按上面操作 1 处理
 4. 一起提交 IDL 与全部生成物
@@ -186,13 +196,16 @@ cs / lua / js 已按此落地。新后端只需要两份东西：一个「VM 值
 主仓 `.github/workflows/windows-build.yml` 在构建前执行：
 
 ```yaml
-node third_party/joy/api/gen_bindings.js --check
+node third_party/joy/api/tools/gen_bindings.js --check
 ```
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
-**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、`joy.h` 与 IDL 同步，
-且 `coverage.md`、`thunks_generated.c`、`modules/cs/bindings/api_generated.c`、
-`modules/cs/scripts/Api.generated.cs` 四个生成物都是最新的。任一项不满足即失败；
+**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、三个契约头
+（`include/joy/defs.h` + `include/joy/api.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
+`thunks_generated.c`、`modules/cs/bindings/api/api_generated.c`、
+`modules/cs/scripts/Api.generated.cs` 四个生成物，以及
+`generated/jmath_wrappers.{h,c}`、`include/joy/joy.h` 里那行 include 都是最新的。
+任一项不满足即失败；
 比较前会统一换行，兼容 Windows CRLF checkout。冒烟另需看到
 `[api] selftest PASS`、`[api] lua selftest PASS`、`[api] js selftest PASS`
 与 `[api.cs] PASS` 四条。

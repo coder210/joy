@@ -126,12 +126,14 @@ csx_p csx_create(void) {
         /* Mono 要求调用 managed 代码的线程先 attach 到 domain；
          * 主线程在这里 attach，其它工作线程用 csx_thread_attach()。 */
         csx->thread = mono_thread_attach(csx->domain);
+#ifdef JOY_ENABLE_LEGACY_BINDINGS
         /* 注册 C# → C 的 internal call（白名单自动绑定 + 手写热点） */
         csopen_generated();
         /* 手写的 C# 友好层：绘制热点 / 输入状态 / 宿主服务 */
         csopen_draw();
         csopen_input();
         csopen_host();
+#endif
         /* IDL 驱动的 Joy.Api.* 新链路：与旧白名单胶水并行注册，不改业务调用点。 */
         csopen_api();
         assembly_list_init(&csx->assemblies);
