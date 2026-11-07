@@ -14,6 +14,9 @@ add_custom_command(TARGET example_lua POST_BUILD
             "${CMAKE_CURRENT_LIST_DIR}/scripts" "$<TARGET_FILE_DIR:example_lua>/scripts"
     COMMENT "Copying lua example assets + scripts")
 
+# joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署
+joy_examples_deploy_clr(example_lua)
+
 add_test(NAME example_lua_smoke COMMAND example_lua --smoke 180)
 set_tests_properties(example_lua_smoke PROPERTIES
     WORKING_DIRECTORY "$<TARGET_FILE_DIR:example_lua>"

@@ -205,6 +205,14 @@ $env:SDL_VIDEODRIVER="dummy"
 ./build/Release/example_csharp.exe --smoke 180
 ```
 
+> **注意：coreclr.dll 必须与每个 exe 同目录。**
+> 只要本次配置启用了 `cs` 模块，`joy::all` 就会把 cs 模块的源码注入**每个** target，
+> 于是 cpp / lua / js 三个 exe 的导入表里同样带 `coreclr.dll` 的符号（`mono_free` 等），
+> 哪怕它们从不调用 `csx_*`。缺这个 dll 时，单独运行任何示例都会失败：
+> `无法定位程序输入点 mono_free 于动态链接库 example_js.exe 上`。
+> 因此四个 target 的 POST_BUILD 都通过 `joy_examples_deploy_clr()` 部署 `coreclr.dll`；
+> BCL（`lib/`）只有 `example_csharp` 需要，因为只有它真正初始化 CLR。
+
 判定口径：**四者的冒烟输出必须与旧仓基线一致**——
 
 ```text

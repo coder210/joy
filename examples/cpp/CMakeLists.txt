@@ -9,7 +9,9 @@ add_custom_command(TARGET example_cpp POST_BUILD
             "${JOY_EXAMPLE_ASSETS}" "$<TARGET_FILE_DIR:example_cpp>/assets"
     COMMENT "Copying shared assets for example_cpp")
 
-enable_testing()
+# joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署
+joy_examples_deploy_clr(example_cpp)
+
 add_test(NAME example_cpp_smoke COMMAND example_cpp --smoke 180)
 set_tests_properties(example_cpp_smoke PROPERTIES
     WORKING_DIRECTORY "$<TARGET_FILE_DIR:example_cpp>"

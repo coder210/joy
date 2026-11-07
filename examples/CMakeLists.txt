@@ -63,6 +63,31 @@ endif()
 # 四份实现共用的资源（图片 / 字体）。缺失时各示例走纯色 + 无文字退化路径。
 set(JOY_EXAMPLE_ASSETS "${CMAKE_CURRENT_LIST_DIR}/assets")
 
+# ---- 部署 coreclr.dll（各子目录调用；必须在 add_subdirectory 之前定义） ----
+# joy::all 是「所有已启用模块的源码合集」，只要开了 cs 模块，**每个**示例的
+# 导入表里都会有 coreclr.dll 的符号（mono_free 等），哪怕 cpp/lua/js 从不调用
+# csx_*。只给 example_csharp 部署时，单独构建 example_js 会报
+# 「无法定位程序输入点 mono_free 于动态链接库 example_js.exe 上」。
+# BCL(lib/) 不需要跟着走：不走 CLR 初始化的进程不会加载它。
+#
+# 必须做成函数让子目录自己调用：add_custom_command(TARGET) 只能在创建该
+# target 的同一目录里调用，父目录调用会报
+# "TARGET 'example_xxx' was not created in this directory"。
+function(joy_examples_deploy_clr _target)
+    if(NOT JOY_EXAMPLES_CLR_OK OR NOT MONO_LIBRARIES)
+        return()
+    endif()
+    get_filename_component(_clr_bin "${MONO_LIBRARIES}" DIRECTORY)
+    if(NOT EXISTS "${_clr_bin}/coreclr.dll")
+        return()
+    endif()
+    add_custom_command(TARGET ${_target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_clr_bin}/coreclr.dll"
+                "$<TARGET_FILE_DIR:${_target}>/coreclr.dll"
+        COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
+endfunction()
+
 # 每个子目录都会定义自己的 target 与一次资源拷贝
 enable_testing()
 foreach(_lang cpp lua js csharp)

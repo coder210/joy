@@ -43,14 +43,8 @@ add_custom_command(TARGET example_csharp POST_BUILD
             "${_cs_out}/Joy.Bindings.dll" "${_out_dir}/lib/Joy.Bindings.dll"
     COMMENT "Copying C# example runtime (JoyGame.dll + CLR lib/)")
 
-if(EXISTS "${_clr_bin}/coreclr.dll")
-    add_custom_command(TARGET example_csharp POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${_clr_bin}/coreclr.dll" "${_out_dir}/coreclr.dll"
-        COMMENT "Copying coreclr.dll")
-else()
-    message(WARNING "未找到 ${_clr_bin}/coreclr.dll：example_csharp 运行时会缺运行时")
-endif()
+# coreclr.dll 走共享部署函数：另外三个示例同样导入它（joy::all 含 cs 模块）
+joy_examples_deploy_clr(example_csharp)
 
 enable_testing()
 add_test(NAME example_csharp_smoke COMMAND example_csharp --smoke 180)
