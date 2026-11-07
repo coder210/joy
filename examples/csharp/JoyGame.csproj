@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Mono 宿主加载：netstandard2.0 是最稳的目标框架 -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>JoyGame</AssemblyName>
+    <RootNamespace>JoyGame</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- joy 的 C# 绑定项目位置：本工程位于 <joy>/examples/csharp，
+         绑定模块在 <joy>/modules/cs。 -->
+    <JoyCSharpDir Condition="'$(JoyCSharpDir)' == ''">$(MSBuildProjectDirectory)/../../modules/cs</JoyCSharpDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 所有 Joy.* 声明由 joy 子项目的 Joy.Bindings.csproj 提供（程序集引用） -->
+    <ProjectReference Include="$(JoyCSharpDir)/Joy.Bindings.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 模板运行时骨架 -->
+    <Compile Include="runtime\**\*.cs" />
+    <!-- 示例玩法 -->
+    <Compile Include="game\**\*.cs" />
+    <!-- 无窗口冒烟脚本 -->
+    <Compile Include="test\**\*.cs" />
+  </ItemGroup>
+</Project>

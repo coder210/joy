@@ -1,0 +1,12 @@
+E:\c++\joy_csharp_test\build\examples\csharp\JoyGame.deps.json
+E:\c++\joy_csharp_test\build\examples\csharp\JoyGame.dll
+E:\c++\joy_csharp_test\build\examples\csharp\JoyGame.pdb
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.csproj.AssemblyReference.cache
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.GeneratedMSBuildEditorConfig.editorconfig
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.AssemblyInfoInputs.cache
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.AssemblyInfo.cs
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.csproj.CoreCompileInputs.cache
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.sourcelink.json
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.csproj.Up2Date
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.dll
+E:\c++\joy_csharp_test\third_party\joy\examples\csharp\obj\Release\netstandard2.0\JoyGame.pdb
