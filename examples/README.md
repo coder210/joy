@@ -68,7 +68,11 @@ void* args[1] = { &dt };
 csx_invoke_method(csx, on_frame, args);
 ```
 
-`Host.OnInit(IntPtr window, IntPtr r2d, int w, int h, int smokeFrames)` 由宿主播反射调用。
+`Host.OnInit(int width, int height, int smokeFrames)` 由宿主反射调用（3 个标量参数）。
+**窗口与渲染器不传进来**：由 `GameApp` 自己用 `Joy.Api.Bindings.CreateWindow` /
+`R2dCreate` 创建。原因是生成链路用句柄表管理对象，C 宿主直接创建的裸指针不在表里，
+`Jr2d` 拿不到它。宿主因此不持有窗口/渲染器，也不再负责 `R2dBegin` / `R2dEnd`
+（这两步搬到了 `GameApp.Tick`）。
 
 ### Lua
 

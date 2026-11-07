@@ -1,14 +1,19 @@
 using System;
+using Joy.Api;
 
 namespace JoyGame
 {
     /// <summary>
-    /// 应用外壳：持有渲染句柄、资源、输入快照与当前场景。
+    /// 应用外壳：持有窗口/渲染句柄、资源、输入快照与当前场景。
     /// 每帧由宿主的 C# 入口 Host.OnFrame 驱动 Tick。
+    ///
+    /// 窗口与渲染器由本类自己通过生成链路（Joy.Api.Bindings）创建，
+    /// 宿主不再建——生成链路用句柄表管理对象，宿主的裸指针不在表里。
     /// </summary>
     internal sealed class GameApp
     {
-        public IntPtr R2d { get; }
+        public Jwindow Window { get; }
+        public Jr2d R2d { get; }
         public int Width { get; }
         public int Height { get; }
         public int SmokeFrames { get; }
@@ -23,12 +28,14 @@ namespace JoyGame
 
         public bool Smoke => SmokeFrames > 0;
 
-        public GameApp(IntPtr r2d, int width, int height, int smokeFrames)
+        public GameApp(int width, int height, int smokeFrames)
         {
-            R2d = r2d;
             Width = width;
             Height = height;
             SmokeFrames = smokeFrames;
+
+            Window = Bindings.CreateWindow("Joy C# Topdown", width, height);
+            R2d = Bindings.R2dCreate(Window);
         }
 
         public void Start()
@@ -51,7 +58,12 @@ namespace JoyGame
             Frame++;
             Input.BeginFrame();
             Scene.Update(dt);
+
+            // R2dBegin 用当前颜色清屏，先铺底色再让场景自己画满
+            Bindings.R2dSetColorf(R2d, 0.06f, 0.07f, 0.10f, 1f);
+            Bindings.R2dBegin(R2d);
             Scene.Render();
+            Bindings.R2dEnd(R2d);
         }
     }
 }

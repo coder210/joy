@@ -11,9 +11,13 @@ namespace JoyGame
         private static GameApp _app;
         private static SmokeScript _smoke;
 
-        public static void OnInit(IntPtr window, IntPtr r2d, int width, int height, int smokeFrames)
+        /// <summary>
+        /// 宿主只传尺寸与冒烟帧数：窗口与渲染器由 GameApp 自己用生成链路创建，
+        /// 不再由 C 宿主建好再传裸指针过来（裸指针不在生成链路的句柄表里）。
+        /// </summary>
+        public static void OnInit(int width, int height, int smokeFrames)
         {
-            _app = new GameApp(r2d, width, height, smokeFrames);
+            _app = new GameApp(width, height, smokeFrames);
             _smoke = smokeFrames > 0 ? new SmokeScript() : null;
             if (smokeFrames > 0) ApiBindingSmoke.Run();
             _app.Start();

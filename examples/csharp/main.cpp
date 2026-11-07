@@ -32,8 +32,8 @@
 static const int APP_W = 480;
 static const int APP_H = 320;
 
-static jwindow_p    g_window = NULL;
-static jr2d_p       g_r2d = NULL;
+/* 宿主不持有窗口与渲染器：它们由 C# 侧用生成链路创建（Joy.Api.Bindings）。
+ * 生成链路用句柄表管理对象，宿主直接创建的裸指针进不了那张表。 */
 static csx_p        g_csx = NULL;
 static csx_method_p g_on_init = NULL;
 static csx_method_p g_on_frame = NULL;
@@ -98,18 +98,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
     }
 
-    g_window = create_window("Joy C# Topdown", APP_W, APP_H);
-    if (!g_window) {
-        fprintf(stderr, "[host] create_window failed: %s\n", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-    g_r2d = r2d_create(g_window);
-    if (!g_r2d) {
-        fprintf(stderr, "[host] r2d_create failed: %s\n", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-    r2d_set_blend_mode(g_r2d, JR2D_BLEND_BLEND);
-
     g_csx = csx_create();
     if (!g_csx) {
         fprintf(stderr, "[host] csx_create failed (CLR runtime unavailable?)\n");
@@ -120,7 +108,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    g_on_init = csx_find_method(g_csx, "JoyGame", "Host", "OnInit", 5);
+    g_on_init = csx_find_method(g_csx, "JoyGame", "Host", "OnInit", 3);
     g_on_frame = csx_find_method(g_csx, "JoyGame", "Host", "OnFrame", 1);
     g_on_shutdown = csx_find_method(g_csx, "JoyGame", "Host", "OnShutdown", 0);
     if (!g_on_init || !g_on_frame) {
@@ -129,12 +117,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     }
 
     {
-        void* win = (void*)g_window;
-        void* r2d = (void*)g_r2d;
         int w = APP_W;
         int h = APP_H;
         int smoke = g_smoke_frames;
-        void* args[5] = { &win, &r2d, &w, &h, &smoke };
+        void* args[3] = { &w, &h, &smoke };
         csx_invoke_method(g_csx, g_on_init, args);
     }
 
@@ -152,11 +138,10 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
     case SDL_EVENT_KEY_UP:
         csx_input_key((int)e->key.scancode, false);
         break;
-    case SDL_EVENT_MOUSE_MOTION: {
-        vec2_t p = r2d_coordinates_from_window(g_r2d, e->motion.x, e->motion.y);
-        csx_input_mouse_move(p.x, p.y);
+    case SDL_EVENT_MOUSE_MOTION:
+        /* 宿主没有渲染器做逻辑坐标换算，直接透传窗口坐标 */
+        csx_input_mouse_move(e->motion.x, e->motion.y);
         break;
-    }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         csx_input_mouse_button((int)e->button.button, true);
         break;
@@ -189,12 +174,10 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         if (dt > 0.1f) dt = 0.1f;
     }
 
-    r2d_begin(g_r2d);
     {
         void* args[1] = { &dt };
         csx_invoke_method(g_csx, g_on_frame, args);
     }
-    r2d_end(g_r2d);
     csx_input_end_frame();
 
     g_frame++;
@@ -219,6 +202,4 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
     if (g_on_frame) csx_method_free(g_on_frame);
     if (g_on_shutdown) csx_method_free(g_on_shutdown);
     if (g_csx) csx_release(g_csx);
-    if (g_r2d) r2d_destroy(g_r2d);
-    if (g_window) destroy_window(g_window);
 }
