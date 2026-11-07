@@ -1,7 +1,7 @@
 /* ============================================================
  * 自动生成，勿手改：node api/gen_bindings.js --emit
  * cs 后端薄适配：Mono 值 → joy_value[] → 共享 thunk（不含业务逻辑）。
- * 只有 joy.idl 里 status:on 的 L0/L1 条目会出现在这里。
+ * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。
  * ============================================================ */
 #include <stdint.h>
 #include <stdio.h>
@@ -3667,6 +3667,31 @@ static void icall_CheckboxDestroy(uint64_t p0)
         return;
 }
 
+static void icall_CheckboxSetColors(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[13];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        args[11] = joy_v_u32((uint32_t)p11);
+        args[12] = joy_v_u32((uint32_t)p12);
+        (void)joy_api_call("checkbox_set_colors", args, 13, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "checkbox_set_colors", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_CheckboxSetR2d(uint64_t p0, uint64_t p1)
 {
         joy_status_t st = JOY_OK;
@@ -3691,6 +3716,23 @@ static void icall_CheckboxSetPosition(uint64_t p0, int32_t p1, int32_t p2)
         (void)joy_api_call("checkbox_set_position", args, 3, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "checkbox_set_position", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_CheckboxSetTextColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        (void)joy_api_call("checkbox_set_text_color", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "checkbox_set_text_color", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6844,8 +6886,10 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::RadioIsPressed", (const void*)icall_RadioIsPressed);
         csx_register_internal_call("Joy.Api.Native::RadioSetHovered", (const void*)icall_RadioSetHovered);
         csx_register_internal_call("Joy.Api.Native::CheckboxDestroy", (const void*)icall_CheckboxDestroy);
+        csx_register_internal_call("Joy.Api.Native::CheckboxSetColors", (const void*)icall_CheckboxSetColors);
         csx_register_internal_call("Joy.Api.Native::CheckboxSetR2d", (const void*)icall_CheckboxSetR2d);
         csx_register_internal_call("Joy.Api.Native::CheckboxSetPosition", (const void*)icall_CheckboxSetPosition);
+        csx_register_internal_call("Joy.Api.Native::CheckboxSetTextColor", (const void*)icall_CheckboxSetTextColor);
         csx_register_internal_call("Joy.Api.Native::CheckboxToggle", (const void*)icall_CheckboxToggle);
         csx_register_internal_call("Joy.Api.Native::CheckboxIsPressed", (const void*)icall_CheckboxIsPressed);
         csx_register_internal_call("Joy.Api.Native::CheckboxSetHovered", (const void*)icall_CheckboxSetHovered);

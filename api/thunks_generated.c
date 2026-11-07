@@ -1,6 +1,6 @@
 /* ============================================================
  * 自动生成，勿手改：node api/gen_bindings.js --emit
- * 只有 joy.idl 里 status:on 的 L0/L1 条目会出现在这里。
+ * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。
  * ============================================================ */
 #include <joy/joy.h>
 #include "joy_api.h"
@@ -3568,6 +3568,44 @@ static joy_value_t t_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_null();
 }
 
+static joy_value_t t_checkbox_set_colors(joy_value_t* a, int n, joy_status_t* st)
+{
+        checkbox_p p0;
+        jcolor_t p1 = { 0 };
+        jcolor_t p2 = { 0 };
+        jcolor_t p3 = { 0 };
+        if (n != 13) return joy_v_err(st, JOY_ERR_ARGC, "checkbox_set_colors");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg0");
+        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        if (!p0) return joy_v_err(st, *st, "checkbox_set_colors.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg1");
+        p1.r = (uint8_t)a[1].as.u32;
+        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg2");
+        p1.g = (uint8_t)a[2].as.u32;
+        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg3");
+        p1.b = (uint8_t)a[3].as.u32;
+        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg4");
+        p1.a = (uint8_t)a[4].as.u32;
+        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg5");
+        p2.r = (uint8_t)a[5].as.u32;
+        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg6");
+        p2.g = (uint8_t)a[6].as.u32;
+        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg7");
+        p2.b = (uint8_t)a[7].as.u32;
+        if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg8");
+        p2.a = (uint8_t)a[8].as.u32;
+        if (a[9].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg9");
+        p3.r = (uint8_t)a[9].as.u32;
+        if (a[10].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg10");
+        p3.g = (uint8_t)a[10].as.u32;
+        if (a[11].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg11");
+        p3.b = (uint8_t)a[11].as.u32;
+        if (a[12].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_colors.arg12");
+        p3.a = (uint8_t)a[12].as.u32;
+        checkbox_set_colors(p0, p1, p2, p3);
+        return joy_v_null();
+}
+
 static joy_value_t t_checkbox_set_r2d(joy_value_t* a, int n, joy_status_t* st)
 {
         checkbox_p p0;
@@ -3597,6 +3635,26 @@ static joy_value_t t_checkbox_set_position(joy_value_t* a, int n, joy_status_t* 
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
         checkbox_set_position(p0, p1, p2);
+        return joy_v_null();
+}
+
+static joy_value_t t_checkbox_set_text_color(joy_value_t* a, int n, joy_status_t* st)
+{
+        checkbox_p p0;
+        jcolor_t p1 = { 0 };
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "checkbox_set_text_color");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_text_color.arg0");
+        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        if (!p0) return joy_v_err(st, *st, "checkbox_set_text_color.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_text_color.arg1");
+        p1.r = (uint8_t)a[1].as.u32;
+        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_text_color.arg2");
+        p1.g = (uint8_t)a[2].as.u32;
+        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_text_color.arg3");
+        p1.b = (uint8_t)a[3].as.u32;
+        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "checkbox_set_text_color.arg4");
+        p1.a = (uint8_t)a[4].as.u32;
+        checkbox_set_text_color(p0, p1);
         return joy_v_null();
 }
 
@@ -6611,8 +6669,10 @@ static const joy_value_kind k_radio_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_radio_is_pressed[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_radio_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
 static const joy_value_kind k_checkbox_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_checkbox_set_colors[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_checkbox_set_r2d[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_checkbox_set_position[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_checkbox_set_text_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_checkbox_toggle[] = { JOY_V_HANDLE };
 static const joy_value_kind k_checkbox_is_pressed[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_checkbox_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
@@ -7058,8 +7118,10 @@ static const joy_thunk_entry s_thunks[] = {
         { "radio", "radio_is_pressed", "RadioIsPressed", t_radio_is_pressed, 3, k_radio_is_pressed, JOY_V_BOOL },
         { "radio", "radio_set_hovered", "RadioSetHovered", t_radio_set_hovered, 2, k_radio_set_hovered, JOY_V_NULL },
         { "checkbox", "checkbox_destroy", "CheckboxDestroy", t_checkbox_destroy, 1, k_checkbox_destroy, JOY_V_NULL },
+        { "checkbox", "checkbox_set_colors", "CheckboxSetColors", t_checkbox_set_colors, 13, k_checkbox_set_colors, JOY_V_NULL },
         { "checkbox", "checkbox_set_r2d", "CheckboxSetR2d", t_checkbox_set_r2d, 2, k_checkbox_set_r2d, JOY_V_NULL },
         { "checkbox", "checkbox_set_position", "CheckboxSetPosition", t_checkbox_set_position, 3, k_checkbox_set_position, JOY_V_NULL },
+        { "checkbox", "checkbox_set_text_color", "CheckboxSetTextColor", t_checkbox_set_text_color, 5, k_checkbox_set_text_color, JOY_V_NULL },
         { "checkbox", "checkbox_toggle", "CheckboxToggle", t_checkbox_toggle, 1, k_checkbox_toggle, JOY_V_NULL },
         { "checkbox", "checkbox_is_pressed", "CheckboxIsPressed", t_checkbox_is_pressed, 3, k_checkbox_is_pressed, JOY_V_BOOL },
         { "checkbox", "checkbox_set_hovered", "CheckboxSetHovered", t_checkbox_set_hovered, 2, k_checkbox_set_hovered, JOY_V_NULL },
@@ -7273,7 +7335,8 @@ const char* joy_api_selftest(void)
         uint32_t live0 = joy_obj_live_count();
         uint32_t dead0 = joy_obj_destroy_count();
         joy_value_t r;
-        joy_value_t args[4];
+        joy_value_t args[13];
+        int i;
 
         /* 每条开放的 API 都必须在注册表里且 argc 守卫生效。
          * 故意传错 argc：thunk 第一行就返回，不执行任何 joy 业务函数，
@@ -8014,11 +8077,17 @@ const char* joy_api_selftest(void)
         joy_api_call("checkbox_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/checkbox_destroy";
         st = JOY_OK;
+        joy_api_call("checkbox_set_colors", NULL, 14, &st);
+        if (st != JOY_ERR_ARGC) return "registry/checkbox_set_colors";
+        st = JOY_OK;
         joy_api_call("checkbox_set_r2d", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/checkbox_set_r2d";
         st = JOY_OK;
         joy_api_call("checkbox_set_position", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/checkbox_set_position";
+        st = JOY_OK;
+        joy_api_call("checkbox_set_text_color", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/checkbox_set_text_color";
         st = JOY_OK;
         joy_api_call("checkbox_toggle", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/checkbox_toggle";
@@ -8616,6 +8685,16 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("audio_bgm_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/audio_bgm_destroy";
+
+        /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，
+         * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */
+        for (i = 0; i < 13; i++) args[i] = joy_v_null();
+        st = JOY_OK;
+        joy_api_call("checkbox_set_colors", args, 13, &st);
+        if (st != JOY_ERR_TYPE) return "L2/checkbox_set_colors";
+        st = JOY_OK;
+        joy_api_call("checkbox_set_text_color", args, 5, &st);
+        if (st != JOY_ERR_TYPE) return "L2/checkbox_set_text_color";
 
         /* L0：纯标量往返 */
         st = JOY_OK;

@@ -56,20 +56,9 @@ function stripComments(src) {
     .replace(/\/\/[^\n]*/g, '');
 }
 
-/* 值类型分散在 joy.h 与 jmath.h（vec2_t / vec3_t / vec2f_t 在 jmath.h）。 */
-function collectStructs() {
-  const out = new Set();
-  for (const file of [JOY_H, JMATH_H]) {
-    if (!fs.existsSync(file)) continue;
-    const src = stripComments(fs.readFileSync(file, 'utf8'));
-    const re = /typedef\s+struct\s*\w*\s*\{([^}]*)\}\s*([A-Za-z_]\w*)\s*;/g;
-    let m;
-    while ((m = re.exec(src)) !== null) {
-      if (m[2].endsWith('_t')) out.add(m[2]);
-    }
-  }
-  return out;
-}
+/* 值类型布局由 structs.js 统一解析：gen / thunks / cs 三个生成器共用，
+   L2 试点还靠它把结构体参数展开成标量序列。 */
+const { collectStructs, canExpand } = require('./structs');
 
 /* joy.h 里有 81 个跨行的 JOY_API 声明，必须收集到分号为止。 */
 function collectDecls(src) {
@@ -147,15 +136,26 @@ function domainOf(name) {
   return parts[0];
 }
 
-/* 返回句柄的 create → 找配对的 destroy/free/release/delete。 */
-function inferOwns(name, ret, declNames) {
+/* 返回句柄的 create → 找配对的 destroy/free/release/delete。
+ * 两道保险，与 emit_thunks.js 的 ownsIssue() 硬校验保持一致：
+ * 1. 只有名字里确实含 `_create` 才做精确替换；否则 replace 是恒等变换，
+ *    get_* / find_* / wrap_* 会把 owns 填成自己。
+ * 2. 候选 dtor 必须恰好一个参数、类型与 ret 严格相等；否则 byDomain 兜底
+ *    会把 r3d_destroy(jr3d_p) 套到返回 void* 的 GPU 对象上。 */
+function inferOwns(name, ret, declByName) {
   if (!isOpaque(ret)) return null;
   const domain = domainOf(name);
+  const valid = candidate => {
+    const f = declByName.get(candidate);
+    return !!f && !!f.params && f.params.length === 1 && f.params[0].ctype === ret;
+  };
   for (const suffix of DESTROY_SUFFIXES) {
-    const exact = name.replace(/_create[\s\S]*$/, '_' + suffix);
-    if (declNames.has(exact)) return exact;
+    if (/_create/.test(name)) {
+      const exact = name.replace(/_create[\s\S]*$/, '_' + suffix);
+      if (valid(exact)) return exact;
+    }
     const byDomain = domain + '_' + suffix;
-    if (declNames.has(byDomain)) return byDomain;
+    if (valid(byDomain)) return byDomain;
   }
   return null;
 }
@@ -204,7 +204,8 @@ function scanJoyHeader() {
     const p = parseDecl(d.decl, d.line);
     if (p) parsed.push(p);
   }
-  const declNames = new Set(parsed.map(p => p.name));
+  /* 用 Map 而不是名字集合：inferOwns 要核对候选 dtor 的参数类型。 */
+  const declByName = new Map(parsed.map(p => [p.name, p]));
   const fresh = parsed.map(p => {
     const c = classify(p.name, p.ret, p.params, p.reason, structs);
     return {
@@ -213,14 +214,14 @@ function scanJoyHeader() {
       level: c.level,
       reason: c.reason,
       status: 'off',
-      owns: inferOwns(p.name, p.ret, declNames),
+      owns: inferOwns(p.name, p.ret, declByName),
       ret: p.ret,
       params: p.params,
       source: 'joy.h:' + p.line,
       note: '',
     };
   });
-  return { fresh, structs, declNames };
+  return { fresh, structs, declByName };
 }
 
 /* --scan 只覆盖自动字段；owns / status / note 是人工字段，永不覆盖。
@@ -265,7 +266,7 @@ function jmathMeta() {
 const LEVEL_DESC = {
   L0: '纯标量 + const char*，可直接生成',
   L1: '不透明指针 → 句柄，需所有权测试',
-  L2: '结构体按值 → 展开成标量，需静态断言',
+  L2: '结构体按值 → P2-A 试点按字段展开成标量序列',
   L3: '复杂签名 → 必须手写 thunk，不自动生成',
   X: '有意排除，不进绑定层',
 };
@@ -293,7 +294,8 @@ function buildReport(entries, meta) {
   L.push('# joy 绑定 API 覆盖率报告');
   L.push('');
   L.push('> 自动生成，勿手改：由 `api/gen_bindings.js` 从 `joy.h` + `api/joy.idl` 产出。');
-  L.push('> 生成物（共享 thunk 与 cs 薄适配）只覆盖 `status: on` 的 L0/L1 条目；');
+  L.push('> 生成物（共享 thunk 与 cs 薄适配）覆盖 `status: on` 的 L0/L1，');
+  L.push('> 以及 P2-A 试点里按字段展开成标量序列的 L2 条目；');
   L.push('> 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；');
   L.push('> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。');
   L.push('');
@@ -335,25 +337,29 @@ function buildReport(entries, meta) {
   if (!needsOwns.length) {
     L.push('（无）');
   } else {
-    L.push('| 函数 | 返回 | 位置 |');
-    L.push('|---|---|---|');
-    for (const e of needsOwns) L.push('| `' + e.name + '` | `' + e.ret + '` | ' + e.source + ' |');
+    L.push('| 函数 | 返回 | 位置 | 人工裁决（`note`） |');
+    L.push('|---|---|---|---|');
+    for (const e of needsOwns) {
+      L.push('| `' + e.name + '` | `' + e.ret + '` | ' + e.source + ' | ' + (e.note || '—') + ' |');
+    }
   }
   L.push('');
   L.push('## 待办：所有权待裁决（`owns` 不可信）');
   L.push('');
-  L.push('返回句柄但自动推断的析构函数与返回类型不一致，或压根没有 `owns`。');
+  L.push('返回句柄但没有可通过硬校验的 `owns`：借用指针、dtor 参数不匹配，');
+  L.push('或压根没有合规的单参数 dtor。`note` 列是逐条人工核对后的所有权裁决。');
   L.push('批量开放会跳过它们；`--check` 也禁止把这类条目设成 `on`，');
   L.push('否则 dtor 会把错误类型的指针交给析构函数，运行时才崩。');
   L.push('');
   if (!ownsIssues.length) {
     L.push('（无）');
   } else {
-    L.push('| 函数 | 返回 | `owns` | 问题 |');
-    L.push('|---|---|---|---|');
+    L.push('| 函数 | 返回 | `owns` | 问题 | 人工裁决（`note`） |');
+    L.push('|---|---|---|---|---|');
     for (const x of ownsIssues) {
       L.push('| `' + x.e.name + '` | `' + x.e.ret + '` | '
-        + (x.e.owns ? '`' + x.e.owns + '`' : '（无）') + ' | ' + x.why + ' |');
+        + (x.e.owns ? '`' + x.e.owns + '`' : '（无）') + ' | ' + x.why + ' | '
+        + (x.e.note || '—') + ' |');
     }
   }
   L.push('');
@@ -409,17 +415,19 @@ function loadIdl() {
 function check(entries) {
   const errors = [];
   const names = new Set();
+  const meta = scanJoyHeader();
   for (const e of entries) {
     if (names.has(e.name)) errors.push('重复 name: ' + e.name);
     names.add(e.name);
     if (!e.level || !LEVEL_DESC[e.level]) errors.push('缺 level: ' + e.name);
-    if (e.status === 'on' && e.level !== 'L0' && e.level !== 'L1') {
-      errors.push('P1 只支持 L0/L1 自动 thunk，不能 status:on: ' + e.name + '(' + e.level + ')');
+    if (e.status === 'on' && e.level !== 'L0' && e.level !== 'L1'
+        && !(e.level === 'L2' && canExpand(e, meta.structs))) {
+      errors.push('只支持 L0/L1 及可展开的 L2 自动 thunk，不能 status:on: '
+        + e.name + '(' + e.level + ')');
     }
   }
-  const meta = scanJoyHeader();
   for (const e of entries) {
-    if (e.owns && !meta.declNames.has(e.owns)) {
+    if (e.owns && !meta.declByName.has(e.owns)) {
       errors.push('owns 指向 joy.h 中不存在的函数: ' + e.name + ' -> ' + e.owns);
     }
   }

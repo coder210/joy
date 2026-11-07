@@ -28,6 +28,8 @@ const SCALAR = {
 };
 
 const { isOpaque, methodName } = require('./naming');
+const { collectStructs, canExpand, expandParams } = require('./structs');
+const LAYOUTS = collectStructs();
 function typeInfo(t) { return SCALAR[t] || null; }
 function valueKind(t) {
   if (isOpaque(t)) return 'JOY_V_HANDLE';
@@ -53,12 +55,14 @@ function ownsIssue(e, byName) {
 
 /* --enable 用：这条 API 现在能不能安全地自动生成 thunk。 */
 function canThunk(e, byName) {
-  if (e.level !== 'L0' && e.level !== 'L1') return '仅 L0/L1';
+  const l2 = e.level === 'L2' && canExpand(e, LAYOUTS);
+  if (e.level !== 'L0' && e.level !== 'L1' && !l2) return '仅 L0/L1';
   if (!e.params) return '复杂签名需手写 thunk';
+  if (l2 && isOpaque(e.ret)) return 'L2 试点暂不支持返回句柄';
   const own = ownsIssue(e, byName);
   if (own) return own;
   if (e.ret !== 'void' && !isOpaque(e.ret) && !typeInfo(e.ret)) return '不支持返回类型：' + e.ret;
-  for (const p of e.params) {
+  for (const p of expandParams(e, LAYOUTS)) {
     if (!isOpaque(p.ctype) && !typeInfo(p.ctype)) return '不支持参数类型：' + p.ctype;
     if (p.ctype === 'char*' && !p.isConst) return '非 const char* 输出缓冲';
   }
@@ -116,7 +120,69 @@ function emitThunk(e, dtorName) {
   return L.join('\n');
 }
 
-function emitSelftest(open) {
+/* L2 试点：结构体按值参数展开成「按字段顺序排列的标量序列」。
+ * 注册表 argc / arg_kinds 用展开后的序列，因此 lua / js / cs 三端适配层
+ * 无需改动；thunk 里把字段重新组装成 C 结构体再调用真正的 joy API。 */
+function emitL2Thunk(e, layouts) {
+  const L = [];
+  const flat = expandParams(e, layouts);
+  const groups = [];
+  let idx = 0;
+  for (let i = 0; i < e.params.length; i++) {
+    const p = e.params[i];
+    const f = layouts.has(p.ctype) ? layouts.get(p.ctype) : null;
+    groups.push({ p, i, f, start: idx });
+    idx += f ? f.length : 1;
+  }
+  const args = e.params.map((p, i) => 'p' + i).join(', ');
+  L.push('static joy_value_t t_' + e.name + '(joy_value_t* a, int n, joy_status_t* st)');
+  L.push('{');
+  for (const g of groups) {
+    const decl = g.p.ctype === 'char*' ? 'const char*' : g.p.ctype;
+    L.push('        ' + decl + ' p' + g.i + (g.f ? ' = { 0 }' : '') + ';');
+  }
+  if (e.ret !== 'void') L.push('        ' + e.ret + ' _r;');
+  L.push('        if (n != ' + flat.length + ') return joy_v_err(st, JOY_ERR_ARGC, ' + q(e.name) + ');');
+  for (const g of groups) {
+    if (g.f) {
+      g.f.forEach((fld, k) => {
+        const j = g.start + k;
+        const ti = typeInfo(fld.ctype);
+        L.push('        if (a[' + j + '].kind != ' + ti.kind + ')'
+          + ' return joy_v_err(st, JOY_ERR_TYPE, ' + q(e.name + '.arg' + j) + ');');
+        L.push('        p' + g.i + '.' + fld.name + ' = ' + ti.cast + 'a[' + j + '].' + ti.acc + ';');
+      });
+    } else {
+      const p = g.p;
+      const j = g.start;
+      const kind = isOpaque(p.ctype) ? 'JOY_V_HANDLE' : typeInfo(p.ctype).kind;
+      L.push('        if (a[' + j + '].kind != ' + kind + ')'
+        + ' return joy_v_err(st, JOY_ERR_TYPE, ' + q(e.name + '.arg' + j) + ');');
+      if (isOpaque(p.ctype)) {
+        L.push('        p' + g.i + ' = (' + p.ctype + ')joy_obj_deref(a[' + j + '].as.handle, '
+          + q(p.ctype) + ', st);');
+        L.push('        if (!p' + g.i + ') return joy_v_err(st, *st, '
+          + q(e.name + '.arg' + j) + ');');
+      } else {
+        const ti = typeInfo(p.ctype);
+        L.push('        p' + g.i + ' = ' + ti.cast + 'a[' + j + '].' + ti.acc + ';');
+      }
+    }
+  }
+  if (e.ret === 'void') {
+    L.push('        ' + e.name + '(' + args + ');');
+    L.push('        return joy_v_null();');
+  } else {
+    L.push('        _r = ' + e.name + '(' + args + ');');
+    const ti = typeInfo(e.ret);
+    L.push('        return ' + ti.wrap + '(' + ti.cast + '_r);');
+  }
+  L.push('}');
+  L.push('');
+  return L.join('\n');
+}
+
+function emitSelftest(open, layouts) {
   const probe = open.find(e => e.level === 'L0' && e.params.length === 0
     && e.ret !== 'void' && typeInfo(e.ret));
   const create = open.find(e => e.owns && isOpaque(e.ret) && e.params.length <= 1
@@ -124,6 +190,8 @@ function emitSelftest(open) {
   const handleArg = create ? open.find(e => e.params.length === 1
     && e.params[0].ctype === create.ret && e.ret !== 'void' && typeInfo(e.ret)) : null;
 
+  const l2 = open.filter(e => e.level === 'L2');
+  const maxArgs = Math.max(4, ...open.map(e => expandParams(e, layouts).length));
   const L = [];
   L.push('const char* joy_api_selftest(void)');
   L.push('{');
@@ -131,15 +199,29 @@ function emitSelftest(open) {
   L.push('        uint32_t live0 = joy_obj_live_count();');
   L.push('        uint32_t dead0 = joy_obj_destroy_count();');
   L.push('        joy_value_t r;');
-  L.push('        joy_value_t args[4];');
+  L.push('        joy_value_t args[' + maxArgs + '];');
+  if (l2.length) L.push('        int i;');
   L.push('');
   L.push('        /* 每条开放的 API 都必须在注册表里且 argc 守卫生效。');
   L.push('         * 故意传错 argc：thunk 第一行就返回，不执行任何 joy 业务函数，');
   L.push('         * 因此批量开放有副作用 / 需要上下文的 API 也不会在这里被调用。 */');
   for (const e of open) {
     L.push('        st = JOY_OK;');
-    L.push('        joy_api_call(' + q(e.name) + ', NULL, ' + (e.params.length + 1) + ', &st);');
+    L.push('        joy_api_call(' + q(e.name) + ', NULL, '
+      + (expandParams(e, layouts).length + 1) + ', &st);');
     L.push('        if (st != JOY_ERR_ARGC) return ' + q('registry/' + e.name) + ';');
+  }
+  if (l2.length) {
+    L.push('');
+    L.push('        /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，');
+    L.push('         * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */');
+    L.push('        for (i = 0; i < ' + maxArgs + '; i++) args[i] = joy_v_null();');
+    for (const e of l2) {
+      L.push('        st = JOY_OK;');
+      L.push('        joy_api_call(' + q(e.name) + ', args, '
+        + expandParams(e, layouts).length + ', &st);');
+      L.push('        if (st != JOY_ERR_TYPE) return ' + q('L2/' + e.name) + ';');
+    }
   }
   L.push('');
   if (probe) {
@@ -194,10 +276,12 @@ function emitSelftest(open) {
 }
 
 function buildThunks(entries) {
+  const layouts = LAYOUTS;
   const open = entries.filter(e => e.status === 'on' && !e.orphan);
-  const bad = open.filter(e => e.level !== 'L0' && e.level !== 'L1');
+  const bad = open.filter(e => e.level !== 'L0' && e.level !== 'L1'
+    && !(e.level === 'L2' && canExpand(e, layouts)));
   if (bad.length) {
-    throw new Error('P1 只支持 L0/L1，以下条目不能 status:on：'
+    throw new Error('只支持 L0/L1 及可展开的 L2，以下条目不能 status:on：'
       + bad.slice(0, 5).map(e => e.name + '(' + e.level + ')').join(', '));
   }
   const byName = new Map(entries.map(e => [e.name, e]));
@@ -212,7 +296,7 @@ function buildThunks(entries) {
   const L = [];
   L.push('/* ============================================================');
   L.push(' * 自动生成，勿手改：node api/gen_bindings.js --emit');
-  L.push(' * 只有 joy.idl 里 status:on 的 L0/L1 条目会出现在这里。');
+  L.push(' * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。');
   L.push(' * ============================================================ */');
   L.push('#include <joy/joy.h>');
   L.push('#include "joy_api.h"');
@@ -228,21 +312,23 @@ function buildThunks(entries) {
 
   for (const e of open) {
     const dtorName = isOpaque(e.ret) ? 'dtor_' + e.owns : null;
-    L.push(emitThunk(e, dtorName));
+    L.push(e.level === 'L2' ? emitL2Thunk(e, layouts) : emitThunk(e, dtorName));
   }
 
   for (const e of open) {
-    if (e.params.length) {
+    const flat = expandParams(e, layouts);
+    if (flat.length) {
       L.push('static const joy_value_kind k_' + e.name + '[] = { '
-        + e.params.map(p => valueKind(p.ctype)).join(', ') + ' };');
+        + flat.map(p => valueKind(p.ctype)).join(', ') + ' };');
     }
   }
   L.push('');
   L.push('static const joy_thunk_entry s_thunks[] = {');
   for (const e of open) {
+    const flat = expandParams(e, layouts);
     L.push('        { ' + q(e.domain) + ', ' + q(e.name) + ', ' + q(methodName(e.name))
-      + ', t_' + e.name + ', ' + e.params.length + ', '
-      + (e.params.length ? 'k_' + e.name : 'NULL') + ', ' + retKind(e) + ' },');
+      + ', t_' + e.name + ', ' + flat.length + ', '
+      + (flat.length ? 'k_' + e.name : 'NULL') + ', ' + retKind(e) + ' },');
   }
   L.push('};');
   L.push('');
@@ -252,7 +338,7 @@ function buildThunks(entries) {
   L.push('        return s_thunks;');
   L.push('}');
   L.push('');
-  L.push(emitSelftest(open));
+  L.push(emitSelftest(open, layouts));
   L.push('');
   return L.join('\n');
 }

@@ -5,7 +5,7 @@
 
 > **边界**：本目录只产出契约、报告，以及可被三后端共用的 C 运行层 / 薄适配生成物。
 > 旧的 `modules/*/bindings/` 手写胶水一行未删，新旧链路并行；哪些 API 真正开放由
-> `joy.idl` 的 `status: on` 决定（当前 446 / 935）。**开放 ≠ 业务已调用**。
+> `joy.idl` 的 `status: on` 决定（当前 448 / 935，含 L2 试点 2 条）。**开放 ≠ 业务已调用**。
 > 所有生成物都提交进仓，`git diff` 随时能看清改了什么。
 
 ## 文件
@@ -16,9 +16,10 @@
 | `naming.js` | 人工 | **三端共用**的命名与句柄判定规则，避免各后端长出自己的方言 |
 | `emit_thunks.js` | 人工 | 共享 thunk / 注册表生成器（纯字符串函数） |
 | `emit_cs.js` | 人工 | cs 后端薄适配生成器，产出 C icall 与 C# 强类型包装 |
+| `structs.js` | 人工 | 值类型结构体布局解析 + L2 参数按字段展开，三个生成器共用 |
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待裁决、L3 手写清单 |
-| `thunks_generated.c` | 工具生成，勿手改 | 只有 `status: on` 的 L0/L1 会生成 thunk、注册表与自检 |
+| `thunks_generated.c` | 工具生成，勿手改 | `status: on` 的 L0/L1 及可展开的 L2 试点会生成 thunk、注册表与自检 |
 | `modules/cs/bindings/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
 | `modules/lua/bindings/lapi.c` | 人工 | Lua 薄适配：遍历注册表、`joy_value` ↔ Lua 值、句柄 userdata `__gc` |
@@ -49,9 +50,10 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
 
 `--enable` 不是「把选择到的全改成 on」，而是**逐条过闸**：
 
-1. 只考虑 L0 / L1，且不是 `orphan`
+1. `all` / `L0` / `L1` 只考虑 L0 / L1 且不是 `orphan`；可展开的 L2 试点条目只能 `name:` 点名
 2. 参数 / 返回类型必须能被 thunk 与 cs 适配生成（`fp_t`、枚举、结构体一律跳过）
-3. 返回句柄的条目，`owns` 目标的唯一参数类型必须与返回类型**严格相同**
+3. 返回句柄的条目，`owns` 目标的唯一参数类型必须与返回类型**严格相同**；
+   `inferOwns()` 初次生成时也按同一硬校验过滤候选，`--scan` 不会覆盖人工修正后的 `owns`
 4. `void*` 入参没有脚本层裸缓冲语义，跳过
 5. 返回 `char*` 的所有权未标注，跳过
 6. 返回句柄的条目批量模式一律跳过（可能是借用指针），只能 `name:` 点名开放
@@ -89,9 +91,9 @@ node third_party/joy/api/gen_bindings.js --check    # 只校验不写文件，CI
                     joy_obj（句柄 / refcount / dtor）→ 真正的 joy C API
 ```
 
-**当前开放 446 条**：L0 42 条（另 2 条返回 `char*` 被跳过）、L1 404 条
-（含首批人工验证的 2 条），跳过 136 条。其余 489 条 = L2 74 + L3 229 + X 50 +
-被闸门跳过的 136 条，构成后续阶段的全部工作量。
+**当前开放 448 条**：L0 42 条（另 2 条返回 `char*` 被跳过）、L1 404 条
+（含首批人工验证的 2 条）、L2 试点 2 条，跳过 136 条。其余 487 条 = L2 72 +
+L3 229 + X 50 + 被闸门跳过的 136 条，构成后续阶段的全部工作量。
 
 `joy_thunk_entry` 除 `name` / `domain` / `argc` / `fn` 外，还带
 `arg_kinds[]` 与 `ret_kind`：Lua / JS 的 `vm.c` 直接读这张表就知道第 j 个脚本值
@@ -136,9 +138,10 @@ Lua / JS 的适配层遍历 `joy_thunks_table()` 直接注册，**不需要为�
 `[smoke] PASS` 断言。三端自检都验证：调用、句柄创建、传错句柄被拒、
 GC 后 live 归零且 destroyed +1。
 
-**当前边界**：`--check` 拒绝把 L2 / L3 / X 设成 `on`；生成 thunk 只覆盖标量、
-`const char*`、不透明句柄；结构体展开、记录、数组、回调仍留待后续阶段。
-三端都能调用这 446 条，但业务代码尚未迁移到 `Joy.Api.Bindings.*`。
+**当前边界**：`--check` 放行「字段全是已知标量」的可展开 L2 试点，仍拒绝 L3 / X 与
+返回句柄的 L2；生成 thunk 覆盖标量、`const char*`、不透明句柄，以及按字段展开的
+POD 结构体。记录对象、数组、回调、其余 72 条 L2 仍留待后续阶段。
+三端都能调用这 448 条，但业务代码尚未迁移到 `Joy.Api.Bindings.*`。
 
 ## 分级
 
@@ -146,7 +149,7 @@ GC 后 live 归零且 destroyed +1。
 |---|---|---|
 | L0 | 纯标量 + `const char*` | 可直接生成 |
 | L1 | 不透明指针 `*_p` / `void*` | 转句柄，需所有权测试 |
-| L2 | 结构体按值 | 展开成标量，需 `sizeof` 静态断言 |
+| L2 | 结构体按值 | P2-A 试点：全标量 POD 按字段展开成标量序列；其余不自动生成 |
 | L3 | 回调 / varargs / 数组 / 输出缓冲 / 结构体指针 / 结构体返回 | **不自动生成**，必须手写 thunk |
 | X | 条件编译符号、插件系统、测试符号 | 有意排除 |
 
@@ -187,7 +190,7 @@ node third_party/joy/api/gen_bindings.js --check
 ```
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
-**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 被开放、`joy.h` 与 IDL 同步，
+**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、`joy.h` 与 IDL 同步，
 且 `coverage.md`、`thunks_generated.c`、`modules/cs/bindings/api_generated.c`、
 `modules/cs/scripts/Api.generated.cs` 四个生成物都是最新的。任一项不满足即失败；
 比较前会统一换行，兼容 Windows CRLF checkout。冒烟另需看到
@@ -201,6 +204,12 @@ node third_party/joy/api/gen_bindings.js --check
 - `level` 是保守推断：不认识的类型一律归 L3，宁可要求手写，也不冒险自动生成。
 - `runtime/` 与 `thunks_generated.c` 由宿主 CMake 显式编入；三端适配层由各模块
   GLOB 收集。旧链路只多了一行 `csopen_api()` / `luax_open_api()` / `jsopen_api()` 注册。
-- 42 条「所有权待裁决」需要人工判定是拥有还是借用指针；判定前 `--check` 会拦住。
-- L2 的结构体按值展开、L3 的输出参数 / 回调 / 数组，是下一阶段的主要工作；
+- 38 条「所有权待裁决」已逐条人工核对实现并裁决（借用指针 / dtor 双参数 / 无合规 dtor），
+  结论写在 `joy.idl` 的 `note`，并由 `coverage.md` 的两张待办表展示。它们没有可通过硬校验的
+  `owns`，`--check` 仍会拦住 `status: on`；后续要开放得先手写 thunk 或引入显式 `borrowed` 标记。
+- L2 试点（`checkbox` 域 2 条）用「结构体按字段展开成标量序列」：脚本侧传展开后的
+  多个标量而不是单个对象，参数个数与 `joy.h` 不一致；三端仍同名、同顺序、同类型。
+  展开后参数个数受 `LUAX_MAX_ARGS` / `JSAPI_MAX_ARGS`（16）限制。要恢复「脚本传一个
+  对象」需引入 `JOY_V_RECORD` 与字段 schema，见主仓 `HANDOFF.md` 第 8 节。
+- 其余 72 条 L2 的结构体按值展开、L3 的输出参数 / 回调 / 数组，是下一阶段的主要工作；
   之后才是把旧 `Joy.*` 业务调用点迁到 `Joy.Api.Bindings.*` 并删除旧胶水。

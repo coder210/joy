@@ -31,6 +31,9 @@ const MAP = {
 };
 
 const { isOpaque, methodName, handleClass } = require('./naming');
+const { collectStructs, canExpand, expandParams } = require('./structs');
+const LAYOUTS = collectStructs();
+function paramsOf(e) { return expandParams(e, LAYOUTS); }
 function q(s) { return '"' + s + '"'; }
 
 function infoOf(t) {
@@ -45,11 +48,12 @@ function infoOf(t) {
 
 /* --enable 用：cs 后端能否为这条 API 生成包装。 */
 function canEmitCs(e) {
-  if (e.level !== 'L0' && e.level !== 'L1') return '仅 L0/L1';
+  const l2 = e.level === 'L2' && canExpand(e, LAYOUTS);
+  if (e.level !== 'L0' && e.level !== 'L1' && !l2) return '仅 L0/L1';
   if (!e.params) return '复杂签名需手写适配';
   if (e.ret === 'char*') return '字符串返回需人工标注所有权';
   if (e.ret !== 'void' && !isOpaque(e.ret) && !MAP[e.ret]) return '不支持返回类型：' + e.ret;
-  for (const p of e.params) {
+  for (const p of paramsOf(e)) {
     if (!isOpaque(p.ctype) && !MAP[p.ctype]) return '不支持参数类型：' + p.ctype;
   }
   return null;
@@ -59,11 +63,12 @@ function canEmitCs(e) {
 
 function emitIcall(e) {
   const L = [];
-  const n = e.params.length;
+  const flat = paramsOf(e);
+  const n = flat.length;
   const ret = e.ret === 'void' ? null : infoOf(e.ret);
   const mn = methodName(e.name);
-  const decl = e.params.map((p, i) => infoOf(p.ctype).c + ' p' + i).join(', ');
-  const strs = e.params.map((p, i) => (p.ctype === 'char*' ? i : -1)).filter(i => i >= 0);
+  const decl = flat.map((p, i) => infoOf(p.ctype).c + ' p' + i).join(', ');
+  const strs = flat.map((p, i) => (p.ctype === 'char*' ? i : -1)).filter(i => i >= 0);
 
   L.push('static ' + (ret ? ret.c : 'void') + ' icall_' + mn + '(' + (decl || 'void') + ')');
   L.push('{');
@@ -71,7 +76,7 @@ function emitIcall(e) {
   if (ret) L.push('        joy_value_t r;');
   if (n) L.push('        joy_value_t args[' + n + '];');
   for (const i of strs) L.push('        char* s' + i + ' = NULL;');
-  e.params.forEach((p, i) => {
+  flat.forEach((p, i) => {
     const ti = infoOf(p.ctype);
     if (ti.str) {
       L.push('        s' + i + ' = p' + i + ' ? mono_string_to_utf8(p' + i + ') : NULL;');
@@ -103,7 +108,7 @@ function buildC(open) {
   L.push('/* ============================================================');
   L.push(' * 自动生成，勿手改：node api/gen_bindings.js --emit');
   L.push(' * cs 后端薄适配：Mono 值 → joy_value[] → 共享 thunk（不含业务逻辑）。');
-  L.push(' * 只有 joy.idl 里 status:on 的 L0/L1 条目会出现在这里。');
+  L.push(' * joy.idl 里 status:on 的 L0/L1，以及可展开的 L2 试点条目会出现在这里。');
   L.push(' * ============================================================ */');
   L.push('#include <stdint.h>');
   L.push('#include <stdio.h>');
@@ -156,7 +161,7 @@ function buildCs(open) {
   L.push('    {');
   for (const e of open) {
     const ret = e.ret === 'void' ? 'void' : infoOf(e.ret).cs;
-    const ps = e.params.map((p, i) => infoOf(p.ctype).cs + ' ' + (p.name || ('arg' + i))).join(', ');
+    const ps = paramsOf(e).map((p, i) => infoOf(p.ctype).cs + ' ' + (p.name || ('arg' + i))).join(', ');
     L.push('        [MethodImpl(MethodImplOptions.InternalCall)]');
     L.push('        internal static extern ' + ret + ' ' + methodName(e.name) + '(' + ps + ');');
   }
@@ -195,21 +200,21 @@ function buildCs(open) {
     const mn = methodName(e.name);
     const retHandle = isOpaque(e.ret);
     const pubRet = retHandle ? handleClass(e.ret) : (e.ret === 'void' ? 'void' : infoOf(e.ret).cs);
-    const pubParams = e.params.map((p, i) => {
+    const pubParams = paramsOf(e).map((p, i) => {
       const ti = infoOf(p.ctype);
       const nm = p.name || ('arg' + i);
       return (ti.handle ? ti.cls : ti.cs) + ' ' + nm;
     }).join(', ');
     L.push('        public static ' + pubRet + ' ' + mn + '(' + pubParams + ')');
     L.push('        {');
-    e.params.forEach((p, i) => {
+    paramsOf(e).forEach((p, i) => {
       if (isOpaque(p.ctype)) {
         const nm = p.name || ('arg' + i);
         L.push('            if (' + nm + ' == null)'
           + ' throw new ArgumentNullException(nameof(' + nm + '));');
       }
     });
-    const callArgs = e.params.map((p, i) => {
+    const callArgs = paramsOf(e).map((p, i) => {
       const nm = p.name || ('arg' + i);
       return isOpaque(p.ctype) ? nm + '.Handle' : nm;
     }).join(', ');

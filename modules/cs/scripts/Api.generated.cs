@@ -498,9 +498,13 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void CheckboxDestroy(ulong checkbox);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxSetColors(ulong checkbox, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void CheckboxSetR2d(ulong checkbox, ulong r2d);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void CheckboxSetPosition(ulong checkbox, int x, int y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CheckboxSetTextColor(ulong checkbox, uint color_r, uint color_g, uint color_b, uint color_a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void CheckboxToggle(ulong checkbox);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -2812,6 +2816,11 @@ namespace Joy.Api
             if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
             Native.CheckboxDestroy(checkbox.Handle);
         }
+        public static void CheckboxSetColors(Checkbox checkbox, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            Native.CheckboxSetColors(checkbox.Handle, box_r, box_g, box_b, box_a, check_r, check_g, check_b, check_a, hover_r, hover_g, hover_b, hover_a);
+        }
         public static void CheckboxSetR2d(Checkbox checkbox, Jr2d r2d)
         {
             if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
@@ -2822,6 +2831,11 @@ namespace Joy.Api
         {
             if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
             Native.CheckboxSetPosition(checkbox.Handle, x, y);
+        }
+        public static void CheckboxSetTextColor(Checkbox checkbox, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (checkbox == null) throw new ArgumentNullException(nameof(checkbox));
+            Native.CheckboxSetTextColor(checkbox.Handle, color_r, color_g, color_b, color_a);
         }
         public static void CheckboxToggle(Checkbox checkbox)
         {
