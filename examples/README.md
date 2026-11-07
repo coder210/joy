@@ -97,11 +97,31 @@ jsx_call_joy(js, "update", 1, dt);
 
 与 Lua 同构，`joy.*` 表由 `jsx_create()` 注册。
 
-### 三端共有的新绑定链路
+### 三端共有的新绑定链路（生成 API）
 
-除各自的旧胶水外，三个脚本后端都注册了 IDL 驱动的 `Joy.Api.Bindings.*`（方法名
-三端一致）。本示例优先用旧胶水（`joy.r2d.*` / `Joy.Draw.*`），因为它覆盖绘制
-与输入更完整；新链路当前覆盖 668 条纯标量 API，绘制类多未开放。
+三个脚本后端都注册了 IDL 驱动的 `Joy.Api.Bindings.*`，方法名三端一致：
+Lua 是 `Joy.Api.Bindings.Xxx`，JS 是 `Joy.Api.Bindings.Xxx`（挂在全局 `Joy` 上），
+C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / `Font`，
+不暴露 `IntPtr`）。
+
+**本示例的绘制与窗口全部走生成链路**，为此在 `api/idl/joy.idl` 里把这 6 条从
+`status:off` 翻成 `on`（`node api/tools/gen_bindings.js` 重新生成后三端自动获得）：
+
+| IDL 条目 | 脚本名 | 参数（展开后） |
+|---|---|---|
+| `create_window` | `CreateWindow` | `(title, w, h)` → handle |
+| `r2d_create` | `R2dCreate` | `(window)` → handle |
+| `font_create` | `FontCreate` | `(path, size)` → handle |
+| `image_create` | `ImageCreate` | `(r2d, path)` → handle |
+| `shape_draw_rectangle` | `ShapeDrawRectangle` | `(r2d, mode, x, y, w, h)`（`jrect_t` 按字段展开） |
+| `jtext_printx` | `JtextPrintx` | `(r2d, font, str, len, cr, cg, cb, ca, x, y)` |
+
+配套用法：`R2dSetColorf(r2d, r, g, b, a)` 先设颜色，再 `ShapeDrawRectangle(..., "fill")`
+画实心、`"line"` 画描边；`R2dBegin` 用当前颜色清屏。
+
+**仍然只能走旧胶水的三处**（`L3` 未开放，见第 5 节）：
+事件输入（`keypressed` / `mousepressed` 回调不在 IDL）、图片绘制（`image_draw1` 是
+`jrect_t*` 指针参数）、文字宽度测量（`jtext_measurex` 是 `int*` 输出参数）。
 
 ## 5. 已核实的能力边界
 

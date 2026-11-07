@@ -37,6 +37,12 @@ local BULLET_DAMAGE = 1
 -- 素材原始尺寸（player.png / enemy.png 都是 64x64）
 local SPRITE_SRC = 64
 
+-- ---- 生成链路（IDL → thunks → 三端同名） ----
+-- 窗口、渲染、矩形、直线、字体、文字全部走 Joy.Api.Bindings.*，
+-- 不再用 joy.window / joy.r2d 那套旧手写胶水。
+-- 唯一仍走旧胶水的是输入：keypressed / keyreleased 等事件回调不在 IDL 里。
+local B = Joy.Api.Bindings
+
 -- SDL_Scancode 常用键
 local SC = {
     A = 4, D = 7, J = 13, S = 22, W = 26,
@@ -92,7 +98,7 @@ local S = {
 
 local win, ren
 local font_small, font_big
-local img_player, img_enemy
+local has_font = false
 
 -- 输入：keys 是真实事件状态，scripted 是冒烟注入，now/prev 是合成快照
 local keys, now, prev, scripted = {}, {}, {}, {}
@@ -106,54 +112,50 @@ local function pressed(sc)
     return now[sc] == true and prev[sc] ~= true
 end
 
--- ---------------- 绘制辅助 ----------------
+-- ---------------- 绘制辅助（全部走生成链路） ----------------
 local function set_color(r, g, b, a)
-    joy.r2d.set_color(ren, r, g, b, a or 255)
+    B.R2dSetColorf(ren, r / 255.0, g / 255.0, b / 255.0, (a or 255) / 255.0)
 end
 
 local function fill(x, y, w, h, r, g, b, a)
     set_color(r, g, b, a)
-    joy.r2d.rectangle(ren, "fill", x, y, w, h)
+    B.ShapeDrawRectangle(ren, "fill", x, y, w, h)
 end
 
 local function stroke(x, y, w, h, r, g, b, a)
     set_color(r, g, b, a)
-    joy.r2d.rectangle(ren, "line", x, y, w, h)
+    B.ShapeDrawRectangle(ren, "line", x, y, w, h)
 end
 
 local function draw_line(x1, y1, x2, y2, r, g, b, a)
     set_color(r, g, b, a)
-    joy.r2d.line(ren, x1, y1, x2, y2)
+    B.ShapeDrawLineF(ren, x1, y1, x2, y2)
 end
 
 local function text(s, x, y, r, g, b)
-    if not font_small then return end
-    joy.r2d.print(ren, font_small, s, x, y, r or 232, g or 236, b or 245, 255)
+    if not has_font then return end
+    B.JtextPrintx(ren, font_small, s, #s, r or 232, g or 236, b or 245, 255, x, y)
 end
 
--- Lua 侧拿不到 jtext_measurex，用字号 × 字符数近似宽度做居中
+-- 生成链路里 jtext_measurex 是 L3（int* 输出参数）尚未开放，
+-- 用字号 × 字符数近似宽度做居中
 local function text_width(s, size)
     local n = utf8.len(s) or #s
     return n * size * 0.58
 end
 
 local function text_center(s, cx, cy, big, r, g, b)
+    if not has_font then return end
     local f = big and font_big or font_small
-    if not f then return end
     local size = big and 22 or 12
     local w = text_width(s, size)
-    joy.r2d.print(ren, f, s, cx - w * 0.5, cy - size * 0.5,
-                  r or 232, g or 236, b or 245, 255)
+    B.JtextPrintx(ren, f, s, #s, r or 232, g or 236, b or 245, 255,
+                  cx - w * 0.5, cy - size * 0.5)
 end
 
+-- 图片绘制是 L3（jrect_t* 指针参数）尚未开放，精灵统一画成同尺寸色块
 local function sprite(img, cx, cy, size, fr, fg, fb)
-    if img then
-        local s = size / SPRITE_SRC
-        joy.r2d.draw_image_ex(img, { x = 0, y = 0, w = SPRITE_SRC, h = SPRITE_SRC },
-                              cx, cy, 0, s, s, SPRITE_SRC * 0.5, SPRITE_SRC * 0.5)
-    else
-        fill(cx - size * 0.5, cy - size * 0.5, size, size, fr, fg, fb)
-    end
+    fill(cx - size * 0.5, cy - size * 0.5, size, size, fr, fg, fb)
 end
 
 -- ---------------- 资源 ----------------
@@ -164,19 +166,11 @@ local FONT_CANDIDATES = {
 }
 
 local function load_assets()
-    img_player = joy.r2d.new_image(ren, "assets/sprites/player.png")
-    img_enemy = joy.r2d.new_image(ren, "assets/sprites/enemy.png")
-
-    for _, path in ipairs(FONT_CANDIDATES) do
-        local f = joy.r2d.create_font(path, 12)
-        -- font_create 失败返回 NULL 的 lightuserdata；用 joy.font.create 无法判空，
-        -- 这里靠 pcmp：lightuserdata NULL 仍是 userdata，故再用一次大字号兜底。
-        if f then
-            font_small = f
-            font_big = joy.r2d.create_font(path, 22)
-            break
-        end
-    end
+    -- 生成链路的 handle 是 userdata，脚本层无法判断其内部指针是否为 0，
+    -- 所以只认仓内自带的那份字体（四份示例共享 assets，构建时必被拷贝）。
+    font_small = B.FontCreate(FONT_CANDIDATES[1], 12)
+    font_big = B.FontCreate(FONT_CANDIDATES[1], 22)
+    has_font = true
 end
 
 -- ---------------- 场景 ----------------
@@ -541,10 +535,8 @@ end
 
 -- ---------------- joy 回调 ----------------
 function joy.init()
-    win = joy.window.create("Joy Lua Topdown", W, H)
-    if not win then error("window.create failed") end
-    ren = joy.r2d.create(win)
-    if not ren then error("r2d.create failed") end
+    win = B.CreateWindow("Joy Lua Topdown", W, H)
+    ren = B.R2dCreate(win)
 
     load_assets()
     enter_menu()
@@ -575,7 +567,9 @@ end
 
 function joy.draw()
     local bg = (S.scene == "over") and { 14, 12, 18 } or { 16, 18, 26 }
-    joy.r2d.begin(ren, bg[1], bg[2], bg[3], 255)
+    -- R2dBegin 用「当前颜色」清屏，所以先设清屏色再 begin
+    B.R2dSetColorf(ren, bg[1] / 255.0, bg[2] / 255.0, bg[3] / 255.0, 1.0)
+    B.R2dBegin(ren)
 
     if S.scene == "menu" then
         render_menu()
@@ -585,7 +579,7 @@ function joy.draw()
         render_over()
     end
 
-    joy.r2d.end_frame(ren)
+    B.R2dEnd(ren)
 end
 
 function joy.frame_end(dt)
@@ -611,8 +605,7 @@ function joy.mousereleased(x, y, b)
 end
 
 function joy.shutdown()
-    if img_player then joy.r2d.free_image(img_player) end
-    if img_enemy then joy.r2d.free_image(img_enemy) end
-    if ren then joy.r2d.destroy(ren) end
-    if win then joy.window.destroy(win) end
+    -- 句柄由 Lua GC 经 __gc → joy_obj_release 统一释放。
+    -- 这里不能显式 R2dDestroy / DestroyWindow：userdata 内部还记着指针，
+    -- 显式销毁后再被 GC 释放一次就是双重释放。
 end

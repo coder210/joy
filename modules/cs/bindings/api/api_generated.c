@@ -304,6 +304,25 @@ static uint64_t icall_GetTicks(void)
         return (uint64_t)r.as.u64;
 }
 
+static uint64_t icall_CreateWindow(MonoString* p0, int32_t p1, int32_t p2)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[3];
+        char* s0 = NULL;
+        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
+        args[0] = joy_v_str((const char*)s0);
+        args[1] = joy_v_i32((int32_t)p1);
+        args[2] = joy_v_i32((int32_t)p2);
+        r = joy_api_call("create_window", args, 3, &st);
+        if (s0) mono_free(s0);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "create_window", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_DestroyWindow(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -907,6 +926,24 @@ static void icall_IocpProcessEvents(uint64_t p0, int32_t p1)
         return;
 }
 
+static uint64_t icall_FontCreate(MonoString* p0, int32_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s0 = NULL;
+        s0 = p0 ? mono_string_to_utf8(p0) : NULL;
+        args[0] = joy_v_str((const char*)s0);
+        args[1] = joy_v_i32((int32_t)p1);
+        r = joy_api_call("font_create", args, 2, &st);
+        if (s0) mono_free(s0);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "font_create", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_FontDestroy(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -960,6 +997,20 @@ static int32_t icall_FontGetAscent(uint64_t p0)
                 return 0;
         }
         return (int32_t)r.as.i32;
+}
+
+static uint64_t icall_R2dCreate(uint64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_handle((uint64_t)p0);
+        r = joy_api_call("r2d_create", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r2d_create", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
 }
 
 static void icall_R2dDestroy(uint64_t p0)
@@ -1204,6 +1255,46 @@ static int32_t icall_ShapeDrawLine(uint64_t p0, float p1, float p2, float p3, fl
         return (int32_t)r.as.b;
 }
 
+static int32_t icall_ShapeDrawRectangle(uint64_t p0, MonoString* p1, float p2, float p3, float p4, float p5)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[6];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        r = joy_api_call("shape_draw_rectangle", args, 6, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "shape_draw_rectangle", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static uint64_t icall_ImageCreate(uint64_t p0, MonoString* p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        r = joy_api_call("image_create", args, 2, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "image_create", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_ImageDestroy(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -1283,6 +1374,31 @@ static void icall_JtextPrint(uint64_t p0, uint64_t p1, float p2, float p3)
         (void)joy_api_call("jtext_print", args, 4, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtext_print", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JtextPrintx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[10];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_f64((double)p8);
+        args[9] = joy_v_f64((double)p9);
+        (void)joy_api_call("jtext_printx", args, 10, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtext_printx", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -10294,6 +10410,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::InitEnv", (const void*)icall_InitEnv);
         csx_register_internal_call("Joy.Api.Native::QuitEnv", (const void*)icall_QuitEnv);
         csx_register_internal_call("Joy.Api.Native::GetTicks", (const void*)icall_GetTicks);
+        csx_register_internal_call("Joy.Api.Native::CreateWindow", (const void*)icall_CreateWindow);
         csx_register_internal_call("Joy.Api.Native::DestroyWindow", (const void*)icall_DestroyWindow);
         csx_register_internal_call("Joy.Api.Native::WindowSetFullscreen", (const void*)icall_WindowSetFullscreen);
         csx_register_internal_call("Joy.Api.Native::WindowGetFullscreen", (const void*)icall_WindowGetFullscreen);
@@ -10336,10 +10453,12 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::SysInstallCrashHandlers", (const void*)icall_SysInstallCrashHandlers);
         csx_register_internal_call("Joy.Api.Native::IocpServerDestroy", (const void*)icall_IocpServerDestroy);
         csx_register_internal_call("Joy.Api.Native::IocpProcessEvents", (const void*)icall_IocpProcessEvents);
+        csx_register_internal_call("Joy.Api.Native::FontCreate", (const void*)icall_FontCreate);
         csx_register_internal_call("Joy.Api.Native::FontDestroy", (const void*)icall_FontDestroy);
         csx_register_internal_call("Joy.Api.Native::FontGetScale", (const void*)icall_FontGetScale);
         csx_register_internal_call("Joy.Api.Native::FontGetSize", (const void*)icall_FontGetSize);
         csx_register_internal_call("Joy.Api.Native::FontGetAscent", (const void*)icall_FontGetAscent);
+        csx_register_internal_call("Joy.Api.Native::R2dCreate", (const void*)icall_R2dCreate);
         csx_register_internal_call("Joy.Api.Native::R2dDestroy", (const void*)icall_R2dDestroy);
         csx_register_internal_call("Joy.Api.Native::R2dSetColor", (const void*)icall_R2dSetColor);
         csx_register_internal_call("Joy.Api.Native::R2dBegin", (const void*)icall_R2dBegin);
@@ -10356,12 +10475,15 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R2dResetClipStack", (const void*)icall_R2dResetClipStack);
         csx_register_internal_call("Joy.Api.Native::R2dPointInClip", (const void*)icall_R2dPointInClip);
         csx_register_internal_call("Joy.Api.Native::ShapeDrawLine", (const void*)icall_ShapeDrawLine);
+        csx_register_internal_call("Joy.Api.Native::ShapeDrawRectangle", (const void*)icall_ShapeDrawRectangle);
+        csx_register_internal_call("Joy.Api.Native::ImageCreate", (const void*)icall_ImageCreate);
         csx_register_internal_call("Joy.Api.Native::ImageDestroy", (const void*)icall_ImageDestroy);
         csx_register_internal_call("Joy.Api.Native::ImageSetAlpha", (const void*)icall_ImageSetAlpha);
         csx_register_internal_call("Joy.Api.Native::ImageSetBlendMode", (const void*)icall_ImageSetBlendMode);
         csx_register_internal_call("Joy.Api.Native::ImageSetScaleMode", (const void*)icall_ImageSetScaleMode);
         csx_register_internal_call("Joy.Api.Native::TextDestroy", (const void*)icall_TextDestroy);
         csx_register_internal_call("Joy.Api.Native::JtextPrint", (const void*)icall_JtextPrint);
+        csx_register_internal_call("Joy.Api.Native::JtextPrintx", (const void*)icall_JtextPrintx);
         csx_register_internal_call("Joy.Api.Native::R2dDrawPointF", (const void*)icall_R2dDrawPointF);
         csx_register_internal_call("Joy.Api.Native::ShapeDrawRectangleF", (const void*)icall_ShapeDrawRectangleF);
         csx_register_internal_call("Joy.Api.Native::ShapeDrawLineF", (const void*)icall_ShapeDrawLineF);

@@ -27,3 +27,7 @@ build*/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #cmake-build-*
 /build_editor
+
+# .NET 构建中间产物（examples/csharp 与 modules/cs 下 dotnet build 生成）
+obj/
+bin/

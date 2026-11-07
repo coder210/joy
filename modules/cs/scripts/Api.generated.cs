@@ -48,6 +48,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong GetTicks();
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong CreateWindow(string title, int w, int h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void DestroyWindow(ulong win);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void WindowSetFullscreen(ulong win, bool fullscreen);
@@ -132,6 +134,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void IocpProcessEvents(ulong server, int timeout_ms);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong FontCreate(string filename, int fontsize);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void FontDestroy(ulong font);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern float FontGetScale(ulong font);
@@ -139,6 +143,8 @@ namespace Joy.Api
         internal static extern int FontGetSize(ulong font);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int FontGetAscent(ulong font);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R2dCreate(ulong win);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R2dDestroy(ulong r2d);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -172,6 +178,10 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool ShapeDrawLine(ulong r2d, float x1, float y1, float x2, float y2);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool ShapeDrawRectangle(ulong r2d, string mode, float rect_x, float rect_y, float rect_w, float rect_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong ImageCreate(ulong r2d, string filename);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ImageDestroy(ulong image);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ImageSetAlpha(ulong image, uint alpha);
@@ -183,6 +193,8 @@ namespace Joy.Api
         internal static extern void TextDestroy(ulong jtext_tex);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JtextPrint(ulong r2d, ulong jtext_tex, float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextPrintx(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float x, float y);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R2dDrawPointF(ulong r2d, float fx, float fy);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -2033,9 +2045,9 @@ namespace Joy.Api
     {
         public static LcgNum LcgRandomCreate(ulong seed)
         {
-            ulong h = Native.LcgRandomCreate(seed);
-            if (h == 0) throw new InvalidOperationException("lcg_random_create failed");
-            return new LcgNum(h);
+            ulong __h = Native.LcgRandomCreate(seed);
+            if (__h == 0) throw new InvalidOperationException("lcg_random_create failed");
+            return new LcgNum(__h);
         }
         public static void LcgRandomDestroy(LcgNum lcg)
         {
@@ -2122,6 +2134,12 @@ namespace Joy.Api
         public static ulong GetTicks()
         {
             return Native.GetTicks();
+        }
+        public static Jwindow CreateWindow(string title, int w, int h)
+        {
+            ulong __h = Native.CreateWindow(title, w, h);
+            if (__h == 0) throw new InvalidOperationException("create_window failed");
+            return new Jwindow(__h);
         }
         public static void DestroyWindow(Jwindow win)
         {
@@ -2310,6 +2328,12 @@ namespace Joy.Api
             if (server == null) throw new ArgumentNullException(nameof(server));
             Native.IocpProcessEvents(server.Handle, timeout_ms);
         }
+        public static Font FontCreate(string filename, int fontsize)
+        {
+            ulong __h = Native.FontCreate(filename, fontsize);
+            if (__h == 0) throw new InvalidOperationException("font_create failed");
+            return new Font(__h);
+        }
         public static void FontDestroy(Font font)
         {
             if (font == null) throw new ArgumentNullException(nameof(font));
@@ -2329,6 +2353,13 @@ namespace Joy.Api
         {
             if (font == null) throw new ArgumentNullException(nameof(font));
             return Native.FontGetAscent(font.Handle);
+        }
+        public static Jr2d R2dCreate(Jwindow win)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            ulong __h = Native.R2dCreate(win.Handle);
+            if (__h == 0) throw new InvalidOperationException("r2d_create failed");
+            return new Jr2d(__h);
         }
         public static void R2dDestroy(Jr2d r2d)
         {
@@ -2410,6 +2441,18 @@ namespace Joy.Api
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             return Native.ShapeDrawLine(r2d.Handle, x1, y1, x2, y2);
         }
+        public static bool ShapeDrawRectangle(Jr2d r2d, string mode, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.ShapeDrawRectangle(r2d.Handle, mode, rect_x, rect_y, rect_w, rect_h);
+        }
+        public static Image ImageCreate(Jr2d r2d, string filename)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            ulong __h = Native.ImageCreate(r2d.Handle, filename);
+            if (__h == 0) throw new InvalidOperationException("image_create failed");
+            return new Image(__h);
+        }
         public static void ImageDestroy(Image image)
         {
             if (image == null) throw new ArgumentNullException(nameof(image));
@@ -2440,6 +2483,12 @@ namespace Joy.Api
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
             Native.JtextPrint(r2d.Handle, jtext_tex.Handle, x, y);
+        }
+        public static void JtextPrintx(Jr2d r2d, Font font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float x, float y)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.JtextPrintx(r2d.Handle, font.Handle, str, len, color_r, color_g, color_b, color_a, x, y);
         }
         public static bool R2dDrawPointF(Jr2d r2d, float fx, float fy)
         {

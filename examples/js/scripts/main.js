@@ -84,6 +84,7 @@ var S = {
 
 var win = null, ren = null;
 var fontSmall = null, fontBig = null;
+var hasFont = false;
 
 var keys = {}, nowKeys = {}, prevKeys = {}, scripted = {};
 var mouseLeft = false;
@@ -91,29 +92,38 @@ var mouseLeft = false;
 function down(sc) { return nowKeys[sc] === true; }
 function pressed(sc) { return nowKeys[sc] === true && prevKeys[sc] !== true; }
 
-/* ---------------- 绘制辅助 ---------------- */
-function color(r, g, b, a) {
-    return { r: r, g: g, b: b, a: a === undefined ? 255 : a };
+/* ---------------- 绘制辅助（全部走生成链路） ----------------
+ * 窗口、渲染、矩形、直线、字体、文字都走 Joy.Api.Bindings.*，
+ * 不再用 r2d / window 那套旧手写胶水。
+ * 唯一仍走旧胶水的是输入：joy.keypressed / joy.keyreleased 事件回调不在 IDL 里。 */
+var B = Joy.Api.Bindings;
+
+function setColor(r, g, b, a) {
+    B.R2dSetColorf(ren, r / 255.0, g / 255.0, b / 255.0,
+                   (a === undefined ? 255 : a) / 255.0);
 }
 
 function fill(x, y, w, h, r, g, b, a) {
-    r2d.set_color(ren, r, g, b, a === undefined ? 255 : a);
-    r2d.rectangle(ren, "fill", x, y, w, h);
+    setColor(r, g, b, a);
+    B.ShapeDrawRectangle(ren, "fill", x, y, w, h);
 }
 
 function stroke(x, y, w, h, r, g, b, a) {
-    r2d.set_color(ren, r, g, b, a === undefined ? 255 : a);
-    r2d.rectangle(ren, "line", x, y, w, h);
+    setColor(r, g, b, a);
+    B.ShapeDrawRectangle(ren, "line", x, y, w, h);
 }
 
 function drawLine(x1, y1, x2, y2, r, g, b, a) {
-    r2d.set_color(ren, r, g, b, a === undefined ? 255 : a);
-    r2d.line(ren, x1, y1, x2, y2);
+    setColor(r, g, b, a);
+    B.ShapeDrawLineF(ren, x1, y1, x2, y2);
 }
 
 function text(s, x, y, r, g, b) {
-    if (!fontSmall) return;
-    r2d.print(ren, fontSmall, s, x, y, color(r || 232, g || 236, b || 245, 255));
+    if (!hasFont) return;
+    B.JtextPrintx(ren, fontSmall, s, s.length,
+                  r === undefined ? 232 : r,
+                  g === undefined ? 236 : g,
+                  b === undefined ? 245 : b, 255, x, y);
 }
 
 function textWidth(s, size) {
@@ -121,12 +131,15 @@ function textWidth(s, size) {
 }
 
 function textCenter(s, cx, cy, big, r, g, b) {
+    if (!hasFont) return;
     var f = big ? fontBig : fontSmall;
-    if (!f) return;
     var size = big ? 22 : 12;
     var w = textWidth(s, size);
-    r2d.print(ren, f, s, cx - w * 0.5, cy - size * 0.5,
-              color(r || 232, g || 236, b || 245, 255));
+    B.JtextPrintx(ren, f, s, s.length,
+                  r === undefined ? 232 : r,
+                  g === undefined ? 236 : g,
+                  b === undefined ? 245 : b, 255,
+                  cx - w * 0.5, cy - size * 0.5);
 }
 
 function sprite(cx, cy, size, r, g, b) {
@@ -141,14 +154,10 @@ var FONT_CANDIDATES = [
 ];
 
 function loadAssets() {
-    for (var i = 0; i < FONT_CANDIDATES.length; i++) {
-        var f = r2d.create_font(FONT_CANDIDATES[i], 12);
-        if (f) {
-            fontSmall = f;
-            fontBig = r2d.create_font(FONT_CANDIDATES[i], 22);
-            break;
-        }
-    }
+    /* 生成链路的 handle 在脚本层无法判空，只认仓内自带的那份字体 */
+    fontSmall = B.FontCreate(FONT_CANDIDATES[0], 12);
+    fontBig = B.FontCreate(FONT_CANDIDATES[0], 22);
+    hasFont = true;
 }
 
 /* ---------------- 场景 ---------------- */
@@ -496,8 +505,8 @@ function smokeAfterTick() {
 
 /* ---------------- joy 回调 ---------------- */
 joy.init = function () {
-    win = window.create("Joy JS Topdown", W, H);
-    ren = r2d.create(win);
+    win = B.CreateWindow("Joy JS Topdown", W, H);
+    ren = B.R2dCreate(win);
 
     loadAssets();
     enterMenu();
@@ -524,13 +533,15 @@ joy.update = function (dt) {
 
 joy.draw = function () {
     var bg = (S.scene === "over") ? [14, 12, 18] : [16, 18, 26];
-    r2d.begin(ren, bg[0], bg[1], bg[2], 255);
+    /* R2dBegin 用「当前颜色」清屏，所以先设清屏色再 begin */
+    B.R2dSetColorf(ren, bg[0] / 255.0, bg[1] / 255.0, bg[2] / 255.0, 1.0);
+    B.R2dBegin(ren);
 
     if (S.scene === "menu") renderMenu();
     else if (S.scene === "play") renderPlay();
     else renderOver();
 
-    r2d.end_frame(ren);
+    B.R2dEnd(ren);
 };
 
 joy.frame_end = function () {
@@ -545,6 +556,6 @@ joy.mousepressed = function (x, y, b) { if (b === 1) mouseLeft = true; };
 joy.mousereleased = function (x, y, b) { if (b === 1) mouseLeft = false; };
 
 joy.shutdown = function () {
-    if (ren) r2d.destroy(ren);
-    if (win) window.destroy(win);
+    /* 句柄由 duktape finalizer 统一释放；
+       显式 destroy 会被 finalizer 再释放一次（双重释放）。 */
 };

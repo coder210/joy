@@ -9,6 +9,10 @@
 #include "runtime/joy_thunk.h"
 
 static void dtor_lcg_random_destroy(void* p) { lcg_random_destroy((lcg_num_p)p); }
+static void dtor_destroy_window(void* p) { destroy_window((jwindow_p)p); }
+static void dtor_font_destroy(void* p) { font_destroy((font_p)p); }
+static void dtor_r2d_destroy(void* p) { r2d_destroy((jr2d_p)p); }
+static void dtor_image_destroy(void* p) { image_destroy((image_p)p); }
 
 static joy_value_t t_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
 {
@@ -257,6 +261,27 @@ static joy_value_t t_get_ticks(joy_value_t* a, int n, joy_status_t* st)
         if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "get_ticks");
         _r = get_ticks();
         return joy_v_u64((uint64_t)_r);
+}
+
+static joy_value_t t_create_window(joy_value_t* a, int n, joy_status_t* st)
+{
+        const char* p0;
+        int p1;
+        int p2;
+        jwindow_p _r;
+        uint64_t _h;
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "create_window");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg2");
+        p0 = (const char*)a[0].as.str;
+        p1 = (int)a[1].as.i32;
+        p2 = (int)a[2].as.i32;
+        _r = create_window(p0, p1, p2);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "create_window");
+        _h = joy_obj_register((void*)_r, "jwindow_p", dtor_destroy_window, "create_window");
+        if (!_h) { destroy_window(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "create_window"); }
+        return joy_v_handle(_h);
 }
 
 static joy_value_t t_destroy_window(joy_value_t* a, int n, joy_status_t* st)
@@ -762,6 +787,24 @@ static joy_value_t t_iocp_process_events(joy_value_t* a, int n, joy_status_t* st
         return joy_v_null();
 }
 
+static joy_value_t t_font_create(joy_value_t* a, int n, joy_status_t* st)
+{
+        const char* p0;
+        int p1;
+        font_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "font_create");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "font_create.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "font_create.arg1");
+        p0 = (const char*)a[0].as.str;
+        p1 = (int)a[1].as.i32;
+        _r = font_create(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "font_create");
+        _h = joy_obj_register((void*)_r, "font_p", dtor_font_destroy, "font_create");
+        if (!_h) { font_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "font_create"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_font_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         font_p p0;
@@ -807,6 +850,22 @@ static joy_value_t t_font_get_ascent(joy_value_t* a, int n, joy_status_t* st)
         if (!p0) return joy_v_err(st, *st, "font_get_ascent.arg0");
         _r = font_get_ascent(p0);
         return joy_v_i32((int)_r);
+}
+
+static joy_value_t t_r2d_create(joy_value_t* a, int n, joy_status_t* st)
+{
+        jwindow_p p0;
+        jr2d_p _r;
+        uint64_t _h;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r2d_create");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r2d_create.arg0");
+        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        if (!p0) return joy_v_err(st, *st, "r2d_create.arg0");
+        _r = r2d_create(p0);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "r2d_create");
+        _h = joy_obj_register((void*)_r, "jr2d_p", dtor_r2d_destroy, "r2d_create");
+        if (!_h) { r2d_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "r2d_create"); }
+        return joy_v_handle(_h);
 }
 
 static joy_value_t t_r2d_destroy(joy_value_t* a, int n, joy_status_t* st)
@@ -1069,6 +1128,49 @@ static joy_value_t t_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_bool((bool)_r);
 }
 
+static joy_value_t t_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr2d_p p0;
+        const char* p1;
+        jrect_t p2 = { 0 };
+        bool _r;
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "shape_draw_rectangle");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg0");
+        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        if (!p0) return joy_v_err(st, *st, "shape_draw_rectangle.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg1");
+        p1 = (const char*)a[1].as.str;
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg2");
+        p2.x = (float)a[2].as.f64;
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg3");
+        p2.y = (float)a[3].as.f64;
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg4");
+        p2.w = (float)a[4].as.f64;
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg5");
+        p2.h = (float)a[5].as.f64;
+        _r = shape_draw_rectangle(p0, p1, p2);
+        return joy_v_bool((bool)_r);
+}
+
+static joy_value_t t_image_create(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr2d_p p0;
+        const char* p1;
+        image_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "image_create");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "image_create.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "image_create.arg1");
+        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        if (!p0) return joy_v_err(st, *st, "image_create.arg0");
+        p1 = (const char*)a[1].as.str;
+        _r = image_create(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "image_create");
+        _h = joy_obj_register((void*)_r, "image_p", dtor_image_destroy, "image_create");
+        if (!_h) { image_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "image_create"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_image_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         image_p p0;
@@ -1151,6 +1253,42 @@ static joy_value_t t_jtext_print(joy_value_t* a, int n, joy_status_t* st)
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         jtext_print(p0, p1, p2, p3);
+        return joy_v_null();
+}
+
+static joy_value_t t_jtext_printx(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr2d_p p0;
+        font_p p1;
+        const char* p2;
+        int p3;
+        jcolor_t p4 = { 0 };
+        float p5;
+        float p6;
+        if (n != 10) return joy_v_err(st, JOY_ERR_ARGC, "jtext_printx");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg0");
+        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        if (!p0) return joy_v_err(st, *st, "jtext_printx.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg1");
+        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        if (!p1) return joy_v_err(st, *st, "jtext_printx.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg2");
+        p2 = (const char*)a[2].as.str;
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg3");
+        p3 = (int)a[3].as.i32;
+        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg4");
+        p4.r = (uint8_t)a[4].as.u32;
+        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg5");
+        p4.g = (uint8_t)a[5].as.u32;
+        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg6");
+        p4.b = (uint8_t)a[6].as.u32;
+        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg7");
+        p4.a = (uint8_t)a[7].as.u32;
+        if (a[8].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg8");
+        p5 = (float)a[8].as.f64;
+        if (a[9].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jtext_printx.arg9");
+        p6 = (float)a[9].as.f64;
+        jtext_printx(p0, p1, p2, p3, p4, p5, p6);
         return joy_v_null();
 }
 
@@ -10569,6 +10707,7 @@ static const joy_value_kind k_jtimer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 
 static const joy_value_kind k_jtimer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
 static const joy_value_kind k_jtimer_reset[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jtimer_get_elapsed[] = { JOY_V_HANDLE };
+static const joy_value_kind k_create_window[] = { JOY_V_STR, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_destroy_window[] = { JOY_V_HANDLE };
 static const joy_value_kind k_window_set_fullscreen[] = { JOY_V_HANDLE, JOY_V_BOOL };
 static const joy_value_kind k_window_get_fullscreen[] = { JOY_V_HANDLE };
@@ -10603,10 +10742,12 @@ static const joy_value_kind k_sys_sendto[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32, 
 static const joy_value_kind k_sys_sleep[] = { JOY_V_I32 };
 static const joy_value_kind k_iocp_server_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_iocp_process_events[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_font_create[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_font_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_font_get_scale[] = { JOY_V_HANDLE };
 static const joy_value_kind k_font_get_size[] = { JOY_V_HANDLE };
 static const joy_value_kind k_font_get_ascent[] = { JOY_V_HANDLE };
+static const joy_value_kind k_r2d_create[] = { JOY_V_HANDLE };
 static const joy_value_kind k_r2d_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_r2d_set_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_r2d_begin[] = { JOY_V_HANDLE };
@@ -10623,12 +10764,15 @@ static const joy_value_kind k_r2d_pop_clip_rect[] = { JOY_V_HANDLE };
 static const joy_value_kind k_r2d_reset_clip_stack[] = { JOY_V_HANDLE };
 static const joy_value_kind k_r2d_point_in_clip[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_shape_draw_line[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_shape_draw_rectangle[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_image_create[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_image_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_image_set_alpha[] = { JOY_V_HANDLE, JOY_V_U32 };
 static const joy_value_kind k_image_set_blend_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_image_set_scale_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_text_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jtext_print[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_jtext_printx[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_r2d_draw_point_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_shape_draw_rectangle_f[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_shape_draw_line_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
@@ -11216,6 +11360,7 @@ static const joy_thunk_entry s_thunks[] = {
         { "env", "init_env", "InitEnv", t_init_env, 0, NULL, JOY_V_BOOL },
         { "quit", "quit_env", "QuitEnv", t_quit_env, 0, NULL, JOY_V_NULL },
         { "ticks", "get_ticks", "GetTicks", t_get_ticks, 0, NULL, JOY_V_U64 },
+        { "window", "create_window", "CreateWindow", t_create_window, 3, k_create_window, JOY_V_HANDLE },
         { "window", "destroy_window", "DestroyWindow", t_destroy_window, 1, k_destroy_window, JOY_V_NULL },
         { "window", "window_set_fullscreen", "WindowSetFullscreen", t_window_set_fullscreen, 2, k_window_set_fullscreen, JOY_V_NULL },
         { "window", "window_get_fullscreen", "WindowGetFullscreen", t_window_get_fullscreen, 1, k_window_get_fullscreen, JOY_V_BOOL },
@@ -11258,10 +11403,12 @@ static const joy_thunk_entry s_thunks[] = {
         { "sys", "sys_install_crash_handlers", "SysInstallCrashHandlers", t_sys_install_crash_handlers, 0, NULL, JOY_V_NULL },
         { "iocp", "iocp_server_destroy", "IocpServerDestroy", t_iocp_server_destroy, 1, k_iocp_server_destroy, JOY_V_NULL },
         { "iocp", "iocp_process_events", "IocpProcessEvents", t_iocp_process_events, 2, k_iocp_process_events, JOY_V_NULL },
+        { "font", "font_create", "FontCreate", t_font_create, 2, k_font_create, JOY_V_HANDLE },
         { "font", "font_destroy", "FontDestroy", t_font_destroy, 1, k_font_destroy, JOY_V_NULL },
         { "font", "font_get_scale", "FontGetScale", t_font_get_scale, 1, k_font_get_scale, JOY_V_F64 },
         { "font", "font_get_size", "FontGetSize", t_font_get_size, 1, k_font_get_size, JOY_V_I32 },
         { "font", "font_get_ascent", "FontGetAscent", t_font_get_ascent, 1, k_font_get_ascent, JOY_V_I32 },
+        { "r2d", "r2d_create", "R2dCreate", t_r2d_create, 1, k_r2d_create, JOY_V_HANDLE },
         { "r2d", "r2d_destroy", "R2dDestroy", t_r2d_destroy, 1, k_r2d_destroy, JOY_V_NULL },
         { "r2d", "r2d_set_color", "R2dSetColor", t_r2d_set_color, 5, k_r2d_set_color, JOY_V_BOOL },
         { "r2d", "r2d_begin", "R2dBegin", t_r2d_begin, 1, k_r2d_begin, JOY_V_NULL },
@@ -11278,12 +11425,15 @@ static const joy_thunk_entry s_thunks[] = {
         { "r2d", "r2d_reset_clip_stack", "R2dResetClipStack", t_r2d_reset_clip_stack, 1, k_r2d_reset_clip_stack, JOY_V_NULL },
         { "r2d", "r2d_point_in_clip", "R2dPointInClip", t_r2d_point_in_clip, 3, k_r2d_point_in_clip, JOY_V_BOOL },
         { "shape", "shape_draw_line", "ShapeDrawLine", t_shape_draw_line, 5, k_shape_draw_line, JOY_V_BOOL },
+        { "shape", "shape_draw_rectangle", "ShapeDrawRectangle", t_shape_draw_rectangle, 6, k_shape_draw_rectangle, JOY_V_BOOL },
+        { "image", "image_create", "ImageCreate", t_image_create, 2, k_image_create, JOY_V_HANDLE },
         { "image", "image_destroy", "ImageDestroy", t_image_destroy, 1, k_image_destroy, JOY_V_NULL },
         { "image", "image_set_alpha", "ImageSetAlpha", t_image_set_alpha, 2, k_image_set_alpha, JOY_V_NULL },
         { "image", "image_set_blend_mode", "ImageSetBlendMode", t_image_set_blend_mode, 2, k_image_set_blend_mode, JOY_V_NULL },
         { "image", "image_set_scale_mode", "ImageSetScaleMode", t_image_set_scale_mode, 2, k_image_set_scale_mode, JOY_V_NULL },
         { "text", "text_destroy", "TextDestroy", t_text_destroy, 1, k_text_destroy, JOY_V_NULL },
         { "jtext", "jtext_print", "JtextPrint", t_jtext_print, 4, k_jtext_print, JOY_V_NULL },
+        { "jtext", "jtext_printx", "JtextPrintx", t_jtext_printx, 10, k_jtext_printx, JOY_V_NULL },
         { "r2d", "r2d_draw_point_f", "R2dDrawPointF", t_r2d_draw_point_f, 3, k_r2d_draw_point_f, JOY_V_BOOL },
         { "shape", "shape_draw_rectangle_f", "ShapeDrawRectangleF", t_shape_draw_rectangle_f, 6, k_shape_draw_rectangle_f, JOY_V_BOOL },
         { "shape", "shape_draw_line_f", "ShapeDrawLineF", t_shape_draw_line_f, 5, k_shape_draw_line_f, JOY_V_BOOL },
@@ -11945,6 +12095,9 @@ const char* joy_api_selftest(void)
         joy_api_call("get_ticks", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/get_ticks";
         st = JOY_OK;
+        joy_api_call("create_window", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/create_window";
+        st = JOY_OK;
         joy_api_call("destroy_window", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/destroy_window";
         st = JOY_OK;
@@ -12071,6 +12224,9 @@ const char* joy_api_selftest(void)
         joy_api_call("iocp_process_events", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/iocp_process_events";
         st = JOY_OK;
+        joy_api_call("font_create", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/font_create";
+        st = JOY_OK;
         joy_api_call("font_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/font_destroy";
         st = JOY_OK;
@@ -12082,6 +12238,9 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("font_get_ascent", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/font_get_ascent";
+        st = JOY_OK;
+        joy_api_call("r2d_create", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/r2d_create";
         st = JOY_OK;
         joy_api_call("r2d_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/r2d_destroy";
@@ -12131,6 +12290,12 @@ const char* joy_api_selftest(void)
         joy_api_call("shape_draw_line", NULL, 6, &st);
         if (st != JOY_ERR_ARGC) return "registry/shape_draw_line";
         st = JOY_OK;
+        joy_api_call("shape_draw_rectangle", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/shape_draw_rectangle";
+        st = JOY_OK;
+        joy_api_call("image_create", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/image_create";
+        st = JOY_OK;
         joy_api_call("image_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/image_destroy";
         st = JOY_OK;
@@ -12148,6 +12313,9 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("jtext_print", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/jtext_print";
+        st = JOY_OK;
+        joy_api_call("jtext_printx", NULL, 11, &st);
+        if (st != JOY_ERR_ARGC) return "registry/jtext_printx";
         st = JOY_OK;
         joy_api_call("r2d_draw_point_f", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/r2d_draw_point_f";
@@ -13892,6 +14060,12 @@ const char* joy_api_selftest(void)
         /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，
          * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */
         for (i = 0; i < 13; i++) args[i] = joy_v_null();
+        st = JOY_OK;
+        joy_api_call("shape_draw_rectangle", args, 6, &st);
+        if (st != JOY_ERR_TYPE) return "L2/shape_draw_rectangle";
+        st = JOY_OK;
+        joy_api_call("jtext_printx", args, 10, &st);
+        if (st != JOY_ERR_TYPE) return "L2/jtext_printx";
         st = JOY_OK;
         joy_api_call("checkbox_set_colors", args, 13, &st);
         if (st != JOY_ERR_TYPE) return "L2/checkbox_set_colors";
