@@ -30,13 +30,29 @@ if(NOT TARGET joy::all)
     # 缺失时只关掉 cs 模块（csharp 示例不生成），不让 lua / js / cpp 一起失败。
     if(NOT MONO_INCLUDE_DIR OR NOT MONO_LIBRARIES)
         set(_clr_root "${JOY_ROOT}/runtimes")
-        if(WIN32)
-            set(_clr_plat "${_clr_root}/windows-x64")
-        elseif(APPLE)
-            set(_clr_plat "${_clr_root}/macos-arm64")
-        else()
-            set(_clr_plat "${_clr_root}/linux-x64")
+        # 平台目录名可用 -DJOY_CLR_PLATFORM=<目录名> 覆盖（见 runtimes/README.md）。
+        # Android 按 ABI 映射；官方 MonoVM runtime pack 的原生库在 Android 上是
+        # libmonosgen-2.0.so，Windows 包里则沿用 coreclr.dll 这个名字。
+        if(NOT JOY_CLR_PLATFORM)
+            if(WIN32)
+                set(JOY_CLR_PLATFORM "windows-x64")
+            elseif(ANDROID)
+                if(ANDROID_ABI STREQUAL "arm64-v8a")
+                    set(JOY_CLR_PLATFORM "android-arm64")
+                elseif(ANDROID_ABI STREQUAL "armeabi-v7a")
+                    set(JOY_CLR_PLATFORM "android-armv7")
+                elseif(ANDROID_ABI STREQUAL "x86_64")
+                    set(JOY_CLR_PLATFORM "android-x64")
+                else()
+                    set(JOY_CLR_PLATFORM "android-${ANDROID_ABI}")
+                endif()
+            elseif(APPLE)
+                set(JOY_CLR_PLATFORM "macos-arm64")
+            else()
+                set(JOY_CLR_PLATFORM "linux-x64")
+            endif()
         endif()
+        set(_clr_plat "${_clr_root}/${JOY_CLR_PLATFORM}")
         if(EXISTS "${_clr_plat}/include/mono-2.0")
             set(MONO_INCLUDE_DIR "${_clr_plat}/include/mono-2.0")
         elseif(EXISTS "${_clr_root}/include/mono-2.0")
@@ -44,6 +60,8 @@ if(NOT TARGET joy::all)
         endif()
         if(WIN32 AND EXISTS "${_clr_plat}/coreclr.import.lib")
             set(MONO_LIBRARIES "${_clr_plat}/coreclr.import.lib")
+        elseif(EXISTS "${_clr_plat}/libmonosgen-2.0.so")
+            set(MONO_LIBRARIES "${_clr_plat}/libmonosgen-2.0.so")
         elseif(EXISTS "${_clr_plat}/libcoreclr.so")
             set(MONO_LIBRARIES "${_clr_plat}/libcoreclr.so")
         endif()
@@ -82,14 +100,24 @@ function(joy_examples_deploy_clr _target)
         return()
     endif()
     get_filename_component(_clr_bin "${MONO_LIBRARIES}" DIRECTORY)
-    if(NOT EXISTS "${_clr_bin}/coreclr.dll")
-        return()
+    get_filename_component(_clr_file "${MONO_LIBRARIES}" NAME)
+
+    if(ANDROID)
+        # APK 只把 lib/<abi>/*.so 解压成可执行文件；assets/ 是压缩数据，
+        # 系统加载器找不到。产物落进构建树的 lib/<abi>/ 供打包工程收集。
+        set(_apk_lib "${CMAKE_BINARY_DIR}/lib/${ANDROID_ABI}")
+        add_custom_command(TARGET ${_target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${_apk_lib}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${MONO_LIBRARIES}" "${_apk_lib}/${_clr_file}"
+            COMMENT "Deploying ${_clr_file} into APK lib/${ANDROID_ABI}/")
+    elseif(EXISTS "${_clr_bin}/coreclr.dll")
+        add_custom_command(TARGET ${_target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${_clr_bin}/coreclr.dll"
+                    "$<TARGET_FILE_DIR:${_target}>/coreclr.dll"
+            COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
     endif()
-    add_custom_command(TARGET ${_target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${_clr_bin}/coreclr.dll"
-                "$<TARGET_FILE_DIR:${_target}>/coreclr.dll"
-        COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
 endfunction()
 
 # 每个子目录都会定义自己的 target 与一次资源拷贝。

@@ -1,0 +1,94 @@
+name: Android cross-build (C# host)
+
+# 本机没有 NDK，Android 产物的交叉编译与校验全部放在 CI 上做。
+# MonoVM 运行时与平台 BCL 已入库（runtimes/android-arm64/），CI 不再联网下载。
+# 目前只到「编出 libmain.so + 布好 lib/<abi>/ 与 assets/」；
+# 打 APK 还需要 Gradle / AndroidManifest 工程，仓库里尚未提供。
+# 可用 workflow_dispatch 手动触发，产物从 Artifacts 下载。
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  android-arm64:
+    name: Android / arm64-v8a / Release
+    runs-on: ubuntu-latest
+    env:
+      CLR_VERSION: 8.0.17
+      ANDROID_ABI: arm64-v8a
+      ANDROID_PLATFORM: android-24
+      NDK_VERSION: 26.3.11579264
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # JoyGame.csproj / Joy.Bindings.csproj 是 netstandard2.0，构建期需要 dotnet。
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install fixed NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install "platforms;android-34" "ndk;${NDK_VERSION}" >/dev/null
+          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+
+      # 运行时与平台 BCL 已随仓库入库（见 runtimes/README.md），CI 只做防呆校验，
+      # 不再联网下载，clone 后即可 configure。
+      - name: Verify vendored MonoVM runtime
+        run: |
+          set -euo pipefail
+          dst=runtimes/android-arm64
+          for f in libmonosgen-2.0.so libs/System.Private.CoreLib.dll \
+                   libs/netstandard.dll libs/System.Runtime.dll libs/System.Collections.dll; do
+            test -s "$dst/$f" || { echo "missing vendored runtime: $f"; exit 1; }
+          done
+          file "$dst/libmonosgen-2.0.so" | grep -Eqi 'aarch64|arm64'
+          grep -aq "${CLR_VERSION}" "$dst/libmonosgen-2.0.so" || { echo "CLR version mismatch"; exit 1; }
+          # 本机已解析 dynsym 核实过 1312 个 mono_*；CI 只查 jcsx.c 依赖的 7 个
+          for sym in mono_jit_init mono_image_open_from_data mono_assembly_load_from_full \
+                     mono_runtime_invoke mono_add_internal_call mono_set_dirs mono_free; do
+            grep -aq "$sym" "$dst/libmonosgen-2.0.so" || { echo "missing export: $sym"; exit 1; }
+          done
+
+      - name: Configure (Android toolchain)
+        run: |
+          cmake -S examples -B build-android -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI="$ANDROID_ABI" \
+            -DANDROID_PLATFORM="$ANDROID_PLATFORM"
+
+      - name: Build C# host (libmain.so)
+        run: cmake --build build-android --target example_csharp --parallel
+
+      - name: Verify outputs
+        run: |
+          set -euo pipefail
+          test -f "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
+          find build-android -name libmain.so -print | tee /tmp/libmain.txt
+          test -s /tmp/libmain.txt
+          find build-android -path '*assets/lib/System.Private.CoreLib.dll' -print | tee /tmp/bcl.txt
+          test -s /tmp/bcl.txt
+          echo "--- 关键产物 ---"
+          find build-android \( -name 'libmain.so' -o -path '*assets/JoyGame.dll' \) -print | sort
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-android-${{ env.ANDROID_ABI }}
+          path: |
+            build-android/**/libmain.so
+            build-android/lib/${{ env.ANDROID_ABI }}/*.so
+            build-android/**/assets/**
+          if-no-files-found: error
+          retention-days: 14

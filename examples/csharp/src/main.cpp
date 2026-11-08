@@ -64,19 +64,61 @@ static void chdir_to_exe_dir(void)
 #endif
 }
 
-/* CoreCLR 的 BCL 与绑定程序集放在 assets/lib/：csx_setup_mono_dirs() 只认
- * 系统 Mono 路径或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
+/* BCL 与绑定程序集放在 assets/lib/：csx_setup_mono_dirs() 只认系统 Mono 路径
+ * 或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
+#if defined(__ANDROID__)
+/* APK 的 assets/ 是压缩数据，不是文件系统目录，而 mono_set_dirs() 要真实路径
+ * （csx_setup_mono_dirs 用 stat() 校验）。首次启动把 assets/lib/*.dll 解到
+ * SDL_GetPrefPath() 指向的内部存储，再把 MONO_LIB_DIR 指过去。
+ * 清单与 ../CMakeLists.txt 部署到 assets/lib/ 的文件保持一致。 */
+static const char* const kClrLibs[] = {
+    "System.Private.CoreLib.dll", "netstandard.dll",
+    "System.Runtime.dll", "System.Collections.dll",
+    "Joy.Bindings.dll", NULL
+};
+
+static bool copy_clr_lib(const char* dir, const char* name)
+{
+    char src[512], dst[512];
+    SDL_snprintf(src, sizeof(src), "assets/lib/%s", name);
+    /* SDL_GetPrefPath() 在 Android 返回带尾部 '/' 的内部存储路径 */
+    SDL_snprintf(dst, sizeof(dst), "%s%s", dir, name);
+
+    size_t size = 0;
+    void* data = SDL_LoadFile(src, &size);
+    if (!data) return false;
+    SDL_IOStream* io = SDL_IOFromFile(dst, "wb");
+    if (!io) { SDL_free(data); return false; }
+    bool ok = SDL_WriteIO(io, data, size) == size;
+    SDL_CloseIO(io);
+    SDL_free(data);
+    return ok;
+}
+#endif
+
 static void setup_clr_dirs(void)
 {
+#if defined(__ANDROID__)
+    char* pref = SDL_GetPrefPath("joy", "example_csharp");
+    if (!pref) return;
+    for (int i = 0; kClrLibs[i]; ++i) {
+        if (!copy_clr_lib(pref, kClrLibs[i])) {
+            fprintf(stderr, "[host] unpack CLR lib failed: %s\n", kClrLibs[i]);
+        }
+    }
+    setenv("MONO_LIB_DIR", pref, 1);
+    SDL_free(pref);
+#else
     const char* base = SDL_GetBasePath();
     if (!base) return;
     char lib[512];
-#if defined(_WIN32)
+#  if defined(_WIN32)
     snprintf(lib, sizeof(lib), "%sassets\\lib", base);
     _putenv_s("MONO_LIB_DIR", lib);
-#else
+#  else
     snprintf(lib, sizeof(lib), "%sassets/lib", base);
     setenv("MONO_LIB_DIR", lib, 1);
+#  endif
 #endif
 }
 

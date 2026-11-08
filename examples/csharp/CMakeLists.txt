@@ -12,7 +12,14 @@ joy_ide_source_groups()
 set(_game_sources "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${_game_sources})
 
-add_executable(example_csharp ${_game_sources})
+if(ANDROID)
+    # SDL3 Android 应用由 SDLActivity 加载 libmain.so，不是独立可执行文件；
+    # SDL_AppInit 回调入口保持不变。
+    add_library(example_csharp SHARED ${_game_sources})
+    set_target_properties(example_csharp PROPERTIES OUTPUT_NAME "main")
+else()
+    add_executable(example_csharp ${_game_sources})
+endif()
 target_link_libraries(example_csharp PRIVATE joy::all)
 
 # ---- C# 程序集：dotnet build 产出 JoyGame.dll + Joy.Bindings.dll ----
@@ -53,10 +60,16 @@ endif()
 
 # ---- 托管运行时文件：全部并入 assets/，CI 与 Android APK 只收录这个资源根 ----
 # coreclr.dll 是原生库，由系统加载器从 exe 旁查找，必须留在根目录（见下方部署函数）。
+# BCL 按 RID 存放在 <平台目录>/libs/：CoreLib 含平台特化的 P/Invoke 面
+# （Windows 走 kernel32、Android 走 liblog），实测两者 91% 字节不同，
+# 跨平台混用会在原生化调用上直接失败，所以不做共享、也不做回退。
 get_filename_component(_clr_bin "${MONO_LIBRARIES}" DIRECTORY)
-set(_clr_libs "${JOY_ROOT}/runtimes/libs")
-if(EXISTS "${_clr_bin}/libs/System.Private.CoreLib.dll")
-    set(_clr_libs "${_clr_bin}/libs")
+set(_clr_libs "${_clr_bin}/libs")
+if(NOT EXISTS "${_clr_libs}/System.Private.CoreLib.dll")
+    message(FATAL_ERROR
+        "缺平台 BCL: ${_clr_libs}/System.Private.CoreLib.dll\n"
+        "把 Microsoft.NETCore.App.Runtime.Mono.<rid> 同版本的 4 个 BCL 放进\n"
+        "${_clr_bin}/libs/ 。CoreLib 按 RID 构建，不能复用其它平台的那份。")
 endif()
 
 set(_out_dir "$<TARGET_FILE_DIR:example_csharp>")
@@ -78,7 +91,9 @@ add_custom_command(TARGET example_csharp POST_BUILD
 joy_examples_deploy_clr(example_csharp)
 
 enable_testing()
-add_test(NAME example_csharp_smoke COMMAND example_csharp --smoke 180)
-set_tests_properties(example_csharp_smoke PROPERTIES
-    WORKING_DIRECTORY "${_out_dir}"
-    ENVIRONMENT "SDL_VIDEODRIVER=dummy")
+if(NOT ANDROID)
+    add_test(NAME example_csharp_smoke COMMAND example_csharp --smoke 180)
+    set_tests_properties(example_csharp_smoke PROPERTIES
+        WORKING_DIRECTORY "${_out_dir}"
+        ENVIRONMENT "SDL_VIDEODRIVER=dummy")
+endif()
