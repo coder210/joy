@@ -343,4 +343,5 @@ function buildThunks(entries) {
   return L.join('\n');
 }
 
-module.exports = { buildThunks, canThunk, ownsIssue };
+/* SCALAR 同时被 emit_vtable.js 复用：类型→joy_value 的映射只维护一份。 */
+module.exports = { buildThunks, canThunk, ownsIssue, SCALAR };

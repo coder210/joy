@@ -4,14 +4,18 @@
 # 四个 target：example_cpp / example_csharp / example_lua / example_js
 # 功能完全相同（见 README.md），只是业务逻辑分别用 C++ / C# / Lua / JS 写。
 #
-# 两种用法：
-#   1) 从 joy 仓根构建：根 CMakeLists 里 option(JOY_BUILD_EXAMPLES) 打开后
+# 两种用法（是否启用由 joy 仓根 CMakeLists.txt 的 JOY_BUILD_EXAMPLES 决定）：
+#   1) 从 joy 仓根构建：-DJOY_BUILD_EXAMPLES=ON，根 CMakeLists 会
 #      add_subdirectory(examples)，此时 joy::all 已存在。
 #   2) 独立构建：cmake -S examples -B build/examples，本文件会自行把 joy 与
-#      三个第三方拉进来。
+#      三个第三方拉进来（不经过总开关，默认就构建全部示例）。
 # ============================================================
 cmake_minimum_required(VERSION 3.16)
 project(joy_examples C CXX)
+
+# 标记「examples 已被引入」：独立构建时本文件是顶层，随后会 add_subdirectory
+# (joy 根)；根 CMakeLists 靠这个标记避免再次 add_subdirectory(examples)。
+set(JOY_EXAMPLES_ACTIVE ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 
@@ -88,7 +92,9 @@ function(joy_examples_deploy_clr _target)
         COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
 endfunction()
 
-# 每个子目录都会定义自己的 target 与一次资源拷贝
+# 每个子目录都会定义自己的 target 与一次资源拷贝。
+# IDE 分组 joy_ide_source_groups() 由各子目录自己调用：source_group 只在
+# 「创建 target 的那个目录」生效，父目录定义不会传到子目录。
 enable_testing()
 foreach(_lang cpp lua js csharp)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_lang}/CMakeLists.txt")

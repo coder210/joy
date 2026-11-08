@@ -41,5 +41,60 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_subdirectory(SDL)
 endif()
 
+# ============================================================
+# 总开关：是否构建 examples（cpp / lua / js / csharp 四语言示例）。
+# 默认 OFF —— 把 joy 作为子项目时只拿到引擎本身，不引入任何示例。
+# 打开：-DJOY_BUILD_EXAMPLES=ON，或在 cmake-gui 里勾选。
+#
+# 必须放在 include(JoyTargets.cmake) 之前：JoyTargets 会 foreach(lua js cs)
+# 引入各模块，模块在这一步读取全局属性 JOY_REQUESTED_MODULES 决定启用哪些
+# 脚本后端；晚于它设置就只能拿到空桩。
+# ============================================================
+option(JOY_BUILD_EXAMPLES "构建 examples 四语言示例（cpp / lua / js / csharp）" OFF)
+
+if(JOY_BUILD_EXAMPLES)
+    # CLR 探测与 examples 独立构建时的逻辑一致：默认取 joy 自带的 runtimes/。
+    set(_clr_root "${CMAKE_CURRENT_LIST_DIR}/runtimes")
+    if(WIN32)
+        set(_clr_plat "${_clr_root}/windows-x64")
+    elseif(APPLE)
+        set(_clr_plat "${_clr_root}/macos-arm64")
+    else()
+        set(_clr_plat "${_clr_root}/linux-x64")
+    endif()
+    if(NOT MONO_INCLUDE_DIR OR NOT MONO_LIBRARIES)
+        if(EXISTS "${_clr_plat}/include/mono-2.0")
+            set(MONO_INCLUDE_DIR "${_clr_plat}/include/mono-2.0")
+        elseif(EXISTS "${_clr_root}/include/mono-2.0")
+            set(MONO_INCLUDE_DIR "${_clr_root}/include/mono-2.0")
+        endif()
+        if(WIN32 AND EXISTS "${_clr_plat}/coreclr.import.lib")
+            set(MONO_LIBRARIES "${_clr_plat}/coreclr.import.lib")
+        elseif(EXISTS "${_clr_plat}/libcoreclr.so")
+            set(MONO_LIBRARIES "${_clr_plat}/libcoreclr.so")
+        endif()
+    endif()
+
+    if(MONO_INCLUDE_DIR AND MONO_LIBRARIES AND EXISTS "${MONO_INCLUDE_DIR}")
+        set(_joy_modules cs lua js)
+        message(STATUS "joy: 开启 cs / lua / js 三个后端（examples）")
+    else()
+        set(_joy_modules lua js)
+        message(WARNING
+            "joy: 未找到 CLR 开发包（MONO_INCLUDE_DIR / MONO_LIBRARIES），"
+            "csharp 示例将跳过；请设 -DMONO_INCLUDE_DIR=<.../include/mono-2.0> "
+            "-DMONO_LIBRARIES=<.../coreclr.import.lib>")
+    endif()
+    set_property(GLOBAL PROPERTY JOY_REQUESTED_MODULES ${_joy_modules})
+    # examples/CMakeLists.txt 的 joy_examples_deploy_clr() 依赖这个标记
+    set(JOY_EXAMPLES_CLR_OK ${_joy_modules} MATCHES "cs")
+endif()
+
 # 作为子目录时不调用 project()、不改全局输出目录、不重复添加第三方。
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/JoyTargets.cmake")
+
+# examples 由根目录统一引入。JOY_EXAMPLES_ACTIVE 由 examples/CMakeLists.txt
+# 设置，用于避免 cmake -S examples 独立构建时又回到这里重复引入。
+if(JOY_BUILD_EXAMPLES AND NOT JOY_EXAMPLES_ACTIVE)
+    add_subdirectory(examples)
+endif()

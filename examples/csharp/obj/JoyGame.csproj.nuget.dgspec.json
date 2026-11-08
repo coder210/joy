@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj": {}
+    "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj": {}
   },
   "projects": {
-    "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj": {
+    "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj",
+        "projectUniqueName": "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj",
         "projectName": "JoyGame",
-        "projectPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj",
+        "projectPath": "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj",
         "packagesPath": "C:\\Users\\liwei\\.nuget\\packages\\",
-        "outputPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\obj\\",
+        "outputPath": "E:\\c++\\joy\\examples\\csharp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,8 +33,8 @@
           "netstandard2.0": {
             "targetAlias": "netstandard2.0",
             "projectReferences": {
-              "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj": {
-                "projectPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj"
+              "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj": {
+                "projectPath": "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj"
               }
             }
           }
@@ -77,14 +77,14 @@
         }
       }
     },
-    "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj": {
+    "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj",
+        "projectUniqueName": "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj",
         "projectName": "Joy.Bindings",
-        "projectPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj",
+        "projectPath": "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj",
         "packagesPath": "C:\\Users\\liwei\\.nuget\\packages\\",
-        "outputPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\obj\\",
+        "outputPath": "E:\\c++\\joy\\modules\\cs\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,28 +1,55 @@
 /* ============================================================
- * joy 示例 · C++ 版
+ * joy 示例 · C++ 游戏 DLL（native plugin 版）
  *
  * 480x320 顶视角小游戏，与 csharp / lua / js 三个示例功能完全相同：
  *   Menu → Play（WASD 移动 / Space 射击 / 敌人追击 / 碰撞掉血）→ GameOver
  *
- * 这一版没有脚本层：窗口、主循环、游戏逻辑全部写在 C++ 里，直接调 joy
- * 公共 API。它是另外三个示例的「行为参照物」——同样的固定种子、同样的
- * 运动学常量、同样的冒烟输入序列，因此冒烟输出的指纹数值应当一致。
+ * 这一版把游戏逻辑外置成原生 DLL：宿主只负责 SDL 主循环、加载本 DLL 并
+ * 注入 JoyApi 大函数指针表；窗口、场景、物理、绘制全在这里，且所有引擎
+ * 调用都经 g_api->Xxx()，本 DLL 不链接 joy::all。它是另外三个示例的
+ * 「行为参照物」——同样的固定种子、同样的运动学常量、同样的冒烟输入序列，
+ * 因此冒烟输出的指纹数值应当一致。
  *
  * 逻辑内部用 double 计算：Lua / JS 只有 double，若这里用 float，
  * 两者的位置累积会产生细微漂移，冒烟指纹就对不上了。
- *
- * 参数：
- *   --smoke N   无窗口冒烟：dummy 视频驱动 + 固定 1/60 步长，跑 N 帧后退出
  * ============================================================ */
-#define SDL_MAIN_USE_CALLBACKS 1
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL.h>
-#include <joy/joy.h>
+#include "joy_game_hooks.h"
 
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+/* 与 SDL3 SDL_Scancode（USB HID）取值逐字对齐：宿主用 e->key.scancode
+ * 直接索引 JoyInput.keys[512]，两侧必须一致。这里不 include 任何 SDL 头，
+ * DLL 因此完全不依赖 SDL 的生成配置头；若以后要 include SDL.h，请删掉本枚举。 */
+enum {
+    SDL_SCANCODE_A      = 4,
+    SDL_SCANCODE_D      = 7,
+    SDL_SCANCODE_J      = 13,
+    SDL_SCANCODE_S      = 22,
+    SDL_SCANCODE_W      = 26,
+    SDL_SCANCODE_RETURN = 40,
+    SDL_SCANCODE_ESCAPE = 41,
+    SDL_SCANCODE_SPACE  = 44,
+    SDL_SCANCODE_RIGHT  = 79,
+    SDL_SCANCODE_LEFT   = 80,
+    SDL_SCANCODE_DOWN   = 81,
+    SDL_SCANCODE_UP     = 82,
+};
+
+/* DLL 不 include joy.h，这里按引擎公开布局重放几个纯值类型与常量：
+ * 仅用于 ABI 自检；跨 DLL 边界传递的只有标量，没有结构体。 */
+struct vec2_t  { float x, y; };
+struct jrect_t { float x, y, w, h; };
+#define JR2D_BLEND_BLEND 1
+
+/* 引擎裸指针在 JoyApi 里是强句柄薄包装；用别名让游戏逻辑主体少改，
+ * 空值判断统一用 .h（uint64_t），编译期仍不能混传不同类型的句柄。 */
+using jwindow_p = Jwindow;
+using jr2d_p    = Jr2d;
+using image_p   = Image;
+using font_p    = Font;
 
 /* ---------------- 规格常量（四份实现共用，改动需四份同步） ---------------- */
 static const int   APP_W = 480;
@@ -122,13 +149,14 @@ enum SceneId {
 };
 
 struct Game {
-    jwindow_p window = NULL;
-    jr2d_p    r2d = NULL;
+    /* JoyApi 用强句柄（uint64_t h）代替裸指针，空值用 {} 并判 .h */
+    jwindow_p window = {};
+    jr2d_p    r2d = {};
 
-    image_p img_player = NULL;
-    image_p img_enemy = NULL;
-    font_p  font_small = NULL;
-    font_p  font_big = NULL;
+    image_p img_player = {};
+    image_p img_enemy = {};
+    font_p  font_small = {};
+    font_p  font_big = {};
     bool    has_font = false;
 
     SceneId scene = SCENE_MENU;
@@ -182,80 +210,91 @@ struct Game {
 };
 
 static Game* g_game = NULL;
+static const JoyApi* g_api = NULL;   /* 宿主注入；DLL 内所有引擎调用都经它 */
 
-/* ---------------- 绘制辅助（等价于 C# 的 Painter） ---------------- */
+/* ---------------- 绘制辅助（等价于 C# 的 Painter） ----------------
+ * 全部经 g_api 的强签名函数指针调用。L3（jtext_measurex / image_get_size /
+ * image_draw1）在 joy.idl 里是 status:off，既没有 thunk 也没有 vtable 条目，
+ * 因此照 lua/js/csharp 三个示例的既有做法退化：文字宽度按字号估算、
+ * 精灵统一画成同尺寸色块。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
 
 static void set_color(jr2d_p r2d, int r, int gr, int b, int a)
 {
-    r2d_set_colorf(r2d, (float)r / 255.0f, (float)gr / 255.0f,
-                   (float)b / 255.0f, (float)a / 255.0f);
+    g_api->R2dSetColorf(g_api->ctx, r2d, (float)r / 255.0f,
+                        (float)gr / 255.0f, (float)b / 255.0f,
+                        (float)a / 255.0f);
 }
 
+/* 注意坐标系：*_f 系列（ShapeDrawRectangleF / ShapeDrawLineF）的参数是
+ * 归一化比例，r2d_fpx() 会乘窗口宽高再画；这里传的是像素坐标，必须用
+ * 非 _f 的 ShapeDrawRectangle（L2 按字段展平）/ ShapeDrawLine（L1）。
+ * 否则一个 x=227、w=26 的精灵色块会被放大成 x=108960、w=12480，
+ * 整个跑到屏幕外，表现为「玩家和敌人没渲染出来」。 */
 static void fill_rect(float x, float y, float w, float h,
                       int r, int gr, int b, int a = 255)
 {
     set_color(g_game->r2d, r, gr, b, a);
-    jrect_t rc = { x, y, w, h };
-    shape_draw_rectangle(g_game->r2d, "fill", rc);
+    g_api->ShapeDrawRectangle(g_api->ctx, g_game->r2d, "fill", x, y, w, h);
 }
 
 static void stroke_rect(float x, float y, float w, float h,
                         int r, int gr, int b, int a = 255)
 {
     set_color(g_game->r2d, r, gr, b, a);
-    jrect_t rc = { x, y, w, h };
-    shape_draw_rectangle(g_game->r2d, "line", rc);
+    g_api->ShapeDrawRectangle(g_api->ctx, g_game->r2d, "line", x, y, w, h);
 }
 
 static void draw_line(float x1, float y1, float x2, float y2,
                       int r, int gr, int b, int a = 255)
 {
     set_color(g_game->r2d, r, gr, b, a);
-    shape_draw_line_f(g_game->r2d, x1, y1, x2, y2);
+    g_api->ShapeDrawLine(g_api->ctx, g_game->r2d, x1, y1, x2, y2);
 }
 
+/* 与 lua 示例的 utf8.len(s) * size * 0.58 一致 */
+static float text_width_estimate(const char* s, int size)
+{
+    int n = 0;
+    for (const unsigned char* p = (const unsigned char*)s; *p; ++p) {
+        if ((*p & 0xC0) != 0x80) ++n;
+    }
+    return (float)(n * size) * 0.58f;
+}
+
+/* JtextPrintx 是 L2 展开签名：jcolor_t 按 r/g/b/a 四个 uint8_t 摊平 */
 static void draw_text(const char* s, float x, float y,
                       int r = 232, int gr = 236, int b = 245)
 {
-    if (!g_game->font_small) return;
-    jcolor_t c = { (uint8_t)r, (uint8_t)gr, (uint8_t)b, 255 };
-    jtext_printx(g_game->r2d, g_game->font_small, s, (int)strlen(s), c, x, y);
+    if (!g_game->font_small.h) return;
+    g_api->JtextPrintx(g_api->ctx, g_game->r2d, g_game->font_small,
+                       s, (int)strlen(s), (uint8_t)r, (uint8_t)gr,
+                       (uint8_t)b, (uint8_t)255, x, y);
 }
 
 static void draw_text_center(const char* s, float cx, float cy, bool big = false,
                              int r = 232, int gr = 236, int b = 245)
 {
     font_p f = big ? g_game->font_big : g_game->font_small;
-    if (!f) return;
-    jcolor_t c = { (uint8_t)r, (uint8_t)gr, (uint8_t)b, 255 };
-    int w = 0, h = 0;
-    jtext_measurex(g_game->r2d, f, s, (int)strlen(s), c, &w, &h);
-    jtext_printx(g_game->r2d, f, s, (int)strlen(s), c,
-                 cx - (float)w * 0.5f, cy - (float)h * 0.5f);
+    if (!f.h) return;
+    int size = big ? 22 : 12;
+    float w = text_width_estimate(s, size);
+    g_api->JtextPrintx(g_api->ctx, g_game->r2d, f, s, (int)strlen(s),
+                       (uint8_t)r, (uint8_t)gr, (uint8_t)b, (uint8_t)255,
+                       cx - w * 0.5f, cy - (float)size * 0.5f);
 }
 
 static int text_width(const char* s)
 {
-    if (!g_game->font_small) return 0;
-    jcolor_t c = { 255, 255, 255, 255 };
-    int w = 0, h = 0;
-    jtext_measurex(g_game->r2d, g_game->font_small, s, (int)strlen(s), c, &w, &h);
-    return w;
+    if (!g_game->font_small.h) return 0;
+    return (int)text_width_estimate(s, 12);
 }
 
-/* 以 (cx, cy) 为中心画精灵；缺图时退化为同尺寸色块 */
+/* 以 (cx, cy) 为中心画精灵；L3 image_draw1 未开放，统一画成同尺寸色块 */
 static void draw_sprite(image_p img, float cx, float cy, float size,
                         int fr, int fg, int fb)
 {
-    if (img) {
-        float iw = 0, ih = 0;
-        image_get_size(img, &iw, &ih);
-        jrect_t src = { 0, 0, iw, ih };
-        jrect_t dst = { cx - size * 0.5f, cy - size * 0.5f, size, size };
-        image_draw1(img, &src, &dst);
-    } else {
-        fill_rect(cx - size * 0.5f, cy - size * 0.5f, size, size, fr, fg, fb);
-    }
+    (void)img;
+    fill_rect(cx - size * 0.5f, cy - size * 0.5f, size, size, fr, fg, fb);
 }
 
 static const char* pick(const char* zh, const char* en)
@@ -267,8 +306,10 @@ static const char* pick(const char* zh, const char* en)
 
 static void load_assets(void)
 {
-    g_game->img_player = image_create(g_game->r2d, "assets/sprites/player.png");
-    g_game->img_enemy = image_create(g_game->r2d, "assets/sprites/enemy.png");
+    g_game->img_player = g_api->ImageCreate(g_api->ctx, g_game->r2d,
+                                            "assets/sprites/player.png");
+    g_game->img_enemy = g_api->ImageCreate(g_api->ctx, g_game->r2d,
+                                           "assets/sprites/enemy.png");
 
     static const char* kFonts[] = {
         "assets/fonts/simhei.ttf",
@@ -276,17 +317,17 @@ static void load_assets(void)
         "C:/Windows/Fonts/Deng.ttf",
     };
     for (size_t i = 0; i < sizeof(kFonts) / sizeof(kFonts[0]); ++i) {
-        font_p small = font_create(kFonts[i], 12);
-        if (!small) continue;
+        font_p small = g_api->FontCreate(g_api->ctx, kFonts[i], 12);
+        if (!small.h) continue;
         g_game->font_small = small;
-        g_game->font_big = font_create(kFonts[i], 22);
+        g_game->font_big = g_api->FontCreate(g_api->ctx, kFonts[i], 22);
         g_game->has_font = true;
         break;
     }
 
-    if (!g_game->img_player) printf("[warn] missing assets/sprites/player.png\n");
-    if (!g_game->img_enemy) printf("[warn] missing assets/sprites/enemy.png\n");
-    if (!g_game->font_small) printf("[warn] no usable font, HUD text disabled\n");
+    if (!g_game->img_player.h) printf("[warn] missing assets/sprites/player.png\n");
+    if (!g_game->img_enemy.h) printf("[warn] missing assets/sprites/enemy.png\n");
+    if (!g_game->font_small.h) printf("[warn] no usable font, HUD text disabled\n");
 }
 
 /* ---------------- 场景切换 ---------------- */
@@ -783,103 +824,49 @@ static void input_end_frame(void)
     memset(g->scripted, 0, sizeof(g->scripted));
 }
 
-/* ---------------- SDL 入口 ---------------- */
+/* ---------------- 游戏 DLL 对外契约实现 ---------------- */
 
-static int find_arg(int argc, char* argv[], const char* name)
+static bool game_init(void* game, const JoyApi* api, int smoke_frames)
 {
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], name) == 0) return i;
+    Game* g = (Game*)game;
+    g_api = api;
+    g->rng.seed(12345u);
+    g->smoke_frames = smoke_frames;
+
+    g->window = api->CreateWindow(api->ctx, "Joy CPP Topdown", APP_W, APP_H);
+    if (!g->window.h) {
+        fprintf(stderr, "[host] create_window failed\n");
+        return false;
     }
-    return -1;
-}
-
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
-{
-    (void)appstate;
-
-    g_game = new Game();
-    g_game->rng.seed(12345u);
-
-    int i = find_arg(argc, argv, "--smoke");
-    if (i >= 0 && i + 1 < argc) g_game->smoke_frames = atoi(argv[i + 1]);
-
-    if (g_game->smoke_frames > 0) {
-        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
-        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
-    } else {
-        SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
+    g->r2d = api->R2dCreate(api->ctx, g->window);
+    if (!g->r2d.h) {
+        fprintf(stderr, "[host] r2d_create failed\n");
+        return false;
     }
-
-    g_game->window = create_window("Joy CPP Topdown", APP_W, APP_H);
-    if (!g_game->window) {
-        fprintf(stderr, "[host] create_window failed: %s\n", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-    g_game->r2d = r2d_create(g_game->window);
-    if (!g_game->r2d) {
-        fprintf(stderr, "[host] r2d_create failed: %s\n", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-    r2d_set_blend_mode(g_game->r2d, JR2D_BLEND_BLEND);
+    api->R2dSetBlendMode(api->ctx, g->r2d, JR2D_BLEND_BLEND);
 
     load_assets();
 
-    printf("[host] init %dx%d smoke=%d\n", APP_W, APP_H, g_game->smoke_frames);
+    printf("[host] init %dx%d smoke=%d\n", APP_W, APP_H, g->smoke_frames);
     fflush(stdout);
 
     enter_menu();
-    return SDL_APP_CONTINUE;
+    return true;
 }
 
-SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
+static void game_on_frame(void* game, double dt, const JoyInput* input,
+                          JoyFrameResult* out)
 {
-    (void)appstate;
-    Game* g = g_game;
-    if (!g) return SDL_APP_CONTINUE;
+    Game* g = (Game*)game;
+    out->quit = false;
+    out->exit_code = 0;
+    out->frame = g->frame;
 
-    switch (e->type) {
-    case SDL_EVENT_KEY_DOWN:
-        if (e->key.scancode < 512) g->real_keys[e->key.scancode] = true;
-        break;
-    case SDL_EVENT_KEY_UP:
-        if (e->key.scancode < 512) g->real_keys[e->key.scancode] = false;
-        break;
-    case SDL_EVENT_MOUSE_MOTION:
-        g->mouse_x = e->motion.x;
-        g->mouse_y = e->motion.y;
-        break;
-    case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        if (e->button.button == 1) g->mouse_left = true;
-        break;
-    case SDL_EVENT_MOUSE_BUTTON_UP:
-        if (e->button.button == 1) g->mouse_left = false;
-        break;
-    case SDL_EVENT_QUIT:
-        return SDL_APP_SUCCESS;
-    default:
-        break;
-    }
-    return SDL_APP_CONTINUE;
-}
-
-SDL_AppResult SDL_AppIterate(void* appstate)
-{
-    (void)appstate;
-    Game* g = g_game;
-    if (!g) return SDL_APP_SUCCESS;
-
-    double dt;
-    if (g->smoke_frames > 0) {
-        dt = 1.0 / 60.0;
-    } else {
-        static Uint64 last_ns = 0;
-        Uint64 now = SDL_GetTicksNS();
-        if (last_ns == 0) last_ns = now;
-        dt = (double)(now - last_ns) / (double)SDL_NS_PER_SECOND;
-        last_ns = now;
-        if (dt < 0) dt = 0;
-        if (dt > 0.05) dt = 0.05;   /* 与 C# GameApp.Tick 的上限一致 */
-    }
+    /* 宿主把 SDL 事件翻成纯 C 快照；这里再与冒烟脚本的 scripted 按键合成 */
+    memcpy(g->real_keys, input->keys, sizeof(g->real_keys));
+    g->mouse_x = input->mouse_x;
+    g->mouse_y = input->mouse_y;
+    g->mouse_left = input->mouse_left;
 
     if (g->smoke_frames > 0) smoke_before_tick();
 
@@ -892,50 +879,57 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     case SCENE_OVER: update_over(dt); break;
     }
 
-    r2d_begin(g->r2d);
+    g_api->R2dBegin(g_api->ctx, g->r2d);
     switch (g->scene) {
     case SCENE_MENU: render_menu(); break;
     case SCENE_PLAY: render_play(); break;
     case SCENE_OVER: render_over(); break;
     }
-    r2d_end(g->r2d);
+    g_api->R2dEnd(g_api->ctx, g->r2d);
 
     input_end_frame();
 
     if (g->smoke_frames > 0) {
         smoke_after_tick();
-        if (g->quit) {
-            printf("[host] smoke finished: frames=%d exit=%d\n", g->frame, g->exit_code);
-            fflush(stdout);
-            return g->exit_code == 0 ? SDL_APP_SUCCESS : SDL_APP_FAILURE;
-        }
-        if (g->frame >= g->smoke_frames) {
-            printf("[host] smoke finished: frames=%d exit=%d\n", g->frame, g->exit_code);
-            fflush(stdout);
-            return g->exit_code == 0 ? SDL_APP_SUCCESS : SDL_APP_FAILURE;
+        if (g->quit || g->frame >= g->smoke_frames) {
+            out->quit = true;
+            out->exit_code = g->exit_code;
         }
     } else if (g->quit) {
-        return SDL_APP_SUCCESS;
+        out->quit = true;
+        out->exit_code = g->exit_code;
     }
-
-    return SDL_APP_CONTINUE;
+    out->frame = g->frame;
 }
 
-void SDL_AppQuit(void* appstate, SDL_AppResult result)
+static void game_shutdown(void* game)
 {
-    (void)appstate;
-    (void)result;
+    Game* g = (Game*)game;
+    if (!g || !g_api) return;
 
-    Game* g = g_game;
-    if (!g) return;
-
-    if (g->img_player) image_destroy(g->img_player);
-    if (g->img_enemy) image_destroy(g->img_enemy);
+    if (g->img_player.h) g_api->ImageDestroy(g_api->ctx, g->img_player);
+    if (g->img_enemy.h)  g_api->ImageDestroy(g_api->ctx, g->img_enemy);
     /* font 由 joy 内部缓存管理，这里不显式销毁（与 C# 侧一致：句柄随进程退出回收） */
 
-    if (g->r2d) r2d_destroy(g->r2d);
-    if (g->window) destroy_window(g->window);
+    if (g->r2d.h)    g_api->R2dDestroy(g_api->ctx, g->r2d);
+    if (g->window.h) g_api->DestroyWindow(g_api->ctx, g->window);
+    g_api = NULL;
+}
 
-    delete g;
-    g_game = NULL;
+static JoyGameHooks s_hooks = {
+    JOY_GAME_ABI,
+    (uint32_t)sizeof(JoyGameHooks),
+    NULL,
+    game_init,
+    game_on_frame,
+    game_shutdown,
+};
+
+/* 唯一导出符号：宿主用 SDL_LoadFunction("joy_game_get_hooks") 取它 */
+extern "C" const JoyGameHooks* joy_game_get_hooks(void)
+{
+    static Game s_game;       /* DLL 私有状态，生命周期随模块 */
+    g_game = &s_game;
+    s_hooks.game = g_game;
+    return &s_hooks;
 }

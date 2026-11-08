@@ -29,10 +29,14 @@ const JMATH_WRAPPERS_H = path.join(JOY_API, 'generated', 'jmath_wrappers.h');
 const IDL = path.join(JOY_API, 'idl', 'joy.idl');
 const REPORT = path.join(JOY_API, 'generated', 'coverage.md');
 const THUNKS = path.join(JOY_API, 'generated', 'thunks_generated.c');
+/* C++ 后端强签名 vtable（当前纵向切片试点），同样是入库生成物。 */
+const VTABLE_H = path.join(JOY_API, 'generated', 'joy_api_vtable.h');
+const VTABLE_C = path.join(JOY_API, 'generated', 'joy_api_vtable.c');
 /* cs 后端薄适配也是入库生成物：由 joy.idl 的 status:on 条目驱动。 */
 const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api/api_generated.c');
 const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
 const { buildThunks, canThunk, ownsIssue } = require('./emit_thunks');
+const { buildVtable, canVtable } = require('./emit_vtable');
 const { buildCsGlue, canEmitCs } = require('./emit_cs');
 const { isOpaque } = require('./naming');
 /* jmath 包装生成器作为模块引入：--check 直接汇总它的错误，不再起子进程。 */
@@ -494,6 +498,27 @@ function check(entries) {
       errors.push('modules/cs/scripts/Api.generated.cs 已过期，请跑 node api/tools/gen_bindings.js --emit');
     }
   }
+  /* C++ 后端强签名 vtable：两个生成物同样纳入「无 diff」门禁；
+   * 试点条目若被改坏（关掉 / 换成 L3 签名）会让表变空，这里一并拦住。 */
+  if (!entries.some(canVtable)) {
+    errors.push('vtable 试点条目不可生成，请检查 joy.idl 中该 API 的 status / 签名');
+  }
+  let expectedVtable = null;
+  try {
+    expectedVtable = buildVtable(entries);
+  } catch (err) {
+    errors.push('vtable 生成失败: ' + err.message);
+  }
+  if (expectedVtable !== null) {
+    const hOnDisk = fs.existsSync(VTABLE_H) ? fs.readFileSync(VTABLE_H, 'utf8') : '';
+    const cOnDisk = fs.existsSync(VTABLE_C) ? fs.readFileSync(VTABLE_C, 'utf8') : '';
+    if (normEol(hOnDisk) !== normEol(expectedVtable.h)) {
+      errors.push('joy_api_vtable.h 已过期，请跑 node api/tools/gen_bindings.js --emit');
+    }
+    if (normEol(cOnDisk) !== normEol(expectedVtable.c)) {
+      errors.push('joy_api_vtable.c 已过期，请跑 node api/tools/gen_bindings.js --emit');
+    }
+  }
   /* jmath 包装头是契约输入，它的声明与实现也是生成物，一并纳入同一门禁。 */
   for (const e of checkJmathWrappers().errors) errors.push('jmath_wrap: ' + e);
   return errors;
@@ -559,7 +584,7 @@ function main() {
         return 1;
       }
       console.log('check OK: ' + loadIdl().length
-        + ' IDL entries, report + thunks + cs glue + jmath wrappers up to date');
+        + ' IDL entries, report + thunks + vtable + cs glue + jmath wrappers up to date');
       return 0;
     }
     const hasEnable = args.includes('--enable');
@@ -585,12 +610,16 @@ function main() {
       if (r.skipped.length > 12) console.log('  ... 共 ' + r.skipped.length + ' 项被跳过');
     }
     const glue = buildCsGlue(entries);
+    const vtable = buildVtable(entries);
     fs.writeFileSync(REPORT, buildReport(entries, meta), 'utf8');
     fs.writeFileSync(THUNKS, buildThunks(entries), 'utf8');
+    fs.writeFileSync(VTABLE_H, vtable.h, 'utf8');
+    fs.writeFileSync(VTABLE_C, vtable.c, 'utf8');
     fs.writeFileSync(CS_C, glue.c, 'utf8');
     fs.writeFileSync(CS_CS, glue.cs, 'utf8');
     console.log('emit: open=' + entries.filter(e => e.status === 'on').length
-      + ', report + thunks_generated.c + cs glue written');
+      + ', vtable=' + entries.filter(canVtable).length
+      + ', report + thunks + vtable + cs glue written');
     return 0;
   } catch (err) {
     console.error('gen_bindings: ' + err.message);

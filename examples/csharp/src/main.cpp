@@ -11,7 +11,7 @@
  *
  * 参数：
  *   --smoke N        无窗口冒烟：dummy 驱动 + 固定 1/60 步长，跑 N 帧后退出
- *   --assembly PATH  指定 C# 程序集（默认 JoyGame.dll，相对当前目录）
+ *   --assembly PATH  指定 C# 程序集（默认 assets/JoyGame.dll，相对 exe 目录）
  * ============================================================ */
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
@@ -42,7 +42,7 @@ static csx_method_p g_on_shutdown = NULL;
 static int    g_smoke_frames = 0;
 static int    g_frame = 0;
 static Uint64 g_last_tick_ns = 0;
-static const char* g_assembly = "JoyGame.dll";
+static const char* g_assembly = "assets/JoyGame.dll";
 
 static int find_arg(int argc, char* argv[], const char* name)
 {
@@ -64,17 +64,18 @@ static void chdir_to_exe_dir(void)
 #endif
 }
 
-/* CoreCLR 的 BCL 放在 exe 旁的 lib/：csx_setup_mono_dirs() 只认系统 Mono 路径
- * 或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
+/* CoreCLR 的 BCL 与绑定程序集放在 assets/lib/：csx_setup_mono_dirs() 只认
+ * 系统 Mono 路径或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
 static void setup_clr_dirs(void)
 {
     const char* base = SDL_GetBasePath();
     if (!base) return;
     char lib[512];
-    snprintf(lib, sizeof(lib), "%slib", base);
 #if defined(_WIN32)
+    snprintf(lib, sizeof(lib), "%sassets\\lib", base);
     _putenv_s("MONO_LIB_DIR", lib);
 #else
+    snprintf(lib, sizeof(lib), "%sassets/lib", base);
     setenv("MONO_LIB_DIR", lib, 1);
 #endif
 }

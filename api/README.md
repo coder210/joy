@@ -16,13 +16,16 @@
 | `naming.js` | 人工 | **三端共用**的命名与句柄判定规则，避免各后端长出自己的方言 |
 | `emit_thunks.js` | 人工 | 共享 thunk / 注册表生成器（纯字符串函数） |
 | `emit_cs.js` | 人工 | cs 后端薄适配生成器，产出 C icall 与 C# 强类型包装 |
-| `structs.js` | 人工 | 值类型结构体布局解析 + L2 参数按字段展开，三个生成器共用 |
+| `emit_vtable.js` | 人工 | C++ 后端强签名 vtable 生成器：覆盖 `status:on` 的 L0/L1 与可展开的 L2，支持标量 / `const char*` / 强句柄类型 |
+| `structs.js` | 人工 | 值类型结构体布局解析 + L2 参数按字段展开，四个生成器共用 |
 | `jmath_wrap.js` | 人工 | 解析 `jmath.h`，生成 `generated/jmath_wrappers.{h,c}`；作为模块被 `--check` 直接调用 |
 | `generated/jmath_wrappers.h` | 工具生成，勿手改 | 220 条全标量 `JOY_API` 声明，第二个契约输入源；`joy.h` 只留一行 include |
 | `generated/jmath_wrappers.c` | 工具生成，勿手改 | jmath 数学函数的外部链接包装实现，由 `cmake/JoySources.cmake` 显式收编 |
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待裁决、L3 手写清单 |
 | `thunks_generated.c` | 工具生成，勿手改 | `status: on` 的 L0/L1 及可展开的 L2 试点会生成 thunk、注册表与自检 |
+| `generated/joy_api_vtable.h` | 工具生成，勿手改 | 674 个强签名函数指针 + 56 个句柄薄包装 typedef（`jr2d_p`→`Jr2d`，编译期不可混传）+ `abi_version` / `size` |
+| `generated/joy_api_vtable.c` | 工具生成，勿手改 | 674 个 shim（强签名 ↔ `joy_value`）、宿主侧填表 `joy_api_vtable_init()`、自检 `joy_api_vtable_selftest()` |
 | `modules/cs/bindings/api/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
 | `modules/lua/bindings/lapi.c` | 人工 | Lua 薄适配：遍历注册表、`joy_value` ↔ Lua 值、句柄 userdata `__gc` |
@@ -32,12 +35,28 @@
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
 | `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
 
+### vtable 的自检边界
+
+`joy_api_vtable_selftest()` **只**对 `emit_vtable.js` 里 `SELFTEST_SAFE` 列出的
+确定性纯函数（hash 系列、`jpm_wave_seed`、`jmath_fp_from_float`）做
+「强签名调用 vs 直接 C 调用」数值比对，另用 `window_get_fullscreen({0})`
+验证强句柄的无效值会被 thunk 拒绝而不是崩溃。表里其余 660+ 条 API
+（`create_window` / `sys_bind` / `audio_create_*` / `quit_env` 等有副作用或
+依赖外部状态）**不参与运行时调用**，由编译期签名、`joy_api_vtable_init()`
+填表和 `--check` 生成物一致性保证。新增纯函数到白名单前请确认它无副作用、
+结果确定。
+
+`status:on` 的可展开 L2（`jtext_printx` / `shape_draw_rectangle` 等）已按
+`structs.js` 的字段布局展开成标量进表，与 thunk 表 argc 一致；L3
+（结构体指针 / 输出参数）仍是 `status:off`，不在表内，消费方需自行退化
+（examples 里文字宽度按字号估算、精灵画成色块）。
+
 ## 命令
 
 在任意目录执行（路径都相对脚本自身）：
 
 ```powershell
-node third_party/joy/api/tools/gen_bindings.js            # 重生成报告 + thunks + cs glue
+node third_party/joy/api/tools/gen_bindings.js            # 重生成报告 + thunks + vtable + cs glue
 node third_party/joy/api/tools/gen_bindings.js --emit     # 同上（显式写法）
 node third_party/joy/api/tools/gen_bindings.js --scan     # 从两个契约头更新 joy.idl + 重生成全部产物
 node third_party/joy/api/tools/jmath_wrap.js              # 改过 jmath.h 后先跑：重生成 jmath_wrappers.{h,c}
@@ -46,7 +65,8 @@ node third_party/joy/api/tools/gen_bindings.js --disable <同样的选择子>
 node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文件，CI 门禁用
 ```
 
-默认生成 4 个入库产物：`coverage.md`、`thunks_generated.c`、
+默认生成 6 个入库产物：`coverage.md`、`thunks_generated.c`、
+`generated/joy_api_vtable.{h,c}`、
 `modules/cs/bindings/api/api_generated.c`、`modules/cs/scripts/Api.generated.cs`。
 另有 `jmath_wrap.js` 单独生成 `generated/jmath_wrappers.{h,c}`：先跑它再跑
 `--scan`，因为 `.h` 是契约输入。`--check` 直接调用该模块的 `check()` 汇总错误，

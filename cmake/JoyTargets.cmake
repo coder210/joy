@@ -30,7 +30,8 @@ set(_joy_api_sources
     "${JOY_ROOT}/api/runtime/joy_value.c"
     "${JOY_ROOT}/api/runtime/joy_obj.c"
     "${JOY_ROOT}/api/runtime/joy_thunk.c"
-    "${JOY_ROOT}/api/generated/thunks_generated.c")
+    "${JOY_ROOT}/api/generated/thunks_generated.c"
+    "${JOY_ROOT}/api/generated/joy_api_vtable.c")
 
 # --------------------------------------------------------------- joy::all
 add_library(joy_all INTERFACE)
@@ -108,3 +109,73 @@ foreach(_joy_mod IN ITEMS lua js cs)
         target_link_libraries(joy_all INTERFACE joy_module_${_joy_mod})
     endif()
 endforeach()
+
+# ------------------------------------------------------------ IDE 源码分组
+# joy::all 用 INTERFACE 源码注入，joy 的 .c 会直接编进消费方 target。
+# source_group 是「目录作用域」的，模块目录里定义的规则传不到消费方，
+# 结果 VS 里几十个 joy 源码全平铺在 Source Files 下。
+#
+# 消费方在**创建自己 target 的那个目录**调用一次 joy_ide_source_groups()，
+# 即按 joy 仓真实目录树（src/ api/ external/ modules/...）生成筛选器。
+# 父目录调用不会传到子目录，必须每个定义 target 的目录各调一次。
+set_property(GLOBAL PROPERTY JOY_ROOT_DIR "${JOY_ROOT}")
+
+function(_joy_collect_interface_sources _target)
+    get_property(_seen GLOBAL PROPERTY _JOY_IDE_SEEN)
+    if(_target IN_LIST _seen)
+        return()
+    endif()
+    set_property(GLOBAL APPEND PROPERTY _JOY_IDE_SEEN "${_target}")
+
+    get_target_property(_srcs "${_target}" INTERFACE_SOURCES)
+    if(_srcs)
+        set_property(GLOBAL APPEND PROPERTY _JOY_IDE_FILES ${_srcs})
+    endif()
+    get_target_property(_deps "${_target}" INTERFACE_LINK_LIBRARIES)
+    if(_deps)
+        foreach(_dep IN LISTS _deps)
+            if(TARGET "${_dep}")
+                _joy_collect_interface_sources("${_dep}")
+            endif()
+        endforeach()
+    endif()
+endfunction()
+
+function(joy_ide_source_groups)
+    # 用全局属性取 joy 仓根：本函数可能在调用方目录执行，那里不一定有
+    # JOY_ROOT（add_subdirectory 的普通变量不会传回父目录）。
+    get_property(_joy_tree GLOBAL PROPERTY JOY_ROOT_DIR)
+    if(NOT _joy_tree)
+        get_filename_component(_joy_tree "${JOY_ROOT}" ABSOLUTE)
+    endif()
+
+    set_property(GLOBAL PROPERTY _JOY_IDE_SEEN "")
+    set_property(GLOBAL PROPERTY _JOY_IDE_FILES "")
+    _joy_collect_interface_sources(joy_all)
+
+    get_property(_files GLOBAL PROPERTY _JOY_IDE_FILES)
+    if(NOT _files)
+        return()
+    endif()
+    # 只保留 joy 仓内的真实文件：source_group(TREE) 要求 FILES 都位于 TREE 根下，
+    # 生成器表达式和仓外路径必须剔除。
+    set(_under_root "")
+    foreach(_f IN LISTS _files)
+        string(FIND "${_f}" "$<" _genex)
+        if(NOT _genex EQUAL -1)
+            continue()
+        endif()
+        get_filename_component(_abs "${_f}" ABSOLUTE)
+        file(RELATIVE_PATH _rel "${_joy_tree}" "${_abs}")
+        if(_rel MATCHES "^\\.\\." OR _rel MATCHES "^[A-Za-z]:")
+            continue()
+        endif()
+        list(APPEND _under_root "${_abs}")
+    endforeach()
+    if(_under_root)
+        list(REMOVE_DUPLICATES _under_root)
+        # 统一收在 joy 节点下：joy 仓自己的 src/ 会占用顶层 src 筛选器，
+        # 那个名字要留给宿主真正的游戏代码（joy\src / joy\api / ...）。
+        source_group(TREE "${_joy_tree}" PREFIX "joy" FILES ${_under_root})
+    endif()
+endfunction()

@@ -14,7 +14,7 @@
 
 | 目录 | 语言 | 业务逻辑写在哪 | 宿主 |
 |---|---|---|---|
-| `cpp/` | C++ | 直接写在 C++ 里，调 joy 公共 API | 无脚本后端 |
+| `cpp/` | C++ | 编译成原生 DLL，通过宿主注入的 `JoyApi` 函数指针表调 joy | 无脚本 VM，native plugin |
 | `csharp/` | C# | `JoyGame.dll`（.NET 程序集） | `modules/cs`（CoreCLR 嵌入） |
 | `lua/` | Lua | `*.lua` | `modules/lua`（Lua 5.4） |
 | `js/` | JavaScript | `*.js` | `modules/js`（duktape） |
@@ -45,18 +45,55 @@
 examples/
 ├── README.md          ← 本文件（任务书）
 ├── CMakeLists.txt     ← 共享构建入口：一个文件定义 4 个 target
-├── assets/            ← 四份实现共用的图片/字体（暂无，缺失时走纯色退化路径）
-├── cpp/               ← main.cpp：窗口 + 主循环 + 全部游戏逻辑
-├── csharp/            ← main.cpp（CLR 宿主）+ JoyGame.csproj + *.cs
-├── lua/               ← main.cpp（Lua 宿主）+ scripts/*.lua
-└── js/                ← main.cpp（JS 宿主）+ scripts/*.js
+├── assets/            ← 唯一资源根：静态图片/字体 + 构建生成的脚本与托管程序集
+├── cpp/               ← src/host.cpp（薄宿主）+ src/game.cpp（游戏 DLL）+ joy_game_hooks.h
+├── csharp/            ← src/main.cpp（CLR 宿主）+ JoyGame.csproj + game/ runtime/
+├── lua/               ← src/main.cpp（Lua 宿主）+ src/main.lua（游戏逻辑）
+└── js/                ← src/main.cpp（JS 宿主）+ src/main.js（游戏逻辑）
 ```
 
-每个子目录自己带一个 `main.cpp` 宿主。宿主只做四件事：建窗口、建渲染、
-把 SDL 事件转发给业务层、按帧驱动。游戏逻辑一律不写在宿主里（`cpp/` 除外，
-它没有脚本层）。
+每个子目录的真实 `src/` 里放本示例自己的代码（宿主，lua/js 另有游戏脚本）。
+宿主只做四件事：建窗口、建渲染、把 SDL 事件转发给业务层、按帧驱动。
+游戏逻辑一律不写在宿主里：`cpp/` 把逻辑编译成 `JoyGameCpp.dll`，宿主用
+`SDL_LoadObject` 加载、取唯一入口 `joy_game_get_hooks`，并把 `JoyApi` 大函数
+指针表注入 DLL；DLL 不链接 `joy::all`，所有引擎调用都走表里的强签名函数指针。
+
+所有运行时资源统一落在 exe 旁的 `assets/`：CI（含 Android APK）只收录这个
+资源根，桌面与移动端因此保持同一相对布局。静态图片/字体来自 `assets/`，
+lua/js 游戏脚本部署到 `assets/scripts/`，C# 的 `JoyGame.dll` 与 BCL/绑定程序集
+部署到 `assets/` 与 `assets/lib/`，C++ 游戏 DLL 部署到 `assets/cpp/`；
+宿主一律按 `assets/...` 相对路径加载。`coreclr.dll` 是原生库，仍留在 exe 旁
+由系统加载器查找，不进 `assets/`。
+VS 里 `src` 筛选器是本示例的游戏代码，注入的 joy 引擎源码统一收在 `joy\...` 下。
+
+> **平台边界（试点）**：桌面可以用 `SDL_LoadObject("assets/cpp/...")` 直接加载原生
+> DLL；Android **不能**从 APK assets 加载 `.so`（须由系统从 `lib/<abi>/` 解压），
+> iOS 不允许运行时加载未签名 dylib、wasm 需要 side module。移动/Web 平台需要
+> `JOY_GAME_STATIC` 编译期 fallback，把游戏代码直接编进宿主。本次试点只覆盖桌面。
 
 ## 4. 各后端的宿主写法（已核实）
+
+### C++（native plugin）
+
+```c
+/* 宿主：游戏 DLL 只有一个导出入口，不需要 .lib / __declspec(dllimport) */
+SDL_SharedObject* lib = SDL_LoadObject("assets/cpp/JoyGameCpp.dll");
+const JoyGameHooks* hooks = ((const JoyGameHooks* (*)(void))
+    SDL_LoadFunction(lib, "joy_game_get_hooks"))();
+
+JoyApi api;                        /* 674 个强签名函数指针 */
+joy_api_vtable_init(&api, NULL);   /* 宿主是唯一链接 joy::all 的一方 */
+hooks->init(hooks->game, &api, smoke_frames);
+hooks->on_frame(hooks->game, dt, &input, &result);
+hooks->shutdown(hooks->game);
+SDL_UnloadObject(lib);
+```
+
+`JoyApi` 由 `gen_bindings.js` 从 `joy.idl` 生成；DLL 只 include
+`generated/joy_api_vtable.h` 与 `joy_game_hooks.h`，不 include `joy.h`、
+不链接 SDL 库。表头 `abi_version` / `size` / `ctx` 三字段固定，DLL 侧
+校验版本即可前后兼容加 API。游戏侧用 `Jwindow` / `Jr2d` / `Font` / `Image`
+等强句柄薄包装，编译期不能混传。
 
 ### C#
 
@@ -159,7 +196,7 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
 ### 对引擎的两处改动
 
 1. **新增 `jsx_get_context()`**（`modules/js/joy_js.h` + `jsx.c`，7 行）。
-   `examples/js/main.cpp` 需要读写脚本全局变量（冒烟帧数、退出标志），而
+   `examples/js/src/main.cpp` 需要读写脚本全局变量（冒烟帧数、退出标志），而
    `modules/js` 原本没有取 `duk_context` 的接口（Lua 有 `luax_get_state` 这个对称品）。
 
 2. **修复 `jg_create_font` 的参数错位**（`modules/js/bindings/legacy/r2d.c`）。

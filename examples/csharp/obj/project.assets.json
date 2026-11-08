@@ -202,11 +202,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj",
+      "projectUniqueName": "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj",
       "projectName": "JoyGame",
-      "projectPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\JoyGame.csproj",
+      "projectPath": "E:\\c++\\joy\\examples\\csharp\\JoyGame.csproj",
       "packagesPath": "C:\\Users\\liwei\\.nuget\\packages\\",
-      "outputPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\examples\\csharp\\obj\\",
+      "outputPath": "E:\\c++\\joy\\examples\\csharp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -228,8 +228,8 @@
         "netstandard2.0": {
           "targetAlias": "netstandard2.0",
           "projectReferences": {
-            "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj": {
-              "projectPath": "E:\\c++\\joy_csharp_test\\third_party\\joy\\modules\\cs\\Joy.Bindings.csproj"
+            "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj": {
+              "projectPath": "E:\\c++\\joy\\modules\\cs\\Joy.Bindings.csproj"
             }
           }
         }

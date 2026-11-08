@@ -7,6 +7,7 @@
 #include <mono/metadata/threads.h>
 #include "joy_csharp.h"
 #include <joy/joy.h>
+#include <SDL3/SDL_stdinc.h>   /* SDL_free：utils_read_file 的返回缓冲归 SDL 分配器 */
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -153,13 +154,13 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         MonoImage* image = mono_image_open_from_data(assembly_data, data_size, 1, &status);
         if (status != MONO_IMAGE_OK || !image) {
                 log_error("Failed to open image from data: %s", filename);
-                free(assembly_data);
+                SDL_free(assembly_data);
                 return false;
         }
 
         // 从映像加载程序集，并指定简单名称（可选）
         MonoAssembly* assembly = mono_assembly_load_from_full(image, "joy_asm", &status, 0);
-        free(assembly_data);  // 数据已被复制，可以释放
+        SDL_free(assembly_data);  // 数据已被复制，可以释放
 
         if (!assembly) {
                 log_error("Failed to load assembly from image: %s", filename);
