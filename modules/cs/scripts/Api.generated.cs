@@ -168,7 +168,11 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R2dDrawPoint(ulong r2d, float x, float y);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dSetClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R2dClearClip(ulong r2d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R2dPushClipRect(ulong r2d, float rect_x, float rect_y, float rect_w, float rect_h);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R2dPopClipRect(ulong r2d);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -190,6 +194,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ImageSetScaleMode(ulong image, int nearest);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TextUpdatex(ulong text, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TextDestroy(ulong jtext_tex);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JtextPrint(ulong r2d, ulong jtext_tex, float x, float y);
@@ -201,6 +207,10 @@ namespace Joy.Api
         internal static extern bool ShapeDrawRectangleF(ulong r2d, string mode, float fx, float fy, float fw, float fh);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool ShapeDrawLineF(ulong r2d, float fx1, float fy1, float fx2, float fy2);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextPrintf(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JtextPrintfScaled(ulong r2d, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy, float scale);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int TextGetWidth(ulong jtext_tex);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -217,6 +227,8 @@ namespace Joy.Api
         internal static extern void AnimationDestroy(ulong animation);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void AnimationReset(ulong animation);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void AnimationAddClip(ulong animation, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool AnimationIsFinished(ulong animation);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -352,6 +364,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R3dCheckboxIsHovered(ulong r, ulong cb, float x, float y);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCheckboxSetColors(ulong cb, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dDrawGrid(ulong r, int slices, float spacing, float line_width);
@@ -376,6 +390,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JanimatorSetDefaultState(ulong anim, string name);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateAddClip(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JanimatorStateAddColor(ulong anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JanimatorStateSetLoop(ulong anim, string state_name, bool loop);
@@ -383,6 +399,8 @@ namespace Joy.Api
         internal static extern void JanimatorStateSetSpeed(ulong anim, string state_name, float speed);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JanimatorStateSetBlend(ulong anim, string state_name, string param_name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JanimatorStateAddMotion(ulong anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int JanimatorAddTransition(ulong anim, string from, string to);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -408,9 +426,17 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ButtonSetSize(ulong btn, float width, float height);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetNormalColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetHoverColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetPressedColor(ulong btn, uint color_r, uint color_g, uint color_b, uint color_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ButtonSetImage(ulong btn, ulong image);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ButtonSetPressedImage(ulong btn, ulong image);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ButtonSetTextx(ulong btn, ulong fontinfo, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool ButtonIsHovered(ulong btn, float x, float y);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -451,6 +477,8 @@ namespace Joy.Api
         internal static extern void ScrollviewEnd(ulong v);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ComboboxDestroy(ulong combobox);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ComboboxAddItem(ulong combobox, ulong font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool ComboboxIsPressed(ulong combobox, float x, float y);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -678,15 +706,39 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool JuiIsCtrl(ulong ctx);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiPushClip(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JuiPopClip(ulong ctx);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JuiResetClip(ulong ctx);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiHit(ulong ctx, float rect_x, float rect_y, float rect_w, float rect_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiFillRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiStrokeRect(ulong ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiLine(ulong ctx, float x1, float y1, float x2, float y2, uint c_r, uint c_g, uint c_b, uint c_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JuiText(ulong ctx, float x, float y, string s, uint c_r, uint c_g, uint c_b, uint c_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern int JuiTextCentered(ulong ctx, float r_x, float r_y, float r_w, float r_h, string s, uint c_r, uint c_g, uint c_b, uint c_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiPanelBegin(ulong ctx, float r_x, float r_y, float r_w, float r_h, string title);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JuiPanelEnd(ulong ctx);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiPanelFrame(ulong ctx, float r_x, float r_y, float r_w, float r_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JuiScrollBegin(ulong ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JuiScrollEnd(ulong ctx);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JuiScrollbar(ulong ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JuiScrollSetOffset(ulong ctx, int id, float off, float content_h, float view_h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JuiButton(ulong ctx, int id, float r_x, float r_y, float r_w, float r_h, string text);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JtilemapDestroy(ulong tm);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -915,6 +967,8 @@ namespace Joy.Api
         internal static extern void AudioBgmSetGain(ulong bgm, float gain);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void AudioBgmDestroy(ulong bgm);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ImageDrawRect(ulong r2d, ulong image, float x, float y, float w, float h);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern long JmathFpFromFloat(float a);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -2416,10 +2470,20 @@ namespace Joy.Api
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             return Native.R2dDrawPoint(r2d.Handle, x, y);
         }
+        public static bool R2dSetClipRect(Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dSetClipRect(r2d.Handle, rect_x, rect_y, rect_w, rect_h);
+        }
         public static void R2dClearClip(Jr2d r2d)
         {
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             Native.R2dClearClip(r2d.Handle);
+        }
+        public static bool R2dPushClipRect(Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            return Native.R2dPushClipRect(r2d.Handle, rect_x, rect_y, rect_w, rect_h);
         }
         public static void R2dPopClipRect(Jr2d r2d)
         {
@@ -2473,6 +2537,12 @@ namespace Joy.Api
             if (image == null) throw new ArgumentNullException(nameof(image));
             Native.ImageSetScaleMode(image.Handle, nearest);
         }
+        public static void TextUpdatex(Jtext text, Font font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (text == null) throw new ArgumentNullException(nameof(text));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.TextUpdatex(text.Handle, font.Handle, str, len, color_r, color_g, color_b, color_a);
+        }
         public static void TextDestroy(Jtext jtext_tex)
         {
             if (jtext_tex == null) throw new ArgumentNullException(nameof(jtext_tex));
@@ -2504,6 +2574,18 @@ namespace Joy.Api
         {
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             return Native.ShapeDrawLineF(r2d.Handle, fx1, fy1, fx2, fy2);
+        }
+        public static void JtextPrintf(Jr2d r2d, Font font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.JtextPrintf(r2d.Handle, font.Handle, str, len, color_r, color_g, color_b, color_a, fx, fy);
+        }
+        public static void JtextPrintfScaled(Jr2d r2d, Font font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a, float fx, float fy, float scale)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.JtextPrintfScaled(r2d.Handle, font.Handle, str, len, color_r, color_g, color_b, color_a, fx, fy, scale);
         }
         public static int TextGetWidth(Jtext jtext_tex)
         {
@@ -2540,6 +2622,11 @@ namespace Joy.Api
         {
             if (animation == null) throw new ArgumentNullException(nameof(animation));
             Native.AnimationReset(animation.Handle);
+        }
+        public static void AnimationAddClip(Animation animation, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+        {
+            if (animation == null) throw new ArgumentNullException(nameof(animation));
+            Native.AnimationAddClip(animation.Handle, image_path, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h);
         }
         public static bool AnimationIsFinished(Animation animation)
         {
@@ -2904,6 +2991,11 @@ namespace Joy.Api
             if (cb == null) throw new ArgumentNullException(nameof(cb));
             return Native.R3dCheckboxIsHovered(r.Handle, cb.Handle, x, y);
         }
+        public static void R3dCheckboxSetColors(Jr3dCheckbox cb, uint box_r, uint box_g, uint box_b, uint box_a, uint check_r, uint check_g, uint check_b, uint check_a, uint hover_r, uint hover_g, uint hover_b, uint hover_a)
+        {
+            if (cb == null) throw new ArgumentNullException(nameof(cb));
+            Native.R3dCheckboxSetColors(cb.Handle, box_r, box_g, box_b, box_a, check_r, check_g, check_b, check_a, hover_r, hover_g, hover_b, hover_a);
+        }
         public static void R3dCheckboxDraw(Jr3d r, RenderMesh m, Jr3dCheckbox cb, float winW, float winH)
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
@@ -2966,6 +3058,11 @@ namespace Joy.Api
             if (anim == null) throw new ArgumentNullException(nameof(anim));
             Native.JanimatorSetDefaultState(anim.Handle, name);
         }
+        public static void JanimatorStateAddClip(Janimator anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateAddClip(anim.Handle, state_name, image_path, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h);
+        }
         public static void JanimatorStateAddColor(Janimator anim, string state_name, float duration, int w, int h, uint r, uint g, uint b, uint a)
         {
             if (anim == null) throw new ArgumentNullException(nameof(anim));
@@ -2985,6 +3082,11 @@ namespace Joy.Api
         {
             if (anim == null) throw new ArgumentNullException(nameof(anim));
             Native.JanimatorStateSetBlend(anim.Handle, state_name, param_name);
+        }
+        public static void JanimatorStateAddMotion(Janimator anim, string state_name, string image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold)
+        {
+            if (anim == null) throw new ArgumentNullException(nameof(anim));
+            Native.JanimatorStateAddMotion(anim.Handle, state_name, image_path, duration, src_rect_x, src_rect_y, src_rect_w, src_rect_h, threshold);
         }
         public static int JanimatorAddTransition(Janimator anim, string from, string to)
         {
@@ -3046,6 +3148,21 @@ namespace Joy.Api
             if (btn == null) throw new ArgumentNullException(nameof(btn));
             Native.ButtonSetSize(btn.Handle, width, height);
         }
+        public static void ButtonSetNormalColor(Button btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetNormalColor(btn.Handle, color_r, color_g, color_b, color_a);
+        }
+        public static void ButtonSetHoverColor(Button btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetHoverColor(btn.Handle, color_r, color_g, color_b, color_a);
+        }
+        public static void ButtonSetPressedColor(Button btn, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            Native.ButtonSetPressedColor(btn.Handle, color_r, color_g, color_b, color_a);
+        }
         public static void ButtonSetImage(Button btn, Image image)
         {
             if (btn == null) throw new ArgumentNullException(nameof(btn));
@@ -3057,6 +3174,12 @@ namespace Joy.Api
             if (btn == null) throw new ArgumentNullException(nameof(btn));
             if (image == null) throw new ArgumentNullException(nameof(image));
             Native.ButtonSetPressedImage(btn.Handle, image.Handle);
+        }
+        public static void ButtonSetTextx(Button btn, Font fontinfo, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (btn == null) throw new ArgumentNullException(nameof(btn));
+            if (fontinfo == null) throw new ArgumentNullException(nameof(fontinfo));
+            Native.ButtonSetTextx(btn.Handle, fontinfo.Handle, str, len, color_r, color_g, color_b, color_a);
         }
         public static bool ButtonIsHovered(Button btn, float x, float y)
         {
@@ -3157,6 +3280,12 @@ namespace Joy.Api
         {
             if (combobox == null) throw new ArgumentNullException(nameof(combobox));
             Native.ComboboxDestroy(combobox.Handle);
+        }
+        public static void ComboboxAddItem(Combobox combobox, Font font, string str, int len, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (combobox == null) throw new ArgumentNullException(nameof(combobox));
+            if (font == null) throw new ArgumentNullException(nameof(font));
+            Native.ComboboxAddItem(combobox.Handle, font.Handle, str, len, color_r, color_g, color_b, color_a);
         }
         public static bool ComboboxIsPressed(Combobox combobox, float x, float y)
         {
@@ -3729,6 +3858,11 @@ namespace Joy.Api
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             return Native.JuiIsCtrl(ctx.Handle);
         }
+        public static void JuiPushClip(JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiPushClip(ctx.Handle, rect_x, rect_y, rect_w, rect_h);
+        }
         public static void JuiPopClip(JuiCtx ctx)
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
@@ -3739,20 +3873,75 @@ namespace Joy.Api
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             Native.JuiResetClip(ctx.Handle);
         }
+        public static bool JuiHit(JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiHit(ctx.Handle, rect_x, rect_y, rect_w, rect_h);
+        }
+        public static void JuiFillRect(JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiFillRect(ctx.Handle, r_x, r_y, r_w, r_h, c_r, c_g, c_b, c_a);
+        }
+        public static void JuiStrokeRect(JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiStrokeRect(ctx.Handle, r_x, r_y, r_w, r_h, c_r, c_g, c_b, c_a);
+        }
+        public static void JuiLine(JuiCtx ctx, float x1, float y1, float x2, float y2, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiLine(ctx.Handle, x1, y1, x2, y2, c_r, c_g, c_b, c_a);
+        }
+        public static int JuiText(JuiCtx ctx, float x, float y, string s, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiText(ctx.Handle, x, y, s, c_r, c_g, c_b, c_a);
+        }
+        public static int JuiTextCentered(JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, string s, uint c_r, uint c_g, uint c_b, uint c_a)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiTextCentered(ctx.Handle, r_x, r_y, r_w, r_h, s, c_r, c_g, c_b, c_a);
+        }
+        public static void JuiPanelBegin(JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, string title)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiPanelBegin(ctx.Handle, r_x, r_y, r_w, r_h, title);
+        }
         public static void JuiPanelEnd(JuiCtx ctx)
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             Native.JuiPanelEnd(ctx.Handle);
+        }
+        public static void JuiPanelFrame(JuiCtx ctx, float r_x, float r_y, float r_w, float r_h)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiPanelFrame(ctx.Handle, r_x, r_y, r_w, r_h);
+        }
+        public static float JuiScrollBegin(JuiCtx ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiScrollBegin(ctx.Handle, id, view_x, view_y, view_w, view_h, content_h);
         }
         public static void JuiScrollEnd(JuiCtx ctx)
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             Native.JuiScrollEnd(ctx.Handle);
         }
+        public static void JuiScrollbar(JuiCtx ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            Native.JuiScrollbar(ctx.Handle, view_x, view_y, view_w, view_h, content_h, off);
+        }
         public static void JuiScrollSetOffset(JuiCtx ctx, int id, float off, float content_h, float view_h)
         {
             if (ctx == null) throw new ArgumentNullException(nameof(ctx));
             Native.JuiScrollSetOffset(ctx.Handle, id, off, content_h, view_h);
+        }
+        public static bool JuiButton(JuiCtx ctx, int id, float r_x, float r_y, float r_w, float r_h, string text)
+        {
+            if (ctx == null) throw new ArgumentNullException(nameof(ctx));
+            return Native.JuiButton(ctx.Handle, id, r_x, r_y, r_w, r_h, text);
         }
         public static void JtilemapDestroy(Jtilemap tm)
         {
@@ -4337,6 +4526,12 @@ namespace Joy.Api
         {
             if (bgm == null) throw new ArgumentNullException(nameof(bgm));
             Native.AudioBgmDestroy(bgm.Handle);
+        }
+        public static void ImageDrawRect(Jr2d r2d, Image image, float x, float y, float w, float h)
+        {
+            if (r2d == null) throw new ArgumentNullException(nameof(r2d));
+            if (image == null) throw new ArgumentNullException(nameof(image));
+            Native.ImageDrawRect(r2d.Handle, image.Handle, x, y, w, h);
         }
         public static long JmathFpFromFloat(float a)
         {

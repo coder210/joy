@@ -127,9 +127,11 @@ local function stroke(x, y, w, h, r, g, b, a)
     B.ShapeDrawRectangle(ren, "line", x, y, w, h)
 end
 
+-- *_f 系列参数是归一化比例（r2d_fpx 会乘窗口宽高），这里传的是像素坐标，
+-- 必须用非 _f 的 ShapeDrawLine，否则网格线会被放大到屏幕外。
 local function draw_line(x1, y1, x2, y2, r, g, b, a)
     set_color(r, g, b, a)
-    B.ShapeDrawLineF(ren, x1, y1, x2, y2)
+    B.ShapeDrawLine(ren, x1, y1, x2, y2)
 end
 
 local function text(s, x, y, r, g, b)
@@ -153,9 +155,16 @@ local function text_center(s, cx, cy, big, r, g, b)
                   cx - w * 0.5, cy - size * 0.5)
 end
 
--- 图片绘制是 L3（jrect_t* 指针参数）尚未开放，精灵统一画成同尺寸色块
+local img_player, img_enemy
+
+-- ImageDrawRect 是全标量版（srcrect 固定 NULL 表示整张图），绕开了
+-- jrect_t* 无法进 joy_value 的 L3 限制；句柄为 nil 时退回同尺寸色块。
 local function sprite(img, cx, cy, size, fr, fg, fb)
-    fill(cx - size * 0.5, cy - size * 0.5, size, size, fr, fg, fb)
+    if img then
+        B.ImageDrawRect(ren, img, cx - size * 0.5, cy - size * 0.5, size, size)
+    else
+        fill(cx - size * 0.5, cy - size * 0.5, size, size, fr, fg, fb)
+    end
 end
 
 -- ---------------- 资源 ----------------
@@ -165,12 +174,21 @@ local FONT_CANDIDATES = {
     "C:/Windows/Fonts/Deng.ttf",
 }
 
+-- 贴图由 CMake 部署到 assets/sprites/；万一加载失败，pcall 兜住 thunk 的
+-- JOY_ERR_CREATE，让 sprite 退回色块而不是中断整个脚本。
+local function try_image(path)
+    local ok, h = pcall(B.ImageCreate, ren, path)
+    return ok and h or nil
+end
+
 local function load_assets()
     -- 生成链路的 handle 是 userdata，脚本层无法判断其内部指针是否为 0，
     -- 所以只认仓内自带的那份字体（四份示例共享 assets，构建时必被拷贝）。
     font_small = B.FontCreate(FONT_CANDIDATES[1], 12)
     font_big = B.FontCreate(FONT_CANDIDATES[1], 22)
     has_font = true
+    img_player = try_image("assets/sprites/player.png")
+    img_enemy = try_image("assets/sprites/enemy.png")
 end
 
 -- ---------------- 场景 ----------------

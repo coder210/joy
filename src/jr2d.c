@@ -1015,6 +1015,17 @@ void image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
         image_draw1(image, srcrect, &dest);
 }
 
+/* 生成链路专用薄包装：srcrect=NULL 表示整张图缩放到目标矩形。
+ * 坐标是【像素】，不经过 r2d_frect（那是归一化比例 → 乘窗口宽高），
+ * 与 ShapeDrawRectangle / ShapeDrawLine 的像素语义一致。
+ * 参数全是标量 + 强句柄，joy.idl 判为 L1，thunk / vtable / cs 可自动生成。 */
+void image_draw_rect(jr2d_p r2d, image_p image, float x, float y, float w, float h)
+{
+        (void)r2d;
+        jrect_t dest = { x, y, w, h };
+        image_draw1(image, NULL, &dest);
+}
+
 void jtext_printf(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
         float fx, float fy)
 {

@@ -1679,6 +1679,17 @@ extern "C" {
         JOY_API bool                 jmsgpack_object_boolean(const jmsgpack_object_t* o);
         JOY_API double               jmsgpack_object_f64(const jmsgpack_object_t* o);
 
+        /* 生成链路专用：image_draw1 去掉 jrect_t* 指针后的全标量版本。
+         * srcrect 固定 NULL（整张图），目标矩形摊成 4 个 float。joy_value
+         * 表达不了 jrect_t*，L3 的 image_draw1 无法自动生成 thunk；这条 L1
+         * 让四个后端都能画贴图，且参数保持编译期强类型。
+         *
+         * 坐标是【像素】，不是归一化比例：不要走 r2d_frect / image_draw1_f，
+         * 那些 *_f 系列会乘窗口宽高，把 x=227 放大成 108960。命名用 _rect
+         * 而不是 _f，就是为了和归一化系列区分开。
+         * 声明刻意放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
+        JOY_API void image_draw_rect(jr2d_p r2d, image_p image,
+                                     float x, float y, float w, float h);
 
 #ifdef __cplusplus
 }

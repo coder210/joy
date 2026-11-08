@@ -46,7 +46,10 @@ typedef struct JoyGameHooks {
         void (*shutdown)(void* game);
 } JoyGameHooks;
 
-#if defined(_WIN32)
+/* 静态形态下 game.cpp 直接编进 exe，不需要导出符号。 */
+#if defined(JOY_GAME_STATIC)
+#  define JOY_GAME_EXPORT
+#elif defined(_WIN32)
 #  define JOY_GAME_EXPORT __declspec(dllexport)
 #else
 #  define JOY_GAME_EXPORT __attribute__((visibility("default")))

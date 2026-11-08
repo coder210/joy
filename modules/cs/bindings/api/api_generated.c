@@ -1182,6 +1182,24 @@ static int32_t icall_R2dDrawPoint(uint64_t p0, float p1, float p2)
         return (int32_t)r.as.b;
 }
 
+static int32_t icall_R2dSetClipRect(uint64_t p0, float p1, float p2, float p3, float p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        r = joy_api_call("r2d_set_clip_rect", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r2d_set_clip_rect", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
 static void icall_R2dClearClip(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -1193,6 +1211,24 @@ static void icall_R2dClearClip(uint64_t p0)
                 return;
         }
         return;
+}
+
+static int32_t icall_R2dPushClipRect(uint64_t p0, float p1, float p2, float p3, float p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        r = joy_api_call("r2d_push_clip_rect", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r2d_push_clip_rect", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
 }
 
 static void icall_R2dPopClipRect(uint64_t p0)
@@ -1350,6 +1386,29 @@ static void icall_ImageSetScaleMode(uint64_t p0, int32_t p1)
         return;
 }
 
+static void icall_TextUpdatex(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[8];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        (void)joy_api_call("text_updatex", args, 8, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "text_updatex", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_TextDestroy(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -1460,6 +1519,57 @@ static int32_t icall_ShapeDrawLineF(uint64_t p0, float p1, float p2, float p3, f
         return (int32_t)r.as.b;
 }
 
+static void icall_JtextPrintf(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[10];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_f64((double)p8);
+        args[9] = joy_v_f64((double)p9);
+        (void)joy_api_call("jtext_printf", args, 10, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtext_printf", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JtextPrintfScaled(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, float p8, float p9, float p10)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[11];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_f64((double)p8);
+        args[9] = joy_v_f64((double)p9);
+        args[10] = joy_v_f64((double)p10);
+        (void)joy_api_call("jtext_printf_scaled", args, 11, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtext_printf_scaled", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static int32_t icall_TextGetWidth(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -1558,6 +1668,28 @@ static void icall_AnimationReset(uint64_t p0)
         (void)joy_api_call("animation_reset", args, 1, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_reset", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_AnimationAddClip(uint64_t p0, MonoString* p1, float p2, float p3, float p4, float p5, float p6)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[7];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        (void)joy_api_call("animation_add_clip", args, 7, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_add_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2569,6 +2701,31 @@ static int32_t icall_R3dCheckboxIsHovered(uint64_t p0, uint64_t p1, float p2, fl
         return (int32_t)r.as.b;
 }
 
+static void icall_R3dCheckboxSetColors(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[13];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        args[11] = joy_v_u32((uint32_t)p11);
+        args[12] = joy_v_u32((uint32_t)p12);
+        (void)joy_api_call("r3d_checkbox_set_colors", args, 13, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_set_colors", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_R3dCheckboxDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p3, float p4)
 {
         joy_status_t st = JOY_OK;
@@ -2774,6 +2931,32 @@ static void icall_JanimatorSetDefaultState(uint64_t p0, MonoString* p1)
         return;
 }
 
+static void icall_JanimatorStateAddClip(uint64_t p0, MonoString* p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[8];
+        char* s1 = NULL;
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        (void)joy_api_call("janimator_state_add_clip", args, 8, &st);
+        if (s1) mono_free(s1);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_add_clip", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_JanimatorStateAddColor(uint64_t p0, MonoString* p1, float p2, int32_t p3, int32_t p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
 {
         joy_status_t st = JOY_OK;
@@ -2850,6 +3033,33 @@ static void icall_JanimatorStateSetBlend(uint64_t p0, MonoString* p1, MonoString
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_set_blend", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JanimatorStateAddMotion(uint64_t p0, MonoString* p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, float p8)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[9];
+        char* s1 = NULL;
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_f64((double)p8);
+        (void)joy_api_call("janimator_state_add_motion", args, 9, &st);
+        if (s1) mono_free(s1);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_add_motion", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3042,6 +3252,57 @@ static void icall_ButtonSetSize(uint64_t p0, float p1, float p2)
         return;
 }
 
+static void icall_ButtonSetNormalColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        (void)joy_api_call("button_set_normal_color", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "button_set_normal_color", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_ButtonSetHoverColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        (void)joy_api_call("button_set_hover_color", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "button_set_hover_color", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_ButtonSetPressedColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3, uint32_t p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        (void)joy_api_call("button_set_pressed_color", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "button_set_pressed_color", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_ButtonSetImage(uint64_t p0, uint64_t p1)
 {
         joy_status_t st = JOY_OK;
@@ -3065,6 +3326,29 @@ static void icall_ButtonSetPressedImage(uint64_t p0, uint64_t p1)
         (void)joy_api_call("button_set_pressed_image", args, 2, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "button_set_pressed_image", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_ButtonSetTextx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[8];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        (void)joy_api_call("button_set_textx", args, 8, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "button_set_textx", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3351,6 +3635,29 @@ static void icall_ComboboxDestroy(uint64_t p0)
         (void)joy_api_call("combobox_destroy", args, 1, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "combobox_destroy", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_ComboboxAddItem(uint64_t p0, uint64_t p1, MonoString* p2, int32_t p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[8];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_i32((int32_t)p3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        (void)joy_api_call("combobox_add_item", args, 8, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "combobox_add_item", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5000,6 +5307,23 @@ static int32_t icall_JuiIsCtrl(uint64_t p0)
         return (int32_t)r.as.b;
 }
 
+static void icall_JuiPushClip(uint64_t p0, float p1, float p2, float p3, float p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        (void)joy_api_call("jui_push_clip", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_push_clip", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_JuiPopClip(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -5026,6 +5350,158 @@ static void icall_JuiResetClip(uint64_t p0)
         return;
 }
 
+static int32_t icall_JuiHit(uint64_t p0, float p1, float p2, float p3, float p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        r = joy_api_call("jui_hit", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_hit", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static void icall_JuiFillRect(uint64_t p0, float p1, float p2, float p3, float p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[9];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        (void)joy_api_call("jui_fill_rect", args, 9, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_fill_rect", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JuiStrokeRect(uint64_t p0, float p1, float p2, float p3, float p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[9];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        (void)joy_api_call("jui_stroke_rect", args, 9, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_stroke_rect", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JuiLine(uint64_t p0, float p1, float p2, float p3, float p4, uint32_t p5, uint32_t p6, uint32_t p7, uint32_t p8)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[9];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        (void)joy_api_call("jui_line", args, 9, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_line", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static int32_t icall_JuiText(uint64_t p0, float p1, float p2, MonoString* p3, uint32_t p4, uint32_t p5, uint32_t p6, uint32_t p7)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[8];
+        char* s3 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        s3 = p3 ? mono_string_to_utf8(p3) : NULL;
+        args[3] = joy_v_str((const char*)s3);
+        args[4] = joy_v_u32((uint32_t)p4);
+        args[5] = joy_v_u32((uint32_t)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        r = joy_api_call("jui_text", args, 8, &st);
+        if (s3) mono_free(s3);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_text", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.i32;
+}
+
+static int32_t icall_JuiTextCentered(uint64_t p0, float p1, float p2, float p3, float p4, MonoString* p5, uint32_t p6, uint32_t p7, uint32_t p8, uint32_t p9)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[10];
+        char* s5 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        s5 = p5 ? mono_string_to_utf8(p5) : NULL;
+        args[5] = joy_v_str((const char*)s5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        r = joy_api_call("jui_text_centered", args, 10, &st);
+        if (s5) mono_free(s5);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_text_centered", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.i32;
+}
+
+static void icall_JuiPanelBegin(uint64_t p0, float p1, float p2, float p3, float p4, MonoString* p5)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[6];
+        char* s5 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        s5 = p5 ? mono_string_to_utf8(p5) : NULL;
+        args[5] = joy_v_str((const char*)s5);
+        (void)joy_api_call("jui_panel_begin", args, 6, &st);
+        if (s5) mono_free(s5);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_panel_begin", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static void icall_JuiPanelEnd(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -5039,6 +5515,43 @@ static void icall_JuiPanelEnd(uint64_t p0)
         return;
 }
 
+static void icall_JuiPanelFrame(uint64_t p0, float p1, float p2, float p3, float p4)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[5];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        (void)joy_api_call("jui_panel_frame", args, 5, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_panel_frame", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static float icall_JuiScrollBegin(uint64_t p0, int32_t p1, float p2, float p3, float p4, float p5, float p6)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[7];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_i32((int32_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        r = joy_api_call("jui_scroll_begin", args, 7, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scroll_begin", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (float)r.as.f64;
+}
+
 static void icall_JuiScrollEnd(uint64_t p0)
 {
         joy_status_t st = JOY_OK;
@@ -5047,6 +5560,25 @@ static void icall_JuiScrollEnd(uint64_t p0)
         (void)joy_api_call("jui_scroll_end", args, 1, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scroll_end", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JuiScrollbar(uint64_t p0, float p1, float p2, float p3, float p4, float p5, float p6)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[7];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        (void)joy_api_call("jui_scrollbar", args, 7, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scrollbar", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5067,6 +5599,29 @@ static void icall_JuiScrollSetOffset(uint64_t p0, int32_t p1, float p2, float p3
                 return;
         }
         return;
+}
+
+static int32_t icall_JuiButton(uint64_t p0, int32_t p1, float p2, float p3, float p4, float p5, MonoString* p6)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[7];
+        char* s6 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_i32((int32_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        s6 = p6 ? mono_string_to_utf8(p6) : NULL;
+        args[6] = joy_v_str((const char*)s6);
+        r = joy_api_call("jui_button", args, 7, &st);
+        if (s6) mono_free(s6);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_button", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
 }
 
 static void icall_JtilemapDestroy(uint64_t p0)
@@ -6745,6 +7300,24 @@ static void icall_AudioBgmDestroy(uint64_t p0)
         (void)joy_api_call("audio_bgm_destroy", args, 1, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_bgm_destroy", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_ImageDrawRect(uint64_t p0, uint64_t p1, float p2, float p3, float p4, float p5)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[6];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        (void)joy_api_call("image_draw_rect", args, 6, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "image_draw_rect", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -10470,7 +11043,9 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R2dSetColorf", (const void*)icall_R2dSetColorf);
         csx_register_internal_call("Joy.Api.Native::R2dSetBlendMode", (const void*)icall_R2dSetBlendMode);
         csx_register_internal_call("Joy.Api.Native::R2dDrawPoint", (const void*)icall_R2dDrawPoint);
+        csx_register_internal_call("Joy.Api.Native::R2dSetClipRect", (const void*)icall_R2dSetClipRect);
         csx_register_internal_call("Joy.Api.Native::R2dClearClip", (const void*)icall_R2dClearClip);
+        csx_register_internal_call("Joy.Api.Native::R2dPushClipRect", (const void*)icall_R2dPushClipRect);
         csx_register_internal_call("Joy.Api.Native::R2dPopClipRect", (const void*)icall_R2dPopClipRect);
         csx_register_internal_call("Joy.Api.Native::R2dResetClipStack", (const void*)icall_R2dResetClipStack);
         csx_register_internal_call("Joy.Api.Native::R2dPointInClip", (const void*)icall_R2dPointInClip);
@@ -10481,12 +11056,15 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::ImageSetAlpha", (const void*)icall_ImageSetAlpha);
         csx_register_internal_call("Joy.Api.Native::ImageSetBlendMode", (const void*)icall_ImageSetBlendMode);
         csx_register_internal_call("Joy.Api.Native::ImageSetScaleMode", (const void*)icall_ImageSetScaleMode);
+        csx_register_internal_call("Joy.Api.Native::TextUpdatex", (const void*)icall_TextUpdatex);
         csx_register_internal_call("Joy.Api.Native::TextDestroy", (const void*)icall_TextDestroy);
         csx_register_internal_call("Joy.Api.Native::JtextPrint", (const void*)icall_JtextPrint);
         csx_register_internal_call("Joy.Api.Native::JtextPrintx", (const void*)icall_JtextPrintx);
         csx_register_internal_call("Joy.Api.Native::R2dDrawPointF", (const void*)icall_R2dDrawPointF);
         csx_register_internal_call("Joy.Api.Native::ShapeDrawRectangleF", (const void*)icall_ShapeDrawRectangleF);
         csx_register_internal_call("Joy.Api.Native::ShapeDrawLineF", (const void*)icall_ShapeDrawLineF);
+        csx_register_internal_call("Joy.Api.Native::JtextPrintf", (const void*)icall_JtextPrintf);
+        csx_register_internal_call("Joy.Api.Native::JtextPrintfScaled", (const void*)icall_JtextPrintfScaled);
         csx_register_internal_call("Joy.Api.Native::TextGetWidth", (const void*)icall_TextGetWidth);
         csx_register_internal_call("Joy.Api.Native::TextGetHeight", (const void*)icall_TextGetHeight);
         csx_register_internal_call("Joy.Api.Native::JtextCacheClear", (const void*)icall_JtextCacheClear);
@@ -10495,6 +11073,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JtextCacheSweep", (const void*)icall_JtextCacheSweep);
         csx_register_internal_call("Joy.Api.Native::AnimationDestroy", (const void*)icall_AnimationDestroy);
         csx_register_internal_call("Joy.Api.Native::AnimationReset", (const void*)icall_AnimationReset);
+        csx_register_internal_call("Joy.Api.Native::AnimationAddClip", (const void*)icall_AnimationAddClip);
         csx_register_internal_call("Joy.Api.Native::AnimationIsFinished", (const void*)icall_AnimationIsFinished);
         csx_register_internal_call("Joy.Api.Native::AnimationSetPosition", (const void*)icall_AnimationSetPosition);
         csx_register_internal_call("Joy.Api.Native::AnimationSetScale", (const void*)icall_AnimationSetScale);
@@ -10562,6 +11141,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxIsPressed", (const void*)icall_R3dCheckboxIsPressed);
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxSetHovered", (const void*)icall_R3dCheckboxSetHovered);
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxIsHovered", (const void*)icall_R3dCheckboxIsHovered);
+        csx_register_internal_call("Joy.Api.Native::R3dCheckboxSetColors", (const void*)icall_R3dCheckboxSetColors);
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxDraw", (const void*)icall_R3dCheckboxDraw);
         csx_register_internal_call("Joy.Api.Native::R3dDrawGrid", (const void*)icall_R3dDrawGrid);
         csx_register_internal_call("Joy.Api.Native::JanimatorDestroy", (const void*)icall_JanimatorDestroy);
@@ -10574,10 +11154,12 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JanimatorGetBool", (const void*)icall_JanimatorGetBool);
         csx_register_internal_call("Joy.Api.Native::JanimatorAddState", (const void*)icall_JanimatorAddState);
         csx_register_internal_call("Joy.Api.Native::JanimatorSetDefaultState", (const void*)icall_JanimatorSetDefaultState);
+        csx_register_internal_call("Joy.Api.Native::JanimatorStateAddClip", (const void*)icall_JanimatorStateAddClip);
         csx_register_internal_call("Joy.Api.Native::JanimatorStateAddColor", (const void*)icall_JanimatorStateAddColor);
         csx_register_internal_call("Joy.Api.Native::JanimatorStateSetLoop", (const void*)icall_JanimatorStateSetLoop);
         csx_register_internal_call("Joy.Api.Native::JanimatorStateSetSpeed", (const void*)icall_JanimatorStateSetSpeed);
         csx_register_internal_call("Joy.Api.Native::JanimatorStateSetBlend", (const void*)icall_JanimatorStateSetBlend);
+        csx_register_internal_call("Joy.Api.Native::JanimatorStateAddMotion", (const void*)icall_JanimatorStateAddMotion);
         csx_register_internal_call("Joy.Api.Native::JanimatorAddTransition", (const void*)icall_JanimatorAddTransition);
         csx_register_internal_call("Joy.Api.Native::JanimatorAddAnyTransition", (const void*)icall_JanimatorAddAnyTransition);
         csx_register_internal_call("Joy.Api.Native::JanimatorTransitionAddCond", (const void*)icall_JanimatorTransitionAddCond);
@@ -10590,8 +11172,12 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::ButtonDestroy", (const void*)icall_ButtonDestroy);
         csx_register_internal_call("Joy.Api.Native::ButtonSetPosition", (const void*)icall_ButtonSetPosition);
         csx_register_internal_call("Joy.Api.Native::ButtonSetSize", (const void*)icall_ButtonSetSize);
+        csx_register_internal_call("Joy.Api.Native::ButtonSetNormalColor", (const void*)icall_ButtonSetNormalColor);
+        csx_register_internal_call("Joy.Api.Native::ButtonSetHoverColor", (const void*)icall_ButtonSetHoverColor);
+        csx_register_internal_call("Joy.Api.Native::ButtonSetPressedColor", (const void*)icall_ButtonSetPressedColor);
         csx_register_internal_call("Joy.Api.Native::ButtonSetImage", (const void*)icall_ButtonSetImage);
         csx_register_internal_call("Joy.Api.Native::ButtonSetPressedImage", (const void*)icall_ButtonSetPressedImage);
+        csx_register_internal_call("Joy.Api.Native::ButtonSetTextx", (const void*)icall_ButtonSetTextx);
         csx_register_internal_call("Joy.Api.Native::ButtonIsHovered", (const void*)icall_ButtonIsHovered);
         csx_register_internal_call("Joy.Api.Native::ButtonIsPressed", (const void*)icall_ButtonIsPressed);
         csx_register_internal_call("Joy.Api.Native::ButtonSetHovered", (const void*)icall_ButtonSetHovered);
@@ -10612,6 +11198,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::ScrollviewBegin", (const void*)icall_ScrollviewBegin);
         csx_register_internal_call("Joy.Api.Native::ScrollviewEnd", (const void*)icall_ScrollviewEnd);
         csx_register_internal_call("Joy.Api.Native::ComboboxDestroy", (const void*)icall_ComboboxDestroy);
+        csx_register_internal_call("Joy.Api.Native::ComboboxAddItem", (const void*)icall_ComboboxAddItem);
         csx_register_internal_call("Joy.Api.Native::ComboboxIsPressed", (const void*)icall_ComboboxIsPressed);
         csx_register_internal_call("Joy.Api.Native::ComboboxIsOpen", (const void*)icall_ComboboxIsOpen);
         csx_register_internal_call("Joy.Api.Native::ComboboxSetOpen", (const void*)icall_ComboboxSetOpen);
@@ -10725,11 +11312,23 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JuiTakeWheel", (const void*)icall_JuiTakeWheel);
         csx_register_internal_call("Joy.Api.Native::JuiIsShift", (const void*)icall_JuiIsShift);
         csx_register_internal_call("Joy.Api.Native::JuiIsCtrl", (const void*)icall_JuiIsCtrl);
+        csx_register_internal_call("Joy.Api.Native::JuiPushClip", (const void*)icall_JuiPushClip);
         csx_register_internal_call("Joy.Api.Native::JuiPopClip", (const void*)icall_JuiPopClip);
         csx_register_internal_call("Joy.Api.Native::JuiResetClip", (const void*)icall_JuiResetClip);
+        csx_register_internal_call("Joy.Api.Native::JuiHit", (const void*)icall_JuiHit);
+        csx_register_internal_call("Joy.Api.Native::JuiFillRect", (const void*)icall_JuiFillRect);
+        csx_register_internal_call("Joy.Api.Native::JuiStrokeRect", (const void*)icall_JuiStrokeRect);
+        csx_register_internal_call("Joy.Api.Native::JuiLine", (const void*)icall_JuiLine);
+        csx_register_internal_call("Joy.Api.Native::JuiText", (const void*)icall_JuiText);
+        csx_register_internal_call("Joy.Api.Native::JuiTextCentered", (const void*)icall_JuiTextCentered);
+        csx_register_internal_call("Joy.Api.Native::JuiPanelBegin", (const void*)icall_JuiPanelBegin);
         csx_register_internal_call("Joy.Api.Native::JuiPanelEnd", (const void*)icall_JuiPanelEnd);
+        csx_register_internal_call("Joy.Api.Native::JuiPanelFrame", (const void*)icall_JuiPanelFrame);
+        csx_register_internal_call("Joy.Api.Native::JuiScrollBegin", (const void*)icall_JuiScrollBegin);
         csx_register_internal_call("Joy.Api.Native::JuiScrollEnd", (const void*)icall_JuiScrollEnd);
+        csx_register_internal_call("Joy.Api.Native::JuiScrollbar", (const void*)icall_JuiScrollbar);
         csx_register_internal_call("Joy.Api.Native::JuiScrollSetOffset", (const void*)icall_JuiScrollSetOffset);
+        csx_register_internal_call("Joy.Api.Native::JuiButton", (const void*)icall_JuiButton);
         csx_register_internal_call("Joy.Api.Native::JtilemapDestroy", (const void*)icall_JtilemapDestroy);
         csx_register_internal_call("Joy.Api.Native::JtilemapGetWidth", (const void*)icall_JtilemapGetWidth);
         csx_register_internal_call("Joy.Api.Native::JtilemapGetHeight", (const void*)icall_JtilemapGetHeight);
@@ -10844,6 +11443,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::AudioBgmStop", (const void*)icall_AudioBgmStop);
         csx_register_internal_call("Joy.Api.Native::AudioBgmSetGain", (const void*)icall_AudioBgmSetGain);
         csx_register_internal_call("Joy.Api.Native::AudioBgmDestroy", (const void*)icall_AudioBgmDestroy);
+        csx_register_internal_call("Joy.Api.Native::ImageDrawRect", (const void*)icall_ImageDrawRect);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromFloat", (const void*)icall_JmathFpFromFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpToFloat", (const void*)icall_JmathFpToFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromUint", (const void*)icall_JmathFpFromUint);

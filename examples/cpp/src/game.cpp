@@ -213,10 +213,11 @@ static Game* g_game = NULL;
 static const JoyApi* g_api = NULL;   /* 宿主注入；DLL 内所有引擎调用都经它 */
 
 /* ---------------- 绘制辅助（等价于 C# 的 Painter） ----------------
- * 全部经 g_api 的强签名函数指针调用。L3（jtext_measurex / image_get_size /
- * image_draw1）在 joy.idl 里是 status:off，既没有 thunk 也没有 vtable 条目，
- * 因此照 lua/js/csharp 三个示例的既有做法退化：文字宽度按字号估算、
- * 精灵统一画成同尺寸色块。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
+ * 全部经 g_api 的强签名函数指针调用，坐标一律用像素：*_f 系列是归一化比例，
+ * 会经 r2d_fpx() 乘窗口宽高，传像素坐标会把精灵放大到屏幕外。
+ * 图片绘制走全标量 L1 ImageDrawRect（srcrect 固定 NULL），绕开 jrect_t*
+ * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（jtext_measurex
+ * 是 int* 出参）。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
 
 static void set_color(jr2d_p r2d, int r, int gr, int b, int a)
 {
@@ -289,12 +290,17 @@ static int text_width(const char* s)
     return (int)text_width_estimate(s, 12);
 }
 
-/* 以 (cx, cy) 为中心画精灵；L3 image_draw1 未开放，统一画成同尺寸色块 */
+/* 以 (cx, cy) 为中心画精灵：ImageDrawRect 是全标量版（srcrect 固定 NULL 表示
+ * 整张图），绕开了 joy_value 无法表达 jrect_t* 的 L3 限制。缺图时仍退色块。 */
 static void draw_sprite(image_p img, float cx, float cy, float size,
                         int fr, int fg, int fb)
 {
-    (void)img;
-    fill_rect(cx - size * 0.5f, cy - size * 0.5f, size, size, fr, fg, fb);
+    if (img.h) {
+        g_api->ImageDrawRect(g_api->ctx, g_game->r2d, img,
+                          cx - size * 0.5f, cy - size * 0.5f, size, size);
+    } else {
+        fill_rect(cx - size * 0.5f, cy - size * 0.5f, size, size, fr, fg, fb);
+    }
 }
 
 static const char* pick(const char* zh, const char* en)

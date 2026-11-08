@@ -1,0 +1,33 @@
+name: Build and smoke tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  windows-msvc:
+    name: Windows / VS2022 / Release
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 绑定生成物必须和 joy.idl / joy.h 同步；这是纯 Node 检查，先跑最省时间。
+      - name: Binding generator gate
+        run: node api/tools/gen_bindings.js --check
+
+      # -S examples 独立构建：该入口默认构建全部四语言示例，并自带 enable_testing()。
+      # 第三方 SDL/msgpack/spine 是 vendored 目录，不需要 submodule checkout。
+      - name: Configure
+        run: cmake -S examples -B build/examples
+
+      - name: Build
+        run: cmake --build build/examples --config Release --parallel
+
+      # 四个冒烟都用 dummy 视频驱动，输出指纹与平台无关。
+      - name: Smoke tests
+        run: ctest --test-dir build/examples -C Release --output-on-failure

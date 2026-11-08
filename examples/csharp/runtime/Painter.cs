@@ -6,8 +6,10 @@ namespace JoyGame
     /// <summary>
     /// C# 侧的绘制门面，全部走生成链路（Joy.Api.Bindings）。
     ///
-    /// 生成链路里 R2dSetColorf 是「设当前色」，ShapeDrawRectangle / ShapeDrawLineF
+    /// 生成链路里 R2dSetColorf 是「设当前色」，ShapeDrawRectangle / ShapeDrawLine
     /// 都用这个当前色，所以每个绘制函数先设色再画。
+    /// *_f 系列（ShapeDrawLineF 等）参数是归一化比例，会乘窗口宽高；这里所有
+    /// 坐标都是像素，故一律用非 _f 版本。
     /// 文字宽度测量（jtext_measurex）是 L3 的输出参数，尚未开放，居中用估算。
     /// </summary>
     internal static class Painter
@@ -30,7 +32,7 @@ namespace JoyGame
                                 int r, int g, int b, int a = 255)
         {
             Bindings.R2dSetColorf(app.R2d, r / 255f, g / 255f, b / 255f, a / 255f);
-            Bindings.ShapeDrawLineF(app.R2d, x1, y1, x2, y2);
+            Bindings.ShapeDrawLine(app.R2d, x1, y1, x2, y2);
         }
 
         public static void Text(GameApp app, string text, float x, float y,
@@ -61,13 +63,19 @@ namespace JoyGame
         }
 
         /// <summary>
-        /// 以 (cx, cy) 为中心画精灵。
-        /// 生成链路里 image_draw1 是 jrect_t* 指针参数（L3，未开放），
-        /// 所以统一画成同尺寸色块，与 lua / js 两份的行为一致。
+        /// 以 (cx, cy) 为中心画精灵。ImageDrawRect 是全标量版图片绘制
+        /// （srcrect 固定 NULL 表示整张图），绕开了 jrect_t* 无法进
+        /// joy_value 的 L3 限制。图片缺失时退回同尺寸色块。
         /// </summary>
-        public static void Sprite(GameApp app, IntPtr image, float cx, float cy, float size,
+        public static void Sprite(GameApp app, Image image, float cx, float cy, float size,
                                   int fallbackR, int fallbackG, int fallbackB)
         {
+            if (image != null)
+            {
+                Bindings.ImageDrawRect(app.R2d, image,
+                                    cx - size * 0.5f, cy - size * 0.5f, size, size);
+                return;
+            }
             Fill(app, cx - size * 0.5f, cy - size * 0.5f, size, size,
                  fallbackR, fallbackG, fallbackB);
         }

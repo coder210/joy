@@ -7,8 +7,9 @@
  * 与 Lua 版的两点差异（都是 jsclib 旧胶水的现状，不改引擎）：
  *   1. 模块是**全局对象** r2d / window / keyboard / console，不是 joy.r2d；
  *      只有生命周期回调挂在全局 joy 对象上（jsx_call_joy 走这条路）。
- *   2. r2d 表里没有图片相关函数（new_image / draw_image / draw_image_ex），
- *      所以精灵统一用同尺寸色块绘制，正好走「缺美术资源」的退化路径。
+ *   2. r2d 表里没有图片相关函数（new_image / draw_image / draw_image_ex）。
+ *      当前示例已全量改走生成链路：用 B.ImageCreate + B.ImageDrawRect 画
+ *      真实贴图（全标量版，srcrect 固定 NULL），加载失败才退回同尺寸色块。
  *
  * 宿主（../main.cpp）只往这里推：joy.init / joy.update(dt) / joy.draw / joy.frame_end。
  * ============================================================ */
@@ -113,9 +114,11 @@ function stroke(x, y, w, h, r, g, b, a) {
     B.ShapeDrawRectangle(ren, "line", x, y, w, h);
 }
 
+// *_f 系列参数是归一化比例（r2d_fpx 会乘窗口宽高），这里传的是像素坐标，
+// 必须用非 _f 的 ShapeDrawLine，否则网格线会被放大到屏幕外。
 function drawLine(x1, y1, x2, y2, r, g, b, a) {
     setColor(r, g, b, a);
-    B.ShapeDrawLineF(ren, x1, y1, x2, y2);
+    B.ShapeDrawLine(ren, x1, y1, x2, y2);
 }
 
 function text(s, x, y, r, g, b) {
@@ -142,8 +145,16 @@ function textCenter(s, cx, cy, big, r, g, b) {
                   cx - w * 0.5, cy - size * 0.5);
 }
 
-function sprite(cx, cy, size, r, g, b) {
-    fill(cx - size * 0.5, cy - size * 0.5, size, size, r, g, b);
+var imgPlayer, imgEnemy;
+
+// ImageDrawRect 是全标量版（srcrect 固定 NULL 表示整张图），绕开了
+// jrect_t* 无法进 joy_value 的 L3 限制；句柄为空时退回同尺寸色块。
+function sprite(img, cx, cy, size, r, g, b) {
+    if (img) {
+        B.ImageDrawRect(ren, img, cx - size * 0.5, cy - size * 0.5, size, size);
+    } else {
+        fill(cx - size * 0.5, cy - size * 0.5, size, size, r, g, b);
+    }
 }
 
 /* ---------------- 资源 ---------------- */
@@ -153,11 +164,19 @@ var FONT_CANDIDATES = [
     "C:/Windows/Fonts/Deng.ttf"
 ];
 
+/* 贴图由 CMake 部署到 assets/sprites/；加载失败时兜住 duk_error，
+ * 让 sprite 退回色块而不是中断整个脚本。 */
+function tryImage(path) {
+    try { return B.ImageCreate(ren, path); } catch (e) { return null; }
+}
+
 function loadAssets() {
     /* 生成链路的 handle 在脚本层无法判空，只认仓内自带的那份字体 */
     fontSmall = B.FontCreate(FONT_CANDIDATES[0], 12);
     fontBig = B.FontCreate(FONT_CANDIDATES[0], 22);
     hasFont = true;
+    imgPlayer = tryImage("assets/sprites/player.png");
+    imgEnemy = tryImage("assets/sprites/enemy.png");
 }
 
 /* ---------------- 场景 ---------------- */
@@ -348,7 +367,7 @@ function renderMenu() {
     for (var x = 0; x <= W; x += 32) drawLine(x, 0, x, H, 26, 30, 42);
     for (var y = 0; y <= H; y += 32) drawLine(0, y, W, y, 26, 30, 42);
 
-    sprite(cx, H * 0.5 - 74, 34, 90, 200, 140);
+    sprite(imgPlayer, cx, H * 0.5 - 74, 34, 90, 200, 140);
     textCenter("JOY JS TOPDOWN", cx, H * 0.5 - 26, true, 120, 220, 255);
     textCenter("JavaScript + joy engine", cx, H * 0.5 + 4, false, 150, 160, 180);
 
@@ -378,13 +397,13 @@ function renderPlay() {
 
     for (var j = 0; j < S.enemies.length; j++) {
         var e = S.enemies[j];
-        sprite(e.x, e.y, 24, 210, 96, 96);
+        sprite(imgEnemy, e.x, e.y, 24, 210, 96, 96);
         if (e.hp > 1) {
             fill(e.x - 9, e.y - 17, 18 * (e.hp / 3), 2, 230, 120, 110, 200);
         }
     }
 
-    sprite(S.px, S.py, 26, 110, 210, 150);
+    sprite(imgPlayer, S.px, S.py, 26, 110, 210, 150);
     drawLine(S.px, S.py, S.px + S.facingX * 18, S.py + S.facingY * 18, 180, 240, 210);
 
     /* HUD */

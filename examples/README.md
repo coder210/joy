@@ -66,14 +66,22 @@ lua/js 游戏脚本部署到 `assets/scripts/`，C# 的 `JoyGame.dll` 与 BCL/�
 由系统加载器查找，不进 `assets/`。
 VS 里 `src` 筛选器是本示例的游戏代码，注入的 joy 引擎源码统一收在 `joy\...` 下。
 
-> **平台边界（试点）**：桌面可以用 `SDL_LoadObject("assets/cpp/...")` 直接加载原生
-> DLL；Android **不能**从 APK assets 加载 `.so`（须由系统从 `lib/<abi>/` 解压），
-> iOS 不允许运行时加载未签名 dylib、wasm 需要 side module。移动/Web 平台需要
-> `JOY_GAME_STATIC` 编译期 fallback，把游戏代码直接编进宿主。本次试点只覆盖桌面。
+> **平台边界**：由 `JOY_GAME_STATIC` 选择构建形态（`-DJOY_GAME_STATIC=ON/OFF`），
+> iOS / wasm 默认开启。动态形态下桌面用 `SDL_LoadObject` 从 `assets/cpp/` 加载；
+> Android 的 `SDL_LoadObject` 同样可用，但 `.so` 必须进 APK 的 `lib/<abi>/` 由系统
+> 解压，宿主改用裸库名让 linker 查找（压缩的 `assets/` 里 `dlopen` 打不开）。
+> iOS 运行时只能加载构建期签名并随包的代码、wasm 需 `MAIN_MODULE/SIDE_MODULE`
+> 加虚拟 FS 预加载，因此这两者默认走静态形态，把 `game.cpp` 直接编进宿主、
+> 链接期解析 `joy_game_get_hooks`。两种形态共用同一份 `game.cpp` 与契约头。
+> 桌面已验证动态与静态两种形态；Android/iOS/wasm 需对应工具链验证。
 
 ## 4. 各后端的宿主写法（已核实）
 
 ### C++（native plugin）
+
+下面是**动态形态**（桌面 / Android）。静态形态（iOS / wasm）把 `game.cpp` 编进
+宿主、链接期直接调 `joy_game_get_hooks()`，不加载共享库；下面的 `JoyApi` 注入
+与帧驱动写法完全相同。
 
 ```c
 /* 宿主：游戏 DLL 只有一个导出入口，不需要 .lib / __declspec(dllimport) */
@@ -81,7 +89,7 @@ SDL_SharedObject* lib = SDL_LoadObject("assets/cpp/JoyGameCpp.dll");
 const JoyGameHooks* hooks = ((const JoyGameHooks* (*)(void))
     SDL_LoadFunction(lib, "joy_game_get_hooks"))();
 
-JoyApi api;                        /* 674 个强签名函数指针 */
+JoyApi api;                        /* 701 个强签名函数指针 */
 joy_api_vtable_init(&api, NULL);   /* 宿主是唯一链接 joy::all 的一方 */
 hooks->init(hooks->game, &api, smoke_frames);
 hooks->on_frame(hooks->game, dt, &input, &result);
@@ -160,9 +168,11 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
 配套用法：`R2dSetColorf(r2d, r, g, b, a)` 先设颜色，再 `ShapeDrawRectangle(..., "fill")`
 画实心、`"line"` 画描边；`R2dBegin` 用当前颜色清屏。
 
-**仍然只能走旧胶水的三处**（`L3` 未开放，见第 5 节）：
-事件输入（`keypressed` / `mousepressed` 回调不在 IDL）、图片绘制（`image_draw1` 是
-`jrect_t*` 指针参数）、文字宽度测量（`jtext_measurex` 是 `int*` 输出参数）。
+**仍然只能走旧胶水 / 退化的两处**（`L3` 未开放，见第 5 节）：
+事件输入（`keypressed` / `mousepressed` 回调不在 IDL）、文字宽度测量
+（`jtext_measurex` 是 `int*` 输出参数）。图片绘制已由全标量 L1
+`image_draw_rect` 绕开 `jrect_t*`：四份示例统一用 `ImageCreate` +
+`ImageDrawRect` 画真实贴图，加载失败才退回同尺寸色块。
 
 ## 5. 已核实的能力边界
 
@@ -183,8 +193,9 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
    Lua / JS 版用 `字符数 × 字号 × 0.58` 近似——文字排版会有几像素偏差，
    不影响冒烟指纹（断言只看逻辑数值）。
 2. **JS 的 `r2d` 没有图片函数**。`new_image` / `draw_image` / `draw_image_ex` /
-   `free_image` 只在 Lua 版注册了，JS 版缺失。因此 `js/` 的精灵统一画成同尺寸色块，
-   正好走「缺美术资源」的退化路径；逻辑与另外三份完全一致。
+   `free_image` 只在 Lua 版注册了，JS 版缺失。这是旧胶水时代 `js/` 把精灵画成
+   同尺寸色块的原因；当前四份示例已全量改走生成链路，统一用 `ImageCreate` +
+   `ImageDrawRect` 画真实贴图，此差异不再影响渲染。
 3. **Lua 的 `joy.keyboard.is_down(event, "A")` 不适合做游戏输入**：它要传单个
    `SDL_Event`、且键名表只有 A/Q/ESCAPE/SPACE/四个方向共 8 个（没有 W/S/D/J/Return）。
    Lua 版改为在 `joy.keypressed` / `joy.keyreleased` 里自维护按键表，与 C++/C#

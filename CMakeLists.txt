@@ -17,6 +17,11 @@ cmake_minimum_required(VERSION 3.16)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     project(joy C CXX)
 
+    # 顶层启用 CTest：examples/ 子目录里的 enable_testing() 只在该目录生效，
+    # 不会生成根 CTestTestfile.cmake，导致 `ctest --test-dir build` 报
+    # "No tests were found"。在根调用后，子目录的 add_test 会被聚合上来。
+    enable_testing()
+
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")

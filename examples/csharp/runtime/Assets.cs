@@ -4,11 +4,9 @@ using Joy.Api;
 namespace JoyGame
 {
     /// <summary>
-    /// 运行期资源句柄。
-    ///
-    /// 字体走生成链路（Joy.Api.Bindings.FontCreate → Joy.Api.Font）。
-    /// 图片没有走：生成链路里 image_draw1 是 jrect_t* 指针参数（L3 未开放），
-    /// 拿不到绘制入口，精灵统一退化成纯色矩形（Painter.Sprite 处理）。
+    /// 运行期资源句柄，全部走生成链路（Joy.Api.Bindings → Joy.Api 强句柄）。
+    /// 图片改用全标量版 ImageCreate / ImageDrawRect：绕开 jrect_t* 无法进
+    /// joy_value 的 L3 限制；图片缺失时 Painter.Sprite 退回同尺寸色块。
     /// </summary>
     internal sealed class Assets
     {
@@ -24,9 +22,16 @@ namespace JoyGame
             "C:/Windows/Fonts/Deng.ttf",
         };
 
-        /// <summary>图片未接入生成链路，恒为 Zero，让 Painter.Sprite 走色块。</summary>
-        public IntPtr PlayerImage => IntPtr.Zero;
-        public IntPtr EnemyImage => IntPtr.Zero;
+        public Image PlayerImage { get; private set; }
+        public Image EnemyImage { get; private set; }
+
+        // ImageCreate 在底层返回 NULL 时抛 InvalidOperationException（与 FontCreate 同约定），
+        // 贴图缺失时返回 null，让 Painter.Sprite 走色块而不是中断游戏。
+        private static Image TryImage(Jr2d r2d, string path)
+        {
+            try { return Bindings.ImageCreate(r2d, path); }
+            catch (InvalidOperationException) { return null; }
+        }
 
         public Font FontSmall { get; private set; }
         public Font FontBig { get; private set; }
@@ -59,6 +64,9 @@ namespace JoyGame
                     FontBig = null;
                 }
             }
+
+            PlayerImage = TryImage(r2d, "assets/sprites/player.png");
+            EnemyImage = TryImage(r2d, "assets/sprites/enemy.png");
 
             if (FontSmall == null) Joy.Host.log("[warn] no usable font, HUD text disabled");
         }
