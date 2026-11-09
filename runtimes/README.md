@@ -10,6 +10,7 @@
 | `windows-x64/coreclr.dll`、`coreclr.import.lib` | Windows x64 的 MonoVM 运行时（官方包内即叫 `coreclr.dll`）与导入库 | 平台相关 |
 | `windows-x64/libs/` | Windows 版 4 个 BCL | 平台相关 |
 | `android-arm64/libmonosgen-2.0.so` | Android arm64 的 MonoVM 运行时 | 平台相关 |
+| `android-arm64/libSystem.*.so` | Android 版 CoreLib 的 4 个原生 shim（P/Invoke 目标） | 平台相关 |
 | `android-arm64/libs/` | Android 版 4 个 BCL | 平台相关 |
 | `linux-x64/libcoreclr.so`、`libSystem.*.so` | Linux x64 的 MonoVM 运行时与 5 个原生 shim | 平台相关 |
 | `linux-x64/libs/` | Linux 版 4 个 BCL | 平台相关 |
@@ -89,6 +90,10 @@ NuGet 包不附带。
 | 仓库路径 | 包内来源 |
 |---|---|
 | `android-arm64/libmonosgen-2.0.so` | `runtimes/android-arm64/native/libmonosgen-2.0.so` |
+| `android-arm64/libSystem.Native.so` | `runtimes/android-arm64/native/libSystem.Native.so` |
+| `android-arm64/libSystem.Globalization.Native.so` | 同上 |
+| `android-arm64/libSystem.IO.Compression.Native.so` | 同上 |
+| `android-arm64/libSystem.Security.Cryptography.Native.Android.so` | 同上 |
 | `android-arm64/libs/System.Private.CoreLib.dll` | `runtimes/android-arm64/native/System.Private.CoreLib.dll` |
 | `android-arm64/libs/{netstandard,System.Runtime,System.Collections}.dll` | `runtimes/android-arm64/lib/net8.0/` |
 
@@ -96,8 +101,17 @@ NuGet 包不附带。
 `modules/cs` 的嵌入代码无需改写。BCL 与 `windows-x64/libs/` 是两套独立构建，
 各自跟随本平台的 runtime pack，不能互借。
 
-升级时把两个平台的运行时与 BCL 一起换成同一版本号；其它 ABI 同理，目录名与
-`ANDROID_ABI` 的映射见 `examples/CMakeLists.txt`。
+**Android 的 4 个 `libSystem.*.so` 不是可选项**：Android 版
+`System.Private.CoreLib.dll` 把 `SystemNative_*` / 全球化 / zlib 等 P/Invoke
+目标拆成独立共享库（`libmonosgen-2.0.so` 的 `DT_NEEDED` 只有 `libm/libdl/
+liblog/libz/libc`，不含这些实现）。MonoVM 启动与首次 JIT 时会按 SONAME
+`dlopen`，缺任一个都会直接闪退，而 cpp / lua / js 三个后端因为从不初始化
+CLR 看不出问题。它们只依赖 Android 系统库，`joy_examples_deploy_clr()`
+把主库和 4 个 shim 一起放进 `lib/<abi>/`，`android.yml` 只给 csharp flavor
+打包并在 APK 清单里做防回归校验。
+
+升级时把两个平台的运行时、shim 与 BCL 一起换成同一版本号；其它 ABI 同理，
+目录名与 `ANDROID_ABI` 的映射见 `examples/CMakeLists.txt`。
 
 CI（`.github/workflows/android.yml`）只装 NDK、校验这些已入库文件、交叉编译出
 `libmain.so` 并上传 Artifacts，本机不装 NDK 也能拿到 Android 产物。
@@ -113,11 +127,13 @@ CI（`.github/workflows/android.yml`）只装 NDK、校验这些已入库文件�
   `setup_clr_dirs()` 的 Unix 分支预加载这些 shim，`MONO_LIB_DIR` 仍指向
   `lib/`。若 CoreLib 报 `libSystem.Native` 找不到，先查主库与 shim 是否
   同目录、rpath 是否写进 exe、预加载清单是否覆盖新版本 runtime pack。
-- **Android**：`libmonosgen-2.0.so` 由 `joy_examples_deploy_clr()` 放进
-  `lib/<abi>/`（系统解压后可被加载器找到）；BCL 仍随 `lib/`，但
-  `mono_set_dirs()` 要真实路径，宿主在 `setup_clr_dirs()` 的 `__ANDROID__` 分支里
-  用 `SDL_GetPrefPath()`（内部存储）落盘后再指过去。宿主 target 也改成
-  `libmain.so`。APK 打包与真机冒烟仍需 Android NDK / SDK 工程，本仓库目前只
-  提供到构建配置与产物布局。
+- **Android**：`libmonosgen-2.0.so` 与 4 个 `libSystem.*.so` 由
+  `joy_examples_deploy_clr()` 放进 `lib/<abi>/`（系统解压后可被加载器找到）；
+  BCL 仍随 `assets/lib/` 进 APK，但 `mono_set_dirs()` 要真实路径，宿主在
+  `setup_clr_dirs()` 的 `__ANDROID__` 分支里用 `SDL_GetPrefPath()`（内部存储）
+  落盘后，把 `MONO_PATH` / `MONO_LIB_DIR` 一起指过去；`modules/cs/jcsx.c`
+  再调 `mono_set_assemblies_path()`（.NET 8 已废弃 `mono_set_dirs` 的程序集
+  搜索语义）。解包失败会直接返回 `SDL_APP_FAILURE` 并打 logcat 日志，不再带着
+  半个运行时进 `mono_jit_init()`。宿主 target 也改成 `libmain.so`。
 
 预编译二进制不要放进 `external/`（那里只放参与编译的第三方源码）。

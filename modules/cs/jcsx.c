@@ -112,6 +112,13 @@ static void csx_setup_mono_dirs(void)
 
         if (lib) {
                 mono_set_dirs(lib, csx_dir_exists(etc) ? etc : lib);
+                /* .NET 8 的 MonoVM 已把 mono_set_dirs / mono_assembly_setrootdir
+                 * 标为 deprecated（头文件明确写 "use mono_set_assemblies_path
+                 * instead"）。程序集搜索实际走 mono_set_assemblies_path：漏了它
+                 * 时 Android 只会按 CWD（"/"）找 System.Private.CoreLib.dll，
+                 * mono_jit_init() 里直接 abort，表现就是 C# APK 启动闪退。
+                 * 桌面不受影响（lib 就是 exe 旁的 BCL 目录），两端都显式指定。 */
+                mono_set_assemblies_path(lib);
         }
 }
 

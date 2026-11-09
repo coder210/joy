@@ -290,6 +290,9 @@ $env:SDL_VIDEODRIVER="dummy"
 > `无法定位程序输入点 mono_free 于动态链接库 example_js.exe 上`。
 > 因此四个 target 的 POST_BUILD 都通过 `joy_examples_deploy_clr()` 部署 `coreclr.dll`；
 > BCL（`lib/`）只有 `example_csharp` 需要，因为只有它真正初始化 CLR。
+> Android 还要把官方 runtime pack 的 4 个 `libSystem.*.so` 一起放进 `lib/<abi>/`：
+> 该平台的 CoreLib 把 P/Invoke 目标拆成独立共享库，缺一个 C# APK 就会在
+> MonoVM 启动时 `dlopen` 失败闪退（详见 `runtimes/README.md`）。
 
 判定口径：**四者的冒烟输出必须与旧仓基线一致**——
 

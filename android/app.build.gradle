@@ -80,6 +80,11 @@ android {
     // 也不需要为打包这一步再配置 ndkVersion。产物名由 workflow 复制时统一。
     packagingOptions {
         doNotStrip '**/*.so'
+        // MonoVM 起来后 System.Private.CoreLib.dll 会按 SONAME
+        // dlopen("libSystem.Native.so") 等 4 个 shim。把 .so 真正解压到
+        // nativeLibraryDir（而不是从 APK 里直接映射），保证不同 Android
+        // 版本的 linker namespace 都能按裸库名找到它们。
+        jniLibs.useLegacyPackaging = true
     }
 
     lint {

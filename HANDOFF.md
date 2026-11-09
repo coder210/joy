@@ -118,7 +118,7 @@ ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 四语言�
 检查 Android 产物布局（本机无法编译，只能看文件）：
 
 ```powershell
-Get-ChildItem runtimes/android-arm64 -Recurse -File   # .so + 4 个 BCL
+Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem.*.so + 4 个 BCL
 ```
 
 ## 6. 明确未验证 / 已知风险

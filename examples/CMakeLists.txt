@@ -142,12 +142,16 @@ function(joy_examples_deploy_clr _target)
     if(ANDROID)
         # APK 只把 lib/<abi>/*.so 解压成可执行文件；assets/ 是压缩数据，
         # 系统加载器找不到。产物落进构建树的 lib/<abi>/ 供打包工程收集。
+        # Android 版 System.Private.CoreLib.dll 的 P/Invoke 目标是 4 个独立的
+        # libSystem.*.so（不像 Windows 那样合进主库），MonoVM 启动 / 首次 JIT
+        # 时会按 SONAME dlopen；缺一个就闪退，必须和主库一起进 APK。
         set(_apk_lib "${CMAKE_BINARY_DIR}/lib/${ANDROID_ABI}")
+        file(GLOB _clr_shims "${_clr_bin}/libSystem.*.so")
         add_custom_command(TARGET ${_target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory "${_apk_lib}"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                    "${MONO_LIBRARIES}" "${_apk_lib}/${_clr_file}"
-            COMMENT "Deploying ${_clr_file} into APK lib/${ANDROID_ABI}/")
+                    "${MONO_LIBRARIES}" ${_clr_shims} "${_apk_lib}/"
+            COMMENT "Deploying ${_clr_file} + CoreLib shims into APK lib/${ANDROID_ABI}/")
     elseif(EXISTS "${_clr_bin}/coreclr.dll")
         add_custom_command(TARGET ${_target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different

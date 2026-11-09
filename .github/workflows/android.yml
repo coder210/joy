@@ -83,14 +83,18 @@ jobs:
           set -euo pipefail
           dst=runtimes/android-arm64
           for f in libmonosgen-2.0.so libs/System.Private.CoreLib.dll \
-                   libs/netstandard.dll libs/System.Runtime.dll libs/System.Collections.dll; do
+                   libs/netstandard.dll libs/System.Runtime.dll libs/System.Collections.dll \
+                   libSystem.Native.so libSystem.Globalization.Native.so \
+                   libSystem.IO.Compression.Native.so \
+                   libSystem.Security.Cryptography.Native.Android.so; do
             test -s "$dst/$f" || { echo "missing vendored runtime: $f"; exit 1; }
           done
           file "$dst/libmonosgen-2.0.so" | grep -Eqi 'aarch64|arm64'
           grep -aq "${CLR_VERSION}" "$dst/libmonosgen-2.0.so" || { echo "CLR version mismatch"; exit 1; }
-          # 本机已解析 dynsym 核实过 1312 个 mono_*；CI 只查 jcsx.c 依赖的 7 个
+          # 本机已解析 dynsym 核实过 1312 个 mono_*；CI 只查 jcsx.c 依赖的 8 个
           for sym in mono_jit_init mono_image_open_from_data mono_assembly_load_from_full \
-                     mono_runtime_invoke mono_add_internal_call mono_set_dirs mono_free; do
+                     mono_runtime_invoke mono_add_internal_call mono_set_dirs \
+                     mono_set_assemblies_path mono_free; do
             grep -aq "$sym" "$dst/libmonosgen-2.0.so" || { echo "missing export: $sym"; exit 1; }
           done
 
@@ -122,6 +126,14 @@ jobs:
           set -euo pipefail
           test -f "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
           test -f "build-android/lib/$ANDROID_ABI/libJoyGameCpp.so"
+          # Android 版 CoreLib 的 P/Invoke 目标被拆成独立 shim，少一个都会让
+          # MonoVM 启动时 dlopen 失败闪退。
+          for f in libSystem.Native.so libSystem.Globalization.Native.so \
+                   libSystem.IO.Compression.Native.so \
+                   libSystem.Security.Cryptography.Native.Android.so; do
+            test -f "build-android/lib/$ANDROID_ABI/$f" \
+              || { echo "::error::missing CoreLib shim: $f"; exit 1; }
+          done
           # 四个后端的 libmain.so 落在各自的构建子目录，互不覆盖；
           # SDLActivity 靠 dlsym("SDL_main") 启动，符号必须导出。
           for so in build-android/cpp/libmain.so build-android/lua/libmain.so \
@@ -182,7 +194,15 @@ jobs:
                 cp "$cpp_game" "$jni/libJoyGameCpp.so" ;;
               lua)    cp build-android/lua/libmain.so "$jni/libmain.so" ;;
               js)     cp build-android/js/libmain.so "$jni/libmain.so" ;;
-              csharp) cp build-android/csharp_host/libmain.so "$jni/libmain.so" ;;
+              csharp) cp build-android/csharp_host/libmain.so "$jni/libmain.so"
+                      # CoreLib 的 P/Invoke shim 按 SONAME dlopen，必须和
+                      # libmain.so 一起落在 lib/<abi>/；其它后端不初始化 CLR，
+                      # 不必多带这 1 MB。
+                      for f in libSystem.Native.so libSystem.Globalization.Native.so \
+                               libSystem.IO.Compression.Native.so \
+                               libSystem.Security.Cryptography.Native.Android.so; do
+                        cp "build-android/lib/$ANDROID_ABI/$f" "$jni/"
+                      done ;;
             esac
 
             # 四份示例共用的图片/字体；脚本与 C# 程序集只给对应后端，
@@ -217,6 +237,20 @@ jobs:
             test -n "$apk" || { echo "::error::$backend 没有产出 APK"; exit 1; }
             cp "$apk" "joy-example-$backend-${ANDROID_ABI}-debug.apk"
           done
+
+          # C# 包必须同时带齐 native shim 与 assets 里的 BCL / 程序集，
+          # 少一样都会表现为启动闪退；在 CI 里直接查 APK 清单防回归。
+          unzip -Z1 "joy-example-csharp-${ANDROID_ABI}-debug.apk" > /tmp/csharp-apk.txt
+          for f in libSystem.Native.so libSystem.Globalization.Native.so \
+                   libSystem.IO.Compression.Native.so \
+                   libSystem.Security.Cryptography.Native.Android.so; do
+            grep -qx "lib/$ANDROID_ABI/$f" /tmp/csharp-apk.txt \
+              || { echo "::error::csharp APK 缺 $f"; exit 1; }
+          done
+          grep -qx "assets/JoyGame.dll" /tmp/csharp-apk.txt \
+            || { echo "::error::csharp APK 缺 assets/JoyGame.dll"; exit 1; }
+          grep -qx "assets/lib/System.Private.CoreLib.dll" /tmp/csharp-apk.txt \
+            || { echo "::error::csharp APK 缺 assets/lib/System.Private.CoreLib.dll"; exit 1; }
           ls -lh joy-example-*-debug.apk
 
       - name: Upload Android APKs

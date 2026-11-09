@@ -88,31 +88,56 @@ static bool copy_clr_lib(const char* dir, const char* name)
 
     size_t size = 0;
     void* data = SDL_LoadFile(src, &size);
-    if (!data) return false;
+    if (!data) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[cs] read asset %s failed: %s", src, SDL_GetError());
+        return false;
+    }
     SDL_IOStream* io = SDL_IOFromFile(dst, "wb");
-    if (!io) { SDL_free(data); return false; }
+    if (!io) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[cs] write %s failed: %s", dst, SDL_GetError());
+        SDL_free(data);
+        return false;
+    }
     bool ok = SDL_WriteIO(io, data, size) == size;
+    if (!ok) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[cs] write %s incomplete: %s", dst, SDL_GetError());
+    }
     SDL_CloseIO(io);
     SDL_free(data);
     return ok;
 }
 #endif
 
-static void setup_clr_dirs(void)
+static bool setup_clr_dirs(void)
 {
 #if defined(__ANDROID__)
     char* pref = SDL_GetPrefPath("joy", "example_csharp");
-    if (!pref) return;
+    if (!pref) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[cs] SDL_GetPrefPath failed: %s", SDL_GetError());
+        return false;
+    }
     for (int i = 0; kClrLibs[i]; ++i) {
+        /* 少一个 BCL，mono_jit_init() 就会因为找不到 CoreLib 直接 abort，
+         * 只打日志继续跑没有任何意义，必须立刻终止启动。 */
         if (!copy_clr_lib(pref, kClrLibs[i])) {
-            fprintf(stderr, "[host] unpack CLR lib failed: %s\n", kClrLibs[i]);
+            SDL_free(pref);
+            return false;
         }
     }
+    /* MONO_LIB_DIR 是 jcsx.c 自己读的变量；MonoVM 认的是 MONO_PATH，
+     * .NET 8 还要求 mono_set_assemblies_path()（见 jcsx.c）。两条路径
+     * 都指向同一个解包目录，缺一条都可能让 C# APK 启动闪退。 */
+    setenv("MONO_PATH", pref, 1);
     setenv("MONO_LIB_DIR", pref, 1);
+    SDL_Log("[cs] CLR dirs: %s", pref);
     SDL_free(pref);
 #else
     const char* base = SDL_GetBasePath();
-    if (!base) return;
+    if (!base) return true;
     char lib[512];
 #  if defined(_WIN32)
     snprintf(lib, sizeof(lib), "%slib", base);
@@ -142,6 +167,7 @@ static void setup_clr_dirs(void)
     }
 #  endif
 #endif
+    return true;
 }
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
@@ -149,7 +175,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     (void)appstate;
 
     chdir_to_exe_dir();
-    setup_clr_dirs();
+    if (!setup_clr_dirs()) return SDL_APP_FAILURE;
 
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
@@ -163,13 +189,18 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         SDL_SetHint(SDL_HINT_MAIN_CALLBACK_RATE, "60");
     }
 
+    /* stderr 在 Android 上不稳定，全部走 SDL_Log → logcat，闪退时能定位到
+     * 是 CLR 初始化、程序集加载还是方法查找哪一步失败。 */
+    SDL_Log("[cs] creating MonoVM, assembly=%s", g_assembly);
     g_csx = csx_create();
     if (!g_csx) {
-        fprintf(stderr, "[host] csx_create failed (CLR runtime unavailable?)\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[host] csx_create failed (CLR runtime unavailable?)");
         return SDL_APP_FAILURE;
     }
     if (!csx_load_assembly(g_csx, g_assembly)) {
-        fprintf(stderr, "[host] load assembly failed: %s\n", g_assembly);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[host] load assembly failed: %s", g_assembly);
         return SDL_APP_FAILURE;
     }
 
@@ -177,9 +208,11 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     g_on_frame = csx_find_method(g_csx, "JoyGame", "Host", "OnFrame", 1);
     g_on_shutdown = csx_find_method(g_csx, "JoyGame", "Host", "OnShutdown", 0);
     if (!g_on_init || !g_on_frame) {
-        fprintf(stderr, "[host] JoyGame.Host.OnInit/OnFrame not found\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
+                     "[host] JoyGame.Host.OnInit/OnFrame not found");
         return SDL_APP_FAILURE;
     }
+    SDL_Log("[cs] MonoVM ready");
 
     {
         int w = APP_W;
