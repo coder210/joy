@@ -63,11 +63,28 @@ uint64_t get_ticks(void)
 jwindow_p create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
-        window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
+#if defined(__ANDROID__)
+        /* Android 的窗口恒为全屏，SDL 会用屏幕尺寸覆盖这里传入的 w/h。
+         * 带 RESIZABLE 时 SDLActivity 放开所有方向（FULL_USER），默认竖屏的
+         * 模拟器会把横版游戏纵向拉长；不带则按 w>h 自动请求 landscape。 */
+        Uint32 flags = 0;
+#else
+        Uint32 flags = SDL_WINDOW_RESIZABLE;
+#endif
+        window->sdl_window = SDL_CreateWindow(title, w, h, flags);
         if (!window->sdl_window) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "create_window failed: %s", SDL_GetError());
                 SDL_free(window);
                 return NULL;
+        }
+        /* 记下调用方请求的逻辑分辨率，r2d_create() 从这里取。
+         * 不能在建 renderer 时用 SDL_GetWindowSize：Android 全屏窗口返回的是
+         * 屏幕物理尺寸，拿它当逻辑分辨率会让固定 480x320 的绘制只占屏幕一角。
+         * 用 window properties 传递，不必改 jwindow 的公开不透明类型。 */
+        SDL_PropertiesID props = SDL_GetWindowProperties(window->sdl_window);
+        if (props) {
+                SDL_SetNumberProperty(props, "joy.logical_w", w);
+                SDL_SetNumberProperty(props, "joy.logical_h", h);
         }
         return window;
 }
