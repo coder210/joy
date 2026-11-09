@@ -1,0 +1,116 @@
+name: Web examples (cpp / lua / js)
+
+# C# 在 wasm 无 MonoVM 运行时，Web 只构建 cpp/lua/js 三个后端；
+# 一个 Pages 站点按子目录承载，不按「平台 × 后端」拆 workflow。
+# emsdk 链路首次手动验证前不挂到 push / PR，避免把未验证的 job 变成红灯。
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: '同时发布到 GitHub Pages'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-web:
+    name: Web / wasm / Release
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Emscripten
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://github.com/emscripten-core/emsdk.git --depth=1
+          cd emsdk && ./emsdk install 3.1.64 && ./emsdk activate 3.1.64
+
+      - name: Configure with Emscripten
+        shell: bash
+        run: |
+          set -euo pipefail
+          source emsdk/emsdk_env.sh
+          # -fno-strict-aliasing: jmsgpack.c / protocol.h 的类型双关在 wasm -O3
+          # 下会被 TBAA 优化成乱值（参数与理由同 joy_topdown_template/web-build.yml）。
+          # 强制单线程：Pages 无法设置 COOP/COEP，SharedArrayBuffer 不可用。
+          emcmake cmake -S examples -B build/web \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSDL_PTHREADS=OFF \
+            -DCMAKE_C_FLAGS="-s USE_PTHREADS=0 -fno-strict-aliasing" \
+            -DCMAKE_CXX_FLAGS="-s USE_PTHREADS=0 -s DISABLE_EXCEPTION_CATCHING=0 -fno-strict-aliasing" \
+            -DCMAKE_EXE_LINKER_FLAGS="-s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=256MB -s STACK_SIZE=5MB -s USE_PTHREADS=0 -s SHARED_MEMORY=0 -s WASM_WORKERS=0 -s PROXY_TO_PTHREAD=0 -s ENVIRONMENT=web" \
+            2>&1 | tee configure-web.log
+
+      # 只构建三个有效后端；CMake 在 EMSCRIPTEN 下已跳过 csharp_host。
+      - name: Build (cpp / lua / js)
+        shell: bash
+        run: |
+          set -euo pipefail
+          source emsdk/emsdk_env.sh
+          cmake --build build/web --target example_cpp example_lua example_js \
+            2>&1 | tee build-web.log
+
+      - name: Prepare Pages site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site/cpp _site/lua _site/js
+          for b in cpp lua js; do
+            cp -L build/web/Release/example_$b.* "_site/$b/" || true
+            if [ -f "_site/$b/example_$b.html" ]; then
+              mv "_site/$b/example_$b.html" "_site/$b/index.html"
+            fi
+          done
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>joy examples</title>
+          <h1>joy examples (Web)</h1>
+          <ul>
+            <li><a href="cpp/">C++</a></li>
+            <li><a href="lua/">Lua</a></li>
+            <li><a href="js/">JavaScript</a></li>
+          </ul>
+          <p>C# 后端需要 wasm 版 MonoVM，当前不在 Web 构建范围内。</p>
+          HTML
+          find _site -type l -delete
+          test -f _site/cpp/index.html
+          test -f _site/lua/index.html
+          test -f _site/js/index.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: joy-examples-web
+          path: _site/
+          retention-days: 7
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-examples-web-logs
+          path: '*.log'
+          if-no-files-found: warn
+          retention-days: 7
+
+  deploy:
+    if: inputs.deploy
+    needs: build-web
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: joy-examples-web

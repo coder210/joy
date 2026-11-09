@@ -47,12 +47,16 @@ examples/
 ├── CMakeLists.txt     ← 共享构建入口：一个文件定义 4 个 target
 ├── assets/            ← 唯一资源根：静态图片/字体 + 构建生成的脚本与托管程序集
 ├── cpp/               ← src/host.cpp（薄宿主）+ src/game.cpp（游戏 DLL）+ joy_game_hooks.h
-├── csharp/            ← src/main.cpp（CLR 宿主）+ JoyGame.csproj + game/ runtime/
+├── csharp/            ← 纯 C# 工程：JoyGame.csproj + game/ runtime/ test/（无 native 代码）
+├── csharp_host/       ← src/main.cpp（CLR native 宿主）+ CMakeLists.txt（example_csharp target）
 ├── lua/               ← src/main.cpp（Lua 宿主）+ src/main.lua（游戏逻辑）
 └── js/                ← src/main.cpp（JS 宿主）+ src/main.js（游戏逻辑）
 ```
 
 每个子目录的真实 `src/` 里放本示例自己的代码（宿主，lua/js 另有游戏脚本）。
+C# 是例外：`csharp/` 只放托管工程，native 宿主独立在 `csharp_host/`，两者由
+`csharp_host/CMakeLists.txt` 的 `_cs_proj` 关联。这样 MSBuild 的默认 None glob
+不会再挂进 `main.cpp` / `CMakeLists.txt`，C# 项目节点只出现显式列出的 `.cs`。
 宿主只做四件事：建窗口、建渲染、把 SDL 事件转发给业务层、按帧驱动。
 游戏逻辑一律不写在宿主里：`cpp/` 把逻辑编译成 `JoyGameCpp.dll`，宿主用
 `SDL_LoadObject` 加载、取唯一入口 `joy_game_get_hooks`，并把 `JoyApi` 大函数

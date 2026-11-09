@@ -16,6 +16,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_loadso.h>
 #include <joy/joy.h>
 #include "joy_csharp.h"
 
@@ -118,6 +119,26 @@ static void setup_clr_dirs(void)
 #  else
     snprintf(lib, sizeof(lib), "%sassets/lib", base);
     setenv("MONO_LIB_DIR", lib, 1);
+
+    /* Linux/macOS 的 runtime pack 把 CoreLib 的 P/Invoke 目标拆成独立 shim，
+     * 而 libcoreclr.so/.dylib 没有 DT_RUNPATH，dlopen 不会自动搜 exe 目录。
+     * 在 csx_create() 之前按绝对路径预加载，后续同名加载直接复用；
+     * 清单与 runtimes/<platform>/ 入库的 libSystem.* 一致，缺失的忽略。 */
+    static const char* const kClrShims[] = {
+        "libSystem.Native.so", "libSystem.Native.dylib",
+        "libSystem.Globalization.Native.so", "libSystem.Globalization.Native.dylib",
+        "libSystem.IO.Compression.Native.so", "libSystem.IO.Compression.Native.dylib",
+        "libSystem.Net.Security.Native.so", "libSystem.Net.Security.Native.dylib",
+        "libSystem.Security.Cryptography.Native.OpenSsl.so",
+        "libSystem.Security.Cryptography.Native.OpenSsl.dylib",
+        "libSystem.Security.Cryptography.Native.Apple.dylib",
+        NULL
+    };
+    for (int i = 0; kClrShims[i]; ++i) {
+        char path[512];
+        snprintf(path, sizeof(path), "%s%s", base, kClrShims[i]);
+        if (!SDL_LoadObject(path)) SDL_ClearError();
+    }
 #  endif
 #endif
 }

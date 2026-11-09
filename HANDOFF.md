@@ -80,7 +80,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 | System.Runtime | 43,792 | 43,832 | 23.25% |
 | System.Collections | 102,168 | 102,176 | 46.33% |
 
-所以 `runtimes/` 结构是**每个平台目录自带 4 个 BCL**，`examples/csharp/CMakeLists.txt`
+所以 `runtimes/` 结构是**每个平台目录自带 4 个 BCL**，`examples/csharp_host/CMakeLists.txt`
 只取 `<MONO_LIBRARIES 所在目录>/libs/`，缺失就 `FATAL_ERROR`，**没有向其它平台回退**。
 不要再加回退逻辑——曾经的根目录 `runtimes/libs/` 就是这么把 Windows 版静默拷给别的平台的。
 

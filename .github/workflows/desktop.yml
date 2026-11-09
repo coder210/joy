@@ -1,0 +1,132 @@
+name: Desktop examples (4 backends)
+
+# 一个 workflow 覆盖 Windows / Linux / macOS：后端不是矩阵维度，
+# 每个 job 一次构建四个 target（cpp / lua / js / csharp），打成一个包。
+# 模板仓按平台拆文件；这里用 matrix 收敛成 1 个文件、3 个 job。
+# 骨架沿用 joy_topdown_template 的 windows/linux 两个 workflow。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: ${{ matrix.name }} / Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            name: Windows / VS2022 / x64
+            gen: 'Visual Studio 17 2022'
+            extra: '-Ax64'
+          - os: ubuntu-24.04
+            name: Linux / x64
+            gen: 'Ninja'
+            extra: ''
+          - os: macos-14
+            name: macOS / arm64
+            gen: 'Ninja'
+            # 只有 macos-arm64 runtime pack，双架构会在链接 x86_64 切片时失败。
+            extra: '-DCMAKE_OSX_ARCHITECTURES=arm64'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 引擎自带 SDL 在 Linux 从源码编译，依赖清单来自模板 linux-build.yml。
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt update
+          sudo apt install -y --no-install-recommends build-essential git cmake ninja-build \
+            gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libjack-dev \
+            libsndio-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxss-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev \
+            libgles2-mesa-dev libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev \
+            fcitx-libs-dev libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev \
+            libxtst-dev
+
+      - name: Ensure Ninja (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: command -v ninja >/dev/null || brew install ninja
+
+      - name: Binding generator gate
+        shell: bash
+        run: node api/tools/gen_bindings.js --check 2>&1 | tee binding-gate.log
+
+      - name: Configure
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S examples -B build/examples \
+            -G "${{ matrix.gen }}" ${{ matrix.extra }} \
+            -DCMAKE_BUILD_TYPE=Release 2>&1 | tee configure.log
+
+      # 全新 checkout 没有 obj/：VS 外部 C# 项目在命令行 MSBuild 下不会隐式
+      # NuGet restore。CMake 已把 restore 串进依赖链，这里显式再跑一次（幂等）。
+      - name: Restore C# projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore examples/csharp/JoyGame.csproj 2>&1 | tee restore.log
+
+      # 一次 --parallel 编四个 target 时，各 target 的 POST_BUILD 会同时写
+      # 同一个 Release/assets/（csharp 还会 remove_directory assets/lib），
+      # 且与 VS 外部 C# 项目抢 obj/。拆成两步、串行、每个 target 明确列出。
+      - name: Build (cpp / lua / js)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/examples --config Release \
+            --target example_cpp example_lua example_js 2>&1 | tee build-base.log
+
+      - name: Build (csharp)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/examples --config Release \
+            --target example_csharp 2>&1 | tee build-csharp.log
+
+      # 四个冒烟都用 dummy 视频驱动；--timeout 必备（历史上渲染卡死拖死整轮）。
+      - name: Smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          ctest --test-dir build/examples -C Release \
+            --output-on-failure --timeout 25 2>&1 | tee ctest.log
+
+      - name: Upload build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-examples-${{ matrix.os }}
+          # CMAKE_RUNTIME_OUTPUT_DIRECTORY 把三平台产物都收在 build/examples/Release/：
+          # 四个 exe + assets/ + coreclr.dll 或 libcoreclr.so|.dylib 与 libSystem.* shim。
+          path: build/examples/Release/**
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-examples-logs-${{ matrix.os }}
+          path: |
+            *.log
+            build/examples/Testing/Temporary/*.log
+            build/examples/CMakeFiles/CMake*.log
+          if-no-files-found: warn
+          retention-days: 7

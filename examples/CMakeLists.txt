@@ -48,6 +48,9 @@ if(NOT TARGET joy::all)
                 endif()
             elseif(APPLE)
                 set(JOY_CLR_PLATFORM "macos-arm64")
+            elseif(EMSCRIPTEN)
+                # MonoVM 没有 wasm 运行时；让下面的 CLR 库检查落空，只编 cpp/lua/js。
+                set(JOY_CLR_PLATFORM "unsupported-wasm")
             else()
                 set(JOY_CLR_PLATFORM "linux-x64")
             endif()
@@ -64,6 +67,11 @@ if(NOT TARGET joy::all)
             set(MONO_LIBRARIES "${_clr_plat}/libmonosgen-2.0.so")
         elseif(EXISTS "${_clr_plat}/libcoreclr.so")
             set(MONO_LIBRARIES "${_clr_plat}/libcoreclr.so")
+        elseif(EXISTS "${_clr_plat}/libcoreclr.dylib")
+            # macOS runtime pack 的主库是 .dylib（install name 为 @rpath/...）
+            set(MONO_LIBRARIES "${_clr_plat}/libcoreclr.dylib")
+        elseif(EXISTS "${_clr_plat}/libmonosgen-2.0.dylib")
+            set(MONO_LIBRARIES "${_clr_plat}/libmonosgen-2.0.dylib")
         endif()
     endif()
 
@@ -117,14 +125,39 @@ function(joy_examples_deploy_clr _target)
                     "${_clr_bin}/coreclr.dll"
                     "$<TARGET_FILE_DIR:${_target}>/coreclr.dll"
             COMMENT "Deploying coreclr.dll for ${_target} (joy::all 含 cs 模块)")
+    elseif(UNIX)
+        # Linux/macOS runtime pack 把主库与 libSystem.* shim 拆成多个文件；
+        # 主库无 DT_RUNPATH：exe 靠下面的 BUILD_RPATH 找主库，shim 由宿主在
+        # csx_create() 之前按绝对路径预加载（见 csharp_host/src/main.cpp）。
+        file(GLOB _clr_native_libs
+            "${_clr_bin}/libcoreclr.so" "${_clr_bin}/libcoreclr.dylib"
+            "${_clr_bin}/libmonosgen-2.0.so" "${_clr_bin}/libmonosgen-2.0.dylib"
+            "${_clr_bin}/libSystem.*.so" "${_clr_bin}/libSystem.*.dylib")
+        list(LENGTH _clr_native_libs _clr_native_count)
+        if(_clr_native_count GREATER 0)
+            add_custom_command(TARGET ${_target} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        ${_clr_native_libs} "$<TARGET_FILE_DIR:${_target}>"
+                COMMENT "Deploying MonoVM native libs for ${_target}")
+        endif()
+        # joy::all 含 cs 模块，四个示例的导入表里都有 mono_*，exe 必须能找到主库。
+        if(APPLE)
+            set_property(TARGET ${_target} APPEND PROPERTY BUILD_RPATH "@loader_path")
+            set_property(TARGET ${_target} APPEND PROPERTY INSTALL_RPATH "@loader_path")
+        else()
+            set_property(TARGET ${_target} APPEND PROPERTY BUILD_RPATH "\$ORIGIN")
+            set_property(TARGET ${_target} APPEND PROPERTY INSTALL_RPATH "\$ORIGIN")
+        endif()
     endif()
 endfunction()
 
 # 每个子目录都会定义自己的 target 与一次资源拷贝。
 # IDE 分组 joy_ide_source_groups() 由各子目录自己调用：source_group 只在
 # 「创建 target 的那个目录」生效，父目录定义不会传到子目录。
+# csharp/ 是纯 C# 项目目录（JoyGame.csproj），不参与 add_subdirectory；
+# 它的 native 宿主与 example_csharp target 定义在 csharp_host/。
 enable_testing()
-foreach(_lang cpp lua js csharp)
+foreach(_lang cpp lua js csharp_host)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_lang}/CMakeLists.txt")
         add_subdirectory(${_lang})
     endif()

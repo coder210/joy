@@ -7,6 +7,10 @@
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- 关掉 SDK 的默认 None glob：它曾把同目录的 CMakeLists.txt 与
+         src/main.cpp 挂进 JoyGame 项目节点。native 宿主已移到 ../csharp_host/，
+         本目录只应出现 C# 源码；编译项在下方 ItemGroup 显式列出。 -->
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <!-- joy 的 C# 绑定项目位置：本工程位于 <joy>/examples/csharp，
          绑定模块在 <joy>/modules/cs。 -->
     <JoyCSharpDir Condition="'$(JoyCSharpDir)' == ''">$(MSBuildProjectDirectory)/../../modules/cs</JoyCSharpDir>

@@ -1,4 +1,13 @@
-# C# 版：宿主只做窗口/主循环/事件泵，游戏逻辑在 JoyGame.dll。
+if(EMSCRIPTEN)
+    # MonoVM 没有 wasm 运行时（iOS 禁 JIT、wasm 需专门 runtime）；
+    # Web 只构建 cpp/lua/js 三个后端，这里不定义 example_csharp target。
+    message(STATUS "joy examples: EMSCRIPTEN 跳过 csharp（MonoVM 无 wasm 运行时）")
+    return()
+endif()
+
+# C# 示例的 native 宿主：只做窗口/主循环/事件泵，游戏逻辑在 ../csharp/JoyGame.csproj
+# 产出的 JoyGame.dll 里。这里刻意与 C# 项目分目录，避免 MSBuild 的默认 None
+# glob 把 main.cpp / CMakeLists.txt 挂进 JoyGame 项目节点。
 # 需要 joy 的 cs 模块（JOY_REQUESTED_MODULES 含 cs）与 CLR 开发包。
 if(NOT TARGET joy_module_cs)
     message(WARNING "example_csharp 已跳过：本次配置没有启用 joy 的 cs 模块")
@@ -8,7 +17,7 @@ endif()
 # 注入的 joy 引擎源码收在 joy\... 下（source_group 只在当前目录生效）
 joy_ide_source_groups()
 
-# 宿主代码在真实 src/ 目录里；C# 游戏逻辑由 JoyGame.csproj 的 game/ runtime/ 提供
+# 宿主代码在本目录 src/；C# 游戏逻辑在 ../csharp/ 的 JoyGame.csproj（game/ runtime/ test/）
 set(_game_sources "${CMAKE_CURRENT_LIST_DIR}/src/main.cpp")
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${_game_sources})
 
@@ -24,7 +33,8 @@ target_link_libraries(example_csharp PRIVATE joy::all)
 
 # ---- C# 程序集：dotnet build 产出 JoyGame.dll + Joy.Bindings.dll ----
 set(_cs_out  "${CMAKE_BINARY_DIR}/csharp")
-set(_cs_proj "${CMAKE_CURRENT_LIST_DIR}/JoyGame.csproj")
+# C# 项目在平级的 csharp/ 目录，本目录只放 native 宿主与构建入口。
+set(_cs_proj "${CMAKE_CURRENT_LIST_DIR}/../csharp/JoyGame.csproj")
 
 # 全新 checkout 没有 obj/（已取消跟踪）。VS 生成器下 include_external_msproject
 # 会让 JoyGame/JoyBindings 参与命令行 MSBuild 构建，而命令行 MSBuild 不会隐式
