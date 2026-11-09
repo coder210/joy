@@ -19,6 +19,23 @@ set(JOY_EXAMPLES_ACTIVE ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
 
+# Linux/macOS 上 SDL3 是共享库（LIBRARY 目标），默认落在 build/examples/SDL/，
+# 而打包只收 build/examples/Release/；解压到别的机器就会报
+# "libSDL3.so.0: cannot open shared object file"。让 LIBRARY 与 RUNTIME 同目录。
+# Android 的 libmain.so / lib/<abi>/ 布局已由打包脚本按 find 收集，保持不变。
+if(NOT ANDROID)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
+endif()
+
+# 打包目录要能整体搬走：所有 ELF/Mach-O 都按自身所在目录解析依赖库。
+# 这段 rpath 原先只写在 joy_examples_deploy_clr() 里（CLR 可用时才生效），
+# 但 SDL3 shared 无论开不开 cs 模块都需要它。
+if(APPLE)
+    set(CMAKE_BUILD_RPATH "@loader_path")
+elseif(UNIX AND NOT ANDROID)
+    set(CMAKE_BUILD_RPATH "\$ORIGIN")
+endif()
+
 set(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "joy 仓根目录")
 
 if(NOT TARGET joy::all)

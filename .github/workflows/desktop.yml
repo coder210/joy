@@ -111,13 +111,54 @@ jobs:
           ctest --test-dir build/examples -C Release \
             --output-on-failure --timeout 25 2>&1 | tee ctest.log
 
+      # 构建树里 CMake 会自动加指向 SDL/ 的 rpath，ctest 能过；用户把 artifact
+      # 解压到任意目录后只剩 $ORIGIN / @loader_path 可用。上传前按「解压后的
+      # 目录」自检，避免再出现 libSDL3.so.0 找不到。
+      - name: Verify packaged runtime (Linux / macOS)
+        if: ${{ runner.os != 'Windows' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=build/examples/Release
+          # artifact 是 zip：主动把 libSDL3.so.0 之类的符号链接换成实体副本，
+          # 保证解压后一定有能被加载器按 SONAME 找到的文件。
+          for f in "$out"/*.so* "$out"/*.dylib; do
+            [ -L "$f" ] || continue
+            cp -L "$f" "$f.tmp"
+            mv "$f.tmp" "$f"
+          done
+          echo "--- Release/ ---"
+          ls -lh "$out" | head -40
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            test -e "$out/libSDL3.so.0" \
+              || { echo "::error::libSDL3.so.0 missing from package"; exit 1; }
+            for exe in example_cpp example_lua example_js example_csharp; do
+              readelf -d "$out/$exe" | grep -E 'R(UN)?PATH' | grep -F '$ORIGIN' \
+                || { echo "::error::$exe missing \$ORIGIN rpath"; exit 1; }
+              ldd "$out/$exe" > "/tmp/ldd-$exe.log" 2>&1 || true
+              cat "/tmp/ldd-$exe.log"
+              if grep -q 'not found' "/tmp/ldd-$exe.log"; then
+                echo "::error::$exe missing shared libs: $(grep 'not found' "/tmp/ldd-$exe.log" | head -5 | tr '\n' ' ')"
+                exit 1
+              fi
+            done
+          else
+            ls "$out"/libSDL3*.dylib >/dev/null \
+              || { echo "::error::libSDL3 dylib missing from package"; exit 1; }
+            for exe in example_cpp example_lua example_js example_csharp; do
+              otool -l "$out/$exe" | grep -A3 LC_RPATH | grep -F '@loader_path' \
+                || { echo "::error::$exe missing @loader_path rpath"; exit 1; }
+            done
+          fi
+
       - name: Upload build
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: joy-examples-${{ matrix.os }}
-          # CMAKE_RUNTIME_OUTPUT_DIRECTORY 把三平台产物都收在 build/examples/Release/：
-          # 四个 exe + assets/ + coreclr.dll 或 libcoreclr.so|.dylib 与 libSystem.* shim。
+          # RUNTIME / LIBRARY 输出目录统一为 build/examples/Release/：
+          # 四个 exe + assets/ + coreclr.dll 或 libcoreclr.so|.dylib 与
+          # libSystem.* shim + libSDL3.so.0|libSDL3.0.dylib。
           path: build/examples/Release/**
           if-no-files-found: error
           retention-days: 7
