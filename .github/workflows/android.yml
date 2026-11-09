@@ -5,9 +5,14 @@ name: Android cross-build (C# host)
 # 目前只到「编出 libmain.so + 布好 lib/<abi>/ 与 assets/」；
 # 打 APK 还需要 Gradle / AndroidManifest 工程，仓库里尚未提供。
 # 可用 workflow_dispatch 手动触发，产物从 Artifacts 下载。
+#
+# SDK 用 ubuntu-24.04 镜像预装的 Android SDK，不再依赖第三方 setup-android action：
+# 该 action（Node 20）在 ubuntu-latest 迁移到 Ubuntu 26 后被强制跑在 Node 24 下，
+# 曾在 Setup Android SDK 步骤直接失败，导致编译从未开始。
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch: {}
 
@@ -17,7 +22,7 @@ permissions:
 jobs:
   android-arm64:
     name: Android / arm64-v8a / Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CLR_VERSION: 8.0.17
       ANDROID_ABI: arm64-v8a
@@ -33,18 +38,38 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # sdkmanager 需要 JDK 17；与 joy_topdown_template/android-build.yml 保持一致。
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-      - name: Install fixed NDK
+      # 镜像自带 $ANDROID_HOME 与 cmdline-tools，直接装固定 NDK；
+      # 装完校验 toolchain 文件，避免后面 configure 报一个离题的 CMake 错。
+      - name: Install fixed NDK (preinstalled SDK)
+        shell: bash
         run: |
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --install "platforms;android-34" "ndk;${NDK_VERSION}" >/dev/null
-          echo "ANDROID_NDK_HOME=${ANDROID_HOME}/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          set -euo pipefail
+          sdk="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          test -d "$sdk" || { echo "::error::Android SDK not found at $sdk"; exit 1; }
+          sdkmanager_bin="$sdk/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$sdkmanager_bin" ]; then
+            sdkmanager_bin="$(command -v sdkmanager || true)"
+          fi
+          test -n "$sdkmanager_bin" || { echo "::error::sdkmanager not found"; exit 1; }
+          yes | "$sdkmanager_bin" --licenses >/dev/null 2>&1 || true
+          "$sdkmanager_bin" --install "platforms;android-34" "ndk;${NDK_VERSION}" >/dev/null
+          echo "ANDROID_HOME=$sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$sdk/ndk/${NDK_VERSION}" >> "$GITHUB_ENV"
+          test -f "$sdk/ndk/${NDK_VERSION}/build/cmake/android.toolchain.cmake" \
+            || { echo "::error::NDK toolchain file missing"; exit 1; }
 
       # 运行时与平台 BCL 已随仓库入库（见 runtimes/README.md），CI 只做防呆校验，
       # 不再联网下载，clone 后即可 configure。
       - name: Verify vendored MonoVM runtime
+        shell: bash
         run: |
           set -euo pipefail
           dst=runtimes/android-arm64
@@ -61,17 +86,24 @@ jobs:
           done
 
       - name: Configure (Android toolchain)
+        shell: bash
         run: |
+          set -euo pipefail
           cmake -S examples -B build-android -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI="$ANDROID_ABI" \
-            -DANDROID_PLATFORM="$ANDROID_PLATFORM"
+            -DANDROID_PLATFORM="$ANDROID_PLATFORM" 2>&1 | tee configure-android.log
 
       - name: Build C# host (libmain.so)
-        run: cmake --build build-android --target example_csharp --parallel
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build-android --target example_csharp --parallel \
+            2>&1 | tee build-android.log
 
       - name: Verify outputs
+        shell: bash
         run: |
           set -euo pipefail
           test -f "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
@@ -92,3 +124,15 @@ jobs:
             build-android/**/assets/**
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-android-logs-${{ env.ANDROID_ABI }}
+          path: |
+            configure-android.log
+            build-android.log
+            build-android/CMakeFiles/CMake*.log
+          if-no-files-found: warn
+          retention-days: 7

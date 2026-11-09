@@ -1,7 +1,12 @@
 name: Build and smoke tests
 
+# 骨架对齐 joy_topdown_template 的 windows-build.yml：
+# 固定 runner / 生成器 / 架构、显式 shell、按 target 串行构建、产物与日志都上传。
+# 与模板的差别：joy 是引擎仓，多两条本仓特有门禁（绑定生成物、四语言 ctest 冒烟），
+# 且 vendored 了 SDL/msgpack/spine，不需要 submodules / SUBMODULE_TOKEN。
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch: {}
 
@@ -10,24 +15,86 @@ permissions:
 
 jobs:
   windows-msvc:
-    name: Windows / VS2022 / Release
+    name: Windows / VS2022 / x64 / Release
     runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 绑定生成物必须和 joy.idl / joy.h 同步；这是纯 Node 检查，先跑最省时间。
+      # example_csharp_managed 在 CMake 里调 dotnet build，固定 SDK 避免镜像漂移。
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 绑定生成物必须和 joy.idl / api.h 同步；纯 Node 检查，先跑最省时间。
       - name: Binding generator gate
-        run: node api/tools/gen_bindings.js --check
+        shell: bash
+        run: node api/tools/gen_bindings.js --check 2>&1 | tee binding-gate.log
 
       # -S examples 独立构建：该入口默认构建全部四语言示例，并自带 enable_testing()。
       # 第三方 SDL/msgpack/spine 是 vendored 目录，不需要 submodule checkout。
       - name: Configure
-        run: cmake -S examples -B build/examples
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake -S examples -B build/examples -G "Visual Studio 17 2022" -Ax64 \
+            2>&1 | tee configure.log
 
-      - name: Build
-        run: cmake --build build/examples --config Release --parallel
+      # 全新 checkout 没有 obj/（已取消跟踪）：VS 外部 C# 项目在命令行 MSBuild 下
+      # 不会隐式 NuGet restore，缺 project.assets.json 会报 NETSDK1004。
+      # CMake 里已把 restore 串进依赖链，这里显式再跑一次（幂等），便于日志定位。
+      - name: Restore C# projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore examples/csharp/JoyGame.csproj 2>&1 | tee restore.log
+
+      # 一次 --parallel 编四个 target 时，各 target 的 POST_BUILD 会同时写
+      # 同一个 Release/assets/（csharp 还会 remove_directory assets/lib），
+      # 且与 VS 外部 C# 项目抢 obj/。拆成两步、串行、每个 target 明确列出。
+      - name: Build (cpp / lua / js)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/examples --config Release \
+            --target example_cpp example_lua example_js 2>&1 | tee build-base.log
+
+      - name: Build (csharp)
+        shell: bash
+        run: |
+          set -euo pipefail
+          cmake --build build/examples --config Release \
+            --target example_csharp 2>&1 | tee build-csharp.log
 
       # 四个冒烟都用 dummy 视频驱动，输出指纹与平台无关。
+      # --timeout 必备：历史上渲染卡死曾拖死整轮测试。
       - name: Smoke tests
-        run: ctest --test-dir build/examples -C Release --output-on-failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          ctest --test-dir build/examples -C Release \
+            --output-on-failure --timeout 25 2>&1 | tee ctest.log
+
+      - name: Upload build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-windows-examples-x64-Release
+          path: build/examples/Release/**
+          if-no-files-found: error
+          retention-days: 7
+
+      # 失败时留全量日志：GitHub 的 job logs 对未登录/非管理员不可读，
+      # 没有 artifact 就无法定位 MSBuild / ctest 的真实错误行。
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: joy-windows-logs
+          path: |
+            *.log
+            build/examples/Testing/Temporary/*.log
+            build/examples/CMakeFiles/CMake*.log
+          if-no-files-found: warn
+          retention-days: 7

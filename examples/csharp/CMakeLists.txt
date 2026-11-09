@@ -26,6 +26,16 @@ target_link_libraries(example_csharp PRIVATE joy::all)
 set(_cs_out  "${CMAKE_BINARY_DIR}/csharp")
 set(_cs_proj "${CMAKE_CURRENT_LIST_DIR}/JoyGame.csproj")
 
+# 全新 checkout 没有 obj/（已取消跟踪）。VS 生成器下 include_external_msproject
+# 会让 JoyGame/JoyBindings 参与命令行 MSBuild 构建，而命令行 MSBuild 不会隐式
+# 做 NuGet restore，于是报 NETSDK1004 找不到 obj/project.assets.json。
+# 显式 restore 并串进依赖链，保证 cmake --build / CI / IDE 都能从干净工作区构建；
+# dotnet restore 会递归还原 ProjectReference 的 Joy.Bindings.csproj。
+add_custom_target(example_csharp_restore
+    COMMAND dotnet restore "${_cs_proj}"
+    COMMENT "dotnet restore examples/csharp (+ Joy.Bindings)"
+    VERBATIM)
+
 add_custom_target(example_csharp_managed
     COMMAND dotnet build "${_cs_proj}" -c $<IF:$<CONFIG:Debug>,Debug,Release> -o "${_cs_out}"
     BYPRODUCTS
@@ -34,6 +44,7 @@ add_custom_target(example_csharp_managed
     COMMENT "dotnet build examples/csharp -> JoyGame.dll"
     VERBATIM)
 add_dependencies(example_csharp example_csharp_managed)
+add_dependencies(example_csharp_managed example_csharp_restore)
 
 # 把 C# 项目挂进 VS 解决方案，否则 IDE 里只看得到一条 dotnet build
 # 命令，game/ runtime/ 的 .cs 无法打开。
@@ -54,6 +65,8 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
     include_external_msproject(JoyBindings
         "${JOY_MODULE_CS_DIR}/Joy.Bindings.csproj" PLATFORM "Any CPU")
     include_external_msproject(JoyGame "${_cs_proj}" PLATFORM "Any CPU")
+    # 外部项目参与命令行构建却不隐式 restore，必须先生成 assets.json。
+    add_dependencies(JoyBindings example_csharp_restore)
     add_dependencies(JoyGame JoyBindings)
     add_dependencies(example_csharp_managed JoyGame)
 endif()
