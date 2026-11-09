@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <mono/metadata/object.h>
+#include <mono/utils/mono-publib.h>  /* mono_free 的声明不由 object.h 传递 */
 #include "joy_csharp.h"
 
 static bool s_quit = false;

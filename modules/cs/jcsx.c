@@ -5,6 +5,7 @@
 #include <mono/metadata/class.h>
 #include <mono/metadata/object.h>
 #include <mono/metadata/threads.h>
+#include <mono/utils/mono-publib.h>   /* mono_free 只声明在这里，NDK clang 不接受隐式声明 */
 #include "joy_csharp.h"
 #include <joy/joy.h>
 #include <SDL3/SDL_stdinc.h>   /* SDL_free：utils_read_file 的返回缓冲归 SDL 分配器 */
