@@ -17,7 +17,7 @@ namespace JoyGame
         // simsunb.ttf 是宋体扩展汉字补充，不保证覆盖常用字，故不列入 UI 字体候选。
         private static readonly string[] CjkFonts =
         {
-            "assets/fonts/simhei.ttf",       // 仓内自带黑体，首选（模板自包含）
+            "fonts/simhei.ttf",       // 仓内自带黑体，首选（模板自包含）
             "C:/Windows/Fonts/simhei.ttf",   // 系统兜底
             "C:/Windows/Fonts/Deng.ttf",
         };
@@ -65,8 +65,8 @@ namespace JoyGame
                 }
             }
 
-            PlayerImage = TryImage(r2d, "assets/sprites/player.png");
-            EnemyImage = TryImage(r2d, "assets/sprites/enemy.png");
+            PlayerImage = TryImage(r2d, "sprites/player.png");
+            EnemyImage = TryImage(r2d, "sprites/enemy.png");
 
             if (FontSmall == null) Joy.Host.log("[warn] no usable font, HUD text disabled");
         }

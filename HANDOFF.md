@@ -142,7 +142,7 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # .so + 4 个 BCL
    - `add_library(SHARED)` + `OUTPUT_NAME main` 是否产出 `libmain.so`
    - `joy_examples_deploy_clr()` 的 Android 分支是否把 `.so` 放进 `build-android/lib/<abi>/`
 2. **APK 打包工程**：Gradle + `AndroidManifest.xml` + `SDLActivity`，把
-   `libmain.so`、`lib/arm64-v8a/*.so`、`assets/**` 装进 APK。这是让产物变成可安装包的前置。
+   `libmain.so`、`lib/arm64-v8a/*.so`、`pack/**`（作为 APK assets 根）装进 APK。这是让产物变成可安装包的前置。
    会引入 Gradle 目录结构，动手前先确认放不放仓库。
 3. **真机 / 模拟器冒烟**：CI 上可用 `android-emulator-runner`（慢、不稳），或手动跑。
 4. **旧清单（不阻塞 Android）**：

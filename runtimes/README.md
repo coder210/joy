@@ -106,15 +106,15 @@ CI（`.github/workflows/android.yml`）只装 NDK、校验这些已入库文件�
 ## 部署
 
 - **Windows**：post-build 把 `coreclr.dll` 拷到 exe 旁、`windows-x64/libs/` 拷成
-  `assets/lib/`，宿主用 `MONO_LIB_DIR` 指向它，让 `mono_set_dirs()` 解析依赖程序集。
+  `lib/`，宿主用 `MONO_LIB_DIR` 指向它，让 `mono_set_dirs()` 解析依赖程序集。
 - **Linux / macOS**：`joy_examples_deploy_clr()` 的 `UNIX` 分支把主库与全部
   `libSystem.*` 一次性拷到 exe 同目录，并给 target 追加 `BUILD_RPATH` /
   `INSTALL_RPATH`（Linux `$ORIGIN`、macOS `@loader_path`）；宿主在
   `setup_clr_dirs()` 的 Unix 分支预加载这些 shim，`MONO_LIB_DIR` 仍指向
-  `assets/lib/`。若 CoreLib 报 `libSystem.Native` 找不到，先查主库与 shim 是否
+  `lib/`。若 CoreLib 报 `libSystem.Native` 找不到，先查主库与 shim 是否
   同目录、rpath 是否写进 exe、预加载清单是否覆盖新版本 runtime pack。
 - **Android**：`libmonosgen-2.0.so` 由 `joy_examples_deploy_clr()` 放进
-  `lib/<abi>/`（系统解压后可被加载器找到）；BCL 仍随 `assets/lib/`，但
+  `lib/<abi>/`（系统解压后可被加载器找到）；BCL 仍随 `lib/`，但
   `mono_set_dirs()` 要真实路径，宿主在 `setup_clr_dirs()` 的 `__ANDROID__` 分支里
   用 `SDL_GetPrefPath()`（内部存储）落盘后再指过去。宿主 target 也改成
   `libmain.so`。APK 打包与真机冒烟仍需 Android NDK / SDK 工程，本仓库目前只

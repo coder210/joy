@@ -2,8 +2,8 @@
  * joy 示例 · Lua 版宿主
  *
  * 宿主几乎是空的：窗口、渲染器、游戏状态、绘制全在 src/main.lua 里
- *（源码在 src/，构建时部署进 assets/scripts/main.lua —— assets/ 是 CI 与
- *  Android APK 唯一收录的资源根，宿主也按这个相对路径加载）。
+ *（源码在 src/，构建时铺进运行期资源根的 scripts/main.lua；资源根在桌面
+ *  是 exe 同目录、Android 是 APK 的 assets 根，路径都不带 assets/ 前缀）。
  * C++ 只负责 SDL 生命周期 + 把事件/帧推给脚本。
  *
  * 契约（jluax.c 提供，见 modules/lua/joy_lua.h）：
@@ -90,8 +90,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     g_L = (lua_State*)luax_get_state(g_lua);
 
     luax_set_args(g_lua, argc, argv);
-    if (!luax_dofile(g_lua, "assets/scripts/main.lua")) {
-        fprintf(stderr, "[host] load assets/scripts/main.lua failed\n");
+    if (!luax_dofile(g_lua, "scripts/main.lua")) {
+        fprintf(stderr, "[host] load scripts/main.lua failed\n");
         return SDL_APP_FAILURE;
     }
 

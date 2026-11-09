@@ -159,12 +159,12 @@ function sprite(img, cx, cy, size, r, g, b) {
 
 /* ---------------- 资源 ---------------- */
 var FONT_CANDIDATES = [
-    "assets/fonts/simhei.ttf",
+    "fonts/simhei.ttf",
     "C:/Windows/Fonts/simhei.ttf",
     "C:/Windows/Fonts/Deng.ttf"
 ];
 
-/* 贴图由 CMake 部署到 assets/sprites/；加载失败时兜住 duk_error，
+/* 贴图由 CMake 部署到 sprites/；加载失败时兜住 duk_error，
  * 让 sprite 退回色块而不是中断整个脚本。 */
 function tryImage(path) {
     try { return B.ImageCreate(ren, path); } catch (e) { return null; }
@@ -175,8 +175,8 @@ function loadAssets() {
     fontSmall = B.FontCreate(FONT_CANDIDATES[0], 12);
     fontBig = B.FontCreate(FONT_CANDIDATES[0], 22);
     hasFont = true;
-    imgPlayer = tryImage("assets/sprites/player.png");
-    imgEnemy = tryImage("assets/sprites/enemy.png");
+    imgPlayer = tryImage("sprites/player.png");
+    imgEnemy = tryImage("sprites/enemy.png");
 }
 
 /* ---------------- 场景 ---------------- */

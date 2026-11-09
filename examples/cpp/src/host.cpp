@@ -13,7 +13,7 @@
  * 它们是脚本/托管程序集，这里是原生代码。
  *
  * 两种形态由 JOY_GAME_STATIC 决定（见 ../CMakeLists.txt）：
- *   动态 — 桌面用 SDL_LoadObject 从 assets/cpp/ 加载游戏 DLL；
+ *   动态 — 桌面用 SDL_LoadObject 从 cpp/ 加载游戏 DLL；
  *          Android 由系统从 lib/<abi>/ 解压 .so，宿主用裸库名让 linker 查找。
  *   静态 — iOS / wasm 把 game.cpp 编进本 exe，链接期解析 joy_game_get_hooks，
  *          避开代码签名 / Emscripten 动态链接配置。
@@ -95,9 +95,9 @@ static bool load_game(void)
     (void)base;
     SDL_snprintf(path, sizeof(path), "%s", JOY_GAME_DLL_NAME);
 #  elif defined(_WIN32)
-    SDL_snprintf(path, sizeof(path), "%sassets\\cpp\\%s", base, JOY_GAME_DLL_NAME);
+    SDL_snprintf(path, sizeof(path), "%scpp\\%s", base, JOY_GAME_DLL_NAME);
 #  else
-    SDL_snprintf(path, sizeof(path), "%sassets/cpp/%s", base, JOY_GAME_DLL_NAME);
+    SDL_snprintf(path, sizeof(path), "%scpp/%s", base, JOY_GAME_DLL_NAME);
 #  endif
     /* 不要 SDL_free(base)：SDL3 的 SDL_GetBasePath() 返回内部 CachedBasePath
      * 静态缓存，释放它会在进程退出时造成堆损坏（0xC0000374）。 */

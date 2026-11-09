@@ -11,7 +11,7 @@
  *
  * 参数：
  *   --smoke N        无窗口冒烟：dummy 驱动 + 固定 1/60 步长，跑 N 帧后退出
- *   --assembly PATH  指定 C# 程序集（默认 assets/JoyGame.dll，相对 exe 目录）
+ *   --assembly PATH  指定 C# 程序集（默认 JoyGame.dll，相对运行期资源根）
  * ============================================================ */
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL_main.h>
@@ -43,7 +43,7 @@ static csx_method_p g_on_shutdown = NULL;
 static int    g_smoke_frames = 0;
 static int    g_frame = 0;
 static Uint64 g_last_tick_ns = 0;
-static const char* g_assembly = "assets/JoyGame.dll";
+static const char* g_assembly = "JoyGame.dll";
 
 static int find_arg(int argc, char* argv[], const char* name)
 {
@@ -53,7 +53,8 @@ static int find_arg(int argc, char* argv[], const char* name)
     return -1;
 }
 
-/* 把工作目录切到 exe 目录：JoyGame.dll 与 assets/ 都按相对路径加载 */
+/* 把工作目录切到 exe 目录：资源根就是 exe 同目录，JoyGame.dll / fonts/ 等
+ * 都按不带 assets/ 前缀的相对路径加载 */
 static void chdir_to_exe_dir(void)
 {
     const char* base = SDL_GetBasePath();
@@ -65,13 +66,13 @@ static void chdir_to_exe_dir(void)
 #endif
 }
 
-/* BCL 与绑定程序集放在 assets/lib/：csx_setup_mono_dirs() 只认系统 Mono 路径
+/* BCL 与绑定程序集放在 lib/：csx_setup_mono_dirs() 只认系统 Mono 路径
  * 或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
 #if defined(__ANDROID__)
 /* APK 的 assets/ 是压缩数据，不是文件系统目录，而 mono_set_dirs() 要真实路径
- * （csx_setup_mono_dirs 用 stat() 校验）。首次启动把 assets/lib/ 下的 DLL 解到
+ * （csx_setup_mono_dirs 用 stat() 校验）。首次启动把 lib/ 下的 DLL 解到
  * SDL_GetPrefPath() 指向的内部存储，再把 MONO_LIB_DIR 指过去。
- * 清单与 ../CMakeLists.txt 部署到 assets/lib/ 的文件保持一致。 */
+ * 清单与 ../CMakeLists.txt 部署到 lib/ 的文件保持一致。 */
 static const char* const kClrLibs[] = {
     "System.Private.CoreLib.dll", "netstandard.dll",
     "System.Runtime.dll", "System.Collections.dll",
@@ -81,7 +82,7 @@ static const char* const kClrLibs[] = {
 static bool copy_clr_lib(const char* dir, const char* name)
 {
     char src[512], dst[512];
-    SDL_snprintf(src, sizeof(src), "assets/lib/%s", name);
+    SDL_snprintf(src, sizeof(src), "lib/%s", name);
     /* SDL_GetPrefPath() 在 Android 返回带尾部 '/' 的内部存储路径 */
     SDL_snprintf(dst, sizeof(dst), "%s%s", dir, name);
 
@@ -114,10 +115,10 @@ static void setup_clr_dirs(void)
     if (!base) return;
     char lib[512];
 #  if defined(_WIN32)
-    snprintf(lib, sizeof(lib), "%sassets\\lib", base);
+    snprintf(lib, sizeof(lib), "%slib", base);
     _putenv_s("MONO_LIB_DIR", lib);
 #  else
-    snprintf(lib, sizeof(lib), "%sassets/lib", base);
+    snprintf(lib, sizeof(lib), "%slib", base);
     setenv("MONO_LIB_DIR", lib, 1);
 
     /* Linux/macOS 的 runtime pack 把 CoreLib 的 P/Invoke 目标拆成独立 shim，

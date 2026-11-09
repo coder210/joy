@@ -169,12 +169,12 @@ end
 
 -- ---------------- 资源 ----------------
 local FONT_CANDIDATES = {
-    "assets/fonts/simhei.ttf",
+    "fonts/simhei.ttf",
     "C:/Windows/Fonts/simhei.ttf",
     "C:/Windows/Fonts/Deng.ttf",
 }
 
--- 贴图由 CMake 部署到 assets/sprites/；万一加载失败，pcall 兜住 thunk 的
+-- 贴图由 CMake 部署到 sprites/；万一加载失败，pcall 兜住 thunk 的
 -- JOY_ERR_CREATE，让 sprite 退回色块而不是中断整个脚本。
 local function try_image(path)
     local ok, h = pcall(B.ImageCreate, ren, path)
@@ -187,8 +187,8 @@ local function load_assets()
     font_small = B.FontCreate(FONT_CANDIDATES[1], 12)
     font_big = B.FontCreate(FONT_CANDIDATES[1], 22)
     has_font = true
-    img_player = try_image("assets/sprites/player.png")
-    img_enemy = try_image("assets/sprites/enemy.png")
+    img_player = try_image("sprites/player.png")
+    img_enemy = try_image("sprites/enemy.png")
 end
 
 -- ---------------- 场景 ----------------

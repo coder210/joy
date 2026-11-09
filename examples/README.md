@@ -45,7 +45,7 @@
 examples/
 ├── README.md          ← 本文件（任务书）
 ├── CMakeLists.txt     ← 共享构建入口：一个文件定义 4 个 target
-├── assets/            ← 唯一资源根：静态图片/字体 + 构建生成的脚本与托管程序集
+├── assets/            ← 源码资源根：静态图片/字体（运行时铺进资源根，不带 assets/ 前缀）
 ├── cpp/               ← src/host.cpp（薄宿主）+ src/game.cpp（游戏 DLL）+ joy_game_hooks.h
 ├── csharp/            ← 纯 C# 工程：JoyGame.csproj + game/ runtime/ test/（无 native 代码）
 ├── csharp_host/       ← src/main.cpp（CLR native 宿主）+ CMakeLists.txt（example_csharp target）
@@ -62,16 +62,18 @@ C# 是例外：`csharp/` 只放托管工程，native 宿主独立在 `csharp_hos
 `SDL_LoadObject` 加载、取唯一入口 `joy_game_get_hooks`，并把 `JoyApi` 大函数
 指针表注入 DLL；DLL 不链接 `joy::all`，所有引擎调用都走表里的强签名函数指针。
 
-所有运行时资源统一落在 exe 旁的 `assets/`：CI（含 Android APK）只收录这个
-资源根，桌面与移动端因此保持同一相对布局。静态图片/字体来自 `assets/`，
-lua/js 游戏脚本部署到 `assets/scripts/`，C# 的 `JoyGame.dll` 与 BCL/绑定程序集
-部署到 `assets/` 与 `assets/lib/`，C++ 游戏 DLL 部署到 `assets/cpp/`；
-宿主一律按 `assets/...` 相对路径加载。`coreclr.dll` 是原生库，仍留在 exe 旁
-由系统加载器查找，不进 `assets/`。
+运行期资源根不含 `assets/` 前缀：桌面就是 exe 同目录（`fonts/`、`sprites/`、
+`scripts/`、`cpp/`、`lib/`、`JoyGame.dll` 直接铺开），Android 是构建树的
+`pack/`，打包时原样成为 APK 的 `assets/` 根。两者相对布局一致，宿主一律按
+`fonts/simhei.ttf` / `scripts/main.lua` / `JoyGame.dll` 这类相对路径加载。
+原因：Android 的 `SDL_IOFromFile` 会把路径原样交给 `AAssetManager`，其路径
+已经相对 APK 的 `assets/` 根，写成 `assets/foo` 会去找 `assets/assets/foo`；
+`joy_topdown_template` 也是这套布局。`coreclr.dll` 是原生库，仍留在 exe 旁
+由系统加载器查找，不进资源根。
 VS 里 `src` 筛选器是本示例的游戏代码，注入的 joy 引擎源码统一收在 `joy\...` 下。
 
 > **平台边界**：由 `JOY_GAME_STATIC` 选择构建形态（`-DJOY_GAME_STATIC=ON/OFF`），
-> iOS / wasm 默认开启。动态形态下桌面用 `SDL_LoadObject` 从 `assets/cpp/` 加载；
+> iOS / wasm 默认开启。动态形态下桌面用 `SDL_LoadObject` 从 `cpp/` 加载；
 > Android 的 `SDL_LoadObject` 同样可用，但 `.so` 必须进 APK 的 `lib/<abi>/` 由系统
 > 解压，宿主改用裸库名让 linker 查找（压缩的 `assets/` 里 `dlopen` 打不开）。
 > iOS 运行时只能加载构建期签名并随包的代码、wasm 需 `MAIN_MODULE/SIDE_MODULE`
@@ -89,7 +91,7 @@ VS 里 `src` 筛选器是本示例的游戏代码，注入的 joy 引擎源码�
 
 ```c
 /* 宿主：游戏 DLL 只有一个导出入口，不需要 .lib / __declspec(dllimport) */
-SDL_SharedObject* lib = SDL_LoadObject("assets/cpp/JoyGameCpp.dll");
+SDL_SharedObject* lib = SDL_LoadObject("cpp/JoyGameCpp.dll");
 const JoyGameHooks* hooks = ((const JoyGameHooks* (*)(void))
     SDL_LoadFunction(lib, "joy_game_get_hooks"))();
 

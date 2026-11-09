@@ -313,12 +313,12 @@ static const char* pick(const char* zh, const char* en)
 static void load_assets(void)
 {
     g_game->img_player = g_api->ImageCreate(g_api->ctx, g_game->r2d,
-                                            "assets/sprites/player.png");
+                                            "sprites/player.png");
     g_game->img_enemy = g_api->ImageCreate(g_api->ctx, g_game->r2d,
-                                           "assets/sprites/enemy.png");
+                                           "sprites/enemy.png");
 
     static const char* kFonts[] = {
-        "assets/fonts/simhei.ttf",
+        "fonts/simhei.ttf",
         "C:/Windows/Fonts/simhei.ttf",
         "C:/Windows/Fonts/Deng.ttf",
     };
@@ -331,8 +331,8 @@ static void load_assets(void)
         break;
     }
 
-    if (!g_game->img_player.h) printf("[warn] missing assets/sprites/player.png\n");
-    if (!g_game->img_enemy.h) printf("[warn] missing assets/sprites/enemy.png\n");
+    if (!g_game->img_player.h) printf("[warn] missing sprites/player.png\n");
+    if (!g_game->img_enemy.h) printf("[warn] missing sprites/enemy.png\n");
     if (!g_game->font_small.h) printf("[warn] no usable font, HUD text disabled\n");
 }
 

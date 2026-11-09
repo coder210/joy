@@ -20,13 +20,13 @@ target_link_libraries(example_lua PRIVATE joy::all)
 
 add_custom_command(TARGET example_lua POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JOY_EXAMPLE_ASSETS}" "$<TARGET_FILE_DIR:example_lua>/assets"
-    # 生成物统一落进 assets/：CI（含 Android APK）只收录这个资源根，
-    # 桌面与移动端保持同一相对布局，宿主按 assets/scripts/main.lua 加载。
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:example_lua>/assets/scripts"
+            "${JOY_EXAMPLE_ASSETS}" "${JOY_EXAMPLE_ASSET_ROOT}"
+    # 资源根内容直接铺开：桌面是 exe 同目录，Android 是 APK 的 assets 根，
+    # 两者相对布局一致，宿主按 scripts/main.lua 加载（不带 assets/ 前缀）。
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${JOY_EXAMPLE_ASSET_ROOT}/scripts"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_CURRENT_LIST_DIR}/src/main.lua"
-            "$<TARGET_FILE_DIR:example_lua>/assets/scripts/main.lua"
+            "${JOY_EXAMPLE_ASSET_ROOT}/scripts/main.lua"
     COMMENT "Copying lua example assets + scripts")
 
 # joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署

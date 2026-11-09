@@ -1085,18 +1085,15 @@ void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 	if (!r || !path) return NULL;
 	SDL_Surface* surf = SDL_LoadPNG(path);
 	if (!surf) {
-		/* 兜底：运行时 CWD 未必是构建输出目录（直接双击 exe / 从其它目录启动），
-		   尝试相对可执行文件所在目录解析，确保贴图能被找到。
+		/* 兜底：运行时 CWD 未必是资源根目录（直接双击 exe / 从其它目录启动），
+		   尝试相对可执行文件所在目录解析；资源根就是 exe 同目录，path 一律
+		   不带 assets/ 前缀（Android 由 AAssetManager 按 APK assets 根解析）。
 		   注意: SDL_GetBasePath() 返回 SDL 内部缓存指针，由 SDL 退出时释放，调用方不能 SDL_free。 */
 		const char* base = SDL_GetBasePath();
 		if (base) {
 			char alt[1024];
 			SDL_snprintf(alt, sizeof(alt), "%s%s", base, path);
 			surf = SDL_LoadPNG(alt);
-			if (!surf) {
-				SDL_snprintf(alt, sizeof(alt), "%sassets/%s", base, path);
-				surf = SDL_LoadPNG(alt);
-			}
 		}
 	}
 	if (!surf) {

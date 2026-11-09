@@ -2,8 +2,8 @@
  * joy 示例 · JavaScript(duktape) 版宿主
  *
  * 宿主几乎是空的：窗口、渲染器、游戏状态、绘制全在 src/main.js 里
- *（源码在 src/，构建时部署进 assets/scripts/main.js —— assets/ 是 CI 与
- *  Android APK 唯一收录的资源根，宿主也按这个相对路径加载）。
+ *（源码在 src/，构建时铺进运行期资源根的 scripts/main.js；资源根在桌面
+ *  是 exe 同目录、Android 是 APK 的 assets 根，路径都不带 assets/ 前缀）。
  * C++ 只负责 SDL 生命周期 + 把事件/帧推给脚本。
  *
  * 契约（jsx.c 提供，见 modules/js/joy_js.h）：
@@ -89,8 +89,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!jsx_dofile(g_js, "assets/scripts/main.js")) {
-        fprintf(stderr, "[host] load assets/scripts/main.js failed\n");
+    if (!jsx_dofile(g_js, "scripts/main.js")) {
+        fprintf(stderr, "[host] load scripts/main.js failed\n");
         return SDL_APP_FAILURE;
     }
 

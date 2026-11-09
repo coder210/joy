@@ -108,7 +108,19 @@ if(NOT TARGET joy::all)
 endif()
 
 # 四份实现共用的资源（图片 / 字体）。缺失时各示例走纯色 + 无文字退化路径。
+# 这是「源码资源根」；下面的 JOY_EXAMPLE_ASSET_ROOT 是「运行期资源根」。
 set(JOY_EXAMPLE_ASSETS "${CMAKE_CURRENT_LIST_DIR}/assets")
+
+# 运行期资源根：桌面与 exe 同目录，Android 收进独立的 pack/ 供 APK 打包。
+# 代码里的资源路径一律不带 "assets/" 前缀（与 joy_topdown_template 一致）：
+# Android 的 SDL_IOFromFile 会把路径原样交给 AAssetManager，而 AAssetManager
+# 的路径已经相对 APK 的 assets/ 根，写成 "assets/foo" 会去找
+# "assets/assets/foo"；桌面则靠 chdir 到 exe 目录解析同一套相对路径。
+if(ANDROID)
+    set(JOY_EXAMPLE_ASSET_ROOT "${CMAKE_BINARY_DIR}/pack")
+else()
+    set(JOY_EXAMPLE_ASSET_ROOT "${CMAKE_BINARY_DIR}/$<CONFIG>")
+endif()
 
 # ---- 部署 coreclr.dll（各子目录调用；必须在 add_subdirectory 之前定义） ----
 # joy::all 是「所有已启用模块的源码合集」，只要开了 cs 模块，**每个**示例的

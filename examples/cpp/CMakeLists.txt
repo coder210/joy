@@ -87,24 +87,24 @@ if(NOT JOY_GAME_STATIC)
         set_target_properties(JoyGameCpp PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${_abi}")
     else()
-        # 桌面：生成物统一落进 assets/，CI 只收录这个资源根。
-        # 用 CMAKE_BINARY_DIR/$<CONFIG> 而不是 $<TARGET_FILE_DIR:example_cpp>，
+        # 桌面：游戏 DLL 落进运行期资源根的 cpp/ 子目录（路径不带 assets/ 前缀）。
+        # 用 JOY_EXAMPLE_ASSET_ROOT 而不是 $<TARGET_FILE_DIR:example_cpp>，
         # 避免在 POST_BUILD 里反向引用宿主 target 形成依赖环。
         add_custom_command(TARGET JoyGameCpp POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory
-                    "${CMAKE_BINARY_DIR}/$<CONFIG>/assets/cpp"
+                    "${JOY_EXAMPLE_ASSET_ROOT}/cpp"
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                     "$<TARGET_FILE:JoyGameCpp>"
-                    "${CMAKE_BINARY_DIR}/$<CONFIG>/assets/cpp/$<TARGET_FILE_NAME:JoyGameCpp>"
-            COMMENT "Deploying game DLL into assets/cpp/")
+                    "${JOY_EXAMPLE_ASSET_ROOT}/cpp/$<TARGET_FILE_NAME:JoyGameCpp>"
+            COMMENT "Deploying game DLL into cpp/")
     endif()
     add_dependencies(example_cpp JoyGameCpp)
 endif()
 
-# 资源目录按相对路径加载，和 exe 放一起
+# 资源内容直接铺在 exe 旁（桌面）或 pack/（Android），与 APK assets 根一致
 add_custom_command(TARGET example_cpp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JOY_EXAMPLE_ASSETS}" "$<TARGET_FILE_DIR:example_cpp>/assets"
+            "${JOY_EXAMPLE_ASSETS}" "${JOY_EXAMPLE_ASSET_ROOT}"
     COMMENT "Copying shared assets for example_cpp")
 
 # joy::all 含 cs 模块时 exe 会导入 coreclr.dll，必须一起部署

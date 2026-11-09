@@ -81,7 +81,8 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio")
     add_dependencies(example_csharp_managed JoyGame)
 endif()
 
-# ---- 托管运行时文件：全部并入 assets/，CI 与 Android APK 只收录这个资源根 ----
+# ---- 托管运行时文件：全部铺进 JOY_EXAMPLE_ASSET_ROOT（无 assets/ 前缀） ----
+# 桌面就是 exe 同目录；Android 是 pack/，打包时原样成为 APK 的 assets 根。
 # coreclr.dll 是原生库，由系统加载器从 exe 旁查找，必须留在根目录（见下方部署函数）。
 # BCL 按 RID 存放在 <平台目录>/libs/：CoreLib 含平台特化的 P/Invoke 面
 # （Windows 走 kernel32、Android 走 liblog），实测两者 91% 字节不同，
@@ -99,16 +100,16 @@ set(_out_dir "$<TARGET_FILE_DIR:example_csharp>")
 
 add_custom_command(TARGET example_csharp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JOY_EXAMPLE_ASSETS}" "${_out_dir}/assets"
+            "${JOY_EXAMPLE_ASSETS}" "${JOY_EXAMPLE_ASSET_ROOT}"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${_cs_out}/JoyGame.dll" "${_out_dir}/assets/JoyGame.dll"
-    # 先整块同步 BCL，再把绑定程序集塞进 assets/lib/：
-    # 自定义 CLR 只从 MONO_LIB_DIR 解析依赖程序集，宿主已把它指向 assets/lib。
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${_out_dir}/assets/lib"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${_clr_libs}" "${_out_dir}/assets/lib"
+            "${_cs_out}/JoyGame.dll" "${JOY_EXAMPLE_ASSET_ROOT}/JoyGame.dll"
+    # 先整块同步 BCL，再把绑定程序集塞进 lib/：
+    # 自定义 CLR 只从 MONO_LIB_DIR 解析依赖程序集，宿主已把它指向 lib。
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${JOY_EXAMPLE_ASSET_ROOT}/lib"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${_clr_libs}" "${JOY_EXAMPLE_ASSET_ROOT}/lib"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${_cs_out}/Joy.Bindings.dll" "${_out_dir}/assets/lib/Joy.Bindings.dll"
-    COMMENT "Copying C# example runtime (assets/JoyGame.dll + assets/lib/)")
+            "${_cs_out}/Joy.Bindings.dll" "${JOY_EXAMPLE_ASSET_ROOT}/lib/Joy.Bindings.dll"
+    COMMENT "Copying C# example runtime (JoyGame.dll + lib/)")
 
 # coreclr.dll 走共享部署函数：另外三个示例同样导入它（joy::all 含 cs 模块）
 joy_examples_deploy_clr(example_csharp)

@@ -4,7 +4,7 @@
 // SDL/android-project 自带的那份。区别在于：
 //   - SDL 默认工程会用 externalNativeBuild 再跑一遍 ndk-build/CMake 重编 SDL；
 //     而 joy 的 native 部分已由仓库根的 CMake + NDK 交叉编译完成，连带带出了
-//     C# 的 libmain.so、libSDL3.so、libmonosgen-2.0.so 和 assets/。
+//     C# 的 libmain.so、libSDL3.so、libmonosgen-2.0.so 和 pack/ 资源根。
 //   - 所以这里只做「预编译产物 -> jniLibs / assets -> APK」，不再编 native。
 // Java 层（SDLActivity.getLibraries() 会依次加载 SDL3 / main）、res/ 和
 // AndroidManifest.xml 仍然直接复用 SDL/android-project/app 里的文件。

@@ -114,10 +114,10 @@ jobs:
           test -f "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
           find build-android -name libmain.so -print | tee /tmp/libmain.txt
           test -s /tmp/libmain.txt
-          find build-android -path '*assets/lib/System.Private.CoreLib.dll' -print | tee /tmp/bcl.txt
+          find build-android/pack -path '*/lib/System.Private.CoreLib.dll' -print | tee /tmp/bcl.txt
           test -s /tmp/bcl.txt
           echo "--- 关键产物 ---"
-          find build-android \( -name 'libmain.so' -o -path '*assets/JoyGame.dll' \) -print | sort
+          find build-android \( -name 'libmain.so' -o -path '*/pack/JoyGame.dll' \) -print | sort
 
       - name: Assemble APK (prebuilt native libs + assets)
         shell: bash
@@ -154,11 +154,20 @@ jobs:
             fi
           done
 
-          # JoyGame.dll + BCL(assets/lib/) + 图片字体；宿主用 utils_read_file ->
-          # SDL_LoadFile 从 APK assets 读，BCL 首次启动再解到 SDL_GetPrefPath。
-          assets_src="$(dirname "$main_so")/assets"
-          test -d "$assets_src" || { echo "::error::assets not found at $assets_src"; exit 1; }
+          # 运行期资源根（无 assets/ 前缀）：CMake 的 JOY_EXAMPLE_ASSET_ROOT 在
+          # Android 下就是 build-android/pack，内容原样成为 APK 的 assets 根。
+          # 宿主用 utils_read_file -> SDL_LoadFile 从 APK assets 读，BCL 首次
+          # 启动再解到 SDL_GetPrefPath。
+          assets_src="build-android/pack"
+          test -f "$assets_src/JoyGame.dll" \
+            || { echo "::error::JoyGame.dll not found in $assets_src"; exit 1; }
+          test -f "$assets_src/lib/System.Private.CoreLib.dll" \
+            || { echo "::error::BCL not found in $assets_src/lib"; exit 1; }
           cp -a "$assets_src"/. "$assets"/
+          # 防回归：APK assets 根下不能再出现 assets/ 子目录，否则
+          # AAssetManager 会去找 assets/assets/... 而读不到任何资源。
+          test ! -d "$assets/assets" \
+            || { echo "::error::nested assets/ directory in APK assets root"; exit 1; }
           echo "--- jniLibs / assets ---"
           find "$jni" "$assets" -type f | sort
 
@@ -180,7 +189,7 @@ jobs:
             joy-example-csharp-*.apk
             build-android/**/libmain.so
             build-android/lib/${{ env.ANDROID_ABI }}/*.so
-            build-android/**/assets/**
+            build-android/pack/**
           if-no-files-found: error
           retention-days: 14
 

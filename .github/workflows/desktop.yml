@@ -87,7 +87,7 @@ jobs:
           dotnet restore examples/csharp/JoyGame.csproj 2>&1 | tee restore.log
 
       # 一次 --parallel 编四个 target 时，各 target 的 POST_BUILD 会同时写
-      # 同一个 Release/assets/（csharp 还会 remove_directory assets/lib），
+      # 同一个 Release/ 资源根（csharp 还会 remove_directory Release/lib），
       # 且与 VS 外部 C# 项目抢 obj/。拆成两步、串行、每个 target 明确列出。
       - name: Build (cpp / lua / js)
         shell: bash
@@ -156,9 +156,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: joy-examples-${{ matrix.os }}
-          # RUNTIME / LIBRARY 输出目录统一为 build/examples/Release/：
-          # 四个 exe + assets/ + coreclr.dll 或 libcoreclr.so|.dylib 与
-          # libSystem.* shim + libSDL3.so.0|libSDL3.0.dylib。
+          # RUNTIME / LIBRARY 输出目录统一为 build/examples/Release/，它同时
+          # 就是运行期资源根：四个 exe + fonts/ sprites/ scripts/ cpp/ lib/
+          # + JoyGame.dll + coreclr.dll 或 libcoreclr.so|.dylib 与 libSystem.*
+          # shim + libSDL3.so.0|libSDL3.0.dylib（路径不带 assets/ 前缀）。
           path: build/examples/Release/**
           if-no-files-found: error
           retention-days: 7
