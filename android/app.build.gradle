@@ -1,0 +1,50 @@
+// joy 的 Android APK 打包配置。
+//
+// .github/workflows/android.yml 会把它复制到 build-apk/app/build.gradle，覆盖
+// SDL/android-project 自带的那份。区别在于：
+//   - SDL 默认工程会用 externalNativeBuild 再跑一遍 ndk-build/CMake 重编 SDL；
+//     而 joy 的 native 部分已由仓库根的 CMake + NDK 交叉编译完成，连带带出了
+//     C# 的 libmain.so、libSDL3.so、libmonosgen-2.0.so 和 assets/。
+//   - 所以这里只做「预编译产物 -> jniLibs / assets -> APK」，不再编 native。
+// Java 层（SDLActivity.getLibraries() 会依次加载 SDL3 / main）、res/ 和
+// AndroidManifest.xml 仍然直接复用 SDL/android-project/app 里的文件。
+
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'org.libsdl.app'
+    // 与 .github/workflows/android.yml 装的 SDK、以及 CMake 的
+    // -DANDROID_PLATFORM=android-24 保持一致，不额外依赖 android-35。
+    compileSdkVersion 34
+
+    defaultConfig {
+        applicationId 'org.libsdl.app'
+        // native 用 android-24 交叉编译；API 21/22 也不支持从 APK 直接加载
+        // 未抽取的 .so，minSdk 与编译平台对齐最稳。
+        minSdkVersion 24
+        targetSdkVersion 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    sourceSets.main {
+        // workflow 把三个 .so 放到 src/main/jniLibs/<abi>/，
+        // 把 JoyGame.dll + BCL + 图片字体放到 src/main/assets/。
+        jniLibs.srcDirs = ['src/main/jniLibs']
+        assets.srcDirs = ['src/main/assets']
+    }
+
+    // 预编译产物按原样进 APK：不让 AGP 用本机（可能不同版本的）NDK strip，
+    // 也不需要为打包这一步再配置 ndkVersion。产物名由 workflow 复制时统一。
+    packagingOptions {
+        doNotStrip '**/*.so'
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+}
