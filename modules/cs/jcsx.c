@@ -42,14 +42,14 @@ static void assembly_list_init(assembly_list_p list)
 }
 
 // 向列表添加程序集
-static void assembly_list_add(assembly_list_p list, MonoAssembly* asm)
+static void assembly_list_add(assembly_list_p list, MonoAssembly* assembly)
 {
         if (list->count >= list->capacity) {
                 int new_cap = list->capacity == 0 ? 4 : list->capacity * 2;
                 list->items = (MonoAssembly**)realloc(list->items, new_cap * sizeof(MonoAssembly*));
                 list->capacity = new_cap;
         }
-        list->items[list->count++] = asm;
+        list->items[list->count++] = assembly;
 }
 
 // 释放列表内存（不释放程序集本身，程序集由 domain 管理）
@@ -180,8 +180,8 @@ csx_find_class(csx_p csx, const char* namespace_name, const char* class_name)
 {
         MonoClass* klass;
         for (int i = 0; i < csx->assemblies.count; i++) {
-                MonoAssembly* asm = csx->assemblies.items[i];
-                MonoImage* image = mono_assembly_get_image(asm);
+                MonoAssembly* assembly = csx->assemblies.items[i];
+                MonoImage* image = mono_assembly_get_image(assembly);
                 klass = mono_class_from_name(image, namespace_name, class_name);
                 if (klass) {
                         return klass;
