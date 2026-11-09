@@ -3,9 +3,12 @@
 // .github/workflows/android.yml 会把它复制到 build-apk/app/build.gradle，覆盖
 // SDL/android-project 自带的那份。区别在于：
 //   - SDL 默认工程会用 externalNativeBuild 再跑一遍 ndk-build/CMake 重编 SDL；
-//     而 joy 的 native 部分已由仓库根的 CMake + NDK 交叉编译完成，连带带出了
-//     C# 的 libmain.so、libSDL3.so、libmonosgen-2.0.so 和 pack/ 资源根。
-//   - 所以这里只做「预编译产物 -> jniLibs / assets -> APK」，不再编 native。
+//     而 joy 的 native 部分已由仓库根的 CMake + NDK 交叉编译完成。
+//   - SDLActivity 只会 dlopen 一个 libmain.so 并找 SDL_main，没法在一个 APK
+//     里塞四个入口。所以四个后端各打一个 APK：4 个 productFlavor，
+//     一次 assembleDebug 全出，每个 flavor 用自己的
+//     src/<backend>/jniLibs 与 src/<backend>/assets。
+//   - 只做「预编译产物 -> jniLibs / assets -> APK」，不再编 native。
 // Java 层（SDLActivity.getLibraries() 会依次加载 SDL3 / main）、res/ 和
 // AndroidManifest.xml 仍然直接复用 SDL/android-project/app 里的文件。
 
@@ -27,11 +30,50 @@ android {
         versionName '1.0'
     }
 
-    sourceSets.main {
-        // workflow 把三个 .so 放到 src/main/jniLibs/<abi>/，
-        // 把 JoyGame.dll + BCL + 图片字体放到 src/main/assets/。
-        jniLibs.srcDirs = ['src/main/jniLibs']
-        assets.srcDirs = ['src/main/assets']
+    // 一个后端一个 APK：applicationIdSuffix 让四个包能同时装在一台设备上。
+    flavorDimensions += 'backend'
+    productFlavors {
+        cpp {
+            dimension 'backend'
+            applicationIdSuffix '.cpp'
+        }
+        lua {
+            dimension 'backend'
+            applicationIdSuffix '.lua'
+        }
+        js {
+            dimension 'backend'
+            applicationIdSuffix '.js'
+        }
+        csharp {
+            dimension 'backend'
+            applicationIdSuffix '.cs'
+        }
+    }
+
+    sourceSets {
+        // SDL 工程的 src/main 里只有 Java/res/Manifest；清空默认的
+        // jniLibs/assets，避免以后上游带进无关资源混进每个 flavor。
+        main {
+            jniLibs.srcDirs = []
+            assets.srcDirs = []
+        }
+        cpp {
+            jniLibs.srcDirs = ['src/cpp/jniLibs']
+            assets.srcDirs = ['src/cpp/assets']
+        }
+        lua {
+            jniLibs.srcDirs = ['src/lua/jniLibs']
+            assets.srcDirs = ['src/lua/assets']
+        }
+        js {
+            jniLibs.srcDirs = ['src/js/jniLibs']
+            assets.srcDirs = ['src/js/assets']
+        }
+        csharp {
+            jniLibs.srcDirs = ['src/csharp/jniLibs']
+            assets.srcDirs = ['src/csharp/assets']
+        }
     }
 
     // 预编译产物按原样进 APK：不让 AGP 用本机（可能不同版本的）NDK strip，

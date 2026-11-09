@@ -54,7 +54,15 @@ else()
     set(_host_sources ${_host} ${_contract} ${_vtable_h})
 endif()
 
-add_executable(example_cpp ${_host_sources})
+if(ANDROID)
+    # SDL3 Android 由 SDLActivity dlopen libmain.so 再 dlsym("SDL_main")，不是
+    # 独立可执行文件。四个后端各输出一个 libmain.so 到自己的构建子目录
+    # （cpp/ lua/ js/ csharp_host/），一个后端一个 APK，互不覆盖。
+    add_library(example_cpp SHARED ${_host_sources})
+    set_target_properties(example_cpp PROPERTIES OUTPUT_NAME "main")
+else()
+    add_executable(example_cpp ${_host_sources})
+endif()
 target_link_libraries(example_cpp PRIVATE joy::all)
 target_include_directories(example_cpp PRIVATE
     "${JOY_ROOT}/api"

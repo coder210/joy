@@ -15,7 +15,13 @@ set_source_files_properties("${CMAKE_CURRENT_LIST_DIR}/src/main.lua"
     PROPERTIES HEADER_FILE_ONLY TRUE)
 source_group(TREE "${CMAKE_CURRENT_LIST_DIR}" FILES ${_game_sources})
 
-add_executable(example_lua ${_game_sources})
+if(ANDROID)
+    # Android 由 SDLActivity 加载 libmain.so；四个后端各出一个，见 cpp/ 注释。
+    add_library(example_lua SHARED ${_game_sources})
+    set_target_properties(example_lua PROPERTIES OUTPUT_NAME "main")
+else()
+    add_executable(example_lua ${_game_sources})
+endif()
 target_link_libraries(example_lua PRIVATE joy::all)
 
 add_custom_command(TARGET example_lua POST_BUILD

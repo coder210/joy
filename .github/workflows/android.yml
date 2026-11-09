@@ -1,11 +1,15 @@
-name: Android APK (C# host)
+name: Android APKs (cpp / lua / js / csharp)
 
 # 本机没有 NDK，Android 产物的交叉编译与校验全部放在 CI 上做。
 # MonoVM 运行时与平台 BCL 已入库（runtimes/android-arm64/），CI 不再联网下载。
-# 流程：CMake/NDK 交叉编译 -> libmain.so / libSDL3.so / libmonosgen-2.0.so
+# 流程：CMake/NDK 串行交叉编译四个后端 -> 各自的 libmain.so + 共享的
+#       libSDL3.so / libmonosgen-2.0.so / pack 资源根
 #       -> 复用 SDL/android-project 的 Gradle 工程（Java/res/Manifest/wrapper），
-#          配合 android/app.build.gradle 只做预编译产物打包，不重编 native
-#       -> assembleDebug 产出 APK，与中间产物一起放进同一个 artifact。
+#          配合 android/app.build.gradle 的 4 个 productFlavor 只做预编译产物打包
+#       -> 一次 assembleDebug 出 4 个 APK。
+# SDLActivity 只会 dlopen 一个 libmain.so 并 dlsym("SDL_main")，一个 APK 只能有
+# 一个入口，所以四个后端各打一个包（不是 4 个 workflow、也不是 4 个 job）。
+# artifact 只放最终 APK，中间产物留在构建目录里供失败排查。
 # 可用 workflow_dispatch 手动触发，产物从 Artifacts 下载。
 #
 # SDK 用 ubuntu-24.04 镜像预装的 Android SDK，不再依赖第三方 setup-android action：
@@ -23,7 +27,7 @@ permissions:
 
 jobs:
   android-arm64:
-    name: Android / arm64-v8a / APK
+    name: Android / arm64-v8a / 4 APKs
     runs-on: ubuntu-24.04
     env:
       CLR_VERSION: 8.0.17
@@ -100,96 +104,127 @@ jobs:
             -DANDROID_ABI="$ANDROID_ABI" \
             -DANDROID_PLATFORM="$ANDROID_PLATFORM" 2>&1 | tee configure-android.log
 
-      - name: Build C# host (libmain.so)
+      - name: Build four backends (libmain.so each)
         shell: bash
         run: |
           set -euo pipefail
-          cmake --build build-android --target example_csharp --parallel \
-            2>&1 | tee build-android.log
+          # 四个 target 的 POST_BUILD 都写同一个 pack/ 资源根，并行会互相踩
+          # （csharp 还会 remove_directory pack/lib）。串行构建，单 target 内部并行。
+          for target in example_cpp example_lua example_js example_csharp; do
+            echo "--- building $target ---"
+            cmake --build build-android --target "$target" --parallel \
+              2>&1 | tee -a build-android.log
+          done
 
       - name: Verify outputs
         shell: bash
         run: |
           set -euo pipefail
           test -f "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
-          find build-android -name libmain.so -print | tee /tmp/libmain.txt
-          test -s /tmp/libmain.txt
-          find build-android/pack -path '*/lib/System.Private.CoreLib.dll' -print | tee /tmp/bcl.txt
-          test -s /tmp/bcl.txt
+          test -f "build-android/lib/$ANDROID_ABI/libJoyGameCpp.so"
+          # 四个后端的 libmain.so 落在各自的构建子目录，互不覆盖；
+          # SDLActivity 靠 dlsym("SDL_main") 启动，符号必须导出。
+          for so in build-android/cpp/libmain.so build-android/lua/libmain.so \
+                    build-android/js/libmain.so build-android/csharp_host/libmain.so; do
+            test -f "$so" || { echo "::error::missing $so"; exit 1; }
+            grep -aq 'SDL_main' "$so" || { echo "::error::$so 未导出 SDL_main"; exit 1; }
+          done
+          test -f build-android/pack/JoyGame.dll
+          test -f build-android/pack/lib/System.Private.CoreLib.dll
+          test -f build-android/pack/scripts/main.lua
+          test -f build-android/pack/scripts/main.js
           echo "--- 关键产物 ---"
-          find build-android \( -name 'libmain.so' -o -path '*/pack/JoyGame.dll' \) -print | sort
+          find build-android -maxdepth 3 \( -name 'libmain.so' -o -name 'libSDL3.so' \) -print | sort
 
-      - name: Assemble APK (prebuilt native libs + assets)
+      - name: Assemble 4 APKs (flavored prebuilt libs + assets)
         shell: bash
         run: |
           set -euo pipefail
           # 复用 SDL 的 Gradle 工程骨架（SDLActivity/Java、res、Manifest、wrapper），
-          # 但覆盖 app/build.gradle：native 已交叉编译好，绝不再跑 externalNativeBuild。
+          # 但覆盖 app/build.gradle：native 已交叉编译好，绝不跑 externalNativeBuild。
           rm -rf build-apk
           mkdir -p build-apk
           cp -a SDL/android-project/. build-apk/
           cp android/app.build.gradle build-apk/app/build.gradle
 
-          jni="build-apk/app/src/main/jniLibs/$ANDROID_ABI"
-          assets="build-apk/app/src/main/assets"
-          mkdir -p "$jni" "$assets"
-
-          # libmain.so 的 DT_NEEDED 含 libSDL3.so / libmonosgen-2.0.so；
-          # SDLActivity.getLibraries() 还会 System.loadLibrary("SDL3")，三者缺一不可。
           sdl3="$(find build-android -name 'libSDL3.so' -type f -print -quit)"
-          main_so="$(find build-android -name 'libmain.so' -type f -print -quit)"
+          mono="build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so"
+          cpp_game="build-android/lib/$ANDROID_ABI/libJoyGameCpp.so"
           test -n "$sdl3" || { echo "::error::libSDL3.so missing from cross-build"; exit 1; }
-          test -n "$main_so" || { echo "::error::libmain.so missing from cross-build"; exit 1; }
-          cp "$sdl3" "$jni/libSDL3.so"
-          cp "$main_so" "$jni/libmain.so"
-          cp "build-android/lib/$ANDROID_ABI/libmonosgen-2.0.so" "$jni/"
+          # joy::all 含 cs 模块，四个后端的导入表都带 mono_*，主库每个 APK 都要有。
+          test -f "$mono" || { echo "::error::libmonosgen-2.0.so missing"; exit 1; }
 
-          # 若任一 .so 依赖 NDK 的 C++ 运行时，系统不提供，必须一起打进 APK。
-          for so in "$jni"/*.so; do
+          # 若任一 libmain.so 依赖 NDK 的 C++ 运行时，系统不提供，必须一起打进 APK。
+          stl=""
+          for so in build-android/cpp/libmain.so build-android/lua/libmain.so \
+                    build-android/js/libmain.so build-android/csharp_host/libmain.so; do
             if grep -aq 'libc++_shared.so' "$so"; then
               stl="$(find "$ANDROID_NDK_HOME" -path '*/sysroot/usr/lib/*/libc++_shared.so' -print -quit)"
               test -n "$stl" || { echo "::error::libc++_shared.so not found in NDK"; exit 1; }
-              cp "$stl" "$jni/libc++_shared.so"
               break
             fi
           done
 
-          # 运行期资源根（无 assets/ 前缀）：CMake 的 JOY_EXAMPLE_ASSET_ROOT 在
-          # Android 下就是 build-android/pack，内容原样成为 APK 的 assets 根。
-          # 宿主用 utils_read_file -> SDL_LoadFile 从 APK assets 读，BCL 首次
-          # 启动再解到 SDL_GetPrefPath。
-          assets_src="build-android/pack"
-          test -f "$assets_src/JoyGame.dll" \
-            || { echo "::error::JoyGame.dll not found in $assets_src"; exit 1; }
-          test -f "$assets_src/lib/System.Private.CoreLib.dll" \
-            || { echo "::error::BCL not found in $assets_src/lib"; exit 1; }
-          cp -a "$assets_src"/. "$assets"/
-          # 防回归：APK assets 根下不能再出现 assets/ 子目录，否则
-          # AAssetManager 会去找 assets/assets/... 而读不到任何资源。
-          test ! -d "$assets/assets" \
-            || { echo "::error::nested assets/ directory in APK assets root"; exit 1; }
+          pack=build-android/pack
+          for backend in cpp lua js csharp; do
+            jni="build-apk/app/src/$backend/jniLibs/$ANDROID_ABI"
+            assets="build-apk/app/src/$backend/assets"
+            mkdir -p "$jni" "$assets"
+
+            # SDLActivity.getLibraries() 依次 System.loadLibrary("SDL3", "main")。
+            cp "$sdl3" "$jni/libSDL3.so"
+            cp "$mono" "$jni/libmonosgen-2.0.so"
+            [ -z "$stl" ] || cp "$stl" "$jni/libc++_shared.so"
+            case "$backend" in
+              cpp)
+                cp build-android/cpp/libmain.so "$jni/libmain.so"
+                # C++ 宿主用裸库名让 linker 从 lib/<abi>/ 找游戏库。
+                cp "$cpp_game" "$jni/libJoyGameCpp.so" ;;
+              lua)    cp build-android/lua/libmain.so "$jni/libmain.so" ;;
+              js)     cp build-android/js/libmain.so "$jni/libmain.so" ;;
+              csharp) cp build-android/csharp_host/libmain.so "$jni/libmain.so" ;;
+            esac
+
+            # 四份示例共用的图片/字体；脚本与 C# 程序集只给对应后端，
+            # 避免每个 APK 都塞一份用不到的 BCL / 另一套脚本。
+            cp -a "$pack/fonts" "$pack/sprites" "$assets"/
+            case "$backend" in
+              lua)    mkdir -p "$assets/scripts"
+                      cp "$pack/scripts/main.lua" "$assets/scripts/" ;;
+              js)     mkdir -p "$assets/scripts"
+                      cp "$pack/scripts/main.js" "$assets/scripts/" ;;
+              csharp) cp "$pack/JoyGame.dll" "$assets/"
+                      cp -a "$pack/lib" "$assets/" ;;
+              cpp)    : ;;
+            esac
+
+            test -f "$jni/libmain.so" || { echo "::error::$backend 缺 libmain.so"; exit 1; }
+            # 资源根不能有 assets/ 前缀层，否则 AAssetManager 读不到。
+            test ! -d "$assets/assets" \
+              || { echo "::error::$backend 出现嵌套 assets/ 目录"; exit 1; }
+          done
+
           echo "--- jniLibs / assets ---"
-          find "$jni" "$assets" -type f | sort
+          find build-apk/app/src -type f | sort
 
           cd build-apk
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon 2>&1 | tee ../gradle-apk.log
           cd ..
 
-          apk="$(find build-apk/app/build/outputs/apk -name '*.apk' -type f -print -quit)"
-          test -n "$apk" || { echo "::error::Gradle did not produce an APK"; exit 1; }
-          cp "$apk" "joy-example-csharp-${ANDROID_ABI}-debug.apk"
-          ls -lh "joy-example-csharp-${ANDROID_ABI}-debug.apk"
+          for backend in cpp lua js csharp; do
+            apk="$(find "build-apk/app/build/outputs/apk/$backend" -name '*.apk' -type f -print -quit)"
+            test -n "$apk" || { echo "::error::$backend 没有产出 APK"; exit 1; }
+            cp "$apk" "joy-example-$backend-${ANDROID_ABI}-debug.apk"
+          done
+          ls -lh joy-example-*-debug.apk
 
-      - name: Upload Android artifacts
+      - name: Upload Android APKs
         uses: actions/upload-artifact@v4
         with:
           name: joy-android-${{ env.ANDROID_ABI }}
-          path: |
-            joy-example-csharp-*.apk
-            build-android/**/libmain.so
-            build-android/lib/${{ env.ANDROID_ABI }}/*.so
-            build-android/pack/**
+          # 只给最终可安装的包；libmain.so / pack/ 等中间产物不再混进 artifact。
+          path: joy-example-*-${{ env.ANDROID_ABI }}-debug.apk
           if-no-files-found: error
           retention-days: 14
 
