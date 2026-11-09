@@ -18,9 +18,10 @@
 #include <spine/extension.h>
 
 #include "joy.h"
-#include "external/stb_image.h" /* 实现在 jimpl.c（STB_IMAGE_IMPLEMENTATION） */
+#include "external/stb_image.h" /* 实现在 src/vendor_impl.c（STB_IMAGE_IMPLEMENTATION） */
 
 #include <float.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* ==================== 内部类型 ==================== */
@@ -51,11 +52,20 @@ void _spAtlasPage_createTexture(spAtlasPage *self, const char *path) {
         int width = 0, height = 0, components = 0;
         stbi_uc *image_data;
         SDL_Texture *texture;
+        size_t file_len = 0;
+        stbi_uc *filedata;
 
-        image_data = stbi_load(path, &width, &height, &components, 4);
+        /* 不能用 stbi_load(path)：它内部走 stdio fopen，Android 的资源在
+         * APK 内读不到。先经 SDL_LoadFile（AAssetManager）取到内存再解码。 */
+        filedata = (stbi_uc *)SDL_LoadFile(path, &file_len);
+        if (!filedata) {
+                printf("[jspine] atlas page read failed: '%s' (%s)\n", path, SDL_GetError());
+                return;
+        }
+        image_data = stbi_load_from_memory(filedata, (int)file_len, &width, &height, &components, 4);
+        SDL_free(filedata);
         if (!image_data) {
-                /* 官方原版静默返回，这里补日志便于定位资源路径问题 */
-                printf("[jspine] atlas page load failed: '%s' (%s)\n",
+                printf("[jspine] atlas page decode failed: '%s' (%s)\n",
                        path, stbi_failure_reason() ? stbi_failure_reason() : "unknown");
                 return;
         }
@@ -81,7 +91,27 @@ void _spAtlasPage_disposeTexture(spAtlasPage *self) {
 }
 
 char *_spUtil_readFile(const char *path, int *length) {
-        return _spReadFile(path, length);
+        size_t size = 0;
+        char *filedata;
+        char *data;
+
+        if (length) *length = 0;
+        /* spine 的默认 _spReadFile() 直接 fopen，Android 的 APK assets 读不到；
+         * .atlas / .json / .skel 全部改走 SDL_LoadFile（AAssetManager）。
+         * 返回值由 spine 用 FREE()/_spFree() 释放，所以必须换成 spine 自己的
+         * MALLOC() 分配一份，不能把 SDL 的缓冲直接交出去（分配器不能混用）。 */
+        filedata = (char *)SDL_LoadFile(path, &size);
+        if (!filedata) return NULL;
+        data = MALLOC(char, (int)size + 1);
+        if (!data) {
+                SDL_free(filedata);
+                return NULL;
+        }
+        memcpy(data, filedata, size);
+        data[size] = '\0';
+        SDL_free(filedata);
+        if (length) *length = (int)size;
+        return data;
 }
 
 /* ==================== 内部工具 ==================== */

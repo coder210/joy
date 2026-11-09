@@ -415,9 +415,10 @@ jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
         if (!clean) { printf("[jgltf] cannot normalize glb '%s'\n", path); return NULL; }
         {
                 char dpath[256];
+                SDL_IOStream* dio;
                 snprintf(dpath, sizeof(dpath), "clean_%s.glb", path);
-                FILE* df = fopen(dpath, "wb");
-                if (df) { fwrite(clean, 1, (size_t)clen, df); fclose(df); }
+                dio = SDL_IOFromFile(dpath, "wb");
+                if (dio) { SDL_WriteIO(dio, clean, (size_t)clen); SDL_CloseIO(dio); }
         }
 
         memset(&opt, 0, sizeof(opt));

@@ -87,10 +87,14 @@ utils_check_file(const char* filename)
 void 
 utils_append_file(const char* filename, const char* data)
 {
-	FILE* fp = fopen(filename, "a+");
-	if (fp != NULL) {
-		fprintf(fp, "%s\n", data);
-		fclose(fp);
+	SDL_IOStream* io;
+
+	if (!filename || !*filename || !data) return;
+	io = SDL_IOFromFile(filename, "a+");
+	if (io) {
+		SDL_WriteIO(io, data, SDL_strlen(data));
+		SDL_WriteIO(io, "\n", 1);
+		SDL_CloseIO(io);
 	}
 }
 

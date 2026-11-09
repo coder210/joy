@@ -11,9 +11,9 @@
  * 且内部定义了 L / PLAYBACK_* 等宏），若在此 include 会与 jimpl.c 的实现重复定义，
  * 并污染 joy.h 里名为 L 的参数。因此这里只手动声明本文件用到的这个函数，
  * 实现由 jimpl.c 提供。strict C99 的 clang（Android NDK）下不能依赖隐式声明。 */
-extern int stb_vorbis_decode_filename(const char *filename, int *channels, int *sample_rate, short **output);
-/* 同上：手动声明（不能 include 实现头）。用 decode_memory 而非 decode_filename ——
- * *_filename 版内部走 stdio fopen，安卓上资源在 APK 内读不到，会静默返回 0（没声音）。 */
+/* 只手动声明 decode_memory（不能 include 实现头）：所有音频资源先经 SDL_LoadFile
+ * 读进内存再解码；dr_mp3/dr_flac 的 *_file 版与 stb_vorbis_decode_filename 都在
+ * 内部走 stdio fopen，安卓上 APK assets 读不到，会静默返回 0（没声音）。 */
 extern int stb_vorbis_decode_memory(const unsigned char *mem, int len, int *channels, int *sample_rate, short **output);
 
 /* ==================== 内部辅助 ==================== */
@@ -76,8 +76,14 @@ static void SDLCALL FeedTheAudioStreamMore(void* userdata, SDL_AudioStream* astr
 static Uint8* decode_mp3(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
 {
         drmp3 mp3;
-        if (!drmp3_init_file(&mp3, path, NULL))
+        size_t file_len = 0;
+        void* filedata = SDL_LoadFile(path, &file_len);
+        if (!filedata) return NULL;
+        /* drmp3_init_file 内部 fopen，Android APK assets 读不到；改用内存版。 */
+        if (!drmp3_init_memory(&mp3, filedata, file_len, NULL)) {
+                SDL_free(filedata);
                 return NULL;
+        }
 
         drmp3_uint64 total_frames = drmp3_get_pcm_frame_count(&mp3);
         Uint32 channels = mp3.channels;
@@ -85,14 +91,15 @@ static Uint8* decode_mp3(const char* path, SDL_AudioSpec* spec, Uint32* out_len)
         Uint32 byte_len = total_samples * sizeof(float);
 
         float* buf = (float*)SDL_malloc(byte_len);
-        if (!buf) { drmp3_uninit(&mp3); return NULL; }
+        if (!buf) { drmp3_uninit(&mp3); SDL_free(filedata); return NULL; }
         drmp3_read_pcm_frames_f32(&mp3, total_frames, buf);
-        drmp3_uninit(&mp3);
 
         spec->format   = SDL_AUDIO_F32;
         spec->channels = (Uint8)channels;
         spec->freq     = mp3.sampleRate;
         *out_len       = byte_len;
+        drmp3_uninit(&mp3);
+        SDL_free(filedata);
         return (Uint8*)buf;
 }
 
@@ -101,7 +108,15 @@ static Uint8* decode_flac(const char* path, SDL_AudioSpec* spec, Uint32* out_len
 {
         unsigned int channels, sampleRate;
         drflac_uint64 totalPCMFrameCount;
-        float* samples = drflac_open_file_and_read_pcm_frames_f32(path, &channels, &sampleRate, &totalPCMFrameCount, NULL);
+        size_t file_len = 0;
+        float* samples;
+        void* filedata = SDL_LoadFile(path, &file_len);
+        if (!filedata) return NULL;
+
+        /* drflac_open_file_* 内部 fopen，Android APK assets 读不到；改用内存版。 */
+        samples = drflac_open_memory_and_read_pcm_frames_f32(
+                filedata, file_len, &channels, &sampleRate, &totalPCMFrameCount, NULL);
+        SDL_free(filedata);
         if (!samples) return NULL;
 
         Uint32 total_samples = (Uint32)(totalPCMFrameCount * channels);
