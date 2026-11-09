@@ -93,19 +93,13 @@ static bool copy_clr_lib(const char* dir, const char* name)
                      "[cs] read asset %s failed: %s", src, SDL_GetError());
         return false;
     }
-    SDL_IOStream* io = SDL_IOFromFile(dst, "wb");
-    if (!io) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "[cs] write %s failed: %s", dst, SDL_GetError());
-        SDL_free(data);
-        return false;
-    }
-    bool ok = SDL_WriteIO(io, data, size) == size;
+    /* SDL_SaveFile 内部循环写，避免 4.4 MB 的 CoreLib 在单次
+     * SDL_WriteIO 短写时被截成半个 DLL（之后 MonoVM 必然崩）。 */
+    bool ok = SDL_SaveFile(dst, data, size);
     if (!ok) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "[cs] write %s incomplete: %s", dst, SDL_GetError());
+                     "[cs] write %s failed: %s", dst, SDL_GetError());
     }
-    SDL_CloseIO(io);
     SDL_free(data);
     return ok;
 }
