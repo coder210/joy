@@ -125,6 +125,29 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      # 公开仓库匿名读不到 job 日志 / artifact；把编译错误行转成 annotation，
+      # 失败原因可以直接从 check-run annotations 读到，不必登录 GitHub 翻日志。
+      - name: Surface build errors
+        if: failure()
+        shell: bash
+        run: |
+          set -uo pipefail
+          logs=(configure-android.log build-android.log)
+          present=()
+          for f in "${logs[@]}"; do
+            [ -f "$f" ] && present+=("$f")
+          done
+          if [ ${#present[@]} -eq 0 ]; then exit 0; fi
+          {
+            (grep -nE 'error:|fatal error:|undefined reference|ninja: build stopped|CMake Error|Error [0-9]+' "${present[@]}" || true) | head -30
+            tail -n 12 <(cat "${present[@]}")
+          } > /tmp/joy-errors.txt
+          while IFS= read -r line; do
+            line="${line//%/%25}"
+            line="${line//$'\r'/%0D}"
+            echo "::error::$line"
+          done < /tmp/joy-errors.txt
+
       - name: Upload logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
