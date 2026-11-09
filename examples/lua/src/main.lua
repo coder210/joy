@@ -555,6 +555,10 @@ end
 function joy.init()
     win = B.CreateWindow("Joy Lua Topdown", W, H)
     ren = B.R2dCreate(win)
+    -- 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
+    -- 覆盖 r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
+    -- 按 480x320 绘制只占屏幕一角。LETTERBOX 等比缩放居中、不拉伸。
+    B.R2dSetLogicalPresentationMode(ren, W, H, 2) -- JOY_EXAMPLE_PRESENTATION_LETTERBOX
 
     load_assets()
     enter_menu()

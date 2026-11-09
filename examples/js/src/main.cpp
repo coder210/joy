@@ -31,6 +31,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../../mobile_display.h"
+
 static jsx_p        g_js = NULL;
 static duk_context* g_ctx = NULL;
 static int          g_smoke_frames = 0;
@@ -68,6 +70,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     (void)appstate;
 
+    joy_examples_setup_mobile_display();  /* 必须在脚本建窗口之前 */
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
 

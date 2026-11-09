@@ -34,6 +34,8 @@ extern "C" {
 #include <cstdlib>
 #include <cstring>
 
+#include "../../mobile_display.h"
+
 static luax_p  g_lua = NULL;
 static lua_State* g_L = NULL;
 static int     g_smoke_frames = 0;
@@ -71,6 +73,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     (void)appstate;
 
+    joy_examples_setup_mobile_display();  /* 必须在脚本建窗口之前 */
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
 

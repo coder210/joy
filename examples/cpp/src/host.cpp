@@ -30,6 +30,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../../mobile_display.h"
+
 /* 与 CMake 默认 SHARED 库产物名一致，避免把生成器表达式塞进编译宏。
  * Android 上这个名字也是交给系统 linker 搜索的裸库名。 */
 #ifndef JOY_GAME_DLL_NAME
@@ -128,6 +130,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     (void)appstate;
 
+    joy_examples_setup_mobile_display();  /* 必须在游戏 DLL 建窗口之前 */
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
     g_smoke = g_smoke_frames > 0;

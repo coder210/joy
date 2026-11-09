@@ -850,6 +850,10 @@ static bool game_init(void* game, const JoyApi* api, int smoke_frames)
         return false;
     }
     api->R2dSetBlendMode(api->ctx, g->r2d, JR2D_BLEND_BLEND);
+    /* 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
+     * 覆盖 r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
+     * 按 480x320 绘制只占屏幕一角。2 == JOY_LOGICAL_PRESENTATION_LETTERBOX。 */
+    api->R2dSetLogicalPresentationMode(api->ctx, g->r2d, APP_W, APP_H, 2);
 
     load_assets();
 

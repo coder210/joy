@@ -59,23 +59,10 @@ struct animation {
 
 jr2d_p r2d_create(jwindow_p win)
 {
-        if (!win) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
+        int w, h;
         SDL_Window* raw = (SDL_Window*)get_raw_window(win);
-        if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null SDL window"); return NULL; }
-
-        /* 逻辑分辨率取 create_window() 请求的尺寸。桌面窗口本来就是这个尺寸，
-         * 行为不变；Android/iOS 全屏窗口的 SDL_GetWindowSize 是屏幕物理尺寸，
-         * 若用它当逻辑分辨率，按 480x320 绘制的游戏只会画在屏幕一角。
-         * STRETCH 会把逻辑画面铺满整个窗口，输入坐标也经同一变换换算回来。
-         * 外部自建 SDL_Window（没有该属性）仍退回旧行为。 */
-        int w = 0, h = 0;
-        SDL_PropertiesID props = SDL_GetWindowProperties(raw);
-        if (props) {
-                w = (int)SDL_GetNumberProperty(props, "joy.logical_w", 0);
-                h = (int)SDL_GetNumberProperty(props, "joy.logical_h", 0);
-        }
-        if (w <= 0 || h <= 0) SDL_GetWindowSize(raw, &w, &h);
-
+        SDL_GetWindowSize(raw, &w, &h);
+        if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
         jr2d_p r2d = (jr2d_p)SDL_calloc(1, sizeof(jr2d_t));
         if (!r2d) return NULL;
         r2d->sdl = SDL_CreateRenderer(raw, NULL);

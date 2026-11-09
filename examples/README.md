@@ -24,11 +24,16 @@
 
 ## 2. 功能规格（四份实现必须一致）
 
-- 分辨率 480×320，逻辑分辨率固定，绘制按逻辑坐标。`create_window()` 把请求的
-  尺寸记进 SDL window properties，`r2d_create()` 用 `STRETCH` 把这套逻辑坐标
-  铺满实际窗口。桌面窗口本身就是 480×320；Android 的 `SDL_CreateWindow` 会把
-  窗口尺寸改成屏幕物理尺寸，若拿它当逻辑分辨率，画面只会落在屏幕一角。
-  Android 下窗口按 480 > 320 自动请求横屏，避免竖屏时画面被纵向拉长。
+- 分辨率 480×320，逻辑分辨率固定，绘制按逻辑坐标。屏幕适配照
+  `joy_topdown_template` 的做法放在应用层（见 `mobile_display.h`）：四份宿主在
+  建窗口前设 `SDL_HINT_ORIENTATIONS` 固定横屏；四份示例在建好 renderer 后调
+  `R2dSetLogicalPresentationMode(480, 320, LETTERBOX)`，覆盖 `r2d_create()`
+  默认的「窗口物理尺寸 + STRETCH」——Android 的 `SDL_CreateWindow` 会把窗口
+  改成屏幕物理尺寸，拿它当逻辑分辨率时 480×320 的画面只会落在屏幕一角。
+  `LETTERBOX` 等比缩放居中，任意屏宽比都不拉伸；桌面窗口本征 480×320，
+  与 `STRETCH` 等价。模板游戏用 `r2d_get_logical_presentation()` 做自适应布局，
+  所以能进一步铺满且无黑边；本仓四份示例把 480×320 写进玩法逻辑，只能用
+  模板保留的 `presentation_set_design()` 方案。
 - 三个场景：`Menu` → `Play` → `GameOver` →（回 `Play`）。
 - `Menu`：标题、副标题、闪烁的开始提示、操作说明、背景网格。
 - `Play`：

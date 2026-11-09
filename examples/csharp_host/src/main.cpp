@@ -24,6 +24,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../../mobile_display.h"
+
 #if defined(_WIN32)
 #include <direct.h>
 #else
@@ -168,6 +170,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     (void)appstate;
 
+    joy_examples_setup_mobile_display();  /* 必须在 JoyGame 建窗口之前 */
     chdir_to_exe_dir();
     if (!setup_clr_dirs()) return SDL_APP_FAILURE;
 
