@@ -29,7 +29,10 @@ jobs:
             name: Linux / x64
             gen: 'Ninja'
             extra: ''
-          - os: macos-14
+          # macos-14 在本仓库已被 GitHub 判定为不支持的配置
+          # （"The configuration 'macos-14-arm64-us-default' is not supported"，
+          #  job 会在 0 步直接 cancelled，导致整个 run 显示 cancelled）。
+          - os: macos-15
             name: macOS / arm64
             gen: 'Ninja'
             # 只有 macos-arm64 runtime pack，双架构会在链接 x86_64 切片时失败。
