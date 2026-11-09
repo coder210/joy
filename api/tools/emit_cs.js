@@ -114,6 +114,9 @@ function buildC(open) {
   L.push('#include <stdio.h>');
   L.push('#include <mono/metadata/object.h>');
   L.push('#include <mono/metadata/appdomain.h>');
+  /* mono_free 只声明在 mono/utils/mono-publib.h（details/mono-publib-functions.h），
+   * object.h 不传递它；缺这行时 NDK clang 按 C99 隐式函数声明直接报错。 */
+  L.push('#include <mono/utils/mono-publib.h>');
   L.push('#include <joy/joy.h>');
   L.push('#include <joy/api/runtime/joy_value.h>');
   L.push('#include <joy/api/runtime/joy_obj.h>');

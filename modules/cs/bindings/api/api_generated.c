@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <mono/metadata/object.h>
 #include <mono/metadata/appdomain.h>
+#include <mono/utils/mono-publib.h>
 #include <joy/joy.h>
 #include <joy/api/runtime/joy_value.h>
 #include <joy/api/runtime/joy_obj.h>

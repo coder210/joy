@@ -69,7 +69,7 @@ static void chdir_to_exe_dir(void)
  * 或 MONO_LIB_DIR，所以在 csx_create() 之前显式指过去。 */
 #if defined(__ANDROID__)
 /* APK 的 assets/ 是压缩数据，不是文件系统目录，而 mono_set_dirs() 要真实路径
- * （csx_setup_mono_dirs 用 stat() 校验）。首次启动把 assets/lib/*.dll 解到
+ * （csx_setup_mono_dirs 用 stat() 校验）。首次启动把 assets/lib/ 下的 DLL 解到
  * SDL_GetPrefPath() 指向的内部存储，再把 MONO_LIB_DIR 指过去。
  * 清单与 ../CMakeLists.txt 部署到 assets/lib/ 的文件保持一致。 */
 static const char* const kClrLibs[] = {
