@@ -7330,9 +7330,9 @@ static int64_t icall_JmathFpFromFloat(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_fp_from_float", args, 1, &st);
+        r = joy_api_call("joy_math_fp_from_float", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_from_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_from_float", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7344,9 +7344,9 @@ static float icall_JmathFpToFloat(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_fp_to_float", args, 1, &st);
+        r = joy_api_call("joy_math_fp_to_float", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_to_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_to_float", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -7358,9 +7358,9 @@ static int64_t icall_JmathFpFromUint(uint32_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_u32((uint32_t)p0);
-        r = joy_api_call("jmath_fp_from_uint", args, 1, &st);
+        r = joy_api_call("joy_math_fp_from_uint", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_from_uint", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_from_uint", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7372,9 +7372,9 @@ static int64_t icall_JmathFpFromInt(int32_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i32((int32_t)p0);
-        r = joy_api_call("jmath_fp_from_int", args, 1, &st);
+        r = joy_api_call("joy_math_fp_from_int", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_from_int", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_from_int", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7386,9 +7386,9 @@ static int64_t icall_JmathFpFromFraction(uint32_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_u32((uint32_t)p0);
-        r = joy_api_call("jmath_fp_from_fraction", args, 1, &st);
+        r = joy_api_call("joy_math_fp_from_fraction", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_from_fraction", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_from_fraction", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7398,9 +7398,9 @@ static int64_t icall_JmathFpMinValue(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_min_value", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_min_value", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_min_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_min_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7410,9 +7410,9 @@ static int64_t icall_JmathFpMaxValue(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_max_value", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_max_value", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_max_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_max_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7425,9 +7425,9 @@ static int64_t icall_JmathFpAdd(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_fp_add", args, 2, &st);
+        r = joy_api_call("joy_math_fp_add", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_add", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_add", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7440,9 +7440,9 @@ static int64_t icall_JmathFpSub(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_fp_sub", args, 2, &st);
+        r = joy_api_call("joy_math_fp_sub", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_sub", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_sub", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7452,9 +7452,9 @@ static int64_t icall_JmathFpZero(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_zero", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_zero", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_zero", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_zero", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7464,9 +7464,9 @@ static int64_t icall_JmathFpHalf(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_half", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_half", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_half", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_half", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7476,9 +7476,9 @@ static int64_t icall_JmathFpOne(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_one", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_one", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_one", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_one", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7488,9 +7488,9 @@ static int64_t icall_JmathFpPi(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_fp_pi", NULL, 0, &st);
+        r = joy_api_call("joy_math_fp_pi", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_pi", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_pi", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7503,9 +7503,9 @@ static int64_t icall_JmathFpMax(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_fp_max", args, 2, &st);
+        r = joy_api_call("joy_math_fp_max", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_max", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_max", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7518,9 +7518,9 @@ static int64_t icall_JmathFpMin(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_fp_min", args, 2, &st);
+        r = joy_api_call("joy_math_fp_min", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_min", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_min", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7532,9 +7532,9 @@ static int64_t icall_JmathFpPow2(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_fp_pow2", args, 1, &st);
+        r = joy_api_call("joy_math_fp_pow2", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_pow2", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_pow2", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7546,9 +7546,9 @@ static int32_t icall_JmathFpSign(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_fp_sign", args, 1, &st);
+        r = joy_api_call("joy_math_fp_sign", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_sign", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_sign", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -7562,9 +7562,9 @@ static int64_t icall_JmathFpClamp(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_fp_clamp", args, 3, &st);
+        r = joy_api_call("joy_math_fp_clamp", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_clamp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_clamp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7578,9 +7578,9 @@ static int64_t icall_JmathFpLerp(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_fp_lerp", args, 3, &st);
+        r = joy_api_call("joy_math_fp_lerp", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_fp_lerp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_lerp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7593,9 +7593,9 @@ static int64_t icall_JmathVec2fNegateX(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_negate_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_negate_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_negate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_negate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7608,9 +7608,9 @@ static int64_t icall_JmathVec2fNegateY(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_negate_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_negate_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_negate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_negate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7625,9 +7625,9 @@ static int64_t icall_JmathVec2fDot(int64_t p0, int64_t p1, int64_t p2, int64_t p
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_dot", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_dot", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_dot", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_dot", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7642,9 +7642,9 @@ static int64_t icall_JmathVec2fCross(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_cross", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_cross", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_cross", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_cross", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7658,9 +7658,9 @@ static int64_t icall_JmathVec2fCross2X(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_cross2_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_cross2_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_cross2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_cross2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7674,9 +7674,9 @@ static int64_t icall_JmathVec2fCross2Y(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_cross2_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_cross2_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_cross2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_cross2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7690,9 +7690,9 @@ static int64_t icall_JmathVec2fCross3X(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_cross3_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_cross3_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_cross3_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_cross3_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7706,9 +7706,9 @@ static int64_t icall_JmathVec2fCross3Y(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_cross3_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_cross3_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_cross3_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_cross3_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7723,9 +7723,9 @@ static int64_t icall_JmathVec2fAddX(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_add_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_add_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_add_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_add_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7740,9 +7740,9 @@ static int64_t icall_JmathVec2fAddY(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_add_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_add_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_add_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_add_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7757,9 +7757,9 @@ static int64_t icall_JmathVec2fSubX(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_sub_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_sub_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_sub_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_sub_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7774,9 +7774,9 @@ static int64_t icall_JmathVec2fSubY(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_sub_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_sub_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_sub_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_sub_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7790,9 +7790,9 @@ static int64_t icall_JmathVec2fScaleX(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_scale_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_scale_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_scale_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_scale_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7806,9 +7806,9 @@ static int64_t icall_JmathVec2fScaleY(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_scale_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_scale_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_scale_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_scale_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7821,9 +7821,9 @@ static int64_t icall_JmathVec2fAbsX(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_abs_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_abs_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_abs_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_abs_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7836,9 +7836,9 @@ static int64_t icall_JmathVec2fAbsY(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_abs_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_abs_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_abs_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_abs_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7851,9 +7851,9 @@ static int64_t icall_JmathVec2fLengthSquared(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_length_squared", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_length_squared", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_length_squared", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_length_squared", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7866,9 +7866,9 @@ static int64_t icall_JmathVec2fLength(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_length", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_length", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7881,9 +7881,9 @@ static int64_t icall_JmathVec2fNormalizeX(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_normalize_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_normalize_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_normalize_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_normalize_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7896,9 +7896,9 @@ static int64_t icall_JmathVec2fNormalizeY(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_normalize_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_normalize_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_normalize_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_normalize_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7911,9 +7911,9 @@ static int64_t icall_JmathVec2fNormalX(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_normal_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_normal_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_normal_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_normal_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7926,9 +7926,9 @@ static int64_t icall_JmathVec2fNormalY(int64_t p0, int64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
-        r = joy_api_call("jmath_vec2f_normal_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2f_normal_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_normal_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_normal_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7942,9 +7942,9 @@ static int64_t icall_JmathVec2fRotateX(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_rotate_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_rotate_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_rotate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_rotate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7958,9 +7958,9 @@ static int64_t icall_JmathVec2fRotateY(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec2f_rotate_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2f_rotate_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_rotate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_rotate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7976,9 +7976,9 @@ static int64_t icall_JmathVec2fLerpX(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
-        r = joy_api_call("jmath_vec2f_lerp_x", args, 5, &st);
+        r = joy_api_call("joy_math_vec2f_lerp_x", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_lerp_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_lerp_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -7994,9 +7994,9 @@ static int64_t icall_JmathVec2fLerpY(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
-        r = joy_api_call("jmath_vec2f_lerp_y", args, 5, &st);
+        r = joy_api_call("joy_math_vec2f_lerp_y", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_lerp_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_lerp_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8011,9 +8011,9 @@ static int64_t icall_JmathVec2fDistance(int64_t p0, int64_t p1, int64_t p2, int6
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec2f_distance", args, 4, &st);
+        r = joy_api_call("joy_math_vec2f_distance", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2f_distance", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2f_distance", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8027,9 +8027,9 @@ static int64_t icall_JmathVec3fNegateX(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_negate_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_negate_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_negate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_negate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8043,9 +8043,9 @@ static int64_t icall_JmathVec3fNegateY(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_negate_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_negate_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_negate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_negate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8059,9 +8059,9 @@ static int64_t icall_JmathVec3fNegateZ(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_negate_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_negate_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_negate_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_negate_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8078,9 +8078,9 @@ static int64_t icall_JmathVec3fAddX(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_add_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_add_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_add_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_add_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8097,9 +8097,9 @@ static int64_t icall_JmathVec3fAddY(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_add_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_add_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_add_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_add_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8116,9 +8116,9 @@ static int64_t icall_JmathVec3fAddZ(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_add_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_add_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_add_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_add_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8135,9 +8135,9 @@ static int64_t icall_JmathVec3fSubX(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_sub_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_sub_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_sub_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_sub_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8154,9 +8154,9 @@ static int64_t icall_JmathVec3fSubY(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_sub_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_sub_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_sub_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_sub_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8173,9 +8173,9 @@ static int64_t icall_JmathVec3fSubZ(int64_t p0, int64_t p1, int64_t p2, int64_t 
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_sub_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_sub_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_sub_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_sub_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8190,9 +8190,9 @@ static int64_t icall_JmathVec3fScaleX(int64_t p0, int64_t p1, int64_t p2, int64_
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec3f_scale_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec3f_scale_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_scale_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_scale_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8207,9 +8207,9 @@ static int64_t icall_JmathVec3fScaleY(int64_t p0, int64_t p1, int64_t p2, int64_
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec3f_scale_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec3f_scale_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_scale_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_scale_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8224,9 +8224,9 @@ static int64_t icall_JmathVec3fScaleZ(int64_t p0, int64_t p1, int64_t p2, int64_
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_vec3f_scale_z", args, 4, &st);
+        r = joy_api_call("joy_math_vec3f_scale_z", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_scale_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_scale_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8240,9 +8240,9 @@ static int64_t icall_JmathVec3fAbsX(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_abs_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_abs_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_abs_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_abs_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8256,9 +8256,9 @@ static int64_t icall_JmathVec3fAbsY(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_abs_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_abs_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_abs_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_abs_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8272,9 +8272,9 @@ static int64_t icall_JmathVec3fAbsZ(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_abs_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_abs_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_abs_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_abs_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8291,9 +8291,9 @@ static int64_t icall_JmathVec3fDot(int64_t p0, int64_t p1, int64_t p2, int64_t p
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_dot", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_dot", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_dot", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_dot", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8310,9 +8310,9 @@ static int64_t icall_JmathVec3fCrossX(int64_t p0, int64_t p1, int64_t p2, int64_
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_cross_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_cross_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_cross_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_cross_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8329,9 +8329,9 @@ static int64_t icall_JmathVec3fCrossY(int64_t p0, int64_t p1, int64_t p2, int64_
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_cross_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_cross_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_cross_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_cross_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8348,9 +8348,9 @@ static int64_t icall_JmathVec3fCrossZ(int64_t p0, int64_t p1, int64_t p2, int64_
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_cross_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_cross_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_cross_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_cross_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8364,9 +8364,9 @@ static int64_t icall_JmathVec3fSquareLength(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_square_length", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_square_length", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_square_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_square_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8380,9 +8380,9 @@ static int64_t icall_JmathVec3fLength(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_length", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_length", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8396,9 +8396,9 @@ static int64_t icall_JmathVec3fNormalizeX(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_normalize_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_normalize_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_normalize_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_normalize_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8412,9 +8412,9 @@ static int64_t icall_JmathVec3fNormalizeY(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_normalize_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_normalize_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_normalize_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_normalize_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8428,9 +8428,9 @@ static int64_t icall_JmathVec3fNormalizeZ(int64_t p0, int64_t p1, int64_t p2)
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
-        r = joy_api_call("jmath_vec3f_normalize_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3f_normalize_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_normalize_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_normalize_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8448,9 +8448,9 @@ static int64_t icall_JmathVec3fLerpX(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
-        r = joy_api_call("jmath_vec3f_lerp_x", args, 7, &st);
+        r = joy_api_call("joy_math_vec3f_lerp_x", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_lerp_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_lerp_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8468,9 +8468,9 @@ static int64_t icall_JmathVec3fLerpY(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
-        r = joy_api_call("jmath_vec3f_lerp_y", args, 7, &st);
+        r = joy_api_call("joy_math_vec3f_lerp_y", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_lerp_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_lerp_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8488,9 +8488,9 @@ static int64_t icall_JmathVec3fLerpZ(int64_t p0, int64_t p1, int64_t p2, int64_t
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
-        r = joy_api_call("jmath_vec3f_lerp_z", args, 7, &st);
+        r = joy_api_call("joy_math_vec3f_lerp_z", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_lerp_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_lerp_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8507,9 +8507,9 @@ static int64_t icall_JmathVec3fDistance(int64_t p0, int64_t p1, int64_t p2, int6
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_vec3f_distance", args, 6, &st);
+        r = joy_api_call("joy_math_vec3f_distance", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3f_distance", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3f_distance", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8526,9 +8526,9 @@ static int64_t icall_JmathMat22fMulVec2fX(int64_t p0, int64_t p1, int64_t p2, in
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_mat22f_mul_vec2f_x", args, 6, &st);
+        r = joy_api_call("joy_math_mat22f_mul_vec2f_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_vec2f_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_vec2f_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8545,9 +8545,9 @@ static int64_t icall_JmathMat22fMulVec2fY(int64_t p0, int64_t p1, int64_t p2, in
         args[3] = joy_v_i64((int64_t)p3);
         args[4] = joy_v_i64((int64_t)p4);
         args[5] = joy_v_i64((int64_t)p5);
-        r = joy_api_call("jmath_mat22f_mul_vec2f_y", args, 6, &st);
+        r = joy_api_call("joy_math_mat22f_mul_vec2f_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_vec2f_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_vec2f_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8559,9 +8559,9 @@ static int64_t icall_JmathMat22fRotateCol1X(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_mat22f_rotate_col1_x", args, 1, &st);
+        r = joy_api_call("joy_math_mat22f_rotate_col1_x", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_rotate_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_rotate_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8573,9 +8573,9 @@ static int64_t icall_JmathMat22fRotateCol1Y(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_mat22f_rotate_col1_y", args, 1, &st);
+        r = joy_api_call("joy_math_mat22f_rotate_col1_y", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_rotate_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_rotate_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8587,9 +8587,9 @@ static int64_t icall_JmathMat22fRotateCol2X(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_mat22f_rotate_col2_x", args, 1, &st);
+        r = joy_api_call("joy_math_mat22f_rotate_col2_x", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_rotate_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_rotate_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8601,9 +8601,9 @@ static int64_t icall_JmathMat22fRotateCol2Y(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("jmath_mat22f_rotate_col2_y", args, 1, &st);
+        r = joy_api_call("joy_math_mat22f_rotate_col2_y", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_rotate_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_rotate_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8618,9 +8618,9 @@ static int64_t icall_JmathMat22fTransposeCol1X(int64_t p0, int64_t p1, int64_t p
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_transpose_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_transpose_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_transpose_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_transpose_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8635,9 +8635,9 @@ static int64_t icall_JmathMat22fTransposeCol1Y(int64_t p0, int64_t p1, int64_t p
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_transpose_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_transpose_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_transpose_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_transpose_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8652,9 +8652,9 @@ static int64_t icall_JmathMat22fTransposeCol2X(int64_t p0, int64_t p1, int64_t p
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_transpose_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_transpose_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_transpose_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_transpose_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8669,9 +8669,9 @@ static int64_t icall_JmathMat22fTransposeCol2Y(int64_t p0, int64_t p1, int64_t p
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_transpose_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_transpose_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_transpose_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_transpose_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8686,9 +8686,9 @@ static int64_t icall_JmathMat22fInvertCol1X(int64_t p0, int64_t p1, int64_t p2, 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_invert_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_invert_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_invert_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_invert_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8703,9 +8703,9 @@ static int64_t icall_JmathMat22fInvertCol1Y(int64_t p0, int64_t p1, int64_t p2, 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_invert_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_invert_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_invert_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_invert_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8720,9 +8720,9 @@ static int64_t icall_JmathMat22fInvertCol2X(int64_t p0, int64_t p1, int64_t p2, 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_invert_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_invert_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_invert_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_invert_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8737,9 +8737,9 @@ static int64_t icall_JmathMat22fInvertCol2Y(int64_t p0, int64_t p1, int64_t p2, 
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_invert_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_invert_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_invert_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_invert_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8758,9 +8758,9 @@ static int64_t icall_JmathMat22fAddCol1X(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_add_col1_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_add_col1_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_add_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_add_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8779,9 +8779,9 @@ static int64_t icall_JmathMat22fAddCol1Y(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_add_col1_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_add_col1_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_add_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_add_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8800,9 +8800,9 @@ static int64_t icall_JmathMat22fAddCol2X(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_add_col2_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_add_col2_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_add_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_add_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8821,9 +8821,9 @@ static int64_t icall_JmathMat22fAddCol2Y(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_add_col2_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_add_col2_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_add_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_add_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8842,9 +8842,9 @@ static int64_t icall_JmathMat22fMulCol1X(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_mul_col1_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_mul_col1_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8863,9 +8863,9 @@ static int64_t icall_JmathMat22fMulCol1Y(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_mul_col1_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_mul_col1_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8884,9 +8884,9 @@ static int64_t icall_JmathMat22fMulCol2X(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_mul_col2_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_mul_col2_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8905,9 +8905,9 @@ static int64_t icall_JmathMat22fMulCol2Y(int64_t p0, int64_t p1, int64_t p2, int
         args[5] = joy_v_i64((int64_t)p5);
         args[6] = joy_v_i64((int64_t)p6);
         args[7] = joy_v_i64((int64_t)p7);
-        r = joy_api_call("jmath_mat22f_mul_col2_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22f_mul_col2_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_mul_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_mul_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8922,9 +8922,9 @@ static int64_t icall_JmathMat22fAbsCol1X(int64_t p0, int64_t p1, int64_t p2, int
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_abs_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_abs_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_abs_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_abs_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8939,9 +8939,9 @@ static int64_t icall_JmathMat22fAbsCol1Y(int64_t p0, int64_t p1, int64_t p2, int
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_abs_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_abs_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_abs_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_abs_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8956,9 +8956,9 @@ static int64_t icall_JmathMat22fAbsCol2X(int64_t p0, int64_t p1, int64_t p2, int
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_abs_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_abs_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_abs_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_abs_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8973,9 +8973,9 @@ static int64_t icall_JmathMat22fAbsCol2Y(int64_t p0, int64_t p1, int64_t p2, int
         args[1] = joy_v_i64((int64_t)p1);
         args[2] = joy_v_i64((int64_t)p2);
         args[3] = joy_v_i64((int64_t)p3);
-        r = joy_api_call("jmath_mat22f_abs_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22f_abs_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22f_abs_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22f_abs_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -8987,9 +8987,9 @@ static float icall_JmathFtFromFloat(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_from_float", args, 1, &st);
+        r = joy_api_call("joy_math_ft_from_float", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_from_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_from_float", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9001,9 +9001,9 @@ static float icall_JmathFtToFloat(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_to_float", args, 1, &st);
+        r = joy_api_call("joy_math_ft_to_float", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_to_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_to_float", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9013,9 +9013,9 @@ static float icall_JmathFtMinValue(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_min_value", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_min_value", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_min_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_min_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9025,9 +9025,9 @@ static float icall_JmathFtMaxValue(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_max_value", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_max_value", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_max_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_max_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9040,9 +9040,9 @@ static float icall_JmathFtAdd(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_add", args, 2, &st);
+        r = joy_api_call("joy_math_ft_add", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_add", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_add", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9055,9 +9055,9 @@ static float icall_JmathFtSub(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_sub", args, 2, &st);
+        r = joy_api_call("joy_math_ft_sub", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_sub", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_sub", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9070,9 +9070,9 @@ static float icall_JmathFtMul(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_mul", args, 2, &st);
+        r = joy_api_call("joy_math_ft_mul", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_mul", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_mul", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9085,9 +9085,9 @@ static float icall_JmathFtDiv(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_div", args, 2, &st);
+        r = joy_api_call("joy_math_ft_div", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_div", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_div", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9099,9 +9099,9 @@ static float icall_JmathFtAbs(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_abs", args, 1, &st);
+        r = joy_api_call("joy_math_ft_abs", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_abs", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_abs", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9113,9 +9113,9 @@ static float icall_JmathFtSqrt(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_sqrt", args, 1, &st);
+        r = joy_api_call("joy_math_ft_sqrt", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_sqrt", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_sqrt", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9127,9 +9127,9 @@ static float icall_JmathFtSin(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_sin", args, 1, &st);
+        r = joy_api_call("joy_math_ft_sin", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_sin", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_sin", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9141,9 +9141,9 @@ static float icall_JmathFtCos(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_cos", args, 1, &st);
+        r = joy_api_call("joy_math_ft_cos", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_cos", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_cos", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9156,9 +9156,9 @@ static float icall_JmathFtAtan2(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_atan2", args, 2, &st);
+        r = joy_api_call("joy_math_ft_atan2", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_atan2", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_atan2", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9168,9 +9168,9 @@ static float icall_JmathFtZero(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_zero", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_zero", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_zero", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_zero", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9180,9 +9180,9 @@ static float icall_JmathFtHalf(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_half", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_half", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_half", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_half", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9192,9 +9192,9 @@ static float icall_JmathFtOne(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_one", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_one", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_one", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_one", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9204,9 +9204,9 @@ static float icall_JmathFtPi(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("jmath_ft_pi", NULL, 0, &st);
+        r = joy_api_call("joy_math_ft_pi", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_pi", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_pi", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9219,9 +9219,9 @@ static float icall_JmathFtMax(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_max", args, 2, &st);
+        r = joy_api_call("joy_math_ft_max", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_max", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_max", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9234,9 +9234,9 @@ static float icall_JmathFtMin(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_ft_min", args, 2, &st);
+        r = joy_api_call("joy_math_ft_min", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_min", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_min", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9248,9 +9248,9 @@ static float icall_JmathFtPow2(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_pow2", args, 1, &st);
+        r = joy_api_call("joy_math_ft_pow2", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_pow2", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_pow2", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9262,9 +9262,9 @@ static int32_t icall_JmathFtSign(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_sign", args, 1, &st);
+        r = joy_api_call("joy_math_ft_sign", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_sign", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_sign", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -9278,9 +9278,9 @@ static float icall_JmathFtClamp(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_ft_clamp", args, 3, &st);
+        r = joy_api_call("joy_math_ft_clamp", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_clamp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_clamp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9294,9 +9294,9 @@ static float icall_JmathFtLerp(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_ft_lerp", args, 3, &st);
+        r = joy_api_call("joy_math_ft_lerp", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_lerp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_lerp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9309,9 +9309,9 @@ static float icall_JmathVec2NegateX(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_negate_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_negate_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_negate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_negate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9324,9 +9324,9 @@ static float icall_JmathVec2NegateY(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_negate_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_negate_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_negate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_negate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9339,9 +9339,9 @@ static uint64_t icall_JmathVec2Negate(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_negate", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_negate", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_negate", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_negate", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9356,9 +9356,9 @@ static float icall_JmathVec2Dot(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_dot", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_dot", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_dot", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_dot", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9373,9 +9373,9 @@ static float icall_JmathVec2Cross(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_cross", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_cross", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9389,9 +9389,9 @@ static float icall_JmathVec2Cross2X(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross2_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross2_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9405,9 +9405,9 @@ static float icall_JmathVec2Cross2Y(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross2_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross2_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9421,9 +9421,9 @@ static uint64_t icall_JmathVec2Cross2(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross2", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross2", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross2", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross2", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9437,9 +9437,9 @@ static float icall_JmathVec2Cross3X(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross3_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross3_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross3_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross3_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9453,9 +9453,9 @@ static float icall_JmathVec2Cross3Y(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross3_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross3_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross3_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross3_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9469,9 +9469,9 @@ static uint64_t icall_JmathVec2Cross3(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_cross3", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_cross3", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_cross3", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_cross3", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9486,9 +9486,9 @@ static float icall_JmathVec2AddX(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_add_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_add_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_add_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_add_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9503,9 +9503,9 @@ static float icall_JmathVec2AddY(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_add_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_add_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_add_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_add_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9520,9 +9520,9 @@ static uint64_t icall_JmathVec2Add(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_add", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_add", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_add", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_add", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9537,9 +9537,9 @@ static float icall_JmathVec2SubX(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_sub_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_sub_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_sub_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_sub_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9554,9 +9554,9 @@ static float icall_JmathVec2SubY(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_sub_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_sub_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_sub_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_sub_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9571,9 +9571,9 @@ static uint64_t icall_JmathVec2Sub(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_sub", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_sub", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_sub", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_sub", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9587,9 +9587,9 @@ static float icall_JmathVec2ScaleX(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_scale_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_scale_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_scale_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_scale_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9603,9 +9603,9 @@ static float icall_JmathVec2ScaleY(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_scale_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_scale_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_scale_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_scale_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9619,9 +9619,9 @@ static uint64_t icall_JmathVec2Scale(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_scale", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_scale", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_scale", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_scale", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9634,9 +9634,9 @@ static float icall_JmathVec2AbsX(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_abs_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_abs_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_abs_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_abs_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9649,9 +9649,9 @@ static float icall_JmathVec2AbsY(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_abs_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_abs_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_abs_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_abs_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9664,9 +9664,9 @@ static uint64_t icall_JmathVec2Abs(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_abs", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_abs", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_abs", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_abs", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9679,9 +9679,9 @@ static float icall_JmathVec2LengthSquared(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_length_squared", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_length_squared", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_length_squared", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_length_squared", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9694,9 +9694,9 @@ static float icall_JmathVec2Length(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_length", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_length", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9709,9 +9709,9 @@ static float icall_JmathVec2NormalizeX(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normalize_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normalize_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normalize_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normalize_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9724,9 +9724,9 @@ static float icall_JmathVec2NormalizeY(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normalize_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normalize_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normalize_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normalize_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9739,9 +9739,9 @@ static uint64_t icall_JmathVec2Normalize(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normalize", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normalize", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normalize", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normalize", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9754,9 +9754,9 @@ static float icall_JmathVec2NormalX(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normal_x", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normal_x", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normal_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normal_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9769,9 +9769,9 @@ static float icall_JmathVec2NormalY(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normal_y", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normal_y", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normal_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normal_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9784,9 +9784,9 @@ static uint64_t icall_JmathVec2Normal(float p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
-        r = joy_api_call("jmath_vec2_normal", args, 2, &st);
+        r = joy_api_call("joy_math_vec2_normal", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_normal", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_normal", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9800,9 +9800,9 @@ static float icall_JmathVec2RotateX(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_rotate_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_rotate_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_rotate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_rotate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9816,9 +9816,9 @@ static float icall_JmathVec2RotateY(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_rotate_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_rotate_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_rotate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_rotate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9832,9 +9832,9 @@ static uint64_t icall_JmathVec2Rotate(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec2_rotate", args, 3, &st);
+        r = joy_api_call("joy_math_vec2_rotate", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_rotate", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_rotate", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9850,9 +9850,9 @@ static float icall_JmathVec2LerpX(float p0, float p1, float p2, float p3, float 
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("jmath_vec2_lerp_x", args, 5, &st);
+        r = joy_api_call("joy_math_vec2_lerp_x", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_lerp_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_lerp_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9868,9 +9868,9 @@ static float icall_JmathVec2LerpY(float p0, float p1, float p2, float p3, float 
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("jmath_vec2_lerp_y", args, 5, &st);
+        r = joy_api_call("joy_math_vec2_lerp_y", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_lerp_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_lerp_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9886,9 +9886,9 @@ static uint64_t icall_JmathVec2Lerp(float p0, float p1, float p2, float p3, floa
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("jmath_vec2_lerp", args, 5, &st);
+        r = joy_api_call("joy_math_vec2_lerp", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_lerp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_lerp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -9903,9 +9903,9 @@ static float icall_JmathVec2Distance(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec2_distance", args, 4, &st);
+        r = joy_api_call("joy_math_vec2_distance", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec2_distance", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec2_distance", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9919,9 +9919,9 @@ static float icall_JmathVec3NegateX(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_negate_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_negate_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_negate_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_negate_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9935,9 +9935,9 @@ static float icall_JmathVec3NegateY(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_negate_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_negate_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_negate_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_negate_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9951,9 +9951,9 @@ static float icall_JmathVec3NegateZ(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_negate_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_negate_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_negate_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_negate_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9970,9 +9970,9 @@ static float icall_JmathVec3AddX(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_add_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_add_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_add_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_add_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -9989,9 +9989,9 @@ static float icall_JmathVec3AddY(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_add_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_add_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_add_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_add_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10008,9 +10008,9 @@ static float icall_JmathVec3AddZ(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_add_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_add_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_add_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_add_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10027,9 +10027,9 @@ static float icall_JmathVec3SubX(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_sub_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_sub_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_sub_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_sub_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10046,9 +10046,9 @@ static float icall_JmathVec3SubY(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_sub_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_sub_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_sub_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_sub_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10065,9 +10065,9 @@ static float icall_JmathVec3SubZ(float p0, float p1, float p2, float p3, float p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_sub_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_sub_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_sub_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_sub_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10082,9 +10082,9 @@ static float icall_JmathVec3ScaleX(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_scale_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_scale_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_scale_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_scale_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10099,9 +10099,9 @@ static float icall_JmathVec3ScaleY(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_scale_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_scale_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_scale_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_scale_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10116,9 +10116,9 @@ static float icall_JmathVec3ScaleZ(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_scale_z", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_scale_z", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_scale_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_scale_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10132,9 +10132,9 @@ static float icall_JmathVec3AbsX(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_abs_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_abs_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_abs_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_abs_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10148,9 +10148,9 @@ static float icall_JmathVec3AbsY(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_abs_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_abs_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_abs_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_abs_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10164,9 +10164,9 @@ static float icall_JmathVec3AbsZ(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_abs_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_abs_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_abs_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_abs_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10183,9 +10183,9 @@ static float icall_JmathVec3Dot(float p0, float p1, float p2, float p3, float p4
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_dot", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_dot", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_dot", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_dot", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10202,9 +10202,9 @@ static float icall_JmathVec3CrossX(float p0, float p1, float p2, float p3, float
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_cross_x", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_cross_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_cross_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_cross_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10221,9 +10221,9 @@ static float icall_JmathVec3CrossY(float p0, float p1, float p2, float p3, float
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_cross_y", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_cross_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_cross_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_cross_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10240,9 +10240,9 @@ static float icall_JmathVec3CrossZ(float p0, float p1, float p2, float p3, float
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_cross_z", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_cross_z", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_cross_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_cross_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10256,9 +10256,9 @@ static float icall_JmathVec3SquareLength(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_square_length", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_square_length", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_square_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_square_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10272,9 +10272,9 @@ static float icall_JmathVec3Length(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_length", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_length", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_length", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_length", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10288,9 +10288,9 @@ static float icall_JmathVec3NormalizeX(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_normalize_x", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_normalize_x", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_normalize_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_normalize_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10304,9 +10304,9 @@ static float icall_JmathVec3NormalizeY(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_normalize_y", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_normalize_y", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_normalize_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_normalize_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10320,9 +10320,9 @@ static float icall_JmathVec3NormalizeZ(float p0, float p1, float p2)
         args[0] = joy_v_f64((double)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("jmath_vec3_normalize_z", args, 3, &st);
+        r = joy_api_call("joy_math_vec3_normalize_z", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_normalize_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_normalize_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10340,9 +10340,9 @@ static float icall_JmathVec3LerpX(float p0, float p1, float p2, float p3, float 
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        r = joy_api_call("jmath_vec3_lerp_x", args, 7, &st);
+        r = joy_api_call("joy_math_vec3_lerp_x", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_lerp_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_lerp_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10360,9 +10360,9 @@ static float icall_JmathVec3LerpY(float p0, float p1, float p2, float p3, float 
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        r = joy_api_call("jmath_vec3_lerp_y", args, 7, &st);
+        r = joy_api_call("joy_math_vec3_lerp_y", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_lerp_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_lerp_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10380,9 +10380,9 @@ static float icall_JmathVec3LerpZ(float p0, float p1, float p2, float p3, float 
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        r = joy_api_call("jmath_vec3_lerp_z", args, 7, &st);
+        r = joy_api_call("joy_math_vec3_lerp_z", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_lerp_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_lerp_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10399,9 +10399,9 @@ static float icall_JmathVec3Distance(float p0, float p1, float p2, float p3, flo
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_vec3_distance", args, 6, &st);
+        r = joy_api_call("joy_math_vec3_distance", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_distance", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_distance", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10418,9 +10418,9 @@ static float icall_JmathMat22MulVec2X(float p0, float p1, float p2, float p3, fl
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_mat22_mul_vec2_x", args, 6, &st);
+        r = joy_api_call("joy_math_mat22_mul_vec2_x", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_vec2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_vec2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10437,9 +10437,9 @@ static float icall_JmathMat22MulVec2Y(float p0, float p1, float p2, float p3, fl
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_mat22_mul_vec2_y", args, 6, &st);
+        r = joy_api_call("joy_math_mat22_mul_vec2_y", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_vec2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_vec2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10456,9 +10456,9 @@ static uint64_t icall_JmathMat22MulVec2(float p0, float p1, float p2, float p3, 
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("jmath_mat22_mul_vec2", args, 6, &st);
+        r = joy_api_call("joy_math_mat22_mul_vec2", args, 6, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_vec2", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_vec2", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -10470,9 +10470,9 @@ static float icall_JmathMat22RotateCol1X(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_mat22_rotate_col1_x", args, 1, &st);
+        r = joy_api_call("joy_math_mat22_rotate_col1_x", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_rotate_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_rotate_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10484,9 +10484,9 @@ static float icall_JmathMat22RotateCol1Y(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_mat22_rotate_col1_y", args, 1, &st);
+        r = joy_api_call("joy_math_mat22_rotate_col1_y", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_rotate_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_rotate_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10498,9 +10498,9 @@ static float icall_JmathMat22RotateCol2X(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_mat22_rotate_col2_x", args, 1, &st);
+        r = joy_api_call("joy_math_mat22_rotate_col2_x", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_rotate_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_rotate_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10512,9 +10512,9 @@ static float icall_JmathMat22RotateCol2Y(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_mat22_rotate_col2_y", args, 1, &st);
+        r = joy_api_call("joy_math_mat22_rotate_col2_y", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_rotate_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_rotate_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10529,9 +10529,9 @@ static float icall_JmathMat22TransposeCol1X(float p0, float p1, float p2, float 
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_transpose_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_transpose_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_transpose_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_transpose_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10546,9 +10546,9 @@ static float icall_JmathMat22TransposeCol1Y(float p0, float p1, float p2, float 
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_transpose_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_transpose_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_transpose_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_transpose_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10563,9 +10563,9 @@ static float icall_JmathMat22TransposeCol2X(float p0, float p1, float p2, float 
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_transpose_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_transpose_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_transpose_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_transpose_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10580,9 +10580,9 @@ static float icall_JmathMat22TransposeCol2Y(float p0, float p1, float p2, float 
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_transpose_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_transpose_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_transpose_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_transpose_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10597,9 +10597,9 @@ static float icall_JmathMat22InvertCol1X(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_invert_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_invert_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_invert_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_invert_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10614,9 +10614,9 @@ static float icall_JmathMat22InvertCol1Y(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_invert_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_invert_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_invert_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_invert_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10631,9 +10631,9 @@ static float icall_JmathMat22InvertCol2X(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_invert_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_invert_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_invert_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_invert_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10648,9 +10648,9 @@ static float icall_JmathMat22InvertCol2Y(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_invert_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_invert_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_invert_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_invert_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10669,9 +10669,9 @@ static float icall_JmathMat22AddCol1X(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_add_col1_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_add_col1_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_add_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_add_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10690,9 +10690,9 @@ static float icall_JmathMat22AddCol1Y(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_add_col1_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_add_col1_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_add_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_add_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10711,9 +10711,9 @@ static float icall_JmathMat22AddCol2X(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_add_col2_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_add_col2_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_add_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_add_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10732,9 +10732,9 @@ static float icall_JmathMat22AddCol2Y(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_add_col2_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_add_col2_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_add_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_add_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10753,9 +10753,9 @@ static float icall_JmathMat22MulCol1X(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_mul_col1_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_mul_col1_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10774,9 +10774,9 @@ static float icall_JmathMat22MulCol1Y(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_mul_col1_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_mul_col1_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10795,9 +10795,9 @@ static float icall_JmathMat22MulCol2X(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_mul_col2_x", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_mul_col2_x", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10816,9 +10816,9 @@ static float icall_JmathMat22MulCol2Y(float p0, float p1, float p2, float p3, fl
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("jmath_mat22_mul_col2_y", args, 8, &st);
+        r = joy_api_call("joy_math_mat22_mul_col2_y", args, 8, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_mul_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_mul_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10833,9 +10833,9 @@ static float icall_JmathMat22AbsCol1X(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_abs_col1_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_abs_col1_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_abs_col1_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_abs_col1_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10850,9 +10850,9 @@ static float icall_JmathMat22AbsCol1Y(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_abs_col1_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_abs_col1_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_abs_col1_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_abs_col1_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10867,9 +10867,9 @@ static float icall_JmathMat22AbsCol2X(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_abs_col2_x", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_abs_col2_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_abs_col2_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_abs_col2_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10884,9 +10884,9 @@ static float icall_JmathMat22AbsCol2Y(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_mat22_abs_col2_y", args, 4, &st);
+        r = joy_api_call("joy_math_mat22_abs_col2_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_mat22_abs_col2_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_mat22_abs_col2_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10901,9 +10901,9 @@ static float icall_JmathVec3DivX(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_div_x", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_div_x", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_div_x", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_div_x", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10918,9 +10918,9 @@ static float icall_JmathVec3DivY(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_div_y", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_div_y", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_div_y", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_div_y", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10935,9 +10935,9 @@ static float icall_JmathVec3DivZ(float p0, float p1, float p2, float p3)
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("jmath_vec3_div_z", args, 4, &st);
+        r = joy_api_call("joy_math_vec3_div_z", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_vec3_div_z", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_vec3_div_z", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -10949,9 +10949,9 @@ static float icall_JmathFtRadians(float p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_f64((double)p0);
-        r = joy_api_call("jmath_ft_radians", args, 1, &st);
+        r = joy_api_call("joy_math_ft_radians", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jmath_ft_radians", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_ft_radians", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;

@@ -148,6 +148,13 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `audio`（20 条）→ `joy_audio_*`。`sys` 是 `net` 域的子命名空间，按
   `joy_net_sys_*` 收敛；`audio` 自成一个白名单域。`net` 域 98 条、`audio`
   域 20 条，旧 `sys`/`audio` domain 归零。
+- 第十五批 **`jmath` 220 条**：这 220 条不是手写在 `api.h` 里，而是
+  `jmath.h` 的 134 个 `JOY_INLINE` 内联函数，由 `jmath_wrap.js` 套 `jmath_`
+  前缀生成 `jmath_wrappers.h/.c` 后被扫进 IDL（全部 L0 公开 API，会进
+  vtable）。改名点是 `jmath_wrap.js` 里 3 处 `jmath_' + f.name` →
+  `joy_math_' + f.name`，重生成后 IDL 名变成 `joy_math_*`，按 `math` 域收敛
+  （顺带把原本不在白名单里的 `jmath` 域也纠正成 `math`）。脚本层名用 ALIASES
+  冻结为 `Jmath*`，`compat.h` 兜底旧 `jmath_*` 调用。`math` 域 313 条。
 
 映射见 `idl/rename_map.json`（累加式）。
 

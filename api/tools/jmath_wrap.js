@@ -226,7 +226,7 @@ function generate(src) {
     const base = { params: flat, decls, callArgs, orig: f.name, fieldExpr: null, retStruct: null };
     if (f.ret === 'void' || SCALARS[f.ret]) {
       add(Object.assign({}, base, {
-        cname: 'jmath_' + f.name,
+        cname: 'joy_math_' + f.name,
         ret: f.ret === 'void' ? 'void' : SCALARS[f.ret],
       }));
       continue;
@@ -240,7 +240,7 @@ function generate(src) {
     }
     for (const fld of retFields) {
       add(Object.assign({}, base, {
-        cname: 'jmath_' + f.name + '_' + fld.flat,
+        cname: 'joy_math_' + f.name + '_' + fld.flat,
         ret: fld.ctype,
         retStruct: f.ret,
         fieldExpr: fld.expr,
@@ -249,7 +249,7 @@ function generate(src) {
     /* vec2_t 的两个 float 正好能塞进 uint64_t，给一个一次调用拿到结果版本。 */
     if (f.ret === 'vec2_t' && retFields.length === 2) {
       add(Object.assign({}, base, {
-        cname: 'jmath_' + f.name,
+        cname: 'joy_math_' + f.name,
         ret: 'uint64_t',
         packed: true,
         fields: retFields,
