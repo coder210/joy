@@ -34,7 +34,7 @@
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
-| core | 14 | 23 | 1 | 9 | 0 | 47 |
+| core | 14 | 23 | 1 | 9 | 20 | 67 |
 | input | 0 | 14 | 0 | 3 | 0 | 17 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
 | math | 220 | 3 | 27 | 63 | 0 | 313 |
@@ -44,7 +44,6 @@
 | scene | 1 | 117 | 3 | 38 | 1 | 160 |
 | script | 0 | 0 | 0 | 0 | 33 | 33 |
 | ui | 0 | 170 | 23 | 29 | 0 | 222 |
-| utils | 0 | 0 | 0 | 0 | 20 | 20 |
 
 ## 待办：返回句柄但缺 `owns`
 
@@ -355,26 +354,26 @@
 
 | 函数 | 位置 |
 |---|---|
-| `utils_random_create` | include/joy/defs.h:165 |
-| `utils_random_destroy` | include/joy/defs.h:166 |
-| `utils_random_next` | include/joy/defs.h:167 |
-| `utils_random_get_state` | include/joy/defs.h:170 |
-| `utils_random_set_state` | include/joy/defs.h:171 |
-| `utils_strdup` | include/joy/api.h:19 |
-| `utils_get_current_time` | include/joy/api.h:20 |
-| `utils_current_datetime` | include/joy/api.h:21 |
-| `utils_read_file` | include/joy/api.h:22 |
-| `utils_check_file` | include/joy/api.h:23 |
-| `utils_append_file` | include/joy/api.h:24 |
-| `utils_read_script` | include/joy/api.h:25 |
-| `utils_bit2short` | include/joy/api.h:26 |
-| `utils_short2bit` | include/joy/api.h:27 |
-| `utils_bit2int` | include/joy/api.h:29 |
-| `utils_int2bit` | include/joy/api.h:31 |
-| `utils_wait_delay` | include/joy/api.h:32 |
-| `utils_md5x` | include/joy/api.h:33 |
-| `utils_des_crypt` | include/joy/api.h:34 |
-| `utils_des_decrypt` | include/joy/api.h:35 |
+| `joy_core_utils_random_create` | include/joy/defs.h:165 |
+| `joy_core_utils_random_destroy` | include/joy/defs.h:166 |
+| `joy_core_utils_random_next` | include/joy/defs.h:167 |
+| `joy_core_utils_random_get_state` | include/joy/defs.h:170 |
+| `joy_core_utils_random_set_state` | include/joy/defs.h:171 |
+| `joy_core_utils_strdup` | include/joy/api.h:19 |
+| `joy_core_utils_get_current_time` | include/joy/api.h:20 |
+| `joy_core_utils_current_datetime` | include/joy/api.h:21 |
+| `joy_core_utils_read_file` | include/joy/api.h:22 |
+| `joy_core_utils_check_file` | include/joy/api.h:23 |
+| `joy_core_utils_append_file` | include/joy/api.h:24 |
+| `joy_core_utils_read_script` | include/joy/api.h:25 |
+| `joy_core_utils_bit2short` | include/joy/api.h:26 |
+| `joy_core_utils_short2bit` | include/joy/api.h:27 |
+| `joy_core_utils_bit2int` | include/joy/api.h:29 |
+| `joy_core_utils_int2bit` | include/joy/api.h:31 |
+| `joy_core_utils_wait_delay` | include/joy/api.h:32 |
+| `joy_core_utils_md5x` | include/joy/api.h:33 |
+| `joy_core_utils_des_crypt` | include/joy/api.h:34 |
+| `joy_core_utils_des_decrypt` | include/joy/api.h:35 |
 | `joy_r2d_spine_asset_load` | include/joy/api.h:998 |
 | `joy_r2d_spine_asset_free` | include/joy/api.h:1000 |
 | `joy_r2d_spine_asset_animation_count` | include/joy/api.h:1002 |

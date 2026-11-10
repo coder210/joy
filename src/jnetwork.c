@@ -198,7 +198,7 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
         kcp_connection_p conn;
         net_message_t msg;
 
-        conv = utils_bit2int((uint8_t*)data);
+        conv = joy_core_utils_bit2int((uint8_t*)data);
         k = kh_get(kconn, ks->conns, conv);
 
         if (k != kh_end(ks->conns))
@@ -252,11 +252,11 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
         }
         kh_val(ks->conns, k) = conn;
 
-        utils_int2bit((uint8_t*)buf, conv);
+        joy_core_utils_int2bit((uint8_t*)buf, conv);
         joy_net_sys_sendto(ks->sockfd, buf, 4, conn->ip, conn->port);
 
         msg.type = NET_TYPE_CONNECTED;
-        msg.data = utils_strdup("connected", NULL);
+        msg.data = joy_core_utils_strdup("connected", NULL);
         msg.len = strlen(msg.data);
         msg.conv = conv;
 
@@ -336,7 +336,7 @@ void joy_net_kcpserver_update(kcpserver_p ks)
                         continue;
                 }
 
-                if (utils_wait_delay(&conn->updating_delay, current_time))
+                if (joy_core_utils_wait_delay(&conn->updating_delay, current_time))
                 {
                         conn->timeout -= 1;
                 }
@@ -367,7 +367,7 @@ void joy_net_kcpserver_update(kcpserver_p ks)
                 kcp_connection_p conn = kh_val(ks->conns, p);
 
                 msg.type = NET_TYPE_DISCONNECTED;
-                msg.data = utils_strdup("disconnected", NULL);
+                msg.data = joy_core_utils_strdup("disconnected", NULL);
                 msg.len = strlen(msg.data);
                 msg.conv = ikcp_getconv(conn->kcp);
 
@@ -482,13 +482,13 @@ kcpclient_input(kcpclient_p kc, const char* data, int sz)
                 if (sz != 4) return;
 
                 joy_core_log_debug("kcpclient create");
-                conv = utils_bit2int((uint8_t*)data);
+                conv = joy_core_utils_bit2int((uint8_t*)data);
                 kc->kcp = ikcp_create(conv, kc);
                 ikcp_wndsize(kc->kcp, 512, 512);
                 ikcp_nodelay(kc->kcp, 0, 40, 0, 0);
                 ikcp_setoutput(kc->kcp, kcpclient_output);
                 msg.conv = conv;
-                msg.data = utils_strdup("connected", NULL);
+                msg.data = joy_core_utils_strdup("connected", NULL);
                 msg.len = strlen(msg.data);
                 msg.type = NET_TYPE_CONNECTED;
                 if (kc->cb)
@@ -533,7 +533,7 @@ void joy_net_kcpclient_update(kcpclient_p kc)
                 {
                         return;
                 }
-                if (utils_wait_delay(&kc->updating_delay, current_time))
+                if (joy_core_utils_wait_delay(&kc->updating_delay, current_time))
                 {
                         kc->timeout--;
                 }
@@ -546,7 +546,7 @@ void joy_net_kcpclient_update(kcpclient_p kc)
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
                         msg.len = 11;
-                        msg.data = utils_strdup("disconnected", NULL);
+                        msg.data = joy_core_utils_strdup("disconnected", NULL);
                         if (kc->cb)
                         {
                                 kc->cb(&msg, kc->userdata);
@@ -574,7 +574,7 @@ void joy_net_kcpclient_update(kcpclient_p kc)
                         }
                 }
         }
-        else if (utils_wait_delay(&kc->connection_delay, current_time))
+        else if (joy_core_utils_wait_delay(&kc->connection_delay, current_time))
         {
                 data[0] = data[1] = data[2] = data[3] = 0;
                 joy_net_sys_sendto(kc->sockfd, data, 4, kc->server_ip, kc->server_port);
@@ -697,7 +697,7 @@ tcpserver_accpet(tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port
         kh_val(tcpserver->conns, k) = conn;
 
         msg.type = NET_TYPE_CONNECTED;
-        msg.data = utils_strdup("connected", NULL);
+        msg.data = joy_core_utils_strdup("connected", NULL);
         msg.len = strlen(msg.data);
         msg.conv = conv;
         *kl_pushp(kmq, tcpserver->mq) = msg;
@@ -789,13 +789,13 @@ void joy_net_tcpserver_update(tcpserver_p tcpserver)
                         if (conn->timeout < 0)
                         {
                                 msg.type = NET_TYPE_DISCONNECTED;
-                                msg.data = utils_strdup("disconnected", NULL);
+                                msg.data = joy_core_utils_strdup("disconnected", NULL);
                                 msg.len = strlen(msg.data);
                                 msg.conv = conv;
                                 *kl_pushp(kmq, tcpserver->mq) = msg;
                                 kh_del(ktcp_conn, tcpserver->conns, p);
                         }
-                        else if (utils_wait_delay(&conn->updating_delay, current_time))
+                        else if (joy_core_utils_wait_delay(&conn->updating_delay, current_time))
                         {
                                 conn->timeout--;
                         }
@@ -879,14 +879,14 @@ void joy_net_tcpclient_update(tcpclient_p tcpclient)
         }
         else
         {
-                /*if (utils_wait_delay(&tcpclient->connection_delay, current_time)) {
+                /*if (joy_core_utils_wait_delay(&tcpclient->connection_delay, current_time)) {
                         joy_core_log_debug("tcpclient connecting to %s:%d",
                                 tcpclient->server_ip, tcpclient->server_port);
                         if (joy_net_sys_connect(tcpclient->sockfd, tcpclient->server_ip, tcpclient->server_port)) {
                                 tcpclient->connected = true;
                                 msg.type = NET_TYPE_CONNECTED;
                                 msg.conv = (int)tcpclient->sockfd;
-                                msg.data = utils_strdup("connected", NULL);
+                                msg.data = joy_core_utils_strdup("connected", NULL);
                                 msg.len = strlen(msg.data);
                                 *kl_pushp(kmq, tcpclient->mq) = msg;
                         }
@@ -901,7 +901,7 @@ void joy_net_tcpclient_update(tcpclient_p tcpclient)
                         tcpclient->connected = true;
                         msg.type = NET_TYPE_CONNECTED;
                         msg.conv = (int)tcpclient->sockfd;
-                        msg.data = utils_strdup("connected", NULL);
+                        msg.data = joy_core_utils_strdup("connected", NULL);
                         msg.len = strlen(msg.data);
                         *kl_pushp(kmq, tcpclient->mq) = msg;
                 }
@@ -915,7 +915,7 @@ void joy_net_tcpclient_update(tcpclient_p tcpclient)
         {
                 return;
         }
-        if (utils_wait_delay(&tcpclient->updating_delay, current_time))
+        if (joy_core_utils_wait_delay(&tcpclient->updating_delay, current_time))
         {
                 tcpclient->timeout--;
         }
@@ -924,7 +924,7 @@ void joy_net_tcpclient_update(tcpclient_p tcpclient)
                 msg.type = NET_TYPE_DISCONNECTED;
                 msg.conv = (int)tcpclient->sockfd;
                 msg.len = 9;
-                msg.data = utils_strdup("disconnected", NULL);
+                msg.data = joy_core_utils_strdup("disconnected", NULL);
                 *kl_pushp(kmq, tcpclient->mq) = msg;
                 return;
         }
@@ -978,7 +978,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_CONNECTED;
                         msg.conv = ctx->conv;
-                        msg.data = utils_strdup("connected", NULL);
+                        msg.data = joy_core_utils_strdup("connected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (ws->cb) {
                                 ws->cb(&msg, ws->userdata);
@@ -1028,7 +1028,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = ctx->conv;
-                        msg.data = utils_strdup("disconnected", NULL);
+                        msg.data = joy_core_utils_strdup("disconnected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (server->cb) {
                                 server->cb(&msg, server->userdata);
@@ -1369,7 +1369,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 net_message_t msg;
                 msg.type = NET_TYPE_CONNECTED;
                 msg.conv = 0;
-                msg.data = utils_strdup("connected", NULL);
+                msg.data = joy_core_utils_strdup("connected", NULL);
                 msg.len = (int)strlen(msg.data);
                 if (wc->cb) {
                         wc->cb(&msg, wc->userdata);
@@ -1406,7 +1406,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
-                        msg.data = utils_strdup("disconnected", NULL);
+                        msg.data = joy_core_utils_strdup("disconnected", NULL);
                         msg.len = (int)strlen(msg.data);
                         if (wc->cb) {
                                 wc->cb(&msg, wc->userdata);
@@ -1453,7 +1453,7 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
         net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
         msg.conv = 0;
-        msg.data = utils_strdup("connected", NULL);
+        msg.data = joy_core_utils_strdup("connected", NULL);
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
                 wc->cb(&msg, wc->userdata);
@@ -1516,7 +1516,7 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
         net_message_t msg;
         msg.type = NET_TYPE_DISCONNECTED;
         msg.conv = 0;
-        msg.data = utils_strdup("disconnected", NULL);
+        msg.data = joy_core_utils_strdup("disconnected", NULL);
         msg.len = (int)strlen(msg.data);
         if (wc->cb) {
                 wc->cb(&msg, wc->userdata);

@@ -199,7 +199,7 @@ bool jsx_dofile(jsx_p jsx, const char* filename)
 {
 	size_t data_size;
 	char* data;
-	data = utils_read_file(filename, &data_size);
+	data = joy_core_utils_read_file(filename, &data_size);
 	if (data) {
 		duk_push_lstring(jsx->ctx, data, data_size);
 		if (duk_peval(jsx->ctx) != 0) {

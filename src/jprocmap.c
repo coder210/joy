@@ -17,7 +17,7 @@ History:
 static int jpm_rand_mod(random_num_p rng, int mod)
 {
         if (mod <= 0) return 0;
-        return (int)(utils_random_next(rng) % (uint32_t)mod);
+        return (int)(joy_core_utils_random_next(rng) % (uint32_t)mod);
 }
 
 /* 格 → 世界坐标（十分之一米）：世界原点落在网格中心附近，与默认 config 完全一致 */
@@ -302,7 +302,7 @@ void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm
 {
         int grid_n = cfg->grid_n;
         const int min_size = 5;   /* 房间最小边长（格） */
-        random_num_p rng = utils_random_create(seed);
+        random_num_p rng = joy_core_utils_random_create(seed);
         out->seed = (int)seed;
         out->count = 0;
 
@@ -374,12 +374,12 @@ void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm
         /* 3. 连通性兜底：BSP 门洞已保证全连通，此步仅作安全网 */
         jpm_repair_connectivity(cfg, out);
 
-        utils_random_destroy(rng);
+        joy_core_utils_random_destroy(rng);
 }
 
 void joy_scene_procmap_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out)
 {
-        uint32_t seed = utils_random_next(rng);
+        uint32_t seed = joy_core_utils_random_next(rng);
         joy_scene_procmap_generate_seed(cfg, seed, out);
 }
 

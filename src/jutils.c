@@ -18,7 +18,7 @@ struct random_num {
 
 
 char* 
-utils_strdup(const char* str, size_t* out_sz)
+joy_core_utils_strdup(const char* str, size_t* out_sz)
 {
 	size_t sz = strlen(str);
 	char* ret = (char*)malloc(sz + 1);
@@ -30,7 +30,7 @@ utils_strdup(const char* str, size_t* out_sz)
 }
 
 bool
-utils_get_current_time(uint64_t *ms_ticks)
+joy_core_utils_get_current_time(uint64_t *ms_ticks)
 {
 	bool resval;
 	SDL_Time ticks;
@@ -40,7 +40,7 @@ utils_get_current_time(uint64_t *ms_ticks)
 }
 
 void 
-utils_current_datetime(const char* fmt, char* buf, size_t len)
+joy_core_utils_current_datetime(const char* fmt, char* buf, size_t len)
 {
 	time_t t;
 	time(&t);
@@ -54,7 +54,7 @@ utils_current_datetime(const char* fmt, char* buf, size_t len)
  * 返回 SDL_malloc 出来的缓冲（末尾带 '\0'），调用方用 SDL_free 释放；
  * 失败返回 NULL 且 *sz 置 0。契约与改动前一致。 */
 char* 
-utils_read_file(const char* filename, size_t* sz)
+joy_core_utils_read_file(const char* filename, size_t* sz)
 {
 	size_t size = 0;
 	char* buf;
@@ -69,9 +69,9 @@ utils_read_file(const char* filename, size_t* sz)
 	return buf;
 }
 
-/* 文件是否存在。同样走 SDL IO，理由同 utils_read_file。 */
+/* 文件是否存在。同样走 SDL IO，理由同 joy_core_utils_read_file。 */
 bool 
-utils_check_file(const char* filename)
+joy_core_utils_check_file(const char* filename)
 {
 	SDL_IOStream* io;
 
@@ -85,7 +85,7 @@ utils_check_file(const char* filename)
 }
 
 void 
-utils_append_file(const char* filename, const char* data)
+joy_core_utils_append_file(const char* filename, const char* data)
 {
 	SDL_IOStream* io;
 
@@ -99,14 +99,14 @@ utils_append_file(const char* filename, const char* data)
 }
 
 short 
-utils_bit2short(uint8_t* buf)
+joy_core_utils_bit2short(uint8_t* buf)
 {
 	short r = (short)buf[0] << 8 | (short)buf[1];
 	return r;
 }
 
 void 
-utils_short2bit(uint8_t* buf, short value)
+joy_core_utils_short2bit(uint8_t* buf, short value)
 {
 	buf[0] = (value >> 8) & 0xff;
 	buf[1] = value & 0xff;
@@ -116,7 +116,7 @@ utils_short2bit(uint8_t* buf, short value)
 * c# = BitConverter.FromUInt32
 */
 int 
-utils_bit2int(uint8_t* buf)
+joy_core_utils_bit2int(uint8_t* buf)
 {
 	int r = buf[0];
 	r |= (int)buf[1] << 8;
@@ -129,7 +129,7 @@ utils_bit2int(uint8_t* buf)
 * c# = BitConverter.ToUInt32
 */
 void 
-utils_int2bit(uint8_t* buf, int value)
+joy_core_utils_int2bit(uint8_t* buf, int value)
 {
 	buf[3] = ((0xff000000 & value) >> 24);
 	buf[2] = ((0xff0000 & value) >> 16);
@@ -138,7 +138,7 @@ utils_int2bit(uint8_t* buf, int value)
 }
 
 bool
-utils_wait_delay(delay_t* delay, uint64_t current_time)
+joy_core_utils_wait_delay(delay_t* delay, uint64_t current_time)
 {
 	if (current_time - delay->time >= delay->timeout) {
 		delay->time = current_time;
@@ -148,7 +148,7 @@ utils_wait_delay(delay_t* delay, uint64_t current_time)
 }
 
 short 
-utils_md5x(const char* input, size_t len, char* output)
+joy_core_utils_md5x(const char* input, size_t len, char* output)
 {
 	char value[16] = { 0 };
 	md5(input, len, value);
@@ -182,7 +182,7 @@ utils_b64_decode(const char* input, size_t len, size_t* out_len)
 }
 
 unsigned char* 
-utils_aes_encrypt256(const char* input, size_t* len,
+joy_core_utils_aes_encrypt256(const char* input, size_t* len,
 	const char* key, const char* iv)
 {
 	size_t input_len;
@@ -198,7 +198,7 @@ utils_aes_encrypt256(const char* input, size_t* len,
 * key len is equal 32
 */
 unsigned char*
-utils_aes_decrypt256(const char* input, size_t* out_len,
+joy_core_utils_aes_decrypt256(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
 	unsigned char* output = NULL;
@@ -214,7 +214,7 @@ utils_aes_decrypt256(const char* input, size_t* out_len,
 * key len is equal 16
 */
 unsigned char* 
-utils_aes_encrypt128(const char* input, size_t* out_len,
+joy_core_utils_aes_encrypt128(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
 	unsigned char* output = NULL;
@@ -226,7 +226,7 @@ utils_aes_encrypt128(const char* input, size_t* out_len,
 }
 
 unsigned char*
-utils_aes_decrypt128(const char* input, size_t* out_len,
+joy_core_utils_aes_decrypt128(const char* input, size_t* out_len,
 	const char* key, const char* iv)
 {
 	unsigned char* output = NULL;
@@ -240,7 +240,7 @@ utils_aes_decrypt128(const char* input, size_t* out_len,
 
 
 char* 
-utils_des_crypt(const char* key, const char* text,
+joy_core_utils_des_crypt(const char* key, const char* text,
 	size_t textsz, size_t* out_len)
 {
 	uint32_t SK[32];
@@ -276,7 +276,7 @@ utils_des_crypt(const char* key, const char* text,
 }
 
 char*
-utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len)
+joy_core_utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len)
 {
 	uint32_t ESK[32];
 	uint32_t SK[32];
@@ -323,7 +323,7 @@ utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_
 }
 
 char*
-utils_read_script(const char* file, size_t* data_size)
+joy_core_utils_read_script(const char* file, size_t* data_size)
 {
 	size_t raw_data_size;
 	char* raw_data, * data;
@@ -332,7 +332,7 @@ utils_read_script(const char* file, size_t* data_size)
 	key = "com.livnet.liwei";
 	raw_data = SDL_LoadFile(file, &raw_data_size);
 	if (raw_data) {
-		data = utils_des_decrypt(key, raw_data, raw_data_size, data_size);
+		data = joy_core_utils_des_decrypt(key, raw_data, raw_data_size, data_size);
 		if (data) {
 			data[*data_size] = 0;
 			SDL_free(raw_data);
@@ -351,7 +351,7 @@ utils_read_script(const char* file, size_t* data_size)
 }
 
 random_num_p
-utils_random_create(uint32_t seed)
+joy_core_utils_random_create(uint32_t seed)
 {
 	random_num_p rnum;
 	rnum = (random_num_p)SDL_malloc(sizeof(random_num_t));
@@ -366,13 +366,13 @@ utils_random_create(uint32_t seed)
 }
 
 void
-utils_random_destroy(random_num_p rnum)
+joy_core_utils_random_destroy(random_num_p rnum)
 {
 	SDL_free(rnum);
 }
 
 uint32_t
-utils_random_next(random_num_p rnum)
+joy_core_utils_random_next(random_num_p rnum)
 {
 	const uint32_t matrix_a = 0x9908b0df;
 	const uint32_t upper_mask = 0x80000000;
@@ -396,7 +396,7 @@ utils_random_next(random_num_p rnum)
 }
 
 void
-utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out)
+joy_core_utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out)
 {
 	if (rnum) {
 		if (mt_out) SDL_memcpy(mt_out, rnum->mt, sizeof(uint32_t) * MT_N);
@@ -405,7 +405,7 @@ utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out)
 }
 
 void
-utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in)
+joy_core_utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in)
 {
 	if (rnum) {
 		if (mt_in) SDL_memcpy(rnum->mt, mt_in, sizeof(uint32_t) * MT_N);

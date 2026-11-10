@@ -8,7 +8,7 @@
 #include <mono/utils/mono-publib.h>   /* mono_free 只声明在这里，NDK clang 不接受隐式声明 */
 #include "joy_csharp.h"
 #include <joy/joy.h>
-#include <SDL3/SDL_stdinc.h>   /* SDL_free：utils_read_file 的返回缓冲归 SDL 分配器 */
+#include <SDL3/SDL_stdinc.h>   /* SDL_free：joy_core_utils_read_file 的返回缓冲归 SDL 分配器 */
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -151,7 +151,7 @@ csx_p csx_create(void) {
 bool csx_load_assembly(csx_p csx, const char* filename)
 {
         size_t data_size;
-        char* assembly_data = utils_read_file(filename, &data_size);
+        char* assembly_data = joy_core_utils_read_file(filename, &data_size);
         if (!assembly_data) {
                 joy_core_log_error("Failed to read assembly file: %s", filename);
                 return false;

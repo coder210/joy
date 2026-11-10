@@ -163,6 +163,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `modules/` 共 57 个手写源文件里的 1881 处旧名全部改成 `joy_*` 新名；改写后
   手写源零旧名残留，且**不再需要兼容宏**即可编译通过，`compat.h` 宏块清空（仅留
   空占位，防 `joy.h` 的 `#include` 失效）。
+- **`script`（33 条）与 `utils`（20 条）收尾**：二者都曾因带函数指针参数 / 属于有意排除项
+  而留在 `SKIP_DOMAINS` 里（X 级，不进 thunk/vtable/C# 绑定）。按同样方式把它们的
+  定义与调用点真正改名——`script` → `joy_script_*`（仍归 `script` 域、X 级），
+  `utils` → `joy_core_utils_*`（归 `core` 域、靠 `SKIP_PREFIXES` 维持 X 级）；
+  旧 `utils`/`jspine`/`modules`/`module` 等死域从跳过清单里清掉。`compat.h` 不再需要。
 
 映射见 `idl/rename_map.json`（累加式）。
 

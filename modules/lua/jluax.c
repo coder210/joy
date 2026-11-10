@@ -197,7 +197,7 @@ bool luax_dofile(luax_p luax, const char* filename)
         strcat(chunkname, "@");
         strcat(chunkname, filename);
         size_t data_sz;
-        char* data = utils_read_file(filename, &data_sz);
+        char* data = joy_core_utils_read_file(filename, &data_sz);
         if (data) {
                 if (luaL_loadbuffer(luax->L, data, data_sz, chunkname) != LUA_OK) {
                         const char* error_msg = lua_tostring(luax->L, -1);

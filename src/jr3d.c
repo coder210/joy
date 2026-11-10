@@ -2952,7 +2952,7 @@ jr3d_checkbox_p joy_r3d_checkbox_create(float x, float y, float size, const char
 	cb->state = JOY_R3D_CHECKBOX_UNCHECKED;
 	cb->hovered = false;
 	cb->enabled = true;
-	cb->label = label ? utils_strdup(label, NULL) : NULL;
+	cb->label = label ? joy_core_utils_strdup(label, NULL) : NULL;
 	cb->label_w = label ? (float)strlen(label) * 8.0f : 0.0f;
 	cb->box_color = (jcolor_t){ 0, 0, 0, 255 };
 	cb->check_color = (jcolor_t){ 0, 120, 0, 255 };
@@ -2964,7 +2964,7 @@ jr3d_checkbox_p joy_r3d_checkbox_create(float x, float y, float size, const char
 void joy_r3d_checkbox_destroy(jr3d_checkbox_p cb)
 {
 	if (!cb) return;
-	/* label 由 utils_strdup(malloc) 分配, 必须用 free 释放(与 jui.c 一致), 避免跨堆(SDL_free 走 SDL3.dll 的 CRT 堆) */
+	/* label 由 joy_core_utils_strdup(malloc) 分配, 必须用 free 释放(与 jui.c 一致), 避免跨堆(SDL_free 走 SDL3.dll 的 CRT 堆) */
 	if (cb->label) free(cb->label);
 	SDL_free(cb);
 }

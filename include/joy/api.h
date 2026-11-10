@@ -16,23 +16,23 @@ extern "C" {
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  utils  //////////////////////////////////
         ///////////////////////////////////////////////////////////////////////
-        JOY_API char* utils_strdup(const char* str, size_t* out_sz);
-        JOY_API bool utils_get_current_time(uint64_t* ms_ticks);
-        JOY_API void utils_current_datetime(const char* fmt, char* buf, size_t len);
-        JOY_API char* utils_read_file(const char* filename, size_t* sz);
-        JOY_API bool utils_check_file(const char* filename);
-        JOY_API void utils_append_file(const char* filename, const char* data);
-        JOY_API char* utils_read_script(const char* file, size_t* data_size);
-        JOY_API short utils_bit2short(uint8_t* buf);
-        JOY_API void  utils_short2bit(uint8_t* buf, short value);
+        JOY_API char* joy_core_utils_strdup(const char* str, size_t* out_sz);
+        JOY_API bool joy_core_utils_get_current_time(uint64_t* ms_ticks);
+        JOY_API void joy_core_utils_current_datetime(const char* fmt, char* buf, size_t len);
+        JOY_API char* joy_core_utils_read_file(const char* filename, size_t* sz);
+        JOY_API bool joy_core_utils_check_file(const char* filename);
+        JOY_API void joy_core_utils_append_file(const char* filename, const char* data);
+        JOY_API char* joy_core_utils_read_script(const char* file, size_t* data_size);
+        JOY_API short joy_core_utils_bit2short(uint8_t* buf);
+        JOY_API void  joy_core_utils_short2bit(uint8_t* buf, short value);
         /* c# = BitConverter.FromUInt32 */
-        JOY_API int utils_bit2int(uint8_t* buf);
+        JOY_API int joy_core_utils_bit2int(uint8_t* buf);
         /* c# = BitConverter.ToUInt32 */
-        JOY_API void utils_int2bit(uint8_t* buf, int value);
-        JOY_API bool utils_wait_delay(delay_t* delay, uint64_t current_time);
-        JOY_API short utils_md5x(const char* input, size_t len, char* output);
-        JOY_API char* utils_des_crypt(const char* key, const char* text, size_t textsz, size_t* out_len);
-        JOY_API char* utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len);
+        JOY_API void joy_core_utils_int2bit(uint8_t* buf, int value);
+        JOY_API bool joy_core_utils_wait_delay(delay_t* delay, uint64_t current_time);
+        JOY_API short joy_core_utils_md5x(const char* input, size_t len, char* output);
+        JOY_API char* joy_core_utils_des_crypt(const char* key, const char* text, size_t textsz, size_t* out_len);
+        JOY_API char* joy_core_utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len);
 
         JOY_API unsigned long joy_core_sdbm_hash(const char* str, int size);
         JOY_API unsigned long joy_core_fnv1a_hash(const char* str, int size);

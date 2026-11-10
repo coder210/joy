@@ -1285,7 +1285,7 @@ void joy_scene_animation_reset(animation_p animation)
         uint64_t ticks;
         animation->idx_frame = 0;
         animation->total_time = 0;
-        if (utils_get_current_time(&ticks)) {
+        if (joy_core_utils_get_current_time(&ticks)) {
                 animation->last_time = ticks;
         }
         else {

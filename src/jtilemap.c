@@ -233,7 +233,7 @@ static char* cj_get_string(cJSON* obj, const char* key)
 {
     cJSON* it = cJSON_GetObjectItem(obj, key);
     if (it && it->type == cJSON_String && it->valuestring)
-        return utils_strdup(it->valuestring, NULL);
+        return joy_core_utils_strdup(it->valuestring, NULL);
     return NULL;
 }
 /* 当字段可能是字符串或数字时，统一返回字符串（renderorder 等） */
@@ -241,11 +241,11 @@ static char* cj_get_string_or_number(cJSON* obj, const char* key)
 {
     cJSON* it = cJSON_GetObjectItem(obj, key);
     if (!it) return NULL;
-    if (it->type == cJSON_String && it->valuestring) return utils_strdup(it->valuestring, NULL);
+    if (it->type == cJSON_String && it->valuestring) return joy_core_utils_strdup(it->valuestring, NULL);
     if (it->type == cJSON_Number) {
         char buf[64];
         snprintf(buf, sizeof(buf), "%lld", (long long)(int)it->valuedouble);
-        return utils_strdup(buf, NULL);
+        return joy_core_utils_strdup(buf, NULL);
     }
     return NULL;
 }
@@ -306,7 +306,7 @@ static bool parse_tileset_cjson(cJSON* j, jtilemap_tileset_t* ts)
             if (img && img->type == cJSON_String && img->valuestring) {
                 jtilemap_tile_def_t def;
                 def.id = tile_id;
-                def.image = utils_strdup(img->valuestring, NULL);
+                def.image = joy_core_utils_strdup(img->valuestring, NULL);
                 def.width  = cj_get_integer(t, "width", 64);
                 def.height = cj_get_integer(t, "height", 64);
                 kv_push(jtilemap_tile_def_t, ts->tile_defs, def);
@@ -881,7 +881,7 @@ static image_p load_texture_internal(jtilemap_render_p r, const char* path)
         stbi_image_free(data);
         if (!img) return NULL;
 
-        char* key = utils_strdup(path, NULL);
+        char* key = joy_core_utils_strdup(path, NULL);
         int ret;
         khiter_t ki = kh_put(tex_cache, r->tex_cache, key, &ret);
         kh_value(r->tex_cache, ki) = img;
@@ -1055,7 +1055,7 @@ jtilemap_render_p joy_scene_tilemap_render_create(jr2d_p renderer,
         if (!r) return NULL;
         r->r2d = renderer;
         r->remap = remap ? remap : default_remap;
-        r->asset_base = asset_base_path ? utils_strdup(asset_base_path, NULL) : NULL;
+        r->asset_base = asset_base_path ? joy_core_utils_strdup(asset_base_path, NULL) : NULL;
         r->view_w = 1024.0f;
         r->view_h = 760.0f;
         r->tile_px = 0.0f;   /* 默认 0：用 map.tilewidth 做每格像素 */

@@ -1315,7 +1315,7 @@ void joy_ui_datagrid_addrow(datagrid_p grid, const char** row_data)
         dg_row_t row;
         kv_init(row);
         for (int i = 0; i < grid->col_count; i++) {
-                kv_push(char*, row, row_data && row_data[i] ? utils_strdup(row_data[i], NULL) : NULL);
+                kv_push(char*, row, row_data && row_data[i] ? joy_core_utils_strdup(row_data[i], NULL) : NULL);
         }
         kv_push(dg_row_t, grid->data, row);
         grid->row_count = (int)kv_size(grid->data);
@@ -1327,7 +1327,7 @@ void joy_ui_datagrid_setcell(datagrid_p grid, int row_index, int col_index, cons
         if (row_index < (int)kv_size(grid->data) && col_index < grid->col_count) {
                 dg_row_t* row = &kv_A(grid->data, row_index);
                 if (kv_A(*row, col_index)) free(kv_A(*row, col_index));
-                kv_A(*row, col_index) = data ? utils_strdup(data, NULL) : NULL;
+                kv_A(*row, col_index) = data ? joy_core_utils_strdup(data, NULL) : NULL;
         }
 }
 
@@ -1487,7 +1487,7 @@ radio_p joy_ui_radio_create(float fx, float fy, float size_frac, const char* lab
 
         // 复制标签文本
         if (label) {
-                radio->label = utils_strdup(label, NULL);
+                radio->label = joy_core_utils_strdup(label, NULL);
         }
         else {
                 radio->label = NULL;
@@ -1635,7 +1635,7 @@ checkbox_p joy_ui_checkbox_create(float fx, float fy, float size_frac, const cha
         cb->size_frac = size_frac;
         cb->r2d = NULL;
         cb->state = JOY_CHECKBOX_UNCHECKED;
-        cb->label = label ? utils_strdup(label, NULL) : NULL;
+        cb->label = label ? joy_core_utils_strdup(label, NULL) : NULL;
         cb->hover = false;
         cb->enabled = true;
 
