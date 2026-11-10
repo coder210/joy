@@ -98,6 +98,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `find_min_separation` → `math`（1）。至此 `GENERIC_FIRST` 兜底产生的
   伪域（`min` / `push` / `game` / `jtimer` / `pack` / `unpack`）全部消失，
   剩下的大域只有 `ui`（20+ 控件域）与 `net`（协议域）待合并。
+- 第四批 **`net` 协议域合并 64 条**：`iocp` / `kcp*` / `tcp*` / `ws*` /
+  `net*` / `netmessage` 全部并入 `net`，`net` 域累计 76 条（含上一批的
+  pack/unpack）。剩下最大的就是 `ui`（约 230 条、20+ 控件域）。
 
 映射见 `idl/rename_map.json`（累加式）。
 

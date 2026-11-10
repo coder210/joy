@@ -791,20 +791,20 @@ static void shim_sys_install_crash_handlers(void* _jv_ctx)
         return;
 }
 
-static void shim_iocp_server_destroy(void* _jv_ctx, IocpServer server)
+static void shim_joy_net_iocp_server_destroy(void* _jv_ctx, IocpServer server)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(server.h);
-        _jv_r = joy_api_call("iocp_server_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_iocp_server_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_iocp_process_events(void* _jv_ctx, IocpServer server, int timeout_ms)
+static void shim_joy_net_iocp_process_events(void* _jv_ctx, IocpServer server, int timeout_ms)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -812,7 +812,7 @@ static void shim_iocp_process_events(void* _jv_ctx, IocpServer server, int timeo
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(server.h);
         _jv_args[1] = joy_v_i32(timeout_ms);
-        _jv_r = joy_api_call("iocp_process_events", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_iocp_process_events", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -5354,19 +5354,19 @@ static void shim_jtilemap_render_destroy(void* _jv_ctx, JtilemapRender r)
         return;
 }
 
-static int shim_kcpserver_destroy(void* _jv_ctx, Kcpserver ks)
+static int shim_joy_net_kcpserver_destroy(void* _jv_ctx, Kcpserver ks)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ks.h);
-        _jv_r = joy_api_call("kcpserver_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_destroy", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_kcpserver_send(void* _jv_ctx, Kcpserver ks, int conv, const char* data, int len)
+static void shim_joy_net_kcpserver_send(void* _jv_ctx, Kcpserver ks, int conv, const char* data, int len)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -5376,13 +5376,13 @@ static void shim_kcpserver_send(void* _jv_ctx, Kcpserver ks, int conv, const cha
         _jv_args[1] = joy_v_i32(conv);
         _jv_args[2] = joy_v_str(data);
         _jv_args[3] = joy_v_i32(len);
-        _jv_r = joy_api_call("kcpserver_send", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_send", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_kcpserver_broadcast(void* _jv_ctx, Kcpserver ks, const char* data, int len)
+static void shim_joy_net_kcpserver_broadcast(void* _jv_ctx, Kcpserver ks, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5391,13 +5391,13 @@ static void shim_kcpserver_broadcast(void* _jv_ctx, Kcpserver ks, const char* da
         _jv_args[0] = joy_v_handle(ks.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("kcpserver_broadcast", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_broadcast", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_kcpserver_offline(void* _jv_ctx, Kcpserver ks, int conv)
+static void shim_joy_net_kcpserver_offline(void* _jv_ctx, Kcpserver ks, int conv)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5405,38 +5405,38 @@ static void shim_kcpserver_offline(void* _jv_ctx, Kcpserver ks, int conv)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ks.h);
         _jv_args[1] = joy_v_i32(conv);
-        _jv_r = joy_api_call("kcpserver_offline", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_offline", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_kcpserver_update(void* _jv_ctx, Kcpserver ks)
+static void shim_joy_net_kcpserver_update(void* _jv_ctx, Kcpserver ks)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ks.h);
-        _jv_r = joy_api_call("kcpserver_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_kcpserver_connection_count(void* _jv_ctx, Kcpserver ks)
+static int shim_joy_net_kcpserver_connection_count(void* _jv_ctx, Kcpserver ks)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ks.h);
-        _jv_r = joy_api_call("kcpserver_connection_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_connection_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_kcpserver_poll_message(void* _jv_ctx, Kcpserver ks, NetMessage msg)
+static bool shim_joy_net_kcpserver_poll_message(void* _jv_ctx, Kcpserver ks, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5444,25 +5444,25 @@ static bool shim_kcpserver_poll_message(void* _jv_ctx, Kcpserver ks, NetMessage 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ks.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("kcpserver_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpserver_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_kcpclient_destroy(void* _jv_ctx, Kcpclient kc)
+static void shim_joy_net_kcpclient_destroy(void* _jv_ctx, Kcpclient kc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(kc.h);
-        _jv_r = joy_api_call("kcpclient_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpclient_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_kcpclient_send(void* _jv_ctx, Kcpclient kc, const char* data, int len)
+static int shim_joy_net_kcpclient_send(void* _jv_ctx, Kcpclient kc, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5471,25 +5471,25 @@ static int shim_kcpclient_send(void* _jv_ctx, Kcpclient kc, const char* data, in
         _jv_args[0] = joy_v_handle(kc.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("kcpclient_send", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpclient_send", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_kcpclient_update(void* _jv_ctx, Kcpclient kc)
+static void shim_joy_net_kcpclient_update(void* _jv_ctx, Kcpclient kc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(kc.h);
-        _jv_r = joy_api_call("kcpclient_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpclient_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_kcpclient_poll_message(void* _jv_ctx, Kcpclient kc, NetMessage msg)
+static bool shim_joy_net_kcpclient_poll_message(void* _jv_ctx, Kcpclient kc, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5497,24 +5497,24 @@ static bool shim_kcpclient_poll_message(void* _jv_ctx, Kcpclient kc, NetMessage 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(kc.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("kcpclient_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_kcpclient_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static int shim_tcpserver_destroy(void* _jv_ctx, Tcpserver tcpserver)
+static int shim_joy_net_tcpserver_destroy(void* _jv_ctx, Tcpserver tcpserver)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpserver.h);
-        _jv_r = joy_api_call("tcpserver_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_destroy", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_tcpserver_send(void* _jv_ctx, Tcpserver tcpserver, int conv, const char* data, int len)
+static void shim_joy_net_tcpserver_send(void* _jv_ctx, Tcpserver tcpserver, int conv, const char* data, int len)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -5524,13 +5524,13 @@ static void shim_tcpserver_send(void* _jv_ctx, Tcpserver tcpserver, int conv, co
         _jv_args[1] = joy_v_i32(conv);
         _jv_args[2] = joy_v_str(data);
         _jv_args[3] = joy_v_i32(len);
-        _jv_r = joy_api_call("tcpserver_send", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_send", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tcpserver_broadcast(void* _jv_ctx, Tcpserver tcpserver, const char* data, int len)
+static void shim_joy_net_tcpserver_broadcast(void* _jv_ctx, Tcpserver tcpserver, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5539,13 +5539,13 @@ static void shim_tcpserver_broadcast(void* _jv_ctx, Tcpserver tcpserver, const c
         _jv_args[0] = joy_v_handle(tcpserver.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("tcpserver_broadcast", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_broadcast", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tcpserver_offline(void* _jv_ctx, Tcpserver tcpserver, int conv)
+static void shim_joy_net_tcpserver_offline(void* _jv_ctx, Tcpserver tcpserver, int conv)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5553,38 +5553,38 @@ static void shim_tcpserver_offline(void* _jv_ctx, Tcpserver tcpserver, int conv)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpserver.h);
         _jv_args[1] = joy_v_i32(conv);
-        _jv_r = joy_api_call("tcpserver_offline", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_offline", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tcpserver_update(void* _jv_ctx, Tcpserver tcpserver)
+static void shim_joy_net_tcpserver_update(void* _jv_ctx, Tcpserver tcpserver)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpserver.h);
-        _jv_r = joy_api_call("tcpserver_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_tcpserver_connection_count(void* _jv_ctx, Tcpserver tcpserver)
+static int shim_joy_net_tcpserver_connection_count(void* _jv_ctx, Tcpserver tcpserver)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpserver.h);
-        _jv_r = joy_api_call("tcpserver_connection_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_connection_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_tcpserver_poll_message(void* _jv_ctx, Tcpserver tcpserver, NetMessage msg)
+static bool shim_joy_net_tcpserver_poll_message(void* _jv_ctx, Tcpserver tcpserver, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5592,25 +5592,25 @@ static bool shim_tcpserver_poll_message(void* _jv_ctx, Tcpserver tcpserver, NetM
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpserver.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("tcpserver_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpserver_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_tcpclient_destroy(void* _jv_ctx, Tcpclient tcpclient)
+static void shim_joy_net_tcpclient_destroy(void* _jv_ctx, Tcpclient tcpclient)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpclient.h);
-        _jv_r = joy_api_call("tcpclient_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpclient_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_tcpclient_send(void* _jv_ctx, Tcpclient tcpclient, const char* data, int len)
+static int shim_joy_net_tcpclient_send(void* _jv_ctx, Tcpclient tcpclient, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5619,25 +5619,25 @@ static int shim_tcpclient_send(void* _jv_ctx, Tcpclient tcpclient, const char* d
         _jv_args[0] = joy_v_handle(tcpclient.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("tcpclient_send", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpclient_send", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_tcpclient_update(void* _jv_ctx, Tcpclient tcpclient)
+static void shim_joy_net_tcpclient_update(void* _jv_ctx, Tcpclient tcpclient)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpclient.h);
-        _jv_r = joy_api_call("tcpclient_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpclient_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_tcpclient_poll_message(void* _jv_ctx, Tcpclient tcpclient, NetMessage msg)
+static bool shim_joy_net_tcpclient_poll_message(void* _jv_ctx, Tcpclient tcpclient, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5645,24 +5645,24 @@ static bool shim_tcpclient_poll_message(void* _jv_ctx, Tcpclient tcpclient, NetM
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tcpclient.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("tcpclient_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_tcpclient_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static int shim_wsnetserver_destroy(void* _jv_ctx, Wsnetserver ws)
+static int shim_joy_net_wsnetserver_destroy(void* _jv_ctx, Wsnetserver ws)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ws.h);
-        _jv_r = joy_api_call("wsnetserver_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_destroy", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_wsnetserver_send(void* _jv_ctx, Wsnetserver ws, int conv, const char* data, int len)
+static void shim_joy_net_wsnetserver_send(void* _jv_ctx, Wsnetserver ws, int conv, const char* data, int len)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -5672,13 +5672,13 @@ static void shim_wsnetserver_send(void* _jv_ctx, Wsnetserver ws, int conv, const
         _jv_args[1] = joy_v_i32(conv);
         _jv_args[2] = joy_v_str(data);
         _jv_args[3] = joy_v_i32(len);
-        _jv_r = joy_api_call("wsnetserver_send", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_send", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_wsnetserver_broadcast(void* _jv_ctx, Wsnetserver ws, const char* data, int len)
+static void shim_joy_net_wsnetserver_broadcast(void* _jv_ctx, Wsnetserver ws, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5687,13 +5687,13 @@ static void shim_wsnetserver_broadcast(void* _jv_ctx, Wsnetserver ws, const char
         _jv_args[0] = joy_v_handle(ws.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("wsnetserver_broadcast", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_broadcast", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_wsnetserver_offline(void* _jv_ctx, Wsnetserver ws, int conv)
+static void shim_joy_net_wsnetserver_offline(void* _jv_ctx, Wsnetserver ws, int conv)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5701,38 +5701,38 @@ static void shim_wsnetserver_offline(void* _jv_ctx, Wsnetserver ws, int conv)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ws.h);
         _jv_args[1] = joy_v_i32(conv);
-        _jv_r = joy_api_call("wsnetserver_offline", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_offline", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_wsnetserver_update(void* _jv_ctx, Wsnetserver ws)
+static void shim_joy_net_wsnetserver_update(void* _jv_ctx, Wsnetserver ws)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ws.h);
-        _jv_r = joy_api_call("wsnetserver_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_wsnetserver_connection_count(void* _jv_ctx, Wsnetserver ws)
+static int shim_joy_net_wsnetserver_connection_count(void* _jv_ctx, Wsnetserver ws)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ws.h);
-        _jv_r = joy_api_call("wsnetserver_connection_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_connection_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_wsnetserver_poll_message(void* _jv_ctx, Wsnetserver ws, NetMessage msg)
+static bool shim_joy_net_wsnetserver_poll_message(void* _jv_ctx, Wsnetserver ws, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5740,25 +5740,25 @@ static bool shim_wsnetserver_poll_message(void* _jv_ctx, Wsnetserver ws, NetMess
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ws.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("wsnetserver_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetserver_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_wsnetclient_destroy(void* _jv_ctx, Wsnetclient wc)
+static void shim_joy_net_wsnetclient_destroy(void* _jv_ctx, Wsnetclient wc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(wc.h);
-        _jv_r = joy_api_call("wsnetclient_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetclient_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_wsnetclient_send(void* _jv_ctx, Wsnetclient wc, const char* data, int len)
+static int shim_joy_net_wsnetclient_send(void* _jv_ctx, Wsnetclient wc, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5767,25 +5767,25 @@ static int shim_wsnetclient_send(void* _jv_ctx, Wsnetclient wc, const char* data
         _jv_args[0] = joy_v_handle(wc.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("wsnetclient_send", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetclient_send", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_wsnetclient_update(void* _jv_ctx, Wsnetclient wc)
+static void shim_joy_net_wsnetclient_update(void* _jv_ctx, Wsnetclient wc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(wc.h);
-        _jv_r = joy_api_call("wsnetclient_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetclient_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_wsnetclient_poll_message(void* _jv_ctx, Wsnetclient wc, NetMessage msg)
+static bool shim_joy_net_wsnetclient_poll_message(void* _jv_ctx, Wsnetclient wc, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5793,25 +5793,25 @@ static bool shim_wsnetclient_poll_message(void* _jv_ctx, Wsnetclient wc, NetMess
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(wc.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("wsnetclient_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_wsnetclient_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_netclient_destroy(void* _jv_ctx, Netclient nc)
+static void shim_joy_net_netclient_destroy(void* _jv_ctx, Netclient nc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(nc.h);
-        _jv_r = joy_api_call("netclient_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netclient_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_netclient_send(void* _jv_ctx, Netclient nc, const char* data, int len)
+static int shim_joy_net_netclient_send(void* _jv_ctx, Netclient nc, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5820,25 +5820,25 @@ static int shim_netclient_send(void* _jv_ctx, Netclient nc, const char* data, in
         _jv_args[0] = joy_v_handle(nc.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("netclient_send", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netclient_send", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_netclient_update(void* _jv_ctx, Netclient nc)
+static void shim_joy_net_netclient_update(void* _jv_ctx, Netclient nc)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(nc.h);
-        _jv_r = joy_api_call("netclient_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netclient_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_netclient_poll_message(void* _jv_ctx, Netclient nc, NetMessage msg)
+static bool shim_joy_net_netclient_poll_message(void* _jv_ctx, Netclient nc, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5846,25 +5846,25 @@ static bool shim_netclient_poll_message(void* _jv_ctx, Netclient nc, NetMessage 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(nc.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("netclient_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netclient_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_netserver_destroy(void* _jv_ctx, Netserver ns)
+static void shim_joy_net_netserver_destroy(void* _jv_ctx, Netserver ns)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ns.h);
-        _jv_r = joy_api_call("netserver_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_netserver_send(void* _jv_ctx, Netserver ns, int conv, const char* data, int len)
+static void shim_joy_net_netserver_send(void* _jv_ctx, Netserver ns, int conv, const char* data, int len)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -5874,13 +5874,13 @@ static void shim_netserver_send(void* _jv_ctx, Netserver ns, int conv, const cha
         _jv_args[1] = joy_v_i32(conv);
         _jv_args[2] = joy_v_str(data);
         _jv_args[3] = joy_v_i32(len);
-        _jv_r = joy_api_call("netserver_send", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_send", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_netserver_broadcast(void* _jv_ctx, Netserver ns, const char* data, int len)
+static void shim_joy_net_netserver_broadcast(void* _jv_ctx, Netserver ns, const char* data, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5889,13 +5889,13 @@ static void shim_netserver_broadcast(void* _jv_ctx, Netserver ns, const char* da
         _jv_args[0] = joy_v_handle(ns.h);
         _jv_args[1] = joy_v_str(data);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("netserver_broadcast", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_broadcast", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_netserver_offline(void* _jv_ctx, Netserver ns, int conv)
+static void shim_joy_net_netserver_offline(void* _jv_ctx, Netserver ns, int conv)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5903,38 +5903,38 @@ static void shim_netserver_offline(void* _jv_ctx, Netserver ns, int conv)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ns.h);
         _jv_args[1] = joy_v_i32(conv);
-        _jv_r = joy_api_call("netserver_offline", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_offline", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_netserver_update(void* _jv_ctx, Netserver ns)
+static void shim_joy_net_netserver_update(void* _jv_ctx, Netserver ns)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ns.h);
-        _jv_r = joy_api_call("netserver_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_netserver_connection_count(void* _jv_ctx, Netserver ns)
+static int shim_joy_net_netserver_connection_count(void* _jv_ctx, Netserver ns)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ns.h);
-        _jv_r = joy_api_call("netserver_connection_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_connection_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_netserver_poll_message(void* _jv_ctx, Netserver ns, NetMessage msg)
+static bool shim_joy_net_netserver_poll_message(void* _jv_ctx, Netserver ns, NetMessage msg)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5942,19 +5942,19 @@ static bool shim_netserver_poll_message(void* _jv_ctx, Netserver ns, NetMessage 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ns.h);
         _jv_args[1] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("netserver_poll_message", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netserver_poll_message", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_netmessage_free_data(void* _jv_ctx, NetMessage msg)
+static void shim_joy_net_netmessage_free_data(void* _jv_ctx, NetMessage msg)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(msg.h);
-        _jv_r = joy_api_call("netmessage_free_data", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_netmessage_free_data", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10022,8 +10022,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->SysCurrentTime = shim_sys_current_time;
         api->SysSleep = shim_sys_sleep;
         api->SysInstallCrashHandlers = shim_sys_install_crash_handlers;
-        api->IocpServerDestroy = shim_iocp_server_destroy;
-        api->IocpProcessEvents = shim_iocp_process_events;
+        api->IocpServerDestroy = shim_joy_net_iocp_server_destroy;
+        api->IocpProcessEvents = shim_joy_net_iocp_process_events;
         api->FontCreate = shim_font_create;
         api->FontDestroy = shim_font_destroy;
         api->FontGetScale = shim_font_get_scale;
@@ -10339,51 +10339,51 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JtilemapRenderSetTilePx = shim_jtilemap_render_set_tile_px;
         api->JtilemapRenderLayer = shim_jtilemap_render_layer;
         api->JtilemapRenderDestroy = shim_jtilemap_render_destroy;
-        api->KcpserverDestroy = shim_kcpserver_destroy;
-        api->KcpserverSend = shim_kcpserver_send;
-        api->KcpserverBroadcast = shim_kcpserver_broadcast;
-        api->KcpserverOffline = shim_kcpserver_offline;
-        api->KcpserverUpdate = shim_kcpserver_update;
-        api->KcpserverConnectionCount = shim_kcpserver_connection_count;
-        api->KcpserverPollMessage = shim_kcpserver_poll_message;
-        api->KcpclientDestroy = shim_kcpclient_destroy;
-        api->KcpclientSend = shim_kcpclient_send;
-        api->KcpclientUpdate = shim_kcpclient_update;
-        api->KcpclientPollMessage = shim_kcpclient_poll_message;
-        api->TcpserverDestroy = shim_tcpserver_destroy;
-        api->TcpserverSend = shim_tcpserver_send;
-        api->TcpserverBroadcast = shim_tcpserver_broadcast;
-        api->TcpserverOffline = shim_tcpserver_offline;
-        api->TcpserverUpdate = shim_tcpserver_update;
-        api->TcpserverConnectionCount = shim_tcpserver_connection_count;
-        api->TcpserverPollMessage = shim_tcpserver_poll_message;
-        api->TcpclientDestroy = shim_tcpclient_destroy;
-        api->TcpclientSend = shim_tcpclient_send;
-        api->TcpclientUpdate = shim_tcpclient_update;
-        api->TcpclientPollMessage = shim_tcpclient_poll_message;
-        api->WsnetserverDestroy = shim_wsnetserver_destroy;
-        api->WsnetserverSend = shim_wsnetserver_send;
-        api->WsnetserverBroadcast = shim_wsnetserver_broadcast;
-        api->WsnetserverOffline = shim_wsnetserver_offline;
-        api->WsnetserverUpdate = shim_wsnetserver_update;
-        api->WsnetserverConnectionCount = shim_wsnetserver_connection_count;
-        api->WsnetserverPollMessage = shim_wsnetserver_poll_message;
-        api->WsnetclientDestroy = shim_wsnetclient_destroy;
-        api->WsnetclientSend = shim_wsnetclient_send;
-        api->WsnetclientUpdate = shim_wsnetclient_update;
-        api->WsnetclientPollMessage = shim_wsnetclient_poll_message;
-        api->NetclientDestroy = shim_netclient_destroy;
-        api->NetclientSend = shim_netclient_send;
-        api->NetclientUpdate = shim_netclient_update;
-        api->NetclientPollMessage = shim_netclient_poll_message;
-        api->NetserverDestroy = shim_netserver_destroy;
-        api->NetserverSend = shim_netserver_send;
-        api->NetserverBroadcast = shim_netserver_broadcast;
-        api->NetserverOffline = shim_netserver_offline;
-        api->NetserverUpdate = shim_netserver_update;
-        api->NetserverConnectionCount = shim_netserver_connection_count;
-        api->NetserverPollMessage = shim_netserver_poll_message;
-        api->NetmessageFreeData = shim_netmessage_free_data;
+        api->KcpserverDestroy = shim_joy_net_kcpserver_destroy;
+        api->KcpserverSend = shim_joy_net_kcpserver_send;
+        api->KcpserverBroadcast = shim_joy_net_kcpserver_broadcast;
+        api->KcpserverOffline = shim_joy_net_kcpserver_offline;
+        api->KcpserverUpdate = shim_joy_net_kcpserver_update;
+        api->KcpserverConnectionCount = shim_joy_net_kcpserver_connection_count;
+        api->KcpserverPollMessage = shim_joy_net_kcpserver_poll_message;
+        api->KcpclientDestroy = shim_joy_net_kcpclient_destroy;
+        api->KcpclientSend = shim_joy_net_kcpclient_send;
+        api->KcpclientUpdate = shim_joy_net_kcpclient_update;
+        api->KcpclientPollMessage = shim_joy_net_kcpclient_poll_message;
+        api->TcpserverDestroy = shim_joy_net_tcpserver_destroy;
+        api->TcpserverSend = shim_joy_net_tcpserver_send;
+        api->TcpserverBroadcast = shim_joy_net_tcpserver_broadcast;
+        api->TcpserverOffline = shim_joy_net_tcpserver_offline;
+        api->TcpserverUpdate = shim_joy_net_tcpserver_update;
+        api->TcpserverConnectionCount = shim_joy_net_tcpserver_connection_count;
+        api->TcpserverPollMessage = shim_joy_net_tcpserver_poll_message;
+        api->TcpclientDestroy = shim_joy_net_tcpclient_destroy;
+        api->TcpclientSend = shim_joy_net_tcpclient_send;
+        api->TcpclientUpdate = shim_joy_net_tcpclient_update;
+        api->TcpclientPollMessage = shim_joy_net_tcpclient_poll_message;
+        api->WsnetserverDestroy = shim_joy_net_wsnetserver_destroy;
+        api->WsnetserverSend = shim_joy_net_wsnetserver_send;
+        api->WsnetserverBroadcast = shim_joy_net_wsnetserver_broadcast;
+        api->WsnetserverOffline = shim_joy_net_wsnetserver_offline;
+        api->WsnetserverUpdate = shim_joy_net_wsnetserver_update;
+        api->WsnetserverConnectionCount = shim_joy_net_wsnetserver_connection_count;
+        api->WsnetserverPollMessage = shim_joy_net_wsnetserver_poll_message;
+        api->WsnetclientDestroy = shim_joy_net_wsnetclient_destroy;
+        api->WsnetclientSend = shim_joy_net_wsnetclient_send;
+        api->WsnetclientUpdate = shim_joy_net_wsnetclient_update;
+        api->WsnetclientPollMessage = shim_joy_net_wsnetclient_poll_message;
+        api->NetclientDestroy = shim_joy_net_netclient_destroy;
+        api->NetclientSend = shim_joy_net_netclient_send;
+        api->NetclientUpdate = shim_joy_net_netclient_update;
+        api->NetclientPollMessage = shim_joy_net_netclient_poll_message;
+        api->NetserverDestroy = shim_joy_net_netserver_destroy;
+        api->NetserverSend = shim_joy_net_netserver_send;
+        api->NetserverBroadcast = shim_joy_net_netserver_broadcast;
+        api->NetserverOffline = shim_joy_net_netserver_offline;
+        api->NetserverUpdate = shim_joy_net_netserver_update;
+        api->NetserverConnectionCount = shim_joy_net_netserver_connection_count;
+        api->NetserverPollMessage = shim_joy_net_netserver_poll_message;
+        api->NetmessageFreeData = shim_joy_net_netmessage_free_data;
         api->SceneNodeDestroy = shim_scene_node_destroy;
         api->SceneNodeAddChild = shim_scene_node_add_child;
         api->SceneNodeRemoveChild = shim_scene_node_remove_child;

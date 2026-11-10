@@ -905,9 +905,9 @@ static void icall_IocpServerDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("iocp_server_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_iocp_server_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "iocp_server_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_iocp_server_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -919,9 +919,9 @@ static void icall_IocpProcessEvents(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("iocp_process_events", args, 2, &st);
+        (void)joy_api_call("joy_net_iocp_process_events", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "iocp_process_events", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_iocp_process_events", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5815,9 +5815,9 @@ static int32_t icall_KcpserverDestroy(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("kcpserver_destroy", args, 1, &st);
+        r = joy_api_call("joy_net_kcpserver_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_destroy", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5833,10 +5833,10 @@ static void icall_KcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("kcpserver_send", args, 4, &st);
+        (void)joy_api_call("joy_net_kcpserver_send", args, 4, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_send", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5851,10 +5851,10 @@ static void icall_KcpserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("kcpserver_broadcast", args, 3, &st);
+        (void)joy_api_call("joy_net_kcpserver_broadcast", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_broadcast", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5866,9 +5866,9 @@ static void icall_KcpserverOffline(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("kcpserver_offline", args, 2, &st);
+        (void)joy_api_call("joy_net_kcpserver_offline", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_offline", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_offline", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5879,9 +5879,9 @@ static void icall_KcpserverUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("kcpserver_update", args, 1, &st);
+        (void)joy_api_call("joy_net_kcpserver_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5893,9 +5893,9 @@ static int32_t icall_KcpserverConnectionCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("kcpserver_connection_count", args, 1, &st);
+        r = joy_api_call("joy_net_kcpserver_connection_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_connection_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_connection_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5908,9 +5908,9 @@ static int32_t icall_KcpserverPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("kcpserver_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_kcpserver_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpserver_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpserver_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5921,9 +5921,9 @@ static void icall_KcpclientDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("kcpclient_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_kcpclient_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpclient_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpclient_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5939,10 +5939,10 @@ static int32_t icall_KcpclientSend(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("kcpclient_send", args, 3, &st);
+        r = joy_api_call("joy_net_kcpclient_send", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpclient_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5953,9 +5953,9 @@ static void icall_KcpclientUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("kcpclient_update", args, 1, &st);
+        (void)joy_api_call("joy_net_kcpclient_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpclient_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpclient_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5968,9 +5968,9 @@ static int32_t icall_KcpclientPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("kcpclient_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_kcpclient_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kcpclient_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_kcpclient_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5982,9 +5982,9 @@ static int32_t icall_TcpserverDestroy(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("tcpserver_destroy", args, 1, &st);
+        r = joy_api_call("joy_net_tcpserver_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_destroy", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6000,10 +6000,10 @@ static void icall_TcpserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("tcpserver_send", args, 4, &st);
+        (void)joy_api_call("joy_net_tcpserver_send", args, 4, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_send", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6018,10 +6018,10 @@ static void icall_TcpserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("tcpserver_broadcast", args, 3, &st);
+        (void)joy_api_call("joy_net_tcpserver_broadcast", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_broadcast", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6033,9 +6033,9 @@ static void icall_TcpserverOffline(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("tcpserver_offline", args, 2, &st);
+        (void)joy_api_call("joy_net_tcpserver_offline", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_offline", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_offline", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6046,9 +6046,9 @@ static void icall_TcpserverUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("tcpserver_update", args, 1, &st);
+        (void)joy_api_call("joy_net_tcpserver_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6060,9 +6060,9 @@ static int32_t icall_TcpserverConnectionCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("tcpserver_connection_count", args, 1, &st);
+        r = joy_api_call("joy_net_tcpserver_connection_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_connection_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_connection_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6075,9 +6075,9 @@ static int32_t icall_TcpserverPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("tcpserver_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_tcpserver_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpserver_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpserver_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6088,9 +6088,9 @@ static void icall_TcpclientDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("tcpclient_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_tcpclient_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpclient_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpclient_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6106,10 +6106,10 @@ static int32_t icall_TcpclientSend(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("tcpclient_send", args, 3, &st);
+        r = joy_api_call("joy_net_tcpclient_send", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpclient_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6120,9 +6120,9 @@ static void icall_TcpclientUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("tcpclient_update", args, 1, &st);
+        (void)joy_api_call("joy_net_tcpclient_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpclient_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpclient_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6135,9 +6135,9 @@ static int32_t icall_TcpclientPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("tcpclient_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_tcpclient_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "tcpclient_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_tcpclient_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6149,9 +6149,9 @@ static int32_t icall_WsnetserverDestroy(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("wsnetserver_destroy", args, 1, &st);
+        r = joy_api_call("joy_net_wsnetserver_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_destroy", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6167,10 +6167,10 @@ static void icall_WsnetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("wsnetserver_send", args, 4, &st);
+        (void)joy_api_call("joy_net_wsnetserver_send", args, 4, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_send", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6185,10 +6185,10 @@ static void icall_WsnetserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("wsnetserver_broadcast", args, 3, &st);
+        (void)joy_api_call("joy_net_wsnetserver_broadcast", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_broadcast", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6200,9 +6200,9 @@ static void icall_WsnetserverOffline(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("wsnetserver_offline", args, 2, &st);
+        (void)joy_api_call("joy_net_wsnetserver_offline", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_offline", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_offline", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6213,9 +6213,9 @@ static void icall_WsnetserverUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("wsnetserver_update", args, 1, &st);
+        (void)joy_api_call("joy_net_wsnetserver_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6227,9 +6227,9 @@ static int32_t icall_WsnetserverConnectionCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("wsnetserver_connection_count", args, 1, &st);
+        r = joy_api_call("joy_net_wsnetserver_connection_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_connection_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_connection_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6242,9 +6242,9 @@ static int32_t icall_WsnetserverPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("wsnetserver_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_wsnetserver_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetserver_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetserver_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6255,9 +6255,9 @@ static void icall_WsnetclientDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("wsnetclient_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_wsnetclient_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetclient_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetclient_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6273,10 +6273,10 @@ static int32_t icall_WsnetclientSend(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("wsnetclient_send", args, 3, &st);
+        r = joy_api_call("joy_net_wsnetclient_send", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetclient_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6287,9 +6287,9 @@ static void icall_WsnetclientUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("wsnetclient_update", args, 1, &st);
+        (void)joy_api_call("joy_net_wsnetclient_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetclient_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetclient_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6302,9 +6302,9 @@ static int32_t icall_WsnetclientPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("wsnetclient_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_wsnetclient_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "wsnetclient_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_wsnetclient_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6315,9 +6315,9 @@ static void icall_NetclientDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("netclient_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_netclient_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netclient_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netclient_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6333,10 +6333,10 @@ static int32_t icall_NetclientSend(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("netclient_send", args, 3, &st);
+        r = joy_api_call("joy_net_netclient_send", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netclient_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netclient_send", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6347,9 +6347,9 @@ static void icall_NetclientUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("netclient_update", args, 1, &st);
+        (void)joy_api_call("joy_net_netclient_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netclient_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netclient_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6362,9 +6362,9 @@ static int32_t icall_NetclientPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("netclient_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_netclient_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netclient_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netclient_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6375,9 +6375,9 @@ static void icall_NetserverDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("netserver_destroy", args, 1, &st);
+        (void)joy_api_call("joy_net_netserver_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6393,10 +6393,10 @@ static void icall_NetserverSend(uint64_t p0, int32_t p1, MonoString* p2, int32_t
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("netserver_send", args, 4, &st);
+        (void)joy_api_call("joy_net_netserver_send", args, 4, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_send", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6411,10 +6411,10 @@ static void icall_NetserverBroadcast(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("netserver_broadcast", args, 3, &st);
+        (void)joy_api_call("joy_net_netserver_broadcast", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_broadcast", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_broadcast", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6426,9 +6426,9 @@ static void icall_NetserverOffline(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("netserver_offline", args, 2, &st);
+        (void)joy_api_call("joy_net_netserver_offline", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_offline", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_offline", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6439,9 +6439,9 @@ static void icall_NetserverUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("netserver_update", args, 1, &st);
+        (void)joy_api_call("joy_net_netserver_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6453,9 +6453,9 @@ static int32_t icall_NetserverConnectionCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("netserver_connection_count", args, 1, &st);
+        r = joy_api_call("joy_net_netserver_connection_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_connection_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_connection_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6468,9 +6468,9 @@ static int32_t icall_NetserverPollMessage(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        r = joy_api_call("netserver_poll_message", args, 2, &st);
+        r = joy_api_call("joy_net_netserver_poll_message", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netserver_poll_message", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netserver_poll_message", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -6481,9 +6481,9 @@ static void icall_NetmessageFreeData(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("netmessage_free_data", args, 1, &st);
+        (void)joy_api_call("joy_net_netmessage_free_data", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "netmessage_free_data", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_netmessage_free_data", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
