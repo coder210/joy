@@ -433,6 +433,49 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
 #define joystick_get_direction     joy_input_joystick_get_direction
 #define joystick_get_magnitude     joy_input_joystick_get_magnitude
 #define joystick_process_event     joy_input_joystick_process_event
+
+/* P1 第九批：r2d 本体与 jparticle。 */
+#define r2d_create                 joy_r2d_create
+#define r2d_wrap                   joy_r2d_wrap
+#define r2d_destroy                joy_r2d_destroy
+#define r2d_unwrap                 joy_r2d_unwrap
+#define r2d_coordinates_from_window joy_r2d_coordinates_from_window
+#define r2d_get_color              joy_r2d_get_color
+#define r2d_set_color              joy_r2d_set_color
+#define r2d_begin                  joy_r2d_begin
+#define r2d_end                    joy_r2d_end
+#define r2d_set_logical_presentation joy_r2d_set_logical_presentation
+#define r2d_set_logical_presentation_mode joy_r2d_set_logical_presentation_mode
+#define r2d_get_logical_presentation joy_r2d_get_logical_presentation
+#define r2d_get_size               joy_r2d_get_size
+#define r2d_set_vsync              joy_r2d_set_vsync
+#define r2d_set_scale              joy_r2d_set_scale
+#define r2d_set_colorf             joy_r2d_set_colorf
+#define r2d_get_colorf             joy_r2d_get_colorf
+#define r2d_set_blend_mode         joy_r2d_set_blend_mode
+#define r2d_draw_point             joy_r2d_draw_point
+#define r2d_draw_points            joy_r2d_draw_points
+#define r2d_set_clip_rect          joy_r2d_set_clip_rect
+#define r2d_get_clip_rect          joy_r2d_get_clip_rect
+#define r2d_clear_clip             joy_r2d_clear_clip
+#define r2d_push_clip_rect         joy_r2d_push_clip_rect
+#define r2d_pop_clip_rect          joy_r2d_pop_clip_rect
+#define r2d_reset_clip_stack       joy_r2d_reset_clip_stack
+#define r2d_point_in_clip          joy_r2d_point_in_clip
+#define r2d_draw_lines             joy_r2d_draw_lines
+#define r2d_frect                  joy_r2d_frect
+#define r2d_fpx                    joy_r2d_fpx
+#define r2d_draw_point_f           joy_r2d_draw_point_f
+#define jparticle_cfg_default      joy_r2d_particle_cfg_default
+#define jparticle_create           joy_r2d_particle_create
+#define jparticle_destroy          joy_r2d_particle_destroy
+#define jparticle_set_position     joy_r2d_particle_set_position
+#define jparticle_emit             joy_r2d_particle_emit
+#define jparticle_clear            joy_r2d_particle_clear
+#define jparticle_update           joy_r2d_particle_update
+#define jparticle_render           joy_r2d_particle_render
+#define jparticle_count            joy_r2d_particle_count
+#define jparticle_is_active        joy_r2d_particle_is_active
 #endif
 
 #endif /* JOY_COMPAT_H */

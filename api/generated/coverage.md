@@ -51,7 +51,6 @@
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
 | jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
-| jparticle | 0 | 8 | 1 | 1 | 0 | 10 |
 | jpm | 1 | 1 | 0 | 6 | 0 | 8 |
 | jspine | 0 | 0 | 0 | 0 | 19 | 19 |
 | jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
@@ -60,7 +59,7 @@
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
 | net | 0 | 56 | 0 | 20 | 0 | 76 |
-| r2d | 4 | 25 | 5 | 11 | 0 | 45 |
+| r2d | 4 | 33 | 6 | 12 | 0 | 55 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
 | scene | 0 | 64 | 0 | 16 | 0 | 80 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
@@ -76,7 +75,7 @@
 | 函数 | 返回 | 位置 | 人工裁决（`note`） |
 |---|---|---|---|
 | `joy_core_get_raw_window` | `void*` | include/joy/api.h:111 | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
-| `r2d_unwrap` | `void*` | include/joy/api.h:204 | 借用：内部 SDL_Renderer*，所有权归 jr2d |
+| `joy_r2d_unwrap` | `void*` | include/joy/api.h:204 | 借用：内部 SDL_Renderer*，所有权归 jr2d |
 | `r3d_load_shader` | `void*` | include/joy/api.h:334 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_create_pipeline` | `void*` | include/joy/api.h:336 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_upload_buffer` | `void*` | include/joy/api.h:339 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
@@ -124,7 +123,7 @@
 | 函数 | 返回 | `owns` | 问题 | 人工裁决（`note`） |
 |---|---|---|---|---|
 | `joy_core_get_raw_window` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
-| `r2d_unwrap` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Renderer*，所有权归 jr2d |
+| `joy_r2d_unwrap` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Renderer*，所有权归 jr2d |
 | `r3d_load_shader` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_create_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_upload_buffer` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
@@ -197,14 +196,14 @@
 | `sys_accept` | 非 const char* 输出缓冲 | include/joy/api.h:171 |
 | `sys_recv` | 非 const char* 输出缓冲 | include/joy/api.h:173 |
 | `sys_recvfrom` | 非 const char* 输出缓冲 | include/joy/api.h:174 |
-| `r2d_coordinates_from_window` | 结构体按值返回 | include/joy/api.h:205 |
-| `r2d_get_color` | 非不透明指针 / 输出参数：uint8_t* | include/joy/api.h:208 |
-| `r2d_get_logical_presentation` | 非不透明指针 / 输出参数：int* | include/joy/api.h:214 |
-| `r2d_get_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:215 |
-| `r2d_get_colorf` | 非不透明指针 / 输出参数：float* | include/joy/api.h:219 |
-| `r2d_draw_points` | 结构体指针参数 | include/joy/api.h:222 |
-| `r2d_get_clip_rect` | 结构体指针参数 | include/joy/api.h:230 |
-| `r2d_draw_lines` | 结构体指针参数 | include/joy/api.h:239 |
+| `joy_r2d_coordinates_from_window` | 结构体按值返回 | include/joy/api.h:205 |
+| `joy_r2d_get_color` | 非不透明指针 / 输出参数：uint8_t* | include/joy/api.h:208 |
+| `joy_r2d_get_logical_presentation` | 非不透明指针 / 输出参数：int* | include/joy/api.h:214 |
+| `joy_r2d_get_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:215 |
+| `joy_r2d_get_colorf` | 非不透明指针 / 输出参数：float* | include/joy/api.h:219 |
+| `joy_r2d_draw_points` | 结构体指针参数 | include/joy/api.h:222 |
+| `joy_r2d_get_clip_rect` | 结构体指针参数 | include/joy/api.h:230 |
+| `joy_r2d_draw_lines` | 结构体指针参数 | include/joy/api.h:239 |
 | `shape_draw_polygon` | 结构体指针参数 | include/joy/api.h:241 |
 | `joy_ui_image_draw1` | 结构体指针参数 | include/joy/api.h:252 |
 | `joy_ui_image_draw_ex` | 结构体指针参数 | include/joy/api.h:253 |
@@ -212,8 +211,8 @@
 | `joy_ui_image_update` | 结构体指针参数 | include/joy/api.h:257 |
 | `joy_ui_text_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:262 |
 | `joy_ui_text_update` | 非不透明指针 / 输出参数：int* | include/joy/api.h:264 |
-| `r2d_frect` | 结构体按值返回 | include/joy/api.h:279 |
-| `r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/api.h:280 |
+| `joy_r2d_frect` | 结构体按值返回 | include/joy/api.h:279 |
+| `joy_r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/api.h:280 |
 | `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
 | `joy_r2d_jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
 | `animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
@@ -353,7 +352,7 @@
 | `scene_set_destroy_callback` | 未知类型需人工标注：scene_destroy_fn | include/joy/api.h:1513 |
 | `scene_set_event_callback` | 未知类型需人工标注：scene_event_fn | include/joy/api.h:1514 |
 | `scene_set_fixed_update_callback` | 未知类型需人工标注：scene_fixed_update_fn | include/joy/api.h:1515 |
-| `jparticle_cfg_default` | 结构体按值返回 | include/joy/api.h:1533 |
+| `joy_r2d_particle_cfg_default` | 结构体按值返回 | include/joy/api.h:1533 |
 | `jecs_kill` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1563 |
 | `jecs_set` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1565 |
 | `jecs_get` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1566 |

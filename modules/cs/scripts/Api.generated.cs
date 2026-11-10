@@ -2412,7 +2412,7 @@ namespace Joy.Api
         {
             if (win == null) throw new ArgumentNullException(nameof(win));
             ulong __h = Native.R2dCreate(win.Handle);
-            if (__h == 0) throw new InvalidOperationException("r2d_create failed");
+            if (__h == 0) throw new InvalidOperationException("joy_r2d_create failed");
             return new Jr2d(__h);
         }
         public static void R2dDestroy(Jr2d r2d)

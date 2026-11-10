@@ -881,7 +881,7 @@ static int shim_joy_r2d_font_get_ascent(void* _jv_ctx, Font font)
         return (int) _jv_r.as.i32;
 }
 
-static Jr2d shim_r2d_create(void* _jv_ctx, Jwindow win)
+static Jr2d shim_joy_r2d_create(void* _jv_ctx, Jwindow win)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
@@ -889,25 +889,25 @@ static Jr2d shim_r2d_create(void* _jv_ctx, Jwindow win)
         Jr2d _jv_out;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(win.h);
-        _jv_r = joy_api_call("r2d_create", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_create", _jv_args, 1, &_jv_st);
         _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
         return _jv_out;
 }
 
-static void shim_r2d_destroy(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_destroy(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r2d_set_color(void* _jv_ctx, Jr2d r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool shim_joy_r2d_set_color(void* _jv_ctx, Jr2d r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -918,38 +918,38 @@ static bool shim_r2d_set_color(void* _jv_ctx, Jr2d r2d, uint8_t r, uint8_t g, ui
         _jv_args[2] = joy_v_u32(g);
         _jv_args[3] = joy_v_u32(b);
         _jv_args[4] = joy_v_u32(a);
-        _jv_r = joy_api_call("r2d_set_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_color", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r2d_begin(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_begin(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_begin", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_begin", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r2d_end(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_end(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r2d_set_logical_presentation(void* _jv_ctx, Jr2d r2d, int w, int h)
+static bool shim_joy_r2d_set_logical_presentation(void* _jv_ctx, Jr2d r2d, int w, int h)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -958,12 +958,12 @@ static bool shim_r2d_set_logical_presentation(void* _jv_ctx, Jr2d r2d, int w, in
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_i32(w);
         _jv_args[2] = joy_v_i32(h);
-        _jv_r = joy_api_call("r2d_set_logical_presentation", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_logical_presentation", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r2d_set_logical_presentation_mode(void* _jv_ctx, Jr2d r2d, int w, int h, int mode)
+static bool shim_joy_r2d_set_logical_presentation_mode(void* _jv_ctx, Jr2d r2d, int w, int h, int mode)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -973,12 +973,12 @@ static bool shim_r2d_set_logical_presentation_mode(void* _jv_ctx, Jr2d r2d, int 
         _jv_args[1] = joy_v_i32(w);
         _jv_args[2] = joy_v_i32(h);
         _jv_args[3] = joy_v_i32(mode);
-        _jv_r = joy_api_call("r2d_set_logical_presentation_mode", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_logical_presentation_mode", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r2d_set_vsync(void* _jv_ctx, Jr2d r2d, int vsync)
+static bool shim_joy_r2d_set_vsync(void* _jv_ctx, Jr2d r2d, int vsync)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -986,12 +986,12 @@ static bool shim_r2d_set_vsync(void* _jv_ctx, Jr2d r2d, int vsync)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_i32(vsync);
-        _jv_r = joy_api_call("r2d_set_vsync", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_vsync", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r2d_set_scale(void* _jv_ctx, Jr2d r2d, float sx, float sy)
+static bool shim_joy_r2d_set_scale(void* _jv_ctx, Jr2d r2d, float sx, float sy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1000,12 +1000,12 @@ static bool shim_r2d_set_scale(void* _jv_ctx, Jr2d r2d, float sx, float sy)
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_f64(sx);
         _jv_args[2] = joy_v_f64(sy);
-        _jv_r = joy_api_call("r2d_set_scale", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_scale", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r2d_set_colorf(void* _jv_ctx, Jr2d r2d, float r, float g, float b, float a)
+static void shim_joy_r2d_set_colorf(void* _jv_ctx, Jr2d r2d, float r, float g, float b, float a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1016,13 +1016,13 @@ static void shim_r2d_set_colorf(void* _jv_ctx, Jr2d r2d, float r, float g, float
         _jv_args[2] = joy_v_f64(g);
         _jv_args[3] = joy_v_f64(b);
         _jv_args[4] = joy_v_f64(a);
-        _jv_r = joy_api_call("r2d_set_colorf", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_colorf", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r2d_set_blend_mode(void* _jv_ctx, Jr2d r2d, int mode)
+static bool shim_joy_r2d_set_blend_mode(void* _jv_ctx, Jr2d r2d, int mode)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1030,12 +1030,12 @@ static bool shim_r2d_set_blend_mode(void* _jv_ctx, Jr2d r2d, int mode)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_i32(mode);
-        _jv_r = joy_api_call("r2d_set_blend_mode", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_blend_mode", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r2d_draw_point(void* _jv_ctx, Jr2d r2d, float x, float y)
+static bool shim_joy_r2d_draw_point(void* _jv_ctx, Jr2d r2d, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1044,12 +1044,12 @@ static bool shim_r2d_draw_point(void* _jv_ctx, Jr2d r2d, float x, float y)
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("r2d_draw_point", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_draw_point", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r2d_set_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+static bool shim_joy_r2d_set_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1060,25 +1060,25 @@ static bool shim_r2d_set_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float 
         _jv_args[2] = joy_v_f64(rect_y);
         _jv_args[3] = joy_v_f64(rect_w);
         _jv_args[4] = joy_v_f64(rect_h);
-        _jv_r = joy_api_call("r2d_set_clip_rect", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_set_clip_rect", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r2d_clear_clip(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_clear_clip(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_clear_clip", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_clear_clip", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r2d_push_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
+static bool shim_joy_r2d_push_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float rect_y, float rect_w, float rect_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1089,38 +1089,38 @@ static bool shim_r2d_push_clip_rect(void* _jv_ctx, Jr2d r2d, float rect_x, float
         _jv_args[2] = joy_v_f64(rect_y);
         _jv_args[3] = joy_v_f64(rect_w);
         _jv_args[4] = joy_v_f64(rect_h);
-        _jv_r = joy_api_call("r2d_push_clip_rect", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_push_clip_rect", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r2d_pop_clip_rect(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_pop_clip_rect(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_pop_clip_rect", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_pop_clip_rect", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r2d_reset_clip_stack(void* _jv_ctx, Jr2d r2d)
+static void shim_joy_r2d_reset_clip_stack(void* _jv_ctx, Jr2d r2d)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("r2d_reset_clip_stack", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_reset_clip_stack", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r2d_point_in_clip(void* _jv_ctx, Jr2d r2d, float x, float y)
+static bool shim_joy_r2d_point_in_clip(void* _jv_ctx, Jr2d r2d, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1129,7 +1129,7 @@ static bool shim_r2d_point_in_clip(void* _jv_ctx, Jr2d r2d, float x, float y)
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("r2d_point_in_clip", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_point_in_clip", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -1307,7 +1307,7 @@ static void shim_joy_r2d_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const 
         return;
 }
 
-static bool shim_r2d_draw_point_f(void* _jv_ctx, Jr2d r2d, float fx, float fy)
+static bool shim_joy_r2d_draw_point_f(void* _jv_ctx, Jr2d r2d, float fx, float fy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1316,7 +1316,7 @@ static bool shim_r2d_draw_point_f(void* _jv_ctx, Jr2d r2d, float fx, float fy)
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_f64(fx);
         _jv_args[2] = joy_v_f64(fy);
-        _jv_r = joy_api_call("r2d_draw_point_f", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_draw_point_f", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -6313,20 +6313,20 @@ static int shim_scene_manager_get_count(void* _jv_ctx, SceneManager mgr)
         return (int) _jv_r.as.i32;
 }
 
-static void shim_jparticle_destroy(void* _jv_ctx, Jparticle p)
+static void shim_joy_r2d_particle_destroy(void* _jv_ctx, Jparticle p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("jparticle_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jparticle_set_position(void* _jv_ctx, Jparticle p, float x, float y)
+static void shim_joy_r2d_particle_set_position(void* _jv_ctx, Jparticle p, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6335,39 +6335,39 @@ static void shim_jparticle_set_position(void* _jv_ctx, Jparticle p, float x, flo
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("jparticle_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jparticle_emit(void* _jv_ctx, Jparticle p)
+static void shim_joy_r2d_particle_emit(void* _jv_ctx, Jparticle p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("jparticle_emit", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_emit", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jparticle_clear(void* _jv_ctx, Jparticle p)
+static void shim_joy_r2d_particle_clear(void* _jv_ctx, Jparticle p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("jparticle_clear", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_clear", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jparticle_update(void* _jv_ctx, Jparticle p, float dt)
+static void shim_joy_r2d_particle_update(void* _jv_ctx, Jparticle p, float dt)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6375,13 +6375,13 @@ static void shim_jparticle_update(void* _jv_ctx, Jparticle p, float dt)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(dt);
-        _jv_r = joy_api_call("jparticle_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jparticle_render(void* _jv_ctx, Jparticle p, Jr2d r2d)
+static void shim_joy_r2d_particle_render(void* _jv_ctx, Jparticle p, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6389,32 +6389,32 @@ static void shim_jparticle_render(void* _jv_ctx, Jparticle p, Jr2d r2d)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("jparticle_render", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_render", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_jparticle_count(void* _jv_ctx, Jparticle p)
+static int shim_joy_r2d_particle_count(void* _jv_ctx, Jparticle p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("jparticle_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_jparticle_is_active(void* _jv_ctx, Jparticle p)
+static bool shim_joy_r2d_particle_is_active(void* _jv_ctx, Jparticle p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("jparticle_is_active", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_particle_is_active", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -10029,24 +10029,24 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->FontGetScale = shim_joy_r2d_font_get_scale;
         api->FontGetSize = shim_joy_r2d_font_get_size;
         api->FontGetAscent = shim_joy_r2d_font_get_ascent;
-        api->R2dCreate = shim_r2d_create;
-        api->R2dDestroy = shim_r2d_destroy;
-        api->R2dSetColor = shim_r2d_set_color;
-        api->R2dBegin = shim_r2d_begin;
-        api->R2dEnd = shim_r2d_end;
-        api->R2dSetLogicalPresentation = shim_r2d_set_logical_presentation;
-        api->R2dSetLogicalPresentationMode = shim_r2d_set_logical_presentation_mode;
-        api->R2dSetVsync = shim_r2d_set_vsync;
-        api->R2dSetScale = shim_r2d_set_scale;
-        api->R2dSetColorf = shim_r2d_set_colorf;
-        api->R2dSetBlendMode = shim_r2d_set_blend_mode;
-        api->R2dDrawPoint = shim_r2d_draw_point;
-        api->R2dSetClipRect = shim_r2d_set_clip_rect;
-        api->R2dClearClip = shim_r2d_clear_clip;
-        api->R2dPushClipRect = shim_r2d_push_clip_rect;
-        api->R2dPopClipRect = shim_r2d_pop_clip_rect;
-        api->R2dResetClipStack = shim_r2d_reset_clip_stack;
-        api->R2dPointInClip = shim_r2d_point_in_clip;
+        api->R2dCreate = shim_joy_r2d_create;
+        api->R2dDestroy = shim_joy_r2d_destroy;
+        api->R2dSetColor = shim_joy_r2d_set_color;
+        api->R2dBegin = shim_joy_r2d_begin;
+        api->R2dEnd = shim_joy_r2d_end;
+        api->R2dSetLogicalPresentation = shim_joy_r2d_set_logical_presentation;
+        api->R2dSetLogicalPresentationMode = shim_joy_r2d_set_logical_presentation_mode;
+        api->R2dSetVsync = shim_joy_r2d_set_vsync;
+        api->R2dSetScale = shim_joy_r2d_set_scale;
+        api->R2dSetColorf = shim_joy_r2d_set_colorf;
+        api->R2dSetBlendMode = shim_joy_r2d_set_blend_mode;
+        api->R2dDrawPoint = shim_joy_r2d_draw_point;
+        api->R2dSetClipRect = shim_joy_r2d_set_clip_rect;
+        api->R2dClearClip = shim_joy_r2d_clear_clip;
+        api->R2dPushClipRect = shim_joy_r2d_push_clip_rect;
+        api->R2dPopClipRect = shim_joy_r2d_pop_clip_rect;
+        api->R2dResetClipStack = shim_joy_r2d_reset_clip_stack;
+        api->R2dPointInClip = shim_joy_r2d_point_in_clip;
         api->ShapeDrawLine = shim_shape_draw_line;
         api->ShapeDrawRectangle = shim_shape_draw_rectangle;
         api->ImageCreate = shim_joy_ui_image_create;
@@ -10058,7 +10058,7 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->TextDestroy = shim_joy_ui_text_destroy;
         api->JtextPrint = shim_joy_r2d_jtext_print;
         api->JtextPrintx = shim_joy_r2d_jtext_printx;
-        api->R2dDrawPointF = shim_r2d_draw_point_f;
+        api->R2dDrawPointF = shim_joy_r2d_draw_point_f;
         api->ShapeDrawRectangleF = shim_shape_draw_rectangle_f;
         api->ShapeDrawLineF = shim_shape_draw_line_f;
         api->JtextPrintf = shim_joy_r2d_jtext_printf;
@@ -10410,14 +10410,14 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->SceneManagerPop = shim_scene_manager_pop;
         api->SceneManagerUpdate = shim_scene_manager_update;
         api->SceneManagerGetCount = shim_scene_manager_get_count;
-        api->JparticleDestroy = shim_jparticle_destroy;
-        api->JparticleSetPosition = shim_jparticle_set_position;
-        api->JparticleEmit = shim_jparticle_emit;
-        api->JparticleClear = shim_jparticle_clear;
-        api->JparticleUpdate = shim_jparticle_update;
-        api->JparticleRender = shim_jparticle_render;
-        api->JparticleCount = shim_jparticle_count;
-        api->JparticleIsActive = shim_jparticle_is_active;
+        api->JparticleDestroy = shim_joy_r2d_particle_destroy;
+        api->JparticleSetPosition = shim_joy_r2d_particle_set_position;
+        api->JparticleEmit = shim_joy_r2d_particle_emit;
+        api->JparticleClear = shim_joy_r2d_particle_clear;
+        api->JparticleUpdate = shim_joy_r2d_particle_update;
+        api->JparticleRender = shim_joy_r2d_particle_render;
+        api->JparticleCount = shim_joy_r2d_particle_count;
+        api->JparticleIsActive = shim_joy_r2d_particle_is_active;
         api->JlightSysDestroy = shim_jlight_sys_destroy;
         api->JlightSysResize = shim_jlight_sys_resize;
         api->JlightRemove = shim_jlight_remove;

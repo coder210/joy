@@ -119,6 +119,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `jtext`（归 `r2d`）与少量 `jui_im` 增量接口。
 - 第八批 **31 条**：`font`(5) / `jtext`(9) → `r2d`，`joystick`(17) → `input`。
   `r2d` 域现有 45 条（含尚未迁的 `r2d_*` 31 条），`input` 17 条。
+- 第九批 **41 条**：`r2d` 本体 31 条（`r2d_create` → `joy_r2d_create`）+
+  `jparticle` 10 条（→ `joy_r2d_particle_*`）并入 `r2d`，`r2d` 域累计 55 条。
+  `jlight`(11) 与 `jgltf` 按域表归 `r3d`，留到下一批。
 
 映射见 `idl/rename_map.json`（累加式）。
 

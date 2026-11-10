@@ -198,45 +198,45 @@ extern "C" {
         ////////////////////////////  j2rd ///////////////////////////////////
         ///////////////////////////////////////////////////////////////////////
 
-        JOY_API jr2d_p r2d_create(jwindow_p win);
-        JOY_API jr2d_p r2d_wrap(void* sdl_renderer);
-        JOY_API void r2d_destroy(jr2d_p r2d);
-        JOY_API void* r2d_unwrap(jr2d_p r2d);
-        JOY_API vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y);
+        JOY_API jr2d_p joy_r2d_create(jwindow_p win);
+        JOY_API jr2d_p joy_r2d_wrap(void* sdl_renderer);
+        JOY_API void joy_r2d_destroy(jr2d_p r2d);
+        JOY_API void* joy_r2d_unwrap(jr2d_p r2d);
+        JOY_API vec2_t joy_r2d_coordinates_from_window(jr2d_p r2d, float x, float y);
 
         /* 颜色/状态 */
-        JOY_API bool r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a);
-        JOY_API bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-        JOY_API void r2d_begin(jr2d_p r2d);
-        JOY_API void r2d_end(jr2d_p r2d);
-        JOY_API bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h);
-        JOY_API bool r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode);
-        JOY_API bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode);
-        JOY_API void r2d_get_size(jr2d_p r2d, int* w, int* h);
-        JOY_API bool r2d_set_vsync(jr2d_p r2d, int vsync);
-        JOY_API bool r2d_set_scale(jr2d_p r2d, float sx, float sy);
-        JOY_API void r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a);
-        JOY_API void r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a);
-        JOY_API bool r2d_set_blend_mode(jr2d_p r2d, int mode);
-        JOY_API bool r2d_draw_point(jr2d_p r2d, float x, float y);
-        JOY_API bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count);
+        JOY_API bool joy_r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a);
+        JOY_API bool joy_r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+        JOY_API void joy_r2d_begin(jr2d_p r2d);
+        JOY_API void joy_r2d_end(jr2d_p r2d);
+        JOY_API bool joy_r2d_set_logical_presentation(jr2d_p r2d, int w, int h);
+        JOY_API bool joy_r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode);
+        JOY_API bool joy_r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode);
+        JOY_API void joy_r2d_get_size(jr2d_p r2d, int* w, int* h);
+        JOY_API bool joy_r2d_set_vsync(jr2d_p r2d, int vsync);
+        JOY_API bool joy_r2d_set_scale(jr2d_p r2d, float sx, float sy);
+        JOY_API void joy_r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a);
+        JOY_API void joy_r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a);
+        JOY_API bool joy_r2d_set_blend_mode(jr2d_p r2d, int mode);
+        JOY_API bool joy_r2d_draw_point(jr2d_p r2d, float x, float y);
+        JOY_API bool joy_r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count);
 
         /* 裁剪
          * SDL_Renderer 同时只支持一个裁剪矩形，因此这里额外维护一个栈：
          * push 会与父级矩形求交，pop 恢复上一层。UI 的滚动面板需要它，
          * 否则滚动时内容会绘制到面板外面。
          */
-        JOY_API bool r2d_set_clip_rect(jr2d_p r2d, jrect_t rect);
-        JOY_API bool r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect);
-        JOY_API void r2d_clear_clip(jr2d_p r2d);
-        JOY_API bool r2d_push_clip_rect(jr2d_p r2d, jrect_t rect);
-        JOY_API void r2d_pop_clip_rect(jr2d_p r2d);
-        JOY_API void r2d_reset_clip_stack(jr2d_p r2d);
-        JOY_API bool r2d_point_in_clip(jr2d_p r2d, float x, float y);
+        JOY_API bool joy_r2d_set_clip_rect(jr2d_p r2d, jrect_t rect);
+        JOY_API bool joy_r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect);
+        JOY_API void joy_r2d_clear_clip(jr2d_p r2d);
+        JOY_API bool joy_r2d_push_clip_rect(jr2d_p r2d, jrect_t rect);
+        JOY_API void joy_r2d_pop_clip_rect(jr2d_p r2d);
+        JOY_API void joy_r2d_reset_clip_stack(jr2d_p r2d);
+        JOY_API bool joy_r2d_point_in_clip(jr2d_p r2d, float x, float y);
 
         /* 形状绘制 */
         JOY_API bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2);
-        JOY_API bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count);
+        JOY_API bool joy_r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count);
         JOY_API bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect);
         JOY_API bool shape_draw_polygon(jr2d_p r2d, const char* mode, vec2_t* points, int point_count, jcolor_t color);
         JOY_API bool shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments);
@@ -276,11 +276,11 @@ extern "C" {
          *
          * 只新增、不改动上面的像素版接口，既有项目不受影响。
          */
-        JOY_API jrect_t r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh);
-        JOY_API void    r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
+        JOY_API jrect_t joy_r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh);
+        JOY_API void    joy_r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
                                 float* x, float* y, float* w, float* h);
 
-        JOY_API bool    r2d_draw_point_f(jr2d_p r2d, float fx, float fy);
+        JOY_API bool    joy_r2d_draw_point_f(jr2d_p r2d, float fx, float fy);
         JOY_API bool    shape_draw_rectangle_f(jr2d_p r2d, const char* mode,
                                                float fx, float fy, float fw, float fh);
         JOY_API bool    shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2);
@@ -1530,16 +1530,16 @@ extern "C" {
         JOY_API int scene_manager_get_count(scene_manager_p mgr);
 
 
-        JOY_API jparticle_cfg_t jparticle_cfg_default(void);
-        JOY_API jparticle_p jparticle_create(jparticle_cfg_t cfg);
-        JOY_API void jparticle_destroy(jparticle_p p);
-        JOY_API void jparticle_set_position(jparticle_p p, float x, float y);
-        JOY_API void jparticle_emit(jparticle_p p);            /* 爆发一次 */
-        JOY_API void jparticle_clear(jparticle_p p);            /* 清除所有粒子 */
-        JOY_API void jparticle_update(jparticle_p p, float dt);
-        JOY_API void jparticle_render(jparticle_p p, jr2d_p r2d);
-        JOY_API int  jparticle_count(jparticle_p p);
-        JOY_API bool jparticle_is_active(jparticle_p p);
+        JOY_API jparticle_cfg_t joy_r2d_particle_cfg_default(void);
+        JOY_API jparticle_p joy_r2d_particle_create(jparticle_cfg_t cfg);
+        JOY_API void joy_r2d_particle_destroy(jparticle_p p);
+        JOY_API void joy_r2d_particle_set_position(jparticle_p p, float x, float y);
+        JOY_API void joy_r2d_particle_emit(jparticle_p p);            /* 爆发一次 */
+        JOY_API void joy_r2d_particle_clear(jparticle_p p);            /* 清除所有粒子 */
+        JOY_API void joy_r2d_particle_update(jparticle_p p, float dt);
+        JOY_API void joy_r2d_particle_render(jparticle_p p, jr2d_p r2d);
+        JOY_API int  joy_r2d_particle_count(jparticle_p p);
+        JOY_API bool joy_r2d_particle_is_active(jparticle_p p);
 
 
         JOY_API jlight_sys_p jlight_sys_create(int width, int height);
