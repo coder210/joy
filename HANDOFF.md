@@ -185,3 +185,61 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 
 中文、`type(scope): 摘要`，正文用 `- ` 列改动点、最后一行写验证结果。
 参考 `git log -3`。
+
+## 9. 自动化踩坑（给下一任 AI，省得重踩）
+
+本仓库的改名/生成链路在 PowerShell + 中文环境下有几个反直觉的坑，按发生频率排序：
+
+1. **`node -e "..."` 内联脚本里的 `${}` 会让整条命令失效。**
+   PowerShell 会把正则 `/[.*+?^${}()|[\]\\]/g` 里的 `${}` 当变量插值，
+   抛出「空的 ${} 变量引用」，且**整条命令（含前面已写好的 `node .tmp-x.js`）都不会执行**。
+   含正则/特殊字符时一律把脚本写成 `.tmp-*.js` 文件再 `node` 执行，验证也写文件，别用内联 `-e`。
+
+2. **`rename_map.json` 用 `JSON.parse/stringify` 重写，别用字符串插入。**
+   曾用 `s.lastIndexOf('\n}')` 在末尾插入，碰到 CRLF 时 `\r` 被甩到逗号前面，
+   整文件行尾错乱、diff 上千行。正确做法：
+   `JSON.parse` → 改对象 → `JSON.stringify(obj, null, 2).split('\n').join(eol) + eol`，
+   其中 `eol = raw.includes('\r\n') ? '\r\n' : '\n'`（原样保留换行风格，避免大 diff）。
+
+3. **批量改名用字符类边界，别用 `\b`，别用子串替换。**
+   正则 `(^|[^A-Za-z0-9_])name(?=$|[^A-Za-z0-9_])`：
+   - 不用 `\b` —— 经 PowerShell 传递后 `\b` 会变成退格符（U+0008），匹配数为 0 且文件不动。
+   - 不加边界会误伤子串（如 `r2d_create` 命中 `r2d_create_pipeline`）。
+   - 对一组名字批量替换时，旧名互不为前缀子串（如 `r2d_create` 与 `r2d_create_texture`）
+     靠边界互不干扰，顺序无所谓。
+
+4. **`jmath` 220 条不手写，走 `jmath_wrap.js`。**
+   `jmath.h` 的 134 个 `JOY_INLINE` 内联函数（名字本就无前缀，如 `fp_from_float`/`vec2_add`）
+   由 `jmath_wrap.js` 套前缀生成 `jmath_wrappers.h/.c` 后再扫进 IDL。
+   改名点是该脚本里 3 处 `'<prefix>_' + f.name`（已改为 `'joy_math_' + f.name`），
+   不是 `api.h`。改完必须重跑 `node api/tools/jmath_wrap.js` 重新生成包装头。
+
+5. **`compat.h` 已清空，别再往里塞 `#define`。**
+   P1 收尾把 `src/`/`examples`/`modules` 共 57 个手写源文件的 1881 处旧名
+   **真正改成 `joy_*`**，之后 `compat.h` 的宏块已删除（仅留空占位 `#include`）。
+   后续新增改名若要向后兼容，直接改源码，不要再靠宏桥接。
+
+6. **`--scan` 会丢弃「源码里已不存在」的 IDL 过期条目。**
+   改名前务必先 `--scan` 确认真实条目：曾发现 IDL 里残留 `utils_mouse_pos`/
+   `utils_aes_*`/`utils_file_size` 等早已删除的函数，scan 后自动消失，
+   若基于过期 IDL 改名会改错名字。
+
+7. **X 级（不暴露）靠 `SKIP_DOMAINS` 或 `SKIP_PREFIXES` 维持。**
+   `script`（改 `joy_script_*`）、`utils`（改 `joy_core_utils_*`）因带函数指针参数/
+   属有意排除项，改名后仍判 X 级、不进 thunk/vtable/C# 绑定。若要暴露，
+   去掉 `gen_bindings.js` 里对应的跳过项即可，命名已就位。
+
+8. **本机无 NDK / Emscripten，CI 只能靠 GitHub REST API 查。**
+   `Invoke-RestMethod -Uri "https://api.github.com/repos/coder210/joy/actions/runs?per_page=10"`
+   可看三个工作流（Android APKs / Desktop examples / Web examples）的状态，出网正常。
+   Web 站点本身用 `Invoke-WebRequest` 直接 GET `https://coder210.github.io/joy/` 验证
+   （注意 `web_fetch` 工具在本环境未注册，用 PowerShell 即可）。
+
+## 10. 接手前自检清单
+
+- [ ] `node api/tools/gen_bindings.js --check` 通过（report/thunks/vtable/cs glue/jmath 最新）
+- [ ] `cmake --build build --config Debug` 全量 0 错误（**构建已不依赖 compat.h**）
+- [ ] `ctest --test-dir build -C Debug --timeout 25` 四语言冒烟 4/4
+- [ ] GitHub Actions 三个工作流均 `success`（见 §9.8）
+- [ ] 想继续 §7 的某一项时，先读 `api/README.md`（命名域表 + 15 批改名记录）与本节踩坑
+
