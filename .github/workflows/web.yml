@@ -9,8 +9,11 @@ name: Web examples (cpp / lua / js)
 # 打包按 Android 的「每后端自包含」模型，不是桌面的「共享资源目录」：
 # 每个 wasm 模块在链接期用 --preload-file 把资源打进自己的 .data，
 # 一个 Pages 站点按子目录承载，不按「平台 × 后端」拆 workflow。
-# emsdk 链路首次手动验证前不挂到 push / PR，避免把未验证的 job 变成红灯。
+# 只在 push(main) 时自动跑；PR 暂不挂（emsdk 安装较重，wasm 链接还在首次验证
+# 阶段）。手动触发保留，deploy 输入可一并发布 Pages。
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       deploy:
