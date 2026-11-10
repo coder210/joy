@@ -108,6 +108,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   时顺带明确为 `joy_ui_process_widget_event`（脚本名仍冻结为 `JuiProcessEvent`）。
   剩下 `ui-A2`（button / checkbox / radio / label / tooltip / popup / image /
   text，84 条）与输入类控件待迁。
+- 第六批 **`ui-A2` 84 条**：image(14) / text(7) / label(5) / button(20) /
+  radio(5) / checkbox(13) / popup(13) / tooltip(7) 并入 `ui`，`ui` 域累计
+  129 条。`jtext_*`（jtext 域）不在这批，随 `r2d` 域一起迁。剩下输入类控件
+  `inputbox`(28) / `combobox`(26) / `slider`(14) / `scrollview`(14) /
+  `datagrid`(11) 约 93 条，以及 `ui` 的 `jui_im` 增量接口。
 
 映射见 `idl/rename_map.json`（累加式）。
 

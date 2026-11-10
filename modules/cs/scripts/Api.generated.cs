@@ -2514,7 +2514,7 @@ namespace Joy.Api
         {
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             ulong __h = Native.ImageCreate(r2d.Handle, filename);
-            if (__h == 0) throw new InvalidOperationException("image_create failed");
+            if (__h == 0) throw new InvalidOperationException("joy_ui_image_create failed");
             return new Image(__h);
         }
         public static void ImageDestroy(Image image)

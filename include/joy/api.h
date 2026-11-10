@@ -244,25 +244,25 @@ extern "C" {
         JOY_API bool shape_draw_gridx(jr2d_p r2d, vec2_t position, int rows, int cols, float grid_size);
 
         /* 图片操作 */
-        JOY_API image_p image_create(jr2d_p r2d, const char* filename);
-        JOY_API image_p image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h);
-        JOY_API image_p image_create_empty(jr2d_p r2d, int w, int h);
-        JOY_API void  image_destroy(image_p image);
-        JOY_API void  image_draw(image_p image, vec2_t position);
-        JOY_API void  image_draw1(image_p image, const jrect_t* srcrect, const jrect_t* destrect);
-        JOY_API void  image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position, float rotation, vec2_t scale, vec2_t origin);
-        JOY_API void  image_set_alpha(image_p image, uint8_t alpha);
-        JOY_API void  image_set_blend_mode(image_p image, int mode);
-        JOY_API bool  image_get_size(image_p image, float* w, float* h);
-        JOY_API void  image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch);
-        JOY_API void  image_set_scale_mode(image_p image, int nearest);
+        JOY_API image_p joy_ui_image_create(jr2d_p r2d, const char* filename);
+        JOY_API image_p joy_ui_image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h);
+        JOY_API image_p joy_ui_image_create_empty(jr2d_p r2d, int w, int h);
+        JOY_API void  joy_ui_image_destroy(image_p image);
+        JOY_API void  joy_ui_image_draw(image_p image, vec2_t position);
+        JOY_API void  joy_ui_image_draw1(image_p image, const jrect_t* srcrect, const jrect_t* destrect);
+        JOY_API void  joy_ui_image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position, float rotation, vec2_t scale, vec2_t origin);
+        JOY_API void  joy_ui_image_set_alpha(image_p image, uint8_t alpha);
+        JOY_API void  joy_ui_image_set_blend_mode(image_p image, int mode);
+        JOY_API bool  joy_ui_image_get_size(image_p image, float* w, float* h);
+        JOY_API void  joy_ui_image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch);
+        JOY_API void  joy_ui_image_set_scale_mode(image_p image, int nearest);
 
         /* 文字 */
-        JOY_API jtext_p text_createx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color);
-        JOY_API jtext_p text_create(jr2d_p r2d, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
-        JOY_API void text_updatex(jtext_p text, font_p font, const char* str, int len, jcolor_t color);
-        JOY_API void text_update(jtext_p text, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
-        JOY_API void text_destroy(jtext_p jtext_tex);
+        JOY_API jtext_p joy_ui_text_createx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API jtext_p joy_ui_text_create(jr2d_p r2d, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
+        JOY_API void joy_ui_text_updatex(jtext_p text, font_p font, const char* str, int len, jcolor_t color);
+        JOY_API void joy_ui_text_update(jtext_p text, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
+        JOY_API void joy_ui_text_destroy(jtext_p jtext_tex);
         JOY_API void jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
         JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
 
@@ -284,7 +284,7 @@ extern "C" {
         JOY_API bool    shape_draw_rectangle_f(jr2d_p r2d, const char* mode,
                                                float fx, float fy, float fw, float fh);
         JOY_API bool    shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2);
-        JOY_API void    image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
+        JOY_API void    joy_ui_image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
                                       float fx, float fy, float fw, float fh);
 
         /* 文字位置用比例（字号仍由 font 的烘焙尺寸决定；*_scaled 可再乘一个缩放系数） */
@@ -292,8 +292,8 @@ extern "C" {
                                      jcolor_t color, float fx, float fy);
         JOY_API void    jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len,
                                             jcolor_t color, float fx, float fy, float scale);
-        JOY_API int text_get_width(jtext_p jtext_tex);
-        JOY_API int text_get_height(jtext_p jtext_tex);
+        JOY_API int joy_ui_text_get_width(jtext_p jtext_tex);
+        JOY_API int joy_ui_text_get_height(jtext_p jtext_tex);
 
         /* 文字纹理缓存
          * jtext_printx() 以前的实现是 text_createx() -> jtext_print() -> text_destroy()，
@@ -1031,32 +1031,32 @@ extern "C" {
         JOY_API const char *jspine_instance_animation(jspine_instance_p inst);
 #endif /* JOY_USE_SPINE */
 
-        JOY_API label_p label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
-        JOY_API void label_destroy(label_p label);
-        JOY_API void label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
-        JOY_API void label_draw(label_p label);
-        JOY_API void label_process_event(label_p label, const void* event);
-        JOY_API button_p button_create(jr2d_p r2d, float cx, float cy, float wf, float hf);
-        JOY_API void button_destroy(button_p btn);
-        JOY_API void button_set_position(button_p btn, float x, float y);
-        JOY_API vec2_t button_get_position(button_p btn);
+        JOY_API label_p joy_ui_label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
+        JOY_API void joy_ui_label_destroy(label_p label);
+        JOY_API void joy_ui_label_set_text(label_p label, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
+        JOY_API void joy_ui_label_draw(label_p label);
+        JOY_API void joy_ui_label_process_event(label_p label, const void* event);
+        JOY_API button_p joy_ui_button_create(jr2d_p r2d, float cx, float cy, float wf, float hf);
+        JOY_API void joy_ui_button_destroy(button_p btn);
+        JOY_API void joy_ui_button_set_position(button_p btn, float x, float y);
+        JOY_API vec2_t joy_ui_button_get_position(button_p btn);
         /* 布局需要：复用同一个 button 时改变尺寸（旧 API 只能在 create 时定尺寸） */
-        JOY_API void button_set_size(button_p btn, float width, float height);
-        JOY_API void button_set_normal_color(button_p btn, jcolor_t color);
-        JOY_API void button_set_hover_color(button_p btn, jcolor_t color);
-        JOY_API void button_set_pressed_color(button_p btn, jcolor_t color);
-        JOY_API void button_set_image(button_p btn, image_p image);
-        JOY_API void button_set_pressed_image(button_p btn, image_p image);
-        JOY_API void button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, jcolor_t color);
-        JOY_API void button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
-        JOY_API bool button_is_hovered(button_p btn, float x, float y);
-        JOY_API bool button_is_pressed(button_p btn, float x, float y);
-        JOY_API void button_set_hovered(button_p btn, bool v);
-        JOY_API void button_set_pressed(button_p btn, bool v);
-        JOY_API bool button_get_pressed(button_p btn);
-        JOY_API void button_set_text_offset(button_p btn, float x, float y);
-        JOY_API void button_draw(button_p btn);
-        JOY_API void button_process_event(button_p btn, const void* event);
+        JOY_API void joy_ui_button_set_size(button_p btn, float width, float height);
+        JOY_API void joy_ui_button_set_normal_color(button_p btn, jcolor_t color);
+        JOY_API void joy_ui_button_set_hover_color(button_p btn, jcolor_t color);
+        JOY_API void joy_ui_button_set_pressed_color(button_p btn, jcolor_t color);
+        JOY_API void joy_ui_button_set_image(button_p btn, image_p image);
+        JOY_API void joy_ui_button_set_pressed_image(button_p btn, image_p image);
+        JOY_API void joy_ui_button_set_textx(button_p btn, font_p fontinfo, const char* str, int len, jcolor_t color);
+        JOY_API void joy_ui_button_set_text(button_p btn, font_p fontinfo, const int* codepoints, int len, jcolor_t color);
+        JOY_API bool joy_ui_button_is_hovered(button_p btn, float x, float y);
+        JOY_API bool joy_ui_button_is_pressed(button_p btn, float x, float y);
+        JOY_API void joy_ui_button_set_hovered(button_p btn, bool v);
+        JOY_API void joy_ui_button_set_pressed(button_p btn, bool v);
+        JOY_API bool joy_ui_button_get_pressed(button_p btn);
+        JOY_API void joy_ui_button_set_text_offset(button_p btn, float x, float y);
+        JOY_API void joy_ui_button_draw(button_p btn);
+        JOY_API void joy_ui_button_process_event(button_p btn, const void* event);
 
         /* ============ 滚动层 scrollview（可拖拽滚动的容器）============
          * 横向 + 纵向滚动；鼠标拖拽 / 触摸滑动 / 滚轮都支持（触摸在 SDL 里也走鼠标事件）。
@@ -1162,25 +1162,25 @@ extern "C" {
         JOY_API void datagrid_scroll(datagrid_p grid, int lines);
         JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
         JOY_API void datagrid_process_event(datagrid_p dg, const void* event);
-        JOY_API radio_p radio_create(float fx, float fy, float size_frac, const char* label, int group_id);
-        JOY_API void radio_destroy(radio_p radio);
-        JOY_API bool radio_is_pressed(radio_p radio, float x, float y);
-        JOY_API void radio_set_hovered(radio_p radio, bool v);
-        JOY_API void radio_process_event(radio_p rb, const void* event);
-        JOY_API checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* label);
-        JOY_API void checkbox_destroy(checkbox_p checkbox);
-        JOY_API void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
-        JOY_API checkbox_state_t checkbox_get_state(checkbox_p checkbox);
-        JOY_API void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover);
-        JOY_API void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d);
+        JOY_API radio_p joy_ui_radio_create(float fx, float fy, float size_frac, const char* label, int group_id);
+        JOY_API void joy_ui_radio_destroy(radio_p radio);
+        JOY_API bool joy_ui_radio_is_pressed(radio_p radio, float x, float y);
+        JOY_API void joy_ui_radio_set_hovered(radio_p radio, bool v);
+        JOY_API void joy_ui_radio_process_event(radio_p rb, const void* event);
+        JOY_API checkbox_p joy_ui_checkbox_create(float fx, float fy, float size_frac, const char* label);
+        JOY_API void joy_ui_checkbox_destroy(checkbox_p checkbox);
+        JOY_API void joy_ui_checkbox_set_state(checkbox_p checkbox, checkbox_state_t state);
+        JOY_API checkbox_state_t joy_ui_checkbox_get_state(checkbox_p checkbox);
+        JOY_API void joy_ui_checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover);
+        JOY_API void joy_ui_checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d);
         /* 布局需要：移动复选框（旧 API 只能在 create 时定位置） */
-        JOY_API void checkbox_set_position(checkbox_p checkbox, int x, int y);
-        JOY_API void checkbox_set_text_color(checkbox_p checkbox, jcolor_t color);
-        JOY_API void checkbox_toggle(checkbox_p checkbox);
-        JOY_API bool checkbox_is_pressed(checkbox_p cb, float x, float y);
-        JOY_API void checkbox_set_hovered(checkbox_p cb, bool v);
-        JOY_API void checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
-        JOY_API void checkbox_process_event(checkbox_p cb, const void* event);
+        JOY_API void joy_ui_checkbox_set_position(checkbox_p checkbox, int x, int y);
+        JOY_API void joy_ui_checkbox_set_text_color(checkbox_p checkbox, jcolor_t color);
+        JOY_API void joy_ui_checkbox_toggle(checkbox_p checkbox);
+        JOY_API bool joy_ui_checkbox_is_pressed(checkbox_p cb, float x, float y);
+        JOY_API void joy_ui_checkbox_set_hovered(checkbox_p cb, bool v);
+        JOY_API void joy_ui_checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
+        JOY_API void joy_ui_checkbox_process_event(checkbox_p cb, const void* event);
         JOY_API joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
         // 摇杆方向模式：约束/量化 joystick_get_direction 输出的方向
         typedef enum {
@@ -1253,26 +1253,26 @@ extern "C" {
         JOY_API bool slider_is_hovered(slider_p s, float x, float y);
         JOY_API void slider_set_hovered(slider_p s, bool v);
         JOY_API void slider_process_event(slider_p s, const void* event);
-        JOY_API popup_p popup_create(jr2d_p r2d, float fw, float fh);
-        JOY_API void popup_destroy(popup_p p);
-        JOY_API void popup_set_title(popup_p p, const char* text, int len);
-        JOY_API void popup_set_content(popup_p p, const char* text, int len);
-        JOY_API void popup_set_position(popup_p p, float x, float y);
-        JOY_API void popup_set_visible(popup_p p, bool v);
-        JOY_API void popup_set_closeable(popup_p p, bool v);
-        JOY_API void popup_draw(popup_p p, font_p title_font, font_p content_font);
-        JOY_API bool popup_is_close_clicked(popup_p p, float mx, float my);
-        JOY_API bool popup_is_title_clicked(popup_p p, float mx, float my);
-        JOY_API void popup_drag_move(popup_p p, float mx, float my);
-        JOY_API bool popup_is_inside(popup_p p, float mx, float my);
-        JOY_API void popup_process_event(popup_p p, const void* event);
-        JOY_API tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len);
-        JOY_API void tooltip_destroy(tooltip_p t);
-        JOY_API void tooltip_set_text(tooltip_p t, const char* text, int len);
-        JOY_API void tooltip_set_position(tooltip_p t, float x, float y);
-        JOY_API void tooltip_set_visible(tooltip_p t, bool v);
-        JOY_API void tooltip_draw(tooltip_p t, font_p font);
-        JOY_API void tooltip_process_event(tooltip_p t, const void* event);
+        JOY_API popup_p joy_ui_popup_create(jr2d_p r2d, float fw, float fh);
+        JOY_API void joy_ui_popup_destroy(popup_p p);
+        JOY_API void joy_ui_popup_set_title(popup_p p, const char* text, int len);
+        JOY_API void joy_ui_popup_set_content(popup_p p, const char* text, int len);
+        JOY_API void joy_ui_popup_set_position(popup_p p, float x, float y);
+        JOY_API void joy_ui_popup_set_visible(popup_p p, bool v);
+        JOY_API void joy_ui_popup_set_closeable(popup_p p, bool v);
+        JOY_API void joy_ui_popup_draw(popup_p p, font_p title_font, font_p content_font);
+        JOY_API bool joy_ui_popup_is_close_clicked(popup_p p, float mx, float my);
+        JOY_API bool joy_ui_popup_is_title_clicked(popup_p p, float mx, float my);
+        JOY_API void joy_ui_popup_drag_move(popup_p p, float mx, float my);
+        JOY_API bool joy_ui_popup_is_inside(popup_p p, float mx, float my);
+        JOY_API void joy_ui_popup_process_event(popup_p p, const void* event);
+        JOY_API tooltip_p joy_ui_tooltip_create(jr2d_p r2d, const char* text, int len);
+        JOY_API void joy_ui_tooltip_destroy(tooltip_p t);
+        JOY_API void joy_ui_tooltip_set_text(tooltip_p t, const char* text, int len);
+        JOY_API void joy_ui_tooltip_set_position(tooltip_p t, float x, float y);
+        JOY_API void joy_ui_tooltip_set_visible(tooltip_p t, bool v);
+        JOY_API void joy_ui_tooltip_draw(tooltip_p t, font_p font);
+        JOY_API void joy_ui_tooltip_process_event(tooltip_p t, const void* event);
         JOY_API void joy_ui_process_widget_event(void** widgets, int count, const void* event);
 
         /* ======================================================================
@@ -1688,7 +1688,7 @@ extern "C" {
          * 那些 *_f 系列会乘窗口宽高，把 x=227 放大成 108960。命名用 _rect
          * 而不是 _f，就是为了和归一化系列区分开。
          * 声明刻意放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
-        JOY_API void image_draw_rect(jr2d_p r2d, image_p image,
+        JOY_API void joy_ui_image_draw_rect(jr2d_p r2d, image_p image,
                                      float x, float y, float w, float h);
 
 #ifdef __cplusplus

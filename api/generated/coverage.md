@@ -36,8 +36,6 @@
 | animation | 0 | 8 | 1 | 1 | 0 | 10 |
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | box2d | 0 | 0 | 0 | 11 | 0 | 11 |
-| button | 0 | 14 | 4 | 2 | 0 | 20 |
-| checkbox | 0 | 10 | 2 | 1 | 0 | 13 |
 | collision2d | 0 | 0 | 10 | 8 | 0 | 18 |
 | collision2df | 0 | 0 | 5 | 14 | 0 | 19 |
 | collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
@@ -49,7 +47,6 @@
 | gjk2d | 0 | 0 | 0 | 6 | 0 | 6 |
 | gjk3d | 0 | 0 | 1 | 6 | 0 | 7 |
 | gjk3df | 0 | 0 | 1 | 7 | 0 | 8 |
-| image | 0 | 8 | 1 | 5 | 0 | 14 |
 | inputbox | 0 | 27 | 0 | 1 | 0 | 28 |
 | janimator | 0 | 23 | 2 | 2 | 0 | 27 |
 | jecs | 0 | 5 | 0 | 7 | 1 | 13 |
@@ -63,24 +60,19 @@
 | jspine | 0 | 0 | 0 | 0 | 19 | 19 |
 | jtext | 4 | 1 | 3 | 1 | 0 | 9 |
 | jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
-| label | 0 | 3 | 0 | 2 | 0 | 5 |
 | math | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
 | net | 0 | 56 | 0 | 20 | 0 | 76 |
-| popup | 0 | 13 | 0 | 0 | 0 | 13 |
 | r2d | 0 | 19 | 2 | 10 | 0 | 31 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
-| radio | 0 | 5 | 0 | 0 | 0 | 5 |
 | scene | 0 | 64 | 0 | 16 | 0 | 80 |
 | scrollview | 0 | 14 | 0 | 0 | 0 | 14 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
 | slider | 0 | 13 | 1 | 0 | 0 | 14 |
 | sys | 19 | 0 | 0 | 3 | 0 | 22 |
-| text | 0 | 3 | 2 | 2 | 0 | 7 |
-| tooltip | 0 | 7 | 0 | 0 | 0 | 7 |
-| ui | 0 | 20 | 12 | 13 | 0 | 45 |
+| ui | 0 | 83 | 21 | 25 | 0 | 129 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
 
 ## 待办：返回句柄但缺 `owns`
@@ -221,15 +213,15 @@
 | `r2d_get_clip_rect` | 结构体指针参数 | include/joy/api.h:230 |
 | `r2d_draw_lines` | 结构体指针参数 | include/joy/api.h:239 |
 | `shape_draw_polygon` | 结构体指针参数 | include/joy/api.h:241 |
-| `image_draw1` | 结构体指针参数 | include/joy/api.h:252 |
-| `image_draw_ex` | 结构体指针参数 | include/joy/api.h:253 |
-| `image_get_size` | 非不透明指针 / 输出参数：float* | include/joy/api.h:256 |
-| `image_update` | 结构体指针参数 | include/joy/api.h:257 |
-| `text_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:262 |
-| `text_update` | 非不透明指针 / 输出参数：int* | include/joy/api.h:264 |
+| `joy_ui_image_draw1` | 结构体指针参数 | include/joy/api.h:252 |
+| `joy_ui_image_draw_ex` | 结构体指针参数 | include/joy/api.h:253 |
+| `joy_ui_image_get_size` | 非不透明指针 / 输出参数：float* | include/joy/api.h:256 |
+| `joy_ui_image_update` | 结构体指针参数 | include/joy/api.h:257 |
+| `joy_ui_text_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:262 |
+| `joy_ui_text_update` | 非不透明指针 / 输出参数：int* | include/joy/api.h:264 |
 | `r2d_frect` | 结构体按值返回 | include/joy/api.h:279 |
 | `r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/api.h:280 |
-| `image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
+| `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
 | `jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
 | `animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
 | `r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/api.h:340 |
@@ -314,10 +306,10 @@
 | `gjk3d_init_mesh` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:928 |
 | `janimator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:959 |
 | `janimator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:960 |
-| `label_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1034 |
-| `label_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1036 |
-| `button_get_position` | 结构体按值返回 | include/joy/api.h:1042 |
-| `button_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1051 |
+| `joy_ui_label_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1034 |
+| `joy_ui_label_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1036 |
+| `joy_ui_button_get_position` | 结构体按值返回 | include/joy/api.h:1042 |
+| `joy_ui_button_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1051 |
 | `combobox_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1101 |
 | `combobox_add_itemx` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1105 |
 | `joy_ui_layout_grid_create` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1122 |
@@ -328,7 +320,7 @@
 | `joy_ui_layout_grid_label` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1130 |
 | `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1135 |
 | `datagrid_addrow` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1157 |
-| `checkbox_set_state` | 未知类型需人工标注：checkbox_state_t | include/joy/api.h:1172 |
+| `joy_ui_checkbox_set_state` | 未知类型需人工标注：checkbox_state_t | include/joy/api.h:1172 |
 | `joystick_set_dir_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1196 |
 | `joystick_set_textures_for_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1198 |
 | `joystick_get_direction` | 结构体按值返回 | include/joy/api.h:1208 |

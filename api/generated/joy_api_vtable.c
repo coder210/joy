@@ -1167,7 +1167,7 @@ static bool shim_shape_draw_rectangle(void* _jv_ctx, Jr2d r2d, const char* mode,
         return (bool) _jv_r.as.b;
 }
 
-static Image shim_image_create(void* _jv_ctx, Jr2d r2d, const char* filename)
+static Image shim_joy_ui_image_create(void* _jv_ctx, Jr2d r2d, const char* filename)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1176,25 +1176,25 @@ static Image shim_image_create(void* _jv_ctx, Jr2d r2d, const char* filename)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r2d.h);
         _jv_args[1] = joy_v_str(filename);
-        _jv_r = joy_api_call("image_create", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_create", _jv_args, 2, &_jv_st);
         _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
         return _jv_out;
 }
 
-static void shim_image_destroy(void* _jv_ctx, Image image)
+static void shim_joy_ui_image_destroy(void* _jv_ctx, Image image)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(image.h);
-        _jv_r = joy_api_call("image_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_image_set_alpha(void* _jv_ctx, Image image, uint8_t alpha)
+static void shim_joy_ui_image_set_alpha(void* _jv_ctx, Image image, uint8_t alpha)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1202,13 +1202,13 @@ static void shim_image_set_alpha(void* _jv_ctx, Image image, uint8_t alpha)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(image.h);
         _jv_args[1] = joy_v_u32(alpha);
-        _jv_r = joy_api_call("image_set_alpha", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_set_alpha", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_image_set_blend_mode(void* _jv_ctx, Image image, int mode)
+static void shim_joy_ui_image_set_blend_mode(void* _jv_ctx, Image image, int mode)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1216,13 +1216,13 @@ static void shim_image_set_blend_mode(void* _jv_ctx, Image image, int mode)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(image.h);
         _jv_args[1] = joy_v_i32(mode);
-        _jv_r = joy_api_call("image_set_blend_mode", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_set_blend_mode", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_image_set_scale_mode(void* _jv_ctx, Image image, int nearest)
+static void shim_joy_ui_image_set_scale_mode(void* _jv_ctx, Image image, int nearest)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1230,13 +1230,13 @@ static void shim_image_set_scale_mode(void* _jv_ctx, Image image, int nearest)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(image.h);
         _jv_args[1] = joy_v_i32(nearest);
-        _jv_r = joy_api_call("image_set_scale_mode", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_set_scale_mode", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_text_updatex(void* _jv_ctx, Jtext text, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_text_updatex(void* _jv_ctx, Jtext text, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -1250,20 +1250,20 @@ static void shim_text_updatex(void* _jv_ctx, Jtext text, Font font, const char* 
         _jv_args[5] = joy_v_u32(color_g);
         _jv_args[6] = joy_v_u32(color_b);
         _jv_args[7] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("text_updatex", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_text_updatex", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_text_destroy(void* _jv_ctx, Jtext jtext_tex)
+static void shim_joy_ui_text_destroy(void* _jv_ctx, Jtext jtext_tex)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(jtext_tex.h);
-        _jv_r = joy_api_call("text_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_text_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -1399,26 +1399,26 @@ static void shim_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const c
         return;
 }
 
-static int shim_text_get_width(void* _jv_ctx, Jtext jtext_tex)
+static int shim_joy_ui_text_get_width(void* _jv_ctx, Jtext jtext_tex)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(jtext_tex.h);
-        _jv_r = joy_api_call("text_get_width", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_text_get_width", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_text_get_height(void* _jv_ctx, Jtext jtext_tex)
+static int shim_joy_ui_text_get_height(void* _jv_ctx, Jtext jtext_tex)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(jtext_tex.h);
-        _jv_r = joy_api_call("text_get_height", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_text_get_height", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
@@ -2876,46 +2876,46 @@ static void shim_janimator_set_flip_h(void* _jv_ctx, Janimator anim, bool flip)
         return;
 }
 
-static void shim_label_destroy(void* _jv_ctx, Label label)
+static void shim_joy_ui_label_destroy(void* _jv_ctx, Label label)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(label.h);
-        _jv_r = joy_api_call("label_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_label_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_label_draw(void* _jv_ctx, Label label)
+static void shim_joy_ui_label_draw(void* _jv_ctx, Label label)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(label.h);
-        _jv_r = joy_api_call("label_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_label_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_destroy(void* _jv_ctx, Button btn)
+static void shim_joy_ui_button_destroy(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("button_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_position(void* _jv_ctx, Button btn, float x, float y)
+static void shim_joy_ui_button_set_position(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2924,13 +2924,13 @@ static void shim_button_set_position(void* _jv_ctx, Button btn, float x, float y
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("button_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_size(void* _jv_ctx, Button btn, float width, float height)
+static void shim_joy_ui_button_set_size(void* _jv_ctx, Button btn, float width, float height)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2939,13 +2939,13 @@ static void shim_button_set_size(void* _jv_ctx, Button btn, float width, float h
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(width);
         _jv_args[2] = joy_v_f64(height);
-        _jv_r = joy_api_call("button_set_size", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_size", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_normal_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_button_set_normal_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2956,13 +2956,13 @@ static void shim_button_set_normal_color(void* _jv_ctx, Button btn, uint8_t colo
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("button_set_normal_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_normal_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_hover_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_button_set_hover_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2973,13 +2973,13 @@ static void shim_button_set_hover_color(void* _jv_ctx, Button btn, uint8_t color
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("button_set_hover_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_hover_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_pressed_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_button_set_pressed_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2990,13 +2990,13 @@ static void shim_button_set_pressed_color(void* _jv_ctx, Button btn, uint8_t col
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("button_set_pressed_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_pressed_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_image(void* _jv_ctx, Button btn, Image image)
+static void shim_joy_ui_button_set_image(void* _jv_ctx, Button btn, Image image)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3004,13 +3004,13 @@ static void shim_button_set_image(void* _jv_ctx, Button btn, Image image)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_handle(image.h);
-        _jv_r = joy_api_call("button_set_image", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_image", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_pressed_image(void* _jv_ctx, Button btn, Image image)
+static void shim_joy_ui_button_set_pressed_image(void* _jv_ctx, Button btn, Image image)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3018,13 +3018,13 @@ static void shim_button_set_pressed_image(void* _jv_ctx, Button btn, Image image
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_handle(image.h);
-        _jv_r = joy_api_call("button_set_pressed_image", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_pressed_image", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_textx(void* _jv_ctx, Button btn, Font fontinfo, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_button_set_textx(void* _jv_ctx, Button btn, Font fontinfo, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -3038,13 +3038,13 @@ static void shim_button_set_textx(void* _jv_ctx, Button btn, Font fontinfo, cons
         _jv_args[5] = joy_v_u32(color_g);
         _jv_args[6] = joy_v_u32(color_b);
         _jv_args[7] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("button_set_textx", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_textx", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_button_is_hovered(void* _jv_ctx, Button btn, float x, float y)
+static bool shim_joy_ui_button_is_hovered(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3053,12 +3053,12 @@ static bool shim_button_is_hovered(void* _jv_ctx, Button btn, float x, float y)
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("button_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_button_is_pressed(void* _jv_ctx, Button btn, float x, float y)
+static bool shim_joy_ui_button_is_pressed(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3067,12 +3067,12 @@ static bool shim_button_is_pressed(void* _jv_ctx, Button btn, float x, float y)
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("button_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_button_set_hovered(void* _jv_ctx, Button btn, bool v)
+static void shim_joy_ui_button_set_hovered(void* _jv_ctx, Button btn, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3080,13 +3080,13 @@ static void shim_button_set_hovered(void* _jv_ctx, Button btn, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("button_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_set_pressed(void* _jv_ctx, Button btn, bool v)
+static void shim_joy_ui_button_set_pressed(void* _jv_ctx, Button btn, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3094,25 +3094,25 @@ static void shim_button_set_pressed(void* _jv_ctx, Button btn, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("button_set_pressed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_pressed", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_button_get_pressed(void* _jv_ctx, Button btn)
+static bool shim_joy_ui_button_get_pressed(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("button_get_pressed", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_get_pressed", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_button_set_text_offset(void* _jv_ctx, Button btn, float x, float y)
+static void shim_joy_ui_button_set_text_offset(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3121,20 +3121,20 @@ static void shim_button_set_text_offset(void* _jv_ctx, Button btn, float x, floa
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("button_set_text_offset", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_set_text_offset", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_button_draw(void* _jv_ctx, Button btn)
+static void shim_joy_ui_button_draw(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("button_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_button_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -3678,20 +3678,20 @@ static void shim_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row
         return;
 }
 
-static void shim_radio_destroy(void* _jv_ctx, Radio radio)
+static void shim_joy_ui_radio_destroy(void* _jv_ctx, Radio radio)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(radio.h);
-        _jv_r = joy_api_call("radio_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_radio_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_radio_is_pressed(void* _jv_ctx, Radio radio, float x, float y)
+static bool shim_joy_ui_radio_is_pressed(void* _jv_ctx, Radio radio, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3700,12 +3700,12 @@ static bool shim_radio_is_pressed(void* _jv_ctx, Radio radio, float x, float y)
         _jv_args[0] = joy_v_handle(radio.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("radio_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_radio_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
+static void shim_joy_ui_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3713,26 +3713,26 @@ static void shim_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(radio.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("radio_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_radio_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_destroy(void* _jv_ctx, Checkbox checkbox)
+static void shim_joy_ui_checkbox_destroy(void* _jv_ctx, Checkbox checkbox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
-        _jv_r = joy_api_call("checkbox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
+static void shim_joy_ui_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
 {
         joy_value_t _jv_args[13];
         joy_value_t _jv_r;
@@ -3751,13 +3751,13 @@ static void shim_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, uint8_t b
         _jv_args[10] = joy_v_u32(hover_g);
         _jv_args[11] = joy_v_u32(hover_b);
         _jv_args[12] = joy_v_u32(hover_a);
-        _jv_r = joy_api_call("checkbox_set_colors", _jv_args, 13, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_set_colors", _jv_args, 13, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d r2d)
+static void shim_joy_ui_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3765,13 +3765,13 @@ static void shim_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d r2d)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("checkbox_set_r2d", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_set_r2d", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, int x, int y)
+static void shim_joy_ui_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, int x, int y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3780,13 +3780,13 @@ static void shim_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, int x, 
         _jv_args[0] = joy_v_handle(checkbox.h);
         _jv_args[1] = joy_v_i32(x);
         _jv_args[2] = joy_v_i32(y);
-        _jv_r = joy_api_call("checkbox_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3797,26 +3797,26 @@ static void shim_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox, uint8
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("checkbox_set_text_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_set_text_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_checkbox_toggle(void* _jv_ctx, Checkbox checkbox)
+static void shim_joy_ui_checkbox_toggle(void* _jv_ctx, Checkbox checkbox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
-        _jv_r = joy_api_call("checkbox_toggle", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_toggle", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x, float y)
+static bool shim_joy_ui_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3825,12 +3825,12 @@ static bool shim_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x, float 
         _jv_args[0] = joy_v_handle(cb.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("checkbox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
+static void shim_joy_ui_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3838,7 +3838,7 @@ static void shim_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(cb.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("checkbox_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_checkbox_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -4480,20 +4480,20 @@ static void shim_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
         return;
 }
 
-static void shim_popup_destroy(void* _jv_ctx, Popup p)
+static void shim_joy_ui_popup_destroy(void* _jv_ctx, Popup p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("popup_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_set_title(void* _jv_ctx, Popup p, const char* text, int len)
+static void shim_joy_ui_popup_set_title(void* _jv_ctx, Popup p, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4502,13 +4502,13 @@ static void shim_popup_set_title(void* _jv_ctx, Popup p, const char* text, int l
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("popup_set_title", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_set_title", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_set_content(void* _jv_ctx, Popup p, const char* text, int len)
+static void shim_joy_ui_popup_set_content(void* _jv_ctx, Popup p, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4517,13 +4517,13 @@ static void shim_popup_set_content(void* _jv_ctx, Popup p, const char* text, int
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("popup_set_content", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_set_content", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_set_position(void* _jv_ctx, Popup p, float x, float y)
+static void shim_joy_ui_popup_set_position(void* _jv_ctx, Popup p, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4532,13 +4532,13 @@ static void shim_popup_set_position(void* _jv_ctx, Popup p, float x, float y)
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("popup_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_set_visible(void* _jv_ctx, Popup p, bool v)
+static void shim_joy_ui_popup_set_visible(void* _jv_ctx, Popup p, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4546,13 +4546,13 @@ static void shim_popup_set_visible(void* _jv_ctx, Popup p, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("popup_set_visible", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_set_visible", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
+static void shim_joy_ui_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4560,13 +4560,13 @@ static void shim_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("popup_set_closeable", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_set_closeable", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font content_font)
+static void shim_joy_ui_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font content_font)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4575,13 +4575,13 @@ static void shim_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font conten
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_handle(title_font.h);
         _jv_args[2] = joy_v_handle(content_font.h);
-        _jv_r = joy_api_call("popup_draw", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_draw", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_ui_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4590,12 +4590,12 @@ static bool shim_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx, float 
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("popup_is_close_clicked", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_is_close_clicked", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_ui_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4604,12 +4604,12 @@ static bool shim_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx, float 
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("popup_is_title_clicked", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_is_title_clicked", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_popup_drag_move(void* _jv_ctx, Popup p, float mx, float my)
+static void shim_joy_ui_popup_drag_move(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4618,13 +4618,13 @@ static void shim_popup_drag_move(void* _jv_ctx, Popup p, float mx, float my)
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("popup_drag_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_drag_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_popup_is_inside(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_ui_popup_is_inside(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4633,25 +4633,25 @@ static bool shim_popup_is_inside(void* _jv_ctx, Popup p, float mx, float my)
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("popup_is_inside", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_popup_is_inside", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_tooltip_destroy(void* _jv_ctx, Tooltip t)
+static void shim_joy_ui_tooltip_destroy(void* _jv_ctx, Tooltip t)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
-        _jv_r = joy_api_call("tooltip_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_tooltip_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* text, int len)
+static void shim_joy_ui_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4660,13 +4660,13 @@ static void shim_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* text, in
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("tooltip_set_text", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_tooltip_set_text", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, float y)
+static void shim_joy_ui_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4675,13 +4675,13 @@ static void shim_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, float y
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("tooltip_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_tooltip_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
+static void shim_joy_ui_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4689,13 +4689,13 @@ static void shim_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("tooltip_set_visible", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_tooltip_set_visible", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
+static void shim_joy_ui_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4703,7 +4703,7 @@ static void shim_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("tooltip_draw", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_tooltip_draw", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -6731,7 +6731,7 @@ static void shim_audio_bgm_destroy(void* _jv_ctx, AudioBgm bgm)
         return;
 }
 
-static void shim_image_draw_rect(void* _jv_ctx, Jr2d r2d, Image image, float x, float y, float w, float h)
+static void shim_joy_ui_image_draw_rect(void* _jv_ctx, Jr2d r2d, Image image, float x, float y, float w, float h)
 {
         joy_value_t _jv_args[6];
         joy_value_t _jv_r;
@@ -6743,7 +6743,7 @@ static void shim_image_draw_rect(void* _jv_ctx, Jr2d r2d, Image image, float x, 
         _jv_args[3] = joy_v_f64(y);
         _jv_args[4] = joy_v_f64(w);
         _jv_args[5] = joy_v_f64(h);
-        _jv_r = joy_api_call("image_draw_rect", _jv_args, 6, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_image_draw_rect", _jv_args, 6, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10049,13 +10049,13 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R2dPointInClip = shim_r2d_point_in_clip;
         api->ShapeDrawLine = shim_shape_draw_line;
         api->ShapeDrawRectangle = shim_shape_draw_rectangle;
-        api->ImageCreate = shim_image_create;
-        api->ImageDestroy = shim_image_destroy;
-        api->ImageSetAlpha = shim_image_set_alpha;
-        api->ImageSetBlendMode = shim_image_set_blend_mode;
-        api->ImageSetScaleMode = shim_image_set_scale_mode;
-        api->TextUpdatex = shim_text_updatex;
-        api->TextDestroy = shim_text_destroy;
+        api->ImageCreate = shim_joy_ui_image_create;
+        api->ImageDestroy = shim_joy_ui_image_destroy;
+        api->ImageSetAlpha = shim_joy_ui_image_set_alpha;
+        api->ImageSetBlendMode = shim_joy_ui_image_set_blend_mode;
+        api->ImageSetScaleMode = shim_joy_ui_image_set_scale_mode;
+        api->TextUpdatex = shim_joy_ui_text_updatex;
+        api->TextDestroy = shim_joy_ui_text_destroy;
         api->JtextPrint = shim_jtext_print;
         api->JtextPrintx = shim_jtext_printx;
         api->R2dDrawPointF = shim_r2d_draw_point_f;
@@ -10063,8 +10063,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->ShapeDrawLineF = shim_shape_draw_line_f;
         api->JtextPrintf = shim_jtext_printf;
         api->JtextPrintfScaled = shim_jtext_printf_scaled;
-        api->TextGetWidth = shim_text_get_width;
-        api->TextGetHeight = shim_text_get_height;
+        api->TextGetWidth = shim_joy_ui_text_get_width;
+        api->TextGetHeight = shim_joy_ui_text_get_height;
         api->JtextCacheClear = shim_jtext_cache_clear;
         api->JtextCacheSetLimit = shim_jtext_cache_set_limit;
         api->JtextCacheGetCount = shim_jtext_cache_get_count;
@@ -10165,24 +10165,24 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JanimatorUpdate = shim_janimator_update;
         api->JanimatorDraw = shim_janimator_draw;
         api->JanimatorSetFlipH = shim_janimator_set_flip_h;
-        api->LabelDestroy = shim_label_destroy;
-        api->LabelDraw = shim_label_draw;
-        api->ButtonDestroy = shim_button_destroy;
-        api->ButtonSetPosition = shim_button_set_position;
-        api->ButtonSetSize = shim_button_set_size;
-        api->ButtonSetNormalColor = shim_button_set_normal_color;
-        api->ButtonSetHoverColor = shim_button_set_hover_color;
-        api->ButtonSetPressedColor = shim_button_set_pressed_color;
-        api->ButtonSetImage = shim_button_set_image;
-        api->ButtonSetPressedImage = shim_button_set_pressed_image;
-        api->ButtonSetTextx = shim_button_set_textx;
-        api->ButtonIsHovered = shim_button_is_hovered;
-        api->ButtonIsPressed = shim_button_is_pressed;
-        api->ButtonSetHovered = shim_button_set_hovered;
-        api->ButtonSetPressed = shim_button_set_pressed;
-        api->ButtonGetPressed = shim_button_get_pressed;
-        api->ButtonSetTextOffset = shim_button_set_text_offset;
-        api->ButtonDraw = shim_button_draw;
+        api->LabelDestroy = shim_joy_ui_label_destroy;
+        api->LabelDraw = shim_joy_ui_label_draw;
+        api->ButtonDestroy = shim_joy_ui_button_destroy;
+        api->ButtonSetPosition = shim_joy_ui_button_set_position;
+        api->ButtonSetSize = shim_joy_ui_button_set_size;
+        api->ButtonSetNormalColor = shim_joy_ui_button_set_normal_color;
+        api->ButtonSetHoverColor = shim_joy_ui_button_set_hover_color;
+        api->ButtonSetPressedColor = shim_joy_ui_button_set_pressed_color;
+        api->ButtonSetImage = shim_joy_ui_button_set_image;
+        api->ButtonSetPressedImage = shim_joy_ui_button_set_pressed_image;
+        api->ButtonSetTextx = shim_joy_ui_button_set_textx;
+        api->ButtonIsHovered = shim_joy_ui_button_is_hovered;
+        api->ButtonIsPressed = shim_joy_ui_button_is_pressed;
+        api->ButtonSetHovered = shim_joy_ui_button_set_hovered;
+        api->ButtonSetPressed = shim_joy_ui_button_set_pressed;
+        api->ButtonGetPressed = shim_joy_ui_button_get_pressed;
+        api->ButtonSetTextOffset = shim_joy_ui_button_set_text_offset;
+        api->ButtonDraw = shim_joy_ui_button_draw;
         api->ScrollviewDestroy = shim_scrollview_destroy;
         api->ScrollviewSetViewPx = shim_scrollview_set_view_px;
         api->ScrollviewSetContent = shim_scrollview_set_content;
@@ -10222,17 +10222,17 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->DatagridHitRow = shim_datagrid_hit_row;
         api->DatagridScroll = shim_datagrid_scroll;
         api->DatagridSetSelectedRow = shim_datagrid_set_selected_row;
-        api->RadioDestroy = shim_radio_destroy;
-        api->RadioIsPressed = shim_radio_is_pressed;
-        api->RadioSetHovered = shim_radio_set_hovered;
-        api->CheckboxDestroy = shim_checkbox_destroy;
-        api->CheckboxSetColors = shim_checkbox_set_colors;
-        api->CheckboxSetR2d = shim_checkbox_set_r2d;
-        api->CheckboxSetPosition = shim_checkbox_set_position;
-        api->CheckboxSetTextColor = shim_checkbox_set_text_color;
-        api->CheckboxToggle = shim_checkbox_toggle;
-        api->CheckboxIsPressed = shim_checkbox_is_pressed;
-        api->CheckboxSetHovered = shim_checkbox_set_hovered;
+        api->RadioDestroy = shim_joy_ui_radio_destroy;
+        api->RadioIsPressed = shim_joy_ui_radio_is_pressed;
+        api->RadioSetHovered = shim_joy_ui_radio_set_hovered;
+        api->CheckboxDestroy = shim_joy_ui_checkbox_destroy;
+        api->CheckboxSetColors = shim_joy_ui_checkbox_set_colors;
+        api->CheckboxSetR2d = shim_joy_ui_checkbox_set_r2d;
+        api->CheckboxSetPosition = shim_joy_ui_checkbox_set_position;
+        api->CheckboxSetTextColor = shim_joy_ui_checkbox_set_text_color;
+        api->CheckboxToggle = shim_joy_ui_checkbox_toggle;
+        api->CheckboxIsPressed = shim_joy_ui_checkbox_is_pressed;
+        api->CheckboxSetHovered = shim_joy_ui_checkbox_set_hovered;
         api->JoystickDestroy = shim_joystick_destroy;
         api->JoystickSetTextures = shim_joystick_set_textures;
         api->JoystickSetVector = shim_joystick_set_vector;
@@ -10280,22 +10280,22 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->SliderDragMove = shim_slider_drag_move;
         api->SliderIsHovered = shim_slider_is_hovered;
         api->SliderSetHovered = shim_slider_set_hovered;
-        api->PopupDestroy = shim_popup_destroy;
-        api->PopupSetTitle = shim_popup_set_title;
-        api->PopupSetContent = shim_popup_set_content;
-        api->PopupSetPosition = shim_popup_set_position;
-        api->PopupSetVisible = shim_popup_set_visible;
-        api->PopupSetCloseable = shim_popup_set_closeable;
-        api->PopupDraw = shim_popup_draw;
-        api->PopupIsCloseClicked = shim_popup_is_close_clicked;
-        api->PopupIsTitleClicked = shim_popup_is_title_clicked;
-        api->PopupDragMove = shim_popup_drag_move;
-        api->PopupIsInside = shim_popup_is_inside;
-        api->TooltipDestroy = shim_tooltip_destroy;
-        api->TooltipSetText = shim_tooltip_set_text;
-        api->TooltipSetPosition = shim_tooltip_set_position;
-        api->TooltipSetVisible = shim_tooltip_set_visible;
-        api->TooltipDraw = shim_tooltip_draw;
+        api->PopupDestroy = shim_joy_ui_popup_destroy;
+        api->PopupSetTitle = shim_joy_ui_popup_set_title;
+        api->PopupSetContent = shim_joy_ui_popup_set_content;
+        api->PopupSetPosition = shim_joy_ui_popup_set_position;
+        api->PopupSetVisible = shim_joy_ui_popup_set_visible;
+        api->PopupSetCloseable = shim_joy_ui_popup_set_closeable;
+        api->PopupDraw = shim_joy_ui_popup_draw;
+        api->PopupIsCloseClicked = shim_joy_ui_popup_is_close_clicked;
+        api->PopupIsTitleClicked = shim_joy_ui_popup_is_title_clicked;
+        api->PopupDragMove = shim_joy_ui_popup_drag_move;
+        api->PopupIsInside = shim_joy_ui_popup_is_inside;
+        api->TooltipDestroy = shim_joy_ui_tooltip_destroy;
+        api->TooltipSetText = shim_joy_ui_tooltip_set_text;
+        api->TooltipSetPosition = shim_joy_ui_tooltip_set_position;
+        api->TooltipSetVisible = shim_joy_ui_tooltip_set_visible;
+        api->TooltipDraw = shim_joy_ui_tooltip_draw;
         api->JuiCtxDestroy = shim_joy_ui_ctx_destroy;
         api->JuiBegin = shim_joy_ui_begin;
         api->JuiEnd = shim_joy_ui_end;
@@ -10441,7 +10441,7 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->AudioBgmStop = shim_audio_bgm_stop;
         api->AudioBgmSetGain = shim_audio_bgm_set_gain;
         api->AudioBgmDestroy = shim_audio_bgm_destroy;
-        api->ImageDrawRect = shim_image_draw_rect;
+        api->ImageDrawRect = shim_joy_ui_image_draw_rect;
         api->JmathFpFromFloat = shim_jmath_fp_from_float;
         api->JmathFpToFloat = shim_jmath_fp_to_float;
         api->JmathFpFromUint = shim_jmath_fp_from_uint;
