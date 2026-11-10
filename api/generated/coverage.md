@@ -23,8 +23,8 @@
 | L0 | 纯标量 + const char*，可直接生成 | 264 |
 | L1 | 不透明指针 → 句柄，需所有权测试 | 539 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
-| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 229 |
-| X | 有意排除，不进绑定层 | 50 |
+| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 206 |
+| X | 有意排除，不进绑定层 | 73 |
 
 开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与
 缓冲校验的条目，被跳过的原因会在命令输出和下面各节列出；**开放 ≠ 业务已调用**。
@@ -36,16 +36,13 @@
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | core | 14 | 23 | 1 | 9 | 0 | 47 |
 | input | 0 | 14 | 0 | 3 | 0 | 17 |
-| jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
 | math | 220 | 3 | 27 | 63 | 0 | 313 |
-| module | 0 | 0 | 0 | 0 | 5 | 5 |
-| modules | 0 | 0 | 0 | 0 | 5 | 5 |
-| moudles | 0 | 0 | 0 | 1 | 0 | 1 |
 | net | 19 | 56 | 0 | 23 | 0 | 98 |
 | r2d | 4 | 33 | 6 | 12 | 19 | 74 |
 | r3d | 0 | 109 | 14 | 23 | 0 | 146 |
 | scene | 1 | 117 | 3 | 38 | 1 | 160 |
+| script | 0 | 0 | 0 | 0 | 33 | 33 |
 | ui | 0 | 170 | 23 | 29 | 0 | 222 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
 
@@ -342,7 +339,6 @@
 | `joy_scene_ecs_query` | 可变参数 | include/joy/api.h:1568 |
 | `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1569 |
 | `joy_scene_ecs_register` | 未知类型需人工标注：jecs_system_t | include/joy/api.h:1570 |
-| `moudles_retire` | 非不透明指针 / 输出参数：module_p* | include/joy/api.h:1636 |
 | `joy_math_box2d_create_world` | 未知类型需人工标注：vec2f_t | include/joy/api.h:1644 |
 | `joy_math_box2d_clear_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1645 |
 | `joy_math_box2d_destroy_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1646 |
@@ -354,28 +350,6 @@
 | `joy_math_box2d_foreach_bodies` | 函数指针 / 回调 | include/joy/api.h:1652 |
 | `joy_math_box2d_foreach_joints` | 函数指针 / 回调 | include/joy/api.h:1653 |
 | `joy_math_box2d_foreach_arbiters` | 函数指针 / 回调 | include/joy/api.h:1654 |
-| `jmsgpack_packer_init` | 结构体指针参数 | include/joy/api.h:1656 |
-| `jmsgpack_pack_int` | 结构体指针参数 | include/joy/api.h:1657 |
-| `jmsgpack_pack_int64` | 结构体指针参数 | include/joy/api.h:1658 |
-| `jmsgpack_pack_uint` | 结构体指针参数 | include/joy/api.h:1659 |
-| `jmsgpack_pack_uint64` | 结构体指针参数 | include/joy/api.h:1660 |
-| `jmsgpack_pack_nil` | 结构体指针参数 | include/joy/api.h:1661 |
-| `jmsgpack_pack_array` | 结构体指针参数 | include/joy/api.h:1662 |
-| `jmsgpack_pack_str` | 结构体指针参数 | include/joy/api.h:1663 |
-| `jmsgpack_pack_str_body` | 结构体指针参数 | include/joy/api.h:1664 |
-| `jmsgpack_unpacked_init` | 结构体指针参数 | include/joy/api.h:1665 |
-| `jmsgpack_unpacked_destroy` | 结构体指针参数 | include/joy/api.h:1666 |
-| `jmsgpack_unpack_next` | 结构体指针参数 | include/joy/api.h:1668 |
-| `jmsgpack_unpacked_data` | 结构体指针参数 | include/joy/api.h:1671 |
-| `jmsgpack_object_type` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1672 |
-| `jmsgpack_object_array_size` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1673 |
-| `jmsgpack_object_array_at` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1674 |
-| `jmsgpack_object_str_size` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1675 |
-| `jmsgpack_object_str_ptr` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1676 |
-| `jmsgpack_object_u64` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1677 |
-| `jmsgpack_object_i64` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1678 |
-| `jmsgpack_object_boolean` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1679 |
-| `jmsgpack_object_f64` | 非不透明指针 / 输出参数：jmsgpack_object_t* | include/joy/api.h:1680 |
 
 ## 有意排除（X）
 
@@ -421,16 +395,39 @@
 | `joy_r2d_spine_instance_set_tint` | include/joy/api.h:1026 |
 | `joy_r2d_spine_instance_bounds` | include/joy/api.h:1029 |
 | `joy_scene_ecs_test` | include/joy/api.h:1571 |
-| `modules_create` | include/joy/api.h:1626 |
-| `modules_destroy` | include/joy/api.h:1627 |
-| `modules_query` | include/joy/api.h:1628 |
-| `modules_register` | include/joy/api.h:1629 |
-| `modules_require` | include/joy/api.h:1635 |
-| `module_instance_create` | include/joy/api.h:1637 |
-| `module_instance_init` | include/joy/api.h:1638 |
-| `module_instance_event` | include/joy/api.h:1639 |
-| `module_instance_update` | include/joy/api.h:1640 |
-| `module_instance_release` | include/joy/api.h:1641 |
+| `joy_script_module_create` | include/joy/api.h:1626 |
+| `joy_script_module_destroy` | include/joy/api.h:1627 |
+| `joy_script_module_query` | include/joy/api.h:1628 |
+| `joy_script_module_register` | include/joy/api.h:1629 |
+| `joy_script_module_require` | include/joy/api.h:1635 |
+| `joy_script_modules_retire` | include/joy/api.h:1636 |
+| `joy_script_module_instance_create` | include/joy/api.h:1637 |
+| `joy_script_module_instance_init` | include/joy/api.h:1638 |
+| `joy_script_module_instance_event` | include/joy/api.h:1639 |
+| `joy_script_module_instance_update` | include/joy/api.h:1640 |
+| `joy_script_module_instance_release` | include/joy/api.h:1641 |
+| `joy_script_msgpack_packer_init` | include/joy/api.h:1656 |
+| `joy_script_msgpack_pack_int` | include/joy/api.h:1657 |
+| `joy_script_msgpack_pack_int64` | include/joy/api.h:1658 |
+| `joy_script_msgpack_pack_uint` | include/joy/api.h:1659 |
+| `joy_script_msgpack_pack_uint64` | include/joy/api.h:1660 |
+| `joy_script_msgpack_pack_nil` | include/joy/api.h:1661 |
+| `joy_script_msgpack_pack_array` | include/joy/api.h:1662 |
+| `joy_script_msgpack_pack_str` | include/joy/api.h:1663 |
+| `joy_script_msgpack_pack_str_body` | include/joy/api.h:1664 |
+| `joy_script_msgpack_unpacked_init` | include/joy/api.h:1665 |
+| `joy_script_msgpack_unpacked_destroy` | include/joy/api.h:1666 |
+| `joy_script_msgpack_unpack_next` | include/joy/api.h:1668 |
+| `joy_script_msgpack_unpacked_data` | include/joy/api.h:1671 |
+| `joy_script_msgpack_object_type` | include/joy/api.h:1672 |
+| `joy_script_msgpack_object_array_size` | include/joy/api.h:1673 |
+| `joy_script_msgpack_object_array_at` | include/joy/api.h:1674 |
+| `joy_script_msgpack_object_str_size` | include/joy/api.h:1675 |
+| `joy_script_msgpack_object_str_ptr` | include/joy/api.h:1676 |
+| `joy_script_msgpack_object_u64` | include/joy/api.h:1677 |
+| `joy_script_msgpack_object_i64` | include/joy/api.h:1678 |
+| `joy_script_msgpack_object_boolean` | include/joy/api.h:1679 |
+| `joy_script_msgpack_object_f64` | include/joy/api.h:1680 |
 
 ## `jmath.h`
 

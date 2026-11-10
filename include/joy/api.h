@@ -1623,22 +1623,22 @@ extern "C" {
         JOY_API void joy_audio_bgm_destroy(audio_bgm_p bgm);
 
 
-        JOY_API modules_p modules_create(const char* path);
-        JOY_API void modules_destroy(modules_p modules);
-        JOY_API bool modules_query(modules_p modules, const char* name, module_p* mod);
-        JOY_API void modules_register(modules_p modules, const char* name,
+        JOY_API modules_p joy_script_module_create(const char* path);
+        JOY_API void joy_script_module_destroy(modules_p modules);
+        JOY_API bool joy_script_module_query(modules_p modules, const char* name, module_p* mod);
+        JOY_API void joy_script_module_register(modules_p modules, const char* name,
                 module_create_t create,
                 module_init_t init,
                 module_event_t event_handler,
                 module_update_t update,
                 module_release_t release);
-        JOY_API void modules_require(modules_p modules, const char* name);
-        JOY_API bool moudles_retire(modules_p modules, const char* name, module_p* mod);
-        JOY_API void* module_instance_create(module_p mod);
-        JOY_API void module_instance_init(module_p mod, void* inst, void* ctx, const char* param);
-        JOY_API void module_instance_event(module_p mod, void* inst, void* event);
-        JOY_API void module_instance_update(module_p mod, void* inst, float delta_time);
-        JOY_API void module_instance_release(module_p mod, void* inst);
+        JOY_API void joy_script_module_require(modules_p modules, const char* name);
+        JOY_API bool joy_script_modules_retire(modules_p modules, const char* name, module_p* mod);
+        JOY_API void* joy_script_module_instance_create(module_p mod);
+        JOY_API void joy_script_module_instance_init(module_p mod, void* inst, void* ctx, const char* param);
+        JOY_API void joy_script_module_instance_event(module_p mod, void* inst, void* event);
+        JOY_API void joy_script_module_instance_update(module_p mod, void* inst, float delta_time);
+        JOY_API void joy_script_module_instance_release(module_p mod, void* inst);
 
 
         JOY_API box2d_world_t* joy_math_box2d_create_world(vec2f_t gravity, int iterations);
@@ -1653,31 +1653,31 @@ extern "C" {
         JOY_API void joy_math_box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
         JOY_API void joy_math_box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
 
-        JOY_API void jmsgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb);
-        JOY_API int  jmsgpack_pack_int(jmsgpack_packer_t* pk, int d);
-        JOY_API int  jmsgpack_pack_int64(jmsgpack_packer_t* pk, int64_t d);
-        JOY_API int  jmsgpack_pack_uint(jmsgpack_packer_t* pk, unsigned int d);
-        JOY_API int  jmsgpack_pack_uint64(jmsgpack_packer_t* pk, uint64_t d);
-        JOY_API int  jmsgpack_pack_nil(jmsgpack_packer_t* pk);
-        JOY_API int  jmsgpack_pack_array(jmsgpack_packer_t* pk, size_t n);
-        JOY_API int  jmsgpack_pack_str(jmsgpack_packer_t* pk, size_t l);
-        JOY_API int  jmsgpack_pack_str_body(jmsgpack_packer_t* pk, const void* b, size_t l);
-        JOY_API void jmsgpack_unpacked_init(jmsgpack_unpacked_t* result);
-        JOY_API void jmsgpack_unpacked_destroy(jmsgpack_unpacked_t* result);
+        JOY_API void joy_script_msgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb);
+        JOY_API int  joy_script_msgpack_pack_int(jmsgpack_packer_t* pk, int d);
+        JOY_API int  joy_script_msgpack_pack_int64(jmsgpack_packer_t* pk, int64_t d);
+        JOY_API int  joy_script_msgpack_pack_uint(jmsgpack_packer_t* pk, unsigned int d);
+        JOY_API int  joy_script_msgpack_pack_uint64(jmsgpack_packer_t* pk, uint64_t d);
+        JOY_API int  joy_script_msgpack_pack_nil(jmsgpack_packer_t* pk);
+        JOY_API int  joy_script_msgpack_pack_array(jmsgpack_packer_t* pk, size_t n);
+        JOY_API int  joy_script_msgpack_pack_str(jmsgpack_packer_t* pk, size_t l);
+        JOY_API int  joy_script_msgpack_pack_str_body(jmsgpack_packer_t* pk, const void* b, size_t l);
+        JOY_API void joy_script_msgpack_unpacked_init(jmsgpack_unpacked_t* result);
+        JOY_API void joy_script_msgpack_unpacked_destroy(jmsgpack_unpacked_t* result);
         /* 返回值: >0 成功, 0 需要更多数据, <0 错误 */
-        JOY_API int  jmsgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off);
+        JOY_API int  joy_script_msgpack_unpack_next(jmsgpack_unpacked_t* result, const char* data, size_t len, size_t* off);
 
         /* ---- jmsgpack_object_t 不透明访问器（替代直接读结构体字段） ---- */
-        JOY_API const jmsgpack_object_t* jmsgpack_unpacked_data(const jmsgpack_unpacked_t* u);
-        JOY_API jmsgpack_object_type_t jmsgpack_object_type(const jmsgpack_object_t* o);
-        JOY_API uint32_t             jmsgpack_object_array_size(const jmsgpack_object_t* o);
-        JOY_API const jmsgpack_object_t* jmsgpack_object_array_at(const jmsgpack_object_t* o, uint32_t i);
-        JOY_API uint32_t             jmsgpack_object_str_size(const jmsgpack_object_t* o);
-        JOY_API const char*          jmsgpack_object_str_ptr(const jmsgpack_object_t* o);
-        JOY_API uint64_t             jmsgpack_object_u64(const jmsgpack_object_t* o);
-        JOY_API int64_t              jmsgpack_object_i64(const jmsgpack_object_t* o);
-        JOY_API bool                 jmsgpack_object_boolean(const jmsgpack_object_t* o);
-        JOY_API double               jmsgpack_object_f64(const jmsgpack_object_t* o);
+        JOY_API const jmsgpack_object_t* joy_script_msgpack_unpacked_data(const jmsgpack_unpacked_t* u);
+        JOY_API jmsgpack_object_type_t joy_script_msgpack_object_type(const jmsgpack_object_t* o);
+        JOY_API uint32_t             joy_script_msgpack_object_array_size(const jmsgpack_object_t* o);
+        JOY_API const jmsgpack_object_t* joy_script_msgpack_object_array_at(const jmsgpack_object_t* o, uint32_t i);
+        JOY_API uint32_t             joy_script_msgpack_object_str_size(const jmsgpack_object_t* o);
+        JOY_API const char*          joy_script_msgpack_object_str_ptr(const jmsgpack_object_t* o);
+        JOY_API uint64_t             joy_script_msgpack_object_u64(const jmsgpack_object_t* o);
+        JOY_API int64_t              joy_script_msgpack_object_i64(const jmsgpack_object_t* o);
+        JOY_API bool                 joy_script_msgpack_object_boolean(const jmsgpack_object_t* o);
+        JOY_API double               joy_script_msgpack_object_f64(const jmsgpack_object_t* o);
 
         /* 生成链路专用：joy_ui_image_draw1 去掉 jrect_t* 指针后的全标量版本。
          * srcrect 固定 NULL（整张图），目标矩形摊成 4 个 float。joy_value
