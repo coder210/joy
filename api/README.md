@@ -132,6 +132,15 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   Node 工具链按 IDL 名单做精确批量改名（字符类边界，避免 `\b` 被 shell 转义
   成退格符），改完用 `git diff` 逐项核对。`r3d` 域 146 条，`Api.generated.cs`
   零变化说明 on 条目的方法名全部冻结成功。
+- 第十二批 **`scene` 域旧 domain 收敛 145 条**：`scene_*` → `joy_scene_*`，
+  `jecs_*` → `joy_scene_ecs_*`，`jtilemap_*` → `joy_scene_tilemap_*`，
+  `janimator_*` → `joy_scene_animator_*`，`animation_*` →
+  `joy_scene_animation_*`，`jpm_*`（程序化地图）→ `joy_scene_procmap_*`。
+  `jpm_*` 的声明在 `defs.h` 而不是 `api.h`，批量脚本必须同时扫两个文件。
+  同时同步了两处生成器硬编码：`emit_vtable.js` 的 `SELFTEST_SAFE` 里的
+  `jpm_wave_seed`、`gen_bindings.js` 的 `SKIP_NAMES` 里的 `jecs_test`
+  （后者迁名后仍要靠白名单保住 X 级）。`scene` 域累计 160 条，旧 domain
+  全部归零。
 
 映射见 `idl/rename_map.json`（累加式）。
 

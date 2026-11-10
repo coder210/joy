@@ -236,23 +236,23 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } jpm_layout_t, * jpm_layout_p;
 
         // 默认配置：填充一组与游戏一致的默认参数（20×20、玩家(0,0)+敌人(10m,10m) 安全区等）
-        JOY_API void jpm_config_default(jpm_config_t* cfg);
+        JOY_API void joy_scene_procmap_config_default(jpm_config_t* cfg);
         // 追加一个出生安全区（世界坐标圆心 + 半径，十分之一米）
-        JOY_API void jpm_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10);
+        JOY_API void joy_scene_procmap_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10);
         // 波次换图 seed：由初始 seed 与波次号确定性派生（纯函数，不依赖随机流）
-        JOY_API uint32_t jpm_wave_seed(uint32_t base_seed, int wave);
+        JOY_API uint32_t joy_scene_procmap_wave_seed(uint32_t base_seed, int wave);
         // 由给定 seed 确定性生成布局
-        JOY_API void jpm_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out);
+        JOY_API void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out);
         // 从上层随机流抽取 1 个 seed 生成布局（初始生成用）
-        JOY_API void jpm_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out);
+        JOY_API void joy_scene_procmap_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out);
         // 整数栅格化：按配置从障碍实体重建可通行栅格（含 pad 外扩）
-        JOY_API void jpm_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+        JOY_API void joy_scene_procmap_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
                                    const jpm_obstacle_t* obs, int n);
         // 4 方向 BFS：返回从起点可达的格子总数（用于连通性校验）
-        JOY_API int jpm_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz);
+        JOY_API int joy_scene_procmap_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz);
         // 从布局开放格中随机采样 count 个格子（洗牌取前 count），返回实际采样数；
         // min_dist10 限制距玩家区（spawns[0] 圆心）的最小距离（十分之一米）。
-        JOY_API int jpm_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
+        JOY_API int joy_scene_procmap_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
                                           const jpm_layout_t* L, int count, int min_dist10,
                                           int* out_tiles);
 

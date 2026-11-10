@@ -77,9 +77,9 @@ static void icall_JpmConfigAddSpawn(uint64_t p0, int32_t p1, int32_t p2, int32_t
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("jpm_config_add_spawn", args, 4, &st);
+        (void)joy_api_call("joy_scene_procmap_config_add_spawn", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jpm_config_add_spawn", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_procmap_config_add_spawn", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -92,9 +92,9 @@ static uint32_t icall_JpmWaveSeed(uint32_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_u32((uint32_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("jpm_wave_seed", args, 2, &st);
+        r = joy_api_call("joy_scene_procmap_wave_seed", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jpm_wave_seed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_procmap_wave_seed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint32_t)r.as.u32;
@@ -1653,9 +1653,9 @@ static void icall_AnimationDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("animation_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_animation_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1666,9 +1666,9 @@ static void icall_AnimationReset(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("animation_reset", args, 1, &st);
+        (void)joy_api_call("joy_scene_animation_reset", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_reset", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_reset", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1687,10 +1687,10 @@ static void icall_AnimationAddClip(uint64_t p0, MonoString* p1, float p2, float 
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        (void)joy_api_call("animation_add_clip", args, 7, &st);
+        (void)joy_api_call("joy_scene_animation_add_clip", args, 7, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_add_clip", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_add_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1702,9 +1702,9 @@ static int32_t icall_AnimationIsFinished(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("animation_is_finished", args, 1, &st);
+        r = joy_api_call("joy_scene_animation_is_finished", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_is_finished", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_is_finished", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1717,9 +1717,9 @@ static void icall_AnimationSetPosition(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("animation_set_position", args, 3, &st);
+        (void)joy_api_call("joy_scene_animation_set_position", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_set_position", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_set_position", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1732,9 +1732,9 @@ static void icall_AnimationSetScale(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("animation_set_scale", args, 3, &st);
+        (void)joy_api_call("joy_scene_animation_set_scale", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_set_scale", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_set_scale", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1746,9 +1746,9 @@ static void icall_AnimationSetRotation(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("animation_set_rotation", args, 2, &st);
+        (void)joy_api_call("joy_scene_animation_set_rotation", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_set_rotation", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_set_rotation", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1760,9 +1760,9 @@ static void icall_AnimationUpdate(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("animation_update", args, 2, &st);
+        (void)joy_api_call("joy_scene_animation_update", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "animation_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animation_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2765,9 +2765,9 @@ static void icall_JanimatorDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("janimator_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_animator_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2782,10 +2782,10 @@ static void icall_JanimatorSetFloat(uint64_t p0, MonoString* p1, float p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("janimator_set_float", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_set_float", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_float", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2800,10 +2800,10 @@ static void icall_JanimatorSetInt(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("janimator_set_int", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_set_int", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_int", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_int", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2818,10 +2818,10 @@ static void icall_JanimatorSetBool(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_bool((int32_t)p2);
-        (void)joy_api_call("janimator_set_bool", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_set_bool", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_bool", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_bool", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2835,10 +2835,10 @@ static void icall_JanimatorSetTrigger(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("janimator_set_trigger", args, 2, &st);
+        (void)joy_api_call("joy_scene_animator_set_trigger", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_trigger", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_trigger", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2853,10 +2853,10 @@ static float icall_JanimatorGetFloat(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        r = joy_api_call("janimator_get_float", args, 2, &st);
+        r = joy_api_call("joy_scene_animator_get_float", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_get_float", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_float", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -2871,10 +2871,10 @@ static int32_t icall_JanimatorGetInt(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        r = joy_api_call("janimator_get_int", args, 2, &st);
+        r = joy_api_call("joy_scene_animator_get_int", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_get_int", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_int", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -2889,10 +2889,10 @@ static int32_t icall_JanimatorGetBool(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        r = joy_api_call("janimator_get_bool", args, 2, &st);
+        r = joy_api_call("joy_scene_animator_get_bool", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_get_bool", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_get_bool", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2906,10 +2906,10 @@ static void icall_JanimatorAddState(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("janimator_add_state", args, 2, &st);
+        (void)joy_api_call("joy_scene_animator_add_state", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_add_state", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_state", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2923,10 +2923,10 @@ static void icall_JanimatorSetDefaultState(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("janimator_set_default_state", args, 2, &st);
+        (void)joy_api_call("joy_scene_animator_set_default_state", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_default_state", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_default_state", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2948,11 +2948,11 @@ static void icall_JanimatorStateAddClip(uint64_t p0, MonoString* p1, MonoString*
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        (void)joy_api_call("janimator_state_add_clip", args, 8, &st);
+        (void)joy_api_call("joy_scene_animator_state_add_clip", args, 8, &st);
         if (s1) mono_free(s1);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_add_clip", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2973,10 +2973,10 @@ static void icall_JanimatorStateAddColor(uint64_t p0, MonoString* p1, float p2, 
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
-        (void)joy_api_call("janimator_state_add_color", args, 9, &st);
+        (void)joy_api_call("joy_scene_animator_state_add_color", args, 9, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_add_color", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_color", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2991,10 +2991,10 @@ static void icall_JanimatorStateSetLoop(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_bool((int32_t)p2);
-        (void)joy_api_call("janimator_state_set_loop", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_state_set_loop", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_set_loop", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_loop", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3009,10 +3009,10 @@ static void icall_JanimatorStateSetSpeed(uint64_t p0, MonoString* p1, float p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("janimator_state_set_speed", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_state_set_speed", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_set_speed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_speed", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3029,11 +3029,11 @@ static void icall_JanimatorStateSetBlend(uint64_t p0, MonoString* p1, MonoString
         args[1] = joy_v_str((const char*)s1);
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
-        (void)joy_api_call("janimator_state_set_blend", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_state_set_blend", args, 3, &st);
         if (s1) mono_free(s1);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_set_blend", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_set_blend", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3056,11 +3056,11 @@ static void icall_JanimatorStateAddMotion(uint64_t p0, MonoString* p1, MonoStrin
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
         args[8] = joy_v_f64((double)p8);
-        (void)joy_api_call("janimator_state_add_motion", args, 9, &st);
+        (void)joy_api_call("joy_scene_animator_state_add_motion", args, 9, &st);
         if (s1) mono_free(s1);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_state_add_motion", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_state_add_motion", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3078,11 +3078,11 @@ static int32_t icall_JanimatorAddTransition(uint64_t p0, MonoString* p1, MonoStr
         args[1] = joy_v_str((const char*)s1);
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
-        r = joy_api_call("janimator_add_transition", args, 3, &st);
+        r = joy_api_call("joy_scene_animator_add_transition", args, 3, &st);
         if (s1) mono_free(s1);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_add_transition", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_transition", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -3097,10 +3097,10 @@ static int32_t icall_JanimatorAddAnyTransition(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        r = joy_api_call("janimator_add_any_transition", args, 2, &st);
+        r = joy_api_call("joy_scene_animator_add_any_transition", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_add_any_transition", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_add_any_transition", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -3117,10 +3117,10 @@ static void icall_JanimatorTransitionAddCond(uint64_t p0, int32_t p1, MonoString
         args[2] = joy_v_str((const char*)s2);
         args[3] = joy_v_i32((int32_t)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("janimator_transition_add_cond", args, 5, &st);
+        (void)joy_api_call("joy_scene_animator_transition_add_cond", args, 5, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_transition_add_cond", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_transition_add_cond", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3133,9 +3133,9 @@ static void icall_JanimatorTransitionSetExitTime(uint64_t p0, int32_t p1, float 
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("janimator_transition_set_exit_time", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_transition_set_exit_time", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_transition_set_exit_time", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_transition_set_exit_time", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3147,9 +3147,9 @@ static void icall_JanimatorUpdate(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("janimator_update", args, 2, &st);
+        (void)joy_api_call("joy_scene_animator_update", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3162,9 +3162,9 @@ static void icall_JanimatorDraw(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("janimator_draw", args, 3, &st);
+        (void)joy_api_call("joy_scene_animator_draw", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -3176,9 +3176,9 @@ static void icall_JanimatorSetFlipH(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("janimator_set_flip_h", args, 2, &st);
+        (void)joy_api_call("joy_scene_animator_set_flip_h", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "janimator_set_flip_h", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_animator_set_flip_h", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5630,9 +5630,9 @@ static void icall_JtilemapDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jtilemap_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_tilemap_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5644,9 +5644,9 @@ static int32_t icall_JtilemapGetWidth(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jtilemap_get_width", args, 1, &st);
+        r = joy_api_call("joy_scene_tilemap_get_width", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_width", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_width", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5658,9 +5658,9 @@ static int32_t icall_JtilemapGetHeight(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jtilemap_get_height", args, 1, &st);
+        r = joy_api_call("joy_scene_tilemap_get_height", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_height", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_height", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5672,9 +5672,9 @@ static int32_t icall_JtilemapGetTilewidth(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jtilemap_get_tilewidth", args, 1, &st);
+        r = joy_api_call("joy_scene_tilemap_get_tilewidth", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_tilewidth", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_tilewidth", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5686,9 +5686,9 @@ static int32_t icall_JtilemapGetTileheight(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jtilemap_get_tileheight", args, 1, &st);
+        r = joy_api_call("joy_scene_tilemap_get_tileheight", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_tileheight", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_tileheight", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5702,9 +5702,9 @@ static int32_t icall_JtilemapGetAnimTileid(uint64_t p0, int32_t p1, uint32_t p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_u32((uint32_t)p2);
-        r = joy_api_call("jtilemap_get_anim_tileid", args, 3, &st);
+        r = joy_api_call("joy_scene_tilemap_get_anim_tileid", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_anim_tileid", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_anim_tileid", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5718,9 +5718,9 @@ static int32_t icall_JtilemapGetTile(uint64_t p0, int32_t p1, int32_t p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("jtilemap_get_tile", args, 3, &st);
+        r = joy_api_call("joy_scene_tilemap_get_tile", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_get_tile", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_get_tile", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5735,9 +5735,9 @@ static void icall_JtilemapRenderAll(uint64_t p0, uint64_t p1, float p2, float p3
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_u32((uint32_t)p4);
-        (void)joy_api_call("jtilemap_render_all", args, 5, &st);
+        (void)joy_api_call("joy_scene_tilemap_render_all", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_render_all", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_all", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5752,9 +5752,9 @@ static void icall_JtilemapRenderTiles(uint64_t p0, uint64_t p1, float p2, float 
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_u32((uint32_t)p4);
-        (void)joy_api_call("jtilemap_render_tiles", args, 5, &st);
+        (void)joy_api_call("joy_scene_tilemap_render_tiles", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_render_tiles", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_tiles", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5766,9 +5766,9 @@ static void icall_JtilemapRenderSetTilePx(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("jtilemap_render_set_tile_px", args, 2, &st);
+        (void)joy_api_call("joy_scene_tilemap_render_set_tile_px", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_render_set_tile_px", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_set_tile_px", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5787,10 +5787,10 @@ static int32_t icall_JtilemapRenderLayer(uint64_t p0, uint64_t p1, MonoString* p
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_u32((uint32_t)p5);
-        r = joy_api_call("jtilemap_render_layer", args, 6, &st);
+        r = joy_api_call("joy_scene_tilemap_render_layer", args, 6, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_render_layer", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_layer", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5801,9 +5801,9 @@ static void icall_JtilemapRenderDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jtilemap_render_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_tilemap_render_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtilemap_render_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_render_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6494,9 +6494,9 @@ static void icall_SceneNodeDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("scene_node_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_node_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6508,9 +6508,9 @@ static void icall_SceneNodeAddChild(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_node_add_child", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_add_child", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_add_child", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_add_child", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6522,9 +6522,9 @@ static void icall_SceneNodeRemoveChild(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_node_remove_child", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_remove_child", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_remove_child", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_remove_child", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6536,9 +6536,9 @@ static int32_t icall_SceneNodeGetChildCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("scene_node_get_child_count", args, 1, &st);
+        r = joy_api_call("joy_scene_node_get_child_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_get_child_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_get_child_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6551,9 +6551,9 @@ static void icall_SceneNodeSetPosition(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("scene_node_set_position", args, 3, &st);
+        (void)joy_api_call("joy_scene_node_set_position", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_position", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_position", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6566,9 +6566,9 @@ static void icall_SceneNodeSetWorldPosition(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("scene_node_set_world_position", args, 3, &st);
+        (void)joy_api_call("joy_scene_node_set_world_position", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_world_position", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_world_position", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6580,9 +6580,9 @@ static void icall_SceneNodeSetRotation(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("scene_node_set_rotation", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_set_rotation", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_rotation", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_rotation", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6594,9 +6594,9 @@ static float icall_SceneNodeGetRotation(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("scene_node_get_rotation", args, 1, &st);
+        r = joy_api_call("joy_scene_node_get_rotation", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_get_rotation", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_get_rotation", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -6609,9 +6609,9 @@ static void icall_SceneNodeSetScale(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("scene_node_set_scale", args, 3, &st);
+        (void)joy_api_call("joy_scene_node_set_scale", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_scale", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_scale", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6623,9 +6623,9 @@ static void icall_SceneNodeSetZorder(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("scene_node_set_zorder", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_set_zorder", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_zorder", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_zorder", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6637,9 +6637,9 @@ static int32_t icall_SceneNodeGetZorder(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("scene_node_get_zorder", args, 1, &st);
+        r = joy_api_call("joy_scene_node_get_zorder", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_get_zorder", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_get_zorder", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6653,10 +6653,10 @@ static void icall_SceneNodeSetName(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("scene_node_set_name", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_set_name", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_name", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_name", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6670,10 +6670,10 @@ static void icall_SceneNodeSetTag(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("scene_node_set_tag", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_set_tag", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_set_tag", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_set_tag", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6685,9 +6685,9 @@ static void icall_SceneNodeUpdate(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("scene_node_update", args, 2, &st);
+        (void)joy_api_call("joy_scene_node_update", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_node_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_node_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6698,9 +6698,9 @@ static void icall_SceneDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("scene_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6712,9 +6712,9 @@ static void icall_SceneAddRootNode(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_add_root_node", args, 2, &st);
+        (void)joy_api_call("joy_scene_add_root_node", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_add_root_node", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_add_root_node", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6726,9 +6726,9 @@ static void icall_SceneRemoveRootNode(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_remove_root_node", args, 2, &st);
+        (void)joy_api_call("joy_scene_remove_root_node", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_remove_root_node", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_remove_root_node", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6740,9 +6740,9 @@ static int32_t icall_SceneGetRootCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("scene_get_root_count", args, 1, &st);
+        r = joy_api_call("joy_scene_get_root_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_get_root_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_get_root_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -6754,9 +6754,9 @@ static void icall_SceneUpdate(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("scene_update", args, 2, &st);
+        (void)joy_api_call("joy_scene_update", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6768,9 +6768,9 @@ static void icall_SceneSetPopupNode(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_set_popup_node", args, 2, &st);
+        (void)joy_api_call("joy_scene_set_popup_node", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_set_popup_node", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_set_popup_node", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6781,9 +6781,9 @@ static void icall_SceneManagerDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("scene_manager_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_manager_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6795,9 +6795,9 @@ static void icall_SceneManagerPush(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_manager_push", args, 2, &st);
+        (void)joy_api_call("joy_scene_manager_push", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_push", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_push", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6809,9 +6809,9 @@ static void icall_SceneManagerReplace(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("scene_manager_replace", args, 2, &st);
+        (void)joy_api_call("joy_scene_manager_replace", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_replace", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_replace", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6822,9 +6822,9 @@ static void icall_SceneManagerPop(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("scene_manager_pop", args, 1, &st);
+        (void)joy_api_call("joy_scene_manager_pop", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_pop", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_pop", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6836,9 +6836,9 @@ static void icall_SceneManagerUpdate(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("scene_manager_update", args, 2, &st);
+        (void)joy_api_call("joy_scene_manager_update", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6850,9 +6850,9 @@ static int32_t icall_SceneManagerGetCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("scene_manager_get_count", args, 1, &st);
+        r = joy_api_call("joy_scene_manager_get_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "scene_manager_get_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_get_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -7089,9 +7089,9 @@ static void icall_JecsDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jecs_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_ecs_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jecs_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_ecs_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7103,9 +7103,9 @@ static void icall_JecsProcess(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("jecs_process", args, 2, &st);
+        (void)joy_api_call("joy_scene_ecs_process", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jecs_process", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_ecs_process", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7120,10 +7120,10 @@ static void icall_JecsDefine(uint64_t p0, MonoString* p1, uint64_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_u64((uint64_t)p2);
-        (void)joy_api_call("jecs_define", args, 3, &st);
+        (void)joy_api_call("joy_scene_ecs_define", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jecs_define", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_ecs_define", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

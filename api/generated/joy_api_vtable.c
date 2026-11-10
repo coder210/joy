@@ -63,7 +63,7 @@ static void shim_joy_core_lcg_random_set_state(void* _jv_ctx, LcgNum lcg, uint64
         return;
 }
 
-static void shim_jpm_config_add_spawn(void* _jv_ctx, JpmConfig cfg, int cx10, int cz10, int radius10)
+static void shim_joy_scene_procmap_config_add_spawn(void* _jv_ctx, JpmConfig cfg, int cx10, int cz10, int radius10)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -73,13 +73,13 @@ static void shim_jpm_config_add_spawn(void* _jv_ctx, JpmConfig cfg, int cx10, in
         _jv_args[1] = joy_v_i32(cx10);
         _jv_args[2] = joy_v_i32(cz10);
         _jv_args[3] = joy_v_i32(radius10);
-        _jv_r = joy_api_call("jpm_config_add_spawn", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_procmap_config_add_spawn", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static uint32_t shim_jpm_wave_seed(void* _jv_ctx, uint32_t base_seed, int wave)
+static uint32_t shim_joy_scene_procmap_wave_seed(void* _jv_ctx, uint32_t base_seed, int wave)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -87,7 +87,7 @@ static uint32_t shim_jpm_wave_seed(void* _jv_ctx, uint32_t base_seed, int wave)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_u32(base_seed);
         _jv_args[1] = joy_v_i32(wave);
-        _jv_r = joy_api_call("jpm_wave_seed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_procmap_wave_seed", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U32) return (uint32_t)0;
         return (uint32_t) _jv_r.as.u32;
 }
@@ -1472,33 +1472,33 @@ static void shim_joy_r2d_jtext_cache_sweep(void* _jv_ctx, int max_idle_frames)
         return;
 }
 
-static void shim_animation_destroy(void* _jv_ctx, Animation animation)
+static void shim_joy_scene_animation_destroy(void* _jv_ctx, Animation animation)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(animation.h);
-        _jv_r = joy_api_call("animation_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_animation_reset(void* _jv_ctx, Animation animation)
+static void shim_joy_scene_animation_reset(void* _jv_ctx, Animation animation)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(animation.h);
-        _jv_r = joy_api_call("animation_reset", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_reset", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_animation_add_clip(void* _jv_ctx, Animation animation, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+static void shim_joy_scene_animation_add_clip(void* _jv_ctx, Animation animation, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
 {
         joy_value_t _jv_args[7];
         joy_value_t _jv_r;
@@ -1511,25 +1511,25 @@ static void shim_animation_add_clip(void* _jv_ctx, Animation animation, const ch
         _jv_args[4] = joy_v_f64(src_rect_y);
         _jv_args[5] = joy_v_f64(src_rect_w);
         _jv_args[6] = joy_v_f64(src_rect_h);
-        _jv_r = joy_api_call("animation_add_clip", _jv_args, 7, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_add_clip", _jv_args, 7, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_animation_is_finished(void* _jv_ctx, Animation animation)
+static bool shim_joy_scene_animation_is_finished(void* _jv_ctx, Animation animation)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(animation.h);
-        _jv_r = joy_api_call("animation_is_finished", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_is_finished", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_animation_set_position(void* _jv_ctx, Animation animation, float x, float y)
+static void shim_joy_scene_animation_set_position(void* _jv_ctx, Animation animation, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1538,13 +1538,13 @@ static void shim_animation_set_position(void* _jv_ctx, Animation animation, floa
         _jv_args[0] = joy_v_handle(animation.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("animation_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_animation_set_scale(void* _jv_ctx, Animation animation, float x, float y)
+static void shim_joy_scene_animation_set_scale(void* _jv_ctx, Animation animation, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1553,13 +1553,13 @@ static void shim_animation_set_scale(void* _jv_ctx, Animation animation, float x
         _jv_args[0] = joy_v_handle(animation.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("animation_set_scale", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_set_scale", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_animation_set_rotation(void* _jv_ctx, Animation animation, float rotation)
+static void shim_joy_scene_animation_set_rotation(void* _jv_ctx, Animation animation, float rotation)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1567,13 +1567,13 @@ static void shim_animation_set_rotation(void* _jv_ctx, Animation animation, floa
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(animation.h);
         _jv_args[1] = joy_v_f64(rotation);
-        _jv_r = joy_api_call("animation_set_rotation", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_set_rotation", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_animation_update(void* _jv_ctx, Animation animation, float dt)
+static void shim_joy_scene_animation_update(void* _jv_ctx, Animation animation, float dt)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1581,7 +1581,7 @@ static void shim_animation_update(void* _jv_ctx, Animation animation, float dt)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(animation.h);
         _jv_args[1] = joy_v_f64(dt);
-        _jv_r = joy_api_call("animation_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animation_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -2528,20 +2528,20 @@ static void shim_joy_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spac
         return;
 }
 
-static void shim_janimator_destroy(void* _jv_ctx, Janimator anim)
+static void shim_joy_scene_animator_destroy(void* _jv_ctx, Janimator anim)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
-        _jv_r = joy_api_call("janimator_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_float(void* _jv_ctx, Janimator anim, const char* name, float v)
+static void shim_joy_scene_animator_set_float(void* _jv_ctx, Janimator anim, const char* name, float v)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2550,13 +2550,13 @@ static void shim_janimator_set_float(void* _jv_ctx, Janimator anim, const char* 
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
         _jv_args[2] = joy_v_f64(v);
-        _jv_r = joy_api_call("janimator_set_float", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_float", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_int(void* _jv_ctx, Janimator anim, const char* name, int v)
+static void shim_joy_scene_animator_set_int(void* _jv_ctx, Janimator anim, const char* name, int v)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2565,13 +2565,13 @@ static void shim_janimator_set_int(void* _jv_ctx, Janimator anim, const char* na
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
         _jv_args[2] = joy_v_i32(v);
-        _jv_r = joy_api_call("janimator_set_int", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_int", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_bool(void* _jv_ctx, Janimator anim, const char* name, bool v)
+static void shim_joy_scene_animator_set_bool(void* _jv_ctx, Janimator anim, const char* name, bool v)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2580,13 +2580,13 @@ static void shim_janimator_set_bool(void* _jv_ctx, Janimator anim, const char* n
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
         _jv_args[2] = joy_v_bool(v);
-        _jv_r = joy_api_call("janimator_set_bool", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_bool", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_trigger(void* _jv_ctx, Janimator anim, const char* name)
+static void shim_joy_scene_animator_set_trigger(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2594,13 +2594,13 @@ static void shim_janimator_set_trigger(void* _jv_ctx, Janimator anim, const char
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_set_trigger", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_trigger", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_janimator_get_float(void* _jv_ctx, Janimator anim, const char* name)
+static float shim_joy_scene_animator_get_float(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2608,12 +2608,12 @@ static float shim_janimator_get_float(void* _jv_ctx, Janimator anim, const char*
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_get_float", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_get_float", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static int shim_janimator_get_int(void* _jv_ctx, Janimator anim, const char* name)
+static int shim_joy_scene_animator_get_int(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2621,12 +2621,12 @@ static int shim_janimator_get_int(void* _jv_ctx, Janimator anim, const char* nam
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_get_int", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_get_int", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_janimator_get_bool(void* _jv_ctx, Janimator anim, const char* name)
+static bool shim_joy_scene_animator_get_bool(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2634,12 +2634,12 @@ static bool shim_janimator_get_bool(void* _jv_ctx, Janimator anim, const char* n
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_get_bool", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_get_bool", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_janimator_add_state(void* _jv_ctx, Janimator anim, const char* name)
+static void shim_joy_scene_animator_add_state(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2647,13 +2647,13 @@ static void shim_janimator_add_state(void* _jv_ctx, Janimator anim, const char* 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_add_state", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_add_state", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_default_state(void* _jv_ctx, Janimator anim, const char* name)
+static void shim_joy_scene_animator_set_default_state(void* _jv_ctx, Janimator anim, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2661,13 +2661,13 @@ static void shim_janimator_set_default_state(void* _jv_ctx, Janimator anim, cons
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("janimator_set_default_state", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_default_state", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_add_clip(void* _jv_ctx, Janimator anim, const char* state_name, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
+static void shim_joy_scene_animator_state_add_clip(void* _jv_ctx, Janimator anim, const char* state_name, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -2681,13 +2681,13 @@ static void shim_janimator_state_add_clip(void* _jv_ctx, Janimator anim, const c
         _jv_args[5] = joy_v_f64(src_rect_y);
         _jv_args[6] = joy_v_f64(src_rect_w);
         _jv_args[7] = joy_v_f64(src_rect_h);
-        _jv_r = joy_api_call("janimator_state_add_clip", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_add_clip", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_add_color(void* _jv_ctx, Janimator anim, const char* state_name, float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static void shim_joy_scene_animator_state_add_color(void* _jv_ctx, Janimator anim, const char* state_name, float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
         joy_value_t _jv_args[9];
         joy_value_t _jv_r;
@@ -2702,13 +2702,13 @@ static void shim_janimator_state_add_color(void* _jv_ctx, Janimator anim, const 
         _jv_args[6] = joy_v_u32(g);
         _jv_args[7] = joy_v_u32(b);
         _jv_args[8] = joy_v_u32(a);
-        _jv_r = joy_api_call("janimator_state_add_color", _jv_args, 9, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_add_color", _jv_args, 9, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_set_loop(void* _jv_ctx, Janimator anim, const char* state_name, bool loop)
+static void shim_joy_scene_animator_state_set_loop(void* _jv_ctx, Janimator anim, const char* state_name, bool loop)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2717,13 +2717,13 @@ static void shim_janimator_state_set_loop(void* _jv_ctx, Janimator anim, const c
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(state_name);
         _jv_args[2] = joy_v_bool(loop);
-        _jv_r = joy_api_call("janimator_state_set_loop", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_set_loop", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_set_speed(void* _jv_ctx, Janimator anim, const char* state_name, float speed)
+static void shim_joy_scene_animator_state_set_speed(void* _jv_ctx, Janimator anim, const char* state_name, float speed)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2732,13 +2732,13 @@ static void shim_janimator_state_set_speed(void* _jv_ctx, Janimator anim, const 
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(state_name);
         _jv_args[2] = joy_v_f64(speed);
-        _jv_r = joy_api_call("janimator_state_set_speed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_set_speed", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_set_blend(void* _jv_ctx, Janimator anim, const char* state_name, const char* param_name)
+static void shim_joy_scene_animator_state_set_blend(void* _jv_ctx, Janimator anim, const char* state_name, const char* param_name)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2747,13 +2747,13 @@ static void shim_janimator_state_set_blend(void* _jv_ctx, Janimator anim, const 
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(state_name);
         _jv_args[2] = joy_v_str(param_name);
-        _jv_r = joy_api_call("janimator_state_set_blend", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_set_blend", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_state_add_motion(void* _jv_ctx, Janimator anim, const char* state_name, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold)
+static void shim_joy_scene_animator_state_add_motion(void* _jv_ctx, Janimator anim, const char* state_name, const char* image_path, float duration, float src_rect_x, float src_rect_y, float src_rect_w, float src_rect_h, float threshold)
 {
         joy_value_t _jv_args[9];
         joy_value_t _jv_r;
@@ -2768,13 +2768,13 @@ static void shim_janimator_state_add_motion(void* _jv_ctx, Janimator anim, const
         _jv_args[6] = joy_v_f64(src_rect_w);
         _jv_args[7] = joy_v_f64(src_rect_h);
         _jv_args[8] = joy_v_f64(threshold);
-        _jv_r = joy_api_call("janimator_state_add_motion", _jv_args, 9, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_state_add_motion", _jv_args, 9, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_janimator_add_transition(void* _jv_ctx, Janimator anim, const char* from, const char* to)
+static int shim_joy_scene_animator_add_transition(void* _jv_ctx, Janimator anim, const char* from, const char* to)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2783,12 +2783,12 @@ static int shim_janimator_add_transition(void* _jv_ctx, Janimator anim, const ch
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(from);
         _jv_args[2] = joy_v_str(to);
-        _jv_r = joy_api_call("janimator_add_transition", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_add_transition", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_janimator_add_any_transition(void* _jv_ctx, Janimator anim, const char* to)
+static int shim_joy_scene_animator_add_any_transition(void* _jv_ctx, Janimator anim, const char* to)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2796,12 +2796,12 @@ static int shim_janimator_add_any_transition(void* _jv_ctx, Janimator anim, cons
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_str(to);
-        _jv_r = joy_api_call("janimator_add_any_transition", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_add_any_transition", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_janimator_transition_add_cond(void* _jv_ctx, Janimator anim, int trans_idx, const char* param_name, int mode, float threshold)
+static void shim_joy_scene_animator_transition_add_cond(void* _jv_ctx, Janimator anim, int trans_idx, const char* param_name, int mode, float threshold)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2812,13 +2812,13 @@ static void shim_janimator_transition_add_cond(void* _jv_ctx, Janimator anim, in
         _jv_args[2] = joy_v_str(param_name);
         _jv_args[3] = joy_v_i32(mode);
         _jv_args[4] = joy_v_f64(threshold);
-        _jv_r = joy_api_call("janimator_transition_add_cond", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_transition_add_cond", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_transition_set_exit_time(void* _jv_ctx, Janimator anim, int trans_idx, float seconds)
+static void shim_joy_scene_animator_transition_set_exit_time(void* _jv_ctx, Janimator anim, int trans_idx, float seconds)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2827,13 +2827,13 @@ static void shim_janimator_transition_set_exit_time(void* _jv_ctx, Janimator ani
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_i32(trans_idx);
         _jv_args[2] = joy_v_f64(seconds);
-        _jv_r = joy_api_call("janimator_transition_set_exit_time", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_transition_set_exit_time", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_update(void* _jv_ctx, Janimator anim, float dt)
+static void shim_joy_scene_animator_update(void* _jv_ctx, Janimator anim, float dt)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2841,13 +2841,13 @@ static void shim_janimator_update(void* _jv_ctx, Janimator anim, float dt)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_f64(dt);
-        _jv_r = joy_api_call("janimator_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_draw(void* _jv_ctx, Janimator anim, float x, float y)
+static void shim_joy_scene_animator_draw(void* _jv_ctx, Janimator anim, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2856,13 +2856,13 @@ static void shim_janimator_draw(void* _jv_ctx, Janimator anim, float x, float y)
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("janimator_draw", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_draw", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_janimator_set_flip_h(void* _jv_ctx, Janimator anim, bool flip)
+static void shim_joy_scene_animator_set_flip_h(void* _jv_ctx, Janimator anim, bool flip)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2870,7 +2870,7 @@ static void shim_janimator_set_flip_h(void* _jv_ctx, Janimator anim, bool flip)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(anim.h);
         _jv_args[1] = joy_v_bool(flip);
-        _jv_r = joy_api_call("janimator_set_flip_h", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_animator_set_flip_h", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -5187,68 +5187,68 @@ static bool shim_joy_ui_button(void* _jv_ctx, JuiCtx ctx, int id, float r_x, flo
         return (bool) _jv_r.as.b;
 }
 
-static void shim_jtilemap_destroy(void* _jv_ctx, Jtilemap tm)
+static void shim_joy_scene_tilemap_destroy(void* _jv_ctx, Jtilemap tm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tm.h);
-        _jv_r = joy_api_call("jtilemap_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_jtilemap_get_width(void* _jv_ctx, Jtilemap tm)
+static int shim_joy_scene_tilemap_get_width(void* _jv_ctx, Jtilemap tm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tm.h);
-        _jv_r = joy_api_call("jtilemap_get_width", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_width", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_jtilemap_get_height(void* _jv_ctx, Jtilemap tm)
+static int shim_joy_scene_tilemap_get_height(void* _jv_ctx, Jtilemap tm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tm.h);
-        _jv_r = joy_api_call("jtilemap_get_height", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_height", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_jtilemap_get_tilewidth(void* _jv_ctx, Jtilemap tm)
+static int shim_joy_scene_tilemap_get_tilewidth(void* _jv_ctx, Jtilemap tm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tm.h);
-        _jv_r = joy_api_call("jtilemap_get_tilewidth", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_tilewidth", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_jtilemap_get_tileheight(void* _jv_ctx, Jtilemap tm)
+static int shim_joy_scene_tilemap_get_tileheight(void* _jv_ctx, Jtilemap tm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(tm.h);
-        _jv_r = joy_api_call("jtilemap_get_tileheight", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_tileheight", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_jtilemap_get_anim_tileid(void* _jv_ctx, Jtilemap tm, int gid, uint32_t time_ms)
+static int shim_joy_scene_tilemap_get_anim_tileid(void* _jv_ctx, Jtilemap tm, int gid, uint32_t time_ms)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5257,12 +5257,12 @@ static int shim_jtilemap_get_anim_tileid(void* _jv_ctx, Jtilemap tm, int gid, ui
         _jv_args[0] = joy_v_handle(tm.h);
         _jv_args[1] = joy_v_i32(gid);
         _jv_args[2] = joy_v_u32(time_ms);
-        _jv_r = joy_api_call("jtilemap_get_anim_tileid", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_anim_tileid", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_jtilemap_get_tile(void* _jv_ctx, JtilemapTileLayer layer, int tx, int ty)
+static int shim_joy_scene_tilemap_get_tile(void* _jv_ctx, JtilemapTileLayer layer, int tx, int ty)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5271,12 +5271,12 @@ static int shim_jtilemap_get_tile(void* _jv_ctx, JtilemapTileLayer layer, int tx
         _jv_args[0] = joy_v_handle(layer.h);
         _jv_args[1] = joy_v_i32(tx);
         _jv_args[2] = joy_v_i32(ty);
-        _jv_r = joy_api_call("jtilemap_get_tile", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_get_tile", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_jtilemap_render_all(void* _jv_ctx, JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint32_t time_ms)
+static void shim_joy_scene_tilemap_render_all(void* _jv_ctx, JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint32_t time_ms)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5287,13 +5287,13 @@ static void shim_jtilemap_render_all(void* _jv_ctx, JtilemapRender r, Jtilemap t
         _jv_args[2] = joy_v_f64(camera_x);
         _jv_args[3] = joy_v_f64(camera_y);
         _jv_args[4] = joy_v_u32(time_ms);
-        _jv_r = joy_api_call("jtilemap_render_all", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_render_all", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtilemap_render_tiles(void* _jv_ctx, JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint32_t time_ms)
+static void shim_joy_scene_tilemap_render_tiles(void* _jv_ctx, JtilemapRender r, Jtilemap tm, float camera_x, float camera_y, uint32_t time_ms)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5304,13 +5304,13 @@ static void shim_jtilemap_render_tiles(void* _jv_ctx, JtilemapRender r, Jtilemap
         _jv_args[2] = joy_v_f64(camera_x);
         _jv_args[3] = joy_v_f64(camera_y);
         _jv_args[4] = joy_v_u32(time_ms);
-        _jv_r = joy_api_call("jtilemap_render_tiles", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_render_tiles", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtilemap_render_set_tile_px(void* _jv_ctx, JtilemapRender r, float px)
+static void shim_joy_scene_tilemap_render_set_tile_px(void* _jv_ctx, JtilemapRender r, float px)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5318,13 +5318,13 @@ static void shim_jtilemap_render_set_tile_px(void* _jv_ctx, JtilemapRender r, fl
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_f64(px);
-        _jv_r = joy_api_call("jtilemap_render_set_tile_px", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_render_set_tile_px", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_jtilemap_render_layer(void* _jv_ctx, JtilemapRender r, Jtilemap tm, const char* layer_name, float camera_x, float camera_y, uint32_t time_ms)
+static bool shim_joy_scene_tilemap_render_layer(void* _jv_ctx, JtilemapRender r, Jtilemap tm, const char* layer_name, float camera_x, float camera_y, uint32_t time_ms)
 {
         joy_value_t _jv_args[6];
         joy_value_t _jv_r;
@@ -5336,19 +5336,19 @@ static bool shim_jtilemap_render_layer(void* _jv_ctx, JtilemapRender r, Jtilemap
         _jv_args[3] = joy_v_f64(camera_x);
         _jv_args[4] = joy_v_f64(camera_y);
         _jv_args[5] = joy_v_u32(time_ms);
-        _jv_r = joy_api_call("jtilemap_render_layer", _jv_args, 6, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_render_layer", _jv_args, 6, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_jtilemap_render_destroy(void* _jv_ctx, JtilemapRender r)
+static void shim_joy_scene_tilemap_render_destroy(void* _jv_ctx, JtilemapRender r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("jtilemap_render_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_tilemap_render_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -5960,20 +5960,20 @@ static void shim_joy_net_netmessage_free_data(void* _jv_ctx, NetMessage msg)
         return;
 }
 
-static void shim_scene_node_destroy(void* _jv_ctx, SceneNode node)
+static void shim_joy_scene_node_destroy(void* _jv_ctx, SceneNode node)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("scene_node_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_add_child(void* _jv_ctx, SceneNode parent, SceneNode child)
+static void shim_joy_scene_node_add_child(void* _jv_ctx, SceneNode parent, SceneNode child)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5981,13 +5981,13 @@ static void shim_scene_node_add_child(void* _jv_ctx, SceneNode parent, SceneNode
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(parent.h);
         _jv_args[1] = joy_v_handle(child.h);
-        _jv_r = joy_api_call("scene_node_add_child", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_add_child", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_remove_child(void* _jv_ctx, SceneNode parent, SceneNode child)
+static void shim_joy_scene_node_remove_child(void* _jv_ctx, SceneNode parent, SceneNode child)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5995,25 +5995,25 @@ static void shim_scene_node_remove_child(void* _jv_ctx, SceneNode parent, SceneN
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(parent.h);
         _jv_args[1] = joy_v_handle(child.h);
-        _jv_r = joy_api_call("scene_node_remove_child", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_remove_child", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_scene_node_get_child_count(void* _jv_ctx, SceneNode node)
+static int shim_joy_scene_node_get_child_count(void* _jv_ctx, SceneNode node)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("scene_node_get_child_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_get_child_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_scene_node_set_position(void* _jv_ctx, SceneNode node, float x, float y)
+static void shim_joy_scene_node_set_position(void* _jv_ctx, SceneNode node, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6022,13 +6022,13 @@ static void shim_scene_node_set_position(void* _jv_ctx, SceneNode node, float x,
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("scene_node_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_set_world_position(void* _jv_ctx, SceneNode node, float x, float y)
+static void shim_joy_scene_node_set_world_position(void* _jv_ctx, SceneNode node, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6037,13 +6037,13 @@ static void shim_scene_node_set_world_position(void* _jv_ctx, SceneNode node, fl
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("scene_node_set_world_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_world_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_set_rotation(void* _jv_ctx, SceneNode node, float radians)
+static void shim_joy_scene_node_set_rotation(void* _jv_ctx, SceneNode node, float radians)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6051,25 +6051,25 @@ static void shim_scene_node_set_rotation(void* _jv_ctx, SceneNode node, float ra
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_f64(radians);
-        _jv_r = joy_api_call("scene_node_set_rotation", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_rotation", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_scene_node_get_rotation(void* _jv_ctx, SceneNode node)
+static float shim_joy_scene_node_get_rotation(void* _jv_ctx, SceneNode node)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("scene_node_get_rotation", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_get_rotation", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_scene_node_set_scale(void* _jv_ctx, SceneNode node, float scale_x, float scale_y)
+static void shim_joy_scene_node_set_scale(void* _jv_ctx, SceneNode node, float scale_x, float scale_y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6078,13 +6078,13 @@ static void shim_scene_node_set_scale(void* _jv_ctx, SceneNode node, float scale
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_f64(scale_x);
         _jv_args[2] = joy_v_f64(scale_y);
-        _jv_r = joy_api_call("scene_node_set_scale", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_scale", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_set_zorder(void* _jv_ctx, SceneNode node, int zorder)
+static void shim_joy_scene_node_set_zorder(void* _jv_ctx, SceneNode node, int zorder)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6092,25 +6092,25 @@ static void shim_scene_node_set_zorder(void* _jv_ctx, SceneNode node, int zorder
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_i32(zorder);
-        _jv_r = joy_api_call("scene_node_set_zorder", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_zorder", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_scene_node_get_zorder(void* _jv_ctx, SceneNode node)
+static int shim_joy_scene_node_get_zorder(void* _jv_ctx, SceneNode node)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("scene_node_get_zorder", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_get_zorder", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_scene_node_set_name(void* _jv_ctx, SceneNode node, const char* name)
+static void shim_joy_scene_node_set_name(void* _jv_ctx, SceneNode node, const char* name)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6118,13 +6118,13 @@ static void shim_scene_node_set_name(void* _jv_ctx, SceneNode node, const char* 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_str(name);
-        _jv_r = joy_api_call("scene_node_set_name", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_name", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_set_tag(void* _jv_ctx, SceneNode node, const char* tag)
+static void shim_joy_scene_node_set_tag(void* _jv_ctx, SceneNode node, const char* tag)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6132,13 +6132,13 @@ static void shim_scene_node_set_tag(void* _jv_ctx, SceneNode node, const char* t
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_str(tag);
-        _jv_r = joy_api_call("scene_node_set_tag", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_set_tag", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_node_update(void* _jv_ctx, SceneNode node, float delta_time)
+static void shim_joy_scene_node_update(void* _jv_ctx, SceneNode node, float delta_time)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6146,26 +6146,26 @@ static void shim_scene_node_update(void* _jv_ctx, SceneNode node, float delta_ti
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(node.h);
         _jv_args[1] = joy_v_f64(delta_time);
-        _jv_r = joy_api_call("scene_node_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_node_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_destroy(void* _jv_ctx, Scene scene)
+static void shim_joy_scene_destroy(void* _jv_ctx, Scene scene)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
-        _jv_r = joy_api_call("scene_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_add_root_node(void* _jv_ctx, Scene scene, SceneNode root)
+static void shim_joy_scene_add_root_node(void* _jv_ctx, Scene scene, SceneNode root)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6173,13 +6173,13 @@ static void shim_scene_add_root_node(void* _jv_ctx, Scene scene, SceneNode root)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
         _jv_args[1] = joy_v_handle(root.h);
-        _jv_r = joy_api_call("scene_add_root_node", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_add_root_node", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_remove_root_node(void* _jv_ctx, Scene scene, SceneNode root)
+static void shim_joy_scene_remove_root_node(void* _jv_ctx, Scene scene, SceneNode root)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6187,25 +6187,25 @@ static void shim_scene_remove_root_node(void* _jv_ctx, Scene scene, SceneNode ro
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
         _jv_args[1] = joy_v_handle(root.h);
-        _jv_r = joy_api_call("scene_remove_root_node", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_remove_root_node", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_scene_get_root_count(void* _jv_ctx, Scene scene)
+static int shim_joy_scene_get_root_count(void* _jv_ctx, Scene scene)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
-        _jv_r = joy_api_call("scene_get_root_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_get_root_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_scene_update(void* _jv_ctx, Scene scene, float delta_time)
+static void shim_joy_scene_update(void* _jv_ctx, Scene scene, float delta_time)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6213,13 +6213,13 @@ static void shim_scene_update(void* _jv_ctx, Scene scene, float delta_time)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
         _jv_args[1] = joy_v_f64(delta_time);
-        _jv_r = joy_api_call("scene_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_set_popup_node(void* _jv_ctx, Scene scene, SceneNode node)
+static void shim_joy_scene_set_popup_node(void* _jv_ctx, Scene scene, SceneNode node)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6227,26 +6227,26 @@ static void shim_scene_set_popup_node(void* _jv_ctx, Scene scene, SceneNode node
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(scene.h);
         _jv_args[1] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("scene_set_popup_node", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_set_popup_node", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_manager_destroy(void* _jv_ctx, SceneManager mgr)
+static void shim_joy_scene_manager_destroy(void* _jv_ctx, SceneManager mgr)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
-        _jv_r = joy_api_call("scene_manager_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_manager_push(void* _jv_ctx, SceneManager mgr, Scene scene)
+static void shim_joy_scene_manager_push(void* _jv_ctx, SceneManager mgr, Scene scene)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6254,13 +6254,13 @@ static void shim_scene_manager_push(void* _jv_ctx, SceneManager mgr, Scene scene
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
         _jv_args[1] = joy_v_handle(scene.h);
-        _jv_r = joy_api_call("scene_manager_push", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_push", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_manager_replace(void* _jv_ctx, SceneManager mgr, Scene scene)
+static void shim_joy_scene_manager_replace(void* _jv_ctx, SceneManager mgr, Scene scene)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6268,26 +6268,26 @@ static void shim_scene_manager_replace(void* _jv_ctx, SceneManager mgr, Scene sc
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
         _jv_args[1] = joy_v_handle(scene.h);
-        _jv_r = joy_api_call("scene_manager_replace", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_replace", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_manager_pop(void* _jv_ctx, SceneManager mgr)
+static void shim_joy_scene_manager_pop(void* _jv_ctx, SceneManager mgr)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
-        _jv_r = joy_api_call("scene_manager_pop", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_pop", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scene_manager_update(void* _jv_ctx, SceneManager mgr, float delta_time)
+static void shim_joy_scene_manager_update(void* _jv_ctx, SceneManager mgr, float delta_time)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6295,20 +6295,20 @@ static void shim_scene_manager_update(void* _jv_ctx, SceneManager mgr, float del
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
         _jv_args[1] = joy_v_f64(delta_time);
-        _jv_r = joy_api_call("scene_manager_update", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_update", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_scene_manager_get_count(void* _jv_ctx, SceneManager mgr)
+static int shim_joy_scene_manager_get_count(void* _jv_ctx, SceneManager mgr)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(mgr.h);
-        _jv_r = joy_api_call("scene_manager_get_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_manager_get_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
@@ -6533,20 +6533,20 @@ static void shim_joy_r3d_light_render(void* _jv_ctx, JlightSys sys, Jr2d r2d)
         return;
 }
 
-static void shim_jecs_destroy(void* _jv_ctx, JecsWorld world)
+static void shim_joy_scene_ecs_destroy(void* _jv_ctx, JecsWorld world)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(world.h);
-        _jv_r = joy_api_call("jecs_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_ecs_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jecs_process(void* _jv_ctx, JecsWorld world, float dt)
+static void shim_joy_scene_ecs_process(void* _jv_ctx, JecsWorld world, float dt)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6554,13 +6554,13 @@ static void shim_jecs_process(void* _jv_ctx, JecsWorld world, float dt)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(world.h);
         _jv_args[1] = joy_v_f64(dt);
-        _jv_r = joy_api_call("jecs_process", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_ecs_process", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jecs_define(void* _jv_ctx, JecsWorld world, const char* name, size_t size)
+static void shim_joy_scene_ecs_define(void* _jv_ctx, JecsWorld world, const char* name, size_t size)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6569,7 +6569,7 @@ static void shim_jecs_define(void* _jv_ctx, JecsWorld world, const char* name, s
         _jv_args[0] = joy_v_handle(world.h);
         _jv_args[1] = joy_v_str(name);
         _jv_args[2] = joy_v_u64(size);
-        _jv_r = joy_api_call("jecs_define", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_ecs_define", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -9965,8 +9965,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->LcgRandomDestroy = shim_joy_core_lcg_random_destroy;
         api->LcgRandomNext = shim_joy_core_lcg_random_next;
         api->LcgRandomSetState = shim_joy_core_lcg_random_set_state;
-        api->JpmConfigAddSpawn = shim_jpm_config_add_spawn;
-        api->JpmWaveSeed = shim_jpm_wave_seed;
+        api->JpmConfigAddSpawn = shim_joy_scene_procmap_config_add_spawn;
+        api->JpmWaveSeed = shim_joy_scene_procmap_wave_seed;
         api->SdbmHash = shim_joy_core_sdbm_hash;
         api->Fnv1aHash = shim_joy_core_fnv1a_hash;
         api->JenkinsHash = shim_joy_core_jenkins_hash;
@@ -10069,14 +10069,14 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JtextCacheSetLimit = shim_joy_r2d_jtext_cache_set_limit;
         api->JtextCacheGetCount = shim_joy_r2d_jtext_cache_get_count;
         api->JtextCacheSweep = shim_joy_r2d_jtext_cache_sweep;
-        api->AnimationDestroy = shim_animation_destroy;
-        api->AnimationReset = shim_animation_reset;
-        api->AnimationAddClip = shim_animation_add_clip;
-        api->AnimationIsFinished = shim_animation_is_finished;
-        api->AnimationSetPosition = shim_animation_set_position;
-        api->AnimationSetScale = shim_animation_set_scale;
-        api->AnimationSetRotation = shim_animation_set_rotation;
-        api->AnimationUpdate = shim_animation_update;
+        api->AnimationDestroy = shim_joy_scene_animation_destroy;
+        api->AnimationReset = shim_joy_scene_animation_reset;
+        api->AnimationAddClip = shim_joy_scene_animation_add_clip;
+        api->AnimationIsFinished = shim_joy_scene_animation_is_finished;
+        api->AnimationSetPosition = shim_joy_scene_animation_set_position;
+        api->AnimationSetScale = shim_joy_scene_animation_set_scale;
+        api->AnimationSetRotation = shim_joy_scene_animation_set_rotation;
+        api->AnimationUpdate = shim_joy_scene_animation_update;
         api->R3dDestroy = shim_joy_r3d_destroy;
         api->R3dBegin = shim_joy_r3d_begin;
         api->R3dEnd = shim_joy_r3d_end;
@@ -10142,29 +10142,29 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dCheckboxSetColors = shim_joy_r3d_checkbox_set_colors;
         api->R3dCheckboxDraw = shim_joy_r3d_checkbox_draw;
         api->R3dDrawGrid = shim_joy_r3d_draw_grid;
-        api->JanimatorDestroy = shim_janimator_destroy;
-        api->JanimatorSetFloat = shim_janimator_set_float;
-        api->JanimatorSetInt = shim_janimator_set_int;
-        api->JanimatorSetBool = shim_janimator_set_bool;
-        api->JanimatorSetTrigger = shim_janimator_set_trigger;
-        api->JanimatorGetFloat = shim_janimator_get_float;
-        api->JanimatorGetInt = shim_janimator_get_int;
-        api->JanimatorGetBool = shim_janimator_get_bool;
-        api->JanimatorAddState = shim_janimator_add_state;
-        api->JanimatorSetDefaultState = shim_janimator_set_default_state;
-        api->JanimatorStateAddClip = shim_janimator_state_add_clip;
-        api->JanimatorStateAddColor = shim_janimator_state_add_color;
-        api->JanimatorStateSetLoop = shim_janimator_state_set_loop;
-        api->JanimatorStateSetSpeed = shim_janimator_state_set_speed;
-        api->JanimatorStateSetBlend = shim_janimator_state_set_blend;
-        api->JanimatorStateAddMotion = shim_janimator_state_add_motion;
-        api->JanimatorAddTransition = shim_janimator_add_transition;
-        api->JanimatorAddAnyTransition = shim_janimator_add_any_transition;
-        api->JanimatorTransitionAddCond = shim_janimator_transition_add_cond;
-        api->JanimatorTransitionSetExitTime = shim_janimator_transition_set_exit_time;
-        api->JanimatorUpdate = shim_janimator_update;
-        api->JanimatorDraw = shim_janimator_draw;
-        api->JanimatorSetFlipH = shim_janimator_set_flip_h;
+        api->JanimatorDestroy = shim_joy_scene_animator_destroy;
+        api->JanimatorSetFloat = shim_joy_scene_animator_set_float;
+        api->JanimatorSetInt = shim_joy_scene_animator_set_int;
+        api->JanimatorSetBool = shim_joy_scene_animator_set_bool;
+        api->JanimatorSetTrigger = shim_joy_scene_animator_set_trigger;
+        api->JanimatorGetFloat = shim_joy_scene_animator_get_float;
+        api->JanimatorGetInt = shim_joy_scene_animator_get_int;
+        api->JanimatorGetBool = shim_joy_scene_animator_get_bool;
+        api->JanimatorAddState = shim_joy_scene_animator_add_state;
+        api->JanimatorSetDefaultState = shim_joy_scene_animator_set_default_state;
+        api->JanimatorStateAddClip = shim_joy_scene_animator_state_add_clip;
+        api->JanimatorStateAddColor = shim_joy_scene_animator_state_add_color;
+        api->JanimatorStateSetLoop = shim_joy_scene_animator_state_set_loop;
+        api->JanimatorStateSetSpeed = shim_joy_scene_animator_state_set_speed;
+        api->JanimatorStateSetBlend = shim_joy_scene_animator_state_set_blend;
+        api->JanimatorStateAddMotion = shim_joy_scene_animator_state_add_motion;
+        api->JanimatorAddTransition = shim_joy_scene_animator_add_transition;
+        api->JanimatorAddAnyTransition = shim_joy_scene_animator_add_any_transition;
+        api->JanimatorTransitionAddCond = shim_joy_scene_animator_transition_add_cond;
+        api->JanimatorTransitionSetExitTime = shim_joy_scene_animator_transition_set_exit_time;
+        api->JanimatorUpdate = shim_joy_scene_animator_update;
+        api->JanimatorDraw = shim_joy_scene_animator_draw;
+        api->JanimatorSetFlipH = shim_joy_scene_animator_set_flip_h;
         api->LabelDestroy = shim_joy_ui_label_destroy;
         api->LabelDraw = shim_joy_ui_label_draw;
         api->ButtonDestroy = shim_joy_ui_button_destroy;
@@ -10327,18 +10327,18 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JuiScrollbar = shim_joy_ui_scrollbar;
         api->JuiScrollSetOffset = shim_joy_ui_scroll_set_offset;
         api->JuiButton = shim_joy_ui_button;
-        api->JtilemapDestroy = shim_jtilemap_destroy;
-        api->JtilemapGetWidth = shim_jtilemap_get_width;
-        api->JtilemapGetHeight = shim_jtilemap_get_height;
-        api->JtilemapGetTilewidth = shim_jtilemap_get_tilewidth;
-        api->JtilemapGetTileheight = shim_jtilemap_get_tileheight;
-        api->JtilemapGetAnimTileid = shim_jtilemap_get_anim_tileid;
-        api->JtilemapGetTile = shim_jtilemap_get_tile;
-        api->JtilemapRenderAll = shim_jtilemap_render_all;
-        api->JtilemapRenderTiles = shim_jtilemap_render_tiles;
-        api->JtilemapRenderSetTilePx = shim_jtilemap_render_set_tile_px;
-        api->JtilemapRenderLayer = shim_jtilemap_render_layer;
-        api->JtilemapRenderDestroy = shim_jtilemap_render_destroy;
+        api->JtilemapDestroy = shim_joy_scene_tilemap_destroy;
+        api->JtilemapGetWidth = shim_joy_scene_tilemap_get_width;
+        api->JtilemapGetHeight = shim_joy_scene_tilemap_get_height;
+        api->JtilemapGetTilewidth = shim_joy_scene_tilemap_get_tilewidth;
+        api->JtilemapGetTileheight = shim_joy_scene_tilemap_get_tileheight;
+        api->JtilemapGetAnimTileid = shim_joy_scene_tilemap_get_anim_tileid;
+        api->JtilemapGetTile = shim_joy_scene_tilemap_get_tile;
+        api->JtilemapRenderAll = shim_joy_scene_tilemap_render_all;
+        api->JtilemapRenderTiles = shim_joy_scene_tilemap_render_tiles;
+        api->JtilemapRenderSetTilePx = shim_joy_scene_tilemap_render_set_tile_px;
+        api->JtilemapRenderLayer = shim_joy_scene_tilemap_render_layer;
+        api->JtilemapRenderDestroy = shim_joy_scene_tilemap_render_destroy;
         api->KcpserverDestroy = shim_joy_net_kcpserver_destroy;
         api->KcpserverSend = shim_joy_net_kcpserver_send;
         api->KcpserverBroadcast = shim_joy_net_kcpserver_broadcast;
@@ -10384,32 +10384,32 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->NetserverConnectionCount = shim_joy_net_netserver_connection_count;
         api->NetserverPollMessage = shim_joy_net_netserver_poll_message;
         api->NetmessageFreeData = shim_joy_net_netmessage_free_data;
-        api->SceneNodeDestroy = shim_scene_node_destroy;
-        api->SceneNodeAddChild = shim_scene_node_add_child;
-        api->SceneNodeRemoveChild = shim_scene_node_remove_child;
-        api->SceneNodeGetChildCount = shim_scene_node_get_child_count;
-        api->SceneNodeSetPosition = shim_scene_node_set_position;
-        api->SceneNodeSetWorldPosition = shim_scene_node_set_world_position;
-        api->SceneNodeSetRotation = shim_scene_node_set_rotation;
-        api->SceneNodeGetRotation = shim_scene_node_get_rotation;
-        api->SceneNodeSetScale = shim_scene_node_set_scale;
-        api->SceneNodeSetZorder = shim_scene_node_set_zorder;
-        api->SceneNodeGetZorder = shim_scene_node_get_zorder;
-        api->SceneNodeSetName = shim_scene_node_set_name;
-        api->SceneNodeSetTag = shim_scene_node_set_tag;
-        api->SceneNodeUpdate = shim_scene_node_update;
-        api->SceneDestroy = shim_scene_destroy;
-        api->SceneAddRootNode = shim_scene_add_root_node;
-        api->SceneRemoveRootNode = shim_scene_remove_root_node;
-        api->SceneGetRootCount = shim_scene_get_root_count;
-        api->SceneUpdate = shim_scene_update;
-        api->SceneSetPopupNode = shim_scene_set_popup_node;
-        api->SceneManagerDestroy = shim_scene_manager_destroy;
-        api->SceneManagerPush = shim_scene_manager_push;
-        api->SceneManagerReplace = shim_scene_manager_replace;
-        api->SceneManagerPop = shim_scene_manager_pop;
-        api->SceneManagerUpdate = shim_scene_manager_update;
-        api->SceneManagerGetCount = shim_scene_manager_get_count;
+        api->SceneNodeDestroy = shim_joy_scene_node_destroy;
+        api->SceneNodeAddChild = shim_joy_scene_node_add_child;
+        api->SceneNodeRemoveChild = shim_joy_scene_node_remove_child;
+        api->SceneNodeGetChildCount = shim_joy_scene_node_get_child_count;
+        api->SceneNodeSetPosition = shim_joy_scene_node_set_position;
+        api->SceneNodeSetWorldPosition = shim_joy_scene_node_set_world_position;
+        api->SceneNodeSetRotation = shim_joy_scene_node_set_rotation;
+        api->SceneNodeGetRotation = shim_joy_scene_node_get_rotation;
+        api->SceneNodeSetScale = shim_joy_scene_node_set_scale;
+        api->SceneNodeSetZorder = shim_joy_scene_node_set_zorder;
+        api->SceneNodeGetZorder = shim_joy_scene_node_get_zorder;
+        api->SceneNodeSetName = shim_joy_scene_node_set_name;
+        api->SceneNodeSetTag = shim_joy_scene_node_set_tag;
+        api->SceneNodeUpdate = shim_joy_scene_node_update;
+        api->SceneDestroy = shim_joy_scene_destroy;
+        api->SceneAddRootNode = shim_joy_scene_add_root_node;
+        api->SceneRemoveRootNode = shim_joy_scene_remove_root_node;
+        api->SceneGetRootCount = shim_joy_scene_get_root_count;
+        api->SceneUpdate = shim_joy_scene_update;
+        api->SceneSetPopupNode = shim_joy_scene_set_popup_node;
+        api->SceneManagerDestroy = shim_joy_scene_manager_destroy;
+        api->SceneManagerPush = shim_joy_scene_manager_push;
+        api->SceneManagerReplace = shim_joy_scene_manager_replace;
+        api->SceneManagerPop = shim_joy_scene_manager_pop;
+        api->SceneManagerUpdate = shim_joy_scene_manager_update;
+        api->SceneManagerGetCount = shim_joy_scene_manager_get_count;
         api->JparticleDestroy = shim_joy_r2d_particle_destroy;
         api->JparticleSetPosition = shim_joy_r2d_particle_set_position;
         api->JparticleEmit = shim_joy_r2d_particle_emit;
@@ -10426,9 +10426,9 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JlightClearOccluders = shim_joy_r3d_light_clear_occluders;
         api->JlightSetAmbient = shim_joy_r3d_light_set_ambient;
         api->JlightRender = shim_joy_r3d_light_render;
-        api->JecsDestroy = shim_jecs_destroy;
-        api->JecsProcess = shim_jecs_process;
-        api->JecsDefine = shim_jecs_define;
+        api->JecsDestroy = shim_joy_scene_ecs_destroy;
+        api->JecsProcess = shim_joy_scene_ecs_process;
+        api->JecsDefine = shim_joy_scene_ecs_define;
         api->AudioOpenDevice = shim_audio_open_device;
         api->AudioCloseDevice = shim_audio_close_device;
         api->AudioCreateWav = shim_audio_create_wav;
@@ -10673,9 +10673,9 @@ const char* joy_api_vtable_selftest(void)
         if (api.size != sizeof(JoyApi)) return "size";
         if (!api.JpmWaveSeed) return "missing shim: JpmWaveSeed";
         {
-                uint32_t direct = jpm_wave_seed((uint32_t)12345, (int)3);
+                uint32_t direct = joy_scene_procmap_wave_seed((uint32_t)12345, (int)3);
                 uint32_t via = api.JpmWaveSeed(api.ctx, (uint32_t)12345, (int)3);
-                if (direct != via) return "jpm_wave_seed mismatch";
+                if (direct != via) return "joy_scene_procmap_wave_seed mismatch";
         }
         if (!api.SdbmHash) return "missing shim: SdbmHash";
         {

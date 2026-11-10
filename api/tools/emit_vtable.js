@@ -29,7 +29,7 @@ const LAYOUTS = collectStructs();
  * 混着 create_window / sys_bind / audio_create_* / quit_env 等，全跑会出乱子；
  * 其余 API 由编译期签名 + init 填表保证，不做运行时调用。 */
 const SELFTEST_SAFE = new Set([
-  'jpm_wave_seed',                                              // 纯标量
+  'joy_scene_procmap_wave_seed',                                              // 纯标量
   'joy_core_sdbm_hash', 'joy_core_fnv1a_hash', 'joy_core_jenkins_hash',
   'joy_core_murmur3_hash', 'joy_core_kr_hash',                       // const char*
   'jmath_fp_from_float',                                       // float 参数

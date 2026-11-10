@@ -33,7 +33,6 @@
 
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
-| animation | 0 | 8 | 1 | 1 | 0 | 10 |
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | box2d | 0 | 0 | 0 | 11 | 0 | 11 |
 | collision2d | 0 | 0 | 10 | 8 | 0 | 18 |
@@ -45,13 +44,9 @@
 | gjk3d | 0 | 0 | 1 | 6 | 0 | 7 |
 | gjk3df | 0 | 0 | 1 | 7 | 0 | 8 |
 | input | 0 | 14 | 0 | 3 | 0 | 17 |
-| janimator | 0 | 23 | 2 | 2 | 0 | 27 |
-| jecs | 0 | 5 | 0 | 7 | 1 | 13 |
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
 | jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
-| jpm | 1 | 1 | 0 | 6 | 0 | 8 |
-| jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
 | math | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
@@ -59,7 +54,7 @@
 | net | 0 | 56 | 0 | 20 | 0 | 76 |
 | r2d | 4 | 33 | 6 | 12 | 19 | 74 |
 | r3d | 0 | 109 | 14 | 23 | 0 | 146 |
-| scene | 0 | 64 | 0 | 16 | 0 | 80 |
+| scene | 1 | 117 | 3 | 38 | 1 | 160 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
 | sys | 19 | 0 | 0 | 3 | 0 | 22 |
 | ui | 0 | 170 | 23 | 29 | 0 | 222 |
@@ -101,15 +96,15 @@
 | `joy_r3d_mesh_plane_lit` | `render_mesh_p` | include/joy/api.h:743 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `joy_r3d_mesh_ramp_lit` | `render_mesh_p` | include/joy/api.h:744 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `joy_r3d_mesh_custom_lit` | `render_mesh_p` | include/joy/api.h:745 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `jtilemap_find_tile_layer` | `jtilemap_tile_layer_p` | include/joy/api.h:1374 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
-| `jtilemap_find_object_layer` | `jtilemap_object_layer_p` | include/joy/api.h:1376 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
-| `scene_node_get_userdata` | `void*` | include/joy/api.h:1485 | 借用：外部传入的 userdata，引擎不释放 |
-| `scene_find_node_by_name` | `scene_node_p` | include/joy/api.h:1490 | 借用：DFS 返回树内节点；scene_node_destroy 类型匹配但填 owns 会双重释放 |
-| `scene_find_node_by_name_deep` | `scene_node_p` | include/joy/api.h:1491 | 借用：树内节点，由 scene_destroy 递归销毁 |
-| `scene_get_root_at` | `scene_node_p` | include/joy/api.h:1506 | 借用：scene->root_nodes 内部指针 |
-| `scene_get_popup_node` | `scene_node_p` | include/joy/api.h:1517 | 借用：scene->popup_node，由 scene_destroy 销毁 |
-| `scene_get_userdata` | `void*` | include/joy/api.h:1519 | 借用：外部 userdata，scene_destroy 不释放 |
-| `scene_manager_get_current` | `scene_p` | include/joy/api.h:1529 | 借用：manager 栈顶 scene，所有权归 manager |
+| `joy_scene_tilemap_find_tile_layer` | `jtilemap_tile_layer_p` | include/joy/api.h:1374 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
+| `joy_scene_tilemap_find_object_layer` | `jtilemap_object_layer_p` | include/joy/api.h:1376 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
+| `joy_scene_node_get_userdata` | `void*` | include/joy/api.h:1485 | 借用：外部传入的 userdata，引擎不释放 |
+| `joy_scene_find_node_by_name` | `scene_node_p` | include/joy/api.h:1490 | 借用：DFS 返回树内节点；scene_node_destroy 类型匹配但填 owns 会双重释放 |
+| `joy_scene_find_node_by_name_deep` | `scene_node_p` | include/joy/api.h:1491 | 借用：树内节点，由 scene_destroy 递归销毁 |
+| `joy_scene_get_root_at` | `scene_node_p` | include/joy/api.h:1506 | 借用：scene->root_nodes 内部指针 |
+| `joy_scene_get_popup_node` | `scene_node_p` | include/joy/api.h:1517 | 借用：scene->popup_node，由 scene_destroy 销毁 |
+| `joy_scene_get_userdata` | `void*` | include/joy/api.h:1519 | 借用：外部 userdata，scene_destroy 不释放 |
+| `joy_scene_manager_get_current` | `scene_p` | include/joy/api.h:1529 | 借用：manager 栈顶 scene，所有权归 manager |
 
 ## 待办：所有权待裁决（`owns` 不可信）
 
@@ -149,27 +144,27 @@
 | `joy_r3d_mesh_plane_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `joy_r3d_mesh_ramp_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `joy_r3d_mesh_custom_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `jtilemap_find_tile_layer` | `jtilemap_tile_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
-| `jtilemap_find_object_layer` | `jtilemap_object_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
-| `scene_node_get_userdata` | `void*` | （无） | 返回句柄但缺 owns | 借用：外部传入的 userdata，引擎不释放 |
-| `scene_find_node_by_name` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：DFS 返回树内节点；scene_node_destroy 类型匹配但填 owns 会双重释放 |
-| `scene_find_node_by_name_deep` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：树内节点，由 scene_destroy 递归销毁 |
-| `scene_get_root_at` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：scene->root_nodes 内部指针 |
-| `scene_get_popup_node` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：scene->popup_node，由 scene_destroy 销毁 |
-| `scene_get_userdata` | `void*` | （无） | 返回句柄但缺 owns | 借用：外部 userdata，scene_destroy 不释放 |
-| `scene_manager_get_current` | `scene_p` | （无） | 返回句柄但缺 owns | 借用：manager 栈顶 scene，所有权归 manager |
+| `joy_scene_tilemap_find_tile_layer` | `jtilemap_tile_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
+| `joy_scene_tilemap_find_object_layer` | `jtilemap_object_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
+| `joy_scene_node_get_userdata` | `void*` | （无） | 返回句柄但缺 owns | 借用：外部传入的 userdata，引擎不释放 |
+| `joy_scene_find_node_by_name` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：DFS 返回树内节点；scene_node_destroy 类型匹配但填 owns 会双重释放 |
+| `joy_scene_find_node_by_name_deep` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：树内节点，由 scene_destroy 递归销毁 |
+| `joy_scene_get_root_at` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：scene->root_nodes 内部指针 |
+| `joy_scene_get_popup_node` | `scene_node_p` | （无） | 返回句柄但缺 owns | 借用：scene->popup_node，由 scene_destroy 销毁 |
+| `joy_scene_get_userdata` | `void*` | （无） | 返回句柄但缺 owns | 借用：外部 userdata，scene_destroy 不释放 |
+| `joy_scene_manager_get_current` | `scene_p` | （无） | 返回句柄但缺 owns | 借用：manager 栈顶 scene，所有权归 manager |
 
 ## L3 清单（必须手写 thunk）
 
 | 函数 | 原因 | 位置 |
 |---|---|---|
 | `joy_core_lcg_random_get_state` | 非不透明指针 / 输出参数：uint64_t* | include/joy/defs.h:183 |
-| `jpm_config_default` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:239 |
-| `jpm_generate_seed` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:245 |
-| `jpm_generate` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:247 |
-| `jpm_rasterize` | 数组参数 | include/joy/defs.h:249 |
-| `jpm_bfs` | 数组参数 | include/joy/defs.h:252 |
-| `jpm_sample_open_tiles` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:255 |
+| `joy_scene_procmap_config_default` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:239 |
+| `joy_scene_procmap_generate_seed` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:245 |
+| `joy_scene_procmap_generate` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:247 |
+| `joy_scene_procmap_rasterize` | 数组参数 | include/joy/defs.h:249 |
+| `joy_scene_procmap_bfs` | 数组参数 | include/joy/defs.h:252 |
+| `joy_scene_procmap_sample_open_tiles` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:255 |
 | `joy_core_utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:50 |
 | `joy_core_utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/api.h:60 |
 | `joy_core_utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:72 |
@@ -213,7 +208,7 @@
 | `joy_r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/api.h:280 |
 | `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
 | `joy_r2d_jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
-| `animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
+| `joy_scene_animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
 | `joy_r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/api.h:340 |
 | `joy_r3d_mat44_to_float16` | 数组参数 | include/joy/api.h:344 |
 | `joy_r3d_load_texture_png` | 非不透明指针 / 输出参数：int* | include/joy/api.h:389 |
@@ -294,8 +289,8 @@
 | `gjk3d_init_cylinder` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:926 |
 | `gjk3d_init_cone` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:927 |
 | `gjk3d_init_mesh` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:928 |
-| `janimator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:959 |
-| `janimator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:960 |
+| `joy_scene_animator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:959 |
+| `joy_scene_animator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:960 |
 | `joy_ui_label_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1034 |
 | `joy_ui_label_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1036 |
 | `joy_ui_button_get_position` | 结构体按值返回 | include/joy/api.h:1042 |
@@ -321,12 +316,12 @@
 | `joy_ui_text_measure` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1340 |
 | `joy_ui_checkbox` | 非不透明指针 / 输出参数：bool* | include/joy/api.h:1357 |
 | `joy_ui_slider` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1359 |
-| `jtilemap_resolve_gid` | 结构体按值返回 | include/joy/api.h:1367 |
-| `jtilemap_get_tile_def_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1369 |
-| `jtilemap_get_tile_uv` | 数组参数 | include/joy/api.h:1370 |
-| `jtilemap_object_layer_foreach` | 函数指针 / 回调 | include/joy/api.h:1377 |
-| `jtilemap_object_layer_foreach_all` | 函数指针 / 回调 | include/joy/api.h:1378 |
-| `jtilemap_render_create` | 未知类型需人工标注：jtilemap_path_remap_t | include/joy/api.h:1381 |
+| `joy_scene_tilemap_resolve_gid` | 结构体按值返回 | include/joy/api.h:1367 |
+| `joy_scene_tilemap_get_tile_def_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1369 |
+| `joy_scene_tilemap_get_tile_uv` | 数组参数 | include/joy/api.h:1370 |
+| `joy_scene_tilemap_object_layer_foreach` | 函数指针 / 回调 | include/joy/api.h:1377 |
+| `joy_scene_tilemap_object_layer_foreach_all` | 函数指针 / 回调 | include/joy/api.h:1378 |
+| `joy_scene_tilemap_render_create` | 未知类型需人工标注：jtilemap_path_remap_t | include/joy/api.h:1381 |
 | `joy_net_kcpserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1411 |
 | `joy_net_kcpclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1417 |
 | `joy_net_wsnetserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1439 |
@@ -335,29 +330,29 @@
 | `joy_net_netclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1451 |
 | `joy_net_netserver_create` | 未知类型需人工标注：net_server_type | include/joy/api.h:1453 |
 | `joy_net_netserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1461 |
-| `scene_node_get_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1475 |
-| `scene_node_get_world_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1477 |
-| `scene_node_get_scale` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1481 |
-| `scene_find_nodes_by_tag` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1492 |
-| `scene_find_nodes_by_tag_deep` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1493 |
-| `scene_node_set_update_callback` | 未知类型需人工标注：scene_node_update_fn | include/joy/api.h:1494 |
-| `scene_node_set_render_callback` | 未知类型需人工标注：scene_node_render_fn | include/joy/api.h:1495 |
-| `scene_node_set_destroy_callback` | 未知类型需人工标注：scene_node_destroy_fn | include/joy/api.h:1496 |
-| `scene_node_set_event_callback` | 未知类型需人工标注：scene_node_event_fn | include/joy/api.h:1497 |
-| `scene_set_load_callback` | 未知类型需人工标注：scene_load_fn | include/joy/api.h:1510 |
-| `scene_set_update_callback` | 未知类型需人工标注：scene_update_fn | include/joy/api.h:1511 |
-| `scene_set_render_callback` | 未知类型需人工标注：scene_render_fn | include/joy/api.h:1512 |
-| `scene_set_destroy_callback` | 未知类型需人工标注：scene_destroy_fn | include/joy/api.h:1513 |
-| `scene_set_event_callback` | 未知类型需人工标注：scene_event_fn | include/joy/api.h:1514 |
-| `scene_set_fixed_update_callback` | 未知类型需人工标注：scene_fixed_update_fn | include/joy/api.h:1515 |
+| `joy_scene_node_get_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1475 |
+| `joy_scene_node_get_world_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1477 |
+| `joy_scene_node_get_scale` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1481 |
+| `joy_scene_find_nodes_by_tag` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1492 |
+| `joy_scene_find_nodes_by_tag_deep` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1493 |
+| `joy_scene_node_set_update_callback` | 未知类型需人工标注：scene_node_update_fn | include/joy/api.h:1494 |
+| `joy_scene_node_set_render_callback` | 未知类型需人工标注：scene_node_render_fn | include/joy/api.h:1495 |
+| `joy_scene_node_set_destroy_callback` | 未知类型需人工标注：scene_node_destroy_fn | include/joy/api.h:1496 |
+| `joy_scene_node_set_event_callback` | 未知类型需人工标注：scene_node_event_fn | include/joy/api.h:1497 |
+| `joy_scene_set_load_callback` | 未知类型需人工标注：scene_load_fn | include/joy/api.h:1510 |
+| `joy_scene_set_update_callback` | 未知类型需人工标注：scene_update_fn | include/joy/api.h:1511 |
+| `joy_scene_set_render_callback` | 未知类型需人工标注：scene_render_fn | include/joy/api.h:1512 |
+| `joy_scene_set_destroy_callback` | 未知类型需人工标注：scene_destroy_fn | include/joy/api.h:1513 |
+| `joy_scene_set_event_callback` | 未知类型需人工标注：scene_event_fn | include/joy/api.h:1514 |
+| `joy_scene_set_fixed_update_callback` | 未知类型需人工标注：scene_fixed_update_fn | include/joy/api.h:1515 |
 | `joy_r2d_particle_cfg_default` | 结构体按值返回 | include/joy/api.h:1533 |
-| `jecs_kill` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1563 |
-| `jecs_set` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1565 |
-| `jecs_get` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1566 |
-| `jecs_remove` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1567 |
-| `jecs_query` | 可变参数 | include/joy/api.h:1568 |
-| `jecs_queryx` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1569 |
-| `jecs_register` | 未知类型需人工标注：jecs_system_t | include/joy/api.h:1570 |
+| `joy_scene_ecs_kill` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1563 |
+| `joy_scene_ecs_set` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1565 |
+| `joy_scene_ecs_get` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1566 |
+| `joy_scene_ecs_remove` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1567 |
+| `joy_scene_ecs_query` | 可变参数 | include/joy/api.h:1568 |
+| `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1569 |
+| `joy_scene_ecs_register` | 未知类型需人工标注：jecs_system_t | include/joy/api.h:1570 |
 | `moudles_retire` | 非不透明指针 / 输出参数：module_p* | include/joy/api.h:1636 |
 | `box2d_create_world` | 未知类型需人工标注：vec2f_t | include/joy/api.h:1644 |
 | `box2d_clear_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1645 |
@@ -436,7 +431,7 @@
 | `joy_r2d_spine_instance_set_alpha` | include/joy/api.h:1025 |
 | `joy_r2d_spine_instance_set_tint` | include/joy/api.h:1026 |
 | `joy_r2d_spine_instance_bounds` | include/joy/api.h:1029 |
-| `jecs_test` | include/joy/api.h:1571 |
+| `joy_scene_ecs_test` | include/joy/api.h:1571 |
 | `modules_create` | include/joy/api.h:1626 |
 | `modules_destroy` | include/joy/api.h:1627 |
 | `modules_query` | include/joy/api.h:1628 |

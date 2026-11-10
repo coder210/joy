@@ -54,7 +54,7 @@ const RENAME_MAP = path.join(JOY_API, 'idl', 'rename_map.json');
 /* jspine 是有意排除（JOY_USE_SPINE 条件编译）；迁移后新名沿用同一排除，
  * 否则 19 条会从 X 掉回 L0/L1 混进 thunk 生成。 */
 const SKIP_PREFIXES = ['utils_', 'jspine_', 'joy_r2d_spine_', 'modules_', 'module_instance_'];
-const SKIP_NAMES = new Set(['jecs_test']);
+const SKIP_NAMES = new Set(['jecs_test', 'joy_scene_ecs_test']);
 const SKIP_DOMAINS = new Set(['utils', 'jspine', 'modules', 'module', 'script']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];
 

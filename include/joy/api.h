@@ -315,16 +315,16 @@ extern "C" {
                 jcolor_t color, int* out_w, int* out_h);
 
         /* 简单动画 */
-        JOY_API animation_p animation_create(jr2d_p r2d);
-        JOY_API void animation_destroy(animation_p animation);
-        JOY_API void animation_reset(animation_p animation);
-        JOY_API void animation_add_clip(animation_p animation, const char* image_path, float duration, jrect_t src_rect);
-        JOY_API bool animation_is_finished(animation_p animation);
-        JOY_API void animation_set_position(animation_p animation, float x, float y);
-        JOY_API void animation_set_scale(animation_p animation, float x, float y);
-        JOY_API void animation_set_rotation(animation_p animation, float rotation);
-        JOY_API void animation_update(animation_p animation, float dt);
-        JOY_API void animation_draw(animation_p animation, jrect_t* camera);
+        JOY_API animation_p joy_scene_animation_create(jr2d_p r2d);
+        JOY_API void joy_scene_animation_destroy(animation_p animation);
+        JOY_API void joy_scene_animation_reset(animation_p animation);
+        JOY_API void joy_scene_animation_add_clip(animation_p animation, const char* image_path, float duration, jrect_t src_rect);
+        JOY_API bool joy_scene_animation_is_finished(animation_p animation);
+        JOY_API void joy_scene_animation_set_position(animation_p animation, float x, float y);
+        JOY_API void joy_scene_animation_set_scale(animation_p animation, float x, float y);
+        JOY_API void joy_scene_animation_set_rotation(animation_p animation, float rotation);
+        JOY_API void joy_scene_animation_update(animation_p animation, float dt);
+        JOY_API void joy_scene_animation_draw(animation_p animation, jrect_t* camera);
 
 
         ///////////////////////////////////////////////////////////////////////
@@ -927,37 +927,37 @@ extern "C" {
         JOY_API void gjk3d_init_cone(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
         JOY_API void gjk3d_init_mesh(gjk3d_collider_t* c, vec3_t* vertices, int num);
 
-        JOY_API janimator_p janimator_create(jr2d_p r2d);
-        JOY_API void janimator_destroy(janimator_p anim);
-        JOY_API void janimator_set_float(janimator_p anim, const char* name, float v);
-        JOY_API void janimator_set_int(janimator_p anim, const char* name, int v);
-        JOY_API void janimator_set_bool(janimator_p anim, const char* name, bool v);
-        JOY_API void janimator_set_trigger(janimator_p anim, const char* name);
-        JOY_API float janimator_get_float(janimator_p anim, const char* name);
-        JOY_API int janimator_get_int(janimator_p anim, const char* name);
-        JOY_API bool janimator_get_bool(janimator_p anim, const char* name);
-        JOY_API void janimator_add_state(janimator_p anim, const char* name);
-        JOY_API void janimator_set_default_state(janimator_p anim, const char* name);
-        JOY_API void janimator_state_add_clip(janimator_p anim, const char* state_name,
+        JOY_API janimator_p joy_scene_animator_create(jr2d_p r2d);
+        JOY_API void joy_scene_animator_destroy(janimator_p anim);
+        JOY_API void joy_scene_animator_set_float(janimator_p anim, const char* name, float v);
+        JOY_API void joy_scene_animator_set_int(janimator_p anim, const char* name, int v);
+        JOY_API void joy_scene_animator_set_bool(janimator_p anim, const char* name, bool v);
+        JOY_API void joy_scene_animator_set_trigger(janimator_p anim, const char* name);
+        JOY_API float joy_scene_animator_get_float(janimator_p anim, const char* name);
+        JOY_API int joy_scene_animator_get_int(janimator_p anim, const char* name);
+        JOY_API bool joy_scene_animator_get_bool(janimator_p anim, const char* name);
+        JOY_API void joy_scene_animator_add_state(janimator_p anim, const char* name);
+        JOY_API void joy_scene_animator_set_default_state(janimator_p anim, const char* name);
+        JOY_API void joy_scene_animator_state_add_clip(janimator_p anim, const char* state_name,
                 const char* image_path, float duration, jrect_t src_rect);
-        JOY_API void janimator_state_add_color(janimator_p anim, const char* state_name,
+        JOY_API void joy_scene_animator_state_add_color(janimator_p anim, const char* state_name,
                 float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-        JOY_API void janimator_state_set_loop(janimator_p anim, const char* state_name, bool loop);
-        JOY_API void janimator_state_set_speed(janimator_p anim, const char* state_name, float speed);
-        JOY_API void janimator_state_set_blend(janimator_p anim, const char* state_name,
+        JOY_API void joy_scene_animator_state_set_loop(janimator_p anim, const char* state_name, bool loop);
+        JOY_API void joy_scene_animator_state_set_speed(janimator_p anim, const char* state_name, float speed);
+        JOY_API void joy_scene_animator_state_set_blend(janimator_p anim, const char* state_name,
                 const char* param_name);
-        JOY_API void janimator_state_add_motion(janimator_p anim, const char* state_name, const char* image_path, float duration, jrect_t src_rect, float threshold);
-        JOY_API int janimator_add_transition(janimator_p anim, const char* from, const char* to);
-        JOY_API int janimator_add_any_transition(janimator_p anim, const char* to);
-        JOY_API void janimator_transition_add_cond(janimator_p anim, int trans_idx,
+        JOY_API void joy_scene_animator_state_add_motion(janimator_p anim, const char* state_name, const char* image_path, float duration, jrect_t src_rect, float threshold);
+        JOY_API int joy_scene_animator_add_transition(janimator_p anim, const char* from, const char* to);
+        JOY_API int joy_scene_animator_add_any_transition(janimator_p anim, const char* to);
+        JOY_API void joy_scene_animator_transition_add_cond(janimator_p anim, int trans_idx,
                 const char* param_name, int mode, float threshold);
-        JOY_API void janimator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds);
-        JOY_API void janimator_update(janimator_p anim, float dt);
-        JOY_API void janimator_draw(janimator_p anim, float x, float y);
-        JOY_API void janimator_set_flip_h(janimator_p anim, bool flip);
-        JOY_API const char* janimator_current_state(janimator_p anim);
-        JOY_API void janimator_set_on_enter(janimator_p anim, janim_state_cb cb, void* userdata);
-        JOY_API void janimator_set_on_exit(janimator_p anim, janim_state_cb cb, void* userdata);
+        JOY_API void joy_scene_animator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds);
+        JOY_API void joy_scene_animator_update(janimator_p anim, float dt);
+        JOY_API void joy_scene_animator_draw(janimator_p anim, float x, float y);
+        JOY_API void joy_scene_animator_set_flip_h(janimator_p anim, bool flip);
+        JOY_API const char* joy_scene_animator_current_state(janimator_p anim);
+        JOY_API void joy_scene_animator_set_on_enter(janimator_p anim, janim_state_cb cb, void* userdata);
+        JOY_API void joy_scene_animator_set_on_exit(janimator_p anim, janim_state_cb cb, void* userdata);
 
 
         /* ==================== Spine 骨骼动画（jspine，可选模块） ====================
@@ -1358,44 +1358,44 @@ extern "C" {
         /* rect 是滑轨区域；标签与数值文本由调用方自行绘制（格式各异） */
         JOY_API bool joy_ui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv);
 
-        JOY_API jtilemap_p jtilemap_load_file_json(const char* filename);
-        JOY_API void jtilemap_destroy(jtilemap_p tm);
-        JOY_API int jtilemap_get_width(const jtilemap_p tm);
-        JOY_API int jtilemap_get_height(const jtilemap_p tm);
-        JOY_API int jtilemap_get_tilewidth(const jtilemap_p tm);
-        JOY_API int jtilemap_get_tileheight(const jtilemap_p tm);
-        JOY_API jtilemap_gid_resolve_t jtilemap_resolve_gid(const jtilemap_p tm, int gid);
-        JOY_API const char* jtilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
-        JOY_API bool jtilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id, int* out_w, int* out_h);
-        JOY_API bool jtilemap_get_tile_uv(const jtilemap_p tm, int gid,
+        JOY_API jtilemap_p joy_scene_tilemap_load_file_json(const char* filename);
+        JOY_API void joy_scene_tilemap_destroy(jtilemap_p tm);
+        JOY_API int joy_scene_tilemap_get_width(const jtilemap_p tm);
+        JOY_API int joy_scene_tilemap_get_height(const jtilemap_p tm);
+        JOY_API int joy_scene_tilemap_get_tilewidth(const jtilemap_p tm);
+        JOY_API int joy_scene_tilemap_get_tileheight(const jtilemap_p tm);
+        JOY_API jtilemap_gid_resolve_t joy_scene_tilemap_resolve_gid(const jtilemap_p tm, int gid);
+        JOY_API const char* joy_scene_tilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id);
+        JOY_API bool joy_scene_tilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id, int* out_w, int* out_h);
+        JOY_API bool joy_scene_tilemap_get_tile_uv(const jtilemap_p tm, int gid,
                 uint32_t time_ms, float out_rect[4]);
-        JOY_API int jtilemap_get_anim_tileid(const jtilemap_p tm, int gid,
+        JOY_API int joy_scene_tilemap_get_anim_tileid(const jtilemap_p tm, int gid,
                 uint32_t time_ms);
-        JOY_API jtilemap_tile_layer_p jtilemap_find_tile_layer(const jtilemap_p tm,
+        JOY_API jtilemap_tile_layer_p joy_scene_tilemap_find_tile_layer(const jtilemap_p tm,
                 const char* name);
-        JOY_API jtilemap_object_layer_p jtilemap_find_object_layer(const jtilemap_p tm, const char* name);
-        JOY_API void jtilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
-        JOY_API void jtilemap_object_layer_foreach_all(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
-        JOY_API int jtilemap_get_tile(const jtilemap_tile_layer_p layer,
+        JOY_API jtilemap_object_layer_p joy_scene_tilemap_find_object_layer(const jtilemap_p tm, const char* name);
+        JOY_API void joy_scene_tilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
+        JOY_API void joy_scene_tilemap_object_layer_foreach_all(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void*arg), void* arg);
+        JOY_API int joy_scene_tilemap_get_tile(const jtilemap_tile_layer_p layer,
                 int tx, int ty);
-        JOY_API jtilemap_render_p jtilemap_render_create(jr2d_p renderer,
+        JOY_API jtilemap_render_p joy_scene_tilemap_render_create(jr2d_p renderer,
                 const char* asset_base_path,
                 jtilemap_path_remap_t remap);
-        JOY_API void jtilemap_render_all(jtilemap_render_p r,
+        JOY_API void joy_scene_tilemap_render_all(jtilemap_render_p r,
                 jtilemap_p tm,
                 float camera_x, float camera_y,
                 uint32_t time_ms);
-        JOY_API void jtilemap_render_tiles(jtilemap_render_p r,
+        JOY_API void joy_scene_tilemap_render_tiles(jtilemap_render_p r,
                 jtilemap_p tm,
                 float camera_x, float camera_y,
                 uint32_t time_ms);
-        JOY_API void jtilemap_render_set_tile_px(jtilemap_render_p r, float px);
-        JOY_API bool jtilemap_render_layer(jtilemap_render_p r,
+        JOY_API void joy_scene_tilemap_render_set_tile_px(jtilemap_render_p r, float px);
+        JOY_API bool joy_scene_tilemap_render_layer(jtilemap_render_p r,
                 jtilemap_p tm,
                 const char* layer_name,
                 float camera_x, float camera_y,
                 uint32_t time_ms);
-        JOY_API void jtilemap_render_destroy(jtilemap_render_p r);
+        JOY_API void joy_scene_tilemap_render_destroy(jtilemap_render_p r);
 
         // ==============================
         // KCP Server & Client
@@ -1463,71 +1463,71 @@ extern "C" {
         JOY_API void joy_net_netmessage_free_data(net_message_p msg);
 
 
-        JOY_API scene_node_p scene_node_create(void);
-        JOY_API void scene_node_destroy(scene_node_p node);
-        JOY_API void scene_node_add_child(scene_node_p parent, scene_node_p child);
-        JOY_API void scene_node_remove_child(scene_node_p parent, scene_node_p child);
-        JOY_API scene_node_p scene_node_get_parent(scene_node_p node);
-        JOY_API scene_node_p scene_node_get_first_child(scene_node_p node);
-        JOY_API scene_node_p scene_node_get_next_sibling(scene_node_p node);
-        JOY_API int scene_node_get_child_count(scene_node_p node);
-        JOY_API void scene_node_set_position(scene_node_p node, float x, float y);
-        JOY_API void scene_node_get_position(scene_node_p node, float* out_x, float* out_y);
-        JOY_API void scene_node_set_world_position(scene_node_p node, float x, float y);
-        JOY_API void scene_node_get_world_position(scene_node_p node, float* out_x, float* out_y);
-        JOY_API void scene_node_set_rotation(scene_node_p node, float radians);
-        JOY_API float scene_node_get_rotation(scene_node_p node);
-        JOY_API void scene_node_set_scale(scene_node_p node, float scale_x, float scale_y);
-        JOY_API void scene_node_get_scale(scene_node_p node, float* out_scale_x, float* out_scale_y);
-        JOY_API void scene_node_set_zorder(scene_node_p node, int zorder);
-        JOY_API int scene_node_get_zorder(scene_node_p node);
-        JOY_API void scene_node_set_userdata(scene_node_p node, void* userdata);
-        JOY_API void* scene_node_get_userdata(scene_node_p node);
-        JOY_API void scene_node_set_name(scene_node_p node, const char* name);
-        JOY_API const char* scene_node_get_name(scene_node_p node);
-        JOY_API void scene_node_set_tag(scene_node_p node, const char* tag);
-        JOY_API const char* scene_node_get_tag(scene_node_p node);
-        JOY_API scene_node_p scene_find_node_by_name(scene_node_p root, const char* name);
-        JOY_API scene_node_p scene_find_node_by_name_deep(scene_p scene, const char* name);
-        JOY_API int  scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max);
-        JOY_API int  scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max);
-        JOY_API void scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb);
-        JOY_API void scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb);
-        JOY_API void scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb);
-        JOY_API void scene_node_set_event_callback(scene_node_p node, scene_node_event_fn cb);
-        JOY_API void scene_node_handle_event(scene_node_p node, const void* e);
-        JOY_API void scene_node_update(scene_node_p node, float delta_time);
-        JOY_API void scene_node_render(scene_node_p node, const void* arg);
-        JOY_API scene_p scene_create(const char* name);
-        JOY_API void scene_destroy(scene_p scene);
-        JOY_API void scene_add_root_node(scene_p scene, scene_node_p root);
-        JOY_API void scene_remove_root_node(scene_p scene, scene_node_p root);
-        JOY_API int scene_get_root_count(scene_p scene);
-        JOY_API scene_node_p scene_get_root_at(scene_p scene, int index);
-        JOY_API void scene_update(scene_p scene, float delta_time);
-        JOY_API void scene_render(scene_p scene, const void* arg);
-        JOY_API void scene_handle_event(scene_p scene, const void* e);
-        JOY_API void scene_set_load_callback(scene_p scene, scene_load_fn cb);
-        JOY_API void scene_set_update_callback(scene_p scene, scene_update_fn cb);
-        JOY_API void scene_set_render_callback(scene_p scene, scene_render_fn cb);
-        JOY_API void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb);
-        JOY_API void scene_set_event_callback(scene_p scene, scene_event_fn cb);
-        JOY_API void scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float fixed_step);
-        JOY_API void scene_set_popup_node(scene_p scene, scene_node_p node);
-        JOY_API scene_node_p scene_get_popup_node(scene_p scene);
-        JOY_API void scene_set_userdata(scene_p scene, void* ud);
-        JOY_API void* scene_get_userdata(scene_p scene);
-        JOY_API const char* scene_get_name(scene_p scene);
-        JOY_API scene_manager_p scene_manager_create(void);
-        JOY_API void scene_manager_destroy(scene_manager_p mgr);
-        JOY_API void scene_manager_push(scene_manager_p mgr, scene_p scene);
-        JOY_API void scene_manager_replace(scene_manager_p mgr, scene_p scene);
-        JOY_API void scene_manager_pop(scene_manager_p mgr);
-        JOY_API void scene_manager_update(scene_manager_p mgr, float delta_time);
-        JOY_API void scene_manager_render(scene_manager_p mgr, const void* arg);
-        JOY_API void scene_manager_handle_event(scene_manager_p mgr, const void* e);
-        JOY_API scene_p scene_manager_get_current(scene_manager_p mgr);
-        JOY_API int scene_manager_get_count(scene_manager_p mgr);
+        JOY_API scene_node_p joy_scene_node_create(void);
+        JOY_API void joy_scene_node_destroy(scene_node_p node);
+        JOY_API void joy_scene_node_add_child(scene_node_p parent, scene_node_p child);
+        JOY_API void joy_scene_node_remove_child(scene_node_p parent, scene_node_p child);
+        JOY_API scene_node_p joy_scene_node_get_parent(scene_node_p node);
+        JOY_API scene_node_p joy_scene_node_get_first_child(scene_node_p node);
+        JOY_API scene_node_p joy_scene_node_get_next_sibling(scene_node_p node);
+        JOY_API int joy_scene_node_get_child_count(scene_node_p node);
+        JOY_API void joy_scene_node_set_position(scene_node_p node, float x, float y);
+        JOY_API void joy_scene_node_get_position(scene_node_p node, float* out_x, float* out_y);
+        JOY_API void joy_scene_node_set_world_position(scene_node_p node, float x, float y);
+        JOY_API void joy_scene_node_get_world_position(scene_node_p node, float* out_x, float* out_y);
+        JOY_API void joy_scene_node_set_rotation(scene_node_p node, float radians);
+        JOY_API float joy_scene_node_get_rotation(scene_node_p node);
+        JOY_API void joy_scene_node_set_scale(scene_node_p node, float scale_x, float scale_y);
+        JOY_API void joy_scene_node_get_scale(scene_node_p node, float* out_scale_x, float* out_scale_y);
+        JOY_API void joy_scene_node_set_zorder(scene_node_p node, int zorder);
+        JOY_API int joy_scene_node_get_zorder(scene_node_p node);
+        JOY_API void joy_scene_node_set_userdata(scene_node_p node, void* userdata);
+        JOY_API void* joy_scene_node_get_userdata(scene_node_p node);
+        JOY_API void joy_scene_node_set_name(scene_node_p node, const char* name);
+        JOY_API const char* joy_scene_node_get_name(scene_node_p node);
+        JOY_API void joy_scene_node_set_tag(scene_node_p node, const char* tag);
+        JOY_API const char* joy_scene_node_get_tag(scene_node_p node);
+        JOY_API scene_node_p joy_scene_find_node_by_name(scene_node_p root, const char* name);
+        JOY_API scene_node_p joy_scene_find_node_by_name_deep(scene_p scene, const char* name);
+        JOY_API int  joy_scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max);
+        JOY_API int  joy_scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max);
+        JOY_API void joy_scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb);
+        JOY_API void joy_scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb);
+        JOY_API void joy_scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb);
+        JOY_API void joy_scene_node_set_event_callback(scene_node_p node, scene_node_event_fn cb);
+        JOY_API void joy_scene_node_handle_event(scene_node_p node, const void* e);
+        JOY_API void joy_scene_node_update(scene_node_p node, float delta_time);
+        JOY_API void joy_scene_node_render(scene_node_p node, const void* arg);
+        JOY_API scene_p joy_scene_create(const char* name);
+        JOY_API void joy_scene_destroy(scene_p scene);
+        JOY_API void joy_scene_add_root_node(scene_p scene, scene_node_p root);
+        JOY_API void joy_scene_remove_root_node(scene_p scene, scene_node_p root);
+        JOY_API int joy_scene_get_root_count(scene_p scene);
+        JOY_API scene_node_p joy_scene_get_root_at(scene_p scene, int index);
+        JOY_API void joy_scene_update(scene_p scene, float delta_time);
+        JOY_API void joy_scene_render(scene_p scene, const void* arg);
+        JOY_API void joy_scene_handle_event(scene_p scene, const void* e);
+        JOY_API void joy_scene_set_load_callback(scene_p scene, scene_load_fn cb);
+        JOY_API void joy_scene_set_update_callback(scene_p scene, scene_update_fn cb);
+        JOY_API void joy_scene_set_render_callback(scene_p scene, scene_render_fn cb);
+        JOY_API void joy_scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb);
+        JOY_API void joy_scene_set_event_callback(scene_p scene, scene_event_fn cb);
+        JOY_API void joy_scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float fixed_step);
+        JOY_API void joy_scene_set_popup_node(scene_p scene, scene_node_p node);
+        JOY_API scene_node_p joy_scene_get_popup_node(scene_p scene);
+        JOY_API void joy_scene_set_userdata(scene_p scene, void* ud);
+        JOY_API void* joy_scene_get_userdata(scene_p scene);
+        JOY_API const char* joy_scene_get_name(scene_p scene);
+        JOY_API scene_manager_p joy_scene_manager_create(void);
+        JOY_API void joy_scene_manager_destroy(scene_manager_p mgr);
+        JOY_API void joy_scene_manager_push(scene_manager_p mgr, scene_p scene);
+        JOY_API void joy_scene_manager_replace(scene_manager_p mgr, scene_p scene);
+        JOY_API void joy_scene_manager_pop(scene_manager_p mgr);
+        JOY_API void joy_scene_manager_update(scene_manager_p mgr, float delta_time);
+        JOY_API void joy_scene_manager_render(scene_manager_p mgr, const void* arg);
+        JOY_API void joy_scene_manager_handle_event(scene_manager_p mgr, const void* e);
+        JOY_API scene_p joy_scene_manager_get_current(scene_manager_p mgr);
+        JOY_API int joy_scene_manager_get_count(scene_manager_p mgr);
 
 
         JOY_API jparticle_cfg_t joy_r2d_particle_cfg_default(void);
@@ -1556,19 +1556,19 @@ extern "C" {
 
 
 
-        JOY_API jecs_world_p jecs_create();
-        JOY_API void jecs_destroy(jecs_world_p world);
-        JOY_API void jecs_process(jecs_world_p world, float dt);
-        JOY_API jecs_id_t jecs_spawn(jecs_world_p world);
-        JOY_API void jecs_kill(jecs_world_p world, jecs_id_t id);
-        JOY_API void jecs_define(jecs_world_p world, const char* name, size_t size);
-        JOY_API void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size);
-        JOY_API size_t jecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data);
-        JOY_API void jecs_remove(jecs_world_p world, jecs_id_t id, const char* name);
-        JOY_API jecs_id_array_t jecs_query(jecs_world_p world, int arg_cnt, ...);
-        JOY_API jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char** args);
-        JOY_API void jecs_register(jecs_world_p world, jecs_system_t system);
-        JOY_API int jecs_test();
+        JOY_API jecs_world_p joy_scene_ecs_create();
+        JOY_API void joy_scene_ecs_destroy(jecs_world_p world);
+        JOY_API void joy_scene_ecs_process(jecs_world_p world, float dt);
+        JOY_API jecs_id_t joy_scene_ecs_spawn(jecs_world_p world);
+        JOY_API void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id);
+        JOY_API void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size);
+        JOY_API void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size);
+        JOY_API size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data);
+        JOY_API void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name);
+        JOY_API jecs_id_array_t joy_scene_ecs_query(jecs_world_p world, int arg_cnt, ...);
+        JOY_API jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char** args);
+        JOY_API void joy_scene_ecs_register(jecs_world_p world, jecs_system_t system);
+        JOY_API int joy_scene_ecs_test();
 
 
         /* ===== 运行与生命周期管理 ===== */
