@@ -1,6 +1,13 @@
 name: Web examples (cpp / lua / js)
 
-# C# 在 wasm 无 MonoVM 运行时，Web 只构建 cpp/lua/js 三个后端；
+# 平台矩阵：Web 明确只发 cpp / lua / js（方案 A），C# 留在桌面 / Android。
+# C# 后端是 C/C++ 宿主嵌入 MonoVM（mono_jit_init + mono_add_internal_call +
+# 动态库 + 真实文件系统里的 BCL）；.NET 8 虽正式支持 browser-wasm，但那是
+# SDK 托管的 interpreter 应用（dotnet.js 启动 mono_wasm_load_runtime），
+# 宿主模型不兼容，Joy.Bindings 的 InternalCall 绑定也没有注册入口。
+#
+# 打包按 Android 的「每后端自包含」模型，不是桌面的「共享资源目录」：
+# 每个 wasm 模块在链接期用 --preload-file 把资源打进自己的 .data，
 # 一个 Pages 站点按子目录承载，不按「平台 × 后端」拆 workflow。
 # emsdk 链路首次手动验证前不挂到 push / PR，避免把未验证的 job 变成红灯。
 on:
@@ -60,10 +67,16 @@ jobs:
           set -euo pipefail
           mkdir -p _site/cpp _site/lua _site/js
           for b in cpp lua js; do
-            cp -L build/web/Release/example_$b.* "_site/$b/" || true
-            if [ -f "_site/$b/example_$b.html" ]; then
-              mv "_site/$b/example_$b.html" "_site/$b/index.html"
-            fi
+            # emcc 生成的 JS 把 .data 名字硬编码成 example_$b.data，所以只有
+            # html 能改名，js / wasm / data 必须原名同目录。.data 缺失通常
+            # 意味着 CMake 的 --preload-file 没生效，直接在这里挡住。
+            for ext in html js wasm data; do
+              src="build/web/Release/example_$b.$ext"
+              test -s "$src" \
+                || { echo "::error::$b 缺 example_$b.$ext（--preload-file 生效了吗？）"; exit 1; }
+              cp -L "$src" "_site/$b/"
+            done
+            mv "_site/$b/example_$b.html" "_site/$b/index.html"
           done
           cat > _site/index.html <<'HTML'
           <!doctype html>
@@ -75,12 +88,14 @@ jobs:
             <li><a href="lua/">Lua</a></li>
             <li><a href="js/">JavaScript</a></li>
           </ul>
-          <p>C# 后端需要 wasm 版 MonoVM，当前不在 Web 构建范围内。</p>
+          <p>Web 只提供 C++ / Lua / JavaScript 三个后端；C# 后端是桌面 / Android
+             上的嵌入 MonoVM 宿主，不在 Web 构建范围内。</p>
           HTML
           find _site -type l -delete
-          test -f _site/cpp/index.html
-          test -f _site/lua/index.html
-          test -f _site/js/index.html
+          for b in cpp lua js; do
+            test -f "_site/$b/index.html"
+            test -s "_site/$b/example_$b.data"
+          done
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

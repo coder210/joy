@@ -19,6 +19,27 @@
 | `lua/` | Lua | `*.lua` | `modules/lua`（Lua 5.4） |
 | `js/` | JavaScript | `*.js` | `modules/js`（duktape） |
 
+### 平台矩阵
+
+| 平台 | cpp | lua | js | csharp | 产物组织 |
+|---|---|---|---|---|---|
+| Windows / Linux / macOS | ✓ | ✓ | ✓ | ✓ | 一份共享资源目录 + 四个 exe，一个 artifact |
+| Android | ✓ | ✓ | ✓ | ✓ | 一个 flavor 一个 APK，各自带 assets 副本 |
+| Web（wasm） | ✓ | ✓ | ✓ | — | 一个后端一个 `html/js/wasm/data` 子目录，一个 Pages 站点 |
+
+Web 不带 C#（方案 A）：C# 后端是 C/C++ 宿主嵌入 MonoVM（`mono_jit_init` +
+`mono_add_internal_call` + 动态库 + 真实文件系统里的 BCL），`Joy.Bindings`
+的绑定全是 `[MethodImpl(InternalCall)]`，靠 C 侧注册。.NET 8 虽正式支持
+`browser-wasm`，但那是 SDK 托管的 interpreter 应用（`dotnet.js` 启动
+`mono_wasm_load_runtime`），宿主模型不兼容。因此 `csharp_host/CMakeLists.txt`
+在 `EMSCRIPTEN` 下直接跳过，`examples/CMakeLists.txt` 也不启用 cs 模块。
+
+Web 打包按 Android 的「每后端自包含」组织，不像桌面共用一份资源目录：
+Emscripten 的 `--preload-file` 在**链接期**就要读到源文件，而桌面 / Android
+的资源是 POST_BUILD 才拷进资源根，所以 CMake 直接对源码资源生成
+`<绝对路径>@<虚拟 FS 相对路径>` 映射（`@` 右侧与 APK assets 根一致，不带
+`assets/` 前缀），每个 wasm 模块自带一份 `.data`，脚本按后端裁剪。
+
 四份实现共用同一套 `assets/`，同一个固定随机种子（12345），因此同样的输入序列
 应产生同样的结果，可以直接横向对比。
 

@@ -195,3 +195,45 @@ foreach(_lang cpp lua js csharp_host)
         add_subdirectory(${_lang})
     endif()
 endforeach()
+
+# ---- Emscripten：每个 wasm 模块在链接期自带一份资源 .data ----
+# 三种打包模型的差别：
+#   桌面(Windows/Linux/macOS)：一份共享资源目录 + 四个 exe，POST_BUILD 拷到 exe 旁；
+#   Android：一个 flavor 一个 APK，每个 APK 的 assets 各自一份（按后端裁剪）；
+#   Web：更像 Android —— 每个 html/js/wasm 自带一份 .data，站点按子目录铺开，
+#        不能照桌面那样共用一个资源目录（.data 是 emcc 链接期按本模块的
+#        --preload-file 生成的，JS 里硬编码了同名文件）。
+# wasm 比 Android 多一条约束：--preload-file 在**链接期**就要读到源文件，而
+# 各示例的资源是 POST_BUILD 才拷进 JOY_EXAMPLE_ASSET_ROOT，顺序上够不着。
+# 所以这里直接对源码资源生成 <绝对路径>@<虚拟 FS 相对路径> 映射，不依赖 POST_BUILD。
+# @ 右侧不带 assets/ 前缀，与 APK assets 根、代码里的相对路径完全一致。
+if(EMSCRIPTEN)
+    file(GLOB_RECURSE _web_asset_files RELATIVE "${JOY_EXAMPLE_ASSETS}"
+         "${JOY_EXAMPLE_ASSETS}/*")
+    set(_web_lua_script "${CMAKE_CURRENT_LIST_DIR}/lua/src/main.lua")
+    set(_web_js_script  "${CMAKE_CURRENT_LIST_DIR}/js/src/main.js")
+
+    function(joy_examples_web_preload _target)
+        set(_flags "")
+        foreach(_rel IN LISTS _web_asset_files)
+            file(TO_CMAKE_PATH "${_rel}" _rel)
+            list(APPEND _flags
+                 "SHELL:--preload-file ${JOY_EXAMPLE_ASSETS}/${_rel}@${_rel}")
+        endforeach()
+        # 脚本按后端裁剪：cpp 在 wasm 是静态形态不需要脚本，lua/js 各带一份。
+        if(_target STREQUAL "example_lua")
+            list(APPEND _flags
+                 "SHELL:--preload-file ${_web_lua_script}@scripts/main.lua")
+        elseif(_target STREQUAL "example_js")
+            list(APPEND _flags
+                 "SHELL:--preload-file ${_web_js_script}@scripts/main.js")
+        endif()
+        target_link_options(${_target} PRIVATE ${_flags})
+    endfunction()
+
+    foreach(_t example_cpp example_lua example_js)
+        if(TARGET ${_t})
+            joy_examples_web_preload(${_t})
+        endif()
+    endforeach()
+endif()

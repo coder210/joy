@@ -129,7 +129,7 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 | APK 打包 | 未做。没有 Gradle / `AndroidManifest.xml` / `SDLActivity` 工程 |
 | Android 真机冒烟 | 未做。桌面 `--smoke` 走 dummy 驱动，不能替代 |
 | iOS / wasm | `JOY_GAME_STATIC` 静态形态只在桌面验证过，两平台工具链都没跑 |
-| C# 在 iOS / wasm | 更根本的障碍：iOS 禁 JIT（这套是 `mono_jit_init`）、wasm 需要专门的运行时 |
+| C# 在 iOS / wasm | iOS 禁 JIT。wasm 不是「.NET 8 不支持」：.NET 8 正式支持 `browser-wasm`，但那是 SDK 托管的 interpreter 应用；joy 的 C# 后端是嵌入 MonoVM 的宿主 + `InternalCall` 绑定，宿主模型不兼容。Web 已定方案 A：只发 cpp / lua / js，见 `examples/README.md` 平台矩阵 |
 | `runtimes/windows-x64/coreclr.dll` | 是本地编译版，可考虑换成官方包同名 DLL |
 
 ## 7. 接下来的建议（按优先级）
