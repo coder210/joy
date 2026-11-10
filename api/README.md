@@ -34,6 +34,63 @@
 | `runtime/joy_obj.*` | 人工 | 句柄表、引用计数、类型 tag 校验、自动析构 |
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
 | `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
+| `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的 1156 条存量 API 名，命名门禁的豁免基线；全量迁移后删除 |
+| `include/joy/compat.h` | 人工 | 旧名 → 新名的宏映射，迁移期保护外部调用方；`joy.h` 引入，但不属于 `DECL_SOURCES` |
+
+## 公开 API 命名规范（P0 起，分阶段迁移）
+
+**目标格式**：`joy_<域>_<动作>[_宾语]`，全小写下划线，例如
+`joy_core_create_window`、`joy_net_create_server`。`joy` 是项目命名空间，
+`<域>` 必须取自 `api/tools/naming.js` 的封闭白名单 `DOMAINS`（唯一真相源，
+新增域要改它并评审）。
+
+C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Windows.h` 下
+`CreateWindow` 是 `CreateWindowW` 宏），又让 `domainOf()` 能按 `_` 分词。
+脚本层与 C++ vtable 仍是 PascalCase，由 `naming.js` 的 `methodName()` 生成 ——
+**两层命名是有意分层，不是不一致**。
+
+### 域表（把现有 85 个自发生长的 domain 归并成 10 个）
+
+| 域 | 吸收的历史 domain | 约条数 |
+|---|---|---|
+| `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 | ~60 |
+| `math` | jmath(220) / collision* / gjk* / box2d / shape | ~300 |
+| `r2d` | r2d / font / jtext / image / jspine / jparticle | ~100 |
+| `r3d` | r3d / jlight / jgltf | ~150 |
+| `ui` | jui / jui_im / jlayout + 全部控件域 | ~230 |
+| `scene` | scene / game / jecs / jtilemap / janimator / animation / jtimer / jpm | ~150 |
+| `net` | net* / tcp* / kcp* / ws* / iocp / pack / unpack / netmessage | ~90 |
+| `audio` | audio | 20 |
+| `input` | joystick / mouse | ~20 |
+| `script` | modules / module / moudles / jmsgpack | ~30 |
+
+划分原则：按「谁会一起改 / 谁依赖谁」分，不按文件、不按算法；一个 API 只属
+一个域，跨域时归被调用方；控件、协议、碰撞维度一律合并。域清单封闭，防止
+再次长到 85 个（`GENERIC_FIRST` 兜底漏出的 `min` / `raw` / `should` 等垃圾域
+一并收编）。
+
+### 门禁与生成链路
+
+- `--check` 只卡**新增**：不在 `idl/legacy_names.txt` 里的 `JOY_API` 必须匹配
+  `joy_<白名单域>_`，否则报错。存量 1156 条豁免，删掉该文件即变成全量强制。
+- `domainOf()` 对三段式名字取第二段；存量名字仍走 `GENERIC_FIRST` 旧分词，
+  **P0 期间 IDL 的 domain 列一字不变**。全量迁移后 `GENERIC_FIRST` 退休。
+- `SKIP_PREFIXES` 管旧前缀、`SKIP_DOMAINS` 管新域，两者并存到迁移结束。
+- 迁移改名时在 `naming.js` 的 `ALIASES` 登记 `新C名 → 旧PascalCase名`，使
+  三端方法名与 `api->R2dCreate` 保持冻结；不能用「剥掉 `joy_<域>`」自动推导
+  （历史名如 `JanimatorCreate` 会坏）。
+- `compat.h` 放旧名 `#define`，不在 `DECL_SOURCES` 里且 `collectDecls()` 跳过
+  `#` 行，不会污染 IDL / 生成物。定义 `JOY_NO_LEGACY_NAMES` 可查残留调用点。
+
+### 迁移顺序（P1，尚未开始）
+
+1. 每批一个域：`--scan → --enable domain:<域> → --check` → 四语言 `ctest`
+   → Desktop / Android / Web CI 全绿 → 下一个 commit。
+2. 先 `core` / `audio` / `input` 小域试通，再合并 `ui`（20 域 → 1）、`net`，
+   最后 `math` / `r3d` 大域；`jmath_wrappers.h` 的 220 条走 `jmath_wrap.js`。
+3. **改名必须原位替换**，不要增删 `api.h` / `defs.h` 的行，否则 IDL 的
+   `source` 行号整体漂移（见 `HANDOFF.md`）。
+4. 全迁完删除 `legacy_names.txt` 与 `compat.h`。
 
 ### vtable 的自检边界
 

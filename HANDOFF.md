@@ -98,6 +98,14 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 4. `node api/tools/gen_bindings.js --check`
    （`--enable` 会直接 emit；`--check` 只有在 emit 之后才通过）
 
+### 公开 API 命名（P0 起分阶段迁移）
+`j` 前缀是最初设计的项目命名空间，后来没贯彻，IDL 里长出了 85 个 domain。
+新 API 一律 `joy_<域>_<动作>`，10 个域的封闭白名单在
+`api/tools/naming.js` 的 `DOMAINS`（归并表与门禁说明见 `api/README.md`）。
+`--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`；迁移期的
+旧名映射放 `include/joy/compat.h`。**新增声明仍放 `api.h` 末尾，改名必须原位
+替换**，避免 IDL 的 `source` 行号整体漂移。
+
 ### 其他
 - `examples/csharp/obj` 已从版本库移除，`.gitignore` 有 `obj/`，不要加回来。
 - `ctest` 需要根级 `enable_testing()`，只在 `examples/` 里写不生成根 `CTestTestfile.cmake`。

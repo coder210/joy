@@ -38,13 +38,19 @@ const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
 const { buildThunks, canThunk, ownsIssue } = require('./emit_thunks');
 const { buildVtable, canVtable } = require('./emit_vtable');
 const { buildCsGlue, canEmitCs } = require('./emit_cs');
-const { isOpaque } = require('./naming');
+const { isOpaque, namespacedDomain, isNamespaced } = require('./naming');
 /* jmath 包装生成器作为模块引入：--check 直接汇总它的错误，不再起子进程。 */
 const { check: checkJmathWrappers } = require('./jmath_wrap');
 
-/* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。 */
+/* 存量豁免名单：P0 冻结的 1156 条旧名字。命名门禁只检查不在这张表里的
+ * 新增 API；全量迁移完成后删除该文件，届时所有名字都必须自带域。 */
+const LEGACY_NAMES = path.join(JOY_API, 'idl', 'legacy_names.txt');
+
+/* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
+ * SKIP_PREFIXES 管存量名字，SKIP_DOMAINS 管三段式新名字。 */
 const SKIP_PREFIXES = ['utils_', 'jspine_', 'modules_', 'module_instance_'];
 const SKIP_NAMES = new Set(['jecs_test']);
+const SKIP_DOMAINS = new Set(['utils', 'jspine', 'modules', 'module', 'script']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];
 
 const SCALARS = new Set([
@@ -141,6 +147,10 @@ const GENERIC_FIRST = new Set([
 ]);
 
 function domainOf(name) {
+  /* P0：三段式新名字取白名单域；存量名字仍走旧分词，结果一字不变。
+   * 全量迁移完成后 GENERIC_FIRST 可退休（那时每个名字都自带域）。 */
+  const ns = namespacedDomain(name);
+  if (ns) return ns;
   const parts = name.split('_');
   if (parts.length > 1 && GENERIC_FIRST.has(parts[0])) return parts[1];
   return parts[0];
@@ -172,7 +182,9 @@ function inferOwns(name, ret, declByName) {
 
 /* 分级按风险排序：X(有意排除) L3(手写) L2(需静态断言) L1(句柄) L0(直接)。 */
 function classify(name, ret, params, reason, structs) {
-  if (SKIP_NAMES.has(name) || SKIP_PREFIXES.some(p => name.startsWith(p))) {
+  const ns = namespacedDomain(name);
+  if (SKIP_NAMES.has(name) || SKIP_PREFIXES.some(p => name.startsWith(p))
+      || (ns && SKIP_DOMAINS.has(ns))) {
     return { level: 'X', reason: '有意排除（条件编译 / 插件系统 / 测试符号）' };
   }
   if (params === null) return { level: 'L3', reason };
@@ -462,6 +474,21 @@ function check(entries) {
     const e = entries.find(x => x.name === f.name);
     if (!e) { errors.push('joy.h 新增 API 未进 IDL，请跑 --scan: ' + f.name); continue; }
     if (auto(e) !== auto(f)) errors.push('joy.h 签名已变更，请跑 --scan: ' + f.name);
+  }
+  /* P0 命名门禁：只卡新增，不卡存量。存量 1156 条冻结在 legacy_names.txt；
+   * 迁移产生的新名符合 joy_<域>_<动作> 即放行，旧名由 compat.h 兜住。
+   * 全量迁移完成后删掉豁免文件，门禁自动变成全量强制。 */
+  const legacy = new Set(
+    fs.existsSync(LEGACY_NAMES)
+      ? fs.readFileSync(LEGACY_NAMES, 'utf8').split(/\r?\n/).filter(Boolean)
+      : []
+  );
+  for (const f of meta.fresh) {
+    if (legacy.has(f.name)) continue;
+    if (!isNamespaced(f.name)) {
+      errors.push('新增 API 命名不合规（应形如 joy_<域>_<动作>，域见 naming.js DOMAINS）: '
+        + f.name);
+    }
   }
   /* Windows checkout（core.autocrlf）会把入库的 LF 转成 CRLF，比较前统一换行。 */
   const normEol = s => s.replace(/\r\n/g, '\n');
