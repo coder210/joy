@@ -68,6 +68,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # 产物名/后缀出问题时，日志里直接能看到 emcc 实际生成了什么
+          echo "--- Emscripten 产物 ---"
+          find build/web -type f \( -name '*.html' -o -name '*.js' \
+               -o -name '*.wasm' -o -name '*.data' \) -print | sort
           mkdir -p _site/cpp _site/lua _site/js
           for b in cpp lua js; do
             # emcc 生成的 JS 把 .data 名字硬编码成 example_$b.data，所以只有
@@ -76,7 +80,7 @@ jobs:
             for ext in html js wasm data; do
               src="build/web/Release/example_$b.$ext"
               test -s "$src" \
-                || { echo "::error::$b 缺 example_$b.$ext（--preload-file 生效了吗？）"; exit 1; }
+                || { echo "::error::$b 缺 example_$b.$ext（对照上面的产物清单：.html 看 CMAKE_EXECUTABLE_SUFFIX，.data 看 --preload-file）"; exit 1; }
               cp -L "$src" "_site/$b/"
             done
             mv "_site/$b/example_$b.html" "_site/$b/index.html"

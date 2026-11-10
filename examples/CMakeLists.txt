@@ -38,6 +38,14 @@ endif()
 
 set(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "joy 仓根目录")
 
+# Web：照 joy_topdown_template 让 emcc 直接产出 .html。Emscripten 工具链默认
+# 的 CMAKE_EXECUTABLE_SUFFIX 是 .js，只会有 example_*.js/.wasm/.data，站点
+# 没有可打开的入口页（Web CI 第二轮就卡在这里）。必须在 add_executable 之前
+# 设置，子目录会继承这个变量。
+if(EMSCRIPTEN)
+    set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE INTERNAL "")
+endif()
+
 if(NOT TARGET joy::all)
     # Emscripten / iOS 不支持动态链接。msgpack 默认建 SHARED 库，wasm 上会报
     # "ADD_LIBRARY called with SHARED option but the target platform does not
