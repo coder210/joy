@@ -5118,9 +5118,9 @@ static void icall_JuiCtxDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_ctx_destroy", args, 1, &st);
+        (void)joy_api_call("joy_ui_ctx_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_ctx_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_ctx_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5131,9 +5131,9 @@ static void icall_JuiBegin(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_begin", args, 1, &st);
+        (void)joy_api_call("joy_ui_begin", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_begin", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_begin", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5144,9 +5144,9 @@ static void icall_JuiEnd(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_end", args, 1, &st);
+        (void)joy_api_call("joy_ui_end", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_end", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_end", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5159,9 +5159,9 @@ static void icall_JuiInputMotion(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        (void)joy_api_call("jui_input_motion", args, 3, &st);
+        (void)joy_api_call("joy_ui_input_motion", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_input_motion", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_input_motion", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5173,9 +5173,9 @@ static void icall_JuiInputDown(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("jui_input_down", args, 2, &st);
+        (void)joy_api_call("joy_ui_input_down", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_input_down", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_input_down", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5187,9 +5187,9 @@ static void icall_JuiInputUp(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("jui_input_up", args, 2, &st);
+        (void)joy_api_call("joy_ui_input_up", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_input_up", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_input_up", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5201,9 +5201,9 @@ static void icall_JuiInputWheel(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("jui_input_wheel", args, 2, &st);
+        (void)joy_api_call("joy_ui_input_wheel", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_input_wheel", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_input_wheel", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5216,9 +5216,9 @@ static void icall_JuiInputKey(uint64_t p0, int32_t p1, int32_t p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
         args[2] = joy_v_bool((int32_t)p2);
-        (void)joy_api_call("jui_input_key", args, 3, &st);
+        (void)joy_api_call("joy_ui_input_key", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_input_key", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_input_key", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5230,9 +5230,9 @@ static int32_t icall_JuiIsDown(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_is_down", args, 1, &st);
+        r = joy_api_call("joy_ui_is_down", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_is_down", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_is_down", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5244,9 +5244,9 @@ static int32_t icall_JuiIsPressed(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_is_pressed", args, 1, &st);
+        r = joy_api_call("joy_ui_is_pressed", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_is_pressed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_is_pressed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5258,9 +5258,9 @@ static int32_t icall_JuiIsReleased(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_is_released", args, 1, &st);
+        r = joy_api_call("joy_ui_is_released", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_is_released", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_is_released", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5272,9 +5272,9 @@ static float icall_JuiTakeWheel(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_take_wheel", args, 1, &st);
+        r = joy_api_call("joy_ui_take_wheel", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_take_wheel", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_take_wheel", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -5286,9 +5286,9 @@ static int32_t icall_JuiIsShift(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_is_shift", args, 1, &st);
+        r = joy_api_call("joy_ui_is_shift", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_is_shift", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_is_shift", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5300,9 +5300,9 @@ static int32_t icall_JuiIsCtrl(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jui_is_ctrl", args, 1, &st);
+        r = joy_api_call("joy_ui_is_ctrl", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_is_ctrl", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_is_ctrl", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5317,9 +5317,9 @@ static void icall_JuiPushClip(uint64_t p0, float p1, float p2, float p3, float p
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("jui_push_clip", args, 5, &st);
+        (void)joy_api_call("joy_ui_push_clip", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_push_clip", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_push_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5330,9 +5330,9 @@ static void icall_JuiPopClip(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_pop_clip", args, 1, &st);
+        (void)joy_api_call("joy_ui_pop_clip", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_pop_clip", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_pop_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5343,9 +5343,9 @@ static void icall_JuiResetClip(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_reset_clip", args, 1, &st);
+        (void)joy_api_call("joy_ui_reset_clip", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_reset_clip", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_reset_clip", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5361,9 +5361,9 @@ static int32_t icall_JuiHit(uint64_t p0, float p1, float p2, float p3, float p4)
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("jui_hit", args, 5, &st);
+        r = joy_api_call("joy_ui_hit", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_hit", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_hit", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -5382,9 +5382,9 @@ static void icall_JuiFillRect(uint64_t p0, float p1, float p2, float p3, float p
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
-        (void)joy_api_call("jui_fill_rect", args, 9, &st);
+        (void)joy_api_call("joy_ui_fill_rect", args, 9, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_fill_rect", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_fill_rect", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5403,9 +5403,9 @@ static void icall_JuiStrokeRect(uint64_t p0, float p1, float p2, float p3, float
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
-        (void)joy_api_call("jui_stroke_rect", args, 9, &st);
+        (void)joy_api_call("joy_ui_stroke_rect", args, 9, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_stroke_rect", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_stroke_rect", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5424,9 +5424,9 @@ static void icall_JuiLine(uint64_t p0, float p1, float p2, float p3, float p4, u
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
-        (void)joy_api_call("jui_line", args, 9, &st);
+        (void)joy_api_call("joy_ui_line", args, 9, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_line", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_line", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5447,10 +5447,10 @@ static int32_t icall_JuiText(uint64_t p0, float p1, float p2, MonoString* p3, ui
         args[5] = joy_v_u32((uint32_t)p5);
         args[6] = joy_v_u32((uint32_t)p6);
         args[7] = joy_v_u32((uint32_t)p7);
-        r = joy_api_call("jui_text", args, 8, &st);
+        r = joy_api_call("joy_ui_text", args, 8, &st);
         if (s3) mono_free(s3);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_text", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_text", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5473,10 +5473,10 @@ static int32_t icall_JuiTextCentered(uint64_t p0, float p1, float p2, float p3, 
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_u32((uint32_t)p8);
         args[9] = joy_v_u32((uint32_t)p9);
-        r = joy_api_call("jui_text_centered", args, 10, &st);
+        r = joy_api_call("joy_ui_text_centered", args, 10, &st);
         if (s5) mono_free(s5);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_text_centered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_text_centered", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -5494,10 +5494,10 @@ static void icall_JuiPanelBegin(uint64_t p0, float p1, float p2, float p3, float
         args[4] = joy_v_f64((double)p4);
         s5 = p5 ? mono_string_to_utf8(p5) : NULL;
         args[5] = joy_v_str((const char*)s5);
-        (void)joy_api_call("jui_panel_begin", args, 6, &st);
+        (void)joy_api_call("joy_ui_panel_begin", args, 6, &st);
         if (s5) mono_free(s5);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_panel_begin", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_panel_begin", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5508,9 +5508,9 @@ static void icall_JuiPanelEnd(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_panel_end", args, 1, &st);
+        (void)joy_api_call("joy_ui_panel_end", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_panel_end", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_panel_end", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5525,9 +5525,9 @@ static void icall_JuiPanelFrame(uint64_t p0, float p1, float p2, float p3, float
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("jui_panel_frame", args, 5, &st);
+        (void)joy_api_call("joy_ui_panel_frame", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_panel_frame", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_panel_frame", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5545,9 +5545,9 @@ static float icall_JuiScrollBegin(uint64_t p0, int32_t p1, float p2, float p3, f
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        r = joy_api_call("jui_scroll_begin", args, 7, &st);
+        r = joy_api_call("joy_ui_scroll_begin", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scroll_begin", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_scroll_begin", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -5558,9 +5558,9 @@ static void icall_JuiScrollEnd(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jui_scroll_end", args, 1, &st);
+        (void)joy_api_call("joy_ui_scroll_end", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scroll_end", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_scroll_end", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5577,9 +5577,9 @@ static void icall_JuiScrollbar(uint64_t p0, float p1, float p2, float p3, float 
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
-        (void)joy_api_call("jui_scrollbar", args, 7, &st);
+        (void)joy_api_call("joy_ui_scrollbar", args, 7, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scrollbar", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_scrollbar", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5594,9 +5594,9 @@ static void icall_JuiScrollSetOffset(uint64_t p0, int32_t p1, float p2, float p3
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("jui_scroll_set_offset", args, 5, &st);
+        (void)joy_api_call("joy_ui_scroll_set_offset", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_scroll_set_offset", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_scroll_set_offset", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -5616,10 +5616,10 @@ static int32_t icall_JuiButton(uint64_t p0, int32_t p1, float p2, float p3, floa
         args[5] = joy_v_f64((double)p5);
         s6 = p6 ? mono_string_to_utf8(p6) : NULL;
         args[6] = joy_v_str((const char*)s6);
-        r = joy_api_call("jui_button", args, 7, &st);
+        r = joy_api_call("joy_ui_button", args, 7, &st);
         if (s6) mono_free(s6);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jui_button", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_ui_button", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;

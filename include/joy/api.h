@@ -1119,20 +1119,20 @@ extern "C" {
          * 每行：用 jlayout_grid_label() 在左列画标签、用 jlayout_grid_cell() 取右列矩形，
          * 再用各控件 *_create(r2d, px/LW, py/LH, pw/LW, ph/LH, ...) 创建控件。
          * col_fracs 为各列宽占比（和≈1），pad 为单元格内边距（像素）。 */
-        JOY_API jlayout_grid_t* jlayout_grid_create(float ox, float oy, float width, float row_h,
+        JOY_API jlayout_grid_t* joy_ui_layout_grid_create(float ox, float oy, float width, float row_h,
                 int ncols, const float* col_fracs, float pad);
-        JOY_API void jlayout_grid_destroy(jlayout_grid_t* g);
-        JOY_API void jlayout_grid_next_row(jlayout_grid_t* g);
-        JOY_API void jlayout_grid_set_row(jlayout_grid_t* g, int row);
+        JOY_API void joy_ui_layout_grid_destroy(jlayout_grid_t* g);
+        JOY_API void joy_ui_layout_grid_next_row(jlayout_grid_t* g);
+        JOY_API void joy_ui_layout_grid_set_row(jlayout_grid_t* g, int row);
         /* 取第 col 列的像素矩形（已含内边距）。x/y/w/h 可为 NULL。 */
-        JOY_API void jlayout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h);
+        JOY_API void joy_ui_layout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h);
         /* 在第 col 列画左对齐、垂直居中的标签，并返回该列像素矩形（cx/cy/cw/ch 可为 NULL）。 */
-        JOY_API void jlayout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+        JOY_API void joy_ui_layout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
                 const char* text, int n, jcolor_t c, int col,
                 float* cx, float* cy, float* cw, float* ch);
         /* 在当前行创建 n 个等宽按钮（横向按钮条/菜单），各占一列；
          * 按钮指针写入 out[]（调用方分配 n 个），创建后自动换到下一行。 */
-        JOY_API void jlayout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+        JOY_API void joy_ui_layout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
                 const char** labels, int n, button_p* out);
 
         // 可输入下拉列表框
@@ -1273,7 +1273,7 @@ extern "C" {
         JOY_API void tooltip_set_visible(tooltip_p t, bool v);
         JOY_API void tooltip_draw(tooltip_p t, font_p font);
         JOY_API void tooltip_process_event(tooltip_p t, const void* event);
-        JOY_API void jui_process_event(void** widgets, int count, const void* event);
+        JOY_API void joy_ui_process_widget_event(void** widgets, int count, const void* event);
 
         /* ======================================================================
          * 即时模式 UI 层（jui_im）
@@ -1301,62 +1301,62 @@ extern "C" {
                 jcolor_t panel, panel_title, border;
         } jui_theme_t;
 
-        JOY_API jui_ctx_p jui_ctx_create(jr2d_p r2d, font_p font);
-        JOY_API void      jui_ctx_destroy(jui_ctx_p ctx);
-        JOY_API void      jui_set_theme(jui_ctx_p ctx, const jui_theme_t* theme);
+        JOY_API jui_ctx_p joy_ui_ctx_create(jr2d_p r2d, font_p font);
+        JOY_API void      joy_ui_ctx_destroy(jui_ctx_p ctx);
+        JOY_API void      joy_ui_set_theme(jui_ctx_p ctx, const jui_theme_t* theme);
 
         /* 每帧开始 / 结束。begin 会转存一次性输入（按下/抬起/滚轮），end 清零。 */
-        JOY_API void jui_begin(jui_ctx_p ctx);
-        JOY_API void jui_end(jui_ctx_p ctx);
+        JOY_API void joy_ui_begin(jui_ctx_p ctx);
+        JOY_API void joy_ui_end(jui_ctx_p ctx);
 
         /* 输入：从 SDL 事件喂进来。坐标为**窗口坐标**，内部转成逻辑坐标。 */
-        JOY_API void jui_input_motion(jui_ctx_p ctx, float win_x, float win_y);
-        JOY_API void jui_input_down(jui_ctx_p ctx, int button);
-        JOY_API void jui_input_up(jui_ctx_p ctx, int button);
-        JOY_API void jui_input_wheel(jui_ctx_p ctx, float dy);
-        JOY_API void jui_input_key(jui_ctx_p ctx, bool shift, bool ctrl);
+        JOY_API void joy_ui_input_motion(jui_ctx_p ctx, float win_x, float win_y);
+        JOY_API void joy_ui_input_down(jui_ctx_p ctx, int button);
+        JOY_API void joy_ui_input_up(jui_ctx_p ctx, int button);
+        JOY_API void joy_ui_input_wheel(jui_ctx_p ctx, float dy);
+        JOY_API void joy_ui_input_key(jui_ctx_p ctx, bool shift, bool ctrl);
 
         /* 逻辑鼠标坐标（供调用方自行做命中判断，例如视口拾取） */
-        JOY_API void  jui_get_mouse(jui_ctx_p ctx, float* out_x, float* out_y);
-        JOY_API bool  jui_is_down(jui_ctx_p ctx);
-        JOY_API bool  jui_is_pressed(jui_ctx_p ctx);
-        JOY_API bool  jui_is_released(jui_ctx_p ctx);
-        JOY_API float jui_take_wheel(jui_ctx_p ctx);   /* 取走并标记已消费 */
-        JOY_API bool  jui_is_shift(jui_ctx_p ctx);
-        JOY_API bool  jui_is_ctrl(jui_ctx_p ctx);
+        JOY_API void  joy_ui_get_mouse(jui_ctx_p ctx, float* out_x, float* out_y);
+        JOY_API bool  joy_ui_is_down(jui_ctx_p ctx);
+        JOY_API bool  joy_ui_is_pressed(jui_ctx_p ctx);
+        JOY_API bool  joy_ui_is_released(jui_ctx_p ctx);
+        JOY_API float joy_ui_take_wheel(jui_ctx_p ctx);   /* 取走并标记已消费 */
+        JOY_API bool  joy_ui_is_shift(jui_ctx_p ctx);
+        JOY_API bool  joy_ui_is_ctrl(jui_ctx_p ctx);
 
         /* 裁剪：内部委托 r2d_push/pop_clip_rect，同时记录当前矩形用于命中测试 */
-        JOY_API void jui_push_clip(jui_ctx_p ctx, jrect_t rect);
-        JOY_API void jui_pop_clip(jui_ctx_p ctx);
-        JOY_API void jui_reset_clip(jui_ctx_p ctx);
+        JOY_API void joy_ui_push_clip(jui_ctx_p ctx, jrect_t rect);
+        JOY_API void joy_ui_pop_clip(jui_ctx_p ctx);
+        JOY_API void joy_ui_reset_clip(jui_ctx_p ctx);
         /* 命中测试：既要在矩形内，也要在当前裁剪区内（否则滚动区域外会误触） */
-        JOY_API bool jui_hit(jui_ctx_p ctx, jrect_t rect);
+        JOY_API bool joy_ui_hit(jui_ctx_p ctx, jrect_t rect);
 
         /* 绘制辅助 */
-        JOY_API void jui_fill_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
-        JOY_API void jui_stroke_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
-        JOY_API void jui_line(jui_ctx_p ctx, float x1, float y1, float x2, float y2, jcolor_t c);
-        JOY_API int  jui_text(jui_ctx_p ctx, float x, float y, const char* s, jcolor_t c);
-        JOY_API bool jui_text_measure(jui_ctx_p ctx, const char* s, jcolor_t c, int* out_w, int* out_h);
-        JOY_API int  jui_text_centered(jui_ctx_p ctx, jrect_t r, const char* s, jcolor_t c);
+        JOY_API void joy_ui_fill_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
+        JOY_API void joy_ui_stroke_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c);
+        JOY_API void joy_ui_line(jui_ctx_p ctx, float x1, float y1, float x2, float y2, jcolor_t c);
+        JOY_API int  joy_ui_text(jui_ctx_p ctx, float x, float y, const char* s, jcolor_t c);
+        JOY_API bool joy_ui_text_measure(jui_ctx_p ctx, const char* s, jcolor_t c, int* out_w, int* out_h);
+        JOY_API int  joy_ui_text_centered(jui_ctx_p ctx, jrect_t r, const char* s, jcolor_t c);
 
         /* 面板（标题栏 + 内容裁剪区）*/
-        JOY_API void jui_panel_begin(jui_ctx_p ctx, jrect_t r, const char* title);
-        JOY_API void jui_panel_end(jui_ctx_p ctx);
-        JOY_API void jui_panel_frame(jui_ctx_p ctx, jrect_t r);
+        JOY_API void joy_ui_panel_begin(jui_ctx_p ctx, jrect_t r, const char* title);
+        JOY_API void joy_ui_panel_end(jui_ctx_p ctx);
+        JOY_API void joy_ui_panel_frame(jui_ctx_p ctx, jrect_t r);
 
         /* 滚动：id 用于在 ctx 内保存各自的滚动偏移 */
-        JOY_API float jui_scroll_begin(jui_ctx_p ctx, int id, jrect_t view, float content_h);
-        JOY_API void  jui_scroll_end(jui_ctx_p ctx);
-        JOY_API void  jui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off);
+        JOY_API float joy_ui_scroll_begin(jui_ctx_p ctx, int id, jrect_t view, float content_h);
+        JOY_API void  joy_ui_scroll_end(jui_ctx_p ctx);
+        JOY_API void  joy_ui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off);
         /* 强制设置滚动偏移（控制台贴底跟随用）；content_h 传 0 时仅设偏移 */
-        JOY_API void  jui_scroll_set_offset(jui_ctx_p ctx, int id, float off, float content_h, float view_h);
+        JOY_API void  joy_ui_scroll_set_offset(jui_ctx_p ctx, int id, float off, float content_h, float view_h);
 
         /* 控件：复用 button / checkbox / slider，按 id 池化 */
-        JOY_API bool jui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text);
-        JOY_API bool jui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* label);
+        JOY_API bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text);
+        JOY_API bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* label);
         /* rect 是滑轨区域；标签与数值文本由调用方自行绘制（格式各异） */
-        JOY_API bool jui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv);
+        JOY_API bool joy_ui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv);
 
         JOY_API jtilemap_p jtilemap_load_file_json(const char* filename);
         JOY_API void jtilemap_destroy(jtilemap_p tm);

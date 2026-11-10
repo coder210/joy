@@ -101,6 +101,13 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 - 第四批 **`net` 协议域合并 64 条**：`iocp` / `kcp*` / `tcp*` / `ws*` /
   `net*` / `netmessage` 全部并入 `net`，`net` 域累计 76 条（含上一批的
   pack/unpack）。剩下最大的就是 `ui`（约 230 条、20+ 控件域）。
+- 第五批 **`ui-A1` 45 条**：即时模式 UI（`jui_*` → `joy_ui_*`）与栅格布局
+  （`jlayout_grid_*` → `joy_ui_layout_grid_*`）并入 `ui`。这里开始用「剥离
+  冗余前缀」而非无脑加域前缀：`jui_begin` → `joy_ui_begin`，不是
+  `joy_ui_jui_begin`；`jui_process_event` 是 retained 控件的事件分发，改名
+  时顺带明确为 `joy_ui_process_widget_event`（脚本名仍冻结为 `JuiProcessEvent`）。
+  剩下 `ui-A2`（button / checkbox / radio / label / tooltip / popup / image /
+  text，84 条）与输入类控件待迁。
 
 映射见 `idl/rename_map.json`（累加式）。
 

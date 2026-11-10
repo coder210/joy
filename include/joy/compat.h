@@ -172,6 +172,53 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
 #define netserver_set_callback      joy_net_netserver_set_callback
 #define netserver_get_type          joy_net_netserver_get_type
 #define netmessage_free_data        joy_net_netmessage_free_data
+
+/* P1 第五批：ui-A1，jui / jlayout 并入 ui 域。定义文件暂不改名，由宏兜住。 */
+#define jlayout_grid_create        joy_ui_layout_grid_create
+#define jlayout_grid_destroy       joy_ui_layout_grid_destroy
+#define jlayout_grid_next_row      joy_ui_layout_grid_next_row
+#define jlayout_grid_set_row       joy_ui_layout_grid_set_row
+#define jlayout_grid_cell          joy_ui_layout_grid_cell
+#define jlayout_grid_label         joy_ui_layout_grid_label
+#define jlayout_grid_button_row    joy_ui_layout_grid_button_row
+#define jui_process_event          joy_ui_process_widget_event
+#define jui_ctx_create             joy_ui_ctx_create
+#define jui_ctx_destroy            joy_ui_ctx_destroy
+#define jui_set_theme              joy_ui_set_theme
+#define jui_begin                  joy_ui_begin
+#define jui_end                    joy_ui_end
+#define jui_input_motion           joy_ui_input_motion
+#define jui_input_down             joy_ui_input_down
+#define jui_input_up               joy_ui_input_up
+#define jui_input_wheel            joy_ui_input_wheel
+#define jui_input_key              joy_ui_input_key
+#define jui_get_mouse              joy_ui_get_mouse
+#define jui_is_down                joy_ui_is_down
+#define jui_is_pressed             joy_ui_is_pressed
+#define jui_is_released            joy_ui_is_released
+#define jui_take_wheel             joy_ui_take_wheel
+#define jui_is_shift               joy_ui_is_shift
+#define jui_is_ctrl                joy_ui_is_ctrl
+#define jui_push_clip              joy_ui_push_clip
+#define jui_pop_clip               joy_ui_pop_clip
+#define jui_reset_clip             joy_ui_reset_clip
+#define jui_hit                    joy_ui_hit
+#define jui_fill_rect              joy_ui_fill_rect
+#define jui_stroke_rect            joy_ui_stroke_rect
+#define jui_line                   joy_ui_line
+#define jui_text                   joy_ui_text
+#define jui_text_measure           joy_ui_text_measure
+#define jui_text_centered          joy_ui_text_centered
+#define jui_panel_begin            joy_ui_panel_begin
+#define jui_panel_end              joy_ui_panel_end
+#define jui_panel_frame            joy_ui_panel_frame
+#define jui_scroll_begin           joy_ui_scroll_begin
+#define jui_scroll_end             joy_ui_scroll_end
+#define jui_scrollbar              joy_ui_scrollbar
+#define jui_scroll_set_offset      joy_ui_scroll_set_offset
+#define jui_button                 joy_ui_button
+#define jui_checkbox               joy_ui_checkbox
+#define jui_slider                 joy_ui_slider
 #endif
 
 #endif /* JOY_COMPAT_H */
