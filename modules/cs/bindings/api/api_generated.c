@@ -1773,9 +1773,9 @@ static void icall_R3dDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1787,9 +1787,9 @@ static int32_t icall_R3dBegin(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("r3d_begin", args, 1, &st);
+        r = joy_api_call("joy_r3d_begin", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_begin", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_begin", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1800,9 +1800,9 @@ static void icall_R3dEnd(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_end", args, 1, &st);
+        (void)joy_api_call("joy_r3d_end", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_end", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_end", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1814,9 +1814,9 @@ static int32_t icall_R3dGetDrawCalls(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("r3d_get_draw_calls", args, 1, &st);
+        r = joy_api_call("joy_r3d_get_draw_calls", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_get_draw_calls", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_get_draw_calls", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -1830,9 +1830,9 @@ static void icall_R3dSetClearColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32
         args[1] = joy_v_u32((uint32_t)p1);
         args[2] = joy_v_u32((uint32_t)p2);
         args[3] = joy_v_u32((uint32_t)p3);
-        (void)joy_api_call("r3d_set_clear_color", args, 4, &st);
+        (void)joy_api_call("joy_r3d_set_clear_color", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_set_clear_color", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_set_clear_color", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1844,9 +1844,9 @@ static void icall_R3dMeshDestroy(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("r3d_mesh_destroy", args, 2, &st);
+        (void)joy_api_call("joy_r3d_mesh_destroy", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_mesh_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1862,10 +1862,10 @@ static int32_t icall_R3dFontInit(uint64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("r3d_font_init", args, 3, &st);
+        r = joy_api_call("joy_r3d_font_init", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_init", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_init", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1886,10 +1886,10 @@ static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, MonoString* p2, flo
         args[5] = joy_v_f64((double)p5);
         args[6] = joy_v_f64((double)p6);
         args[7] = joy_v_f64((double)p7);
-        r = joy_api_call("r3d_font_draw_2d", args, 8, &st);
+        r = joy_api_call("joy_r3d_font_draw_2d", args, 8, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_draw_2d", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1901,9 +1901,9 @@ static void icall_R3dFontCacheSetLimit(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("r3d_font_cache_set_limit", args, 2, &st);
+        (void)joy_api_call("joy_r3d_font_cache_set_limit", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_cache_set_limit", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_cache_set_limit", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1915,9 +1915,9 @@ static int32_t icall_R3dFontCacheGetCount(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("r3d_font_cache_get_count", args, 1, &st);
+        r = joy_api_call("joy_r3d_font_cache_get_count", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_cache_get_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_cache_get_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -1928,9 +1928,9 @@ static void icall_R3dFontCacheClear(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_font_cache_clear", args, 1, &st);
+        (void)joy_api_call("joy_r3d_font_cache_clear", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_cache_clear", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_cache_clear", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1942,9 +1942,9 @@ static void icall_R3dFontCacheSweep(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("r3d_font_cache_sweep", args, 2, &st);
+        (void)joy_api_call("joy_r3d_font_cache_sweep", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_font_cache_sweep", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_cache_sweep", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1957,9 +1957,9 @@ static void icall_R3dSetLogicalPresentation(uint64_t p0, int32_t p1, int32_t p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("r3d_set_logical_presentation", args, 3, &st);
+        (void)joy_api_call("joy_r3d_set_logical_presentation", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_set_logical_presentation", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_set_logical_presentation", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1973,9 +1973,9 @@ static void icall_R3dSetLogicalPresentationMode(uint64_t p0, int32_t p1, int32_t
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
         args[3] = joy_v_i32((int32_t)p3);
-        (void)joy_api_call("r3d_set_logical_presentation_mode", args, 4, &st);
+        (void)joy_api_call("joy_r3d_set_logical_presentation_mode", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_set_logical_presentation_mode", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_set_logical_presentation_mode", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1990,9 +1990,9 @@ static void icall_R3dButtonDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p3,
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_button_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_button_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2007,9 +2007,9 @@ static void icall_R3dButtonDrawCircle(uint64_t p0, uint64_t p1, uint64_t p2, flo
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_button_draw_circle", args, 5, &st);
+        (void)joy_api_call("joy_r3d_button_draw_circle", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_draw_circle", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_draw_circle", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2024,9 +2024,9 @@ static int32_t icall_R3dButtonIsHovered(uint64_t p0, uint64_t p1, float p2, floa
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_button_is_hovered", args, 4, &st);
+        r = joy_api_call("joy_r3d_button_is_hovered", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_is_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_is_hovered", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2042,9 +2042,9 @@ static int32_t icall_R3dButtonIsPressed(uint64_t p0, uint64_t p1, int32_t p2, fl
         args[2] = joy_v_bool((int32_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("r3d_button_is_pressed", args, 5, &st);
+        r = joy_api_call("joy_r3d_button_is_pressed", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_is_pressed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_is_pressed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2058,9 +2058,9 @@ static void icall_R3dButtonRelease(uint64_t p0, uint64_t p1, float p2, float p3)
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        (void)joy_api_call("r3d_button_release", args, 4, &st);
+        (void)joy_api_call("joy_r3d_button_release", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_release", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_release", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2071,9 +2071,9 @@ static void icall_R3dButtonDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_button_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_button_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_button_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2087,10 +2087,10 @@ static void icall_R3dLabelSetText(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("r3d_label_set_text", args, 2, &st);
+        (void)joy_api_call("joy_r3d_label_set_text", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_label_set_text", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_label_set_text", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2105,9 +2105,9 @@ static void icall_R3dLabelDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p3, 
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_label_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_label_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_label_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_label_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2118,9 +2118,9 @@ static void icall_R3dLabelDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_label_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_label_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_label_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_label_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2134,10 +2134,10 @@ static void icall_R3dInputSetText(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("r3d_input_set_text", args, 2, &st);
+        (void)joy_api_call("joy_r3d_input_set_text", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_set_text", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_set_text", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2152,9 +2152,9 @@ static int32_t icall_R3dInputIsHovered(uint64_t p0, uint64_t p1, float p2, float
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_input_is_hovered", args, 4, &st);
+        r = joy_api_call("joy_r3d_input_is_hovered", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_is_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_is_hovered", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2165,9 +2165,9 @@ static void icall_R3dInputFocus(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_focus", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_focus", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_focus", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_focus", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2178,9 +2178,9 @@ static void icall_R3dInputDefocus(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_defocus", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_defocus", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_defocus", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_defocus", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2192,9 +2192,9 @@ static int32_t icall_R3dInputIsFocused(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("r3d_input_is_focused", args, 1, &st);
+        r = joy_api_call("joy_r3d_input_is_focused", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_is_focused", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_is_focused", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2206,9 +2206,9 @@ static void icall_R3dInputStartTextInput(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("r3d_input_start_text_input", args, 2, &st);
+        (void)joy_api_call("joy_r3d_input_start_text_input", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_start_text_input", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_start_text_input", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2220,9 +2220,9 @@ static void icall_R3dInputStopTextInput(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("r3d_input_stop_text_input", args, 2, &st);
+        (void)joy_api_call("joy_r3d_input_stop_text_input", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_stop_text_input", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_stop_text_input", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2236,10 +2236,10 @@ static void icall_R3dInputInsert(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("r3d_input_insert", args, 2, &st);
+        (void)joy_api_call("joy_r3d_input_insert", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_insert", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_insert", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2250,9 +2250,9 @@ static void icall_R3dInputBackspace(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_backspace", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_backspace", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_backspace", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_backspace", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2263,9 +2263,9 @@ static void icall_R3dInputDelete(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_delete", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_delete", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_delete", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_delete", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2276,9 +2276,9 @@ static void icall_R3dInputCursorLeft(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_cursor_left", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_cursor_left", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_cursor_left", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_cursor_left", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2289,9 +2289,9 @@ static void icall_R3dInputCursorRight(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_cursor_right", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_cursor_right", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_cursor_right", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_cursor_right", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2302,9 +2302,9 @@ static void icall_R3dInputCursorHome(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_cursor_home", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_cursor_home", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_cursor_home", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_cursor_home", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2315,9 +2315,9 @@ static void icall_R3dInputCursorEnd(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_cursor_end", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_cursor_end", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_cursor_end", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_cursor_end", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2331,9 +2331,9 @@ static void icall_R3dInputClick(uint64_t p0, uint64_t p1, float p2, float p3)
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        (void)joy_api_call("r3d_input_click", args, 4, &st);
+        (void)joy_api_call("joy_r3d_input_click", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_click", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_click", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2344,9 +2344,9 @@ static void icall_R3dInputSubmit(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_submit", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_submit", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_submit", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_submit", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2361,9 +2361,9 @@ static void icall_R3dInputDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p3, 
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_input_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_input_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2374,9 +2374,9 @@ static void icall_R3dInputDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_input_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_input_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_input_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_input_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2387,9 +2387,9 @@ static void icall_R3dComboboxInputDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_combobox_input_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2403,10 +2403,10 @@ static void icall_R3dComboboxInputAddItem(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("r3d_combobox_input_add_item", args, 2, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_add_item", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_add_item", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_add_item", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2417,9 +2417,9 @@ static void icall_R3dComboboxInputClearItems(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_combobox_input_clear_items", args, 1, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_clear_items", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_clear_items", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_clear_items", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2433,10 +2433,10 @@ static void icall_R3dComboboxInputSetText(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("r3d_combobox_input_set_text", args, 2, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_set_text", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_set_text", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_set_text", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2450,9 +2450,9 @@ static int32_t icall_R3dComboboxInputHitItem(uint64_t p0, float p1, float p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
         args[2] = joy_v_f64((double)p2);
-        r = joy_api_call("r3d_combobox_input_hit_item", args, 3, &st);
+        r = joy_api_call("joy_r3d_combobox_input_hit_item", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_hit_item", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_hit_item", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -2467,9 +2467,9 @@ static void icall_R3dComboboxInputDraw(uint64_t p0, uint64_t p1, uint64_t p2, fl
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_combobox_input_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2484,9 +2484,9 @@ static void icall_R3dComboboxInputDrawDropdown(uint64_t p0, uint64_t p1, uint64_
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_combobox_input_draw_dropdown", args, 5, &st);
+        (void)joy_api_call("joy_r3d_combobox_input_draw_dropdown", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_combobox_input_draw_dropdown", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_combobox_input_draw_dropdown", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2497,9 +2497,9 @@ static void icall_R3dSliderDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_slider_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_slider_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2511,9 +2511,9 @@ static void icall_R3dSliderSetValue(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("r3d_slider_set_value", args, 2, &st);
+        (void)joy_api_call("joy_r3d_slider_set_value", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_set_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_set_value", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2525,9 +2525,9 @@ static float icall_R3dSliderGetValue(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("r3d_slider_get_value", args, 1, &st);
+        r = joy_api_call("joy_r3d_slider_get_value", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_get_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_get_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -2542,9 +2542,9 @@ static void icall_R3dSliderDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p3,
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_slider_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_slider_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2559,9 +2559,9 @@ static int32_t icall_R3dSliderIsPressed(uint64_t p0, uint64_t p1, float p2, floa
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_slider_is_pressed", args, 4, &st);
+        r = joy_api_call("joy_r3d_slider_is_pressed", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_is_pressed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_is_pressed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2573,9 +2573,9 @@ static void icall_R3dSliderSetPressed(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("r3d_slider_set_pressed", args, 2, &st);
+        (void)joy_api_call("joy_r3d_slider_set_pressed", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_set_pressed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_set_pressed", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2589,9 +2589,9 @@ static void icall_R3dSliderDragMove(uint64_t p0, uint64_t p1, float p2, float p3
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        (void)joy_api_call("r3d_slider_drag_move", args, 4, &st);
+        (void)joy_api_call("joy_r3d_slider_drag_move", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_drag_move", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_drag_move", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2606,9 +2606,9 @@ static int32_t icall_R3dSliderIsHovered(uint64_t p0, uint64_t p1, float p2, floa
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_slider_is_hovered", args, 4, &st);
+        r = joy_api_call("joy_r3d_slider_is_hovered", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_is_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_is_hovered", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2620,9 +2620,9 @@ static void icall_R3dSliderSetHovered(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("r3d_slider_set_hovered", args, 2, &st);
+        (void)joy_api_call("joy_r3d_slider_set_hovered", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_slider_set_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_slider_set_hovered", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2633,9 +2633,9 @@ static void icall_R3dCheckboxDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_checkbox_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_checkbox_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2646,9 +2646,9 @@ static void icall_R3dCheckboxToggle(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("r3d_checkbox_toggle", args, 1, &st);
+        (void)joy_api_call("joy_r3d_checkbox_toggle", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_toggle", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_toggle", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2663,9 +2663,9 @@ static int32_t icall_R3dCheckboxIsPressed(uint64_t p0, uint64_t p1, float p2, fl
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_checkbox_is_pressed", args, 4, &st);
+        r = joy_api_call("joy_r3d_checkbox_is_pressed", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_is_pressed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_is_pressed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2677,9 +2677,9 @@ static void icall_R3dCheckboxSetHovered(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("r3d_checkbox_set_hovered", args, 2, &st);
+        (void)joy_api_call("joy_r3d_checkbox_set_hovered", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_set_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_set_hovered", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2694,9 +2694,9 @@ static int32_t icall_R3dCheckboxIsHovered(uint64_t p0, uint64_t p1, float p2, fl
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        r = joy_api_call("r3d_checkbox_is_hovered", args, 4, &st);
+        r = joy_api_call("joy_r3d_checkbox_is_hovered", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_is_hovered", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_is_hovered", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2719,9 +2719,9 @@ static void icall_R3dCheckboxSetColors(uint64_t p0, uint32_t p1, uint32_t p2, ui
         args[10] = joy_v_u32((uint32_t)p10);
         args[11] = joy_v_u32((uint32_t)p11);
         args[12] = joy_v_u32((uint32_t)p12);
-        (void)joy_api_call("r3d_checkbox_set_colors", args, 13, &st);
+        (void)joy_api_call("joy_r3d_checkbox_set_colors", args, 13, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_set_colors", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_set_colors", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2736,9 +2736,9 @@ static void icall_R3dCheckboxDraw(uint64_t p0, uint64_t p1, uint64_t p2, float p
         args[2] = joy_v_handle((uint64_t)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        (void)joy_api_call("r3d_checkbox_draw", args, 5, &st);
+        (void)joy_api_call("joy_r3d_checkbox_draw", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_checkbox_draw", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_checkbox_draw", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -2752,9 +2752,9 @@ static void icall_R3dDrawGrid(uint64_t p0, int32_t p1, float p2, float p3)
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        (void)joy_api_call("r3d_draw_grid", args, 4, &st);
+        (void)joy_api_call("joy_r3d_draw_grid", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "r3d_draw_grid", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_grid", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

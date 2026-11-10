@@ -1689,106 +1689,106 @@ static joy_value_t t_animation_update(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_destroy.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_destroy.arg0");
-        r3d_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_destroy.arg0");
+        joy_r3d_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_begin(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_begin(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_begin");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_begin.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_begin");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_begin.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_begin.arg0");
-        _r = r3d_begin(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_begin.arg0");
+        _r = joy_r3d_begin(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_end(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_end(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_end");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_end.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_end");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_end.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_end.arg0");
-        r3d_end(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_end.arg0");
+        joy_r3d_end(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_get_draw_calls(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_get_draw_calls(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_get_draw_calls");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_get_draw_calls.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_get_draw_calls");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_get_draw_calls.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_get_draw_calls.arg0");
-        _r = r3d_get_draw_calls(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_get_draw_calls.arg0");
+        _r = joy_r3d_get_draw_calls(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         uint8_t p1;
         uint8_t p2;
         uint8_t p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_set_clear_color");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_clear_color.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_clear_color.arg1");
-        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_clear_color.arg2");
-        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_clear_color.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_set_clear_color");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg1");
+        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg2");
+        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_set_clear_color.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_set_clear_color.arg0");
         p1 = (uint8_t)a[1].as.u32;
         p2 = (uint8_t)a[2].as.u32;
         p3 = (uint8_t)a[3].as.u32;
-        r3d_set_clear_color(p0, p1, p2, p3);
+        joy_r3d_set_clear_color(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_mesh_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_mesh_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_mesh_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_mesh_destroy.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_mesh_destroy.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_destroy.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_destroy.arg1");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_mesh_destroy.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_destroy.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_mesh_destroy.arg1");
-        r3d_mesh_destroy(p0, p1);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_mesh_destroy.arg1");
+        joy_r3d_mesh_destroy(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_font_init(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_init(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         const char* p1;
         int p2;
         bool _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_init");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_init.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_init.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_init.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_init");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg2");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_init.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_init.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = r3d_font_init(p0, p1, p2);
+        _r = joy_r3d_font_init(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
@@ -1799,190 +1799,190 @@ static joy_value_t t_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* st)
         float p6;
         float p7;
         bool _r;
-        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_draw_2d");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg1");
-        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg4");
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg5");
-        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg6");
-        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_draw_2d.arg7");
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_draw_2d");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg5");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg6");
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg7");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_draw_2d.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_draw_2d.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_font_draw_2d.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_font_draw_2d.arg1");
         p2 = (const char*)a[2].as.str;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
         p5 = (float)a[5].as.f64;
         p6 = (float)a[6].as.f64;
         p7 = (float)a[7].as.f64;
-        _r = r3d_font_draw_2d(p0, p1, p2, p3, p4, p5, p6, p7);
+        _r = joy_r3d_font_draw_2d(p0, p1, p2, p3, p4, p5, p6, p7);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_font_cache_set_limit(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_cache_set_limit(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_cache_set_limit");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_set_limit.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_set_limit.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_set_limit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_set_limit.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_set_limit.arg1");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_cache_set_limit.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_set_limit.arg0");
         p1 = (int)a[1].as.i32;
-        r3d_font_cache_set_limit(p0, p1);
+        joy_r3d_font_cache_set_limit(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_font_cache_get_count(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_cache_get_count(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_cache_get_count");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_get_count.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_get_count");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_get_count.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_cache_get_count.arg0");
-        _r = r3d_font_cache_get_count(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_get_count.arg0");
+        _r = joy_r3d_font_cache_get_count(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_r3d_font_cache_clear(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_cache_clear(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_cache_clear");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_clear.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_clear");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_clear.arg0");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_cache_clear.arg0");
-        r3d_font_cache_clear(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_clear.arg0");
+        joy_r3d_font_cache_clear(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_font_cache_sweep(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_font_cache_sweep(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_font_cache_sweep");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_sweep.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_font_cache_sweep.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_sweep");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_sweep.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_sweep.arg1");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_font_cache_sweep.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_sweep.arg0");
         p1 = (int)a[1].as.i32;
-        r3d_font_cache_sweep(p0, p1);
+        joy_r3d_font_cache_sweep(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_set_logical_presentation(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_set_logical_presentation(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int p1;
         int p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "r3d_set_logical_presentation");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_set_logical_presentation");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg2");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_set_logical_presentation.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_set_logical_presentation.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
-        r3d_set_logical_presentation(p0, p1, p2);
+        joy_r3d_set_logical_presentation(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_set_logical_presentation_mode(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_set_logical_presentation_mode(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int p1;
         int p2;
         int p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_set_logical_presentation_mode");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation_mode.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation_mode.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation_mode.arg2");
-        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_set_logical_presentation_mode.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_set_logical_presentation_mode");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_set_logical_presentation_mode.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_set_logical_presentation_mode.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
         p3 = (int)a[3].as.i32;
-        r3d_set_logical_presentation_mode(p0, p1, p2, p3);
+        joy_r3d_set_logical_presentation_mode(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_button_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_button_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_button_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_button_draw.arg1");
         p2 = (jr3d_button_p)joy_obj_deref(a[2].as.handle, "jr3d_button_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_button_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_button_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_button_draw(p0, p1, p2, p3, p4);
+        joy_r3d_button_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_button_draw_circle(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_draw_circle(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_button_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_draw_circle");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw_circle.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw_circle.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw_circle.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw_circle.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_draw_circle.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_draw_circle");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_draw_circle.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_button_draw_circle.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg1");
         p2 = (jr3d_button_p)joy_obj_deref(a[2].as.handle, "jr3d_button_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_button_draw_circle.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_button_draw_circle(p0, p1, p2, p3, p4);
+        joy_r3d_button_draw_circle(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_button_is_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_button_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_is_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_hovered.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_hovered.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_hovered.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_hovered.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_is_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_is_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_is_hovered.arg0");
         p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_button_is_hovered.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_button_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_button_is_hovered(p0, p1, p2, p3);
+        _r = joy_r3d_button_is_hovered(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_button_is_pressed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_button_p p1;
@@ -1990,786 +1990,786 @@ static joy_value_t t_r3d_button_is_pressed(joy_value_t* a, int n, joy_status_t* 
         float p3;
         float p4;
         bool _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_is_pressed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_pressed.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_pressed.arg1");
-        if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_pressed.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_pressed.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_is_pressed.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_is_pressed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg1");
+        if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_is_pressed.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_is_pressed.arg0");
         p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_button_is_pressed.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_button_is_pressed.arg1");
         p2 = (bool)a[2].as.b;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = r3d_button_is_pressed(p0, p1, p2, p3, p4);
+        _r = joy_r3d_button_is_pressed(p0, p1, p2, p3, p4);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_button_release(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_release(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_button_p p1;
         float p2;
         float p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_release");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_release.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_release.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_release.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_release.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_release");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_release.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_release.arg0");
         p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_button_release.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_button_release.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        r3d_button_release(p0, p1, p2, p3);
+        joy_r3d_button_release(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_button_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_button_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_button_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_button_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_button_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_destroy.arg0");
         p0 = (jr3d_button_p)joy_obj_deref(a[0].as.handle, "jr3d_button_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_button_destroy.arg0");
-        r3d_button_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_button_destroy.arg0");
+        joy_r3d_button_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_label_set_text(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_label_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_label_p p0;
         const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_label_set_text");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_set_text.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_set_text.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_set_text");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_set_text.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_set_text.arg1");
         p0 = (jr3d_label_p)joy_obj_deref(a[0].as.handle, "jr3d_label_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_label_set_text.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_label_set_text.arg0");
         p1 = (const char*)a[1].as.str;
-        r3d_label_set_text(p0, p1);
+        joy_r3d_label_set_text(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_label_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_label_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_label_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_label_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_label_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_label_draw.arg1");
         p2 = (jr3d_label_p)joy_obj_deref(a[2].as.handle, "jr3d_label_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_label_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_label_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_label_draw(p0, p1, p2, p3, p4);
+        joy_r3d_label_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_label_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_label_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_label_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_label_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_label_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_destroy.arg0");
         p0 = (jr3d_label_p)joy_obj_deref(a[0].as.handle, "jr3d_label_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_label_destroy.arg0");
-        r3d_label_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_label_destroy.arg0");
+        joy_r3d_label_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_set_text(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
         const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_set_text");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_set_text.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_set_text.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_set_text");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_set_text.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_set_text.arg1");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_set_text.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_set_text.arg0");
         p1 = (const char*)a[1].as.str;
-        r3d_input_set_text(p0, p1);
+        joy_r3d_input_set_text(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_is_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_input_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_is_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_is_hovered.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_is_hovered.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_is_hovered.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_is_hovered.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_is_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_is_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_is_hovered.arg0");
         p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_input_is_hovered.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_input_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_input_is_hovered(p0, p1, p2, p3);
+        _r = joy_r3d_input_is_hovered(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_input_focus(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_focus(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_focus");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_focus.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_focus");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_focus.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_focus.arg0");
-        r3d_input_focus(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_focus.arg0");
+        joy_r3d_input_focus(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_defocus(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_defocus(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_defocus");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_defocus.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_defocus");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_defocus.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_defocus.arg0");
-        r3d_input_defocus(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_defocus.arg0");
+        joy_r3d_input_defocus(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_is_focused(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_is_focused(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_is_focused");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_is_focused.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_is_focused");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_focused.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_is_focused.arg0");
-        _r = r3d_input_is_focused(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_is_focused.arg0");
+        _r = joy_r3d_input_is_focused(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_input_start_text_input(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_start_text_input(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_input_p p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_start_text_input");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_start_text_input.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_start_text_input.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_start_text_input");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_start_text_input.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_start_text_input.arg1");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_start_text_input.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_start_text_input.arg0");
         p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_input_start_text_input.arg1");
-        r3d_input_start_text_input(p0, p1);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_input_start_text_input.arg1");
+        joy_r3d_input_start_text_input(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_stop_text_input(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_stop_text_input(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_input_p p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_stop_text_input");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_stop_text_input.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_stop_text_input.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_stop_text_input");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_stop_text_input.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_stop_text_input.arg1");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_stop_text_input.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_stop_text_input.arg0");
         p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_input_stop_text_input.arg1");
-        r3d_input_stop_text_input(p0, p1);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_input_stop_text_input.arg1");
+        joy_r3d_input_stop_text_input(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_insert(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_insert(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
         const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_insert");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_insert.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_insert.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_insert");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_insert.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_insert.arg1");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_insert.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_insert.arg0");
         p1 = (const char*)a[1].as.str;
-        r3d_input_insert(p0, p1);
+        joy_r3d_input_insert(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_backspace(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_backspace(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_backspace");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_backspace.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_backspace");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_backspace.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_backspace.arg0");
-        r3d_input_backspace(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_backspace.arg0");
+        joy_r3d_input_backspace(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_delete(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_delete(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_delete");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_delete.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_delete");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_delete.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_delete.arg0");
-        r3d_input_delete(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_delete.arg0");
+        joy_r3d_input_delete(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_cursor_left(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_cursor_left(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_cursor_left");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_cursor_left.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_left");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_left.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_cursor_left.arg0");
-        r3d_input_cursor_left(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_left.arg0");
+        joy_r3d_input_cursor_left(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_cursor_right(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_cursor_right(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_cursor_right");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_cursor_right.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_right");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_right.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_cursor_right.arg0");
-        r3d_input_cursor_right(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_right.arg0");
+        joy_r3d_input_cursor_right(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_cursor_home(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_cursor_home(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_cursor_home");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_cursor_home.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_home");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_home.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_cursor_home.arg0");
-        r3d_input_cursor_home(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_home.arg0");
+        joy_r3d_input_cursor_home(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_cursor_end(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_cursor_end(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_cursor_end");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_cursor_end.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_end");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_end.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_cursor_end.arg0");
-        r3d_input_cursor_end(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_end.arg0");
+        joy_r3d_input_cursor_end(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_click(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_click(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_input_p p1;
         float p2;
         float p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_click");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_click.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_click.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_click.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_click.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_click");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_click.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_click.arg0");
         p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_input_click.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_input_click.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        r3d_input_click(p0, p1, p2, p3);
+        joy_r3d_input_click(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_submit(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_submit(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_submit");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_submit.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_submit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_submit.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_submit.arg0");
-        r3d_input_submit(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_submit.arg0");
+        joy_r3d_input_submit(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_input_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_input_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_input_draw.arg1");
         p2 = (jr3d_input_p)joy_obj_deref(a[2].as.handle, "jr3d_input_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_input_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_input_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_input_draw(p0, p1, p2, p3, p4);
+        joy_r3d_input_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_input_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_input_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_input_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_destroy.arg0");
         p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_input_destroy.arg0");
-        r3d_input_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_input_destroy.arg0");
+        joy_r3d_input_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_combobox_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_destroy.arg0");
         p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_destroy.arg0");
-        r3d_combobox_input_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_destroy.arg0");
+        joy_r3d_combobox_input_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_combobox_input_add_item(joy_value_t* a, int n, joy_status_t* st)
-{
-        jr3d_combobox_input_p p0;
-        const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_add_item");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_add_item.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_add_item.arg1");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_add_item.arg0");
-        p1 = (const char*)a[1].as.str;
-        r3d_combobox_input_add_item(p0, p1);
-        return joy_v_null();
-}
-
-static joy_value_t t_r3d_combobox_input_clear_items(joy_value_t* a, int n, joy_status_t* st)
-{
-        jr3d_combobox_input_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_clear_items");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_clear_items.arg0");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_clear_items.arg0");
-        r3d_combobox_input_clear_items(p0);
-        return joy_v_null();
-}
-
-static joy_value_t t_r3d_combobox_input_set_text(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_combobox_input_add_item(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_combobox_input_p p0;
         const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_set_text");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_set_text.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_set_text.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_add_item");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_add_item.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_add_item.arg1");
         p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_set_text.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_add_item.arg0");
         p1 = (const char*)a[1].as.str;
-        r3d_combobox_input_set_text(p0, p1);
+        joy_r3d_combobox_input_add_item(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_combobox_input_hit_item(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_combobox_input_clear_items(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_combobox_input_p p0;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_clear_items");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_clear_items.arg0");
+        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_clear_items.arg0");
+        joy_r3d_combobox_input_clear_items(p0);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_r3d_combobox_input_set_text(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_combobox_input_p p0;
+        const char* p1;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_set_text");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_set_text.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_set_text.arg1");
+        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_set_text.arg0");
+        p1 = (const char*)a[1].as.str;
+        joy_r3d_combobox_input_set_text(p0, p1);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_r3d_combobox_input_hit_item(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_combobox_input_p p0;
         float p1;
         float p2;
         int _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_hit_item");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_hit_item.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_hit_item.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_hit_item.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_hit_item");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg2");
         p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_hit_item.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_hit_item.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        _r = r3d_combobox_input_hit_item(p0, p1, p2);
+        _r = joy_r3d_combobox_input_hit_item(p0, p1, p2);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_r3d_combobox_input_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_combobox_input_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_combobox_input_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_combobox_input_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg1");
         p2 = (jr3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "jr3d_combobox_input_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_combobox_input_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_combobox_input_draw(p0, p1, p2, p3, p4);
+        joy_r3d_combobox_input_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_combobox_input_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_combobox_input_draw_dropdown");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw_dropdown.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw_dropdown.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw_dropdown.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw_dropdown.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_combobox_input_draw_dropdown.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_draw_dropdown");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_combobox_input_draw_dropdown.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_combobox_input_draw_dropdown.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg1");
         p2 = (jr3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "jr3d_combobox_input_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_combobox_input_draw_dropdown.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_combobox_input_draw_dropdown(p0, p1, p2, p3, p4);
+        joy_r3d_combobox_input_draw_dropdown(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_slider_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_destroy.arg0");
         p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_destroy.arg0");
-        r3d_slider_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_destroy.arg0");
+        joy_r3d_slider_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_set_value(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_set_value(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_slider_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_set_value");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_value.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_value.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_value");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_value.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_value.arg1");
         p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_set_value.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_value.arg0");
         p1 = (float)a[1].as.f64;
-        r3d_slider_set_value(p0, p1);
+        joy_r3d_slider_set_value(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_get_value(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_get_value(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_slider_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_get_value");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_get_value.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_get_value");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_get_value.arg0");
         p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_get_value.arg0");
-        _r = r3d_slider_get_value(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_get_value.arg0");
+        _r = joy_r3d_slider_get_value(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_r3d_slider_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_slider_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_slider_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg1");
         p2 = (jr3d_slider_p)joy_obj_deref(a[2].as.handle, "jr3d_slider_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_slider_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_slider_draw(p0, p1, p2, p3, p4);
+        joy_r3d_slider_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_is_pressed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_slider_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_is_pressed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_pressed.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_pressed.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_pressed.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_pressed.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_is_pressed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_is_pressed.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_is_pressed.arg0");
         p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_slider_is_pressed.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_is_pressed.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_slider_is_pressed(p0, p1, p2, p3);
+        _r = joy_r3d_slider_is_pressed(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_slider_set_pressed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_set_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_slider_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_set_pressed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_pressed.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_pressed.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_pressed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_pressed.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_pressed.arg1");
         p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_set_pressed.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_pressed.arg0");
         p1 = (bool)a[1].as.b;
-        r3d_slider_set_pressed(p0, p1);
+        joy_r3d_slider_set_pressed(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_drag_move(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_drag_move(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_slider_p p1;
         float p2;
         float p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_drag_move");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_drag_move.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_drag_move.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_drag_move.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_drag_move.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_drag_move");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_drag_move.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_drag_move.arg0");
         p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_slider_drag_move.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_drag_move.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        r3d_slider_drag_move(p0, p1, p2, p3);
+        joy_r3d_slider_drag_move(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_slider_is_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_slider_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_is_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_hovered.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_hovered.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_hovered.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_is_hovered.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_is_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_is_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_is_hovered.arg0");
         p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_slider_is_hovered.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_slider_is_hovered(p0, p1, p2, p3);
+        _r = joy_r3d_slider_is_hovered(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_slider_set_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_slider_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_slider_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_slider_set_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_hovered.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "r3d_slider_set_hovered.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_hovered.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_hovered.arg1");
         p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_slider_set_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
-        r3d_slider_set_hovered(p0, p1);
+        joy_r3d_slider_set_hovered(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_checkbox_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_destroy.arg0");
         p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_destroy.arg0");
-        r3d_checkbox_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_destroy.arg0");
+        joy_r3d_checkbox_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_checkbox_toggle(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_toggle(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_checkbox_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_toggle");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_toggle.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_toggle");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_toggle.arg0");
         p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_toggle.arg0");
-        r3d_checkbox_toggle(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_toggle.arg0");
+        joy_r3d_checkbox_toggle(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_checkbox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_checkbox_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_is_pressed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_pressed.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_pressed.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_pressed.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_pressed.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_is_pressed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_is_pressed.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_is_pressed.arg0");
         p1 = (jr3d_checkbox_p)joy_obj_deref(a[1].as.handle, "jr3d_checkbox_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_checkbox_is_pressed.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_is_pressed.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_checkbox_is_pressed(p0, p1, p2, p3);
+        _r = joy_r3d_checkbox_is_pressed(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_checkbox_set_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_checkbox_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_set_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_hovered.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_hovered.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_set_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_hovered.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_hovered.arg1");
         p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_set_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
-        r3d_checkbox_set_hovered(p0, p1);
+        joy_r3d_checkbox_set_hovered(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_checkbox_is_hovered(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         jr3d_checkbox_p p1;
         float p2;
         float p3;
         bool _r;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_is_hovered");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_hovered.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_hovered.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_hovered.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_is_hovered.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_is_hovered");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_is_hovered.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_is_hovered.arg0");
         p1 = (jr3d_checkbox_p)joy_obj_deref(a[1].as.handle, "jr3d_checkbox_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_checkbox_is_hovered.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        _r = r3d_checkbox_is_hovered(p0, p1, p2, p3);
+        _r = joy_r3d_checkbox_is_hovered(p0, p1, p2, p3);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_r3d_checkbox_set_colors(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_set_colors(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_checkbox_p p0;
         jcolor_t p1 = { 0 };
         jcolor_t p2 = { 0 };
         jcolor_t p3 = { 0 };
-        if (n != 13) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_set_colors");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg0");
+        if (n != 13) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_set_colors");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg0");
         p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_set_colors.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg1");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_set_colors.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg1");
         p1.r = (uint8_t)a[1].as.u32;
-        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg2");
+        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg2");
         p1.g = (uint8_t)a[2].as.u32;
-        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg3");
+        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg3");
         p1.b = (uint8_t)a[3].as.u32;
-        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg4");
+        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg4");
         p1.a = (uint8_t)a[4].as.u32;
-        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg5");
+        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg5");
         p2.r = (uint8_t)a[5].as.u32;
-        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg6");
+        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg6");
         p2.g = (uint8_t)a[6].as.u32;
-        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg7");
+        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg7");
         p2.b = (uint8_t)a[7].as.u32;
-        if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg8");
+        if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg8");
         p2.a = (uint8_t)a[8].as.u32;
-        if (a[9].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg9");
+        if (a[9].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg9");
         p3.r = (uint8_t)a[9].as.u32;
-        if (a[10].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg10");
+        if (a[10].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg10");
         p3.g = (uint8_t)a[10].as.u32;
-        if (a[11].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg11");
+        if (a[11].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg11");
         p3.b = (uint8_t)a[11].as.u32;
-        if (a[12].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_set_colors.arg12");
+        if (a[12].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg12");
         p3.a = (uint8_t)a[12].as.u32;
-        r3d_checkbox_set_colors(p0, p1, p2, p3);
+        joy_r3d_checkbox_set_colors(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_checkbox_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_checkbox_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         render_mesh_p p1;
         jr3d_checkbox_p p2;
         float p3;
         float p4;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "r3d_checkbox_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_draw.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_draw.arg1");
-        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_draw.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_draw.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_checkbox_draw.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg1");
+        if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg4");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_checkbox_draw.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg0");
         p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
-        if (!p1) return joy_v_err(st, *st, "r3d_checkbox_draw.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg1");
         p2 = (jr3d_checkbox_p)joy_obj_deref(a[2].as.handle, "jr3d_checkbox_p", st);
-        if (!p2) return joy_v_err(st, *st, "r3d_checkbox_draw.arg2");
+        if (!p2) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        r3d_checkbox_draw(p0, p1, p2, p3, p4);
+        joy_r3d_checkbox_draw(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
         int p1;
         float p2;
         float p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "r3d_draw_grid");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "r3d_draw_grid.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "r3d_draw_grid.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_draw_grid.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "r3d_draw_grid.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_draw_grid");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg3");
         p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
-        if (!p0) return joy_v_err(st, *st, "r3d_draw_grid.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_draw_grid.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
-        r3d_draw_grid(p0, p1, p2, p3);
+        joy_r3d_draw_grid(p0, p1, p2, p3);
         return joy_v_null();
 }
 
@@ -11529,71 +11529,71 @@ static const joy_value_kind k_animation_set_position[] = { JOY_V_HANDLE, JOY_V_F
 static const joy_value_kind k_animation_set_scale[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_animation_set_rotation[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_animation_update[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_r3d_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_begin[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_end[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_get_draw_calls[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_set_clear_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
-static const joy_value_kind k_r3d_mesh_destroy[] = { JOY_V_HANDLE, JOY_V_HANDLE };
-static const joy_value_kind k_r3d_font_init[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_r3d_font_draw_2d[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_font_cache_set_limit[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_r3d_font_cache_get_count[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_font_cache_clear[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_font_cache_sweep[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_r3d_set_logical_presentation[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
-static const joy_value_kind k_r3d_set_logical_presentation_mode[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32, JOY_V_I32 };
-static const joy_value_kind k_r3d_button_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_button_draw_circle[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_button_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_button_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_BOOL, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_button_release[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_button_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_label_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_r3d_label_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_label_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_r3d_input_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_input_focus[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_defocus[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_is_focused[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_start_text_input[] = { JOY_V_HANDLE, JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_stop_text_input[] = { JOY_V_HANDLE, JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_insert[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_r3d_input_backspace[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_delete[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_cursor_left[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_cursor_right[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_cursor_home[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_cursor_end[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_click[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_input_submit[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_input_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_input_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_combobox_input_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_combobox_input_add_item[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_r3d_combobox_input_clear_items[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_combobox_input_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_r3d_combobox_input_hit_item[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_combobox_input_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_combobox_input_draw_dropdown[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_slider_set_value[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_get_value[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_slider_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_set_pressed[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_r3d_slider_drag_move[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_slider_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_r3d_checkbox_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_checkbox_toggle[] = { JOY_V_HANDLE };
-static const joy_value_kind k_r3d_checkbox_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_checkbox_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_r3d_checkbox_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_checkbox_set_colors[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
-static const joy_value_kind k_r3d_checkbox_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_r3d_draw_grid[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_begin[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_end[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_get_draw_calls[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_set_clear_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_mesh_destroy[] = { JOY_V_HANDLE, JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_font_init[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_font_draw_2d[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_font_cache_set_limit[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_font_cache_get_count[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_font_cache_clear[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_font_cache_sweep[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_set_logical_presentation[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_set_logical_presentation_mode[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_button_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_button_draw_circle[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_button_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_button_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_BOOL, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_button_release[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_button_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_label_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r3d_label_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_label_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r3d_input_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_input_focus[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_defocus[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_is_focused[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_start_text_input[] = { JOY_V_HANDLE, JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_stop_text_input[] = { JOY_V_HANDLE, JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_insert[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r3d_input_backspace[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_delete[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_cursor_left[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_cursor_right[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_cursor_home[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_cursor_end[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_click[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_input_submit[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_input_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_input_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_combobox_input_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_combobox_input_add_item[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r3d_combobox_input_clear_items[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_combobox_input_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r3d_combobox_input_hit_item[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_combobox_input_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_combobox_input_draw_dropdown[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_slider_set_value[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_get_value[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_slider_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_set_pressed[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_r3d_slider_drag_move[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_slider_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_r3d_checkbox_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_checkbox_toggle[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_checkbox_is_pressed[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_checkbox_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_r3d_checkbox_is_hovered[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_checkbox_set_colors[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_checkbox_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_draw_grid[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_janimator_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_janimator_set_float[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64 };
 static const joy_value_kind k_janimator_set_int[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_I32 };
@@ -12219,71 +12219,71 @@ static const joy_thunk_entry s_thunks[] = {
         { "animation", "animation_set_scale", "AnimationSetScale", t_animation_set_scale, 3, k_animation_set_scale, JOY_V_NULL },
         { "animation", "animation_set_rotation", "AnimationSetRotation", t_animation_set_rotation, 2, k_animation_set_rotation, JOY_V_NULL },
         { "animation", "animation_update", "AnimationUpdate", t_animation_update, 2, k_animation_update, JOY_V_NULL },
-        { "r3d", "r3d_destroy", "R3dDestroy", t_r3d_destroy, 1, k_r3d_destroy, JOY_V_NULL },
-        { "r3d", "r3d_begin", "R3dBegin", t_r3d_begin, 1, k_r3d_begin, JOY_V_BOOL },
-        { "r3d", "r3d_end", "R3dEnd", t_r3d_end, 1, k_r3d_end, JOY_V_NULL },
-        { "r3d", "r3d_get_draw_calls", "R3dGetDrawCalls", t_r3d_get_draw_calls, 1, k_r3d_get_draw_calls, JOY_V_I32 },
-        { "r3d", "r3d_set_clear_color", "R3dSetClearColor", t_r3d_set_clear_color, 4, k_r3d_set_clear_color, JOY_V_NULL },
-        { "r3d", "r3d_mesh_destroy", "R3dMeshDestroy", t_r3d_mesh_destroy, 2, k_r3d_mesh_destroy, JOY_V_NULL },
-        { "r3d", "r3d_font_init", "R3dFontInit", t_r3d_font_init, 3, k_r3d_font_init, JOY_V_BOOL },
-        { "r3d", "r3d_font_draw_2d", "R3dFontDraw2d", t_r3d_font_draw_2d, 8, k_r3d_font_draw_2d, JOY_V_BOOL },
-        { "r3d", "r3d_font_cache_set_limit", "R3dFontCacheSetLimit", t_r3d_font_cache_set_limit, 2, k_r3d_font_cache_set_limit, JOY_V_NULL },
-        { "r3d", "r3d_font_cache_get_count", "R3dFontCacheGetCount", t_r3d_font_cache_get_count, 1, k_r3d_font_cache_get_count, JOY_V_I32 },
-        { "r3d", "r3d_font_cache_clear", "R3dFontCacheClear", t_r3d_font_cache_clear, 1, k_r3d_font_cache_clear, JOY_V_NULL },
-        { "r3d", "r3d_font_cache_sweep", "R3dFontCacheSweep", t_r3d_font_cache_sweep, 2, k_r3d_font_cache_sweep, JOY_V_NULL },
-        { "r3d", "r3d_set_logical_presentation", "R3dSetLogicalPresentation", t_r3d_set_logical_presentation, 3, k_r3d_set_logical_presentation, JOY_V_NULL },
-        { "r3d", "r3d_set_logical_presentation_mode", "R3dSetLogicalPresentationMode", t_r3d_set_logical_presentation_mode, 4, k_r3d_set_logical_presentation_mode, JOY_V_NULL },
-        { "r3d", "r3d_button_draw", "R3dButtonDraw", t_r3d_button_draw, 5, k_r3d_button_draw, JOY_V_NULL },
-        { "r3d", "r3d_button_draw_circle", "R3dButtonDrawCircle", t_r3d_button_draw_circle, 5, k_r3d_button_draw_circle, JOY_V_NULL },
-        { "r3d", "r3d_button_is_hovered", "R3dButtonIsHovered", t_r3d_button_is_hovered, 4, k_r3d_button_is_hovered, JOY_V_BOOL },
-        { "r3d", "r3d_button_is_pressed", "R3dButtonIsPressed", t_r3d_button_is_pressed, 5, k_r3d_button_is_pressed, JOY_V_BOOL },
-        { "r3d", "r3d_button_release", "R3dButtonRelease", t_r3d_button_release, 4, k_r3d_button_release, JOY_V_NULL },
-        { "r3d", "r3d_button_destroy", "R3dButtonDestroy", t_r3d_button_destroy, 1, k_r3d_button_destroy, JOY_V_NULL },
-        { "r3d", "r3d_label_set_text", "R3dLabelSetText", t_r3d_label_set_text, 2, k_r3d_label_set_text, JOY_V_NULL },
-        { "r3d", "r3d_label_draw", "R3dLabelDraw", t_r3d_label_draw, 5, k_r3d_label_draw, JOY_V_NULL },
-        { "r3d", "r3d_label_destroy", "R3dLabelDestroy", t_r3d_label_destroy, 1, k_r3d_label_destroy, JOY_V_NULL },
-        { "r3d", "r3d_input_set_text", "R3dInputSetText", t_r3d_input_set_text, 2, k_r3d_input_set_text, JOY_V_NULL },
-        { "r3d", "r3d_input_is_hovered", "R3dInputIsHovered", t_r3d_input_is_hovered, 4, k_r3d_input_is_hovered, JOY_V_BOOL },
-        { "r3d", "r3d_input_focus", "R3dInputFocus", t_r3d_input_focus, 1, k_r3d_input_focus, JOY_V_NULL },
-        { "r3d", "r3d_input_defocus", "R3dInputDefocus", t_r3d_input_defocus, 1, k_r3d_input_defocus, JOY_V_NULL },
-        { "r3d", "r3d_input_is_focused", "R3dInputIsFocused", t_r3d_input_is_focused, 1, k_r3d_input_is_focused, JOY_V_BOOL },
-        { "r3d", "r3d_input_start_text_input", "R3dInputStartTextInput", t_r3d_input_start_text_input, 2, k_r3d_input_start_text_input, JOY_V_NULL },
-        { "r3d", "r3d_input_stop_text_input", "R3dInputStopTextInput", t_r3d_input_stop_text_input, 2, k_r3d_input_stop_text_input, JOY_V_NULL },
-        { "r3d", "r3d_input_insert", "R3dInputInsert", t_r3d_input_insert, 2, k_r3d_input_insert, JOY_V_NULL },
-        { "r3d", "r3d_input_backspace", "R3dInputBackspace", t_r3d_input_backspace, 1, k_r3d_input_backspace, JOY_V_NULL },
-        { "r3d", "r3d_input_delete", "R3dInputDelete", t_r3d_input_delete, 1, k_r3d_input_delete, JOY_V_NULL },
-        { "r3d", "r3d_input_cursor_left", "R3dInputCursorLeft", t_r3d_input_cursor_left, 1, k_r3d_input_cursor_left, JOY_V_NULL },
-        { "r3d", "r3d_input_cursor_right", "R3dInputCursorRight", t_r3d_input_cursor_right, 1, k_r3d_input_cursor_right, JOY_V_NULL },
-        { "r3d", "r3d_input_cursor_home", "R3dInputCursorHome", t_r3d_input_cursor_home, 1, k_r3d_input_cursor_home, JOY_V_NULL },
-        { "r3d", "r3d_input_cursor_end", "R3dInputCursorEnd", t_r3d_input_cursor_end, 1, k_r3d_input_cursor_end, JOY_V_NULL },
-        { "r3d", "r3d_input_click", "R3dInputClick", t_r3d_input_click, 4, k_r3d_input_click, JOY_V_NULL },
-        { "r3d", "r3d_input_submit", "R3dInputSubmit", t_r3d_input_submit, 1, k_r3d_input_submit, JOY_V_NULL },
-        { "r3d", "r3d_input_draw", "R3dInputDraw", t_r3d_input_draw, 5, k_r3d_input_draw, JOY_V_NULL },
-        { "r3d", "r3d_input_destroy", "R3dInputDestroy", t_r3d_input_destroy, 1, k_r3d_input_destroy, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_destroy", "R3dComboboxInputDestroy", t_r3d_combobox_input_destroy, 1, k_r3d_combobox_input_destroy, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_add_item", "R3dComboboxInputAddItem", t_r3d_combobox_input_add_item, 2, k_r3d_combobox_input_add_item, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_clear_items", "R3dComboboxInputClearItems", t_r3d_combobox_input_clear_items, 1, k_r3d_combobox_input_clear_items, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_set_text", "R3dComboboxInputSetText", t_r3d_combobox_input_set_text, 2, k_r3d_combobox_input_set_text, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_hit_item", "R3dComboboxInputHitItem", t_r3d_combobox_input_hit_item, 3, k_r3d_combobox_input_hit_item, JOY_V_I32 },
-        { "r3d", "r3d_combobox_input_draw", "R3dComboboxInputDraw", t_r3d_combobox_input_draw, 5, k_r3d_combobox_input_draw, JOY_V_NULL },
-        { "r3d", "r3d_combobox_input_draw_dropdown", "R3dComboboxInputDrawDropdown", t_r3d_combobox_input_draw_dropdown, 5, k_r3d_combobox_input_draw_dropdown, JOY_V_NULL },
-        { "r3d", "r3d_slider_destroy", "R3dSliderDestroy", t_r3d_slider_destroy, 1, k_r3d_slider_destroy, JOY_V_NULL },
-        { "r3d", "r3d_slider_set_value", "R3dSliderSetValue", t_r3d_slider_set_value, 2, k_r3d_slider_set_value, JOY_V_NULL },
-        { "r3d", "r3d_slider_get_value", "R3dSliderGetValue", t_r3d_slider_get_value, 1, k_r3d_slider_get_value, JOY_V_F64 },
-        { "r3d", "r3d_slider_draw", "R3dSliderDraw", t_r3d_slider_draw, 5, k_r3d_slider_draw, JOY_V_NULL },
-        { "r3d", "r3d_slider_is_pressed", "R3dSliderIsPressed", t_r3d_slider_is_pressed, 4, k_r3d_slider_is_pressed, JOY_V_BOOL },
-        { "r3d", "r3d_slider_set_pressed", "R3dSliderSetPressed", t_r3d_slider_set_pressed, 2, k_r3d_slider_set_pressed, JOY_V_NULL },
-        { "r3d", "r3d_slider_drag_move", "R3dSliderDragMove", t_r3d_slider_drag_move, 4, k_r3d_slider_drag_move, JOY_V_NULL },
-        { "r3d", "r3d_slider_is_hovered", "R3dSliderIsHovered", t_r3d_slider_is_hovered, 4, k_r3d_slider_is_hovered, JOY_V_BOOL },
-        { "r3d", "r3d_slider_set_hovered", "R3dSliderSetHovered", t_r3d_slider_set_hovered, 2, k_r3d_slider_set_hovered, JOY_V_NULL },
-        { "r3d", "r3d_checkbox_destroy", "R3dCheckboxDestroy", t_r3d_checkbox_destroy, 1, k_r3d_checkbox_destroy, JOY_V_NULL },
-        { "r3d", "r3d_checkbox_toggle", "R3dCheckboxToggle", t_r3d_checkbox_toggle, 1, k_r3d_checkbox_toggle, JOY_V_NULL },
-        { "r3d", "r3d_checkbox_is_pressed", "R3dCheckboxIsPressed", t_r3d_checkbox_is_pressed, 4, k_r3d_checkbox_is_pressed, JOY_V_BOOL },
-        { "r3d", "r3d_checkbox_set_hovered", "R3dCheckboxSetHovered", t_r3d_checkbox_set_hovered, 2, k_r3d_checkbox_set_hovered, JOY_V_NULL },
-        { "r3d", "r3d_checkbox_is_hovered", "R3dCheckboxIsHovered", t_r3d_checkbox_is_hovered, 4, k_r3d_checkbox_is_hovered, JOY_V_BOOL },
-        { "r3d", "r3d_checkbox_set_colors", "R3dCheckboxSetColors", t_r3d_checkbox_set_colors, 13, k_r3d_checkbox_set_colors, JOY_V_NULL },
-        { "r3d", "r3d_checkbox_draw", "R3dCheckboxDraw", t_r3d_checkbox_draw, 5, k_r3d_checkbox_draw, JOY_V_NULL },
-        { "r3d", "r3d_draw_grid", "R3dDrawGrid", t_r3d_draw_grid, 4, k_r3d_draw_grid, JOY_V_NULL },
+        { "r3d", "joy_r3d_destroy", "R3dDestroy", t_joy_r3d_destroy, 1, k_joy_r3d_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_begin", "R3dBegin", t_joy_r3d_begin, 1, k_joy_r3d_begin, JOY_V_BOOL },
+        { "r3d", "joy_r3d_end", "R3dEnd", t_joy_r3d_end, 1, k_joy_r3d_end, JOY_V_NULL },
+        { "r3d", "joy_r3d_get_draw_calls", "R3dGetDrawCalls", t_joy_r3d_get_draw_calls, 1, k_joy_r3d_get_draw_calls, JOY_V_I32 },
+        { "r3d", "joy_r3d_set_clear_color", "R3dSetClearColor", t_joy_r3d_set_clear_color, 4, k_joy_r3d_set_clear_color, JOY_V_NULL },
+        { "r3d", "joy_r3d_mesh_destroy", "R3dMeshDestroy", t_joy_r3d_mesh_destroy, 2, k_joy_r3d_mesh_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_font_init", "R3dFontInit", t_joy_r3d_font_init, 3, k_joy_r3d_font_init, JOY_V_BOOL },
+        { "r3d", "joy_r3d_font_draw_2d", "R3dFontDraw2d", t_joy_r3d_font_draw_2d, 8, k_joy_r3d_font_draw_2d, JOY_V_BOOL },
+        { "r3d", "joy_r3d_font_cache_set_limit", "R3dFontCacheSetLimit", t_joy_r3d_font_cache_set_limit, 2, k_joy_r3d_font_cache_set_limit, JOY_V_NULL },
+        { "r3d", "joy_r3d_font_cache_get_count", "R3dFontCacheGetCount", t_joy_r3d_font_cache_get_count, 1, k_joy_r3d_font_cache_get_count, JOY_V_I32 },
+        { "r3d", "joy_r3d_font_cache_clear", "R3dFontCacheClear", t_joy_r3d_font_cache_clear, 1, k_joy_r3d_font_cache_clear, JOY_V_NULL },
+        { "r3d", "joy_r3d_font_cache_sweep", "R3dFontCacheSweep", t_joy_r3d_font_cache_sweep, 2, k_joy_r3d_font_cache_sweep, JOY_V_NULL },
+        { "r3d", "joy_r3d_set_logical_presentation", "R3dSetLogicalPresentation", t_joy_r3d_set_logical_presentation, 3, k_joy_r3d_set_logical_presentation, JOY_V_NULL },
+        { "r3d", "joy_r3d_set_logical_presentation_mode", "R3dSetLogicalPresentationMode", t_joy_r3d_set_logical_presentation_mode, 4, k_joy_r3d_set_logical_presentation_mode, JOY_V_NULL },
+        { "r3d", "joy_r3d_button_draw", "R3dButtonDraw", t_joy_r3d_button_draw, 5, k_joy_r3d_button_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_button_draw_circle", "R3dButtonDrawCircle", t_joy_r3d_button_draw_circle, 5, k_joy_r3d_button_draw_circle, JOY_V_NULL },
+        { "r3d", "joy_r3d_button_is_hovered", "R3dButtonIsHovered", t_joy_r3d_button_is_hovered, 4, k_joy_r3d_button_is_hovered, JOY_V_BOOL },
+        { "r3d", "joy_r3d_button_is_pressed", "R3dButtonIsPressed", t_joy_r3d_button_is_pressed, 5, k_joy_r3d_button_is_pressed, JOY_V_BOOL },
+        { "r3d", "joy_r3d_button_release", "R3dButtonRelease", t_joy_r3d_button_release, 4, k_joy_r3d_button_release, JOY_V_NULL },
+        { "r3d", "joy_r3d_button_destroy", "R3dButtonDestroy", t_joy_r3d_button_destroy, 1, k_joy_r3d_button_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_label_set_text", "R3dLabelSetText", t_joy_r3d_label_set_text, 2, k_joy_r3d_label_set_text, JOY_V_NULL },
+        { "r3d", "joy_r3d_label_draw", "R3dLabelDraw", t_joy_r3d_label_draw, 5, k_joy_r3d_label_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_label_destroy", "R3dLabelDestroy", t_joy_r3d_label_destroy, 1, k_joy_r3d_label_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_set_text", "R3dInputSetText", t_joy_r3d_input_set_text, 2, k_joy_r3d_input_set_text, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_is_hovered", "R3dInputIsHovered", t_joy_r3d_input_is_hovered, 4, k_joy_r3d_input_is_hovered, JOY_V_BOOL },
+        { "r3d", "joy_r3d_input_focus", "R3dInputFocus", t_joy_r3d_input_focus, 1, k_joy_r3d_input_focus, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_defocus", "R3dInputDefocus", t_joy_r3d_input_defocus, 1, k_joy_r3d_input_defocus, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_is_focused", "R3dInputIsFocused", t_joy_r3d_input_is_focused, 1, k_joy_r3d_input_is_focused, JOY_V_BOOL },
+        { "r3d", "joy_r3d_input_start_text_input", "R3dInputStartTextInput", t_joy_r3d_input_start_text_input, 2, k_joy_r3d_input_start_text_input, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_stop_text_input", "R3dInputStopTextInput", t_joy_r3d_input_stop_text_input, 2, k_joy_r3d_input_stop_text_input, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_insert", "R3dInputInsert", t_joy_r3d_input_insert, 2, k_joy_r3d_input_insert, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_backspace", "R3dInputBackspace", t_joy_r3d_input_backspace, 1, k_joy_r3d_input_backspace, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_delete", "R3dInputDelete", t_joy_r3d_input_delete, 1, k_joy_r3d_input_delete, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_cursor_left", "R3dInputCursorLeft", t_joy_r3d_input_cursor_left, 1, k_joy_r3d_input_cursor_left, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_cursor_right", "R3dInputCursorRight", t_joy_r3d_input_cursor_right, 1, k_joy_r3d_input_cursor_right, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_cursor_home", "R3dInputCursorHome", t_joy_r3d_input_cursor_home, 1, k_joy_r3d_input_cursor_home, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_cursor_end", "R3dInputCursorEnd", t_joy_r3d_input_cursor_end, 1, k_joy_r3d_input_cursor_end, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_click", "R3dInputClick", t_joy_r3d_input_click, 4, k_joy_r3d_input_click, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_submit", "R3dInputSubmit", t_joy_r3d_input_submit, 1, k_joy_r3d_input_submit, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_draw", "R3dInputDraw", t_joy_r3d_input_draw, 5, k_joy_r3d_input_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_input_destroy", "R3dInputDestroy", t_joy_r3d_input_destroy, 1, k_joy_r3d_input_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_destroy", "R3dComboboxInputDestroy", t_joy_r3d_combobox_input_destroy, 1, k_joy_r3d_combobox_input_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_add_item", "R3dComboboxInputAddItem", t_joy_r3d_combobox_input_add_item, 2, k_joy_r3d_combobox_input_add_item, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_clear_items", "R3dComboboxInputClearItems", t_joy_r3d_combobox_input_clear_items, 1, k_joy_r3d_combobox_input_clear_items, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_set_text", "R3dComboboxInputSetText", t_joy_r3d_combobox_input_set_text, 2, k_joy_r3d_combobox_input_set_text, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_hit_item", "R3dComboboxInputHitItem", t_joy_r3d_combobox_input_hit_item, 3, k_joy_r3d_combobox_input_hit_item, JOY_V_I32 },
+        { "r3d", "joy_r3d_combobox_input_draw", "R3dComboboxInputDraw", t_joy_r3d_combobox_input_draw, 5, k_joy_r3d_combobox_input_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_combobox_input_draw_dropdown", "R3dComboboxInputDrawDropdown", t_joy_r3d_combobox_input_draw_dropdown, 5, k_joy_r3d_combobox_input_draw_dropdown, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_destroy", "R3dSliderDestroy", t_joy_r3d_slider_destroy, 1, k_joy_r3d_slider_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_set_value", "R3dSliderSetValue", t_joy_r3d_slider_set_value, 2, k_joy_r3d_slider_set_value, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_get_value", "R3dSliderGetValue", t_joy_r3d_slider_get_value, 1, k_joy_r3d_slider_get_value, JOY_V_F64 },
+        { "r3d", "joy_r3d_slider_draw", "R3dSliderDraw", t_joy_r3d_slider_draw, 5, k_joy_r3d_slider_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_is_pressed", "R3dSliderIsPressed", t_joy_r3d_slider_is_pressed, 4, k_joy_r3d_slider_is_pressed, JOY_V_BOOL },
+        { "r3d", "joy_r3d_slider_set_pressed", "R3dSliderSetPressed", t_joy_r3d_slider_set_pressed, 2, k_joy_r3d_slider_set_pressed, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_drag_move", "R3dSliderDragMove", t_joy_r3d_slider_drag_move, 4, k_joy_r3d_slider_drag_move, JOY_V_NULL },
+        { "r3d", "joy_r3d_slider_is_hovered", "R3dSliderIsHovered", t_joy_r3d_slider_is_hovered, 4, k_joy_r3d_slider_is_hovered, JOY_V_BOOL },
+        { "r3d", "joy_r3d_slider_set_hovered", "R3dSliderSetHovered", t_joy_r3d_slider_set_hovered, 2, k_joy_r3d_slider_set_hovered, JOY_V_NULL },
+        { "r3d", "joy_r3d_checkbox_destroy", "R3dCheckboxDestroy", t_joy_r3d_checkbox_destroy, 1, k_joy_r3d_checkbox_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_checkbox_toggle", "R3dCheckboxToggle", t_joy_r3d_checkbox_toggle, 1, k_joy_r3d_checkbox_toggle, JOY_V_NULL },
+        { "r3d", "joy_r3d_checkbox_is_pressed", "R3dCheckboxIsPressed", t_joy_r3d_checkbox_is_pressed, 4, k_joy_r3d_checkbox_is_pressed, JOY_V_BOOL },
+        { "r3d", "joy_r3d_checkbox_set_hovered", "R3dCheckboxSetHovered", t_joy_r3d_checkbox_set_hovered, 2, k_joy_r3d_checkbox_set_hovered, JOY_V_NULL },
+        { "r3d", "joy_r3d_checkbox_is_hovered", "R3dCheckboxIsHovered", t_joy_r3d_checkbox_is_hovered, 4, k_joy_r3d_checkbox_is_hovered, JOY_V_BOOL },
+        { "r3d", "joy_r3d_checkbox_set_colors", "R3dCheckboxSetColors", t_joy_r3d_checkbox_set_colors, 13, k_joy_r3d_checkbox_set_colors, JOY_V_NULL },
+        { "r3d", "joy_r3d_checkbox_draw", "R3dCheckboxDraw", t_joy_r3d_checkbox_draw, 5, k_joy_r3d_checkbox_draw, JOY_V_NULL },
+        { "r3d", "joy_r3d_draw_grid", "R3dDrawGrid", t_joy_r3d_draw_grid, 4, k_joy_r3d_draw_grid, JOY_V_NULL },
         { "janimator", "janimator_destroy", "JanimatorDestroy", t_janimator_destroy, 1, k_janimator_destroy, JOY_V_NULL },
         { "janimator", "janimator_set_float", "JanimatorSetFloat", t_janimator_set_float, 3, k_janimator_set_float, JOY_V_NULL },
         { "janimator", "janimator_set_int", "JanimatorSetInt", t_janimator_set_int, 3, k_janimator_set_int, JOY_V_NULL },
@@ -13173,200 +13173,200 @@ const char* joy_api_selftest(void)
         joy_api_call("animation_update", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/animation_update";
         st = JOY_OK;
-        joy_api_call("r3d_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_destroy";
+        joy_api_call("joy_r3d_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_begin", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_begin";
+        joy_api_call("joy_r3d_begin", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_begin";
         st = JOY_OK;
-        joy_api_call("r3d_end", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_end";
+        joy_api_call("joy_r3d_end", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_end";
         st = JOY_OK;
-        joy_api_call("r3d_get_draw_calls", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_get_draw_calls";
+        joy_api_call("joy_r3d_get_draw_calls", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_get_draw_calls";
         st = JOY_OK;
-        joy_api_call("r3d_set_clear_color", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_set_clear_color";
+        joy_api_call("joy_r3d_set_clear_color", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_set_clear_color";
         st = JOY_OK;
-        joy_api_call("r3d_mesh_destroy", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_mesh_destroy";
+        joy_api_call("joy_r3d_mesh_destroy", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_font_init", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_init";
+        joy_api_call("joy_r3d_font_init", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_init";
         st = JOY_OK;
-        joy_api_call("r3d_font_draw_2d", NULL, 9, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_draw_2d";
+        joy_api_call("joy_r3d_font_draw_2d", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_draw_2d";
         st = JOY_OK;
-        joy_api_call("r3d_font_cache_set_limit", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_cache_set_limit";
+        joy_api_call("joy_r3d_font_cache_set_limit", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_cache_set_limit";
         st = JOY_OK;
-        joy_api_call("r3d_font_cache_get_count", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_cache_get_count";
+        joy_api_call("joy_r3d_font_cache_get_count", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_cache_get_count";
         st = JOY_OK;
-        joy_api_call("r3d_font_cache_clear", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_cache_clear";
+        joy_api_call("joy_r3d_font_cache_clear", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_cache_clear";
         st = JOY_OK;
-        joy_api_call("r3d_font_cache_sweep", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_font_cache_sweep";
+        joy_api_call("joy_r3d_font_cache_sweep", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_font_cache_sweep";
         st = JOY_OK;
-        joy_api_call("r3d_set_logical_presentation", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_set_logical_presentation";
+        joy_api_call("joy_r3d_set_logical_presentation", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_set_logical_presentation";
         st = JOY_OK;
-        joy_api_call("r3d_set_logical_presentation_mode", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_set_logical_presentation_mode";
+        joy_api_call("joy_r3d_set_logical_presentation_mode", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_set_logical_presentation_mode";
         st = JOY_OK;
-        joy_api_call("r3d_button_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_draw";
+        joy_api_call("joy_r3d_button_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_draw";
         st = JOY_OK;
-        joy_api_call("r3d_button_draw_circle", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_draw_circle";
+        joy_api_call("joy_r3d_button_draw_circle", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_draw_circle";
         st = JOY_OK;
-        joy_api_call("r3d_button_is_hovered", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_is_hovered";
+        joy_api_call("joy_r3d_button_is_hovered", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_is_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_button_is_pressed", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_is_pressed";
+        joy_api_call("joy_r3d_button_is_pressed", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_is_pressed";
         st = JOY_OK;
-        joy_api_call("r3d_button_release", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_release";
+        joy_api_call("joy_r3d_button_release", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_release";
         st = JOY_OK;
-        joy_api_call("r3d_button_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_button_destroy";
+        joy_api_call("joy_r3d_button_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_button_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_label_set_text", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_label_set_text";
+        joy_api_call("joy_r3d_label_set_text", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_label_set_text";
         st = JOY_OK;
-        joy_api_call("r3d_label_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_label_draw";
+        joy_api_call("joy_r3d_label_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_label_draw";
         st = JOY_OK;
-        joy_api_call("r3d_label_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_label_destroy";
+        joy_api_call("joy_r3d_label_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_label_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_input_set_text", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_set_text";
+        joy_api_call("joy_r3d_input_set_text", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_set_text";
         st = JOY_OK;
-        joy_api_call("r3d_input_is_hovered", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_is_hovered";
+        joy_api_call("joy_r3d_input_is_hovered", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_is_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_input_focus", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_focus";
+        joy_api_call("joy_r3d_input_focus", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_focus";
         st = JOY_OK;
-        joy_api_call("r3d_input_defocus", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_defocus";
+        joy_api_call("joy_r3d_input_defocus", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_defocus";
         st = JOY_OK;
-        joy_api_call("r3d_input_is_focused", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_is_focused";
+        joy_api_call("joy_r3d_input_is_focused", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_is_focused";
         st = JOY_OK;
-        joy_api_call("r3d_input_start_text_input", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_start_text_input";
+        joy_api_call("joy_r3d_input_start_text_input", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_start_text_input";
         st = JOY_OK;
-        joy_api_call("r3d_input_stop_text_input", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_stop_text_input";
+        joy_api_call("joy_r3d_input_stop_text_input", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_stop_text_input";
         st = JOY_OK;
-        joy_api_call("r3d_input_insert", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_insert";
+        joy_api_call("joy_r3d_input_insert", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_insert";
         st = JOY_OK;
-        joy_api_call("r3d_input_backspace", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_backspace";
+        joy_api_call("joy_r3d_input_backspace", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_backspace";
         st = JOY_OK;
-        joy_api_call("r3d_input_delete", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_delete";
+        joy_api_call("joy_r3d_input_delete", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_delete";
         st = JOY_OK;
-        joy_api_call("r3d_input_cursor_left", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_cursor_left";
+        joy_api_call("joy_r3d_input_cursor_left", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_cursor_left";
         st = JOY_OK;
-        joy_api_call("r3d_input_cursor_right", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_cursor_right";
+        joy_api_call("joy_r3d_input_cursor_right", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_cursor_right";
         st = JOY_OK;
-        joy_api_call("r3d_input_cursor_home", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_cursor_home";
+        joy_api_call("joy_r3d_input_cursor_home", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_cursor_home";
         st = JOY_OK;
-        joy_api_call("r3d_input_cursor_end", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_cursor_end";
+        joy_api_call("joy_r3d_input_cursor_end", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_cursor_end";
         st = JOY_OK;
-        joy_api_call("r3d_input_click", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_click";
+        joy_api_call("joy_r3d_input_click", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_click";
         st = JOY_OK;
-        joy_api_call("r3d_input_submit", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_submit";
+        joy_api_call("joy_r3d_input_submit", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_submit";
         st = JOY_OK;
-        joy_api_call("r3d_input_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_draw";
+        joy_api_call("joy_r3d_input_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_draw";
         st = JOY_OK;
-        joy_api_call("r3d_input_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_input_destroy";
+        joy_api_call("joy_r3d_input_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_input_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_destroy";
+        joy_api_call("joy_r3d_combobox_input_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_add_item", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_add_item";
+        joy_api_call("joy_r3d_combobox_input_add_item", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_add_item";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_clear_items", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_clear_items";
+        joy_api_call("joy_r3d_combobox_input_clear_items", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_clear_items";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_set_text", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_set_text";
+        joy_api_call("joy_r3d_combobox_input_set_text", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_set_text";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_hit_item", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_hit_item";
+        joy_api_call("joy_r3d_combobox_input_hit_item", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_hit_item";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_draw";
+        joy_api_call("joy_r3d_combobox_input_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_draw";
         st = JOY_OK;
-        joy_api_call("r3d_combobox_input_draw_dropdown", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_combobox_input_draw_dropdown";
+        joy_api_call("joy_r3d_combobox_input_draw_dropdown", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_combobox_input_draw_dropdown";
         st = JOY_OK;
-        joy_api_call("r3d_slider_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_destroy";
+        joy_api_call("joy_r3d_slider_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_slider_set_value", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_set_value";
+        joy_api_call("joy_r3d_slider_set_value", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_set_value";
         st = JOY_OK;
-        joy_api_call("r3d_slider_get_value", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_get_value";
+        joy_api_call("joy_r3d_slider_get_value", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_get_value";
         st = JOY_OK;
-        joy_api_call("r3d_slider_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_draw";
+        joy_api_call("joy_r3d_slider_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_draw";
         st = JOY_OK;
-        joy_api_call("r3d_slider_is_pressed", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_is_pressed";
+        joy_api_call("joy_r3d_slider_is_pressed", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_is_pressed";
         st = JOY_OK;
-        joy_api_call("r3d_slider_set_pressed", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_set_pressed";
+        joy_api_call("joy_r3d_slider_set_pressed", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_set_pressed";
         st = JOY_OK;
-        joy_api_call("r3d_slider_drag_move", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_drag_move";
+        joy_api_call("joy_r3d_slider_drag_move", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_drag_move";
         st = JOY_OK;
-        joy_api_call("r3d_slider_is_hovered", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_is_hovered";
+        joy_api_call("joy_r3d_slider_is_hovered", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_is_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_slider_set_hovered", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_slider_set_hovered";
+        joy_api_call("joy_r3d_slider_set_hovered", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_slider_set_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_destroy";
+        joy_api_call("joy_r3d_checkbox_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_destroy";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_toggle", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_toggle";
+        joy_api_call("joy_r3d_checkbox_toggle", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_toggle";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_is_pressed", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_is_pressed";
+        joy_api_call("joy_r3d_checkbox_is_pressed", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_is_pressed";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_set_hovered", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_set_hovered";
+        joy_api_call("joy_r3d_checkbox_set_hovered", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_set_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_is_hovered", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_is_hovered";
+        joy_api_call("joy_r3d_checkbox_is_hovered", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_is_hovered";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_set_colors", NULL, 14, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_set_colors";
+        joy_api_call("joy_r3d_checkbox_set_colors", NULL, 14, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_set_colors";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_draw", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_checkbox_draw";
+        joy_api_call("joy_r3d_checkbox_draw", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_checkbox_draw";
         st = JOY_OK;
-        joy_api_call("r3d_draw_grid", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/r3d_draw_grid";
+        joy_api_call("joy_r3d_draw_grid", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_grid";
         st = JOY_OK;
         joy_api_call("janimator_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/janimator_destroy";
@@ -14956,8 +14956,8 @@ const char* joy_api_selftest(void)
         joy_api_call("animation_add_clip", args, 7, &st);
         if (st != JOY_ERR_TYPE) return "L2/animation_add_clip";
         st = JOY_OK;
-        joy_api_call("r3d_checkbox_set_colors", args, 13, &st);
-        if (st != JOY_ERR_TYPE) return "L2/r3d_checkbox_set_colors";
+        joy_api_call("joy_r3d_checkbox_set_colors", args, 13, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r3d_checkbox_set_colors";
         st = JOY_OK;
         joy_api_call("janimator_state_add_clip", args, 8, &st);
         if (st != JOY_ERR_TYPE) return "L2/janimator_state_add_clip";

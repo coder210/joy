@@ -127,6 +127,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   有意排除项（19 条全是 X 级），迁名后必须在 `SKIP_PREFIXES` 里补
   `joy_r2d_spine_`，否则会从 X 掉回 L0/L1 混进 thunk 生成。`jgltf` 在 IDL
   里 0 条（构建默认关），无需处理。`r2d` 域 74 条、`r3d` 146 条。
+- 第十一批 **`r3d` 本体 135 条**：`r3d_*` → `joy_r3d_<动作>`（去掉重复的
+  `r3d_`）。这批声明散在 `api.h` 的 334–750 共约 25 个区块，改用项目自带的
+  Node 工具链按 IDL 名单做精确批量改名（字符类边界，避免 `\b` 被 shell 转义
+  成退格符），改完用 `git diff` 逐项核对。`r3d` 域 146 条，`Api.generated.cs`
+  零变化说明 on 条目的方法名全部冻结成功。
 
 映射见 `idl/rename_map.json`（累加式）。
 

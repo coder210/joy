@@ -74,33 +74,33 @@
 |---|---|---|---|
 | `joy_core_get_raw_window` | `void*` | include/joy/api.h:111 | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
 | `joy_r2d_unwrap` | `void*` | include/joy/api.h:204 | 借用：内部 SDL_Renderer*，所有权归 jr2d |
-| `r3d_load_shader` | `void*` | include/joy/api.h:334 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_pipeline` | `void*` | include/joy/api.h:336 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_upload_buffer` | `void*` | include/joy/api.h:339 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_solid_texture` | `void*` | include/joy/api.h:340 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_depth_texture` | `void*` | include/joy/api.h:342 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_sampler` | `void*` | include/joy/api.h:343 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_get_device` | `void*` | include/joy/api.h:354 | 借用：内部 SDL_GPUDevice*，由 r3d_destroy 销毁 |
-| `r3d_mesh_cube` | `render_mesh_p` | include/joy/api.h:369 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere` | `render_mesh_p` | include/joy/api.h:370 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane` | `render_mesh_p` | include/joy/api.h:371 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp` | `render_mesh_p` | include/joy/api.h:372 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_custom` | `render_mesh_p` | include/joy/api.h:373 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_quad` | `render_mesh_p` | include/joy/api.h:375 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_cube_wire` | `render_mesh_p` | include/joy/api.h:378 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere_wire` | `render_mesh_p` | include/joy/api.h:379 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane_wire` | `render_mesh_p` | include/joy/api.h:380 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp_wire` | `render_mesh_p` | include/joy/api.h:381 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_create_texture` | `void*` | include/joy/api.h:386 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_load_texture_png` | `void*` | include/joy/api.h:389 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_gen_checkerboard` | `void*` | include/joy/api.h:390 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_line_pipeline` | `void*` | include/joy/api.h:730 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_lighting_pipeline` | `void*` | include/joy/api.h:737 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_mesh_cube_lit` | `render_mesh_p` | include/joy/api.h:741 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere_lit` | `render_mesh_p` | include/joy/api.h:742 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane_lit` | `render_mesh_p` | include/joy/api.h:743 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp_lit` | `render_mesh_p` | include/joy/api.h:744 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_custom_lit` | `render_mesh_p` | include/joy/api.h:745 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_load_shader` | `void*` | include/joy/api.h:334 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_pipeline` | `void*` | include/joy/api.h:336 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_upload_buffer` | `void*` | include/joy/api.h:339 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_solid_texture` | `void*` | include/joy/api.h:340 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_depth_texture` | `void*` | include/joy/api.h:342 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_sampler` | `void*` | include/joy/api.h:343 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_get_device` | `void*` | include/joy/api.h:354 | 借用：内部 SDL_GPUDevice*，由 r3d_destroy 销毁 |
+| `joy_r3d_mesh_cube` | `render_mesh_p` | include/joy/api.h:369 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere` | `render_mesh_p` | include/joy/api.h:370 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane` | `render_mesh_p` | include/joy/api.h:371 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp` | `render_mesh_p` | include/joy/api.h:372 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_custom` | `render_mesh_p` | include/joy/api.h:373 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_quad` | `render_mesh_p` | include/joy/api.h:375 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_cube_wire` | `render_mesh_p` | include/joy/api.h:378 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere_wire` | `render_mesh_p` | include/joy/api.h:379 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane_wire` | `render_mesh_p` | include/joy/api.h:380 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp_wire` | `render_mesh_p` | include/joy/api.h:381 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_create_texture` | `void*` | include/joy/api.h:386 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_load_texture_png` | `void*` | include/joy/api.h:389 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_gen_checkerboard` | `void*` | include/joy/api.h:390 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_line_pipeline` | `void*` | include/joy/api.h:730 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_lighting_pipeline` | `void*` | include/joy/api.h:737 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_mesh_cube_lit` | `render_mesh_p` | include/joy/api.h:741 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere_lit` | `render_mesh_p` | include/joy/api.h:742 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane_lit` | `render_mesh_p` | include/joy/api.h:743 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp_lit` | `render_mesh_p` | include/joy/api.h:744 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_custom_lit` | `render_mesh_p` | include/joy/api.h:745 | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `jtilemap_find_tile_layer` | `jtilemap_tile_layer_p` | include/joy/api.h:1374 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
 | `jtilemap_find_object_layer` | `jtilemap_object_layer_p` | include/joy/api.h:1376 | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
 | `scene_node_get_userdata` | `void*` | include/joy/api.h:1485 | 借用：外部传入的 userdata，引擎不释放 |
@@ -122,33 +122,33 @@
 |---|---|---|---|---|
 | `joy_core_get_raw_window` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
 | `joy_r2d_unwrap` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Renderer*，所有权归 jr2d |
-| `r3d_load_shader` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_upload_buffer` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_solid_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_depth_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_sampler` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_get_device` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_GPUDevice*，由 r3d_destroy 销毁 |
-| `r3d_mesh_cube` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_custom` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_quad` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_cube_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_create_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_load_texture_png` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_gen_checkerboard` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_line_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_create_lighting_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
-| `r3d_mesh_cube_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_sphere_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_plane_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_ramp_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
-| `r3d_mesh_custom_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_load_shader` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_upload_buffer` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_solid_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_depth_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_sampler` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_get_device` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_GPUDevice*，由 r3d_destroy 销毁 |
+| `joy_r3d_mesh_cube` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_custom` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_quad` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_cube_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp_wire` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_create_texture` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_load_texture_png` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_gen_checkerboard` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_line_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_create_lighting_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
+| `joy_r3d_mesh_cube_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_sphere_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_plane_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_ramp_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
+| `joy_r3d_mesh_custom_lit` | `render_mesh_p` | （无） | 返回句柄但缺 owns | 语义新建 mesh；唯一 dtor r3d_mesh_destroy(jr3d_p,render_mesh_p) 是双参数，硬约束不允许填 owns |
 | `jtilemap_find_tile_layer` | `jtilemap_tile_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
 | `jtilemap_find_object_layer` | `jtilemap_object_layer_p` | （无） | 返回句柄但缺 owns | 借用：tm->layers 内部元素，由 jtilemap_destroy 统一销毁 |
 | `scene_node_get_userdata` | `void*` | （无） | 返回句柄但缺 owns | 借用：外部传入的 userdata，引擎不释放 |
@@ -214,29 +214,29 @@
 | `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
 | `joy_r2d_jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
 | `animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
-| `r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/api.h:340 |
-| `r3d_mat44_to_float16` | 数组参数 | include/joy/api.h:344 |
-| `r3d_load_texture_png` | 非不透明指针 / 输出参数：int* | include/joy/api.h:389 |
-| `r3d_font_set_color` | 未知类型需人工标注：Uint8 | include/joy/api.h:401 |
-| `r3d_font_draw_2d_color` | 未知类型需人工标注：Uint8 | include/joy/api.h:416 |
-| `r3d_font_draw_2d_outline` | 未知类型需人工标注：Uint8 | include/joy/api.h:421 |
-| `r3d_get_window_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:428 |
-| `r3d_world_to_screen` | 非不透明指针 / 输出参数：float* | include/joy/api.h:446 |
-| `r3d_get_logical_presentation` | 非不透明指针 / 输出参数：int* | include/joy/api.h:458 |
-| `r3d_window_to_logical` | 非不透明指针 / 输出参数：float* | include/joy/api.h:460 |
-| `r3d_logical_to_window` | 非不透明指针 / 输出参数：float* | include/joy/api.h:462 |
-| `r3d_button_set_onclick` | 函数指针 / 回调 | include/joy/api.h:493 |
-| `r3d_draw_rect_2d` | 未知类型需人工标注：Uint8 | include/joy/api.h:500 |
-| `r3d_draw_mesh_2d` | 未知类型需人工标注：Uint8 | include/joy/api.h:506 |
-| `r3d_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:584 |
-| `r3d_input_set_onsubmit` | 函数指针 / 回调 | include/joy/api.h:586 |
-| `r3d_combobox_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:626 |
-| `r3d_checkbox_set_state` | 未知类型需人工标注：jr3d_checkbox_state_t | include/joy/api.h:697 |
-| `r3d_draw_mesh_solid_basis` | 结构体指针参数 | include/joy/api.h:722 |
-| `r3d_draw_wire_basis` | 结构体指针参数 | include/joy/api.h:728 |
-| `r3d_set_light_block` | 结构体指针参数 | include/joy/api.h:747 |
-| `r3d_draw_mesh_lit` | 结构体指针参数 | include/joy/api.h:749 |
-| `r3d_draw_mesh_lit_color` | 结构体指针参数 | include/joy/api.h:750 |
+| `joy_r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/api.h:340 |
+| `joy_r3d_mat44_to_float16` | 数组参数 | include/joy/api.h:344 |
+| `joy_r3d_load_texture_png` | 非不透明指针 / 输出参数：int* | include/joy/api.h:389 |
+| `joy_r3d_font_set_color` | 未知类型需人工标注：Uint8 | include/joy/api.h:401 |
+| `joy_r3d_font_draw_2d_color` | 未知类型需人工标注：Uint8 | include/joy/api.h:416 |
+| `joy_r3d_font_draw_2d_outline` | 未知类型需人工标注：Uint8 | include/joy/api.h:421 |
+| `joy_r3d_get_window_size` | 非不透明指针 / 输出参数：int* | include/joy/api.h:428 |
+| `joy_r3d_world_to_screen` | 非不透明指针 / 输出参数：float* | include/joy/api.h:446 |
+| `joy_r3d_get_logical_presentation` | 非不透明指针 / 输出参数：int* | include/joy/api.h:458 |
+| `joy_r3d_window_to_logical` | 非不透明指针 / 输出参数：float* | include/joy/api.h:460 |
+| `joy_r3d_logical_to_window` | 非不透明指针 / 输出参数：float* | include/joy/api.h:462 |
+| `joy_r3d_button_set_onclick` | 函数指针 / 回调 | include/joy/api.h:493 |
+| `joy_r3d_draw_rect_2d` | 未知类型需人工标注：Uint8 | include/joy/api.h:500 |
+| `joy_r3d_draw_mesh_2d` | 未知类型需人工标注：Uint8 | include/joy/api.h:506 |
+| `joy_r3d_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:584 |
+| `joy_r3d_input_set_onsubmit` | 函数指针 / 回调 | include/joy/api.h:586 |
+| `joy_r3d_combobox_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:626 |
+| `joy_r3d_checkbox_set_state` | 未知类型需人工标注：jr3d_checkbox_state_t | include/joy/api.h:697 |
+| `joy_r3d_draw_mesh_solid_basis` | 结构体指针参数 | include/joy/api.h:722 |
+| `joy_r3d_draw_wire_basis` | 结构体指针参数 | include/joy/api.h:728 |
+| `joy_r3d_set_light_block` | 结构体指针参数 | include/joy/api.h:747 |
+| `joy_r3d_draw_mesh_lit` | 结构体指针参数 | include/joy/api.h:749 |
+| `joy_r3d_draw_mesh_lit_color` | 结构体指针参数 | include/joy/api.h:750 |
 | `joy_fov_ray_dist` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/api.h:763 |
 | `joy_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/api.h:767 |
 | `joy_fov_draw` | 非不透明指针 / 输出参数：float* | include/joy/api.h:773 |

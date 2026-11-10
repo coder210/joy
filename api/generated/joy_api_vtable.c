@@ -1587,57 +1587,57 @@ static void shim_animation_update(void* _jv_ctx, Animation animation, float dt)
         return;
 }
 
-static void shim_r3d_destroy(void* _jv_ctx, Jr3d r)
+static void shim_joy_r3d_destroy(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_begin(void* _jv_ctx, Jr3d r)
+static bool shim_joy_r3d_begin(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_begin", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_begin", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_end(void* _jv_ctx, Jr3d r)
+static void shim_joy_r3d_end(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_r3d_get_draw_calls(void* _jv_ctx, Jr3d r)
+static int shim_joy_r3d_get_draw_calls(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_get_draw_calls", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_get_draw_calls", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_r3d_set_clear_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t cg, uint8_t cb)
+static void shim_joy_r3d_set_clear_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t cg, uint8_t cb)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1647,13 +1647,13 @@ static void shim_r3d_set_clear_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t 
         _jv_args[1] = joy_v_u32(cr);
         _jv_args[2] = joy_v_u32(cg);
         _jv_args[3] = joy_v_u32(cb);
-        _jv_r = joy_api_call("r3d_set_clear_color", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_set_clear_color", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_mesh_destroy(void* _jv_ctx, Jr3d r, RenderMesh m)
+static void shim_joy_r3d_mesh_destroy(void* _jv_ctx, Jr3d r, RenderMesh m)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1661,13 +1661,13 @@ static void shim_r3d_mesh_destroy(void* _jv_ctx, Jr3d r, RenderMesh m)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_handle(m.h);
-        _jv_r = joy_api_call("r3d_mesh_destroy", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_mesh_destroy", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_font_init(void* _jv_ctx, Jr3d r, const char* ttf_path, int pixel_height)
+static bool shim_joy_r3d_font_init(void* _jv_ctx, Jr3d r, const char* ttf_path, int pixel_height)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1676,12 +1676,12 @@ static bool shim_r3d_font_init(void* _jv_ctx, Jr3d r, const char* ttf_path, int 
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_str(ttf_path);
         _jv_args[2] = joy_v_i32(pixel_height);
-        _jv_r = joy_api_call("r3d_font_init", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_init", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r3d_font_draw_2d(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH)
+static bool shim_joy_r3d_font_draw_2d(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -1695,12 +1695,12 @@ static bool shim_r3d_font_draw_2d(void* _jv_ctx, Jr3d r, RenderMesh m, const cha
         _jv_args[5] = joy_v_f64(fontSize);
         _jv_args[6] = joy_v_f64(winW);
         _jv_args[7] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_font_draw_2d", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_draw_2d", _jv_args, 8, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_font_cache_set_limit(void* _jv_ctx, Jr3d r, int max_entries)
+static void shim_joy_r3d_font_cache_set_limit(void* _jv_ctx, Jr3d r, int max_entries)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1708,38 +1708,38 @@ static void shim_r3d_font_cache_set_limit(void* _jv_ctx, Jr3d r, int max_entries
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_i32(max_entries);
-        _jv_r = joy_api_call("r3d_font_cache_set_limit", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_cache_set_limit", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_r3d_font_cache_get_count(void* _jv_ctx, Jr3d r)
+static int shim_joy_r3d_font_cache_get_count(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_font_cache_get_count", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_cache_get_count", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_r3d_font_cache_clear(void* _jv_ctx, Jr3d r)
+static void shim_joy_r3d_font_cache_clear(void* _jv_ctx, Jr3d r)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
-        _jv_r = joy_api_call("r3d_font_cache_clear", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_cache_clear", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_font_cache_sweep(void* _jv_ctx, Jr3d r, int max_idle_frames)
+static void shim_joy_r3d_font_cache_sweep(void* _jv_ctx, Jr3d r, int max_idle_frames)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1747,13 +1747,13 @@ static void shim_r3d_font_cache_sweep(void* _jv_ctx, Jr3d r, int max_idle_frames
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_i32(max_idle_frames);
-        _jv_r = joy_api_call("r3d_font_cache_sweep", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_font_cache_sweep", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_set_logical_presentation(void* _jv_ctx, Jr3d r, int w, int h)
+static void shim_joy_r3d_set_logical_presentation(void* _jv_ctx, Jr3d r, int w, int h)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -1762,13 +1762,13 @@ static void shim_r3d_set_logical_presentation(void* _jv_ctx, Jr3d r, int w, int 
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_i32(w);
         _jv_args[2] = joy_v_i32(h);
-        _jv_r = joy_api_call("r3d_set_logical_presentation", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_set_logical_presentation", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_set_logical_presentation_mode(void* _jv_ctx, Jr3d r, int w, int h, int mode)
+static void shim_joy_r3d_set_logical_presentation_mode(void* _jv_ctx, Jr3d r, int w, int h, int mode)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1778,13 +1778,13 @@ static void shim_r3d_set_logical_presentation_mode(void* _jv_ctx, Jr3d r, int w,
         _jv_args[1] = joy_v_i32(w);
         _jv_args[2] = joy_v_i32(h);
         _jv_args[3] = joy_v_i32(mode);
-        _jv_r = joy_api_call("r3d_set_logical_presentation_mode", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_set_logical_presentation_mode", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_button_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
+static void shim_joy_r3d_button_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1795,13 +1795,13 @@ static void shim_r3d_button_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dButton
         _jv_args[2] = joy_v_handle(btn.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_button_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_button_draw_circle(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
+static void shim_joy_r3d_button_draw_circle(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dButton btn, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1812,13 +1812,13 @@ static void shim_r3d_button_draw_circle(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3
         _jv_args[2] = joy_v_handle(btn.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_button_draw_circle", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_draw_circle", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_button_is_hovered(void* _jv_ctx, Jr3d r, Jr3dButton btn, float mx, float my)
+static bool shim_joy_r3d_button_is_hovered(void* _jv_ctx, Jr3d r, Jr3dButton btn, float mx, float my)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1828,12 +1828,12 @@ static bool shim_r3d_button_is_hovered(void* _jv_ctx, Jr3d r, Jr3dButton btn, fl
         _jv_args[1] = joy_v_handle(btn.h);
         _jv_args[2] = joy_v_f64(mx);
         _jv_args[3] = joy_v_f64(my);
-        _jv_r = joy_api_call("r3d_button_is_hovered", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_is_hovered", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_r3d_button_is_pressed(void* _jv_ctx, Jr3d r, Jr3dButton btn, bool mouse_down, float mx, float my)
+static bool shim_joy_r3d_button_is_pressed(void* _jv_ctx, Jr3d r, Jr3dButton btn, bool mouse_down, float mx, float my)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1844,12 +1844,12 @@ static bool shim_r3d_button_is_pressed(void* _jv_ctx, Jr3d r, Jr3dButton btn, bo
         _jv_args[2] = joy_v_bool(mouse_down);
         _jv_args[3] = joy_v_f64(mx);
         _jv_args[4] = joy_v_f64(my);
-        _jv_r = joy_api_call("r3d_button_is_pressed", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_is_pressed", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_button_release(void* _jv_ctx, Jr3d r, Jr3dButton btn, float mx, float my)
+static void shim_joy_r3d_button_release(void* _jv_ctx, Jr3d r, Jr3dButton btn, float mx, float my)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1859,26 +1859,26 @@ static void shim_r3d_button_release(void* _jv_ctx, Jr3d r, Jr3dButton btn, float
         _jv_args[1] = joy_v_handle(btn.h);
         _jv_args[2] = joy_v_f64(mx);
         _jv_args[3] = joy_v_f64(my);
-        _jv_r = joy_api_call("r3d_button_release", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_release", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_button_destroy(void* _jv_ctx, Jr3dButton btn)
+static void shim_joy_r3d_button_destroy(void* _jv_ctx, Jr3dButton btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("r3d_button_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_button_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_label_set_text(void* _jv_ctx, Jr3dLabel l, const char* text)
+static void shim_joy_r3d_label_set_text(void* _jv_ctx, Jr3dLabel l, const char* text)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1886,13 +1886,13 @@ static void shim_r3d_label_set_text(void* _jv_ctx, Jr3dLabel l, const char* text
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(l.h);
         _jv_args[1] = joy_v_str(text);
-        _jv_r = joy_api_call("r3d_label_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_label_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_label_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dLabel l, float winW, float winH)
+static void shim_joy_r3d_label_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dLabel l, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1903,26 +1903,26 @@ static void shim_r3d_label_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dLabel l
         _jv_args[2] = joy_v_handle(l.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_label_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_label_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_label_destroy(void* _jv_ctx, Jr3dLabel l)
+static void shim_joy_r3d_label_destroy(void* _jv_ctx, Jr3dLabel l)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(l.h);
-        _jv_r = joy_api_call("r3d_label_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_label_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_set_text(void* _jv_ctx, Jr3dInput inp, const char* text)
+static void shim_joy_r3d_input_set_text(void* _jv_ctx, Jr3dInput inp, const char* text)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1930,13 +1930,13 @@ static void shim_r3d_input_set_text(void* _jv_ctx, Jr3dInput inp, const char* te
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
         _jv_args[1] = joy_v_str(text);
-        _jv_r = joy_api_call("r3d_input_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_input_is_hovered(void* _jv_ctx, Jr3d r, Jr3dInput inp, float mx, float my)
+static bool shim_joy_r3d_input_is_hovered(void* _jv_ctx, Jr3d r, Jr3dInput inp, float mx, float my)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1946,50 +1946,50 @@ static bool shim_r3d_input_is_hovered(void* _jv_ctx, Jr3d r, Jr3dInput inp, floa
         _jv_args[1] = joy_v_handle(inp.h);
         _jv_args[2] = joy_v_f64(mx);
         _jv_args[3] = joy_v_f64(my);
-        _jv_r = joy_api_call("r3d_input_is_hovered", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_is_hovered", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_input_focus(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_focus(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_focus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_focus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_defocus(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_defocus(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_defocus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_defocus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_input_is_focused(void* _jv_ctx, Jr3dInput inp)
+static bool shim_joy_r3d_input_is_focused(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_is_focused", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_is_focused", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_input_start_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp)
+static void shim_joy_r3d_input_start_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -1997,13 +1997,13 @@ static void shim_r3d_input_start_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_start_text_input", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_start_text_input", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_stop_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp)
+static void shim_joy_r3d_input_stop_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2011,13 +2011,13 @@ static void shim_r3d_input_stop_text_input(void* _jv_ctx, Jr3d r, Jr3dInput inp)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(r.h);
         _jv_args[1] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_stop_text_input", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_stop_text_input", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_insert(void* _jv_ctx, Jr3dInput inp, const char* s)
+static void shim_joy_r3d_input_insert(void* _jv_ctx, Jr3dInput inp, const char* s)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2025,91 +2025,91 @@ static void shim_r3d_input_insert(void* _jv_ctx, Jr3dInput inp, const char* s)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
         _jv_args[1] = joy_v_str(s);
-        _jv_r = joy_api_call("r3d_input_insert", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_insert", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_backspace(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_backspace(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_backspace", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_backspace", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_delete(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_delete(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_delete", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_delete", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_cursor_left(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_cursor_left(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_cursor_left", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_cursor_left", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_cursor_right(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_cursor_right(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_cursor_right", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_cursor_right", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_cursor_home(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_cursor_home(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_cursor_home", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_cursor_home", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_cursor_end(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_cursor_end(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_cursor_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_cursor_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_click(void* _jv_ctx, Jr3d r, Jr3dInput inp, float mx, float my)
+static void shim_joy_r3d_input_click(void* _jv_ctx, Jr3d r, Jr3dInput inp, float mx, float my)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2119,26 +2119,26 @@ static void shim_r3d_input_click(void* _jv_ctx, Jr3d r, Jr3dInput inp, float mx,
         _jv_args[1] = joy_v_handle(inp.h);
         _jv_args[2] = joy_v_f64(mx);
         _jv_args[3] = joy_v_f64(my);
-        _jv_r = joy_api_call("r3d_input_click", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_click", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_submit(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_submit(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_submit", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_submit", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dInput inp, float winW, float winH)
+static void shim_joy_r3d_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dInput inp, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2149,39 +2149,39 @@ static void shim_r3d_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dInput i
         _jv_args[2] = joy_v_handle(inp.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_input_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_input_destroy(void* _jv_ctx, Jr3dInput inp)
+static void shim_joy_r3d_input_destroy(void* _jv_ctx, Jr3dInput inp)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(inp.h);
-        _jv_r = joy_api_call("r3d_input_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_input_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_combobox_input_destroy(void* _jv_ctx, Jr3dComboboxInput ci)
+static void shim_joy_r3d_combobox_input_destroy(void* _jv_ctx, Jr3dComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("r3d_combobox_input_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_combobox_input_add_item(void* _jv_ctx, Jr3dComboboxInput ci, const char* str)
+static void shim_joy_r3d_combobox_input_add_item(void* _jv_ctx, Jr3dComboboxInput ci, const char* str)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2189,26 +2189,26 @@ static void shim_r3d_combobox_input_add_item(void* _jv_ctx, Jr3dComboboxInput ci
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
-        _jv_r = joy_api_call("r3d_combobox_input_add_item", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_add_item", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_combobox_input_clear_items(void* _jv_ctx, Jr3dComboboxInput ci)
+static void shim_joy_r3d_combobox_input_clear_items(void* _jv_ctx, Jr3dComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("r3d_combobox_input_clear_items", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_clear_items", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_combobox_input_set_text(void* _jv_ctx, Jr3dComboboxInput ci, const char* str)
+static void shim_joy_r3d_combobox_input_set_text(void* _jv_ctx, Jr3dComboboxInput ci, const char* str)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2216,13 +2216,13 @@ static void shim_r3d_combobox_input_set_text(void* _jv_ctx, Jr3dComboboxInput ci
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
-        _jv_r = joy_api_call("r3d_combobox_input_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_r3d_combobox_input_hit_item(void* _jv_ctx, Jr3dComboboxInput ci, float x, float y)
+static int shim_joy_r3d_combobox_input_hit_item(void* _jv_ctx, Jr3dComboboxInput ci, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -2231,12 +2231,12 @@ static int shim_r3d_combobox_input_hit_item(void* _jv_ctx, Jr3dComboboxInput ci,
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_combobox_input_hit_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_hit_item", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_r3d_combobox_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
+static void shim_joy_r3d_combobox_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2247,13 +2247,13 @@ static void shim_r3d_combobox_input_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr
         _jv_args[2] = joy_v_handle(ci.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_combobox_input_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_combobox_input_draw_dropdown(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
+static void shim_joy_r3d_combobox_input_draw_dropdown(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dComboboxInput ci, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2264,26 +2264,26 @@ static void shim_r3d_combobox_input_draw_dropdown(void* _jv_ctx, Jr3d r, RenderM
         _jv_args[2] = joy_v_handle(ci.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_combobox_input_draw_dropdown", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_combobox_input_draw_dropdown", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_slider_destroy(void* _jv_ctx, Jr3dSlider s)
+static void shim_joy_r3d_slider_destroy(void* _jv_ctx, Jr3dSlider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("r3d_slider_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_slider_set_value(void* _jv_ctx, Jr3dSlider s, float v)
+static void shim_joy_r3d_slider_set_value(void* _jv_ctx, Jr3dSlider s, float v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2291,25 +2291,25 @@ static void shim_r3d_slider_set_value(void* _jv_ctx, Jr3dSlider s, float v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(v);
-        _jv_r = joy_api_call("r3d_slider_set_value", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_set_value", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_r3d_slider_get_value(void* _jv_ctx, Jr3dSlider s)
+static float shim_joy_r3d_slider_get_value(void* _jv_ctx, Jr3dSlider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("r3d_slider_get_value", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_get_value", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_r3d_slider_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dSlider s, float winW, float winH)
+static void shim_joy_r3d_slider_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dSlider s, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2320,13 +2320,13 @@ static void shim_r3d_slider_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dSlider
         _jv_args[2] = joy_v_handle(s.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_slider_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_slider_is_pressed(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
+static bool shim_joy_r3d_slider_is_pressed(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2336,12 +2336,12 @@ static bool shim_r3d_slider_is_pressed(void* _jv_ctx, Jr3d r, Jr3dSlider s, floa
         _jv_args[1] = joy_v_handle(s.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_slider_is_pressed", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_is_pressed", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_slider_set_pressed(void* _jv_ctx, Jr3dSlider s, bool v)
+static void shim_joy_r3d_slider_set_pressed(void* _jv_ctx, Jr3dSlider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2349,13 +2349,13 @@ static void shim_r3d_slider_set_pressed(void* _jv_ctx, Jr3dSlider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("r3d_slider_set_pressed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_set_pressed", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_slider_drag_move(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
+static void shim_joy_r3d_slider_drag_move(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2365,13 +2365,13 @@ static void shim_r3d_slider_drag_move(void* _jv_ctx, Jr3d r, Jr3dSlider s, float
         _jv_args[1] = joy_v_handle(s.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_slider_drag_move", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_drag_move", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_slider_is_hovered(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
+static bool shim_joy_r3d_slider_is_hovered(void* _jv_ctx, Jr3d r, Jr3dSlider s, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2381,12 +2381,12 @@ static bool shim_r3d_slider_is_hovered(void* _jv_ctx, Jr3d r, Jr3dSlider s, floa
         _jv_args[1] = joy_v_handle(s.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_slider_is_hovered", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_is_hovered", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_slider_set_hovered(void* _jv_ctx, Jr3dSlider s, bool v)
+static void shim_joy_r3d_slider_set_hovered(void* _jv_ctx, Jr3dSlider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2394,39 +2394,39 @@ static void shim_r3d_slider_set_hovered(void* _jv_ctx, Jr3dSlider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("r3d_slider_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_slider_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_checkbox_destroy(void* _jv_ctx, Jr3dCheckbox cb)
+static void shim_joy_r3d_checkbox_destroy(void* _jv_ctx, Jr3dCheckbox cb)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(cb.h);
-        _jv_r = joy_api_call("r3d_checkbox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_checkbox_toggle(void* _jv_ctx, Jr3dCheckbox cb)
+static void shim_joy_r3d_checkbox_toggle(void* _jv_ctx, Jr3dCheckbox cb)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(cb.h);
-        _jv_r = joy_api_call("r3d_checkbox_toggle", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_toggle", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_checkbox_is_pressed(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb, float x, float y)
+static bool shim_joy_r3d_checkbox_is_pressed(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2436,12 +2436,12 @@ static bool shim_r3d_checkbox_is_pressed(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb,
         _jv_args[1] = joy_v_handle(cb.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_checkbox_is_pressed", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_is_pressed", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_checkbox_set_hovered(void* _jv_ctx, Jr3dCheckbox cb, bool v)
+static void shim_joy_r3d_checkbox_set_hovered(void* _jv_ctx, Jr3dCheckbox cb, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -2449,13 +2449,13 @@ static void shim_r3d_checkbox_set_hovered(void* _jv_ctx, Jr3dCheckbox cb, bool v
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(cb.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("r3d_checkbox_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_r3d_checkbox_is_hovered(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb, float x, float y)
+static bool shim_joy_r3d_checkbox_is_hovered(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2465,12 +2465,12 @@ static bool shim_r3d_checkbox_is_hovered(void* _jv_ctx, Jr3d r, Jr3dCheckbox cb,
         _jv_args[1] = joy_v_handle(cb.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("r3d_checkbox_is_hovered", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_is_hovered", _jv_args, 4, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_r3d_checkbox_set_colors(void* _jv_ctx, Jr3dCheckbox cb, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
+static void shim_joy_r3d_checkbox_set_colors(void* _jv_ctx, Jr3dCheckbox cb, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
 {
         joy_value_t _jv_args[13];
         joy_value_t _jv_r;
@@ -2489,13 +2489,13 @@ static void shim_r3d_checkbox_set_colors(void* _jv_ctx, Jr3dCheckbox cb, uint8_t
         _jv_args[10] = joy_v_u32(hover_g);
         _jv_args[11] = joy_v_u32(hover_b);
         _jv_args[12] = joy_v_u32(hover_a);
-        _jv_r = joy_api_call("r3d_checkbox_set_colors", _jv_args, 13, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_set_colors", _jv_args, 13, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_checkbox_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dCheckbox cb, float winW, float winH)
+static void shim_joy_r3d_checkbox_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dCheckbox cb, float winW, float winH)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -2506,13 +2506,13 @@ static void shim_r3d_checkbox_draw(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dChec
         _jv_args[2] = joy_v_handle(cb.h);
         _jv_args[3] = joy_v_f64(winW);
         _jv_args[4] = joy_v_f64(winH);
-        _jv_r = joy_api_call("r3d_checkbox_draw", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_checkbox_draw", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spacing, float line_width)
+static void shim_joy_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spacing, float line_width)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -2522,7 +2522,7 @@ static void shim_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spacing,
         _jv_args[1] = joy_v_i32(slices);
         _jv_args[2] = joy_v_f64(spacing);
         _jv_args[3] = joy_v_f64(line_width);
-        _jv_r = joy_api_call("r3d_draw_grid", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_draw_grid", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10077,71 +10077,71 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->AnimationSetScale = shim_animation_set_scale;
         api->AnimationSetRotation = shim_animation_set_rotation;
         api->AnimationUpdate = shim_animation_update;
-        api->R3dDestroy = shim_r3d_destroy;
-        api->R3dBegin = shim_r3d_begin;
-        api->R3dEnd = shim_r3d_end;
-        api->R3dGetDrawCalls = shim_r3d_get_draw_calls;
-        api->R3dSetClearColor = shim_r3d_set_clear_color;
-        api->R3dMeshDestroy = shim_r3d_mesh_destroy;
-        api->R3dFontInit = shim_r3d_font_init;
-        api->R3dFontDraw2d = shim_r3d_font_draw_2d;
-        api->R3dFontCacheSetLimit = shim_r3d_font_cache_set_limit;
-        api->R3dFontCacheGetCount = shim_r3d_font_cache_get_count;
-        api->R3dFontCacheClear = shim_r3d_font_cache_clear;
-        api->R3dFontCacheSweep = shim_r3d_font_cache_sweep;
-        api->R3dSetLogicalPresentation = shim_r3d_set_logical_presentation;
-        api->R3dSetLogicalPresentationMode = shim_r3d_set_logical_presentation_mode;
-        api->R3dButtonDraw = shim_r3d_button_draw;
-        api->R3dButtonDrawCircle = shim_r3d_button_draw_circle;
-        api->R3dButtonIsHovered = shim_r3d_button_is_hovered;
-        api->R3dButtonIsPressed = shim_r3d_button_is_pressed;
-        api->R3dButtonRelease = shim_r3d_button_release;
-        api->R3dButtonDestroy = shim_r3d_button_destroy;
-        api->R3dLabelSetText = shim_r3d_label_set_text;
-        api->R3dLabelDraw = shim_r3d_label_draw;
-        api->R3dLabelDestroy = shim_r3d_label_destroy;
-        api->R3dInputSetText = shim_r3d_input_set_text;
-        api->R3dInputIsHovered = shim_r3d_input_is_hovered;
-        api->R3dInputFocus = shim_r3d_input_focus;
-        api->R3dInputDefocus = shim_r3d_input_defocus;
-        api->R3dInputIsFocused = shim_r3d_input_is_focused;
-        api->R3dInputStartTextInput = shim_r3d_input_start_text_input;
-        api->R3dInputStopTextInput = shim_r3d_input_stop_text_input;
-        api->R3dInputInsert = shim_r3d_input_insert;
-        api->R3dInputBackspace = shim_r3d_input_backspace;
-        api->R3dInputDelete = shim_r3d_input_delete;
-        api->R3dInputCursorLeft = shim_r3d_input_cursor_left;
-        api->R3dInputCursorRight = shim_r3d_input_cursor_right;
-        api->R3dInputCursorHome = shim_r3d_input_cursor_home;
-        api->R3dInputCursorEnd = shim_r3d_input_cursor_end;
-        api->R3dInputClick = shim_r3d_input_click;
-        api->R3dInputSubmit = shim_r3d_input_submit;
-        api->R3dInputDraw = shim_r3d_input_draw;
-        api->R3dInputDestroy = shim_r3d_input_destroy;
-        api->R3dComboboxInputDestroy = shim_r3d_combobox_input_destroy;
-        api->R3dComboboxInputAddItem = shim_r3d_combobox_input_add_item;
-        api->R3dComboboxInputClearItems = shim_r3d_combobox_input_clear_items;
-        api->R3dComboboxInputSetText = shim_r3d_combobox_input_set_text;
-        api->R3dComboboxInputHitItem = shim_r3d_combobox_input_hit_item;
-        api->R3dComboboxInputDraw = shim_r3d_combobox_input_draw;
-        api->R3dComboboxInputDrawDropdown = shim_r3d_combobox_input_draw_dropdown;
-        api->R3dSliderDestroy = shim_r3d_slider_destroy;
-        api->R3dSliderSetValue = shim_r3d_slider_set_value;
-        api->R3dSliderGetValue = shim_r3d_slider_get_value;
-        api->R3dSliderDraw = shim_r3d_slider_draw;
-        api->R3dSliderIsPressed = shim_r3d_slider_is_pressed;
-        api->R3dSliderSetPressed = shim_r3d_slider_set_pressed;
-        api->R3dSliderDragMove = shim_r3d_slider_drag_move;
-        api->R3dSliderIsHovered = shim_r3d_slider_is_hovered;
-        api->R3dSliderSetHovered = shim_r3d_slider_set_hovered;
-        api->R3dCheckboxDestroy = shim_r3d_checkbox_destroy;
-        api->R3dCheckboxToggle = shim_r3d_checkbox_toggle;
-        api->R3dCheckboxIsPressed = shim_r3d_checkbox_is_pressed;
-        api->R3dCheckboxSetHovered = shim_r3d_checkbox_set_hovered;
-        api->R3dCheckboxIsHovered = shim_r3d_checkbox_is_hovered;
-        api->R3dCheckboxSetColors = shim_r3d_checkbox_set_colors;
-        api->R3dCheckboxDraw = shim_r3d_checkbox_draw;
-        api->R3dDrawGrid = shim_r3d_draw_grid;
+        api->R3dDestroy = shim_joy_r3d_destroy;
+        api->R3dBegin = shim_joy_r3d_begin;
+        api->R3dEnd = shim_joy_r3d_end;
+        api->R3dGetDrawCalls = shim_joy_r3d_get_draw_calls;
+        api->R3dSetClearColor = shim_joy_r3d_set_clear_color;
+        api->R3dMeshDestroy = shim_joy_r3d_mesh_destroy;
+        api->R3dFontInit = shim_joy_r3d_font_init;
+        api->R3dFontDraw2d = shim_joy_r3d_font_draw_2d;
+        api->R3dFontCacheSetLimit = shim_joy_r3d_font_cache_set_limit;
+        api->R3dFontCacheGetCount = shim_joy_r3d_font_cache_get_count;
+        api->R3dFontCacheClear = shim_joy_r3d_font_cache_clear;
+        api->R3dFontCacheSweep = shim_joy_r3d_font_cache_sweep;
+        api->R3dSetLogicalPresentation = shim_joy_r3d_set_logical_presentation;
+        api->R3dSetLogicalPresentationMode = shim_joy_r3d_set_logical_presentation_mode;
+        api->R3dButtonDraw = shim_joy_r3d_button_draw;
+        api->R3dButtonDrawCircle = shim_joy_r3d_button_draw_circle;
+        api->R3dButtonIsHovered = shim_joy_r3d_button_is_hovered;
+        api->R3dButtonIsPressed = shim_joy_r3d_button_is_pressed;
+        api->R3dButtonRelease = shim_joy_r3d_button_release;
+        api->R3dButtonDestroy = shim_joy_r3d_button_destroy;
+        api->R3dLabelSetText = shim_joy_r3d_label_set_text;
+        api->R3dLabelDraw = shim_joy_r3d_label_draw;
+        api->R3dLabelDestroy = shim_joy_r3d_label_destroy;
+        api->R3dInputSetText = shim_joy_r3d_input_set_text;
+        api->R3dInputIsHovered = shim_joy_r3d_input_is_hovered;
+        api->R3dInputFocus = shim_joy_r3d_input_focus;
+        api->R3dInputDefocus = shim_joy_r3d_input_defocus;
+        api->R3dInputIsFocused = shim_joy_r3d_input_is_focused;
+        api->R3dInputStartTextInput = shim_joy_r3d_input_start_text_input;
+        api->R3dInputStopTextInput = shim_joy_r3d_input_stop_text_input;
+        api->R3dInputInsert = shim_joy_r3d_input_insert;
+        api->R3dInputBackspace = shim_joy_r3d_input_backspace;
+        api->R3dInputDelete = shim_joy_r3d_input_delete;
+        api->R3dInputCursorLeft = shim_joy_r3d_input_cursor_left;
+        api->R3dInputCursorRight = shim_joy_r3d_input_cursor_right;
+        api->R3dInputCursorHome = shim_joy_r3d_input_cursor_home;
+        api->R3dInputCursorEnd = shim_joy_r3d_input_cursor_end;
+        api->R3dInputClick = shim_joy_r3d_input_click;
+        api->R3dInputSubmit = shim_joy_r3d_input_submit;
+        api->R3dInputDraw = shim_joy_r3d_input_draw;
+        api->R3dInputDestroy = shim_joy_r3d_input_destroy;
+        api->R3dComboboxInputDestroy = shim_joy_r3d_combobox_input_destroy;
+        api->R3dComboboxInputAddItem = shim_joy_r3d_combobox_input_add_item;
+        api->R3dComboboxInputClearItems = shim_joy_r3d_combobox_input_clear_items;
+        api->R3dComboboxInputSetText = shim_joy_r3d_combobox_input_set_text;
+        api->R3dComboboxInputHitItem = shim_joy_r3d_combobox_input_hit_item;
+        api->R3dComboboxInputDraw = shim_joy_r3d_combobox_input_draw;
+        api->R3dComboboxInputDrawDropdown = shim_joy_r3d_combobox_input_draw_dropdown;
+        api->R3dSliderDestroy = shim_joy_r3d_slider_destroy;
+        api->R3dSliderSetValue = shim_joy_r3d_slider_set_value;
+        api->R3dSliderGetValue = shim_joy_r3d_slider_get_value;
+        api->R3dSliderDraw = shim_joy_r3d_slider_draw;
+        api->R3dSliderIsPressed = shim_joy_r3d_slider_is_pressed;
+        api->R3dSliderSetPressed = shim_joy_r3d_slider_set_pressed;
+        api->R3dSliderDragMove = shim_joy_r3d_slider_drag_move;
+        api->R3dSliderIsHovered = shim_joy_r3d_slider_is_hovered;
+        api->R3dSliderSetHovered = shim_joy_r3d_slider_set_hovered;
+        api->R3dCheckboxDestroy = shim_joy_r3d_checkbox_destroy;
+        api->R3dCheckboxToggle = shim_joy_r3d_checkbox_toggle;
+        api->R3dCheckboxIsPressed = shim_joy_r3d_checkbox_is_pressed;
+        api->R3dCheckboxSetHovered = shim_joy_r3d_checkbox_set_hovered;
+        api->R3dCheckboxIsHovered = shim_joy_r3d_checkbox_is_hovered;
+        api->R3dCheckboxSetColors = shim_joy_r3d_checkbox_set_colors;
+        api->R3dCheckboxDraw = shim_joy_r3d_checkbox_draw;
+        api->R3dDrawGrid = shim_joy_r3d_draw_grid;
         api->JanimatorDestroy = shim_janimator_destroy;
         api->JanimatorSetFloat = shim_janimator_set_float;
         api->JanimatorSetInt = shim_janimator_set_int;
