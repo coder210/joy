@@ -476,6 +476,40 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
 #define jparticle_render           joy_r2d_particle_render
 #define jparticle_count            joy_r2d_particle_count
 #define jparticle_is_active        joy_r2d_particle_is_active
+
+/* P1 第十批：jspine → r2d（仍是 X 有意排除，靠 SKIP_PREFIXES 保级），
+ * jlight → r3d。 */
+#define jspine_asset_load          joy_r2d_spine_asset_load
+#define jspine_asset_free          joy_r2d_spine_asset_free
+#define jspine_asset_animation_count joy_r2d_spine_asset_animation_count
+#define jspine_asset_animation_duration joy_r2d_spine_asset_animation_duration
+#define jspine_instance_init       joy_r2d_spine_instance_init
+#define jspine_instance_free       joy_r2d_spine_instance_free
+#define jspine_instance_reset      joy_r2d_spine_instance_reset
+#define jspine_instance_set_animation joy_r2d_spine_instance_set_animation
+#define jspine_instance_add_animation joy_r2d_spine_instance_add_animation
+#define jspine_instance_update     joy_r2d_spine_instance_update
+#define jspine_instance_sync       joy_r2d_spine_instance_sync
+#define jspine_instance_draw       joy_r2d_spine_instance_draw
+#define jspine_instance_set_position joy_r2d_spine_instance_set_position
+#define jspine_instance_set_scale  joy_r2d_spine_instance_set_scale
+#define jspine_instance_set_rotation joy_r2d_spine_instance_set_rotation
+#define jspine_instance_set_flip_x joy_r2d_spine_instance_set_flip_x
+#define jspine_instance_set_alpha  joy_r2d_spine_instance_set_alpha
+#define jspine_instance_set_tint   joy_r2d_spine_instance_set_tint
+#define jspine_instance_bounds     joy_r2d_spine_instance_bounds
+#define jspine_instance_animation  joy_r2d_spine_instance_animation
+#define jlight_sys_create          joy_r3d_light_sys_create
+#define jlight_sys_destroy         joy_r3d_light_sys_destroy
+#define jlight_sys_resize          joy_r3d_light_sys_resize
+#define jlight_add                 joy_r3d_light_add
+#define jlight_remove              joy_r3d_light_remove
+#define jlight_set                 joy_r3d_light_set
+#define jlight_clear               joy_r3d_light_clear
+#define jlight_add_occluder        joy_r3d_light_add_occluder
+#define jlight_clear_occluders     joy_r3d_light_clear_occluders
+#define jlight_set_ambient         joy_r3d_light_set_ambient
+#define jlight_render              joy_r3d_light_render
 #endif
 
 #endif /* JOY_COMPAT_H */

@@ -6973,9 +6973,9 @@ static void icall_JlightSysDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jlight_sys_destroy", args, 1, &st);
+        (void)joy_api_call("joy_r3d_light_sys_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_sys_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_sys_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -6988,9 +6988,9 @@ static void icall_JlightSysResize(uint64_t p0, int32_t p1, int32_t p2)
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        (void)joy_api_call("jlight_sys_resize", args, 3, &st);
+        (void)joy_api_call("joy_r3d_light_sys_resize", args, 3, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_sys_resize", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_sys_resize", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7002,9 +7002,9 @@ static void icall_JlightRemove(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("jlight_remove", args, 2, &st);
+        (void)joy_api_call("joy_r3d_light_remove", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_remove", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_remove", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7015,9 +7015,9 @@ static void icall_JlightClear(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jlight_clear", args, 1, &st);
+        (void)joy_api_call("joy_r3d_light_clear", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_clear", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_clear", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7033,9 +7033,9 @@ static int32_t icall_JlightAddOccluder(uint64_t p0, float p1, float p2, float p3
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("jlight_add_occluder", args, 5, &st);
+        r = joy_api_call("joy_r3d_light_add_occluder", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_add_occluder", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_add_occluder", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -7046,9 +7046,9 @@ static void icall_JlightClearOccluders(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jlight_clear_occluders", args, 1, &st);
+        (void)joy_api_call("joy_r3d_light_clear_occluders", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_clear_occluders", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_clear_occluders", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7062,9 +7062,9 @@ static void icall_JlightSetAmbient(uint64_t p0, uint32_t p1, uint32_t p2, uint32
         args[1] = joy_v_u32((uint32_t)p1);
         args[2] = joy_v_u32((uint32_t)p2);
         args[3] = joy_v_u32((uint32_t)p3);
-        (void)joy_api_call("jlight_set_ambient", args, 4, &st);
+        (void)joy_api_call("joy_r3d_light_set_ambient", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_set_ambient", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_set_ambient", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7076,9 +7076,9 @@ static void icall_JlightRender(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_handle((uint64_t)p1);
-        (void)joy_api_call("jlight_render", args, 2, &st);
+        (void)joy_api_call("joy_r3d_light_render", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jlight_render", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_light_render", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

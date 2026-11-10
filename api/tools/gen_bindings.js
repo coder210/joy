@@ -51,7 +51,9 @@ const RENAME_MAP = path.join(JOY_API, 'idl', 'rename_map.json');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
  * SKIP_PREFIXES 管存量名字，SKIP_DOMAINS 管三段式新名字。 */
-const SKIP_PREFIXES = ['utils_', 'jspine_', 'modules_', 'module_instance_'];
+/* jspine 是有意排除（JOY_USE_SPINE 条件编译）；迁移后新名沿用同一排除，
+ * 否则 19 条会从 X 掉回 L0/L1 混进 thunk 生成。 */
+const SKIP_PREFIXES = ['utils_', 'jspine_', 'joy_r2d_spine_', 'modules_', 'module_instance_'];
 const SKIP_NAMES = new Set(['jecs_test']);
 const SKIP_DOMAINS = new Set(['utils', 'jspine', 'modules', 'module', 'script']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];

@@ -47,20 +47,18 @@
 | input | 0 | 14 | 0 | 3 | 0 | 17 |
 | janimator | 0 | 23 | 2 | 2 | 0 | 27 |
 | jecs | 0 | 5 | 0 | 7 | 1 | 13 |
-| jlight | 0 | 9 | 2 | 0 | 0 | 11 |
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
 | jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
 | jpm | 1 | 1 | 0 | 6 | 0 | 8 |
-| jspine | 0 | 0 | 0 | 0 | 19 | 19 |
 | jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
 | math | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
 | net | 0 | 56 | 0 | 20 | 0 | 76 |
-| r2d | 4 | 33 | 6 | 12 | 0 | 55 |
-| r3d | 0 | 100 | 12 | 23 | 0 | 135 |
+| r2d | 4 | 33 | 6 | 12 | 19 | 74 |
+| r3d | 0 | 109 | 14 | 23 | 0 | 146 |
 | scene | 0 | 64 | 0 | 16 | 0 | 80 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
 | sys | 19 | 0 | 0 | 3 | 0 | 22 |
@@ -419,25 +417,25 @@
 | `utils_md5x` | include/joy/api.h:33 |
 | `utils_des_crypt` | include/joy/api.h:34 |
 | `utils_des_decrypt` | include/joy/api.h:35 |
-| `jspine_asset_load` | include/joy/api.h:998 |
-| `jspine_asset_free` | include/joy/api.h:1000 |
-| `jspine_asset_animation_count` | include/joy/api.h:1002 |
-| `jspine_asset_animation_duration` | include/joy/api.h:1004 |
-| `jspine_instance_init` | include/joy/api.h:1007 |
-| `jspine_instance_free` | include/joy/api.h:1008 |
-| `jspine_instance_reset` | include/joy/api.h:1009 |
-| `jspine_instance_set_animation` | include/joy/api.h:1010 |
-| `jspine_instance_add_animation` | include/joy/api.h:1012 |
-| `jspine_instance_update` | include/joy/api.h:1016 |
-| `jspine_instance_sync` | include/joy/api.h:1017 |
-| `jspine_instance_draw` | include/joy/api.h:1018 |
-| `jspine_instance_set_position` | include/joy/api.h:1021 |
-| `jspine_instance_set_scale` | include/joy/api.h:1022 |
-| `jspine_instance_set_rotation` | include/joy/api.h:1023 |
-| `jspine_instance_set_flip_x` | include/joy/api.h:1024 |
-| `jspine_instance_set_alpha` | include/joy/api.h:1025 |
-| `jspine_instance_set_tint` | include/joy/api.h:1026 |
-| `jspine_instance_bounds` | include/joy/api.h:1029 |
+| `joy_r2d_spine_asset_load` | include/joy/api.h:998 |
+| `joy_r2d_spine_asset_free` | include/joy/api.h:1000 |
+| `joy_r2d_spine_asset_animation_count` | include/joy/api.h:1002 |
+| `joy_r2d_spine_asset_animation_duration` | include/joy/api.h:1004 |
+| `joy_r2d_spine_instance_init` | include/joy/api.h:1007 |
+| `joy_r2d_spine_instance_free` | include/joy/api.h:1008 |
+| `joy_r2d_spine_instance_reset` | include/joy/api.h:1009 |
+| `joy_r2d_spine_instance_set_animation` | include/joy/api.h:1010 |
+| `joy_r2d_spine_instance_add_animation` | include/joy/api.h:1012 |
+| `joy_r2d_spine_instance_update` | include/joy/api.h:1016 |
+| `joy_r2d_spine_instance_sync` | include/joy/api.h:1017 |
+| `joy_r2d_spine_instance_draw` | include/joy/api.h:1018 |
+| `joy_r2d_spine_instance_set_position` | include/joy/api.h:1021 |
+| `joy_r2d_spine_instance_set_scale` | include/joy/api.h:1022 |
+| `joy_r2d_spine_instance_set_rotation` | include/joy/api.h:1023 |
+| `joy_r2d_spine_instance_set_flip_x` | include/joy/api.h:1024 |
+| `joy_r2d_spine_instance_set_alpha` | include/joy/api.h:1025 |
+| `joy_r2d_spine_instance_set_tint` | include/joy/api.h:1026 |
+| `joy_r2d_spine_instance_bounds` | include/joy/api.h:1029 |
 | `jecs_test` | include/joy/api.h:1571 |
 | `modules_create` | include/joy/api.h:1626 |
 | `modules_destroy` | include/joy/api.h:1627 |

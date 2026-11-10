@@ -6419,20 +6419,20 @@ static bool shim_joy_r2d_particle_is_active(void* _jv_ctx, Jparticle p)
         return (bool) _jv_r.as.b;
 }
 
-static void shim_jlight_sys_destroy(void* _jv_ctx, JlightSys sys)
+static void shim_joy_r3d_light_sys_destroy(void* _jv_ctx, JlightSys sys)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(sys.h);
-        _jv_r = joy_api_call("jlight_sys_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_sys_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jlight_sys_resize(void* _jv_ctx, JlightSys sys, int width, int height)
+static void shim_joy_r3d_light_sys_resize(void* _jv_ctx, JlightSys sys, int width, int height)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -6441,13 +6441,13 @@ static void shim_jlight_sys_resize(void* _jv_ctx, JlightSys sys, int width, int 
         _jv_args[0] = joy_v_handle(sys.h);
         _jv_args[1] = joy_v_i32(width);
         _jv_args[2] = joy_v_i32(height);
-        _jv_r = joy_api_call("jlight_sys_resize", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_sys_resize", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jlight_remove(void* _jv_ctx, JlightSys sys, int id)
+static void shim_joy_r3d_light_remove(void* _jv_ctx, JlightSys sys, int id)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6455,26 +6455,26 @@ static void shim_jlight_remove(void* _jv_ctx, JlightSys sys, int id)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(sys.h);
         _jv_args[1] = joy_v_i32(id);
-        _jv_r = joy_api_call("jlight_remove", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_remove", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jlight_clear(void* _jv_ctx, JlightSys sys)
+static void shim_joy_r3d_light_clear(void* _jv_ctx, JlightSys sys)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(sys.h);
-        _jv_r = joy_api_call("jlight_clear", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_clear", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_jlight_add_occluder(void* _jv_ctx, JlightSys sys, float x1, float y1, float x2, float y2)
+static int shim_joy_r3d_light_add_occluder(void* _jv_ctx, JlightSys sys, float x1, float y1, float x2, float y2)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -6485,25 +6485,25 @@ static int shim_jlight_add_occluder(void* _jv_ctx, JlightSys sys, float x1, floa
         _jv_args[2] = joy_v_f64(y1);
         _jv_args[3] = joy_v_f64(x2);
         _jv_args[4] = joy_v_f64(y2);
-        _jv_r = joy_api_call("jlight_add_occluder", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_add_occluder", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_jlight_clear_occluders(void* _jv_ctx, JlightSys sys)
+static void shim_joy_r3d_light_clear_occluders(void* _jv_ctx, JlightSys sys)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(sys.h);
-        _jv_r = joy_api_call("jlight_clear_occluders", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_clear_occluders", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jlight_set_ambient(void* _jv_ctx, JlightSys sys, uint8_t r, uint8_t g, uint8_t b)
+static void shim_joy_r3d_light_set_ambient(void* _jv_ctx, JlightSys sys, uint8_t r, uint8_t g, uint8_t b)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -6513,13 +6513,13 @@ static void shim_jlight_set_ambient(void* _jv_ctx, JlightSys sys, uint8_t r, uin
         _jv_args[1] = joy_v_u32(r);
         _jv_args[2] = joy_v_u32(g);
         _jv_args[3] = joy_v_u32(b);
-        _jv_r = joy_api_call("jlight_set_ambient", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_set_ambient", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jlight_render(void* _jv_ctx, JlightSys sys, Jr2d r2d)
+static void shim_joy_r3d_light_render(void* _jv_ctx, JlightSys sys, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6527,7 +6527,7 @@ static void shim_jlight_render(void* _jv_ctx, JlightSys sys, Jr2d r2d)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(sys.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("jlight_render", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r3d_light_render", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10418,14 +10418,14 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JparticleRender = shim_joy_r2d_particle_render;
         api->JparticleCount = shim_joy_r2d_particle_count;
         api->JparticleIsActive = shim_joy_r2d_particle_is_active;
-        api->JlightSysDestroy = shim_jlight_sys_destroy;
-        api->JlightSysResize = shim_jlight_sys_resize;
-        api->JlightRemove = shim_jlight_remove;
-        api->JlightClear = shim_jlight_clear;
-        api->JlightAddOccluder = shim_jlight_add_occluder;
-        api->JlightClearOccluders = shim_jlight_clear_occluders;
-        api->JlightSetAmbient = shim_jlight_set_ambient;
-        api->JlightRender = shim_jlight_render;
+        api->JlightSysDestroy = shim_joy_r3d_light_sys_destroy;
+        api->JlightSysResize = shim_joy_r3d_light_sys_resize;
+        api->JlightRemove = shim_joy_r3d_light_remove;
+        api->JlightClear = shim_joy_r3d_light_clear;
+        api->JlightAddOccluder = shim_joy_r3d_light_add_occluder;
+        api->JlightClearOccluders = shim_joy_r3d_light_clear_occluders;
+        api->JlightSetAmbient = shim_joy_r3d_light_set_ambient;
+        api->JlightRender = shim_joy_r3d_light_render;
         api->JecsDestroy = shim_jecs_destroy;
         api->JecsProcess = shim_jecs_process;
         api->JecsDefine = shim_jecs_define;

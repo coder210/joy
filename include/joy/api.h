@@ -995,40 +995,40 @@ extern "C" {
         } jspine_instance_t, * jspine_instance_p;
 
         /* ---- 共享资源 ---- */
-        JOY_API jspine_asset_p jspine_asset_load(jr2d_p r2d, const char *atlas_path,
+        JOY_API jspine_asset_p joy_r2d_spine_asset_load(jr2d_p r2d, const char *atlas_path,
                                                  const char *skeleton_path, float scale);
-        JOY_API void jspine_asset_free(jspine_asset_p asset);
+        JOY_API void joy_r2d_spine_asset_free(jspine_asset_p asset);
         JOY_API spSkeletonData *jspine_asset_data(jspine_asset_p asset);
-        JOY_API int jspine_asset_animation_count(jspine_asset_p asset);
+        JOY_API int joy_r2d_spine_asset_animation_count(jspine_asset_p asset);
         JOY_API const char *jspine_asset_animation_name(jspine_asset_p asset, int index);
-        JOY_API float jspine_asset_animation_duration(jspine_asset_p asset, int index);
+        JOY_API float joy_r2d_spine_asset_animation_duration(jspine_asset_p asset, int index);
 
         /* ---- 组件（实例） ---- */
-        JOY_API bool jspine_instance_init(jspine_instance_p inst, jspine_asset_p asset);
-        JOY_API void jspine_instance_free(jspine_instance_p inst);
-        JOY_API void jspine_instance_reset(jspine_instance_p inst);
-        JOY_API bool jspine_instance_set_animation(jspine_instance_p inst, int track,
+        JOY_API bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset);
+        JOY_API void joy_r2d_spine_instance_free(jspine_instance_p inst);
+        JOY_API void joy_r2d_spine_instance_reset(jspine_instance_p inst);
+        JOY_API bool joy_r2d_spine_instance_set_animation(jspine_instance_p inst, int track,
                                                    const char *name, bool loop);
-        JOY_API bool jspine_instance_add_animation(jspine_instance_p inst, int track,
+        JOY_API bool joy_r2d_spine_instance_add_animation(jspine_instance_p inst, int track,
                                                    const char *name, bool loop, float delay);
         /* update = 同步字段 + 推进动画 + 世界变换；
          * sync  = 只同步字段与世界变换（暂停、或改完字段想立刻生效时用） */
-        JOY_API void jspine_instance_update(jspine_instance_p inst, float dt);
-        JOY_API void jspine_instance_sync(jspine_instance_p inst);
-        JOY_API void jspine_instance_draw(jr2d_p r2d, jspine_instance_p inst);
+        JOY_API void joy_r2d_spine_instance_update(jspine_instance_p inst, float dt);
+        JOY_API void joy_r2d_spine_instance_sync(jspine_instance_p inst);
+        JOY_API void joy_r2d_spine_instance_draw(jr2d_p r2d, jspine_instance_p inst);
 
         /* 变换/状态：写组件字段，下一次 update 生效 */
-        JOY_API void jspine_instance_set_position(jspine_instance_p inst, float x, float y);
-        JOY_API void jspine_instance_set_scale(jspine_instance_p inst, float sx, float sy);
-        JOY_API void jspine_instance_set_rotation(jspine_instance_p inst, float degrees);
-        JOY_API void jspine_instance_set_flip_x(jspine_instance_p inst, bool flip);
-        JOY_API void jspine_instance_set_alpha(jspine_instance_p inst, float alpha);
-        JOY_API void jspine_instance_set_tint(jspine_instance_p inst, jcolor_t tint);
+        JOY_API void joy_r2d_spine_instance_set_position(jspine_instance_p inst, float x, float y);
+        JOY_API void joy_r2d_spine_instance_set_scale(jspine_instance_p inst, float sx, float sy);
+        JOY_API void joy_r2d_spine_instance_set_rotation(jspine_instance_p inst, float degrees);
+        JOY_API void joy_r2d_spine_instance_set_flip_x(jspine_instance_p inst, bool flip);
+        JOY_API void joy_r2d_spine_instance_set_alpha(jspine_instance_p inst, float alpha);
+        JOY_API void joy_r2d_spine_instance_set_tint(jspine_instance_p inst, jcolor_t tint);
 
         /* 包围盒（y 向下坐标系）：便于 ECS 做视口剔除/碰撞粗筛 */
-        JOY_API bool jspine_instance_bounds(jspine_instance_p inst, float *out_x, float *out_y,
+        JOY_API bool joy_r2d_spine_instance_bounds(jspine_instance_p inst, float *out_x, float *out_y,
                                             float *out_w, float *out_h);
-        JOY_API const char *jspine_instance_animation(jspine_instance_p inst);
+        JOY_API const char *joy_r2d_spine_instance_animation(jspine_instance_p inst);
 #endif /* JOY_USE_SPINE */
 
         JOY_API label_p joy_ui_label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int len);
@@ -1542,17 +1542,17 @@ extern "C" {
         JOY_API bool joy_r2d_particle_is_active(jparticle_p p);
 
 
-        JOY_API jlight_sys_p jlight_sys_create(int width, int height);
-        JOY_API void jlight_sys_destroy(jlight_sys_p sys);
-        JOY_API void jlight_sys_resize(jlight_sys_p sys, int width, int height);
-        JOY_API int  jlight_add(jlight_sys_p sys, jlight_t light);
-        JOY_API void jlight_remove(jlight_sys_p sys, int id);
-        JOY_API void jlight_set(jlight_sys_p sys, int id, jlight_t light);
-        JOY_API void jlight_clear(jlight_sys_p sys);
-        JOY_API int jlight_add_occluder(jlight_sys_p sys, float x1, float y1, float x2, float y2);
-        JOY_API void jlight_clear_occluders(jlight_sys_p sys);
-        JOY_API void jlight_set_ambient(jlight_sys_p sys, uint8_t r, uint8_t g, uint8_t b);
-        JOY_API void jlight_render(jlight_sys_p sys, jr2d_p r2d);
+        JOY_API jlight_sys_p joy_r3d_light_sys_create(int width, int height);
+        JOY_API void joy_r3d_light_sys_destroy(jlight_sys_p sys);
+        JOY_API void joy_r3d_light_sys_resize(jlight_sys_p sys, int width, int height);
+        JOY_API int  joy_r3d_light_add(jlight_sys_p sys, jlight_t light);
+        JOY_API void joy_r3d_light_remove(jlight_sys_p sys, int id);
+        JOY_API void joy_r3d_light_set(jlight_sys_p sys, int id, jlight_t light);
+        JOY_API void joy_r3d_light_clear(jlight_sys_p sys);
+        JOY_API int joy_r3d_light_add_occluder(jlight_sys_p sys, float x1, float y1, float x2, float y2);
+        JOY_API void joy_r3d_light_clear_occluders(jlight_sys_p sys);
+        JOY_API void joy_r3d_light_set_ambient(jlight_sys_p sys, uint8_t r, uint8_t g, uint8_t b);
+        JOY_API void joy_r3d_light_render(jlight_sys_p sys, jr2d_p r2d);
 
 
 

@@ -6973,60 +6973,60 @@ static joy_value_t t_joy_r2d_particle_is_active(joy_value_t* a, int n, joy_statu
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_jlight_sys_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_sys_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jlight_sys_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_sys_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_sys_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_destroy.arg0");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_sys_destroy.arg0");
-        jlight_sys_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_sys_destroy.arg0");
+        joy_r3d_light_sys_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_sys_resize(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_sys_resize(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
         int p1;
         int p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "jlight_sys_resize");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_sys_resize.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_sys_resize.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_sys_resize.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_sys_resize");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg2");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_sys_resize.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_sys_resize.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
-        jlight_sys_resize(p0, p1, p2);
+        joy_r3d_light_sys_resize(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_remove(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_remove(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jlight_remove");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_remove.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_remove.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_remove");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_remove.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_remove.arg1");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_remove.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_remove.arg0");
         p1 = (int)a[1].as.i32;
-        jlight_remove(p0, p1);
+        joy_r3d_light_remove(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_clear(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_clear(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jlight_clear");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_clear.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_clear");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_clear.arg0");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_clear.arg0");
-        jlight_clear(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_clear.arg0");
+        joy_r3d_light_clear(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_add_occluder(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_add_occluder(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
         float p1;
@@ -7034,65 +7034,65 @@ static joy_value_t t_jlight_add_occluder(joy_value_t* a, int n, joy_status_t* st
         float p3;
         float p4;
         int _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "jlight_add_occluder");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_add_occluder.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jlight_add_occluder.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jlight_add_occluder.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jlight_add_occluder.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "jlight_add_occluder.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_add_occluder");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg4");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_add_occluder.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_add_occluder.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = jlight_add_occluder(p0, p1, p2, p3, p4);
+        _r = joy_r3d_light_add_occluder(p0, p1, p2, p3, p4);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_jlight_clear_occluders(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_clear_occluders(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jlight_clear_occluders");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_clear_occluders.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_clear_occluders");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_clear_occluders.arg0");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_clear_occluders.arg0");
-        jlight_clear_occluders(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_clear_occluders.arg0");
+        joy_r3d_light_clear_occluders(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_set_ambient(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_set_ambient(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
         uint8_t p1;
         uint8_t p2;
         uint8_t p3;
-        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "jlight_set_ambient");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_set_ambient.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_set_ambient.arg1");
-        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_set_ambient.arg2");
-        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "jlight_set_ambient.arg3");
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_set_ambient");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg1");
+        if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg2");
+        if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg3");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_set_ambient.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_set_ambient.arg0");
         p1 = (uint8_t)a[1].as.u32;
         p2 = (uint8_t)a[2].as.u32;
         p3 = (uint8_t)a[3].as.u32;
-        jlight_set_ambient(p0, p1, p2, p3);
+        joy_r3d_light_set_ambient(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_jlight_render(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r3d_light_render(joy_value_t* a, int n, joy_status_t* st)
 {
         jlight_sys_p p0;
         jr2d_p p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jlight_render");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_render.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jlight_render.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_render");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_render.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_render.arg1");
         p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
-        if (!p0) return joy_v_err(st, *st, "jlight_render.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_light_render.arg0");
         p1 = (jr2d_p)joy_obj_deref(a[1].as.handle, "jr2d_p", st);
-        if (!p1) return joy_v_err(st, *st, "jlight_render.arg1");
-        jlight_render(p0, p1);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_light_render.arg1");
+        joy_r3d_light_render(p0, p1);
         return joy_v_null();
 }
 
@@ -11870,14 +11870,14 @@ static const joy_value_kind k_joy_r2d_particle_update[] = { JOY_V_HANDLE, JOY_V_
 static const joy_value_kind k_joy_r2d_particle_render[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_particle_count[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_particle_is_active[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jlight_sys_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jlight_sys_resize[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
-static const joy_value_kind k_jlight_remove[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_jlight_clear[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jlight_add_occluder[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_jlight_clear_occluders[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jlight_set_ambient[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
-static const joy_value_kind k_jlight_render[] = { JOY_V_HANDLE, JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_light_sys_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_light_sys_resize[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_light_remove[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_light_clear[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_light_add_occluder[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_light_clear_occluders[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_light_set_ambient[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_light_render[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_jecs_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jecs_process[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_jecs_define[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_U64 };
@@ -12560,14 +12560,14 @@ static const joy_thunk_entry s_thunks[] = {
         { "r2d", "joy_r2d_particle_render", "JparticleRender", t_joy_r2d_particle_render, 2, k_joy_r2d_particle_render, JOY_V_NULL },
         { "r2d", "joy_r2d_particle_count", "JparticleCount", t_joy_r2d_particle_count, 1, k_joy_r2d_particle_count, JOY_V_I32 },
         { "r2d", "joy_r2d_particle_is_active", "JparticleIsActive", t_joy_r2d_particle_is_active, 1, k_joy_r2d_particle_is_active, JOY_V_BOOL },
-        { "jlight", "jlight_sys_destroy", "JlightSysDestroy", t_jlight_sys_destroy, 1, k_jlight_sys_destroy, JOY_V_NULL },
-        { "jlight", "jlight_sys_resize", "JlightSysResize", t_jlight_sys_resize, 3, k_jlight_sys_resize, JOY_V_NULL },
-        { "jlight", "jlight_remove", "JlightRemove", t_jlight_remove, 2, k_jlight_remove, JOY_V_NULL },
-        { "jlight", "jlight_clear", "JlightClear", t_jlight_clear, 1, k_jlight_clear, JOY_V_NULL },
-        { "jlight", "jlight_add_occluder", "JlightAddOccluder", t_jlight_add_occluder, 5, k_jlight_add_occluder, JOY_V_I32 },
-        { "jlight", "jlight_clear_occluders", "JlightClearOccluders", t_jlight_clear_occluders, 1, k_jlight_clear_occluders, JOY_V_NULL },
-        { "jlight", "jlight_set_ambient", "JlightSetAmbient", t_jlight_set_ambient, 4, k_jlight_set_ambient, JOY_V_NULL },
-        { "jlight", "jlight_render", "JlightRender", t_jlight_render, 2, k_jlight_render, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_sys_destroy", "JlightSysDestroy", t_joy_r3d_light_sys_destroy, 1, k_joy_r3d_light_sys_destroy, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_sys_resize", "JlightSysResize", t_joy_r3d_light_sys_resize, 3, k_joy_r3d_light_sys_resize, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_remove", "JlightRemove", t_joy_r3d_light_remove, 2, k_joy_r3d_light_remove, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_clear", "JlightClear", t_joy_r3d_light_clear, 1, k_joy_r3d_light_clear, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_add_occluder", "JlightAddOccluder", t_joy_r3d_light_add_occluder, 5, k_joy_r3d_light_add_occluder, JOY_V_I32 },
+        { "r3d", "joy_r3d_light_clear_occluders", "JlightClearOccluders", t_joy_r3d_light_clear_occluders, 1, k_joy_r3d_light_clear_occluders, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_set_ambient", "JlightSetAmbient", t_joy_r3d_light_set_ambient, 4, k_joy_r3d_light_set_ambient, JOY_V_NULL },
+        { "r3d", "joy_r3d_light_render", "JlightRender", t_joy_r3d_light_render, 2, k_joy_r3d_light_render, JOY_V_NULL },
         { "jecs", "jecs_destroy", "JecsDestroy", t_jecs_destroy, 1, k_jecs_destroy, JOY_V_NULL },
         { "jecs", "jecs_process", "JecsProcess", t_jecs_process, 2, k_jecs_process, JOY_V_NULL },
         { "jecs", "jecs_define", "JecsDefine", t_jecs_define, 3, k_jecs_define, JOY_V_NULL },
@@ -14196,29 +14196,29 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_particle_is_active", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_particle_is_active";
         st = JOY_OK;
-        joy_api_call("jlight_sys_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_sys_destroy";
+        joy_api_call("joy_r3d_light_sys_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_sys_destroy";
         st = JOY_OK;
-        joy_api_call("jlight_sys_resize", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_sys_resize";
+        joy_api_call("joy_r3d_light_sys_resize", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_sys_resize";
         st = JOY_OK;
-        joy_api_call("jlight_remove", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_remove";
+        joy_api_call("joy_r3d_light_remove", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_remove";
         st = JOY_OK;
-        joy_api_call("jlight_clear", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_clear";
+        joy_api_call("joy_r3d_light_clear", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_clear";
         st = JOY_OK;
-        joy_api_call("jlight_add_occluder", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_add_occluder";
+        joy_api_call("joy_r3d_light_add_occluder", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_add_occluder";
         st = JOY_OK;
-        joy_api_call("jlight_clear_occluders", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_clear_occluders";
+        joy_api_call("joy_r3d_light_clear_occluders", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_clear_occluders";
         st = JOY_OK;
-        joy_api_call("jlight_set_ambient", NULL, 5, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_set_ambient";
+        joy_api_call("joy_r3d_light_set_ambient", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_set_ambient";
         st = JOY_OK;
-        joy_api_call("jlight_render", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jlight_render";
+        joy_api_call("joy_r3d_light_render", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_light_render";
         st = JOY_OK;
         joy_api_call("jecs_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/jecs_destroy";

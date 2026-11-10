@@ -122,6 +122,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 - 第九批 **41 条**：`r2d` 本体 31 条（`r2d_create` → `joy_r2d_create`）+
   `jparticle` 10 条（→ `joy_r2d_particle_*`）并入 `r2d`，`r2d` 域累计 55 条。
   `jlight`(11) 与 `jgltf` 按域表归 `r3d`，留到下一批。
+- 第十批 **30 条**：`jspine`(19，→ `joy_r2d_spine_*`) 并入 `r2d`，`jlight`(11,
+  → `joy_r3d_light_*`) 并入 `r3d`。`jspine` 是 `JOY_USE_SPINE` 条件编译的
+  有意排除项（19 条全是 X 级），迁名后必须在 `SKIP_PREFIXES` 里补
+  `joy_r2d_spine_`，否则会从 X 掉回 L0/L1 混进 thunk 生成。`jgltf` 在 IDL
+  里 0 条（构建默认关），无需处理。`r2d` 域 74 条、`r3d` 146 条。
 
 映射见 `idl/rename_map.json`（累加式）。
 
