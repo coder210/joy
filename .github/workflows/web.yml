@@ -10,7 +10,10 @@ name: Web examples (cpp / lua / js)
 # 每个 wasm 模块在链接期用 --preload-file 把资源打进自己的 .data，
 # 一个 Pages 站点按子目录承载，不按「平台 × 后端」拆 workflow。
 # 只在 push(main) 时自动跑；PR 暂不挂（emsdk 安装较重，wasm 链接还在首次验证
-# 阶段）。手动触发保留，deploy 输入可一并发布 Pages。
+# 阶段）。push(main) 构建成功后自动发布到 GitHub Pages；手动触发保留，
+# deploy 输入用于不推代码时单独重跑一次部署。
+# 首次部署前仓库必须已启用 Pages（Source = GitHub Actions）；configure-pages
+# 会用 GITHUB_TOKEN 尝试启用，权限不足时需管理员在 Settings → Pages 选一次。
 on:
   push:
     branches: [main]
@@ -23,6 +26,11 @@ on:
 
 permissions:
   contents: read
+
+# 同一时间只允许一次 Pages 部署，避免并发覆盖；进行中的部署不取消。
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build-web:
@@ -121,7 +129,7 @@ jobs:
           retention-days: 7
 
   deploy:
-    if: inputs.deploy
+    if: ${{ github.event_name == 'push' || inputs.deploy }}
     needs: build-web
     permissions:
       pages: write
@@ -131,6 +139,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-24.04
     steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          # 仓库首次部署时 Pages 站点还不存在，尝试用 GITHUB_TOKEN 启用；
+          # 权限不足时由管理员在 Settings → Pages 把 Source 设为 GitHub Actions。
+          enablement: true
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
