@@ -93,6 +93,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   **定义仍写旧名**，由 `compat.h` 宏在预处理期切到新符号，全量迁移完成、
   删除 `compat.h` 前再统一替换定义处源码名。`push_*` / `game_timer_*` /
   `jtimer_*` 等 domain 碎片留待后续批次归并。
+- 第三批 **碎片归位 30 条**：`pack/unpack` → `net`（12）、
+  `jtimer/game_timer` → `scene`（15）、`push_*` → `core`（2）、
+  `find_min_separation` → `math`（1）。至此 `GENERIC_FIRST` 兜底产生的
+  伪域（`min` / `push` / `game` / `jtimer` / `pack` / `unpack`）全部消失，
+  剩下的大域只有 `ui`（20+ 控件域）与 `net`（协议域）待合并。
 
 映射见 `idl/rename_map.json`（累加式）。
 

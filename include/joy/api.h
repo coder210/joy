@@ -71,26 +71,26 @@ extern "C" {
          */
         JOY_API size_t joy_core_utf8_decode_all(const char* s, size_t len,
                 int32_t* out_codes, size_t out_capacity);
-        JOY_API int pack_int8(char* buf, int8_t value, int offset);
-        JOY_API int pack_int16(char* buf, int16_t value, int offset);
-        JOY_API int pack_int32(char* buf, int32_t value, int offset);
-        JOY_API int pack_uint32(char* buf, uint32_t value, int offset);
-        JOY_API int pack_int64(char* buf, int64_t value, int offset);
-        JOY_API int unpack_int8(const char* buf, int8_t* value, int offset);
-        JOY_API int unpack_int16(const char* buf, int16_t* value, int offset);
-        JOY_API int unpack_int32(const char* buf, int32_t* value, int offset);
-        JOY_API int unpack_uint32(const char* buf, uint32_t* value, int offset);
-        JOY_API int unpack_int64(const char* buf, int64_t* value, int offset);
-        JOY_API int pack_string(char* buf, const char* value, int type_size, int offset);
-        JOY_API int unpack_string(const char* buf, char* value, int type_size, int offset);
+        JOY_API int joy_net_pack_int8(char* buf, int8_t value, int offset);
+        JOY_API int joy_net_pack_int16(char* buf, int16_t value, int offset);
+        JOY_API int joy_net_pack_int32(char* buf, int32_t value, int offset);
+        JOY_API int joy_net_pack_uint32(char* buf, uint32_t value, int offset);
+        JOY_API int joy_net_pack_int64(char* buf, int64_t value, int offset);
+        JOY_API int joy_net_unpack_int8(const char* buf, int8_t* value, int offset);
+        JOY_API int joy_net_unpack_int16(const char* buf, int16_t* value, int offset);
+        JOY_API int joy_net_unpack_int32(const char* buf, int32_t* value, int offset);
+        JOY_API int joy_net_unpack_uint32(const char* buf, uint32_t* value, int offset);
+        JOY_API int joy_net_unpack_int64(const char* buf, int64_t* value, int offset);
+        JOY_API int joy_net_pack_string(char* buf, const char* value, int type_size, int offset);
+        JOY_API int joy_net_unpack_string(const char* buf, char* value, int type_size, int offset);
        
-        JOY_API jtimer_p jtimer_create(int interval, jtimer_callback cb, void* userdata);
-        JOY_API void jtimer_destroy(jtimer_p timer);
-        JOY_API void jtimer_trigger(jtimer_p timer);
-        JOY_API void jtimer_set_interval(jtimer_p timer, int interval);
-        JOY_API void jtimer_set_active(jtimer_p timer, bool active);
-        JOY_API void jtimer_reset(jtimer_p timer);
-        JOY_API uint64_t jtimer_get_elapsed(jtimer_p timer);
+        JOY_API jtimer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata);
+        JOY_API void joy_scene_jtimer_destroy(jtimer_p timer);
+        JOY_API void joy_scene_jtimer_trigger(jtimer_p timer);
+        JOY_API void joy_scene_jtimer_set_interval(jtimer_p timer, int interval);
+        JOY_API void joy_scene_jtimer_set_active(jtimer_p timer, bool active);
+        JOY_API void joy_scene_jtimer_reset(jtimer_p timer);
+        JOY_API uint64_t joy_scene_jtimer_get_elapsed(jtimer_p timer);
 
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  core  ///////////////////////////////////
@@ -118,8 +118,8 @@ extern "C" {
         JOY_API int  joy_core_get_event_type(const void* event);
         JOY_API int  joy_core_get_event_code(const void* event);
         JOY_API bool joy_core_is_user_event(const void* event, int type);
-        JOY_API bool push_user_event(int type, int code);
-        JOY_API bool push_quit_event(void);
+        JOY_API bool joy_core_push_user_event(int type, int code);
+        JOY_API bool joy_core_push_quit_event(void);
         JOY_API bool joy_core_should_close(void* ev);
 
         JOY_API int joy_core_log_info(const char* format, ...);
@@ -137,14 +137,14 @@ extern "C" {
         JOY_API void joy_core_simple_fps_update(simple_fps_counter_p fps);
         JOY_API int joy_core_simple_fps_value(simple_fps_counter_p fps);
 
-        JOY_API void game_timer_init(game_timer_p clock);
-        JOY_API void game_timer_update(game_timer_p clock);
-        JOY_API float game_timer_get_delta_time(const game_timer_p clock);
-        JOY_API float game_timer_get_unscaled_delta_time(const game_timer_p clock);
-        JOY_API void game_timer_set_time_scale(game_timer_p clock, float scale);
-        JOY_API float game_timer_get_time_scale(const game_timer_p clock);
-        JOY_API void game_timer_set_target_fps(game_timer_p clock, int fps);
-        JOY_API int game_timer_get_target_fps(const game_timer_p clock);
+        JOY_API void joy_scene_game_timer_init(game_timer_p clock);
+        JOY_API void joy_scene_game_timer_update(game_timer_p clock);
+        JOY_API float joy_scene_game_timer_get_delta_time(const game_timer_p clock);
+        JOY_API float joy_scene_game_timer_get_unscaled_delta_time(const game_timer_p clock);
+        JOY_API void joy_scene_game_timer_set_time_scale(game_timer_p clock, float scale);
+        JOY_API float joy_scene_game_timer_get_time_scale(const game_timer_p clock);
+        JOY_API void joy_scene_game_timer_set_target_fps(game_timer_p clock, int fps);
+        JOY_API int joy_scene_game_timer_get_target_fps(const game_timer_p clock);
 
         /** 获取剪贴板文本（调用者负责释放返回的字符串） */
         JOY_API char* joy_core_get_clipboard_text(void);
@@ -839,7 +839,7 @@ extern "C" {
         JOY_API int collision2df_get_rectangles(rectanglef_t a, fp_t a_angle /* 度 */,
                 rectanglef_t b, fp_t b_angle /* 度 */,
                 contact2df_t* contact);
-        JOY_API fp_t find_min_separation(polygonf_t a, polygonf_t b,
+        JOY_API fp_t joy_math_find_min_separation(polygonf_t a, polygonf_t b,
                 vec2f_t* axis, vec2f_t* point);
         JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
                 contact2df_t* contact);

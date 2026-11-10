@@ -43,10 +43,9 @@
 | collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
 | collision3df | 0 | 0 | 3 | 5 | 0 | 8 |
 | combobox | 0 | 23 | 1 | 2 | 0 | 26 |
-| core | 12 | 23 | 1 | 9 | 0 | 45 |
+| core | 14 | 23 | 1 | 9 | 0 | 47 |
 | datagrid | 0 | 10 | 0 | 1 | 0 | 11 |
 | font | 0 | 5 | 0 | 0 | 0 | 5 |
-| game | 0 | 8 | 0 | 0 | 0 | 8 |
 | gjk2d | 0 | 0 | 0 | 6 | 0 | 6 |
 | gjk3d | 0 | 0 | 1 | 6 | 0 | 7 |
 | gjk3df | 0 | 0 | 1 | 7 | 0 | 8 |
@@ -66,25 +65,23 @@
 | jspine | 0 | 0 | 0 | 0 | 19 | 19 |
 | jtext | 4 | 1 | 3 | 1 | 0 | 9 |
 | jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
-| jtimer | 0 | 6 | 0 | 1 | 0 | 7 |
 | jui | 0 | 20 | 12 | 6 | 0 | 38 |
 | kcpclient | 0 | 5 | 0 | 1 | 0 | 6 |
 | kcpserver | 0 | 8 | 0 | 1 | 0 | 9 |
 | label | 0 | 3 | 0 | 2 | 0 | 5 |
-| min | 0 | 0 | 0 | 1 | 0 | 1 |
+| math | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
+| net | 0 | 0 | 0 | 12 | 0 | 12 |
 | netclient | 0 | 5 | 0 | 2 | 0 | 7 |
 | netmessage | 0 | 1 | 0 | 0 | 0 | 1 |
 | netserver | 0 | 8 | 0 | 2 | 0 | 10 |
-| pack | 0 | 0 | 0 | 6 | 0 | 6 |
 | popup | 0 | 13 | 0 | 0 | 0 | 13 |
-| push | 2 | 0 | 0 | 0 | 0 | 2 |
 | r2d | 0 | 19 | 2 | 10 | 0 | 31 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
 | radio | 0 | 5 | 0 | 0 | 0 | 5 |
-| scene | 0 | 50 | 0 | 15 | 0 | 65 |
+| scene | 0 | 64 | 0 | 16 | 0 | 80 |
 | scrollview | 0 | 14 | 0 | 0 | 0 | 14 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
 | slider | 0 | 13 | 1 | 0 | 0 | 14 |
@@ -93,7 +90,6 @@
 | tcpserver | 0 | 8 | 0 | 0 | 0 | 8 |
 | text | 0 | 3 | 2 | 2 | 0 | 7 |
 | tooltip | 0 | 7 | 0 | 0 | 0 | 7 |
-| unpack | 0 | 0 | 0 | 6 | 0 | 6 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
 | wsnetclient | 0 | 5 | 0 | 1 | 0 | 6 |
 | wsnetserver | 0 | 8 | 0 | 1 | 0 | 9 |
@@ -206,19 +202,19 @@
 | `joy_core_utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:50 |
 | `joy_core_utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/api.h:60 |
 | `joy_core_utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:72 |
-| `pack_int8` | 非 const char* 输出缓冲 | include/joy/api.h:74 |
-| `pack_int16` | 非 const char* 输出缓冲 | include/joy/api.h:75 |
-| `pack_int32` | 非 const char* 输出缓冲 | include/joy/api.h:76 |
-| `pack_uint32` | 非 const char* 输出缓冲 | include/joy/api.h:77 |
-| `pack_int64` | 非 const char* 输出缓冲 | include/joy/api.h:78 |
-| `unpack_int8` | 非不透明指针 / 输出参数：int8_t* | include/joy/api.h:79 |
-| `unpack_int16` | 非不透明指针 / 输出参数：int16_t* | include/joy/api.h:80 |
-| `unpack_int32` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:81 |
-| `unpack_uint32` | 非不透明指针 / 输出参数：uint32_t* | include/joy/api.h:82 |
-| `unpack_int64` | 非不透明指针 / 输出参数：int64_t* | include/joy/api.h:83 |
-| `pack_string` | 非 const char* 输出缓冲 | include/joy/api.h:84 |
-| `unpack_string` | 非 const char* 输出缓冲 | include/joy/api.h:85 |
-| `jtimer_create` | 未知类型需人工标注：jtimer_callback | include/joy/api.h:87 |
+| `joy_net_pack_int8` | 非 const char* 输出缓冲 | include/joy/api.h:74 |
+| `joy_net_pack_int16` | 非 const char* 输出缓冲 | include/joy/api.h:75 |
+| `joy_net_pack_int32` | 非 const char* 输出缓冲 | include/joy/api.h:76 |
+| `joy_net_pack_uint32` | 非 const char* 输出缓冲 | include/joy/api.h:77 |
+| `joy_net_pack_int64` | 非 const char* 输出缓冲 | include/joy/api.h:78 |
+| `joy_net_unpack_int8` | 非不透明指针 / 输出参数：int8_t* | include/joy/api.h:79 |
+| `joy_net_unpack_int16` | 非不透明指针 / 输出参数：int16_t* | include/joy/api.h:80 |
+| `joy_net_unpack_int32` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:81 |
+| `joy_net_unpack_uint32` | 非不透明指针 / 输出参数：uint32_t* | include/joy/api.h:82 |
+| `joy_net_unpack_int64` | 非不透明指针 / 输出参数：int64_t* | include/joy/api.h:83 |
+| `joy_net_pack_string` | 非 const char* 输出缓冲 | include/joy/api.h:84 |
+| `joy_net_unpack_string` | 非 const char* 输出缓冲 | include/joy/api.h:85 |
+| `joy_scene_jtimer_create` | 未知类型需人工标注：jtimer_callback | include/joy/api.h:87 |
 | `joy_core_get_mouse_pos` | 非不透明指针 / 输出参数：float* | include/joy/api.h:105 |
 | `joy_core_log_info` | 可变参数 | include/joy/api.h:125 |
 | `joy_core_log_debug` | 可变参数 | include/joy/api.h:126 |
@@ -298,7 +294,7 @@
 | `collision2df_check_point_line` | 未知类型需人工标注：vec2f_t | include/joy/api.h:830 |
 | `collision2df_get_circles` | 结构体指针参数 | include/joy/api.h:837 |
 | `collision2df_get_rectangles` | 结构体指针参数 | include/joy/api.h:839 |
-| `find_min_separation` | 非不透明指针 / 输出参数：vec2f_t* | include/joy/api.h:842 |
+| `joy_math_find_min_separation` | 非不透明指针 / 输出参数：vec2f_t* | include/joy/api.h:842 |
 | `collision2df_get_polygons` | 结构体指针参数 | include/joy/api.h:844 |
 | `collision2df_swept_obb` | 未知类型需人工标注：vec2f_t | include/joy/api.h:866 |
 | `joy_tilemap_sweep_x` | 非不透明指针 / 输出参数：fp_t* | include/joy/api.h:876 |

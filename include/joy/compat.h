@@ -72,6 +72,40 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
 #define get_clipboard_text         joy_core_get_clipboard_text
 #define set_clipboard_text         joy_core_set_clipboard_text
 #define get_local_ips              joy_core_get_local_ips
+
+/* P1 第三批：碎片归位。
+ * pack/unpack → net，jtimer/game_timer → scene，push → core，
+ * find_min_separation → math。定义文件同样暂不改名，由宏兜住。 */
+#define pack_int8                  joy_net_pack_int8
+#define pack_int16                 joy_net_pack_int16
+#define pack_int32                 joy_net_pack_int32
+#define pack_uint32                joy_net_pack_uint32
+#define pack_int64                 joy_net_pack_int64
+#define unpack_int8                joy_net_unpack_int8
+#define unpack_int16               joy_net_unpack_int16
+#define unpack_int32               joy_net_unpack_int32
+#define unpack_uint32              joy_net_unpack_uint32
+#define unpack_int64               joy_net_unpack_int64
+#define pack_string                joy_net_pack_string
+#define unpack_string              joy_net_unpack_string
+#define jtimer_create              joy_scene_jtimer_create
+#define jtimer_destroy             joy_scene_jtimer_destroy
+#define jtimer_trigger             joy_scene_jtimer_trigger
+#define jtimer_set_interval        joy_scene_jtimer_set_interval
+#define jtimer_set_active          joy_scene_jtimer_set_active
+#define jtimer_reset               joy_scene_jtimer_reset
+#define jtimer_get_elapsed         joy_scene_jtimer_get_elapsed
+#define push_user_event            joy_core_push_user_event
+#define push_quit_event            joy_core_push_quit_event
+#define game_timer_init            joy_scene_game_timer_init
+#define game_timer_update          joy_scene_game_timer_update
+#define game_timer_get_delta_time  joy_scene_game_timer_get_delta_time
+#define game_timer_get_unscaled_delta_time joy_scene_game_timer_get_unscaled_delta_time
+#define game_timer_set_time_scale  joy_scene_game_timer_set_time_scale
+#define game_timer_get_time_scale  joy_scene_game_timer_get_time_scale
+#define game_timer_set_target_fps  joy_scene_game_timer_set_target_fps
+#define game_timer_get_target_fps  joy_scene_game_timer_get_target_fps
+#define find_min_separation        joy_math_find_min_separation
 #endif
 
 #endif /* JOY_COMPAT_H */

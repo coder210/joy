@@ -194,9 +194,9 @@ static void icall_JtimerDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jtimer_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_jtimer_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -207,9 +207,9 @@ static void icall_JtimerTrigger(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jtimer_trigger", args, 1, &st);
+        (void)joy_api_call("joy_scene_jtimer_trigger", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_trigger", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_trigger", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -221,9 +221,9 @@ static void icall_JtimerSetInterval(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("jtimer_set_interval", args, 2, &st);
+        (void)joy_api_call("joy_scene_jtimer_set_interval", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_set_interval", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_set_interval", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -235,9 +235,9 @@ static void icall_JtimerSetActive(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("jtimer_set_active", args, 2, &st);
+        (void)joy_api_call("joy_scene_jtimer_set_active", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_set_active", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_set_active", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -248,9 +248,9 @@ static void icall_JtimerReset(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("jtimer_reset", args, 1, &st);
+        (void)joy_api_call("joy_scene_jtimer_reset", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_reset", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_reset", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -262,9 +262,9 @@ static uint64_t icall_JtimerGetElapsed(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("jtimer_get_elapsed", args, 1, &st);
+        r = joy_api_call("joy_scene_jtimer_get_elapsed", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jtimer_get_elapsed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_get_elapsed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -389,9 +389,9 @@ static int32_t icall_PushUserEvent(int32_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i32((int32_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("push_user_event", args, 2, &st);
+        r = joy_api_call("joy_core_push_user_event", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "push_user_event", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_push_user_event", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -401,9 +401,9 @@ static int32_t icall_PushQuitEvent(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("push_quit_event", NULL, 0, &st);
+        r = joy_api_call("joy_core_push_quit_event", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "push_quit_event", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_push_quit_event", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -501,9 +501,9 @@ static void icall_GameTimerInit(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("game_timer_init", args, 1, &st);
+        (void)joy_api_call("joy_scene_game_timer_init", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_init", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_init", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -514,9 +514,9 @@ static void icall_GameTimerUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("game_timer_update", args, 1, &st);
+        (void)joy_api_call("joy_scene_game_timer_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -528,9 +528,9 @@ static float icall_GameTimerGetDeltaTime(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("game_timer_get_delta_time", args, 1, &st);
+        r = joy_api_call("joy_scene_game_timer_get_delta_time", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_get_delta_time", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_get_delta_time", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -542,9 +542,9 @@ static float icall_GameTimerGetUnscaledDeltaTime(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("game_timer_get_unscaled_delta_time", args, 1, &st);
+        r = joy_api_call("joy_scene_game_timer_get_unscaled_delta_time", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_get_unscaled_delta_time", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_get_unscaled_delta_time", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -556,9 +556,9 @@ static void icall_GameTimerSetTimeScale(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("game_timer_set_time_scale", args, 2, &st);
+        (void)joy_api_call("joy_scene_game_timer_set_time_scale", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_set_time_scale", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_set_time_scale", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -570,9 +570,9 @@ static float icall_GameTimerGetTimeScale(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("game_timer_get_time_scale", args, 1, &st);
+        r = joy_api_call("joy_scene_game_timer_get_time_scale", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_get_time_scale", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_get_time_scale", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (float)r.as.f64;
@@ -584,9 +584,9 @@ static void icall_GameTimerSetTargetFps(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("game_timer_set_target_fps", args, 2, &st);
+        (void)joy_api_call("joy_scene_game_timer_set_target_fps", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_set_target_fps", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_set_target_fps", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -598,9 +598,9 @@ static int32_t icall_GameTimerGetTargetFps(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("game_timer_get_target_fps", args, 1, &st);
+        r = joy_api_call("joy_scene_game_timer_get_target_fps", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "game_timer_get_target_fps", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_game_timer_get_target_fps", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;

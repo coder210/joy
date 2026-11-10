@@ -167,76 +167,76 @@ static joy_value_t t_joy_core_kr_hash(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_jtimer_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_destroy.arg0");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_destroy.arg0");
-        jtimer_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_destroy.arg0");
+        joy_scene_jtimer_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jtimer_trigger(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_trigger(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_trigger");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_trigger.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_trigger");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_trigger.arg0");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_trigger.arg0");
-        jtimer_trigger(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_trigger.arg0");
+        joy_scene_jtimer_trigger(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jtimer_set_interval(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_set_interval(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_set_interval");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_set_interval.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_set_interval.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_set_interval");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_interval.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_interval.arg1");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_set_interval.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_set_interval.arg0");
         p1 = (int)a[1].as.i32;
-        jtimer_set_interval(p0, p1);
+        joy_scene_jtimer_set_interval(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_jtimer_set_active(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_set_active(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_set_active");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_set_active.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_set_active.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_set_active");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_active.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_active.arg1");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_set_active.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_set_active.arg0");
         p1 = (bool)a[1].as.b;
-        jtimer_set_active(p0, p1);
+        joy_scene_jtimer_set_active(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_jtimer_reset(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_reset(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_reset");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_reset.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_reset");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_reset.arg0");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_reset.arg0");
-        jtimer_reset(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_reset.arg0");
+        joy_scene_jtimer_reset(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_jtimer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_jtimer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
 {
         jtimer_p p0;
         uint64_t _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "jtimer_get_elapsed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "jtimer_get_elapsed.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_get_elapsed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_get_elapsed.arg0");
         p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
-        if (!p0) return joy_v_err(st, *st, "jtimer_get_elapsed.arg0");
-        _r = jtimer_get_elapsed(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_get_elapsed.arg0");
+        _r = joy_scene_jtimer_get_elapsed(p0);
         return joy_v_u64((uint64_t)_r);
 }
 
@@ -335,25 +335,25 @@ static joy_value_t t_joy_core_window_set_icon(joy_value_t* a, int n, joy_status_
         return joy_v_null();
 }
 
-static joy_value_t t_push_user_event(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_push_user_event(joy_value_t* a, int n, joy_status_t* st)
 {
         int p0;
         int p1;
         bool _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "push_user_event");
-        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "push_user_event.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "push_user_event.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_push_user_event");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_push_user_event.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_push_user_event.arg1");
         p0 = (int)a[0].as.i32;
         p1 = (int)a[1].as.i32;
-        _r = push_user_event(p0, p1);
+        _r = joy_core_push_user_event(p0, p1);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_push_quit_event(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_push_quit_event(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "push_quit_event");
-        _r = push_quit_event();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_push_quit_event");
+        _r = joy_core_push_quit_event();
         return joy_v_bool((bool)_r);
 }
 
@@ -429,101 +429,101 @@ static joy_value_t t_joy_core_simple_fps_value(joy_value_t* a, int n, joy_status
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_game_timer_init(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_init(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_init");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_init.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_init");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_init.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_init.arg0");
-        game_timer_init(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_init.arg0");
+        joy_scene_game_timer_init(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_game_timer_update(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_update(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_update");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_update.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_update");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_update.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_update.arg0");
-        game_timer_update(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_update.arg0");
+        joy_scene_game_timer_update(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_game_timer_get_delta_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_get_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_get_delta_time");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_get_delta_time.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_delta_time");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_delta_time.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_get_delta_time.arg0");
-        _r = game_timer_get_delta_time(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_delta_time.arg0");
+        _r = joy_scene_game_timer_get_delta_time(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_game_timer_get_unscaled_delta_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_get_unscaled_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_get_unscaled_delta_time");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_get_unscaled_delta_time.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_unscaled_delta_time");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_get_unscaled_delta_time.arg0");
-        _r = game_timer_get_unscaled_delta_time(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
+        _r = joy_scene_game_timer_get_unscaled_delta_time(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_game_timer_set_time_scale(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_set_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_set_time_scale");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_set_time_scale.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_set_time_scale.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_time_scale");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg1");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_set_time_scale.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_time_scale.arg0");
         p1 = (float)a[1].as.f64;
-        game_timer_set_time_scale(p0, p1);
+        joy_scene_game_timer_set_time_scale(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_game_timer_get_time_scale(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_get_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_get_time_scale");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_get_time_scale.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_time_scale");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_time_scale.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_get_time_scale.arg0");
-        _r = game_timer_get_time_scale(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_time_scale.arg0");
+        _r = joy_scene_game_timer_get_time_scale(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_game_timer_set_target_fps(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_set_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_set_target_fps");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_set_target_fps.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_set_target_fps.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_target_fps");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg1");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_set_target_fps.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_target_fps.arg0");
         p1 = (int)a[1].as.i32;
-        game_timer_set_target_fps(p0, p1);
+        joy_scene_game_timer_set_target_fps(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_game_timer_get_target_fps(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_scene_game_timer_get_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
         game_timer_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "game_timer_get_target_fps");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "game_timer_get_target_fps.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_target_fps");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_target_fps.arg0");
         p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "game_timer_get_target_fps.arg0");
-        _r = game_timer_get_target_fps(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_target_fps.arg0");
+        _r = joy_scene_game_timer_get_target_fps(p0);
         return joy_v_i32((int)_r);
 }
 
@@ -11437,32 +11437,32 @@ static const joy_value_kind k_joy_core_fnv1a_hash[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_joy_core_jenkins_hash[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_joy_core_murmur3_hash[] = { JOY_V_STR };
 static const joy_value_kind k_joy_core_kr_hash[] = { JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_jtimer_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jtimer_trigger[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jtimer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_jtimer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_jtimer_reset[] = { JOY_V_HANDLE };
-static const joy_value_kind k_jtimer_get_elapsed[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_jtimer_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_jtimer_trigger[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_jtimer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_scene_jtimer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_scene_jtimer_reset[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_jtimer_get_elapsed[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_create_window[] = { JOY_V_STR, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_core_destroy_window[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_window_set_fullscreen[] = { JOY_V_HANDLE, JOY_V_BOOL };
 static const joy_value_kind k_joy_core_window_get_fullscreen[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_window_set_icon[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_push_user_event[] = { JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_core_push_user_event[] = { JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_core_log_title[] = { JOY_V_I32 };
 static const joy_value_kind k_joy_core_env_set[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
 static const joy_value_kind k_joy_core_env_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_destory[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_update[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_value[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_init[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_update[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_get_delta_time[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_get_unscaled_delta_time[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_set_time_scale[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_game_timer_get_time_scale[] = { JOY_V_HANDLE };
-static const joy_value_kind k_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_game_timer_get_target_fps[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_init[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_update[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_get_delta_time[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_get_unscaled_delta_time[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_set_time_scale[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_scene_game_timer_get_time_scale[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_scene_game_timer_get_target_fps[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_set_clipboard_text[] = { JOY_V_STR };
 static const joy_value_kind k_sys_closesocket[] = { JOY_V_I64 };
 static const joy_value_kind k_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
@@ -12114,12 +12114,12 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_jenkins_hash", "JenkinsHash", t_joy_core_jenkins_hash, 2, k_joy_core_jenkins_hash, JOY_V_U64 },
         { "core", "joy_core_murmur3_hash", "Murmur3Hash", t_joy_core_murmur3_hash, 1, k_joy_core_murmur3_hash, JOY_V_U64 },
         { "core", "joy_core_kr_hash", "KrHash", t_joy_core_kr_hash, 2, k_joy_core_kr_hash, JOY_V_U64 },
-        { "jtimer", "jtimer_destroy", "JtimerDestroy", t_jtimer_destroy, 1, k_jtimer_destroy, JOY_V_NULL },
-        { "jtimer", "jtimer_trigger", "JtimerTrigger", t_jtimer_trigger, 1, k_jtimer_trigger, JOY_V_NULL },
-        { "jtimer", "jtimer_set_interval", "JtimerSetInterval", t_jtimer_set_interval, 2, k_jtimer_set_interval, JOY_V_NULL },
-        { "jtimer", "jtimer_set_active", "JtimerSetActive", t_jtimer_set_active, 2, k_jtimer_set_active, JOY_V_NULL },
-        { "jtimer", "jtimer_reset", "JtimerReset", t_jtimer_reset, 1, k_jtimer_reset, JOY_V_NULL },
-        { "jtimer", "jtimer_get_elapsed", "JtimerGetElapsed", t_jtimer_get_elapsed, 1, k_jtimer_get_elapsed, JOY_V_U64 },
+        { "scene", "joy_scene_jtimer_destroy", "JtimerDestroy", t_joy_scene_jtimer_destroy, 1, k_joy_scene_jtimer_destroy, JOY_V_NULL },
+        { "scene", "joy_scene_jtimer_trigger", "JtimerTrigger", t_joy_scene_jtimer_trigger, 1, k_joy_scene_jtimer_trigger, JOY_V_NULL },
+        { "scene", "joy_scene_jtimer_set_interval", "JtimerSetInterval", t_joy_scene_jtimer_set_interval, 2, k_joy_scene_jtimer_set_interval, JOY_V_NULL },
+        { "scene", "joy_scene_jtimer_set_active", "JtimerSetActive", t_joy_scene_jtimer_set_active, 2, k_joy_scene_jtimer_set_active, JOY_V_NULL },
+        { "scene", "joy_scene_jtimer_reset", "JtimerReset", t_joy_scene_jtimer_reset, 1, k_joy_scene_jtimer_reset, JOY_V_NULL },
+        { "scene", "joy_scene_jtimer_get_elapsed", "JtimerGetElapsed", t_joy_scene_jtimer_get_elapsed, 1, k_joy_scene_jtimer_get_elapsed, JOY_V_U64 },
         { "core", "joy_core_init_env", "InitEnv", t_joy_core_init_env, 0, NULL, JOY_V_BOOL },
         { "core", "joy_core_quit_env", "QuitEnv", t_joy_core_quit_env, 0, NULL, JOY_V_NULL },
         { "core", "joy_core_get_ticks", "GetTicks", t_joy_core_get_ticks, 0, NULL, JOY_V_U64 },
@@ -12128,22 +12128,22 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_window_set_fullscreen", "WindowSetFullscreen", t_joy_core_window_set_fullscreen, 2, k_joy_core_window_set_fullscreen, JOY_V_NULL },
         { "core", "joy_core_window_get_fullscreen", "WindowGetFullscreen", t_joy_core_window_get_fullscreen, 1, k_joy_core_window_get_fullscreen, JOY_V_BOOL },
         { "core", "joy_core_window_set_icon", "WindowSetIcon", t_joy_core_window_set_icon, 2, k_joy_core_window_set_icon, JOY_V_NULL },
-        { "push", "push_user_event", "PushUserEvent", t_push_user_event, 2, k_push_user_event, JOY_V_BOOL },
-        { "push", "push_quit_event", "PushQuitEvent", t_push_quit_event, 0, NULL, JOY_V_BOOL },
+        { "core", "joy_core_push_user_event", "PushUserEvent", t_joy_core_push_user_event, 2, k_joy_core_push_user_event, JOY_V_BOOL },
+        { "core", "joy_core_push_quit_event", "PushQuitEvent", t_joy_core_push_quit_event, 0, NULL, JOY_V_BOOL },
         { "core", "joy_core_log_title", "LogTitle", t_joy_core_log_title, 1, k_joy_core_log_title, JOY_V_NULL },
         { "core", "joy_core_env_set", "EnvSet", t_joy_core_env_set, 3, k_joy_core_env_set, JOY_V_NULL },
         { "core", "joy_core_env_destroy", "EnvDestroy", t_joy_core_env_destroy, 1, k_joy_core_env_destroy, JOY_V_NULL },
         { "core", "joy_core_simple_fps_destory", "SimpleFpsDestory", t_joy_core_simple_fps_destory, 1, k_joy_core_simple_fps_destory, JOY_V_NULL },
         { "core", "joy_core_simple_fps_update", "SimpleFpsUpdate", t_joy_core_simple_fps_update, 1, k_joy_core_simple_fps_update, JOY_V_NULL },
         { "core", "joy_core_simple_fps_value", "SimpleFpsValue", t_joy_core_simple_fps_value, 1, k_joy_core_simple_fps_value, JOY_V_I32 },
-        { "game", "game_timer_init", "GameTimerInit", t_game_timer_init, 1, k_game_timer_init, JOY_V_NULL },
-        { "game", "game_timer_update", "GameTimerUpdate", t_game_timer_update, 1, k_game_timer_update, JOY_V_NULL },
-        { "game", "game_timer_get_delta_time", "GameTimerGetDeltaTime", t_game_timer_get_delta_time, 1, k_game_timer_get_delta_time, JOY_V_F64 },
-        { "game", "game_timer_get_unscaled_delta_time", "GameTimerGetUnscaledDeltaTime", t_game_timer_get_unscaled_delta_time, 1, k_game_timer_get_unscaled_delta_time, JOY_V_F64 },
-        { "game", "game_timer_set_time_scale", "GameTimerSetTimeScale", t_game_timer_set_time_scale, 2, k_game_timer_set_time_scale, JOY_V_NULL },
-        { "game", "game_timer_get_time_scale", "GameTimerGetTimeScale", t_game_timer_get_time_scale, 1, k_game_timer_get_time_scale, JOY_V_F64 },
-        { "game", "game_timer_set_target_fps", "GameTimerSetTargetFps", t_game_timer_set_target_fps, 2, k_game_timer_set_target_fps, JOY_V_NULL },
-        { "game", "game_timer_get_target_fps", "GameTimerGetTargetFps", t_game_timer_get_target_fps, 1, k_game_timer_get_target_fps, JOY_V_I32 },
+        { "scene", "joy_scene_game_timer_init", "GameTimerInit", t_joy_scene_game_timer_init, 1, k_joy_scene_game_timer_init, JOY_V_NULL },
+        { "scene", "joy_scene_game_timer_update", "GameTimerUpdate", t_joy_scene_game_timer_update, 1, k_joy_scene_game_timer_update, JOY_V_NULL },
+        { "scene", "joy_scene_game_timer_get_delta_time", "GameTimerGetDeltaTime", t_joy_scene_game_timer_get_delta_time, 1, k_joy_scene_game_timer_get_delta_time, JOY_V_F64 },
+        { "scene", "joy_scene_game_timer_get_unscaled_delta_time", "GameTimerGetUnscaledDeltaTime", t_joy_scene_game_timer_get_unscaled_delta_time, 1, k_joy_scene_game_timer_get_unscaled_delta_time, JOY_V_F64 },
+        { "scene", "joy_scene_game_timer_set_time_scale", "GameTimerSetTimeScale", t_joy_scene_game_timer_set_time_scale, 2, k_joy_scene_game_timer_set_time_scale, JOY_V_NULL },
+        { "scene", "joy_scene_game_timer_get_time_scale", "GameTimerGetTimeScale", t_joy_scene_game_timer_get_time_scale, 1, k_joy_scene_game_timer_get_time_scale, JOY_V_F64 },
+        { "scene", "joy_scene_game_timer_set_target_fps", "GameTimerSetTargetFps", t_joy_scene_game_timer_set_target_fps, 2, k_joy_scene_game_timer_set_target_fps, JOY_V_NULL },
+        { "scene", "joy_scene_game_timer_get_target_fps", "GameTimerGetTargetFps", t_joy_scene_game_timer_get_target_fps, 1, k_joy_scene_game_timer_get_target_fps, JOY_V_I32 },
         { "core", "joy_core_set_clipboard_text", "SetClipboardText", t_joy_core_set_clipboard_text, 1, k_joy_core_set_clipboard_text, JOY_V_NULL },
         { "sys", "sys_init_netenv", "SysInitNetenv", t_sys_init_netenv, 0, NULL, JOY_V_BOOL },
         { "sys", "sys_release_netenv", "SysReleaseNetenv", t_sys_release_netenv, 0, NULL, JOY_V_BOOL },
@@ -12858,23 +12858,23 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_kr_hash", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_kr_hash";
         st = JOY_OK;
-        joy_api_call("jtimer_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_destroy";
+        joy_api_call("joy_scene_jtimer_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_destroy";
         st = JOY_OK;
-        joy_api_call("jtimer_trigger", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_trigger";
+        joy_api_call("joy_scene_jtimer_trigger", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_trigger";
         st = JOY_OK;
-        joy_api_call("jtimer_set_interval", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_set_interval";
+        joy_api_call("joy_scene_jtimer_set_interval", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_set_interval";
         st = JOY_OK;
-        joy_api_call("jtimer_set_active", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_set_active";
+        joy_api_call("joy_scene_jtimer_set_active", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_set_active";
         st = JOY_OK;
-        joy_api_call("jtimer_reset", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_reset";
+        joy_api_call("joy_scene_jtimer_reset", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_reset";
         st = JOY_OK;
-        joy_api_call("jtimer_get_elapsed", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jtimer_get_elapsed";
+        joy_api_call("joy_scene_jtimer_get_elapsed", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_jtimer_get_elapsed";
         st = JOY_OK;
         joy_api_call("joy_core_init_env", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_init_env";
@@ -12900,11 +12900,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_window_set_icon", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_window_set_icon";
         st = JOY_OK;
-        joy_api_call("push_user_event", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/push_user_event";
+        joy_api_call("joy_core_push_user_event", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_push_user_event";
         st = JOY_OK;
-        joy_api_call("push_quit_event", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/push_quit_event";
+        joy_api_call("joy_core_push_quit_event", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_push_quit_event";
         st = JOY_OK;
         joy_api_call("joy_core_log_title", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_log_title";
@@ -12924,29 +12924,29 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_simple_fps_value", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_simple_fps_value";
         st = JOY_OK;
-        joy_api_call("game_timer_init", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_init";
+        joy_api_call("joy_scene_game_timer_init", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_init";
         st = JOY_OK;
-        joy_api_call("game_timer_update", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_update";
+        joy_api_call("joy_scene_game_timer_update", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_update";
         st = JOY_OK;
-        joy_api_call("game_timer_get_delta_time", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_get_delta_time";
+        joy_api_call("joy_scene_game_timer_get_delta_time", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_delta_time";
         st = JOY_OK;
-        joy_api_call("game_timer_get_unscaled_delta_time", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_get_unscaled_delta_time";
+        joy_api_call("joy_scene_game_timer_get_unscaled_delta_time", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_unscaled_delta_time";
         st = JOY_OK;
-        joy_api_call("game_timer_set_time_scale", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_set_time_scale";
+        joy_api_call("joy_scene_game_timer_set_time_scale", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_set_time_scale";
         st = JOY_OK;
-        joy_api_call("game_timer_get_time_scale", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_get_time_scale";
+        joy_api_call("joy_scene_game_timer_get_time_scale", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_time_scale";
         st = JOY_OK;
-        joy_api_call("game_timer_set_target_fps", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_set_target_fps";
+        joy_api_call("joy_scene_game_timer_set_target_fps", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_set_target_fps";
         st = JOY_OK;
-        joy_api_call("game_timer_get_target_fps", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/game_timer_get_target_fps";
+        joy_api_call("joy_scene_game_timer_get_target_fps", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_target_fps";
         st = JOY_OK;
         joy_api_call("joy_core_set_clipboard_text", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_set_clipboard_text";

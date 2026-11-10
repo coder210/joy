@@ -156,33 +156,33 @@ static unsigned long shim_joy_core_kr_hash(void* _jv_ctx, const char* str, int s
         return (unsigned long) _jv_r.as.u64;
 }
 
-static void shim_jtimer_destroy(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_jtimer_destroy(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("jtimer_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtimer_trigger(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_jtimer_trigger(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("jtimer_trigger", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_trigger", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtimer_set_interval(void* _jv_ctx, Jtimer timer, int interval)
+static void shim_joy_scene_jtimer_set_interval(void* _jv_ctx, Jtimer timer, int interval)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -190,13 +190,13 @@ static void shim_jtimer_set_interval(void* _jv_ctx, Jtimer timer, int interval)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
         _jv_args[1] = joy_v_i32(interval);
-        _jv_r = joy_api_call("jtimer_set_interval", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_set_interval", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtimer_set_active(void* _jv_ctx, Jtimer timer, bool active)
+static void shim_joy_scene_jtimer_set_active(void* _jv_ctx, Jtimer timer, bool active)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -204,33 +204,33 @@ static void shim_jtimer_set_active(void* _jv_ctx, Jtimer timer, bool active)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
         _jv_args[1] = joy_v_bool(active);
-        _jv_r = joy_api_call("jtimer_set_active", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_set_active", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtimer_reset(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_jtimer_reset(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("jtimer_reset", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_reset", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static uint64_t shim_jtimer_get_elapsed(void* _jv_ctx, Jtimer timer)
+static uint64_t shim_joy_scene_jtimer_get_elapsed(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("jtimer_get_elapsed", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_jtimer_get_elapsed", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (uint64_t)0;
         return (uint64_t) _jv_r.as.u64;
 }
@@ -337,7 +337,7 @@ static void shim_joy_core_window_set_icon(void* _jv_ctx, Jwindow win, const char
         return;
 }
 
-static bool shim_push_user_event(void* _jv_ctx, int type, int code)
+static bool shim_joy_core_push_user_event(void* _jv_ctx, int type, int code)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -345,18 +345,18 @@ static bool shim_push_user_event(void* _jv_ctx, int type, int code)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(type);
         _jv_args[1] = joy_v_i32(code);
-        _jv_r = joy_api_call("push_user_event", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_push_user_event", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_push_quit_event(void* _jv_ctx)
+static bool shim_joy_core_push_quit_event(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("push_quit_event", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_core_push_quit_event", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -440,57 +440,57 @@ static int shim_joy_core_simple_fps_value(void* _jv_ctx, SimpleFpsCounter fps)
         return (int) _jv_r.as.i32;
 }
 
-static void shim_game_timer_init(void* _jv_ctx, GameTimer clock)
+static void shim_joy_scene_game_timer_init(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_init", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_init", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_game_timer_update(void* _jv_ctx, GameTimer clock)
+static void shim_joy_scene_game_timer_update(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_game_timer_get_delta_time(void* _jv_ctx, GameTimer clock)
+static float shim_joy_scene_game_timer_get_delta_time(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_get_delta_time", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_get_delta_time", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static float shim_game_timer_get_unscaled_delta_time(void* _jv_ctx, GameTimer clock)
+static float shim_joy_scene_game_timer_get_unscaled_delta_time(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_get_unscaled_delta_time", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_get_unscaled_delta_time", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_game_timer_set_time_scale(void* _jv_ctx, GameTimer clock, float scale)
+static void shim_joy_scene_game_timer_set_time_scale(void* _jv_ctx, GameTimer clock, float scale)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -498,25 +498,25 @@ static void shim_game_timer_set_time_scale(void* _jv_ctx, GameTimer clock, float
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
         _jv_args[1] = joy_v_f64(scale);
-        _jv_r = joy_api_call("game_timer_set_time_scale", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_set_time_scale", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_game_timer_get_time_scale(void* _jv_ctx, GameTimer clock)
+static float shim_joy_scene_game_timer_get_time_scale(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_get_time_scale", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_get_time_scale", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_game_timer_set_target_fps(void* _jv_ctx, GameTimer clock, int fps)
+static void shim_joy_scene_game_timer_set_target_fps(void* _jv_ctx, GameTimer clock, int fps)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -524,20 +524,20 @@ static void shim_game_timer_set_target_fps(void* _jv_ctx, GameTimer clock, int f
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
         _jv_args[1] = joy_v_i32(fps);
-        _jv_r = joy_api_call("game_timer_set_target_fps", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_set_target_fps", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_game_timer_get_target_fps(void* _jv_ctx, GameTimer clock)
+static int shim_joy_scene_game_timer_get_target_fps(void* _jv_ctx, GameTimer clock)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(clock.h);
-        _jv_r = joy_api_call("game_timer_get_target_fps", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_game_timer_get_target_fps", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
@@ -9972,12 +9972,12 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JenkinsHash = shim_joy_core_jenkins_hash;
         api->Murmur3Hash = shim_joy_core_murmur3_hash;
         api->KrHash = shim_joy_core_kr_hash;
-        api->JtimerDestroy = shim_jtimer_destroy;
-        api->JtimerTrigger = shim_jtimer_trigger;
-        api->JtimerSetInterval = shim_jtimer_set_interval;
-        api->JtimerSetActive = shim_jtimer_set_active;
-        api->JtimerReset = shim_jtimer_reset;
-        api->JtimerGetElapsed = shim_jtimer_get_elapsed;
+        api->JtimerDestroy = shim_joy_scene_jtimer_destroy;
+        api->JtimerTrigger = shim_joy_scene_jtimer_trigger;
+        api->JtimerSetInterval = shim_joy_scene_jtimer_set_interval;
+        api->JtimerSetActive = shim_joy_scene_jtimer_set_active;
+        api->JtimerReset = shim_joy_scene_jtimer_reset;
+        api->JtimerGetElapsed = shim_joy_scene_jtimer_get_elapsed;
         api->InitEnv = shim_joy_core_init_env;
         api->QuitEnv = shim_joy_core_quit_env;
         api->GetTicks = shim_joy_core_get_ticks;
@@ -9986,22 +9986,22 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->WindowSetFullscreen = shim_joy_core_window_set_fullscreen;
         api->WindowGetFullscreen = shim_joy_core_window_get_fullscreen;
         api->WindowSetIcon = shim_joy_core_window_set_icon;
-        api->PushUserEvent = shim_push_user_event;
-        api->PushQuitEvent = shim_push_quit_event;
+        api->PushUserEvent = shim_joy_core_push_user_event;
+        api->PushQuitEvent = shim_joy_core_push_quit_event;
         api->LogTitle = shim_joy_core_log_title;
         api->EnvSet = shim_joy_core_env_set;
         api->EnvDestroy = shim_joy_core_env_destroy;
         api->SimpleFpsDestory = shim_joy_core_simple_fps_destory;
         api->SimpleFpsUpdate = shim_joy_core_simple_fps_update;
         api->SimpleFpsValue = shim_joy_core_simple_fps_value;
-        api->GameTimerInit = shim_game_timer_init;
-        api->GameTimerUpdate = shim_game_timer_update;
-        api->GameTimerGetDeltaTime = shim_game_timer_get_delta_time;
-        api->GameTimerGetUnscaledDeltaTime = shim_game_timer_get_unscaled_delta_time;
-        api->GameTimerSetTimeScale = shim_game_timer_set_time_scale;
-        api->GameTimerGetTimeScale = shim_game_timer_get_time_scale;
-        api->GameTimerSetTargetFps = shim_game_timer_set_target_fps;
-        api->GameTimerGetTargetFps = shim_game_timer_get_target_fps;
+        api->GameTimerInit = shim_joy_scene_game_timer_init;
+        api->GameTimerUpdate = shim_joy_scene_game_timer_update;
+        api->GameTimerGetDeltaTime = shim_joy_scene_game_timer_get_delta_time;
+        api->GameTimerGetUnscaledDeltaTime = shim_joy_scene_game_timer_get_unscaled_delta_time;
+        api->GameTimerSetTimeScale = shim_joy_scene_game_timer_set_time_scale;
+        api->GameTimerGetTimeScale = shim_joy_scene_game_timer_get_time_scale;
+        api->GameTimerSetTargetFps = shim_joy_scene_game_timer_set_target_fps;
+        api->GameTimerGetTargetFps = shim_joy_scene_game_timer_get_target_fps;
         api->SetClipboardText = shim_joy_core_set_clipboard_text;
         api->SysInitNetenv = shim_sys_init_netenv;
         api->SysReleaseNetenv = shim_sys_release_netenv;
