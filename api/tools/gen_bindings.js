@@ -274,7 +274,9 @@ function mergeIdl(fresh) {
   const byName = new Map(old.map(e => [e.name, e]));
   const result = fresh.map(f => {
     /* 本批改名的新条目从旧名继承人工字段，并把 owns 里指向旧名的也换掉。 */
-    const o = byName.get(renamedFrom.get(f.name) || f.name);
+    /* rename_map 可以跨批累加：旧名条目已被上一批消费掉时回退到按本名匹配，
+     * 否则第二次 --scan 会把已开放的 status 又清成 off。 */
+    const o = byName.get(renamedFrom.get(f.name) || f.name) || byName.get(f.name);
     if (!o) return f;
     const owns = o.owns !== undefined ? o.owns : f.owns;
     return {

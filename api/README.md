@@ -88,6 +88,10 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 `idl/rename_map.json`。改名的同时发现 `emit_vtable.js` 的 `HANDLE_PROBE`
 按名字硬编码，漏改会让强句柄自检被静默跳过。
 
+`rename_map.json` 只写**本批**的旧名 → 新名，可以换成下一批也可以累加
+（`mergeIdl` 在旧条目已消费时会回退按本名匹配，重复 `--scan` 不会把
+`status:on` 清掉）。
+
 0. 改名前先搜 `api/tools/` 里的硬编码旧名（`SELFTEST_SAFE`、`HANDLE_PROBE`、
    `SKIP_NAMES` 等）——`--check` 只比对生成物，这类漏改查不出来。
 1. 每批一个域：`--scan → --enable domain:<域> → --check` → 四语言 `ctest`
