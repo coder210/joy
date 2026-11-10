@@ -3140,20 +3140,20 @@ static void shim_joy_ui_button_draw(void* _jv_ctx, Button btn)
         return;
 }
 
-static void shim_scrollview_destroy(void* _jv_ctx, Scrollview v)
+static void shim_joy_ui_scrollview_destroy(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scrollview_set_view_px(void* _jv_ctx, Scrollview v, float x, float y, float w, float h)
+static void shim_joy_ui_scrollview_set_view_px(void* _jv_ctx, Scrollview v, float x, float y, float w, float h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3164,13 +3164,13 @@ static void shim_scrollview_set_view_px(void* _jv_ctx, Scrollview v, float x, fl
         _jv_args[2] = joy_v_f64(y);
         _jv_args[3] = joy_v_f64(w);
         _jv_args[4] = joy_v_f64(h);
-        _jv_r = joy_api_call("scrollview_set_view_px", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_set_view_px", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scrollview_set_content(void* _jv_ctx, Scrollview v, float content_w, float content_h)
+static void shim_joy_ui_scrollview_set_content(void* _jv_ctx, Scrollview v, float content_w, float content_h)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3179,13 +3179,13 @@ static void shim_scrollview_set_content(void* _jv_ctx, Scrollview v, float conte
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(content_w);
         _jv_args[2] = joy_v_f64(content_h);
-        _jv_r = joy_api_call("scrollview_set_content", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_set_content", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scrollview_set_offset(void* _jv_ctx, Scrollview v, float ox, float oy)
+static void shim_joy_ui_scrollview_set_offset(void* _jv_ctx, Scrollview v, float ox, float oy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3194,50 +3194,50 @@ static void shim_scrollview_set_offset(void* _jv_ctx, Scrollview v, float ox, fl
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(ox);
         _jv_args[2] = joy_v_f64(oy);
-        _jv_r = joy_api_call("scrollview_set_offset", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_set_offset", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scrollview_clamp(void* _jv_ctx, Scrollview v)
+static void shim_joy_ui_scrollview_clamp(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_clamp", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_clamp", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_scrollview_get_offset_x(void* _jv_ctx, Scrollview v)
+static float shim_joy_ui_scrollview_get_offset_x(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_get_offset_x", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_get_offset_x", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static float shim_scrollview_get_offset_y(void* _jv_ctx, Scrollview v)
+static float shim_joy_ui_scrollview_get_offset_y(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_get_offset_y", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_get_offset_y", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, bool show)
+static void shim_joy_ui_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, bool show)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3245,25 +3245,25 @@ static void shim_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, bool show)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_bool(show);
-        _jv_r = joy_api_call("scrollview_set_show_bar", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_set_show_bar", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_scrollview_dragging(void* _jv_ctx, Scrollview v)
+static bool shim_joy_ui_scrollview_dragging(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_dragging", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_dragging", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x, float win_y)
+static bool shim_joy_ui_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x, float win_y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3272,51 +3272,51 @@ static bool shim_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x, float 
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(win_x);
         _jv_args[2] = joy_v_f64(win_y);
-        _jv_r = joy_api_call("scrollview_hit", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_hit", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_scrollview_begin(void* _jv_ctx, Scrollview v)
+static void shim_joy_ui_scrollview_begin(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_begin", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_begin", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_scrollview_end(void* _jv_ctx, Scrollview v)
+static void shim_joy_ui_scrollview_end(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("scrollview_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_scrollview_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_destroy(void* _jv_ctx, Combobox combobox)
+static void shim_joy_ui_combobox_destroy(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("combobox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_add_item(void* _jv_ctx, Combobox combobox, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_ui_combobox_add_item(void* _jv_ctx, Combobox combobox, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -3330,13 +3330,13 @@ static void shim_combobox_add_item(void* _jv_ctx, Combobox combobox, Font font, 
         _jv_args[5] = joy_v_u32(color_g);
         _jv_args[6] = joy_v_u32(color_b);
         _jv_args[7] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("combobox_add_item", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_add_item", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_combobox_is_pressed(void* _jv_ctx, Combobox combobox, float x, float y)
+static bool shim_joy_ui_combobox_is_pressed(void* _jv_ctx, Combobox combobox, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3345,24 +3345,24 @@ static bool shim_combobox_is_pressed(void* _jv_ctx, Combobox combobox, float x, 
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("combobox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_combobox_is_open(void* _jv_ctx, Combobox combobox)
+static bool shim_joy_ui_combobox_is_open(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("combobox_is_open", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_is_open", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_combobox_set_open(void* _jv_ctx, Combobox combobox, bool v)
+static void shim_joy_ui_combobox_set_open(void* _jv_ctx, Combobox combobox, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3370,13 +3370,13 @@ static void shim_combobox_set_open(void* _jv_ctx, Combobox combobox, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("combobox_set_open", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_set_open", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_combobox_hit_item(void* _jv_ctx, Combobox combobox, float x, float y)
+static int shim_joy_ui_combobox_hit_item(void* _jv_ctx, Combobox combobox, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3385,12 +3385,12 @@ static int shim_combobox_hit_item(void* _jv_ctx, Combobox combobox, float x, flo
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("combobox_hit_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_hit_item", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_combobox_set_selected(void* _jv_ctx, Combobox combobox, int index)
+static void shim_joy_ui_combobox_set_selected(void* _jv_ctx, Combobox combobox, int index)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3398,51 +3398,51 @@ static void shim_combobox_set_selected(void* _jv_ctx, Combobox combobox, int ind
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_i32(index);
-        _jv_r = joy_api_call("combobox_set_selected", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_set_selected", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_combobox_get_selected(void* _jv_ctx, Combobox combobox)
+static int shim_joy_ui_combobox_get_selected(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("combobox_get_selected", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_get_selected", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_combobox_draw(void* _jv_ctx, Combobox combobox)
+static void shim_joy_ui_combobox_draw(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("combobox_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_destroy(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_ui_combobox_input_destroy(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("combobox_input_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci, const char* str, int len)
+static void shim_joy_ui_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci, const char* str, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3451,26 +3451,26 @@ static void shim_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci, const 
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("combobox_input_add_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_add_item", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_clear_items(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_ui_combobox_input_clear_items(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("combobox_input_clear_items", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_clear_items", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci, const char* str)
+static void shim_joy_ui_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci, const char* str)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3478,51 +3478,51 @@ static void shim_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci, const 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
-        _jv_r = joy_api_call("combobox_input_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_draw(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_ui_combobox_input_draw(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("combobox_input_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_combobox_input_draw_dropdown(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_ui_combobox_input_draw_dropdown(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("combobox_input_draw_dropdown", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_draw_dropdown", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_combobox_input_is_open(void* _jv_ctx, ComboboxInput ci)
+static bool shim_joy_ui_combobox_input_is_open(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("combobox_input_is_open", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_is_open", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInput ci, SceneNode node)
+static void shim_joy_ui_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInput ci, SceneNode node)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3530,13 +3530,13 @@ static void shim_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInput ci, 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("combobox_input_set_popup_node", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_set_popup_node", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, float x, float y)
+static int shim_joy_ui_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3545,12 +3545,12 @@ static int shim_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, float x
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("combobox_input_hit_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_hit_item", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci, bool v)
+static void shim_joy_ui_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3558,13 +3558,13 @@ static void shim_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci, bool v
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("combobox_input_set_open", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_combobox_input_set_open", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const char* headers)
+static void shim_joy_ui_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const char* headers)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3572,13 +3572,13 @@ static void shim_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const char* h
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_str(headers);
-        _jv_r = joy_api_call("datagrid_setheaders", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_setheaders", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_setheader(void* _jv_ctx, Datagrid grid, int index, const char* header)
+static void shim_joy_ui_datagrid_setheader(void* _jv_ctx, Datagrid grid, int index, const char* header)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3587,13 +3587,13 @@ static void shim_datagrid_setheader(void* _jv_ctx, Datagrid grid, int index, con
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(index);
         _jv_args[2] = joy_v_str(header);
-        _jv_r = joy_api_call("datagrid_setheader", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_setheader", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_index, int col_index, const char* data)
+static void shim_joy_ui_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_index, int col_index, const char* data)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -3603,26 +3603,26 @@ static void shim_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_index, i
         _jv_args[1] = joy_v_i32(row_index);
         _jv_args[2] = joy_v_i32(col_index);
         _jv_args[3] = joy_v_str(data);
-        _jv_r = joy_api_call("datagrid_setcell", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_setcell", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_destroy(void* _jv_ctx, Datagrid grid)
+static void shim_joy_ui_datagrid_destroy(void* _jv_ctx, Datagrid grid)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
-        _jv_r = joy_api_call("datagrid_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
+static void shim_joy_ui_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3630,13 +3630,13 @@ static void shim_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("datagrid_draw", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_draw", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, float y)
+static int shim_joy_ui_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3645,12 +3645,12 @@ static int shim_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, float y)
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("datagrid_hit_row", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_hit_row", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
+static void shim_joy_ui_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3658,13 +3658,13 @@ static void shim_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(lines);
-        _jv_r = joy_api_call("datagrid_scroll", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_scroll", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row)
+static void shim_joy_ui_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3672,7 +3672,7 @@ static void shim_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(row);
-        _jv_r = joy_api_call("datagrid_set_selected_row", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_datagrid_set_selected_row", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -4009,20 +4009,20 @@ static float shim_joystick_get_magnitude(void* _jv_ctx, Joystick joystick)
         return (float) _jv_r.as.f64;
 }
 
-static void shim_inputbox_destroy(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_destroy(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char* text)
+static void shim_joy_ui_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char* text)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4030,26 +4030,26 @@ static void shim_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char* text)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_str(text);
-        _jv_r = joy_api_call("inputbox_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_draw(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_draw(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x, float y)
+static bool shim_joy_ui_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4058,12 +4058,12 @@ static bool shim_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x, float 
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("inputbox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x, float y)
+static bool shim_joy_ui_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4072,51 +4072,51 @@ static bool shim_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x, float 
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("inputbox_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_inputbox_focus(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_focus(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_focus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_focus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_defocus(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_defocus(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_defocus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_defocus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_blur(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_blur(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_blur", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_blur", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* s, int len)
+static void shim_joy_ui_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* s, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4125,220 +4125,220 @@ static void shim_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* s, int 
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_str(s);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("inputbox_insert", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_insert", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_backspace(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_backspace(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_backspace", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_backspace", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_delete(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_delete(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_delete", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_delete", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_cursor_left(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_cursor_left(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_cursor_left", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_cursor_left", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_cursor_right(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_cursor_right(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_cursor_right", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_cursor_right", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_cursor_home(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_cursor_home(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_cursor_home", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_cursor_home", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_cursor_end(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_cursor_end(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_cursor_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_cursor_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_select_left(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_select_left(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_select_left", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_select_left", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_select_right(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_select_right(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_select_right", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_select_right", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_select_home(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_select_home(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_select_home", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_select_home", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_select_end(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_select_end(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_select_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_select_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_select_all(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_select_all(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_select_all", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_select_all", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_paste(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_paste(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_paste", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_paste", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_copy(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_copy(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_copy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_copy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_inputbox_cut(void* _jv_ctx, Inputbox ti)
+static void shim_joy_ui_inputbox_cut(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_cut", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_cut", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_inputbox_is_focused(void* _jv_ctx, Inputbox ti)
+static bool shim_joy_ui_inputbox_is_focused(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("inputbox_is_focused", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_inputbox_is_focused", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_slider_destroy(void* _jv_ctx, Slider s)
+static void shim_joy_ui_slider_destroy(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("slider_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_slider_set_value(void* _jv_ctx, Slider s, float v)
+static void shim_joy_ui_slider_set_value(void* _jv_ctx, Slider s, float v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4346,25 +4346,25 @@ static void shim_slider_set_value(void* _jv_ctx, Slider s, float v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(v);
-        _jv_r = joy_api_call("slider_set_value", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_set_value", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_slider_get_value(void* _jv_ctx, Slider s)
+static float shim_joy_ui_slider_get_value(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("slider_get_value", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_get_value", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_slider_set_rect(void* _jv_ctx, Slider s, float x, float y, float w, float h)
+static void shim_joy_ui_slider_set_rect(void* _jv_ctx, Slider s, float x, float y, float w, float h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -4375,13 +4375,13 @@ static void shim_slider_set_rect(void* _jv_ctx, Slider s, float x, float y, floa
         _jv_args[2] = joy_v_f64(y);
         _jv_args[3] = joy_v_f64(w);
         _jv_args[4] = joy_v_f64(h);
-        _jv_r = joy_api_call("slider_set_rect", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_set_rect", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_slider_set_range(void* _jv_ctx, Slider s, float min, float max)
+static void shim_joy_ui_slider_set_range(void* _jv_ctx, Slider s, float min, float max)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4390,26 +4390,26 @@ static void shim_slider_set_range(void* _jv_ctx, Slider s, float min, float max)
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(min);
         _jv_args[2] = joy_v_f64(max);
-        _jv_r = joy_api_call("slider_set_range", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_set_range", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_slider_draw(void* _jv_ctx, Slider s)
+static void shim_joy_ui_slider_draw(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("slider_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_slider_is_pressed(void* _jv_ctx, Slider s, float x, float y)
+static bool shim_joy_ui_slider_is_pressed(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4418,12 +4418,12 @@ static bool shim_slider_is_pressed(void* _jv_ctx, Slider s, float x, float y)
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("slider_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
+static void shim_joy_ui_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4431,13 +4431,13 @@ static void shim_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("slider_set_pressed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_set_pressed", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_slider_drag_move(void* _jv_ctx, Slider s, float x, float y)
+static void shim_joy_ui_slider_drag_move(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4446,13 +4446,13 @@ static void shim_slider_drag_move(void* _jv_ctx, Slider s, float x, float y)
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("slider_drag_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_drag_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_slider_is_hovered(void* _jv_ctx, Slider s, float x, float y)
+static bool shim_joy_ui_slider_is_hovered(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4461,12 +4461,12 @@ static bool shim_slider_is_hovered(void* _jv_ctx, Slider s, float x, float y)
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("slider_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
+static void shim_joy_ui_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4474,7 +4474,7 @@ static void shim_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("slider_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_ui_slider_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10183,45 +10183,45 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->ButtonGetPressed = shim_joy_ui_button_get_pressed;
         api->ButtonSetTextOffset = shim_joy_ui_button_set_text_offset;
         api->ButtonDraw = shim_joy_ui_button_draw;
-        api->ScrollviewDestroy = shim_scrollview_destroy;
-        api->ScrollviewSetViewPx = shim_scrollview_set_view_px;
-        api->ScrollviewSetContent = shim_scrollview_set_content;
-        api->ScrollviewSetOffset = shim_scrollview_set_offset;
-        api->ScrollviewClamp = shim_scrollview_clamp;
-        api->ScrollviewGetOffsetX = shim_scrollview_get_offset_x;
-        api->ScrollviewGetOffsetY = shim_scrollview_get_offset_y;
-        api->ScrollviewSetShowBar = shim_scrollview_set_show_bar;
-        api->ScrollviewDragging = shim_scrollview_dragging;
-        api->ScrollviewHit = shim_scrollview_hit;
-        api->ScrollviewBegin = shim_scrollview_begin;
-        api->ScrollviewEnd = shim_scrollview_end;
-        api->ComboboxDestroy = shim_combobox_destroy;
-        api->ComboboxAddItem = shim_combobox_add_item;
-        api->ComboboxIsPressed = shim_combobox_is_pressed;
-        api->ComboboxIsOpen = shim_combobox_is_open;
-        api->ComboboxSetOpen = shim_combobox_set_open;
-        api->ComboboxHitItem = shim_combobox_hit_item;
-        api->ComboboxSetSelected = shim_combobox_set_selected;
-        api->ComboboxGetSelected = shim_combobox_get_selected;
-        api->ComboboxDraw = shim_combobox_draw;
-        api->ComboboxInputDestroy = shim_combobox_input_destroy;
-        api->ComboboxInputAddItem = shim_combobox_input_add_item;
-        api->ComboboxInputClearItems = shim_combobox_input_clear_items;
-        api->ComboboxInputSetText = shim_combobox_input_set_text;
-        api->ComboboxInputDraw = shim_combobox_input_draw;
-        api->ComboboxInputDrawDropdown = shim_combobox_input_draw_dropdown;
-        api->ComboboxInputIsOpen = shim_combobox_input_is_open;
-        api->ComboboxInputSetPopupNode = shim_combobox_input_set_popup_node;
-        api->ComboboxInputHitItem = shim_combobox_input_hit_item;
-        api->ComboboxInputSetOpen = shim_combobox_input_set_open;
-        api->DatagridSetheaders = shim_datagrid_setheaders;
-        api->DatagridSetheader = shim_datagrid_setheader;
-        api->DatagridSetcell = shim_datagrid_setcell;
-        api->DatagridDestroy = shim_datagrid_destroy;
-        api->DatagridDraw = shim_datagrid_draw;
-        api->DatagridHitRow = shim_datagrid_hit_row;
-        api->DatagridScroll = shim_datagrid_scroll;
-        api->DatagridSetSelectedRow = shim_datagrid_set_selected_row;
+        api->ScrollviewDestroy = shim_joy_ui_scrollview_destroy;
+        api->ScrollviewSetViewPx = shim_joy_ui_scrollview_set_view_px;
+        api->ScrollviewSetContent = shim_joy_ui_scrollview_set_content;
+        api->ScrollviewSetOffset = shim_joy_ui_scrollview_set_offset;
+        api->ScrollviewClamp = shim_joy_ui_scrollview_clamp;
+        api->ScrollviewGetOffsetX = shim_joy_ui_scrollview_get_offset_x;
+        api->ScrollviewGetOffsetY = shim_joy_ui_scrollview_get_offset_y;
+        api->ScrollviewSetShowBar = shim_joy_ui_scrollview_set_show_bar;
+        api->ScrollviewDragging = shim_joy_ui_scrollview_dragging;
+        api->ScrollviewHit = shim_joy_ui_scrollview_hit;
+        api->ScrollviewBegin = shim_joy_ui_scrollview_begin;
+        api->ScrollviewEnd = shim_joy_ui_scrollview_end;
+        api->ComboboxDestroy = shim_joy_ui_combobox_destroy;
+        api->ComboboxAddItem = shim_joy_ui_combobox_add_item;
+        api->ComboboxIsPressed = shim_joy_ui_combobox_is_pressed;
+        api->ComboboxIsOpen = shim_joy_ui_combobox_is_open;
+        api->ComboboxSetOpen = shim_joy_ui_combobox_set_open;
+        api->ComboboxHitItem = shim_joy_ui_combobox_hit_item;
+        api->ComboboxSetSelected = shim_joy_ui_combobox_set_selected;
+        api->ComboboxGetSelected = shim_joy_ui_combobox_get_selected;
+        api->ComboboxDraw = shim_joy_ui_combobox_draw;
+        api->ComboboxInputDestroy = shim_joy_ui_combobox_input_destroy;
+        api->ComboboxInputAddItem = shim_joy_ui_combobox_input_add_item;
+        api->ComboboxInputClearItems = shim_joy_ui_combobox_input_clear_items;
+        api->ComboboxInputSetText = shim_joy_ui_combobox_input_set_text;
+        api->ComboboxInputDraw = shim_joy_ui_combobox_input_draw;
+        api->ComboboxInputDrawDropdown = shim_joy_ui_combobox_input_draw_dropdown;
+        api->ComboboxInputIsOpen = shim_joy_ui_combobox_input_is_open;
+        api->ComboboxInputSetPopupNode = shim_joy_ui_combobox_input_set_popup_node;
+        api->ComboboxInputHitItem = shim_joy_ui_combobox_input_hit_item;
+        api->ComboboxInputSetOpen = shim_joy_ui_combobox_input_set_open;
+        api->DatagridSetheaders = shim_joy_ui_datagrid_setheaders;
+        api->DatagridSetheader = shim_joy_ui_datagrid_setheader;
+        api->DatagridSetcell = shim_joy_ui_datagrid_setcell;
+        api->DatagridDestroy = shim_joy_ui_datagrid_destroy;
+        api->DatagridDraw = shim_joy_ui_datagrid_draw;
+        api->DatagridHitRow = shim_joy_ui_datagrid_hit_row;
+        api->DatagridScroll = shim_joy_ui_datagrid_scroll;
+        api->DatagridSetSelectedRow = shim_joy_ui_datagrid_set_selected_row;
         api->RadioDestroy = shim_joy_ui_radio_destroy;
         api->RadioIsPressed = shim_joy_ui_radio_is_pressed;
         api->RadioSetHovered = shim_joy_ui_radio_set_hovered;
@@ -10245,41 +10245,41 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JoystickTouchMove = shim_joystick_touch_move;
         api->JoystickTouchUp = shim_joystick_touch_up;
         api->JoystickGetMagnitude = shim_joystick_get_magnitude;
-        api->InputboxDestroy = shim_inputbox_destroy;
-        api->InputboxSetText = shim_inputbox_set_text;
-        api->InputboxDraw = shim_inputbox_draw;
-        api->InputboxIsPressed = shim_inputbox_is_pressed;
-        api->InputboxIsHovered = shim_inputbox_is_hovered;
-        api->InputboxFocus = shim_inputbox_focus;
-        api->InputboxDefocus = shim_inputbox_defocus;
-        api->InputboxBlur = shim_inputbox_blur;
-        api->InputboxInsert = shim_inputbox_insert;
-        api->InputboxBackspace = shim_inputbox_backspace;
-        api->InputboxDelete = shim_inputbox_delete;
-        api->InputboxCursorLeft = shim_inputbox_cursor_left;
-        api->InputboxCursorRight = shim_inputbox_cursor_right;
-        api->InputboxCursorHome = shim_inputbox_cursor_home;
-        api->InputboxCursorEnd = shim_inputbox_cursor_end;
-        api->InputboxSelectLeft = shim_inputbox_select_left;
-        api->InputboxSelectRight = shim_inputbox_select_right;
-        api->InputboxSelectHome = shim_inputbox_select_home;
-        api->InputboxSelectEnd = shim_inputbox_select_end;
-        api->InputboxSelectAll = shim_inputbox_select_all;
-        api->InputboxPaste = shim_inputbox_paste;
-        api->InputboxCopy = shim_inputbox_copy;
-        api->InputboxCut = shim_inputbox_cut;
-        api->InputboxIsFocused = shim_inputbox_is_focused;
-        api->SliderDestroy = shim_slider_destroy;
-        api->SliderSetValue = shim_slider_set_value;
-        api->SliderGetValue = shim_slider_get_value;
-        api->SliderSetRect = shim_slider_set_rect;
-        api->SliderSetRange = shim_slider_set_range;
-        api->SliderDraw = shim_slider_draw;
-        api->SliderIsPressed = shim_slider_is_pressed;
-        api->SliderSetPressed = shim_slider_set_pressed;
-        api->SliderDragMove = shim_slider_drag_move;
-        api->SliderIsHovered = shim_slider_is_hovered;
-        api->SliderSetHovered = shim_slider_set_hovered;
+        api->InputboxDestroy = shim_joy_ui_inputbox_destroy;
+        api->InputboxSetText = shim_joy_ui_inputbox_set_text;
+        api->InputboxDraw = shim_joy_ui_inputbox_draw;
+        api->InputboxIsPressed = shim_joy_ui_inputbox_is_pressed;
+        api->InputboxIsHovered = shim_joy_ui_inputbox_is_hovered;
+        api->InputboxFocus = shim_joy_ui_inputbox_focus;
+        api->InputboxDefocus = shim_joy_ui_inputbox_defocus;
+        api->InputboxBlur = shim_joy_ui_inputbox_blur;
+        api->InputboxInsert = shim_joy_ui_inputbox_insert;
+        api->InputboxBackspace = shim_joy_ui_inputbox_backspace;
+        api->InputboxDelete = shim_joy_ui_inputbox_delete;
+        api->InputboxCursorLeft = shim_joy_ui_inputbox_cursor_left;
+        api->InputboxCursorRight = shim_joy_ui_inputbox_cursor_right;
+        api->InputboxCursorHome = shim_joy_ui_inputbox_cursor_home;
+        api->InputboxCursorEnd = shim_joy_ui_inputbox_cursor_end;
+        api->InputboxSelectLeft = shim_joy_ui_inputbox_select_left;
+        api->InputboxSelectRight = shim_joy_ui_inputbox_select_right;
+        api->InputboxSelectHome = shim_joy_ui_inputbox_select_home;
+        api->InputboxSelectEnd = shim_joy_ui_inputbox_select_end;
+        api->InputboxSelectAll = shim_joy_ui_inputbox_select_all;
+        api->InputboxPaste = shim_joy_ui_inputbox_paste;
+        api->InputboxCopy = shim_joy_ui_inputbox_copy;
+        api->InputboxCut = shim_joy_ui_inputbox_cut;
+        api->InputboxIsFocused = shim_joy_ui_inputbox_is_focused;
+        api->SliderDestroy = shim_joy_ui_slider_destroy;
+        api->SliderSetValue = shim_joy_ui_slider_set_value;
+        api->SliderGetValue = shim_joy_ui_slider_get_value;
+        api->SliderSetRect = shim_joy_ui_slider_set_rect;
+        api->SliderSetRange = shim_joy_ui_slider_set_range;
+        api->SliderDraw = shim_joy_ui_slider_draw;
+        api->SliderIsPressed = shim_joy_ui_slider_is_pressed;
+        api->SliderSetPressed = shim_joy_ui_slider_set_pressed;
+        api->SliderDragMove = shim_joy_ui_slider_drag_move;
+        api->SliderIsHovered = shim_joy_ui_slider_is_hovered;
+        api->SliderSetHovered = shim_joy_ui_slider_set_hovered;
         api->PopupDestroy = shim_joy_ui_popup_destroy;
         api->PopupSetTitle = shim_joy_ui_popup_set_title;
         api->PopupSetContent = shim_joy_ui_popup_set_content;

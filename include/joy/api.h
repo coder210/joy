@@ -1081,38 +1081,38 @@ extern "C" {
          * 偏移恒 ≤0（子控件整体向左/上移 = 用户向右/下看），并夹紧在内容范围内；
          * 内容不大于视口时偏移恒 0、不画滚动条、拖拽与滚轮均无效。
          */
-        JOY_API scrollview_p scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
-        JOY_API void  scrollview_destroy(scrollview_p v);
-        JOY_API void  scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h);
-        JOY_API void  scrollview_set_content(scrollview_p v, float content_w, float content_h);
-        JOY_API void  scrollview_set_offset(scrollview_p v, float ox, float oy);
-        JOY_API void  scrollview_clamp(scrollview_p v);
-        JOY_API float scrollview_get_offset_x(scrollview_p v);
-        JOY_API float scrollview_get_offset_y(scrollview_p v);
-        JOY_API void  scrollview_set_show_bar(scrollview_p v, bool show);
-        JOY_API bool  scrollview_dragging(scrollview_p v);
-        JOY_API bool  scrollview_hit(scrollview_p v, float win_x, float win_y);
-        JOY_API void  scrollview_begin(scrollview_p v);
-        JOY_API void  scrollview_end(scrollview_p v);
+        JOY_API scrollview_p joy_ui_scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
+        JOY_API void  joy_ui_scrollview_destroy(scrollview_p v);
+        JOY_API void  joy_ui_scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h);
+        JOY_API void  joy_ui_scrollview_set_content(scrollview_p v, float content_w, float content_h);
+        JOY_API void  joy_ui_scrollview_set_offset(scrollview_p v, float ox, float oy);
+        JOY_API void  joy_ui_scrollview_clamp(scrollview_p v);
+        JOY_API float joy_ui_scrollview_get_offset_x(scrollview_p v);
+        JOY_API float joy_ui_scrollview_get_offset_y(scrollview_p v);
+        JOY_API void  joy_ui_scrollview_set_show_bar(scrollview_p v, bool show);
+        JOY_API bool  joy_ui_scrollview_dragging(scrollview_p v);
+        JOY_API bool  joy_ui_scrollview_hit(scrollview_p v, float win_x, float win_y);
+        JOY_API void  joy_ui_scrollview_begin(scrollview_p v);
+        JOY_API void  joy_ui_scrollview_end(scrollview_p v);
         /* 返回 true = 该事件已被滚动层消费（拖拽中/滑动结束/滚轮），调用方不要再当点击 */
-        JOY_API bool  scrollview_process_event(scrollview_p v, const void* event);
-        JOY_API combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
-        JOY_API void combobox_destroy(combobox_p combobox);
-        JOY_API void combobox_set_text(combobox_p combobox, font_p font,
+        JOY_API bool  joy_ui_scrollview_process_event(scrollview_p v, const void* event);
+        JOY_API combobox_p joy_ui_combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh);
+        JOY_API void joy_ui_combobox_destroy(combobox_p combobox);
+        JOY_API void joy_ui_combobox_set_text(combobox_p combobox, font_p font,
                 const int* codepoints, int len, jcolor_t color);
-        JOY_API void combobox_add_item(combobox_p combobox, font_p font,
+        JOY_API void joy_ui_combobox_add_item(combobox_p combobox, font_p font,
                 const char* str, int len, jcolor_t color);
-        JOY_API void combobox_add_itemx(combobox_p combobox, font_p font,
+        JOY_API void joy_ui_combobox_add_itemx(combobox_p combobox, font_p font,
                 const int* codepoints, int len, jcolor_t color);
 
-        JOY_API bool combobox_is_pressed(combobox_p combobox, float x, float y);
-        JOY_API bool combobox_is_open(combobox_p combobox);
-        JOY_API void combobox_set_open(combobox_p combobox, bool v);
-        JOY_API int combobox_hit_item(combobox_p combobox, float x, float y);
-        JOY_API void combobox_set_selected(combobox_p combobox, int index);
-        JOY_API int combobox_get_selected(combobox_p combobox);
-        JOY_API void combobox_draw(combobox_p combobox);
-        JOY_API void combobox_process_event(combobox_p cb, const void* event);
+        JOY_API bool joy_ui_combobox_is_pressed(combobox_p combobox, float x, float y);
+        JOY_API bool joy_ui_combobox_is_open(combobox_p combobox);
+        JOY_API void joy_ui_combobox_set_open(combobox_p combobox, bool v);
+        JOY_API int joy_ui_combobox_hit_item(combobox_p combobox, float x, float y);
+        JOY_API void joy_ui_combobox_set_selected(combobox_p combobox, int index);
+        JOY_API int joy_ui_combobox_get_selected(combobox_p combobox);
+        JOY_API void joy_ui_combobox_draw(combobox_p combobox);
+        JOY_API void joy_ui_combobox_process_event(combobox_p cb, const void* event);
 
         /* ===== 栅格布局 jlayout（纯几何计算 + 可选标签绘制，不持有任何控件） =====
          * 场景按“逻辑像素”创建栅格：ox/oy/width 由逻辑宽计算，row_h 由高度基准 s 计算。
@@ -1136,32 +1136,32 @@ extern "C" {
                 const char** labels, int n, button_p* out);
 
         // 可输入下拉列表框
-        JOY_API combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len);
-        JOY_API void combobox_input_destroy(combobox_input_p ci);
-        JOY_API void combobox_input_add_item(combobox_input_p ci, const char* str, int len);
-        JOY_API void combobox_input_clear_items(combobox_input_p ci);
-        JOY_API const char* combobox_input_get_text(combobox_input_p ci);
-        JOY_API void combobox_input_set_text(combobox_input_p ci, const char* str);
-        JOY_API void combobox_input_draw(combobox_input_p ci);
-        JOY_API void combobox_input_draw_dropdown(combobox_input_p ci);
-        JOY_API bool combobox_input_is_open(combobox_input_p ci);
-        JOY_API void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node);
-        JOY_API void combobox_input_process_event(combobox_input_p ci, const void* ev);
-        JOY_API int combobox_input_hit_item(combobox_input_p ci, float x, float y);
+        JOY_API combobox_input_p joy_ui_combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len);
+        JOY_API void joy_ui_combobox_input_destroy(combobox_input_p ci);
+        JOY_API void joy_ui_combobox_input_add_item(combobox_input_p ci, const char* str, int len);
+        JOY_API void joy_ui_combobox_input_clear_items(combobox_input_p ci);
+        JOY_API const char* joy_ui_combobox_input_get_text(combobox_input_p ci);
+        JOY_API void joy_ui_combobox_input_set_text(combobox_input_p ci, const char* str);
+        JOY_API void joy_ui_combobox_input_draw(combobox_input_p ci);
+        JOY_API void joy_ui_combobox_input_draw_dropdown(combobox_input_p ci);
+        JOY_API bool joy_ui_combobox_input_is_open(combobox_input_p ci);
+        JOY_API void joy_ui_combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node);
+        JOY_API void joy_ui_combobox_input_process_event(combobox_input_p ci, const void* ev);
+        JOY_API int joy_ui_combobox_input_hit_item(combobox_input_p ci, float x, float y);
         /* 主动展开/收起下拉列表（原来只有 is_open，选中某项后无法收起）。 */
-        JOY_API void combobox_input_set_open(combobox_input_p ci, bool v);
+        JOY_API void joy_ui_combobox_input_set_open(combobox_input_p ci, bool v);
 
-        JOY_API datagrid_p datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font);
-        JOY_API void datagrid_setheaders(datagrid_p grid, const char* headers);
-        JOY_API void datagrid_setheader(datagrid_p grid, int index, const char* header);
-        JOY_API void datagrid_addrow(datagrid_p grid, const char** row_data);
-        JOY_API void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
-        JOY_API void datagrid_destroy(datagrid_p grid);
-        JOY_API void datagrid_draw(datagrid_p grid, jr2d_p r2d);
-        JOY_API int datagrid_hit_row(datagrid_p grid, float x, float y);
-        JOY_API void datagrid_scroll(datagrid_p grid, int lines);
-        JOY_API void datagrid_set_selected_row(datagrid_p grid, int row);
-        JOY_API void datagrid_process_event(datagrid_p dg, const void* event);
+        JOY_API datagrid_p joy_ui_datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font);
+        JOY_API void joy_ui_datagrid_setheaders(datagrid_p grid, const char* headers);
+        JOY_API void joy_ui_datagrid_setheader(datagrid_p grid, int index, const char* header);
+        JOY_API void joy_ui_datagrid_addrow(datagrid_p grid, const char** row_data);
+        JOY_API void joy_ui_datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data);
+        JOY_API void joy_ui_datagrid_destroy(datagrid_p grid);
+        JOY_API void joy_ui_datagrid_draw(datagrid_p grid, jr2d_p r2d);
+        JOY_API int joy_ui_datagrid_hit_row(datagrid_p grid, float x, float y);
+        JOY_API void joy_ui_datagrid_scroll(datagrid_p grid, int lines);
+        JOY_API void joy_ui_datagrid_set_selected_row(datagrid_p grid, int row);
+        JOY_API void joy_ui_datagrid_process_event(datagrid_p dg, const void* event);
         JOY_API radio_p joy_ui_radio_create(float fx, float fy, float size_frac, const char* label, int group_id);
         JOY_API void joy_ui_radio_destroy(radio_p radio);
         JOY_API bool joy_ui_radio_is_pressed(radio_p radio, float x, float y);
@@ -1208,51 +1208,51 @@ extern "C" {
         JOY_API vec2_t joystick_get_direction(joystick_p joystick);
         JOY_API float joystick_get_magnitude(joystick_p joystick);
         JOY_API void joystick_process_event(joystick_p js, const void* event);
-        JOY_API inputbox_p inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font);
-        JOY_API void inputbox_destroy(inputbox_p ti);
-        JOY_API void inputbox_set_text(inputbox_p ti, const char* text);
-        JOY_API const char* inputbox_get_text(inputbox_p ti);
-        JOY_API void inputbox_set_callback(inputbox_p ti, void (*submit)(inputbox_p, void*), void (*change)(inputbox_p, void*), void* userdata);
-        JOY_API void inputbox_draw(inputbox_p ti);
-        JOY_API bool inputbox_is_pressed(inputbox_p ti, float x, float y);
-        JOY_API bool inputbox_is_hovered(inputbox_p ti, float x, float y);
-        JOY_API void inputbox_focus(inputbox_p ti);
-        JOY_API void inputbox_defocus(inputbox_p ti);
+        JOY_API inputbox_p joy_ui_inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font);
+        JOY_API void joy_ui_inputbox_destroy(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_set_text(inputbox_p ti, const char* text);
+        JOY_API const char* joy_ui_inputbox_get_text(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_set_callback(inputbox_p ti, void (*submit)(inputbox_p, void*), void (*change)(inputbox_p, void*), void* userdata);
+        JOY_API void joy_ui_inputbox_draw(inputbox_p ti);
+        JOY_API bool joy_ui_inputbox_is_pressed(inputbox_p ti, float x, float y);
+        JOY_API bool joy_ui_inputbox_is_hovered(inputbox_p ti, float x, float y);
+        JOY_API void joy_ui_inputbox_focus(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_defocus(inputbox_p ti);
         /* 仅清除焦点，不调用 SDL_StopTextInput。用于多输入框之间切换焦点时保持软键盘不收起，
          * 避免 Android IME hide/show 同帧竞态导致新的输入框唤不起键盘。 */
-        JOY_API void inputbox_blur(inputbox_p ti);
-        JOY_API void inputbox_insert(inputbox_p ti, const char* s, int len);
-        JOY_API void inputbox_backspace(inputbox_p ti);
-        JOY_API void inputbox_delete(inputbox_p ti);
-        JOY_API void inputbox_cursor_left(inputbox_p ti);
-        JOY_API void inputbox_cursor_right(inputbox_p ti);
-        JOY_API void inputbox_cursor_home(inputbox_p ti);
-        JOY_API void inputbox_cursor_end(inputbox_p ti);
-        JOY_API void inputbox_select_left(inputbox_p ti);
-        JOY_API void inputbox_select_right(inputbox_p ti);
-        JOY_API void inputbox_select_home(inputbox_p ti);
-        JOY_API void inputbox_select_end(inputbox_p ti);
-        JOY_API void inputbox_select_all(inputbox_p ti);
-        JOY_API void inputbox_paste(inputbox_p ti);
-        JOY_API void inputbox_copy(inputbox_p ti);
-        JOY_API void inputbox_cut(inputbox_p ti);
-        JOY_API bool inputbox_is_focused(inputbox_p ti);
-        JOY_API void inputbox_process_event(inputbox_p ti, const void* event);
-        JOY_API slider_p slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial);
-        JOY_API void slider_destroy(slider_p s);
-        JOY_API void slider_set_value(slider_p s, float v);
-        JOY_API float slider_get_value(slider_p s);
-        JOY_API void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover);
+        JOY_API void joy_ui_inputbox_blur(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_insert(inputbox_p ti, const char* s, int len);
+        JOY_API void joy_ui_inputbox_backspace(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_delete(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_cursor_left(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_cursor_right(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_cursor_home(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_cursor_end(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_select_left(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_select_right(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_select_home(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_select_end(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_select_all(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_paste(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_copy(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_cut(inputbox_p ti);
+        JOY_API bool joy_ui_inputbox_is_focused(inputbox_p ti);
+        JOY_API void joy_ui_inputbox_process_event(inputbox_p ti, const void* event);
+        JOY_API slider_p joy_ui_slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial);
+        JOY_API void joy_ui_slider_destroy(slider_p s);
+        JOY_API void joy_ui_slider_set_value(slider_p s, float v);
+        JOY_API float joy_ui_slider_get_value(slider_p s);
+        JOY_API void joy_ui_slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover);
         /* 布局需要：移动/缩放滑轨（旧 API 只能在 create 时定位置与尺寸） */
-        JOY_API void slider_set_rect(slider_p s, float x, float y, float w, float h);
-        JOY_API void slider_set_range(slider_p s, float min, float max);
-        JOY_API void slider_draw(slider_p s);
-        JOY_API bool slider_is_pressed(slider_p s, float x, float y);
-        JOY_API void slider_set_pressed(slider_p s, bool v);
-        JOY_API void slider_drag_move(slider_p s, float x, float y);
-        JOY_API bool slider_is_hovered(slider_p s, float x, float y);
-        JOY_API void slider_set_hovered(slider_p s, bool v);
-        JOY_API void slider_process_event(slider_p s, const void* event);
+        JOY_API void joy_ui_slider_set_rect(slider_p s, float x, float y, float w, float h);
+        JOY_API void joy_ui_slider_set_range(slider_p s, float min, float max);
+        JOY_API void joy_ui_slider_draw(slider_p s);
+        JOY_API bool joy_ui_slider_is_pressed(slider_p s, float x, float y);
+        JOY_API void joy_ui_slider_set_pressed(slider_p s, bool v);
+        JOY_API void joy_ui_slider_drag_move(slider_p s, float x, float y);
+        JOY_API bool joy_ui_slider_is_hovered(slider_p s, float x, float y);
+        JOY_API void joy_ui_slider_set_hovered(slider_p s, bool v);
+        JOY_API void joy_ui_slider_process_event(slider_p s, const void* event);
         JOY_API popup_p joy_ui_popup_create(jr2d_p r2d, float fw, float fh);
         JOY_API void joy_ui_popup_destroy(popup_p p);
         JOY_API void joy_ui_popup_set_title(popup_p p, const char* text, int len);
