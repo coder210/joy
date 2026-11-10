@@ -41,28 +41,26 @@
 | collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
 | collision3df | 0 | 0 | 3 | 5 | 0 | 8 |
 | core | 14 | 23 | 1 | 9 | 0 | 47 |
-| font | 0 | 5 | 0 | 0 | 0 | 5 |
 | gjk2d | 0 | 0 | 0 | 6 | 0 | 6 |
 | gjk3d | 0 | 0 | 1 | 6 | 0 | 7 |
 | gjk3df | 0 | 0 | 1 | 7 | 0 | 8 |
+| input | 0 | 14 | 0 | 3 | 0 | 17 |
 | janimator | 0 | 23 | 2 | 2 | 0 | 27 |
 | jecs | 0 | 5 | 0 | 7 | 1 | 13 |
 | jlight | 0 | 9 | 2 | 0 | 0 | 11 |
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
 | jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
-| joystick | 0 | 14 | 0 | 3 | 0 | 17 |
 | jparticle | 0 | 8 | 1 | 1 | 0 | 10 |
 | jpm | 1 | 1 | 0 | 6 | 0 | 8 |
 | jspine | 0 | 0 | 0 | 0 | 19 | 19 |
-| jtext | 4 | 1 | 3 | 1 | 0 | 9 |
 | jtilemap | 0 | 16 | 0 | 6 | 0 | 22 |
 | math | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
 | net | 0 | 56 | 0 | 20 | 0 | 76 |
-| r2d | 0 | 19 | 2 | 10 | 0 | 31 |
+| r2d | 4 | 25 | 5 | 11 | 0 | 45 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
 | scene | 0 | 64 | 0 | 16 | 0 | 80 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
@@ -217,7 +215,7 @@
 | `r2d_frect` | 结构体按值返回 | include/joy/api.h:279 |
 | `r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/api.h:280 |
 | `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/api.h:287 |
-| `jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
+| `joy_r2d_jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/api.h:314 |
 | `animation_draw` | 结构体指针参数 | include/joy/api.h:327 |
 | `r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/api.h:340 |
 | `r3d_mat44_to_float16` | 数组参数 | include/joy/api.h:344 |
@@ -316,9 +314,9 @@
 | `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1135 |
 | `joy_ui_datagrid_addrow` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1157 |
 | `joy_ui_checkbox_set_state` | 未知类型需人工标注：checkbox_state_t | include/joy/api.h:1172 |
-| `joystick_set_dir_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1196 |
-| `joystick_set_textures_for_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1198 |
-| `joystick_get_direction` | 结构体按值返回 | include/joy/api.h:1208 |
+| `joy_input_joystick_set_dir_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1196 |
+| `joy_input_joystick_set_textures_for_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1198 |
+| `joy_input_joystick_get_direction` | 结构体按值返回 | include/joy/api.h:1208 |
 | `joy_ui_inputbox_set_callback` | 函数指针 / 回调 | include/joy/api.h:1215 |
 | `joy_ui_process_widget_event` | 非不透明指针 / 输出参数：void** | include/joy/api.h:1276 |
 | `joy_ui_set_theme` | 非不透明指针 / 输出参数：jui_theme_t* | include/joy/api.h:1306 |

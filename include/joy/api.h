@@ -187,11 +187,11 @@ extern "C" {
         ////////////////////////////  font ///////////////////////////////////
         ///////////////////////////////////////////////////////////////////////
 
-        JOY_API font_p font_create(const char* filename, int fontsize);
-        JOY_API void font_destroy(font_p font);
-        JOY_API float font_get_scale(font_p font);
-        JOY_API int font_get_size(font_p font);
-        JOY_API int font_get_ascent(font_p font);
+        JOY_API font_p joy_r2d_font_create(const char* filename, int fontsize);
+        JOY_API void joy_r2d_font_destroy(font_p font);
+        JOY_API float joy_r2d_font_get_scale(font_p font);
+        JOY_API int joy_r2d_font_get_size(font_p font);
+        JOY_API int joy_r2d_font_get_ascent(font_p font);
 
 
         ///////////////////////////////////////////////////////////////////////
@@ -263,8 +263,8 @@ extern "C" {
         JOY_API void joy_ui_text_updatex(jtext_p text, font_p font, const char* str, int len, jcolor_t color);
         JOY_API void joy_ui_text_update(jtext_p text, font_p font, const int* codepoints, int num_codepoints, jcolor_t color);
         JOY_API void joy_ui_text_destroy(jtext_p jtext_tex);
-        JOY_API void jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
-        JOY_API void jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
+        JOY_API void joy_r2d_jtext_print(jr2d_p r2d, jtext_p jtext_tex, float x, float y);
+        JOY_API void joy_r2d_jtext_printx(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color, float x, float y);
 
         /* ==================== 比例坐标（0~1）绘制接口 ====================
          *
@@ -288,9 +288,9 @@ extern "C" {
                                       float fx, float fy, float fw, float fh);
 
         /* 文字位置用比例（字号仍由 font 的烘焙尺寸决定；*_scaled 可再乘一个缩放系数） */
-        JOY_API void    jtext_printf(jr2d_p r2d, font_p font, const char* str, int len,
+        JOY_API void    joy_r2d_jtext_printf(jr2d_p r2d, font_p font, const char* str, int len,
                                      jcolor_t color, float fx, float fy);
-        JOY_API void    jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len,
+        JOY_API void    joy_r2d_jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len,
                                             jcolor_t color, float fx, float fy, float scale);
         JOY_API int joy_ui_text_get_width(jtext_p jtext_tex);
         JOY_API int joy_ui_text_get_height(jtext_p jtext_tex);
@@ -304,14 +304,14 @@ extern "C" {
          * 帧计数由 r2d_begin() 递增，因此 sweep 的 idle 单位是“帧”。
          * 注意：这只影响 jtext_printx；text_createx 仍由调用方自行持有与释放。
          */
-        JOY_API void jtext_cache_clear(void);
-        JOY_API void jtext_cache_set_limit(int max_entries);
-        JOY_API int  jtext_cache_get_count(void);
-        JOY_API void jtext_cache_sweep(int max_idle_frames);
+        JOY_API void joy_r2d_jtext_cache_clear(void);
+        JOY_API void joy_r2d_jtext_cache_set_limit(int max_entries);
+        JOY_API int  joy_r2d_jtext_cache_get_count(void);
+        JOY_API void joy_r2d_jtext_cache_sweep(int max_idle_frames);
 
         /* 测量文本尺寸，同样走缓存（命中缓存时不产生任何纹理开销）。
          * jtext_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
-        JOY_API bool jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
+        JOY_API bool joy_r2d_jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
                 jcolor_t color, int* out_w, int* out_h);
 
         /* 简单动画 */
@@ -1181,7 +1181,7 @@ extern "C" {
         JOY_API void joy_ui_checkbox_set_hovered(checkbox_p cb, bool v);
         JOY_API void joy_ui_checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
         JOY_API void joy_ui_checkbox_process_event(checkbox_p cb, const void* event);
-        JOY_API joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
+        JOY_API joystick_p joy_input_joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
         // 摇杆方向模式：约束/量化 joystick_get_direction 输出的方向
         typedef enum {
                 JOYSTICK_DIR_OMNI = 0,       // 全方向（模拟，默认）
@@ -1191,23 +1191,23 @@ extern "C" {
                 JOYSTICK_DIR_HORIZONTAL,     // 仅 左/右
         } joystick_dir_mode;
 
-        JOY_API void joystick_destroy(joystick_p joystick);
-        JOY_API void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path);
-        JOY_API void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode);
-        JOY_API void joystick_set_vector(joystick_p joystick, float dx, float dy);
-        JOY_API void joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path);
-        JOY_API void joystick_draw(joystick_p joystick);
-        JOY_API void joystick_reset(joystick_p joystick);
-        JOY_API void joystick_set_position(joystick_p joystick, float x, float y);
+        JOY_API void joy_input_joystick_destroy(joystick_p joystick);
+        JOY_API void joy_input_joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path);
+        JOY_API void joy_input_joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode);
+        JOY_API void joy_input_joystick_set_vector(joystick_p joystick, float dx, float dy);
+        JOY_API void joy_input_joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path);
+        JOY_API void joy_input_joystick_draw(joystick_p joystick);
+        JOY_API void joy_input_joystick_reset(joystick_p joystick);
+        JOY_API void joy_input_joystick_set_position(joystick_p joystick, float x, float y);
         /* 布局需要：逻辑分辨率变化（自适应宽高比/旋转）时改变摇杆半径，保持设计尺寸 */
-        JOY_API void joystick_set_radius(joystick_p joystick, float radius);
-        JOY_API bool joystick_is_dragging(joystick_p joystick);
-        JOY_API void joystick_touch_down(joystick_p joystick, float x, float y);
-        JOY_API void joystick_touch_move(joystick_p joystick, float x, float y);
-        JOY_API void joystick_touch_up(joystick_p joystick);
-        JOY_API vec2_t joystick_get_direction(joystick_p joystick);
-        JOY_API float joystick_get_magnitude(joystick_p joystick);
-        JOY_API void joystick_process_event(joystick_p js, const void* event);
+        JOY_API void joy_input_joystick_set_radius(joystick_p joystick, float radius);
+        JOY_API bool joy_input_joystick_is_dragging(joystick_p joystick);
+        JOY_API void joy_input_joystick_touch_down(joystick_p joystick, float x, float y);
+        JOY_API void joy_input_joystick_touch_move(joystick_p joystick, float x, float y);
+        JOY_API void joy_input_joystick_touch_up(joystick_p joystick);
+        JOY_API vec2_t joy_input_joystick_get_direction(joystick_p joystick);
+        JOY_API float joy_input_joystick_get_magnitude(joystick_p joystick);
+        JOY_API void joy_input_joystick_process_event(joystick_p js, const void* event);
         JOY_API inputbox_p joy_ui_inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font);
         JOY_API void joy_ui_inputbox_destroy(inputbox_p ti);
         JOY_API void joy_ui_inputbox_set_text(inputbox_p ti, const char* text);

@@ -2385,7 +2385,7 @@ namespace Joy.Api
         public static Font FontCreate(string filename, int fontsize)
         {
             ulong __h = Native.FontCreate(filename, fontsize);
-            if (__h == 0) throw new InvalidOperationException("font_create failed");
+            if (__h == 0) throw new InvalidOperationException("joy_r2d_font_create failed");
             return new Font(__h);
         }
         public static void FontDestroy(Font font)

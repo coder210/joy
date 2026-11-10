@@ -117,6 +117,8 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `combobox_input_*` 13) / `datagrid`(11) / `inputbox`(28) / `slider`(14) 并入
   `ui`，`ui` 域累计 222 条。至此 `ui` 主体收完，剩 `joystick`（归 `input`）、
   `jtext`（归 `r2d`）与少量 `jui_im` 增量接口。
+- 第八批 **31 条**：`font`(5) / `jtext`(9) → `r2d`，`joystick`(17) → `input`。
+  `r2d` 域现有 45 条（含尚未迁的 `r2d_*` 31 条），`input` 17 条。
 
 映射见 `idl/rename_map.json`（累加式）。
 

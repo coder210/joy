@@ -400,6 +400,39 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
 #define slider_is_hovered          joy_ui_slider_is_hovered
 #define slider_set_hovered         joy_ui_slider_set_hovered
 #define slider_process_event       joy_ui_slider_process_event
+
+/* P1 第八批：font / jtext → r2d，joystick → input。 */
+#define font_create                joy_r2d_font_create
+#define font_destroy               joy_r2d_font_destroy
+#define font_get_scale             joy_r2d_font_get_scale
+#define font_get_size              joy_r2d_font_get_size
+#define font_get_ascent            joy_r2d_font_get_ascent
+#define jtext_print                joy_r2d_jtext_print
+#define jtext_printx               joy_r2d_jtext_printx
+#define jtext_printf               joy_r2d_jtext_printf
+#define jtext_printf_scaled        joy_r2d_jtext_printf_scaled
+#define jtext_cache_clear          joy_r2d_jtext_cache_clear
+#define jtext_cache_set_limit      joy_r2d_jtext_cache_set_limit
+#define jtext_cache_get_count      joy_r2d_jtext_cache_get_count
+#define jtext_cache_sweep          joy_r2d_jtext_cache_sweep
+#define jtext_measurex             joy_r2d_jtext_measurex
+#define joystick_create            joy_input_joystick_create
+#define joystick_destroy           joy_input_joystick_destroy
+#define joystick_set_textures      joy_input_joystick_set_textures
+#define joystick_set_dir_mode      joy_input_joystick_set_dir_mode
+#define joystick_set_vector        joy_input_joystick_set_vector
+#define joystick_set_textures_for_mode joy_input_joystick_set_textures_for_mode
+#define joystick_draw              joy_input_joystick_draw
+#define joystick_reset             joy_input_joystick_reset
+#define joystick_set_position      joy_input_joystick_set_position
+#define joystick_set_radius        joy_input_joystick_set_radius
+#define joystick_is_dragging       joy_input_joystick_is_dragging
+#define joystick_touch_down        joy_input_joystick_touch_down
+#define joystick_touch_move        joy_input_joystick_touch_move
+#define joystick_touch_up          joy_input_joystick_touch_up
+#define joystick_get_direction     joy_input_joystick_get_direction
+#define joystick_get_magnitude     joy_input_joystick_get_magnitude
+#define joystick_process_event     joy_input_joystick_process_event
 #endif
 
 #endif /* JOY_COMPAT_H */

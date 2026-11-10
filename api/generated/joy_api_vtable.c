@@ -818,7 +818,7 @@ static void shim_joy_net_iocp_process_events(void* _jv_ctx, IocpServer server, i
         return;
 }
 
-static Font shim_font_create(void* _jv_ctx, const char* filename, int fontsize)
+static Font shim_joy_r2d_font_create(void* _jv_ctx, const char* filename, int fontsize)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -827,56 +827,56 @@ static Font shim_font_create(void* _jv_ctx, const char* filename, int fontsize)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(filename);
         _jv_args[1] = joy_v_i32(fontsize);
-        _jv_r = joy_api_call("font_create", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_font_create", _jv_args, 2, &_jv_st);
         _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
         return _jv_out;
 }
 
-static void shim_font_destroy(void* _jv_ctx, Font font)
+static void shim_joy_r2d_font_destroy(void* _jv_ctx, Font font)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("font_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_font_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_font_get_scale(void* _jv_ctx, Font font)
+static float shim_joy_r2d_font_get_scale(void* _jv_ctx, Font font)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("font_get_scale", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_font_get_scale", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static int shim_font_get_size(void* _jv_ctx, Font font)
+static int shim_joy_r2d_font_get_size(void* _jv_ctx, Font font)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("font_get_size", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_font_get_size", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_font_get_ascent(void* _jv_ctx, Font font)
+static int shim_joy_r2d_font_get_ascent(void* _jv_ctx, Font font)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("font_get_ascent", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_font_get_ascent", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
@@ -1269,7 +1269,7 @@ static void shim_joy_ui_text_destroy(void* _jv_ctx, Jtext jtext_tex)
         return;
 }
 
-static void shim_jtext_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, float x, float y)
+static void shim_joy_r2d_jtext_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1279,13 +1279,13 @@ static void shim_jtext_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, float x, 
         _jv_args[1] = joy_v_handle(jtext_tex.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("jtext_print", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_print", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float x, float y)
+static void shim_joy_r2d_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float x, float y)
 {
         joy_value_t _jv_args[10];
         joy_value_t _jv_r;
@@ -1301,7 +1301,7 @@ static void shim_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const char* st
         _jv_args[7] = joy_v_u32(color_a);
         _jv_args[8] = joy_v_f64(x);
         _jv_args[9] = joy_v_f64(y);
-        _jv_r = joy_api_call("jtext_printx", _jv_args, 10, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_printx", _jv_args, 10, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -1354,7 +1354,7 @@ static bool shim_shape_draw_line_f(void* _jv_ctx, Jr2d r2d, float fx1, float fy1
         return (bool) _jv_r.as.b;
 }
 
-static void shim_jtext_printf(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy)
+static void shim_joy_r2d_jtext_printf(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy)
 {
         joy_value_t _jv_args[10];
         joy_value_t _jv_r;
@@ -1370,13 +1370,13 @@ static void shim_jtext_printf(void* _jv_ctx, Jr2d r2d, Font font, const char* st
         _jv_args[7] = joy_v_u32(color_a);
         _jv_args[8] = joy_v_f64(fx);
         _jv_args[9] = joy_v_f64(fy);
-        _jv_r = joy_api_call("jtext_printf", _jv_args, 10, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_printf", _jv_args, 10, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy, float scale)
+static void shim_joy_r2d_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy, float scale)
 {
         joy_value_t _jv_args[11];
         joy_value_t _jv_r;
@@ -1393,7 +1393,7 @@ static void shim_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const c
         _jv_args[8] = joy_v_f64(fx);
         _jv_args[9] = joy_v_f64(fy);
         _jv_args[10] = joy_v_f64(scale);
-        _jv_r = joy_api_call("jtext_printf_scaled", _jv_args, 11, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_printf_scaled", _jv_args, 11, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -1423,50 +1423,50 @@ static int shim_joy_ui_text_get_height(void* _jv_ctx, Jtext jtext_tex)
         return (int) _jv_r.as.i32;
 }
 
-static void shim_jtext_cache_clear(void* _jv_ctx)
+static void shim_joy_r2d_jtext_cache_clear(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("jtext_cache_clear", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_cache_clear", _jv_args, 0, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_jtext_cache_set_limit(void* _jv_ctx, int max_entries)
+static void shim_joy_r2d_jtext_cache_set_limit(void* _jv_ctx, int max_entries)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(max_entries);
-        _jv_r = joy_api_call("jtext_cache_set_limit", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_cache_set_limit", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_jtext_cache_get_count(void* _jv_ctx)
+static int shim_joy_r2d_jtext_cache_get_count(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("jtext_cache_get_count", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_cache_get_count", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_jtext_cache_sweep(void* _jv_ctx, int max_idle_frames)
+static void shim_joy_r2d_jtext_cache_sweep(void* _jv_ctx, int max_idle_frames)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(max_idle_frames);
-        _jv_r = joy_api_call("jtext_cache_sweep", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_jtext_cache_sweep", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -3844,20 +3844,20 @@ static void shim_joy_ui_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
         return;
 }
 
-static void shim_joystick_destroy(void* _jv_ctx, Joystick joystick)
+static void shim_joy_input_joystick_destroy(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_set_textures(void* _jv_ctx, Joystick joystick, const char* base_path, const char* thumb_path)
+static void shim_joy_input_joystick_set_textures(void* _jv_ctx, Joystick joystick, const char* base_path, const char* thumb_path)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3866,13 +3866,13 @@ static void shim_joystick_set_textures(void* _jv_ctx, Joystick joystick, const c
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_str(base_path);
         _jv_args[2] = joy_v_str(thumb_path);
-        _jv_r = joy_api_call("joystick_set_textures", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_set_textures", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_set_vector(void* _jv_ctx, Joystick joystick, float dx, float dy)
+static void shim_joy_input_joystick_set_vector(void* _jv_ctx, Joystick joystick, float dx, float dy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3881,39 +3881,39 @@ static void shim_joystick_set_vector(void* _jv_ctx, Joystick joystick, float dx,
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(dx);
         _jv_args[2] = joy_v_f64(dy);
-        _jv_r = joy_api_call("joystick_set_vector", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_set_vector", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_draw(void* _jv_ctx, Joystick joystick)
+static void shim_joy_input_joystick_draw(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_reset(void* _jv_ctx, Joystick joystick)
+static void shim_joy_input_joystick_reset(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_reset", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_reset", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_set_position(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_input_joystick_set_position(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3922,13 +3922,13 @@ static void shim_joystick_set_position(void* _jv_ctx, Joystick joystick, float x
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joystick_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_set_radius(void* _jv_ctx, Joystick joystick, float radius)
+static void shim_joy_input_joystick_set_radius(void* _jv_ctx, Joystick joystick, float radius)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3936,25 +3936,25 @@ static void shim_joystick_set_radius(void* _jv_ctx, Joystick joystick, float rad
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(radius);
-        _jv_r = joy_api_call("joystick_set_radius", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_set_radius", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joystick_is_dragging(void* _jv_ctx, Joystick joystick)
+static bool shim_joy_input_joystick_is_dragging(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_is_dragging", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_is_dragging", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joystick_touch_down(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_input_joystick_touch_down(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3963,13 +3963,13 @@ static void shim_joystick_touch_down(void* _jv_ctx, Joystick joystick, float x, 
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joystick_touch_down", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_touch_down", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_touch_move(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_input_joystick_touch_move(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3978,33 +3978,33 @@ static void shim_joystick_touch_move(void* _jv_ctx, Joystick joystick, float x, 
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joystick_touch_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_touch_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joystick_touch_up(void* _jv_ctx, Joystick joystick)
+static void shim_joy_input_joystick_touch_up(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_touch_up", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_touch_up", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_joystick_get_magnitude(void* _jv_ctx, Joystick joystick)
+static float shim_joy_input_joystick_get_magnitude(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joystick_get_magnitude", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_input_joystick_get_magnitude", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
@@ -10024,11 +10024,11 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->SysInstallCrashHandlers = shim_sys_install_crash_handlers;
         api->IocpServerDestroy = shim_joy_net_iocp_server_destroy;
         api->IocpProcessEvents = shim_joy_net_iocp_process_events;
-        api->FontCreate = shim_font_create;
-        api->FontDestroy = shim_font_destroy;
-        api->FontGetScale = shim_font_get_scale;
-        api->FontGetSize = shim_font_get_size;
-        api->FontGetAscent = shim_font_get_ascent;
+        api->FontCreate = shim_joy_r2d_font_create;
+        api->FontDestroy = shim_joy_r2d_font_destroy;
+        api->FontGetScale = shim_joy_r2d_font_get_scale;
+        api->FontGetSize = shim_joy_r2d_font_get_size;
+        api->FontGetAscent = shim_joy_r2d_font_get_ascent;
         api->R2dCreate = shim_r2d_create;
         api->R2dDestroy = shim_r2d_destroy;
         api->R2dSetColor = shim_r2d_set_color;
@@ -10056,19 +10056,19 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->ImageSetScaleMode = shim_joy_ui_image_set_scale_mode;
         api->TextUpdatex = shim_joy_ui_text_updatex;
         api->TextDestroy = shim_joy_ui_text_destroy;
-        api->JtextPrint = shim_jtext_print;
-        api->JtextPrintx = shim_jtext_printx;
+        api->JtextPrint = shim_joy_r2d_jtext_print;
+        api->JtextPrintx = shim_joy_r2d_jtext_printx;
         api->R2dDrawPointF = shim_r2d_draw_point_f;
         api->ShapeDrawRectangleF = shim_shape_draw_rectangle_f;
         api->ShapeDrawLineF = shim_shape_draw_line_f;
-        api->JtextPrintf = shim_jtext_printf;
-        api->JtextPrintfScaled = shim_jtext_printf_scaled;
+        api->JtextPrintf = shim_joy_r2d_jtext_printf;
+        api->JtextPrintfScaled = shim_joy_r2d_jtext_printf_scaled;
         api->TextGetWidth = shim_joy_ui_text_get_width;
         api->TextGetHeight = shim_joy_ui_text_get_height;
-        api->JtextCacheClear = shim_jtext_cache_clear;
-        api->JtextCacheSetLimit = shim_jtext_cache_set_limit;
-        api->JtextCacheGetCount = shim_jtext_cache_get_count;
-        api->JtextCacheSweep = shim_jtext_cache_sweep;
+        api->JtextCacheClear = shim_joy_r2d_jtext_cache_clear;
+        api->JtextCacheSetLimit = shim_joy_r2d_jtext_cache_set_limit;
+        api->JtextCacheGetCount = shim_joy_r2d_jtext_cache_get_count;
+        api->JtextCacheSweep = shim_joy_r2d_jtext_cache_sweep;
         api->AnimationDestroy = shim_animation_destroy;
         api->AnimationReset = shim_animation_reset;
         api->AnimationAddClip = shim_animation_add_clip;
@@ -10233,18 +10233,18 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->CheckboxToggle = shim_joy_ui_checkbox_toggle;
         api->CheckboxIsPressed = shim_joy_ui_checkbox_is_pressed;
         api->CheckboxSetHovered = shim_joy_ui_checkbox_set_hovered;
-        api->JoystickDestroy = shim_joystick_destroy;
-        api->JoystickSetTextures = shim_joystick_set_textures;
-        api->JoystickSetVector = shim_joystick_set_vector;
-        api->JoystickDraw = shim_joystick_draw;
-        api->JoystickReset = shim_joystick_reset;
-        api->JoystickSetPosition = shim_joystick_set_position;
-        api->JoystickSetRadius = shim_joystick_set_radius;
-        api->JoystickIsDragging = shim_joystick_is_dragging;
-        api->JoystickTouchDown = shim_joystick_touch_down;
-        api->JoystickTouchMove = shim_joystick_touch_move;
-        api->JoystickTouchUp = shim_joystick_touch_up;
-        api->JoystickGetMagnitude = shim_joystick_get_magnitude;
+        api->JoystickDestroy = shim_joy_input_joystick_destroy;
+        api->JoystickSetTextures = shim_joy_input_joystick_set_textures;
+        api->JoystickSetVector = shim_joy_input_joystick_set_vector;
+        api->JoystickDraw = shim_joy_input_joystick_draw;
+        api->JoystickReset = shim_joy_input_joystick_reset;
+        api->JoystickSetPosition = shim_joy_input_joystick_set_position;
+        api->JoystickSetRadius = shim_joy_input_joystick_set_radius;
+        api->JoystickIsDragging = shim_joy_input_joystick_is_dragging;
+        api->JoystickTouchDown = shim_joy_input_joystick_touch_down;
+        api->JoystickTouchMove = shim_joy_input_joystick_touch_move;
+        api->JoystickTouchUp = shim_joy_input_joystick_touch_up;
+        api->JoystickGetMagnitude = shim_joy_input_joystick_get_magnitude;
         api->InputboxDestroy = shim_joy_ui_inputbox_destroy;
         api->InputboxSetText = shim_joy_ui_inputbox_set_text;
         api->InputboxDraw = shim_joy_ui_inputbox_draw;
