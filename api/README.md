@@ -143,7 +143,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   全部归零。
 - 第十三批 **math 类 92 条**：`collision2d/2df/3d/3df`、`gjk2d/3d/3df`、
   `box2d`、`shape` 统一到 `joy_math_<旧 domain>_<动作>`，`math` 域累计 93 条
-  （含第三批的 `find_min_separation`），这些旧 domain 全部归零。
+  （含第三批的 `find_min_separation`），  这些旧 domain 全部归零。
+- 第十四批 **42 条**：`sys`（网络环境，22 条）→ `joy_net_sys_*`、
+  `audio`（20 条）→ `joy_audio_*`。`sys` 是 `net` 域的子命名空间，按
+  `joy_net_sys_*` 收敛；`audio` 自成一个白名单域。`net` 域 98 条、`audio`
+  域 20 条，旧 `sys`/`audio` domain 归零。
 
 映射见 `idl/rename_map.json`（累加式）。
 

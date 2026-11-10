@@ -555,52 +555,52 @@ static void shim_joy_core_set_clipboard_text(void* _jv_ctx, const char* text)
         return;
 }
 
-static bool shim_sys_init_netenv(void* _jv_ctx)
+static bool shim_joy_net_sys_init_netenv(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_init_netenv", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_init_netenv", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_sys_release_netenv(void* _jv_ctx)
+static bool shim_joy_net_sys_release_netenv(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_release_netenv", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_release_netenv", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static int shim_sys_anyaddr(void* _jv_ctx)
+static int shim_joy_net_sys_anyaddr(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_anyaddr", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_anyaddr", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static bool shim_sys_closesocket(void* _jv_ctx, int64_t sockfd)
+static bool shim_joy_net_sys_closesocket(void* _jv_ctx, int64_t sockfd)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
-        _jv_r = joy_api_call("sys_closesocket", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_closesocket", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static int shim_sys_set_sock_sndtimeo(void* _jv_ctx, int64_t sockfd, int ms)
+static int shim_joy_net_sys_set_sock_sndtimeo(void* _jv_ctx, int64_t sockfd, int ms)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -608,12 +608,12 @@ static int shim_sys_set_sock_sndtimeo(void* _jv_ctx, int64_t sockfd, int ms)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_i32(ms);
-        _jv_r = joy_api_call("sys_set_sock_sndtimeo", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_set_sock_sndtimeo", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_sys_set_sock_rcvtimeo(void* _jv_ctx, int64_t sockfd, int ms)
+static int shim_joy_net_sys_set_sock_rcvtimeo(void* _jv_ctx, int64_t sockfd, int ms)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -621,12 +621,12 @@ static int shim_sys_set_sock_rcvtimeo(void* _jv_ctx, int64_t sockfd, int ms)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_i32(ms);
-        _jv_r = joy_api_call("sys_set_sock_rcvtimeo", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_set_sock_rcvtimeo", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_sys_set_sock_accpettimeo(void* _jv_ctx, int64_t sockfd, int ms)
+static int shim_joy_net_sys_set_sock_accpettimeo(void* _jv_ctx, int64_t sockfd, int ms)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -634,58 +634,58 @@ static int shim_sys_set_sock_accpettimeo(void* _jv_ctx, int64_t sockfd, int ms)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_i32(ms);
-        _jv_r = joy_api_call("sys_set_sock_accpettimeo", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_set_sock_accpettimeo", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_sys_set_sock_broadcast(void* _jv_ctx, int64_t sockfd)
+static int shim_joy_net_sys_set_sock_broadcast(void* _jv_ctx, int64_t sockfd)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
-        _jv_r = joy_api_call("sys_set_sock_broadcast", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_set_sock_broadcast", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_sys_set_sock_reuseaddr(void* _jv_ctx, int64_t sockfd)
+static int shim_joy_net_sys_set_sock_reuseaddr(void* _jv_ctx, int64_t sockfd)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
-        _jv_r = joy_api_call("sys_set_sock_reuseaddr", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_set_sock_reuseaddr", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int64_t shim_sys_tcp(void* _jv_ctx)
+static int64_t shim_joy_net_sys_tcp(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_tcp", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_tcp", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
         return (int64_t) _jv_r.as.i64;
 }
 
-static int64_t shim_sys_udp(void* _jv_ctx)
+static int64_t shim_joy_net_sys_udp(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_udp", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_udp", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
         return (int64_t) _jv_r.as.i64;
 }
 
-static bool shim_sys_bind(void* _jv_ctx, int64_t sockfd, const char* ip, int port)
+static bool shim_joy_net_sys_bind(void* _jv_ctx, int64_t sockfd, const char* ip, int port)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -694,12 +694,12 @@ static bool shim_sys_bind(void* _jv_ctx, int64_t sockfd, const char* ip, int por
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_str(ip);
         _jv_args[2] = joy_v_i32(port);
-        _jv_r = joy_api_call("sys_bind", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_bind", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_sys_connect(void* _jv_ctx, int64_t sockfd, const char* ip, int port)
+static bool shim_joy_net_sys_connect(void* _jv_ctx, int64_t sockfd, const char* ip, int port)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -708,24 +708,24 @@ static bool shim_sys_connect(void* _jv_ctx, int64_t sockfd, const char* ip, int 
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_str(ip);
         _jv_args[2] = joy_v_i32(port);
-        _jv_r = joy_api_call("sys_connect", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_connect", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_sys_listen(void* _jv_ctx, int64_t sockfd)
+static bool shim_joy_net_sys_listen(void* _jv_ctx, int64_t sockfd)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i64(sockfd);
-        _jv_r = joy_api_call("sys_listen", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_listen", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static int shim_sys_send(void* _jv_ctx, int64_t sockfd, const char* buf, int len)
+static int shim_joy_net_sys_send(void* _jv_ctx, int64_t sockfd, const char* buf, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -734,12 +734,12 @@ static int shim_sys_send(void* _jv_ctx, int64_t sockfd, const char* buf, int len
         _jv_args[0] = joy_v_i64(sockfd);
         _jv_args[1] = joy_v_str(buf);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("sys_send", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_send", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_sys_sendto(void* _jv_ctx, int64_t sockfd, const char* buf, int len, const char* ip, int port)
+static int shim_joy_net_sys_sendto(void* _jv_ctx, int64_t sockfd, const char* buf, int len, const char* ip, int port)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -750,42 +750,42 @@ static int shim_sys_sendto(void* _jv_ctx, int64_t sockfd, const char* buf, int l
         _jv_args[2] = joy_v_i32(len);
         _jv_args[3] = joy_v_str(ip);
         _jv_args[4] = joy_v_i32(port);
-        _jv_r = joy_api_call("sys_sendto", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_sendto", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int64_t shim_sys_current_time(void* _jv_ctx)
+static int64_t shim_joy_net_sys_current_time(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_current_time", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_current_time", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
         return (int64_t) _jv_r.as.i64;
 }
 
-static void shim_sys_sleep(void* _jv_ctx, int ms)
+static void shim_joy_net_sys_sleep(void* _jv_ctx, int ms)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(ms);
-        _jv_r = joy_api_call("sys_sleep", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_sleep", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_sys_install_crash_handlers(void* _jv_ctx)
+static void shim_joy_net_sys_install_crash_handlers(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("sys_install_crash_handlers", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_net_sys_install_crash_handlers", _jv_args, 0, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -6575,31 +6575,31 @@ static void shim_joy_scene_ecs_define(void* _jv_ctx, JecsWorld world, const char
         return;
 }
 
-static uint32_t shim_audio_open_device(void* _jv_ctx)
+static uint32_t shim_joy_audio_open_device(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("audio_open_device", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_open_device", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U32) return (uint32_t)0;
         return (uint32_t) _jv_r.as.u32;
 }
 
-static void shim_audio_close_device(void* _jv_ctx, uint32_t device_id)
+static void shim_joy_audio_close_device(void* _jv_ctx, uint32_t device_id)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_u32(device_id);
-        _jv_r = joy_api_call("audio_close_device", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_close_device", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_audio_create_wav(void* _jv_ctx, const char* filepath, uint32_t device_id)
+static bool shim_joy_audio_create_wav(void* _jv_ctx, const char* filepath, uint32_t device_id)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6607,12 +6607,12 @@ static bool shim_audio_create_wav(void* _jv_ctx, const char* filepath, uint32_t 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(filepath);
         _jv_args[1] = joy_v_u32(device_id);
-        _jv_r = joy_api_call("audio_create_wav", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_create_wav", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_audio_create_mp3(void* _jv_ctx, const char* filepath, uint32_t device_id)
+static bool shim_joy_audio_create_mp3(void* _jv_ctx, const char* filepath, uint32_t device_id)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6620,12 +6620,12 @@ static bool shim_audio_create_mp3(void* _jv_ctx, const char* filepath, uint32_t 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(filepath);
         _jv_args[1] = joy_v_u32(device_id);
-        _jv_r = joy_api_call("audio_create_mp3", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_create_mp3", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_audio_create_flac(void* _jv_ctx, const char* filepath, uint32_t device_id)
+static bool shim_joy_audio_create_flac(void* _jv_ctx, const char* filepath, uint32_t device_id)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6633,12 +6633,12 @@ static bool shim_audio_create_flac(void* _jv_ctx, const char* filepath, uint32_t
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(filepath);
         _jv_args[1] = joy_v_u32(device_id);
-        _jv_r = joy_api_call("audio_create_flac", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_create_flac", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_audio_create_ogg(void* _jv_ctx, const char* filepath, uint32_t device_id)
+static bool shim_joy_audio_create_ogg(void* _jv_ctx, const char* filepath, uint32_t device_id)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6646,25 +6646,25 @@ static bool shim_audio_create_ogg(void* _jv_ctx, const char* filepath, uint32_t 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(filepath);
         _jv_args[1] = joy_v_u32(device_id);
-        _jv_r = joy_api_call("audio_create_ogg", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_create_ogg", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_audio_shot_play(void* _jv_ctx, AudioShot shot)
+static void shim_joy_audio_shot_play(void* _jv_ctx, AudioShot shot)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(shot.h);
-        _jv_r = joy_api_call("audio_shot_play", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_shot_play", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_audio_shot_set_gain(void* _jv_ctx, AudioShot shot, float gain)
+static void shim_joy_audio_shot_set_gain(void* _jv_ctx, AudioShot shot, float gain)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6672,39 +6672,39 @@ static void shim_audio_shot_set_gain(void* _jv_ctx, AudioShot shot, float gain)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(shot.h);
         _jv_args[1] = joy_v_f64(gain);
-        _jv_r = joy_api_call("audio_shot_set_gain", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_shot_set_gain", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_audio_shot_destroy(void* _jv_ctx, AudioShot shot)
+static void shim_joy_audio_shot_destroy(void* _jv_ctx, AudioShot shot)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(shot.h);
-        _jv_r = joy_api_call("audio_shot_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_shot_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_audio_bgm_stop(void* _jv_ctx, AudioBgm bgm)
+static void shim_joy_audio_bgm_stop(void* _jv_ctx, AudioBgm bgm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(bgm.h);
-        _jv_r = joy_api_call("audio_bgm_stop", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_bgm_stop", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_audio_bgm_set_gain(void* _jv_ctx, AudioBgm bgm, float gain)
+static void shim_joy_audio_bgm_set_gain(void* _jv_ctx, AudioBgm bgm, float gain)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -6712,20 +6712,20 @@ static void shim_audio_bgm_set_gain(void* _jv_ctx, AudioBgm bgm, float gain)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(bgm.h);
         _jv_args[1] = joy_v_f64(gain);
-        _jv_r = joy_api_call("audio_bgm_set_gain", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_bgm_set_gain", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_audio_bgm_destroy(void* _jv_ctx, AudioBgm bgm)
+static void shim_joy_audio_bgm_destroy(void* _jv_ctx, AudioBgm bgm)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(bgm.h);
-        _jv_r = joy_api_call("audio_bgm_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_audio_bgm_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10003,25 +10003,25 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->GameTimerSetTargetFps = shim_joy_scene_game_timer_set_target_fps;
         api->GameTimerGetTargetFps = shim_joy_scene_game_timer_get_target_fps;
         api->SetClipboardText = shim_joy_core_set_clipboard_text;
-        api->SysInitNetenv = shim_sys_init_netenv;
-        api->SysReleaseNetenv = shim_sys_release_netenv;
-        api->SysAnyaddr = shim_sys_anyaddr;
-        api->SysClosesocket = shim_sys_closesocket;
-        api->SysSetSockSndtimeo = shim_sys_set_sock_sndtimeo;
-        api->SysSetSockRcvtimeo = shim_sys_set_sock_rcvtimeo;
-        api->SysSetSockAccpettimeo = shim_sys_set_sock_accpettimeo;
-        api->SysSetSockBroadcast = shim_sys_set_sock_broadcast;
-        api->SysSetSockReuseaddr = shim_sys_set_sock_reuseaddr;
-        api->SysTcp = shim_sys_tcp;
-        api->SysUdp = shim_sys_udp;
-        api->SysBind = shim_sys_bind;
-        api->SysConnect = shim_sys_connect;
-        api->SysListen = shim_sys_listen;
-        api->SysSend = shim_sys_send;
-        api->SysSendto = shim_sys_sendto;
-        api->SysCurrentTime = shim_sys_current_time;
-        api->SysSleep = shim_sys_sleep;
-        api->SysInstallCrashHandlers = shim_sys_install_crash_handlers;
+        api->SysInitNetenv = shim_joy_net_sys_init_netenv;
+        api->SysReleaseNetenv = shim_joy_net_sys_release_netenv;
+        api->SysAnyaddr = shim_joy_net_sys_anyaddr;
+        api->SysClosesocket = shim_joy_net_sys_closesocket;
+        api->SysSetSockSndtimeo = shim_joy_net_sys_set_sock_sndtimeo;
+        api->SysSetSockRcvtimeo = shim_joy_net_sys_set_sock_rcvtimeo;
+        api->SysSetSockAccpettimeo = shim_joy_net_sys_set_sock_accpettimeo;
+        api->SysSetSockBroadcast = shim_joy_net_sys_set_sock_broadcast;
+        api->SysSetSockReuseaddr = shim_joy_net_sys_set_sock_reuseaddr;
+        api->SysTcp = shim_joy_net_sys_tcp;
+        api->SysUdp = shim_joy_net_sys_udp;
+        api->SysBind = shim_joy_net_sys_bind;
+        api->SysConnect = shim_joy_net_sys_connect;
+        api->SysListen = shim_joy_net_sys_listen;
+        api->SysSend = shim_joy_net_sys_send;
+        api->SysSendto = shim_joy_net_sys_sendto;
+        api->SysCurrentTime = shim_joy_net_sys_current_time;
+        api->SysSleep = shim_joy_net_sys_sleep;
+        api->SysInstallCrashHandlers = shim_joy_net_sys_install_crash_handlers;
         api->IocpServerDestroy = shim_joy_net_iocp_server_destroy;
         api->IocpProcessEvents = shim_joy_net_iocp_process_events;
         api->FontCreate = shim_joy_r2d_font_create;
@@ -10429,18 +10429,18 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JecsDestroy = shim_joy_scene_ecs_destroy;
         api->JecsProcess = shim_joy_scene_ecs_process;
         api->JecsDefine = shim_joy_scene_ecs_define;
-        api->AudioOpenDevice = shim_audio_open_device;
-        api->AudioCloseDevice = shim_audio_close_device;
-        api->AudioCreateWav = shim_audio_create_wav;
-        api->AudioCreateMp3 = shim_audio_create_mp3;
-        api->AudioCreateFlac = shim_audio_create_flac;
-        api->AudioCreateOgg = shim_audio_create_ogg;
-        api->AudioShotPlay = shim_audio_shot_play;
-        api->AudioShotSetGain = shim_audio_shot_set_gain;
-        api->AudioShotDestroy = shim_audio_shot_destroy;
-        api->AudioBgmStop = shim_audio_bgm_stop;
-        api->AudioBgmSetGain = shim_audio_bgm_set_gain;
-        api->AudioBgmDestroy = shim_audio_bgm_destroy;
+        api->AudioOpenDevice = shim_joy_audio_open_device;
+        api->AudioCloseDevice = shim_joy_audio_close_device;
+        api->AudioCreateWav = shim_joy_audio_create_wav;
+        api->AudioCreateMp3 = shim_joy_audio_create_mp3;
+        api->AudioCreateFlac = shim_joy_audio_create_flac;
+        api->AudioCreateOgg = shim_joy_audio_create_ogg;
+        api->AudioShotPlay = shim_joy_audio_shot_play;
+        api->AudioShotSetGain = shim_joy_audio_shot_set_gain;
+        api->AudioShotDestroy = shim_joy_audio_shot_destroy;
+        api->AudioBgmStop = shim_joy_audio_bgm_stop;
+        api->AudioBgmSetGain = shim_joy_audio_bgm_set_gain;
+        api->AudioBgmDestroy = shim_joy_audio_bgm_destroy;
         api->ImageDrawRect = shim_joy_ui_image_draw_rect;
         api->JmathFpFromFloat = shim_jmath_fp_from_float;
         api->JmathFpToFloat = shim_jmath_fp_to_float;

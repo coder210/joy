@@ -152,31 +152,31 @@ extern "C" {
         JOY_API void joy_core_set_clipboard_text(const char* text);
 
 
-        JOY_API bool sys_init_netenv(void);
-        JOY_API bool sys_release_netenv(void);
+        JOY_API bool joy_net_sys_init_netenv(void);
+        JOY_API bool joy_net_sys_release_netenv(void);
         JOY_API int joy_core_get_local_ips(char ips[][JOY_MAX_IP], int max_count);
-        JOY_API int sys_anyaddr(void);
-        JOY_API bool sys_closesocket(int64_t sockfd);
-        JOY_API int sys_set_sock_sndtimeo(int64_t sockfd, int ms);
-        JOY_API int sys_set_sock_rcvtimeo(int64_t sockfd, int ms);
-        JOY_API int sys_set_sock_accpettimeo(int64_t sockfd, int ms);
+        JOY_API int joy_net_sys_anyaddr(void);
+        JOY_API bool joy_net_sys_closesocket(int64_t sockfd);
+        JOY_API int joy_net_sys_set_sock_sndtimeo(int64_t sockfd, int ms);
+        JOY_API int joy_net_sys_set_sock_rcvtimeo(int64_t sockfd, int ms);
+        JOY_API int joy_net_sys_set_sock_accpettimeo(int64_t sockfd, int ms);
         /* UDP 广播 / 地址复用开关（局域网房间发现用）：成功返回 0 */
-        JOY_API int sys_set_sock_broadcast(int64_t sockfd);
-        JOY_API int sys_set_sock_reuseaddr(int64_t sockfd);
-        JOY_API int64_t sys_tcp();
-        JOY_API int64_t sys_udp();
-        JOY_API bool sys_bind(int64_t sockfd, const char* ip, int port);
-        JOY_API bool sys_connect(int64_t sockfd, const char* ip, int port);
-        JOY_API bool sys_listen(int64_t sockfd);
-        JOY_API int64_t sys_accept(int64_t sockfd, char* ip, int* port);
-        JOY_API int sys_send(int64_t sockfd, const char* buf, int len);
-        JOY_API int sys_recv(int64_t sockfd, char* buf);
-        JOY_API int sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port);
-        JOY_API int sys_sendto(int64_t sockfd, const char* buf,
+        JOY_API int joy_net_sys_set_sock_broadcast(int64_t sockfd);
+        JOY_API int joy_net_sys_set_sock_reuseaddr(int64_t sockfd);
+        JOY_API int64_t joy_net_sys_tcp();
+        JOY_API int64_t joy_net_sys_udp();
+        JOY_API bool joy_net_sys_bind(int64_t sockfd, const char* ip, int port);
+        JOY_API bool joy_net_sys_connect(int64_t sockfd, const char* ip, int port);
+        JOY_API bool joy_net_sys_listen(int64_t sockfd);
+        JOY_API int64_t joy_net_sys_accept(int64_t sockfd, char* ip, int* port);
+        JOY_API int joy_net_sys_send(int64_t sockfd, const char* buf, int len);
+        JOY_API int joy_net_sys_recv(int64_t sockfd, char* buf);
+        JOY_API int joy_net_sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port);
+        JOY_API int joy_net_sys_sendto(int64_t sockfd, const char* buf,
                 int len, const char* ip, int port);
-        JOY_API int64_t sys_current_time();
-        JOY_API void sys_sleep(int ms);
-        JOY_API void sys_install_crash_handlers();
+        JOY_API int64_t joy_net_sys_current_time();
+        JOY_API void joy_net_sys_sleep(int ms);
+        JOY_API void joy_net_sys_install_crash_handlers();
 
         JOY_API iocp_server_p joy_net_iocp_server_create(const char* bind_ip, int bind_port);
         JOY_API void joy_net_iocp_server_destroy(iocp_server_p server);
@@ -1601,26 +1601,26 @@ extern "C" {
         void       bt_statemachine_transition(bt_node_t* node, const char* state_name);
 
 
-        JOY_API uint32_t audio_open_device();
-        JOY_API void audio_close_device(uint32_t device_id);
-        JOY_API bool audio_create_wav(const char* filepath, uint32_t device_id);
-        JOY_API bool audio_create_mp3(const char* filepath, uint32_t device_id);
-        JOY_API bool audio_create_flac(const char* filepath, uint32_t device_id);
-        JOY_API bool audio_create_ogg(const char* filepath, uint32_t device_id);
-        JOY_API audio_shot_p audio_shot_create(const char* wav_path, uint32_t device_id);
-        JOY_API audio_shot_p audio_shot_create_mp3(const char* path, uint32_t device_id);
-        JOY_API audio_shot_p audio_shot_create_flac(const char* path, uint32_t device_id);
-        JOY_API audio_shot_p audio_shot_create_ogg(const char* path, uint32_t device_id);
-        JOY_API void audio_shot_play(audio_shot_p shot);
-        JOY_API void audio_shot_set_gain(audio_shot_p shot, float gain);
-        JOY_API void audio_shot_destroy(audio_shot_p shot);
-        JOY_API audio_bgm_p audio_bgm_create(const char* wav_path, uint32_t device_id);
-        JOY_API audio_bgm_p audio_bgm_create_mp3(const char* path, uint32_t device_id);
-        JOY_API audio_bgm_p audio_bgm_create_flac(const char* path, uint32_t device_id);
-        JOY_API audio_bgm_p audio_bgm_create_ogg(const char* path, uint32_t device_id);
-        JOY_API void audio_bgm_stop(audio_bgm_p bgm);
-        JOY_API void audio_bgm_set_gain(audio_bgm_p bgm, float gain);
-        JOY_API void audio_bgm_destroy(audio_bgm_p bgm);
+        JOY_API uint32_t joy_audio_open_device();
+        JOY_API void joy_audio_close_device(uint32_t device_id);
+        JOY_API bool joy_audio_create_wav(const char* filepath, uint32_t device_id);
+        JOY_API bool joy_audio_create_mp3(const char* filepath, uint32_t device_id);
+        JOY_API bool joy_audio_create_flac(const char* filepath, uint32_t device_id);
+        JOY_API bool joy_audio_create_ogg(const char* filepath, uint32_t device_id);
+        JOY_API audio_shot_p joy_audio_shot_create(const char* wav_path, uint32_t device_id);
+        JOY_API audio_shot_p joy_audio_shot_create_mp3(const char* path, uint32_t device_id);
+        JOY_API audio_shot_p joy_audio_shot_create_flac(const char* path, uint32_t device_id);
+        JOY_API audio_shot_p joy_audio_shot_create_ogg(const char* path, uint32_t device_id);
+        JOY_API void joy_audio_shot_play(audio_shot_p shot);
+        JOY_API void joy_audio_shot_set_gain(audio_shot_p shot, float gain);
+        JOY_API void joy_audio_shot_destroy(audio_shot_p shot);
+        JOY_API audio_bgm_p joy_audio_bgm_create(const char* wav_path, uint32_t device_id);
+        JOY_API audio_bgm_p joy_audio_bgm_create_mp3(const char* path, uint32_t device_id);
+        JOY_API audio_bgm_p joy_audio_bgm_create_flac(const char* path, uint32_t device_id);
+        JOY_API audio_bgm_p joy_audio_bgm_create_ogg(const char* path, uint32_t device_id);
+        JOY_API void joy_audio_bgm_stop(audio_bgm_p bgm);
+        JOY_API void joy_audio_bgm_set_gain(audio_bgm_p bgm, float gain);
+        JOY_API void joy_audio_bgm_destroy(audio_bgm_p bgm);
 
 
         JOY_API modules_p modules_create(const char* path);

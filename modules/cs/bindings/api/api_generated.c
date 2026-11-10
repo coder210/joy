@@ -626,9 +626,9 @@ static int32_t icall_SysInitNetenv(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_init_netenv", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_init_netenv", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_init_netenv", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_init_netenv", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -638,9 +638,9 @@ static int32_t icall_SysReleaseNetenv(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_release_netenv", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_release_netenv", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_release_netenv", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_release_netenv", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -650,9 +650,9 @@ static int32_t icall_SysAnyaddr(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_anyaddr", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_anyaddr", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_anyaddr", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_anyaddr", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -664,9 +664,9 @@ static int32_t icall_SysClosesocket(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("sys_closesocket", args, 1, &st);
+        r = joy_api_call("joy_net_sys_closesocket", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_closesocket", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_closesocket", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -679,9 +679,9 @@ static int32_t icall_SysSetSockSndtimeo(int64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("sys_set_sock_sndtimeo", args, 2, &st);
+        r = joy_api_call("joy_net_sys_set_sock_sndtimeo", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_set_sock_sndtimeo", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_set_sock_sndtimeo", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -694,9 +694,9 @@ static int32_t icall_SysSetSockRcvtimeo(int64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("sys_set_sock_rcvtimeo", args, 2, &st);
+        r = joy_api_call("joy_net_sys_set_sock_rcvtimeo", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_set_sock_rcvtimeo", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_set_sock_rcvtimeo", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -709,9 +709,9 @@ static int32_t icall_SysSetSockAccpettimeo(int64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_i64((int64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("sys_set_sock_accpettimeo", args, 2, &st);
+        r = joy_api_call("joy_net_sys_set_sock_accpettimeo", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_set_sock_accpettimeo", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_set_sock_accpettimeo", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -723,9 +723,9 @@ static int32_t icall_SysSetSockBroadcast(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("sys_set_sock_broadcast", args, 1, &st);
+        r = joy_api_call("joy_net_sys_set_sock_broadcast", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_set_sock_broadcast", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_set_sock_broadcast", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -737,9 +737,9 @@ static int32_t icall_SysSetSockReuseaddr(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("sys_set_sock_reuseaddr", args, 1, &st);
+        r = joy_api_call("joy_net_sys_set_sock_reuseaddr", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_set_sock_reuseaddr", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_set_sock_reuseaddr", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -749,9 +749,9 @@ static int64_t icall_SysTcp(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_tcp", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_tcp", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_tcp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_tcp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -761,9 +761,9 @@ static int64_t icall_SysUdp(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_udp", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_udp", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_udp", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_udp", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -779,10 +779,10 @@ static int32_t icall_SysBind(int64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("sys_bind", args, 3, &st);
+        r = joy_api_call("joy_net_sys_bind", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_bind", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_bind", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -798,10 +798,10 @@ static int32_t icall_SysConnect(int64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("sys_connect", args, 3, &st);
+        r = joy_api_call("joy_net_sys_connect", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_connect", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_connect", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -813,9 +813,9 @@ static int32_t icall_SysListen(int64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_i64((int64_t)p0);
-        r = joy_api_call("sys_listen", args, 1, &st);
+        r = joy_api_call("joy_net_sys_listen", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_listen", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_listen", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -831,10 +831,10 @@ static int32_t icall_SysSend(int64_t p0, MonoString* p1, int32_t p2)
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("sys_send", args, 3, &st);
+        r = joy_api_call("joy_net_sys_send", args, 3, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_send", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_send", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -854,11 +854,11 @@ static int32_t icall_SysSendto(int64_t p0, MonoString* p1, int32_t p2, MonoStrin
         s3 = p3 ? mono_string_to_utf8(p3) : NULL;
         args[3] = joy_v_str((const char*)s3);
         args[4] = joy_v_i32((int32_t)p4);
-        r = joy_api_call("sys_sendto", args, 5, &st);
+        r = joy_api_call("joy_net_sys_sendto", args, 5, &st);
         if (s1) mono_free(s1);
         if (s3) mono_free(s3);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_sendto", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_sendto", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -868,9 +868,9 @@ static int64_t icall_SysCurrentTime(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("sys_current_time", NULL, 0, &st);
+        r = joy_api_call("joy_net_sys_current_time", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_current_time", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_current_time", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int64_t)r.as.i64;
@@ -881,9 +881,9 @@ static void icall_SysSleep(int32_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_i32((int32_t)p0);
-        (void)joy_api_call("sys_sleep", args, 1, &st);
+        (void)joy_api_call("joy_net_sys_sleep", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_sleep", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_sleep", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -892,9 +892,9 @@ static void icall_SysSleep(int32_t p0)
 static void icall_SysInstallCrashHandlers(void)
 {
         joy_status_t st = JOY_OK;
-        (void)joy_api_call("sys_install_crash_handlers", NULL, 0, &st);
+        (void)joy_api_call("joy_net_sys_install_crash_handlers", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sys_install_crash_handlers", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_net_sys_install_crash_handlers", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7133,9 +7133,9 @@ static uint32_t icall_AudioOpenDevice(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("audio_open_device", NULL, 0, &st);
+        r = joy_api_call("joy_audio_open_device", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_open_device", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_open_device", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint32_t)r.as.u32;
@@ -7146,9 +7146,9 @@ static void icall_AudioCloseDevice(uint32_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_u32((uint32_t)p0);
-        (void)joy_api_call("audio_close_device", args, 1, &st);
+        (void)joy_api_call("joy_audio_close_device", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_close_device", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_close_device", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7163,10 +7163,10 @@ static int32_t icall_AudioCreateWav(MonoString* p0, uint32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_u32((uint32_t)p1);
-        r = joy_api_call("audio_create_wav", args, 2, &st);
+        r = joy_api_call("joy_audio_create_wav", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_create_wav", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_wav", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -7181,10 +7181,10 @@ static int32_t icall_AudioCreateMp3(MonoString* p0, uint32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_u32((uint32_t)p1);
-        r = joy_api_call("audio_create_mp3", args, 2, &st);
+        r = joy_api_call("joy_audio_create_mp3", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_create_mp3", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_mp3", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -7199,10 +7199,10 @@ static int32_t icall_AudioCreateFlac(MonoString* p0, uint32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_u32((uint32_t)p1);
-        r = joy_api_call("audio_create_flac", args, 2, &st);
+        r = joy_api_call("joy_audio_create_flac", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_create_flac", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_flac", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -7217,10 +7217,10 @@ static int32_t icall_AudioCreateOgg(MonoString* p0, uint32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_u32((uint32_t)p1);
-        r = joy_api_call("audio_create_ogg", args, 2, &st);
+        r = joy_api_call("joy_audio_create_ogg", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_create_ogg", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_create_ogg", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -7231,9 +7231,9 @@ static void icall_AudioShotPlay(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("audio_shot_play", args, 1, &st);
+        (void)joy_api_call("joy_audio_shot_play", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_shot_play", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_shot_play", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7245,9 +7245,9 @@ static void icall_AudioShotSetGain(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("audio_shot_set_gain", args, 2, &st);
+        (void)joy_api_call("joy_audio_shot_set_gain", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_shot_set_gain", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_shot_set_gain", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7258,9 +7258,9 @@ static void icall_AudioShotDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("audio_shot_destroy", args, 1, &st);
+        (void)joy_api_call("joy_audio_shot_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_shot_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_shot_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7271,9 +7271,9 @@ static void icall_AudioBgmStop(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("audio_bgm_stop", args, 1, &st);
+        (void)joy_api_call("joy_audio_bgm_stop", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_bgm_stop", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_bgm_stop", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7285,9 +7285,9 @@ static void icall_AudioBgmSetGain(uint64_t p0, float p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_f64((double)p1);
-        (void)joy_api_call("audio_bgm_set_gain", args, 2, &st);
+        (void)joy_api_call("joy_audio_bgm_set_gain", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_bgm_set_gain", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_bgm_set_gain", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7298,9 +7298,9 @@ static void icall_AudioBgmDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("audio_bgm_destroy", args, 1, &st);
+        (void)joy_api_call("joy_audio_bgm_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "audio_bgm_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_audio_bgm_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

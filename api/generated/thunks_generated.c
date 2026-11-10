@@ -537,184 +537,184 @@ static joy_value_t t_joy_core_set_clipboard_text(joy_value_t* a, int n, joy_stat
         return joy_v_null();
 }
 
-static joy_value_t t_sys_init_netenv(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_init_netenv(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_init_netenv");
-        _r = sys_init_netenv();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_init_netenv");
+        _r = joy_net_sys_init_netenv();
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_release_netenv(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_release_netenv(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_release_netenv");
-        _r = sys_release_netenv();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_release_netenv");
+        _r = joy_net_sys_release_netenv();
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_anyaddr(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_anyaddr(joy_value_t* a, int n, joy_status_t* st)
 {
         int _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_anyaddr");
-        _r = sys_anyaddr();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_anyaddr");
+        _r = joy_net_sys_anyaddr();
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_closesocket(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_closesocket(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "sys_closesocket");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_closesocket.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_closesocket");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_closesocket.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = sys_closesocket(p0);
+        _r = joy_net_sys_closesocket(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_set_sock_sndtimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_set_sock_sndtimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "sys_set_sock_sndtimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_sndtimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_sndtimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_sndtimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_sndtimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_sndtimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = sys_set_sock_sndtimeo(p0, p1);
+        _r = joy_net_sys_set_sock_sndtimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_set_sock_rcvtimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_set_sock_rcvtimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "sys_set_sock_rcvtimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_rcvtimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_rcvtimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_rcvtimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_rcvtimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_rcvtimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = sys_set_sock_rcvtimeo(p0, p1);
+        _r = joy_net_sys_set_sock_rcvtimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_set_sock_accpettimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_set_sock_accpettimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "sys_set_sock_accpettimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_accpettimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_accpettimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_accpettimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_accpettimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_accpettimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = sys_set_sock_accpettimeo(p0, p1);
+        _r = joy_net_sys_set_sock_accpettimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_set_sock_broadcast(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_set_sock_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "sys_set_sock_broadcast");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_broadcast.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_broadcast");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_broadcast.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = sys_set_sock_broadcast(p0);
+        _r = joy_net_sys_set_sock_broadcast(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_set_sock_reuseaddr(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_set_sock_reuseaddr(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "sys_set_sock_reuseaddr");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_set_sock_reuseaddr.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_reuseaddr");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_reuseaddr.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = sys_set_sock_reuseaddr(p0);
+        _r = joy_net_sys_set_sock_reuseaddr(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_tcp(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_tcp(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_tcp");
-        _r = sys_tcp();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_tcp");
+        _r = joy_net_sys_tcp();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_sys_udp(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_udp(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_udp");
-        _r = sys_udp();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_udp");
+        _r = joy_net_sys_udp();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_sys_bind(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_bind(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         bool _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "sys_bind");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_bind.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sys_bind.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_bind.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_bind");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = sys_bind(p0, p1, p2);
+        _r = joy_net_sys_bind(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_connect(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_connect(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         bool _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "sys_connect");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_connect.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sys_connect.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_connect.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_connect");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = sys_connect(p0, p1, p2);
+        _r = joy_net_sys_connect(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_listen(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_listen(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "sys_listen");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_listen.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_listen");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_listen.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = sys_listen(p0);
+        _r = joy_net_sys_listen(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_sys_send(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_send(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         int _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "sys_send");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_send.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sys_send.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_send.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_send");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = sys_send(p0, p1, p2);
+        _r = joy_net_sys_send(p0, p1, p2);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
@@ -722,43 +722,43 @@ static joy_value_t t_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
         const char* p3;
         int p4;
         int _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "sys_sendto");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "sys_sendto.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sys_sendto.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_sendto.arg2");
-        if (a[3].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sys_sendto.arg3");
-        if (a[4].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_sendto.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_sendto");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg2");
+        if (a[3].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg3");
+        if (a[4].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg4");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
         p3 = (const char*)a[3].as.str;
         p4 = (int)a[4].as.i32;
-        _r = sys_sendto(p0, p1, p2, p3, p4);
+        _r = joy_net_sys_sendto(p0, p1, p2, p3, p4);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_sys_current_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_current_time(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_current_time");
-        _r = sys_current_time();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_current_time");
+        _r = joy_net_sys_current_time();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_sys_sleep(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_sleep(joy_value_t* a, int n, joy_status_t* st)
 {
         int p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "sys_sleep");
-        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sys_sleep.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_sleep");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sleep.arg0");
         p0 = (int)a[0].as.i32;
-        sys_sleep(p0);
+        joy_net_sys_sleep(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_sys_install_crash_handlers(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_net_sys_install_crash_handlers(joy_value_t* a, int n, joy_status_t* st)
 {
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "sys_install_crash_handlers");
-        sys_install_crash_handlers();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_install_crash_handlers");
+        joy_net_sys_install_crash_handlers();
         return joy_v_null();
 }
 
@@ -7138,149 +7138,149 @@ static joy_value_t t_joy_scene_ecs_define(joy_value_t* a, int n, joy_status_t* s
         return joy_v_null();
 }
 
-static joy_value_t t_audio_open_device(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_open_device(joy_value_t* a, int n, joy_status_t* st)
 {
         uint32_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "audio_open_device");
-        _r = audio_open_device();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_open_device");
+        _r = joy_audio_open_device();
         return joy_v_u32((uint32_t)_r);
 }
 
-static joy_value_t t_audio_close_device(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_close_device(joy_value_t* a, int n, joy_status_t* st)
 {
         uint32_t p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "audio_close_device");
-        if (a[0].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "audio_close_device.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_close_device");
+        if (a[0].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_close_device.arg0");
         p0 = (uint32_t)a[0].as.u32;
-        audio_close_device(p0);
+        joy_audio_close_device(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_create_wav(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_create_wav(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         uint32_t p1;
         bool _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_create_wav");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_wav.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_wav.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_create_wav");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_wav.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_wav.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (uint32_t)a[1].as.u32;
-        _r = audio_create_wav(p0, p1);
+        _r = joy_audio_create_wav(p0, p1);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_audio_create_mp3(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_create_mp3(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         uint32_t p1;
         bool _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_create_mp3");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_mp3.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_mp3.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_create_mp3");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_mp3.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_mp3.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (uint32_t)a[1].as.u32;
-        _r = audio_create_mp3(p0, p1);
+        _r = joy_audio_create_mp3(p0, p1);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_audio_create_flac(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_create_flac(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         uint32_t p1;
         bool _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_create_flac");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_flac.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_flac.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_create_flac");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_flac.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_flac.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (uint32_t)a[1].as.u32;
-        _r = audio_create_flac(p0, p1);
+        _r = joy_audio_create_flac(p0, p1);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_audio_create_ogg(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_create_ogg(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         uint32_t p1;
         bool _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_create_ogg");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_ogg.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "audio_create_ogg.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_create_ogg");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_ogg.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_create_ogg.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (uint32_t)a[1].as.u32;
-        _r = audio_create_ogg(p0, p1);
+        _r = joy_audio_create_ogg(p0, p1);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_audio_shot_play(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_shot_play(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_shot_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "audio_shot_play");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_shot_play.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_play");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_play.arg0");
         p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_shot_play.arg0");
-        audio_shot_play(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_audio_shot_play.arg0");
+        joy_audio_shot_play(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_shot_set_gain(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_shot_set_gain(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_shot_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_shot_set_gain");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_shot_set_gain.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "audio_shot_set_gain.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_set_gain");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_set_gain.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_set_gain.arg1");
         p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_shot_set_gain.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_audio_shot_set_gain.arg0");
         p1 = (float)a[1].as.f64;
-        audio_shot_set_gain(p0, p1);
+        joy_audio_shot_set_gain(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_shot_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_shot_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_shot_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "audio_shot_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_shot_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_destroy.arg0");
         p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_shot_destroy.arg0");
-        audio_shot_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_audio_shot_destroy.arg0");
+        joy_audio_shot_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_bgm_stop(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_bgm_stop(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_bgm_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "audio_bgm_stop");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_bgm_stop.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_stop");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_stop.arg0");
         p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_bgm_stop.arg0");
-        audio_bgm_stop(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_stop.arg0");
+        joy_audio_bgm_stop(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_bgm_set_gain(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_bgm_set_gain(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_bgm_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "audio_bgm_set_gain");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_bgm_set_gain.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "audio_bgm_set_gain.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_set_gain");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_set_gain.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_set_gain.arg1");
         p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_bgm_set_gain.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_set_gain.arg0");
         p1 = (float)a[1].as.f64;
-        audio_bgm_set_gain(p0, p1);
+        joy_audio_bgm_set_gain(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         audio_bgm_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "audio_bgm_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "audio_bgm_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_destroy.arg0");
         p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
-        if (!p0) return joy_v_err(st, *st, "audio_bgm_destroy.arg0");
-        audio_bgm_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_destroy.arg0");
+        joy_audio_bgm_destroy(p0);
         return joy_v_null();
 }
 
@@ -11464,18 +11464,18 @@ static const joy_value_kind k_joy_scene_game_timer_get_time_scale[] = { JOY_V_HA
 static const joy_value_kind k_joy_scene_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_joy_scene_game_timer_get_target_fps[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_set_clipboard_text[] = { JOY_V_STR };
-static const joy_value_kind k_sys_closesocket[] = { JOY_V_I64 };
-static const joy_value_kind k_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_sys_set_sock_rcvtimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_sys_set_sock_accpettimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_sys_set_sock_broadcast[] = { JOY_V_I64 };
-static const joy_value_kind k_sys_set_sock_reuseaddr[] = { JOY_V_I64 };
-static const joy_value_kind k_sys_bind[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_sys_connect[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_sys_listen[] = { JOY_V_I64 };
-static const joy_value_kind k_sys_send[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_sys_sendto[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_sys_sleep[] = { JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_closesocket[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_net_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_set_sock_rcvtimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_set_sock_accpettimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_set_sock_broadcast[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_net_sys_set_sock_reuseaddr[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_net_sys_bind[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_connect[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_listen[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_net_sys_send[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_sendto[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_net_sys_sleep[] = { JOY_V_I32 };
 static const joy_value_kind k_joy_net_iocp_server_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_net_iocp_process_events[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_joy_r2d_font_create[] = { JOY_V_STR, JOY_V_I32 };
@@ -11881,17 +11881,17 @@ static const joy_value_kind k_joy_r3d_light_render[] = { JOY_V_HANDLE, JOY_V_HAN
 static const joy_value_kind k_joy_scene_ecs_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_ecs_process[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_scene_ecs_define[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_U64 };
-static const joy_value_kind k_audio_close_device[] = { JOY_V_U32 };
-static const joy_value_kind k_audio_create_wav[] = { JOY_V_STR, JOY_V_U32 };
-static const joy_value_kind k_audio_create_mp3[] = { JOY_V_STR, JOY_V_U32 };
-static const joy_value_kind k_audio_create_flac[] = { JOY_V_STR, JOY_V_U32 };
-static const joy_value_kind k_audio_create_ogg[] = { JOY_V_STR, JOY_V_U32 };
-static const joy_value_kind k_audio_shot_play[] = { JOY_V_HANDLE };
-static const joy_value_kind k_audio_shot_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_audio_shot_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_audio_bgm_stop[] = { JOY_V_HANDLE };
-static const joy_value_kind k_audio_bgm_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_audio_bgm_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_audio_close_device[] = { JOY_V_U32 };
+static const joy_value_kind k_joy_audio_create_wav[] = { JOY_V_STR, JOY_V_U32 };
+static const joy_value_kind k_joy_audio_create_mp3[] = { JOY_V_STR, JOY_V_U32 };
+static const joy_value_kind k_joy_audio_create_flac[] = { JOY_V_STR, JOY_V_U32 };
+static const joy_value_kind k_joy_audio_create_ogg[] = { JOY_V_STR, JOY_V_U32 };
+static const joy_value_kind k_joy_audio_shot_play[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_audio_shot_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_audio_shot_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_audio_bgm_stop[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_audio_bgm_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_audio_bgm_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_image_draw_rect[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_jmath_fp_from_float[] = { JOY_V_F64 };
 static const joy_value_kind k_jmath_fp_to_float[] = { JOY_V_I64 };
@@ -12145,25 +12145,25 @@ static const joy_thunk_entry s_thunks[] = {
         { "scene", "joy_scene_game_timer_set_target_fps", "GameTimerSetTargetFps", t_joy_scene_game_timer_set_target_fps, 2, k_joy_scene_game_timer_set_target_fps, JOY_V_NULL },
         { "scene", "joy_scene_game_timer_get_target_fps", "GameTimerGetTargetFps", t_joy_scene_game_timer_get_target_fps, 1, k_joy_scene_game_timer_get_target_fps, JOY_V_I32 },
         { "core", "joy_core_set_clipboard_text", "SetClipboardText", t_joy_core_set_clipboard_text, 1, k_joy_core_set_clipboard_text, JOY_V_NULL },
-        { "sys", "sys_init_netenv", "SysInitNetenv", t_sys_init_netenv, 0, NULL, JOY_V_BOOL },
-        { "sys", "sys_release_netenv", "SysReleaseNetenv", t_sys_release_netenv, 0, NULL, JOY_V_BOOL },
-        { "sys", "sys_anyaddr", "SysAnyaddr", t_sys_anyaddr, 0, NULL, JOY_V_I32 },
-        { "sys", "sys_closesocket", "SysClosesocket", t_sys_closesocket, 1, k_sys_closesocket, JOY_V_BOOL },
-        { "sys", "sys_set_sock_sndtimeo", "SysSetSockSndtimeo", t_sys_set_sock_sndtimeo, 2, k_sys_set_sock_sndtimeo, JOY_V_I32 },
-        { "sys", "sys_set_sock_rcvtimeo", "SysSetSockRcvtimeo", t_sys_set_sock_rcvtimeo, 2, k_sys_set_sock_rcvtimeo, JOY_V_I32 },
-        { "sys", "sys_set_sock_accpettimeo", "SysSetSockAccpettimeo", t_sys_set_sock_accpettimeo, 2, k_sys_set_sock_accpettimeo, JOY_V_I32 },
-        { "sys", "sys_set_sock_broadcast", "SysSetSockBroadcast", t_sys_set_sock_broadcast, 1, k_sys_set_sock_broadcast, JOY_V_I32 },
-        { "sys", "sys_set_sock_reuseaddr", "SysSetSockReuseaddr", t_sys_set_sock_reuseaddr, 1, k_sys_set_sock_reuseaddr, JOY_V_I32 },
-        { "sys", "sys_tcp", "SysTcp", t_sys_tcp, 0, NULL, JOY_V_I64 },
-        { "sys", "sys_udp", "SysUdp", t_sys_udp, 0, NULL, JOY_V_I64 },
-        { "sys", "sys_bind", "SysBind", t_sys_bind, 3, k_sys_bind, JOY_V_BOOL },
-        { "sys", "sys_connect", "SysConnect", t_sys_connect, 3, k_sys_connect, JOY_V_BOOL },
-        { "sys", "sys_listen", "SysListen", t_sys_listen, 1, k_sys_listen, JOY_V_BOOL },
-        { "sys", "sys_send", "SysSend", t_sys_send, 3, k_sys_send, JOY_V_I32 },
-        { "sys", "sys_sendto", "SysSendto", t_sys_sendto, 5, k_sys_sendto, JOY_V_I32 },
-        { "sys", "sys_current_time", "SysCurrentTime", t_sys_current_time, 0, NULL, JOY_V_I64 },
-        { "sys", "sys_sleep", "SysSleep", t_sys_sleep, 1, k_sys_sleep, JOY_V_NULL },
-        { "sys", "sys_install_crash_handlers", "SysInstallCrashHandlers", t_sys_install_crash_handlers, 0, NULL, JOY_V_NULL },
+        { "net", "joy_net_sys_init_netenv", "SysInitNetenv", t_joy_net_sys_init_netenv, 0, NULL, JOY_V_BOOL },
+        { "net", "joy_net_sys_release_netenv", "SysReleaseNetenv", t_joy_net_sys_release_netenv, 0, NULL, JOY_V_BOOL },
+        { "net", "joy_net_sys_anyaddr", "SysAnyaddr", t_joy_net_sys_anyaddr, 0, NULL, JOY_V_I32 },
+        { "net", "joy_net_sys_closesocket", "SysClosesocket", t_joy_net_sys_closesocket, 1, k_joy_net_sys_closesocket, JOY_V_BOOL },
+        { "net", "joy_net_sys_set_sock_sndtimeo", "SysSetSockSndtimeo", t_joy_net_sys_set_sock_sndtimeo, 2, k_joy_net_sys_set_sock_sndtimeo, JOY_V_I32 },
+        { "net", "joy_net_sys_set_sock_rcvtimeo", "SysSetSockRcvtimeo", t_joy_net_sys_set_sock_rcvtimeo, 2, k_joy_net_sys_set_sock_rcvtimeo, JOY_V_I32 },
+        { "net", "joy_net_sys_set_sock_accpettimeo", "SysSetSockAccpettimeo", t_joy_net_sys_set_sock_accpettimeo, 2, k_joy_net_sys_set_sock_accpettimeo, JOY_V_I32 },
+        { "net", "joy_net_sys_set_sock_broadcast", "SysSetSockBroadcast", t_joy_net_sys_set_sock_broadcast, 1, k_joy_net_sys_set_sock_broadcast, JOY_V_I32 },
+        { "net", "joy_net_sys_set_sock_reuseaddr", "SysSetSockReuseaddr", t_joy_net_sys_set_sock_reuseaddr, 1, k_joy_net_sys_set_sock_reuseaddr, JOY_V_I32 },
+        { "net", "joy_net_sys_tcp", "SysTcp", t_joy_net_sys_tcp, 0, NULL, JOY_V_I64 },
+        { "net", "joy_net_sys_udp", "SysUdp", t_joy_net_sys_udp, 0, NULL, JOY_V_I64 },
+        { "net", "joy_net_sys_bind", "SysBind", t_joy_net_sys_bind, 3, k_joy_net_sys_bind, JOY_V_BOOL },
+        { "net", "joy_net_sys_connect", "SysConnect", t_joy_net_sys_connect, 3, k_joy_net_sys_connect, JOY_V_BOOL },
+        { "net", "joy_net_sys_listen", "SysListen", t_joy_net_sys_listen, 1, k_joy_net_sys_listen, JOY_V_BOOL },
+        { "net", "joy_net_sys_send", "SysSend", t_joy_net_sys_send, 3, k_joy_net_sys_send, JOY_V_I32 },
+        { "net", "joy_net_sys_sendto", "SysSendto", t_joy_net_sys_sendto, 5, k_joy_net_sys_sendto, JOY_V_I32 },
+        { "net", "joy_net_sys_current_time", "SysCurrentTime", t_joy_net_sys_current_time, 0, NULL, JOY_V_I64 },
+        { "net", "joy_net_sys_sleep", "SysSleep", t_joy_net_sys_sleep, 1, k_joy_net_sys_sleep, JOY_V_NULL },
+        { "net", "joy_net_sys_install_crash_handlers", "SysInstallCrashHandlers", t_joy_net_sys_install_crash_handlers, 0, NULL, JOY_V_NULL },
         { "net", "joy_net_iocp_server_destroy", "IocpServerDestroy", t_joy_net_iocp_server_destroy, 1, k_joy_net_iocp_server_destroy, JOY_V_NULL },
         { "net", "joy_net_iocp_process_events", "IocpProcessEvents", t_joy_net_iocp_process_events, 2, k_joy_net_iocp_process_events, JOY_V_NULL },
         { "r2d", "joy_r2d_font_create", "FontCreate", t_joy_r2d_font_create, 2, k_joy_r2d_font_create, JOY_V_HANDLE },
@@ -12571,18 +12571,18 @@ static const joy_thunk_entry s_thunks[] = {
         { "scene", "joy_scene_ecs_destroy", "JecsDestroy", t_joy_scene_ecs_destroy, 1, k_joy_scene_ecs_destroy, JOY_V_NULL },
         { "scene", "joy_scene_ecs_process", "JecsProcess", t_joy_scene_ecs_process, 2, k_joy_scene_ecs_process, JOY_V_NULL },
         { "scene", "joy_scene_ecs_define", "JecsDefine", t_joy_scene_ecs_define, 3, k_joy_scene_ecs_define, JOY_V_NULL },
-        { "audio", "audio_open_device", "AudioOpenDevice", t_audio_open_device, 0, NULL, JOY_V_U32 },
-        { "audio", "audio_close_device", "AudioCloseDevice", t_audio_close_device, 1, k_audio_close_device, JOY_V_NULL },
-        { "audio", "audio_create_wav", "AudioCreateWav", t_audio_create_wav, 2, k_audio_create_wav, JOY_V_BOOL },
-        { "audio", "audio_create_mp3", "AudioCreateMp3", t_audio_create_mp3, 2, k_audio_create_mp3, JOY_V_BOOL },
-        { "audio", "audio_create_flac", "AudioCreateFlac", t_audio_create_flac, 2, k_audio_create_flac, JOY_V_BOOL },
-        { "audio", "audio_create_ogg", "AudioCreateOgg", t_audio_create_ogg, 2, k_audio_create_ogg, JOY_V_BOOL },
-        { "audio", "audio_shot_play", "AudioShotPlay", t_audio_shot_play, 1, k_audio_shot_play, JOY_V_NULL },
-        { "audio", "audio_shot_set_gain", "AudioShotSetGain", t_audio_shot_set_gain, 2, k_audio_shot_set_gain, JOY_V_NULL },
-        { "audio", "audio_shot_destroy", "AudioShotDestroy", t_audio_shot_destroy, 1, k_audio_shot_destroy, JOY_V_NULL },
-        { "audio", "audio_bgm_stop", "AudioBgmStop", t_audio_bgm_stop, 1, k_audio_bgm_stop, JOY_V_NULL },
-        { "audio", "audio_bgm_set_gain", "AudioBgmSetGain", t_audio_bgm_set_gain, 2, k_audio_bgm_set_gain, JOY_V_NULL },
-        { "audio", "audio_bgm_destroy", "AudioBgmDestroy", t_audio_bgm_destroy, 1, k_audio_bgm_destroy, JOY_V_NULL },
+        { "audio", "joy_audio_open_device", "AudioOpenDevice", t_joy_audio_open_device, 0, NULL, JOY_V_U32 },
+        { "audio", "joy_audio_close_device", "AudioCloseDevice", t_joy_audio_close_device, 1, k_joy_audio_close_device, JOY_V_NULL },
+        { "audio", "joy_audio_create_wav", "AudioCreateWav", t_joy_audio_create_wav, 2, k_joy_audio_create_wav, JOY_V_BOOL },
+        { "audio", "joy_audio_create_mp3", "AudioCreateMp3", t_joy_audio_create_mp3, 2, k_joy_audio_create_mp3, JOY_V_BOOL },
+        { "audio", "joy_audio_create_flac", "AudioCreateFlac", t_joy_audio_create_flac, 2, k_joy_audio_create_flac, JOY_V_BOOL },
+        { "audio", "joy_audio_create_ogg", "AudioCreateOgg", t_joy_audio_create_ogg, 2, k_joy_audio_create_ogg, JOY_V_BOOL },
+        { "audio", "joy_audio_shot_play", "AudioShotPlay", t_joy_audio_shot_play, 1, k_joy_audio_shot_play, JOY_V_NULL },
+        { "audio", "joy_audio_shot_set_gain", "AudioShotSetGain", t_joy_audio_shot_set_gain, 2, k_joy_audio_shot_set_gain, JOY_V_NULL },
+        { "audio", "joy_audio_shot_destroy", "AudioShotDestroy", t_joy_audio_shot_destroy, 1, k_joy_audio_shot_destroy, JOY_V_NULL },
+        { "audio", "joy_audio_bgm_stop", "AudioBgmStop", t_joy_audio_bgm_stop, 1, k_joy_audio_bgm_stop, JOY_V_NULL },
+        { "audio", "joy_audio_bgm_set_gain", "AudioBgmSetGain", t_joy_audio_bgm_set_gain, 2, k_joy_audio_bgm_set_gain, JOY_V_NULL },
+        { "audio", "joy_audio_bgm_destroy", "AudioBgmDestroy", t_joy_audio_bgm_destroy, 1, k_joy_audio_bgm_destroy, JOY_V_NULL },
         { "ui", "joy_ui_image_draw_rect", "ImageDrawRect", t_joy_ui_image_draw_rect, 6, k_joy_ui_image_draw_rect, JOY_V_NULL },
         { "jmath", "jmath_fp_from_float", "JmathFpFromFloat", t_jmath_fp_from_float, 1, k_jmath_fp_from_float, JOY_V_I64 },
         { "jmath", "jmath_fp_to_float", "JmathFpToFloat", t_jmath_fp_to_float, 1, k_jmath_fp_to_float, JOY_V_F64 },
@@ -12951,62 +12951,62 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_set_clipboard_text", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_set_clipboard_text";
         st = JOY_OK;
-        joy_api_call("sys_init_netenv", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_init_netenv";
+        joy_api_call("joy_net_sys_init_netenv", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_init_netenv";
         st = JOY_OK;
-        joy_api_call("sys_release_netenv", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_release_netenv";
+        joy_api_call("joy_net_sys_release_netenv", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_release_netenv";
         st = JOY_OK;
-        joy_api_call("sys_anyaddr", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_anyaddr";
+        joy_api_call("joy_net_sys_anyaddr", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_anyaddr";
         st = JOY_OK;
-        joy_api_call("sys_closesocket", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_closesocket";
+        joy_api_call("joy_net_sys_closesocket", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_closesocket";
         st = JOY_OK;
-        joy_api_call("sys_set_sock_sndtimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_set_sock_sndtimeo";
+        joy_api_call("joy_net_sys_set_sock_sndtimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_sndtimeo";
         st = JOY_OK;
-        joy_api_call("sys_set_sock_rcvtimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_set_sock_rcvtimeo";
+        joy_api_call("joy_net_sys_set_sock_rcvtimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_rcvtimeo";
         st = JOY_OK;
-        joy_api_call("sys_set_sock_accpettimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_set_sock_accpettimeo";
+        joy_api_call("joy_net_sys_set_sock_accpettimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_accpettimeo";
         st = JOY_OK;
-        joy_api_call("sys_set_sock_broadcast", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_set_sock_broadcast";
+        joy_api_call("joy_net_sys_set_sock_broadcast", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_broadcast";
         st = JOY_OK;
-        joy_api_call("sys_set_sock_reuseaddr", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_set_sock_reuseaddr";
+        joy_api_call("joy_net_sys_set_sock_reuseaddr", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_reuseaddr";
         st = JOY_OK;
-        joy_api_call("sys_tcp", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_tcp";
+        joy_api_call("joy_net_sys_tcp", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_tcp";
         st = JOY_OK;
-        joy_api_call("sys_udp", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_udp";
+        joy_api_call("joy_net_sys_udp", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_udp";
         st = JOY_OK;
-        joy_api_call("sys_bind", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_bind";
+        joy_api_call("joy_net_sys_bind", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_bind";
         st = JOY_OK;
-        joy_api_call("sys_connect", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_connect";
+        joy_api_call("joy_net_sys_connect", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_connect";
         st = JOY_OK;
-        joy_api_call("sys_listen", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_listen";
+        joy_api_call("joy_net_sys_listen", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_listen";
         st = JOY_OK;
-        joy_api_call("sys_send", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_send";
+        joy_api_call("joy_net_sys_send", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_send";
         st = JOY_OK;
-        joy_api_call("sys_sendto", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_sendto";
+        joy_api_call("joy_net_sys_sendto", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_sendto";
         st = JOY_OK;
-        joy_api_call("sys_current_time", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_current_time";
+        joy_api_call("joy_net_sys_current_time", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_current_time";
         st = JOY_OK;
-        joy_api_call("sys_sleep", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_sleep";
+        joy_api_call("joy_net_sys_sleep", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_sleep";
         st = JOY_OK;
-        joy_api_call("sys_install_crash_handlers", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sys_install_crash_handlers";
+        joy_api_call("joy_net_sys_install_crash_handlers", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_install_crash_handlers";
         st = JOY_OK;
         joy_api_call("joy_net_iocp_server_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_net_iocp_server_destroy";
@@ -14229,41 +14229,41 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_scene_ecs_define", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_ecs_define";
         st = JOY_OK;
-        joy_api_call("audio_open_device", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_open_device";
+        joy_api_call("joy_audio_open_device", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_open_device";
         st = JOY_OK;
-        joy_api_call("audio_close_device", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_close_device";
+        joy_api_call("joy_audio_close_device", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_close_device";
         st = JOY_OK;
-        joy_api_call("audio_create_wav", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_create_wav";
+        joy_api_call("joy_audio_create_wav", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_create_wav";
         st = JOY_OK;
-        joy_api_call("audio_create_mp3", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_create_mp3";
+        joy_api_call("joy_audio_create_mp3", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_create_mp3";
         st = JOY_OK;
-        joy_api_call("audio_create_flac", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_create_flac";
+        joy_api_call("joy_audio_create_flac", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_create_flac";
         st = JOY_OK;
-        joy_api_call("audio_create_ogg", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_create_ogg";
+        joy_api_call("joy_audio_create_ogg", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_create_ogg";
         st = JOY_OK;
-        joy_api_call("audio_shot_play", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_shot_play";
+        joy_api_call("joy_audio_shot_play", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_shot_play";
         st = JOY_OK;
-        joy_api_call("audio_shot_set_gain", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_shot_set_gain";
+        joy_api_call("joy_audio_shot_set_gain", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_shot_set_gain";
         st = JOY_OK;
-        joy_api_call("audio_shot_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_shot_destroy";
+        joy_api_call("joy_audio_shot_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_shot_destroy";
         st = JOY_OK;
-        joy_api_call("audio_bgm_stop", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_bgm_stop";
+        joy_api_call("joy_audio_bgm_stop", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_bgm_stop";
         st = JOY_OK;
-        joy_api_call("audio_bgm_set_gain", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_bgm_set_gain";
+        joy_api_call("joy_audio_bgm_set_gain", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_bgm_set_gain";
         st = JOY_OK;
-        joy_api_call("audio_bgm_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/audio_bgm_destroy";
+        joy_api_call("joy_audio_bgm_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_audio_bgm_destroy";
         st = JOY_OK;
         joy_api_call("joy_ui_image_draw_rect", NULL, 7, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_draw_rect";
