@@ -21,7 +21,14 @@ Description: 公开 API 命名迁移期的旧名兼容层（P0 骨架）。
  * 全量迁移完成、外部调用方（含 joy_topdown_template）切到新名后删除本文件。
  */
 #ifndef JOY_NO_LEGACY_NAMES
-/* P0：尚未开始迁移，映射区暂时为空。 */
+/* P1 第一批：core/window 子域。本仓库内部调用点与 joy_topdown_template
+ * 仍用旧名时由这里兜住；逐步切到新名后可逐条删除。 */
+#define create_window             joy_core_create_window
+#define destroy_window            joy_core_destroy_window
+#define get_raw_window            joy_core_get_raw_window
+#define window_set_fullscreen     joy_core_window_set_fullscreen
+#define window_get_fullscreen     joy_core_window_get_fullscreen
+#define window_set_icon           joy_core_window_set_icon
 #endif
 
 #endif /* JOY_COMPAT_H */

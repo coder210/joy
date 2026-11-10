@@ -269,7 +269,7 @@ static uint64_t shim_get_ticks(void* _jv_ctx)
         return (uint64_t) _jv_r.as.u64;
 }
 
-static Jwindow shim_create_window(void* _jv_ctx, const char* title, int w, int h)
+static Jwindow shim_joy_core_create_window(void* _jv_ctx, const char* title, int w, int h)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -279,25 +279,25 @@ static Jwindow shim_create_window(void* _jv_ctx, const char* title, int w, int h
         _jv_args[0] = joy_v_str(title);
         _jv_args[1] = joy_v_i32(w);
         _jv_args[2] = joy_v_i32(h);
-        _jv_r = joy_api_call("create_window", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_core_create_window", _jv_args, 3, &_jv_st);
         _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
         return _jv_out;
 }
 
-static void shim_destroy_window(void* _jv_ctx, Jwindow win)
+static void shim_joy_core_destroy_window(void* _jv_ctx, Jwindow win)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(win.h);
-        _jv_r = joy_api_call("destroy_window", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_destroy_window", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_window_set_fullscreen(void* _jv_ctx, Jwindow win, bool fullscreen)
+static void shim_joy_core_window_set_fullscreen(void* _jv_ctx, Jwindow win, bool fullscreen)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -305,25 +305,25 @@ static void shim_window_set_fullscreen(void* _jv_ctx, Jwindow win, bool fullscre
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(win.h);
         _jv_args[1] = joy_v_bool(fullscreen);
-        _jv_r = joy_api_call("window_set_fullscreen", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_window_set_fullscreen", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_window_get_fullscreen(void* _jv_ctx, Jwindow win)
+static bool shim_joy_core_window_get_fullscreen(void* _jv_ctx, Jwindow win)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(win.h);
-        _jv_r = joy_api_call("window_get_fullscreen", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_window_get_fullscreen", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_window_set_icon(void* _jv_ctx, Jwindow win, const char* png_path)
+static void shim_joy_core_window_set_icon(void* _jv_ctx, Jwindow win, const char* png_path)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -331,7 +331,7 @@ static void shim_window_set_icon(void* _jv_ctx, Jwindow win, const char* png_pat
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(win.h);
         _jv_args[1] = joy_v_str(png_path);
-        _jv_r = joy_api_call("window_set_icon", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_window_set_icon", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -9981,11 +9981,11 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->InitEnv = shim_init_env;
         api->QuitEnv = shim_quit_env;
         api->GetTicks = shim_get_ticks;
-        api->CreateWindow = shim_create_window;
-        api->DestroyWindow = shim_destroy_window;
-        api->WindowSetFullscreen = shim_window_set_fullscreen;
-        api->WindowGetFullscreen = shim_window_get_fullscreen;
-        api->WindowSetIcon = shim_window_set_icon;
+        api->CreateWindow = shim_joy_core_create_window;
+        api->DestroyWindow = shim_joy_core_destroy_window;
+        api->WindowSetFullscreen = shim_joy_core_window_set_fullscreen;
+        api->WindowGetFullscreen = shim_joy_core_window_get_fullscreen;
+        api->WindowSetIcon = shim_joy_core_window_set_icon;
         api->PushUserEvent = shim_push_user_event;
         api->PushQuitEvent = shim_push_quit_event;
         api->LogTitle = shim_log_title;

@@ -60,7 +60,7 @@ uint64_t get_ticks(void)
 	return SDL_GetTicks();
 }
 
-jwindow_p create_window(const char* title, int w, int h)
+jwindow_p joy_core_create_window(const char* title, int w, int h)
 {
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
         window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
@@ -72,7 +72,7 @@ jwindow_p create_window(const char* title, int w, int h)
         return window;
 }
 
-void destroy_window(jwindow_p win)
+void joy_core_destroy_window(jwindow_p win)
 {
 	if (win) {
                 SDL_DestroyWindow(win->sdl_window);
@@ -80,23 +80,23 @@ void destroy_window(jwindow_p win)
 	}
 }
 
-void* get_raw_window(jwindow_p win)
+void* joy_core_get_raw_window(jwindow_p win)
 {
 	return win->sdl_window;
 }
 
-void window_set_fullscreen(jwindow_p win, bool fullscreen)
+void joy_core_window_set_fullscreen(jwindow_p win, bool fullscreen)
 {
 	if (win) SDL_SetWindowFullscreen(win->sdl_window, fullscreen);
 }
 
-bool window_get_fullscreen(jwindow_p win)
+bool joy_core_window_get_fullscreen(jwindow_p win)
 {
         if (!win) return false;
         return (SDL_GetWindowFlags(win->sdl_window) & SDL_WINDOW_FULLSCREEN) != 0;
 }
 
-void window_set_icon(jwindow_p win, const char* png_path)
+void joy_core_window_set_icon(jwindow_p win, const char* png_path)
 {
         if (!win || !png_path) return;
 

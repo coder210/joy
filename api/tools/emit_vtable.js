@@ -34,7 +34,8 @@ const SELFTEST_SAFE = new Set([
   'jmath_fp_from_float',                                       // float 参数
 ]);
 /* 强句柄链路探针：单参数句柄 getter，传 h=0 应被 thunk 拒绝并返回零值。 */
-const HANDLE_PROBE = 'window_get_fullscreen';
+/* 改名为 joy_<域>_ 后要同步这里，否则探针找不到条目会被静默跳过。 */
+const HANDLE_PROBE = 'joy_core_window_get_fullscreen';
 
 /* IDL 里有 63 个参数名叫 r；生成代码的局部变量统一加前缀避免遮蔽。 */
 const P = '_jv_';

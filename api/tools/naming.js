@@ -45,7 +45,15 @@ function isNamespaced(name) { return namespacedDomain(name) !== null; }
  *   'joy_core_create_window': 'CreateWindow'
  * 注意不能用「简单剥掉 joy_<域>」推导，历史名如 JanimatorCreate 带 J 前缀，
  * 显式表才不会把它们改坏。P0 阶段表为空，所有生成物一字不变。 */
-const ALIASES = new Map();
+const ALIASES = new Map([
+  /* P1 第一批：core/window 子域。旧名 → 生成层一直使用的 PascalCase 名。 */
+  ['joy_core_create_window', 'CreateWindow'],
+  ['joy_core_destroy_window', 'DestroyWindow'],
+  ['joy_core_get_raw_window', 'GetRawWindow'],
+  ['joy_core_window_set_fullscreen', 'WindowSetFullscreen'],
+  ['joy_core_window_get_fullscreen', 'WindowGetFullscreen'],
+  ['joy_core_window_set_icon', 'WindowSetIcon'],
+]);
 
 function isOpaque(t) {
   return t === 'void*' || (t.endsWith('_p') && !t.includes('*'));

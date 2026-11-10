@@ -44,6 +44,7 @@
 | collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
 | collision3df | 0 | 0 | 3 | 5 | 0 | 8 |
 | combobox | 0 | 23 | 1 | 2 | 0 | 26 |
+| core | 0 | 6 | 0 | 0 | 0 | 6 |
 | datagrid | 0 | 10 | 0 | 1 | 0 | 11 |
 | dispatch | 0 | 0 | 1 | 0 | 0 | 1 |
 | env | 1 | 4 | 0 | 0 | 0 | 5 |
@@ -97,7 +98,6 @@
 | r2d | 0 | 19 | 2 | 10 | 0 | 31 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
 | radio | 0 | 5 | 0 | 0 | 0 | 5 |
-| raw | 0 | 1 | 0 | 0 | 0 | 1 |
 | scene | 0 | 50 | 0 | 15 | 0 | 65 |
 | scrollview | 0 | 14 | 0 | 0 | 0 | 14 |
 | sdbm | 1 | 0 | 0 | 0 | 0 | 1 |
@@ -115,7 +115,6 @@
 | user | 0 | 1 | 0 | 0 | 0 | 1 |
 | utf8 | 0 | 0 | 0 | 3 | 0 | 3 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
-| window | 0 | 5 | 0 | 0 | 0 | 5 |
 | wsnetclient | 0 | 5 | 0 | 1 | 0 | 6 |
 | wsnetserver | 0 | 8 | 0 | 1 | 0 | 9 |
 
@@ -126,7 +125,7 @@
 
 | 函数 | 返回 | 位置 | 人工裁决（`note`） |
 |---|---|---|---|
-| `get_raw_window` | `void*` | include/joy/api.h:111 | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
+| `joy_core_get_raw_window` | `void*` | include/joy/api.h:111 | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
 | `r2d_unwrap` | `void*` | include/joy/api.h:204 | 借用：内部 SDL_Renderer*，所有权归 jr2d |
 | `r3d_load_shader` | `void*` | include/joy/api.h:334 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_create_pipeline` | `void*` | include/joy/api.h:336 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
@@ -174,7 +173,7 @@
 
 | 函数 | 返回 | `owns` | 问题 | 人工裁决（`note`） |
 |---|---|---|---|---|
-| `get_raw_window` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
+| `joy_core_get_raw_window` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Window*，由 destroy_window 一并销毁 |
 | `r2d_unwrap` | `void*` | （无） | 返回句柄但缺 owns | 借用：内部 SDL_Renderer*，所有权归 jr2d |
 | `r3d_load_shader` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |
 | `r3d_create_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h，r3d_destroy(jr3d_p) 类型不符 |

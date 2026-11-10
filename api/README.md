@@ -82,8 +82,14 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 - `compat.h` 放旧名 `#define`，不在 `DECL_SOURCES` 里且 `collectDecls()` 跳过
   `#` 行，不会污染 IDL / 生成物。定义 `JOY_NO_LEGACY_NAMES` 可查残留调用点。
 
-### 迁移顺序（P1，尚未开始）
+### 迁移顺序（P1 进行中）
 
+**批次记录**：第一批 `core/window` 子域 6 条（2026-11），映射见
+`idl/rename_map.json`。改名的同时发现 `emit_vtable.js` 的 `HANDLE_PROBE`
+按名字硬编码，漏改会让强句柄自检被静默跳过。
+
+0. 改名前先搜 `api/tools/` 里的硬编码旧名（`SELFTEST_SAFE`、`HANDLE_PROBE`、
+   `SKIP_NAMES` 等）——`--check` 只比对生成物，这类漏改查不出来。
 1. 每批一个域：`--scan → --enable domain:<域> → --check` → 四语言 `ctest`
    → Desktop / Android / Web CI 全绿 → 下一个 commit。
 2. 先 `core` / `audio` / `input` 小域试通，再合并 `ui`（20 域 → 1）、`net`，

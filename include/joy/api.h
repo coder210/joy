@@ -106,12 +106,12 @@ extern "C" {
         /** 从鼠标事件中提取按钮（1=左, 2=中, 3=右） */
         JOY_API int  get_mouse_button(const void* event);
 
-        JOY_API jwindow_p create_window(const char* title, int w, int h);
-        JOY_API void destroy_window(jwindow_p win);
-        JOY_API void* get_raw_window(jwindow_p win);
-        JOY_API void window_set_fullscreen(jwindow_p win, bool fullscreen);
-        JOY_API bool window_get_fullscreen(jwindow_p win);
-        JOY_API void window_set_icon(jwindow_p win, const char* png_path);
+        JOY_API jwindow_p joy_core_create_window(const char* title, int w, int h);
+        JOY_API void joy_core_destroy_window(jwindow_p win);
+        JOY_API void* joy_core_get_raw_window(jwindow_p win);
+        JOY_API void joy_core_window_set_fullscreen(jwindow_p win, bool fullscreen);
+        JOY_API bool joy_core_window_get_fullscreen(jwindow_p win);
+        JOY_API void joy_core_window_set_icon(jwindow_p win, const char* png_path);
 
         JOY_API void dispatch_event(jevent_callbacks_t cbs,
                 const void* event, void* arg);

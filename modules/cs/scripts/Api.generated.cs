@@ -2192,7 +2192,7 @@ namespace Joy.Api
         public static Jwindow CreateWindow(string title, int w, int h)
         {
             ulong __h = Native.CreateWindow(title, w, h);
-            if (__h == 0) throw new InvalidOperationException("create_window failed");
+            if (__h == 0) throw new InvalidOperationException("joy_core_create_window failed");
             return new Jwindow(__h);
         }
         public static void DestroyWindow(Jwindow win)

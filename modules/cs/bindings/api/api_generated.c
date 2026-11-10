@@ -315,10 +315,10 @@ static uint64_t icall_CreateWindow(MonoString* p0, int32_t p1, int32_t p2)
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_i32((int32_t)p1);
         args[2] = joy_v_i32((int32_t)p2);
-        r = joy_api_call("create_window", args, 3, &st);
+        r = joy_api_call("joy_core_create_window", args, 3, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "create_window", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_create_window", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.handle;
@@ -329,9 +329,9 @@ static void icall_DestroyWindow(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("destroy_window", args, 1, &st);
+        (void)joy_api_call("joy_core_destroy_window", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "destroy_window", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_destroy_window", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -343,9 +343,9 @@ static void icall_WindowSetFullscreen(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("window_set_fullscreen", args, 2, &st);
+        (void)joy_api_call("joy_core_window_set_fullscreen", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "window_set_fullscreen", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_window_set_fullscreen", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -357,9 +357,9 @@ static int32_t icall_WindowGetFullscreen(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("window_get_fullscreen", args, 1, &st);
+        r = joy_api_call("joy_core_window_get_fullscreen", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "window_get_fullscreen", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_window_get_fullscreen", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -373,10 +373,10 @@ static void icall_WindowSetIcon(uint64_t p0, MonoString* p1)
         args[0] = joy_v_handle((uint64_t)p0);
         s1 = p1 ? mono_string_to_utf8(p1) : NULL;
         args[1] = joy_v_str((const char*)s1);
-        (void)joy_api_call("window_set_icon", args, 2, &st);
+        (void)joy_api_call("joy_core_window_set_icon", args, 2, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "window_set_icon", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_window_set_icon", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

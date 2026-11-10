@@ -1,0 +1,8 @@
+{
+  "create_window": "joy_core_create_window",
+  "destroy_window": "joy_core_destroy_window",
+  "get_raw_window": "joy_core_get_raw_window",
+  "window_set_fullscreen": "joy_core_window_set_fullscreen",
+  "window_get_fullscreen": "joy_core_window_get_fullscreen",
+  "window_set_icon": "joy_core_window_set_icon"
+}

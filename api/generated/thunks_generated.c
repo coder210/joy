@@ -9,7 +9,7 @@
 #include "runtime/joy_thunk.h"
 
 static void dtor_lcg_random_destroy(void* p) { lcg_random_destroy((lcg_num_p)p); }
-static void dtor_destroy_window(void* p) { destroy_window((jwindow_p)p); }
+static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((jwindow_p)p); }
 static void dtor_font_destroy(void* p) { font_destroy((font_p)p); }
 static void dtor_r2d_destroy(void* p) { r2d_destroy((jr2d_p)p); }
 static void dtor_image_destroy(void* p) { image_destroy((image_p)p); }
@@ -263,75 +263,75 @@ static joy_value_t t_get_ticks(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_u64((uint64_t)_r);
 }
 
-static joy_value_t t_create_window(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_create_window(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         int p1;
         int p2;
         jwindow_p _r;
         uint64_t _h;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "create_window");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "create_window.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_create_window");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_create_window.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_create_window.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_create_window.arg2");
         p0 = (const char*)a[0].as.str;
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
-        _r = create_window(p0, p1, p2);
-        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "create_window");
-        _h = joy_obj_register((void*)_r, "jwindow_p", dtor_destroy_window, "create_window");
-        if (!_h) { destroy_window(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "create_window"); }
+        _r = joy_core_create_window(p0, p1, p2);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_core_create_window");
+        _h = joy_obj_register((void*)_r, "jwindow_p", dtor_joy_core_destroy_window, "joy_core_create_window");
+        if (!_h) { joy_core_destroy_window(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_core_create_window"); }
         return joy_v_handle(_h);
 }
 
-static joy_value_t t_destroy_window(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_destroy_window(joy_value_t* a, int n, joy_status_t* st)
 {
         jwindow_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "destroy_window");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "destroy_window.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_destroy_window");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_destroy_window.arg0");
         p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
-        if (!p0) return joy_v_err(st, *st, "destroy_window.arg0");
-        destroy_window(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_destroy_window.arg0");
+        joy_core_destroy_window(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_window_set_fullscreen(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_window_set_fullscreen(joy_value_t* a, int n, joy_status_t* st)
 {
         jwindow_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "window_set_fullscreen");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "window_set_fullscreen.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "window_set_fullscreen.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_set_fullscreen");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_fullscreen.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_fullscreen.arg1");
         p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
-        if (!p0) return joy_v_err(st, *st, "window_set_fullscreen.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_window_set_fullscreen.arg0");
         p1 = (bool)a[1].as.b;
-        window_set_fullscreen(p0, p1);
+        joy_core_window_set_fullscreen(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_window_get_fullscreen(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_window_get_fullscreen(joy_value_t* a, int n, joy_status_t* st)
 {
         jwindow_p p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "window_get_fullscreen");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "window_get_fullscreen.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_get_fullscreen");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_get_fullscreen.arg0");
         p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
-        if (!p0) return joy_v_err(st, *st, "window_get_fullscreen.arg0");
-        _r = window_get_fullscreen(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_window_get_fullscreen.arg0");
+        _r = joy_core_window_get_fullscreen(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_window_set_icon(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_window_set_icon(joy_value_t* a, int n, joy_status_t* st)
 {
         jwindow_p p0;
         const char* p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "window_set_icon");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "window_set_icon.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "window_set_icon.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_set_icon");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_icon.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_icon.arg1");
         p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
-        if (!p0) return joy_v_err(st, *st, "window_set_icon.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_window_set_icon.arg0");
         p1 = (const char*)a[1].as.str;
-        window_set_icon(p0, p1);
+        joy_core_window_set_icon(p0, p1);
         return joy_v_null();
 }
 
@@ -11443,11 +11443,11 @@ static const joy_value_kind k_jtimer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 
 static const joy_value_kind k_jtimer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
 static const joy_value_kind k_jtimer_reset[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jtimer_get_elapsed[] = { JOY_V_HANDLE };
-static const joy_value_kind k_create_window[] = { JOY_V_STR, JOY_V_I32, JOY_V_I32 };
-static const joy_value_kind k_destroy_window[] = { JOY_V_HANDLE };
-static const joy_value_kind k_window_set_fullscreen[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_window_get_fullscreen[] = { JOY_V_HANDLE };
-static const joy_value_kind k_window_set_icon[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_core_create_window[] = { JOY_V_STR, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_core_destroy_window[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_window_set_fullscreen[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_core_window_get_fullscreen[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_window_set_icon[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_push_user_event[] = { JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_log_title[] = { JOY_V_I32 };
 static const joy_value_kind k_env_set[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
@@ -12123,11 +12123,11 @@ static const joy_thunk_entry s_thunks[] = {
         { "env", "init_env", "InitEnv", t_init_env, 0, NULL, JOY_V_BOOL },
         { "quit", "quit_env", "QuitEnv", t_quit_env, 0, NULL, JOY_V_NULL },
         { "ticks", "get_ticks", "GetTicks", t_get_ticks, 0, NULL, JOY_V_U64 },
-        { "window", "create_window", "CreateWindow", t_create_window, 3, k_create_window, JOY_V_HANDLE },
-        { "window", "destroy_window", "DestroyWindow", t_destroy_window, 1, k_destroy_window, JOY_V_NULL },
-        { "window", "window_set_fullscreen", "WindowSetFullscreen", t_window_set_fullscreen, 2, k_window_set_fullscreen, JOY_V_NULL },
-        { "window", "window_get_fullscreen", "WindowGetFullscreen", t_window_get_fullscreen, 1, k_window_get_fullscreen, JOY_V_BOOL },
-        { "window", "window_set_icon", "WindowSetIcon", t_window_set_icon, 2, k_window_set_icon, JOY_V_NULL },
+        { "core", "joy_core_create_window", "CreateWindow", t_joy_core_create_window, 3, k_joy_core_create_window, JOY_V_HANDLE },
+        { "core", "joy_core_destroy_window", "DestroyWindow", t_joy_core_destroy_window, 1, k_joy_core_destroy_window, JOY_V_NULL },
+        { "core", "joy_core_window_set_fullscreen", "WindowSetFullscreen", t_joy_core_window_set_fullscreen, 2, k_joy_core_window_set_fullscreen, JOY_V_NULL },
+        { "core", "joy_core_window_get_fullscreen", "WindowGetFullscreen", t_joy_core_window_get_fullscreen, 1, k_joy_core_window_get_fullscreen, JOY_V_BOOL },
+        { "core", "joy_core_window_set_icon", "WindowSetIcon", t_joy_core_window_set_icon, 2, k_joy_core_window_set_icon, JOY_V_NULL },
         { "push", "push_user_event", "PushUserEvent", t_push_user_event, 2, k_push_user_event, JOY_V_BOOL },
         { "push", "push_quit_event", "PushQuitEvent", t_push_quit_event, 0, NULL, JOY_V_BOOL },
         { "log", "log_title", "LogTitle", t_log_title, 1, k_log_title, JOY_V_NULL },
@@ -12885,20 +12885,20 @@ const char* joy_api_selftest(void)
         joy_api_call("get_ticks", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/get_ticks";
         st = JOY_OK;
-        joy_api_call("create_window", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/create_window";
+        joy_api_call("joy_core_create_window", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_create_window";
         st = JOY_OK;
-        joy_api_call("destroy_window", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/destroy_window";
+        joy_api_call("joy_core_destroy_window", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_destroy_window";
         st = JOY_OK;
-        joy_api_call("window_set_fullscreen", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/window_set_fullscreen";
+        joy_api_call("joy_core_window_set_fullscreen", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_window_set_fullscreen";
         st = JOY_OK;
-        joy_api_call("window_get_fullscreen", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/window_get_fullscreen";
+        joy_api_call("joy_core_window_get_fullscreen", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_window_get_fullscreen";
         st = JOY_OK;
-        joy_api_call("window_set_icon", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/window_set_icon";
+        joy_api_call("joy_core_window_set_icon", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_window_set_icon";
         st = JOY_OK;
         joy_api_call("push_user_event", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/push_user_event";

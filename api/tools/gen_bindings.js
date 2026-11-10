@@ -45,6 +45,9 @@ const { check: checkJmathWrappers } = require('./jmath_wrap');
 /* 存量豁免名单：P0 冻结的 1156 条旧名字。命名门禁只检查不在这张表里的
  * 新增 API；全量迁移完成后删除该文件，届时所有名字都必须自带域。 */
 const LEGACY_NAMES = path.join(JOY_API, 'idl', 'legacy_names.txt');
+/* P1 分批改名：旧名 → 新名。--scan 时让新条目继承旧条目的 status/owns/note，
+ * 且旧名不再变成 orphan，否则已开放的绑定会被静默关掉。每批填一次。 */
+const RENAME_MAP = path.join(JOY_API, 'idl', 'rename_map.json');
 
 /* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
  * SKIP_PREFIXES 管存量名字，SKIP_DOMAINS 管三段式新名字。 */
@@ -258,23 +261,33 @@ function scanJoyHeader() {
 
 /* --scan 只覆盖自动字段；owns / status / note 是人工字段，永不覆盖。
    joy.h 里消失的条目保留并标 orphan，避免丢失人工标注。 */
+function loadRenames() {
+  if (!fs.existsSync(RENAME_MAP)) return new Map();
+  return new Map(Object.entries(JSON.parse(fs.readFileSync(RENAME_MAP, 'utf8'))));
+}
+
 function mergeIdl(fresh) {
   let old = [];
   if (fs.existsSync(IDL)) old = JSON.parse(fs.readFileSync(IDL, 'utf8'));
+  const renames = loadRenames();
+  const renamedFrom = new Map([...renames].map(([from, to]) => [to, from]));
   const byName = new Map(old.map(e => [e.name, e]));
   const result = fresh.map(f => {
-    const o = byName.get(f.name);
+    /* 本批改名的新条目从旧名继承人工字段，并把 owns 里指向旧名的也换掉。 */
+    const o = byName.get(renamedFrom.get(f.name) || f.name);
     if (!o) return f;
+    const owns = o.owns !== undefined ? o.owns : f.owns;
     return {
       ...f,
-      owns: o.owns !== undefined ? o.owns : f.owns,
+      owns: owns && renames.has(owns) ? renames.get(owns) : owns,
       status: o.status || 'off',
       note: o.note || '',
     };
   });
   const names = new Set(fresh.map(f => f.name));
   for (const o of old) {
-    if (!names.has(o.name)) result.push({ ...o, orphan: true });
+    /* 已被改名消费的旧条目不再进 orphan。 */
+    if (!names.has(o.name) && !renames.has(o.name)) result.push({ ...o, orphan: true });
   }
   return result;
 }
