@@ -12,7 +12,7 @@ struct jfont {
 	int line_gap;
 };
 
-font_p font_create(const char* filename, int fontsize)
+font_p joy_r2d_font_create(const char* filename, int fontsize)
 {
 	size_t data_size;
 	unsigned char* fontdata;
@@ -20,7 +20,7 @@ font_p font_create(const char* filename, int fontsize)
 
 	fontdata = SDL_LoadFile(filename, &data_size);
 	if (!fontdata) {
-		log_info("Failed to load font file: %s", filename);
+		joy_core_log_info("Failed to load font file: %s", filename);
 		return NULL;
 	}
 
@@ -31,7 +31,7 @@ font_p font_create(const char* filename, int fontsize)
 	}
 
 	if (!stbtt_InitFont(&font->fontinfo, fontdata, 0)) {
-		log_info("Failed to initialize font");
+		joy_core_log_info("Failed to initialize font");
 		SDL_free(fontdata);
 		SDL_free(font);
 		return NULL;
@@ -48,7 +48,7 @@ font_p font_create(const char* filename, int fontsize)
 	return font;
 }
 
-void font_destroy(font_p font)
+void joy_r2d_font_destroy(font_p font)
 {
 	if (!font) return;
 
@@ -56,23 +56,23 @@ void font_destroy(font_p font)
 	 * 若新字体恰好分配到同一地址，缓存会命中用旧字体烘焙的纹理，
 	 * 渲染出错误的字形。这里整体清空缓存以杜绝该隐患
 	 * （字体销毁是低频操作，代价可接受）。 */
-	jtext_cache_clear();
+	joy_r2d_jtext_cache_clear();
 
 	if (font->fontdata) SDL_free(font->fontdata);
 	SDL_free(font);
 }
 
-float font_get_scale(font_p font)
+float joy_r2d_font_get_scale(font_p font)
 {
 	return font->scale;
 }
 
-int font_get_size(font_p font)
+int joy_r2d_font_get_size(font_p font)
 {
 	return font->fontsize;
 }
 
-int font_get_ascent(font_p font)
+int joy_r2d_font_get_ascent(font_p font)
 {
 	return font->ascent;
 }

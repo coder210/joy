@@ -77,7 +77,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
 
-    /* dummy / 软件渲染的 hint 必须早于脚本建窗口（joy.init 里 create_window） */
+    /* dummy / 软件渲染的 hint 必须早于脚本建窗口（joy.init 里 joy_core_create_window） */
     if (g_smoke_frames > 0) {
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");

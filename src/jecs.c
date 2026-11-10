@@ -175,7 +175,7 @@ struct jecs_world {
         khash_t(kecs_entity)* entities;
 };
 
-jecs_world_p jecs_create() 
+jecs_world_p joy_scene_ecs_create() 
 {
         jecs_world_p world = (jecs_world_p)SDL_malloc(sizeof(jecs_world_t));
         world->metas = kh_init(kecs_meta);
@@ -187,7 +187,7 @@ jecs_world_p jecs_create()
 }
 
 
-void jecs_destroy(jecs_world_p world)
+void joy_scene_ecs_destroy(jecs_world_p world)
 {
         jecs_id_t id;
         ecs_entity_p entity;
@@ -227,7 +227,7 @@ void jecs_destroy(jecs_world_p world)
         SDL_free(world);
 }
 
-void jecs_process(jecs_world_p world, float dt)
+void joy_scene_ecs_process(jecs_world_p world, float dt)
 {
         jecs_system_t system;
         kliter_t(kecs_system)* p;
@@ -239,7 +239,7 @@ void jecs_process(jecs_world_p world, float dt)
         }
 }
 
-jecs_id_t jecs_spawn(jecs_world_p world)
+jecs_id_t joy_scene_ecs_spawn(jecs_world_p world)
 {
         jecs_id_t id;
         khint_t k;
@@ -250,7 +250,7 @@ jecs_id_t jecs_spawn(jecs_world_p world)
         return id;
 }
 
-void jecs_kill(jecs_world_p world, jecs_id_t id)
+void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id)
 {
         ecs_entity_p entity;
         component_store_t* store;
@@ -285,12 +285,12 @@ void jecs_kill(jecs_world_p world, jecs_id_t id)
         kh_destroy(kecs_component_data, entity);
 }
 
-void jecs_define(jecs_world_p world, const char* name, size_t size)
+void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size)
 {
         ecs_cid_t component_id;
         khint_t k;
         int ret;
-        component_id = murmur3_hash(name);
+        component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_meta, world->metas, component_id);
         if (k == kh_end(world->metas)) {
                 k = kh_put(kecs_meta, world->metas, component_id, &ret);
@@ -298,7 +298,7 @@ void jecs_define(jecs_world_p world, const char* name, size_t size)
         }
 }
 
-void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size)
+void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size)
 {
         ecs_entity_p entity;
         ecs_cid_t component_id;
@@ -308,7 +308,7 @@ void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* pt
         ecs_component_data_p component_data;
         int ret;
 
-        component_id = murmur3_hash(name);
+        component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_meta, world->metas, component_id);
         if (k == kh_end(world->metas))
                 return;
@@ -352,13 +352,13 @@ void jecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* pt
         }
 }
 
-size_t jecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
+size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
 {
         ecs_cid_t component_id;
         ecs_entity_p entity;
         ecs_component_data_p component_data;
         khint_t k;
-        component_id = murmur3_hash(name);
+        component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_entity, world->entities, id);
         if (k == kh_end(world->entities)) {
                 return 0;
@@ -373,14 +373,14 @@ size_t jecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
         return component_data->size;
 }
 
-void jecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
+void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
 {
         ecs_entity_p entity;
         component_store_t* store;
         ecs_component_data_p component_data;
         khint_t k;
 
-        ecs_cid_t component_id = murmur3_hash(name);
+        ecs_cid_t component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_entity, world->entities, id);
         if (k != kh_end(world->entities)) {
                 entity = kh_val(world->entities, k);
@@ -422,7 +422,7 @@ void jecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
 //        return vec;
 //}
 
-jecs_id_array_t jecs_query(jecs_world_p world, int arg_cnt, ...)
+jecs_id_array_t joy_scene_ecs_query(jecs_world_p world, int arg_cnt, ...)
 {
         jecs_id_array_t result = { 0 };
         if (arg_cnt <= 0) {
@@ -438,13 +438,13 @@ jecs_id_array_t jecs_query(jecs_world_p world, int arg_cnt, ...)
         }
         va_end(va);
 
-        result = jecs_queryx(world, arg_cnt, args);
+        result = joy_scene_ecs_queryx(world, arg_cnt, args);
         SDL_free(args);
 
         return result;
 }
 
-jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char**args)
+jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args)
 {
         jecs_id_array_t result = { 0 };
 
@@ -458,7 +458,7 @@ jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char**args)
 
         for (int i = 0; i < arg_cnt; ++i) {
                 const char* comp_name = args[i];
-                ecs_cid_t component_id = murmur3_hash(comp_name);
+                ecs_cid_t component_id = joy_core_murmur3_hash(comp_name);
                 khint_t k = kh_get(kecs_component, world->components, component_id);
 
                 if (k == kh_end(world->components)) {
@@ -481,7 +481,7 @@ jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char**args)
 
         if (!first) {
                 const char* first_comp = args[0];
-                ecs_cid_t first_cid = murmur3_hash(first_comp);
+                ecs_cid_t first_cid = joy_core_murmur3_hash(first_comp);
                 khint_t k = kh_get(kecs_component, world->components, first_cid);
 
                 if (k != kh_end(world->components)) {
@@ -503,7 +503,7 @@ jecs_id_array_t jecs_queryx(jecs_world_p world, int arg_cnt, char**args)
 }
 
 
-void jecs_register(jecs_world_p world, jecs_system_t system)
+void joy_scene_ecs_register(jecs_world_p world, jecs_system_t system)
 {
         *kl_pushp(kecs_system, world->systems) = system;
 }

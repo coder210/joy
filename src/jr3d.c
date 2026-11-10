@@ -42,7 +42,7 @@ struct jr3d {
 	int                logical_w, logical_h;  /* 逻辑分辨率(0=关闭, 直接用窗口像素) */
 	int                logical_mode;          /* 呈现模式: STRETCH / LETTERBOX(见 joy.h 常量) */
 	float              ui_sx, ui_sy;          /* UI 缩放系数: 窗口像素/逻辑像素(LETTERBOX 下 x==y) */
-	float              ui_offx, ui_offy;      /* UI letterbox 居中偏移(像素, 在 r3d_begin 更新) */
+	float              ui_offx, ui_offy;      /* UI letterbox 居中偏移(像素, 在 joy_r3d_begin 更新) */
 
 	/* 相机/投影 */
 	mat44_t            viewProj;
@@ -55,7 +55,7 @@ struct jr3d {
 	struct { Uint8 r, g, b, a; SDL_GPUTexture* tex; } color_cache[MAX_COLOR_CACHE];
 	int                color_count;
 
-	/* 光照渲染（可选, 由 r3d_create 探测 lighting.vert/frag.spv 自动启用） */
+	/* 光照渲染（可选, 由 joy_r3d_create 探测 lighting.vert/frag.spv 自动启用） */
 	SDL_GPUShader*     lvs;
 	SDL_GPUShader*     lfs;
 	SDL_GPUGraphicsPipeline* lighting_pipeline;
@@ -80,9 +80,9 @@ struct jr3d {
 	   采用 LRU 淘汰 + 可配置上限(font_cache_limit): 当不同 (字符串,颜色) 组合超过上限时,
 	   优先淘汰最久未使用的条目, 避免固定文字被频繁变化的文本挤掉后每帧重建纹理(缓存颠簸)。 */
 	int  font_slots_used;
-	int  font_cache_limit;         /* 缓存上限(默认 32), 可经 r3d_font_cache_set_limit 调整 */
+	int  font_cache_limit;         /* 缓存上限(默认 32), 可经 joy_r3d_font_cache_set_limit 调整 */
 	Uint64 font_cache_tick;        /* 每次烘焙操作的单调计数, 用作 LRU 时间戳 */
-	Uint64 font_cache_frame;       /* 渲染帧计数(r3d_begin 递增), 供 sweep 判断闲置帧数 */
+	Uint64 font_cache_frame;       /* 渲染帧计数(joy_r3d_begin 递增), 供 sweep 判断闲置帧数 */
 	struct {
 		char str[256]; int w, h; Uint8 r, g, b;
 		SDL_GPUTexture* tex;
@@ -90,31 +90,31 @@ struct jr3d {
 		Uint64 last_frame;         /* 最近一次命中/创建所在的渲染帧 */
 	} font_slots[64];              /* 物理数组上限 64(可配置上限 <= 64) */
 
-	/* 每帧 draw call 计数: r3d_begin 清零, draw_mesh_internal_proj 自增, 供 render3d_pass 输出诊断 */
+	/* 每帧 draw call 计数: joy_r3d_begin 清零, draw_mesh_internal_proj 自增, 供 render3d_pass 输出诊断 */
 	int  draw_calls;
 
-	/* 延迟释放队列: r3d_mesh_destroy 不再立即释放 GPU buffer,
-	   而是延迟到 r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
+	/* 延迟释放队列: joy_r3d_mesh_destroy 不再立即释放 GPU buffer,
+	   而是延迟到 joy_r3d_end 之后, 避免释放仍被 GPU 引用的 buffer 导致崩溃 */
 	SDL_GPUBuffer**    pending_buffers;
 	int                pending_count;
 	int                pending_cap;
 };
 
-/* 前向声明: 延迟释放队列的 buffer, 在 r3d_end / r3d_destroy 后统一释放 */
+/* 前向声明: 延迟释放队列的 buffer, 在 joy_r3d_end / joy_r3d_destroy 后统一释放 */
 static void r3d_flush_pending(jr3d_p r);
 
 /* ================================================================
  * 底层工具 — 使用 void* 隐藏 SDL3 句柄，内部强转
  * ================================================================ */
 
-void* r3d_load_shader(void* device, const char* filename,
+void* joy_r3d_load_shader(void* device, const char* filename,
 	int stage, int sampler_num, int uniform_buffer_num)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	size_t file_size;
 	Uint8* data = (Uint8*)SDL_LoadFile(filename, &file_size);
 	if (!data) {
-		SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "r3d_load_shader: %s failed: %s", filename, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "joy_r3d_load_shader: %s failed: %s", filename, SDL_GetError());
 		return NULL;
 	}
 	SDL_GPUShaderCreateInfo ci = { 0 };
@@ -130,11 +130,11 @@ void* r3d_load_shader(void* device, const char* filename,
 	SDL_GPUShader* shader = SDL_CreateGPUShader(dev, &ci);
 	SDL_free(data);
 	if (!shader)
-		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_load_shader: create %s failed: %s", filename, SDL_GetError());
+		SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_load_shader: create %s failed: %s", filename, SDL_GetError());
 	return (void*)shader;
 }
 
-void* r3d_create_pipeline(void* device,
+void* joy_r3d_create_pipeline(void* device,
 	void* vertex_shader, void* fragment_shader,
 	int swapchain_format, int depth_format)
 {
@@ -206,7 +206,7 @@ void* r3d_create_pipeline(void* device,
 }
 
 /* 线框 pipeline: 与非 lit 完全相同的 vertex format 和 shader, 仅 primitive type 改为 LINELIST */
-void* r3d_create_line_pipeline(void* device,
+void* joy_r3d_create_line_pipeline(void* device,
 	void* vertex_shader, void* fragment_shader,
 	int swapchain_format, int depth_format)
 {
@@ -338,7 +338,7 @@ void* r3d_create_solid_pipeline(void* device,
 	return (void*)SDL_CreateGPUGraphicsPipeline(dev, &ci);
 }
 
-void* r3d_create_lighting_pipeline(void* device,
+void* joy_r3d_create_lighting_pipeline(void* device,
 	void* vertex_shader, void* fragment_shader,
 	int swapchain_format, int depth_format)
 {
@@ -414,14 +414,14 @@ void* r3d_create_lighting_pipeline(void* device,
 	return (void*)SDL_CreateGPUGraphicsPipeline(dev, &ci);
 }
 
-void* r3d_upload_buffer(void* device, const void* data, size_t size)
+void* joy_r3d_upload_buffer(void* device, const void* data, size_t size)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	SDL_GPUTransferBufferCreateInfo tb_ci = { 0 };
 	tb_ci.size = size;
 	tb_ci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
 	SDL_GPUTransferBuffer* tb = SDL_CreateGPUTransferBuffer(dev, &tb_ci);
-	if (!tb) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_upload_buffer: create tb failed"); return NULL; }
+	if (!tb) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_upload_buffer: create tb failed"); return NULL; }
 	void* ptr = SDL_MapGPUTransferBuffer(dev, tb, false);
 	memcpy(ptr, data, size);
 	SDL_UnmapGPUTransferBuffer(dev, tb);
@@ -490,7 +490,7 @@ static SDL_GPUTexture* upload_pixels_to_texture(SDL_GPUDevice* device,
 	return tex;
 }
 
-void* r3d_create_solid_texture(void* device,
+void* joy_r3d_create_solid_texture(void* device,
 	unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
@@ -508,7 +508,7 @@ void* r3d_create_solid_texture(void* device,
 	return (void*)tex;
 }
 
-void* r3d_create_depth_texture(void* device, int width, int height)
+void* joy_r3d_create_depth_texture(void* device, int width, int height)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	SDL_GPUTextureCreateInfo tex_ci = { 0 };
@@ -520,7 +520,7 @@ void* r3d_create_depth_texture(void* device, int width, int height)
 	return (void*)SDL_CreateGPUTexture(dev, &tex_ci);
 }
 
-void* r3d_create_sampler(void* device)
+void* joy_r3d_create_sampler(void* device)
 {
 	SDL_GPUDevice* dev = (SDL_GPUDevice*)device;
 	SDL_GPUSamplerCreateInfo ci = { 0 };
@@ -535,7 +535,7 @@ void* r3d_create_sampler(void* device)
 	return (void*)SDL_CreateGPUSampler(dev, &ci);
 }
 
-void r3d_mat44_to_float16(const mat44_t* m, float out[16])
+void joy_r3d_mat44_to_float16(const mat44_t* m, float out[16])
 {
 	out[0] = m->m0;  out[1] = m->m1;  out[2] = m->m2;  out[3] = m->m3;
 	out[4] = m->m4;  out[5] = m->m5;  out[6] = m->m6;  out[7] = m->m7;
@@ -561,7 +561,7 @@ static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb,
 		for (int i = 0; i < MAX_COLOR_CACHE - 1; i++) r->color_cache[i] = r->color_cache[i + 1];
 		r->color_count = MAX_COLOR_CACHE - 1;
 	}
-	SDL_GPUTexture* tex = (SDL_GPUTexture*)r3d_create_solid_texture(r->dev, cr, cg, cb, ca);
+	SDL_GPUTexture* tex = (SDL_GPUTexture*)joy_r3d_create_solid_texture(r->dev, cr, cg, cb, ca);
 	if (tex) {
 		r->color_cache[r->color_count].r = cr;
 		r->color_cache[r->color_count].g = cg;
@@ -575,15 +575,15 @@ static SDL_GPUTexture* get_color_texture(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb,
 
 /* ---- 生命周期 ---- */
 
-void* r3d_get_device(jr3d_p r)
+void* joy_r3d_get_device(jr3d_p r)
 {
 	if (!r) return NULL;
 	return (void*)r->dev;
 }
 
-jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
+jr3d_p joy_r3d_create(jwindow_p win, const char* shader_dir)
 {
-	SDL_Window* window = (SDL_Window*)get_raw_window(win);
+	SDL_Window* window = (SDL_Window*)joy_core_get_raw_window(win);
 	jr3d_p r = (jr3d_p)SDL_calloc(1, sizeof(jr3d_t));
 	if (!r) return NULL;
 
@@ -608,13 +608,13 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	} else {
 		r->dev = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, NULL);
 	}
-	if (!r->dev) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: CreateGPUDevice failed: %s", SDL_GetError()); SDL_free(r); return NULL; }
+	if (!r->dev) { SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_create: CreateGPUDevice failed: %s", SDL_GetError()); SDL_free(r); return NULL; }
 	if (!SDL_ClaimWindowForGPUDevice(r->dev, r->win)) {
-		SDL_LogError(SDL_LOG_CATEGORY_GPU, "r3d_create: ClaimWindow failed");
+		SDL_LogError(SDL_LOG_CATEGORY_GPU, "joy_r3d_create: ClaimWindow failed");
 		SDL_DestroyGPUDevice(r->dev); SDL_free(r); return NULL;
 	}
 
-	/* 默认清屏色 = 深蓝黑 {13,15,26}, 与 UI 场景背景一致; 游戏场景可调用 r3d_set_clear_color 改为白底 */
+	/* 默认清屏色 = 深蓝黑 {13,15,26}, 与 UI 场景背景一致; 游戏场景可调用 joy_r3d_set_clear_color 改为白底 */
 	r->clear_r = 13; r->clear_g = 15; r->clear_b = 26;
 
 	/* 2D UI 逻辑分辨率默认关闭(直接用窗口像素), 缩放系数初始为 1 */
@@ -639,34 +639,34 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	size_t plen = dirlen + 16;
 	char* vert_path = (char*)SDL_malloc(plen);
 	char* frag_path = (char*)SDL_malloc(plen);
-	if (!vert_path || !frag_path) { SDL_free(vert_path); SDL_free(frag_path); r3d_destroy(r); return NULL; }
+	if (!vert_path || !frag_path) { SDL_free(vert_path); SDL_free(frag_path); joy_r3d_destroy(r); return NULL; }
 	snprintf(vert_path, plen, "%s%svert.spv", sd, sep);
 	snprintf(frag_path, plen, "%s%sfrag.spv", sd, sep);
-	r->vs = (SDL_GPUShader*)r3d_load_shader(r->dev, vert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-	r->fs = (SDL_GPUShader*)r3d_load_shader(r->dev, frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
+	r->vs = (SDL_GPUShader*)joy_r3d_load_shader(r->dev, vert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+	r->fs = (SDL_GPUShader*)joy_r3d_load_shader(r->dev, frag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 0);
 	SDL_free(vert_path); SDL_free(frag_path);
-	if (!r->vs || !r->fs) { r3d_destroy(r); return NULL; }
+	if (!r->vs || !r->fs) { joy_r3d_destroy(r); return NULL; }
 
 	SDL_GPUTextureFormat fmt = SDL_GetGPUSwapchainTextureFormat(r->dev, r->win);
-	r->pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_pipeline(r->dev,
+	r->pipeline = (SDL_GPUGraphicsPipeline*)joy_r3d_create_pipeline(r->dev,
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
-	if (!r->pipeline) { r3d_destroy(r); return NULL; }
+	if (!r->pipeline) { joy_r3d_destroy(r); return NULL; }
 
 	/* 线框 pipeline（与非 lit 共用 shader, 仅 primitive type 不同） */
-	r->line_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_line_pipeline(r->dev,
+	r->line_pipeline = (SDL_GPUGraphicsPipeline*)joy_r3d_create_line_pipeline(r->dev,
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 
 	/* 实体填充 pipeline（写深度, 用于"填充+描边"画风的填充 pass） */
 	r->solid_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_solid_pipeline(r->dev,
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 
-	r->sampler = (SDL_GPUSampler*)r3d_create_sampler(r->dev);
-	if (!r->sampler) { r3d_destroy(r); return NULL; }
+	r->sampler = (SDL_GPUSampler*)joy_r3d_create_sampler(r->dev);
+	if (!r->sampler) { joy_r3d_destroy(r); return NULL; }
 
 	SDL_GetWindowSize(r->win, &r->ww, &r->wh);
 	r->last_ww = r->ww; r->last_wh = r->wh;
-	r->depth = (SDL_GPUTexture*)r3d_create_depth_texture(r->dev, r->ww, r->wh);
-	if (!r->depth) { r3d_destroy(r); return NULL; }
+	r->depth = (SDL_GPUTexture*)joy_r3d_create_depth_texture(r->dev, r->ww, r->wh);
+	if (!r->depth) { joy_r3d_destroy(r); return NULL; }
 
 	r->aspect = (float)r->ww / (float)r->wh;
 	r->fovy   = 45.0f;
@@ -681,10 +681,10 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 		if (lvert_path && lfrag_path) {
 			snprintf(lvert_path, lplen, "%s%slighting.vert.spv", sd, sep);
 			snprintf(lfrag_path, lplen, "%s%slighting.frag.spv", sd, sep);
-			r->lvs = (SDL_GPUShader*)r3d_load_shader(r->dev, lvert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
-			r->lfs = (SDL_GPUShader*)r3d_load_shader(r->dev, lfrag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
+			r->lvs = (SDL_GPUShader*)joy_r3d_load_shader(r->dev, lvert_path, SDL_GPU_SHADERSTAGE_VERTEX, 0, 1);
+			r->lfs = (SDL_GPUShader*)joy_r3d_load_shader(r->dev, lfrag_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 1, 1);
 			if (r->lvs && r->lfs) {
-				r->lighting_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_lighting_pipeline(r->dev,
+				r->lighting_pipeline = (SDL_GPUGraphicsPipeline*)joy_r3d_create_lighting_pipeline(r->dev,
 					r->lvs, r->lfs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 			}
 		}
@@ -714,7 +714,7 @@ jr3d_p r3d_create(jwindow_p win, const char* shader_dir)
 	return r;
 }
 
-void r3d_destroy(jr3d_p r)
+void joy_r3d_destroy(jr3d_p r)
 {
 	if (!r) return;
 	if (r->dev) SDL_WaitForGPUIdle(r->dev);
@@ -759,7 +759,7 @@ void r3d_destroy(jr3d_p r)
 
 /* ---- 帧管理 ---- */
 
-bool r3d_begin(jr3d_p r)
+bool joy_r3d_begin(jr3d_p r)
 {
 	if (!r) return false;
 	r->draw_calls = 0;
@@ -787,7 +787,7 @@ bool r3d_begin(jr3d_p r)
 		r->ww = (int)sw; r->wh = (int)sh;
 		r->aspect = (float)r->ww / (float)r->wh;
 		if (r->depth) SDL_ReleaseGPUTexture(r->dev, r->depth);
-		r->depth = (SDL_GPUTexture*)r3d_create_depth_texture(r->dev, r->ww, r->wh);
+		r->depth = (SDL_GPUTexture*)joy_r3d_create_depth_texture(r->dev, r->ww, r->wh);
 	}
 
 	/* 2D UI 逻辑分辨率: 根据呈现模式计算等比缩放系数 + letterbox 居中偏移(使用最终 swapchain 尺寸) */
@@ -837,7 +837,7 @@ bool r3d_begin(jr3d_p r)
 	return true;
 }
 
-void r3d_end(jr3d_p r)
+void joy_r3d_end(jr3d_p r)
 {
 	if (!r) return;
 	if (r->rp)  { SDL_EndGPURenderPass(r->rp); r->rp = NULL; }
@@ -846,14 +846,14 @@ void r3d_end(jr3d_p r)
 	r3d_flush_pending(r);
 }
 
-int r3d_get_draw_calls(jr3d_p r)
+int joy_r3d_get_draw_calls(jr3d_p r)
 {
 	return r ? r->draw_calls : 0;
 }
 
 /* ---- 相机 ---- */
 
-void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fovy)
+void joy_r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fovy)
 {
 	mat44_t view;
 	mat44_t proj;
@@ -871,7 +871,7 @@ void r3d_camera_lookat(jr3d_p r, vec3_t eye, vec3_t target, vec3_t up, float fov
 	}
 }
 
-void r3d_camera_fps(jr3d_p r, vec3_t pos, float yaw, float pitch, float fovy)
+void joy_r3d_camera_fps(jr3d_p r, vec3_t pos, float yaw, float pitch, float fovy)
 {
 	float yr, pr;
 	vec3_t camOffset;
@@ -886,12 +886,12 @@ void r3d_camera_fps(jr3d_p r, vec3_t pos, float yaw, float pitch, float fovy)
 	upv.x = 0; upv.y = 1; upv.z = 0;
 	target.x = pos.x; target.y = pos.y + 1.0f; target.z = pos.z;
 	eye = vec3_add(pos, camOffset);
-	r3d_camera_lookat(r, eye, target, upv, fovy);
+	joy_r3d_camera_lookat(r, eye, target, upv, fovy);
 }
 
 /* ---- 网格 ---- */
 
-render_mesh_p r3d_mesh_cube(jr3d_p r, float w, float h, float d)
+render_mesh_p joy_r3d_mesh_cube(jr3d_p r, float w, float h, float d)
 {
 	float hw, hh, hd;
 	float* verts;
@@ -935,10 +935,10 @@ render_mesh_p r3d_mesh_cube(jr3d_p r, float w, float h, float d)
 	verts[vi++]= hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=1; verts[vi++]=1;
 	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]= hd; verts[vi++]=0; verts[vi++]=1;
 	verts[vi++]=-hw; verts[vi++]=-hh; verts[vi++]=-hd; verts[vi++]=0; verts[vi++]=0;
-	return r3d_mesh_custom(r, verts, 36);
+	return joy_r3d_mesh_custom(r, verts, 36);
 }
 
-render_mesh_p r3d_mesh_sphere(jr3d_p r, float radius, int slices, int stacks)
+render_mesh_p joy_r3d_mesh_sphere(jr3d_p r, float radius, int slices, int stacks)
 {
 	float* verts;
 	int count, j, i, o;
@@ -967,12 +967,12 @@ render_mesh_p r3d_mesh_sphere(jr3d_p r, float radius, int slices, int stacks)
 			o = count * 5; verts[o]=x4; verts[o+1]=y4; verts[o+2]=z4; verts[o+3]=u1; verts[o+4]=v2; count++;
 		}
 	}
-	m = r3d_mesh_custom(r, verts, count);
+	m = joy_r3d_mesh_custom(r, verts, count);
 	SDL_free(verts);
 	return m;
 }
 
-render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs)
+render_mesh_p joy_r3d_mesh_plane(jr3d_p r, float w, float d, int segs)
 {
 	float hw, hd, step_x, step_z, x0, z0, x1, z1, u0, v0, u1, v1;
 	int total, iz, ix, idx;
@@ -998,12 +998,12 @@ render_mesh_p r3d_mesh_plane(jr3d_p r, float w, float d, int segs)
 			verts[idx*5+0]=x0; verts[idx*5+1]=0; verts[idx*5+2]=z1; verts[idx*5+3]=u0; verts[idx*5+4]=v1; idx++;
 		}
 	}
-	m = r3d_mesh_custom(r, verts, total);
+	m = joy_r3d_mesh_custom(r, verts, total);
 	SDL_free(verts);
 	return m;
 }
 
-render_mesh_p r3d_mesh_ramp(jr3d_p r, float w, float l, float h)
+render_mesh_p joy_r3d_mesh_ramp(jr3d_p r, float w, float l, float h)
 {
 	float hw, hl;
 	float* verts;
@@ -1042,32 +1042,32 @@ render_mesh_p r3d_mesh_ramp(jr3d_p r, float w, float l, float h)
 	verts[vi++]= hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=1; verts[vi++]=1;
 	verts[vi++]=-hw; verts[vi++]=0; verts[vi++]= hl; verts[vi++]=0; verts[vi++]=1;
 
-	m = r3d_mesh_custom(r, verts, 24);
+	m = joy_r3d_mesh_custom(r, verts, 24);
 	SDL_free(verts);
 	return m;
 }
 
-render_mesh_p r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
+render_mesh_p joy_r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
 	(void)r;
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 5 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 5 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = vertex_count;
 	return m;
 }
 
 /* 通用 RGBA32 纹理创建: 自动处理 upload 行对齐, flip=1 时上下翻转(与 stbi_set_flip_vertically_on_load 对应) */
-void* r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip)
+void* joy_r3d_create_texture(jr3d_p r, int w, int h, const void* rgba32, int flip)
 {
 	if (!r || !rgba32 || w <= 0 || h <= 0) return NULL;
 	return (void*)upload_pixels_to_texture(r->dev, (const unsigned char*)rgba32, w, h,
 		SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, SDL_GPU_TEXTUREUSAGE_SAMPLER, flip);
 }
 
-/* 从 PNG 文件加载并创建 GPU 纹理: SDL_LoadPNG -> RGBA32 -> r3d_create_texture(flip=1)
+/* 从 PNG 文件加载并创建 GPU 纹理: SDL_LoadPNG -> RGBA32 -> joy_r3d_create_texture(flip=1)
    返回 SDL_GPUTexture* (void*)。失败返回 NULL 并通过 SDL_GetError 暴露原因。
    统一封装了图片文件加载, 供各 app 复用, 避免重复手写 SDL_LoadPNG 流程。 */
 /* 纹理缺失兜底：按路径哈希生成稳定的纯色（不同缺失资源得到不同但确定的颜色，便于定位缺哪些贴图） */
@@ -1080,7 +1080,7 @@ static void r3d_missing_tex_color(const char* path, unsigned char* out)
 	out[2] = (unsigned char)(48 + ((h >> 16) & 0xBF));
 }
 
-void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
+void* joy_r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 {
 	if (!r || !path) return NULL;
 	SDL_Surface* surf = SDL_LoadPNG(path);
@@ -1100,10 +1100,10 @@ void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 		/* 纹理文件缺失：返回纯色纹理(色块)，避免引用该纹理的网格消失/崩溃 */
 		unsigned char c[3];
 		r3d_missing_tex_color(path, c);
-		SDL_Log("r3d_load_texture_png: %s 缺失, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
+		SDL_Log("joy_r3d_load_texture_png: %s 缺失, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
 		if (outW) *outW = 1;
 		if (outH) *outH = 1;
-		return r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
+		return joy_r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
 	}
 	SDL_Surface* rgba = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_RGBA32);
 	int w = surf->w, h = surf->h;
@@ -1111,16 +1111,16 @@ void* r3d_load_texture_png(jr3d_p r, const char* path, int* outW, int* outH)
 	if (!rgba) {
 		unsigned char c[3];
 		r3d_missing_tex_color(path, c);
-		SDL_Log("r3d_load_texture_png: convert %s failed, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
+		SDL_Log("joy_r3d_load_texture_png: convert %s failed, 回退为纯色色块(%d,%d,%d)", path, c[0], c[1], c[2]);
 		if (outW) *outW = 1;
 		if (outH) *outH = 1;
-		return r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
+		return joy_r3d_create_solid_texture(r, c[0], c[1], c[2], 255);
 	}
-	void* tex = r3d_create_texture(r, rgba->w, rgba->h, rgba->pixels, 1);
+	void* tex = joy_r3d_create_texture(r, rgba->w, rgba->h, rgba->pixels, 1);
 	SDL_DestroySurface(rgba);
 	if (outW) *outW = w;
 	if (outH) *outH = h;
-	SDL_Log("r3d_load_texture_png: OK %s %dx%d tex=%p", path, w, h, tex);
+	SDL_Log("joy_r3d_load_texture_png: OK %s %dx%d tex=%p", path, w, h, tex);
 	return tex;
 }
 
@@ -1130,13 +1130,13 @@ static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, m
 /* ================================================================
  * 字体渲染 (stb_truetype)
  *   整段文字烤成一张 RGBA32 纹理(白字形 + alpha), UV (0,0)-(1,1),
- *   通过 r3d_draw_mesh_tex_basis 以 billboard 方式贴到 3D 空间。
+ *   通过 joy_r3d_draw_mesh_tex_basis 以 billboard 方式贴到 3D 空间。
  *   算法沿用原 main_tex.cpp 中已验证可用的 yaw/pitch 基向量计算,
  *   保证文字始终直立、不斜切。
  * ================================================================ */
 
 /* 初始化字体: 逐行照抄原版 font_init, 仅 gFont* -> r->font* */
-bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
+bool joy_r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 {
 	if (!r || !ttf_path || pixel_height <= 0) return false;
 
@@ -1164,7 +1164,7 @@ bool r3d_font_init(jr3d_p r, const char* ttf_path, int pixel_height)
 }
 
 /* 设置 3D 世界文字颜色(RGB 烘焙进下一段 bake 的纹理, 需在 draw_3d 前调用) */
-void r3d_font_set_color(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb)
+void joy_r3d_font_set_color(jr3d_p r, Uint8 cr, Uint8 cg, Uint8 cb)
 {
 	if (!r) return;
 	r->font_color_r = cr; r->font_color_g = cg; r->font_color_b = cb;
@@ -1212,7 +1212,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 	size_t pos = 0;
 	int32_t code;
 	while (pos < (size_t)n) {
-		size_t consumed = utf8_decode(str + pos, (size_t)n - pos, &code);
+		size_t consumed = joy_core_utf8_decode(str + pos, (size_t)n - pos, &code);
 		if (consumed == 0) { code = '?'; consumed = 1; }   // 非法字节: 用 '?' 占位
 		int c = (int)code;
 		int advance_width = 0, left_side_bearing = 0;
@@ -1263,7 +1263,7 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 
 	// 注意: 不能在此释放旧的 r->font_tex——它已被存入某个缓存槽并被引用,
 	// 生命周期交由槽的 LRU 淘汰统一管理。这里仅创建新纹理。
-	r->font_tex = (SDL_GPUTexture*)r3d_create_texture(r, final_w, real_height, rgba, 0);
+	r->font_tex = (SDL_GPUTexture*)joy_r3d_create_texture(r, final_w, real_height, rgba, 0);
 	SDL_free(rgba);
 	r->font_tex_w = final_w;
 	r->font_tex_h = real_height;
@@ -1308,11 +1308,11 @@ static bool r3d_font_bake(jr3d_p r, const char* str)
 /* 在 3D 空间绘制文字 billboard。
    topLeft: 文字左上角锚点(世界坐标); yaw/pitch: 屏幕基向量方向(与相机一致);
    size: 文字在世界中的高度。 right/up 由 yaw/pitch 推得, 保证文字直立。 */
-bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
+bool joy_r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
 					  vec3_t topLeft, float yaw, float pitch, float size)
 {
 	if (!r || !m || !text || size <= 0) return false;
-	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_3d: font not init"); return false; }
+	if (!r->font_ttf_buf) { SDL_Log("joy_r3d_font_draw_3d: font not init"); return false; }
 
 	if (SDL_strcmp(r->font_cache, text) != 0 ||
 		r->font_color_r != r->font_cache_r ||
@@ -1337,17 +1337,17 @@ bool r3d_font_draw_3d(jr3d_p r, render_mesh_p m, const char* text,
 		topLeft.y + rightScaled.y * (worldW * 0.5f) + up.y * (worldH * 0.5f),
 		topLeft.z + rightScaled.z * (worldW * 0.5f) + up.z * (worldH * 0.5f),
 	};
-	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
+	joy_r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
 	return true;
 }
 
 /* 在 3D 空间绘制文字, 朝向固定(不随相机 yaw/pitch 变化): 始终水平直立、正对 -Z。
    topLeft: 文字左上角锚点(世界坐标); size: 文字世界高度。 */
-bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
+bool joy_r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 						 vec3_t topLeft, float size)
 {
 	if (!r || !m || !text || size <= 0) return false;
-	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_fixed: font not init"); return false; }
+	if (!r->font_ttf_buf) { SDL_Log("joy_r3d_font_draw_fixed: font not init"); return false; }
 
 	if (SDL_strcmp(r->font_cache, text) != 0 ||
 		r->font_color_r != r->font_cache_r ||
@@ -1371,17 +1371,17 @@ bool r3d_font_draw_fixed(jr3d_p r, render_mesh_p m, const char* text,
 		topLeft.y + rightScaled.y * (worldW * 0.5f) + up.y * (worldH * 0.5f),
 		topLeft.z + rightScaled.z * (worldW * 0.5f) + up.z * (worldH * 0.5f),
 	};
-	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
+	joy_r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, worldH, (void*)r->font_tex);
 	return true;
 }
 
 /* 在 3D 空间绘制文字 billboard: 文字平面由 right/up 基向量张成(通常取相机基向量,
    使文字始终面向相机、不因俯视角压扁), 文字沿 right 横向、沿 up 纵向, 字形正向同 2D 文字。 */
-bool r3d_font_draw_billboard(jr3d_p r, render_mesh_p m, const char* text,
+bool joy_r3d_font_draw_billboard(jr3d_p r, render_mesh_p m, const char* text,
 							 vec3_t topLeft, vec3_t right, vec3_t up, float size)
 {
 	if (!r || !m || !text || size <= 0) return false;
-	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_billboard: font not init"); return false; }
+	if (!r->font_ttf_buf) { SDL_Log("joy_r3d_font_draw_billboard: font not init"); return false; }
 
 	if (SDL_strcmp(r->font_cache, text) != 0 ||
 		r->font_color_r != r->font_cache_r ||
@@ -1397,7 +1397,7 @@ bool r3d_font_draw_billboard(jr3d_p r, render_mesh_p m, const char* text,
 		topLeft.y + rightScaled.y * (size * 0.5f) + up.y * (size * 0.5f),
 		topLeft.z + rightScaled.z * (size * 0.5f) + up.z * (size * 0.5f),
 	};
-	r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, size, (void*)r->font_tex);
+	joy_r3d_draw_mesh_tex_basis(r, m, center, rightScaled, up, size, (void*)r->font_tex);
 	return true;
 }
 
@@ -1409,9 +1409,9 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 								  float winW, float winH)
 {
 	if (!r || !m || !text || fontSize <= 0 || winW <= 0 || winH <= 0) return false;
-	if (!r->font_ttf_buf) { SDL_Log("r3d_font_draw_2d: font not init"); return false; }
+	if (!r->font_ttf_buf) { SDL_Log("joy_r3d_font_draw_2d: font not init"); return false; }
 
-	/* 使用当前 r->font_color_* 作为烘焙颜色(由 r3d_font_draw_2d / _color 设置) */
+	/* 使用当前 r->font_color_* 作为烘焙颜色(由 joy_r3d_font_draw_2d / _color 设置) */
 
 	if (SDL_strcmp(r->font_cache, text) != 0 ||
 		r->font_color_r != r->font_cache_r ||
@@ -1439,7 +1439,7 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 	/* 屏幕像素正交投影: 原点左上, X 向右, Y 向下, 覆盖整个窗口。
 	   这是纯屏幕坐标映射, 不修正文字朝向——文字朝向由纹理内容保证。 */
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 joy_r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
 	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
 		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
 		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
@@ -1460,8 +1460,8 @@ static bool r3d_font_draw_2d_impl(jr3d_p r, render_mesh_p m, const char* text,
 	return true;
 }
 
-/* 无颜色版本默认白色(避免残留上一次 r3d_font_draw_2d_color 的颜色) */
-bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
+/* 无颜色版本默认白色(避免残留上一次 joy_r3d_font_draw_2d_color 的颜色) */
+bool joy_r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
 					  float pixelX, float pixelY, float fontSize,
 					  float winW, float winH)
 {
@@ -1471,7 +1471,7 @@ bool r3d_font_draw_2d(jr3d_p r, render_mesh_p m, const char* text,
 }
 
 /* 带颜色的 2D 文字绘制: 设置烘焙颜色后走公共绘制逻辑(不能被 draw_2d 重置为白色) */
-bool r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
+bool joy_r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
 						  float pixelX, float pixelY, float fontSize,
 						  float winW, float winH,
 						  Uint8 cr, Uint8 cg, Uint8 cb)
@@ -1483,7 +1483,7 @@ bool r3d_font_draw_2d_color(jr3d_p r, render_mesh_p m, const char* text,
 
 /* 带描边的 2D HUD 文字: 先烘焙描边色绘制 4 个方向偏移, 再烘焙主色绘制原位。
    描边宽度 outline 为像素。任何背景下均可读(如浅色地面上的黑色昵称加白描边)。 */
-bool r3d_font_draw_2d_outline(jr3d_p r, render_mesh_p m, const char* text,
+bool joy_r3d_font_draw_2d_outline(jr3d_p r, render_mesh_p m, const char* text,
 							  float pixelX, float pixelY, float fontSize,
 							  float winW, float winH,
 							  Uint8 cr, Uint8 cg, Uint8 cb,     /* 主色 */
@@ -1504,7 +1504,7 @@ bool r3d_font_draw_2d_outline(jr3d_p r, render_mesh_p m, const char* text,
 	return r3d_font_draw_2d_impl(r, m, text, pixelX, pixelY, fontSize, winW, winH);
 }
 
-void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
+void joy_r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 {
 	if (!r) return;
 	if (outW) *outW = r->last_ww;
@@ -1512,7 +1512,7 @@ void r3d_get_window_size(jr3d_p r, int* outW, int* outH)
 }
 
 /* 设置文字烘焙缓存上限(最小 4, 最大 64, 超出物理数组容量会被截断) */
-void r3d_font_cache_set_limit(jr3d_p r, int max_entries)
+void joy_r3d_font_cache_set_limit(jr3d_p r, int max_entries)
 {
 	int i, victim;
 	if (!r) return;
@@ -1531,14 +1531,14 @@ void r3d_font_cache_set_limit(jr3d_p r, int max_entries)
 	r->font_cache_limit = max_entries;
 }
 
-int r3d_font_cache_get_count(jr3d_p r)
+int joy_r3d_font_cache_get_count(jr3d_p r)
 {
 	return r ? r->font_slots_used : 0;
 }
 
 /* 清空缓存并释放全部缓存纹理。font_tex 若指向被释放的纹理也一并置空失效,
    保证后续调用不会用到悬空纹理(r3d_font_draw_* 在 font_tex 为空时会走 bake 重建)。 */
-void r3d_font_cache_clear(jr3d_p r)
+void joy_r3d_font_cache_clear(jr3d_p r)
 {
 	if (!r) return;
 	for (int i = 0; i < r->font_slots_used; i++) {
@@ -1553,10 +1553,10 @@ void r3d_font_cache_clear(jr3d_p r)
 }
 
 /* 回收闲置超过 max_idle_frames 帧的缓存条目并释放其纹理。
-   单位是渲染帧(r3d_begin 推进的 font_cache_frame)。
+   单位是渲染帧(joy_r3d_begin 推进的 font_cache_frame)。
    对一次性文本(如滚动的聊天记录)很有用: 它们用完即闲置, 周期性 sweep 会释放,
    避免缓存长期被历史文本占满、把固定 UI 文字挤出去。 */
-void r3d_font_cache_sweep(jr3d_p r, int max_idle_frames)
+void joy_r3d_font_cache_sweep(jr3d_p r, int max_idle_frames)
 {
 	int i;
 	if (!r || max_idle_frames < 0) return;
@@ -1588,7 +1588,7 @@ void r3d_font_cache_sweep(jr3d_p r, int max_idle_frames)
 /* 世界坐标投影到屏幕像素坐标(原点左上, Y 向下)。
    用 viewProj 矩阵变换后做透视除法, 再映射到窗口像素。
    返回 false 表示点在相机后面(clip.w <= 0), 调用方应跳过绘制。 */
-bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY)
+bool joy_r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY)
 {
 	if (!r || !screenX || !screenY) return false;
 
@@ -1610,7 +1610,7 @@ bool r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY)
 /* ================================================================
  * 2D UI 逻辑分辨率(仿 jr2d logical presentation, 窗口缩放自适应)
  * ================================================================ */
-void r3d_set_logical_presentation(jr3d_p r, int w, int h)
+void joy_r3d_set_logical_presentation(jr3d_p r, int w, int h)
 {
 	if (!r) return;
 	r->logical_w = w;
@@ -1618,10 +1618,10 @@ void r3d_set_logical_presentation(jr3d_p r, int w, int h)
 	r->logical_mode = JOY_LOGICAL_PRESENTATION_STRETCH;
 }
 
-/* 设置逻辑分辨率 + 呈现模式(对标 jr2d 的 r2d_set_logical_presentation_mode)。
+/* 设置逻辑分辨率 + 呈现模式(对标 jr2d 的 joy_r2d_set_logical_presentation_mode)。
    STRETCH:   分别按 x/y 拉伸铺满(旧行为, 非 3:2 屏圆会变形);
    LETTERBOX: 等比缩放并居中, 圆/文字在任意屏宽比下都不拉伸(推荐移动端使用)。 */
-void r3d_set_logical_presentation_mode(jr3d_p r, int w, int h, int mode)
+void joy_r3d_set_logical_presentation_mode(jr3d_p r, int w, int h, int mode)
 {
 	if (!r) return;
 	r->logical_w = w;
@@ -1629,21 +1629,21 @@ void r3d_set_logical_presentation_mode(jr3d_p r, int w, int h, int mode)
 	r->logical_mode = mode;
 }
 
-void r3d_get_logical_presentation(jr3d_p r, int* w, int* h)
+void joy_r3d_get_logical_presentation(jr3d_p r, int* w, int* h)
 {
 	if (!r) return;
 	if (w) *w = r->logical_w;
 	if (h) *h = r->logical_h;
 }
 
-void r3d_window_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
+void joy_r3d_window_to_logical(jr3d_p r, float wx, float wy, float* lx, float* ly)
 {
 	if (!r) return;
 	if (lx) *lx = (r->ui_sx > 0) ? (wx - r->ui_offx) / r->ui_sx : wx;
 	if (ly) *ly = (r->ui_sy > 0) ? (wy - r->ui_offy) / r->ui_sy : wy;
 }
 
-void r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy)
+void joy_r3d_logical_to_window(jr3d_p r, float lx, float ly, float* wx, float* wy)
 {
 	if (!r) return;
 	if (wx) *wx = lx * r->ui_sx + r->ui_offx;
@@ -1678,7 +1678,7 @@ static void draw_rect_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 joy_r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
 	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
 		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
 		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
@@ -1700,7 +1700,7 @@ static void draw_rect_2d(jr3d_p r, render_mesh_p m,
 }
 
 /* 公开的 2D 实心矩形绘制(逻辑/窗口像素坐标, 由调用方保证与 winW/winH 一致) */
-void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
+void joy_r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
 					  float x, float y, float w, float h,
 					  Uint8 cr, Uint8 cg, Uint8 cb,
 					  float winW, float winH)
@@ -1711,8 +1711,8 @@ void r3d_draw_rect_2d(jr3d_p r, render_mesh_p m,
 /* 在屏幕(逻辑)坐标绘制自定义实心色 mesh(2D 正交, 原点左上, Y 向下)。
    cx/cy: mesh 中心逻辑坐标; sx/sy: 缩放(逻辑像素);
    用于环形/扇形/拱形等非矩形图元(如按钮倒计时环形圈)。
-   与 r3d_draw_rect_2d 使用同一套 proj 映射, 保证与按钮/文字坐标对齐。 */
-void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
+   与 joy_r3d_draw_rect_2d 使用同一套 proj 映射, 保证与按钮/文字坐标对齐。 */
+void joy_r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
 					  float cx, float cy, float sx, float sy,
 					  Uint8 cr, Uint8 cg, Uint8 cb,
 					  float winW, float winH)
@@ -1728,7 +1728,7 @@ void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 joy_r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
 	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
 		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
 		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
@@ -1750,10 +1750,10 @@ void r3d_draw_mesh_2d(jr3d_p r, render_mesh_p m,
 }
 
 /* 在屏幕(逻辑)坐标绘制贴图 quad(2D 正交, 原点左上, Y 向下)。
-   (x,y,w,h): 目标矩形(逻辑像素); tex: SDL_GPUTexture*(由 r3d_load_texture_png 返回);
-   单位 quad 自带 UV(0,0)-(1,1), 与 r3d_font_draw_2d_impl / r3d_draw_mesh_2d 同一套 proj 映射,
+   (x,y,w,h): 目标矩形(逻辑像素); tex: SDL_GPUTexture*(由 joy_r3d_load_texture_png 返回);
+   单位 quad 自带 UV(0,0)-(1,1), 与 r3d_font_draw_2d_impl / joy_r3d_draw_mesh_2d 同一套 proj 映射,
    保证与按钮/文字/矩形坐标对齐。用于摇杆底纹/按钮图标等贴图 UI。 */
-void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
+void joy_r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
 					 float x, float y, float w, float h,
 					 void* tex, float winW, float winH)
 {
@@ -1768,7 +1768,7 @@ void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
 	model.m15 = 1.0f;
 
 	mat44_t proj; memset(&proj, 0, sizeof(proj));
-	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
+	/* 2D 正交投影: 逻辑坐标 -> 窗口像素(含 letterbox 居中偏移), 由 joy_r3d_begin 的 ui_sx/ui_sy/ui_offx/ui_offy 决定 */
 	if (r->logical_mode == JOY_LOGICAL_PRESENTATION_LETTERBOX) {
 		proj.m0  =  2.0f * r->ui_sx / (float)r->ww;
 		proj.m5  = -2.0f * r->ui_sy / (float)r->wh;
@@ -1788,7 +1788,7 @@ void r3d_draw_tex_2d(jr3d_p r, render_mesh_p m,
 	draw_mesh_internal_proj(r, m, &model, &proj, (SDL_GPUTexture*)tex);
 }
 
-jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* text)
+jr3d_button_p joy_r3d_button_create(float x, float y, float w, float h, const char* text)
 {
 	jr3d_button_p b = (jr3d_button_p)SDL_malloc(sizeof(jr3d_button_t));
 	if (!b) return NULL;
@@ -1801,12 +1801,12 @@ jr3d_button_p r3d_button_create(float x, float y, float w, float h, const char* 
 	return b;
 }
 
-void r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p))
+void joy_r3d_button_set_onclick(jr3d_button_p btn, void (*cb)(jr3d_button_p))
 {
 	if (btn) btn->onClick = cb;
 }
 
-bool r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my)
+bool joy_r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my)
 {
 	if (!btn) return false;
 	float lx = mx, ly = my;
@@ -1815,10 +1815,10 @@ bool r3d_button_is_hovered(jr3d_p r, const jr3d_button_p btn, float mx, float my
 			ly >= btn->y && ly <= btn->y + btn->h);
 }
 
-bool r3d_button_is_pressed(jr3d_p r, jr3d_button_p btn, bool mouse_down, float mx, float my)
+bool joy_r3d_button_is_pressed(jr3d_p r, jr3d_button_p btn, bool mouse_down, float mx, float my)
 {
 	if (!btn) return false;
-	bool hover = r3d_button_is_hovered(r, btn, mx, my);
+	bool hover = joy_r3d_button_is_hovered(r, btn, mx, my);
 	if (hover && mouse_down) {
 		btn->state = JR3D_BTN_PRESSED;
 		btn->pressedInside = true;
@@ -1828,10 +1828,10 @@ bool r3d_button_is_pressed(jr3d_p r, jr3d_button_p btn, bool mouse_down, float m
 	return false;
 }
 
-void r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my)
+void joy_r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my)
 {
 	if (!btn) return;
-	bool hover = r3d_button_is_hovered(r, btn, mx, my);
+	bool hover = joy_r3d_button_is_hovered(r, btn, mx, my);
 	/* 完整 click: 按下在按钮内 且 松开也在按钮内 -> 触发回调 */
 	if (btn->pressedInside && hover && btn->onClick) {
 		btn->onClick(btn);
@@ -1840,7 +1840,7 @@ void r3d_button_release(jr3d_p r, jr3d_button_p btn, float mx, float my)
 	btn->state = hover ? JR3D_BTN_HOVER : JR3D_BTN_NORMAL;
 }
 
-void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
+void joy_r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
 {
 	if (!r || !m || !btn || winW <= 0 || winH <= 0) return;
 
@@ -1849,7 +1849,7 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 	if (btn->state == JR3D_BTN_HOVER)   { fr = 220; fg = 225; fb = 235; }
 	if (btn->state == JR3D_BTN_PRESSED) { fr = 200; fg = 200; fb = 210; }
 
-	/* 按钮坐标与 winW/winH 同为逻辑坐标(窗口缩放自适应由 r3d_begin 的 ui_sx/ui_sy 决定,
+	/* 按钮坐标与 winW/winH 同为逻辑坐标(窗口缩放自适应由 joy_r3d_begin 的 ui_sx/ui_sy 决定,
 	   绘制时直接以逻辑尺寸做正交投影, 无需再缩放矩形) */
 	float x = btn->x, y = btn->y, w = btn->w, h = btn->h;
 
@@ -1873,12 +1873,12 @@ void r3d_button_draw(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, f
 		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
 		float tx = x + (w - textW) * 0.5f;
 		float ty = y + (h - fontSize) * 0.5f;
-		r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
+		joy_r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
 		(void)aspect;
 	}
 }
 
-void r3d_button_destroy(jr3d_button_p btn)
+void joy_r3d_button_destroy(jr3d_button_p btn)
 {
 	if (btn) SDL_free(btn);
 }
@@ -1902,13 +1902,13 @@ static render_mesh_p r3d_unit_disc(jr3d_p r)
 		verts[vi++]=rim[i*2]; verts[vi++]=rim[i*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
 		verts[vi++]=rim[j*2]; verts[vi++]=rim[j*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
 	}
-	disc = r3d_mesh_custom(r, verts, vi / 5);
+	disc = joy_r3d_mesh_custom(r, verts, vi / 5);
 	return disc;
 }
 
-/* 圆形按钮: 深色描边圆 + 填充圆(圆形版 r3d_button_draw), 文字处理同矩形按钮。
+/* 圆形按钮: 深色描边圆 + 填充圆(圆形版 joy_r3d_button_draw), 文字处理同矩形按钮。
    击打区仍用 btn 矩形(64x64), 但视觉为直径=min(w,h) 的圆。 */
-void r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
+void joy_r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float winW, float winH)
 {
 	if (!r || !btn || winW <= 0 || winH <= 0) return;
 	Uint8 fr = 255, fg = 255, fb = 255;
@@ -1918,16 +1918,16 @@ void r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float 
 	if (!disc) return;
 	float cx = btn->x + btn->w * 0.5f, cy = btn->y + btn->h * 0.5f;
 	float R = (btn->w < btn->h ? btn->w : btn->h) * 0.5f;
-	r3d_draw_mesh_2d(r, disc, cx, cy, R + 3.0f, R + 3.0f, 0, 0, 0, winW, winH); // 黑描边
-	r3d_draw_mesh_2d(r, disc, cx, cy, R, R, fr, fg, fb, winW, winH);            // 填充
-	/* 文字居中(与 r3d_button_draw 一致) */
+	joy_r3d_draw_mesh_2d(r, disc, cx, cy, R + 3.0f, R + 3.0f, 0, 0, 0, winW, winH); // 黑描边
+	joy_r3d_draw_mesh_2d(r, disc, cx, cy, R, R, fr, fg, fb, winW, winH);            // 填充
+	/* 文字居中(与 joy_r3d_button_draw 一致) */
 	if (r->font_ttf_buf && btn->text[0]) {
 		float fontSize = btn->h * 0.5f;
 		if (SDL_strcmp(r->font_cache, btn->text) != 0) r3d_font_bake(r, btn->text);
 		float textW = fontSize * ((float)r->font_tex_w / (float)r->font_tex_h);
 		float tx = btn->x + (btn->w - textW) * 0.5f;
 		float ty = btn->y + (btn->h - fontSize) * 0.5f;
-		r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
+		joy_r3d_font_draw_2d_color(r, m, btn->text, tx, ty, fontSize, winW, winH, 0, 0, 0);
 	}
 }
 
@@ -1936,7 +1936,7 @@ void r3d_button_draw_circle(jr3d_p r, render_mesh_p m, jr3d_button_p btn, float 
  * ================================================================ */
 
 /* label 类型已在 joy.h 中定义 */
-jr3d_label_p r3d_label_create(float x, float y, float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
+jr3d_label_p joy_r3d_label_create(float x, float y, float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
 	jr3d_label_p l = (jr3d_label_p)SDL_malloc(sizeof(jr3d_label_t));
 	if (!l) return NULL;
@@ -1948,21 +1948,21 @@ jr3d_label_p r3d_label_create(float x, float y, float fontSize, uint8_t cr, uint
 }
 
 /* 更新文字内容(支持动态文本如 FPS) */
-void r3d_label_set_text(jr3d_label_p l, const char* text)
+void joy_r3d_label_set_text(jr3d_label_p l, const char* text)
 {
 	if (l && text) SDL_strlcpy(l->text, text, sizeof(l->text));
 }
 
-void r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float winH)
+void joy_r3d_label_draw(jr3d_p r, render_mesh_p m, jr3d_label_p l, float winW, float winH)
 {
 	if (!r || !m || !l || winW <= 0 || winH <= 0) return;
 	if (!r->font_ttf_buf || !l->text[0]) return;
 	/* 使用 label 创建时的颜色(白底 UI 需深色文字, 不能再固定白色) */
-	r3d_font_draw_2d_color(r, m, l->text, l->x, l->y, l->fontSize, winW, winH,
+	joy_r3d_font_draw_2d_color(r, m, l->text, l->x, l->y, l->fontSize, winW, winH,
 		l->r, l->g, l->b);
 }
 
-void r3d_label_destroy(jr3d_label_p l)
+void joy_r3d_label_destroy(jr3d_label_p l)
 {
 	if (l) SDL_free(l);
 }
@@ -1979,7 +1979,7 @@ static float r3d_font_measure(jr3d_p r, const char* str, int byte_len)
 	int pos = 0;
 	int32_t code;
 	while (pos < byte_len) {
-		size_t consumed = utf8_decode(str + pos, (size_t)(byte_len - pos), &code);
+		size_t consumed = joy_core_utf8_decode(str + pos, (size_t)(byte_len - pos), &code);
 		if (consumed == 0) break;
 		int advance = 0, lsb = 0;
 		stbtt_GetCodepointHMetrics(&r->font_info, (int)code, &advance, &lsb);
@@ -2004,12 +2004,12 @@ static int r3d_input_next_char(const char* s, int pos, int len)
 {
 	int p = pos;
 	if (p >= len) return len;
-	size_t consumed = utf8_decode(s + p, (size_t)(len - p), &(int32_t){0});
+	size_t consumed = joy_core_utf8_decode(s + p, (size_t)(len - p), &(int32_t){0});
 	if (consumed == 0) return len;
 	return p + (int)consumed;
 }
 
-jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize,
+jr3d_input_p joy_r3d_input_create(float x, float y, float w, float h, float fontSize,
                               uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
 	jr3d_input_p inp = (jr3d_input_p)SDL_malloc(sizeof(jr3d_input_t));
@@ -2030,7 +2030,7 @@ jr3d_input_p r3d_input_create(float x, float y, float w, float h, float fontSize
 	return inp;
 }
 
-void r3d_input_set_text(jr3d_input_p inp, const char* text)
+void joy_r3d_input_set_text(jr3d_input_p inp, const char* text)
 {
 	if (!inp) return;
 	inp->text[0] = '\0';
@@ -2039,12 +2039,12 @@ void r3d_input_set_text(jr3d_input_p inp, const char* text)
 	inp->scroll = 0;
 }
 
-const char* r3d_input_get_text(jr3d_input_p inp)
+const char* joy_r3d_input_get_text(jr3d_input_p inp)
 {
 	return inp ? inp->text : "";
 }
 
-bool r3d_input_is_hovered(jr3d_p r, const jr3d_input_p inp, float mx, float my)
+bool joy_r3d_input_is_hovered(jr3d_p r, const jr3d_input_p inp, float mx, float my)
 {
 	if (!inp) return false;
 	float lx = mx, ly = my;
@@ -2053,34 +2053,34 @@ bool r3d_input_is_hovered(jr3d_p r, const jr3d_input_p inp, float mx, float my)
 			ly >= inp->y && ly <= inp->y + inp->h);
 }
 
-void r3d_input_focus(jr3d_input_p inp)
+void joy_r3d_input_focus(jr3d_input_p inp)
 {
 	if (inp) { inp->focused = true; inp->cursor_visible = true; inp->cursor_timer = SDL_GetTicks(); }
 }
 
-void r3d_input_start_text_input(jr3d_p r, jr3d_input_p inp)
+void joy_r3d_input_start_text_input(jr3d_p r, jr3d_input_p inp)
 {
 	if (!r || !inp) return;
 	if (inp->focused && r->win) SDL_StartTextInput(r->win);
 }
 
-void r3d_input_stop_text_input(jr3d_p r, jr3d_input_p inp)
+void joy_r3d_input_stop_text_input(jr3d_p r, jr3d_input_p inp)
 {
 	if (!r || !inp) return;
 	if (r->win) SDL_StopTextInput(r->win);
 }
 
-void r3d_input_defocus(jr3d_input_p inp)
+void joy_r3d_input_defocus(jr3d_input_p inp)
 {
 	if (inp) inp->focused = false;
 }
 
-bool r3d_input_is_focused(const jr3d_input_p inp)
+bool joy_r3d_input_is_focused(const jr3d_input_p inp)
 {
 	return inp ? inp->focused : false;
 }
 
-void r3d_input_insert(jr3d_input_p inp, const char* s)
+void joy_r3d_input_insert(jr3d_input_p inp, const char* s)
 {
 	if (!inp || !s) return;
 	size_t cur = SDL_strlen(inp->text);
@@ -2096,7 +2096,7 @@ void r3d_input_insert(jr3d_input_p inp, const char* s)
 	inp->cursor_pos += (int)add;
 }
 
-void r3d_input_backspace(jr3d_input_p inp)
+void joy_r3d_input_backspace(jr3d_input_p inp)
 {
 	if (!inp || inp->cursor_pos <= 0) return;
 	int start = r3d_input_prev_char(inp->text, inp->cursor_pos);
@@ -2106,7 +2106,7 @@ void r3d_input_backspace(jr3d_input_p inp)
 	inp->cursor_pos = start;
 }
 
-void r3d_input_delete(jr3d_input_p inp)
+void joy_r3d_input_delete(jr3d_input_p inp)
 {
 	if (!inp) return;
 	size_t cur = SDL_strlen(inp->text);
@@ -2116,13 +2116,13 @@ void r3d_input_delete(jr3d_input_p inp)
 	/* cursor_pos 不变 */
 }
 
-void r3d_input_cursor_left(jr3d_input_p inp)
+void joy_r3d_input_cursor_left(jr3d_input_p inp)
 {
 	if (!inp || inp->cursor_pos <= 0) return;
 	inp->cursor_pos = r3d_input_prev_char(inp->text, inp->cursor_pos);
 }
 
-void r3d_input_cursor_right(jr3d_input_p inp)
+void joy_r3d_input_cursor_right(jr3d_input_p inp)
 {
 	if (!inp) return;
 	size_t cur = SDL_strlen(inp->text);
@@ -2130,17 +2130,17 @@ void r3d_input_cursor_right(jr3d_input_p inp)
 	inp->cursor_pos = r3d_input_next_char(inp->text, inp->cursor_pos, (int)cur);
 }
 
-void r3d_input_cursor_home(jr3d_input_p inp)
+void joy_r3d_input_cursor_home(jr3d_input_p inp)
 {
 	if (inp) inp->cursor_pos = 0;
 }
 
-void r3d_input_cursor_end(jr3d_input_p inp)
+void joy_r3d_input_cursor_end(jr3d_input_p inp)
 {
 	if (inp) inp->cursor_pos = (int)SDL_strlen(inp->text);
 }
 
-void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
+void joy_r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
 {
 	if (!inp) return;
 	float lx = mx, ly = my;
@@ -2148,10 +2148,10 @@ void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
 	inp->focused = true;
 	inp->cursor_timer = SDL_GetTicks();
 	inp->cursor_visible = true;
-	if (!r3d_input_is_hovered(r, inp, mx, my)) return;
+	if (!joy_r3d_input_is_hovered(r, inp, mx, my)) return;
 
 	float padX = 4.0f;
-	/* 换算系数: 让 measure(bake 像素宽) 与 r3d_font_draw_2d(整图按 fontSize 缩放) 的屏幕像素宽一致。
+	/* 换算系数: 让 measure(bake 像素宽) 与 joy_r3d_font_draw_2d(整图按 fontSize 缩放) 的屏幕像素宽一致。
 	   draw_2d 中 1 个 bake 像素 = fontSize / font_tex_h 个屏幕像素。 */
 	float fontSize = inp->fontSize > 0 ? inp->fontSize : (inp->h * 0.6f);
 	float k = r->font_tex_h > 0 ? (fontSize / (float)r->font_tex_h) : 1.0f;
@@ -2175,12 +2175,12 @@ void r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my)
 	inp->cursor_pos = best;
 }
 
-void r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p))
+void joy_r3d_input_set_onsubmit(jr3d_input_p inp, void (*cb)(jr3d_input_p))
 {
 	if (inp) inp->on_submit = cb;
 }
 
-void r3d_input_submit(jr3d_input_p inp)
+void joy_r3d_input_submit(jr3d_input_p inp)
 {
 	if (inp && inp->on_submit) inp->on_submit(inp);
 }
@@ -2210,7 +2210,7 @@ static void r3d_input_delete_sel(jr3d_input_p inp)
 	r3d_input_clear_sel(inp);
 }
 
-/* 文本屏幕像素宽度(用与 r3d_font_draw_2d 一致的缩放) */
+/* 文本屏幕像素宽度(用与 joy_r3d_font_draw_2d 一致的缩放) */
 static float r3d_input_text_w(jr3d_p r, jr3d_input_p inp, const char* s, int n)
 {
 	float fontSize = inp->fontSize > 0 ? inp->fontSize : (inp->h * 0.6f);
@@ -2233,7 +2233,7 @@ static void r3d_input_scroll_to_cursor(jr3d_p r, jr3d_input_p inp)
 	if (inp->scroll < 0) inp->scroll = 0;
 }
 
-/* 在 cursor_pos 处插入 (对齐 inputbox_insert, 自动删除选中) */
+/* 在 cursor_pos 处插入 (对齐 joy_ui_inputbox_insert, 自动删除选中) */
 static void r3d_input_insert_at(jr3d_p r, jr3d_input_p inp, const char* s, int len)
 {
 	if (!inp || !s || len <= 0) return;
@@ -2347,25 +2347,25 @@ void r3d_input_cut(jr3d_input_p inp)
 	}
 }
 
-/* ===================== 统一事件处理 (对齐 jr2d inputbox_process_event) ===================== */
-bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
+/* ===================== 统一事件处理 (对齐 jr2d joy_ui_inputbox_process_event) ===================== */
+bool joy_r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 {
 	if (!r || !inp || !event) return false;
 
 	if (event->type == SDL_EVENT_MOUSE_MOTION) {
 		/* 仅更新 hover 状态(选中拖拽扩展可选, 此处保持简单) */
-		r3d_input_is_hovered(r, inp, event->motion.x, event->motion.y);
+		joy_r3d_input_is_hovered(r, inp, event->motion.x, event->motion.y);
 		return false;
 	}
 	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
 		if (event->button.button != SDL_BUTTON_LEFT)
 			return false;
-		if (r3d_input_is_hovered(r, inp, event->button.x, event->button.y)) {
+		if (joy_r3d_input_is_hovered(r, inp, event->button.x, event->button.y)) {
 			/* 聚焦 + 点击定位光标 + 启动文本输入(幂等, 重复调用无害) */
 			inp->focused = true;
 			inp->cursor_visible = true;
 			inp->cursor_timer = SDL_GetTicks();
-			r3d_input_click(r, inp, event->button.x, event->button.y);
+			joy_r3d_input_click(r, inp, event->button.x, event->button.y);
 			if (r->win) SDL_StartTextInput(r->win);
 			return true;   /* 消费: 调用方不应再旋转相机 */
 		} else {
@@ -2387,23 +2387,23 @@ bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 		if (!inp->focused) return false;
 		SDL_Keymod mod = event->key.mod;
 		switch (event->key.scancode) {
-		case SDL_SCANCODE_BACKSPACE: r3d_input_backspace(inp); break;
-		case SDL_SCANCODE_DELETE:    r3d_input_delete(inp); break;
+		case SDL_SCANCODE_BACKSPACE: joy_r3d_input_backspace(inp); break;
+		case SDL_SCANCODE_DELETE:    joy_r3d_input_delete(inp); break;
 		case SDL_SCANCODE_LEFT:
 			if (mod & SDL_KMOD_SHIFT) r3d_input_select_left(inp);
-			else r3d_input_cursor_left(inp);
+			else joy_r3d_input_cursor_left(inp);
 			break;
 		case SDL_SCANCODE_RIGHT:
 			if (mod & SDL_KMOD_SHIFT) r3d_input_select_right(inp);
-			else r3d_input_cursor_right(inp);
+			else joy_r3d_input_cursor_right(inp);
 			break;
 		case SDL_SCANCODE_HOME:
 			if (mod & SDL_KMOD_SHIFT) r3d_input_select_home(inp);
-			else r3d_input_cursor_home(inp);
+			else joy_r3d_input_cursor_home(inp);
 			break;
 		case SDL_SCANCODE_END:
 			if (mod & SDL_KMOD_SHIFT) r3d_input_select_end(inp);
-			else r3d_input_cursor_end(inp);
+			else joy_r3d_input_cursor_end(inp);
 			break;
 		case SDL_SCANCODE_A:
 			if (mod & SDL_KMOD_CTRL) r3d_input_select_all(inp);
@@ -2419,7 +2419,7 @@ bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 			break;
 		case SDL_SCANCODE_RETURN:
 		case SDL_SCANCODE_KP_ENTER:
-			r3d_input_submit(inp);
+			joy_r3d_input_submit(inp);
 			break;
 		default: break;
 		}
@@ -2429,7 +2429,7 @@ bool r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event)
 	return false;
 }
 
-void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, float winH)
+void joy_r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, float winH)
 {
 	if (!r || !m || !inp || winW <= 0 || winH <= 0) return;
 
@@ -2486,7 +2486,7 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 	float visW   = inp->w - 2.0f * bw - 2.0f * padX;   /* 可见文本宽度 */
 	int   len    = (int)SDL_strlen(inp->text);
 
-	/* 换算系数: measure(bake 像素宽) -> 屏幕像素宽, 与 r3d_font_draw_2d 的整图缩放一致。
+	/* 换算系数: measure(bake 像素宽) -> 屏幕像素宽, 与 joy_r3d_font_draw_2d 的整图缩放一致。
 	   draw_2d 中 1 个 bake 像素 = fontSize / font_tex_h 个屏幕像素。 */
 	float k = r->font_tex_h > 0 ? (fontSize / (float)r->font_tex_h) : 1.0f;
 	#define R3D_MEASURE(r, s, n) (r3d_font_measure((r), (s), (n)) * (k))
@@ -2522,7 +2522,7 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 	   故子串起点 = x+padX-scroll+pre_w (注意: 先减 scroll 再加 pre_w, 不能写成 -(pre_w-scroll)) */
 	float draw_x = inp->x + padX - (float)inp->scroll + pre_w;
 	if (vis_start < len) {
-		r3d_font_draw_2d_color(r, m, inp->text + vis_start, draw_x, ty, fontSize, winW, winH,
+		joy_r3d_font_draw_2d_color(r, m, inp->text + vis_start, draw_x, ty, fontSize, winW, winH,
 			inp->r, inp->g, inp->b);
 	}
 
@@ -2553,7 +2553,7 @@ void r3d_input_draw(jr3d_p r, render_mesh_p m, jr3d_input_p inp, float winW, flo
 	#undef R3D_MEASURE
 }
 
-void r3d_input_destroy(jr3d_input_p inp)
+void joy_r3d_input_destroy(jr3d_input_p inp)
 {
 	if (inp) SDL_free(inp);
 }
@@ -2562,7 +2562,7 @@ void r3d_input_destroy(jr3d_input_p inp)
  * 2D UI: combobox_input (可输入下拉列表框, 仿 jr2d combobox_input)
  * ================================================================ */
 
-jr3d_combobox_input_p r3d_combobox_input_create(float x, float y, float w, float h,
+jr3d_combobox_input_p joy_r3d_combobox_input_create(float x, float y, float w, float h,
 	float fontSize, uint8_t cr, uint8_t cg, uint8_t cb, const char* text)
 {
 	jr3d_combobox_input_p ci = (jr3d_combobox_input_p)SDL_calloc(1, sizeof(jr3d_combobox_input_t));
@@ -2576,40 +2576,40 @@ jr3d_combobox_input_p r3d_combobox_input_create(float x, float y, float w, float
 	ci->item_count = 0;
 	ci->on_change = NULL;
 	/* 内部输入框: 宽度减去箭头区域 */
-	ci->input = r3d_input_create(x, y, w - ci->arrow_w, h, fontSize, cr, cg, cb, text);
+	ci->input = joy_r3d_input_create(x, y, w - ci->arrow_w, h, fontSize, cr, cg, cb, text);
 	return ci;
 }
 
-void r3d_combobox_input_destroy(jr3d_combobox_input_p ci)
+void joy_r3d_combobox_input_destroy(jr3d_combobox_input_p ci)
 {
 	if (!ci) return;
-	if (ci->input) r3d_input_destroy(ci->input);
+	if (ci->input) joy_r3d_input_destroy(ci->input);
 	SDL_free(ci);
 }
 
-void r3d_combobox_input_add_item(jr3d_combobox_input_p ci, const char* str)
+void joy_r3d_combobox_input_add_item(jr3d_combobox_input_p ci, const char* str)
 {
 	if (!ci || !str || ci->item_count >= 20) return;
 	SDL_strlcpy(ci->items[ci->item_count], str, JOY_MAX_IP);
 	ci->item_count++;
 }
 
-void r3d_combobox_input_clear_items(jr3d_combobox_input_p ci)
+void joy_r3d_combobox_input_clear_items(jr3d_combobox_input_p ci)
 {
 	if (ci) ci->item_count = 0;
 }
 
-const char* r3d_combobox_input_get_text(jr3d_combobox_input_p ci)
+const char* joy_r3d_combobox_input_get_text(jr3d_combobox_input_p ci)
 {
-	return (ci && ci->input) ? r3d_input_get_text(ci->input) : "";
+	return (ci && ci->input) ? joy_r3d_input_get_text(ci->input) : "";
 }
 
-void r3d_combobox_input_set_text(jr3d_combobox_input_p ci, const char* str)
+void joy_r3d_combobox_input_set_text(jr3d_combobox_input_p ci, const char* str)
 {
-	if (ci && ci->input) r3d_input_set_text(ci->input, str);
+	if (ci && ci->input) joy_r3d_input_set_text(ci->input, str);
 }
 
-int r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y)
+int joy_r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y)
 {
 	if (!ci || !ci->is_open) return -1;
 	for (int i = 0; i < ci->item_count; i++) {
@@ -2621,7 +2621,7 @@ int r3d_combobox_input_hit_item(jr3d_combobox_input_p ci, float x, float y)
 	return -1;
 }
 
-bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Event* event)
+bool joy_r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Event* event)
 {
 	if (!r || !ci || !event) return false;
 
@@ -2647,13 +2647,13 @@ bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Eve
 
 		if (in_arrow) {
 			ci->is_open = !ci->is_open;
-			if (ci->input) r3d_input_focus(ci->input);
+			if (ci->input) joy_r3d_input_focus(ci->input);
 			return true;
 		}
 		else if (ci->is_open) {
-			int hit = r3d_combobox_input_hit_item(ci, lx, ly);
+			int hit = joy_r3d_combobox_input_hit_item(ci, lx, ly);
 			if (hit >= 0) {
-				r3d_combobox_input_set_text(ci, ci->items[hit]);
+				joy_r3d_combobox_input_set_text(ci, ci->items[hit]);
 				ci->selected_index = hit;
 				ci->is_open = false;
 				if (ci->on_change) ci->on_change(ci);
@@ -2661,26 +2661,26 @@ bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Eve
 			}
 		}
 		if (in_rect) {
-			if (ci->input) r3d_input_click(r, ci->input, mx, my);
+			if (ci->input) joy_r3d_input_click(r, ci->input, mx, my);
 			ci->is_open = false;
 			return true;
 		}
 		else {
 			ci->is_open = false;
-			if (ci->input) r3d_input_defocus(ci->input);
+			if (ci->input) joy_r3d_input_defocus(ci->input);
 			return false;
 		}
 	}
 	else if (event->type == SDL_EVENT_TEXT_INPUT) {
-		if (ci->input && r3d_input_is_focused(ci->input)) {
-			bool consumed = r3d_input_handle_event(r, ci->input, event);
+		if (ci->input && joy_r3d_input_is_focused(ci->input)) {
+			bool consumed = joy_r3d_input_handle_event(r, ci->input, event);
 			if (ci->on_change) ci->on_change(ci);
 			return consumed;
 		}
 		return false;
 	}
 	else if (event->type == SDL_EVENT_KEY_DOWN) {
-		if (!ci->input || !r3d_input_is_focused(ci->input)) return false;
+		if (!ci->input || !joy_r3d_input_is_focused(ci->input)) return false;
 		if (event->key.scancode == SDL_SCANCODE_DOWN) {
 			if (ci->is_open && ci->selected_index < ci->item_count - 1) {
 				ci->selected_index++;
@@ -2696,23 +2696,23 @@ bool r3d_combobox_input_handle_event(jr3d_p r, jr3d_combobox_input_p ci, SDL_Eve
 		else if (event->key.scancode == SDL_SCANCODE_RETURN ||
 				 event->key.scancode == SDL_SCANCODE_KP_ENTER) {
 			if (ci->is_open && ci->selected_index >= 0 && ci->selected_index < ci->item_count) {
-				r3d_combobox_input_set_text(ci, ci->items[ci->selected_index]);
+				joy_r3d_combobox_input_set_text(ci, ci->items[ci->selected_index]);
 				ci->is_open = false;
 				if (ci->on_change) ci->on_change(ci);
 				return true;
 			}
 		}
-		return r3d_input_handle_event(r, ci->input, event);
+		return joy_r3d_input_handle_event(r, ci->input, event);
 	}
 	return false;
 }
 
-void r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH)
+void joy_r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH)
 {
 	if (!r || !m || !ci || winW <= 0 || winH <= 0) return;
 
 	/* 内部输入框 */
-	if (ci->input) r3d_input_draw(r, m, ci->input, winW, winH);
+	if (ci->input) joy_r3d_input_draw(r, m, ci->input, winW, winH);
 
 	/* 箭头区域背景(白底 UI) */
 	float ax = ci->x + ci->w - ci->arrow_w;
@@ -2743,7 +2743,7 @@ void r3d_combobox_input_draw(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci
 
 /* 仅绘制展开的下拉列表。供场景在渲染最后调用, 保证列表绘制在最上层,
    不被位于其下方的其他控件(如后续的输入框/按钮)遮挡。 */
-void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH)
+void joy_r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_input_p ci, float winW, float winH)
 {
 	if (!r || !m || !ci || winW <= 0 || winH <= 0) return;
 	if (!ci->is_open || ci->item_count <= 0) return;
@@ -2764,7 +2764,7 @@ void r3d_combobox_input_draw_dropdown(jr3d_p r, render_mesh_p m, jr3d_combobox_i
 			draw_rect_2d(r, m, ci->x + 1, iy, ci->w - 2, ci->item_height, 70, 110, 200, winW, winH);
 		}
 		if (r->font_ttf_buf && ci->items[i][0]) {
-			r3d_font_draw_2d_color(r, m, ci->items[i], ci->x + 4, iy + 3, ci->fontSize, winW, winH,
+			joy_r3d_font_draw_2d_color(r, m, ci->items[i], ci->x + 4, iy + 3, ci->fontSize, winW, winH,
 				50, 50, 60);
 		}
 	}
@@ -2800,7 +2800,7 @@ static bool r3d_slider_thumb_hit(jr3d_slider_p s, float mx, float my)
 		&& my >= s->y && my <= s->y + s->h;
 }
 
-jr3d_slider_p r3d_slider_create(float x, float y, float w, float h, float min, float max, float initial)
+jr3d_slider_p joy_r3d_slider_create(float x, float y, float w, float h, float min, float max, float initial)
 {
 	jr3d_slider_p s = (jr3d_slider_p)SDL_malloc(sizeof(jr3d_slider_t));
 	if (!s) return NULL;
@@ -2819,12 +2819,12 @@ jr3d_slider_p r3d_slider_create(float x, float y, float w, float h, float min, f
 	return s;
 }
 
-void r3d_slider_destroy(jr3d_slider_p s)
+void joy_r3d_slider_destroy(jr3d_slider_p s)
 {
 	if (s) SDL_free(s);
 }
 
-void r3d_slider_set_value(jr3d_slider_p s, float v)
+void joy_r3d_slider_set_value(jr3d_slider_p s, float v)
 {
 	if (!s) return;
 	if (v < s->min) v = s->min;
@@ -2832,12 +2832,12 @@ void r3d_slider_set_value(jr3d_slider_p s, float v)
 	s->value = v;
 }
 
-float r3d_slider_get_value(jr3d_slider_p s)
+float joy_r3d_slider_get_value(jr3d_slider_p s)
 {
 	return s ? s->value : 0;
 }
 
-void r3d_slider_set_colors(jr3d_slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
+void joy_r3d_slider_set_colors(jr3d_slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
 {
 	if (!s) return;
 	s->track_color = track;
@@ -2846,7 +2846,7 @@ void r3d_slider_set_colors(jr3d_slider_p s, jcolor_t track, jcolor_t fill, jcolo
 	s->thumb_hover_color = thumb_hover;
 }
 
-void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, float winH)
+void joy_r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, float winH)
 {
 	if (!r || !m || !s || winW <= 0 || winH <= 0) return;
 
@@ -2878,7 +2878,7 @@ void r3d_slider_draw(jr3d_p r, render_mesh_p m, jr3d_slider_p s, float winW, flo
 	draw_rect_2d(r, m, sx + s->thumb_width - bw, s->y, bw, s->h, 0, 0, 0, winW, winH);
 }
 
-bool r3d_slider_is_pressed(jr3d_p r, jr3d_slider_p s, float x, float y)
+bool joy_r3d_slider_is_pressed(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	if (!s) return false;
 	float lx = x, ly = y;
@@ -2897,12 +2897,12 @@ bool r3d_slider_is_pressed(jr3d_p r, jr3d_slider_p s, float x, float y)
 	return false;
 }
 
-void r3d_slider_set_pressed(jr3d_slider_p s, bool v)
+void joy_r3d_slider_set_pressed(jr3d_slider_p s, bool v)
 {
 	if (s) s->is_dragging = v;
 }
 
-void r3d_slider_drag_move(jr3d_p r, jr3d_slider_p s, float x, float y)
+void joy_r3d_slider_drag_move(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	(void)y;
 	if (!s || !s->is_dragging) return;
@@ -2911,7 +2911,7 @@ void r3d_slider_drag_move(jr3d_p r, jr3d_slider_p s, float x, float y)
 	r3d_slider_update_value_from_x(s, lx);
 }
 
-bool r3d_slider_is_hovered(jr3d_p r, jr3d_slider_p s, float x, float y)
+bool joy_r3d_slider_is_hovered(jr3d_p r, jr3d_slider_p s, float x, float y)
 {
 	if (!s) return false;
 	float lx = x, ly = y;
@@ -2920,7 +2920,7 @@ bool r3d_slider_is_hovered(jr3d_p r, jr3d_slider_p s, float x, float y)
 	return s->hovered;
 }
 
-void r3d_slider_set_hovered(jr3d_slider_p s, bool v)
+void joy_r3d_slider_set_hovered(jr3d_slider_p s, bool v)
 {
 	if (s) s->hovered = v;
 }
@@ -2944,7 +2944,7 @@ static void draw_line_dots(jr3d_p r, render_mesh_p m, float x0, float y0, float 
 	}
 }
 
-jr3d_checkbox_p r3d_checkbox_create(float x, float y, float size, const char* label)
+jr3d_checkbox_p joy_r3d_checkbox_create(float x, float y, float size, const char* label)
 {
 	jr3d_checkbox_p cb = (jr3d_checkbox_p)SDL_malloc(sizeof(jr3d_checkbox_t));
 	if (!cb) return NULL;
@@ -2961,7 +2961,7 @@ jr3d_checkbox_p r3d_checkbox_create(float x, float y, float size, const char* la
 	return cb;
 }
 
-void r3d_checkbox_destroy(jr3d_checkbox_p cb)
+void joy_r3d_checkbox_destroy(jr3d_checkbox_p cb)
 {
 	if (!cb) return;
 	/* label 由 utils_strdup(malloc) 分配, 必须用 free 释放(与 jui.c 一致), 避免跨堆(SDL_free 走 SDL3.dll 的 CRT 堆) */
@@ -2969,24 +2969,24 @@ void r3d_checkbox_destroy(jr3d_checkbox_p cb)
 	SDL_free(cb);
 }
 
-void r3d_checkbox_set_state(jr3d_checkbox_p cb, jr3d_checkbox_state_t state)
+void joy_r3d_checkbox_set_state(jr3d_checkbox_p cb, jr3d_checkbox_state_t state)
 {
 	if (cb) cb->state = state;
 }
 
-jr3d_checkbox_state_t r3d_checkbox_get_state(jr3d_checkbox_p cb)
+jr3d_checkbox_state_t joy_r3d_checkbox_get_state(jr3d_checkbox_p cb)
 {
 	return cb ? cb->state : JOY_R3D_CHECKBOX_UNCHECKED;
 }
 
-void r3d_checkbox_toggle(jr3d_checkbox_p cb)
+void joy_r3d_checkbox_toggle(jr3d_checkbox_p cb)
 {
 	if (!cb || !cb->enabled) return;
 	cb->state = (cb->state == JOY_R3D_CHECKBOX_UNCHECKED)
 		? JOY_R3D_CHECKBOX_CHECKED : JOY_R3D_CHECKBOX_UNCHECKED;
 }
 
-bool r3d_checkbox_is_pressed(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
+bool joy_r3d_checkbox_is_pressed(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 {
 	if (!cb || !cb->enabled) return false;
 	float lx = x, ly = y;
@@ -2994,18 +2994,18 @@ bool r3d_checkbox_is_pressed(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 	float hit_w = cb->size + 5.0f + cb->label_w;
 	if (lx >= cb->x && lx <= cb->x + hit_w
 		&& ly >= cb->y && ly <= cb->y + cb->size) {
-		r3d_checkbox_toggle(cb);
+		joy_r3d_checkbox_toggle(cb);
 		return true;
 	}
 	return false;
 }
 
-void r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v)
+void joy_r3d_checkbox_set_hovered(jr3d_checkbox_p cb, bool v)
 {
 	if (cb) cb->hovered = v;
 }
 
-bool r3d_checkbox_is_hovered(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
+bool joy_r3d_checkbox_is_hovered(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 {
 	if (!cb) return false;
 	float lx = x, ly = y;
@@ -3016,7 +3016,7 @@ bool r3d_checkbox_is_hovered(jr3d_p r, jr3d_checkbox_p cb, float x, float y)
 	return cb->hovered;
 }
 
-void r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, jcolor_t hover)
+void joy_r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, jcolor_t hover)
 {
 	if (!cb) return;
 	cb->box_color = box;
@@ -3024,7 +3024,7 @@ void r3d_checkbox_set_colors(jr3d_checkbox_p cb, jcolor_t box, jcolor_t check, j
 	cb->hover_color = hover;
 }
 
-void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW, float winH)
+void joy_r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW, float winH)
 {
 	if (!r || !m || !cb || winW <= 0 || winH <= 0) return;
 
@@ -3068,14 +3068,14 @@ void r3d_checkbox_draw(jr3d_p r, render_mesh_p m, jr3d_checkbox_p cb, float winW
 
 	/* 标签文本 */
 	if (cb->label && cb->label[0] && r->font_ttf_buf) {
-		r3d_font_draw_2d_color(r, m, cb->label, cx + sz + 5.0f, cy + 1.0f, sz * 0.8f, winW, winH,
+		joy_r3d_font_draw_2d_color(r, m, cb->label, cx + sz + 5.0f, cy + 1.0f, sz * 0.8f, winW, winH,
 			50, 50, 60);
 	}
 }
 
 /* 单位平面 quad: 4 顶点(FLOAT3 pos + FLOAT2 uv) + 6 索引(0,1,2,0,3,2), 范围 x/y ∈ [-0.5,0.5]
    UV: (0,0)左上 (1,1)右下, 与 stbi flip=true 后的纹理朝向一致 */
-render_mesh_p r3d_mesh_quad(jr3d_p r)
+render_mesh_p joy_r3d_mesh_quad(jr3d_p r)
 {
 	static const float verts[4 * 5] = {
 		/* x,    y,    z,   u,  v */
@@ -3088,8 +3088,8 @@ render_mesh_p r3d_mesh_quad(jr3d_p r)
 
 	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
-	m->index_buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, indices, sizeof(indices));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->index_buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, indices, sizeof(indices));
 	if (!m->buffer || !m->index_buffer) {
 		if (m->buffer) SDL_ReleaseGPUBuffer(r->dev, m->buffer);
 		if (m->index_buffer) SDL_ReleaseGPUBuffer(r->dev, m->index_buffer);
@@ -3103,7 +3103,7 @@ render_mesh_p r3d_mesh_quad(jr3d_p r)
 
 /* ---- 线框网格（pos FLOAT3 + uv FLOAT2, 5 float/顶点, LINELIST） ---- */
 
-render_mesh_p r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d)
+render_mesh_p joy_r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d)
 {
 	float hw = w * 0.5f, hh = h * 0.5f, hd = d * 0.5f;
 	float verts[24 * 5];
@@ -3131,13 +3131,13 @@ render_mesh_p r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d)
 
 	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = 24;
 	return m;
 }
 
-render_mesh_p r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stacks)
+render_mesh_p joy_r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stacks)
 {
 	/* 纬度环 (stacks-1) * slices * 2 + 经度线 slices * stacks * 2 */
 	int lat_verts = (stacks - 1) * slices * 2;
@@ -3176,14 +3176,14 @@ render_mesh_p r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int stack
 
 	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
 	SDL_free(verts);
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = total;
 	return m;
 }
 
-render_mesh_p r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs)
+render_mesh_p joy_r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs)
 {
 	/* (segs+1) 条 X 方向线 + (segs+1) 条 Z 方向线, 每条 2 顶点 */
 	int total = (segs + 1) * 2 * 2;
@@ -3206,15 +3206,15 @@ render_mesh_p r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs)
 
 	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
 	SDL_free(verts);
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = total;
 	return m;
 }
 
-/* 斜坡线框: 与 r3d_mesh_ramp(w,l,h) 同几何（三角棱柱, 坡面沿 Z 上升） */
-render_mesh_p r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h)
+/* 斜坡线框: 与 joy_r3d_mesh_ramp(w,l,h) 同几何（三角棱柱, 坡面沿 Z 上升） */
+render_mesh_p joy_r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h)
 {
 	float hw = w * 0.5f, hl = l * 0.5f;
 	float verts[9 * 2 * 5];
@@ -3237,7 +3237,7 @@ render_mesh_p r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h)
 
 	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = 18;
 	return m;
@@ -3245,7 +3245,7 @@ render_mesh_p r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h)
 
 /* ---- 光照网格（pos FLOAT3 + normal FLOAT3 + uv FLOAT2, 8 float/顶点, 无索引） ---- */
 
-render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
+render_mesh_p joy_r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
 {
 	float hw = w * 0.5f, hh = h * 0.5f, hd = d * 0.5f;
 	float verts[36 * 8];
@@ -3271,7 +3271,7 @@ render_mesh_p r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
 #undef LIT_V
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = 36;
 	return m;
@@ -3285,10 +3285,10 @@ static void r3d_flush_pending(jr3d_p r)
 	r->pending_count = 0;
 }
 
-void r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
+void joy_r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 {
 	if (!r || !m) return;
-	/* 延迟释放 GPU buffer: 推入队列, 待 r3d_end 后统一释放,
+	/* 延迟释放 GPU buffer: 推入队列, 待 joy_r3d_end 后统一释放,
 	   避免释放仍被 GPU 引用的 buffer 导致 VULKAN 崩溃 */
 	if (m->buffer) {
 		if (r->pending_count >= r->pending_cap) {
@@ -3308,7 +3308,7 @@ void r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 	SDL_free(m);
 }
 
-render_mesh_p r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks)
+render_mesh_p joy_r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks)
 {
 	int stack, slice, vcount, vi;
 	float* verts;
@@ -3352,14 +3352,14 @@ render_mesh_p r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks
 	}
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = vcount;
 	return m;
 }
 
-render_mesh_p r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
+render_mesh_p joy_r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
 {
 	int x, z, vcount, vi;
 	float* verts;
@@ -3388,14 +3388,14 @@ render_mesh_p r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
 	}
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) { SDL_free(verts); return NULL; }
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = vcount;
 	return m;
 }
 
-render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
+render_mesh_p joy_r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 {
 	/* 三角棱柱斜坡: 底在 y=0, 沿 +Z 从 0 升到 h */
 	float L = sqrtf(l * l + h * h);
@@ -3427,18 +3427,18 @@ render_mesh_p r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 #undef RV
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, sizeof(verts));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = 30;
 	return m;
 }
 
-render_mesh_p r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
+render_mesh_p joy_r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
 	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
 	if (!m) return NULL;
-	m->buffer = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 8 * sizeof(float));
+	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 8 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
 	m->vertex_count = vertex_count;
 	return m;
@@ -3460,8 +3460,8 @@ static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, m
 	if (!r->rp || !m || !m->buffer) return;
 
 	memset(&mvp, 0, sizeof(mvp));
-	r3d_mat44_to_float16(proj, mvp.viewProj);
-	r3d_mat44_to_float16(model, mvp.model);
+	joy_r3d_mat44_to_float16(proj, mvp.viewProj);
+	joy_r3d_mat44_to_float16(model, mvp.model);
 	SDL_PushGPUVertexUniformData(r->cmd, 0, &mvp, sizeof(mvp));
 
 	if (tex) {
@@ -3488,7 +3488,7 @@ static void draw_mesh_internal_proj(jr3d_p r, render_mesh_p m, mat44_t* model, m
 
 /* ---- 公开绘制 API ---- */
 
-void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
+void joy_r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
 {
 	mat44_t model;
 	SDL_GPUTexture* tex;
@@ -3500,7 +3500,7 @@ void r3d_draw_mesh(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t
 	draw_mesh_internal(r, m, &model, tex);
 }
 
-void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex)
+void joy_r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void* tex)
 {
 	mat44_t model = { 0 };
 	model.m0 = scale.x;  model.m5 = scale.y;  model.m10 = scale.z;
@@ -3510,7 +3510,7 @@ void r3d_draw_mesh_tex(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, void
 }
 
 /* billboard 绘制: 单位 quad 经 right/up 基向量旋转 + size 缩放 + center 平移 */
-void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
+void joy_r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
 	vec3_t center, vec3_t right, vec3_t up, float size, void* tex)
 {
 	if (!r || !m) return;
@@ -3526,9 +3526,9 @@ void r3d_draw_mesh_tex_basis(jr3d_p r, render_mesh_p m,
 	draw_mesh_internal(r, m, &model, (SDL_GPUTexture*)tex);
 }
 
-/* ---- 线框绘制（需在 r3d_begin/r3d_end 之间调用） ---- */
+/* ---- 线框绘制（需在 joy_r3d_begin/joy_r3d_end 之间调用） ---- */
 
-void r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
+void joy_r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
 {
 	mat44_t model;
 	SDL_GPUTexture* tex;
@@ -3545,7 +3545,7 @@ void r3d_draw_wire(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
-void r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
+void joy_r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
 {
 	SDL_GPUTexture* tex;
 	if (!r || !r->rp || !r->line_pipeline || !m) return;
@@ -3557,15 +3557,15 @@ void r3d_draw_wire_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
-/* ---- 实体填充绘制（写深度, 供"填充+描边"画风使用; 需在 r3d_begin/r3d_end 之间调用） ---- */
+/* ---- 实体填充绘制（写深度, 供"填充+描边"画风使用; 需在 joy_r3d_begin/joy_r3d_end 之间调用） ---- */
 
-void r3d_set_clear_color(jr3d_p r, uint8_t cr, uint8_t cg, uint8_t cb)
+void joy_r3d_set_clear_color(jr3d_p r, uint8_t cr, uint8_t cg, uint8_t cb)
 {
 	if (!r) return;
 	r->clear_r = cr; r->clear_g = cg; r->clear_b = cb;
 }
 
-void r3d_draw_mesh_solid(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
+void joy_r3d_draw_mesh_solid(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jcolor_t color)
 {
 	mat44_t model;
 	SDL_GPUTexture* tex;
@@ -3582,7 +3582,7 @@ void r3d_draw_mesh_solid(jr3d_p r, render_mesh_p m, vec3_t pos, vec3_t scale, jc
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
-void r3d_draw_mesh_solid_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
+void joy_r3d_draw_mesh_solid_basis(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
 {
 	SDL_GPUTexture* tex;
 	if (!r || !r->rp || !r->solid_pipeline || !m) return;
@@ -3660,7 +3660,7 @@ static void* joy_fov_gradient_texture(jr3d_p r)
 		px[(size_t)y * 4 + 0] = 54; px[(size_t)y * 4 + 1] = 56;
 		px[(size_t)y * 4 + 2] = 62; px[(size_t)y * 4 + 3] = a;
 	}
-	s_tex = r3d_create_texture(r, 1, H, px, 0);
+	s_tex = joy_r3d_create_texture(r, 1, H, px, 0);
 	SDL_free(px);
 	return s_tex;
 }
@@ -3706,13 +3706,13 @@ void joy_fov_draw(jr3d_p r, float px, float py, float pz,
 		verts[vi]=b1x; verts[vi+1]=py; verts[vi+2]=b1z; verts[vi+3]=0.5f; verts[vi+4]=1.0f; vi+=5;
 	}
 
-	render_mesh_p mesh = r3d_mesh_custom(r, verts, vi / 5);
+	render_mesh_p mesh = joy_r3d_mesh_custom(r, verts, vi / 5);
 	SDL_free(verts);
 	if (!mesh) return;
 
 	/* 上一帧 mesh 在本帧绘制后延迟释放, 避免 GPU buffer 在被引用时销毁悬空 */
 	static render_mesh_p s_prev = NULL;
-	if (s_prev) { r3d_mesh_destroy(r, s_prev); s_prev = NULL; }
+	if (s_prev) { joy_r3d_mesh_destroy(r, s_prev); s_prev = NULL; }
 	s_prev = mesh;
 
 	void* tex = joy_fov_gradient_texture(r);
@@ -3723,16 +3723,16 @@ void joy_fov_draw(jr3d_p r, float px, float py, float pz,
 	draw_mesh_internal(r, mesh, &idm, (SDL_GPUTexture*)tex);
 }
 
-/* ---- 光照绘制（需在 r3d_begin/r3d_end 之间调用） ---- */
+/* ---- 光照绘制（需在 joy_r3d_begin/joy_r3d_end 之间调用） ---- */
 
-void r3d_set_light_block(jr3d_p r, const jr3d_light_block_t* block)
+void joy_r3d_set_light_block(jr3d_p r, const jr3d_light_block_t* block)
 {
 	if (!r || !block) return;
 	r->light_block = *block;
 	r->light_block_valid = true;
 }
 
-void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* tex)
+void joy_r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* tex)
 {
 	render_mvp_t mvp;
 	SDL_GPUTextureSamplerBinding samp;
@@ -3740,13 +3740,13 @@ void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* te
 	if (!r || !r->rp || !r->lighting_pipeline || !r->light_block_valid || !m) return;
 	/* 拦截明显非法的 buffer 指针（如 0xFFFFFFFFFFFFFFFF / 内核地址），避免崩溃 */
 	if ((uintptr_t)m->buffer < (uintptr_t)0x1000 || (uintptr_t)m->buffer == (uintptr_t)-1) {
-		log_error("r3d_draw_mesh_lit: 跳过非法 mesh buffer %p", (void*)m->buffer);
+		joy_core_log_error("joy_r3d_draw_mesh_lit: 跳过非法 mesh buffer %p", (void*)m->buffer);
 		return;
 	}
 
 	memset(&mvp, 0, sizeof(mvp));
-	r3d_mat44_to_float16(&r->viewProj, mvp.viewProj);
-	r3d_mat44_to_float16(model, mvp.model);
+	joy_r3d_mat44_to_float16(&r->viewProj, mvp.viewProj);
+	joy_r3d_mat44_to_float16(model, mvp.model);
 	SDL_PushGPUVertexUniformData(r->cmd, 0, &mvp, sizeof(mvp));
 	SDL_PushGPUFragmentUniformData(r->cmd, 0, &r->light_block, sizeof(r->light_block));
 
@@ -3763,23 +3763,23 @@ void r3d_draw_mesh_lit(jr3d_p r, render_mesh_p m, const mat44_t* model, void* te
 	SDL_BindGPUVertexBuffers(r->rp, 0, &bind, 1);
 	SDL_DrawGPUPrimitives(r->rp, m->vertex_count, 1, 0, 0);
 
-	/* 恢复默认 pipeline, 与 r3d_draw_wire / r3d_draw_solid 保持一致:
+	/* 恢复默认 pipeline, 与 joy_r3d_draw_wire / r3d_draw_solid 保持一致:
 	   否则后续用 draw_mesh_internal(如网格、2D 文字) 会误用 lighting_pipeline,
 	   顶点布局(pos+normal+uv)不匹配 5-float 网格/quad, 导致文字变成白块 */
 	SDL_BindGPUGraphicsPipeline(r->rp, r->pipeline);
 }
 
-void r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
+void joy_r3d_draw_mesh_lit_color(jr3d_p r, render_mesh_p m, const mat44_t* model, jcolor_t color)
 {
 	SDL_GPUTexture* tex;
 	if (!r) return;
 	tex = get_color_texture(r, color.r, color.g, color.b, 255);
-	r3d_draw_mesh_lit(r, m, model, tex);
+	joy_r3d_draw_mesh_lit(r, m, model, tex);
 }
 
 /* ---- 棋盘格纹理 ---- */
 
-void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count)
+void* joy_r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count)
 {
 	int w = tile_size * tile_count;
 	int h = w;
@@ -3815,7 +3815,7 @@ void* r3d_gen_checkerboard(jr3d_p r, int tile_size, int tile_count)
 	return (void*)tex;
 }
 
-void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width)
+void joy_r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width)
 {
 	float half, hw, p;
 	int i;
@@ -3841,7 +3841,7 @@ void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width)
 			verts_x[vi++]=p; verts_x[vi++]=0; verts_x[vi++]=-half; verts_x[vi++]=0; verts_x[vi++]=0;
 			verts_x[vi++]=p+hw; verts_x[vi++]=0; verts_x[vi++]=half; verts_x[vi++]=1; verts_x[vi++]=1;
 			verts_x[vi++]=p; verts_x[vi++]=0; verts_x[vi++]=half; verts_x[vi++]=0; verts_x[vi++]=1;
-			bx = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts_x, sizeof(verts_x));
+			bx = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts_x, sizeof(verts_x));
 		}
 		if (bx) {
 			memset(&id, 0, sizeof(id)); id.m15 = 1;
@@ -3859,7 +3859,7 @@ void r3d_draw_grid(jr3d_p r, int slices, float spacing, float line_width)
 			verts_z[vi++]=-half; verts_z[vi++]=0; verts_z[vi++]=p; verts_z[vi++]=0; verts_z[vi++]=0;
 			verts_z[vi++]= half; verts_z[vi++]=0; verts_z[vi++]=p+hw; verts_z[vi++]=1; verts_z[vi++]=1;
 			verts_z[vi++]=-half; verts_z[vi++]=0; verts_z[vi++]=p+hw; verts_z[vi++]=0; verts_z[vi++]=1;
-			bz = (SDL_GPUBuffer*)r3d_upload_buffer(r->dev, verts_z, sizeof(verts_z));
+			bz = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts_z, sizeof(verts_z));
 		}
 		if (bz) {
 			memset(&id, 0, sizeof(id)); id.m15 = 1;

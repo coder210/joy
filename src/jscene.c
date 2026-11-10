@@ -42,7 +42,7 @@ struct scene_node {
 // 节点实现
 // ============================================================
 
-scene_node_p scene_node_create(void)
+scene_node_p joy_scene_node_create(void)
 {
     struct scene_node* n = (struct scene_node*)SDL_malloc(sizeof(struct scene_node));
     SDL_assert(n);
@@ -53,13 +53,13 @@ scene_node_p scene_node_create(void)
     return n;
 }
 
-void scene_node_destroy(scene_node_p node)
+void joy_scene_node_destroy(scene_node_p node)
 {
     if (!node) return;
     scene_node_p child = node->first_child;
     while (child) {
         scene_node_p next = child->next_sibling;
-        scene_node_destroy(child);
+        joy_scene_node_destroy(child);
         child = next;
     }
     if (node->on_destroy) {
@@ -68,11 +68,11 @@ void scene_node_destroy(scene_node_p node)
     SDL_free(node);
 }
 
-void scene_node_add_child(scene_node_p parent, scene_node_p child)
+void joy_scene_node_add_child(scene_node_p parent, scene_node_p child)
 {
     if (!parent || !child) return;
     if (child->parent) {
-        scene_node_remove_child(child->parent, child);
+        joy_scene_node_remove_child(child->parent, child);
     }
     child->parent = parent;
     child->next_sibling = parent->first_child;
@@ -80,7 +80,7 @@ void scene_node_add_child(scene_node_p parent, scene_node_p child)
     parent->child_count++;
 }
 
-void scene_node_remove_child(scene_node_p parent, scene_node_p child)
+void joy_scene_node_remove_child(scene_node_p parent, scene_node_p child)
 {
     if (!parent || !child) return;
     struct scene_node* prev = NULL;
@@ -102,33 +102,33 @@ void scene_node_remove_child(scene_node_p parent, scene_node_p child)
     }
 }
 
-scene_node_p scene_node_get_parent(scene_node_p node) { return node ? node->parent : NULL; }
-scene_node_p scene_node_get_first_child(scene_node_p node) { return node ? node->first_child : NULL; }
-scene_node_p scene_node_get_next_sibling(scene_node_p node) { return node ? node->next_sibling : NULL; }
-int scene_node_get_child_count(scene_node_p node) { return node ? node->child_count : 0; }
+scene_node_p joy_scene_node_get_parent(scene_node_p node) { return node ? node->parent : NULL; }
+scene_node_p joy_scene_node_get_first_child(scene_node_p node) { return node ? node->first_child : NULL; }
+scene_node_p joy_scene_node_get_next_sibling(scene_node_p node) { return node ? node->next_sibling : NULL; }
+int joy_scene_node_get_child_count(scene_node_p node) { return node ? node->child_count : 0; }
 
-void scene_node_set_position(scene_node_p node, float x, float y)
+void joy_scene_node_set_position(scene_node_p node, float x, float y)
 {
     if (!node) return;
     node->local_x = x;
     node->local_y = y;
 }
 
-void scene_node_get_position(scene_node_p node, float* out_x, float* out_y)
+void joy_scene_node_get_position(scene_node_p node, float* out_x, float* out_y)
 {
     if (!node) return;
     if (out_x) *out_x = node->local_x;
     if (out_y) *out_y = node->local_y;
 }
 
-void scene_node_set_world_position(scene_node_p node, float x, float y)
+void joy_scene_node_set_world_position(scene_node_p node, float x, float y)
 {
     if (!node) return;
     node->world_x = x;
     node->world_y = y;
 }
 
-void scene_node_get_world_position(scene_node_p node, float* out_x, float* out_y)
+void joy_scene_node_get_world_position(scene_node_p node, float* out_x, float* out_y)
 {
     if (!node) return;
     float wx = node->local_x;
@@ -143,39 +143,39 @@ void scene_node_get_world_position(scene_node_p node, float* out_x, float* out_y
     if (out_y) *out_y = wy;
 }
 
-void scene_node_set_rotation(scene_node_p node, float radians) { if (node) node->rotation = radians; }
-float scene_node_get_rotation(scene_node_p node) { return node ? node->rotation : 0.0f; }
+void joy_scene_node_set_rotation(scene_node_p node, float radians) { if (node) node->rotation = radians; }
+float joy_scene_node_get_rotation(scene_node_p node) { return node ? node->rotation : 0.0f; }
 
-void scene_node_set_scale(scene_node_p node, float scale_x, float scale_y)
+void joy_scene_node_set_scale(scene_node_p node, float scale_x, float scale_y)
 {
     if (!node) return;
     node->scale_x = scale_x;
     node->scale_y = scale_y;
 }
 
-void scene_node_get_scale(scene_node_p node, float* out_x, float* out_y)
+void joy_scene_node_get_scale(scene_node_p node, float* out_x, float* out_y)
 {
     if (!node) return;
     if (out_x) *out_x = node->scale_x;
     if (out_y) *out_y = node->scale_y;
 }
 
-void scene_node_set_zorder(scene_node_p node, int zorder) { if (node) node->zorder = zorder; }
-int scene_node_get_zorder(scene_node_p node) { return node ? node->zorder : 0; }
+void joy_scene_node_set_zorder(scene_node_p node, int zorder) { if (node) node->zorder = zorder; }
+int joy_scene_node_get_zorder(scene_node_p node) { return node ? node->zorder : 0; }
 
-void scene_node_set_userdata(scene_node_p node, void* ud) { if (node) node->userdata = ud; }
-void* scene_node_get_userdata(scene_node_p node) { return node ? node->userdata : NULL; }
+void joy_scene_node_set_userdata(scene_node_p node, void* ud) { if (node) node->userdata = ud; }
+void* joy_scene_node_get_userdata(scene_node_p node) { return node ? node->userdata : NULL; }
 
 /* ===== name / tag ===== */
-void scene_node_set_name(scene_node_p node, const char* name) {
+void joy_scene_node_set_name(scene_node_p node, const char* name) {
     if (node && name) SDL_strlcpy(node->name, name, sizeof(node->name));
 }
-const char* scene_node_get_name(scene_node_p node) { return node ? node->name : ""; }
+const char* joy_scene_node_get_name(scene_node_p node) { return node ? node->name : ""; }
 
-void scene_node_set_tag(scene_node_p node, const char* tag) {
+void joy_scene_node_set_tag(scene_node_p node, const char* tag) {
     if (node && tag) SDL_strlcpy(node->tag, tag, sizeof(node->tag));
 }
-const char* scene_node_get_tag(scene_node_p node) { return node ? node->tag : ""; }
+const char* joy_scene_node_get_tag(scene_node_p node) { return node ? node->tag : ""; }
 
 
 /* ===== 递归查找 ===== */
@@ -193,7 +193,7 @@ static scene_node_p find_name_r(scene_node_p root, const char* name) {
     return NULL;
 }
 
-scene_node_p scene_find_node_by_name(scene_node_p root, const char* name) {
+scene_node_p joy_scene_find_node_by_name(scene_node_p root, const char* name) {
     return find_name_r(root, name);
 }
 
@@ -211,17 +211,17 @@ static int find_tag_r(scene_node_p root, const char* tag, scene_node_p* out, int
     return count;
 }
 
-int scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max) {
+int joy_scene_find_nodes_by_tag(scene_node_p root, const char* tag, scene_node_p* out, int max) {
     if (!root || !tag) return 0;
     return find_tag_r(root, tag, out, max, 0);
 }
 
-void scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb) { if (node) node->on_update = cb; }
-void scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb) { if (node) node->on_render = cb; }
-void scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb) { if (node) node->on_destroy = cb; }
-void scene_node_set_event_callback(scene_node_p node, scene_node_event_fn cb) { if (node) node->on_event = cb; }
+void joy_scene_node_set_update_callback(scene_node_p node, scene_node_update_fn cb) { if (node) node->on_update = cb; }
+void joy_scene_node_set_render_callback(scene_node_p node, scene_node_render_fn cb) { if (node) node->on_render = cb; }
+void joy_scene_node_set_destroy_callback(scene_node_p node, scene_node_destroy_fn cb) { if (node) node->on_destroy = cb; }
+void joy_scene_node_set_event_callback(scene_node_p node, scene_node_event_fn cb) { if (node) node->on_event = cb; }
 
-void scene_node_update(scene_node_p node, float delta_time)
+void joy_scene_node_update(scene_node_p node, float delta_time)
 {
     if (!node) return;
 
@@ -238,29 +238,29 @@ void scene_node_update(scene_node_p node, float delta_time)
 
     scene_node_p child = node->first_child;
     while (child) {
-        scene_node_update(child, delta_time);
+        joy_scene_node_update(child, delta_time);
         child = child->next_sibling;
     }
 }
 
-void scene_node_render(scene_node_p node, const void* arg)
+void joy_scene_node_render(scene_node_p node, const void* arg)
 {
     if (!node) return;
     if (node->on_render) node->on_render(node, arg);
     scene_node_p child = node->first_child;
     while (child) {
-        scene_node_render(child, arg);
+        joy_scene_node_render(child, arg);
         child = child->next_sibling;
     }
 }
 
-void scene_node_handle_event(scene_node_p node, const void* e)
+void joy_scene_node_handle_event(scene_node_p node, const void* e)
 {
     if (!node) return;
     if (node->on_event) node->on_event(node, e);
     scene_node_p child = node->first_child;
     while (child) {
-        scene_node_handle_event(child, e);
+        joy_scene_node_handle_event(child, e);
         child = child->next_sibling;
     }
 }
@@ -293,7 +293,7 @@ struct scene {
 // 场景实现
 // ============================================================
 
-scene_p scene_create(const char* name)
+scene_p joy_scene_create(const char* name)
 {
     scene_p s = (scene_p)SDL_malloc(sizeof(struct scene));
     SDL_assert(s);
@@ -305,19 +305,19 @@ scene_p scene_create(const char* name)
     return s;
 }
 
-void scene_destroy(scene_p scene)
+void joy_scene_destroy(scene_p scene)
 {
     if (!scene) return;
     if (scene->on_destroy) scene->on_destroy(scene);
     for (int i = 0; i < scene->root_count; i++) {
-        scene_node_destroy(scene->root_nodes[i]);
+        joy_scene_node_destroy(scene->root_nodes[i]);
     }
-    if (scene->popup_node) scene_node_destroy(scene->popup_node);
+    if (scene->popup_node) joy_scene_node_destroy(scene->popup_node);
     SDL_free(scene->root_nodes);
     SDL_free(scene);
 }
 
-void scene_add_root_node(scene_p scene, scene_node_p root)
+void joy_scene_add_root_node(scene_p scene, scene_node_p root)
 {
     if (!scene || !root) return;
     if (scene->root_count >= scene->root_capacity) {
@@ -329,7 +329,7 @@ void scene_add_root_node(scene_p scene, scene_node_p root)
     scene->root_nodes[scene->root_count++] = root;
 }
 
-void scene_remove_root_node(scene_p scene, scene_node_p root)
+void joy_scene_remove_root_node(scene_p scene, scene_node_p root)
 {
     if (!scene || !root) return;
     for (int i = 0; i < scene->root_count; i++) {
@@ -344,16 +344,16 @@ void scene_remove_root_node(scene_p scene, scene_node_p root)
     }
 }
 
-int scene_get_root_count(scene_p scene) { return scene ? scene->root_count : 0; }
+int joy_scene_get_root_count(scene_p scene) { return scene ? scene->root_count : 0; }
 
-scene_node_p scene_get_root_at(scene_p scene, int index)
+scene_node_p joy_scene_get_root_at(scene_p scene, int index)
 {
     if (!scene || index < 0 || index >= scene->root_count) return NULL;
     return scene->root_nodes[index];
 }
 
 /* ===== 场景级递归查找（依赖 struct scene 定义） ===== */
-scene_node_p scene_find_node_by_name_deep(scene_p scene, const char* name) {
+scene_node_p joy_scene_find_node_by_name_deep(scene_p scene, const char* name) {
     if (!scene || !name) return NULL;
     for (int i = 0; i < scene->root_count; i++) {
         scene_node_p found = find_name_r(scene->root_nodes[i], name);
@@ -362,7 +362,7 @@ scene_node_p scene_find_node_by_name_deep(scene_p scene, const char* name) {
     return NULL;
 }
 
-int scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max) {
+int joy_scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* out, int max) {
     if (!scene || !tag || !out || max <= 0) return 0;
     int count = 0;
     for (int i = 0; i < scene->root_count && count < max; i++) {
@@ -371,7 +371,7 @@ int scene_find_nodes_by_tag_deep(scene_p scene, const char* tag, scene_node_p* o
     return count;
 }
 
-void scene_update(scene_p scene, float delta_time)
+void joy_scene_update(scene_p scene, float delta_time)
 {
     if (!scene) return;
     if (scene->fixed_step > 0.0f) {
@@ -383,53 +383,53 @@ void scene_update(scene_p scene, float delta_time)
     }
     if (scene->on_update) scene->on_update(scene, delta_time);
     for (int i = 0; i < scene->root_count; i++) {
-        scene_node_update(scene->root_nodes[i], delta_time);
+        joy_scene_node_update(scene->root_nodes[i], delta_time);
     }
 }
 
-void scene_render(scene_p scene, const void* arg)
+void joy_scene_render(scene_p scene, const void* arg)
 {
     if (!scene) return;
     if (scene->on_render) scene->on_render(scene);
     for (int i = 0; i < scene->root_count; i++) {
-        scene_node_render(scene->root_nodes[i], arg);
+        joy_scene_node_render(scene->root_nodes[i], arg);
     }
     // 弹层节点最后渲染，保证在所有普通节点之上
-    if (scene->popup_node) scene_node_render(scene->popup_node, arg);
+    if (scene->popup_node) joy_scene_node_render(scene->popup_node, arg);
 }
 
-void scene_handle_event(scene_p scene, const void* e)
+void joy_scene_handle_event(scene_p scene, const void* e)
 {
     if (!scene || !e) return;
     if (scene->on_event) scene->on_event(scene, e);
     for (int i = 0; i < scene->root_count; i++) {
-        scene_node_handle_event(scene->root_nodes[i], e);
+        joy_scene_node_handle_event(scene->root_nodes[i], e);
     }
 }
 
-void scene_set_load_callback(scene_p scene, scene_load_fn cb) { if (scene) scene->on_load = cb; }
-void scene_set_update_callback(scene_p scene, scene_update_fn cb) 
+void joy_scene_set_load_callback(scene_p scene, scene_load_fn cb) { if (scene) scene->on_load = cb; }
+void joy_scene_set_update_callback(scene_p scene, scene_update_fn cb) 
 { 
         if (scene) scene->on_update = cb;
 }
-void scene_set_render_callback(scene_p scene, scene_render_fn cb) { if (scene) scene->on_render = cb; }
-void scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
-void scene_set_event_callback(scene_p scene, scene_event_fn cb) { if (scene) scene->on_event = cb; }
+void joy_scene_set_render_callback(scene_p scene, scene_render_fn cb) { if (scene) scene->on_render = cb; }
+void joy_scene_set_destroy_callback(scene_p scene, scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
+void joy_scene_set_event_callback(scene_p scene, scene_event_fn cb) { if (scene) scene->on_event = cb; }
 
 /* 启用固定步长更新(Unity FixedUpdate 对应)。step<=0 关闭，回调可传 NULL */
-void scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float step) {
+void joy_scene_set_fixed_update_callback(scene_p scene, scene_fixed_update_fn cb, float step) {
 	if (scene) {
 		scene->on_fixed_update = cb;
 		scene->fixed_step = step;
 		scene->fixed_accum = 0.0f;
 	}
 }
-void scene_set_userdata(scene_p scene, void* ud) { if (scene) scene->userdata = ud; }
-void* scene_get_userdata(scene_p scene) { return scene ? scene->userdata : NULL; }
-const char* scene_get_name(scene_p scene) { return scene ? scene->name : ""; }
+void joy_scene_set_userdata(scene_p scene, void* ud) { if (scene) scene->userdata = ud; }
+void* joy_scene_get_userdata(scene_p scene) { return scene ? scene->userdata : NULL; }
+const char* joy_scene_get_name(scene_p scene) { return scene ? scene->name : ""; }
 
-void scene_set_popup_node(scene_p scene, scene_node_p node) { if (scene) scene->popup_node = node; }
-scene_node_p scene_get_popup_node(scene_p scene) { return scene ? scene->popup_node : NULL; }
+void joy_scene_set_popup_node(scene_p scene, scene_node_p node) { if (scene) scene->popup_node = node; }
+scene_node_p joy_scene_get_popup_node(scene_p scene) { return scene ? scene->popup_node : NULL; }
 
 // ============================================================
 // 场景管理器结构体
@@ -445,7 +445,7 @@ struct scene_manager {
 // 场景管理器实现
 // ============================================================
 
-scene_manager_p scene_manager_create(void)
+scene_manager_p joy_scene_manager_create(void)
 {
     struct scene_manager* mgr = (struct scene_manager*)SDL_malloc(sizeof(struct scene_manager));
     SDL_assert(mgr);
@@ -456,17 +456,17 @@ scene_manager_p scene_manager_create(void)
     return mgr;
 }
 
-void scene_manager_destroy(scene_manager_p mgr)
+void joy_scene_manager_destroy(scene_manager_p mgr)
 {
     if (!mgr) return;
     for (int i = 0; i < mgr->scene_count; i++) {
-        scene_destroy(mgr->scenes[i]);
+        joy_scene_destroy(mgr->scenes[i]);
     }
     SDL_free(mgr->scenes);
     SDL_free(mgr);
 }
 
-void scene_manager_push(scene_manager_p mgr, scene_p scene)
+void joy_scene_manager_push(scene_manager_p mgr, scene_p scene)
 {
     if (!mgr || !scene) return;
     if (mgr->scene_count >= mgr->scene_capacity) {
@@ -478,13 +478,13 @@ void scene_manager_push(scene_manager_p mgr, scene_p scene)
     mgr->scenes[mgr->scene_count++] = scene;
 }
 
-void scene_manager_replace(scene_manager_p mgr, scene_p scene)
+void joy_scene_manager_replace(scene_manager_p mgr, scene_p scene)
 {
     if (!mgr || !scene) return;
     if (mgr->scene_count > 0) {
         scene_p old = mgr->scenes[mgr->scene_count - 1];
         if (old != scene) {
-            scene_destroy(old);
+            joy_scene_destroy(old);
         }
         mgr->scenes[mgr->scene_count - 1] = scene;
     } else {
@@ -497,37 +497,37 @@ void scene_manager_replace(scene_manager_p mgr, scene_p scene)
     if (scene->on_load) scene->on_load(scene);
 }
 
-void scene_manager_pop(scene_manager_p mgr)
+void joy_scene_manager_pop(scene_manager_p mgr)
 {
     if (!mgr || mgr->scene_count <= 0) return;
-    scene_destroy(mgr->scenes[--mgr->scene_count]);
+    joy_scene_destroy(mgr->scenes[--mgr->scene_count]);
 }
 
-void scene_manager_update(scene_manager_p mgr, float delta_time)
+void joy_scene_manager_update(scene_manager_p mgr, float delta_time)
 {
     if (!mgr || mgr->scene_count == 0) return;
-    scene_update(mgr->scenes[mgr->scene_count - 1], delta_time);
+    joy_scene_update(mgr->scenes[mgr->scene_count - 1], delta_time);
 }
 
-void scene_manager_render(scene_manager_p mgr, const void* arg)
+void joy_scene_manager_render(scene_manager_p mgr, const void* arg)
 {
     if (!mgr || mgr->scene_count == 0) return;
-    scene_render(mgr->scenes[mgr->scene_count - 1], arg);
+    joy_scene_render(mgr->scenes[mgr->scene_count - 1], arg);
 }
 
-void scene_manager_handle_event(scene_manager_p mgr, const void* e)
+void joy_scene_manager_handle_event(scene_manager_p mgr, const void* e)
 {
     if (!mgr || mgr->scene_count == 0 || !e) return;
-    scene_handle_event(mgr->scenes[mgr->scene_count - 1], e);
+    joy_scene_handle_event(mgr->scenes[mgr->scene_count - 1], e);
 }
 
-scene_p scene_manager_get_current(scene_manager_p mgr)
+scene_p joy_scene_manager_get_current(scene_manager_p mgr)
 {
     if (!mgr || mgr->scene_count == 0) return NULL;
     return mgr->scenes[mgr->scene_count - 1];
 }
 
-int scene_manager_get_count(scene_manager_p mgr)
+int joy_scene_manager_get_count(scene_manager_p mgr)
 {
     return mgr ? mgr->scene_count : 0;
 }

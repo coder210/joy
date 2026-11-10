@@ -35,7 +35,7 @@
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
 | `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
 | `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的 1156 条存量 API 名，命名门禁的豁免基线；全量迁移后删除 |
-| `include/joy/compat.h` | 人工 | 旧名 → 新名的宏映射，迁移期保护外部调用方；`joy.h` 引入，但不属于 `DECL_SOURCES` |
+| `include/joy/compat.h` | 人工 | 空兼容层占位文件，`joy.h` 引入；P1 收尾已把 `src/` 与各模块定义、调用点真正改名，宏块清空，不再靠 `#define` 桥接 |
 
 ## 公开 API 命名规范（P0 起，分阶段迁移）
 
@@ -79,8 +79,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 - 迁移改名时在 `naming.js` 的 `ALIASES` 登记 `新C名 → 旧PascalCase名`，使
   三端方法名与 `api->R2dCreate` 保持冻结；不能用「剥掉 `joy_<域>`」自动推导
   （历史名如 `JanimatorCreate` 会坏）。
-- `compat.h` 放旧名 `#define`，不在 `DECL_SOURCES` 里且 `collectDecls()` 跳过
-  `#` 行，不会污染 IDL / 生成物。定义 `JOY_NO_LEGACY_NAMES` 可查残留调用点。
+- `compat.h` 曾放旧名 `#define` 桥接；P1 收尾已把 `src/` 与各模块里的定义与调用点
+  真正改成 `joy_*` 新名，宏块清空，该文件仅作为 `joy.h` 的占位 include 保留。
+  若日后需要重新开放旧名兼容，在下方补 `#define` 即可。
 
 ### 迁移顺序（P1 进行中）
 
@@ -89,9 +90,8 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `HANDLE_PROBE` 按名字硬编码，漏改会让强句柄自检被静默跳过。
 - 第二批 `core` 剩余 39 条（hash / utf8 / lcg / env / log / event / fps /
   clipboard / local_ips），`core` 域累计 45 条。同步了 `SELFTEST_SAFE` 里
-  5 个 hash 名。这批改的是声明；`src/jcore.c` / `jutils.c` / `jsys.c` 里的
-  **定义仍写旧名**，由 `compat.h` 宏在预处理期切到新符号，全量迁移完成、
-  删除 `compat.h` 前再统一替换定义处源码名。`push_*` / `game_timer_*` /
+  5 个 hash 名。`src/jcore.c` / `jutils.c` / `jsys.c` 里的定义与调用点也同步
+  改成 `joy_*` 新名（见 P1 收尾说明）。`push_*` / `game_timer_*` /
   `jtimer_*` 等 domain 碎片留待后续批次归并。
 - 第三批 **碎片归位 30 条**：`pack/unpack` → `net`（12）、
   `jtimer/game_timer` → `scene`（15）、`push_*` → `core`（2）、
@@ -154,7 +154,15 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   vtable）。改名点是 `jmath_wrap.js` 里 3 处 `jmath_' + f.name` →
   `joy_math_' + f.name`，重生成后 IDL 名变成 `joy_math_*`，按 `math` 域收敛
   （顺带把原本不在白名单里的 `jmath` 域也纠正成 `math`）。脚本层名用 ALIASES
-  冻结为 `Jmath*`，`compat.h` 兜底旧 `jmath_*` 调用。`math` 域 313 条。
+  冻结为 `Jmath*`，`jmath_wrappers.c/.h` 已用新名重生成；`src/jgjk.c` /
+  `jbox2d.c` / `jcollision.c` 等旧名调用点也同步改名。`math` 域 313 条。
+- **P1 收尾（真正改名）**：前 15 批只改了 `api.h` / `defs.h` / 生成物里的声明，
+  `src/*.c` 与各模块定义、调用点仍写旧名，靠 `compat.h` 的 `#define` 在预处理期
+  切到新符号——等于"只重定义了名字、没改源码"。收尾阶段用字符边界批量替换，把
+  `src/`（jui.c 538、jr3d.c 281、jnetwork.c 187、jr2d.c 143 …）、`examples/`、
+  `modules/` 共 57 个手写源文件里的 1881 处旧名全部改成 `joy_*` 新名；改写后
+  手写源零旧名残留，且**不再需要兼容宏**即可编译通过，`compat.h` 宏块清空（仅留
+  空占位，防 `joy.h` 的 `#include` 失效）。
 
 映射见 `idl/rename_map.json`（累加式）。
 

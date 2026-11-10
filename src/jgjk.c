@@ -534,7 +534,7 @@ static bool degenerate_fallback_f(gjk3df_collider_p ca, gjk3df_collider_p cb, gj
 }
 
 /* ============ 公开API实现 ============ */
-bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
+bool joy_math_gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 	vec3f_t init_dir, gjk3df_contact_p contact)
 {
 	simplex3d_f_t simplex;
@@ -584,21 +584,21 @@ bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 
 /* ============ 碰撞体初始化函数 ============ */
 
-void gjk3df_init_sphere(gjk3df_collider_t *c, vec3f_t pos, fp_t radius) {
+void joy_math_gjk3df_init_sphere(gjk3df_collider_t *c, vec3f_t pos, fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_SPHERE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void gjk3df_init_box(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size) {
+void joy_math_gjk3df_init_box(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation) {
+void joy_math_gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_OBB;
 	c->position = pos;
@@ -606,7 +606,7 @@ void gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size, vec3f
 	c->rotation = rotation;
 }
 
-void gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
+void joy_math_gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CAPSULE;
 	c->position = pos;
@@ -615,7 +615,7 @@ void gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t he
 	c->axis = vec3f_normalize(axis);
 }
 
-void gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void joy_math_gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CYLINDER;
 	c->position = pos;
@@ -623,7 +623,7 @@ void gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t h
 	c->height = height;
 }
 
-void gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void joy_math_gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CONE;
 	c->position = pos;
@@ -631,7 +631,7 @@ void gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t heigh
 	c->height = height;
 }
 
-void gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num) {
+void joy_math_gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_MESH;
 	c->vertices = vertices;
@@ -1131,7 +1131,7 @@ static bool degenerate_fallback(gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_
 }
 
 /* ============ 公开API实现 ============ */
-bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
+bool joy_math_gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 	vec3_t init_dir, gjk3d_contact_p contact)
 {
 	simplex3d_t simplex;
@@ -1181,21 +1181,21 @@ bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 
 /* ============ 碰撞体初始化函数 ============ */
 
-void gjk3d_init_sphere(gjk3d_collider_t *c, vec3_t pos, ft_t radius) {
+void joy_math_gjk3d_init_sphere(gjk3d_collider_t *c, vec3_t pos, ft_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_SPHERE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void gjk3d_init_box(gjk3d_collider_t *c, vec3_t pos, vec3_t half_size) {
+void joy_math_gjk3d_init_box(gjk3d_collider_t *c, vec3_t pos, vec3_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void gjk3d_init_capsule(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis) {
+void joy_math_gjk3d_init_capsule(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CAPSULE;
 	c->position = pos;
@@ -1204,7 +1204,7 @@ void gjk3d_init_capsule(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t heigh
 	c->axis = vec3_normalize(axis);
 }
 
-void gjk3d_init_cylinder(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
+void joy_math_gjk3d_init_cylinder(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CYLINDER;
 	c->position = pos;
@@ -1212,7 +1212,7 @@ void gjk3d_init_cylinder(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t heig
 	c->height = height;
 }
 
-void gjk3d_init_cone(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
+void joy_math_gjk3d_init_cone(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CONE;
 	c->position = pos;
@@ -1220,7 +1220,7 @@ void gjk3d_init_cone(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) 
 	c->height = height;
 }
 
-void gjk3d_init_mesh(gjk3d_collider_t *c, vec3_t *vertices, int num) {
+void joy_math_gjk3d_init_mesh(gjk3d_collider_t *c, vec3_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_MESH;
 	c->vertices = vertices;
@@ -1524,7 +1524,7 @@ static bool epa2d(simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb
 
 /* ============ 公开API实现 ============ */
 
-bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
+bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
 	vec2f_t init_dir, gjk2d_contact_p contact)
 {
 	simplex2d_t simplex;
@@ -1574,21 +1574,21 @@ bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
 	return false;
 }
 
-void gjk2d_init_circle(gjk2d_collider_t *c, vec2f_t pos, fp_t radius) {
+void joy_math_gjk2d_init_circle(gjk2d_collider_t *c, vec2f_t pos, fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_CIRCLE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void gjk2d_init_box(gjk2d_collider_t *c, vec2f_t pos, vec2f_t half_size) {
+void joy_math_gjk2d_init_box(gjk2d_collider_t *c, vec2f_t pos, vec2f_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius) {
+void joy_math_gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_CAPSULE;
 	c->position = pos;
@@ -1597,14 +1597,14 @@ void gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t hei
 	c->radius = radius;
 }
 
-void gjk2d_init_polygon(gjk2d_collider_t *c, vec2f_t *vertices, int num) {
+void joy_math_gjk2d_init_polygon(gjk2d_collider_t *c, vec2f_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_POLYGON;
 	c->vertices = vertices;
 	c->vertices_num = num;
 }
 
-void gjk2d_init_pie(gjk2d_collider_t *c, vec2f_t pos, fp_t radius, fp_t sweep) {
+void joy_math_gjk2d_init_pie(gjk2d_collider_t *c, vec2f_t pos, fp_t radius, fp_t sweep) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_PIE;
 	c->position = pos;

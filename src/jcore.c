@@ -37,7 +37,7 @@ struct simple_fps_counter {
 	Uint64 current_time;
 };
 
-bool init_env()
+bool joy_core_init_env()
 { 
 	return SDL_Init(SDL_INIT_AUDIO 
 		| SDL_INIT_VIDEO 
@@ -45,17 +45,17 @@ bool init_env()
 		| SDL_INIT_JOYSTICK);
 }
 
-void quit_env(void) 
+void joy_core_quit_env(void) 
 { 
 	SDL_Quit();
 }
 
-const char* get_error(void)
+const char* joy_core_get_error(void)
 {
 	return SDL_GetError();
 }
 
-uint64_t get_ticks(void)
+uint64_t joy_core_get_ticks(void)
 {
 	return SDL_GetTicks();
 }
@@ -65,7 +65,7 @@ jwindow_p joy_core_create_window(const char* title, int w, int h)
         jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
         window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
         if (!window->sdl_window) {
-                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "create_window failed: %s", SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "joy_core_create_window failed: %s", SDL_GetError());
                 SDL_free(window);
                 return NULL;
         }
@@ -167,7 +167,7 @@ static const char* key_name(SDL_Keycode k)
 }
 
 
-void dispatch_event(jevent_callbacks_t cbs, 
+void joy_core_dispatch_event(jevent_callbacks_t cbs, 
 	const void* ev, void* arg)
 {
 	const SDL_Event* event = (SDL_Event*)ev;
@@ -179,7 +179,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousepressed)
 			cbs.on_mousepressed(x, y, b, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_MOUSE_BUTTON_DOWN");
+			;//joy_core_log_error("unhandled SDL_EVENT_MOUSE_BUTTON_DOWN");
 		break;
 	}
 	case SDL_EVENT_MOUSE_BUTTON_UP: {
@@ -189,7 +189,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousereleased)
 			cbs.on_mousereleased(x, y, b, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_MOUSE_BUTTON_UP");
+			;//joy_core_log_error("unhandled SDL_EVENT_MOUSE_BUTTON_UP");
 		break;
 	}
 	case SDL_EVENT_MOUSE_MOTION: {
@@ -200,7 +200,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_mousemoved)
 			cbs.on_mousemoved(x, y, dx, dy, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_MOUSE_MOTION");
+			;//joy_core_log_error("unhandled SDL_EVENT_MOUSE_MOTION");
 		break;
 	}
 	case SDL_EVENT_KEY_DOWN: {
@@ -214,7 +214,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_keypressed)
 			cbs.on_keypressed(name, sc, rep, ctrl, shift, alt, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_KEY_DOWN");
+			;//joy_core_log_error("unhandled SDL_EVENT_KEY_DOWN");
 		break;
 	}
 	case SDL_EVENT_KEY_UP: {
@@ -224,7 +224,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_keyreleased)
 			cbs.on_keyreleased(name, sc, arg);
 		// else
-		// 	log_error("unhandled SDL_EVENT_KEY_UP");
+		// 	joy_core_log_error("unhandled SDL_EVENT_KEY_UP");
 		break;
 	}
 	case SDL_EVENT_TEXT_INPUT: {
@@ -232,7 +232,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_textinput)
 			cbs.on_textinput(text, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_TEXT_INPUT");
+			;//joy_core_log_error("unhandled SDL_EVENT_TEXT_INPUT");
 		break;
 	}
 	case SDL_EVENT_WINDOW_RESIZED: {
@@ -241,7 +241,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		if (cbs.on_resize)
 			cbs.on_resize(w, h, arg);
 		else
-			;//log_error("unhandled SDL_EVENT_WINDOW_RESIZED");
+			;//joy_core_log_error("unhandled SDL_EVENT_WINDOW_RESIZED");
 		break;
 	}
 	case SDL_EVENT_WINDOW_CLOSE_REQUESTED: {
@@ -258,7 +258,7 @@ void dispatch_event(jevent_callbacks_t cbs,
 		cbs.on_process_event(ev, arg);
 }
 
-bool push_user_event(int type, int code)
+bool joy_core_push_user_event(int type, int code)
 {
 	SDL_Event event;
 	SDL_zero(event);
@@ -267,25 +267,25 @@ bool push_user_event(int type, int code)
 	return SDL_PushEvent(&event);
 }
 
-int get_event_type(const void* event)
+int joy_core_get_event_type(const void* event)
 {
 	const SDL_Event* e = (const SDL_Event*)event;
 	return e->type;
 }
 
-int get_event_code(const void* event)
+int joy_core_get_event_code(const void* event)
 {
 	const SDL_Event* e = (const SDL_Event*)event;
 	return e->user.code;
 }
 
-bool is_user_event(const void* event, int type)
+bool joy_core_is_user_event(const void* event, int type)
 {
 	const SDL_Event* e = (const SDL_Event*)event;
 	return e->type == SDL_EVENT_USER + type;
 }
 
-void get_mouse_pos(const void* event, float* out_x, float* out_y)
+void joy_core_get_mouse_pos(const void* event, float* out_x, float* out_y)
 {
 	const SDL_Event* e = (const SDL_Event*)event;
 	if (e->type == SDL_EVENT_MOUSE_MOTION) {
@@ -296,7 +296,7 @@ void get_mouse_pos(const void* event, float* out_x, float* out_y)
 	}
 }
 
-int get_mouse_button(const void* event)
+int joy_core_get_mouse_button(const void* event)
 {
 	const SDL_Event* e = (const SDL_Event*)event;
 	if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
@@ -305,21 +305,21 @@ int get_mouse_button(const void* event)
 	return 0;
 }
 
-bool push_quit_event(void) 
+bool joy_core_push_quit_event(void) 
 {
 	SDL_Event e; SDL_zero(e);
 	e.type = SDL_EVENT_QUIT;
 	return SDL_PushEvent(&e);
 }
 
-bool should_close(void* ev)
+bool joy_core_should_close(void* ev)
 {
 	SDL_Event* e = (SDL_Event*)ev;
 	return (e->type == SDL_EVENT_QUIT);
 }
 
 
-int log_info(const char* format, ...)
+int joy_core_log_info(const char* format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
@@ -355,7 +355,7 @@ int log_info(const char* format, ...)
 	return len;
 }
 
-int log_debug(const char* format, ...)
+int joy_core_log_debug(const char* format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
@@ -391,7 +391,7 @@ int log_debug(const char* format, ...)
 	return len;
 }
 
-int log_error(const char* format, ...)
+int joy_core_log_error(const char* format, ...)
 {
 	va_list ap;
 	va_start(ap, format);
@@ -427,38 +427,38 @@ int log_error(const char* format, ...)
 	return len;
 }
 
-void log_title(int type)
+void joy_core_log_title(int type)
 {
 	if (type == 1) {
-		log_info("=======================================================");
-		log_info("     ##   #####   ##   ##   #######   ####   ");
-		log_info("     ##  ##   ##  ##   ##  ##   ##   ##  ##  ");
-		log_info("     ##  ##   ##   ## ##       ##    ##   ## ");
-		log_info(" ##  ##  ##   ##    ###       ##     ##  ##  ");
-		log_info("  ####    #####     ###    ######     ####   ");
-		log_info("=======================================================");
+		joy_core_log_info("=======================================================");
+		joy_core_log_info("     ##   #####   ##   ##   #######   ####   ");
+		joy_core_log_info("     ##  ##   ##  ##   ##  ##   ##   ##  ##  ");
+		joy_core_log_info("     ##  ##   ##   ## ##       ##    ##   ## ");
+		joy_core_log_info(" ##  ##  ##   ##    ###       ##     ##  ##  ");
+		joy_core_log_info("  ####    #####     ###    ######     ####   ");
+		joy_core_log_info("=======================================================");
 	}
 	else if (type == 2) {
-		log_info("---------------------------------------------------");
-		log_info("                    J O Y 2 D                      ");
-		log_info("                Game Engine v2.0                   ");
-		log_info("---------------------------------------------------");
+		joy_core_log_info("---------------------------------------------------");
+		joy_core_log_info("                    J O Y 2 D                      ");
+		joy_core_log_info("                Game Engine v2.0                   ");
+		joy_core_log_info("---------------------------------------------------");
 	}
 	else if (type == 3) {
-		log_info("-------------------------------------------------------");
-		log_info("  JJJJ    OOOOO    Y   Y   22222    DDDDD             ");
-		log_info("    J    O     O    Y Y        2    D    D            ");
-		log_info("    J    O     O     Y      222     D     D           ");
-		log_info("J   J    O     O     Y     2        D    D            ");
-		log_info(" JJJ      OOOOO      Y    2222222   DDDDD             ");
-		log_info("-------------------------------------------------------");
+		joy_core_log_info("-------------------------------------------------------");
+		joy_core_log_info("  JJJJ    OOOOO    Y   Y   22222    DDDDD             ");
+		joy_core_log_info("    J    O     O    Y Y        2    D    D            ");
+		joy_core_log_info("    J    O     O     Y      222     D     D           ");
+		joy_core_log_info("J   J    O     O     Y     2        D    D            ");
+		joy_core_log_info(" JJJ      OOOOO      Y    2222222   DDDDD             ");
+		joy_core_log_info("-------------------------------------------------------");
 	}
 	else {
-		log_info("joy");
+		joy_core_log_info("joy");
 	}
 }
 
-env_p env_create(void)
+env_p joy_core_env_create(void)
 {
 	env_p env;
 	env = SDL_malloc(sizeof(env_t));
@@ -468,24 +468,24 @@ env_p env_create(void)
 	return env;
 }
 
-const char* env_get(env_p env, const char* key)
+const char* joy_core_env_get(env_p env, const char* key)
 {
 	return SDL_GetEnvironmentVariable(env->sdl_env, key);
 }
 
-void env_set(env_p env, const char* key, const char* value)
+void joy_core_env_set(env_p env, const char* key, const char* value)
 {
 	SDL_SetEnvironmentVariable(env->sdl_env, key, value, true);
 }
 
-void env_destroy(env_p env)
+void joy_core_env_destroy(env_p env)
 {
 	SDL_assert(env);
 	SDL_DestroyEnvironment(env->sdl_env);
 	SDL_free(env);
 }
 
-simple_fps_counter_p simple_fps_create()
+simple_fps_counter_p joy_core_simple_fps_create()
 {
 	simple_fps_counter_p fps;
 	fps = (simple_fps_counter_p)SDL_malloc(sizeof(simple_fps_counter_t));
@@ -494,12 +494,12 @@ simple_fps_counter_p simple_fps_create()
 	return fps;
 }
 
-void simple_fps_destory(simple_fps_counter_p fps)
+void joy_core_simple_fps_destory(simple_fps_counter_p fps)
 {
 	SDL_free(fps);
 }
 
-void simple_fps_update(simple_fps_counter_p fps)
+void joy_core_simple_fps_update(simple_fps_counter_p fps)
 {
 	fps->frame_count++;
 	fps->current_time = SDL_GetTicks();
@@ -513,7 +513,7 @@ void simple_fps_update(simple_fps_counter_p fps)
 	}
 }
 
-int simple_fps_value(simple_fps_counter_p fps)
+int joy_core_simple_fps_value(simple_fps_counter_p fps)
 {
 	return fps->fps;
 }
@@ -532,7 +532,7 @@ static void limit_frame_rate(game_timer_p timer, float current_delta_time)
 	// 如果 current_delta_time >= target_frame_time，不做任何事，delta_time 保持原值
 }
 
-void game_timer_init(game_timer_p timer)
+void joy_scene_game_timer_init(game_timer_p timer)
 {
 	if (!timer) return;
 	Uint64 now = SDL_GetTicksNS();
@@ -542,10 +542,10 @@ void game_timer_init(game_timer_p timer)
 	timer->time_scale = 1.0;
 	timer->target_fps = 0;
 	timer->target_frame_time = 0.0;
-	log_info("[Gametimer] Initialized. Last time: %llu ns", (unsigned long long)now);
+	joy_core_log_info("[Gametimer] Initialized. Last time: %llu ns", (unsigned long long)now);
 }
 
-void game_timer_update(game_timer_p timer)
+void joy_scene_game_timer_update(game_timer_p timer)
 {
 	if (!timer) return;
 
@@ -568,40 +568,40 @@ void game_timer_update(game_timer_p timer)
 
 
 
-float game_timer_get_delta_time(const game_timer_p timer)
+float joy_scene_game_timer_get_delta_time(const game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)(timer->delta_time * timer->time_scale);
 }
 
-float game_timer_get_unscaled_delta_time(const game_timer_p timer)
+float joy_scene_game_timer_get_unscaled_delta_time(const game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)timer->delta_time;
 }
 
-void game_timer_set_time_scale(game_timer_p timer, float scale)
+void joy_scene_game_timer_set_time_scale(game_timer_p timer, float scale)
 {
 	if (!timer) return;
 	if (scale < 0.0f) {
-		log_info("[Gametimer] Warning: Time scale cannot be negative. Clamping to 0.");
+		joy_core_log_info("[Gametimer] Warning: Time scale cannot be negative. Clamping to 0.");
 		scale = 0.0f;
 	}
 	timer->time_scale = (double)scale;
 }
 
-float game_timer_get_time_scale(const game_timer_p timer)
+float joy_scene_game_timer_get_time_scale(const game_timer_p timer)
 {
 	if (!timer) return 1.0f;
 	return (float)timer->time_scale;
 }
 
-void game_timer_set_target_fps(game_timer_p timer, int fps)
+void joy_scene_game_timer_set_target_fps(game_timer_p timer, int fps)
 {
 	if (!timer) return;
 
 	if (fps < 0) {
-		log_info("[Gametimer] Warning: Target FPS cannot be negative. Setting to 0 (unlimited).");
+		joy_core_log_info("[Gametimer] Warning: Target FPS cannot be negative. Setting to 0 (unlimited).");
 		timer->target_fps = 0;
 	}
 	else {
@@ -610,23 +610,23 @@ void game_timer_set_target_fps(game_timer_p timer, int fps)
 
 	if (timer->target_fps > 0) {
 		timer->target_frame_time = 1.0 / (double)timer->target_fps;
-		log_info("[Gametimer] Target FPS set to: %d (Frame time: %.6f s)",
+		joy_core_log_info("[Gametimer] Target FPS set to: %d (Frame time: %.6f s)",
 			timer->target_fps, timer->target_frame_time);
 	}
 	else {
 		timer->target_frame_time = 0.0;
-		log_info("[Gametimer] Target FPS set to: Unlimited");
+		joy_core_log_info("[Gametimer] Target FPS set to: Unlimited");
 	}
 }
 
-int game_timer_get_target_fps(const game_timer_p timer)
+int joy_scene_game_timer_get_target_fps(const game_timer_p timer)
 {
 	if (!timer) return 0;
 	return timer->target_fps;
 }
 
 /* ---- 剪贴板 ---- */
-char* get_clipboard_text(void)
+char* joy_core_get_clipboard_text(void)
 {
 	const char* sdl_text = SDL_GetClipboardText();
 	if (!sdl_text) return NULL;
@@ -636,7 +636,7 @@ char* get_clipboard_text(void)
 	return copy;
 }
 
-void set_clipboard_text(const char* text)
+void joy_core_set_clipboard_text(const char* text)
 {
 	SDL_SetClipboardText(text);
 }

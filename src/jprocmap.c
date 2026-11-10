@@ -39,7 +39,7 @@ static bool jpm_in_spawn_zone(const jpm_config_t* cfg, int gx, int gz)
         return false;
 }
 
-/* 整数栅格化（含 pad 外扩）：把我方障碍实体重建为可通行栅格。内部使用 jpm_rasterize 的统一口径 */
+/* 整数栅格化（含 pad 外扩）：把我方障碍实体重建为可通行栅格。内部使用 joy_scene_procmap_rasterize 的统一口径 */
 static void jpm_rasterize_impl(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
                                const jpm_obstacle_t* obs, int n)
 {
@@ -256,7 +256,7 @@ static void bsp_split_rec(random_num_p rng, int min_size, int depth, int max_dep
 
 /* ============ 公开接口 ============ */
 
-void jpm_config_default(jpm_config_t* cfg)
+void joy_scene_procmap_config_default(jpm_config_t* cfg)
 {
         cfg->grid_n       = 20;
         cfg->offset10     = 100;   /* 10m */
@@ -269,11 +269,11 @@ void jpm_config_default(jpm_config_t* cfg)
         cfg->cluster_max  = 10;
         cfg->spawn_count  = 0;
         /* 默认追加两组与游戏一致的安全区：玩家 (0,0) + 敌人 (10m,10m)，半径 2.2m */
-        jpm_config_add_spawn(cfg, 0, 0, 22);
-        jpm_config_add_spawn(cfg, 100, 100, 22);
+        joy_scene_procmap_config_add_spawn(cfg, 0, 0, 22);
+        joy_scene_procmap_config_add_spawn(cfg, 100, 100, 22);
 }
 
-void jpm_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10)
+void joy_scene_procmap_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10)
 {
         if (cfg->spawn_count >= JPM_MAX_SPAWN) return;
         cfg->spawns[cfg->spawn_count].cx10 = cx10;
@@ -282,23 +282,23 @@ void jpm_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10)
         cfg->spawn_count++;
 }
 
-uint32_t jpm_wave_seed(uint32_t base_seed, int wave)
+uint32_t joy_scene_procmap_wave_seed(uint32_t base_seed, int wave)
 {
         return base_seed + (uint32_t)wave * 1000003u;
 }
 
-void jpm_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+void joy_scene_procmap_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
                    const jpm_obstacle_t* obs, int n)
 {
         jpm_rasterize_impl(cfg, walkable, obs, n);
 }
 
-int jpm_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz)
+int joy_scene_procmap_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz)
 {
         return jpm_bfs_impl(walkable, grid_n, sx, sz);
 }
 
-void jpm_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out)
+void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out)
 {
         int grid_n = cfg->grid_n;
         const int min_size = 5;   /* 房间最小边长（格） */
@@ -377,13 +377,13 @@ void jpm_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out
         utils_random_destroy(rng);
 }
 
-void jpm_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out)
+void joy_scene_procmap_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out)
 {
         uint32_t seed = utils_random_next(rng);
-        jpm_generate_seed(cfg, seed, out);
+        joy_scene_procmap_generate_seed(cfg, seed, out);
 }
 
-int jpm_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
+int joy_scene_procmap_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
                           const jpm_layout_t* L, int count, int min_dist10,
                           int* out_tiles)
 {

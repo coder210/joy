@@ -311,7 +311,7 @@ extern "C" {
         typedef struct jtilemap_object_layer jtilemap_object_layer_t, * jtilemap_object_layer_p;
 
         /* GID 解析结果：在此给出完整定义，使 C++ TU（模板 .cpp）也能看到完整类型，
-           从而消除 jtilemap_resolve_gid 的 -Wreturn-type-c-linkage 告警 */
+           从而消除 joy_scene_tilemap_resolve_gid 的 -Wreturn-type-c-linkage 告警 */
         typedef struct jtilemap_gid_resolve {
                 jtilemap_tileset_p tileset;
                 int local_id;               /* tileset 内局部 ID */

@@ -9,14 +9,14 @@
 static jrect_t jui_frect(jr2d_p r2d, float fx, float fy, float fw, float fh)
 {
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         jrect_t r = { fx * (float)lw, fy * (float)lh, fw * (float)lw, fh * (float)lh };
         return r;
 }
 static void jui_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh, float* x, float* y, float* w, float* h)
 {
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         *x = fx * (float)lw; *y = fy * (float)lh;
         *w = fw * (float)lw; *h = fh * (float)lh;
 }
@@ -227,7 +227,7 @@ struct joystick {
         int touch_id;
         image_p base_image;     // 当前显示的底圈纹理（指向 default 或某 mode 的纹理，不单独拥有）
         image_p thumb_image;    // 当前显示的摇杆头纹理
-        image_p base_default;   // 默认底圈（joystick_set_textures 设置）
+        image_p base_default;   // 默认底圈（joy_input_joystick_set_textures 设置）
         image_p thumb_default;  // 默认摇杆头
         image_p mode_base[5];   // 各方向模式专属底圈（NULL=回退默认）
         image_p mode_thumb[5];  // 各方向模式专属摇杆头
@@ -241,38 +241,38 @@ static float distance_squared(float x1, float y1, float x2, float y2) {
 }
 
 label_p
-label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int num_codepoints)
+joy_ui_label_create(jr2d_p r2d, font_p fontinfo, const int* codepoints, int num_codepoints)
 {
         label_p label = (label_p)malloc(sizeof(label_t));
         label->r2d = r2d;
         label->position = (vec2_t){ 0, 0 };
         label->color = (jcolor_t){ 255, 255,255, 255 };
-        label->text = text_create(r2d, fontinfo, codepoints, num_codepoints, label->color);
+        label->text = joy_ui_text_create(r2d, fontinfo, codepoints, num_codepoints, label->color);
         return label;
 }
 
 void
-label_destroy(label_p label)
+joy_ui_label_destroy(label_p label)
 {
         if (!label) return;
-        if (label->text) text_destroy(label->text);
+        if (label->text) joy_ui_text_destroy(label->text);
         free(label);
 }
 
 void
-label_set_text(label_p label, font_p font,
+joy_ui_label_set_text(label_p label, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
         if (label->text) {
-                text_update(label->text, font, codepoints, num_codepoints, color);
+                joy_ui_text_update(label->text, font, codepoints, num_codepoints, color);
         }
         else {
-                label->text = text_create(label->r2d, font, codepoints, num_codepoints, color);
+                label->text = joy_ui_text_create(label->r2d, font, codepoints, num_codepoints, color);
         }
 }
 
-void label_draw(label_p label)
+void joy_ui_label_draw(label_p label)
 {
         //jrect_t dest_rect;
         if (!label) return;
@@ -283,7 +283,7 @@ void label_draw(label_p label)
         //dest_rect.w = label->text->w;
         //dest_rect.h = label->text->h;
         //SDL_RenderTexture(r2d, label->text, NULL, &dest_rect);
-        jtext_print(label->r2d, label->text, label->position.x, label->position.y);
+        joy_r2d_jtext_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
 void label_handle_event(label_p label, void* event)
@@ -293,12 +293,12 @@ void label_handle_event(label_p label, void* event)
 }
 
 button_p
-button_create(jr2d_p r2d, float cx, float cy, float wf, float hf)
+joy_ui_button_create(jr2d_p r2d, float cx, float cy, float wf, float hf)
 {
         button_p btn = (button_p)malloc(sizeof(button_t));
         if (!btn) return NULL;
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         float w = wf * (float)lw, h = hf * (float)lh;
         float x = (cx - wf * 0.5f) * (float)lw, y = (cy - hf * 0.5f) * (float)lh;
         btn->r2d = r2d;
@@ -317,31 +317,31 @@ button_create(jr2d_p r2d, float cx, float cy, float wf, float hf)
         return btn;
 }
 
-void button_set_normal_color(button_p btn, jcolor_t color)
+void joy_ui_button_set_normal_color(button_p btn, jcolor_t color)
 {
         if (!btn) return;
         btn->normal_color = color;
 }
 
-void button_set_hover_color(button_p btn, jcolor_t color)
+void joy_ui_button_set_hover_color(button_p btn, jcolor_t color)
 {
         if (!btn) return;
         btn->hover_color = color;
 }
 
-void button_set_pressed_color(button_p btn, jcolor_t color)
+void joy_ui_button_set_pressed_color(button_p btn, jcolor_t color)
 {
         if (!btn) return;
         btn->pressed_color = color;
 }
 
-void button_set_image(button_p btn, image_p image)
+void joy_ui_button_set_image(button_p btn, image_p image)
 {
         if (!btn) return;
         btn->image = image;
 }
 
-void button_set_pressed_image(button_p btn, image_p image)
+void joy_ui_button_set_pressed_image(button_p btn, image_p image)
 {
         if (!btn) return;
         btn->pressed_image = image;
@@ -349,44 +349,44 @@ void button_set_pressed_image(button_p btn, image_p image)
 
 
 
-void button_set_textx(button_p btn, font_p font,
+void joy_ui_button_set_textx(button_p btn, font_p font,
         const char* str, int len, jcolor_t color)
 {
         if (!btn) return;
         if (btn->text) {
-                text_updatex(btn->text, font, str, len, color);
+                joy_ui_text_updatex(btn->text, font, str, len, color);
         }
         else {
-                btn->text = text_createx(btn->r2d, font, str, len, color);
+                btn->text = joy_ui_text_createx(btn->r2d, font, str, len, color);
         }
 }
 
 void
-button_set_text(button_p btn, font_p font,
+joy_ui_button_set_text(button_p btn, font_p font,
         const int* codepoints, int num_codepoints, jcolor_t color)
 {
         if (!btn) return;
         if (btn->text) {
-                text_update(btn->text, font, codepoints, num_codepoints, color);
+                joy_ui_text_update(btn->text, font, codepoints, num_codepoints, color);
         }
         else {
-                btn->text = text_create(btn->r2d, font, codepoints, num_codepoints, color);
+                btn->text = joy_ui_text_create(btn->r2d, font, codepoints, num_codepoints, color);
         }
 }
 
-void button_set_position(button_p btn, float x, float y)
+void joy_ui_button_set_position(button_p btn, float x, float y)
 {
         if (!btn) return;
         btn->position.x = x;
         btn->position.y = y;
 }
 
-vec2_t button_get_position(button_p btn)
+vec2_t joy_ui_button_get_position(button_p btn)
 {
         return btn->position;
 }
 
-void button_set_size(button_p btn, float width, float height)
+void joy_ui_button_set_size(button_p btn, float width, float height)
 {
         if (!btn) return;
         btn->width = width;
@@ -395,58 +395,58 @@ void button_set_size(button_p btn, float width, float height)
 
 static bool button_hit_test(button_p btn, float x, float y)
 {
-        vec2_t logic = r2d_coordinates_from_window(btn->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(btn->r2d, x, y);
         return logic.x >= btn->position.x && logic.x <= btn->position.x + btn->width
                 && logic.y >= btn->position.y && logic.y <= btn->position.y + btn->height;
 }
 
-bool button_is_hovered(button_p btn, float x, float y)
+bool joy_ui_button_is_hovered(button_p btn, float x, float y)
 {
         if (!btn) return false;
         btn->is_hovered = button_hit_test(btn, x, y);
         return btn->is_hovered;
 }
 
-bool button_is_pressed(button_p btn, float x, float y)
+bool joy_ui_button_is_pressed(button_p btn, float x, float y)
 {
         if (!btn) return false;
         btn->is_pressed = button_hit_test(btn, x, y);
         return btn->is_pressed;
 }
 
-void button_set_hovered(button_p btn, bool v)
+void joy_ui_button_set_hovered(button_p btn, bool v)
 {
         if (btn) btn->is_hovered = v;
 }
 
-void button_set_text_offset(button_p btn, float x, float y)
+void joy_ui_button_set_text_offset(button_p btn, float x, float y)
 {
         if (!btn) return;
         btn->text_pos.x = x;
         btn->text_pos.y = y;
 }
 
-void button_set_pressed(button_p btn, bool v)
+void joy_ui_button_set_pressed(button_p btn, bool v)
 {
         if (btn) btn->is_pressed = v;
 }
 
-bool button_get_pressed(button_p btn)
+bool joy_ui_button_get_pressed(button_p btn)
 {
         return btn ? btn->is_pressed : false;
 }
 
-void button_destroy(button_p btn)
+void joy_ui_button_destroy(button_p btn)
 {
         if (!btn) return;
-        if (btn->text) text_destroy(btn->text);
-        if (btn->image) image_destroy(btn->image);
-        if (btn->pressed_image) image_destroy(btn->pressed_image);
+        if (btn->text) joy_ui_text_destroy(btn->text);
+        if (btn->image) joy_ui_image_destroy(btn->image);
+        if (btn->pressed_image) joy_ui_image_destroy(btn->pressed_image);
         free(btn);
 }
 
 
-void button_draw(button_p btn)
+void joy_ui_button_draw(button_p btn)
 {
         jr2d_p r2d;
         jrect_t dest_rect, rect, inner;
@@ -476,10 +476,10 @@ void button_draw(button_p btn)
         rect.h = btn->height;
 
         r2d = btn->r2d;
-        r2d_set_color(r2d, btn->display_color.r, btn->display_color.g, btn->display_color.b, btn->display_color.a);
-        shape_draw_rectangle(r2d, "fill", rect);
-        r2d_set_color(r2d, 0, 0, 0, 255);
-        shape_draw_rectangle(r2d, "line", rect);
+        joy_r2d_set_color(r2d, btn->display_color.r, btn->display_color.g, btn->display_color.b, btn->display_color.a);
+        joy_math_shape_draw_rectangle(r2d, "fill", rect);
+        joy_r2d_set_color(r2d, 0, 0, 0, 255);
+        joy_math_shape_draw_rectangle(r2d, "line", rect);
         /* 加粗边框：内缩 1 逻辑像素再描一圈，形成约 2px 黑框（窗口缩小时仍可见） */
         inner = rect;
         inner.x += 1;
@@ -487,28 +487,28 @@ void button_draw(button_p btn)
         inner.w -= 2;
         inner.h -= 2;
         if (inner.w > 0 && inner.h > 0) {
-                shape_draw_rectangle(r2d, "line", inner);
+                joy_math_shape_draw_rectangle(r2d, "line", inner);
         }
 
         if (btn->is_pressed && btn->pressed_image) {
-                image_draw1(btn->pressed_image, NULL, &rect);
+                joy_ui_image_draw1(btn->pressed_image, NULL, &rect);
         }
         else if (btn->image) {
-                image_draw1(btn->image, NULL, &rect);
+                joy_ui_image_draw1(btn->image, NULL, &rect);
         }
 
         if (btn->text) {
-                float widht = text_get_width(btn->text);
-                float height = text_get_height(btn->text);
+                float widht = joy_ui_text_get_width(btn->text);
+                float height = joy_ui_text_get_height(btn->text);
                 dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
                 dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
-                jtext_print(r2d, btn->text, dest_rect.x, dest_rect.y);
+                joy_r2d_jtext_print(r2d, btn->text, dest_rect.x, dest_rect.y);
         }
 }
 
 /* 事件处理已移至 Lua 层，见 joy.lua 中的 joy.mousepressed/mousereleased/mousemoved */
 
-combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
+combobox_p joy_ui_combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
 {
         jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         combobox_p combobox;
@@ -523,7 +523,7 @@ combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
         // item_height 原为 480x320 设计稿下的固定 30px，不随逻辑分辨率换算 ——
         // 高分辨率下会出现"文字比列表项还高、溢出到列表背景外"，这里按分辨率缩放。
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
         combobox->ui_scale = s;
         combobox->item_count = 0;
@@ -536,35 +536,35 @@ combobox_p combobox_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
         return combobox;
 }
 
-void combobox_destroy(combobox_p combobox)
+void joy_ui_combobox_destroy(combobox_p combobox)
 {
         if (combobox) {
                 for (int i = 0; i < combobox->item_count; i++)
-                        if (combobox->items[i].text) text_destroy(combobox->items[i].text);
+                        if (combobox->items[i].text) joy_ui_text_destroy(combobox->items[i].text);
                 free(combobox);
         }
 }
 
 void
-combobox_set_text(combobox_p combobox, font_p font,
+joy_ui_combobox_set_text(combobox_p combobox, font_p font,
         const int* codepoints, int len, jcolor_t color)
 {
         if (combobox->text) {
-                text_destroy(combobox->text);
+                joy_ui_text_destroy(combobox->text);
         }
-        combobox->text = text_create(combobox->r2d, font, codepoints, len, color);
+        combobox->text = joy_ui_text_create(combobox->r2d, font, codepoints, len, color);
 }
 
-void combobox_add_item(combobox_p combobox, font_p font, const char* str, int len, jcolor_t color)
+void joy_ui_combobox_add_item(combobox_p combobox, font_p font, const char* str, int len, jcolor_t color)
 {
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
-        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
-        combobox_add_itemx(combobox, font, codepoints, num_codepoints, color);
+        int num_codepoints = joy_core_utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        joy_ui_combobox_add_itemx(combobox, font, codepoints, num_codepoints, color);
         SDL_free(codepoints);
 }
 
-void combobox_add_itemx(combobox_p combobox, font_p font, const int* codepoints, int len, jcolor_t color)
+void joy_ui_combobox_add_itemx(combobox_p combobox, font_p font, const int* codepoints, int len, jcolor_t color)
 {
         combobox_item_p item;
         jr2d_p r2d;
@@ -573,38 +573,38 @@ void combobox_add_itemx(combobox_p combobox, font_p font, const int* codepoints,
         }
         r2d = combobox->r2d;
         item = combobox->items + combobox->item_count;
-        item->text = text_create(r2d, font, codepoints, len, color);
+        item->text = joy_ui_text_create(r2d, font, codepoints, len, color);
         item->is_selected = false;
         combobox->item_count++;
         combobox->dropdown_rect.h = combobox->item_count * combobox->item_height;
 }
 
-bool combobox_is_pressed(combobox_p combobox, float x, float y)
+bool joy_ui_combobox_is_pressed(combobox_p combobox, float x, float y)
 {
         if (!combobox) return false;
-        vec2_t logic = r2d_coordinates_from_window(combobox->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(combobox->r2d, x, y);
         rectangle_t rect;
         rect.x = combobox->main_rect.x;
         rect.y = combobox->main_rect.y;
         rect.width = combobox->main_rect.w;
         rect.height = combobox->main_rect.h;
-        return collision2d_check_point_rectangle(logic, rect);
+        return joy_math_collision2d_check_point_rectangle(logic, rect);
 }
 
-bool combobox_is_open(combobox_p combobox)
+bool joy_ui_combobox_is_open(combobox_p combobox)
 {
         return combobox ? combobox->is_open : false;
 }
 
-void combobox_set_open(combobox_p combobox, bool v)
+void joy_ui_combobox_set_open(combobox_p combobox, bool v)
 {
         if (combobox) combobox->is_open = v;
 }
 
-int combobox_hit_item(combobox_p combobox, float x, float y)
+int joy_ui_combobox_hit_item(combobox_p combobox, float x, float y)
 {
         if (!combobox || !combobox->is_open) return -1;
-        vec2_t logic = r2d_coordinates_from_window(combobox->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(combobox->r2d, x, y);
         for (int i = 0; i < combobox->item_count; i++) {
                 rectangle_t item_rect = {
                     combobox->dropdown_rect.x,
@@ -612,32 +612,32 @@ int combobox_hit_item(combobox_p combobox, float x, float y)
                     combobox->dropdown_rect.w,
                     combobox->item_height
                 };
-                if (collision2d_check_point_rectangle(logic, item_rect)) return i;
+                if (joy_math_collision2d_check_point_rectangle(logic, item_rect)) return i;
         }
         return -1;
 }
 
-void combobox_set_selected(combobox_p combobox, int index)
+void joy_ui_combobox_set_selected(combobox_p combobox, int index)
 {
         if (combobox) combobox->selected_index = index;
 }
 
-int combobox_get_selected(combobox_p combobox)
+int joy_ui_combobox_get_selected(combobox_p combobox)
 {
         return combobox ? combobox->selected_index : -1;
 }
 
-void combobox_draw(combobox_p combobox)
+void joy_ui_combobox_draw(combobox_p combobox)
 {
         if (!combobox) return;
         jr2d_p r2d;
         r2d = combobox->r2d;
-        r2d_set_color(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
-        shape_draw_rectangle(r2d, "fill", combobox->main_rect);
+        joy_r2d_set_color(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
+        joy_math_shape_draw_rectangle(r2d, "fill", combobox->main_rect);
 
 
-        r2d_set_color(r2d, 0, 0, 0, 255);
-        shape_draw_rectangle(r2d, "line", combobox->main_rect);
+        joy_r2d_set_color(r2d, 0, 0, 0, 255);
+        joy_math_shape_draw_rectangle(r2d, "line", combobox->main_rect);
 
         const float s = (combobox->ui_scale > 0.0f) ? combobox->ui_scale : 1.0f;
 
@@ -646,7 +646,7 @@ void combobox_draw(combobox_p combobox)
                 // 注：jtext 的内部结构（real_height）在 jui.c 不可见，无法精确垂直居中，
                 // 这里用按分辨率换算的顶部偏移（设计稿 2px）。
                 jtext_p t = combobox->items[combobox->selected_index].text;
-                jtext_print(r2d, t, combobox->main_rect.x + 5.0f * s,
+                joy_r2d_jtext_print(r2d, t, combobox->main_rect.x + 5.0f * s,
                             combobox->main_rect.y + 2.0f * s);
         }
 
@@ -655,7 +655,7 @@ void combobox_draw(combobox_p combobox)
         if (combobox->is_open) {
                 // 渲染下拉箭头
                 jcolor_t color = { 0, 0, 0, 255 };
-                r2d_set_color(r2d, 0, 0, 0, 255);
+                joy_r2d_set_color(r2d, 0, 0, 0, 255);
                 // 箭头各偏移是设计稿像素（25/10/5/15/20），按分辨率换算并垂直居中
                 float ax = combobox->main_rect.x + combobox->main_rect.w;
                 float ay = combobox->main_rect.y;
@@ -667,14 +667,14 @@ void combobox_draw(combobox_p combobox)
                     {ax - 5.0f * s,  ay + ao},
                     {ax - 15.0f * s, ay + ao + ah}
                 };
-                shape_draw_polygon(r2d, "line", arrow_points, 3, color);
+                joy_math_shape_draw_polygon(r2d, "line", arrow_points, 3, color);
 
 
-                r2d_set_color(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
-                shape_draw_rectangle(r2d, "fill", combobox->dropdown_rect);
+                joy_r2d_set_color(r2d, combobox->bg_color.r, combobox->bg_color.g, combobox->bg_color.b, combobox->bg_color.a);
+                joy_math_shape_draw_rectangle(r2d, "fill", combobox->dropdown_rect);
 
-                r2d_set_color(r2d, 0, 0, 0, 255);
-                shape_draw_rectangle(r2d, "line", combobox->dropdown_rect);
+                joy_r2d_set_color(r2d, 0, 0, 0, 255);
+                joy_math_shape_draw_rectangle(r2d, "line", combobox->dropdown_rect);
 
                 combobox_item_p item;
 
@@ -688,18 +688,18 @@ void combobox_draw(combobox_p combobox)
 
                         // 如果是当前选中的项, 使用高亮颜色
                         if (i == combobox->selected_index) {
-                                r2d_set_color(r2d, combobox->hover_color.r, combobox->hover_color.g, combobox->hover_color.b, combobox->hover_color.a);
-                                shape_draw_rectangle(r2d, "line", item_rect);
+                                joy_r2d_set_color(r2d, combobox->hover_color.r, combobox->hover_color.g, combobox->hover_color.b, combobox->hover_color.a);
+                                joy_math_shape_draw_rectangle(r2d, "line", item_rect);
                         }
 
-                        r2d_set_color(r2d, 0, 0, 0, 255);
-                        shape_draw_rectangle(r2d, "line", item_rect);
+                        joy_r2d_set_color(r2d, 0, 0, 0, 255);
+                        joy_math_shape_draw_rectangle(r2d, "line", item_rect);
 
                         item = combobox->items + i;
                         if (item->text) {
                                 // 顶部偏移按分辨率换算（设计稿 2px）：
                                 // item_height 已同步放大，文字不会溢出到下一项
-                                jtext_print(r2d, item->text, item_rect.x + 5.0f * s,
+                                joy_r2d_jtext_print(r2d, item->text, item_rect.x + 5.0f * s,
                                             item_rect.y + 2.0f * s);
                         }
                 }
@@ -717,7 +717,7 @@ void combobox_draw(combobox_p combobox)
                     {ax - 25.0f * s, ay + ao + ah},
                     {ax - 5.0f * s,  ay + ao + ah}
                 };
-                shape_draw_polygon(r2d, "line", arrow_points, 3, color);
+                joy_math_shape_draw_polygon(r2d, "line", arrow_points, 3, color);
         }
 }
 
@@ -765,7 +765,7 @@ struct combobox_input {
         scene_node_p popup_node;
 };
 
-combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len)
+combobox_input_p joy_ui_combobox_input_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font, int buf_len)
 {
         jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         combobox_input_p ci = (combobox_input_p)calloc(1, sizeof(combobox_input_t));
@@ -791,7 +791,7 @@ combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw,
          * 逻辑分辨率提高后不跟着放大 —— 表现为"字号比列表项还高"、文字溢出到
          * 列表背景外面（与下方控件重叠看不清）。这里按逻辑分辨率换算。 */
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
 
         ci->item_height = (int)(24.0f * s);
@@ -811,7 +811,7 @@ combobox_input_p combobox_input_create(jr2d_p r2d, float fx, float fy, float fw,
         return ci;
 }
 
-void combobox_input_destroy(combobox_input_p ci)
+void joy_ui_combobox_input_destroy(combobox_input_p ci)
 {
         if (ci) {
                 free(ci->buffer);
@@ -819,7 +819,7 @@ void combobox_input_destroy(combobox_input_p ci)
         }
 }
 
-void combobox_input_add_item(combobox_input_p ci, const char* str, int len)
+void joy_ui_combobox_input_add_item(combobox_input_p ci, const char* str, int len)
 {
         if (!ci || ci->item_count >= 20) return;
         if (len <= 0) len = (int)strlen(str);
@@ -829,17 +829,17 @@ void combobox_input_add_item(combobox_input_p ci, const char* str, int len)
         ci->item_count++;
 }
 
-void combobox_input_clear_items(combobox_input_p ci)
+void joy_ui_combobox_input_clear_items(combobox_input_p ci)
 {
         if (ci) ci->item_count = 0;
 }
 
-const char* combobox_input_get_text(combobox_input_p ci)
+const char* joy_ui_combobox_input_get_text(combobox_input_p ci)
 {
         return ci ? ci->buffer : "";
 }
 
-void combobox_input_set_text(combobox_input_p ci, const char* str)
+void joy_ui_combobox_input_set_text(combobox_input_p ci, const char* str)
 {
         if (!ci) return;
         int len = (int)strlen(str);
@@ -855,9 +855,9 @@ static void ci_inputbox_focus(combobox_input_p ci)
 {
         if (!ci || ci->focused) return;
         ci->focused = true;
-        ci->cursor_timer = get_ticks();
+        ci->cursor_timer = joy_core_get_ticks();
         ci->cursor_visible = true;
-        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ci->r2d));
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)joy_r2d_unwrap(ci->r2d));
         if (win) SDL_StartTextInput(win);
 }
 
@@ -867,7 +867,7 @@ static void ci_inputbox_defocus(combobox_input_p ci)
         ci->focused = false;
         ci->sel_start = -1;
         ci->sel_end = -1;
-        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ci->r2d));
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)joy_r2d_unwrap(ci->r2d));
         if (win) SDL_StopTextInput(win);
 }
 
@@ -875,10 +875,10 @@ static int ci_cursor_x(combobox_input_p ci)
 {
         if (ci->cursor_pos <= 0 || !ci->font) return 0;
         jcolor_t c = { 0,0,0,255 };
-        jtext_p tex = text_createx(ci->r2d, ci->font, ci->buffer, ci->cursor_pos, c);
+        jtext_p tex = joy_ui_text_createx(ci->r2d, ci->font, ci->buffer, ci->cursor_pos, c);
         if (!tex) return 0;
-        int w = text_get_width(tex);
-        text_destroy(tex);
+        int w = joy_ui_text_get_width(tex);
+        joy_ui_text_destroy(tex);
         return w;
 }
 
@@ -886,10 +886,10 @@ static int ci_cursor_x_at(combobox_input_p ci, int pos)
 {
         if (pos <= 0 || !ci->font) return 0;
         jcolor_t c = { 0,0,0,255 };
-        jtext_p tex = text_createx(ci->r2d, ci->font, ci->buffer, pos, c);
+        jtext_p tex = joy_ui_text_createx(ci->r2d, ci->font, ci->buffer, pos, c);
         if (!tex) return 0;
-        int w = text_get_width(tex);
-        text_destroy(tex);
+        int w = joy_ui_text_get_width(tex);
+        joy_ui_text_destroy(tex);
         return w;
 }
 
@@ -954,7 +954,7 @@ static void ci_backspace(combobox_input_p ci)
         if (ci->on_change) ci->on_change(ci, ci->cb_userdata);
 }
 
-void combobox_input_draw(combobox_input_p ci)
+void joy_ui_combobox_input_draw(combobox_input_p ci)
 {
         if (!ci) return;
         jr2d_p r = ci->r2d;
@@ -963,20 +963,20 @@ void combobox_input_draw(combobox_input_p ci)
         // 设计稿像素（文字左边距 4、光标边界、分隔线等）按逻辑分辨率换算，
         // 理由同 item_height：不换算在 960x640 下会偏小/偏移。
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r, &lw, &lh, NULL);
         const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
 
         // 背景
-        r2d_set_color(r, ci->bg_color.r, ci->bg_color.g, ci->bg_color.b, ci->bg_color.a);
-        shape_draw_rectangle(r, "fill", rect);
+        joy_r2d_set_color(r, ci->bg_color.r, ci->bg_color.g, ci->bg_color.b, ci->bg_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", rect);
 
         // 边框（聚焦时高亮）
         jcolor_t border = ci->focused ? ci->focus_border_color : ci->border_color;
-        r2d_set_color(r, border.r, border.g, border.b, border.a);
-        shape_draw_rectangle(r, "line", rect);
+        joy_r2d_set_color(r, border.r, border.g, border.b, border.a);
+        joy_math_shape_draw_rectangle(r, "line", rect);
 
         // 裁剪区域（文字区域，排除箭头按钮）
-        SDL_Renderer* sdl_r = (SDL_Renderer*)r2d_unwrap(r);
+        SDL_Renderer* sdl_r = (SDL_Renderer*)joy_r2d_unwrap(r);
         // 裁剪区排除箭头按钮（宽度随分辨率换算，原来写死 24）
         SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y,
                 (int)(rect.w - ci->arrow_rect.w - 4.0f), (int)rect.h };
@@ -988,9 +988,9 @@ void combobox_input_draw(combobox_input_p ci)
         // 文字
         if (ci->text_len > 0 && ci->font) {
                 float text_x = rect.x + 4.0f * s;
-                float text_y = rect.y + (rect.h - (float)font_get_size(ci->font)) / 2.0f;
+                float text_y = rect.y + (rect.h - (float)joy_r2d_font_get_size(ci->font)) / 2.0f;
                 float ox = text_x - (float)ci->scroll_offset;
-                jtext_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
+                joy_r2d_jtext_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
         }
 
         // 恢复裁剪
@@ -1001,7 +1001,7 @@ void combobox_input_draw(combobox_input_p ci)
 
         // 光标
         if (ci->focused) {
-                uint64_t now = get_ticks();
+                uint64_t now = joy_core_get_ticks();
                 if (now - ci->cursor_timer >= 530) {
                         ci->cursor_visible = !ci->cursor_visible;
                         ci->cursor_timer = now;
@@ -1012,8 +1012,8 @@ void combobox_input_draw(combobox_input_p ci)
                         if (cx >= rect.x + 2 && cx <= rect.x + rect.w - (int)(ci->arrow_rect.w + 4.0f)) {
                                 float cy = rect.y + 3.0f * s;
                                 float ch = rect.h - 6.0f * s;
-                                r2d_set_color(r, ci->cursor_color.r, ci->cursor_color.g, ci->cursor_color.b, ci->cursor_color.a);
-                                shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+                                joy_r2d_set_color(r, ci->cursor_color.r, ci->cursor_color.g, ci->cursor_color.b, ci->cursor_color.a);
+                                joy_math_shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
                         }
                 }
         }
@@ -1036,7 +1036,7 @@ void combobox_input_draw(combobox_input_p ci)
                     {arrow_cx + aw, arrow_cy + ah},
                     {arrow_cx,      arrow_cy - ah}
                 };
-                shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
+                joy_math_shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
         } else {
                 // 下箭头
                 vec2_t pts[3] = {
@@ -1044,22 +1044,22 @@ void combobox_input_draw(combobox_input_p ci)
                     {arrow_cx + aw, arrow_cy - ah},
                     {arrow_cx,      arrow_cy + ah}
                 };
-                shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
+                joy_math_shape_draw_polygon(r, "fill", pts, 3, ci->text_color);
         }
 
         // 竖线分隔箭头区域
-        r2d_set_color(r, ci->border_color.r, ci->border_color.g, ci->border_color.b, ci->border_color.a);
-        shape_draw_line(r, ci->arrow_rect.x, rect.y + 2.0f * s, ci->arrow_rect.x, rect.y + rect.h - 2.0f * s);
+        joy_r2d_set_color(r, ci->border_color.r, ci->border_color.g, ci->border_color.b, ci->border_color.a);
+        joy_math_shape_draw_line(r, ci->arrow_rect.x, rect.y + 2.0f * s, ci->arrow_rect.x, rect.y + rect.h - 2.0f * s);
 }
 
-void combobox_input_draw_dropdown(combobox_input_p ci)
+void joy_ui_combobox_input_draw_dropdown(combobox_input_p ci)
 {
         if (!ci || !ci->is_open || ci->item_count <= 0) return;
         jr2d_p r = ci->r2d;
         jrect_t rect = ci->rect;
         /* 设计稿像素（文字左边距等）按逻辑分辨率换算，理由同 create 中的 item_height */
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r, &lw, &lh, NULL);
         const float s = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
         jrect_t drop_rect = {
             rect.x, rect.y + rect.h,
@@ -1067,11 +1067,11 @@ void combobox_input_draw_dropdown(combobox_input_p ci)
         };
         // 背景
         jcolor_t drop_bg = { 255, 255, 255, 255 };
-        r2d_set_color(r, drop_bg.r, drop_bg.g, drop_bg.b, drop_bg.a);
-        shape_draw_rectangle(r, "fill", drop_rect);
+        joy_r2d_set_color(r, drop_bg.r, drop_bg.g, drop_bg.b, drop_bg.a);
+        joy_math_shape_draw_rectangle(r, "fill", drop_rect);
         // 边框
-        r2d_set_color(r, 0, 0, 0, 255);
-        shape_draw_rectangle(r, "line", drop_rect);
+        joy_r2d_set_color(r, 0, 0, 0, 255);
+        joy_math_shape_draw_rectangle(r, "line", drop_rect);
 
         for (int i = 0; i < ci->item_count; i++) {
                 jrect_t item_rect = {
@@ -1081,42 +1081,42 @@ void combobox_input_draw_dropdown(combobox_input_p ci)
                 // 选中项高亮
                 if (i == ci->selected_index) {
                         jcolor_t hl = { 200, 220, 255, 255 };
-                        r2d_set_color(r, hl.r, hl.g, hl.b, hl.a);
-                        shape_draw_rectangle(r, "fill", item_rect);
+                        joy_r2d_set_color(r, hl.r, hl.g, hl.b, hl.a);
+                        joy_math_shape_draw_rectangle(r, "fill", item_rect);
                 }
                 // 分隔线
-                r2d_set_color(r, 220, 220, 220, 255);
-                shape_draw_line(r, item_rect.x, item_rect.y + item_rect.h,
+                joy_r2d_set_color(r, 220, 220, 220, 255);
+                joy_math_shape_draw_line(r, item_rect.x, item_rect.y + item_rect.h,
                         item_rect.x + item_rect.w, item_rect.y + item_rect.h);
                 // 文字：垂直居中 + 左边距按分辨率换算
                 //（原来是固定 +4 / +2，字号变大后会顶出列表项、溢出到列表外）
-                float th = (float)font_get_size(ci->font);
+                float th = (float)joy_r2d_font_get_size(ci->font);
                 float ty = item_rect.y + (item_rect.h - th) * 0.5f;
                 if (ty < item_rect.y) ty = item_rect.y;
-                jtext_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
+                joy_r2d_jtext_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
                         ci->text_color, item_rect.x + 4.0f * s, ty);
         }
 }
 
-bool combobox_input_is_open(combobox_input_p ci)
+bool joy_ui_combobox_input_is_open(combobox_input_p ci)
 {
         return ci ? ci->is_open : false;
 }
 
-/* 下面两个内部函数在后面才定义，这里提前声明以便 combobox_input_set_open 使用 */
+/* 下面两个内部函数在后面才定义，这里提前声明以便 joy_ui_combobox_input_set_open 使用 */
 static void ci_open_dropdown(combobox_input_p ci);
 static void ci_close_dropdown(combobox_input_p ci);
 
 /* 主动展开/收起下拉列表：调用方用 hit_item 选中某项后需要收起列表，
  * 原来没有这个接口（内部 ci_open_dropdown / ci_close_dropdown 是 static）。 */
-void combobox_input_set_open(combobox_input_p ci, bool v)
+void joy_ui_combobox_input_set_open(combobox_input_p ci, bool v)
 {
         if (!ci) return;
         if (v) ci_open_dropdown(ci);
         else   ci_close_dropdown(ci);
 }
 
-void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node)
+void joy_ui_combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node)
 {
         if (ci) ci->popup_node = node;
 }
@@ -1125,8 +1125,8 @@ void combobox_input_set_popup_node(combobox_input_p ci, scene_node_p node)
 static void ci_popup_render(scene_node_p node, const void* arg)
 {
         (void)arg;
-        combobox_input_p ci = (combobox_input_p)scene_node_get_userdata(node);
-        if (ci) combobox_input_draw_dropdown(ci);
+        combobox_input_p ci = (combobox_input_p)joy_scene_node_get_userdata(node);
+        if (ci) joy_ui_combobox_input_draw_dropdown(ci);
 }
 
 /* 展开下拉列表时挂载到弹层节点 */
@@ -1135,8 +1135,8 @@ static void ci_open_dropdown(combobox_input_p ci)
         if (!ci || ci->is_open) return;
         ci->is_open = true;
         if (ci->popup_node) {
-                scene_node_set_userdata(ci->popup_node, ci);
-                scene_node_set_render_callback(ci->popup_node, ci_popup_render);
+                joy_scene_node_set_userdata(ci->popup_node, ci);
+                joy_scene_node_set_render_callback(ci->popup_node, ci_popup_render);
         }
 }
 
@@ -1146,22 +1146,22 @@ static void ci_close_dropdown(combobox_input_p ci)
         if (!ci || !ci->is_open) return;
         ci->is_open = false;
         if (ci->popup_node) {
-                scene_node_set_render_callback(ci->popup_node, NULL);
-                scene_node_set_userdata(ci->popup_node, NULL);
+                joy_scene_node_set_render_callback(ci->popup_node, NULL);
+                joy_scene_node_set_userdata(ci->popup_node, NULL);
         }
 }
 
-void combobox_input_process_event(combobox_input_p ci, const void* ev)
+void joy_ui_combobox_input_process_event(combobox_input_p ci, const void* ev)
 {
         if (!ci || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
-                vec2_t logic = r2d_coordinates_from_window(ci->r2d, e->motion.x, e->motion.y);
+                vec2_t logic = joy_r2d_coordinates_from_window(ci->r2d, e->motion.x, e->motion.y);
                 ci->arrow_hovered = (logic.x >= ci->arrow_rect.x && logic.x <= ci->arrow_rect.x + ci->arrow_rect.w
                         && logic.y >= ci->arrow_rect.y && logic.y <= ci->arrow_rect.y + ci->arrow_rect.h);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                vec2_t logic = r2d_coordinates_from_window(ci->r2d, e->button.x, e->button.y);
+                vec2_t logic = joy_r2d_coordinates_from_window(ci->r2d, e->button.x, e->button.y);
                 bool in_rect = (logic.x >= ci->rect.x && logic.x <= ci->rect.x + ci->rect.w
                         && logic.y >= ci->rect.y && logic.y <= ci->rect.y + ci->rect.h);
                 bool in_arrow = (logic.x >= ci->arrow_rect.x && logic.x <= ci->arrow_rect.x + ci->arrow_rect.w
@@ -1217,7 +1217,7 @@ void combobox_input_process_event(combobox_input_p ci, const void* ev)
                 case SDL_SCANCODE_RETURN:
                 case SDL_SCANCODE_KP_ENTER:
                         if (ci->is_open && ci->selected_index >= 0 && ci->selected_index < ci->item_count) {
-                                combobox_input_set_text(ci, ci->items[ci->selected_index]);
+                                joy_ui_combobox_input_set_text(ci, ci->items[ci->selected_index]);
                                 ci_close_dropdown(ci);
                         }
                         break;
@@ -1226,10 +1226,10 @@ void combobox_input_process_event(combobox_input_p ci, const void* ev)
         }
 }
 
-int combobox_input_hit_item(combobox_input_p ci, float x, float y)
+int joy_ui_combobox_input_hit_item(combobox_input_p ci, float x, float y)
 {
         if (!ci || !ci->is_open) return -1;
-        vec2_t logic = r2d_coordinates_from_window(ci->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(ci->r2d, x, y);
         for (int i = 0; i < ci->item_count; i++) {
                 jrect_t item_rect = {
                     ci->rect.x, ci->rect.y + ci->rect.h + i * ci->item_height,
@@ -1244,7 +1244,7 @@ int combobox_input_hit_item(combobox_input_p ci, float x, float y)
 
 
 datagrid_p
-datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font)
+joy_ui_datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_count, bool has_header, void* font)
 {
         jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         datagrid_p grid;
@@ -1281,7 +1281,7 @@ datagrid_create(jr2d_p r2d, float fx, float fy, float fw, float fh, int col_coun
 }
 
 
-void datagrid_setheaders(datagrid_p grid, const char* headers)
+void joy_ui_datagrid_setheaders(datagrid_p grid, const char* headers)
 {
         font_p fontinfo;
         jcolor_t color;
@@ -1289,11 +1289,11 @@ void datagrid_setheaders(datagrid_p grid, const char* headers)
         if (!grid->has_header) return;
         fontinfo = grid->font;
         for (int i = 0; i < grid->col_count; i++) {
-                //grid->headers[i] = text_createx(grid->r2d, fontinfo, headers[i], SDL_strlen(headers[i]), color);
+                //grid->headers[i] = joy_ui_text_createx(grid->r2d, fontinfo, headers[i], SDL_strlen(headers[i]), color);
         }
 }
 
-void datagrid_setheader(datagrid_p grid, int index, const char* header)
+void joy_ui_datagrid_setheader(datagrid_p grid, int index, const char* header)
 {
         font_p fontinfo;
         jcolor_t color;
@@ -1309,7 +1309,7 @@ void datagrid_setheader(datagrid_p grid, int index, const char* header)
         }
 }
 
-void datagrid_addrow(datagrid_p grid, const char** row_data)
+void joy_ui_datagrid_addrow(datagrid_p grid, const char** row_data)
 {
         if (!grid) return;
         dg_row_t row;
@@ -1321,7 +1321,7 @@ void datagrid_addrow(datagrid_p grid, const char** row_data)
         grid->row_count = (int)kv_size(grid->data);
 }
 
-void datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data)
+void joy_ui_datagrid_setcell(datagrid_p grid, int row_index, int col_index, const char* data)
 {
         if (!grid) return;
         if (row_index < (int)kv_size(grid->data) && col_index < grid->col_count) {
@@ -1344,19 +1344,19 @@ static void datagrid_cleardata(datagrid_p grid)
 }
 
 
-void datagrid_destroy(datagrid_p grid)
+void joy_ui_datagrid_destroy(datagrid_p grid)
 {
         if (!grid) return;
         if (grid->has_header) {
                 for (int i = 0; i < grid->col_count; i++)
-                        if (grid->headers[i]) text_destroy(grid->headers[i]);
+                        if (grid->headers[i]) joy_ui_text_destroy(grid->headers[i]);
         }
         datagrid_cleardata(grid);
         free(grid->col_widths);
         free(grid);
 }
 
-void datagrid_draw(datagrid_p grid, jr2d_p r2d)
+void joy_ui_datagrid_draw(datagrid_p grid, jr2d_p r2d)
 {
         // 计算可见行范围
         int start_row = grid->scroll_offset;
@@ -1365,9 +1365,9 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 
         // 绘制背景
         jcolor_t bg_color = grid->bg_color;
-        r2d_set_color(r2d, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+        joy_r2d_set_color(r2d, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
         jrect_t bg_rect = { grid->x, grid->y, grid->width, grid->height };
-        shape_draw_rectangle(r2d, "fill", bg_rect);
+        joy_math_shape_draw_rectangle(r2d, "fill", bg_rect);
 
         // 获取网格线和文字颜色
         jcolor_t grid_color = grid->grid_color;
@@ -1376,9 +1376,9 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
         jcolor_t selected_color = grid->selected_color;
 
         // 绘制表头
-        r2d_set_color(r2d, header_bg_color.r, header_bg_color.g, header_bg_color.b, header_bg_color.a);
+        joy_r2d_set_color(r2d, header_bg_color.r, header_bg_color.g, header_bg_color.b, header_bg_color.a);
         jrect_t header_rect = { grid->x, grid->y, grid->width, grid->row_height };
-        shape_draw_rectangle(r2d, "fill", header_rect);
+        joy_math_shape_draw_rectangle(r2d, "fill", header_rect);
 
 
         {
@@ -1386,11 +1386,11 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                 int y = grid->y;
                 for (int col = 0; col < grid->col_count; col++) {
                         jtext_p tex = grid->headers[col];
-                        jtext_print(r2d, tex, x, y);
+                        joy_r2d_jtext_print(r2d, tex, x, y);
 
                         // 绘制垂直分隔线
-                        r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-                        shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
+                        joy_r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+                        joy_math_shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
                         x += grid->col_widths[col];
                 }
@@ -1402,9 +1402,9 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
 
                 // 绘制选中行背景
                 if (row == grid->selected_row) {
-                        r2d_set_color(r2d, selected_color.r, selected_color.g, selected_color.b, selected_color.a);
+                        joy_r2d_set_color(r2d, selected_color.r, selected_color.g, selected_color.b, selected_color.a);
                         jrect_t selected_rect = { grid->x, y, grid->width, grid->row_height };
-                        shape_draw_rectangle(r2d, "fill", selected_rect);
+                        joy_math_shape_draw_rectangle(r2d, "fill", selected_rect);
                 }
                 else {
                         /* 非选中行默认无背景 */
@@ -1417,40 +1417,40 @@ void datagrid_draw(datagrid_p grid, jr2d_p r2d)
                                 char* text = kv_A(kv_A(grid->data, row), col);
                                 if (text) {
                                         jcolor_t c = { 0,0,0,255 };
-                                        jtext_printx(r2d, grid->font, text, (int)strlen(text), c, (float)x + 2, (float)y);
+                                        joy_r2d_jtext_printx(r2d, grid->font, text, (int)strlen(text), c, (float)x + 2, (float)y);
                                 }
                         }
 
                         // 绘制垂直分隔线
-                        r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-                        shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
+                        joy_r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+                        joy_math_shape_draw_line(r2d, x + grid->col_widths[col], y, x + grid->col_widths[col], y + grid->row_height);
 
                         x += grid->col_widths[col];
                 }
 
                 // 绘制水平分隔线
-                r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-                shape_draw_line(r2d, grid->x, y + grid->row_height, grid->x + grid->width, y + grid->row_height);
+                joy_r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+                joy_math_shape_draw_line(r2d, grid->x, y + grid->row_height, grid->x + grid->width, y + grid->row_height);
         }
 
         // 绘制外边框
-        r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
-        shape_draw_rectangle(r2d, "line", bg_rect);
+        joy_r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
+        joy_math_shape_draw_rectangle(r2d, "line", bg_rect);
 }
 
-int datagrid_hit_row(datagrid_p grid, float x, float y)
+int joy_ui_datagrid_hit_row(datagrid_p grid, float x, float y)
 {
         if (!grid) return -1;
-        vec2_t logic = r2d_coordinates_from_window(grid->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(grid->r2d, x, y);
         rectangle_t rect = { (float)grid->x, (float)(grid->y + grid->row_height), (float)grid->width, (float)grid->height };
-        if (!collision2d_check_point_rectangle(logic, rect))
+        if (!joy_math_collision2d_check_point_rectangle(logic, rect))
                 return -1;
         int clicked_row = grid->scroll_offset + ((int)(logic.y - rect.y)) / grid->row_height;
         if (clicked_row < grid->row_count) return clicked_row;
         return -1;
 }
 
-void datagrid_scroll(datagrid_p grid, int lines)
+void joy_ui_datagrid_scroll(datagrid_p grid, int lines)
 {
         if (!grid) return;
         grid->scroll_offset -= lines;
@@ -1460,12 +1460,12 @@ void datagrid_scroll(datagrid_p grid, int lines)
         if (grid->scroll_offset > max_scroll) grid->scroll_offset = max_scroll;
 }
 
-void datagrid_set_selected_row(datagrid_p grid, int row)
+void joy_ui_datagrid_set_selected_row(datagrid_p grid, int row)
 {
         if (grid) grid->selected_row = row;
 }
 
-radio_p radio_create(float fx, float fy, float size_frac, const char* label, int group_id)
+radio_p joy_ui_radio_create(float fx, float fy, float size_frac, const char* label, int group_id)
 {
         int lw = 480, lh = 320;
         int x = (int)(fx * (float)lw), y = (int)(fy * (float)lh), size = (int)(size_frac * (float)lw);
@@ -1503,7 +1503,7 @@ radio_p radio_create(float fx, float fy, float size_frac, const char* label, int
         return radio;
 }
 
-void radio_destroy(radio_p radio)
+void joy_ui_radio_destroy(radio_p radio)
 {
         if (!radio) return;
 
@@ -1516,13 +1516,13 @@ void radio_destroy(radio_p radio)
 
 
 /* 按"当前"逻辑分辨率把比例换算成像素（位置/尺寸/命中区），同 checkbox_update_layout。
- * radio_create 拿不到 r2d（只能拿到比例），真正的换算推迟到这里。 */
+ * joy_ui_radio_create 拿不到 r2d（只能拿到比例），真正的换算推迟到这里。 */
 static void radio_update_layout(radio_p rb)
 {
         if (!rb || !rb->r2d) return;
 
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(rb->r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(rb->r2d, &lw, &lh, NULL);
         if (lw <= 0 || lh <= 0) return;
 
         const float scale = (float)lw / 480.0f;      // 相对设计稿 480x320 的缩放
@@ -1546,7 +1546,7 @@ void radio_render(radio_p radio, jr2d_p r2d)
         radio_update_layout(radio);
 
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         const float scale = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
 
         float center_x = radio->x + radio->size / 2;
@@ -1574,26 +1574,26 @@ void radio_render(radio_p radio, jr2d_p r2d)
 
 
         /* 外圈 */
-        r2d_set_color(r2d, radio->r1_color.r, radio->r1_color.g, radio->r1_color.b, radio->r1_color.a);
-        shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r1, 32);
+        joy_r2d_set_color(r2d, radio->r1_color.r, radio->r1_color.g, radio->r1_color.b, radio->r1_color.a);
+        joy_math_shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r1, 32);
 
         /* 内圈 */
-        r2d_set_color(r2d, radio->r2_color.r, radio->r2_color.g, radio->r2_color.b, radio->r2_color.a);
-        shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r2, 32);
+        joy_r2d_set_color(r2d, radio->r2_color.r, radio->r2_color.g, radio->r2_color.b, radio->r2_color.a);
+        joy_math_shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r2, 32);
 
         /* 选中标记 */
         if (radio->checked) {
-                r2d_set_color(r2d, radio->r3_color.r, radio->r3_color.g, radio->r3_color.b, radio->r3_color.a);
-                shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r3, 32);
+                joy_r2d_set_color(r2d, radio->r3_color.r, radio->r3_color.g, radio->r3_color.b, radio->r3_color.a);
+                joy_math_shape_draw_circle(r2d, "fill", (vec2_t) { center_x, center_y }, r3, 32);
         }
 
         // 渲染标签文本
         if (radio->label) {
-                /* 标签文本 — 由外部传入 font 后使用 jtext_printx 渲染 */
+                /* 标签文本 — 由外部传入 font 后使用 joy_r2d_jtext_printx 渲染 */
         }
 }
 
-bool radio_is_pressed(radio_p radio, float x, float y)
+bool joy_ui_radio_is_pressed(radio_p radio, float x, float y)
 {
         if (!radio)
                 return false;
@@ -1605,20 +1605,20 @@ bool radio_is_pressed(radio_p radio, float x, float y)
         hit_area.width = radio->hit_area.w;
         hit_area.height = radio->hit_area.h;
 
-        if (collision2d_check_point_rectangle(pt, hit_area)) {
+        if (joy_math_collision2d_check_point_rectangle(pt, hit_area)) {
                 radio->checked = !radio->checked;
                 return true;
         }
         return false;
 }
 
-void radio_set_hovered(radio_p radio, bool v)
+void joy_ui_radio_set_hovered(radio_p radio, bool v)
 {
         if (radio) radio->hover = v;
 }
 
 
-checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* label)
+checkbox_p joy_ui_checkbox_create(float fx, float fy, float size_frac, const char* label)
 {
         int lw = 480, lh = 320;
         int x = (int)(fx * (float)lw), y = (int)(fy * (float)lh), size = (int)(size_frac * (float)lw);
@@ -1659,7 +1659,7 @@ checkbox_p checkbox_create(float fx, float fy, float size_frac, const char* labe
 }
 
 
-void checkbox_destroy(checkbox_p checkbox)
+void joy_ui_checkbox_destroy(checkbox_p checkbox)
 {
         if (!checkbox) return;
 
@@ -1670,24 +1670,24 @@ void checkbox_destroy(checkbox_p checkbox)
         free(checkbox);
 }
 
-void checkbox_set_state(checkbox_p checkbox, checkbox_state_t state)
+void joy_ui_checkbox_set_state(checkbox_p checkbox, checkbox_state_t state)
 {
         if (!checkbox) return;
         checkbox->state = state;
 }
 
-checkbox_state_t checkbox_get_state(checkbox_p checkbox)
+checkbox_state_t joy_ui_checkbox_get_state(checkbox_p checkbox)
 {
         return checkbox ? checkbox->state : JOY_CHECKBOX_UNCHECKED;
 }
 
-void checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d)
+void joy_ui_checkbox_set_r2d(checkbox_p checkbox, jr2d_p r2d)
 {
         if (!checkbox) return;
         checkbox->r2d = r2d;
 }
 
-void checkbox_set_position(checkbox_p checkbox, int x, int y)
+void joy_ui_checkbox_set_position(checkbox_p checkbox, int x, int y)
 {
         if (!checkbox) return;
         int dx = x - checkbox->x;
@@ -1698,13 +1698,13 @@ void checkbox_set_position(checkbox_p checkbox, int x, int y)
         checkbox->hit_area.y += dy;
 }
 
-void checkbox_set_text_color(checkbox_p checkbox, jcolor_t color)
+void joy_ui_checkbox_set_text_color(checkbox_p checkbox, jcolor_t color)
 {
         if (!checkbox) return;
         checkbox->text_color = color;
 }
 
-void checkbox_toggle(checkbox_p checkbox)
+void joy_ui_checkbox_toggle(checkbox_p checkbox)
 {
         if (!checkbox || !checkbox->enabled) return;
 
@@ -1718,32 +1718,32 @@ void checkbox_toggle(checkbox_p checkbox)
 
 
 // 处理复选框点击事件
-bool checkbox_is_pressed(checkbox_p cb, float x, float y)
+bool joy_ui_checkbox_is_pressed(checkbox_p cb, float x, float y)
 {
         if (!cb || !cb->enabled) return false;
         // 命中前先按当前逻辑分辨率重算命中区，否则分辨率改变后点击位置对不上
         checkbox_update_layout(cb);
         vec2_t pt = { x, y };
         // 与 button/slider/inputbox 一致：窗口坐标转逻辑坐标，保证全屏下命中正确
-        if (cb->r2d) pt = r2d_coordinates_from_window(cb->r2d, x, y);
+        if (cb->r2d) pt = joy_r2d_coordinates_from_window(cb->r2d, x, y);
         rectangle_t hit_area;
         hit_area.x = cb->hit_area.x;
         hit_area.y = cb->hit_area.y;
         hit_area.width = cb->hit_area.w;
         hit_area.height = cb->hit_area.h;
-        if (collision2d_check_point_rectangle(pt, hit_area)) {
-                checkbox_toggle(cb);
+        if (joy_math_collision2d_check_point_rectangle(pt, hit_area)) {
+                joy_ui_checkbox_toggle(cb);
                 return true;
         }
         return false;
 }
 
-void checkbox_set_hovered(checkbox_p cb, bool v)
+void joy_ui_checkbox_set_hovered(checkbox_p cb, bool v)
 {
         if (cb) cb->hover = v;
 }
 
-void checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover)
+void joy_ui_checkbox_set_colors(checkbox_p checkbox, jcolor_t box, jcolor_t check, jcolor_t hover)
 {
         if (!checkbox) return;
         checkbox->box_color = box;
@@ -1759,7 +1759,7 @@ static void checkbox_update_layout(checkbox_p cb)
         if (!cb || !cb->r2d) return;
 
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(cb->r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(cb->r2d, &lw, &lh, NULL);
         if (lw <= 0 || lh <= 0) return;
 
         const float scale = (float)lw / 480.0f;      // 相对设计稿 480x320 的缩放
@@ -1775,7 +1775,7 @@ static void checkbox_update_layout(checkbox_p cb)
         cb->hit_area.h = cb->size;
 }
 
-void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
+void joy_ui_checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 {
         if (!checkbox) return;
 
@@ -1790,23 +1790,23 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
         uint8_t alpha = checkbox->enabled ? 255 : 100;
 
         // === 框体背景 ===
-        r2d_set_color(r2d, checkbox->box_color.r, checkbox->box_color.g, checkbox->box_color.b, alpha);
+        joy_r2d_set_color(r2d, checkbox->box_color.r, checkbox->box_color.g, checkbox->box_color.b, alpha);
         jrect_t fill_rect = { cx, cy, sz, sz };
-        shape_draw_rectangle(r2d, "fill", fill_rect);
+        joy_math_shape_draw_rectangle(r2d, "fill", fill_rect);
 
         // === 悬停时变色 ===
         if (checkbox->hover && checkbox->enabled) {
-                r2d_set_color(r2d, checkbox->hover_color.r, checkbox->hover_color.g, checkbox->hover_color.b, 255);
-                shape_draw_rectangle(r2d, "fill", fill_rect);
+                joy_r2d_set_color(r2d, checkbox->hover_color.r, checkbox->hover_color.g, checkbox->hover_color.b, 255);
+                joy_math_shape_draw_rectangle(r2d, "fill", fill_rect);
         }
 
         // === 边框 ===
-        r2d_set_color(r2d, 255, 255, 255, alpha);
-        shape_draw_rectangle(r2d, "line", fill_rect);
+        joy_r2d_set_color(r2d, 255, 255, 255, alpha);
+        joy_math_shape_draw_rectangle(r2d, "line", fill_rect);
 
         // === 选中状态 ===
         if (checkbox->state == JOY_CHECKBOX_CHECKED && checkbox->enabled) {
-                r2d_set_color(r2d, checkbox->check_color.r, checkbox->check_color.g, checkbox->check_color.b, 255);
+                joy_r2d_set_color(r2d, checkbox->check_color.r, checkbox->check_color.g, checkbox->check_color.b, 255);
                 float p = sz * 0.18f;
                 float m = sz * 0.5f;
                 float e = sz - p;
@@ -1824,25 +1824,25 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
                             {check[1].x + off * 0.4f, check[1].y + off * 0.4f},
                             {check[2].x + off * 0.4f, check[2].y + off * 0.4f}
                         };
-                        r2d_draw_lines(r2d, thick, 3);
+                        joy_r2d_draw_lines(r2d, thick, 3);
                 }
-                r2d_draw_lines(r2d, check, 3);
+                joy_r2d_draw_lines(r2d, check, 3);
         }
         else if (checkbox->state == JOY_CHECKBOX_INDETERMINATE && checkbox->enabled) {
                 // 不确定状态：白色短横线
-                r2d_set_color(r2d, 255, 255, 255, 255);
+                joy_r2d_set_color(r2d, 255, 255, 255, 255);
                 float p = sz * 0.25f;
                 vec2_t dash[2] = {
                     {cx + p, cy + sz * 0.5f},
                     {cx + sz - p, cy + sz * 0.5f}
                 };
-                shape_draw_line(r2d, dash[0].x, dash[0].y, dash[1].x, dash[1].y);
+                joy_math_shape_draw_line(r2d, dash[0].x, dash[0].y, dash[1].x, dash[1].y);
         }
 
         // === 禁用遮罩 ===
         if (!checkbox->enabled) {
-                r2d_set_color(r2d, 200, 200, 200, 120);
-                shape_draw_rectangle(r2d, "fill", fill_rect);
+                joy_r2d_set_color(r2d, 200, 200, 200, 120);
+                joy_math_shape_draw_rectangle(r2d, "fill", fill_rect);
         }
 
         // === 标签文本 ===
@@ -1851,11 +1851,11 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
                 jcolor_t tc = checkbox->enabled ? checkbox->text_color : (jcolor_t){ 160, 160, 160, 255 };
                 // 标签与框的间距 8 是设计稿像素，按分辨率换算
                 int lw = 0, lh = 0;
-                r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+                joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
                 const float scale = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
-                jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
+                joy_r2d_jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
                         cx + sz + 8.0f * scale,
-                        cy + (sz - (float)font_get_size(f)) / 2);
+                        cy + (sz - (float)joy_r2d_font_get_size(f)) / 2);
         }
 }
 
@@ -1863,10 +1863,10 @@ void checkbox_draw(checkbox_p checkbox, jr2d_p r2d, void* font)
 
 
 // 初始化摇杆
-joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
+joystick_p joy_input_joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
 {
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         float x = cx * (float)lw, y = cy * (float)lh, radius = radius_frac * (float)lw;
         joystick_p joystick;
         joystick = (joystick_p)malloc(sizeof(joystick_t));
@@ -1903,46 +1903,46 @@ joystick_p joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac)
         return joystick;
 }
 
-void joystick_destroy(joystick_p joystick)
+void joy_input_joystick_destroy(joystick_p joystick)
 {
         if (!joystick) return;
         // base_image/thumb_image 只是指向 default 或某 mode 纹理的指针，不单独释放，避免重复释放
-        if (joystick->base_default) image_destroy(joystick->base_default);
-        if (joystick->thumb_default) image_destroy(joystick->thumb_default);
+        if (joystick->base_default) joy_ui_image_destroy(joystick->base_default);
+        if (joystick->thumb_default) joy_ui_image_destroy(joystick->thumb_default);
         for (int i = 0; i < 5; i++) {
-                if (joystick->mode_base[i]) image_destroy(joystick->mode_base[i]);
-                if (joystick->mode_thumb[i]) image_destroy(joystick->mode_thumb[i]);
+                if (joystick->mode_base[i]) joy_ui_image_destroy(joystick->mode_base[i]);
+                if (joystick->mode_thumb[i]) joy_ui_image_destroy(joystick->mode_thumb[i]);
         }
         free(joystick);
 }
 
 // 设置摇杆默认纹理：底圈(base) 与摇杆头(thumb)。传空串 / NULL 则清除（退回纯绘制）。
 // 设为默认集合，并立即作为当前显示（除非后续有模式专属纹理）。
-void joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path)
+void joy_input_joystick_set_textures(joystick_p joystick, const char* base_path, const char* thumb_path)
 {
         if (!joystick) return;
-        if (joystick->base_default) { image_destroy(joystick->base_default); joystick->base_default = NULL; }
-        if (joystick->thumb_default) { image_destroy(joystick->thumb_default); joystick->thumb_default = NULL; }
+        if (joystick->base_default) { joy_ui_image_destroy(joystick->base_default); joystick->base_default = NULL; }
+        if (joystick->thumb_default) { joy_ui_image_destroy(joystick->thumb_default); joystick->thumb_default = NULL; }
         if (base_path && base_path[0])
-                joystick->base_default = image_create(joystick->r2d, base_path);
+                joystick->base_default = joy_ui_image_create(joystick->r2d, base_path);
         if (thumb_path && thumb_path[0])
-                joystick->thumb_default = image_create(joystick->r2d, thumb_path);
+                joystick->thumb_default = joy_ui_image_create(joystick->r2d, thumb_path);
         // 立即作为当前显示（若当前模式无专属纹理，则显示默认）
         joystick->base_image = joystick->base_default;
         joystick->thumb_image = joystick->thumb_default;
 }
 
 // 为某个方向模式注册专属纹理；切换该模式时自动换上，未注册则回退默认纹理。
-void joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path)
+void joy_input_joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path)
 {
         if (!joystick) return;
         if (mode < 0 || mode > JOYSTICK_DIR_HORIZONTAL) return;
-        if (joystick->mode_base[(int)mode]) { image_destroy(joystick->mode_base[(int)mode]); joystick->mode_base[(int)mode] = NULL; }
-        if (joystick->mode_thumb[(int)mode]) { image_destroy(joystick->mode_thumb[(int)mode]); joystick->mode_thumb[(int)mode] = NULL; }
+        if (joystick->mode_base[(int)mode]) { joy_ui_image_destroy(joystick->mode_base[(int)mode]); joystick->mode_base[(int)mode] = NULL; }
+        if (joystick->mode_thumb[(int)mode]) { joy_ui_image_destroy(joystick->mode_thumb[(int)mode]); joystick->mode_thumb[(int)mode] = NULL; }
         if (base_path && base_path[0])
-                joystick->mode_base[(int)mode] = image_create(joystick->r2d, base_path);
+                joystick->mode_base[(int)mode] = joy_ui_image_create(joystick->r2d, base_path);
         if (thumb_path && thumb_path[0])
-                joystick->mode_thumb[(int)mode] = image_create(joystick->r2d, thumb_path);
+                joystick->mode_thumb[(int)mode] = joy_ui_image_create(joystick->r2d, thumb_path);
         // 若当前正好是该模式，立即切换显示
         if (joystick->dir_mode == mode) {
                 joystick->base_image = joystick->mode_base[(int)mode] ? joystick->mode_base[(int)mode] : joystick->base_default;
@@ -1951,7 +1951,7 @@ void joystick_set_textures_for_mode(joystick_p joystick, joystick_dir_mode mode,
 }
 
 // 设置摇杆位置
-void joystick_set_position(joystick_p joystick, float x, float y)
+void joy_input_joystick_set_position(joystick_p joystick, float x, float y)
 {
         joystick->center.x = x;
         joystick->center.y = y;
@@ -1966,7 +1966,7 @@ void joystick_set_position(joystick_p joystick, float x, float y)
 }
 
 // 设置摇杆半径（底圈与手柄同步缩放）。用于逻辑分辨率变化时保持设计尺寸。
-void joystick_set_radius(joystick_p joystick, float radius)
+void joy_input_joystick_set_radius(joystick_p joystick, float radius)
 {
         if (!joystick || radius <= 0.0f) return;
         joystick->radius = radius;
@@ -1986,7 +1986,7 @@ void joystick_set_radius(joystick_p joystick, float radius)
 }
 
 // 设置方向约束模式（全方向/四向/八向/仅上/下/左/右）
-void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
+void joy_input_joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
 {
         if (!joystick) return;
         joystick->dir_mode = mode;
@@ -1995,16 +1995,16 @@ void joystick_set_dir_mode(joystick_p joystick, joystick_dir_mode mode)
         joystick->thumb_image = joystick->mode_thumb[(int)mode] ? joystick->mode_thumb[(int)mode] : joystick->thumb_default;
 }
 
-// 前向声明（定义见下方）；供 joystick_set_vector 在定义前调用，避免 static 函数“定义前使用”被当成隐式声明
+// 前向声明（定义见下方）；供 joy_input_joystick_set_vector 在定义前调用，避免 static 函数“定义前使用”被当成隐式声明
 static void joystick_apply_dir_mode(joystick_dir_mode mode, vec2_t* d);
 
 // 以方向向量驱动摇杆（无需触摸），用于键盘/外部输入同步显示。
 // (dx,dy) 为方向（屏幕坐标，y 向下）；长度>0 即视为按下（满量程），为 0 则回中。
 // 同样受 dir_mode 约束（小圆只沿允许方向滑动），视觉与触摸一致。
-void joystick_set_vector(joystick_p j, float dx, float dy)
+void joy_input_joystick_set_vector(joystick_p j, float dx, float dy)
 {
         if (!j) return;
-        if (dx == 0.0f && dy == 0.0f) { joystick_reset(j); return; }
+        if (dx == 0.0f && dy == 0.0f) { joy_input_joystick_reset(j); return; }
         j->is_dragging = true;
         j->is_touch_active = true;
         float len = sqrtf(dx * dx + dy * dy);
@@ -2082,15 +2082,15 @@ static void joystick_update_drag(joystick_p joystick, float touch_x, float touch
 }
 
 // 处理事件和响应逻辑(分辨率)
-bool joystick_is_dragging(joystick_p j)
+bool joy_input_joystick_is_dragging(joystick_p j)
 {
         return j ? j->is_dragging : false;
 }
 
-void joystick_touch_down(joystick_p j, float x, float y)
+void joy_input_joystick_touch_down(joystick_p j, float x, float y)
 {
         if (!j) return;
-        vec2_t logic = r2d_coordinates_from_window(j->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(j->r2d, x, y);
         float dist_sq = distance_squared(logic.x, logic.y, j->center.x, j->center.y);
         if (dist_sq <= (j->radius * j->radius)) {
                 j->is_dragging = true;
@@ -2100,21 +2100,21 @@ void joystick_touch_down(joystick_p j, float x, float y)
         }
 }
 
-void joystick_touch_move(joystick_p j, float x, float y)
+void joy_input_joystick_touch_move(joystick_p j, float x, float y)
 {
         if (!j || !j->is_dragging) return;
-        vec2_t logic = r2d_coordinates_from_window(j->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(j->r2d, x, y);
         joystick_update_drag(j, logic.x, logic.y);
 }
 
-void joystick_touch_up(joystick_p j)
+void joy_input_joystick_touch_up(joystick_p j)
 {
         if (!j) return;
-        joystick_reset(j);
+        joy_input_joystick_reset(j);
 }
 
 // 重置摇杆
-void joystick_reset(joystick_p joystick)
+void joy_input_joystick_reset(joystick_p joystick)
 {
         joystick->direction.x = 0.0f;
         joystick->direction.y = 0.0f;
@@ -2130,63 +2130,63 @@ void joystick_reset(joystick_p joystick)
 
 // 绘制摇杆：优先使用纹理（底圈 base_image + 摇杆头 thumb_image），
 // 未设置纹理时退回原纯绘制（圆形背景 + 十字 + 圆形手柄），保持向后兼容。
-void joystick_draw(joystick_p joystick)
+void joy_input_joystick_draw(joystick_p joystick)
 {
         if (!joystick) return;
         jr2d_p r2d = joystick->r2d;
 
         // ---- 底圈 ----
         if (joystick->base_image) {
-                image_draw1(joystick->base_image, NULL, &joystick->background);
+                joy_ui_image_draw1(joystick->base_image, NULL, &joystick->background);
         } else {
-                r2d_set_color(r2d,
+                joy_r2d_set_color(r2d,
                         (JOYSTICK_BG_COLOR >> 24) & 0xFF,
                         (JOYSTICK_BG_COLOR >> 16) & 0xFF,
                         (JOYSTICK_BG_COLOR >> 8) & 0xFF,
                         JOYSTICK_BG_COLOR & 0xFF);
                 // 绘制圆形背景, 使用多段模拟圆形
-                shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
+                joy_math_shape_draw_circle(r2d, "line", joystick->center, joystick->radius, 32);
 
                 // 绘制十字线
-                r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
-                shape_draw_line(r2d,
+                joy_r2d_set_color(r2d, 0x66, 0x66, 0x66, 0xFF);
+                joy_math_shape_draw_line(r2d,
                         joystick->center.x - joystick->radius, joystick->center.y,
                         joystick->center.x + joystick->radius, joystick->center.y);
-                shape_draw_line(r2d,
+                joy_math_shape_draw_line(r2d,
                         joystick->center.x, joystick->center.y - joystick->radius,
                         joystick->center.x, joystick->center.y + joystick->radius);
         }
 
         // ---- 摇杆头 ----
         if (joystick->thumb_image) {
-                image_draw1(joystick->thumb_image, NULL, &joystick->handle);
+                joy_ui_image_draw1(joystick->thumb_image, NULL, &joystick->handle);
         } else {
                 jcolor_t handle_color = joystick->is_dragging ?
                         (jcolor_t) { 0x4C, 0xAF, 0x50, 0xFF } :
                         (jcolor_t) { 0x88, 0x88, 0x88, 0xFF };
-                r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
+                joy_r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a);
 
                 // 绘制圆形手柄
                 vec2_t handle_center = {
                         joystick->handle.x + joystick->handle_radius,
                         joystick->handle.y + joystick->handle_radius
                 };
-                shape_draw_circle(r2d, "fill", handle_center, joystick->radius * 0.5f, 24);
+                joy_math_shape_draw_circle(r2d, "fill", handle_center, joystick->radius * 0.5f, 24);
 
                 // 绘制手柄内框
-                r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
+                joy_r2d_set_color(r2d, handle_color.r, handle_color.g, handle_color.b, handle_color.a - 0x40);
                 jrect_t handle_fill = {
                         joystick->handle.x + 2, joystick->handle.y + 2,
                         joystick->handle.w - 4, joystick->handle.h - 4
                 };
-                shape_draw_rectangle(r2d, "fill", handle_fill);
+                joy_math_shape_draw_rectangle(r2d, "fill", handle_fill);
         }
 
         // ---- 方向指示线（仅纯绘制时；纹理已用摇杆头位移表达方向）----
-        if (!joystick->thumb_image && joystick_get_magnitude(joystick) > 0) {
-                vec2_t dir = joystick_get_direction(joystick);
-                r2d_set_color(r2d, 0, 0, 0, 100);
-                shape_draw_line(r2d,
+        if (!joystick->thumb_image && joy_input_joystick_get_magnitude(joystick) > 0) {
+                vec2_t dir = joy_input_joystick_get_direction(joystick);
+                joy_r2d_set_color(r2d, 0, 0, 0, 100);
+                joy_math_shape_draw_line(r2d,
                         joystick->center.x,
                         joystick->center.y,
                         joystick->center.x + dir.x * joystick->radius,
@@ -2195,13 +2195,13 @@ void joystick_draw(joystick_p joystick)
 }
 
 // 获取摇杆方向
-vec2_t joystick_get_direction(joystick_p joystick)
+vec2_t joy_input_joystick_get_direction(joystick_p joystick)
 {
         return joystick->direction;
 }
 
 // 获取摇杆强度
-float joystick_get_magnitude(joystick_p joystick)
+float joy_input_joystick_get_magnitude(joystick_p joystick)
 {
         return joystick->magnitude;
 }
@@ -2212,7 +2212,7 @@ float joystick_get_magnitude(joystick_p joystick)
 
 #define INPUTBOX_BUF_INIT 256
 
-inputbox_p inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font)
+inputbox_p joy_ui_inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, font_p font)
 {
         jrect_t rect = jui_frect(r2d, fx, fy, fw, fh);
         inputbox_p ti = (inputbox_p)calloc(1, sizeof(inputbox_t));
@@ -2233,12 +2233,12 @@ inputbox_p inputbox_create(jr2d_p r2d, float fx, float fy, float fw, float fh, f
         ti->sel_start = -1;
         ti->sel_end = -1;
         ti->focused = false;
-        ti->cursor_timer = get_ticks();
+        ti->cursor_timer = joy_core_get_ticks();
         ti->cursor_visible = true;
         return ti;
 }
 
-void inputbox_destroy(inputbox_p ti)
+void joy_ui_inputbox_destroy(inputbox_p ti)
 {
         if (!ti) return;
         free(ti->buffer);
@@ -2272,7 +2272,7 @@ static void inputbox_delete_sel(inputbox_p ti)
 }
 
 
-void inputbox_set_text(inputbox_p ti, const char* text)
+void joy_ui_inputbox_set_text(inputbox_p ti, const char* text)
 {
         if (!ti || !text) return;
         int len = (int)strlen(text);
@@ -2289,12 +2289,12 @@ void inputbox_set_text(inputbox_p ti, const char* text)
         if (ti->on_change) ti->on_change(ti, ti->cb_userdata);
 }
 
-const char* inputbox_get_text(inputbox_p ti)
+const char* joy_ui_inputbox_get_text(inputbox_p ti)
 {
         return ti ? ti->buffer : "";
 }
 
-void inputbox_set_callback(inputbox_p ti,
+void joy_ui_inputbox_set_callback(inputbox_p ti,
         void (*submit)(inputbox_p, void*),
         void (*change)(inputbox_p, void*),
         void* userdata)
@@ -2335,7 +2335,7 @@ static void inputbox_scroll_to_cursor(inputbox_p ti)
 }
 
 /* 在 buffer 的 cursor_pos 处插入 len 字节 */
-void inputbox_insert(inputbox_p ti, const char* s, int len)
+void joy_ui_inputbox_insert(inputbox_p ti, const char* s, int len)
 {
         /* 有选中时先删除选中文本 */
         if (inputbox_has_sel(ti)) inputbox_delete_sel(ti);
@@ -2373,33 +2373,33 @@ static void inputbox_update_sel(inputbox_p ti)
 
 /* ---- end 选中支持 ---- */
 
-void inputbox_cursor_left(inputbox_p ti)
+void joy_ui_inputbox_cursor_left(inputbox_p ti)
 {
         if (!ti || ti->cursor_pos <= 0) return;
         inputbox_move_cursor(ti, ti->cursor_pos - 1);
 }
 
-void inputbox_cursor_right(inputbox_p ti)
+void joy_ui_inputbox_cursor_right(inputbox_p ti)
 {
         if (!ti || ti->cursor_pos >= ti->text_len) return;
         inputbox_move_cursor(ti, ti->cursor_pos + 1);
 }
 
-void inputbox_cursor_home(inputbox_p ti)
+void joy_ui_inputbox_cursor_home(inputbox_p ti)
 {
         if (!ti) return;
         inputbox_move_cursor(ti, 0);
         ti->scroll_offset = 0;
 }
 
-void inputbox_cursor_end(inputbox_p ti)
+void joy_ui_inputbox_cursor_end(inputbox_p ti)
 {
         if (!ti) return;
         inputbox_move_cursor(ti, ti->text_len);
         inputbox_scroll_to_cursor(ti);
 }
 
-void inputbox_select_left(inputbox_p ti)
+void joy_ui_inputbox_select_left(inputbox_p ti)
 {
         if (!ti || ti->cursor_pos <= 0) return;
         ti->cursor_pos--;
@@ -2407,7 +2407,7 @@ void inputbox_select_left(inputbox_p ti)
         inputbox_scroll_to_cursor(ti);
 }
 
-void inputbox_select_right(inputbox_p ti)
+void joy_ui_inputbox_select_right(inputbox_p ti)
 {
         if (!ti || ti->cursor_pos >= ti->text_len) return;
         ti->cursor_pos++;
@@ -2415,7 +2415,7 @@ void inputbox_select_right(inputbox_p ti)
         inputbox_scroll_to_cursor(ti);
 }
 
-void inputbox_select_home(inputbox_p ti)
+void joy_ui_inputbox_select_home(inputbox_p ti)
 {
         if (!ti) return;
         inputbox_update_sel(ti);
@@ -2424,7 +2424,7 @@ void inputbox_select_home(inputbox_p ti)
         ti->sel_end = 0;
 }
 
-void inputbox_select_end(inputbox_p ti)
+void joy_ui_inputbox_select_end(inputbox_p ti)
 {
         if (!ti) return;
         inputbox_update_sel(ti);
@@ -2433,7 +2433,7 @@ void inputbox_select_end(inputbox_p ti)
         inputbox_scroll_to_cursor(ti);
 }
 
-void inputbox_select_all(inputbox_p ti)
+void joy_ui_inputbox_select_all(inputbox_p ti)
 {
         if (!ti) return;
         ti->sel_start = 0;
@@ -2443,7 +2443,7 @@ void inputbox_select_all(inputbox_p ti)
 }
 
 /* 删除光标前一个 UTF-8 字符（退格） */
-void inputbox_backspace(inputbox_p ti)
+void joy_ui_inputbox_backspace(inputbox_p ti)
 {
         if (inputbox_has_sel(ti)) {
                 inputbox_delete_sel(ti);
@@ -2466,7 +2466,7 @@ void inputbox_backspace(inputbox_p ti)
 }
 
 /* 删除光标后一个 UTF-8 字符（Delete） */
-void inputbox_delete(inputbox_p ti)
+void joy_ui_inputbox_delete(inputbox_p ti)
 {
         if (inputbox_has_sel(ti)) {
                 inputbox_delete_sel(ti);
@@ -2487,14 +2487,14 @@ void inputbox_delete(inputbox_p ti)
         inputbox_scroll_to_cursor(ti);
 }
 
-void inputbox_paste(inputbox_p ti)
+void joy_ui_inputbox_paste(inputbox_p ti)
 {
         if (!ti) return;
-        const char* clip = get_clipboard_text();
-        if (clip) inputbox_insert(ti, clip, (int)strlen(clip));
+        const char* clip = joy_core_get_clipboard_text();
+        if (clip) joy_ui_inputbox_insert(ti, clip, (int)strlen(clip));
 }
 
-void inputbox_copy(inputbox_p ti)
+void joy_ui_inputbox_copy(inputbox_p ti)
 {
         if (!ti || ti->text_len <= 0) return;
         if (inputbox_has_sel(ti)) {
@@ -2504,15 +2504,15 @@ void inputbox_copy(inputbox_p ti)
                 char* buf = (char*)malloc(len + 1);
                 memcpy(buf, ti->buffer + a, len);
                 buf[len] = '\0';
-                set_clipboard_text(buf);
+                joy_core_set_clipboard_text(buf);
                 free(buf);
         }
         else {
-                set_clipboard_text(ti->buffer);
+                joy_core_set_clipboard_text(ti->buffer);
         }
 }
 
-void inputbox_cut(inputbox_p ti)
+void joy_ui_inputbox_cut(inputbox_p ti)
 {
         if (!ti || ti->text_len <= 0) return;
         if (inputbox_has_sel(ti)) {
@@ -2522,7 +2522,7 @@ void inputbox_cut(inputbox_p ti)
                 char* buf = (char*)malloc(len + 1);
                 memcpy(buf, ti->buffer + a, len);
                 buf[len] = '\0';
-                set_clipboard_text(buf);
+                joy_core_set_clipboard_text(buf);
                 free(buf);
                 inputbox_delete_sel(ti);
                 ti->buffer[ti->text_len] = '\0';
@@ -2530,7 +2530,7 @@ void inputbox_cut(inputbox_p ti)
                 inputbox_scroll_to_cursor(ti);
         }
         else {
-                set_clipboard_text(ti->buffer);
+                joy_core_set_clipboard_text(ti->buffer);
                 ti->text_len = 0;
                 ti->cursor_pos = 0;
                 ti->scroll_offset = 0;
@@ -2543,12 +2543,12 @@ void inputbox_cut(inputbox_p ti)
 static int inputbox_cursor_x(inputbox_p ti)
 {
         if (ti->cursor_pos <= 0 || !ti->font) return 0;
-        /* 用 text_createx 生成光标前的子串，量宽度 */
+        /* 用 joy_ui_text_createx 生成光标前的子串，量宽度 */
         jcolor_t c = { 0,0,0,255 };
-        jtext_p tex = text_createx(ti->r2d, ti->font, ti->buffer, ti->cursor_pos, c);
+        jtext_p tex = joy_ui_text_createx(ti->r2d, ti->font, ti->buffer, ti->cursor_pos, c);
         if (!tex) return 0;
-        int w = text_get_width(tex);
-        text_destroy(tex);
+        int w = joy_ui_text_get_width(tex);
+        joy_ui_text_destroy(tex);
         return w;
 }
 
@@ -2557,10 +2557,10 @@ static int inputbox_cursor_x_at(inputbox_p ti, int pos)
 {
         if (pos <= 0 || !ti->font) return 0;
         jcolor_t c = { 0,0,0,255 };
-        jtext_p tex = text_createx(ti->r2d, ti->font, ti->buffer, pos, c);
+        jtext_p tex = joy_ui_text_createx(ti->r2d, ti->font, ti->buffer, pos, c);
         if (!tex) return 0;
-        int w = text_get_width(tex);
-        text_destroy(tex);
+        int w = joy_ui_text_get_width(tex);
+        joy_ui_text_destroy(tex);
         return w;
 }
 
@@ -2584,11 +2584,11 @@ static int inputbox_pos_from_x(inputbox_p ti, float local_x)
         return ti->text_len;
 }
 
-void inputbox_focus(inputbox_p ti)
+void joy_ui_inputbox_focus(inputbox_p ti)
 {
         if (!ti) return;
         ti->focused = true;
-        ti->cursor_timer = get_ticks();
+        ti->cursor_timer = joy_core_get_ticks();
         ti->cursor_visible = true;
         /* 从 r2d 获取 window 并启用文本输入。
          * 注意：即使已经处于聚焦态也要调用 SDL_StartTextInput——用户可能用系统返回键
@@ -2596,52 +2596,52 @@ void inputbox_focus(inputbox_p ti)
          * 复位为 false，但 inputbox 自身的 focused 仍是 true）。再次点击该框时需要重新
          * 拉起键盘，否则表现为"点一下没反应、要再点一下"。
          * 键盘本来就开着时，SDL_StartTextInput 内部是 no-op（不会重复 show/start）。 */
-        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)joy_r2d_unwrap(ti->r2d));
         if (win) SDL_StartTextInput(win);
 }
 
-void inputbox_defocus(inputbox_p ti)
+void joy_ui_inputbox_defocus(inputbox_p ti)
 {
         if (!ti || !ti->focused) return;
         ti->focused = false;
         inputbox_clear_sel(ti);
-        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)r2d_unwrap(ti->r2d));
+        SDL_Window* win = SDL_GetRenderWindow((SDL_Renderer*)joy_r2d_unwrap(ti->r2d));
         if (win) SDL_StopTextInput(win);
 }
 
 /* 仅清除焦点，不调用 SDL_StopTextInput。
  * 用于在两个输入框之间切换焦点：保持软键盘/IME 不收起。
- * 为什么不能直接走 inputbox_defocus：
+ * 为什么不能直接走 joy_ui_inputbox_defocus：
  *   切换焦点时若先 SDL_StopTextInput(隐藏键盘)、同一帧内紧接着另一框
  *   SDL_StartTextInput(显示键盘)，Android 的 IME hide/show 是异步投递到 UI 线程的，
  *   show 会与尚未完成的 hide 竞态被吞掉，表现为"从 A 直接点 B 唤不起输入法，
  *   必须先点输入框外让 A 失焦、隔一帧再点 B 才行"。
  * 因此：框间切换用本函数只转移焦点（键盘保持），点到所有框之外才用
- * inputbox_defocus 真正收起键盘。 */
-void inputbox_blur(inputbox_p ti)
+ * joy_ui_inputbox_defocus 真正收起键盘。 */
+void joy_ui_inputbox_blur(inputbox_p ti)
 {
         if (!ti || !ti->focused) return;
         ti->focused = false;
         inputbox_clear_sel(ti);
 }
 
-void inputbox_draw(inputbox_p ti)
+void joy_ui_inputbox_draw(inputbox_p ti)
 {
         if (!ti) return;
         jr2d_p r = ti->r2d;
         jrect_t rect = ti->rect;
 
         /* 背景 */
-        r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
-        shape_draw_rectangle(r, "fill", rect);
+        joy_r2d_set_color(r, ti->bg_color.r, ti->bg_color.g, ti->bg_color.b, ti->bg_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", rect);
 
         /* 边框（聚焦时高亮） */
         jcolor_t border = ti->focused ? ti->focus_border_color : ti->border_color;
-        r2d_set_color(r, border.r, border.g, border.b, border.a);
-        shape_draw_rectangle(r, "line", rect);
+        joy_r2d_set_color(r, border.r, border.g, border.b, border.a);
+        joy_math_shape_draw_rectangle(r, "line", rect);
 
         /* 设置裁剪区域，防止文字绘制到 inputbox 矩形之外 */
-        SDL_Renderer* sdl_r = (SDL_Renderer*)r2d_unwrap(r);
+        SDL_Renderer* sdl_r = (SDL_Renderer*)joy_r2d_unwrap(r);
         SDL_Rect clip_rect = { (int)rect.x + 2, (int)rect.y, (int)rect.w - 4, (int)rect.h };
         bool clip_was_enabled = SDL_RenderClipEnabled(sdl_r);
         SDL_Rect old_clip;
@@ -2654,23 +2654,23 @@ void inputbox_draw(inputbox_p ti)
                 int a = ti->sel_start, b = ti->sel_end;
                 if (a > b) { int t = a; a = b; b = t; }
                 jcolor_t c = { 0,0,0,255 };
-                jtext_p ta = text_createx(r, ti->font, ti->buffer, a, c);
-                jtext_p tb = text_createx(r, ti->font, ti->buffer + a, b - a, c);
+                jtext_p ta = joy_ui_text_createx(r, ti->font, ti->buffer, a, c);
+                jtext_p tb = joy_ui_text_createx(r, ti->font, ti->buffer + a, b - a, c);
                 if (ta && tb) {
-                        float sx = rect.x + 4 + (float)(text_get_width(ta) - ti->scroll_offset);
-                        float sw = (float)text_get_width(tb);
+                        float sx = rect.x + 4 + (float)(joy_ui_text_get_width(ta) - ti->scroll_offset);
+                        float sw = (float)joy_ui_text_get_width(tb);
                         jrect_t sel_rect = { sx, rect.y + 1, sw, rect.h - 2 };
-                        r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
-                        shape_draw_rectangle(r, "fill", sel_rect);
+                        joy_r2d_set_color(r, ti->sel_color.r, ti->sel_color.g, ti->sel_color.b, ti->sel_color.a);
+                        joy_math_shape_draw_rectangle(r, "fill", sel_rect);
                 }
-                if (ta) text_destroy(ta);
-                if (tb) text_destroy(tb);
+                if (ta) joy_ui_text_destroy(ta);
+                if (tb) joy_ui_text_destroy(tb);
         }
 
         /* 文字 */
         if (ti->text_len > 0 && ti->font) {
                 float text_x = rect.x + 4;
-                float text_y = rect.y + (rect.h - (float)font_get_size(ti->font)) / 2.0f;
+                float text_y = rect.y + (rect.h - (float)joy_r2d_font_get_size(ti->font)) / 2.0f;
                 float ox = text_x - (float)ti->scroll_offset;
 
                 if (inputbox_has_sel(ti)) {
@@ -2679,20 +2679,20 @@ void inputbox_draw(inputbox_p ti)
                         jcolor_t white = { 255, 255, 255, 255 };
                         /* 选中前部分 */
                         if (a > 0)
-                                jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+                                joy_r2d_jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
                         /* 选中部分（白色） */
                         if (b > a) {
-                                float offset_before = (float)text_get_width(text_createx(r, ti->font, ti->buffer, a, ti->text_color));
-                                jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+                                float offset_before = (float)joy_ui_text_get_width(joy_ui_text_createx(r, ti->font, ti->buffer, a, ti->text_color));
+                                joy_r2d_jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
                         }
                         /* 选中后部分 */
                         if (b < ti->text_len) {
-                                float offset_sel = (float)text_get_width(text_createx(r, ti->font, ti->buffer, b, ti->text_color));
-                                jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+                                float offset_sel = (float)joy_ui_text_get_width(joy_ui_text_createx(r, ti->font, ti->buffer, b, ti->text_color));
+                                joy_r2d_jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
                         }
                 }
                 else {
-                        jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+                        joy_r2d_jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
                 }
         }
 
@@ -2704,7 +2704,7 @@ void inputbox_draw(inputbox_p ti)
 
         /* 光标（聚焦时绘制） */
         if (ti->focused) {
-                uint64_t now = get_ticks();
+                uint64_t now = joy_core_get_ticks();
                 if (now - ti->cursor_timer >= 530) {
                         ti->cursor_visible = !ti->cursor_visible;
                         ti->cursor_timer = now;
@@ -2714,14 +2714,14 @@ void inputbox_draw(inputbox_p ti)
                         if (cx >= rect.x + 2 && cx <= rect.x + rect.w - 2) {
                                 float cy = rect.y + 3;
                                 float ch = rect.h - 6;
-                                r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
-                                shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
+                                joy_r2d_set_color(r, ti->cursor_color.r, ti->cursor_color.g, ti->cursor_color.b, ti->cursor_color.a);
+                                joy_math_shape_draw_line(r, (float)cx + 0.5f, cy, (float)cx + 0.5f, cy + ch);
                         }
                 }
         }
 }
 
-bool inputbox_is_pressed(inputbox_p ti, float x, float y)
+bool joy_ui_inputbox_is_pressed(inputbox_p ti, float x, float y)
 {
         if (!ti) return false;
         vec2_t logic;
@@ -2730,20 +2730,20 @@ bool inputbox_is_pressed(inputbox_p ti, float x, float y)
         rect.y = ti->rect.y;
         rect.width = ti->rect.w;
         rect.height = ti->rect.h;
-        logic = r2d_coordinates_from_window(ti->r2d, x, y);
-        if (collision2d_check_point_rectangle(logic, rect)) {
-                inputbox_focus(ti);
+        logic = joy_r2d_coordinates_from_window(ti->r2d, x, y);
+        if (joy_math_collision2d_check_point_rectangle(logic, rect)) {
+                joy_ui_inputbox_focus(ti);
                 inputbox_clear_sel(ti);
                 float local_x = logic.x - ti->rect.x - 2 + ti->scroll_offset;
                 ti->cursor_pos = inputbox_pos_from_x(ti, local_x);
                 inputbox_scroll_to_cursor(ti);
                 return true;
         }
-        inputbox_defocus(ti);
+        joy_ui_inputbox_defocus(ti);
         return false;
 }
 
-bool inputbox_is_hovered(inputbox_p ti, float x, float y)
+bool joy_ui_inputbox_is_hovered(inputbox_p ti, float x, float y)
 {
         if (!ti) return false;
         vec2_t logic;
@@ -2752,12 +2752,12 @@ bool inputbox_is_hovered(inputbox_p ti, float x, float y)
         rect.y = ti->rect.y;
         rect.width = ti->rect.w;
         rect.height = ti->rect.h;
-        logic = r2d_coordinates_from_window(ti->r2d, x, y);
-        ti->hovered = collision2d_check_point_rectangle(logic, rect);
+        logic = joy_r2d_coordinates_from_window(ti->r2d, x, y);
+        ti->hovered = joy_math_collision2d_check_point_rectangle(logic, rect);
         return ti->hovered;
 }
 
-bool inputbox_is_focused(inputbox_p ti)
+bool joy_ui_inputbox_is_focused(inputbox_p ti)
 {
         return ti ? ti->focused : false;
 }
@@ -2805,7 +2805,7 @@ static bool slider_thumb_hit(slider_p s, float logic_x, float logic_y)
                 && logic_y >= tr.y && logic_y <= tr.y + tr.h;
 }
 
-slider_p slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial)
+slider_p joy_ui_slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float min, float max, float initial)
 {
         float x, y, w, h;
         jui_fpx(r2d, fx, fy, fw, fh, &x, &y, &w, &h);
@@ -2831,12 +2831,12 @@ slider_p slider_create(jr2d_p r2d, float fx, float fy, float fw, float fh, float
         return s;
 }
 
-void slider_destroy(slider_p s)
+void joy_ui_slider_destroy(slider_p s)
 {
         free(s);
 }
 
-void slider_set_value(slider_p s, float v)
+void joy_ui_slider_set_value(slider_p s, float v)
 {
         if (!s) return;
         if (v < s->min) v = s->min;
@@ -2844,12 +2844,12 @@ void slider_set_value(slider_p s, float v)
         s->value = v;
 }
 
-float slider_get_value(slider_p s)
+float joy_ui_slider_get_value(slider_p s)
 {
         return s ? s->value : 0;
 }
 
-void slider_set_range(slider_p s, float min, float max)
+void joy_ui_slider_set_range(slider_p s, float min, float max)
 {
         if (!s) return;
         s->min = min;
@@ -2858,7 +2858,7 @@ void slider_set_range(slider_p s, float min, float max)
         if (s->value > max) s->value = max;
 }
 
-void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
+void joy_ui_slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb, jcolor_t thumb_hover)
 {
         if (!s) return;
         s->track_color = track;
@@ -2867,7 +2867,7 @@ void slider_set_colors(slider_p s, jcolor_t track, jcolor_t fill, jcolor_t thumb
         s->thumb_hover_color = thumb_hover;
 }
 
-void slider_set_rect(slider_p s, float x, float y, float w, float h)
+void joy_ui_slider_set_rect(slider_p s, float x, float y, float w, float h)
 {
         if (!s) return;
         s->track.x = x;
@@ -2877,37 +2877,37 @@ void slider_set_rect(slider_p s, float x, float y, float w, float h)
         s->thumb_width = h;
 }
 
-void slider_draw(slider_p s)
+void joy_ui_slider_draw(slider_p s)
 {
         if (!s) return;
         jr2d_p r = s->r2d;
 
         /* 滑轨背景 */
-        r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
-        shape_draw_rectangle(r, "fill", s->track);
+        joy_r2d_set_color(r, s->track_color.r, s->track_color.g, s->track_color.b, s->track_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", s->track);
 
         /* 已填充部分（从 track.x 到 thumb 中心） */
         float tx = slider_thumb_x(s);
         float fill_w = tx - s->track.x;
         if (fill_w > 0) {
-                r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
+                joy_r2d_set_color(r, s->fill_color.r, s->fill_color.g, s->fill_color.b, s->fill_color.a);
                 jrect_t fill_rect = { s->track.x, s->track.y, fill_w, s->track.h };
-                shape_draw_rectangle(r, "fill", fill_rect);
+                joy_math_shape_draw_rectangle(r, "fill", fill_rect);
         }
 
         /* 滑块 */
         jrect_t tr = slider_thumb_rect(s);
         jcolor_t tc = s->hovered ? s->thumb_hover_color : s->thumb_color;
-        r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
-        shape_draw_rectangle(r, "fill", tr);
-        r2d_set_color(r, 0, 0, 0, 255);
-        shape_draw_rectangle(r, "line", tr);
+        joy_r2d_set_color(r, tc.r, tc.g, tc.b, tc.a);
+        joy_math_shape_draw_rectangle(r, "fill", tr);
+        joy_r2d_set_color(r, 0, 0, 0, 255);
+        joy_math_shape_draw_rectangle(r, "line", tr);
 }
 
-bool slider_is_pressed(slider_p s, float x, float y)
+bool joy_ui_slider_is_pressed(slider_p s, float x, float y)
 {
         if (!s) return false;
-        vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(s->r2d, x, y);
         if (slider_thumb_hit(s, logic.x, logic.y)) {
                 s->is_dragging = true;
                 return true;
@@ -2922,27 +2922,27 @@ bool slider_is_pressed(slider_p s, float x, float y)
         return false;
 }
 
-void slider_set_pressed(slider_p s, bool v)
+void joy_ui_slider_set_pressed(slider_p s, bool v)
 {
         if (s) s->is_dragging = v;
 }
 
-void slider_drag_move(slider_p s, float x, float y)
+void joy_ui_slider_drag_move(slider_p s, float x, float y)
 {
         if (!s || !s->is_dragging) return;
-        vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(s->r2d, x, y);
         slider_update_value_from_x(s, logic.x);
 }
 
-bool slider_is_hovered(slider_p s, float x, float y)
+bool joy_ui_slider_is_hovered(slider_p s, float x, float y)
 {
         if (!s) return false;
-        vec2_t logic = r2d_coordinates_from_window(s->r2d, x, y);
+        vec2_t logic = joy_r2d_coordinates_from_window(s->r2d, x, y);
         s->hovered = slider_thumb_hit(s, logic.x, logic.y);
         return s->hovered;
 }
 
-void slider_set_hovered(slider_p s, bool v)
+void joy_ui_slider_set_hovered(slider_p s, bool v)
 {
         if (s) s->hovered = v;
 }
@@ -2952,10 +2952,10 @@ void slider_set_hovered(slider_p s, bool v)
 #define POPUP_PADDING 12
 #define POPUP_TITLE_HEIGHT 32
 
-popup_p popup_create(jr2d_p r2d, float fw, float fh)
+popup_p joy_ui_popup_create(jr2d_p r2d, float fw, float fh)
 {
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         float w = fw * (float)lw, h = fh * (float)lh;
         popup_p p = (popup_p)calloc(1, sizeof(popup_t));
         if (!p) return NULL;
@@ -2980,12 +2980,12 @@ popup_p popup_create(jr2d_p r2d, float fw, float fh)
         return p;
 }
 
-void popup_destroy(popup_p p)
+void joy_ui_popup_destroy(popup_p p)
 {
         free(p);
 }
 
-void popup_set_title(popup_p p, const char* text, int len)
+void joy_ui_popup_set_title(popup_p p, const char* text, int len)
 {
         if (!p || !text) return;
         if (len < 0) len = (int)strlen(text);
@@ -2994,7 +2994,7 @@ void popup_set_title(popup_p p, const char* text, int len)
         p->title[len] = '\0';
 }
 
-void popup_set_content(popup_p p, const char* text, int len)
+void joy_ui_popup_set_content(popup_p p, const char* text, int len)
 {
         if (!p || !text) return;
         if (len < 0) len = (int)strlen(text);
@@ -3003,17 +3003,17 @@ void popup_set_content(popup_p p, const char* text, int len)
         p->content[len] = '\0';
 }
 
-void popup_set_position(popup_p p, float x, float y)
+void joy_ui_popup_set_position(popup_p p, float x, float y)
 {
         if (p) { p->x = x; p->y = y; }
 }
 
-void popup_set_visible(popup_p p, bool v)
+void joy_ui_popup_set_visible(popup_p p, bool v)
 {
         if (p) p->visible = v;
 }
 
-void popup_set_closeable(popup_p p, bool v)
+void joy_ui_popup_set_closeable(popup_p p, bool v)
 {
         if (p) p->closeable = v;
 }
@@ -3028,49 +3028,49 @@ static void popup_draw_text_lines(jr2d_p r2d, font_p font, const char* text, flo
                 if (!end) end = start + strlen(start);
                 int line_len = (int)(end - start);
                 if (line_len > 0) {
-                        jtext_printx(r2d, font, start, line_len, color, x, y);
-                        y += (float)font_get_size(font) + 4;
+                        joy_r2d_jtext_printx(r2d, font, start, line_len, color, x, y);
+                        y += (float)joy_r2d_font_get_size(font) + 4;
                 }
                 if (*end == '\n') end++;
                 start = end;
         }
 }
 
-void popup_draw(popup_p p, font_p title_font, font_p content_font)
+void joy_ui_popup_draw(popup_p p, font_p title_font, font_p content_font)
 {
         if (!p || !p->visible) return;
         jr2d_p r = p->r2d;
         float x = p->x, y = p->y, w = p->w, h = p->h;
 
         /* 半透明背景遮罩（使用 blend 模式） */
-        r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
-        r2d_set_color(r, 0, 0, 0, 120);
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+        joy_r2d_set_color(r, 0, 0, 0, 120);
         jrect_t full = { 0, 0, 1920, 1080 };
-        shape_draw_rectangle(r, "fill", full);
-        r2d_set_blend_mode(r, JR2D_BLEND_NONE);
+        joy_math_shape_draw_rectangle(r, "fill", full);
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_NONE);
 
         /* 边框 */
-        r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
-        shape_draw_rectangle(r, "line", (jrect_t) { x - 1, y - 1, w + 2, h + 2 });
+        joy_r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+        joy_math_shape_draw_rectangle(r, "line", (jrect_t) { x - 1, y - 1, w + 2, h + 2 });
 
         /* 背景 */
-        r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
-        r2d_set_color(r, p->bg_color.r, p->bg_color.g, p->bg_color.b, p->bg_color.a);
-        shape_draw_rectangle(r, "fill", (jrect_t) { x, y, w, h });
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+        joy_r2d_set_color(r, p->bg_color.r, p->bg_color.g, p->bg_color.b, p->bg_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", (jrect_t) { x, y, w, h });
 
         /* 标题栏背景 */
-        r2d_set_color(r, p->title_bg_color.r, p->title_bg_color.g, p->title_bg_color.b, p->title_bg_color.a);
-        shape_draw_rectangle(r, "fill", (jrect_t) { x, y, w, p->title_height });
+        joy_r2d_set_color(r, p->title_bg_color.r, p->title_bg_color.g, p->title_bg_color.b, p->title_bg_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", (jrect_t) { x, y, w, p->title_height });
 
         /* 标题栏分隔线 */
-        r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
-        shape_draw_line(r, x, y + p->title_height, x + w, y + p->title_height);
+        joy_r2d_set_color(r, p->border_color.r, p->border_color.g, p->border_color.b, p->border_color.a);
+        joy_math_shape_draw_line(r, x, y + p->title_height, x + w, y + p->title_height);
 
         /* 标题文字 */
         if (p->title[0] && title_font) {
                 int title_len = (int)strlen(p->title);
-                jtext_printx(r, title_font, p->title, title_len, p->title_text_color,
-                        x + p->padding, y + (p->title_height - (float)font_get_size(title_font)) / 2);
+                joy_r2d_jtext_printx(r, title_font, p->title, title_len, p->title_text_color,
+                        x + p->padding, y + (p->title_height - (float)joy_r2d_font_get_size(title_font)) / 2);
         }
 
         /* 关闭按钮 */
@@ -3078,27 +3078,27 @@ void popup_draw(popup_p p, font_p title_font, font_p content_font)
                 float cx = x + w - p->close_size - 4;
                 float cy = y + (p->title_height - p->close_size) / 2;
                 if (p->close_hovered)
-                        r2d_set_color(r, p->close_hover_color.r, p->close_hover_color.g, p->close_hover_color.b, p->close_hover_color.a);
+                        joy_r2d_set_color(r, p->close_hover_color.r, p->close_hover_color.g, p->close_hover_color.b, p->close_hover_color.a);
                 else
-                        r2d_set_color(r, p->close_color.r, p->close_color.g, p->close_color.b, p->close_color.a);
-                shape_draw_rectangle(r, "fill", (jrect_t) { cx, cy, p->close_size, p->close_size });
+                        joy_r2d_set_color(r, p->close_color.r, p->close_color.g, p->close_color.b, p->close_color.a);
+                joy_math_shape_draw_rectangle(r, "fill", (jrect_t) { cx, cy, p->close_size, p->close_size });
                 /* X 标记 */
-                r2d_set_color(r, 255, 255, 255, 255);
-                shape_draw_line(r, cx + 6, cy + 6, cx + p->close_size - 6, cy + p->close_size - 6);
-                shape_draw_line(r, cx + p->close_size - 6, cy + 6, cx + 6, cy + p->close_size - 6);
+                joy_r2d_set_color(r, 255, 255, 255, 255);
+                joy_math_shape_draw_line(r, cx + 6, cy + 6, cx + p->close_size - 6, cy + p->close_size - 6);
+                joy_math_shape_draw_line(r, cx + p->close_size - 6, cy + 6, cx + 6, cy + p->close_size - 6);
         }
 
         /* 内容文字 */
         if (p->content[0] && content_font) {
-                r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+                joy_r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
                 popup_draw_text_lines(r, content_font, p->content,
                         x + p->padding, y + p->title_height + p->padding,
                         w - p->padding * 2, p->content_color);
         }
-        r2d_set_blend_mode(r, JR2D_BLEND_NONE);
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_NONE);
 }
 
-bool popup_is_close_clicked(popup_p p, float mx, float my)
+bool joy_ui_popup_is_close_clicked(popup_p p, float mx, float my)
 {
         if (!p || !p->visible || !p->closeable) return false;
         float cx = p->x + p->w - p->close_size - 4;
@@ -3107,7 +3107,7 @@ bool popup_is_close_clicked(popup_p p, float mx, float my)
                 my >= cy && my <= cy + p->close_size;
 }
 
-bool popup_is_title_clicked(popup_p p, float mx, float my)
+bool joy_ui_popup_is_title_clicked(popup_p p, float mx, float my)
 {
         if (!p || !p->visible) return false;
         return mx >= p->x && mx <= p->x + p->w &&
@@ -3115,14 +3115,14 @@ bool popup_is_title_clicked(popup_p p, float mx, float my)
         /* 关闭按钮区域单独处理，但 title 区域也包含它 */
 }
 
-void popup_drag_move(popup_p p, float mx, float my)
+void joy_ui_popup_drag_move(popup_p p, float mx, float my)
 {
         if (!p || !p->is_dragging) return;
         p->x = mx - p->drag_off_x;
         p->y = my - p->drag_off_y;
 }
 
-bool popup_is_inside(popup_p p, float mx, float my)
+bool joy_ui_popup_is_inside(popup_p p, float mx, float my)
 {
         if (!p || !p->visible) return false;
         return mx >= p->x && mx <= p->x + p->w &&
@@ -3130,7 +3130,7 @@ bool popup_is_inside(popup_p p, float mx, float my)
 }
 
 /* ===== Tooltip ===== */
-tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len)
+tooltip_p joy_ui_tooltip_create(jr2d_p r2d, const char* text, int len)
 {
         tooltip_p t = (tooltip_p)calloc(1, sizeof(tooltip_t));
         if (!t) return NULL;
@@ -3141,16 +3141,16 @@ tooltip_p tooltip_create(jr2d_p r2d, const char* text, int len)
         t->bg_color = (jcolor_t){ 40, 40, 55, 220 };
         t->border_color = (jcolor_t){ 100, 100, 130, 255 };
         t->text_color = (jcolor_t){ 255, 255, 255, 255 };
-        tooltip_set_text(t, text, len);
+        joy_ui_tooltip_set_text(t, text, len);
         return t;
 }
 
-void tooltip_destroy(tooltip_p t)
+void joy_ui_tooltip_destroy(tooltip_p t)
 {
         free(t);
 }
 
-void tooltip_set_text(tooltip_p t, const char* text, int len)
+void joy_ui_tooltip_set_text(tooltip_p t, const char* text, int len)
 {
         if (!t || !text) return;
         if (len < 0) len = (int)strlen(text);
@@ -3160,61 +3160,61 @@ void tooltip_set_text(tooltip_p t, const char* text, int len)
         t->text_len = len;
 }
 
-void tooltip_set_position(tooltip_p t, float x, float y)
+void joy_ui_tooltip_set_position(tooltip_p t, float x, float y)
 {
         if (t) { t->x = x; t->y = y; }
 }
 
-void tooltip_set_visible(tooltip_p t, bool v)
+void joy_ui_tooltip_set_visible(tooltip_p t, bool v)
 {
         if (t) t->visible = v;
 }
 
-void tooltip_draw(tooltip_p t, font_p font)
+void joy_ui_tooltip_draw(tooltip_p t, font_p font)
 {
         if (!t || !t->visible || !t->text_len) return;
         jr2d_p r = t->r2d;
 
         /* 估算宽高：按字符数 * fontsize/2 粗略估算 */
-        float fh = (float)font_get_size(font);
+        float fh = (float)joy_r2d_font_get_size(font);
         float tw = t->text_len * fh * 0.55f + t->padding * 2;
         float th = fh + t->padding;
 
         /* 背景 */
-        r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
-        r2d_set_color(r, t->bg_color.r, t->bg_color.g, t->bg_color.b, t->bg_color.a);
-        shape_draw_rectangle(r, "fill", (jrect_t) { t->x, t->y, tw, th });
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_BLEND);
+        joy_r2d_set_color(r, t->bg_color.r, t->bg_color.g, t->bg_color.b, t->bg_color.a);
+        joy_math_shape_draw_rectangle(r, "fill", (jrect_t) { t->x, t->y, tw, th });
 
         /* 边框 */
-        r2d_set_blend_mode(r, JR2D_BLEND_NONE);
-        r2d_set_color(r, t->border_color.r, t->border_color.g, t->border_color.b, t->border_color.a);
-        shape_draw_rectangle(r, "line", (jrect_t) { t->x, t->y, tw, th });
+        joy_r2d_set_blend_mode(r, JR2D_BLEND_NONE);
+        joy_r2d_set_color(r, t->border_color.r, t->border_color.g, t->border_color.b, t->border_color.a);
+        joy_math_shape_draw_rectangle(r, "line", (jrect_t) { t->x, t->y, tw, th });
 
         /* 文字 */
-        jtext_printx(r, font, t->text, t->text_len, t->text_color,
+        joy_r2d_jtext_printx(r, font, t->text, t->text_len, t->text_color,
                 t->x + t->padding, t->y + t->padding / 2);
 }
 
 /* =================================================================
  * 通用事件处理函数
- * 将 label_handle_event 重命名为 label_process_event，风格统一
+ * 将 label_handle_event 重命名为 joy_ui_label_process_event，风格统一
  * ================================================================= */
 
-void label_process_event(label_p label, const void* ev)
+void joy_ui_label_process_event(label_p label, const void* ev)
 {
         (void)label;
         (void)ev;
 }
 
-void button_process_event(button_p btn, const void* ev)
+void joy_ui_button_process_event(button_p btn, const void* ev)
 {
         if (!btn || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
-                button_is_hovered(btn, e->motion.x, e->motion.y);
+                joy_ui_button_is_hovered(btn, e->motion.x, e->motion.y);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                button_is_pressed(btn, e->button.x, e->button.y);
+                joy_ui_button_is_pressed(btn, e->button.x, e->button.y);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 btn->is_pressed = false;
@@ -3223,10 +3223,10 @@ void button_process_event(button_p btn, const void* ev)
 
 /* ===================== 滚动层 scrollview =====================
  * 见 joy.h 中的用法说明。要点：
- *  - 事件坐标是"窗口坐标"，拖拽增量必须经 r2d_coordinates_from_window 转逻辑坐标，
+ *  - 事件坐标是"窗口坐标"，拖拽增量必须经 joy_r2d_coordinates_from_window 转逻辑坐标，
  *    否则窗口与逻辑分辨率不同（letterbox 缩放）时滚动速度和手指不一致；
  *  - 点击/滑动用"本次按下累计位移"区分，位移小=点击、大=滑动；
- *  - 裁剪用 r2d_set_clip_rect（替换语义，非入栈），故 begin 时保存旧裁剪、end 时还原。
+ *  - 裁剪用 joy_r2d_set_clip_rect（替换语义，非入栈），故 begin 时保存旧裁剪、end 时还原。
  */
 struct scrollview {
         jr2d_p r2d;
@@ -3247,7 +3247,7 @@ struct scrollview {
 #define SCROLLVIEW_DRAG_EPS   6.0f    // 拖拽判定阈值（逻辑像素）
 #define SCROLLVIEW_WHEEL_STEP 48.0f   // 滚轮每格滚动距离（像素）
 
-scrollview_p scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
+scrollview_p joy_ui_scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float fh)
 {
         if (!r2d) return NULL;
         scrollview_p v = (scrollview_p)malloc(sizeof(scrollview_t));
@@ -3261,27 +3261,27 @@ scrollview_p scrollview_create(jr2d_p r2d, float fx, float fy, float fw, float f
         return v;
 }
 
-void scrollview_destroy(scrollview_p v)
+void joy_ui_scrollview_destroy(scrollview_p v)
 {
         if (v) free(v);
 }
 
-void scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h)
+void joy_ui_scrollview_set_view_px(scrollview_p v, float x, float y, float w, float h)
 {
         if (!v) return;
         v->view = (jrect_t){ x, y, w, h };
-        scrollview_clamp(v);
+        joy_ui_scrollview_clamp(v);
 }
 
-void scrollview_set_content(scrollview_p v, float content_w, float content_h)
+void joy_ui_scrollview_set_content(scrollview_p v, float content_w, float content_h)
 {
         if (!v) return;
         v->content_w = content_w;
         v->content_h = content_h;
-        scrollview_clamp(v);
+        joy_ui_scrollview_clamp(v);
 }
 
-void scrollview_clamp(scrollview_p v)
+void joy_ui_scrollview_clamp(scrollview_p v)
 {
         if (!v) return;
         const float minx = (v->content_w > v->view.w) ? -(v->content_w - v->view.w) : 0.0f;
@@ -3292,40 +3292,40 @@ void scrollview_clamp(scrollview_p v)
         if (v->off_y < miny) v->off_y = miny;
 }
 
-void scrollview_set_offset(scrollview_p v, float ox, float oy)
+void joy_ui_scrollview_set_offset(scrollview_p v, float ox, float oy)
 {
         if (!v) return;
         v->off_x = ox;
         v->off_y = oy;
-        scrollview_clamp(v);
+        joy_ui_scrollview_clamp(v);
 }
 
-float scrollview_get_offset_x(scrollview_p v) { return v ? v->off_x : 0.0f; }
-float scrollview_get_offset_y(scrollview_p v) { return v ? v->off_y : 0.0f; }
+float joy_ui_scrollview_get_offset_x(scrollview_p v) { return v ? v->off_x : 0.0f; }
+float joy_ui_scrollview_get_offset_y(scrollview_p v) { return v ? v->off_y : 0.0f; }
 
-void scrollview_set_show_bar(scrollview_p v, bool show) { if (v) v->show_bar = show; }
-bool scrollview_dragging(scrollview_p v) { return v ? v->dragging : false; }
+void joy_ui_scrollview_set_show_bar(scrollview_p v, bool show) { if (v) v->show_bar = show; }
+bool joy_ui_scrollview_dragging(scrollview_p v) { return v ? v->dragging : false; }
 
-bool scrollview_hit(scrollview_p v, float win_x, float win_y)
+bool joy_ui_scrollview_hit(scrollview_p v, float win_x, float win_y)
 {
         if (!v) return false;
-        vec2_t p = r2d_coordinates_from_window(v->r2d, win_x, win_y);
+        vec2_t p = joy_r2d_coordinates_from_window(v->r2d, win_x, win_y);
         return p.x >= v->view.x && p.x < v->view.x + v->view.w
             && p.y >= v->view.y && p.y < v->view.y + v->view.h;
 }
 
-void scrollview_begin(scrollview_p v)
+void joy_ui_scrollview_begin(scrollview_p v)
 {
         if (!v) return;
-        v->saved_had_clip = r2d_get_clip_rect(v->r2d, &v->saved_clip);
-        r2d_set_clip_rect(v->r2d, v->view);
+        v->saved_had_clip = joy_r2d_get_clip_rect(v->r2d, &v->saved_clip);
+        joy_r2d_set_clip_rect(v->r2d, v->view);
 }
 
-void scrollview_end(scrollview_p v)
+void joy_ui_scrollview_end(scrollview_p v)
 {
         if (!v) return;
-        if (v->saved_had_clip) r2d_set_clip_rect(v->r2d, v->saved_clip);
-        else                    r2d_reset_clip_stack(v->r2d);
+        if (v->saved_had_clip) joy_r2d_set_clip_rect(v->r2d, v->saved_clip);
+        else                    joy_r2d_reset_clip_stack(v->r2d);
         if (!v->show_bar) return;
 
         const bool hbar = (v->content_w > v->view.w);
@@ -3335,43 +3335,43 @@ void scrollview_end(scrollview_p v)
                 const float x0 = v->view.x;
                 const float w0 = v->view.w - (vbar ? (SCROLLVIEW_BAR_T + 1.0f) : 0.0f);
                 const float y0 = v->view.y + v->view.h - SCROLLVIEW_BAR_T - 1.0f;
-                r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
-                shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, w0, SCROLLVIEW_BAR_T });
+                joy_r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
+                joy_math_shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, w0, SCROLLVIEW_BAR_T });
                 float bw = w0 * (v->view.w / v->content_w);
                 if (bw < SCROLLVIEW_BAR_MIN) bw = SCROLLVIEW_BAR_MIN;
                 if (bw > w0) bw = w0;
                 const float k = -v->off_x / (v->content_w - v->view.w);   // 0..1
-                r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
-                shape_draw_rectangle(v->r2d, "fill",
+                joy_r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
+                joy_math_shape_draw_rectangle(v->r2d, "fill",
                         (jrect_t){ x0 + k * (w0 - bw), y0, bw, SCROLLVIEW_BAR_T });
         }
         if (vbar) {
                 const float y0 = v->view.y;
                 const float h0 = v->view.h - (hbar ? (SCROLLVIEW_BAR_T + 1.0f) : 0.0f);
                 const float x0 = v->view.x + v->view.w - SCROLLVIEW_BAR_T - 1.0f;
-                r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
-                shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, SCROLLVIEW_BAR_T, h0 });
+                joy_r2d_set_color(v->r2d, v->bar_bg.r, v->bar_bg.g, v->bar_bg.b, v->bar_bg.a);
+                joy_math_shape_draw_rectangle(v->r2d, "fill", (jrect_t){ x0, y0, SCROLLVIEW_BAR_T, h0 });
                 float bh = h0 * (v->view.h / v->content_h);
                 if (bh < SCROLLVIEW_BAR_MIN) bh = SCROLLVIEW_BAR_MIN;
                 if (bh > h0) bh = h0;
                 const float k = -v->off_y / (v->content_h - v->view.h);   // 0..1
-                r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
-                shape_draw_rectangle(v->r2d, "fill",
+                joy_r2d_set_color(v->r2d, v->bar_fg.r, v->bar_fg.g, v->bar_fg.b, v->bar_fg.a);
+                joy_math_shape_draw_rectangle(v->r2d, "fill",
                         (jrect_t){ x0, y0 + k * (h0 - bh), SCROLLVIEW_BAR_T, bh });
         }
 }
 
-bool scrollview_process_event(scrollview_p v, const void* ev)
+bool joy_ui_scrollview_process_event(scrollview_p v, const void* ev)
 {
         if (!v || !ev) return false;
         const SDL_Event* e = (const SDL_Event*)ev;
 
         if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                if (!scrollview_hit(v, e->button.x, e->button.y)) {
+                if (!joy_ui_scrollview_hit(v, e->button.x, e->button.y)) {
                         v->dragging = false;              // 视口外按下：不接管
                         return false;
                 }
-                vec2_t p = r2d_coordinates_from_window(v->r2d, e->button.x, e->button.y);
+                vec2_t p = joy_r2d_coordinates_from_window(v->r2d, e->button.x, e->button.y);
                 v->dragging = true;
                 v->last_x  = p.x;
                 v->last_y  = p.y;
@@ -3380,14 +3380,14 @@ bool scrollview_process_event(scrollview_p v, const void* ev)
         }
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
                 if (!v->dragging) return false;
-                vec2_t p = r2d_coordinates_from_window(v->r2d, e->motion.x, e->motion.y);
+                vec2_t p = joy_r2d_coordinates_from_window(v->r2d, e->motion.x, e->motion.y);
                 const float dx = p.x - v->last_x;
                 const float dy = p.y - v->last_y;
                 v->last_x = p.x;
                 v->last_y = p.y;
                 v->off_x += dx;
                 v->off_y += dy;
-                scrollview_clamp(v);
+                joy_ui_scrollview_clamp(v);
                 v->moved += (dx < 0.0f ? -dx : dx) + (dy < 0.0f ? -dy : dy);
                 return v->moved > SCROLLVIEW_DRAG_EPS;     // 已进入滚动 → 调用方忽略点击
         }
@@ -3397,112 +3397,112 @@ bool scrollview_process_event(scrollview_p v, const void* ev)
                 return was_drag;                          // 本次是滑动 → 调用方不要当点击
         }
         if (e->type == SDL_EVENT_MOUSE_WHEEL) {
-                if (!scrollview_hit(v, e->wheel.mouse_x, e->wheel.mouse_y)) return false;
+                if (!joy_ui_scrollview_hit(v, e->wheel.mouse_x, e->wheel.mouse_y)) return false;
                 if (v->content_h > v->view.h)
                         v->off_y -= e->wheel.y * SCROLLVIEW_WHEEL_STEP;   // 纵向优先
                 else if (v->content_w > v->view.w)
                         v->off_x -= e->wheel.x * SCROLLVIEW_WHEEL_STEP;
                 else
                         return false;                     // 没有可滚方向：不消费
-                scrollview_clamp(v);
+                joy_ui_scrollview_clamp(v);
                 return true;
         }
         return false;
 }
 
-void inputbox_process_event(inputbox_p ti, const void* ev)
+void joy_ui_inputbox_process_event(inputbox_p ti, const void* ev)
 {
         if (!ti || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
-                inputbox_is_hovered(ti, e->motion.x, e->motion.y);
+                joy_ui_inputbox_is_hovered(ti, e->motion.x, e->motion.y);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                inputbox_is_pressed(ti, e->button.x, e->button.y);
+                joy_ui_inputbox_is_pressed(ti, e->button.x, e->button.y);
         }
         else if (e->type == SDL_EVENT_TEXT_INPUT) {
                 if (ti->focused) {
-                        inputbox_insert(ti, e->text.text, (int)strlen(e->text.text));
+                        joy_ui_inputbox_insert(ti, e->text.text, (int)strlen(e->text.text));
                 }
         }
         else if (e->type == SDL_EVENT_KEY_DOWN) {
                 if (!ti->focused) return;
                 switch (e->key.scancode) {
-                case SDL_SCANCODE_BACKSPACE: inputbox_backspace(ti); break;
-                case SDL_SCANCODE_DELETE:    inputbox_delete(ti); break;
+                case SDL_SCANCODE_BACKSPACE: joy_ui_inputbox_backspace(ti); break;
+                case SDL_SCANCODE_DELETE:    joy_ui_inputbox_delete(ti); break;
                 case SDL_SCANCODE_LEFT:
-                        if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_left(ti);
-                        else inputbox_cursor_left(ti);
+                        if (e->key.mod & SDL_KMOD_SHIFT) joy_ui_inputbox_select_left(ti);
+                        else joy_ui_inputbox_cursor_left(ti);
                         break;
                 case SDL_SCANCODE_RIGHT:
-                        if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_right(ti);
-                        else inputbox_cursor_right(ti);
+                        if (e->key.mod & SDL_KMOD_SHIFT) joy_ui_inputbox_select_right(ti);
+                        else joy_ui_inputbox_cursor_right(ti);
                         break;
                 case SDL_SCANCODE_HOME:
-                        if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_home(ti);
-                        else inputbox_cursor_home(ti);
+                        if (e->key.mod & SDL_KMOD_SHIFT) joy_ui_inputbox_select_home(ti);
+                        else joy_ui_inputbox_cursor_home(ti);
                         break;
                 case SDL_SCANCODE_END:
-                        if (e->key.mod & SDL_KMOD_SHIFT) inputbox_select_end(ti);
-                        else inputbox_cursor_end(ti);
+                        if (e->key.mod & SDL_KMOD_SHIFT) joy_ui_inputbox_select_end(ti);
+                        else joy_ui_inputbox_cursor_end(ti);
                         break;
                 case SDL_SCANCODE_A:
-                        if (e->key.mod & SDL_KMOD_CTRL) inputbox_select_all(ti);
+                        if (e->key.mod & SDL_KMOD_CTRL) joy_ui_inputbox_select_all(ti);
                         break;
                 case SDL_SCANCODE_V:
-                        if (e->key.mod & SDL_KMOD_CTRL) inputbox_paste(ti);
+                        if (e->key.mod & SDL_KMOD_CTRL) joy_ui_inputbox_paste(ti);
                         break;
                 case SDL_SCANCODE_C:
-                        if (e->key.mod & SDL_KMOD_CTRL) inputbox_copy(ti);
+                        if (e->key.mod & SDL_KMOD_CTRL) joy_ui_inputbox_copy(ti);
                         break;
                 case SDL_SCANCODE_X:
-                        if (e->key.mod & SDL_KMOD_CTRL) inputbox_cut(ti);
+                        if (e->key.mod & SDL_KMOD_CTRL) joy_ui_inputbox_cut(ti);
                         break;
                 default: break;
                 }
         }
 }
 
-void slider_process_event(slider_p s, const void* ev)
+void joy_ui_slider_process_event(slider_p s, const void* ev)
 {
         if (!s || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
-                slider_is_hovered(s, e->motion.x, e->motion.y);
-                if (s->is_dragging) slider_drag_move(s, e->motion.x, e->motion.y);
+                joy_ui_slider_is_hovered(s, e->motion.x, e->motion.y);
+                if (s->is_dragging) joy_ui_slider_drag_move(s, e->motion.x, e->motion.y);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                slider_is_pressed(s, e->button.x, e->button.y);
+                joy_ui_slider_is_pressed(s, e->button.x, e->button.y);
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
                 s->is_dragging = false;
         }
 }
 
-void tooltip_process_event(tooltip_p t, const void* ev)
+void joy_ui_tooltip_process_event(tooltip_p t, const void* ev)
 {
         if (!t || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_MOTION) {
-                tooltip_set_position(t, e->motion.x + 12, e->motion.y - 10);
+                joy_ui_tooltip_set_position(t, e->motion.x + 12, e->motion.y - 10);
         }
 }
 
-void popup_process_event(popup_p p, const void* ev)
+void joy_ui_popup_process_event(popup_p p, const void* ev)
 {
         if (!p || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 float mx = e->button.x, my = e->button.y;
-                if (popup_is_close_clicked(p, mx, my)) {
-                        popup_set_visible(p, false);
-                } else if (popup_is_title_clicked(p, mx, my)) {
+                if (joy_ui_popup_is_close_clicked(p, mx, my)) {
+                        joy_ui_popup_set_visible(p, false);
+                } else if (joy_ui_popup_is_title_clicked(p, mx, my)) {
                         p->is_dragging = true;
                 }
         }
         else if (e->type == SDL_EVENT_MOUSE_MOTION) {
                 if (p->is_dragging) {
-                        popup_drag_move(p, e->motion.x, e->motion.y);
+                        joy_ui_popup_drag_move(p, e->motion.x, e->motion.y);
                 }
         }
         else if (e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
@@ -3510,77 +3510,77 @@ void popup_process_event(popup_p p, const void* ev)
         }
 }
 
-void combobox_process_event(combobox_p cb, const void* ev)
+void joy_ui_combobox_process_event(combobox_p cb, const void* ev)
 {
         if (!cb || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 float mx = e->button.x, my = e->button.y;
-                if (combobox_is_pressed(cb, mx, my)) {
+                if (joy_ui_combobox_is_pressed(cb, mx, my)) {
                         // 点击主框 → 切换展开
-                        combobox_set_open(cb, !combobox_is_open(cb));
-                } else if (combobox_is_open(cb)) {
+                        joy_ui_combobox_set_open(cb, !joy_ui_combobox_is_open(cb));
+                } else if (joy_ui_combobox_is_open(cb)) {
                         // 下拉已展开：检查是否点击了某个 item
-                        int hit = combobox_hit_item(cb, mx, my);
+                        int hit = joy_ui_combobox_hit_item(cb, mx, my);
                         if (hit >= 0) {
-                                combobox_set_selected(cb, hit);
-                                combobox_set_open(cb, false);
+                                joy_ui_combobox_set_selected(cb, hit);
+                                joy_ui_combobox_set_open(cb, false);
                         } else {
                                 // 点击下拉外部 → 收起
-                                combobox_set_open(cb, false);
+                                joy_ui_combobox_set_open(cb, false);
                         }
                 }
         }
 }
 
-void checkbox_process_event(checkbox_p cb, const void* ev)
+void joy_ui_checkbox_process_event(checkbox_p cb, const void* ev)
 {
         if (!cb || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                checkbox_is_pressed(cb, e->button.x, e->button.y);
+                joy_ui_checkbox_is_pressed(cb, e->button.x, e->button.y);
         }
 }
 
-void radio_process_event(radio_p rb, const void* ev)
+void joy_ui_radio_process_event(radio_p rb, const void* ev)
 {
         if (!rb || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                radio_is_pressed(rb, e->button.x, e->button.y);
+                joy_ui_radio_is_pressed(rb, e->button.x, e->button.y);
         }
 }
 
-void datagrid_process_event(datagrid_p dg, const void* ev)
+void joy_ui_datagrid_process_event(datagrid_p dg, const void* ev)
 {
         (void)dg;
         (void)ev;
         /* datagrid 需要配合外部状态管理 */
 }
 
-void joystick_process_event(joystick_p js, const void* ev)
+void joy_input_joystick_process_event(joystick_p js, const void* ev)
 {
         if (!js || !ev) return;
         const SDL_Event* e = (const SDL_Event*)ev;
         if (e->type == SDL_EVENT_FINGER_DOWN || e->type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 float x = (e->type == SDL_EVENT_FINGER_DOWN) ? e->tfinger.x * 800 : e->button.x;
                 float y = (e->type == SDL_EVENT_FINGER_DOWN) ? e->tfinger.y * 600 : e->button.y;
-                joystick_touch_down(js, x, y);
+                joy_input_joystick_touch_down(js, x, y);
         }
         else if (e->type == SDL_EVENT_FINGER_MOTION || e->type == SDL_EVENT_MOUSE_MOTION) {
-                if (joystick_is_dragging(js)) {
+                if (joy_input_joystick_is_dragging(js)) {
                         float x = (e->type == SDL_EVENT_FINGER_MOTION) ? e->tfinger.x * 800 : e->motion.x;
                         float y = (e->type == SDL_EVENT_FINGER_MOTION) ? e->tfinger.y * 600 : e->motion.y;
-                        joystick_touch_move(js, x, y);
+                        joy_input_joystick_touch_move(js, x, y);
                 }
         }
         else if (e->type == SDL_EVENT_FINGER_UP || e->type == SDL_EVENT_MOUSE_BUTTON_UP) {
-                joystick_touch_up(js);
+                joy_input_joystick_touch_up(js);
         }
 }
 
 /* ===== 通用函数：将 SDL 事件路由到控件数组 ===== */
-void jui_process_event(void** widgets, int count, const void* event)
+void joy_ui_process_widget_event(void** widgets, int count, const void* event)
 {
         if (!widgets || !event) return;
         const SDL_Event* e = (const SDL_Event*)event;
@@ -3605,7 +3605,7 @@ struct jlayout_grid {
         int   row;
 };
 
-jlayout_grid_t* jlayout_grid_create(float ox, float oy, float width, float row_h,
+jlayout_grid_t* joy_ui_layout_grid_create(float ox, float oy, float width, float row_h,
                                     int ncols, const float* col_fracs, float pad)
 {
         if (ncols <= 0 || !col_fracs) return NULL;
@@ -3619,24 +3619,24 @@ jlayout_grid_t* jlayout_grid_create(float ox, float oy, float width, float row_h
         return g;
 }
 
-void jlayout_grid_destroy(jlayout_grid_t* g)
+void joy_ui_layout_grid_destroy(jlayout_grid_t* g)
 {
         if (!g) return;
         if (g->col_fracs) free(g->col_fracs);
         free(g);
 }
 
-void jlayout_grid_next_row(jlayout_grid_t* g)
+void joy_ui_layout_grid_next_row(jlayout_grid_t* g)
 {
         if (g) g->row++;
 }
 
-void jlayout_grid_set_row(jlayout_grid_t* g, int row)
+void joy_ui_layout_grid_set_row(jlayout_grid_t* g, int row)
 {
         if (g) g->row = row;
 }
 
-void jlayout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h)
+void joy_ui_layout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w, float* h)
 {
         if (!g || col < 0 || col >= g->ncols) {
                 if (x) *x = 0.0f; if (y) *y = 0.0f; if (w) *w = 0.0f; if (h) *h = 0.0f;
@@ -3653,19 +3653,19 @@ void jlayout_grid_cell(jlayout_grid_t* g, int col, float* x, float* y, float* w,
         if (h && *h < 0.0f) *h = 0.0f;
 }
 
-void jlayout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+void joy_ui_layout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
                         const char* text, int n, jcolor_t c, int col,
                         float* cx, float* cy, float* cw, float* ch)
 {
         float lx, ly, lw, lh;
-        jlayout_grid_cell(g, col, &lx, &ly, &lw, &lh);
+        joy_ui_layout_grid_cell(g, col, &lx, &ly, &lw, &lh);
         int tw = 0, th = 0;
-        jtext_measurex(r2d, font, text, n, c, &tw, &th);
+        joy_r2d_jtext_measurex(r2d, font, text, n, c, &tw, &th);
         int wl = 0, hl = 0;
-        r2d_get_logical_presentation(r2d, &wl, &hl, NULL);
+        joy_r2d_get_logical_presentation(r2d, &wl, &hl, NULL);
         float text_x = lx;                                   // 左对齐
         float text_y = ly + ((lh - (float)th) * 0.5f);       // 垂直居中
-        jtext_printf(r2d, font, text, n, c,
+        joy_r2d_jtext_printf(r2d, font, text, n, c,
                      (wl > 0 ? text_x / (float)wl : 0.0f),
                      (hl > 0 ? text_y / (float)hl : 0.0f));
         if (cx) *cx = lx; if (cy) *cy = ly; if (cw) *cw = lw; if (ch) *ch = lh;
@@ -3674,24 +3674,24 @@ void jlayout_grid_label(jlayout_grid_t* g, jr2d_p r2d, font_p font,
 /* 在当前行创建 n 个等宽按钮（横向按钮条/菜单），各占一列。
  * 按钮尺寸取单元格的 0.86×0.7 居中，避免贴边；指针写入 out[]（调用方分配 n 个）。
  * 列数受栅格 ncols 限制（多出的 label 被忽略）。创建后自动换到下一行。 */
-void jlayout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
+void joy_ui_layout_grid_button_row(jlayout_grid_t* g, jr2d_p r2d, font_p font,
                              const char** labels, int n, button_p* out)
 {
         if (!g || !r2d || n <= 0 || !out) return;
         int lw = 0, lh = 0;
-        r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
+        joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
         const float LW = (lw > 0) ? (float)lw : 960.0f;
         const float LH = (lh > 0) ? (float)lh : 640.0f;
         const int cnt = (n < g->ncols) ? n : g->ncols;
         for (int i = 0; i < cnt; i++) {
                 float cx, cy, cw, ch;
-                jlayout_grid_cell(g, i, &cx, &cy, &cw, &ch);
+                joy_ui_layout_grid_cell(g, i, &cx, &cy, &cw, &ch);
                 float bw = cw * 0.86f, bh = ch * 0.7f;
                 float bx = cx + (cw - bw) * 0.5f, by = cy + (ch - bh) * 0.5f;
-                button_p b = button_create(r2d, bx / LW, by / LH, bw / LW, bh / LH);
+                button_p b = joy_ui_button_create(r2d, bx / LW, by / LH, bw / LW, bh / LH);
                 if (labels && labels[i])
-                        button_set_textx(b, font, labels[i], (int)strlen(labels[i]), (jcolor_t){ 0, 0, 0, 255 });
+                        joy_ui_button_set_textx(b, font, labels[i], (int)strlen(labels[i]), (jcolor_t){ 0, 0, 0, 255 });
                 out[i] = b;
         }
-        jlayout_grid_next_row(g);
+        joy_ui_layout_grid_next_row(g);
 }

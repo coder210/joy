@@ -225,10 +225,10 @@ static int vc_sweep(VC* vc) {
 
 #define GSZ 256
 static image_p make_grad(jr2d_p r2d){
-    image_p t = image_create_empty(r2d, GSZ, GSZ);
+    image_p t = joy_ui_image_create_empty(r2d, GSZ, GSZ);
     if(!t)return NULL;
     uint32_t* px=(uint32_t*)malloc(GSZ*GSZ*4);
-    if(!px){image_destroy(t);return NULL;}
+    if(!px){joy_ui_image_destroy(t);return NULL;}
     float cx=(GSZ-1)*0.5f,cy=cx,mr=cx;
     for(int y=0;y<GSZ;y++)for(int x=0;x<GSZ;x++){
         float d=sqrtf((x-cx)*(x-cx)+(y-cy)*(y-cy));
@@ -237,13 +237,13 @@ static image_p make_grad(jr2d_p r2d){
         px[y*GSZ+x]=((uint32_t)a<<24)|0x00FFFFFF;
     }
     jrect_t full = {0, 0, GSZ, GSZ};
-    image_update(t, &full, px, GSZ*4);
+    joy_ui_image_update(t, &full, px, GSZ*4);
     free(px);
-    image_set_blend_mode(t, JR2D_BLEND_ADD);
+    joy_ui_image_set_blend_mode(t, JR2D_BLEND_ADD);
     return t;
 }
 
-jlight_sys_p jlight_sys_create(int w,int h){
+jlight_sys_p joy_r3d_light_sys_create(int w,int h){
     jlight_sys_p s=(jlight_sys_p)calloc(1,sizeof(jlight_sys_t));
     if(!s)return NULL;
     s->width=w;s->height=h;
@@ -253,18 +253,18 @@ jlight_sys_p jlight_sys_create(int w,int h){
 static void ensure_tex(jlight_sys_p s,jr2d_p r2d){
     if(!s->gradient) s->gradient = make_grad(r2d);
 }
-void jlight_sys_destroy(jlight_sys_p s){
+void joy_r3d_light_sys_destroy(jlight_sys_p s){
     if(!s)return;
-    if(s->gradient) image_destroy(s->gradient);
-    if(s->lightmap) image_destroy(s->lightmap);
+    if(s->gradient) joy_ui_image_destroy(s->gradient);
+    if(s->lightmap) joy_ui_image_destroy(s->lightmap);
     free(s);
 }
-void jlight_sys_resize(jlight_sys_p s,int w,int h){
+void joy_r3d_light_sys_resize(jlight_sys_p s,int w,int h){
     if(!s)return;
-    if(s->lightmap){image_destroy(s->lightmap);s->lightmap=NULL;}
+    if(s->lightmap){joy_ui_image_destroy(s->lightmap);s->lightmap=NULL;}
     s->width=w;s->height=h;
 }
-int jlight_add(jlight_sys_p s,jlight_t l){
+int joy_r3d_light_add(jlight_sys_p s,jlight_t l){
     if(!s||s->count>=JLIGHT_MAX)return -1;
     int id=-1;
     for(int i=0;i<JLIGHT_MAX;i++)if(!s->active[i]){id=i;break;}
@@ -272,30 +272,30 @@ int jlight_add(jlight_sys_p s,jlight_t l){
     s->lights[id]=l;s->active[id]=true;s->count++;
     return id;
 }
-void jlight_remove(jlight_sys_p s,int id){
+void joy_r3d_light_remove(jlight_sys_p s,int id){
     if(!s||id<0||id>=JLIGHT_MAX||!s->active[id])return;
     s->active[id]=false;s->count--;
 }
-void jlight_set(jlight_sys_p s,int id,jlight_t l){
+void joy_r3d_light_set(jlight_sys_p s,int id,jlight_t l){
     if(!s||id<0||id>=JLIGHT_MAX||!s->active[id])return;
     s->lights[id]=l;
 }
-void jlight_clear(jlight_sys_p s){
+void joy_r3d_light_clear(jlight_sys_p s){
     if(!s)return;memset(s->active,0,sizeof(s->active));s->count=0;
 }
-void jlight_clear_occluders(jlight_sys_p s){if(s)s->occluder_count=0;}
-int jlight_add_occluder(jlight_sys_p s,float x1,float y1,float x2,float y2){
+void joy_r3d_light_clear_occluders(jlight_sys_p s){if(s)s->occluder_count=0;}
+int joy_r3d_light_add_occluder(jlight_sys_p s,float x1,float y1,float x2,float y2){
     if(!s||s->occluder_count>=JLIGHT_OCCLUDER_MAX)return -1;
     int id=s->occluder_count++;
     s->occluders[id].x1=x1;s->occluders[id].y1=y1;
     s->occluders[id].x2=x2;s->occluders[id].y2=y2;
     return id;
 }
-void jlight_set_ambient(jlight_sys_p s,uint8_t r,uint8_t g,uint8_t b){
+void joy_r3d_light_set_ambient(jlight_sys_p s,uint8_t r,uint8_t g,uint8_t b){
     if(!s)return;s->ambient_r=r;s->ambient_g=g;s->ambient_b=b;
 }
 
-void jlight_render(jlight_sys_p s, jr2d_p r2d){
+void joy_r3d_light_render(jlight_sys_p s, jr2d_p r2d){
     if(!s||!r2d||s->count==0)return;
     ensure_tex(s,r2d);
     if(!s->gradient)return;
@@ -314,9 +314,9 @@ void jlight_render(jlight_sys_p s, jr2d_p r2d){
         if(s->occluder_count==0){
             float d=rr*2;
             jrect_t dst={lx-rr,ly-rr,d,d};
-            image_set_blend_mode(grad, JR2D_BLEND_ADD);
-            image_set_alpha(grad, 255);
-            image_draw1(grad, NULL, &dst);
+            joy_ui_image_set_blend_mode(grad, JR2D_BLEND_ADD);
+            joy_ui_image_set_alpha(grad, 255);
+            joy_ui_image_draw1(grad, NULL, &dst);
             continue;
         }
 
@@ -332,12 +332,12 @@ void jlight_render(jlight_sys_p s, jr2d_p r2d){
         if(n_out<2)continue;
 
         /* 调试轮廓（绿色线框） */
-        r2d_set_blend_mode(r2d, JR2D_BLEND_NONE);
-        r2d_set_color(r2d, 0,255,0,255);
+        joy_r2d_set_blend_mode(r2d, JR2D_BLEND_NONE);
+        joy_r2d_set_color(r2d, 0,255,0,255);
         for(int i=0;i<n_out-1;i++)
-            shape_draw_line(r2d, vc->out.a[i].x,vc->out.a[i].y,
+            joy_math_shape_draw_line(r2d, vc->out.a[i].x,vc->out.a[i].y,
                               vc->out.a[i+1].x,vc->out.a[i+1].y);
-        shape_draw_line(r2d, vc->out.a[n_out-1].x,vc->out.a[n_out-1].y,
+        joy_math_shape_draw_line(r2d, vc->out.a[n_out-1].x,vc->out.a[n_out-1].y,
                           vc->out.a[0].x,vc->out.a[0].y);
 
         /* 三角扇（渐变纹理） */
@@ -365,8 +365,8 @@ void jlight_render(jlight_sys_p s, jr2d_p r2d){
             idx[ni++]=0;idx[ni++]=n_out;idx[ni++]=1;
         }
         if(ni>0){
-            image_set_blend_mode(grad, JR2D_BLEND_ADD);
-            image_set_alpha(grad, 255);
+            joy_ui_image_set_blend_mode(grad, JR2D_BLEND_ADD);
+            joy_ui_image_set_alpha(grad, 255);
             r2d_render_geometry(r2d, grad, verts, nv, idx, ni);
         }
         SDL_free(idx);SDL_free(verts);

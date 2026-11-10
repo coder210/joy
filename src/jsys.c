@@ -222,7 +222,7 @@ static void crashHandler(int sig)
 #	include <netdb.h>         // getaddrinfo / struct addrinfo / freeaddrinfo
 #endif
 
-bool sys_init_netenv(void)
+bool joy_net_sys_init_netenv(void)
 {
 #if defined(JOY_WIN)
 	WSADATA data;
@@ -239,7 +239,7 @@ bool sys_init_netenv(void)
 #endif
 }
 
-bool sys_release_netenv(void)
+bool joy_net_sys_release_netenv(void)
 {
 #if defined(JOY_WIN)
 	int r;
@@ -257,7 +257,7 @@ bool sys_release_netenv(void)
 	return false;
 }
 
-int sys_anyaddr(void)
+int joy_net_sys_anyaddr(void)
 {
 #if defined(JOY_WIN)
 	int anyaddr = htonl(INADDR_ANY);
@@ -274,7 +274,7 @@ int sys_anyaddr(void)
 #endif
 }
 
-bool sys_closesocket(int64_t sockfd)
+bool joy_net_sys_closesocket(int64_t sockfd)
 {
 #if defined(JOY_WIN)
 	return closesocket(sockfd) == 0;
@@ -289,7 +289,7 @@ bool sys_closesocket(int64_t sockfd)
 #endif
 }
 
-int sys_set_sock_sndtimeo(int64_t sockfd, int ms)
+int joy_net_sys_set_sock_sndtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -315,7 +315,7 @@ int sys_set_sock_sndtimeo(int64_t sockfd, int ms)
 	return r;
 }
 
-int sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
+int joy_net_sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -334,7 +334,7 @@ int sys_set_sock_rcvtimeo(int64_t sockfd, int ms)
 	return r;
 }
 
-int sys_set_sock_accpettimeo(int64_t sockfd, int ms)
+int joy_net_sys_set_sock_accpettimeo(int64_t sockfd, int ms)
 {
 	int r, sz;
 
@@ -354,7 +354,7 @@ int sys_set_sock_accpettimeo(int64_t sockfd, int ms)
 	return r;
 }
 
-int sys_set_sock_broadcast(int64_t sockfd)
+int joy_net_sys_set_sock_broadcast(int64_t sockfd)
 {
 	int r;
 #if defined(JOY_WIN)
@@ -369,7 +369,7 @@ int sys_set_sock_broadcast(int64_t sockfd)
 	return r;
 }
 
-int sys_set_sock_reuseaddr(int64_t sockfd)
+int joy_net_sys_set_sock_reuseaddr(int64_t sockfd)
 {
 	int r;
 #if defined(JOY_WIN)
@@ -384,7 +384,7 @@ int sys_set_sock_reuseaddr(int64_t sockfd)
 	return r;
 }
 
-int64_t sys_tcp()
+int64_t joy_net_sys_tcp()
 {
 	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -395,7 +395,7 @@ int64_t sys_tcp()
 	return sockfd;
 }
 
-int64_t sys_udp()
+int64_t joy_net_sys_udp()
 {
 	int64_t sockfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -406,7 +406,7 @@ int64_t sys_udp()
 	return sockfd;
 }
 
-bool sys_bind(int64_t sockfd, const char* ip, int port)
+bool joy_net_sys_bind(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -421,7 +421,7 @@ bool sys_bind(int64_t sockfd, const char* ip, int port)
 	return resval;
 }
 
-bool sys_connect(int64_t sockfd, const char* ip, int port)
+bool joy_net_sys_connect(int64_t sockfd, const char* ip, int port)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -436,7 +436,7 @@ bool sys_connect(int64_t sockfd, const char* ip, int port)
 	return resval;
 }
 
-bool sys_listen(int64_t sockfd)
+bool joy_net_sys_listen(int64_t sockfd)
 {
 	bool resval;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -447,7 +447,7 @@ bool sys_listen(int64_t sockfd)
 	return resval;
 }
 
-int64_t sys_accept(int64_t sockfd, char* ip, int* port)
+int64_t joy_net_sys_accept(int64_t sockfd, char* ip, int* port)
 {
 	int64_t acceptfd;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -466,7 +466,7 @@ int64_t sys_accept(int64_t sockfd, char* ip, int* port)
 	return acceptfd;
 }
 
-int sys_send(int64_t sockfd, const char* buf, int len)
+int joy_net_sys_send(int64_t sockfd, const char* buf, int len)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -477,7 +477,7 @@ int sys_send(int64_t sockfd, const char* buf, int len)
 	return n;
 }
 
-int sys_recv(int64_t sockfd, char* buf)
+int joy_net_sys_recv(int64_t sockfd, char* buf)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
@@ -489,7 +489,7 @@ int sys_recv(int64_t sockfd, char* buf)
 	return n;
 }
 
-int sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
+int joy_net_sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 {
 	int n;
 #if defined(JOY_WIN)
@@ -510,7 +510,7 @@ int sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 	return n;
 }
 
-int sys_sendto(int64_t sockfd, const char* buf, int len, 
+int joy_net_sys_sendto(int64_t sockfd, const char* buf, int len, 
 	const char* ip, int port)
 {
 	int n;
@@ -528,7 +528,7 @@ int sys_sendto(int64_t sockfd, const char* buf, int len,
 	return n;
 }
 
-int64_t sys_current_time()
+int64_t joy_net_sys_current_time()
 {
 	int64_t current_time;
 #if defined(JOY_WIN)
@@ -558,7 +558,7 @@ int64_t sys_current_time()
 	return current_time;
 }
 
-void sys_sleep(int ms)
+void joy_net_sys_sleep(int ms)
 {
 #if defined(JOY_WIN)
 	Sleep(ms);
@@ -571,7 +571,7 @@ void sys_sleep(int ms)
 }
 
 
-void sys_install_crash_handlers()
+void joy_net_sys_install_crash_handlers()
 {
 #if defined(JOY_WIN)
         SetUnhandledExceptionFilter(crashHandler);
@@ -844,7 +844,7 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
 }
 
 // 创建IOCP服务器
-iocp_server_p iocp_server_create(const char* ip, int port)
+iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
 {
         WSADATA wsa_data;
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
@@ -941,12 +941,12 @@ iocp_server_p iocp_server_create(const char* ip, int port)
         return server;
 
 error_cleanup:
-        iocp_server_destroy(server);
+        joy_net_iocp_server_destroy(server);
         return NULL;
 }
 
 // 销毁IOCP服务器
-void iocp_server_destroy(iocp_server_p server)
+void joy_net_iocp_server_destroy(iocp_server_p server)
 {
         if (!server) return;
 
@@ -971,7 +971,7 @@ void iocp_server_destroy(iocp_server_p server)
 }
 
 // 处理IOCP事件
-void iocp_process_events(iocp_server_p server, int timeout_ms)
+void joy_net_iocp_process_events(iocp_server_p server, int timeout_ms)
 {
         if (!server || !server->is_running) return;
 
@@ -1042,18 +1042,18 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
 #else
 
 // 非Windows平台的空实现
-iocp_server_p iocp_server_create(const char* bind_ip, int bind_port)
+iocp_server_p joy_net_iocp_server_create(const char* bind_ip, int bind_port)
 {
         printf("IOCP is only supported on Windows platform");
         return NULL;
 }
 
-void iocp_server_destroy(iocp_server_p server)
+void joy_net_iocp_server_destroy(iocp_server_p server)
 {
         (void)server;
 }
 
-void iocp_process_events(iocp_server_p server, int timeout_ms)
+void joy_net_iocp_process_events(iocp_server_p server, int timeout_ms)
 {
         (void)server;
         (void)timeout_ms;
@@ -1086,7 +1086,7 @@ void iocp_process_events(iocp_server_p server, int timeout_ms)
  *   1) 只有 Windows 分支，其它平台直接 return 0（安卓上列表是空的）；
  *   2) AF_UNSPEC 会把 IPv6 一起收进来。
  */
-int get_local_ips(char ips[][JOY_MAX_IP], int max_count)
+int joy_core_get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 {
         if (!ips || max_count <= 0) return 0;
 

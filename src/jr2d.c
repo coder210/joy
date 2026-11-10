@@ -8,8 +8,8 @@
 /* 裁剪栈最大深度：嵌套面板（窗口 > 面板 > 滚动区 > 列表项）足够用 */
 #define R2D_CLIP_STACK_MAX 32
 
-/* 帧计数，由 r2d_begin() 递增。文字缓存用它做 LRU 的时间基准，
- * 定义在文件顶部是因为 r2d_begin() 的位置在缓存实现之前。 */
+/* 帧计数，由 joy_r2d_begin() 递增。文字缓存用它做 LRU 的时间基准，
+ * 定义在文件顶部是因为 joy_r2d_begin() 的位置在缓存实现之前。 */
 static Uint64 g_frame = 0;
 
 struct jr2d {
@@ -57,25 +57,25 @@ struct animation {
 };
 
 
-jr2d_p r2d_create(jwindow_p win)
+jr2d_p joy_r2d_create(jwindow_p win)
 {
         int w, h;
-        SDL_Window* raw = (SDL_Window*)get_raw_window(win);
+        SDL_Window* raw = (SDL_Window*)joy_core_get_raw_window(win);
         SDL_GetWindowSize(raw, &w, &h);
-        if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: null window"); return NULL; }
+        if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "joy_r2d_create: null window"); return NULL; }
         jr2d_p r2d = (jr2d_p)SDL_calloc(1, sizeof(jr2d_t));
         if (!r2d) return NULL;
         r2d->sdl = SDL_CreateRenderer(raw, NULL);
         if (!r2d->sdl) {
-                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "r2d_create: SDL_CreateRenderer failed: %s", SDL_GetError());
+                SDL_LogError(SDL_LOG_CATEGORY_RENDER, "joy_r2d_create: SDL_CreateRenderer failed: %s", SDL_GetError());
                 SDL_free(r2d);
                 return NULL;
         }
-        r2d_set_logical_presentation(r2d, w, h);
+        joy_r2d_set_logical_presentation(r2d, w, h);
         return r2d;
 }
 
-jr2d_p r2d_wrap(void* sdl_renderer)
+jr2d_p joy_r2d_wrap(void* sdl_renderer)
 {
         jr2d_p r2d = (jr2d_p)SDL_calloc(1, sizeof(jr2d_t));
         if (!r2d) return NULL;
@@ -83,53 +83,53 @@ jr2d_p r2d_wrap(void* sdl_renderer)
         return r2d;
 }
 
-void* r2d_unwrap(jr2d_p r2d)
+void* joy_r2d_unwrap(jr2d_p r2d)
 {
         return r2d ? (void*)r2d->sdl : NULL;
 }
 
 
-vec2_t r2d_coordinates_from_window(jr2d_p r2d, float x, float y)
+vec2_t joy_r2d_coordinates_from_window(jr2d_p r2d, float x, float y)
 {
     vec2_t logic;
     SDL_RenderCoordinatesFromWindow(r2d->sdl, x, y, &logic.x, &logic.y);
     return logic;
 }
 
-void r2d_destroy(jr2d_p r2d)
+void joy_r2d_destroy(jr2d_p r2d)
 {
         if (!r2d) return;
         /* 缓存的纹理隶属于这个 renderer，必须整体释放，否则会留下悬空纹理 */
-        jtext_cache_clear();
+        joy_r2d_jtext_cache_clear();
         SDL_DestroyRenderer(r2d->sdl);
         SDL_free(r2d);
 }
 
-bool r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a)
+bool joy_r2d_get_color(jr2d_p r2d, uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* a)
 {
         return SDL_GetRenderDrawColor(r2d->sdl, r, g, b, a);
 }
 
-bool r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+bool joy_r2d_set_color(jr2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
         return SDL_SetRenderDrawColor(r2d->sdl, r, g, b, a);
 }
 
 /* 递增帧计数：文字缓存以帧为单位判断条目是否闲置 */
-void r2d_begin(jr2d_p r2d) { g_frame++; SDL_RenderClear(r2d->sdl); }
-void r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
+void joy_r2d_begin(jr2d_p r2d) { g_frame++; SDL_RenderClear(r2d->sdl); }
+void joy_r2d_end(jr2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
-bool r2d_set_logical_presentation(jr2d_p r2d, int w, int h)
+bool joy_r2d_set_logical_presentation(jr2d_p r2d, int w, int h)
 {
-        return r2d_set_logical_presentation_mode(r2d, w, h, SDL_LOGICAL_PRESENTATION_STRETCH);
+        return joy_r2d_set_logical_presentation_mode(r2d, w, h, SDL_LOGICAL_PRESENTATION_STRETCH);
 }
 
-bool r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode)
+bool joy_r2d_set_logical_presentation_mode(jr2d_p r2d, int w, int h, int mode)
 {
         return SDL_SetRenderLogicalPresentation(r2d->sdl, w, h, (SDL_RendererLogicalPresentation)mode);
 }
 
-bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)
+bool joy_r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)
 {
         SDL_RendererLogicalPresentation m;
         bool r = SDL_GetRenderLogicalPresentation(r2d->sdl, w, h, &m);
@@ -137,35 +137,35 @@ bool r2d_get_logical_presentation(jr2d_p r2d, int* w, int* h, int* mode)
         return r;
 }
 
-void r2d_get_size(jr2d_p r2d, int* w, int* h)
+void joy_r2d_get_size(jr2d_p r2d, int* w, int* h)
 {
         SDL_GetRenderOutputSize(r2d->sdl, w, h);
 }
 
-bool r2d_set_vsync(jr2d_p r2d, int vsync)
+bool joy_r2d_set_vsync(jr2d_p r2d, int vsync)
 {
         return SDL_SetRenderVSync(r2d->sdl, vsync);
 }
 
-bool r2d_set_scale(jr2d_p r2d, float sx, float sy)
+bool joy_r2d_set_scale(jr2d_p r2d, float sx, float sy)
 {
         return SDL_SetRenderScale(r2d->sdl, sx, sy);
 }
 
 /* ===================== 比例坐标（0~1）基础转换 =====================
  *
- * 与 jui 里 button_create / joystick_create 等控件的百分比语义一致：
+ * 与 jui 里 joy_ui_button_create / joy_input_joystick_create 等控件的百分比语义一致：
  *   x / w → 逻辑分辨率的宽；y / h → 逻辑分辨率的高。
  * 未启用逻辑分辨率时回退到渲染输出尺寸，保证任何配置下都有效。
  */
-void r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
+void joy_r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
              float* x, float* y, float* w, float* h)
 {
         int bw = 0, bh = 0;
         if (!r2d) { bw = bh = 0; }
         else {
-                r2d_get_logical_presentation(r2d, &bw, &bh, NULL);
-                if (bw <= 0 || bh <= 0) r2d_get_size(r2d, &bw, &bh);   /* 回退：输出尺寸 */
+                joy_r2d_get_logical_presentation(r2d, &bw, &bh, NULL);
+                if (bw <= 0 || bh <= 0) joy_r2d_get_size(r2d, &bw, &bh);   /* 回退：输出尺寸 */
         }
         const float W = (float)bw, H = (float)bh;
         if (x) *x = fx * W;
@@ -174,29 +174,29 @@ void r2d_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh,
         if (h) *h = fh * H;
 }
 
-jrect_t r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh)
+jrect_t joy_r2d_frect(jr2d_p r2d, float fx, float fy, float fw, float fh)
 {
         jrect_t r = { 0.0f, 0.0f, 0.0f, 0.0f };
-        r2d_fpx(r2d, fx, fy, fw, fh, &r.x, &r.y, &r.w, &r.h);
+        joy_r2d_fpx(r2d, fx, fy, fw, fh, &r.x, &r.y, &r.w, &r.h);
         return r;
 }
 
-void r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a)
+void joy_r2d_set_colorf(jr2d_p r2d, float r, float g, float b, float a)
 {
         SDL_SetRenderDrawColorFloat(r2d->sdl, r, g, b, a);
 }
 
-void r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a)
+void joy_r2d_get_colorf(jr2d_p r2d, float* r, float* g, float* b, float* a)
 {
         SDL_GetRenderDrawColorFloat(r2d->sdl, r, g, b, a);
 }
 
-bool r2d_draw_point(jr2d_p r2d, float x, float y)
+bool joy_r2d_draw_point(jr2d_p r2d, float x, float y)
 {
         return SDL_RenderPoint(r2d->sdl, x, y);
 }
 
-bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count)
+bool joy_r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count)
 {
     if (count >= 512) {
         SDL_FPoint *raw_points = SDL_malloc(sizeof(SDL_FPoint) * count);
@@ -218,7 +218,7 @@ bool r2d_draw_points(jr2d_p r2d, const vec2_t* points, int count)
     }
 }
 
-bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count)
+bool joy_r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count)
 {
         if (count >= 512) {
             SDL_FPoint* raw_points = SDL_malloc(sizeof(SDL_FPoint) * count);
@@ -240,14 +240,14 @@ bool r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count)
         }
 }
 
-bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2)
+bool joy_math_shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2)
 {
     bool result;
     result = SDL_RenderLine(r2d->sdl, x1, y1, x2, y2);
     return result;
 }
 
-bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect)
+bool joy_math_shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect)
 {
         SDL_FRect raw_rect = { .x = rect.x, .y = rect.y, .w = rect.w, .h = rect.h};
         bool result;
@@ -340,7 +340,7 @@ draw_polygon_filled(jr2d_p r2d,
 }
 
 bool
-shape_draw_polygon(jr2d_p r2d, const char* mode,
+joy_math_shape_draw_polygon(jr2d_p r2d, const char* mode,
         vec2_t* points, int point_count, jcolor_t color)
 {
         bool result;
@@ -424,7 +424,7 @@ draw_circle_filled(jr2d_p r2d, vec2_t center, float radius, int segments, jcolor
 }
 
 bool
-shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments)
+joy_math_shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments)
 {
         bool result;
         jcolor_t color;
@@ -444,7 +444,7 @@ shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int
 }
 
 bool
-shape_draw_grid(jr2d_p r2d,
+joy_math_shape_draw_grid(jr2d_p r2d,
         vec2_t start, vec2_t end,
         float grid_size)
 {
@@ -467,7 +467,7 @@ shape_draw_grid(jr2d_p r2d,
 }
 
 bool
-shape_draw_gridx(jr2d_p r2d,
+joy_math_shape_draw_gridx(jr2d_p r2d,
         vec2_t position,
         int rows, int cols, float grid_size)
 {
@@ -556,7 +556,7 @@ static image_p load_png(jr2d_p r2d, const char* filename)
 	return image;
 }
 
-image_p image_create(jr2d_p r2d, const char* filename)
+image_p joy_ui_image_create(jr2d_p r2d, const char* filename)
 {
 	image_p image = NULL;
 	if (SDL_strstr(filename, ".bmp")) {
@@ -585,7 +585,7 @@ static image_p image_create_from_surface(jr2d_p r2d,
 	return image;
 }
 
-void image_destroy(image_p image)
+void joy_ui_image_destroy(image_p image)
 {
 	SDL_assert(image);
 	if (image->texture) {
@@ -594,15 +594,15 @@ void image_destroy(image_p image)
 	SDL_free(image);
 }
 
-void image_draw(image_p image, vec2_t position)
+void joy_ui_image_draw(image_p image, vec2_t position)
 {
 	jrect_t srcrect = { 0, 0, image->texture->w, image->texture->h };
 	vec2_t scale = { 1.0f, 1.0f };
 	vec2_t origin = { 0.0f, 0.0f };
-	image_draw_ex(image, &srcrect, position, 0.0f, scale, origin);
+	joy_ui_image_draw_ex(image, &srcrect, position, 0.0f, scale, origin);
 }
 
-void image_draw1(image_p image,
+void joy_ui_image_draw1(image_p image,
 	const jrect_t* srcrect, const jrect_t* destrect)
 {
         SDL_FRect raw_src, raw_dest;
@@ -623,13 +623,13 @@ void image_draw1(image_p image,
 	SDL_RenderTexture(renderer, image->texture, src_ptr, dst_ptr);
 }
 
-void image_set_scale_mode(image_p image, int nearest)
+void joy_ui_image_set_scale_mode(image_p image, int nearest)
 {
 	SDL_SetTextureScaleMode(image->texture,
 		nearest ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
 }
 
-void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
+void joy_ui_image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	float rotation, vec2_t scale, vec2_t origin)
 {
 	SDL_Renderer *renderer;
@@ -662,7 +662,7 @@ void image_draw_ex(image_p image, const jrect_t* srcrect, vec2_t position,
 	//SDL_SetTextureAlphaMod(image->texture, 255);
 }
 
-image_p image_create_empty(jr2d_p r2d, int w, int h)
+image_p joy_ui_image_create_empty(jr2d_p r2d, int w, int h)
 {
     SDL_Texture* tex = SDL_CreateTexture(r2d->sdl, SDL_PIXELFORMAT_RGBA32,
         SDL_TEXTUREACCESS_STREAMING, w, h);
@@ -674,7 +674,7 @@ image_p image_create_empty(jr2d_p r2d, int w, int h)
     return img;
 }
 
-image_p image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h)
+image_p joy_ui_image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h)
 {
     SDL_Surface* surf = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32,
         (void*)rgba_pixels, w * 4);
@@ -683,18 +683,18 @@ image_p image_create_from_data(jr2d_p r2d, const void* rgba_pixels, int w, int h
     return img;
 }
 
-void image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch)
+void joy_ui_image_update(image_p image, const jrect_t* rect, const void* pixels, int pitch)
 {
     SDL_Rect r = { (int)rect->x, (int)rect->y, (int)rect->w, (int)rect->h };
     SDL_UpdateTexture(image->texture, &r, pixels, pitch);
 }
 
-void image_set_alpha(image_p image, uint8_t alpha)
+void joy_ui_image_set_alpha(image_p image, uint8_t alpha)
 {
     SDL_SetTextureAlphaMod(image->texture, alpha);
 }
 
-void image_set_blend_mode(image_p image, int mode)
+void joy_ui_image_set_blend_mode(image_p image, int mode)
 {
     SDL_BlendMode m;
     switch (mode) {
@@ -707,7 +707,7 @@ void image_set_blend_mode(image_p image, int mode)
     SDL_SetTextureBlendMode(image->texture, m);
 }
 
-bool image_get_size(image_p image, float* w, float* h)
+bool joy_ui_image_get_size(image_p image, float* w, float* h)
 {
     if (!image || !image->texture) return false;
     float fw, fh;
@@ -716,18 +716,18 @@ bool image_get_size(image_p image, float* w, float* h)
     return true;
 }
 
-jtext_p text_createx(jr2d_p r2d, font_p font,
+jtext_p joy_ui_text_createx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color) {
         jtext_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
-        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
-        texture = text_create(r2d, font, codepoints, num_codepoints, color);
+        int num_codepoints = joy_core_utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        texture = joy_ui_text_create(r2d, font, codepoints, num_codepoints, color);
         SDL_free(codepoints);
         return texture;
 }
 
-jtext_p text_create(jr2d_p r2d, font_p font,
+jtext_p joy_ui_text_create(jr2d_p r2d, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
@@ -745,9 +745,9 @@ jtext_p text_create(jr2d_p r2d, font_p font,
 
         x = 0;
         advance_width = left_side_bearing = 0;
-        scale = font_get_scale(font);
-        font_size = font_get_size(font);
-        font_ascent = font_get_ascent(font);
+        scale = joy_r2d_font_get_scale(font);
+        font_size = joy_r2d_font_get_size(font);
+        font_ascent = joy_r2d_font_get_ascent(font);
 
         text = (jtext_p)SDL_malloc(sizeof(jtext_t));
         if (!text) return NULL;
@@ -838,17 +838,17 @@ jtext_p text_create(jr2d_p r2d, font_p font,
         return text;
 }
 
-void text_updatex(jtext_p text, font_p font,
+void joy_ui_text_updatex(jtext_p text, font_p font,
         const char* str, int len, jcolor_t color) {
         jtext_p texture;
         int capacity_codepoints = len * 4;
         int* codepoints = (int*)SDL_malloc(sizeof(int) * capacity_codepoints);
-        int num_codepoints = utf8_decode_all(str, len, codepoints, capacity_codepoints);
-        text_update(text, font, codepoints, num_codepoints, color);
+        int num_codepoints = joy_core_utf8_decode_all(str, len, codepoints, capacity_codepoints);
+        joy_ui_text_update(text, font, codepoints, num_codepoints, color);
         SDL_free(codepoints);
 }
 
-void text_update(jtext_p text, font_p font,
+void joy_ui_text_update(jtext_p text, font_p font,
         const int* codepoints, int num_codepoints,
         jcolor_t color)
 {
@@ -866,11 +866,11 @@ void text_update(jtext_p text, font_p font,
 
         x = 0;
         advance_width = left_side_bearing = 0;
-        font_scale = font_get_scale(font);
-        font_size = font_get_size(font);
-        font_ascent = font_get_ascent(font);
+        font_scale = joy_r2d_font_get_scale(font);
+        font_size = joy_r2d_font_get_size(font);
+        font_ascent = joy_r2d_font_get_ascent(font);
 
-        /* 第一遍：测量真实绘制范围（与 text_create 同一套修复：
+        /* 第一遍：测量真实绘制范围（与 joy_ui_text_create 同一套修复：
            避免负左边距 / 下行部 / 末字形越列导致 blit 写穿 bitmap）。 */
         int min_x = 0, max_x = 0, min_y = 0, max_y = 0;
         int mx = 0;
@@ -968,14 +968,14 @@ void text_update(jtext_p text, font_p font,
         SDL_DestroySurface(surface);
 }
 
-void text_destroy(jtext_p text)
+void joy_ui_text_destroy(jtext_p text)
 {
         if (!text) return;
         SDL_DestroyTexture(text->texture);
         SDL_free(text);
 }
 
-void jtext_print(jr2d_p r2d,
+void joy_r2d_jtext_print(jr2d_p r2d,
         jtext_p text,
         float x, float y)
 {
@@ -985,78 +985,78 @@ void jtext_print(jr2d_p r2d,
 
 /* ===================== 比例坐标（0~1）绘制封装 =====================
  *
- * 全部建立在 r2d_fpx / r2d_frect 之上，语义与控件层的百分比参数一致。
+ * 全部建立在 joy_r2d_fpx / joy_r2d_frect 之上，语义与控件层的百分比参数一致。
  * 逻辑分辨率改变时，用这些接口绘制的内容自动等比适配，无需改任何常量。
  */
-bool r2d_draw_point_f(jr2d_p r2d, float fx, float fy)
+bool joy_r2d_draw_point_f(jr2d_p r2d, float fx, float fy)
 {
         float x = 0.0f, y = 0.0f;
-        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
-        return r2d_draw_point(r2d, x, y);
+        joy_r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        return joy_r2d_draw_point(r2d, x, y);
 }
 
-bool shape_draw_rectangle_f(jr2d_p r2d, const char* mode, float fx, float fy, float fw, float fh)
+bool joy_math_shape_draw_rectangle_f(jr2d_p r2d, const char* mode, float fx, float fy, float fw, float fh)
 {
-        return shape_draw_rectangle(r2d, mode, r2d_frect(r2d, fx, fy, fw, fh));
+        return joy_math_shape_draw_rectangle(r2d, mode, joy_r2d_frect(r2d, fx, fy, fw, fh));
 }
 
-bool shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2)
+bool joy_math_shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2)
 {
         float x1 = 0.0f, y1 = 0.0f, x2 = 0.0f, y2 = 0.0f;
-        r2d_fpx(r2d, fx1, fy1, 0.0f, 0.0f, &x1, &y1, NULL, NULL);
-        r2d_fpx(r2d, fx2, fy2, 0.0f, 0.0f, &x2, &y2, NULL, NULL);
-        return shape_draw_line(r2d, x1, y1, x2, y2);
+        joy_r2d_fpx(r2d, fx1, fy1, 0.0f, 0.0f, &x1, &y1, NULL, NULL);
+        joy_r2d_fpx(r2d, fx2, fy2, 0.0f, 0.0f, &x2, &y2, NULL, NULL);
+        return joy_math_shape_draw_line(r2d, x1, y1, x2, y2);
 }
 
-void image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
+void joy_ui_image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
         float fx, float fy, float fw, float fh)
 {
-        jrect_t dest = r2d_frect(r2d, fx, fy, fw, fh);
-        image_draw1(image, srcrect, &dest);
+        jrect_t dest = joy_r2d_frect(r2d, fx, fy, fw, fh);
+        joy_ui_image_draw1(image, srcrect, &dest);
 }
 
 /* 生成链路专用薄包装：srcrect=NULL 表示整张图缩放到目标矩形。
- * 坐标是【像素】，不经过 r2d_frect（那是归一化比例 → 乘窗口宽高），
+ * 坐标是【像素】，不经过 joy_r2d_frect（那是归一化比例 → 乘窗口宽高），
  * 与 ShapeDrawRectangle / ShapeDrawLine 的像素语义一致。
  * 参数全是标量 + 强句柄，joy.idl 判为 L1，thunk / vtable / cs 可自动生成。 */
-void image_draw_rect(jr2d_p r2d, image_p image, float x, float y, float w, float h)
+void joy_ui_image_draw_rect(jr2d_p r2d, image_p image, float x, float y, float w, float h)
 {
         (void)r2d;
         jrect_t dest = { x, y, w, h };
-        image_draw1(image, NULL, &dest);
+        joy_ui_image_draw1(image, NULL, &dest);
 }
 
-void jtext_printf(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
+void joy_r2d_jtext_printf(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
         float fx, float fy)
 {
         float x = 0.0f, y = 0.0f;
-        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
-        jtext_printx(r2d, font, str, len, color, x, y);
+        joy_r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        joy_r2d_jtext_printx(r2d, font, str, len, color, x, y);
 }
 
 /* 位置为比例，且绘制尺寸 = 字号 × scale（用于需要按屏幕比例缩放字号的场合）。
- * 不走 jtext_printx 的纹理缓存（缓存条目尺寸固定），这里按次创建再释放。 */
-void jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
+ * 不走 joy_r2d_jtext_printx 的纹理缓存（缓存条目尺寸固定），这里按次创建再释放。 */
+void joy_r2d_jtext_printf_scaled(jr2d_p r2d, font_p font, const char* str, int len, jcolor_t color,
         float fx, float fy, float scale)
 {
-        jtext_p tex = text_createx(r2d, font, str, len, color);
+        jtext_p tex = joy_ui_text_createx(r2d, font, str, len, color);
         if (!tex) return;
         float x = 0.0f, y = 0.0f;
-        r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
+        joy_r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
         SDL_FRect dest = { x, y, (float)tex->real_width * scale, (float)tex->real_height * scale };
         SDL_RenderTexture(r2d->sdl, tex->texture, NULL, &dest);
-        text_destroy(tex);
+        joy_ui_text_destroy(tex);
 }
 
 /* ===================== 文字纹理缓存 =====================
  *
- * 旧实现里 jtext_printx() 是 text_createx() -> jtext_print() -> text_destroy()，
+ * 旧实现里 joy_r2d_jtext_printx() 是 joy_ui_text_createx() -> joy_r2d_jtext_print() -> joy_ui_text_destroy()，
  * 每次调用都新建并销毁一张 SDL 纹理。inputbox / datagrid / popup / tooltip /
- * combobox_input 都走这条路径；其中 inputbox_draw 还会为测量子串宽度额外
+ * combobox_input 都走这条路径；其中 joy_ui_inputbox_draw 还会为测量子串宽度额外
  * 创建两张纹理，一个带选区的 inputbox 每帧要建 3~4 张。
  *
  * 这里按 (font, color, 内容字节) 缓存纹理并 LRU 复用。
- * 注意只有 jtext_printx 走缓存；text_createx 仍由调用方自行持有与释放，
+ * 注意只有 joy_r2d_jtext_printx 走缓存；joy_ui_text_createx 仍由调用方自行持有与释放，
  * 因此 label / button 这类自己缓存 jtext 的控件不受影响。
  */
 
@@ -1122,7 +1122,7 @@ static void jtext_lru_push_front(jtext_entry_t* e)
 static void jtext_entry_free(jtext_entry_t* e)
 {
         if (!e) return;
-        if (e->tex) text_destroy(e->tex);
+        if (e->tex) joy_ui_text_destroy(e->tex);
         if (e->str) SDL_free(e->str);
         SDL_free(e);
 }
@@ -1170,15 +1170,15 @@ static jtext_p jtext_cache_get(jr2d_p r2d, font_p font,
                 }
         }
 
-        tex = text_createx(r2d, font, str, len, color);
+        tex = joy_ui_text_createx(r2d, font, str, len, color);
         if (!tex) return NULL;
 
         while (g_cache_count >= g_cache_limit) jtext_evict_one();
 
         e = (jtext_entry_t*)SDL_calloc(1, sizeof(jtext_entry_t));
-        if (!e) { text_destroy(tex); return NULL; }
+        if (!e) { joy_ui_text_destroy(tex); return NULL; }
         e->str = (char*)SDL_malloc((size_t)len + 1);
-        if (!e->str) { SDL_free(e); text_destroy(tex); return NULL; }
+        if (!e->str) { SDL_free(e); joy_ui_text_destroy(tex); return NULL; }
         SDL_memcpy(e->str, str, (size_t)len);
         e->str[len] = '\0';
 
@@ -1195,25 +1195,25 @@ static jtext_p jtext_cache_get(jr2d_p r2d, font_p font,
         return e->tex;
 }
 
-void jtext_cache_clear(void)
+void joy_r2d_jtext_cache_clear(void)
 {
         while (g_lru_head) jtext_evict_one();
 }
 
-void jtext_cache_set_limit(int max_entries)
+void joy_r2d_jtext_cache_set_limit(int max_entries)
 {
         if (max_entries < 16) max_entries = 16;
         g_cache_limit = max_entries;
         while (g_cache_count > g_cache_limit) jtext_evict_one();
 }
 
-int jtext_cache_get_count(void)
+int joy_r2d_jtext_cache_get_count(void)
 {
         return g_cache_count;
 }
 
-/* 回收空闲超过 max_idle_frames 帧的条目（单位：帧，由 r2d_begin 推进） */
-void jtext_cache_sweep(int max_idle_frames)
+/* 回收空闲超过 max_idle_frames 帧的条目（单位：帧，由 joy_r2d_begin 推进） */
+void joy_r2d_jtext_cache_sweep(int max_idle_frames)
 {
         if (max_idle_frames < 0) return;
         while (g_lru_tail
@@ -1222,16 +1222,16 @@ void jtext_cache_sweep(int max_idle_frames)
         }
 }
 
-void jtext_printx(jr2d_p r2d, font_p font,
+void joy_r2d_jtext_printx(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color, float x, float y)
 {
         jtext_p t = jtext_cache_get(r2d, font, str, len, color);
         if (t) {
-                jtext_print(r2d, t, x, y);
+                joy_r2d_jtext_print(r2d, t, x, y);
         }
 }
 
-bool jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
+bool joy_r2d_jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
         jcolor_t color, int* out_w, int* out_h)
 {
         jtext_p t;
@@ -1243,23 +1243,23 @@ bool jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
         t = jtext_cache_get(r2d, font, str, len, color);
         if (!t) return false;
 
-        if (out_w) *out_w = text_get_width(t);
-        if (out_h) *out_h = text_get_height(t);
+        if (out_w) *out_w = joy_ui_text_get_width(t);
+        if (out_h) *out_h = joy_ui_text_get_height(t);
         return true;
 }
 
-int text_get_width(jtext_p jtext_tex)
+int joy_ui_text_get_width(jtext_p jtext_tex)
 {
         return jtext_tex->real_width;
 }
 
-int text_get_height(jtext_p jtext_tex)
+int joy_ui_text_get_height(jtext_p jtext_tex)
 {
         return jtext_tex->real_height;
 }
 
 
-animation_p animation_create(jr2d_p r2d)
+animation_p joy_scene_animation_create(jr2d_p r2d)
 {
         animation_p animation;
         animation = (animation_p)SDL_malloc(sizeof(animation_t));
@@ -1274,13 +1274,13 @@ animation_p animation_create(jr2d_p r2d)
         return animation;
 }
 
-void animation_destroy(animation_p animation)
+void joy_scene_animation_destroy(animation_p animation)
 {
         kv_destroy(animation->clips);
         SDL_free(animation);
 }
 
-void animation_reset(animation_p animation)
+void joy_scene_animation_reset(animation_p animation)
 {
         uint64_t ticks;
         animation->idx_frame = 0;
@@ -1293,18 +1293,18 @@ void animation_reset(animation_p animation)
         }
 }
 
-void animation_add_clip(animation_p animation,
+void joy_scene_animation_add_clip(animation_p animation,
         const char* image_path, float duration,
         jrect_t src_rect)
 {
         animation_clip_t animation_clip;
-        animation_clip.image = image_create(animation->r2d, image_path);
+        animation_clip.image = joy_ui_image_create(animation->r2d, image_path);
         animation_clip.duration = duration;
         animation_clip.src_rect = src_rect;
         kv_push(animation_clip_t, animation->clips, animation_clip);
 }
 
-bool animation_is_finished(animation_p animation)
+bool joy_scene_animation_is_finished(animation_p animation)
 {
         if (animation->is_loop) {
                 return false;
@@ -1314,24 +1314,24 @@ bool animation_is_finished(animation_p animation)
         }
 }
 
-void animation_set_position(animation_p animation, float x, float y)
+void joy_scene_animation_set_position(animation_p animation, float x, float y)
 {
         animation->position.x = x;
         animation->position.y = y;
 }
 
-void animation_set_scale(animation_p animation, float x, float y)
+void joy_scene_animation_set_scale(animation_p animation, float x, float y)
 {
         animation->scale.x = x;
         animation->scale.y = y;
 }
 
-void animation_set_rotation(animation_p animation, float rotation)
+void joy_scene_animation_set_rotation(animation_p animation, float rotation)
 {
         animation->rotation = rotation;
 }
 
-void animation_update(animation_p animation, float dt)
+void joy_scene_animation_update(animation_p animation, float dt)
 {
         animation_clip_p animation_clip;
         if (kv_size(animation->clips) <= 0) {
@@ -1354,7 +1354,7 @@ void animation_update(animation_p animation, float dt)
         }
 }
 
-void animation_draw(animation_p animation, jrect_t* camera)
+void joy_scene_animation_draw(animation_p animation, jrect_t* camera)
 {
         animation_clip_p animation_clip;
         float r_x, r_y;
@@ -1366,7 +1366,7 @@ void animation_draw(animation_p animation, jrect_t* camera)
         }
 
         animation_clip = &kv_A(animation->clips, animation->idx_frame);
-        image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
+        joy_ui_image_draw_ex(animation_clip->image, &animation_clip->src_rect, animation->position, animation->rotation, animation->scale, animation->origin);
 }
 
 /* ===== 裁剪 ===== */
@@ -1392,7 +1392,7 @@ static void r2d_apply_clip(jr2d_p r2d)
         SDL_SetRenderClipRect(r2d->sdl, &cr);
 }
 
-bool r2d_set_clip_rect(jr2d_p r2d, jrect_t rect)
+bool joy_r2d_set_clip_rect(jr2d_p r2d, jrect_t rect)
 {
         if (!r2d) return false;
         r2d->clip_enabled = true;
@@ -1403,14 +1403,14 @@ bool r2d_set_clip_rect(jr2d_p r2d, jrect_t rect)
         return true;
 }
 
-bool r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect)
+bool joy_r2d_get_clip_rect(jr2d_p r2d, jrect_t* out_rect)
 {
         if (!r2d) return false;
         if (out_rect && r2d->clip_enabled) *out_rect = r2d->clip_rect;
         return r2d->clip_enabled;
 }
 
-void r2d_clear_clip(jr2d_p r2d)
+void joy_r2d_clear_clip(jr2d_p r2d)
 {
         if (!r2d) return;
         r2d->clip_enabled = false;
@@ -1418,13 +1418,13 @@ void r2d_clear_clip(jr2d_p r2d)
         r2d_apply_clip(r2d);
 }
 
-bool r2d_push_clip_rect(jr2d_p r2d, jrect_t rect)
+bool joy_r2d_push_clip_rect(jr2d_p r2d, jrect_t rect)
 {
         jrect_t out;
         if (!r2d) return false;
         if (r2d->clip_top >= R2D_CLIP_STACK_MAX) {
                 SDL_LogError(SDL_LOG_CATEGORY_RENDER,
-                        "r2d_push_clip_rect: stack overflow (max %d)", R2D_CLIP_STACK_MAX);
+                        "joy_r2d_push_clip_rect: stack overflow (max %d)", R2D_CLIP_STACK_MAX);
                 return false;
         }
 
@@ -1467,7 +1467,7 @@ bool r2d_push_clip_rect(jr2d_p r2d, jrect_t rect)
         return true;
 }
 
-void r2d_pop_clip_rect(jr2d_p r2d)
+void joy_r2d_pop_clip_rect(jr2d_p r2d)
 {
         if (!r2d || r2d->clip_top <= 0) return;
         r2d->clip_top--;
@@ -1476,7 +1476,7 @@ void r2d_pop_clip_rect(jr2d_p r2d)
         r2d_apply_clip(r2d);
 }
 
-void r2d_reset_clip_stack(jr2d_p r2d)
+void joy_r2d_reset_clip_stack(jr2d_p r2d)
 {
         if (!r2d) return;
         r2d->clip_top = 0;
@@ -1485,7 +1485,7 @@ void r2d_reset_clip_stack(jr2d_p r2d)
         r2d_apply_clip(r2d);
 }
 
-bool r2d_point_in_clip(jr2d_p r2d, float x, float y)
+bool joy_r2d_point_in_clip(jr2d_p r2d, float x, float y)
 {
         if (!r2d) return true;              /* 无渲染器时不拦截 */
         if (!r2d->clip_enabled) return true;
@@ -1496,7 +1496,7 @@ bool r2d_point_in_clip(jr2d_p r2d, float x, float y)
 }
 
 /* ===== Blend mode ===== */
-bool r2d_set_blend_mode(jr2d_p r2d, int mode)
+bool joy_r2d_set_blend_mode(jr2d_p r2d, int mode)
 {
         SDL_BlendMode sdl_mode = SDL_BLENDMODE_NONE;
         switch (mode) {
@@ -1631,7 +1631,7 @@ static SDL_Texture* joy_fov_gradient_tex_2d(jr2d_p r)
 }
 
 /* px/py: 观察点在输出像素坐标; radii[seg] 每方向可见半径(像素);
-   feather/outer_radius 亦为像素。需在 r2d_begin/r2d_end 与地图绘制的同一
+   feather/outer_radius 亦为像素。需在 joy_r2d_begin/joy_r2d_end 与地图绘制的同一
    坐标系下调用(相机相对像素)。 */
 void joy_fov_draw_2d(jr2d_p r, float px, float py,
                      const float* radii, int seg,

@@ -22,7 +22,7 @@ static duk_ret_t js_console_log(duk_context* ctx)
 {
 	duk_idx_t i, n = duk_get_top(ctx);
 	for (i = 0; i < n; ++i) {
-		log_info("%s", duk_safe_to_string(ctx, i));
+		joy_core_log_info("%s", duk_safe_to_string(ctx, i));
 	}
 	return 0;
 }
@@ -48,7 +48,7 @@ static bool call_joy_js(duk_context* ctx, const char* func, int nargs)
 	duk_insert(ctx, -(nargs + 1));
 
 	if (duk_pcall(ctx, nargs)) {
-		log_error("joy.%s: %s", func, duk_to_string(ctx, -1));
+		joy_core_log_error("joy.%s: %s", func, duk_to_string(ctx, -1));
 		duk_pop(ctx);
 		return false;
 	}
@@ -205,7 +205,7 @@ bool jsx_dofile(jsx_p jsx, const char* filename)
 		if (duk_peval(jsx->ctx) != 0) {
 			/* 执行错误，错误消息在栈顶 */
 			SDL_free(data);
-			log_info("%s", duk_to_string(jsx->ctx, -1));
+			joy_core_log_info("%s", duk_to_string(jsx->ctx, -1));
 			duk_pop(jsx->ctx);
 			return false;
 		}
@@ -227,7 +227,7 @@ void jsx_release(jsx_p jsx)
 
 void jsx_dispatch_event(jsx_p jsx, const void* event)
 {
-	dispatch_event(jsx->cbs, event, jsx);
+	joy_core_dispatch_event(jsx->cbs, event, jsx);
 }
 
 
@@ -247,7 +247,7 @@ bool jsx_call_joy(jsx_p jsx, const char* func, int argc, float dt)
 		duk_push_number(ctx, (duk_double_t)dt);
 
 	if (duk_pcall(ctx, argc)) {
-		log_error("joy.%s error: %s", func, duk_to_string(ctx, -1));
+		joy_core_log_error("joy.%s error: %s", func, duk_to_string(ctx, -1));
 		duk_pop(ctx);
 		duk_set_top(ctx, top);
 		return false;
@@ -330,7 +330,7 @@ bool jsx_poll_reload(jsx_p jsx)
 	if (info.modify_time == jsx->last_mtime)
 		return false;
 	jsx->last_mtime = info.modify_time;
-	log_info("[CHANGED] %s", jsx->watch_file);
+	joy_core_log_info("[CHANGED] %s", jsx->watch_file);
 	if (!jsx_reload(jsx, jsx->watch_file))
 		return false;
 	jsx_call_joy(jsx, "hotfix", 0, 0);

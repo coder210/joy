@@ -426,7 +426,7 @@ struct lcg_num {
 };
 
 lcg_num_p
-lcg_random_create(uint64_t seed)
+joy_core_lcg_random_create(uint64_t seed)
 {
 	lcg_num_p lcg = (lcg_num_p)SDL_malloc(sizeof(lcg_num_t));
 	SDL_assert(lcg);
@@ -435,31 +435,31 @@ lcg_random_create(uint64_t seed)
 }
 
 void
-lcg_random_destroy(lcg_num_p lcg)
+joy_core_lcg_random_destroy(lcg_num_p lcg)
 {
 	SDL_free(lcg);
 }
 
 uint32_t
-lcg_random_next(lcg_num_p lcg)
+joy_core_lcg_random_next(lcg_num_p lcg)
 {
 	lcg->state = LCG_A * lcg->state + LCG_C;
 	return (uint32_t)(lcg->state >> 32); // 取高 32 位，避免低位的短周期相关
 }
 
 void
-lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out)
+joy_core_lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out)
 {
 	if (lcg && state_out) *state_out = lcg->state;
 }
 
 void
-lcg_random_set_state(lcg_num_p lcg, uint64_t state)
+joy_core_lcg_random_set_state(lcg_num_p lcg, uint64_t state)
 {
 	if (lcg) lcg->state = state;
 }
 
-unsigned long sdbm_hash(const char* str, int size)
+unsigned long joy_core_sdbm_hash(const char* str, int size)
 {
 	unsigned long hash = 0;
 	int c;
@@ -469,7 +469,7 @@ unsigned long sdbm_hash(const char* str, int size)
 	return hash % size;
 }
 
-unsigned long fnv1a_hash(const char* str, int size)
+unsigned long joy_core_fnv1a_hash(const char* str, int size)
 {
 	unsigned long hash = 2166136261u;  // FNV_offset_basis
 	int c;
@@ -481,7 +481,7 @@ unsigned long fnv1a_hash(const char* str, int size)
 }
 
 
-unsigned long jenkins_hash(const char* str, int size)
+unsigned long joy_core_jenkins_hash(const char* str, int size)
 {
 	unsigned long hash = 0;
 	int c;
@@ -496,7 +496,7 @@ unsigned long jenkins_hash(const char* str, int size)
 	return hash % size;
 }
 
-unsigned long murmur3_hash(const char* str)
+unsigned long joy_core_murmur3_hash(const char* str)
 {
 	unsigned long hash = 0;
 	const unsigned int seed = 0x9747b28c;
@@ -542,7 +542,7 @@ unsigned long murmur3_hash(const char* str)
 	return hash;
 }
 
-unsigned long kr_hash(const char* str, int size)
+unsigned long joy_core_kr_hash(const char* str, int size)
 {
 	unsigned long hash = 0;
 	int c;
@@ -561,7 +561,7 @@ static const uint32_t limits[] = {
     ~(uint32_t)0, 0x80, 0x800, 0x10000u, 0x200000u, 0x4000000u
 };
 
-size_t utf8_decode(const char* s, size_t len, int32_t* code)
+size_t joy_core_utf8_decode(const char* s, size_t len, int32_t* code)
 {
 	if (len == 0) return 0;
 
@@ -625,16 +625,16 @@ size_t utf8_decode(const char* s, size_t len, int32_t* code)
 	return nbytes;
 }
 
-int utf8_next(const char* s, size_t len, size_t* pos, int32_t* code)
+int joy_core_utf8_next(const char* s, size_t len, size_t* pos, int32_t* code)
 {
 	if (*pos >= len) return 0;
-	size_t consumed = utf8_decode(s + *pos, len - *pos, code);
+	size_t consumed = joy_core_utf8_decode(s + *pos, len - *pos, code);
 	if (consumed == 0) return 0;
 	*pos += consumed;
 	return 1;
 }
 
-size_t utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out_capacity)
+size_t joy_core_utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out_capacity)
 {
 	size_t count = 0;
 	size_t pos = 0;
@@ -642,7 +642,7 @@ size_t utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out
 	/* 第一次遍历：计算所需码点个数，同时验证字符串有效性 */
 	while (pos < len) {
 		int32_t cp;  /* 临时存储，无需实际值 */
-		size_t consumed = utf8_decode(s + pos, len - pos, &cp);
+		size_t consumed = joy_core_utf8_decode(s + pos, len - pos, &cp);
 		if (consumed == 0) {
 			return 0;  /* 无效 UTF-8 序列 */
 		}
@@ -665,7 +665,7 @@ size_t utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out
 	size_t idx = 0;
 	while (pos < len) {
 		int32_t cp;
-		size_t consumed = utf8_decode(s + pos, len - pos, &cp);
+		size_t consumed = joy_core_utf8_decode(s + pos, len - pos, &cp);
 		/* 此时不会失败，因为第一次已验证过 */
 		out_codes[idx++] = cp;
 		pos += consumed;
@@ -675,73 +675,73 @@ size_t utf8_decode_all(const char* s, size_t len, int32_t* out_codes, size_t out
 }
 
 
-int pack_int8(char* buf, int8_t value, int offset)
+int joy_net_pack_int8(char* buf, int8_t value, int offset)
 {
 	int type_size = sizeof(int8_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int pack_int16(char* buf, int16_t value, int offset)
+int joy_net_pack_int16(char* buf, int16_t value, int offset)
 {
 	int type_size = sizeof(int16_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int pack_int32(char* buf, int32_t value, int offset)
+int joy_net_pack_int32(char* buf, int32_t value, int offset)
 {
 	int type_size = sizeof(int32_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int pack_uint32(char* buf, uint32_t value, int offset)
+int joy_net_pack_uint32(char* buf, uint32_t value, int offset)
 {
 	int type_size = sizeof(uint32_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int pack_int64(char* buf, int64_t value, int offset)
+int joy_net_pack_int64(char* buf, int64_t value, int offset)
 {
 	int type_size = sizeof(int64_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
 
-int unpack_int8(const char* buf, int8_t* value, int offset)
+int joy_net_unpack_int8(const char* buf, int8_t* value, int offset)
 {
 	int type_size = sizeof(int8_t);
 	*value = *((int8_t*)(buf + offset));
 	return offset + type_size;
 }
-int unpack_int16(const char* buf, int16_t* value, int offset)
+int joy_net_unpack_int16(const char* buf, int16_t* value, int offset)
 {
 	int type_size = sizeof(int16_t);
 	*value = *((int16_t*)(buf + offset));
 	return offset + type_size;
 }
-int unpack_int32(const char* buf, int32_t* value, int offset)
+int joy_net_unpack_int32(const char* buf, int32_t* value, int offset)
 {
 	int type_size = sizeof(int32_t);
 	*value = *((int32_t*)(buf + offset));
 	return offset + type_size;
 }
-int unpack_uint32(const char* buf, uint32_t* value, int offset)
+int joy_net_unpack_uint32(const char* buf, uint32_t* value, int offset)
 {
 	int type_size = sizeof(uint32_t);
 	*value = *((uint32_t*)(buf + offset));
 	return offset + type_size;
 }
-int unpack_int64(const char* buf, int64_t* value, int offset)
+int joy_net_unpack_int64(const char* buf, int64_t* value, int offset)
 {
 	int type_size = sizeof(int64_t);
 	*value = *((int64_t*)(buf + offset));
 	return offset + type_size;
 }
-int pack_string(char* buf, const char* value, int type_size, int offset)
+int joy_net_pack_string(char* buf, const char* value, int type_size, int offset)
 {
 	memcpy(buf + offset, value, type_size);
 	return offset + type_size;
 }
-int unpack_string(const char* buf, char* value, int type_size, int offset)
+int joy_net_unpack_string(const char* buf, char* value, int type_size, int offset)
 {
 	memcpy(value, buf + offset, type_size);
 	return offset + type_size;
@@ -757,7 +757,7 @@ struct jtimer {
 	void* userdata;            // 用户数据
 };
 
-jtimer_p jtimer_create(int interval, jtimer_callback cb, void* userdata)
+jtimer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata)
 {
 	jtimer_p jtimer = (jtimer_p)malloc(sizeof(struct jtimer));
 	if (!jtimer) return NULL;
@@ -771,14 +771,14 @@ jtimer_p jtimer_create(int interval, jtimer_callback cb, void* userdata)
 	return jtimer;
 }
 
-void jtimer_destroy(jtimer_p jtimer)
+void joy_scene_jtimer_destroy(jtimer_p jtimer)
 {
 	if (jtimer) {
 		free(jtimer);
 	}
 }
 
-void jtimer_trigger(jtimer_p jtimer)
+void joy_scene_jtimer_trigger(jtimer_p jtimer)
 {
 	if (!jtimer || !jtimer->active || !jtimer->callback) {
 		return;
@@ -803,14 +803,14 @@ void jtimer_trigger(jtimer_p jtimer)
 	}
 }
 
-void jtimer_set_interval(jtimer_p jtimer, int interval)
+void joy_scene_jtimer_set_interval(jtimer_p jtimer, int interval)
 {
 	if (jtimer) {
 		jtimer->interval = interval;
 	}
 }
 
-void jtimer_set_active(jtimer_p jtimer, bool active)
+void joy_scene_jtimer_set_active(jtimer_p jtimer, bool active)
 {
 	if (jtimer) {
 		jtimer->active = active;
@@ -820,14 +820,14 @@ void jtimer_set_active(jtimer_p jtimer, bool active)
 	}
 }
 
-void jtimer_reset(jtimer_p jtimer)
+void joy_scene_jtimer_reset(jtimer_p jtimer)
 {
 	if (jtimer) {
 		jtimer->last_time = SDL_GetTicks();
 	}
 }
 
-uint64_t jtimer_get_elapsed(jtimer_p jtimer)
+uint64_t joy_scene_jtimer_get_elapsed(jtimer_p jtimer)
 {
 	if (!jtimer) return 0;
 	return SDL_GetTicks() - jtimer->last_time;

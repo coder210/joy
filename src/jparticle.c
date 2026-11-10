@@ -41,7 +41,7 @@ static float deg2rad(float deg) {
 }
 
 /* ======================== 默认配置 ======================== */
-jparticle_cfg_t jparticle_cfg_default(void) {
+jparticle_cfg_t joy_r2d_particle_cfg_default(void) {
     jparticle_cfg_t cfg;
     cfg.x = 0; cfg.y = 0;
     cfg.spawn_radius = 0;
@@ -60,7 +60,7 @@ jparticle_cfg_t jparticle_cfg_default(void) {
 }
 
 /* ======================== 创建/销毁 ======================== */
-jparticle_p jparticle_create(jparticle_cfg_t cfg) {
+jparticle_p joy_r2d_particle_create(jparticle_cfg_t cfg) {
     jparticle_p p = (jparticle_p)malloc(sizeof(jparticle_t));
     if (!p) return NULL;
     p->cfg = cfg;
@@ -69,27 +69,27 @@ jparticle_p jparticle_create(jparticle_cfg_t cfg) {
     return p;
 }
 
-void jparticle_destroy(jparticle_p p) {
+void joy_r2d_particle_destroy(jparticle_p p) {
     if (!p) return;
     kv_destroy(p->particles);
     free(p);
 }
 
 /* ======================== 控制 ======================== */
-void jparticle_set_position(jparticle_p p, float x, float y) {
+void joy_r2d_particle_set_position(jparticle_p p, float x, float y) {
     if (!p) return;
     p->cfg.x = x;
     p->cfg.y = y;
 }
 
-void jparticle_clear(jparticle_p p) {
+void joy_r2d_particle_clear(jparticle_p p) {
     if (!p) return;
     p->particles.n = 0;
     p->emit_acc = 0;
 }
 
 /* ======================== 发射粒子 ======================== */
-void jparticle_emit(jparticle_p p) {
+void joy_r2d_particle_emit(jparticle_p p) {
     if (!p) return;
     jparticle_cfg_t* c = &p->cfg;
     int n = c->burst > 0 ? c->burst : 1;
@@ -121,7 +121,7 @@ void jparticle_emit(jparticle_p p) {
 }
 
 /* ======================== 更新 ======================== */
-void jparticle_update(jparticle_p p, float dt) {
+void joy_r2d_particle_update(jparticle_p p, float dt) {
     if (!p) return;
     jparticle_cfg_t* c = &p->cfg;
 
@@ -131,7 +131,7 @@ void jparticle_update(jparticle_p p, float dt) {
         float interval = 1.0f / c->rate;
         while (p->emit_acc >= interval) {
             p->emit_acc -= interval;
-            jparticle_emit(p);
+            joy_r2d_particle_emit(p);
         }
     }
 
@@ -167,22 +167,22 @@ void jparticle_update(jparticle_p p, float dt) {
 }
 
 /* ======================== 渲染 ======================== */
-void jparticle_render(jparticle_p p, jr2d_p r2d) {
+void joy_r2d_particle_render(jparticle_p p, jr2d_p r2d) {
     if (!p || !r2d) return;
     for (size_t i = 0; i < p->particles.n; i++) {
         particle_inner_t* pt = &kv_A(p->particles, i);
         float half = pt->size * 0.5f;
         jrect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
-        r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);
-        shape_draw_rectangle(r2d, "fill", r);
+        joy_r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);
+        joy_math_shape_draw_rectangle(r2d, "fill", r);
     }
 }
 
 /* ======================== 查询 ======================== */
-int jparticle_count(jparticle_p p) {
+int joy_r2d_particle_count(jparticle_p p) {
     return p ? (int)p->particles.n : 0;
 }
 
-bool jparticle_is_active(jparticle_p p) {
+bool joy_r2d_particle_is_active(jparticle_p p) {
     return p && p->particles.n > 0;
 }

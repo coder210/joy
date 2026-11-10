@@ -214,9 +214,9 @@ static const JoyApi* g_api = NULL;   /* 宿主注入；DLL 内所有引擎调用
 
 /* ---------------- 绘制辅助（等价于 C# 的 Painter） ----------------
  * 全部经 g_api 的强签名函数指针调用，坐标一律用像素：*_f 系列是归一化比例，
- * 会经 r2d_fpx() 乘窗口宽高，传像素坐标会把精灵放大到屏幕外。
+ * 会经 joy_r2d_fpx() 乘窗口宽高，传像素坐标会把精灵放大到屏幕外。
  * 图片绘制走全标量 L1 ImageDrawRect（srcrect 固定 NULL），绕开 jrect_t*
- * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（jtext_measurex
+ * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（joy_r2d_jtext_measurex
  * 是 int* 出参）。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
 
 static void set_color(jr2d_p r2d, int r, int gr, int b, int a)
@@ -227,7 +227,7 @@ static void set_color(jr2d_p r2d, int r, int gr, int b, int a)
 }
 
 /* 注意坐标系：*_f 系列（ShapeDrawRectangleF / ShapeDrawLineF）的参数是
- * 归一化比例，r2d_fpx() 会乘窗口宽高再画；这里传的是像素坐标，必须用
+ * 归一化比例，joy_r2d_fpx() 会乘窗口宽高再画；这里传的是像素坐标，必须用
  * 非 _f 的 ShapeDrawRectangle（L2 按字段展平）/ ShapeDrawLine（L1）。
  * 否则一个 x=227、w=26 的精灵色块会被放大成 x=108960、w=12480，
  * 整个跑到屏幕外，表现为「玩家和敌人没渲染出来」。 */
@@ -841,17 +841,17 @@ static bool game_init(void* game, const JoyApi* api, int smoke_frames)
 
     g->window = api->CreateWindow(api->ctx, "Joy CPP Topdown", APP_W, APP_H);
     if (!g->window.h) {
-        fprintf(stderr, "[host] create_window failed\n");
+        fprintf(stderr, "[host] joy_core_create_window failed\n");
         return false;
     }
     g->r2d = api->R2dCreate(api->ctx, g->window);
     if (!g->r2d.h) {
-        fprintf(stderr, "[host] r2d_create failed\n");
+        fprintf(stderr, "[host] joy_r2d_create failed\n");
         return false;
     }
     api->R2dSetBlendMode(api->ctx, g->r2d, JR2D_BLEND_BLEND);
     /* 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
-     * 覆盖 r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
+     * 覆盖 joy_r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
      * 按 480x320 绘制只占屏幕一角。2 == JOY_LOGICAL_PRESENTATION_LETTERBOX。 */
     api->R2dSetLogicalPresentationMode(api->ctx, g->r2d, APP_W, APP_H, 2);
 

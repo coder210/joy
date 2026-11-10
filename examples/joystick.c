@@ -34,11 +34,11 @@
 //
 //        // 初始化左摇杆（在逻辑空间的固定位置）
 //        joystick_p left_joystick;
-//        left_joystick = joystick_create(renderer, 200.0f, 400.0f, 80.0f);
+//        left_joystick = joy_input_joystick_create(renderer, 200.0f, 400.0f, 80.0f);
 //
 //        // 初始化右摇杆
 //        joystick_p right_joystick;
-//        right_joystick = joystick_create(renderer, 600.0f, 400.0f, 80.0f);
+//        right_joystick = joy_input_joystick_create(renderer, 600.0f, 400.0f, 80.0f);
 //
 //        // 主循环
 //        bool quit = false;
@@ -56,13 +56,13 @@
 //                                }
 //                                else if (event.key.key == SDLK_SPACE) {
 //                                        // 打印摇杆状态
-//                                        SDL_FPoint left_dir = joystick_get_direction(left_joystick);
-//                                        SDL_FPoint right_dir = joystick_get_direction(&right_joystick);
+//                                        SDL_FPoint left_dir = joy_input_joystick_get_direction(left_joystick);
+//                                        SDL_FPoint right_dir = joy_input_joystick_get_direction(&right_joystick);
 //
 //                                        printf("左摇杆: X=%.2f, Y=%.2f, 强度=%.2f\n",
-//                                                left_dir.x, left_dir.y, joystick_get_magnitude(left_joystick));
+//                                                left_dir.x, left_dir.y, joy_input_joystick_get_magnitude(left_joystick));
 //                                        printf("右摇杆: X=%.2f, Y=%.2f, 强度=%.2f\n",
-//                                                right_dir.x, right_dir.y, joystick_get_magnitude(&right_joystick));
+//                                                right_dir.x, right_dir.y, joy_input_joystick_get_magnitude(&right_joystick));
 //                                }
 //                        }
 //
@@ -86,8 +86,8 @@
 //                // 绘制方向指示线
 //                SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 //
-//               /* if (joystick_get_magnitude(left_joystick) > 0) {
-//                        SDL_FPoint dir = joystick_get_direction(left_joystick);
+//               /* if (joy_input_joystick_get_magnitude(left_joystick) > 0) {
+//                        SDL_FPoint dir = joy_input_joystick_get_direction(left_joystick);
 //                        SDL_RenderLine(renderer,
 //                                left_joystick->center.x,
 //                                left_joystick->center.y,
@@ -95,8 +95,8 @@
 //                                left_joystick->center.y + dir.y * left_joystick->radius);
 //                }
 //
-//                if (joystick_get_magnitude(&right_joystick) > 0) {
-//                        SDL_FPoint dir = joystick_get_direction(&right_joystick);
+//                if (joy_input_joystick_get_magnitude(&right_joystick) > 0) {
+//                        SDL_FPoint dir = joy_input_joystick_get_direction(&right_joystick);
 //                        SDL_RenderLine(renderer,
 //                                right_joystick.center.x,
 //                                right_joystick.center.y,
@@ -117,8 +117,8 @@
 //        }
 //
 //        // 清理资源
-//        joystick_destroy(left_joystick);
-//        joystick_destroy(right_joystick);
+//        joy_input_joystick_destroy(left_joystick);
+//        joy_input_joystick_destroy(right_joystick);
 //        SDL_DestroyRenderer(renderer);
 //        SDL_DestroyWindow(window);
 //        SDL_Quit();

@@ -1,7 +1,7 @@
 #include "joy.h"
 
 ray2d_collisionf_t 
-collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
+joy_math_collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
 {
         vec2f_t seg;
         fp_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
@@ -96,7 +96,7 @@ static vec2f_t collision2df_calculate_rect_normal(vec2f_t point, vec2f_t min, ve
 #define SWAP(a, b)  do { fp_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
 
 // 射线-矩形碰撞检测（修复版）
-ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rect)
+ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rect)
 {
         ray2d_collisionf_t result = { 0 };
         vec2f_t min, max;
@@ -177,7 +177,7 @@ ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rec
 
 
 ray2d_collisionf_t 
-collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
+joy_math_collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
 {
         ray2d_collisionf_t result={0};
         vec2f_t half_extents, center, local_origin, local_dir;
@@ -272,7 +272,7 @@ collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
 }
 
 ray2d_collisionf_t 
-collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
+joy_math_collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
 {
         ray2d_collisionf_t result = {0};
         vec2f_t edge_start, edge_end, edge_vec, diff;
@@ -325,28 +325,28 @@ collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
 }
 
 bool 
-collision2df_check_point_rectangle(vec2f_t point, rectanglef_t rect)
+joy_math_collision2df_check_point_rectangle(vec2f_t point, rectanglef_t rect)
 {
         return (point.x >= rect.x && point.x <= fp_add(rect.x, rect.width)
              && point.y >= rect.y && point.y <= fp_add(rect.y, rect.height));
 }
 
 bool 
-collision2df_check_point_circle(vec2f_t point, circlef_t circle)
+joy_math_collision2df_check_point_circle(vec2f_t point, circlef_t circle)
 {
         vec2f_t diff = vec2f_sub(point, circle.center);
         return vec2f_length_squared(diff) <= fp_pow2(circle.radius);
 }
 
 fp_t
-collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle)
+joy_math_collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle)
 {
         vec2f_t diff = vec2f_sub(point, circle.center);
         return vec2f_length_squared(diff);
 }
 
 bool 
-collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t p3)
+joy_math_collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t p3)
 {
         /* Barycentric coordinate method */
         vec2f_t v0 = vec2f_sub(p3, p1);
@@ -372,7 +372,7 @@ collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t
 }
 
 bool 
-collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2, vec2f_t*cp)
+joy_math_collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2, vec2f_t*cp)
 {
         vec2f_t r = vec2f_sub(b1, a1);
         vec2f_t s = vec2f_sub(b2, a2);
@@ -397,7 +397,7 @@ collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2, vec2f_t
 }
 
 bool 
-collision2df_check_point_line(vec2f_t point, vec2f_t p1, vec2f_t p2, fp_t threshold)
+joy_math_collision2df_check_point_line(vec2f_t point, vec2f_t p1, vec2f_t p2, fp_t threshold)
 {
         vec2f_t ab = vec2f_sub(p2, p1);
         vec2f_t ap = vec2f_sub(point, p1);
@@ -416,7 +416,7 @@ collision2df_check_point_line(vec2f_t point, vec2f_t p1, vec2f_t p2, fp_t thresh
 }
 
 bool 
-collision2df_check_circles(circlef_t a, circlef_t b)
+joy_math_collision2df_check_circles(circlef_t a, circlef_t b)
 {
         vec2f_t distance;
         fp_t distance_squared, radius_sum;
@@ -430,7 +430,7 @@ collision2df_check_circles(circlef_t a, circlef_t b)
 
 /* aabb */
 bool 
-collision2df_check_rectangles(rectanglef_t a, rectanglef_t b)
+joy_math_collision2df_check_rectangles(rectanglef_t a, rectanglef_t b)
 {
         if (a.x > fp_add(b.x, b.width))
                 return false;
@@ -543,22 +543,22 @@ joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h, joy
 
 /* SAT-based polygon-polygon overlap test */
 bool 
-collision2df_check_polygons(polygonf_t a, polygonf_t b)
+joy_math_collision2df_check_polygons(polygonf_t a, polygonf_t b)
 {
         vec2f_t axis, point;
-        fp_t ab_sep = find_min_separation(a, b, &axis, &point);
+        fp_t ab_sep = joy_math_find_min_separation(a, b, &axis, &point);
         if (ab_sep >= fp_zero())
                 return false;
-        fp_t ba_sep = find_min_separation(b, a, &axis, &point);
+        fp_t ba_sep = joy_math_find_min_separation(b, a, &axis, &point);
         if (ba_sep >= fp_zero())
                 return false;
         return true;
 }
 
 /* OBB 沿 (dx,dy) 平移的扫掠凸包（Andrew monotone chain，8 点）。
- * 语义/绕序约定见 joy.h 中 collision2df_swept_obb 的注释。 */
+ * 语义/绕序约定见 joy.h 中 joy_math_collision2df_swept_obb 的注释。 */
 void 
-collision2df_swept_obb(vec2f_t center, vec2f_t axis,
+joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
         fp_t half_long, fp_t half_short, fp_t dx, fp_t dy,
         vec2f_t* out, int* out_count)
 {
@@ -626,7 +626,7 @@ collision2df_swept_obb(vec2f_t center, vec2f_t axis,
         if (n > 8) n = 8;
 
         /* 统一绕序为「y 向下坐标系的顺时针」（有向面积 > 0）：
-         * vec2f_normal 对这种绕序给出外法线，find_min_separation 依赖它。 */
+         * vec2f_normal 对这种绕序给出外法线，joy_math_find_min_separation 依赖它。 */
         fp_t area = fp_zero();
         for (int i = 0; i < n; i++) {
                 vec2f_t a = h[i];
@@ -647,7 +647,7 @@ collision2df_swept_obb(vec2f_t center, vec2f_t axis,
 
 /* Circle vs AABB: find closest point on rect to circle center */
 bool 
-collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
+joy_math_collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
 {
         vec2f_t closest;
         closest.x = fp_clamp(a.center.x, b.x, fp_add(b.x, b.width));
@@ -659,7 +659,7 @@ collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
 
 /* Circle vs convex polygon */
 bool 
-collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
+joy_math_collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
 {
         if (b.num_vertices < 3)
                 return false;
@@ -707,7 +707,7 @@ collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
 }
 
 int 
-collision2df_get_circles(circlef_t a, circlef_t b, contact2df_t *contact)
+joy_math_collision2df_get_circles(circlef_t a, circlef_t b, contact2df_t *contact)
 {
         vec2f_t distance;
         fp_t distance_squared, radius_sum;
@@ -727,7 +727,7 @@ collision2df_get_circles(circlef_t a, circlef_t b, contact2df_t *contact)
 }
 
 int 
-collision2df_get_rectangles(rectanglef_t a, fp_t a_angle, 
+joy_math_collision2df_get_rectangles(rectanglef_t a, fp_t a_angle, 
         rectanglef_t b, fp_t b_angle,
 	contact2df_t *contact)
 {
@@ -865,7 +865,7 @@ static vec2f_t edge_at(polygonf_t poly, int index)
 }
 
 fp_t 
-find_min_separation(polygonf_t a, polygonf_t b, vec2f_t *axis, vec2f_t *point)
+joy_math_find_min_separation(polygonf_t a, polygonf_t b, vec2f_t *axis, vec2f_t *point)
 {
         fp_t separation, min_sep, proj;
         vec2f_t va, vb, normal, min_vertex;
@@ -892,15 +892,15 @@ find_min_separation(polygonf_t a, polygonf_t b, vec2f_t *axis, vec2f_t *point)
 }
 
 int 
-collision2df_get_polygons(polygonf_t a, polygonf_t b, contact2df_t *contact)
+joy_math_collision2df_get_polygons(polygonf_t a, polygonf_t b, contact2df_t *contact)
 {
         vec2f_t a_axis, b_axis, a_point, b_point;
         vec2f_t distance;
         fp_t ab_sep, ba_sep;
-        ab_sep = find_min_separation(a, b, &a_axis, &a_point);
+        ab_sep = joy_math_find_min_separation(a, b, &a_axis, &a_point);
         if (ab_sep >= 0)
                 return 0;
-        ba_sep = find_min_separation(b, a, &b_axis, &b_point);
+        ba_sep = joy_math_find_min_separation(b, a, &b_axis, &b_point);
         if (ba_sep >= 0)
                 return 0;
         if (ab_sep > ba_sep) {
@@ -922,7 +922,7 @@ collision2df_get_polygons(polygonf_t a, polygonf_t b, contact2df_t *contact)
 
 
 ray3d_collisionf_t
-collision3df_get_ray_triangle(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3)
+joy_math_collision3df_get_ray_triangle(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3)
 {
         const fp_t EPSILON = fp_from_float(0.000001f);
         ray3d_collisionf_t result = {0};
@@ -981,17 +981,17 @@ collision3df_get_ray_triangle(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3)
 }
 
 ray3d_collisionf_t 
-collision3df_get_ray_quad(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3f_t p4)
+joy_math_collision3df_get_ray_quad(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3f_t p4)
 {
         ray3d_collisionf_t result;
-        result = collision3df_get_ray_triangle(ray, p1, p2, p4);
+        result = joy_math_collision3df_get_ray_triangle(ray, p1, p2, p4);
         if (!result.hit)
-                result = collision3df_get_ray_triangle(ray, p2, p3, p4);
+                result = joy_math_collision3df_get_ray_triangle(ray, p2, p3, p4);
         return result;
 }
  
 ray3d_collisionf_t 
-collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
+joy_math_collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
 {
         ray3d_collisionf_t result = {0};
         vec3f_t ray_sphere_pos = vec3f_sub(ray.position, sphere.position);
@@ -1022,7 +1022,7 @@ collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
 }
 
 ray3d_collisionf_t
-collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
+joy_math_collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
 {
         /* Slabs method (ray-AABB) */
         ray3d_collisionf_t result = {0};
@@ -1121,7 +1121,7 @@ static mat44f_t jcoll_obb_euler_to_rot(vec3f_t euler) {
  * 在局部系内做 slab(AABB) 求交, 再把命中点与法线旋回世界空间。
  * 全程定点(fp_t), 帧同步确定。 */
 ray3d_collisionf_t
-collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_size, vec3f_t rotation)
+joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_size, vec3f_t rotation)
 {
         ray3d_collisionf_t result = {0};
         const fp_t EPSILON = fp_from_float(0.0001f);
@@ -1243,7 +1243,7 @@ collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_size, vec3
 }
 
 bool
-collision3df_check_spheres(spheref_t a, spheref_t b)
+joy_math_collision3df_check_spheres(spheref_t a, spheref_t b)
 {
         vec3f_t diff = vec3f_sub(b.position, a.position);
         fp_t dist_sq = vec3f_square_length(diff);
@@ -1252,7 +1252,7 @@ collision3df_check_spheres(spheref_t a, spheref_t b)
 }
 
 bool 
-collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
+joy_math_collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
 {
         return (a.min.x <= b.max.x && a.max.x >= b.min.x
              && a.min.y <= b.max.y && a.max.y >= b.min.y
@@ -1260,7 +1260,7 @@ collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
 }
 
 bool 
-collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
+joy_math_collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
 {
         vec3f_t closest;
         closest.x = fp_clamp(b.position.x, a.min.x, a.max.x);
@@ -1276,7 +1276,7 @@ collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
  * ================================================================= */
 
 ray2d_collision_t 
-collision2d_get_ray_circle(ray2d_t ray, circle_t circle)
+joy_math_collision2d_get_ray_circle(ray2d_t ray, circle_t circle)
 {
         vec2_t seg;
         ft_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
@@ -1344,7 +1344,7 @@ static vec2_t collision2d_calculate_rect_normal(vec2_t point, vec2_t min, vec2_t
 
 #define SWAP_FT(a, b)  do { ft_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
 
-ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect)
+ray2d_collision_t joy_math_collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect)
 {
         ray2d_collision_t result = { 0 };
         vec2_t min, max;
@@ -1386,7 +1386,7 @@ ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect)
 }
 
 ray2d_collision_t 
-collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle)
+joy_math_collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle)
 {
         ray2d_collision_t result = {0};
         vec2_t half_extents, center, local_origin, local_dir;
@@ -1449,7 +1449,7 @@ collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle)
 }
 
 ray2d_collision_t 
-collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
+joy_math_collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
 {
         ray2d_collision_t result = {0};
         vec2_t edge_start, edge_end, edge_vec, diff;
@@ -1485,25 +1485,25 @@ collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
         return result;
 }
 
-bool collision2d_check_point_rectangle(vec2_t point, rectangle_t rect)
+bool joy_math_collision2d_check_point_rectangle(vec2_t point, rectangle_t rect)
 {
         return point.x >= rect.x && point.x <= rect.x + rect.width
             && point.y >= rect.y && point.y <= rect.y + rect.height;
 }
 
-bool collision2d_check_point_circle(vec2_t point, circle_t circle)
+bool joy_math_collision2d_check_point_circle(vec2_t point, circle_t circle)
 {
         vec2_t diff = vec2_sub(point, circle.center);
         return vec2_length_squared(diff) <= circle.radius * circle.radius;
 }
 
-ft_t collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle)
+ft_t joy_math_collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle)
 {
         vec2_t diff = vec2_sub(point, circle.center);
         return vec2_length_squared(diff);
 }
 
-bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3)
+bool joy_math_collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3)
 {
         vec2_t v0 = vec2_sub(p3, p1);
         vec2_t v1 = vec2_sub(p2, p1);
@@ -1521,7 +1521,7 @@ bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t
         return u >= 0 && v >= 0 && u + v <= 1.0f;
 }
 
-bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp)
+bool joy_math_collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp)
 {
         vec2_t r = vec2_sub(b1, a1);
         vec2_t s = vec2_sub(b2, a2);
@@ -1537,7 +1537,7 @@ bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t*
         return false;
 }
 
-bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold)
+bool joy_math_collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold)
 {
         vec2_t ab = vec2_sub(p2, p1);
         vec2_t ap = vec2_sub(point, p1);
@@ -1551,7 +1551,7 @@ bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t thres
         return vec2_length_squared(diff) <= threshold * threshold;
 }
 
-bool collision2d_check_circles(circle_t a, circle_t b)
+bool joy_math_collision2d_check_circles(circle_t a, circle_t b)
 {
         vec2_t distance = vec2_sub(b.center, a.center);
         ft_t dist_sq = vec2_length_squared(distance);
@@ -1559,7 +1559,7 @@ bool collision2d_check_circles(circle_t a, circle_t b)
         return dist_sq <= radius_sum * radius_sum;
 }
 
-bool collision2d_check_rectangles(rectangle_t a, rectangle_t b)
+bool joy_math_collision2d_check_rectangles(rectangle_t a, rectangle_t b)
 {
         if (a.x > b.x + b.width) return false;
         if (a.x + a.width < b.x) return false;
@@ -1568,7 +1568,7 @@ bool collision2d_check_rectangles(rectangle_t a, rectangle_t b)
         return true;
 }
 
-bool collision2d_check_circle_rectangle(circle_t a, rectangle_t b)
+bool joy_math_collision2d_check_circle_rectangle(circle_t a, rectangle_t b)
 {
         vec2_t closest;
         closest.x = fminf(fmaxf(a.center.x, b.x), b.x + b.width);
@@ -1608,7 +1608,7 @@ static ft_t poly_min_sep(polygon_t a, polygon_t b, vec2_t* axis, vec2_t* point)
         return separation;
 }
 
-bool collision2d_check_polygons(polygon_t a, polygon_t b)
+bool joy_math_collision2d_check_polygons(polygon_t a, polygon_t b)
 {
         vec2_t axis, point;
         ft_t ab_sep = poly_min_sep(a, b, &axis, &point);
@@ -1618,7 +1618,7 @@ bool collision2d_check_polygons(polygon_t a, polygon_t b)
         return true;
 }
 
-bool collision2d_check_circle_polygon(circle_t a, polygon_t b)
+bool joy_math_collision2d_check_circle_polygon(circle_t a, polygon_t b)
 {
         if (b.num_vertices < 3) return false;
         for (int i = 0; i < b.num_vertices; i++) {
@@ -1649,7 +1649,7 @@ bool collision2d_check_circle_polygon(circle_t a, polygon_t b)
         return false;
 }
 
-int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact)
+int joy_math_collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact)
 {
         vec2_t distance = vec2_sub(b.center, a.center);
         ft_t dist_sq = vec2_length_squared(distance);
@@ -1662,7 +1662,7 @@ int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact)
         return 1;
 }
 
-int collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
+int joy_math_collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
         rectangle_t b, ft_t b_angle, contact2d_t* contact)
 {
         vec2_t a_bounds, b_bounds, a_h, b_h, a_pos, b_pos;
@@ -1717,7 +1717,7 @@ int collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
         return 1;
 }
 
-int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact)
+int joy_math_collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact)
 {
         vec2_t a_axis, b_axis, a_point, b_point, distance;
         ft_t ab_sep = poly_min_sep(a, b, &a_axis, &a_point);
@@ -1741,7 +1741,7 @@ int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact)
 }
 
 ray3d_collision_t
-collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3)
+joy_math_collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3)
 {
         const ft_t EPSILON = 0.000001f;
         ray3d_collision_t result = {0};
@@ -1772,15 +1772,15 @@ collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3)
 }
 
 ray3d_collision_t 
-collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4)
+joy_math_collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4)
 {
-        ray3d_collision_t result = collision3d_get_ray_triangle(ray, p1, p2, p4);
-        if (!result.hit) result = collision3d_get_ray_triangle(ray, p2, p3, p4);
+        ray3d_collision_t result = joy_math_collision3d_get_ray_triangle(ray, p1, p2, p4);
+        if (!result.hit) result = joy_math_collision3d_get_ray_triangle(ray, p2, p3, p4);
         return result;
 }
 
 ray3d_collision_t 
-collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
+joy_math_collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
 {
         ray3d_collision_t result = {0};
         vec3_t rs = vec3_sub(ray.position, sphere.position);
@@ -1802,7 +1802,7 @@ collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
 }
 
 ray3d_collision_t
-collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
+joy_math_collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
 {
         ray3d_collision_t result = {0};
         vec3_t dirfrac;
@@ -1853,7 +1853,7 @@ collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
         return result;
 }
 
-bool collision3d_check_spheres(sphere_t a, sphere_t b)
+bool joy_math_collision3d_check_spheres(sphere_t a, sphere_t b)
 {
         vec3_t diff = vec3_sub(b.position, a.position);
         ft_t dist_sq = vec3_square_length(diff);
@@ -1861,14 +1861,14 @@ bool collision3d_check_spheres(sphere_t a, sphere_t b)
         return dist_sq <= radius_sum * radius_sum;
 }
 
-bool collision3d_check_boxes(bounding_box_t a, bounding_box_t b)
+bool joy_math_collision3d_check_boxes(bounding_box_t a, bounding_box_t b)
 {
         return a.min.x <= b.max.x && a.max.x >= b.min.x
             && a.min.y <= b.max.y && a.max.y >= b.min.y
             && a.min.z <= b.max.z && a.max.z >= b.min.z;
 }
 
-bool collision3d_check_box_sphere(bounding_box_t a, sphere_t b)
+bool joy_math_collision3d_check_box_sphere(bounding_box_t a, sphere_t b)
 {
         vec3_t closest;
         closest.x = fminf(fmaxf(b.position.x, a.min.x), a.max.x);

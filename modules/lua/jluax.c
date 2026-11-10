@@ -47,7 +47,7 @@ static bool call_joy_n(lua_State* L, const char* func, int nargs)
         lua_pop(L, 1);                  /* [func, args...] */
 
         if (lua_pcall(L, nargs, 0, 0) != LUA_OK) {
-                log_error("joy.%s: %s", func, lua_tostring(L, -1));
+                joy_core_log_error("joy.%s: %s", func, lua_tostring(L, -1));
                 lua_pop(L, 1);
                 return false;
         }
@@ -201,12 +201,12 @@ bool luax_dofile(luax_p luax, const char* filename)
         if (data) {
                 if (luaL_loadbuffer(luax->L, data, data_sz, chunkname) != LUA_OK) {
                         const char* error_msg = lua_tostring(luax->L, -1);
-                        log_info("%s", error_msg);
+                        joy_core_log_info("%s", error_msg);
                         return false;
                 }
                 if (lua_pcall(luax->L, 0, LUA_MULTRET, 0) != LUA_OK) {
                         const char* error_msg = lua_tostring(luax->L, -1);
-                        log_info("%s", error_msg);
+                        joy_core_log_info("%s", error_msg);
                         SDL_free(data);
                         return false;
                 }
@@ -230,7 +230,7 @@ void* luax_get_state(luax_p luax)
 
 void luax_dispatch_event(luax_p luax, const void* event)
 {
-	dispatch_event(luax->cbs, event, luax);
+	joy_core_dispatch_event(luax->cbs, event, luax);
 }
 
 void luax_set_args(luax_p luax, int argc, char* argv[])
@@ -257,7 +257,7 @@ bool luax_call_joy(luax_p luax, const char* func, int argc, float dt)
 
         int ret = lua_pcall(L, argc, 0, 0);
         if (ret != LUA_OK) {
-                log_error("joy.%s error: %s", func, lua_tostring(L, -1));
+                joy_core_log_error("joy.%s error: %s", func, lua_tostring(L, -1));
                 lua_pop(L, 1);
                 lua_pop(L, 1);
                 return false;
@@ -293,7 +293,7 @@ bool luax_poll_reload(luax_p luax)
         if (info.modify_time == luax->last_mtime)
                 return false;
         luax->last_mtime = info.modify_time;
-        log_info("[CHANGED] %s", luax->watch_file);
+        joy_core_log_info("[CHANGED] %s", luax->watch_file);
         if (!luax_reload(luax, luax->watch_file))
                 return false;
         luax_call_joy(luax, "hotfix", 0, 0);

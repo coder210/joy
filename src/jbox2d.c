@@ -798,7 +798,7 @@ _solve(box2d_world_t* world) {
 
 
 box2d_world_t*
-box2d_create_world(vec2f_t gravity, int iterations) {
+joy_math_box2d_create_world(vec2f_t gravity, int iterations) {
 	box2d_world_t* world = (box2d_world_t*)malloc(sizeof(box2d_world_t));
 	assert(world);
 	world->gravity = gravity;
@@ -811,7 +811,7 @@ box2d_create_world(vec2f_t gravity, int iterations) {
 }
 
 void
-box2d_clear_world(box2d_world_t* world) {
+joy_math_box2d_clear_world(box2d_world_t* world) {
 	khint_t k;
 	for (k = kh_begin(world->bodies); k != kh_end(world->bodies); ++k) {
 		if (!kh_exist(world->bodies, k)) continue;
@@ -841,7 +841,7 @@ box2d_clear_world(box2d_world_t* world) {
 }
 
 void
-box2d_destroy_world(box2d_world_t* world) {
+joy_math_box2d_destroy_world(box2d_world_t* world) {
 	khint_t k;
 	for (k = kh_begin(world->bodies); k != kh_end(world->bodies); ++k) {
 		if (!kh_exist(world->bodies, k)) continue;
@@ -869,7 +869,7 @@ box2d_destroy_world(box2d_world_t* world) {
 
 
 void
-box2d_step(box2d_world_t* world, fp_t dt) {
+joy_math_box2d_step(box2d_world_t* world, fp_t dt) {
 	fp_t inv_dt = fp_greater(dt, fp_zero()) ? fp_div(fp_one(), dt) : fp_zero();
 
 	_broad_phase(world);
@@ -881,7 +881,7 @@ box2d_step(box2d_world_t* world, fp_t dt) {
 }
 
 box2d_body_t*
-box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by) {
+joy_math_box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by) {
 	box2d_body_t* body = (box2d_body_t*)malloc(sizeof(box2d_body_t));
 	assert(body != NULL);
 
@@ -916,7 +916,7 @@ box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by) {
 }
 
 void
-box2d_destroy_body(box2d_world_t* world, int id) {
+joy_math_box2d_destroy_body(box2d_world_t* world, int id) {
 	khint_t k = kh_get(bodies_map, world->bodies, id);
 	if (k != kh_end(world->bodies)) {
 		free(kh_val(world->bodies, k));
@@ -925,7 +925,7 @@ box2d_destroy_body(box2d_world_t* world, int id) {
 }
 
 box2d_joint_t*
-box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor) {
+joy_math_box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor) {
 	khint_t kk;
 
 	kk = kh_get(bodies_map, world->bodies, id1);
@@ -964,7 +964,7 @@ box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor) {
 }
 
 void
-box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint) {
+joy_math_box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint) {
 	klist_t(joints_list)* new_list = kl_init(joints_list);
 	kliter_t(joints_list)* iter = kl_begin(world->joints);
 	while (iter != kl_end(world->joints)) {
@@ -979,7 +979,7 @@ box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint) {
 }
 
 void
-box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*)) {
+joy_math_box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*)) {
 	khint_t k;
 	for (k = kh_begin(world->bodies); k != kh_end(world->bodies); ++k) {
 		if (!kh_exist(world->bodies, k)) continue;
@@ -988,7 +988,7 @@ box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*)) {
 }
 
 void
-box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*)) {
+joy_math_box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*)) {
 	kliter_t(joints_list)* joint_iter = kl_begin(world->joints);
 	while (joint_iter != kl_end(world->joints)) {
 		box2d_joint_t* joint = kl_val(joint_iter);
@@ -1006,7 +1006,7 @@ box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2
 }
 
 void
-box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*)) {
+joy_math_box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*)) {
 	khint_t k;
 	for (k = kh_begin(world->arbiters); k != kh_end(world->arbiters); ++k) {
 		if (!kh_exist(world->arbiters, k)) continue;

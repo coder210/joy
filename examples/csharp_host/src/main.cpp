@@ -4,7 +4,7 @@
  * C++ 侧只做窗口 / 主循环 / 事件泵 / 渲染帧边界，游戏逻辑全在
  * JoyGame.dll（game/ 玩法 + runtime/ 骨架 + test/ 冒烟脚本）。
  *
- * 每帧：r2d_begin → C# Host.OnFrame(dt) → r2d_end
+ * 每帧：joy_r2d_begin → C# Host.OnFrame(dt) → joy_r2d_end
  * 输入：SDL 事件写进 cs 模块的输入桥，C# 通过 Joy.Input 轮询。
  *
  * 与 cpp / lua / js 三个示例功能完全相同（见 ../README.md）。

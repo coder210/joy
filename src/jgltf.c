@@ -39,7 +39,7 @@ typedef struct {
         float *bind_verts;    /* lit 布局: pos.xyz + normal.xyz + uv.xy, 每顶点 8 float */
         float *jnt;           /* 每顶点 4 个关节索引(float), 为 skin joints 数组下标 */
         float *wts;           /* 每顶点 4 个权重 */
-        void  *tex;           /* baseColor 贴图的 SDL 纹理(r3d_create_texture), 无则 NULL */
+        void  *tex;           /* baseColor 贴图的 SDL 纹理(joy_r3d_create_texture), 无则 NULL */
 } jgltf_prim_src_t;
 
 struct jgltf_asset {
@@ -395,7 +395,7 @@ void* jgltf_prim_load_texture(jr3d_p r3d, cgltf_primitive* pr) {
                 int w = 0, h = 0, n = 0;
                 unsigned char* rgba = stbi_load_from_memory(p, (int)img->buffer_view->size, &w, &h, &n, 4);
                 if (!rgba || w <= 0 || h <= 0) { fprintf(stderr, "[jgltf] tex decode fail (%.0fx%.0f)\n", (double)w, (double)h); return NULL; }
-                void* tex = r3d_create_texture(r3d, w, h, rgba, 1);
+                void* tex = joy_r3d_create_texture(r3d, w, h, rgba, 1);
                 stbi_image_free(rgba);
                 printf("[jgltf] tex %dx%d -> %p\n", w, h, tex);
                 return tex;
@@ -490,7 +490,7 @@ jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
         /* 纯白纹理（8x8, 光照管线采样） */
         if (r3d) {
                 uint8_t rgba[8*8*4]; memset(rgba, 255, sizeof(rgba));
-                a->white_tex = r3d_create_texture(r3d, 8, 8, rgba, 0);
+                a->white_tex = joy_r3d_create_texture(r3d, 8, 8, rgba, 0);
         }
 
         /* 计算模型空间包围球（对所有 primitive 的绑定姿态）：供调用方按模型实际
@@ -532,7 +532,7 @@ void jgltf_asset_release(jgltf_asset_p a) {
         if (!a) return;
         if (--a->refs > 0) return;
         if (a->white_tex) {
-                /* r3d 无公开纹理销毁, 交由 r3d_destroy 一并回收 */
+                /* r3d 无公开纹理销毁, 交由 joy_r3d_destroy 一并回收 */
         }
         for (i = 0; i < a->prim_count; i++) {
                 free(a->prims[i].bind_verts);
@@ -625,10 +625,10 @@ void jgltf_instance_destroy(jgltf_instance_p inst) {
         int i;
         if (!inst) return;
         for (i = 0; i < inst->prim_count; i++) {
-                if (inst->gpu[i]) r3d_mesh_destroy(inst->asset->r3d, inst->gpu[i]);
+                if (inst->gpu[i]) joy_r3d_mesh_destroy(inst->asset->r3d, inst->gpu[i]);
                 free(inst->skinned[i]);
         }
-        if (inst->bones_mesh) r3d_mesh_destroy(inst->asset->r3d, inst->bones_mesh);
+        if (inst->bones_mesh) joy_r3d_mesh_destroy(inst->asset->r3d, inst->bones_mesh);
         free(inst->gpu);
         free(inst->skinned);
         free(inst->nodes);
@@ -870,12 +870,12 @@ void jgltf_instance_draw_bones(jr3d_p r3d, jgltf_instance_p inst, const mat44_t*
         if (vcount <= 0) { free(verts); return; }
 
         /* 用 base 线框网格（5 float/顶点, pos+uv）画线段；销毁上一帧的旧网格 */
-        mesh = r3d_mesh_custom(r3d, verts, vcount);
+        mesh = joy_r3d_mesh_custom(r3d, verts, vcount);
         free(verts);
         if (!mesh) return;
         identity = mat44_identity();
-        r3d_draw_wire_basis(r3d, mesh, &identity, (jcolor_t){255, 80, 80, 255});
-        if (inst->bones_mesh) r3d_mesh_destroy(r3d, inst->bones_mesh);
+        joy_r3d_draw_wire_basis(r3d, mesh, &identity, (jcolor_t){255, 80, 80, 255});
+        if (inst->bones_mesh) joy_r3d_mesh_destroy(r3d, inst->bones_mesh);
         inst->bones_mesh = mesh;
 }
 

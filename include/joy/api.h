@@ -268,7 +268,7 @@ extern "C" {
 
         /* ==================== 比例坐标（0~1）绘制接口 ====================
          *
-         * 语义与 button_create / joystick_create / popup_create 等控件的百分比参数完全一致：
+         * 语义与 joy_ui_button_create / joy_input_joystick_create / joy_ui_popup_create 等控件的百分比参数完全一致：
          *   x / w 相对"逻辑分辨率的宽"，y / h 相对"逻辑分辨率的高"。
          *
          * 这样绘制层(shape/image/text)与控件层用同一套坐标：逻辑分辨率变化时
@@ -296,13 +296,13 @@ extern "C" {
         JOY_API int joy_ui_text_get_height(jtext_p jtext_tex);
 
         /* 文字纹理缓存
-         * jtext_printx() 以前的实现是 text_createx() -> jtext_print() -> text_destroy()，
+         * joy_r2d_jtext_printx() 以前的实现是 joy_ui_text_createx() -> joy_r2d_jtext_print() -> joy_ui_text_destroy()，
          * 即每次调用都创建并销毁一张 SDL 纹理。inputbox、datagrid、popup、tooltip、
          * combobox_input 等控件都走这条路径，一个带选区的 inputbox 每帧要建 3~4 张纹理。
-         * 现在 jtext_printx 改为按 (font, color, 内容) 缓存并 LRU 复用。
+         * 现在 joy_r2d_jtext_printx 改为按 (font, color, 内容) 缓存并 LRU 复用。
          *
-         * 帧计数由 r2d_begin() 递增，因此 sweep 的 idle 单位是“帧”。
-         * 注意：这只影响 jtext_printx；text_createx 仍由调用方自行持有与释放。
+         * 帧计数由 joy_r2d_begin() 递增，因此 sweep 的 idle 单位是“帧”。
+         * 注意：这只影响 joy_r2d_jtext_printx；joy_ui_text_createx 仍由调用方自行持有与释放。
          */
         JOY_API void joy_r2d_jtext_cache_clear(void);
         JOY_API void joy_r2d_jtext_cache_set_limit(int max_entries);
@@ -310,7 +310,7 @@ extern "C" {
         JOY_API void joy_r2d_jtext_cache_sweep(int max_idle_frames);
 
         /* 测量文本尺寸，同样走缓存（命中缓存时不产生任何纹理开销）。
-         * jtext_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
+         * joy_r2d_jtext_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
         JOY_API bool joy_r2d_jtext_measurex(jr2d_p r2d, font_p font, const char* str, int len,
                 jcolor_t color, int* out_w, int* out_h);
 
@@ -438,14 +438,14 @@ extern "C" {
         /* 清空缓存并释放全部缓存纹理(字体销毁前调用) */
         JOY_API void joy_r3d_font_cache_clear(jr3d_p r);
         /* 回收闲置超过 max_idle_frames 帧的缓存条目并释放其纹理(单位: 渲染帧,
-           由 joy_r3d_begin 推进)。对齐 jtext_cache_sweep 的语义, 供周期性调用清理
+           由 joy_r3d_begin 推进)。对齐 joy_r2d_jtext_cache_sweep 的语义, 供周期性调用清理
            一次性文本(如滚动的聊天记录), 避免缓存长期被历史文本占满。 */
         JOY_API void joy_r3d_font_cache_sweep(jr3d_p r, int max_idle_frames);
 
         /* 世界坐标 -> 屏幕像素坐标(原点左上, Y 向下)。返回 false 表示点在相机后面或视锥外 */
         JOY_API bool joy_r3d_world_to_screen(jr3d_p r, vec3_t world, float* screenX, float* screenY);
 
-        /* ---------- 2D UI 逻辑分辨率(仿 jr2d r2d_set_logical_presentation, 窗口缩放自适应) ---------- */
+        /* ---------- 2D UI 逻辑分辨率(仿 jr2d joy_r2d_set_logical_presentation, 窗口缩放自适应) ---------- */
         /* 设置逻辑分辨率: 所有 2D UI(按钮/输入框/滑块/复选框/文字)以逻辑坐标布局,
            渲染时按 窗口尺寸/逻辑尺寸 等比缩放, 命中测试自动把窗口坐标换算回逻辑坐标。
            传 0 表示关闭(直接用窗口像素坐标)。 */
@@ -578,7 +578,7 @@ extern "C" {
         JOY_API void   joy_r3d_input_cursor_end(jr3d_input_p inp);
         /* 鼠标点击定位光标: 屏幕像素坐标 (mx,my) -> cursor_pos(并聚焦) */
         JOY_API void   joy_r3d_input_click(jr3d_p r, jr3d_input_p inp, float mx, float my);
-        /* 统一事件处理(对齐 jr2d inputbox_process_event): 内部处理
+        /* 统一事件处理(对齐 jr2d joy_ui_inputbox_process_event): 内部处理
            鼠标聚焦/定位、文本输入、键盘(退格/删除/方向/Home/End/回车)。
            返回 true 表示事件已被输入框消费(调用方应停止后续处理, 如相机旋转)。 */
         JOY_API bool   joy_r3d_input_handle_event(jr3d_p r, jr3d_input_p inp, SDL_Event* event);
@@ -774,7 +774,7 @@ extern "C" {
                 const float* radii, int seg, float feather, float outer_radius);
         /* 2D 视野绘制: 在像素平面构造 A/B/C 三环羽化多边形, 复刻 3D 的渐变纹理软边。
            px/py 为观察点在输出像素坐标, radii[seg] 每方向可见半径(像素),
-           feather/outer_radius 亦为像素。需在 r2d_begin/r2d_end 与地图同一坐标系(相机相对像素)下调用。
+           feather/outer_radius 亦为像素。需在 joy_r2d_begin/joy_r2d_end 与地图同一坐标系(相机相对像素)下调用。
            射线遮挡仍用上方的 joy_fov_compute_radii 计算(其 px/pz 即 2D 的 x/y。若担心模板冲突,
            2D 侧也可直接以世界米为单位计算后乘以 PPM 得到像素半径)。 */
         JOY_API void joy_fov_draw_2d(jr2d_p r, float px, float py,
@@ -859,7 +859,7 @@ extern "C" {
          * out_count  : 输出顶点数（4~8）
          *
          * 绕序：统一输出为「y 向下坐标系下的顺时针」，此时 vec2f_normal 给出外法线，
-         * 与 find_min_separation 的约定一致 —— 绕序反了会让分离距离符号反转、
+         * 与 joy_math_find_min_separation 的约定一致 —— 绕序反了会让分离距离符号反转、
          * 判定结果完全相反。
          *
          * 典型用法：把 out/out_count 包成 polygonf_t，再交给 joy_math_collision2df_check_polygons。 */
@@ -973,8 +973,8 @@ extern "C" {
 
 #define JSPINE_NAME_MAX 64
 
-        /* ECS 组件：ecs.emplace<jspine_instance_t>(e) 后调用 jspine_instance_init，
-         * 销毁前必须调用 jspine_instance_free（不会释放 asset）。 */
+        /* ECS 组件：ecs.emplace<jspine_instance_t>(e) 后调用 joy_r2d_spine_instance_init，
+         * 销毁前必须调用 joy_r2d_spine_instance_free（不会释放 asset）。 */
         typedef struct jspine_instance {
                 jspine_asset_p asset;              /* 共享资源（不拥有） */
                 spSkeleton *skeleton;              /* 拥有的实例数据 */
@@ -1062,21 +1062,21 @@ extern "C" {
          * 横向 + 纵向滚动；鼠标拖拽 / 触摸滑动 / 滚轮都支持（触摸在 SDL 里也走鼠标事件）。
          * 与保留模式子控件（button/inputbox 等）配合的典型用法：
          *
-         *   scrollview_p v = scrollview_create(r2d, fx, fy, fw, fh);  // 归一化视口
-         *   scrollview_set_content(v, 内容总宽, 内容总高);
+         *   scrollview_p v = joy_ui_scrollview_create(r2d, fx, fy, fw, fh);  // 归一化视口
+         *   joy_ui_scrollview_set_content(v, 内容总宽, 内容总高);
          *
          *   // ① 事件：先问滚动层。返回 true = 本次手势是滚动，调用方应忽略点击
          *   //   （否则"滑动一下"会误触发子控件；故点击判定建议放到松手，见下）
-         *   if (scrollview_process_event(v, ev)) return;   // 已作为滚动消费
+         *   if (joy_ui_scrollview_process_event(v, ev)) return;   // 已作为滚动消费
          *   ...你原有的点击/悬停逻辑...
          *
          *   // ② 每帧绘制：begin/end 之间画子控件，超出视口的部分被裁掉
-         *   scrollview_begin(v);
-         *   for (i) button_set_position(child[i],
-         *               base_x[i] + scrollview_get_offset_x(v),
-         *               base_y[i] + scrollview_get_offset_y(v));
-         *   for (i) button_draw(child[i]);
-         *   scrollview_end(v);      // 恢复裁剪 + 画滚动条
+         *   joy_ui_scrollview_begin(v);
+         *   for (i) joy_ui_button_set_position(child[i],
+         *               base_x[i] + joy_ui_scrollview_get_offset_x(v),
+         *               base_y[i] + joy_ui_scrollview_get_offset_y(v));
+         *   for (i) joy_ui_button_draw(child[i]);
+         *   joy_ui_scrollview_end(v);      // 恢复裁剪 + 画滚动条
          *
          * 偏移恒 ≤0（子控件整体向左/上移 = 用户向右/下看），并夹紧在内容范围内；
          * 内容不大于视口时偏移恒 0、不画滚动条、拖拽与滚轮均无效。
@@ -1116,7 +1116,7 @@ extern "C" {
 
         /* ===== 栅格布局 jlayout（纯几何计算 + 可选标签绘制，不持有任何控件） =====
          * 场景按“逻辑像素”创建栅格：ox/oy/width 由逻辑宽计算，row_h 由高度基准 s 计算。
-         * 每行：用 jlayout_grid_label() 在左列画标签、用 jlayout_grid_cell() 取右列矩形，
+         * 每行：用 joy_ui_layout_grid_label() 在左列画标签、用 joy_ui_layout_grid_cell() 取右列矩形，
          * 再用各控件 *_create(r2d, px/LW, py/LH, pw/LW, ph/LH, ...) 创建控件。
          * col_fracs 为各列宽占比（和≈1），pad 为单元格内边距（像素）。 */
         JOY_API jlayout_grid_t* joy_ui_layout_grid_create(float ox, float oy, float width, float row_h,
@@ -1182,7 +1182,7 @@ extern "C" {
         JOY_API void joy_ui_checkbox_draw(checkbox_p cb, jr2d_p r2d, void* font);
         JOY_API void joy_ui_checkbox_process_event(checkbox_p cb, const void* event);
         JOY_API joystick_p joy_input_joystick_create(jr2d_p r2d, float cx, float cy, float radius_frac);
-        // 摇杆方向模式：约束/量化 joystick_get_direction 输出的方向
+        // 摇杆方向模式：约束/量化 joy_input_joystick_get_direction 输出的方向
         typedef enum {
                 JOYSTICK_DIR_OMNI = 0,       // 全方向（模拟，默认）
                 JOYSTICK_DIR_4WAY,           // 上/下/左/右 四向
@@ -1286,7 +1286,7 @@ extern "C" {
          * 按 id 池化复用——既保留了 button 的颜色过渡动画、slider 的拖拽状态，
          * 又不必由调用方管理生命周期。
          *
-         * 关键依赖：r2d_push_clip_rect / r2d_pop_clip_rect。
+         * 关键依赖：joy_r2d_push_clip_rect / joy_r2d_pop_clip_rect。
          * jui 原本完全没有裁剪，而滚动面板是编辑器的基础，缺了它内容会溢出面板。
          * ====================================================================== */
 
@@ -1679,12 +1679,12 @@ extern "C" {
         JOY_API bool                 jmsgpack_object_boolean(const jmsgpack_object_t* o);
         JOY_API double               jmsgpack_object_f64(const jmsgpack_object_t* o);
 
-        /* 生成链路专用：image_draw1 去掉 jrect_t* 指针后的全标量版本。
+        /* 生成链路专用：joy_ui_image_draw1 去掉 jrect_t* 指针后的全标量版本。
          * srcrect 固定 NULL（整张图），目标矩形摊成 4 个 float。joy_value
-         * 表达不了 jrect_t*，L3 的 image_draw1 无法自动生成 thunk；这条 L1
+         * 表达不了 jrect_t*，L3 的 joy_ui_image_draw1 无法自动生成 thunk；这条 L1
          * 让四个后端都能画贴图，且参数保持编译期强类型。
          *
-         * 坐标是【像素】，不是归一化比例：不要走 r2d_frect / image_draw1_f，
+         * 坐标是【像素】，不是归一化比例：不要走 joy_r2d_frect / joy_ui_image_draw1_f，
          * 那些 *_f 系列会乘窗口宽高，把 x=227 放大成 108960。命名用 _rect
          * 而不是 _f，就是为了和归一化系列区分开。
          * 声明刻意放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */

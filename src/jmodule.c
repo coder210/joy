@@ -47,7 +47,7 @@ static void* _try_open(const char* path, const char* name)
 			SDL_strlcpy(tmp + i + name_size, path + i + 1, len - i - 1);
 		}
 		else {
-			log_error("Invalid C service path");
+			joy_core_log_error("Invalid C service path");
 			break;
 		}
 		dl = SDL_LoadObject(tmp);
@@ -58,7 +58,7 @@ static void* _try_open(const char* path, const char* name)
 
 	if (dl == NULL) {
 		char msg[512] = { 0 };
-		log_error("try open %s failed : %s", name, msg);
+		joy_core_log_error("try open %s failed : %s", name, msg);
 	}
 
 	return dl;
@@ -177,12 +177,12 @@ void modules_require(modules_p modules, const char* name)
 		}
 		else {
 			SDL_UnloadObject(mod->handle);
-			log_error("%s register failed.", mod->name);
+			joy_core_log_error("%s register failed.", mod->name);
 			SDL_free(mod);
 		}
 	}
 	else {
-		log_error("%s register failed.", name);
+		joy_core_log_error("%s register failed.", name);
 	}
 }
 
@@ -196,7 +196,7 @@ bool moudles_retire(modules_p modules, const char* name, module_p *mod)
 		return true;
 	}
 	else {
-		log_error("%s register failed.", name);
+		joy_core_log_error("%s register failed.", name);
 		return false;
 	}
 }

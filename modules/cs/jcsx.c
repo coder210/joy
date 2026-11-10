@@ -128,7 +128,7 @@ csx_p csx_create(void) {
         csx_setup_mono_dirs();
         csx->domain = mono_jit_init("joy");
         if (!csx->domain) {
-                log_error("Failed to initialize Mono domain");
+                joy_core_log_error("Failed to initialize Mono domain");
                 free(csx);
                 return NULL;
         }
@@ -153,7 +153,7 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         size_t data_size;
         char* assembly_data = utils_read_file(filename, &data_size);
         if (!assembly_data) {
-                log_error("Failed to read assembly file: %s", filename);
+                joy_core_log_error("Failed to read assembly file: %s", filename);
                 return false;
         }
 
@@ -161,7 +161,7 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         // 第三个参数 1 表示 Mono 会复制数据，之后我们可以安全释放
         MonoImage* image = mono_image_open_from_data(assembly_data, data_size, 1, &status);
         if (status != MONO_IMAGE_OK || !image) {
-                log_error("Failed to open image from data: %s", filename);
+                joy_core_log_error("Failed to open image from data: %s", filename);
                 SDL_free(assembly_data);
                 return false;
         }
@@ -171,14 +171,14 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         SDL_free(assembly_data);  // 数据已被复制，可以释放
 
         if (!assembly) {
-                log_error("Failed to load assembly from image: %s", filename);
+                joy_core_log_error("Failed to load assembly from image: %s", filename);
                 mono_image_close(image);
                 return false;
         }
 
         // 保存程序集到列表
         assembly_list_add(&csx->assemblies, assembly);
-        log_info("Loaded assembly: %s", filename);
+        joy_core_log_info("Loaded assembly: %s", filename);
         return true;
 }
 
@@ -194,7 +194,7 @@ csx_find_class(csx_p csx, const char* namespace_name, const char* class_name)
                         return klass;
                 }
         }
-        log_error("Class %s.%s not found in any loaded assembly", namespace_name, class_name);
+        joy_core_log_error("Class %s.%s not found in any loaded assembly", namespace_name, class_name);
         return NULL;
 }
 
@@ -209,7 +209,7 @@ csx_invoke_static_method(csx_p csx, const char* namespace_name,
         /* -1 表示忽略参数数量（简单查找） */
         MonoMethod* method = mono_class_get_method_from_name(klass, method_name, -1);
         if (!method) {
-                log_error("Method %s not found in class %s.%s", method_name, namespace_name, class_name);
+                joy_core_log_error("Method %s not found in class %s.%s", method_name, namespace_name, class_name);
                 return NULL;
         }
 
@@ -219,10 +219,10 @@ csx_invoke_static_method(csx_p csx, const char* namespace_name,
                 MonoString* exc_str = mono_object_to_string(exception, NULL);
                 if (exc_str) {
                         char* exc_cstr = mono_string_to_utf8(exc_str);
-                        log_error("Exception: %s", exc_cstr);
+                        joy_core_log_error("Exception: %s", exc_cstr);
                         mono_free(exc_cstr);   /* mono_string_to_utf8 的返回值须手动释放 */
                 } else {
-                        log_error("Exception (unprintable)");
+                        joy_core_log_error("Exception (unprintable)");
                 }
                 return NULL;
         }
@@ -237,7 +237,7 @@ csx_method_p csx_find_method(csx_p csx, const char* namespace_name, const char* 
         if (!klass) return NULL;
         MonoMethod* method = mono_class_get_method_from_name(klass, method_name, param_count);
         if (!method) {
-                log_error("Method %s not found in class %s.%s", method_name, namespace_name, class_name);
+                joy_core_log_error("Method %s not found in class %s.%s", method_name, namespace_name, class_name);
                 return NULL;
         }
         csx_method_p cached = (csx_method_p)malloc(sizeof(csx_method_t));
@@ -257,10 +257,10 @@ MonoObject* csx_invoke_method(csx_p csx, csx_method_p method, void** args)
                 MonoString* exc_str = mono_object_to_string(exception, NULL);
                 if (exc_str) {
                         char* exc_cstr = mono_string_to_utf8(exc_str);
-                        log_error("Exception: %s", exc_cstr);
+                        joy_core_log_error("Exception: %s", exc_cstr);
                         mono_free(exc_cstr);
                 } else {
-                        log_error("Exception (unprintable)");
+                        joy_core_log_error("Exception (unprintable)");
                 }
                 return NULL;
         }
