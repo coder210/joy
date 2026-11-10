@@ -2100,7 +2100,7 @@ namespace Joy.Api
         public static LcgNum LcgRandomCreate(ulong seed)
         {
             ulong __h = Native.LcgRandomCreate(seed);
-            if (__h == 0) throw new InvalidOperationException("lcg_random_create failed");
+            if (__h == 0) throw new InvalidOperationException("joy_core_lcg_random_create failed");
             return new LcgNum(__h);
         }
         public static void LcgRandomDestroy(LcgNum lcg)

@@ -84,9 +84,17 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 
 ### 迁移顺序（P1 进行中）
 
-**批次记录**：第一批 `core/window` 子域 6 条（2026-11），映射见
-`idl/rename_map.json`。改名的同时发现 `emit_vtable.js` 的 `HANDLE_PROBE`
-按名字硬编码，漏改会让强句柄自检被静默跳过。
+**批次记录**：
+- 第一批 `core/window` 子域 6 条（2026-11）。发现 `emit_vtable.js` 的
+  `HANDLE_PROBE` 按名字硬编码，漏改会让强句柄自检被静默跳过。
+- 第二批 `core` 剩余 39 条（hash / utf8 / lcg / env / log / event / fps /
+  clipboard / local_ips），`core` 域累计 45 条。同步了 `SELFTEST_SAFE` 里
+  5 个 hash 名。这批改的是声明；`src/jcore.c` / `jutils.c` / `jsys.c` 里的
+  **定义仍写旧名**，由 `compat.h` 宏在预处理期切到新符号，全量迁移完成、
+  删除 `compat.h` 前再统一替换定义处源码名。`push_*` / `game_timer_*` /
+  `jtimer_*` 等 domain 碎片留待后续批次归并。
+
+映射见 `idl/rename_map.json`（累加式）。
 
 `rename_map.json` 只写**本批**的旧名 → 新名，可以换成下一批也可以累加
 （`mergeIdl` 在旧条目已消费时会回退按本名匹配，重复 `--scan` 不会把

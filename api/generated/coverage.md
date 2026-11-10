@@ -38,19 +38,13 @@
 | box2d | 0 | 0 | 0 | 11 | 0 | 11 |
 | button | 0 | 14 | 4 | 2 | 0 | 20 |
 | checkbox | 0 | 10 | 2 | 1 | 0 | 13 |
-| clipboard | 2 | 0 | 0 | 0 | 0 | 2 |
 | collision2d | 0 | 0 | 10 | 8 | 0 | 18 |
 | collision2df | 0 | 0 | 5 | 14 | 0 | 19 |
 | collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
 | collision3df | 0 | 0 | 3 | 5 | 0 | 8 |
 | combobox | 0 | 23 | 1 | 2 | 0 | 26 |
-| core | 0 | 6 | 0 | 0 | 0 | 6 |
+| core | 12 | 23 | 1 | 9 | 0 | 45 |
 | datagrid | 0 | 10 | 0 | 1 | 0 | 11 |
-| dispatch | 0 | 0 | 1 | 0 | 0 | 1 |
-| env | 1 | 4 | 0 | 0 | 0 | 5 |
-| error | 1 | 0 | 0 | 0 | 0 | 1 |
-| event | 0 | 2 | 0 | 0 | 0 | 2 |
-| fnv1a | 1 | 0 | 0 | 0 | 0 | 1 |
 | font | 0 | 5 | 0 | 0 | 0 | 5 |
 | game | 0 | 8 | 0 | 0 | 0 | 8 |
 | gjk2d | 0 | 0 | 0 | 6 | 0 | 6 |
@@ -61,7 +55,6 @@
 | iocp | 0 | 3 | 0 | 0 | 0 | 3 |
 | janimator | 0 | 23 | 2 | 2 | 0 | 27 |
 | jecs | 0 | 5 | 0 | 7 | 1 | 13 |
-| jenkins | 1 | 0 | 0 | 0 | 0 | 1 |
 | jlayout | 0 | 0 | 0 | 7 | 0 | 7 |
 | jlight | 0 | 9 | 2 | 0 | 0 | 11 |
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
@@ -77,43 +70,30 @@
 | jui | 0 | 20 | 12 | 6 | 0 | 38 |
 | kcpclient | 0 | 5 | 0 | 1 | 0 | 6 |
 | kcpserver | 0 | 8 | 0 | 1 | 0 | 9 |
-| kr | 1 | 0 | 0 | 0 | 0 | 1 |
 | label | 0 | 3 | 0 | 2 | 0 | 5 |
-| lcg | 0 | 4 | 0 | 1 | 0 | 5 |
-| local | 0 | 0 | 0 | 1 | 0 | 1 |
-| log | 1 | 0 | 0 | 3 | 0 | 4 |
 | min | 0 | 0 | 0 | 1 | 0 | 1 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
-| mouse | 0 | 1 | 0 | 1 | 0 | 2 |
-| murmur3 | 1 | 0 | 0 | 0 | 0 | 1 |
 | netclient | 0 | 5 | 0 | 2 | 0 | 7 |
 | netmessage | 0 | 1 | 0 | 0 | 0 | 1 |
 | netserver | 0 | 8 | 0 | 2 | 0 | 10 |
 | pack | 0 | 0 | 0 | 6 | 0 | 6 |
 | popup | 0 | 13 | 0 | 0 | 0 | 13 |
 | push | 2 | 0 | 0 | 0 | 0 | 2 |
-| quit | 1 | 0 | 0 | 0 | 0 | 1 |
 | r2d | 0 | 19 | 2 | 10 | 0 | 31 |
 | r3d | 0 | 100 | 12 | 23 | 0 | 135 |
 | radio | 0 | 5 | 0 | 0 | 0 | 5 |
 | scene | 0 | 50 | 0 | 15 | 0 | 65 |
 | scrollview | 0 | 14 | 0 | 0 | 0 | 14 |
-| sdbm | 1 | 0 | 0 | 0 | 0 | 1 |
 | shape | 0 | 3 | 4 | 1 | 0 | 8 |
-| should | 0 | 1 | 0 | 0 | 0 | 1 |
-| simple | 0 | 4 | 0 | 0 | 0 | 4 |
 | slider | 0 | 13 | 1 | 0 | 0 | 14 |
 | sys | 19 | 0 | 0 | 3 | 0 | 22 |
 | tcpclient | 0 | 5 | 0 | 0 | 0 | 5 |
 | tcpserver | 0 | 8 | 0 | 0 | 0 | 8 |
 | text | 0 | 3 | 2 | 2 | 0 | 7 |
-| ticks | 1 | 0 | 0 | 0 | 0 | 1 |
 | tooltip | 0 | 7 | 0 | 0 | 0 | 7 |
 | unpack | 0 | 0 | 0 | 6 | 0 | 6 |
-| user | 0 | 1 | 0 | 0 | 0 | 1 |
-| utf8 | 0 | 0 | 0 | 3 | 0 | 3 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
 | wsnetclient | 0 | 5 | 0 | 1 | 0 | 6 |
 | wsnetserver | 0 | 8 | 0 | 1 | 0 | 9 |
@@ -216,16 +196,16 @@
 
 | 函数 | 原因 | 位置 |
 |---|---|---|
-| `lcg_random_get_state` | 非不透明指针 / 输出参数：uint64_t* | include/joy/defs.h:183 |
+| `joy_core_lcg_random_get_state` | 非不透明指针 / 输出参数：uint64_t* | include/joy/defs.h:183 |
 | `jpm_config_default` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:239 |
 | `jpm_generate_seed` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:245 |
 | `jpm_generate` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:247 |
 | `jpm_rasterize` | 数组参数 | include/joy/defs.h:249 |
 | `jpm_bfs` | 数组参数 | include/joy/defs.h:252 |
 | `jpm_sample_open_tiles` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:255 |
-| `utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:50 |
-| `utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/api.h:60 |
-| `utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:72 |
+| `joy_core_utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:50 |
+| `joy_core_utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/api.h:60 |
+| `joy_core_utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:72 |
 | `pack_int8` | 非 const char* 输出缓冲 | include/joy/api.h:74 |
 | `pack_int16` | 非 const char* 输出缓冲 | include/joy/api.h:75 |
 | `pack_int32` | 非 const char* 输出缓冲 | include/joy/api.h:76 |
@@ -239,11 +219,11 @@
 | `pack_string` | 非 const char* 输出缓冲 | include/joy/api.h:84 |
 | `unpack_string` | 非 const char* 输出缓冲 | include/joy/api.h:85 |
 | `jtimer_create` | 未知类型需人工标注：jtimer_callback | include/joy/api.h:87 |
-| `get_mouse_pos` | 非不透明指针 / 输出参数：float* | include/joy/api.h:105 |
-| `log_info` | 可变参数 | include/joy/api.h:125 |
-| `log_debug` | 可变参数 | include/joy/api.h:126 |
-| `log_error` | 可变参数 | include/joy/api.h:127 |
-| `get_local_ips` | 数组参数 | include/joy/api.h:157 |
+| `joy_core_get_mouse_pos` | 非不透明指针 / 输出参数：float* | include/joy/api.h:105 |
+| `joy_core_log_info` | 可变参数 | include/joy/api.h:125 |
+| `joy_core_log_debug` | 可变参数 | include/joy/api.h:126 |
+| `joy_core_log_error` | 可变参数 | include/joy/api.h:127 |
+| `joy_core_get_local_ips` | 数组参数 | include/joy/api.h:157 |
 | `sys_accept` | 非 const char* 输出缓冲 | include/joy/api.h:171 |
 | `sys_recv` | 非 const char* 输出缓冲 | include/joy/api.h:173 |
 | `sys_recvfrom` | 非 const char* 输出缓冲 | include/joy/api.h:174 |

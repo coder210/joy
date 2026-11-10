@@ -11,7 +11,7 @@
 
 /* 宿主侧实现：DLL 侧只 include .h，不链接本文件。 */
 
-static LcgNum shim_lcg_random_create(void* _jv_ctx, uint64_t seed)
+static LcgNum shim_joy_core_lcg_random_create(void* _jv_ctx, uint64_t seed)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
@@ -19,37 +19,37 @@ static LcgNum shim_lcg_random_create(void* _jv_ctx, uint64_t seed)
         LcgNum _jv_out;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_u64(seed);
-        _jv_r = joy_api_call("lcg_random_create", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_lcg_random_create", _jv_args, 1, &_jv_st);
         _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
         return _jv_out;
 }
 
-static void shim_lcg_random_destroy(void* _jv_ctx, LcgNum lcg)
+static void shim_joy_core_lcg_random_destroy(void* _jv_ctx, LcgNum lcg)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(lcg.h);
-        _jv_r = joy_api_call("lcg_random_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_lcg_random_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static uint32_t shim_lcg_random_next(void* _jv_ctx, LcgNum lcg)
+static uint32_t shim_joy_core_lcg_random_next(void* _jv_ctx, LcgNum lcg)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(lcg.h);
-        _jv_r = joy_api_call("lcg_random_next", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_lcg_random_next", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U32) return (uint32_t)0;
         return (uint32_t) _jv_r.as.u32;
 }
 
-static void shim_lcg_random_set_state(void* _jv_ctx, LcgNum lcg, uint64_t state)
+static void shim_joy_core_lcg_random_set_state(void* _jv_ctx, LcgNum lcg, uint64_t state)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -57,7 +57,7 @@ static void shim_lcg_random_set_state(void* _jv_ctx, LcgNum lcg, uint64_t state)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(lcg.h);
         _jv_args[1] = joy_v_u64(state);
-        _jv_r = joy_api_call("lcg_random_set_state", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_lcg_random_set_state", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -92,7 +92,7 @@ static uint32_t shim_jpm_wave_seed(void* _jv_ctx, uint32_t base_seed, int wave)
         return (uint32_t) _jv_r.as.u32;
 }
 
-static unsigned long shim_sdbm_hash(void* _jv_ctx, const char* str, int size)
+static unsigned long shim_joy_core_sdbm_hash(void* _jv_ctx, const char* str, int size)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -100,12 +100,12 @@ static unsigned long shim_sdbm_hash(void* _jv_ctx, const char* str, int size)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(str);
         _jv_args[1] = joy_v_i32(size);
-        _jv_r = joy_api_call("sdbm_hash", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_sdbm_hash", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (unsigned long)0;
         return (unsigned long) _jv_r.as.u64;
 }
 
-static unsigned long shim_fnv1a_hash(void* _jv_ctx, const char* str, int size)
+static unsigned long shim_joy_core_fnv1a_hash(void* _jv_ctx, const char* str, int size)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -113,12 +113,12 @@ static unsigned long shim_fnv1a_hash(void* _jv_ctx, const char* str, int size)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(str);
         _jv_args[1] = joy_v_i32(size);
-        _jv_r = joy_api_call("fnv1a_hash", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_fnv1a_hash", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (unsigned long)0;
         return (unsigned long) _jv_r.as.u64;
 }
 
-static unsigned long shim_jenkins_hash(void* _jv_ctx, const char* str, int size)
+static unsigned long shim_joy_core_jenkins_hash(void* _jv_ctx, const char* str, int size)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -126,24 +126,24 @@ static unsigned long shim_jenkins_hash(void* _jv_ctx, const char* str, int size)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(str);
         _jv_args[1] = joy_v_i32(size);
-        _jv_r = joy_api_call("jenkins_hash", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_jenkins_hash", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (unsigned long)0;
         return (unsigned long) _jv_r.as.u64;
 }
 
-static unsigned long shim_murmur3_hash(void* _jv_ctx, const char* str)
+static unsigned long shim_joy_core_murmur3_hash(void* _jv_ctx, const char* str)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(str);
-        _jv_r = joy_api_call("murmur3_hash", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_murmur3_hash", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (unsigned long)0;
         return (unsigned long) _jv_r.as.u64;
 }
 
-static unsigned long shim_kr_hash(void* _jv_ctx, const char* str, int size)
+static unsigned long shim_joy_core_kr_hash(void* _jv_ctx, const char* str, int size)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -151,7 +151,7 @@ static unsigned long shim_kr_hash(void* _jv_ctx, const char* str, int size)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(str);
         _jv_args[1] = joy_v_i32(size);
-        _jv_r = joy_api_call("kr_hash", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_core_kr_hash", _jv_args, 2, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (unsigned long)0;
         return (unsigned long) _jv_r.as.u64;
 }
@@ -235,36 +235,36 @@ static uint64_t shim_jtimer_get_elapsed(void* _jv_ctx, Jtimer timer)
         return (uint64_t) _jv_r.as.u64;
 }
 
-static bool shim_init_env(void* _jv_ctx)
+static bool shim_joy_core_init_env(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("init_env", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_core_init_env", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_quit_env(void* _jv_ctx)
+static void shim_joy_core_quit_env(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("quit_env", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_core_quit_env", _jv_args, 0, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static uint64_t shim_get_ticks(void* _jv_ctx)
+static uint64_t shim_joy_core_get_ticks(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("get_ticks", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_core_get_ticks", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (uint64_t)0;
         return (uint64_t) _jv_r.as.u64;
 }
@@ -361,20 +361,20 @@ static bool shim_push_quit_event(void* _jv_ctx)
         return (bool) _jv_r.as.b;
 }
 
-static void shim_log_title(void* _jv_ctx, int type)
+static void shim_joy_core_log_title(void* _jv_ctx, int type)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(type);
-        _jv_r = joy_api_call("log_title", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_log_title", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_env_set(void* _jv_ctx, Env env, const char* key, const char* value)
+static void shim_joy_core_env_set(void* _jv_ctx, Env env, const char* key, const char* value)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -383,59 +383,59 @@ static void shim_env_set(void* _jv_ctx, Env env, const char* key, const char* va
         _jv_args[0] = joy_v_handle(env.h);
         _jv_args[1] = joy_v_str(key);
         _jv_args[2] = joy_v_str(value);
-        _jv_r = joy_api_call("env_set", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_core_env_set", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_env_destroy(void* _jv_ctx, Env env)
+static void shim_joy_core_env_destroy(void* _jv_ctx, Env env)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(env.h);
-        _jv_r = joy_api_call("env_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_env_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_simple_fps_destory(void* _jv_ctx, SimpleFpsCounter fps)
+static void shim_joy_core_simple_fps_destory(void* _jv_ctx, SimpleFpsCounter fps)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(fps.h);
-        _jv_r = joy_api_call("simple_fps_destory", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_simple_fps_destory", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_simple_fps_update(void* _jv_ctx, SimpleFpsCounter fps)
+static void shim_joy_core_simple_fps_update(void* _jv_ctx, SimpleFpsCounter fps)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(fps.h);
-        _jv_r = joy_api_call("simple_fps_update", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_simple_fps_update", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_simple_fps_value(void* _jv_ctx, SimpleFpsCounter fps)
+static int shim_joy_core_simple_fps_value(void* _jv_ctx, SimpleFpsCounter fps)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(fps.h);
-        _jv_r = joy_api_call("simple_fps_value", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_simple_fps_value", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
@@ -542,14 +542,14 @@ static int shim_game_timer_get_target_fps(void* _jv_ctx, GameTimer clock)
         return (int) _jv_r.as.i32;
 }
 
-static void shim_set_clipboard_text(void* _jv_ctx, const char* text)
+static void shim_joy_core_set_clipboard_text(void* _jv_ctx, const char* text)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_str(text);
-        _jv_r = joy_api_call("set_clipboard_text", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_core_set_clipboard_text", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -9961,26 +9961,26 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->abi_version = JOY_API_VTABLE_ABI;
         api->size = (uint32_t)sizeof(JoyApi);
         api->ctx = ctx;
-        api->LcgRandomCreate = shim_lcg_random_create;
-        api->LcgRandomDestroy = shim_lcg_random_destroy;
-        api->LcgRandomNext = shim_lcg_random_next;
-        api->LcgRandomSetState = shim_lcg_random_set_state;
+        api->LcgRandomCreate = shim_joy_core_lcg_random_create;
+        api->LcgRandomDestroy = shim_joy_core_lcg_random_destroy;
+        api->LcgRandomNext = shim_joy_core_lcg_random_next;
+        api->LcgRandomSetState = shim_joy_core_lcg_random_set_state;
         api->JpmConfigAddSpawn = shim_jpm_config_add_spawn;
         api->JpmWaveSeed = shim_jpm_wave_seed;
-        api->SdbmHash = shim_sdbm_hash;
-        api->Fnv1aHash = shim_fnv1a_hash;
-        api->JenkinsHash = shim_jenkins_hash;
-        api->Murmur3Hash = shim_murmur3_hash;
-        api->KrHash = shim_kr_hash;
+        api->SdbmHash = shim_joy_core_sdbm_hash;
+        api->Fnv1aHash = shim_joy_core_fnv1a_hash;
+        api->JenkinsHash = shim_joy_core_jenkins_hash;
+        api->Murmur3Hash = shim_joy_core_murmur3_hash;
+        api->KrHash = shim_joy_core_kr_hash;
         api->JtimerDestroy = shim_jtimer_destroy;
         api->JtimerTrigger = shim_jtimer_trigger;
         api->JtimerSetInterval = shim_jtimer_set_interval;
         api->JtimerSetActive = shim_jtimer_set_active;
         api->JtimerReset = shim_jtimer_reset;
         api->JtimerGetElapsed = shim_jtimer_get_elapsed;
-        api->InitEnv = shim_init_env;
-        api->QuitEnv = shim_quit_env;
-        api->GetTicks = shim_get_ticks;
+        api->InitEnv = shim_joy_core_init_env;
+        api->QuitEnv = shim_joy_core_quit_env;
+        api->GetTicks = shim_joy_core_get_ticks;
         api->CreateWindow = shim_joy_core_create_window;
         api->DestroyWindow = shim_joy_core_destroy_window;
         api->WindowSetFullscreen = shim_joy_core_window_set_fullscreen;
@@ -9988,12 +9988,12 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->WindowSetIcon = shim_joy_core_window_set_icon;
         api->PushUserEvent = shim_push_user_event;
         api->PushQuitEvent = shim_push_quit_event;
-        api->LogTitle = shim_log_title;
-        api->EnvSet = shim_env_set;
-        api->EnvDestroy = shim_env_destroy;
-        api->SimpleFpsDestory = shim_simple_fps_destory;
-        api->SimpleFpsUpdate = shim_simple_fps_update;
-        api->SimpleFpsValue = shim_simple_fps_value;
+        api->LogTitle = shim_joy_core_log_title;
+        api->EnvSet = shim_joy_core_env_set;
+        api->EnvDestroy = shim_joy_core_env_destroy;
+        api->SimpleFpsDestory = shim_joy_core_simple_fps_destory;
+        api->SimpleFpsUpdate = shim_joy_core_simple_fps_update;
+        api->SimpleFpsValue = shim_joy_core_simple_fps_value;
         api->GameTimerInit = shim_game_timer_init;
         api->GameTimerUpdate = shim_game_timer_update;
         api->GameTimerGetDeltaTime = shim_game_timer_get_delta_time;
@@ -10002,7 +10002,7 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->GameTimerGetTimeScale = shim_game_timer_get_time_scale;
         api->GameTimerSetTargetFps = shim_game_timer_set_target_fps;
         api->GameTimerGetTargetFps = shim_game_timer_get_target_fps;
-        api->SetClipboardText = shim_set_clipboard_text;
+        api->SetClipboardText = shim_joy_core_set_clipboard_text;
         api->SysInitNetenv = shim_sys_init_netenv;
         api->SysReleaseNetenv = shim_sys_release_netenv;
         api->SysAnyaddr = shim_sys_anyaddr;
@@ -10679,33 +10679,33 @@ const char* joy_api_vtable_selftest(void)
         }
         if (!api.SdbmHash) return "missing shim: SdbmHash";
         {
-                unsigned long direct = sdbm_hash((const char*)"joy-vtable", (int)3);
+                unsigned long direct = joy_core_sdbm_hash((const char*)"joy-vtable", (int)3);
                 unsigned long via = api.SdbmHash(api.ctx, (const char*)"joy-vtable", (int)3);
-                if (direct != via) return "sdbm_hash mismatch";
+                if (direct != via) return "joy_core_sdbm_hash mismatch";
         }
         if (!api.Fnv1aHash) return "missing shim: Fnv1aHash";
         {
-                unsigned long direct = fnv1a_hash((const char*)"joy-vtable", (int)3);
+                unsigned long direct = joy_core_fnv1a_hash((const char*)"joy-vtable", (int)3);
                 unsigned long via = api.Fnv1aHash(api.ctx, (const char*)"joy-vtable", (int)3);
-                if (direct != via) return "fnv1a_hash mismatch";
+                if (direct != via) return "joy_core_fnv1a_hash mismatch";
         }
         if (!api.JenkinsHash) return "missing shim: JenkinsHash";
         {
-                unsigned long direct = jenkins_hash((const char*)"joy-vtable", (int)3);
+                unsigned long direct = joy_core_jenkins_hash((const char*)"joy-vtable", (int)3);
                 unsigned long via = api.JenkinsHash(api.ctx, (const char*)"joy-vtable", (int)3);
-                if (direct != via) return "jenkins_hash mismatch";
+                if (direct != via) return "joy_core_jenkins_hash mismatch";
         }
         if (!api.Murmur3Hash) return "missing shim: Murmur3Hash";
         {
-                unsigned long direct = murmur3_hash((const char*)"joy-vtable");
+                unsigned long direct = joy_core_murmur3_hash((const char*)"joy-vtable");
                 unsigned long via = api.Murmur3Hash(api.ctx, (const char*)"joy-vtable");
-                if (direct != via) return "murmur3_hash mismatch";
+                if (direct != via) return "joy_core_murmur3_hash mismatch";
         }
         if (!api.KrHash) return "missing shim: KrHash";
         {
-                unsigned long direct = kr_hash((const char*)"joy-vtable", (int)3);
+                unsigned long direct = joy_core_kr_hash((const char*)"joy-vtable", (int)3);
                 unsigned long via = api.KrHash(api.ctx, (const char*)"joy-vtable", (int)3);
-                if (direct != via) return "kr_hash mismatch";
+                if (direct != via) return "joy_core_kr_hash mismatch";
         }
         if (!api.JmathFpFromFloat) return "missing shim: JmathFpFromFloat";
         {

@@ -20,9 +20,9 @@ static uint64_t icall_LcgRandomCreate(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_u64((uint64_t)p0);
-        r = joy_api_call("lcg_random_create", args, 1, &st);
+        r = joy_api_call("joy_core_lcg_random_create", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "lcg_random_create", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_lcg_random_create", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.handle;
@@ -33,9 +33,9 @@ static void icall_LcgRandomDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("lcg_random_destroy", args, 1, &st);
+        (void)joy_api_call("joy_core_lcg_random_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "lcg_random_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_lcg_random_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -47,9 +47,9 @@ static uint32_t icall_LcgRandomNext(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("lcg_random_next", args, 1, &st);
+        r = joy_api_call("joy_core_lcg_random_next", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "lcg_random_next", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_lcg_random_next", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint32_t)r.as.u32;
@@ -61,9 +61,9 @@ static void icall_LcgRandomSetState(uint64_t p0, uint64_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_u64((uint64_t)p1);
-        (void)joy_api_call("lcg_random_set_state", args, 2, &st);
+        (void)joy_api_call("joy_core_lcg_random_set_state", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "lcg_random_set_state", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_lcg_random_set_state", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -109,10 +109,10 @@ static uint64_t icall_SdbmHash(MonoString* p0, int32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("sdbm_hash", args, 2, &st);
+        r = joy_api_call("joy_core_sdbm_hash", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "sdbm_hash", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_sdbm_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -127,10 +127,10 @@ static uint64_t icall_Fnv1aHash(MonoString* p0, int32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("fnv1a_hash", args, 2, &st);
+        r = joy_api_call("joy_core_fnv1a_hash", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "fnv1a_hash", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_fnv1a_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -145,10 +145,10 @@ static uint64_t icall_JenkinsHash(MonoString* p0, int32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("jenkins_hash", args, 2, &st);
+        r = joy_api_call("joy_core_jenkins_hash", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "jenkins_hash", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_jenkins_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -162,10 +162,10 @@ static uint64_t icall_Murmur3Hash(MonoString* p0)
         char* s0 = NULL;
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
-        r = joy_api_call("murmur3_hash", args, 1, &st);
+        r = joy_api_call("joy_core_murmur3_hash", args, 1, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "murmur3_hash", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_murmur3_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -180,10 +180,10 @@ static uint64_t icall_KrHash(MonoString* p0, int32_t p1)
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
         args[1] = joy_v_i32((int32_t)p1);
-        r = joy_api_call("kr_hash", args, 2, &st);
+        r = joy_api_call("joy_core_kr_hash", args, 2, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "kr_hash", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_kr_hash", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -274,9 +274,9 @@ static int32_t icall_InitEnv(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("init_env", NULL, 0, &st);
+        r = joy_api_call("joy_core_init_env", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "init_env", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_init_env", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -285,9 +285,9 @@ static int32_t icall_InitEnv(void)
 static void icall_QuitEnv(void)
 {
         joy_status_t st = JOY_OK;
-        (void)joy_api_call("quit_env", NULL, 0, &st);
+        (void)joy_api_call("joy_core_quit_env", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "quit_env", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_quit_env", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -297,9 +297,9 @@ static uint64_t icall_GetTicks(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("get_ticks", NULL, 0, &st);
+        r = joy_api_call("joy_core_get_ticks", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "get_ticks", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_get_ticks", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -414,9 +414,9 @@ static void icall_LogTitle(int32_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_i32((int32_t)p0);
-        (void)joy_api_call("log_title", args, 1, &st);
+        (void)joy_api_call("joy_core_log_title", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "log_title", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_log_title", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -433,11 +433,11 @@ static void icall_EnvSet(uint64_t p0, MonoString* p1, MonoString* p2)
         args[1] = joy_v_str((const char*)s1);
         s2 = p2 ? mono_string_to_utf8(p2) : NULL;
         args[2] = joy_v_str((const char*)s2);
-        (void)joy_api_call("env_set", args, 3, &st);
+        (void)joy_api_call("joy_core_env_set", args, 3, &st);
         if (s1) mono_free(s1);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "env_set", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_env_set", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -448,9 +448,9 @@ static void icall_EnvDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("env_destroy", args, 1, &st);
+        (void)joy_api_call("joy_core_env_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "env_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_env_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -461,9 +461,9 @@ static void icall_SimpleFpsDestory(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("simple_fps_destory", args, 1, &st);
+        (void)joy_api_call("joy_core_simple_fps_destory", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "simple_fps_destory", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_simple_fps_destory", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -474,9 +474,9 @@ static void icall_SimpleFpsUpdate(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("simple_fps_update", args, 1, &st);
+        (void)joy_api_call("joy_core_simple_fps_update", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "simple_fps_update", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_simple_fps_update", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -488,9 +488,9 @@ static int32_t icall_SimpleFpsValue(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("simple_fps_value", args, 1, &st);
+        r = joy_api_call("joy_core_simple_fps_value", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "simple_fps_value", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_simple_fps_value", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -613,10 +613,10 @@ static void icall_SetClipboardText(MonoString* p0)
         char* s0 = NULL;
         s0 = p0 ? mono_string_to_utf8(p0) : NULL;
         args[0] = joy_v_str((const char*)s0);
-        (void)joy_api_call("set_clipboard_text", args, 1, &st);
+        (void)joy_api_call("joy_core_set_clipboard_text", args, 1, &st);
         if (s0) mono_free(s0);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "set_clipboard_text", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_core_set_clipboard_text", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

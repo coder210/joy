@@ -8,61 +8,61 @@
 #include "runtime/joy_obj.h"
 #include "runtime/joy_thunk.h"
 
-static void dtor_lcg_random_destroy(void* p) { lcg_random_destroy((lcg_num_p)p); }
+static void dtor_joy_core_lcg_random_destroy(void* p) { joy_core_lcg_random_destroy((lcg_num_p)p); }
 static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((jwindow_p)p); }
 static void dtor_font_destroy(void* p) { font_destroy((font_p)p); }
 static void dtor_r2d_destroy(void* p) { r2d_destroy((jr2d_p)p); }
 static void dtor_image_destroy(void* p) { image_destroy((image_p)p); }
 
-static joy_value_t t_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
 {
         uint64_t p0;
         lcg_num_p _r;
         uint64_t _h;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "lcg_random_create");
-        if (a[0].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "lcg_random_create.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_create");
+        if (a[0].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_create.arg0");
         p0 = (uint64_t)a[0].as.u64;
-        _r = lcg_random_create(p0);
-        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "lcg_random_create");
-        _h = joy_obj_register((void*)_r, "lcg_num_p", dtor_lcg_random_destroy, "lcg_random_create");
-        if (!_h) { lcg_random_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "lcg_random_create"); }
+        _r = joy_core_lcg_random_create(p0);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_core_lcg_random_create");
+        _h = joy_obj_register((void*)_r, "lcg_num_p", dtor_joy_core_lcg_random_destroy, "joy_core_lcg_random_create");
+        if (!_h) { joy_core_lcg_random_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_core_lcg_random_create"); }
         return joy_v_handle(_h);
 }
 
-static joy_value_t t_lcg_random_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_lcg_random_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         lcg_num_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "lcg_random_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "lcg_random_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_destroy.arg0");
         p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
-        if (!p0) return joy_v_err(st, *st, "lcg_random_destroy.arg0");
-        lcg_random_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_destroy.arg0");
+        joy_core_lcg_random_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_lcg_random_next(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_lcg_random_next(joy_value_t* a, int n, joy_status_t* st)
 {
         lcg_num_p p0;
         uint32_t _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "lcg_random_next");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "lcg_random_next.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_next");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_next.arg0");
         p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
-        if (!p0) return joy_v_err(st, *st, "lcg_random_next.arg0");
-        _r = lcg_random_next(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_next.arg0");
+        _r = joy_core_lcg_random_next(p0);
         return joy_v_u32((uint32_t)_r);
 }
 
-static joy_value_t t_lcg_random_set_state(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_lcg_random_set_state(joy_value_t* a, int n, joy_status_t* st)
 {
         lcg_num_p p0;
         uint64_t p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "lcg_random_set_state");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "lcg_random_set_state.arg0");
-        if (a[1].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "lcg_random_set_state.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_set_state");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_set_state.arg0");
+        if (a[1].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_set_state.arg1");
         p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
-        if (!p0) return joy_v_err(st, *st, "lcg_random_set_state.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_set_state.arg0");
         p1 = (uint64_t)a[1].as.u64;
-        lcg_random_set_state(p0, p1);
+        joy_core_lcg_random_set_state(p0, p1);
         return joy_v_null();
 }
 
@@ -100,70 +100,70 @@ static joy_value_t t_jpm_wave_seed(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_u32((uint32_t)_r);
 }
 
-static joy_value_t t_sdbm_hash(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_sdbm_hash(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         int p1;
         unsigned long _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "sdbm_hash");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "sdbm_hash.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "sdbm_hash.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_sdbm_hash");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_sdbm_hash.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_sdbm_hash.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (int)a[1].as.i32;
-        _r = sdbm_hash(p0, p1);
+        _r = joy_core_sdbm_hash(p0, p1);
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_fnv1a_hash(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_fnv1a_hash(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         int p1;
         unsigned long _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "fnv1a_hash");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "fnv1a_hash.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "fnv1a_hash.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_fnv1a_hash");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_fnv1a_hash.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_fnv1a_hash.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (int)a[1].as.i32;
-        _r = fnv1a_hash(p0, p1);
+        _r = joy_core_fnv1a_hash(p0, p1);
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_jenkins_hash(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_jenkins_hash(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         int p1;
         unsigned long _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "jenkins_hash");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "jenkins_hash.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "jenkins_hash.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_jenkins_hash");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_jenkins_hash.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_jenkins_hash.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (int)a[1].as.i32;
-        _r = jenkins_hash(p0, p1);
+        _r = joy_core_jenkins_hash(p0, p1);
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_murmur3_hash(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_murmur3_hash(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         unsigned long _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "murmur3_hash");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "murmur3_hash.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_murmur3_hash");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_murmur3_hash.arg0");
         p0 = (const char*)a[0].as.str;
-        _r = murmur3_hash(p0);
+        _r = joy_core_murmur3_hash(p0);
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_kr_hash(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_kr_hash(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
         int p1;
         unsigned long _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "kr_hash");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "kr_hash.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "kr_hash.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_kr_hash");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_kr_hash.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_kr_hash.arg1");
         p0 = (const char*)a[0].as.str;
         p1 = (int)a[1].as.i32;
-        _r = kr_hash(p0, p1);
+        _r = joy_core_kr_hash(p0, p1);
         return joy_v_u64((unsigned long)_r);
 }
 
@@ -240,26 +240,26 @@ static joy_value_t t_jtimer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_u64((uint64_t)_r);
 }
 
-static joy_value_t t_init_env(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_init_env(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "init_env");
-        _r = init_env();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_init_env");
+        _r = joy_core_init_env();
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_quit_env(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_quit_env(joy_value_t* a, int n, joy_status_t* st)
 {
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "quit_env");
-        quit_env();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_quit_env");
+        joy_core_quit_env();
         return joy_v_null();
 }
 
-static joy_value_t t_get_ticks(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_get_ticks(joy_value_t* a, int n, joy_status_t* st)
 {
         uint64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "get_ticks");
-        _r = get_ticks();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_get_ticks");
+        _r = joy_core_get_ticks();
         return joy_v_u64((uint64_t)_r);
 }
 
@@ -357,75 +357,75 @@ static joy_value_t t_push_quit_event(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_log_title(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_log_title(joy_value_t* a, int n, joy_status_t* st)
 {
         int p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "log_title");
-        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "log_title.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_log_title");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_log_title.arg0");
         p0 = (int)a[0].as.i32;
-        log_title(p0);
+        joy_core_log_title(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_env_set(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_env_set(joy_value_t* a, int n, joy_status_t* st)
 {
         env_p p0;
         const char* p1;
         const char* p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "env_set");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "env_set.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "env_set.arg1");
-        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "env_set.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_env_set");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg2");
         p0 = (env_p)joy_obj_deref(a[0].as.handle, "env_p", st);
-        if (!p0) return joy_v_err(st, *st, "env_set.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_env_set.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
-        env_set(p0, p1, p2);
+        joy_core_env_set(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_env_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_env_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         env_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "env_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "env_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_env_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_destroy.arg0");
         p0 = (env_p)joy_obj_deref(a[0].as.handle, "env_p", st);
-        if (!p0) return joy_v_err(st, *st, "env_destroy.arg0");
-        env_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_env_destroy.arg0");
+        joy_core_env_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_simple_fps_destory(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_simple_fps_destory(joy_value_t* a, int n, joy_status_t* st)
 {
         simple_fps_counter_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "simple_fps_destory");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "simple_fps_destory.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_destory");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_destory.arg0");
         p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
-        if (!p0) return joy_v_err(st, *st, "simple_fps_destory.arg0");
-        simple_fps_destory(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_destory.arg0");
+        joy_core_simple_fps_destory(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_simple_fps_update(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_simple_fps_update(joy_value_t* a, int n, joy_status_t* st)
 {
         simple_fps_counter_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "simple_fps_update");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "simple_fps_update.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_update");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_update.arg0");
         p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
-        if (!p0) return joy_v_err(st, *st, "simple_fps_update.arg0");
-        simple_fps_update(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_update.arg0");
+        joy_core_simple_fps_update(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_simple_fps_value(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_simple_fps_value(joy_value_t* a, int n, joy_status_t* st)
 {
         simple_fps_counter_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "simple_fps_value");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "simple_fps_value.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_value");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_value.arg0");
         p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
-        if (!p0) return joy_v_err(st, *st, "simple_fps_value.arg0");
-        _r = simple_fps_value(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_value.arg0");
+        _r = joy_core_simple_fps_value(p0);
         return joy_v_i32((int)_r);
 }
 
@@ -527,13 +527,13 @@ static joy_value_t t_game_timer_get_target_fps(joy_value_t* a, int n, joy_status
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_set_clipboard_text(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_set_clipboard_text(joy_value_t* a, int n, joy_status_t* st)
 {
         const char* p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "set_clipboard_text");
-        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "set_clipboard_text.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_set_clipboard_text");
+        if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_set_clipboard_text.arg0");
         p0 = (const char*)a[0].as.str;
-        set_clipboard_text(p0);
+        joy_core_set_clipboard_text(p0);
         return joy_v_null();
 }
 
@@ -11426,17 +11426,17 @@ static joy_value_t t_jmath_ft_radians(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_f64((float)_r);
 }
 
-static const joy_value_kind k_lcg_random_create[] = { JOY_V_U64 };
-static const joy_value_kind k_lcg_random_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_lcg_random_next[] = { JOY_V_HANDLE };
-static const joy_value_kind k_lcg_random_set_state[] = { JOY_V_HANDLE, JOY_V_U64 };
+static const joy_value_kind k_joy_core_lcg_random_create[] = { JOY_V_U64 };
+static const joy_value_kind k_joy_core_lcg_random_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_lcg_random_next[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_lcg_random_set_state[] = { JOY_V_HANDLE, JOY_V_U64 };
 static const joy_value_kind k_jpm_config_add_spawn[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_jpm_wave_seed[] = { JOY_V_U32, JOY_V_I32 };
-static const joy_value_kind k_sdbm_hash[] = { JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_fnv1a_hash[] = { JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_jenkins_hash[] = { JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_murmur3_hash[] = { JOY_V_STR };
-static const joy_value_kind k_kr_hash[] = { JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_core_sdbm_hash[] = { JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_core_fnv1a_hash[] = { JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_core_jenkins_hash[] = { JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_core_murmur3_hash[] = { JOY_V_STR };
+static const joy_value_kind k_joy_core_kr_hash[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_jtimer_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jtimer_trigger[] = { JOY_V_HANDLE };
 static const joy_value_kind k_jtimer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 };
@@ -11449,12 +11449,12 @@ static const joy_value_kind k_joy_core_window_set_fullscreen[] = { JOY_V_HANDLE,
 static const joy_value_kind k_joy_core_window_get_fullscreen[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_window_set_icon[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_push_user_event[] = { JOY_V_I32, JOY_V_I32 };
-static const joy_value_kind k_log_title[] = { JOY_V_I32 };
-static const joy_value_kind k_env_set[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
-static const joy_value_kind k_env_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_simple_fps_destory[] = { JOY_V_HANDLE };
-static const joy_value_kind k_simple_fps_update[] = { JOY_V_HANDLE };
-static const joy_value_kind k_simple_fps_value[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_log_title[] = { JOY_V_I32 };
+static const joy_value_kind k_joy_core_env_set[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
+static const joy_value_kind k_joy_core_env_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_simple_fps_destory[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_simple_fps_update[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_simple_fps_value[] = { JOY_V_HANDLE };
 static const joy_value_kind k_game_timer_init[] = { JOY_V_HANDLE };
 static const joy_value_kind k_game_timer_update[] = { JOY_V_HANDLE };
 static const joy_value_kind k_game_timer_get_delta_time[] = { JOY_V_HANDLE };
@@ -11463,7 +11463,7 @@ static const joy_value_kind k_game_timer_set_time_scale[] = { JOY_V_HANDLE, JOY_
 static const joy_value_kind k_game_timer_get_time_scale[] = { JOY_V_HANDLE };
 static const joy_value_kind k_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_game_timer_get_target_fps[] = { JOY_V_HANDLE };
-static const joy_value_kind k_set_clipboard_text[] = { JOY_V_STR };
+static const joy_value_kind k_joy_core_set_clipboard_text[] = { JOY_V_STR };
 static const joy_value_kind k_sys_closesocket[] = { JOY_V_I64 };
 static const joy_value_kind k_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
 static const joy_value_kind k_sys_set_sock_rcvtimeo[] = { JOY_V_I64, JOY_V_I32 };
@@ -12103,26 +12103,26 @@ static const joy_value_kind k_jmath_vec3_div_z[] = { JOY_V_F64, JOY_V_F64, JOY_V
 static const joy_value_kind k_jmath_ft_radians[] = { JOY_V_F64 };
 
 static const joy_thunk_entry s_thunks[] = {
-        { "lcg", "lcg_random_create", "LcgRandomCreate", t_lcg_random_create, 1, k_lcg_random_create, JOY_V_HANDLE },
-        { "lcg", "lcg_random_destroy", "LcgRandomDestroy", t_lcg_random_destroy, 1, k_lcg_random_destroy, JOY_V_NULL },
-        { "lcg", "lcg_random_next", "LcgRandomNext", t_lcg_random_next, 1, k_lcg_random_next, JOY_V_U32 },
-        { "lcg", "lcg_random_set_state", "LcgRandomSetState", t_lcg_random_set_state, 2, k_lcg_random_set_state, JOY_V_NULL },
+        { "core", "joy_core_lcg_random_create", "LcgRandomCreate", t_joy_core_lcg_random_create, 1, k_joy_core_lcg_random_create, JOY_V_HANDLE },
+        { "core", "joy_core_lcg_random_destroy", "LcgRandomDestroy", t_joy_core_lcg_random_destroy, 1, k_joy_core_lcg_random_destroy, JOY_V_NULL },
+        { "core", "joy_core_lcg_random_next", "LcgRandomNext", t_joy_core_lcg_random_next, 1, k_joy_core_lcg_random_next, JOY_V_U32 },
+        { "core", "joy_core_lcg_random_set_state", "LcgRandomSetState", t_joy_core_lcg_random_set_state, 2, k_joy_core_lcg_random_set_state, JOY_V_NULL },
         { "jpm", "jpm_config_add_spawn", "JpmConfigAddSpawn", t_jpm_config_add_spawn, 4, k_jpm_config_add_spawn, JOY_V_NULL },
         { "jpm", "jpm_wave_seed", "JpmWaveSeed", t_jpm_wave_seed, 2, k_jpm_wave_seed, JOY_V_U32 },
-        { "sdbm", "sdbm_hash", "SdbmHash", t_sdbm_hash, 2, k_sdbm_hash, JOY_V_U64 },
-        { "fnv1a", "fnv1a_hash", "Fnv1aHash", t_fnv1a_hash, 2, k_fnv1a_hash, JOY_V_U64 },
-        { "jenkins", "jenkins_hash", "JenkinsHash", t_jenkins_hash, 2, k_jenkins_hash, JOY_V_U64 },
-        { "murmur3", "murmur3_hash", "Murmur3Hash", t_murmur3_hash, 1, k_murmur3_hash, JOY_V_U64 },
-        { "kr", "kr_hash", "KrHash", t_kr_hash, 2, k_kr_hash, JOY_V_U64 },
+        { "core", "joy_core_sdbm_hash", "SdbmHash", t_joy_core_sdbm_hash, 2, k_joy_core_sdbm_hash, JOY_V_U64 },
+        { "core", "joy_core_fnv1a_hash", "Fnv1aHash", t_joy_core_fnv1a_hash, 2, k_joy_core_fnv1a_hash, JOY_V_U64 },
+        { "core", "joy_core_jenkins_hash", "JenkinsHash", t_joy_core_jenkins_hash, 2, k_joy_core_jenkins_hash, JOY_V_U64 },
+        { "core", "joy_core_murmur3_hash", "Murmur3Hash", t_joy_core_murmur3_hash, 1, k_joy_core_murmur3_hash, JOY_V_U64 },
+        { "core", "joy_core_kr_hash", "KrHash", t_joy_core_kr_hash, 2, k_joy_core_kr_hash, JOY_V_U64 },
         { "jtimer", "jtimer_destroy", "JtimerDestroy", t_jtimer_destroy, 1, k_jtimer_destroy, JOY_V_NULL },
         { "jtimer", "jtimer_trigger", "JtimerTrigger", t_jtimer_trigger, 1, k_jtimer_trigger, JOY_V_NULL },
         { "jtimer", "jtimer_set_interval", "JtimerSetInterval", t_jtimer_set_interval, 2, k_jtimer_set_interval, JOY_V_NULL },
         { "jtimer", "jtimer_set_active", "JtimerSetActive", t_jtimer_set_active, 2, k_jtimer_set_active, JOY_V_NULL },
         { "jtimer", "jtimer_reset", "JtimerReset", t_jtimer_reset, 1, k_jtimer_reset, JOY_V_NULL },
         { "jtimer", "jtimer_get_elapsed", "JtimerGetElapsed", t_jtimer_get_elapsed, 1, k_jtimer_get_elapsed, JOY_V_U64 },
-        { "env", "init_env", "InitEnv", t_init_env, 0, NULL, JOY_V_BOOL },
-        { "quit", "quit_env", "QuitEnv", t_quit_env, 0, NULL, JOY_V_NULL },
-        { "ticks", "get_ticks", "GetTicks", t_get_ticks, 0, NULL, JOY_V_U64 },
+        { "core", "joy_core_init_env", "InitEnv", t_joy_core_init_env, 0, NULL, JOY_V_BOOL },
+        { "core", "joy_core_quit_env", "QuitEnv", t_joy_core_quit_env, 0, NULL, JOY_V_NULL },
+        { "core", "joy_core_get_ticks", "GetTicks", t_joy_core_get_ticks, 0, NULL, JOY_V_U64 },
         { "core", "joy_core_create_window", "CreateWindow", t_joy_core_create_window, 3, k_joy_core_create_window, JOY_V_HANDLE },
         { "core", "joy_core_destroy_window", "DestroyWindow", t_joy_core_destroy_window, 1, k_joy_core_destroy_window, JOY_V_NULL },
         { "core", "joy_core_window_set_fullscreen", "WindowSetFullscreen", t_joy_core_window_set_fullscreen, 2, k_joy_core_window_set_fullscreen, JOY_V_NULL },
@@ -12130,12 +12130,12 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_window_set_icon", "WindowSetIcon", t_joy_core_window_set_icon, 2, k_joy_core_window_set_icon, JOY_V_NULL },
         { "push", "push_user_event", "PushUserEvent", t_push_user_event, 2, k_push_user_event, JOY_V_BOOL },
         { "push", "push_quit_event", "PushQuitEvent", t_push_quit_event, 0, NULL, JOY_V_BOOL },
-        { "log", "log_title", "LogTitle", t_log_title, 1, k_log_title, JOY_V_NULL },
-        { "env", "env_set", "EnvSet", t_env_set, 3, k_env_set, JOY_V_NULL },
-        { "env", "env_destroy", "EnvDestroy", t_env_destroy, 1, k_env_destroy, JOY_V_NULL },
-        { "simple", "simple_fps_destory", "SimpleFpsDestory", t_simple_fps_destory, 1, k_simple_fps_destory, JOY_V_NULL },
-        { "simple", "simple_fps_update", "SimpleFpsUpdate", t_simple_fps_update, 1, k_simple_fps_update, JOY_V_NULL },
-        { "simple", "simple_fps_value", "SimpleFpsValue", t_simple_fps_value, 1, k_simple_fps_value, JOY_V_I32 },
+        { "core", "joy_core_log_title", "LogTitle", t_joy_core_log_title, 1, k_joy_core_log_title, JOY_V_NULL },
+        { "core", "joy_core_env_set", "EnvSet", t_joy_core_env_set, 3, k_joy_core_env_set, JOY_V_NULL },
+        { "core", "joy_core_env_destroy", "EnvDestroy", t_joy_core_env_destroy, 1, k_joy_core_env_destroy, JOY_V_NULL },
+        { "core", "joy_core_simple_fps_destory", "SimpleFpsDestory", t_joy_core_simple_fps_destory, 1, k_joy_core_simple_fps_destory, JOY_V_NULL },
+        { "core", "joy_core_simple_fps_update", "SimpleFpsUpdate", t_joy_core_simple_fps_update, 1, k_joy_core_simple_fps_update, JOY_V_NULL },
+        { "core", "joy_core_simple_fps_value", "SimpleFpsValue", t_joy_core_simple_fps_value, 1, k_joy_core_simple_fps_value, JOY_V_I32 },
         { "game", "game_timer_init", "GameTimerInit", t_game_timer_init, 1, k_game_timer_init, JOY_V_NULL },
         { "game", "game_timer_update", "GameTimerUpdate", t_game_timer_update, 1, k_game_timer_update, JOY_V_NULL },
         { "game", "game_timer_get_delta_time", "GameTimerGetDeltaTime", t_game_timer_get_delta_time, 1, k_game_timer_get_delta_time, JOY_V_F64 },
@@ -12144,7 +12144,7 @@ static const joy_thunk_entry s_thunks[] = {
         { "game", "game_timer_get_time_scale", "GameTimerGetTimeScale", t_game_timer_get_time_scale, 1, k_game_timer_get_time_scale, JOY_V_F64 },
         { "game", "game_timer_set_target_fps", "GameTimerSetTargetFps", t_game_timer_set_target_fps, 2, k_game_timer_set_target_fps, JOY_V_NULL },
         { "game", "game_timer_get_target_fps", "GameTimerGetTargetFps", t_game_timer_get_target_fps, 1, k_game_timer_get_target_fps, JOY_V_I32 },
-        { "clipboard", "set_clipboard_text", "SetClipboardText", t_set_clipboard_text, 1, k_set_clipboard_text, JOY_V_NULL },
+        { "core", "joy_core_set_clipboard_text", "SetClipboardText", t_joy_core_set_clipboard_text, 1, k_joy_core_set_clipboard_text, JOY_V_NULL },
         { "sys", "sys_init_netenv", "SysInitNetenv", t_sys_init_netenv, 0, NULL, JOY_V_BOOL },
         { "sys", "sys_release_netenv", "SysReleaseNetenv", t_sys_release_netenv, 0, NULL, JOY_V_BOOL },
         { "sys", "sys_anyaddr", "SysAnyaddr", t_sys_anyaddr, 0, NULL, JOY_V_I32 },
@@ -12825,17 +12825,17 @@ const char* joy_api_selftest(void)
          * 故意传错 argc：thunk 第一行就返回，不执行任何 joy 业务函数，
          * 因此批量开放有副作用 / 需要上下文的 API 也不会在这里被调用。 */
         st = JOY_OK;
-        joy_api_call("lcg_random_create", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/lcg_random_create";
+        joy_api_call("joy_core_lcg_random_create", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_lcg_random_create";
         st = JOY_OK;
-        joy_api_call("lcg_random_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/lcg_random_destroy";
+        joy_api_call("joy_core_lcg_random_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_lcg_random_destroy";
         st = JOY_OK;
-        joy_api_call("lcg_random_next", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/lcg_random_next";
+        joy_api_call("joy_core_lcg_random_next", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_lcg_random_next";
         st = JOY_OK;
-        joy_api_call("lcg_random_set_state", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/lcg_random_set_state";
+        joy_api_call("joy_core_lcg_random_set_state", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_lcg_random_set_state";
         st = JOY_OK;
         joy_api_call("jpm_config_add_spawn", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/jpm_config_add_spawn";
@@ -12843,20 +12843,20 @@ const char* joy_api_selftest(void)
         joy_api_call("jpm_wave_seed", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/jpm_wave_seed";
         st = JOY_OK;
-        joy_api_call("sdbm_hash", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/sdbm_hash";
+        joy_api_call("joy_core_sdbm_hash", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_sdbm_hash";
         st = JOY_OK;
-        joy_api_call("fnv1a_hash", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/fnv1a_hash";
+        joy_api_call("joy_core_fnv1a_hash", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_fnv1a_hash";
         st = JOY_OK;
-        joy_api_call("jenkins_hash", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/jenkins_hash";
+        joy_api_call("joy_core_jenkins_hash", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_jenkins_hash";
         st = JOY_OK;
-        joy_api_call("murmur3_hash", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/murmur3_hash";
+        joy_api_call("joy_core_murmur3_hash", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_murmur3_hash";
         st = JOY_OK;
-        joy_api_call("kr_hash", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/kr_hash";
+        joy_api_call("joy_core_kr_hash", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_kr_hash";
         st = JOY_OK;
         joy_api_call("jtimer_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/jtimer_destroy";
@@ -12876,14 +12876,14 @@ const char* joy_api_selftest(void)
         joy_api_call("jtimer_get_elapsed", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/jtimer_get_elapsed";
         st = JOY_OK;
-        joy_api_call("init_env", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/init_env";
+        joy_api_call("joy_core_init_env", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_init_env";
         st = JOY_OK;
-        joy_api_call("quit_env", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/quit_env";
+        joy_api_call("joy_core_quit_env", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_quit_env";
         st = JOY_OK;
-        joy_api_call("get_ticks", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/get_ticks";
+        joy_api_call("joy_core_get_ticks", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_get_ticks";
         st = JOY_OK;
         joy_api_call("joy_core_create_window", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_create_window";
@@ -12906,23 +12906,23 @@ const char* joy_api_selftest(void)
         joy_api_call("push_quit_event", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/push_quit_event";
         st = JOY_OK;
-        joy_api_call("log_title", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/log_title";
+        joy_api_call("joy_core_log_title", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_log_title";
         st = JOY_OK;
-        joy_api_call("env_set", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/env_set";
+        joy_api_call("joy_core_env_set", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_env_set";
         st = JOY_OK;
-        joy_api_call("env_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/env_destroy";
+        joy_api_call("joy_core_env_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_env_destroy";
         st = JOY_OK;
-        joy_api_call("simple_fps_destory", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/simple_fps_destory";
+        joy_api_call("joy_core_simple_fps_destory", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_simple_fps_destory";
         st = JOY_OK;
-        joy_api_call("simple_fps_update", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/simple_fps_update";
+        joy_api_call("joy_core_simple_fps_update", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_simple_fps_update";
         st = JOY_OK;
-        joy_api_call("simple_fps_value", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/simple_fps_value";
+        joy_api_call("joy_core_simple_fps_value", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_simple_fps_value";
         st = JOY_OK;
         joy_api_call("game_timer_init", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/game_timer_init";
@@ -12948,8 +12948,8 @@ const char* joy_api_selftest(void)
         joy_api_call("game_timer_get_target_fps", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/game_timer_get_target_fps";
         st = JOY_OK;
-        joy_api_call("set_clipboard_text", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/set_clipboard_text";
+        joy_api_call("joy_core_set_clipboard_text", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_set_clipboard_text";
         st = JOY_OK;
         joy_api_call("sys_init_netenv", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/sys_init_netenv";
@@ -15024,22 +15024,22 @@ const char* joy_api_selftest(void)
 
         /* L0：纯标量往返 */
         st = JOY_OK;
-        r = t_init_env(NULL, 0, &st);
-        if (st != JOY_OK || r.kind != JOY_V_BOOL) return "L0/init_env";
+        r = t_joy_core_init_env(NULL, 0, &st);
+        if (st != JOY_OK || r.kind != JOY_V_BOOL) return "L0/joy_core_init_env";
         st = JOY_OK;
-        t_init_env(args, 1, &st);
+        t_joy_core_init_env(args, 1, &st);
         if (st != JOY_ERR_ARGC) return "argc-check";
 
         /* L1：create -> 句柄 -> 类型校验 -> 自动析构 */
         st = JOY_OK;
         args[0] = joy_v_u64((uint64_t)12345);
-        r = t_lcg_random_create(args, 1, &st);
-        if (st != JOY_OK || r.kind != JOY_V_HANDLE) return "L1/lcg_random_create";
+        r = t_joy_core_lcg_random_create(args, 1, &st);
+        if (st != JOY_OK || r.kind != JOY_V_HANDLE) return "L1/joy_core_lcg_random_create";
         if (joy_obj_live_count() != live0 + 1) return "live-after-create";
 
         st = JOY_OK;
         {
-                joy_value_t h = t_lcg_random_next(&r, 1, &st);
+                joy_value_t h = t_joy_core_lcg_random_next(&r, 1, &st);
                 if (st != JOY_OK || h.kind != JOY_V_U32) return "handle-arg";
         }
 

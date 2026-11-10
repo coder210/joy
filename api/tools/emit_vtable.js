@@ -30,7 +30,8 @@ const LAYOUTS = collectStructs();
  * 其余 API 由编译期签名 + init 填表保证，不做运行时调用。 */
 const SELFTEST_SAFE = new Set([
   'jpm_wave_seed',                                              // 纯标量
-  'sdbm_hash', 'fnv1a_hash', 'jenkins_hash', 'murmur3_hash', 'kr_hash', // const char*
+  'joy_core_sdbm_hash', 'joy_core_fnv1a_hash', 'joy_core_jenkins_hash',
+  'joy_core_murmur3_hash', 'joy_core_kr_hash',                       // const char*
   'jmath_fp_from_float',                                       // float 参数
 ]);
 /* 强句柄链路探针：单参数句柄 getter，传 h=0 应被 thunk 拒绝并返回零值。 */

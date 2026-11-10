@@ -175,13 +175,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         // 单状态线性同余随机数（LCG，64 位状态）。状态仅 1 个 uint64，
         // 帧同步时"每帧快照"只需同步 8 字节，比 Mersenne Twister（mt[624]+index≈2.5KB）
         // 小得多。用法与 utils_random_* 一致。
-        JOY_API lcg_num_p   lcg_random_create(uint64_t seed);
-        JOY_API void        lcg_random_destroy(lcg_num_p lcg);
-        JOY_API uint32_t    lcg_random_next(lcg_num_p lcg);
+        JOY_API lcg_num_p   joy_core_lcg_random_create(uint64_t seed);
+        JOY_API void        joy_core_lcg_random_destroy(lcg_num_p lcg);
+        JOY_API uint32_t    joy_core_lcg_random_next(lcg_num_p lcg);
         // 导出/恢复 LCG 当前状态（单值）。帧同步：客户端 join 时用服务端当前状态恢复，
         // 保证两端从同一推进位置继续，随机序列一致。
-        JOY_API void        lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out);
-        JOY_API void        lcg_random_set_state(lcg_num_p lcg, uint64_t state);
+        JOY_API void        joy_core_lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out);
+        JOY_API void        joy_core_lcg_random_set_state(lcg_num_p lcg, uint64_t state);
 
         // ============ 泛洪聚团程序化地图生成（jprocmap） ============
         // 程序化生成"带连片掩体的开放竞技场"地图：若干锚点（开放且远离出生安全区的格）

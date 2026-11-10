@@ -34,11 +34,11 @@ extern "C" {
         JOY_API char* utils_des_crypt(const char* key, const char* text, size_t textsz, size_t* out_len);
         JOY_API char* utils_des_decrypt(const char* key, const char* text, size_t textsz, size_t* out_len);
 
-        JOY_API unsigned long sdbm_hash(const char* str, int size);
-        JOY_API unsigned long fnv1a_hash(const char* str, int size);
-        JOY_API unsigned long jenkins_hash(const char* str, int size);
-        JOY_API unsigned long murmur3_hash(const char* str);
-        JOY_API unsigned long kr_hash(const char* str, int size);
+        JOY_API unsigned long joy_core_sdbm_hash(const char* str, int size);
+        JOY_API unsigned long joy_core_fnv1a_hash(const char* str, int size);
+        JOY_API unsigned long joy_core_jenkins_hash(const char* str, int size);
+        JOY_API unsigned long joy_core_murmur3_hash(const char* str);
+        JOY_API unsigned long joy_core_kr_hash(const char* str, int size);
 
         /**
          * 解码 UTF-8 字符串的第一个字符
@@ -47,7 +47,7 @@ extern "C" {
          * @param code 输出参数，存储解码后的 Unicode 码点 (int32_t)
          * @return     成功时返回消耗的字节数（1~4），失败返回 0
          */
-        JOY_API size_t utf8_decode(const char* s, size_t len, int32_t* code);
+        JOY_API size_t joy_core_utf8_decode(const char* s, size_t len, int32_t* code);
 
         /**
          * 迭代遍历 UTF-8 字符串
@@ -57,7 +57,7 @@ extern "C" {
          * @param code 输出码点 (int32_t)
          * @return     成功返回 1，结束或错误返回 0
          */
-        JOY_API int utf8_next(const char* s, size_t len,
+        JOY_API int joy_core_utf8_next(const char* s, size_t len,
                 size_t* pos, int32_t* code);
 
         /**
@@ -69,7 +69,7 @@ extern "C" {
          * @return             成功时返回实际写入的码点个数（若 out_codes==NULL，则返回所需个数）；
          *                     若字符串无效或缓冲区容量不足，返回 0
          */
-        JOY_API size_t utf8_decode_all(const char* s, size_t len,
+        JOY_API size_t joy_core_utf8_decode_all(const char* s, size_t len,
                 int32_t* out_codes, size_t out_capacity);
         JOY_API int pack_int8(char* buf, int8_t value, int offset);
         JOY_API int pack_int16(char* buf, int16_t value, int offset);
@@ -96,15 +96,15 @@ extern "C" {
         ////////////////////////////  core  ///////////////////////////////////
         ///////////////////////////////////////////////////////////////////////
 
-        JOY_API bool init_env();
-        JOY_API void quit_env(void);
-        JOY_API const char* get_error(void);
-        JOY_API uint64_t get_ticks(void);
+        JOY_API bool joy_core_init_env();
+        JOY_API void joy_core_quit_env(void);
+        JOY_API const char* joy_core_get_error(void);
+        JOY_API uint64_t joy_core_get_ticks(void);
 
         /** 从鼠标事件中提取坐标 */
-        JOY_API void get_mouse_pos(const void* event, float* out_x, float* out_y);
+        JOY_API void joy_core_get_mouse_pos(const void* event, float* out_x, float* out_y);
         /** 从鼠标事件中提取按钮（1=左, 2=中, 3=右） */
-        JOY_API int  get_mouse_button(const void* event);
+        JOY_API int  joy_core_get_mouse_button(const void* event);
 
         JOY_API jwindow_p joy_core_create_window(const char* title, int w, int h);
         JOY_API void joy_core_destroy_window(jwindow_p win);
@@ -113,29 +113,29 @@ extern "C" {
         JOY_API bool joy_core_window_get_fullscreen(jwindow_p win);
         JOY_API void joy_core_window_set_icon(jwindow_p win, const char* png_path);
 
-        JOY_API void dispatch_event(jevent_callbacks_t cbs,
+        JOY_API void joy_core_dispatch_event(jevent_callbacks_t cbs,
                 const void* event, void* arg);
-        JOY_API int  get_event_type(const void* event);
-        JOY_API int  get_event_code(const void* event);
-        JOY_API bool is_user_event(const void* event, int type);
+        JOY_API int  joy_core_get_event_type(const void* event);
+        JOY_API int  joy_core_get_event_code(const void* event);
+        JOY_API bool joy_core_is_user_event(const void* event, int type);
         JOY_API bool push_user_event(int type, int code);
         JOY_API bool push_quit_event(void);
-        JOY_API bool should_close(void* ev);
+        JOY_API bool joy_core_should_close(void* ev);
 
-        JOY_API int log_info(const char* format, ...);
-        JOY_API int log_debug(const char* format, ...);
-        JOY_API int log_error(const char* format, ...);
-        JOY_API void log_title(int type);
+        JOY_API int joy_core_log_info(const char* format, ...);
+        JOY_API int joy_core_log_debug(const char* format, ...);
+        JOY_API int joy_core_log_error(const char* format, ...);
+        JOY_API void joy_core_log_title(int type);
 
-        JOY_API env_p env_create(void);
-        JOY_API const char* env_get(env_p env, const char* key);
-        JOY_API void env_set(env_p env, const char* key, const char* value);
-        JOY_API void env_destroy(env_p env);
+        JOY_API env_p joy_core_env_create(void);
+        JOY_API const char* joy_core_env_get(env_p env, const char* key);
+        JOY_API void joy_core_env_set(env_p env, const char* key, const char* value);
+        JOY_API void joy_core_env_destroy(env_p env);
 
-        JOY_API simple_fps_counter_p simple_fps_create();
-        JOY_API void simple_fps_destory(simple_fps_counter_p fps);
-        JOY_API void simple_fps_update(simple_fps_counter_p fps);
-        JOY_API int simple_fps_value(simple_fps_counter_p fps);
+        JOY_API simple_fps_counter_p joy_core_simple_fps_create();
+        JOY_API void joy_core_simple_fps_destory(simple_fps_counter_p fps);
+        JOY_API void joy_core_simple_fps_update(simple_fps_counter_p fps);
+        JOY_API int joy_core_simple_fps_value(simple_fps_counter_p fps);
 
         JOY_API void game_timer_init(game_timer_p clock);
         JOY_API void game_timer_update(game_timer_p clock);
@@ -147,14 +147,14 @@ extern "C" {
         JOY_API int game_timer_get_target_fps(const game_timer_p clock);
 
         /** 获取剪贴板文本（调用者负责释放返回的字符串） */
-        JOY_API char* get_clipboard_text(void);
+        JOY_API char* joy_core_get_clipboard_text(void);
         /** 设置剪贴板文本 */
-        JOY_API void set_clipboard_text(const char* text);
+        JOY_API void joy_core_set_clipboard_text(const char* text);
 
 
         JOY_API bool sys_init_netenv(void);
         JOY_API bool sys_release_netenv(void);
-        JOY_API int get_local_ips(char ips[][JOY_MAX_IP], int max_count);
+        JOY_API int joy_core_get_local_ips(char ips[][JOY_MAX_IP], int max_count);
         JOY_API int sys_anyaddr(void);
         JOY_API bool sys_closesocket(int64_t sockfd);
         JOY_API int sys_set_sock_sndtimeo(int64_t sockfd, int ms);
