@@ -235,13 +235,13 @@ extern "C" {
         JOY_API bool joy_r2d_point_in_clip(jr2d_p r2d, float x, float y);
 
         /* 形状绘制 */
-        JOY_API bool shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2);
+        JOY_API bool joy_math_shape_draw_line(jr2d_p r2d, float x1, float y1, float x2, float y2);
         JOY_API bool joy_r2d_draw_lines(jr2d_p r2d, const vec2_t* points, int count);
-        JOY_API bool shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect);
-        JOY_API bool shape_draw_polygon(jr2d_p r2d, const char* mode, vec2_t* points, int point_count, jcolor_t color);
-        JOY_API bool shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments);
-        JOY_API bool shape_draw_grid(jr2d_p r2d, vec2_t start, vec2_t end, float grid_size);
-        JOY_API bool shape_draw_gridx(jr2d_p r2d, vec2_t position, int rows, int cols, float grid_size);
+        JOY_API bool joy_math_shape_draw_rectangle(jr2d_p r2d, const char* mode, jrect_t rect);
+        JOY_API bool joy_math_shape_draw_polygon(jr2d_p r2d, const char* mode, vec2_t* points, int point_count, jcolor_t color);
+        JOY_API bool joy_math_shape_draw_circle(jr2d_p r2d, const char* mode, vec2_t center, float radius, int segments);
+        JOY_API bool joy_math_shape_draw_grid(jr2d_p r2d, vec2_t start, vec2_t end, float grid_size);
+        JOY_API bool joy_math_shape_draw_gridx(jr2d_p r2d, vec2_t position, int rows, int cols, float grid_size);
 
         /* 图片操作 */
         JOY_API image_p joy_ui_image_create(jr2d_p r2d, const char* filename);
@@ -281,9 +281,9 @@ extern "C" {
                                 float* x, float* y, float* w, float* h);
 
         JOY_API bool    joy_r2d_draw_point_f(jr2d_p r2d, float fx, float fy);
-        JOY_API bool    shape_draw_rectangle_f(jr2d_p r2d, const char* mode,
+        JOY_API bool    joy_math_shape_draw_rectangle_f(jr2d_p r2d, const char* mode,
                                                float fx, float fy, float fw, float fh);
-        JOY_API bool    shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2);
+        JOY_API bool    joy_math_shape_draw_line_f(jr2d_p r2d, float fx1, float fy1, float fx2, float fy2);
         JOY_API void    joy_ui_image_draw1_f(jr2d_p r2d, image_p image, const jrect_t* srcrect,
                                       float fx, float fy, float fw, float fh);
 
@@ -785,63 +785,63 @@ extern "C" {
        ///////////////////////////////////////////////////////////////////////
 
 
-        JOY_API ray2d_collision_t collision2d_get_ray_circle(ray2d_t ray, circle_t circle);
-        JOY_API ray2d_collision_t collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect);
-        JOY_API ray2d_collision_t collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle);
-        JOY_API ray2d_collision_t collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon);
-        JOY_API bool collision2d_check_point_rectangle(vec2_t point, rectangle_t rect);
-        JOY_API bool collision2d_check_point_circle(vec2_t point, circle_t circle);
-        JOY_API ft_t collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle);
-        JOY_API bool collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3);
-        JOY_API bool collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp);
-        JOY_API bool collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold);
-        JOY_API bool collision2d_check_circles(circle_t a, circle_t b);
-        JOY_API bool collision2d_check_rectangles(rectangle_t a, rectangle_t b);
-        JOY_API bool collision2d_check_polygons(polygon_t a, polygon_t b);
-        JOY_API bool collision2d_check_circle_rectangle(circle_t a, rectangle_t b);
-        JOY_API bool collision2d_check_circle_polygon(circle_t a, polygon_t b);
-        JOY_API int collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact);
-        JOY_API int collision2d_get_rectangles(rectangle_t a, ft_t a_angle, rectangle_t b, ft_t b_angle, contact2d_t* contact);
-        JOY_API int collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact);
-        JOY_API ray3d_collision_t collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3);
-        JOY_API ray3d_collision_t collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4);
-        JOY_API ray3d_collision_t collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere);
-        JOY_API ray3d_collision_t collision3d_get_ray_box(ray3d_t ray, bounding_box_t box);
-        JOY_API bool collision3d_check_spheres(sphere_t a, sphere_t b);
-        JOY_API bool collision3d_check_boxes(bounding_box_t a, bounding_box_t b);
-        JOY_API bool collision3d_check_box_sphere(bounding_box_t a, sphere_t b);
+        JOY_API ray2d_collision_t joy_math_collision2d_get_ray_circle(ray2d_t ray, circle_t circle);
+        JOY_API ray2d_collision_t joy_math_collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect);
+        JOY_API ray2d_collision_t joy_math_collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle);
+        JOY_API ray2d_collision_t joy_math_collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon);
+        JOY_API bool joy_math_collision2d_check_point_rectangle(vec2_t point, rectangle_t rect);
+        JOY_API bool joy_math_collision2d_check_point_circle(vec2_t point, circle_t circle);
+        JOY_API ft_t joy_math_collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle);
+        JOY_API bool joy_math_collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3);
+        JOY_API bool joy_math_collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp);
+        JOY_API bool joy_math_collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold);
+        JOY_API bool joy_math_collision2d_check_circles(circle_t a, circle_t b);
+        JOY_API bool joy_math_collision2d_check_rectangles(rectangle_t a, rectangle_t b);
+        JOY_API bool joy_math_collision2d_check_polygons(polygon_t a, polygon_t b);
+        JOY_API bool joy_math_collision2d_check_circle_rectangle(circle_t a, rectangle_t b);
+        JOY_API bool joy_math_collision2d_check_circle_polygon(circle_t a, polygon_t b);
+        JOY_API int joy_math_collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact);
+        JOY_API int joy_math_collision2d_get_rectangles(rectangle_t a, ft_t a_angle, rectangle_t b, ft_t b_angle, contact2d_t* contact);
+        JOY_API int joy_math_collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact);
+        JOY_API ray3d_collision_t joy_math_collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3);
+        JOY_API ray3d_collision_t joy_math_collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4);
+        JOY_API ray3d_collision_t joy_math_collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere);
+        JOY_API ray3d_collision_t joy_math_collision3d_get_ray_box(ray3d_t ray, bounding_box_t box);
+        JOY_API bool joy_math_collision3d_check_spheres(sphere_t a, sphere_t b);
+        JOY_API bool joy_math_collision3d_check_boxes(bounding_box_t a, bounding_box_t b);
+        JOY_API bool joy_math_collision3d_check_box_sphere(bounding_box_t a, sphere_t b);
 
-        JOY_API ray2d_collisionf_t collision2df_get_ray_circle(ray2df_t ray,
+        JOY_API ray2d_collisionf_t joy_math_collision2df_get_ray_circle(ray2df_t ray,
                 circlef_t circle);
-        JOY_API ray2d_collisionf_t collision2df_get_ray_rectangle(ray2df_t ray,
+        JOY_API ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(ray2df_t ray,
                 rectanglef_t rect);
-        JOY_API ray2d_collisionf_t collision2df_get_ray_rectanglex(ray2df_t ray,
+        JOY_API ray2d_collisionf_t joy_math_collision2df_get_ray_rectanglex(ray2df_t ray,
                 rectanglef_t rect, fp_t angle /* 旋转角, 单位: 度 */);
-        JOY_API ray2d_collisionf_t collision2df_get_ray_polygon(ray2df_t ray,
+        JOY_API ray2d_collisionf_t joy_math_collision2df_get_ray_polygon(ray2df_t ray,
                 polygonf_t polygon);
-        JOY_API bool collision2df_check_point_rectangle(vec2f_t point,
+        JOY_API bool joy_math_collision2df_check_point_rectangle(vec2f_t point,
                 rectanglef_t rect);
-        JOY_API bool collision2df_check_point_circle(vec2f_t point, circlef_t circle);
-        JOY_API fp_t collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle);
-        JOY_API bool collision2df_check_point_triangle(vec2f_t point,
+        JOY_API bool joy_math_collision2df_check_point_circle(vec2f_t point, circlef_t circle);
+        JOY_API fp_t joy_math_collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle);
+        JOY_API bool joy_math_collision2df_check_point_triangle(vec2f_t point,
                 vec2f_t p1, vec2f_t p2, vec2f_t p3);
-        JOY_API bool collision2df_check_lines(vec2f_t a1, vec2f_t b1,
+        JOY_API bool joy_math_collision2df_check_lines(vec2f_t a1, vec2f_t b1,
                 vec2f_t a2, vec2f_t b2, vec2f_t* cp);
-        JOY_API bool collision2df_check_point_line(vec2f_t point,
+        JOY_API bool joy_math_collision2df_check_point_line(vec2f_t point,
                 vec2f_t p1, vec2f_t p2, fp_t threshold);
-        JOY_API bool collision2df_check_circles(circlef_t a, circlef_t b);
-        JOY_API bool collision2df_check_rectangles(rectanglef_t a, rectanglef_t b);
-        JOY_API bool collision2df_check_polygons(polygonf_t a, polygonf_t b);
-        JOY_API bool collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b);
-        JOY_API bool collision2df_check_circle_polygon(circlef_t a, polygonf_t b);
-        JOY_API int collision2df_get_circles(circlef_t a, circlef_t b,
+        JOY_API bool joy_math_collision2df_check_circles(circlef_t a, circlef_t b);
+        JOY_API bool joy_math_collision2df_check_rectangles(rectanglef_t a, rectanglef_t b);
+        JOY_API bool joy_math_collision2df_check_polygons(polygonf_t a, polygonf_t b);
+        JOY_API bool joy_math_collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b);
+        JOY_API bool joy_math_collision2df_check_circle_polygon(circlef_t a, polygonf_t b);
+        JOY_API int joy_math_collision2df_get_circles(circlef_t a, circlef_t b,
                 contact2df_t* contact);
-        JOY_API int collision2df_get_rectangles(rectanglef_t a, fp_t a_angle /* 度 */,
+        JOY_API int joy_math_collision2df_get_rectangles(rectanglef_t a, fp_t a_angle /* 度 */,
                 rectanglef_t b, fp_t b_angle /* 度 */,
                 contact2df_t* contact);
         JOY_API fp_t joy_math_find_min_separation(polygonf_t a, polygonf_t b,
                 vec2f_t* axis, vec2f_t* point);
-        JOY_API int collision2df_get_polygons(polygonf_t a, polygonf_t b,
+        JOY_API int joy_math_collision2df_get_polygons(polygonf_t a, polygonf_t b,
                 contact2df_t* contact);
 
         /* OBB（旋转矩形）沿 (dx,dy) 平移的「扫掠体」-> 凸包顶点（世界坐标）。
@@ -862,8 +862,8 @@ extern "C" {
          * 与 find_min_separation 的约定一致 —— 绕序反了会让分离距离符号反转、
          * 判定结果完全相反。
          *
-         * 典型用法：把 out/out_count 包成 polygonf_t，再交给 collision2df_check_polygons。 */
-        JOY_API void collision2df_swept_obb(vec2f_t center, vec2f_t axis,
+         * 典型用法：把 out/out_count 包成 polygonf_t，再交给 joy_math_collision2df_check_polygons。 */
+        JOY_API void joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
                 fp_t half_long, fp_t half_short, fp_t dx, fp_t dy,
                 vec2f_t* out, int* out_count);
 
@@ -878,54 +878,54 @@ extern "C" {
         JOY_API bool joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h,
                 joy_tilemap_solid_fn solid);
 
-        JOY_API ray3d_collisionf_t collision3df_get_ray_triangle(ray3df_t ray,
+        JOY_API ray3d_collisionf_t joy_math_collision3df_get_ray_triangle(ray3df_t ray,
                 vec3f_t p1, vec3f_t p2, vec3f_t p3);
-        JOY_API ray3d_collisionf_t collision3df_get_ray_quad(ray3df_t ray,
+        JOY_API ray3d_collisionf_t joy_math_collision3df_get_ray_quad(ray3df_t ray,
                 vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3f_t p4);
-        JOY_API ray3d_collisionf_t collision3df_get_ray_sphere(ray3df_t ray,
+        JOY_API ray3d_collisionf_t joy_math_collision3df_get_ray_sphere(ray3df_t ray,
                 spheref_t sphere);
-        JOY_API ray3d_collisionf_t collision3df_get_ray_box(ray3df_t ray,
+        JOY_API ray3d_collisionf_t joy_math_collision3df_get_ray_box(ray3df_t ray,
                 bounding_boxf_t box);
         /* OBB(旋转盒)射线检测: position=中心, half_size=半边长, rotation=欧拉角(弧度) */
-        JOY_API ray3d_collisionf_t collision3df_get_ray_obb(ray3df_t ray,
+        JOY_API ray3d_collisionf_t joy_math_collision3df_get_ray_obb(ray3df_t ray,
                 vec3f_t position, vec3f_t half_size, vec3f_t rotation);
-        JOY_API bool collision3df_check_spheres(spheref_t a, spheref_t b);
-        JOY_API bool collision3df_check_boxes(bounding_boxf_t a,
+        JOY_API bool joy_math_collision3df_check_spheres(spheref_t a, spheref_t b);
+        JOY_API bool joy_math_collision3df_check_boxes(bounding_boxf_t a,
                 bounding_boxf_t b);
-        JOY_API bool collision3df_check_box_sphere(bounding_boxf_t a,
+        JOY_API bool joy_math_collision3df_check_box_sphere(bounding_boxf_t a,
                 spheref_t b);
 
 
         /* 主碰撞检测: GJK + EPA, 返回是否碰撞, contact填充法线和深度 */
-        JOY_API bool gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
+        JOY_API bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
                 vec2f_t init_dir, gjk2d_contact_p contact);
-        JOY_API void gjk2d_init_circle(gjk2d_collider_t* c, vec2f_t pos, fp_t radius);
-        JOY_API void gjk2d_init_box(gjk2d_collider_t* c, vec2f_t pos, vec2f_t half_size);
-        JOY_API void gjk2d_init_capsule(gjk2d_collider_t* c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius);
-        JOY_API void gjk2d_init_polygon(gjk2d_collider_t* c, vec2f_t* vertices, int num);
-        JOY_API void gjk2d_init_pie(gjk2d_collider_t* c, vec2f_t pos, fp_t radius, fp_t sweep);
-        JOY_API bool gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
+        JOY_API void joy_math_gjk2d_init_circle(gjk2d_collider_t* c, vec2f_t pos, fp_t radius);
+        JOY_API void joy_math_gjk2d_init_box(gjk2d_collider_t* c, vec2f_t pos, vec2f_t half_size);
+        JOY_API void joy_math_gjk2d_init_capsule(gjk2d_collider_t* c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius);
+        JOY_API void joy_math_gjk2d_init_polygon(gjk2d_collider_t* c, vec2f_t* vertices, int num);
+        JOY_API void joy_math_gjk2d_init_pie(gjk2d_collider_t* c, vec2f_t pos, fp_t radius, fp_t sweep);
+        JOY_API bool joy_math_gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
                 vec3f_t init_dir, gjk3df_contact_p contact);
         /* 快捷初始化函数(仅设置参数,无内存分配) */
-        JOY_API void gjk3df_init_sphere(gjk3df_collider_t* c, vec3f_t pos, fp_t radius);
-        JOY_API void gjk3df_init_box(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size);
-        JOY_API void gjk3df_init_obb(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation);
-        JOY_API void gjk3df_init_capsule(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
-        JOY_API void gjk3df_init_cylinder(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
-        JOY_API void gjk3df_init_cone(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
-        JOY_API void gjk3df_init_mesh(gjk3df_collider_t* c, vec3f_t* vertices, int num);
+        JOY_API void joy_math_gjk3df_init_sphere(gjk3df_collider_t* c, vec3f_t pos, fp_t radius);
+        JOY_API void joy_math_gjk3df_init_box(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size);
+        JOY_API void joy_math_gjk3df_init_obb(gjk3df_collider_t* c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation);
+        JOY_API void joy_math_gjk3df_init_capsule(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis);
+        JOY_API void joy_math_gjk3df_init_cylinder(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void joy_math_gjk3df_init_cone(gjk3df_collider_t* c, vec3f_t pos, fp_t radius, fp_t height);
+        JOY_API void joy_math_gjk3df_init_mesh(gjk3df_collider_t* c, vec3f_t* vertices, int num);
 
         /* ============ GJK 3D 浮点版 (ft_t/vec3_t) ============ */
         /* 主碰撞检测: GJK + EPA, 返回是否碰撞, contact填充法线和深度 */
-        JOY_API bool gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
+        JOY_API bool joy_math_gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
                 vec3_t init_dir, gjk3d_contact_p contact);
         /* 快捷初始化函数(仅设置参数,无内存分配) */
-        JOY_API void gjk3d_init_sphere(gjk3d_collider_t* c, vec3_t pos, ft_t radius);
-        JOY_API void gjk3d_init_box(gjk3d_collider_t* c, vec3_t pos, vec3_t half_size);
-        JOY_API void gjk3d_init_capsule(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis);
-        JOY_API void gjk3d_init_cylinder(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
-        JOY_API void gjk3d_init_cone(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
-        JOY_API void gjk3d_init_mesh(gjk3d_collider_t* c, vec3_t* vertices, int num);
+        JOY_API void joy_math_gjk3d_init_sphere(gjk3d_collider_t* c, vec3_t pos, ft_t radius);
+        JOY_API void joy_math_gjk3d_init_box(gjk3d_collider_t* c, vec3_t pos, vec3_t half_size);
+        JOY_API void joy_math_gjk3d_init_capsule(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis);
+        JOY_API void joy_math_gjk3d_init_cylinder(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
+        JOY_API void joy_math_gjk3d_init_cone(gjk3d_collider_t* c, vec3_t pos, ft_t radius, ft_t height);
+        JOY_API void joy_math_gjk3d_init_mesh(gjk3d_collider_t* c, vec3_t* vertices, int num);
 
         JOY_API janimator_p joy_scene_animator_create(jr2d_p r2d);
         JOY_API void joy_scene_animator_destroy(janimator_p anim);
@@ -1641,17 +1641,17 @@ extern "C" {
         JOY_API void module_instance_release(module_p mod, void* inst);
 
 
-        JOY_API box2d_world_t* box2d_create_world(vec2f_t gravity, int iterations);
-        JOY_API void box2d_clear_world(box2d_world_t* world);
-        JOY_API void box2d_destroy_world(box2d_world_t* world);
-        JOY_API void box2d_step(box2d_world_t* world, fp_t dt);
-        JOY_API box2d_body_t* box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by);
-        JOY_API void box2d_destroy_body(box2d_world_t* world, int id);
-        JOY_API box2d_joint_t* box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor);
-        JOY_API void box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint);
-        JOY_API void box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*));
-        JOY_API void box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
-        JOY_API void box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
+        JOY_API box2d_world_t* joy_math_box2d_create_world(vec2f_t gravity, int iterations);
+        JOY_API void joy_math_box2d_clear_world(box2d_world_t* world);
+        JOY_API void joy_math_box2d_destroy_world(box2d_world_t* world);
+        JOY_API void joy_math_box2d_step(box2d_world_t* world, fp_t dt);
+        JOY_API box2d_body_t* joy_math_box2d_create_body(box2d_world_t* world, fp_t mass, fp_t bx, fp_t by);
+        JOY_API void joy_math_box2d_destroy_body(box2d_world_t* world, int id);
+        JOY_API box2d_joint_t* joy_math_box2d_create_joint(box2d_world_t* world, int id1, int id2, vec2f_t anchor);
+        JOY_API void joy_math_box2d_destroy_joint(box2d_world_t* world, box2d_joint_t* joint);
+        JOY_API void joy_math_box2d_foreach_bodies(box2d_world_t* world, void (*iterator)(box2d_body_t*));
+        JOY_API void joy_math_box2d_foreach_joints(box2d_world_t* world, void (*iterator)(box2d_joint_t*, box2d_body_t*, box2d_body_t*));
+        JOY_API void joy_math_box2d_foreach_arbiters(box2d_world_t* world, void (*iterator)(box2d_arbiter_t*));
 
         JOY_API void jmsgpack_packer_init(jmsgpack_packer_t* pk, void* data, jmsgpack_write_fn cb);
         JOY_API int  jmsgpack_pack_int(jmsgpack_packer_t* pk, int d);

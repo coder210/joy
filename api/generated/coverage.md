@@ -34,20 +34,12 @@
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
-| box2d | 0 | 0 | 0 | 11 | 0 | 11 |
-| collision2d | 0 | 0 | 10 | 8 | 0 | 18 |
-| collision2df | 0 | 0 | 5 | 14 | 0 | 19 |
-| collision3d | 0 | 0 | 3 | 4 | 0 | 7 |
-| collision3df | 0 | 0 | 3 | 5 | 0 | 8 |
 | core | 14 | 23 | 1 | 9 | 0 | 47 |
-| gjk2d | 0 | 0 | 0 | 6 | 0 | 6 |
-| gjk3d | 0 | 0 | 1 | 6 | 0 | 7 |
-| gjk3df | 0 | 0 | 1 | 7 | 0 | 8 |
 | input | 0 | 14 | 0 | 3 | 0 | 17 |
 | jmath | 220 | 0 | 0 | 0 | 0 | 220 |
 | jmsgpack | 0 | 0 | 0 | 22 | 0 | 22 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
-| math | 0 | 0 | 0 | 1 | 0 | 1 |
+| math | 0 | 3 | 27 | 63 | 0 | 93 |
 | module | 0 | 0 | 0 | 0 | 5 | 5 |
 | modules | 0 | 0 | 0 | 0 | 5 | 5 |
 | moudles | 0 | 0 | 0 | 1 | 0 | 1 |
@@ -55,7 +47,6 @@
 | r2d | 4 | 33 | 6 | 12 | 19 | 74 |
 | r3d | 0 | 109 | 14 | 23 | 0 | 146 |
 | scene | 1 | 117 | 3 | 38 | 1 | 160 |
-| shape | 0 | 3 | 4 | 1 | 0 | 8 |
 | sys | 19 | 0 | 0 | 3 | 0 | 22 |
 | ui | 0 | 170 | 23 | 29 | 0 | 222 |
 | utils | 0 | 0 | 0 | 0 | 20 | 20 |
@@ -197,7 +188,7 @@
 | `joy_r2d_draw_points` | 结构体指针参数 | include/joy/api.h:222 |
 | `joy_r2d_get_clip_rect` | 结构体指针参数 | include/joy/api.h:230 |
 | `joy_r2d_draw_lines` | 结构体指针参数 | include/joy/api.h:239 |
-| `shape_draw_polygon` | 结构体指针参数 | include/joy/api.h:241 |
+| `joy_math_shape_draw_polygon` | 结构体指针参数 | include/joy/api.h:241 |
 | `joy_ui_image_draw1` | 结构体指针参数 | include/joy/api.h:252 |
 | `joy_ui_image_draw_ex` | 结构体指针参数 | include/joy/api.h:253 |
 | `joy_ui_image_get_size` | 非不透明指针 / 输出参数：float* | include/joy/api.h:256 |
@@ -236,59 +227,59 @@
 | `joy_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/api.h:767 |
 | `joy_fov_draw` | 非不透明指针 / 输出参数：float* | include/joy/api.h:773 |
 | `joy_fov_draw_2d` | 非不透明指针 / 输出参数：float* | include/joy/api.h:780 |
-| `collision2d_get_ray_circle` | 结构体按值返回 | include/joy/api.h:788 |
-| `collision2d_get_ray_rectangle` | 结构体按值返回 | include/joy/api.h:789 |
-| `collision2d_get_ray_rectanglex` | 结构体按值返回 | include/joy/api.h:790 |
-| `collision2d_get_ray_polygon` | 结构体按值返回 | include/joy/api.h:791 |
-| `collision2d_check_lines` | 结构体指针参数 | include/joy/api.h:796 |
-| `collision2d_get_circles` | 结构体指针参数 | include/joy/api.h:803 |
-| `collision2d_get_rectangles` | 结构体指针参数 | include/joy/api.h:804 |
-| `collision2d_get_polygons` | 结构体指针参数 | include/joy/api.h:805 |
-| `collision3d_get_ray_triangle` | 结构体按值返回 | include/joy/api.h:806 |
-| `collision3d_get_ray_quad` | 结构体按值返回 | include/joy/api.h:807 |
-| `collision3d_get_ray_sphere` | 结构体按值返回 | include/joy/api.h:808 |
-| `collision3d_get_ray_box` | 结构体按值返回 | include/joy/api.h:809 |
-| `collision2df_get_ray_circle` | 结构体按值返回 | include/joy/api.h:814 |
-| `collision2df_get_ray_rectangle` | 结构体按值返回 | include/joy/api.h:816 |
-| `collision2df_get_ray_rectanglex` | 结构体按值返回 | include/joy/api.h:818 |
-| `collision2df_get_ray_polygon` | 结构体按值返回 | include/joy/api.h:820 |
-| `collision2df_check_point_rectangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:822 |
-| `collision2df_check_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:824 |
-| `collision2df_get_squared_distance_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:825 |
-| `collision2df_check_point_triangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:826 |
-| `collision2df_check_lines` | 未知类型需人工标注：vec2f_t | include/joy/api.h:828 |
-| `collision2df_check_point_line` | 未知类型需人工标注：vec2f_t | include/joy/api.h:830 |
-| `collision2df_get_circles` | 结构体指针参数 | include/joy/api.h:837 |
-| `collision2df_get_rectangles` | 结构体指针参数 | include/joy/api.h:839 |
+| `joy_math_collision2d_get_ray_circle` | 结构体按值返回 | include/joy/api.h:788 |
+| `joy_math_collision2d_get_ray_rectangle` | 结构体按值返回 | include/joy/api.h:789 |
+| `joy_math_collision2d_get_ray_rectanglex` | 结构体按值返回 | include/joy/api.h:790 |
+| `joy_math_collision2d_get_ray_polygon` | 结构体按值返回 | include/joy/api.h:791 |
+| `joy_math_collision2d_check_lines` | 结构体指针参数 | include/joy/api.h:796 |
+| `joy_math_collision2d_get_circles` | 结构体指针参数 | include/joy/api.h:803 |
+| `joy_math_collision2d_get_rectangles` | 结构体指针参数 | include/joy/api.h:804 |
+| `joy_math_collision2d_get_polygons` | 结构体指针参数 | include/joy/api.h:805 |
+| `joy_math_collision3d_get_ray_triangle` | 结构体按值返回 | include/joy/api.h:806 |
+| `joy_math_collision3d_get_ray_quad` | 结构体按值返回 | include/joy/api.h:807 |
+| `joy_math_collision3d_get_ray_sphere` | 结构体按值返回 | include/joy/api.h:808 |
+| `joy_math_collision3d_get_ray_box` | 结构体按值返回 | include/joy/api.h:809 |
+| `joy_math_collision2df_get_ray_circle` | 结构体按值返回 | include/joy/api.h:814 |
+| `joy_math_collision2df_get_ray_rectangle` | 结构体按值返回 | include/joy/api.h:816 |
+| `joy_math_collision2df_get_ray_rectanglex` | 结构体按值返回 | include/joy/api.h:818 |
+| `joy_math_collision2df_get_ray_polygon` | 结构体按值返回 | include/joy/api.h:820 |
+| `joy_math_collision2df_check_point_rectangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:822 |
+| `joy_math_collision2df_check_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:824 |
+| `joy_math_collision2df_get_squared_distance_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:825 |
+| `joy_math_collision2df_check_point_triangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:826 |
+| `joy_math_collision2df_check_lines` | 未知类型需人工标注：vec2f_t | include/joy/api.h:828 |
+| `joy_math_collision2df_check_point_line` | 未知类型需人工标注：vec2f_t | include/joy/api.h:830 |
+| `joy_math_collision2df_get_circles` | 结构体指针参数 | include/joy/api.h:837 |
+| `joy_math_collision2df_get_rectangles` | 结构体指针参数 | include/joy/api.h:839 |
 | `joy_math_find_min_separation` | 非不透明指针 / 输出参数：vec2f_t* | include/joy/api.h:842 |
-| `collision2df_get_polygons` | 结构体指针参数 | include/joy/api.h:844 |
-| `collision2df_swept_obb` | 未知类型需人工标注：vec2f_t | include/joy/api.h:866 |
+| `joy_math_collision2df_get_polygons` | 结构体指针参数 | include/joy/api.h:844 |
+| `joy_math_collision2df_swept_obb` | 未知类型需人工标注：vec2f_t | include/joy/api.h:866 |
 | `joy_tilemap_sweep_x` | 非不透明指针 / 输出参数：fp_t* | include/joy/api.h:876 |
 | `joy_tilemap_sweep_y` | 非不透明指针 / 输出参数：fp_t* | include/joy/api.h:878 |
-| `collision3df_get_ray_triangle` | 结构体按值返回 | include/joy/api.h:881 |
-| `collision3df_get_ray_quad` | 结构体按值返回 | include/joy/api.h:883 |
-| `collision3df_get_ray_sphere` | 结构体按值返回 | include/joy/api.h:885 |
-| `collision3df_get_ray_box` | 结构体按值返回 | include/joy/api.h:887 |
-| `collision3df_get_ray_obb` | 结构体按值返回 | include/joy/api.h:890 |
-| `gjk2d_collide` | 未知类型需人工标注：vec2f_t | include/joy/api.h:900 |
-| `gjk2d_init_circle` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:902 |
-| `gjk2d_init_box` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:903 |
-| `gjk2d_init_capsule` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:904 |
-| `gjk2d_init_polygon` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:905 |
-| `gjk2d_init_pie` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:906 |
-| `gjk3df_init_sphere` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:910 |
-| `gjk3df_init_box` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:911 |
-| `gjk3df_init_obb` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:912 |
-| `gjk3df_init_capsule` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:913 |
-| `gjk3df_init_cylinder` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:914 |
-| `gjk3df_init_cone` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:915 |
-| `gjk3df_init_mesh` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:916 |
-| `gjk3d_init_sphere` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:923 |
-| `gjk3d_init_box` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:924 |
-| `gjk3d_init_capsule` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:925 |
-| `gjk3d_init_cylinder` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:926 |
-| `gjk3d_init_cone` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:927 |
-| `gjk3d_init_mesh` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:928 |
+| `joy_math_collision3df_get_ray_triangle` | 结构体按值返回 | include/joy/api.h:881 |
+| `joy_math_collision3df_get_ray_quad` | 结构体按值返回 | include/joy/api.h:883 |
+| `joy_math_collision3df_get_ray_sphere` | 结构体按值返回 | include/joy/api.h:885 |
+| `joy_math_collision3df_get_ray_box` | 结构体按值返回 | include/joy/api.h:887 |
+| `joy_math_collision3df_get_ray_obb` | 结构体按值返回 | include/joy/api.h:890 |
+| `joy_math_gjk2d_collide` | 未知类型需人工标注：vec2f_t | include/joy/api.h:900 |
+| `joy_math_gjk2d_init_circle` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:902 |
+| `joy_math_gjk2d_init_box` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:903 |
+| `joy_math_gjk2d_init_capsule` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:904 |
+| `joy_math_gjk2d_init_polygon` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:905 |
+| `joy_math_gjk2d_init_pie` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:906 |
+| `joy_math_gjk3df_init_sphere` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:910 |
+| `joy_math_gjk3df_init_box` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:911 |
+| `joy_math_gjk3df_init_obb` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:912 |
+| `joy_math_gjk3df_init_capsule` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:913 |
+| `joy_math_gjk3df_init_cylinder` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:914 |
+| `joy_math_gjk3df_init_cone` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:915 |
+| `joy_math_gjk3df_init_mesh` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:916 |
+| `joy_math_gjk3d_init_sphere` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:923 |
+| `joy_math_gjk3d_init_box` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:924 |
+| `joy_math_gjk3d_init_capsule` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:925 |
+| `joy_math_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:926 |
+| `joy_math_gjk3d_init_cone` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:927 |
+| `joy_math_gjk3d_init_mesh` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:928 |
 | `joy_scene_animator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:959 |
 | `joy_scene_animator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:960 |
 | `joy_ui_label_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1034 |
@@ -354,17 +345,17 @@
 | `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1569 |
 | `joy_scene_ecs_register` | 未知类型需人工标注：jecs_system_t | include/joy/api.h:1570 |
 | `moudles_retire` | 非不透明指针 / 输出参数：module_p* | include/joy/api.h:1636 |
-| `box2d_create_world` | 未知类型需人工标注：vec2f_t | include/joy/api.h:1644 |
-| `box2d_clear_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1645 |
-| `box2d_destroy_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1646 |
-| `box2d_step` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1647 |
-| `box2d_create_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1648 |
-| `box2d_destroy_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1649 |
-| `box2d_create_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1650 |
-| `box2d_destroy_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1651 |
-| `box2d_foreach_bodies` | 函数指针 / 回调 | include/joy/api.h:1652 |
-| `box2d_foreach_joints` | 函数指针 / 回调 | include/joy/api.h:1653 |
-| `box2d_foreach_arbiters` | 函数指针 / 回调 | include/joy/api.h:1654 |
+| `joy_math_box2d_create_world` | 未知类型需人工标注：vec2f_t | include/joy/api.h:1644 |
+| `joy_math_box2d_clear_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1645 |
+| `joy_math_box2d_destroy_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1646 |
+| `joy_math_box2d_step` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1647 |
+| `joy_math_box2d_create_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1648 |
+| `joy_math_box2d_destroy_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1649 |
+| `joy_math_box2d_create_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1650 |
+| `joy_math_box2d_destroy_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1651 |
+| `joy_math_box2d_foreach_bodies` | 函数指针 / 回调 | include/joy/api.h:1652 |
+| `joy_math_box2d_foreach_joints` | 函数指针 / 回调 | include/joy/api.h:1653 |
+| `joy_math_box2d_foreach_arbiters` | 函数指针 / 回调 | include/joy/api.h:1654 |
 | `jmsgpack_packer_init` | 结构体指针参数 | include/joy/api.h:1656 |
 | `jmsgpack_pack_int` | 结构体指针参数 | include/joy/api.h:1657 |
 | `jmsgpack_pack_int64` | 结构体指针参数 | include/joy/api.h:1658 |

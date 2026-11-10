@@ -1146,7 +1146,7 @@ static joy_value_t t_joy_r2d_point_in_clip(joy_value_t* a, int n, joy_status_t* 
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
 {
         jr2d_p p0;
         float p1;
@@ -1154,43 +1154,43 @@ static joy_value_t t_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
         float p3;
         float p4;
         bool _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "shape_draw_line");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_line");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg4");
         p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "shape_draw_line.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = shape_draw_line(p0, p1, p2, p3, p4);
+        _r = joy_math_shape_draw_line(p0, p1, p2, p3, p4);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_math_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
 {
         jr2d_p p0;
         const char* p1;
         jrect_t p2 = { 0 };
         bool _r;
-        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "shape_draw_rectangle");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg0");
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_rectangle");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg0");
         p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "shape_draw_rectangle.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg1");
+        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg1");
         p1 = (const char*)a[1].as.str;
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg2");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg2");
         p2.x = (float)a[2].as.f64;
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg3");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg3");
         p2.y = (float)a[3].as.f64;
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg4");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg4");
         p2.w = (float)a[4].as.f64;
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle.arg5");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg5");
         p2.h = (float)a[5].as.f64;
-        _r = shape_draw_rectangle(p0, p1, p2);
+        _r = joy_math_shape_draw_rectangle(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
@@ -1382,7 +1382,7 @@ static joy_value_t t_joy_r2d_draw_point_f(joy_value_t* a, int n, joy_status_t* s
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t* st)
 {
         jr2d_p p0;
         const char* p1;
@@ -1391,25 +1391,25 @@ static joy_value_t t_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t*
         float p4;
         float p5;
         bool _r;
-        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "shape_draw_rectangle_f");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg4");
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_rectangle_f.arg5");
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_rectangle_f");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg5");
         p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "shape_draw_rectangle_f.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle_f.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
         p5 = (float)a[5].as.f64;
-        _r = shape_draw_rectangle_f(p0, p1, p2, p3, p4, p5);
+        _r = joy_math_shape_draw_rectangle_f(p0, p1, p2, p3, p4, p5);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
 {
         jr2d_p p0;
         float p1;
@@ -1417,19 +1417,19 @@ static joy_value_t t_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
         float p3;
         float p4;
         bool _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "shape_draw_line_f");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line_f.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line_f.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line_f.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line_f.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "shape_draw_line_f.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_line_f");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg4");
         p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "shape_draw_line_f.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line_f.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = shape_draw_line_f(p0, p1, p2, p3, p4);
+        _r = joy_math_shape_draw_line_f(p0, p1, p2, p3, p4);
         return joy_v_bool((bool)_r);
 }
 
@@ -11501,8 +11501,8 @@ static const joy_value_kind k_joy_r2d_push_clip_rect[] = { JOY_V_HANDLE, JOY_V_F
 static const joy_value_kind k_joy_r2d_pop_clip_rect[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_reset_clip_stack[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_point_in_clip[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_shape_draw_line[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_shape_draw_rectangle[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_math_shape_draw_line[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_math_shape_draw_rectangle[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_ui_image_create[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_joy_ui_image_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_image_set_alpha[] = { JOY_V_HANDLE, JOY_V_U32 };
@@ -11513,8 +11513,8 @@ static const joy_value_kind k_joy_ui_text_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_jtext_print[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_jtext_printx[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_draw_point_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_shape_draw_rectangle_f[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_shape_draw_line_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_math_shape_draw_rectangle_f[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_math_shape_draw_line_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_jtext_printf[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_jtext_printf_scaled[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_ui_text_get_width[] = { JOY_V_HANDLE };
@@ -12189,8 +12189,8 @@ static const joy_thunk_entry s_thunks[] = {
         { "r2d", "joy_r2d_pop_clip_rect", "R2dPopClipRect", t_joy_r2d_pop_clip_rect, 1, k_joy_r2d_pop_clip_rect, JOY_V_NULL },
         { "r2d", "joy_r2d_reset_clip_stack", "R2dResetClipStack", t_joy_r2d_reset_clip_stack, 1, k_joy_r2d_reset_clip_stack, JOY_V_NULL },
         { "r2d", "joy_r2d_point_in_clip", "R2dPointInClip", t_joy_r2d_point_in_clip, 3, k_joy_r2d_point_in_clip, JOY_V_BOOL },
-        { "shape", "shape_draw_line", "ShapeDrawLine", t_shape_draw_line, 5, k_shape_draw_line, JOY_V_BOOL },
-        { "shape", "shape_draw_rectangle", "ShapeDrawRectangle", t_shape_draw_rectangle, 6, k_shape_draw_rectangle, JOY_V_BOOL },
+        { "math", "joy_math_shape_draw_line", "ShapeDrawLine", t_joy_math_shape_draw_line, 5, k_joy_math_shape_draw_line, JOY_V_BOOL },
+        { "math", "joy_math_shape_draw_rectangle", "ShapeDrawRectangle", t_joy_math_shape_draw_rectangle, 6, k_joy_math_shape_draw_rectangle, JOY_V_BOOL },
         { "ui", "joy_ui_image_create", "ImageCreate", t_joy_ui_image_create, 2, k_joy_ui_image_create, JOY_V_HANDLE },
         { "ui", "joy_ui_image_destroy", "ImageDestroy", t_joy_ui_image_destroy, 1, k_joy_ui_image_destroy, JOY_V_NULL },
         { "ui", "joy_ui_image_set_alpha", "ImageSetAlpha", t_joy_ui_image_set_alpha, 2, k_joy_ui_image_set_alpha, JOY_V_NULL },
@@ -12201,8 +12201,8 @@ static const joy_thunk_entry s_thunks[] = {
         { "r2d", "joy_r2d_jtext_print", "JtextPrint", t_joy_r2d_jtext_print, 4, k_joy_r2d_jtext_print, JOY_V_NULL },
         { "r2d", "joy_r2d_jtext_printx", "JtextPrintx", t_joy_r2d_jtext_printx, 10, k_joy_r2d_jtext_printx, JOY_V_NULL },
         { "r2d", "joy_r2d_draw_point_f", "R2dDrawPointF", t_joy_r2d_draw_point_f, 3, k_joy_r2d_draw_point_f, JOY_V_BOOL },
-        { "shape", "shape_draw_rectangle_f", "ShapeDrawRectangleF", t_shape_draw_rectangle_f, 6, k_shape_draw_rectangle_f, JOY_V_BOOL },
-        { "shape", "shape_draw_line_f", "ShapeDrawLineF", t_shape_draw_line_f, 5, k_shape_draw_line_f, JOY_V_BOOL },
+        { "math", "joy_math_shape_draw_rectangle_f", "ShapeDrawRectangleF", t_joy_math_shape_draw_rectangle_f, 6, k_joy_math_shape_draw_rectangle_f, JOY_V_BOOL },
+        { "math", "joy_math_shape_draw_line_f", "ShapeDrawLineF", t_joy_math_shape_draw_line_f, 5, k_joy_math_shape_draw_line_f, JOY_V_BOOL },
         { "r2d", "joy_r2d_jtext_printf", "JtextPrintf", t_joy_r2d_jtext_printf, 10, k_joy_r2d_jtext_printf, JOY_V_NULL },
         { "r2d", "joy_r2d_jtext_printf_scaled", "JtextPrintfScaled", t_joy_r2d_jtext_printf_scaled, 11, k_joy_r2d_jtext_printf_scaled, JOY_V_NULL },
         { "ui", "joy_ui_text_get_width", "TextGetWidth", t_joy_ui_text_get_width, 1, k_joy_ui_text_get_width, JOY_V_I32 },
@@ -13083,11 +13083,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_point_in_clip", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_point_in_clip";
         st = JOY_OK;
-        joy_api_call("shape_draw_line", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/shape_draw_line";
+        joy_api_call("joy_math_shape_draw_line", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_line";
         st = JOY_OK;
-        joy_api_call("shape_draw_rectangle", NULL, 7, &st);
-        if (st != JOY_ERR_ARGC) return "registry/shape_draw_rectangle";
+        joy_api_call("joy_math_shape_draw_rectangle", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_rectangle";
         st = JOY_OK;
         joy_api_call("joy_ui_image_create", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_create";
@@ -13119,11 +13119,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_draw_point_f", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_draw_point_f";
         st = JOY_OK;
-        joy_api_call("shape_draw_rectangle_f", NULL, 7, &st);
-        if (st != JOY_ERR_ARGC) return "registry/shape_draw_rectangle_f";
+        joy_api_call("joy_math_shape_draw_rectangle_f", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_rectangle_f";
         st = JOY_OK;
-        joy_api_call("shape_draw_line_f", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/shape_draw_line_f";
+        joy_api_call("joy_math_shape_draw_line_f", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_line_f";
         st = JOY_OK;
         joy_api_call("joy_r2d_jtext_printf", NULL, 11, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_jtext_printf";
@@ -14938,8 +14938,8 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_push_clip_rect", args, 5, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r2d_push_clip_rect";
         st = JOY_OK;
-        joy_api_call("shape_draw_rectangle", args, 6, &st);
-        if (st != JOY_ERR_TYPE) return "L2/shape_draw_rectangle";
+        joy_api_call("joy_math_shape_draw_rectangle", args, 6, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_math_shape_draw_rectangle";
         st = JOY_OK;
         joy_api_call("joy_ui_text_updatex", args, 8, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_ui_text_updatex";

@@ -141,6 +141,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   `jpm_wave_seed`、`gen_bindings.js` 的 `SKIP_NAMES` 里的 `jecs_test`
   （后者迁名后仍要靠白名单保住 X 级）。`scene` 域累计 160 条，旧 domain
   全部归零。
+- 第十三批 **math 类 92 条**：`collision2d/2df/3d/3df`、`gjk2d/3d/3df`、
+  `box2d`、`shape` 统一到 `joy_math_<旧 domain>_<动作>`，`math` 域累计 93 条
+  （含第三批的 `find_min_separation`），这些旧 domain 全部归零。
 
 映射见 `idl/rename_map.json`（累加式）。
 

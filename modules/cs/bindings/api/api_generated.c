@@ -1284,9 +1284,9 @@ static int32_t icall_ShapeDrawLine(uint64_t p0, float p1, float p2, float p3, fl
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("shape_draw_line", args, 5, &st);
+        r = joy_api_call("joy_math_shape_draw_line", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "shape_draw_line", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_shape_draw_line", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1305,10 +1305,10 @@ static int32_t icall_ShapeDrawRectangle(uint64_t p0, MonoString* p1, float p2, f
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("shape_draw_rectangle", args, 6, &st);
+        r = joy_api_call("joy_math_shape_draw_rectangle", args, 6, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "shape_draw_rectangle", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_shape_draw_rectangle", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1493,10 +1493,10 @@ static int32_t icall_ShapeDrawRectangleF(uint64_t p0, MonoString* p1, float p2, 
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
         args[5] = joy_v_f64((double)p5);
-        r = joy_api_call("shape_draw_rectangle_f", args, 6, &st);
+        r = joy_api_call("joy_math_shape_draw_rectangle_f", args, 6, &st);
         if (s1) mono_free(s1);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "shape_draw_rectangle_f", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_shape_draw_rectangle_f", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -1512,9 +1512,9 @@ static int32_t icall_ShapeDrawLineF(uint64_t p0, float p1, float p2, float p3, f
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
         args[4] = joy_v_f64((double)p4);
-        r = joy_api_call("shape_draw_line_f", args, 5, &st);
+        r = joy_api_call("joy_math_shape_draw_line_f", args, 5, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "shape_draw_line_f", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_shape_draw_line_f", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;

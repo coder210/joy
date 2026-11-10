@@ -1134,7 +1134,7 @@ static bool shim_joy_r2d_point_in_clip(void* _jv_ctx, Jr2d r2d, float x, float y
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_shape_draw_line(void* _jv_ctx, Jr2d r2d, float x1, float y1, float x2, float y2)
+static bool shim_joy_math_shape_draw_line(void* _jv_ctx, Jr2d r2d, float x1, float y1, float x2, float y2)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1145,12 +1145,12 @@ static bool shim_shape_draw_line(void* _jv_ctx, Jr2d r2d, float x1, float y1, fl
         _jv_args[2] = joy_v_f64(y1);
         _jv_args[3] = joy_v_f64(x2);
         _jv_args[4] = joy_v_f64(y2);
-        _jv_r = joy_api_call("shape_draw_line", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_math_shape_draw_line", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_shape_draw_rectangle(void* _jv_ctx, Jr2d r2d, const char* mode, float rect_x, float rect_y, float rect_w, float rect_h)
+static bool shim_joy_math_shape_draw_rectangle(void* _jv_ctx, Jr2d r2d, const char* mode, float rect_x, float rect_y, float rect_w, float rect_h)
 {
         joy_value_t _jv_args[6];
         joy_value_t _jv_r;
@@ -1162,7 +1162,7 @@ static bool shim_shape_draw_rectangle(void* _jv_ctx, Jr2d r2d, const char* mode,
         _jv_args[3] = joy_v_f64(rect_y);
         _jv_args[4] = joy_v_f64(rect_w);
         _jv_args[5] = joy_v_f64(rect_h);
-        _jv_r = joy_api_call("shape_draw_rectangle", _jv_args, 6, &_jv_st);
+        _jv_r = joy_api_call("joy_math_shape_draw_rectangle", _jv_args, 6, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -1321,7 +1321,7 @@ static bool shim_joy_r2d_draw_point_f(void* _jv_ctx, Jr2d r2d, float fx, float f
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_shape_draw_rectangle_f(void* _jv_ctx, Jr2d r2d, const char* mode, float fx, float fy, float fw, float fh)
+static bool shim_joy_math_shape_draw_rectangle_f(void* _jv_ctx, Jr2d r2d, const char* mode, float fx, float fy, float fw, float fh)
 {
         joy_value_t _jv_args[6];
         joy_value_t _jv_r;
@@ -1333,12 +1333,12 @@ static bool shim_shape_draw_rectangle_f(void* _jv_ctx, Jr2d r2d, const char* mod
         _jv_args[3] = joy_v_f64(fy);
         _jv_args[4] = joy_v_f64(fw);
         _jv_args[5] = joy_v_f64(fh);
-        _jv_r = joy_api_call("shape_draw_rectangle_f", _jv_args, 6, &_jv_st);
+        _jv_r = joy_api_call("joy_math_shape_draw_rectangle_f", _jv_args, 6, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_shape_draw_line_f(void* _jv_ctx, Jr2d r2d, float fx1, float fy1, float fx2, float fy2)
+static bool shim_joy_math_shape_draw_line_f(void* _jv_ctx, Jr2d r2d, float fx1, float fy1, float fx2, float fy2)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -1349,7 +1349,7 @@ static bool shim_shape_draw_line_f(void* _jv_ctx, Jr2d r2d, float fx1, float fy1
         _jv_args[2] = joy_v_f64(fy1);
         _jv_args[3] = joy_v_f64(fx2);
         _jv_args[4] = joy_v_f64(fy2);
-        _jv_r = joy_api_call("shape_draw_line_f", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_math_shape_draw_line_f", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -10047,8 +10047,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R2dPopClipRect = shim_joy_r2d_pop_clip_rect;
         api->R2dResetClipStack = shim_joy_r2d_reset_clip_stack;
         api->R2dPointInClip = shim_joy_r2d_point_in_clip;
-        api->ShapeDrawLine = shim_shape_draw_line;
-        api->ShapeDrawRectangle = shim_shape_draw_rectangle;
+        api->ShapeDrawLine = shim_joy_math_shape_draw_line;
+        api->ShapeDrawRectangle = shim_joy_math_shape_draw_rectangle;
         api->ImageCreate = shim_joy_ui_image_create;
         api->ImageDestroy = shim_joy_ui_image_destroy;
         api->ImageSetAlpha = shim_joy_ui_image_set_alpha;
@@ -10059,8 +10059,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JtextPrint = shim_joy_r2d_jtext_print;
         api->JtextPrintx = shim_joy_r2d_jtext_printx;
         api->R2dDrawPointF = shim_joy_r2d_draw_point_f;
-        api->ShapeDrawRectangleF = shim_shape_draw_rectangle_f;
-        api->ShapeDrawLineF = shim_shape_draw_line_f;
+        api->ShapeDrawRectangleF = shim_joy_math_shape_draw_rectangle_f;
+        api->ShapeDrawLineF = shim_joy_math_shape_draw_line_f;
         api->JtextPrintf = shim_joy_r2d_jtext_printf;
         api->JtextPrintfScaled = shim_joy_r2d_jtext_printf_scaled;
         api->TextGetWidth = shim_joy_ui_text_get_width;
