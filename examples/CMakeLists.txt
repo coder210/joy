@@ -39,6 +39,17 @@ endif()
 set(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "joy 仓根目录")
 
 if(NOT TARGET joy::all)
+    # Emscripten / iOS 不支持动态链接。msgpack 默认建 SHARED 库，wasm 上会报
+    # "ADD_LIBRARY called with SHARED option but the target platform does not
+    # support dynamic linking"（Web CI 首次运行就卡在这里）。
+    # joy 根 CMakeLists 与 joy_topdown_template 根 CMakeLists 都有同样的设置，
+    # 但那段只在「joy 根是顶层项目」时执行；web.yml 用 -S examples，本文件才是
+    # 顶层，所以必须在 add_subdirectory 之前再设一次。
+    if(EMSCRIPTEN OR (APPLE AND NOT CMAKE_SYSTEM_NAME MATCHES "Darwin"))
+        set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+        set(SDL_SHARED OFF)
+    endif()
+
     add_subdirectory("${JOY_ROOT}/msgpack" "${CMAKE_BINARY_DIR}/msgpack")
     add_subdirectory("${JOY_ROOT}/spine"   "${CMAKE_BINARY_DIR}/spine")
     add_subdirectory("${JOY_ROOT}/SDL"     "${CMAKE_BINARY_DIR}/SDL")
