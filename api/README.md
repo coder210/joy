@@ -254,7 +254,7 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 {"name":"joy_r2d_font_create","domain":"r2d","level":"L1","reason":"不透明指针 → 句柄 / 所有权","status":"on",
  "owns":"joy_r2d_font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true},
  {"name":"fontsize","ctype":"int","isConst":false}],
- "source":"include/joy/api.h:190","note":""}
+ "source":"include/joy/japi.h:190","note":""}
 ```
 
 | 字段 | 归属 | 说明 |
@@ -413,7 +413,7 @@ node third_party/joy/api/tools/gen_bindings.js --check
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
 **开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、三个契约头
-（`include/joy/defs.h` + `include/joy/api.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
+（`include/joy/jdefs.h` + `include/joy/japi.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
 `thunks_generated.c`、`modules/cs/bindings/api/api_generated.c`、
 `modules/cs/scripts/Api.generated.cs` 四个生成物，以及
 `generated/jmath_wrappers.{h,c}`、`include/joy/joy.h` 里那行 include 都是最新的。

@@ -26,7 +26,7 @@
 
 #include <SDL3/SDL_hints.h>
 
-/* 与 include/joy/defs.h 的 JOY_LOGICAL_PRESENTATION_LETTERBOX 同值。
+/* 与 include/joy/jdefs.h 的 JOY_LOGICAL_PRESENTATION_LETTERBOX 同值。
  * 脚本层（lua / js / csharp）拿不到 C 头文件常量，统一用这个数值。 */
 #define JOY_EXAMPLE_PRESENTATION_LETTERBOX 2
 

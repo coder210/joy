@@ -210,7 +210,7 @@ function doReplace(src, map, tags) {
 function buildTagMap() {
   const dir = P('include/joy');
   const out = new Set();
-  for (const f of ['types.h', 'defs.h', 'jmath.h']) {
+  for (const f of ['jtypes.h', 'jdefs.h', 'jmath.h']) {
     const fp = path.join(dir, f);
     const s = fs.readFileSync(fp, 'utf8');
     let m;

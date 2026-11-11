@@ -3,7 +3,7 @@
 #ifndef JOY_API_H
 #define JOY_API_H
 
-#include <joy/types.h>
+#include <joy/jtypes.h>
 
 #ifdef __cplusplus
 extern "C" {

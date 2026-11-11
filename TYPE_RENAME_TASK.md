@@ -101,7 +101,7 @@ typedef struct joy_font joy_font_t, *joy_font_p;
 ### 3.3 `jvector_t` / `jvector_p` 是**宏函数**，不是类型
 
 ```c
-/* include/joy/defs.h:143-144 */
+/* include/joy/jdefs.h:143-144 */
 #define jvector_t(name) jvector_##name##_t
 #define jvector_p(name) jvector_##name##_p
 ```

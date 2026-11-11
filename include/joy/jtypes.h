@@ -3,7 +3,7 @@
 #ifndef JOY_TYPES_H
 #define JOY_TYPES_H
 
-#include <joy/defs.h>
+#include <joy/jdefs.h>
 
 #ifdef __cplusplus
 extern "C" {

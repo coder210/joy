@@ -227,8 +227,8 @@ function classify(name, ret, params, reason, structs) {
 /* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「joy.h 原生声明」
  * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。 */
 const DECL_SOURCES = [
-  { label: 'include/joy/defs.h', file: path.join(JOY_REPO, 'include/joy/defs.h') },
-  { label: 'include/joy/api.h', file: path.join(JOY_REPO, 'include/joy/api.h') },
+  { label: 'include/joy/jdefs.h', file: path.join(JOY_REPO, 'include/joy/jdefs.h') },
+  { label: 'include/joy/japi.h', file: path.join(JOY_REPO, 'include/joy/japi.h') },
   { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },
 ];
 

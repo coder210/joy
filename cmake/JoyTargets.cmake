@@ -2,7 +2,7 @@
 # joy 的构建契约：源码注入，唯一入口 joy::all
 #
 # 故意不建静态库。公开头里有编译期可配置的 inline 契约：
-#   include/joy/defs.h 的 PIXELS_PER_METER（#ifndef 可覆盖）与
+#   include/joy/jdefs.h 的 PIXELS_PER_METER（#ifndef 可覆盖）与
 #   meters_to_pixels / pixels_to_meters（static inline，每个 TU 各编一份）。
 # 这类契约要求 joy 的 .c 与宿主的 .c 看到同一组编译宏。做成静态库后，
 # 库内按默认值固化、宿主按自己的 PRIVATE -D 固化，同一进程会出现两套换算。

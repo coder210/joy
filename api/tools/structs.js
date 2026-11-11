@@ -43,8 +43,8 @@ function collectStructs() {
   const out = new Map();
   /* joy.h 已拆成聚合门面 + include/joy/{defs,types}.h；结构体布局分散在前两者，
    * 加上 jmath.h 的值类型，三者合起来才是完整的类型集合。 */
-  for (const file of [path.join(JOY_DIR, 'include/joy/defs.h'),
-                      path.join(JOY_DIR, 'include/joy/types.h'),
+  for (const file of [path.join(JOY_DIR, 'include/joy/jdefs.h'),
+                      path.join(JOY_DIR, 'include/joy/jtypes.h'),
                       path.join(JOY_DIR, 'include/joy/jmath.h')]) {
     if (!fs.existsSync(file)) continue;
     const src = stripComments(fs.readFileSync(file, 'utf8'));

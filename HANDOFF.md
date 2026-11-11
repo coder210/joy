@@ -10,7 +10,7 @@
 ## 1. 项目是什么
 
 joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_bindings.js` 从
-`include/joy/api.h` 生成四份后端的绑定（C++ vtable、C thunk、C# P/Invoke、jmath
+`include/joy/japi.h` 生成四份后端的绑定（C++ vtable、C thunk、C# P/Invoke、jmath
 包装）。`examples/` 下有 cpp / lua / js / csharp 四份功能相同的示例，**它们同时是
 给以后项目用的模板**，所以改动要按模板标准处理（注释、平台分支、可覆盖参数）。
 
@@ -100,7 +100,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    `ctest` 4/4。
 15. **单参数 dtor 包装（机制 B，2026-11-11）**：`src/jr3d.c` 给 `render_mesh`
    加 `jr3d_p owner` 回指，11 处 `SDL_calloc(1, sizeof(render_mesh_t))` 统一改走
-   `r3d_mesh_alloc(r)`；`include/joy/api.h` 末尾新增
+   `r3d_mesh_alloc(r)`；`include/joy/japi.h` 末尾新增
    `joy_r3d_mesh_destroy_one(render_mesh_p)`，内部转调
    `joy_r3d_mesh_destroy(m->owner, m)`（复用延迟释放队列，避免 GPU buffer 提前
    释放）。15 条 mesh 的 `owns` 全部指向它，**13 条开放**（`status:on` 708 → 721，
@@ -119,7 +119,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 
 具体内容：
 
-1. **`image_draw_rect`**（`include/joy/api.h` 末尾、`src/jr2d.c`）
+1. **`image_draw_rect`**（`include/joy/japi.h` 末尾、`src/jr2d.c`）
    全标量 L1，`srcrect` 固定 NULL，坐标是**像素**。绕开 `image_draw1` 的
    `jrect_t*`（L3）。四份示例的 `draw_sprite` 都改用它，缺图才退色块。
 2. **`structs.js` 的 `TYPE_ALIASES { ft_t: 'float' }`**
@@ -176,7 +176,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374）。
 
 ### 生成链路的正确操作顺序
-1. 改 `include/joy/api.h`（**声明放文件末尾**，避免 IDL `source` 行号整体漂移）
+1. 改 `include/joy/japi.h`（**声明放文件末尾**，避免 IDL `source` 行号整体漂移）
 2. `node api/tools/gen_bindings.js --scan`
 3. `node api/tools/gen_bindings.js --enable name:<api_name>`（必须带 `name:` 前缀）
 4. `node api/tools/gen_bindings.js --check`
@@ -195,7 +195,7 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 `joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
 thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域名不在
 10 域白名单（见 §2），因 legacy 豁免不被门禁拦截。脚本层 PascalCase 方法名由
-`ALIASES` 冻结，C 名改了不受影响。**新增声明仍放 `api.h` 末尾，改名必须原位
+`ALIASES` 冻结，C 名改了不受影响。**新增声明仍放 `japi.h` 末尾，改名必须原位
 替换**，避免 IDL 的 `source` 行号整体漂移。
 
 ### 其他
@@ -370,7 +370,7 @@ success。四项均已满足，所以没有遗留任务。
    - 映射表**只在 `--build-map` 时从公开头采集一次**，运行期一律读文件。若每次运行时
      重新采集，批 2 改完头后会算出 `joy_x -> joy_x` 自映射。
    - 采集类型名要**剥离注释**：`src/jr3d.c` 与 `api.h` 注释里的 `r3d_p` 是少写 `j` 的
-     笔误，进映射表会把冻结表 `joy_r3d_p` 的类名从 `Jr3d` 覆盖成 `R3d`。
+     笔误，进映射表会把冻结表 `joy_r3d_p` 的类名从 `Jr3d` 覆盖成 `R3d`。`（注：这里的 `api.h` 指原主头，现已改名 `japi.h`）
    - `struct tag`（`label`/`button`/`circle` 等 127 个无后缀通用词）**不能全词替换**，
      会误伤同名变量；类型与 tag 在 C 里属不同命名空间，保持原名即可。
    - `--trim-ws`：改名后原本带行尾空格的行变成 diff 新增行，会被 `git diff --check`
