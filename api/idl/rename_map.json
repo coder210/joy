@@ -1148,9 +1148,5 @@
   "utils_wait_delay": "joy_core_utils_wait_delay",
   "utils_md5x": "joy_core_utils_md5x",
   "utils_des_crypt": "joy_core_utils_des_crypt",
-  "utils_des_decrypt": "joy_core_utils_des_decrypt",
-  "utils_aes_encrypt256": "joy_core_utils_aes_encrypt256",
-  "utils_aes_decrypt256": "joy_core_utils_aes_decrypt256",
-  "utils_aes_encrypt128": "joy_core_utils_aes_encrypt128",
-  "utils_aes_decrypt128": "joy_core_utils_aes_decrypt128"
+  "utils_des_decrypt": "joy_core_utils_des_decrypt"
 }

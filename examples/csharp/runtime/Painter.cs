@@ -10,7 +10,7 @@ namespace JoyGame
     /// 都用这个当前色，所以每个绘制函数先设色再画。
     /// *_f 系列（ShapeDrawLineF 等）参数是归一化比例，会乘窗口宽高；这里所有
     /// 坐标都是像素，故一律用非 _f 版本。
-    /// 文字宽度测量（jtext_measurex）是 L3 的输出参数，尚未开放，居中用估算。
+    /// 文字宽度测量（joy_r2d_jtext_measurex）是 L3 的输出参数，尚未开放，居中用估算。
     /// </summary>
     internal static class Painter
     {

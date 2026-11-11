@@ -20,7 +20,8 @@ function stripComments(src) {
 /* jmath.h 用宏别名定义标量：#define ft_t float。字段类型必须归一化成
  * 生成物里可见的标准 C 类型：joy_api_vtable.h 只 include stdint/stdbool/stddef，
  * 看不到 ft_t；而且 SCALARS 不认别名会把 vec2_t / vec3_t / mat*.h 判成
- * 「布局不可展开」，连带一批 L2（shape_draw_circle / image_draw / jtext_printf）开不了。 */
+ * 「布局不可展开」，连带一批 L2（joy_math_shape_draw_circle / joy_ui_image_draw /
+ * joy_r2d_jtext_printf）开不了。 */
 const TYPE_ALIASES = { 'ft_t': 'float' };
 
 function normType(t) {

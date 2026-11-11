@@ -48,11 +48,11 @@ Emscripten 的 `--preload-file` 在**链接期**就要读到源文件，而桌�
 - 分辨率 480×320，逻辑分辨率固定，绘制按逻辑坐标。屏幕适配照
   `joy_topdown_template` 的做法放在应用层（见 `mobile_display.h`）：四份宿主在
   建窗口前设 `SDL_HINT_ORIENTATIONS` 固定横屏；四份示例在建好 renderer 后调
-  `R2dSetLogicalPresentationMode(480, 320, LETTERBOX)`，覆盖 `r2d_create()`
+  `R2dSetLogicalPresentationMode(480, 320, LETTERBOX)`，覆盖 `joy_r2d_create()`
   默认的「窗口物理尺寸 + STRETCH」——Android 的 `SDL_CreateWindow` 会把窗口
   改成屏幕物理尺寸，拿它当逻辑分辨率时 480×320 的画面只会落在屏幕一角。
   `LETTERBOX` 等比缩放居中，任意屏宽比都不拉伸；桌面窗口本征 480×320，
-  与 `STRETCH` 等价。模板游戏用 `r2d_get_logical_presentation()` 做自适应布局，
+  与 `STRETCH` 等价。模板游戏用 `joy_r2d_get_logical_presentation()` 做自适应布局，
   所以能进一步铺满且无黑边；本仓四份示例把 480×320 写进玩法逻辑，只能用
   模板保留的 `presentation_set_design()` 方案。
 - 三个场景：`Menu` → `Play` → `GameOver` →（回 `Play`）。
@@ -192,25 +192,32 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
 **本示例的绘制与窗口全部走生成链路**，为此在 `api/idl/joy.idl` 里把这 6 条从
 `status:off` 翻成 `on`（`node api/tools/gen_bindings.js` 重新生成后三端自动获得）：
 
-| IDL 条目 | 脚本名 | 参数（展开后） |
+| IDL 条目（P1 后的 C 名） | 脚本名（`ALIASES` 冻结） | 参数（展开后） |
 |---|---|---|
-| `create_window` | `CreateWindow` | `(title, w, h)` → handle |
-| `r2d_create` | `R2dCreate` | `(window)` → handle |
-| `font_create` | `FontCreate` | `(path, size)` → handle |
-| `image_create` | `ImageCreate` | `(r2d, path)` → handle |
-| `shape_draw_rectangle` | `ShapeDrawRectangle` | `(r2d, mode, x, y, w, h)`（`jrect_t` 按字段展开） |
-| `jtext_printx` | `JtextPrintx` | `(r2d, font, str, len, cr, cg, cb, ca, x, y)` |
+| `joy_core_create_window` | `CreateWindow` | `(title, w, h)` → handle |
+| `joy_r2d_create` | `R2dCreate` | `(window)` → handle |
+| `joy_r2d_font_create` | `FontCreate` | `(path, size)` → handle |
+| `joy_ui_image_create` | `ImageCreate` | `(r2d, path)` → handle |
+| `joy_math_shape_draw_rectangle` | `ShapeDrawRectangle` | `(r2d, mode, x, y, w, h)`（`jrect_t` 按字段展开） |
+| `joy_r2d_jtext_printx` | `JtextPrintx` | `(r2d, font, str, len, cr, cg, cb, ca, x, y)` |
+
+脚本层名字由 `api/tools/naming.js` 的 `ALIASES` 冻结，C 名改了也不跟着变。
 
 配套用法：`R2dSetColorf(r2d, r, g, b, a)` 先设颜色，再 `ShapeDrawRectangle(..., "fill")`
 画实心、`"line"` 画描边；`R2dBegin` 用当前颜色清屏。
 
 **仍然只能走旧胶水 / 退化的两处**（`L3` 未开放，见第 5 节）：
 事件输入（`keypressed` / `mousepressed` 回调不在 IDL）、文字宽度测量
-（`jtext_measurex` 是 `int*` 输出参数）。图片绘制已由全标量 L1
-`image_draw_rect` 绕开 `jrect_t*`：四份示例统一用 `ImageCreate` +
+（`joy_r2d_jtext_measurex` 是 `int*` 输出参数）。图片绘制已由全标量 L1
+`joy_ui_image_draw_rect` 绕开 `jrect_t*`：四份示例统一用 `ImageCreate` +
 `ImageDrawRect` 画真实贴图，加载失败才退回同尺寸色块。
 
 ## 5. 已核实的能力边界
+
+> 下表是**旧手写胶水时代的历史记录**（`modules/*/bindings/legacy/` 已删除）。
+> 当前四份示例的窗口与绘制全部走生成链路 `Joy.Api.Bindings.*`（见第 4 节），
+> 表里的 `window.create` / `r2d.print` / `Joy.Draw.*` 等都已不存在，保留仅供对照
+> 早期设计，不要据此写新代码。
 
 | 能力 | Lua (`joy.*`) | JS (`joy.*`) | C# (`Joy.*`) |
 |---|---|---|---|

@@ -37,7 +37,7 @@ namespace JoyGame
             Window = Bindings.CreateWindow("Joy C# Topdown", width, height);
             R2d = Bindings.R2dCreate(Window);
             // 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
-            // r2d_create 默认用窗口物理尺寸 + STRETCH，Android 全屏下 480x320 只占一角；
+            // joy_r2d_create 默认用窗口物理尺寸 + STRETCH，Android 全屏下 480x320 只占一角；
             // 覆盖为固定设计分辨率 + LETTERBOX（等比缩放居中、不拉伸）。
             // 2 == JOY_LOGICAL_PRESENTATION_LETTERBOX（见 include/joy/defs.h）
             Bindings.R2dSetLogicalPresentationMode(R2d, width, height, 2);

@@ -26,13 +26,13 @@ const { collectStructs, canExpand, expandParams } = require('./structs');
 const LAYOUTS = collectStructs();
 
 /* 运行时自检只跑确定性、无副作用的纯函数。放开白名单后数百条 API 里
- * 混着 create_window / sys_bind / audio_create_* / quit_env 等，全跑会出乱子；
+ * 混着窗口创建、系统绑定、音频对象创建、退出环境等有副作用的调用，全跑会出乱子；
  * 其余 API 由编译期签名 + init 填表保证，不做运行时调用。 */
 const SELFTEST_SAFE = new Set([
   'joy_scene_procmap_wave_seed',                                              // 纯标量
   'joy_core_sdbm_hash', 'joy_core_fnv1a_hash', 'joy_core_jenkins_hash',
   'joy_core_murmur3_hash', 'joy_core_kr_hash',                       // const char*
-  'jmath_fp_from_float',                                       // float 参数
+  'joy_math_fp_from_float',                                   // float 参数
 ]);
 /* 强句柄链路探针：单参数句柄 getter，传 h=0 应被 thunk 拒绝并返回零值。 */
 /* 改名为 joy_<域>_ 后要同步这里，否则探针找不到条目会被静默跳过。 */

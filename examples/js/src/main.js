@@ -114,7 +114,7 @@ function stroke(x, y, w, h, r, g, b, a) {
     B.ShapeDrawRectangle(ren, "line", x, y, w, h);
 }
 
-// *_f 系列参数是归一化比例（r2d_fpx 会乘窗口宽高），这里传的是像素坐标，
+// *_f 系列参数是归一化比例（joy_r2d_fpx 会乘窗口宽高），这里传的是像素坐标，
 // 必须用非 _f 的 ShapeDrawLine，否则网格线会被放大到屏幕外。
 function drawLine(x1, y1, x2, y2, r, g, b, a) {
     setColor(r, g, b, a);
@@ -527,7 +527,7 @@ joy.init = function () {
     win = B.CreateWindow("Joy JS Topdown", W, H);
     ren = B.R2dCreate(win);
     // 对齐 joy_topdown_template/logical_presentation.h 的 presentation_set_design：
-    // 覆盖 r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
+    // 覆盖 joy_r2d_create 默认的「窗口物理尺寸 + STRETCH」，否则 Android 全屏下
     // 按 480x320 绘制只占屏幕一角。LETTERBOX 等比缩放居中、不拉伸。
     B.R2dSetLogicalPresentationMode(ren, W, H, 2); // JOY_EXAMPLE_PRESENTATION_LETTERBOX
 

@@ -2,9 +2,9 @@
 
 > 自动生成，勿手改：由 `api/tools/gen_bindings.js` 从 `include/joy/{defs,api}.h` + `api/idl/joy.idl` 产出。
 > 生成物（共享 thunk 与 cs 薄适配）覆盖 `status: on` 的 L0/L1，
-> 以及 P2-A 试点里按字段展开成标量序列的 L2 条目；
+> 以及按字段展开成标量序列的 L2 条目；
 > 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；
-> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。
+> `modules/*/bindings/legacy/` 旧手写胶水已删除，IDL 驱动层是唯一入口。
 
 ## 总览
 

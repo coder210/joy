@@ -1,11 +1,13 @@
 /* C# → joy 桥：宿主自建对象的「借用句柄」。
  *
  * 生成链路（Joy.Api.Bindings）只认 joy_obj 句柄表里的条目，而窗口 / 渲染器
- * 由 C 宿主创建（例如 joy_csharp_test 的 main.cpp：create_window + r2d_create），
- * 脚本层通过 Host.OnInit 拿到的只是裸地址，不在表里。
+ * 由 C 宿主创建（examples/csharp_host/src/main.cpp 调
+ * joy_core_create_window + joy_r2d_create），脚本层通过 Host.OnInit
+ * 拿到的只是裸地址，不在表里。
  *
  * 这里按 C 类型名把宿主对象登记成借用句柄（dtor 为 NULL）：
- *   - 脚本层可以拿它调绘制类 API（r2d_set_colorf / shape_draw_rectangle …）；
+ *   - 脚本层可以拿它调绘制类 API（joy_r2d_set_colorf /
+ *     joy_math_shape_draw_rectangle …）；
  *   - 引用计数归零时不会释放底层对象，所有权仍在宿主手里。
  * 一个宿主对象只应登记一次（在 Host.OnInit 里），否则每帧都会占用一个槽位。
  */

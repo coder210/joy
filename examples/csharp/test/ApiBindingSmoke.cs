@@ -21,7 +21,7 @@ namespace JoyGame
             var rng = Joy.Api.Bindings.LcgRandomCreate(seed);
             uint a = Joy.Api.Bindings.LcgRandomNext(rng);
             uint b = Joy.Api.Bindings.LcgRandomNext(rng);
-            if (a == b) throw new InvalidOperationException("lcg_random_next returned identical values");
+            if (a == b) throw new InvalidOperationException("joy_core_lcg_random_next returned identical values");
         }
 
         /* 真正调用已开放的 L0 API 并校验返回值，而不只是「注册成功 + argc 守卫」。
@@ -29,7 +29,7 @@ namespace JoyGame
          * Jmath* 三条用于确认 jmath.h 的包装层确实能被脚本调用。 */
         private static bool CheckRealCalls()
         {
-            // jpm_wave_seed(base, wave) = base + wave * 1000003（jprocmap.c:285）
+            // joy_scene_procmap_wave_seed(base, wave) = base + wave * 1000003（jprocmap.c:285）
             uint seed = Joy.Api.Bindings.JpmWaveSeed(12345u, 2);
             bool seedOk = seed == 2012351u;
 

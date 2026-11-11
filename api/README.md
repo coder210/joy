@@ -55,9 +55,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 |---|---|---|
 | `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 | ~60 |
 | `math` | jmath(220) / collision* / gjk* / box2d / shape | ~300 |
-| `r2d` | r2d / font / jtext / image / jspine / jparticle | ~100 |
+| `r2d` | r2d / font / jtext / jspine / jparticle | ~100 |
 | `r3d` | r3d / jlight / jgltf | ~150 |
-| `ui` | jui / jui_im / jlayout + 全部控件域 | ~230 |
+| `ui` | jui / jui_im / jlayout / image + 全部控件域 | ~230 |
 | `scene` | scene / game / jecs / jtilemap / janimator / animation / jtimer / jpm | ~150 |
 | `net` | net* / tcp* / kcp* / ws* / iocp / pack / unpack / netmessage | ~90 |
 | `audio` | audio | 20 |
@@ -140,7 +140,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   同时同步了两处生成器硬编码：`emit_vtable.js` 的 `SELFTEST_SAFE` 里的
   `jpm_wave_seed`、`gen_bindings.js` 的 `SKIP_NAMES` 里的 `jecs_test`
   （后者迁名后仍要靠白名单保住 X 级）。`scene` 域累计 160 条，旧 domain
-  全部归零。
+  全部归零。2026-11-10 收尾时把已不存在的 `jecs_test` 从 `SKIP_NAMES` 清掉，
+  并把 `SELFTEST_SAFE` 里漏改的 `jmath_fp_from_float` 换成
+  `joy_math_fp_from_float`（这条白名单名字写旧会让该 API 完全不进自检）。
 - 第十三批 **math 类 92 条**：`collision2d/2df/3d/3df`、`gjk2d/3d/3df`、
   `box2d`、`shape` 统一到 `joy_math_<旧 domain>_<动作>`，`math` 域累计 93 条
   （含第三批的 `find_min_separation`），  这些旧 domain 全部归零。
@@ -188,21 +190,22 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 ### vtable 的自检边界
 
 `joy_api_vtable_selftest()` **只**对 `emit_vtable.js` 里 `SELFTEST_SAFE` 列出的
-确定性纯函数（hash 系列、`jpm_wave_seed`、`jmath_fp_from_float`）做
-「强签名调用 vs 直接 C 调用」数值比对，另用 `window_get_fullscreen({0})`
-验证强句柄的无效值会被 thunk 拒绝而不是崩溃。表里其余 690+ 条 API
-（`create_window` / `sys_bind` / `audio_create_*` / `quit_env` 等有副作用或
-依赖外部状态）**不参与运行时调用**，由编译期签名、`joy_api_vtable_init()`
-填表和 `--check` 生成物一致性保证。新增纯函数到白名单前请确认它无副作用、
-结果确定。
+确定性纯函数（hash 系列、`joy_scene_procmap_wave_seed`、
+`joy_math_fp_from_float`）做「强签名调用 vs 直接 C 调用」数值比对，另用
+`joy_core_window_get_fullscreen({0})` 验证强句柄的无效值会被 thunk 拒绝而不是
+崩溃。表里其余 690+ 条 API（`joy_core_create_window` / `joy_net_sys_bind` /
+`joy_audio_create_*` / `joy_core_quit_env` 等有副作用或依赖外部状态）
+**不参与运行时调用**，由编译期签名、`joy_api_vtable_init()` 填表和
+`--check` 生成物一致性保证。新增纯函数到白名单前请确认它无副作用、结果确定。
 
-`status:on` 的 L2（`jtext_printx` / `shape_draw_rectangle` / `shape_draw_circle`
-等 30 条）已按 `structs.js` 的字段布局展开成标量进表，与 thunk 表 argc 一致；
-`structs.js` 会把 `jmath.h` 的 `#define ft_t float` 归一化，否则 `vec2_t` /
-`mat22_t` 之类会被判成不可展开。L3（结构体指针 / 输出参数）仍是
-`status:off`，不在表内；图片绘制改由全标量 L1 `image_draw_rect` 绕开
-`jrect_t*`，四份示例已恢复真实贴图。剩下的退化只有文字宽度按字号估算
-（`jtext_measurex` 是 `int*` 出参，暂无对应标量包装）。
+`status:on` 的 L2（`joy_r2d_jtext_printx` / `joy_math_shape_draw_rectangle` /
+`joy_r2d_jtext_printf` 等 30 条）已按 `structs.js` 的字段布局展开成标量进表，
+与 thunk 表 argc 一致；`structs.js` 会把 `jmath.h` 的 `#define ft_t float`
+归一化，否则 `vec2_t` / `mat22_t` 之类会被判成不可展开。L3（结构体指针 /
+输出参数）仍是 `status:off`，不在表内；图片绘制改由全标量 L1
+`joy_ui_image_draw_rect` 绕开 `jrect_t*`，四份示例已恢复真实贴图。剩下的
+退化只有文字宽度按字号估算（`joy_r2d_jtext_measurex` 是 `int*` 出参，暂无
+对应标量包装）。
 
 ## 命令
 
@@ -244,9 +247,10 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 ## IDL 字段
 
 ```json
-{"name":"font_create","domain":"font","level":"L1","reason":"...","status":"off",
- "owns":"font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true}],
- "source":"include/joy/api.h:1076","note":""}
+{"name":"joy_r2d_font_create","domain":"r2d","level":"L1","reason":"不透明指针 → 句柄 / 所有权","status":"on",
+ "owns":"joy_r2d_font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true},
+ {"name":"fontsize","ctype":"int","isConst":false}],
+ "source":"include/joy/api.h:190","note":""}
 ```
 
 | 字段 | 归属 | 说明 |

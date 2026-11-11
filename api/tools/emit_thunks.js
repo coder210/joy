@@ -40,7 +40,7 @@ function retKind(e) { return e.ret === 'void' ? 'JOY_V_NULL' : valueKind(e.ret);
 function q(s) { return '"' + s + '"'; }
 
 /* 所有权校验：dtor 的参数类型必须与 create 的返回类型严格一致。
- * 只看「是不是指针」不够：owns=r2d_destroy 配 ret=void* 会把错误类型的
+ * 只看「是不是指针」不够：owns=joy_r2d_destroy 配 ret=void* 会把错误类型的
  * 指针交给析构函数，运行时才崩，必须在生成阶段拦住。 */
 function ownsIssue(e, byName) {
   if (!isOpaque(e.ret)) return null;
@@ -53,7 +53,13 @@ function ownsIssue(e, byName) {
   return null;
 }
 
-/* --enable 用：这条 API 现在能不能安全地自动生成 thunk。 */
+/* Lua 适配层 modules/lua/bindings/api/lapi.c 的 LUAX_MAX_ARGS 是运行期硬上限：
+ * joy_value_t args[16]，argc 超过 16 的 thunk 永远调不通。把同一约束前移到
+ * 生成阶段，--enable 和 --check 都会在开放前拦住，不必再靠人工名单绕开。
+ * 改动这个值时必须同步 lapi.c 的 #define。 */
+const THUNK_MAX_ARGS = 16;
+
+/* --enable / --check 用：这条 API 现在能不能安全地自动生成 thunk。 */
 function canThunk(e, byName) {
   const l2 = e.level === 'L2' && canExpand(e, LAYOUTS);
   if (e.level !== 'L0' && e.level !== 'L1' && !l2) return '仅 L0/L1';
@@ -62,7 +68,11 @@ function canThunk(e, byName) {
   const own = ownsIssue(e, byName);
   if (own) return own;
   if (e.ret !== 'void' && !isOpaque(e.ret) && !typeInfo(e.ret)) return '不支持返回类型：' + e.ret;
-  for (const p of expandParams(e, LAYOUTS)) {
+  const flat = expandParams(e, LAYOUTS);
+  if (flat.length > THUNK_MAX_ARGS) {
+    return '展开后参数 ' + flat.length + ' 个，超过 LUAX_MAX_ARGS=' + THUNK_MAX_ARGS;
+  }
+  for (const p of flat) {
     if (!isOpaque(p.ctype) && !typeInfo(p.ctype)) return '不支持参数类型：' + p.ctype;
     if (p.ctype === 'char*' && !p.isConst) return '非 const char* 输出缓冲';
   }
@@ -344,4 +354,4 @@ function buildThunks(entries) {
 }
 
 /* SCALAR 同时被 emit_vtable.js 复用：类型→joy_value 的映射只维护一份。 */
-module.exports = { buildThunks, canThunk, ownsIssue, SCALAR };
+module.exports = { buildThunks, canThunk, ownsIssue, SCALAR, THUNK_MAX_ARGS };

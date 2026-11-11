@@ -1,8 +1,11 @@
 # 交接文档（临时）
 
 > 用途：让接手的 AI / 人快速接手本仓库当前状态。任务收敛后可删除。
-> 对应提交：`1e9ed30a`（2026-11-10），分支 `main`，已推送 `origin/main`。
-> 注意：本文件是 P0/P1 期间的快照，部分小节（§7 优先级）会随进度变旧，以 git log 为准。
+> 快照时间：2026-11-11（本轮提交后 HEAD 会前进，**当前提交一律以 `git log -1` 为准**，
+> 本文件里的 hash 与时间只是快照）。
+> 本轮提交前 HEAD 为 `69ffaa64`；2026-11-10 ~ 11 完成两轮改名收尾、构建 /
+> 生成链路加固、文档对齐，见 §3 的 11~13 与 §7 的「已完成」。
+> **§7 是接手后的待办清单**：按优先级排好，每项写了具体位置、做法、验证与风险。
 
 ## 1. 项目是什么
 
@@ -23,11 +26,15 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 
 ## 2. 当前状态
 
-- 工作区干净，本地与 `origin/main` 同为 `1e9ed30a`。
-- 桌面（Windows / VS2022 / Debug）：全量构建 0 错误，`ctest` 4/4 通过；**构建已不再依赖 `compat.h` 兼容宏**（P1 收尾真正改了源码）。
+- 工作区状态以 `git status` 为准；本轮收尾前 `main` 与 `origin/main` 同步。
+- 桌面（Windows / VS2022 / Debug）：全量构建 0 错误，`ctest` 4/4 通过；**构建已不再依赖 `compat.h` 兼容宏**（P1 收尾真正改了源码）。2026-11-11 复验仍是 0 错误 / 4/4（含本轮新增的 vtable 自检条目）。
 - `node api/tools/gen_bindings.js --check` 通过（report/thunks/vtable/cs glue/jmath 全部最新）。
-- **公开 API 命名迁移 P1 已完成**：1156 条 IDL 全部收敛为 `joy_<域>_<动作>`，声明/定义/调用点三处一致，`rename_map.json` 累计 1154 条，`compat.h` 宏块已清空（仅留空占位 include）。
-- Android：CI 已多次跑通（`Android APKs` 工作流 `success`）。
+- **公开 API 命名迁移 P1 基本完成**：1150 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
+  调用点 / 生成物四处 C 符号一致，`compat.h` 宏块已清空。**6 条例外**：
+  `joy_fov_*`(4) 与 `joy_tilemap_sweep_x|y`(2)，域名回退成白名单外的 `joy`，
+  均为 L3 / `status:off` / 不暴露；因在 `legacy_names.txt` 豁免名单里 `--check`
+  查不到。本轮决定保持现状（不暴露，改名收益低于动公开头的风险），只如实记录。
+- Android：CI 已多次跑通（`Android APKs` 工作流 `success`），**已产出 4 个 APK**（见 §6）。
 - Web：已部署到 GitHub Pages（`web.yml` 仅 push 触发），站点 https://coder210.github.io/joy/ 可访问。
 
 ## 3. 已经做完的事（按提交）
@@ -36,7 +43,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 `ccb6232a` — C++ 双形态模板 + 贴图恢复，生成链路开放至 701 条
 `bd12eab2` — 打通 C# 的 Android 构建，MonoVM 运行时按平台入库
 
-**Web 部署 + P1 命名统一（2026-11-09 ~ 11-10，提交 `74b8b71d` ~ `1e9ed30a`）**：
+**Web 部署 + P1 命名统一（2026-11-09 ~ 11-10，提交 `74b8b71d` ~ `69ffaa64`）**：
 
 7. **Web/WASM 走 GitHub Pages**：`web.yml` 改为仅 `push(main)` 触发，`configure-pages` 用
    `enablement:true` 在 Actions 里开 Pages Source=GitHub Actions；Emscripten 构建修复
@@ -49,8 +56,34 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    逐个域收敛到 `joy_<域>_<动作>`；`jmath` 220 条走 `jmath_wrap.js` 改名前缀；`script`(33)/
    `utils`(20) 因带函数指针/有意排除维持 X 级（改名后 `joy_script_*` / `joy_core_utils_*`）。
 10. **P1 收尾（真正改名）**：前 15 批只在头文件改名 + 靠 `compat.h` `#define` 桥接，`.c`
-   实现仍是旧名。收尾用字符边界批量替换把 `src/`/`examples`/`modules` 共 57 个手写源文件 1881 处
-   旧名真正改成 `joy_*`，随后清空 `compat.h` 宏块。手写源零旧名残留，无兼容宏也能编译。
+   实现仍是旧名。收尾用字符边界批量替换，把 `src/`(24) / `examples`(13) /
+   `modules`(15) 共 **52 个手写源文件**里约 1881 处旧名真正改成 `joy_*`
+   （其中约 25 处是日志 / 注释字符串里的函数名引用，不全是代码），随后清空
+   `compat.h` 宏块。**代码里零旧名残留**，但注释里曾有 4 处、文档对照表还是旧名，
+   已在下面的 11 补齐。无兼容宏也能编译。
+11. **改名收尾（2026-11-10）**：独立审计后修掉遗留 —— 四份模板注释里 4 处
+   `r2d_create` 旧名与过时宿主路径；`rename_map.json` 尾部 4 条无声明、IDL 无条目的
+   `utils_aes_*` 死映射；`api/README.md` 域表把 `image` 从 `r2d` 改到实际使用的
+   `ui`；`examples/README.md` 的 6 条 IDL 对照表全部换成 P1 新名、旧胶水能力表加
+   历史留档提示；`gen_bindings.js` 里生成 `coverage.md` 的「旧胶水未删 / 新旧链路
+   并行」错误文案；以及 `joy.h` / `emit_vtable.js` / `emit_cs.js` 的过时注释。
+   生成物只重生成了 `coverage.md`（2 行），其余四个 hash 与索引一致。
+12. **构建 / 生成链路加固（2026-11-10）**：根 `CMakeLists.txt` 的 CLR 探测与
+   `examples/CMakeLists.txt:67-111` 统一（`JOY_CLR_PLATFORM` 推导、Android ABI
+   映射、全部平台库名），消除从根构建 Android 选错运行时；`emit_thunks.js`
+   增加 `THUNK_MAX_ARGS = 16`（对齐 `modules/lua/bindings/api/lapi.c` 的
+   `LUAX_MAX_ARGS`），`canThunk()` 与 `gen_bindings.js --check` 双重拦截展开后
+   参数超限。实测 16 参数放行、17 参数被拒；IDL 里 2 条超限 L2 正好是历史人工
+   跳过的 `joy_r3d_slider_set_colors` / `joy_ui_slider_set_colors`；已开放条目
+   最大 argc 13，门禁与生成物不变。
+13. **命名收尾第二轮（2026-11-10）**：对 1150 个旧名做全仓全词审计，发现 39 处
+   残留，其中「把当前 API 写成旧名」的已全部清掉：三份脚本模板的 `r2d_fpx` /
+   `jtext_measurex`、C# 冒烟测试的消息与注释、`api/README.md` 自检边界段与
+   IDL 字段示例、`api/tools` 四处注释举例。另修两处**功能性**硬编码：
+   `emit_vtable.js` 的 `SELFTEST_SAFE` 里漏改的 `jmath_fp_from_float`
+   （名字写旧会让该 API 完全不进自检，修正后 `joy_api_vtable.c` 多 6 行），
+   以及 `gen_bindings.js` 的 `SKIP_NAMES` 里已不存在的 `jecs_test`。
+   剩余 16 处旧名全部是改名记录 / 旧胶水历史留档，有意保留，不要再清。
 
 具体内容：
 
@@ -63,8 +96,8 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    `LUAX_MAX_ARGS=16`、1 条 L2 返回句柄）。
 3. **三份脚本的线段坐标系**：`ShapeDrawLineF` → `ShapeDrawLine`（前者归一化）。
 4. **仓库卫生**：`examples/csharp/obj` 取消跟踪（16 个带本机绝对路径的还原产物，
-   工作区文件保留）；根 `CMakeLists.txt` 加 `enable_testing()`；新增
-   `.github/workflows/build.yml`。
+   工作区文件保留）；根 `CMakeLists.txt` 加 `enable_testing()`；新增桌面 CI
+   `.github/workflows/desktop.yml`（现为 Win / Linux / macOS 三平台 matrix）。
 5. **C++ 双形态**：`examples/cpp` 新增 option `JOY_GAME_STATIC`（iOS/wasm 默认 ON）。
    静态形态把 `game.cpp` 编进宿主、链接期解析 `joy_game_get_hooks`；动态形态保留
    `SDL_LoadObject`，Android 产物落 `lib/<abi>/` 并用裸库名让 linker 查找。
@@ -122,11 +155,15 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 现已统一为 `joy_<域>_<动作>`，10 个域的封闭白名单在
 `api/tools/naming.js` 的 `DOMAINS`（归并表与门禁说明见 `api/README.md`）。
 `--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`。
-**迁移已收尾**：1154 条旧名→新名映射留在 `api/idl/rename_map.json`（`--scan` 据此
-继承 `status`/`owns`/`note`，可跨批续迁）；`include/joy/compat.h` 宏块已清空，
-仅作 `joy.h` 的占位 `#include`，不再有 `#define` 桥接。`script`/`utils` 因带函数指针
-参数或属有意排除项，维持 X 级（不进 thunk/vtable/C# 绑定）。**新增声明仍放 `api.h`
-末尾，改名必须原位替换**，避免 IDL 的 `source` 行号整体漂移。
+**迁移已收尾**：`api/idl/rename_map.json` 现有 **1150 条**旧名→新名映射
+（2026-11-10 清掉 4 条无声明的 `utils_aes_*` 死映射），`--scan` 据此继承
+`status`/`owns`/`note`；`include/joy/compat.h` 宏块已清空，仅作 `joy.h` 的占位
+`#include`，不再有 `#define` 桥接。`script`(33) 与 `core` 域里的
+`joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
+thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域名不在
+10 域白名单（见 §2），因 legacy 豁免不被门禁拦截。脚本层 PascalCase 方法名由
+`ALIASES` 冻结，C 名改了不受影响。**新增声明仍放 `api.h` 末尾，改名必须原位
+替换**，避免 IDL 的 `source` 行号整体漂移。
 
 ### 其他
 - `examples/csharp/obj` 已从版本库移除，`.gitignore` 有 `obj/`，不要加回来。
@@ -157,29 +194,44 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 |---|---|
 | Android 交叉编译 | **已多次在 CI 跑通**（`Android APKs` 工作流 `success`）；本机无 NDK，仍靠 CI 验证 |
 | Web / WASM | **已部署 GitHub Pages**（仅 push 触发），站点 https://coder210.github.io/joy/ 可访问；方案 A（只发 cpp/lua/js）已落地 |
-| APK 打包 | 未做。没有 Gradle / `AndroidManifest.xml` / `SDLActivity` 工程 |
+| APK 打包 | **已完成**：`android/app.build.gradle` 4 个 productFlavor，`android.yml` 的 `assembleDebug` 产出 4 个 APK 并校验清单、上传 Artifacts |
+| 根构建的 CLR 探测 | **已修复**（2026-11-10）：根 `CMakeLists.txt` 已与 `examples/CMakeLists.txt` 同步，支持 `JOY_CLR_PLATFORM` / Android ABI 映射 / 全部平台库名；`-DJOY_CLR_PLATFORM=android-arm64` 在根入口实测能找到 `libmonosgen-2.0.so`。**Android toolchain 真配置仍只能靠 CI** |
 | Android 真机冒烟 | 未做。桌面 `--smoke` 走 dummy 驱动，不能替代 |
 | iOS / wasm（C++/lua/js） | `JOY_GAME_STATIC` 静态形态只在桌面验证过，两平台工具链都没跑 |
 | C# 在 iOS / wasm | iOS 禁 JIT。wasm 不是「.NET 8 不支持」：.NET 8 正式支持 `browser-wasm`，但那是 SDK 托管的 interpreter 应用；joy 的 C# 后端是嵌入 MonoVM 的宿主 + `InternalCall` 绑定，宿主模型不兼容。Web 已定方案 A：只发 cpp / lua / js，见 `examples/README.md` 平台矩阵 |
 | `runtimes/windows-x64/coreclr.dll` | 是本地编译版，可考虑换成官方包同名 DLL |
 | `src/jgltf.c` | **预存语法错误**，`JOY_ENABLE_GLTF` 默认关、不编译；文件本身待修 |
 
-## 7. 接下来的建议（按优先级）
+## 7. 接下来要做的事（接手清单）
 
-1. **（已完成）Android CI / Web 部署 / P1 命名统一** —— 三项均已落地，见 §2、§3、§4。
-2. **APK 打包工程**：Gradle + `AndroidManifest.xml` + `SDLActivity`，把 `libmain.so`、
-   `lib/arm64-v8a/*.so`、`pack/**`（作为 APK assets 根）装进 APK。会引入 Gradle 目录结构，
-   动手前先确认放不放仓库。
-3. **真机 / 模拟器冒烟**：CI 上可用 `android-emulator-runner`（慢、不稳），或手动跑。
-4. **是否放开 `script`/`utils` 为公开绑定**：二者目前 X 级（不进 thunk/vtable/C#）。
-   若决定暴露，去掉 `SKIP_DOMAINS`/`SKIP_PREFIXES` 对应项即可，命名已就位。
-5. **旧清单（不阻塞上述）**：
-   - L1 里 `status:off` 需逐条裁决 `owns`（`api/generated/coverage.md` 有 38 条待确认）
-   - L3 的 229 条中，出参 99 条最值得做 —— 给 `joy_value` 加出参通道，
-     能顺带解决 `jtext_measurex`（现在文字宽度还是按字号估算）
-   - `canThunk()` 目前没有「展开后参数 ≤ 16」的硬约束，批量开 L2 前建议补上
-   - `src/jgltf.c` 预存语法错，先修文件再决定是否开放 `JOY_ENABLE_GLTF`
-   - C++ 的 iOS / wasm 分支需要对应工具链才能验证
+**接手第一步**：本轮提交后工作区应干净、`main` 与 `origin/main` 同步。先跑一遍
+§10 自检清单确认基线，再按下表挑一项。不确定某项该不该做时，先问人，不要凭
+文档猜——下面标了「决策项」的都需要人来定。
+
+### 已完成，不要当待办
+Android CI + 4 个 APK、Web Pages 部署、P1 命名统一、两轮改名收尾、根 CMake
+的 CLR 探测统一、`canThunk()` 参数上限、`SELFTEST_SAFE` 白名单修正、
+`SKIP_NAMES` 清理。均见 §3。
+
+### 待办（按优先级，含做法 / 验证 / 风险）
+
+| # | 事项 | 具体位置与做法 | 怎么验证 | 风险 / 前置 |
+|---|---|---|---|---|
+| 1 | **38 条 `owns` 待裁决** | `api/generated/coverage.md` 的「所有权待裁决」段。逐条判断返回句柄是「拥有」还是「借用」（`get_*`/`wrap_*` 多为借用），裁决后填 IDL 的 `owns`/`note`，再用 `--enable name:<api>` 逐条开放。L1 的 130 条 `status:off` 主要卡在这里 | `--check` + 全量构建 + `ctest` 4/4 | **高**：借用句柄误配析构会 double free。**不要批量猜**，先出一份「明显拥有 / 疑似借用 / 需人确认」分类清单交人裁决 |
+| 2 | **L3 出参通道** | L3 共 **206** 条，出参类最值得做。给 `api/runtime/joy_value.h` 的 `joy_value_t` 加出参语义，同步 `emit_thunks.js` / `emit_cs.js` / 三端适配。建议先拿 `joy_r2d_jtext_measurex`（`int*` 出参）做最小闭环，成功后可去掉四份示例的「文字宽度按字号估算」 | `--check` + 四语言冒烟 + 文字居中效果对比 | 中高：跨 VM 边界，cpp/lua/js/csharp 四端都要同步；`canThunk()` 的 16 参数上限仍然生效 |
+| 3 | **Android 真机 / 模拟器冒烟** | CI 加 `android-emulator-runner`（慢、不稳），或手动装 4 个 flavor 的 APK 跑 `--smoke` | 四个包都能启动、冒烟指纹与桌面一致 | 中：需要设备/模拟器，本机无 NDK，做不了；桌面 dummy 驱动不能替代 |
+| 4 | **是否放开 X 级 73 条**（决策项） | `script` 33 / `core` 20 / `r2d` 19 / `scene` 1。去掉 `gen_bindings.js` 的 `SKIP_DOMAINS`/`SKIP_PREFIXES` 对应项即可，命名已就位 | `--scan` 幂等 + `--check` + 全量构建 | 先确认这些 API 真的要暴露（带函数指针参数或当初有意排除），别顺手全开 |
+| 5 | **`src/jgltf.c`** | `JOY_ENABLE_GLTF` 默认关、文件整体被 `#ifdef JOY_USE_GLTF` 包裹而从不编译，文档称有预存语法错（未独立验证）。先修文件，再决定要不要开放开关 | 单独用 `-DJOY_ENABLE_GLTF=ON` 配置编译 | 低：不影响现有构建 |
+| 6 | **`runtimes/windows-x64/coreclr.dll` 换官方包** | 现版本内嵌 `C:\Users\liwei\Downloads\runtime-8.0.17\...` 本地编译路径。换 `Microsoft.NETCore.App.Runtime.Mono.win-x64/8.0.17` 里的同名 DLL，`coreclr.import.lib` 需重新生成 | Windows 全量构建 + `ctest` 4/4（重点看 `example_csharp_smoke`） | 中：二进制替换，导入库必须配套；别顺手动其它平台的 BCL |
+| 7 | **iOS / wasm 的 `JOY_GAME_STATIC` 验证** | `examples/cpp/CMakeLists.txt` 在 `IOS OR EMSCRIPTEN` 默认 ON，但只在桌面验证过 | 需 Xcode / Emscripten 工具链 | 环境受限，本机做不了 |
+| 8 | **6 条 `joy` 域例外**（决策项，**不是漏网**） | `joy_fov_*`(4) / `joy_tilemap_sweep_x|y`(2)，L3 / `off` / 不暴露。要归域得同时改 `api.h` 声明、`src/` 定义、IDL、`legacy_names.txt` 与生成物 | `--scan` + `--check` + 全量构建 | 低收益：不暴露，改名却要动公开头。**当前决定保持现状**，见 §2 / §10 |
+
+### 建议的开工顺序
+1. 跑 §10 自检清单确认基线（约 1 分钟）。
+2. 想继续扩容生成链路 → 先做 #1 的**分类清单**，交人裁决后再动 IDL。
+3. #2 是独立架构项，等 #1 稳定再动。
+4. #3 / #7 需要设备或其它工具链，交给 CI 或人工；#4 / #8 是决策项，先问人。
+5. #5 / #6 属于低优先的清理，随时可做，互不依赖。
 
 ## 8. 提交风格
 
@@ -231,15 +283,18 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 
 8. **本机无 NDK / Emscripten，CI 只能靠 GitHub REST API 查。**
    `Invoke-RestMethod -Uri "https://api.github.com/repos/coder210/joy/actions/runs?per_page=10"`
-   可看三个工作流（Android APKs / Desktop examples / Web examples）的状态，出网正常。
-   Web 站点本身用 `Invoke-WebRequest` 直接 GET `https://coder210.github.io/joy/` 验证
-   （注意 `web_fetch` 工具在本环境未注册，用 PowerShell 即可）。
+   可看三个构建型工作流（Android APKs / Desktop examples / Web examples）的状态；
+   第四个 `cleanup-artifacts.yml` 是定时清理，没有 push 运行记录。出网正常。
+   Web 站点本身用 `Invoke-WebRequest` 直接 GET `https://coder210.github.io/joy/` 验证。
 
 ## 10. 接手前自检清单
 
 - [ ] `node api/tools/gen_bindings.js --check` 通过（report/thunks/vtable/cs glue/jmath 最新）
 - [ ] `cmake --build build --config Debug` 全量 0 错误（**构建已不依赖 compat.h**）
 - [ ] `ctest --test-dir build -C Debug --timeout 25` 四语言冒烟 4/4
-- [ ] GitHub Actions 三个工作流均 `success`（见 §9.8）
+- [ ] GitHub Actions 三个构建型工作流均 `success`（见 §9.8）
 - [ ] 想继续 §7 的某一项时，先读 `api/README.md`（命名域表 + 15 批改名记录）与本节踩坑
+- [ ] §2 的 6 条 `joy` 域例外是**有意保留**，不要误当成改名漏网去「修」
+- [ ] 全仓还留有 16 处旧名，全部在改名记录 / 旧胶水历史留档里（见 §3 的 13），**不要再清**
+- [ ] §7 的 #1（38 条 `owns`）、#4（放开 X 级）、#8（6 条例外）是决策项，先问人再动
 

@@ -225,7 +225,7 @@ function buildCs(open) {
     if (e.ret === 'void') {
       L.push('            ' + call + ';');
     } else if (retHandle) {
-      /* 局部名用 __h 而不是 h：参数名可能与 h 撞车（create_window 的高度就是 h），
+      /* 局部名用 __h 而不是 h：参数名可能与 h 撞车（joy_core_create_window 的高度就是 h），
        * 否则生成的代码报 CS0136「无法在此范围中声明名为 h 的局部变量」。 */
       L.push('            ulong __h = ' + call + ';');
       L.push('            if (__h == 0) throw new InvalidOperationException(' + q(e.name + ' failed') + ');');

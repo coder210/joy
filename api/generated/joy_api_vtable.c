@@ -10707,6 +10707,12 @@ const char* joy_api_vtable_selftest(void)
                 unsigned long via = api.KrHash(api.ctx, (const char*)"joy-vtable", (int)3);
                 if (direct != via) return "joy_core_kr_hash mismatch";
         }
+        if (!api.JmathFpFromFloat) return "missing shim: JmathFpFromFloat";
+        {
+                int64_t direct = joy_math_fp_from_float((float)1.5f);
+                int64_t via = api.JmathFpFromFloat(api.ctx, (float)1.5f);
+                if (direct != via) return "joy_math_fp_from_float mismatch";
+        }
         /* 强句柄链路：传 h=0，thunk 的 joy_obj_deref 必须拒绝，
          * shim 应翻译成零值而不是崩溃（不触碰任何真实对象）。 */
         if (!api.WindowGetFullscreen) return "missing shim: WindowGetFullscreen";

@@ -35,7 +35,7 @@ const VTABLE_C = path.join(JOY_API, 'generated', 'joy_api_vtable.c');
 /* cs 后端薄适配也是入库生成物：由 joy.idl 的 status:on 条目驱动。 */
 const CS_C = path.join(JOY_REPO, 'modules/cs/bindings/api/api_generated.c');
 const CS_CS = path.join(JOY_REPO, 'modules/cs/scripts/Api.generated.cs');
-const { buildThunks, canThunk, ownsIssue } = require('./emit_thunks');
+const { buildThunks, canThunk, ownsIssue, THUNK_MAX_ARGS } = require('./emit_thunks');
 const { buildVtable, canVtable } = require('./emit_vtable');
 const { buildCsGlue, canEmitCs } = require('./emit_cs');
 const { isOpaque, namespacedDomain, isNamespaced } = require('./naming');
@@ -54,7 +54,8 @@ const RENAME_MAP = path.join(JOY_API, 'idl', 'rename_map.json');
 /* jspine 是有意排除（JOY_USE_SPINE 条件编译）；迁移后新名沿用同一排除，
  * 否则 19 条会从 X 掉回 L0/L1 混进 thunk 生成。 */
 const SKIP_PREFIXES = ['joy_core_utils_', 'joy_r2d_spine_'];
-const SKIP_NAMES = new Set(['jecs_test', 'joy_scene_ecs_test']);
+/* 旧名 jecs_test 已随 P1 迁成 joy_scene_ecs_test，源码里不再存在，无需保留防护。 */
+const SKIP_NAMES = new Set(['joy_scene_ecs_test']);
 const SKIP_DOMAINS = new Set(['script']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];
 
@@ -79,7 +80,7 @@ function stripComments(src) {
 
 /* 值类型布局由 structs.js 统一解析：gen / thunks / cs 三个生成器共用，
    L2 试点还靠它把结构体参数展开成标量序列。 */
-const { collectStructs, canExpand } = require('./structs');
+const { collectStructs, canExpand, expandParams } = require('./structs');
 
 /* joy.h 里有 81 个跨行的 JOY_API 声明，必须收集到分号为止。 */
 function collectDecls(src) {
@@ -145,7 +146,7 @@ function parseDecl(raw, line) {
 
 /* isOpaque 统一取自 naming.js，避免三个生成器对「句柄」的判定各说各话。 */
 
-/* create_window / destroy_window 这类通用动词开头的名字，用第二段做域名。 */
+/* P1 前的旧名（形如 create_window）用第二段做域名；P1 后一律 joy_<域>_<动作>。 */
 const GENERIC_FIRST = new Set([
   'create', 'destroy', 'find', 'get', 'set', 'new', 'free', 'init',
   'make', 'load', 'save', 'add', 'remove', 'is', 'has', 'to', 'from',
@@ -166,7 +167,7 @@ function domainOf(name) {
  * 1. 只有名字里确实含 `_create` 才做精确替换；否则 replace 是恒等变换，
  *    get_* / find_* / wrap_* 会把 owns 填成自己。
  * 2. 候选 dtor 必须恰好一个参数、类型与 ret 严格相等；否则 byDomain 兜底
- *    会把 r3d_destroy(jr3d_p) 套到返回 void* 的 GPU 对象上。 */
+ *    会把 joy_r3d_destroy(jr3d_p) 套到返回 void* 的 GPU 对象上。 */
 function inferOwns(name, ret, declByName) {
   if (!isOpaque(ret)) return null;
   const domain = domainOf(name);
@@ -344,9 +345,9 @@ function buildReport(entries, meta) {
   L.push('');
   L.push('> 自动生成，勿手改：由 `api/tools/gen_bindings.js` 从 `include/joy/{defs,api}.h` + `api/idl/joy.idl` 产出。');
   L.push('> 生成物（共享 thunk 与 cs 薄适配）覆盖 `status: on` 的 L0/L1，');
-  L.push('> 以及 P2-A 试点里按字段展开成标量序列的 L2 条目；');
+  L.push('> 以及按字段展开成标量序列的 L2 条目；');
   L.push('> 注册表同时携带参数 / 返回类型，供 lua / js / cs 三端 vm.c 共用；');
-  L.push('> 旧的 `modules/*/bindings/` 手写胶水未删，新旧链路并行。');
+  L.push('> `modules/*/bindings/legacy/` 旧手写胶水已删除，IDL 驱动层是唯一入口。');
   L.push('');
   L.push('## 总览');
   L.push('');
@@ -473,6 +474,15 @@ function check(entries) {
         && !(e.level === 'L2' && canExpand(e, meta.structs))) {
       errors.push('只支持 L0/L1 及可展开的 L2 自动 thunk，不能 status:on: '
         + e.name + '(' + e.level + ')');
+    }
+    /* lapi.c 的 LUAX_MAX_ARGS 是运行期硬上限；手工把 IDL 改成 status:on
+     * 也要在门禁里拦住，不能只靠 --enable 时的 canThunk()。 */
+    if (e.status === 'on') {
+      const argc = expandParams(e, meta.structs).length;
+      if (argc > THUNK_MAX_ARGS) {
+        errors.push('展开后参数 ' + argc + ' 个，超过 LUAX_MAX_ARGS='
+          + THUNK_MAX_ARGS + '，不能 status:on: ' + e.name);
+      }
     }
   }
   for (const e of entries) {
