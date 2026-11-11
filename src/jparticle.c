@@ -22,13 +22,13 @@ typedef struct {
     float max_life;   /* 初始生命(用于插值) */
     float size;
     float r, g, b, a;
-} particle_inner_t;
+} joy_particle_inner_t;
 
 /* 发射器 */
 struct jparticle {
         jparticle_cfg_t cfg;
         float emit_acc;         /* 持续发射累积时间 */
-        kvec_t(particle_inner_t) particles;
+        kvec_t(joy_particle_inner_t) particles;
 };
 
 /* ======================== 工具函数 ======================== */
@@ -94,7 +94,7 @@ void joy_r2d_particle_emit(jparticle_p p) {
     jparticle_cfg_t* c = &p->cfg;
     int n = c->burst > 0 ? c->burst : 1;
     for (int i = 0; i < n; i++) {
-        particle_inner_t pt = {0};
+        joy_particle_inner_t pt = {0};
         /* 位置 */
         float angle = randf(0, (float)M_PI * 2);
         float r = randf(0, c->spawn_radius);
@@ -116,7 +116,7 @@ void joy_r2d_particle_emit(jparticle_p p) {
         pt.g = c->g;
         pt.b = c->b;
         pt.a = c->a;
-        kv_push(particle_inner_t, p->particles, pt);
+        kv_push(joy_particle_inner_t, p->particles, pt);
     }
 }
 
@@ -138,7 +138,7 @@ void joy_r2d_particle_update(jparticle_p p, float dt) {
     /* 更新每个粒子 */
     size_t w = 0;
     for (size_t i = 0; i < p->particles.n; i++) {
-        particle_inner_t* pt = &kv_A(p->particles, i);
+        joy_particle_inner_t* pt = &kv_A(p->particles, i);
         pt->life -= dt;
         if (pt->life <= 0) continue; /* 死亡 */
 
@@ -170,7 +170,7 @@ void joy_r2d_particle_update(jparticle_p p, float dt) {
 void joy_r2d_particle_render(jparticle_p p, jr2d_p r2d) {
     if (!p || !r2d) return;
     for (size_t i = 0; i < p->particles.n; i++) {
-        particle_inner_t* pt = &kv_A(p->particles, i);
+        joy_particle_inner_t* pt = &kv_A(p->particles, i);
         float half = pt->size * 0.5f;
         jrect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
         joy_r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);

@@ -20,7 +20,7 @@ extern bool r2d_render_geometry(jr2d_p r2d, void* texture,
 /* ---------- 遮挡线段(墙壁/柱子等) ---------- */
 typedef struct jlight_occluder {
         float x1, y1, x2, y2;
-} jlight_occluder_t;
+} joy_light_occluder_t;
 
 /* ---------- 灯光系统 ---------- */
 struct jlight_sys {
@@ -31,7 +31,7 @@ struct jlight_sys {
         bool active[JLIGHT_MAX];
         int count;
         uint8_t ambient_r, ambient_g, ambient_b;
-        jlight_occluder_t occluders[JLIGHT_OCCLUDER_MAX];
+        joy_light_occluder_t occluders[JLIGHT_OCCLUDER_MAX];
         int occluder_count;
 };
 

@@ -27,7 +27,7 @@ typedef struct jui_slot {
         button_p  btn;
         checkbox_p cb;
         slider_p  sl;
-} jui_slot_t;
+} joy_ui_slot_t;
 
 struct jui_ctx {
         jr2d_p r2d;
@@ -48,7 +48,7 @@ struct jui_ctx {
         int    id_base;
 
         /* 池化控件：复用 retained 实例 */
-        jui_slot_t* slots;
+        joy_ui_slot_t* slots;
         int         slot_count;
         int         slot_cap;
 
@@ -118,7 +118,7 @@ void joy_ui_ctx_destroy(jui_ctx_p ctx)
 {
         if (!ctx) return;
         for (int i = 0; i < ctx->slot_count; i++) {
-                jui_slot_t* s = &ctx->slots[i];
+                joy_ui_slot_t* s = &ctx->slots[i];
                 if (s->btn) joy_ui_button_destroy(s->btn);
                 if (s->cb)  joy_ui_checkbox_destroy(s->cb);
                 if (s->sl)  joy_ui_slider_destroy(s->sl);
@@ -134,25 +134,25 @@ void joy_ui_set_theme(jui_ctx_p ctx, const jui_theme_t* theme)
 
 /* ------------------------------ 槽位池 ------------------------------ */
 
-static jui_slot_t* jui_get_slot(jui_ctx_p ctx, int id)
+static joy_ui_slot_t* jui_get_slot(jui_ctx_p ctx, int id)
 {
         if (ctx->slot_count < 32) {
                 if (ctx->slot_count >= ctx->slot_cap) {
                         int nc = ctx->slot_cap ? ctx->slot_cap * 2 : 64;
-                        jui_slot_t* ns = (jui_slot_t*)realloc(ctx->slots, (size_t)nc * sizeof(jui_slot_t));
+                        joy_ui_slot_t* ns = (joy_ui_slot_t*)realloc(ctx->slots, (size_t)nc * sizeof(joy_ui_slot_t));
                         if (!ns) return NULL;
                         ctx->slots = ns;
                         ctx->slot_cap = nc;
                 }
-                jui_slot_t* s = &ctx->slots[ctx->slot_count++];
+                joy_ui_slot_t* s = &ctx->slots[ctx->slot_count++];
                 memset(s, 0, sizeof(*s));
                 s->id = id;
                 return s;
         }
         /* 已有足够槽位：查找或回收空闲 */
-        jui_slot_t* free_slot = NULL;
+        joy_ui_slot_t* free_slot = NULL;
         for (int i = 0; i < ctx->slot_count; i++) {
-                jui_slot_t* s = &ctx->slots[i];
+                joy_ui_slot_t* s = &ctx->slots[i];
                 if (s->id == id) return s;
                 if (s->id < 0 && !free_slot) free_slot = s;
         }
@@ -428,7 +428,7 @@ void joy_ui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off)
 bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
 {
         if (!ctx || !ctx->font) return false;
-        jui_slot_t* s = jui_get_slot(ctx, id);
+        joy_ui_slot_t* s = jui_get_slot(ctx, id);
         if (!s) return false;
 
         if (!s->btn) {
@@ -460,7 +460,7 @@ bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
 bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* label)
 {
         if (!ctx || !ctx->font) return false;
-        jui_slot_t* s = jui_get_slot(ctx, id);
+        joy_ui_slot_t* s = jui_get_slot(ctx, id);
         if (!s) return false;
 
         /* 复用 checkbox：label 只在创建时定，之后位置由 set_position 移动 */
@@ -494,7 +494,7 @@ bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* 
 bool joy_ui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv)
 {
         if (!ctx) return false;
-        jui_slot_t* s = jui_get_slot(ctx, id);
+        joy_ui_slot_t* s = jui_get_slot(ctx, id);
         if (!s) return false;
 
         if (!s->sl) {

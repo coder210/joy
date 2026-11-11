@@ -2,14 +2,18 @@
 'use strict';
 /* C 类型名统一工具（TYPE_RENAME_TASK.md §6）。
  *
- *   node api/tools/rename_types.js --build-map  生成 type_rename_map.json + handle_aliases.json
+ *   node api/tools/rename_types.js --build-map  生成 type_rename_map.json + private_type_map.json + handle_aliases.json
  *   node api/tools/rename_types.js --dry-run    只打印命中报告，不改文件
- *   node api/tools/rename_types.js --write      执行替换（可配 --only / --tags）
- *   node api/tools/rename_types.js --audit      全词审计旧名残留
+ *   node api/tools/rename_types.js --write      执行替换（可配 --only / --map / --tags）
+ *   node api/tools/rename_types.js --audit      全词审计旧名残留（合并公开+私有两张表）
  *   node api/tools/rename_types.js --check-aliases  校验冻结表与现有生成物类名集合一致
  *
  * 选项：--only <前缀,逗号分隔>  仅处理这些相对路径前缀（如 src/,include/joy/）
+ *       --map public|private|all  选映射表（默认 public）
  *       --tags                  额外做 struct-tag 定向替换（默认关闭，见 §1 说明）
+ *
+ * 批 1 用 --map private --only src/：私有类型不外泄，生成器不扫 src/*.c，
+ * 因此 --check 应零变化。公开类型名在批 2 才原子处理。
  *
  * 约束：字符类全词边界、原位替换不增删行、保留每个文件原换行风格。
  */
@@ -21,6 +25,7 @@ const rel = f => path.relative(ROOT, f).split(path.sep).join('/');
 const P = (...s) => path.join(ROOT, ...s);
 
 const MAP_FILE = P('api/idl/type_rename_map.json');
+const PRIVATE_MAP_FILE = P('api/idl/private_type_map.json');
 const ALIAS_FILE = P('api/idl/handle_aliases.json');
 
 /* §3.2 标准 C 类型（含 SCALARS 里出现的别名），不能加 joy_ */
@@ -82,6 +87,56 @@ function buildMap() {
   const map = {};
   for (const n of collectTypeNames()) map[n] = toNew(n);
   return map;
+}
+
+/* 批 1：采集 src/*.c 内定义、且完全不外泄的私有 typedef 名。
+ * 排除：标准 C 类型、公开头同名（归批 2）、外泄到公开头/生成物/示例、无后缀通用词
+ * （client/server/v/e 等，全词替换会误伤变量）。 */
+function buildPrivateMap(publicMap) {
+  const pubNames = new Set(Object.keys(publicMap));
+  const defined = new Map();
+  const strip = s => s.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ''))
+    .replace(/\/\/[^\n]*/g, '');
+  const src = fs.readdirSync(P('src')).filter(f => f.endsWith('.c')).map(f => P('src', f));
+  for (const f of src) {
+    const s = strip(fs.readFileSync(f, 'utf8'));
+    let m;
+    const patterns = [
+      /\btypedef\b[^;{}]*?(?:\*\s*)?([A-Za-z_]\w*)\s*;/g,
+      /^\s*\}\s*([A-Za-z_]\w*)\s*;/gm,
+      /\btypedef\s+(?:struct|union|enum)\s+(\w+)\s*;/g,
+    ];
+    for (const re of patterns) while ((m = re.exec(s)) !== null) defined.set(m[1], true);
+  }
+  const outside = [];
+  const walk = d => {
+    let e; try { e = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const x of e) {
+      const fp = path.join(d, x.name);
+      if (x.isDirectory()) {
+        if (/^(build|bin|obj|node_modules|\.git|SDL|msgpack|spine|external|runtimes)/.test(x.name)) continue;
+        walk(fp);
+      } else if (/\.(c|h|cpp|hpp|js|cs|idl|json|md)$/.test(x.name)) outside.push(fp);
+    }
+  };
+  for (const d of ['include/joy','api/generated','api/idl','api/tools','api/runtime','examples','modules']) walk(P(d));
+  const text = outside.map(f => { try { return fs.readFileSync(f, 'utf8'); } catch { return ''; } }).join('\n');
+  const map = {};
+  for (const n of [...defined.keys()].sort()) {
+    if (STDLIB.has(n) || pubNames.has(n)) continue;
+    if (!/_(?:t|p|e|k)$/.test(n)) continue;
+    if (new RegExp('\\b' + esc(n) + '\\b').test(text)) continue;
+    map[n] = toNew(n);
+  }
+  return map;
+}
+
+/* 运行期一律从文件读映射表，避免批 2 改完公开头后重新采集出 joy_x -> joy_x 自映射。 */
+function loadMap(which) {
+  const read = f => JSON.parse(fs.readFileSync(f, 'utf8'));
+  if (which === 'private') return read(PRIVATE_MAP_FILE);
+  if (which === 'all') return { ...read(MAP_FILE), ...read(PRIVATE_MAP_FILE) };
+  return read(MAP_FILE);
 }
 
 /* §4 冻结脚本层句柄类名：key = 新类型名，value = 改名前的类名基线 */
@@ -168,9 +223,10 @@ function buildTagMap() {
 }
 
 function parseArgs(argv) {
-  const a = { only: [], tags: false, cmd: null };
+  const a = { only: [], tags: false, cmd: null, map: 'public' };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--only') a.only = argv[++i].split(',').filter(Boolean);
+    else if (argv[i] === '--map') a.map = argv[++i];
     else if (argv[i] === '--tags') a.tags = true;
     else a.cmd = argv[i];
   }
@@ -179,17 +235,22 @@ function parseArgs(argv) {
 
 function main() {
   const args = parseArgs(process.argv.slice(2));
-  const map = buildMap();
-  const tagMap = args.tags ? buildTagMap() : null;
 
   if (args.cmd === '--build-map') {
     const eol = '\n';
-    fs.writeFileSync(MAP_FILE, JSON.stringify(map, null, 2) + eol, 'utf8');
-    fs.writeFileSync(ALIAS_FILE, JSON.stringify(buildHandleAliases(map), null, 2) + eol, 'utf8');
-    console.log('type_rename_map.json', Object.keys(map).length, '条');
-    console.log('handle_aliases.json', Object.keys(buildHandleAliases(map)).length, '条');
+    const pub = buildMap();
+    const priv = buildPrivateMap(pub);
+    fs.writeFileSync(MAP_FILE, JSON.stringify(pub, null, 2) + eol, 'utf8');
+    fs.writeFileSync(PRIVATE_MAP_FILE, JSON.stringify(priv, null, 2) + eol, 'utf8');
+    fs.writeFileSync(ALIAS_FILE, JSON.stringify(buildHandleAliases(pub), null, 2) + eol, 'utf8');
+    console.log('type_rename_map.json', Object.keys(pub).length, '条');
+    console.log('private_type_map.json', Object.keys(priv).length, '条');
+    console.log('handle_aliases.json', Object.keys(buildHandleAliases(pub)).length, '条');
     return;
   }
+
+  const map = loadMap(args.map);
+  const tagMap = args.tags ? buildTagMap() : null;
 
   if (args.cmd === '--check-aliases') {
     const aliases = JSON.parse(fs.readFileSync(ALIAS_FILE, 'utf8'));

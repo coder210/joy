@@ -91,7 +91,7 @@ struct tcpclient
 typedef struct {
         int conv;                      // Connection ID
         struct wsnetserver* server;    // 服务器实例指针（用于后续事件访问）
-} wsnetserver_ctx_t;
+} joy_wsnetserver_ctx_t;
 
 struct wsnetserver {
         struct mg_mgr mgr;             // Mongoose manager
@@ -967,7 +967,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         if (ev == MG_EV_WEBSOCKET_HANDSHAKE_DONE) {
                 // WebSocket 连接已建立
                 // 为连接分配上下文
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)malloc(sizeof(wsnetserver_ctx_t));
+                joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)malloc(sizeof(joy_wsnetserver_ctx_t));
                 if (ctx) {
                         ctx->conv = ws->conv++;
                         ctx->server = ws;  // 保存服务器指针
@@ -992,7 +992,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 struct websocket_message* wm = (struct websocket_message*)ev_data;
                 int payload_len = (int)wm->size;
                 
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 
                 if (payload_len > 0 && ctx != NULL && ctx->server != NULL) {
                         wsnetserver_p server = ctx->server;
@@ -1020,7 +1020,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         }
         else if (ev == MG_EV_CLOSE) {
                 // 连接关闭
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 if (ctx != NULL && ctx->server != NULL) {
                         wsnetserver_p server = ctx->server;
                         joy_core_log_info("wsnetserver: connection closed conv=%d", ctx->conv);
@@ -1116,7 +1116,7 @@ void joy_net_wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int 
         // 遍历所有连接找到对应的 conv
         struct mg_connection* c;
         for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 if (ctx && ctx->conv == conv && (c->flags & MG_F_IS_WEBSOCKET)) {
                         mg_send_websocket_frame(c, WEBSOCKET_OP_BINARY, data, len);
                         return;
@@ -1144,7 +1144,7 @@ void joy_net_wsnetserver_offline(wsnetserver_p ws, int conv)
         // 遍历找到对应连接并关闭
         struct mg_connection* c;
         for (c = ws->mgr.active_connections; c != NULL; c = c->next) {
-                wsnetserver_ctx_t* ctx = (wsnetserver_ctx_t*)c->user_data;
+                joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 if (ctx && ctx->conv == conv) {
                         // 发送 WebSocket 关闭帧
                         mg_send_websocket_frame(c, WEBSOCKET_OP_CLOSE, "", 0);

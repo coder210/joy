@@ -37,47 +37,47 @@ static mat44f_t euler_to_rot(vec3f_t euler) {
 typedef struct simplex3d_f {
 	vec3f_t points[4];
 	int points_num;
-} simplex3d_f_t;
+} joy_simplex3d_f_t;
 
 /* EPA面法线 */
 typedef struct {
 	vec3f_t normal;
 	fp_t distance;
-} epa_face_f_t;
+} joy_epa_face_f_t;
 
 /* EPA边 */
 typedef struct {
 	size_t a, b;
-} epa_edge_f_t;
+} joy_epa_edge_f_t;
 
 /* kvec_t 展开为匿名 struct, 直接用匿名类型作为形参/传址会让 MSVC 判定为
    互不兼容的匿名类型(C4116/C4133)。起具名别名后同一类型身份, 告警消除。 */
-typedef kvec_t(size_t)       size_buf_t;
-typedef kvec_t(vec3f_t)      vec3f_buf_t;
-typedef kvec_t(epa_face_f_t) epa_face_f_buf_t;
-typedef kvec_t(epa_edge_f_t) epa_edge_f_buf_t;
+typedef kvec_t(size_t)       joy_size_buf_t;
+typedef kvec_t(vec3f_t)      joy_vec3f_buf_t;
+typedef kvec_t(joy_epa_face_f_t) joy_epa_face_f_buf_t;
+typedef kvec_t(joy_epa_edge_f_t) joy_epa_edge_f_buf_t;
 
 /* ============ 单纯形操作 ============ */
 
-static void simplex_init1_f(simplex3d_f_t *s, vec3f_t p0) {
+static void simplex_init1_f(joy_simplex3d_f_t *s, vec3f_t p0) {
 	s->points[0] = p0;
 	s->points_num = 1;
 }
 
-static void simplex_init2_f(simplex3d_f_t *s, vec3f_t p0, vec3f_t p1) {
+static void simplex_init2_f(joy_simplex3d_f_t *s, vec3f_t p0, vec3f_t p1) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points_num = 2;
 }
 
-static void simplex_init3_f(simplex3d_f_t *s, vec3f_t p0, vec3f_t p1, vec3f_t p2) {
+static void simplex_init3_f(joy_simplex3d_f_t *s, vec3f_t p0, vec3f_t p1, vec3f_t p2) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points[2] = p2;
 	s->points_num = 3;
 }
 
-static void simplex_push_f(simplex3d_f_t *s, vec3f_t p) {
+static void simplex_push_f(joy_simplex3d_f_t *s, vec3f_t p) {
 	s->points[3] = s->points[2];
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
@@ -216,7 +216,7 @@ static bool safe_cross_normalize_f(vec3f_t a, vec3f_t b, vec3f_t *out) {
 	return true;
 }
 
-static bool gjk_line_f(simplex3d_f_t *s, vec3f_t *dir) {
+static bool gjk_line_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	vec3f_t a = s->points[0], b = s->points[1];
 	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
 	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
@@ -229,7 +229,7 @@ static bool gjk_line_f(simplex3d_f_t *s, vec3f_t *dir) {
 	return false;
 }
 
-static bool gjk_triangle_f(simplex3d_f_t *s, vec3f_t *dir) {
+static bool gjk_triangle_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	vec3f_t a = s->points[0], b = s->points[1], c = s->points[2];
 	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
 	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
@@ -265,7 +265,7 @@ static bool gjk_triangle_f(simplex3d_f_t *s, vec3f_t *dir) {
 	return false;
 }
 
-static bool gjk_tetrahedron_f(simplex3d_f_t *s, vec3f_t *dir) {
+static bool gjk_tetrahedron_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	vec3f_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
 	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
 	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
@@ -283,7 +283,7 @@ static bool gjk_tetrahedron_f(simplex3d_f_t *s, vec3f_t *dir) {
 	return true;
 }
 
-static bool next_simplex_f(simplex3d_f_t *s, vec3f_t *dir) {
+static bool next_simplex_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	switch (s->points_num) {
 	case 2: return gjk_line_f(s, dir);
 	case 3: return gjk_triangle_f(s, dir);
@@ -295,8 +295,8 @@ static bool next_simplex_f(simplex3d_f_t *s, vec3f_t *dir) {
 /* ============ EPA (扩展多面体算法) ============ */
 
 /* 计算所有面法线和最近面索引 */
-static void get_face_normals_f(vec3f_buf_t *polytope, size_buf_t *faces,
-	epa_face_f_buf_t *normals, size_t *min_triangle) {
+static void get_face_normals_f(joy_vec3f_buf_t *polytope, joy_size_buf_t *faces,
+	joy_epa_face_f_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
 	fp_t min_distance = fp_max_value();
 
@@ -311,27 +311,27 @@ static void get_face_normals_f(vec3f_buf_t *polytope, size_buf_t *faces,
 		if (!safe_cross_normalize_f(ba, ca, &n)) {
 			/* 退化面(三点近共线): 法线退化为噪声方向, 跳过该面,
 			   将其距离置为最大避免被选为最近面 */
-			epa_face_f_t face;
+			joy_epa_face_f_t face;
 			face.normal = (vec3f_t){ fp_one(), fp_zero(), fp_zero() };
 			face.distance = fp_max_value();
-			kv_push(epa_face_f_t, *normals, face);
+			kv_push(joy_epa_face_f_t, *normals, face);
 			continue;
 		}
 
 		fp_t dist = vec3f_dot(n, a);
 		if (dist < fp_zero()) { n = vec3f_negate(n); dist = -dist; }
 
-		epa_face_f_t face;
+		joy_epa_face_f_t face;
 		face.normal = n;
 		face.distance = dist;
-		kv_push(epa_face_f_t, *normals, face);
+		kv_push(joy_epa_face_f_t, *normals, face);
 
 		if (dist < min_distance) { min_distance = dist; *min_triangle = i / 3; }
 	}
 }
 
 /* 添加不重复边(EPA用) */
-static void add_unique_edge_f(epa_edge_f_buf_t *edges, size_buf_t *faces, size_t a, size_t b) {
+static void add_unique_edge_f(joy_epa_edge_f_buf_t *edges, joy_size_buf_t *faces, size_t a, size_t b) {
 	size_t fa = kv_A(*faces, a);
 	size_t fb = kv_A(*faces, b);
 	/* 查找是否存在反向边 */
@@ -343,15 +343,15 @@ static void add_unique_edge_f(epa_edge_f_buf_t *edges, size_buf_t *faces, size_t
 			return;
 		}
 	}
-	epa_edge_f_t edge = { fa, fb };
-	kv_push(epa_edge_f_t, *edges, edge);
+	joy_epa_edge_f_t edge = { fa, fb };
+	kv_push(joy_epa_edge_f_t, *edges, edge);
 }
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
-static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
-	vec3f_buf_t polytope;
-	size_buf_t faces;
-	epa_face_f_buf_t normals;
+static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
+	joy_vec3f_buf_t polytope;
+	joy_size_buf_t faces;
+	joy_epa_face_f_buf_t normals;
 
 	kv_init(polytope);
 	kv_init(faces);
@@ -393,7 +393,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			min_distance = fp_max_value();
 
 			/* 找到需要移除的面,收集边界边 */
-			epa_edge_f_buf_t unique_edges;
+			joy_epa_edge_f_buf_t unique_edges;
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
@@ -414,7 +414,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			}
 
 			/* 用边界边创建新面 */
-			size_buf_t new_faces;
+			joy_size_buf_t new_faces;
 			kv_init(new_faces);
 			size_t new_vertex_index = polytope.n;
 			for (size_t i = 0; i < unique_edges.n; i++) {
@@ -425,7 +425,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 			kv_push(vec3f_t, polytope, support);
 
 			/* 计算新面的法线 */
-			epa_face_f_buf_t new_normals;
+			joy_epa_face_f_buf_t new_normals;
 			kv_init(new_normals);
 			size_t new_min_face = 0;
 			get_face_normals_f(&polytope, &new_faces, &new_normals, &new_min_face);
@@ -455,7 +455,7 @@ static bool epa_f(simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_
 				kv_push(size_t, faces, kv_A(new_faces, i));
 			}
 			for (size_t i = 0; i < new_normals.n; i++) {
-				kv_push(epa_face_f_t, normals, kv_A(new_normals, i));
+				kv_push(joy_epa_face_f_t, normals, kv_A(new_normals, i));
 			}
 
 			kv_destroy(new_faces);
@@ -537,7 +537,7 @@ static bool degenerate_fallback_f(gjk3df_collider_p ca, gjk3df_collider_p cb, gj
 bool joy_math_gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 	vec3f_t init_dir, gjk3df_contact_p contact)
 {
-	simplex3d_f_t simplex;
+	joy_simplex3d_f_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
 	vec3f_t support = get_support_point_f(c1, c2, init_dir);
@@ -650,45 +650,45 @@ void joy_math_gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num)
 typedef struct simplex3d {
 	vec3_t points[4];
 	int points_num;
-} simplex3d_t;
+} joy_simplex3d_t;
 
 /* EPA面法线 */
 typedef struct {
 	vec3_t normal;
 	ft_t distance;
-} epa_face_t;
+} joy_epa_face_t;
 
 /* EPA边 */
 typedef struct {
 	size_t a, b;
-} epa_edge_t;
+} joy_epa_edge_t;
 
-/* EPA kvec 具名别名(size_buf_t 已在定点段定义, 此处复用) */
-typedef kvec_t(vec3_t)     vec3_buf_t;
-typedef kvec_t(epa_face_t) epa_face_buf_t;
-typedef kvec_t(epa_edge_t) epa_edge_buf_t;
+/* EPA kvec 具名别名(joy_size_buf_t 已在定点段定义, 此处复用) */
+typedef kvec_t(vec3_t)     joy_vec3_buf_t;
+typedef kvec_t(joy_epa_face_t) joy_epa_face_buf_t;
+typedef kvec_t(joy_epa_edge_t) joy_epa_edge_buf_t;
 
 /* ============ 单纯形操作 ============ */
 
-static void simplex_init1(simplex3d_t *s, vec3_t p0) {
+static void simplex_init1(joy_simplex3d_t *s, vec3_t p0) {
 	s->points[0] = p0;
 	s->points_num = 1;
 }
 
-static void simplex_init2(simplex3d_t *s, vec3_t p0, vec3_t p1) {
+static void simplex_init2(joy_simplex3d_t *s, vec3_t p0, vec3_t p1) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points_num = 2;
 }
 
-static void simplex_init3(simplex3d_t *s, vec3_t p0, vec3_t p1, vec3_t p2) {
+static void simplex_init3(joy_simplex3d_t *s, vec3_t p0, vec3_t p1, vec3_t p2) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points[2] = p2;
 	s->points_num = 3;
 }
 
-static void simplex_push(simplex3d_t *s, vec3_t p) {
+static void simplex_push(joy_simplex3d_t *s, vec3_t p) {
 	s->points[3] = s->points[2];
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
@@ -813,7 +813,7 @@ static bool safe_cross_normalize(vec3_t a, vec3_t b, vec3_t *out) {
 	return true;
 }
 
-static bool gjk_line(simplex3d_t *s, vec3_t *dir) {
+static bool gjk_line(joy_simplex3d_t *s, vec3_t *dir) {
 	vec3_t a = s->points[0], b = s->points[1];
 	vec3_t ab = vec3_normalize(vec3_sub(b, a));
 	vec3_t ao = vec3_normalize(vec3_negate(a));
@@ -826,7 +826,7 @@ static bool gjk_line(simplex3d_t *s, vec3_t *dir) {
 	return false;
 }
 
-static bool gjk_triangle(simplex3d_t *s, vec3_t *dir) {
+static bool gjk_triangle(joy_simplex3d_t *s, vec3_t *dir) {
 	vec3_t a = s->points[0], b = s->points[1], c = s->points[2];
 	vec3_t ab = vec3_normalize(vec3_sub(b, a));
 	vec3_t ac = vec3_normalize(vec3_sub(c, a));
@@ -862,7 +862,7 @@ static bool gjk_triangle(simplex3d_t *s, vec3_t *dir) {
 	return false;
 }
 
-static bool gjk_tetrahedron(simplex3d_t *s, vec3_t *dir) {
+static bool gjk_tetrahedron(joy_simplex3d_t *s, vec3_t *dir) {
 	vec3_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
 	vec3_t ab = vec3_normalize(vec3_sub(b, a));
 	vec3_t ac = vec3_normalize(vec3_sub(c, a));
@@ -880,7 +880,7 @@ static bool gjk_tetrahedron(simplex3d_t *s, vec3_t *dir) {
 	return true;
 }
 
-static bool next_simplex(simplex3d_t *s, vec3_t *dir) {
+static bool next_simplex(joy_simplex3d_t *s, vec3_t *dir) {
 	switch (s->points_num) {
 	case 2: return gjk_line(s, dir);
 	case 3: return gjk_triangle(s, dir);
@@ -892,8 +892,8 @@ static bool next_simplex(simplex3d_t *s, vec3_t *dir) {
 /* ============ EPA (扩展多面体算法) ============ */
 
 /* 计算所有面法线和最近面索引 */
-static void get_face_normals(vec3_buf_t *polytope, size_buf_t *faces,
-	epa_face_buf_t *normals, size_t *min_triangle) {
+static void get_face_normals(joy_vec3_buf_t *polytope, joy_size_buf_t *faces,
+	joy_epa_face_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
 	ft_t min_distance = ft_max_value();
 
@@ -908,27 +908,27 @@ static void get_face_normals(vec3_buf_t *polytope, size_buf_t *faces,
 		if (!safe_cross_normalize(ba, ca, &n)) {
 			/* 退化面(三点近共线): 法线退化为噪声方向, 跳过该面,
 			   将其距离置为最大避免被选为最近面 */
-			epa_face_t face;
+			joy_epa_face_t face;
 			face.normal = (vec3_t){ ft_one(), ft_zero(), ft_zero() };
 			face.distance = ft_max_value();
-			kv_push(epa_face_t, *normals, face);
+			kv_push(joy_epa_face_t, *normals, face);
 			continue;
 		}
 
 		ft_t dist = vec3_dot(n, a);
 		if (dist < ft_zero()) { n = vec3_negate(n); dist = -dist; }
 
-		epa_face_t face;
+		joy_epa_face_t face;
 		face.normal = n;
 		face.distance = dist;
-		kv_push(epa_face_t, *normals, face);
+		kv_push(joy_epa_face_t, *normals, face);
 
 		if (dist < min_distance) { min_distance = dist; *min_triangle = i / 3; }
 	}
 }
 
 /* 添加不重复边(EPA用) */
-static void add_unique_edge(epa_edge_buf_t *edges, size_buf_t *faces, size_t a, size_t b) {
+static void add_unique_edge(joy_epa_edge_buf_t *edges, joy_size_buf_t *faces, size_t a, size_t b) {
 	size_t fa = kv_A(*faces, a);
 	size_t fb = kv_A(*faces, b);
 	/* 查找是否存在反向边 */
@@ -940,15 +940,15 @@ static void add_unique_edge(epa_edge_buf_t *edges, size_buf_t *faces, size_t a, 
 			return;
 		}
 	}
-	epa_edge_t edge = { fa, fb };
-	kv_push(epa_edge_t, *edges, edge);
+	joy_epa_edge_t edge = { fa, fb };
+	kv_push(joy_epa_edge_t, *edges, edge);
 }
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
-static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
-	vec3_buf_t polytope;
-	size_buf_t faces;
-	epa_face_buf_t normals;
+static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
+	joy_vec3_buf_t polytope;
+	joy_size_buf_t faces;
+	joy_epa_face_buf_t normals;
 
 	kv_init(polytope);
 	kv_init(faces);
@@ -990,7 +990,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			min_distance = ft_max_value();
 
 			/* 找到需要移除的面,收集边界边 */
-			epa_edge_buf_t unique_edges;
+			joy_epa_edge_buf_t unique_edges;
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
@@ -1011,7 +1011,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			}
 
 			/* 用边界边创建新面 */
-			size_buf_t new_faces;
+			joy_size_buf_t new_faces;
 			kv_init(new_faces);
 			size_t new_vertex_index = polytope.n;
 			for (size_t i = 0; i < unique_edges.n; i++) {
@@ -1022,7 +1022,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 			kv_push(vec3_t, polytope, support);
 
 			/* 计算新面的法线 */
-			epa_face_buf_t new_normals;
+			joy_epa_face_buf_t new_normals;
 			kv_init(new_normals);
 			size_t new_min_face = 0;
 			get_face_normals(&polytope, &new_faces, &new_normals, &new_min_face);
@@ -1052,7 +1052,7 @@ static bool epa(simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, 
 				kv_push(size_t, faces, kv_A(new_faces, i));
 			}
 			for (size_t i = 0; i < new_normals.n; i++) {
-				kv_push(epa_face_t, normals, kv_A(new_normals, i));
+				kv_push(joy_epa_face_t, normals, kv_A(new_normals, i));
 			}
 
 			kv_destroy(new_faces);
@@ -1134,7 +1134,7 @@ static bool degenerate_fallback(gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_
 bool joy_math_gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 	vec3_t init_dir, gjk3d_contact_p contact)
 {
-	simplex3d_t simplex;
+	joy_simplex3d_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
 	vec3_t support = get_support_point(c1, c2, init_dir);
@@ -1236,18 +1236,18 @@ void joy_math_gjk3d_init_mesh(gjk3d_collider_t *c, vec3_t *vertices, int num) {
 typedef struct {
 	vec2f_t points[3];
 	int points_num;
-} simplex2d_t;
+} joy_simplex2d_t;
 
-static void simplex2d_push(simplex2d_t *s, vec2f_t p) {
+static void simplex2d_push(joy_simplex2d_t *s, vec2f_t p) {
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
 	s->points[0] = p;
 	if (s->points_num < 3) s->points_num++;
 }
 
-static vec2f_t simplex2d_a(const simplex2d_t *s) { return s->points[0]; }
-static vec2f_t simplex2d_b(const simplex2d_t *s) { return s->points[1]; }
-static vec2f_t simplex2d_c(const simplex2d_t *s) { return s->points[2]; }
+static vec2f_t simplex2d_a(const joy_simplex2d_t *s) { return s->points[0]; }
+static vec2f_t simplex2d_b(const joy_simplex2d_t *s) { return s->points[1]; }
+static vec2f_t simplex2d_c(const joy_simplex2d_t *s) { return s->points[2]; }
 
 /* 2D向量三重积: b*(a·c) - a*(b·c) */
 static vec2f_t vec2f_triple(vec2f_t a, vec2f_t b, vec2f_t c) {
@@ -1349,7 +1349,7 @@ static vec2f_t get_support_point_2d(gjk2d_collider_p ca, gjk2d_collider_p cb, ve
 
 /* ---------- 2D单纯形检测 ---------- */
 
-static bool simplex2d_check(simplex2d_t *s, vec2f_t *dir) {
+static bool simplex2d_check(joy_simplex2d_t *s, vec2f_t *dir) {
 	vec2f_t a = simplex2d_a(s);
 	vec2f_t ao = vec2f_negate(a);    /* 从a指向原点 */
 	vec2f_t ab = vec2f_sub(simplex2d_b(s), a);
@@ -1393,10 +1393,10 @@ typedef struct {
 	vec2f_t p1, p2;
 	vec2f_t normal;
 	fp_t distance;
-} epa2d_edge_t;
+} joy_epa2d_edge_t;
 
 /* 确定缠绕方向 */
-static int get_winding_2d(const simplex2d_t *s) {
+static int get_winding_2d(const joy_simplex2d_t *s) {
 	fp_t total = fp_zero();
 	for (int i = 0; i < s->points_num; i++) {
 		vec2f_t p1 = s->points[i];
@@ -1406,7 +1406,7 @@ static int get_winding_2d(const simplex2d_t *s) {
 	return total > fp_zero() ? 1 : -1;
 }
 
-static void build_edges_2d(epa2d_edge_t *edges, int *n, const simplex2d_t *s, int winding) {
+static void build_edges_2d(joy_epa2d_edge_t *edges, int *n, const joy_simplex2d_t *s, int winding) {
 	for (int i = 0; i < s->points_num; i++) {
 		vec2f_t p1 = s->points[i];
 		vec2f_t p2 = s->points[(i + 1) % s->points_num];
@@ -1436,11 +1436,11 @@ static void build_edges_2d(epa2d_edge_t *edges, int *n, const simplex2d_t *s, in
 }
 
 /* 按距离排序 */
-static void sort_edges_2d(epa2d_edge_t *edges, int n) {
+static void sort_edges_2d(joy_epa2d_edge_t *edges, int n) {
 	for (int i = 0; i < n - 1; i++) {
 		for (int j = 0; j < n - 1 - i; j++) {
 			if (edges[j].distance > edges[j + 1].distance) {
-				epa2d_edge_t tmp = edges[j];
+				joy_epa2d_edge_t tmp = edges[j];
 				edges[j] = edges[j + 1];
 				edges[j + 1] = tmp;
 			}
@@ -1448,12 +1448,12 @@ static void sort_edges_2d(epa2d_edge_t *edges, int n) {
 	}
 }
 
-static bool epa2d(simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb, gjk2d_contact_p contact) {
+static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb, gjk2d_contact_p contact) {
 	if (simplex->points_num < 3) return false;
 
 	int winding = get_winding_2d(simplex);
 
-	epa2d_edge_t edges[3 * 64]; /* 最多64次迭代,每次最多增加2条边 */
+	joy_epa2d_edge_t edges[3 * 64]; /* 最多64次迭代,每次最多增加2条边 */
 	int edge_count = 0;
 	build_edges_2d(edges, &edge_count, simplex, winding);
 	sort_edges_2d(edges, edge_count);
@@ -1527,7 +1527,7 @@ static bool epa2d(simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb
 bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
 	vec2f_t init_dir, gjk2d_contact_p contact)
 {
-	simplex2d_t simplex;
+	joy_simplex2d_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
 	vec2f_t dir = init_dir;

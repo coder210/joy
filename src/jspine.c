@@ -38,13 +38,13 @@ typedef struct {
         SDL_Vertex *items;
         int size;
         int capacity;
-} jspine_vertex_array_t;
+} joy_spine_vertex_array_t;
 
 typedef struct jspine_draw_cache {
-        jspine_vertex_array_t vertices;
+        joy_spine_vertex_array_t vertices;
         spIntArray *indices;
         spFloatArray *world_vertices;
-} jspine_draw_cache_t;
+} joy_spine_draw_cache_t;
 
 /* ==================== spine-c 要求的宿主回调 ==================== */
 
@@ -116,11 +116,11 @@ char *_spUtil_readFile(const char *path, int *length) {
 
 /* ==================== 内部工具 ==================== */
 
-static void vertex_array_clear(jspine_vertex_array_t *arr) {
+static void vertex_array_clear(joy_spine_vertex_array_t *arr) {
         if (arr) arr->size = 0;
 }
 
-static void vertex_array_add(jspine_vertex_array_t *arr, SDL_Vertex v) {
+static void vertex_array_add(joy_spine_vertex_array_t *arr, SDL_Vertex v) {
         int i;
         if (!arr) return;
         if (arr->size == arr->capacity) {
@@ -263,7 +263,7 @@ float joy_r2d_spine_asset_animation_duration(jspine_asset_p asset, int index) {
 /* ==================== 组件（实例） ==================== */
 
 bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset) {
-        jspine_draw_cache_t *cache;
+        joy_spine_draw_cache_t *cache;
 
         if (!inst || !asset) return false;
         memset(inst, 0, sizeof(*inst));
@@ -273,7 +273,7 @@ bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset) {
         inst->state = spAnimationState_create(asset->state_data);
         inst->clipper = spSkeletonClipping_create();
 
-        cache = (jspine_draw_cache_t *) calloc(1, sizeof(jspine_draw_cache_t));
+        cache = (joy_spine_draw_cache_t *) calloc(1, sizeof(joy_spine_draw_cache_t));
         if (!cache) {
                 spSkeleton_dispose(inst->skeleton);
                 spAnimationState_dispose(inst->state);
@@ -300,9 +300,9 @@ bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset) {
 }
 
 void joy_r2d_spine_instance_free(jspine_instance_p inst) {
-        jspine_draw_cache_t *cache;
+        joy_spine_draw_cache_t *cache;
         if (!inst) return;
-        cache = (jspine_draw_cache_t *) inst->draw_cache;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
         if (cache) {
                 if (cache->indices) spIntArray_dispose(cache->indices);
                 if (cache->world_vertices) spFloatArray_dispose(cache->world_vertices);
@@ -381,11 +381,11 @@ void joy_r2d_spine_instance_draw(jr2d_p r2d, jspine_instance_p inst) {
         SDL_Renderer *renderer;
         spSkeleton *skeleton;
         spSkeletonClipping *clipper;
-        jspine_draw_cache_t *cache;
+        joy_spine_draw_cache_t *cache;
         int i;
 
         if (!r2d || !inst || !inst->skeleton || !inst->visible) return;
-        cache = (jspine_draw_cache_t *) inst->draw_cache;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
         if (!cache) return;
 
         renderer = (SDL_Renderer *) joy_r2d_unwrap(r2d);
@@ -512,13 +512,13 @@ const char *jspine_instance_animation(jspine_instance_p inst) {
 bool joy_r2d_spine_instance_bounds(jspine_instance_p inst, float *out_x, float *out_y, float *out_w,
                             float *out_h) {
         spSkeleton *skeleton;
-        jspine_draw_cache_t *cache;
+        joy_spine_draw_cache_t *cache;
         float min_x = FLT_MAX, min_y = FLT_MAX, max_x = -FLT_MAX, max_y = -FLT_MAX;
         int i, found = 0;
 
         if (!inst || !inst->skeleton) return false;
         skeleton = inst->skeleton;
-        cache = (jspine_draw_cache_t *) inst->draw_cache;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
         if (!cache) return false;
 
         for (i = 0; i < skeleton->slotsCount; i++) {

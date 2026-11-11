@@ -21,7 +21,7 @@ static void jui_fpx(jr2d_p r2d, float fx, float fy, float fw, float fh, float* x
         *w = fw * (float)lw; *h = fh * (float)lh;
 }
 
-typedef kvec_t(char*) dg_row_t;
+typedef kvec_t(char*) joy_dg_row_t;
 
 struct label {
         jr2d_p r2d;
@@ -81,7 +81,7 @@ struct datagrid {
         int scroll_offset;     // 滚动偏移
         int selected_row;      // 选中的行
         jtext_p headers[512];        // 表头
-        kvec_t(dg_row_t) data;              // 表格数据（klib 动态数组 of dg_row_t）
+        kvec_t(joy_dg_row_t) data;              // 表格数据（klib 动态数组 of joy_dg_row_t）
         int* col_widths;       // 列宽
         bool has_header;   // 是否有表头
         font_p font;        // 字体
@@ -1312,12 +1312,12 @@ void joy_ui_datagrid_setheader(datagrid_p grid, int index, const char* header)
 void joy_ui_datagrid_addrow(datagrid_p grid, const char** row_data)
 {
         if (!grid) return;
-        dg_row_t row;
+        joy_dg_row_t row;
         kv_init(row);
         for (int i = 0; i < grid->col_count; i++) {
                 kv_push(char*, row, row_data && row_data[i] ? joy_core_utils_strdup(row_data[i], NULL) : NULL);
         }
-        kv_push(dg_row_t, grid->data, row);
+        kv_push(joy_dg_row_t, grid->data, row);
         grid->row_count = (int)kv_size(grid->data);
 }
 
@@ -1325,7 +1325,7 @@ void joy_ui_datagrid_setcell(datagrid_p grid, int row_index, int col_index, cons
 {
         if (!grid) return;
         if (row_index < (int)kv_size(grid->data) && col_index < grid->col_count) {
-                dg_row_t* row = &kv_A(grid->data, row_index);
+                joy_dg_row_t* row = &kv_A(grid->data, row_index);
                 if (kv_A(*row, col_index)) free(kv_A(*row, col_index));
                 kv_A(*row, col_index) = data ? joy_core_utils_strdup(data, NULL) : NULL;
         }
@@ -1334,7 +1334,7 @@ void joy_ui_datagrid_setcell(datagrid_p grid, int row_index, int col_index, cons
 static void datagrid_cleardata(datagrid_p grid)
 {
         for (size_t i = 0; i < kv_size(grid->data); i++) {
-                dg_row_t* row = &kv_A(grid->data, i);
+                joy_dg_row_t* row = &kv_A(grid->data, i);
                 for (size_t j = 0; j < kv_size(*row); j++)
                         if (kv_A(*row, j)) { free(kv_A(*row, j)); kv_A(*row, j) = NULL; }
                 kv_destroy(*row);

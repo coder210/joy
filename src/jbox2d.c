@@ -30,23 +30,23 @@ KLIST_INIT(joints_list, box2d_joint_t*, kl_no_free)
 //        e3
 
 
-typedef enum box2d_axis_e {
+typedef enum joy_box2d_axis_e {
 	FACE_A_X,
 	FACE_A_Y,
 	FACE_B_X,
 	FACE_B_Y
-} box2d_axis_e;
+} joy_box2d_axis_e;
 
-typedef enum box2d_edge_e {
+typedef enum joy_box2d_edge_e {
 	NO_EDGE = 0,
 	EDGE1,
 	EDGE2,
 	EDGE3,
 	EDGE4
-} box2d_edge_e;
+} joy_box2d_edge_e;
 
 
-typedef union box2d_feature_t {
+typedef union joy_box2d_feature_t {
 	struct box2d_edges_t {
 		char in_edge1;
 		char out_edge1;
@@ -54,25 +54,25 @@ typedef union box2d_feature_t {
 		char out_edge2;
 	} e;
 	int value;
-} box2d_feature_t;
+} joy_box2d_feature_t;
 
 
-typedef struct box2d_contact_t {
+typedef struct joy_box2d_contact_t {
 	vec2f_t position;
 	vec2f_t normal;
 	fp_t separation;
-	box2d_feature_t feature;
-} box2d_contact_t;
+	joy_box2d_feature_t feature;
+} joy_box2d_contact_t;
 
 
-typedef struct box2d_clip_vertex_t {
+typedef struct joy_box2d_clip_vertex_t {
 	vec2f_t v;
-	box2d_feature_t fp;
-} box2d_clip_vertex_t;
+	joy_box2d_feature_t fp;
+} joy_box2d_clip_vertex_t;
 
 
 static inline void
-_flip(box2d_feature_t* fp) {
+_flip(joy_box2d_feature_t* fp) {
 	char tmp = fp->e.in_edge1;
 	fp->e.in_edge1 = fp->e.in_edge2;
 	fp->e.in_edge2 = tmp;
@@ -82,7 +82,7 @@ _flip(box2d_feature_t* fp) {
 }
 
 static int
-_clip_segment_to_line(box2d_clip_vertex_t vout[2], box2d_clip_vertex_t vin[2],
+_clip_segment_to_line(joy_box2d_clip_vertex_t vout[2], joy_box2d_clip_vertex_t vin[2],
 	const vec2f_t* normal, fp_t offset, char clip_edge) {
 	int num_out = 0;
 	vec2f_t tmp;
@@ -115,7 +115,7 @@ _clip_segment_to_line(box2d_clip_vertex_t vout[2], box2d_clip_vertex_t vin[2],
 }
 
 static void
-_compute_incident_edge(box2d_clip_vertex_t c[2], const vec2f_t* h, const vec2f_t* pos,
+_compute_incident_edge(joy_box2d_clip_vertex_t c[2], const vec2f_t* h, const vec2f_t* pos,
 	const mat22f_t* rot, const vec2f_t* normal) {
 	vec2f_t tmp;
 	mat22f_t rotT = mat22f_transpose(*rot);
@@ -177,7 +177,7 @@ _compute_incident_edge(box2d_clip_vertex_t c[2], const vec2f_t* h, const vec2f_t
 
 // The normal points from A to B
 static int
-_collide(box2d_contact_t* contacts, box2d_body_t* a_body, box2d_body_t* b_body) {
+_collide(joy_box2d_contact_t* contacts, box2d_body_t* a_body, box2d_body_t* b_body) {
 	vec2f_t tmp;
 
 	fp_t half = fp_half();
@@ -219,7 +219,7 @@ _collide(box2d_contact_t* contacts, box2d_body_t* a_body, box2d_body_t* b_body) 
 		return 0;
 
 	// Find best axis
-	box2d_axis_e axis = FACE_A_X;
+	joy_box2d_axis_e axis = FACE_A_X;
 	fp_t separation = a_face.x;
 
 	vec2f_t normal = fp_greater(a_d.x, fp_zero()) ? a_rot.col1 : vec2f_negate(a_rot.col1);
@@ -247,7 +247,7 @@ _collide(box2d_contact_t* contacts, box2d_body_t* a_body, box2d_body_t* b_body) 
 
 	// Setup clipping plane data based on the separating axis
 	vec2f_t front_normal, side_normal;
-	box2d_clip_vertex_t incident_edge[2] = { { 0 } };
+	joy_box2d_clip_vertex_t incident_edge[2] = { { 0 } };
 	fp_t front, neg_side, pos_side;
 	char neg_edge, pos_edge;
 
@@ -305,8 +305,8 @@ _collide(box2d_contact_t* contacts, box2d_body_t* a_body, box2d_body_t* b_body) 
 				 break;
 	}
 
-	box2d_clip_vertex_t clip_points1[2] = { { 0 } };
-	box2d_clip_vertex_t clip_points2[2] = { { 0 } };
+	joy_box2d_clip_vertex_t clip_points1[2] = { { 0 } };
+	joy_box2d_clip_vertex_t clip_points2[2] = { { 0 } };
 	int np;
 
 	vec2f_t neg_side_normal = vec2f_negate(side_normal);
@@ -657,7 +657,7 @@ _broad_phase(box2d_world_t* world) {
 
 static void
 _narrow_phase(box2d_world_t* world) {
-	box2d_contact_t contacts[2];
+	joy_box2d_contact_t contacts[2];
 	box2d_manifold_t ms[2];
 
 	// Collect body pointers into a vector for ordered iteration

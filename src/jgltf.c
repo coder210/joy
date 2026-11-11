@@ -40,7 +40,7 @@ typedef struct {
         float *jnt;           /* 每顶点 4 个关节索引(float), 为 skin joints 数组下标 */
         float *wts;           /* 每顶点 4 个权重 */
         void  *tex;           /* baseColor 贴图的 SDL 纹理(joy_r3d_create_texture), 无则 NULL */
-} jgltf_prim_src_t;
+} joy_gltf_prim_src_t;
 
 struct jgltf_asset {
         int   refs;
@@ -52,7 +52,7 @@ struct jgltf_asset {
         void  *white_tex;           /* 纯白填充纹理, 供光照管线采样 */
         int    node_count;
         int    prim_count;
-        jgltf_prim_src_t *prims;
+        joy_gltf_prim_src_t *prims;
         int    anim_count;
         float *anim_duration;
         vec3_t bounds_center;   /* 所有 primitive 绑定姿态的包围球中心（mesh 局部空间） */
@@ -311,7 +311,7 @@ static void eval_sampler(cgltf_animation_sampler* s, float t, cgltf_size comps, 
 
 /* ==================== asset 加载 ==================== */
 
-static int build_prim(jgltf_prim_src_t* out, cgltf_primitive* pr, cgltf_skin* skin) {
+static int build_prim(joy_gltf_prim_src_t* out, cgltf_primitive* pr, cgltf_skin* skin) {
         cgltf_accessor *aPos = find_attr(pr, "POSITION");
         cgltf_accessor *aNrm = find_attr(pr, "NORMAL");
         cgltf_accessor *aUv  = find_attr(pr, "TEXCOORD_0");
@@ -455,7 +455,7 @@ jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
         a->node_count = (int)data->nodes_count;
         a->prim_count = (int)prim_count;
         a->anim_count = (int)data->animations_count;
-        a->prims = (jgltf_prim_src_t*)calloc(prim_count ? prim_count : 1, sizeof(jgltf_prim_src_t));
+        a->prims = (joy_gltf_prim_src_t*)calloc(prim_count ? prim_count : 1, sizeof(joy_gltf_prim_src_t));
         a->anim_duration = (float*)calloc(a->anim_count ? a->anim_count : 1, sizeof(float));
 
         pc = 0;
@@ -501,7 +501,7 @@ jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
                 vec3_t mn = {0,0,0}, mx = {0,0,0};
                 int mi2;
                 for (mi2 = 0; mi2 < a->prim_count; mi2++) {
-                        jgltf_prim_src_t* ps = &a->prims[mi2];
+                        joy_gltf_prim_src_t* ps = &a->prims[mi2];
                         int kk;
                         for (kk = 0; kk < ps->vertex_count; kk++) {
                                 float x=ps->bind_verts[kk*8+0], y=ps->bind_verts[kk*8+1], z=ps->bind_verts[kk*8+2];
@@ -612,7 +612,7 @@ jgltf_instance_p jgltf_instance_create(jgltf_asset_p a) {
         inst->gpu = (render_mesh_p*)calloc((size_t)(a->prim_count ? a->prim_count : 1), sizeof(render_mesh_p));
         inst->skinned = (float**)calloc((size_t)(a->prim_count ? a->prim_count : 1), sizeof(float*));
         for (i = 0; i < a->prim_count; i++) {
-                jgltf_prim_src_t* src = &a->prims[i];
+                joy_gltf_prim_src_t* src = &a->prims[i];
                 float* buf = (float*)malloc((size_t)src->vertex_count * 8 * sizeof(float));
                 memcpy(buf, src->bind_verts, (size_t)src->vertex_count * 8 * sizeof(float));
                 inst->skinned[i] = buf;
@@ -729,7 +729,7 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
         /* 4. CPU 蒙皮 + 上传 */
         inst->moved_vertices = 0;
         for (ni = 0; ni < inst->prim_count; ni++) {
-                jgltf_prim_src_t* src = &a->prims[ni];
+                joy_gltf_prim_src_t* src = &a->prims[ni];
                 int vc = src->vertex_count;
                 float* out = inst->skinned[ni];
                 if (!src->skinned) continue;                /* 静态 primitive 无需更新 */
@@ -834,7 +834,7 @@ void jgltf_instance_draw_bones(jr3d_p r3d, jgltf_instance_p inst, const mat44_t*
 
         /* 取第一个蒙皮 primitive 的关节表 */
         {
-                const jgltf_prim_src_t* src = NULL;
+                const joy_gltf_prim_src_t* src = NULL;
                 for (k = 0; k < inst->prim_count; k++) {
                         if (a->prims[k].skinned) { src = &a->prims[k]; break; }
                 }

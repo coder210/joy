@@ -28,7 +28,7 @@ typedef enum log_color {
 	LOG_COLOR_BRIGHT_MAGENTA = 95,
 	LOG_COLOR_BRIGHT_CYAN = 96,
 	LOG_COLOR_BRIGHT_WHITE = 97
-} log_color_k;
+} joy_log_color_k;
 
 struct simple_fps_counter {
 	int frame_count;

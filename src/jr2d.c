@@ -1073,11 +1073,11 @@ typedef struct jtext_entry {
         char*     str;          /* 内容拷贝，len 字节，额外补一个 '\0' 便于调试 */
         jtext_p   tex;
         Uint64    last_frame;
-} jtext_entry_t;
+} joy_text_entry_t;
 
-static jtext_entry_t* g_buckets[JTEXT_CACHE_BUCKETS];
-static jtext_entry_t* g_lru_head;    /* 最近使用 */
-static jtext_entry_t* g_lru_tail;    /* 最久未用 */
+static joy_text_entry_t* g_buckets[JTEXT_CACHE_BUCKETS];
+static joy_text_entry_t* g_lru_head;    /* 最近使用 */
+static joy_text_entry_t* g_lru_tail;    /* 最久未用 */
 static int            g_cache_count = 0;
 static int            g_cache_limit = JTEXT_CACHE_DEFAULT_LIMIT;
 
@@ -1100,7 +1100,7 @@ static Uint64 jtext_hash(font_p font, jcolor_t c, const char* s, int len)
         return h;
 }
 
-static void jtext_lru_unlink(jtext_entry_t* e)
+static void jtext_lru_unlink(joy_text_entry_t* e)
 {
         if (e->lru_prev) e->lru_prev->lru_next = e->lru_next;
         else             g_lru_head = e->lru_next;
@@ -1110,7 +1110,7 @@ static void jtext_lru_unlink(jtext_entry_t* e)
         e->lru_next = NULL;
 }
 
-static void jtext_lru_push_front(jtext_entry_t* e)
+static void jtext_lru_push_front(joy_text_entry_t* e)
 {
         e->lru_prev = NULL;
         e->lru_next = g_lru_head;
@@ -1119,7 +1119,7 @@ static void jtext_lru_push_front(jtext_entry_t* e)
         if (!g_lru_tail) g_lru_tail = e;
 }
 
-static void jtext_entry_free(jtext_entry_t* e)
+static void jtext_entry_free(joy_text_entry_t* e)
 {
         if (!e) return;
         if (e->tex) joy_ui_text_destroy(e->tex);
@@ -1130,8 +1130,8 @@ static void jtext_entry_free(jtext_entry_t* e)
 /* 淘汰最久未使用的条目 */
 static void jtext_evict_one(void)
 {
-        jtext_entry_t* victim = g_lru_tail;
-        jtext_entry_t** pp;
+        joy_text_entry_t* victim = g_lru_tail;
+        joy_text_entry_t** pp;
         Uint64 bucket;
         if (!victim) return;
 
@@ -1150,7 +1150,7 @@ static void jtext_evict_one(void)
 static jtext_p jtext_cache_get(jr2d_p r2d, font_p font,
         const char* str, int len, jcolor_t color)
 {
-        jtext_entry_t* e;
+        joy_text_entry_t* e;
         jtext_p tex;
         Uint64 bucket;
 
@@ -1175,7 +1175,7 @@ static jtext_p jtext_cache_get(jr2d_p r2d, font_p font,
 
         while (g_cache_count >= g_cache_limit) jtext_evict_one();
 
-        e = (jtext_entry_t*)SDL_calloc(1, sizeof(jtext_entry_t));
+        e = (joy_text_entry_t*)SDL_calloc(1, sizeof(joy_text_entry_t));
         if (!e) { joy_ui_text_destroy(tex); return NULL; }
         e->str = (char*)SDL_malloc((size_t)len + 1);
         if (!e->str) { SDL_free(e); joy_ui_text_destroy(tex); return NULL; }

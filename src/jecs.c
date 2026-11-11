@@ -9,10 +9,10 @@ typedef struct bitset {
         uint64_t* words;
         int nwords;      // 当前 word 数量
         int capacity;    // 当前能表示的最大实体 ID + 1
-} bitset_t;
+} joy_bitset_t;
 
-static bitset_t* bitset_create(int initial_capacity) {
-        bitset_t* bs = SDL_malloc(sizeof(bitset_t));
+static joy_bitset_t* bitset_create(int initial_capacity) {
+        joy_bitset_t* bs = SDL_malloc(sizeof(joy_bitset_t));
         // 初始化容量, 向上取整为 64 的倍数
         bs->nwords = (initial_capacity + 63) / 64;
         bs->capacity = bs->nwords * 64;
@@ -20,14 +20,14 @@ static bitset_t* bitset_create(int initial_capacity) {
         return bs;
 }
 
-static void bitset_destroy(bitset_t* bs) {
+static void bitset_destroy(joy_bitset_t* bs) {
         if (bs) {
                 SDL_free(bs->words);
                 SDL_free(bs);
         }
 }
 
-static void bitset_ensure_capacity(bitset_t* bs, int min_capacity) {
+static void bitset_ensure_capacity(joy_bitset_t* bs, int min_capacity) {
         if (min_capacity > bs->capacity) {
                 int new_nwords = (min_capacity + 63) / 64;
                 uint64_t* new_words = SDL_realloc(bs->words, new_nwords * sizeof(uint64_t));
@@ -41,7 +41,7 @@ static void bitset_ensure_capacity(bitset_t* bs, int min_capacity) {
         }
 }
 
-static void bitset_set(bitset_t* bs, int id) {
+static void bitset_set(joy_bitset_t* bs, int id) {
         if (id < 0) return;
         bitset_ensure_capacity(bs, id + 1);
         int word = id / 64;
@@ -49,21 +49,21 @@ static void bitset_set(bitset_t* bs, int id) {
         bs->words[word] |= (1ULL << bit);
 }
 
-static void bitset_clear(bitset_t* bs, int id) {
+static void bitset_clear(joy_bitset_t* bs, int id) {
         if (id < 0 || id >= bs->capacity) return;
         int word = id / 64;
         int bit = id % 64;
         bs->words[word] &= ~(1ULL << bit);
 }
 
-static bool bitset_test(bitset_t* bs, int id) {
+static bool bitset_test(joy_bitset_t* bs, int id) {
         if (id < 0 || id >= bs->capacity) return false;
         int word = id / 64;
         int bit = id % 64;
         return (bs->words[word] & (1ULL << bit)) != 0;
 }
 
-static void bitset_and(bitset_t* dest, bitset_t* src) {
+static void bitset_and(joy_bitset_t* dest, joy_bitset_t* src) {
         int min_words = dest->nwords < src->nwords ? dest->nwords : src->nwords;
         for (int i = 0; i < min_words; i++) {
                 dest->words[i] &= src->words[i];
@@ -74,7 +74,7 @@ static void bitset_and(bitset_t* dest, bitset_t* src) {
         }
 }
 
-static void bitset_copy(bitset_t* dest, bitset_t* src) {
+static void bitset_copy(joy_bitset_t* dest, joy_bitset_t* src) {
         bitset_ensure_capacity(dest, src->capacity);
         int words_to_copy = dest->nwords < src->nwords ? dest->nwords : src->nwords;
         SDL_memcpy(dest->words, src->words, words_to_copy * sizeof(uint64_t));
@@ -87,7 +87,7 @@ KHASH_INIT(ksparse, int, int, 1, kh_int_hash_func, kh_int_hash_equal)
 typedef struct sparse_set {
         kvec_t(int) density;
         khash_t(ksparse)* sparse;
-        bitset_t* bitset;  // 辅助位图
+        joy_bitset_t* bitset;  // 辅助位图
 } sparse_set_t, * sparse_set_p;
 
 static sparse_set_p sparse_set_create() {
@@ -150,22 +150,22 @@ typedef struct ecs_component_data {
         void* data;
 }ecs_component_data_t, *ecs_component_data_p;
 
-typedef unsigned long ecs_cid_t;
+typedef unsigned long joy_ecs_cid_t;
 #define __int_free(x)
 KLIST_INIT(kecs_system, jecs_system_t, __int_free)
 
 // 组件存储: 内含稀疏集合与位图
 typedef struct component_store {
         sparse_set_p sparse_set;
-        bitset_t* bitset;
+        joy_bitset_t* bitset;
 } component_store_t, *component_store_p;
 
-KHASH_INIT(kecs_component, ecs_cid_t, component_store_p, 1, kh_int_hash_func, kh_int_hash_equal)
-KHASH_INIT(kecs_component_data, ecs_cid_t, ecs_component_data_p, 1, kh_int_hash_func, kh_int_hash_equal)
-KHASH_INIT(kecs_meta, ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_component, joy_ecs_cid_t, component_store_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_component_data, joy_ecs_cid_t, ecs_component_data_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_meta, joy_ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
-typedef khash_t(kecs_component_data) ecs_entity_t, * ecs_entity_p;
-KHASH_INIT(kecs_entity, jecs_id_t, ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
+typedef khash_t(kecs_component_data) ecs_entity_t, * joy_ecs_entity_p;
+KHASH_INIT(kecs_entity, jecs_id_t, joy_ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
 struct jecs_world {
         jecs_id_t global_id;
@@ -190,7 +190,7 @@ jecs_world_p joy_scene_ecs_create()
 void joy_scene_ecs_destroy(jecs_world_p world)
 {
         jecs_id_t id;
-        ecs_entity_p entity;
+        joy_ecs_entity_p entity;
         khint_t i, j, p;
         sparse_set_p sparse_set;
         ecs_component_data_p component_data;
@@ -198,7 +198,7 @@ void joy_scene_ecs_destroy(jecs_world_p world)
         // 销毁实体
         for (khint_t i = kh_begin(world->entities); i != kh_end(world->entities); i++) {
                 if (kh_exist(world->entities, i)) {
-                        ecs_entity_p entity = kh_val(world->entities, i);
+                        joy_ecs_entity_p entity = kh_val(world->entities, i);
                         // 销毁实体的所有组件
                         for (khint_t j = kh_begin(entity); j != kh_end(entity); j++) {
                                 if (kh_exist(entity, j)) {
@@ -252,9 +252,9 @@ jecs_id_t joy_scene_ecs_spawn(jecs_world_p world)
 
 void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id)
 {
-        ecs_entity_p entity;
+        joy_ecs_entity_p entity;
         component_store_t* store;
-        ecs_cid_t component_id;
+        joy_ecs_cid_t component_id;
         khint_t k, p;
         ecs_component_data_p component_data;
 
@@ -287,7 +287,7 @@ void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id)
 
 void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size)
 {
-        ecs_cid_t component_id;
+        joy_ecs_cid_t component_id;
         khint_t k;
         int ret;
         component_id = joy_core_murmur3_hash(name);
@@ -300,8 +300,8 @@ void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size)
 
 void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size)
 {
-        ecs_entity_p entity;
-        ecs_cid_t component_id;
+        joy_ecs_entity_p entity;
+        joy_ecs_cid_t component_id;
         component_store_t* store;
         size_t meta;
         khint_t k;
@@ -354,8 +354,8 @@ void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const
 
 size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
 {
-        ecs_cid_t component_id;
-        ecs_entity_p entity;
+        joy_ecs_cid_t component_id;
+        joy_ecs_entity_p entity;
         ecs_component_data_p component_data;
         khint_t k;
         component_id = joy_core_murmur3_hash(name);
@@ -375,12 +375,12 @@ size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, voi
 
 void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
 {
-        ecs_entity_p entity;
+        joy_ecs_entity_p entity;
         component_store_t* store;
         ecs_component_data_p component_data;
         khint_t k;
 
-        ecs_cid_t component_id = joy_core_murmur3_hash(name);
+        joy_ecs_cid_t component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_entity, world->entities, id);
         if (k != kh_end(world->entities)) {
                 entity = kh_val(world->entities, k);
@@ -452,13 +452,13 @@ jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args
                 return result;
         }
 
-        bitset_t* temp_bitset = bitset_create(world->global_id + 64);
-        bitset_t* result_bitset = bitset_create(world->global_id + 64);
+        joy_bitset_t* temp_bitset = bitset_create(world->global_id + 64);
+        joy_bitset_t* result_bitset = bitset_create(world->global_id + 64);
         bool first = true;
 
         for (int i = 0; i < arg_cnt; ++i) {
                 const char* comp_name = args[i];
-                ecs_cid_t component_id = joy_core_murmur3_hash(comp_name);
+                joy_ecs_cid_t component_id = joy_core_murmur3_hash(comp_name);
                 khint_t k = kh_get(kecs_component, world->components, component_id);
 
                 if (k == kh_end(world->components)) {
@@ -481,7 +481,7 @@ jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args
 
         if (!first) {
                 const char* first_comp = args[0];
-                ecs_cid_t first_cid = joy_core_murmur3_hash(first_comp);
+                joy_ecs_cid_t first_cid = joy_core_murmur3_hash(first_comp);
                 khint_t k = kh_get(kecs_component, world->components, first_cid);
 
                 if (k != kh_end(world->components)) {
@@ -511,11 +511,11 @@ void joy_scene_ecs_register(jecs_world_p world, jecs_system_t system)
 
 typedef struct position {
         float x, y;
-}position_t;
+}joy_position_t;
 
 typedef struct velocity {
         float x, y;
-}velocity_t;
+}joy_velocity_t;
 
 
 int ecs_test()
@@ -551,31 +551,31 @@ int ecs_test()
 
        // jecs_world_p world;
        // world = ecs_create();
-       // ecs_define(world, "position_t", sizeof(position_t));
-       // ecs_define(world, "velocity_t", sizeof(velocity_t));
+       // ecs_define(world, "joy_position_t", sizeof(joy_position_t));
+       // ecs_define(world, "joy_velocity_t", sizeof(joy_velocity_t));
 
        // jecs_id_t id1 = ecs_spawn(world);
        // jecs_id_t id2 = ecs_spawn(world);
-       // /*ecs_set(world, id1, "position_t", &(position_t){0.2, 0.3});
-       // ecs_set(world, id1, "velocity_t", &(velocity_t){2.2, 4.3});
-       // ecs_set(world, id2, "position_t", &(position_t){2.2, 3.3});
-       // ecs_set(world, id2, "velocity_t", &(velocity_t){3.3, 4.4});*/
+       // /*ecs_set(world, id1, "joy_position_t", &(joy_position_t){0.2, 0.3});
+       // ecs_set(world, id1, "joy_velocity_t", &(joy_velocity_t){2.2, 4.3});
+       // ecs_set(world, id2, "joy_position_t", &(joy_position_t){2.2, 3.3});
+       // ecs_set(world, id2, "joy_velocity_t", &(joy_velocity_t){3.3, 4.4});*/
 
-       // ecs_remove(world, id1, "position_t");
-       // //ecs_set(world, id1, "velocity_t", &(velocity_t){2, 5});
+       // ecs_remove(world, id1, "joy_position_t");
+       // //ecs_set(world, id1, "joy_velocity_t", &(joy_velocity_t){2, 5});
        // //ecs_kill(world, id2);
 
-       // /*  vector_t entities = ecs_query(world, 2, "position_t", "velocity_t");
+       // /*  vector_t entities = ecs_query(world, 2, "joy_position_t", "joy_velocity_t");
        //   for (int i = 0; i < vector_size(&entities); i++) {
        //           jecs_id_t id = vector_a(&entities, i);
-       //           position_t* position = (position_t*)ecs_get(world, id, "position_t");
-       //           velocity_t* velocity = (velocity_t*)ecs_get(world, id, "velocity_t");
+       //           joy_position_t* position = (joy_position_t*)ecs_get(world, id, "joy_position_t");
+       //           joy_velocity_t* velocity = (joy_velocity_t*)ecs_get(world, id, "joy_velocity_t");
        //           SDL_Log("%d <%f,%f> <%f,%f>", id, position->x, position->y, velocity->x, velocity->y);
        //   }*/
-       // vector_t(kecs) entities = ecs_query(world, 1, "position_t");
+       // vector_t(kecs) entities = ecs_query(world, 1, "joy_position_t");
        // for (int i = 0; i < vector_size(kecs, &entities); i++) {
        //         jecs_id_t id = vector_a(kecs, &entities, i);
-       //         //position_t* position = (position_t*)ecs_get(world, id, "position_t");
+       //         //joy_position_t* position = (joy_position_t*)ecs_get(world, id, "joy_position_t");
        //         //SDL_Log("%d <%f,%f>", id, position->x, position->y);
        // }
 
