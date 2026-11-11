@@ -28,6 +28,7 @@ History:
 #define JOY_FP_PI 0x3243F6A88
 #define JOY_FP_PI_OVER_2 0x1921FB544
 #define JOY_FP_PI_OVER_4 0xC90FDAA2
+#define JOY_PI 3.14159265358979323846  /* 浮点 π；替代各 .c 自行 #define 的 M_PI */
 #define JOY_FP_E 0x2B7E15162
 #define JOY_FP_EPOW4 0x3699205C4E
 #define JOY_FP_LN2 0xB17217F7

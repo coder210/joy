@@ -1,10 +1,6 @@
 #include "joy.h"
 #include <SDL3/SDL.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 /* stb_truetype 实现已由 jimpl.c 编译一次(含 STB_TRUETYPE_IMPLEMENTATION),
    此处仅包含头文件以使用其声明, 避免多重定义 */
 #include "external/stb_truetype.h"
@@ -3159,25 +3155,25 @@ joy_render_mesh_p joy_r3d_mesh_sphere_wire(joy_r3d_p r, float radius, int slices
 	/* 纬度环: 在每个 phi 高度画一圈线段 */
 	for (int i = 1; i < stacks; i++) {
 		float phi = -90.0f + (float)i * 180.0f / stacks;
-		float rad = radius * cosf(phi * (float)M_PI / 180.0f);
-		float y   = radius * sinf(phi * (float)M_PI / 180.0f);
+		float rad = radius * cosf(phi * (float)JOY_PI / 180.0f);
+		float y   = radius * sinf(phi * (float)JOY_PI / 180.0f);
 		for (int j = 0; j < slices; j++) {
-			float t1 = (float)j       * 360.0f / slices * (float)M_PI / 180.0f;
-			float t2 = (float)(j + 1) * 360.0f / slices * (float)M_PI / 180.0f;
+			float t1 = (float)j       * 360.0f / slices * (float)JOY_PI / 180.0f;
+			float t2 = (float)(j + 1) * 360.0f / slices * (float)JOY_PI / 180.0f;
 			verts[vi++] = rad * cosf(t1); verts[vi++] = y; verts[vi++] = rad * sinf(t1); verts[vi++] = 0; verts[vi++] = 0;
 			verts[vi++] = rad * cosf(t2); verts[vi++] = y; verts[vi++] = rad * sinf(t2); verts[vi++] = 0; verts[vi++] = 0;
 		}
 	}
 	/* 经度线: 从北极到南极 */
 	for (int j = 0; j < slices; j++) {
-		float theta = (float)j * 360.0f / slices * (float)M_PI / 180.0f;
+		float theta = (float)j * 360.0f / slices * (float)JOY_PI / 180.0f;
 		for (int i = 0; i < stacks; i++) {
 			float p1 = -90.0f + (float)i       * 180.0f / stacks;
 			float p2 = -90.0f + (float)(i + 1) * 180.0f / stacks;
-			float r1 = radius * cosf(p1 * (float)M_PI / 180.0f);
-			float r2 = radius * cosf(p2 * (float)M_PI / 180.0f);
-			float y1 = radius * sinf(p1 * (float)M_PI / 180.0f);
-			float y2 = radius * sinf(p2 * (float)M_PI / 180.0f);
+			float r1 = radius * cosf(p1 * (float)JOY_PI / 180.0f);
+			float r2 = radius * cosf(p2 * (float)JOY_PI / 180.0f);
+			float y1 = radius * sinf(p1 * (float)JOY_PI / 180.0f);
+			float y2 = radius * sinf(p2 * (float)JOY_PI / 180.0f);
 			verts[vi++] = r1 * cosf(theta); verts[vi++] = y1; verts[vi++] = r1 * sinf(theta); verts[vi++] = 0; verts[vi++] = 0;
 			verts[vi++] = r2 * cosf(theta); verts[vi++] = y2; verts[vi++] = r2 * sinf(theta); verts[vi++] = 0; verts[vi++] = 0;
 		}
@@ -3338,11 +3334,11 @@ joy_render_mesh_p joy_r3d_mesh_sphere_lit(joy_r3d_p r, float radius, int slices,
 	if (!verts) return NULL;
 	vi = 0;
 	for (stack = 0; stack < stacks; stack++) {
-		float phi0 = (float)M_PI * (float)stack / (float)stacks;
-		float phi1 = (float)M_PI * (float)(stack + 1) / (float)stacks;
+		float phi0 = (float)JOY_PI * (float)stack / (float)stacks;
+		float phi1 = (float)JOY_PI * (float)(stack + 1) / (float)stacks;
 		for (slice = 0; slice < slices; slice++) {
-			float th0 = 2.0f * (float)M_PI * (float)slice / (float)slices;
-			float th1 = 2.0f * (float)M_PI * (float)(slice + 1) / (float)slices;
+			float th0 = 2.0f * (float)JOY_PI * (float)slice / (float)slices;
+			float th1 = 2.0f * (float)JOY_PI * (float)(slice + 1) / (float)slices;
 			/* 四角点: a0(phi0,th0) a1(phi0,th1) b0(phi1,th0) b1(phi1,th1) */
 			float ca0[3] = { sinf(phi0)*cosf(th0), cosf(phi0), sinf(phi0)*sinf(th0) };
 			float ca1[3] = { sinf(phi0)*cosf(th1), cosf(phi0), sinf(phi0)*sinf(th1) };

@@ -116,6 +116,12 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    `joy_vector_t` 等命中全在注释块中）。删除两个文件 + 两处 include，并清理
    `rename_types.js` 的 tag 采集列表、`gen_bindings.js` 与三份文档里的过期描述。
    删除后全量构建 0 错误。
+17. **清理重复 `M_PI` 与 `r2d_render_geometry` 的 extern hack（2026-11-11）**：
+   `jr3d.c`/`jparticle.c`/`jlight.c` 各 `#define M_PI`，而 `jmath.h` 无统一 π 常量；
+   改为在 `jmath.h` 提供 `JOY_PI`，三文件删各自 define、使用点改 `JOY_PI`。
+   另 `jlight.c` 用 `extern` 前向声明 `jr2d.c` 内部的 `r2d_render_geometry`（跨文件
+   复用内部函数的反模式），改为在 `jdefs.h` 正式声明该函数、`jlight.c` 删 extern 块。
+   验证：`--scan` 幂等（1157 条，r2d_render_geometry 不进 IDL）、`--check` OK、构建 0 错误、`ctest` 4/4。
 
 具体内容：
 

@@ -10,10 +10,6 @@ History:
 #include "external/klib/kvec.h"
 #include "joy.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 /* ======================== 内部粒子结构 ======================== */
 typedef struct {
     float x, y;
@@ -37,7 +33,7 @@ static float randf(float min, float max) {
 }
 
 static float deg2rad(float deg) {
-    return deg * (float)M_PI / 180.0f;
+    return deg * (float)JOY_PI / 180.0f;
 }
 
 /* ======================== 默认配置 ======================== */
@@ -96,7 +92,7 @@ void joy_r2d_particle_emit(joy_particle_p p) {
     for (int i = 0; i < n; i++) {
         joy_particle_inner_t pt = {0};
         /* 位置 */
-        float angle = randf(0, (float)M_PI * 2);
+        float angle = randf(0, (float)JOY_PI * 2);
         float r = randf(0, c->spawn_radius);
         pt.x = c->x + cosf(angle) * r;
         pt.y = c->y + sinf(angle) * r;
