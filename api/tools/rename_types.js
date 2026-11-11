@@ -39,9 +39,9 @@ const STDLIB = new Set([
 /* §3.3 这两个是宏函数 jvector_t(name)/jvector_p(name)，不是类型；改成 joy_vector_t
  * 会与真类型撞车。映射表里不建条目。 */
 const MACRO_FNS = new Set(['jvector_t', 'jvector_p']);
-/* 注意：注释里 `r3d_p`（src/jr3d.c:3321、include/joy/api.h:1695）是对 jr3d_p 的
- * 笔误旧称，不是真实 typedef。采集时剥离注释，避免它进映射表后把冻结表的
- * joy_r3d_p 从 Jr3d 覆盖成 R3d。这两处注释在批 2 人工改为 joy_r3d_p。 */
+/* 注意：源码注释里曾有一处 r3d 句柄的笔误旧称（少写了项目前缀 j），
+ * 不是真实 typedef。采集时剥离注释，避免它进映射表后把冻结表
+ * joy_r3d_p 对应的类名从 Jr3d 覆盖成 R3d。该注释已在批 2 修正。 */
 
 /* 不参与替换的路径（生成物由生成器重出、文档是历史留档、第三方与构建产物） */
 const EXCLUDE_PREFIX = [

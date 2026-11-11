@@ -230,8 +230,12 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 「已评估后明确排除的方向」——**不是待办，不要再从中挑任务继续做**。
 若以后出现新需求，另开议题，不要把这里当 backlog。
 
-> **已另开的新议题（不在本文范围）**：C 类型名统一为 `joy_<概念>_t` / `_p`，
-> 规则、例外、分批与验收全在 `TYPE_RENAME_TASK.md`。**尚未开始任何改动。**
+> **后续议题：C 类型名统一**（`joy_<概念>_t` / `_p`）——2026-11-11 **已完成**，
+> 分 6 批提交，任务书 `TYPE_RENAME_TASK.md` 头部有完整执行结果与口径差异说明。
+> 新增 `api/idl/{type_rename_map,private_type_map,handle_aliases,macro_rename_map}.json`
+> 与 `api/tools/rename_types.js`（支持 `--build-map/--dry-run/--write/--audit/--trim-ws`）。
+> 要点：脚本层 57 个句柄类名由 `handle_aliases.json` 冻结，C 类型改名后 C#/vtable
+> 类名逐字不变；`struct tag` 因 127 个无后缀通用词会误伤变量而**有意保持原名**。
 
 ### 交付范围（已完成）
 生成链路（IDL → thunk / vtable / C# / 四语言示例）、公开 API 命名统一、
@@ -347,6 +351,19 @@ success。四项均已满足，所以没有遗留任务。
    可看三个构建型工作流（Android APKs / Desktop examples / Web examples）的状态；
    第四个 `cleanup-artifacts.yml` 是定时清理，没有 push 运行记录。出网正常。
    Web 站点本身用 `Invoke-WebRequest` 直接 GET `https://coder210.github.io/joy/` 验证。
+
+9. **类型名统一（P2）新增的坑**：见 `api/tools/rename_types.js`。
+   - 替换工具**必须把自己加入排除名单**：它内含旧映射表字面量，否则 `--write` 会改坏自身。
+   - 映射表**只在 `--build-map` 时从公开头采集一次**，运行期一律读文件。若每次运行时
+     重新采集，批 2 改完头后会算出 `joy_x -> joy_x` 自映射。
+   - 采集类型名要**剥离注释**：`src/jr3d.c` 与 `api.h` 注释里的 `r3d_p` 是少写 `j` 的
+     笔误，进映射表会把冻结表 `joy_r3d_p` 的类名从 `Jr3d` 覆盖成 `R3d`。
+   - `struct tag`（`label`/`button`/`circle` 等 127 个无后缀通用词）**不能全词替换**，
+     会误伤同名变量；类型与 tag 在 C 里属不同命名空间，保持原名即可。
+   - `--trim-ws`：改名后原本带行尾空格的行变成 diff 新增行，会被 `git diff --check`
+     抓到；只清含新名行的行尾空白，不增删行。
+   - PowerShell 里内联 `node -e` 的 `\\\\b` 会被叠加转义成匹配字面反斜杠，导致
+     「0 命中」的假结果；校验一律写成临时 `.js` 文件执行。
 
 ## 10. 交付验收（已完成）
 
