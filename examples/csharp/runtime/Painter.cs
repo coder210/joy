@@ -64,7 +64,7 @@ namespace JoyGame
 
         /// <summary>
         /// 以 (cx, cy) 为中心画精灵。ImageDrawRect 是全标量版图片绘制
-        /// （srcrect 固定 NULL 表示整张图），绕开了 jrect_t* 无法进
+        /// （srcrect 固定 NULL 表示整张图），绕开了 joy_rect_t* 无法进
         /// joy_value 的 L3 限制。图片缺失时退回同尺寸色块。
         /// </summary>
         public static void Sprite(GameApp app, Image image, float cx, float cy, float size,

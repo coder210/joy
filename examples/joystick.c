@@ -33,11 +33,11 @@
 //        SDL_SetRenderLogicalPresentation(renderer, 800, 600, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 //
 //        // 初始化左摇杆（在逻辑空间的固定位置）
-//        joystick_p left_joystick;
+//        joy_joystick_p left_joystick;
 //        left_joystick = joy_input_joystick_create(renderer, 200.0f, 400.0f, 80.0f);
 //
 //        // 初始化右摇杆
-//        joystick_p right_joystick;
+//        joy_joystick_p right_joystick;
 //        right_joystick = joy_input_joystick_create(renderer, 600.0f, 400.0f, 80.0f);
 //
 //        // 主循环

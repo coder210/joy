@@ -5,7 +5,7 @@ namespace JoyGame
 {
     /// <summary>
     /// 运行期资源句柄，全部走生成链路（Joy.Api.Bindings → Joy.Api 强句柄）。
-    /// 图片改用全标量版 ImageCreate / ImageDrawRect：绕开 jrect_t* 无法进
+    /// 图片改用全标量版 ImageCreate / ImageDrawRect：绕开 joy_rect_t* 无法进
     /// joy_value 的 L3 限制；图片缺失时 Painter.Sprite 退回同尺寸色块。
     /// </summary>
     internal sealed class Assets

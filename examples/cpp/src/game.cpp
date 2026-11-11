@@ -40,16 +40,16 @@ enum {
 
 /* DLL 不 include joy.h，这里按引擎公开布局重放几个纯值类型与常量：
  * 仅用于 ABI 自检；跨 DLL 边界传递的只有标量，没有结构体。 */
-struct vec2_t  { float x, y; };
-struct jrect_t { float x, y, w, h; };
+struct joy_vec2_t  { float x, y; };
+struct joy_rect_t { float x, y, w, h; };
 #define JR2D_BLEND_BLEND 1
 
 /* 引擎裸指针在 JoyApi 里是强句柄薄包装；用别名让游戏逻辑主体少改，
  * 空值判断统一用 .h（uint64_t），编译期仍不能混传不同类型的句柄。 */
-using jwindow_p = Jwindow;
-using jr2d_p    = Jr2d;
-using image_p   = Image;
-using font_p    = Font;
+using joy_window_p = Jwindow;
+using joy_r2d_p    = Jr2d;
+using joy_image_p   = Image;
+using joy_font_p    = Font;
 
 /* ---------------- 规格常量（四份实现共用，改动需四份同步） ---------------- */
 static const int   APP_W = 480;
@@ -150,13 +150,13 @@ enum SceneId {
 
 struct Game {
     /* JoyApi 用强句柄（uint64_t h）代替裸指针，空值用 {} 并判 .h */
-    jwindow_p window = {};
-    jr2d_p    r2d = {};
+    joy_window_p window = {};
+    joy_r2d_p    r2d = {};
 
-    image_p img_player = {};
-    image_p img_enemy = {};
-    font_p  font_small = {};
-    font_p  font_big = {};
+    joy_image_p img_player = {};
+    joy_image_p img_enemy = {};
+    joy_font_p  font_small = {};
+    joy_font_p  font_big = {};
     bool    has_font = false;
 
     SceneId scene = SCENE_MENU;
@@ -215,11 +215,11 @@ static const JoyApi* g_api = NULL;   /* 宿主注入；DLL 内所有引擎调用
 /* ---------------- 绘制辅助（等价于 C# 的 Painter） ----------------
  * 全部经 g_api 的强签名函数指针调用，坐标一律用像素：*_f 系列是归一化比例，
  * 会经 joy_r2d_fpx() 乘窗口宽高，传像素坐标会把精灵放大到屏幕外。
- * 图片绘制走全标量 L1 ImageDrawRect（srcrect 固定 NULL），绕开 jrect_t*
+ * 图片绘制走全标量 L1 ImageDrawRect（srcrect 固定 NULL），绕开 joy_rect_t*
  * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（joy_r2d_jtext_measurex
  * 是 int* 出参）。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
 
-static void set_color(jr2d_p r2d, int r, int gr, int b, int a)
+static void set_color(joy_r2d_p r2d, int r, int gr, int b, int a)
 {
     g_api->R2dSetColorf(g_api->ctx, r2d, (float)r / 255.0f,
                         (float)gr / 255.0f, (float)b / 255.0f,
@@ -262,7 +262,7 @@ static float text_width_estimate(const char* s, int size)
     return (float)(n * size) * 0.58f;
 }
 
-/* JtextPrintx 是 L2 展开签名：jcolor_t 按 r/g/b/a 四个 uint8_t 摊平 */
+/* JtextPrintx 是 L2 展开签名：joy_color_t 按 r/g/b/a 四个 uint8_t 摊平 */
 static void draw_text(const char* s, float x, float y,
                       int r = 232, int gr = 236, int b = 245)
 {
@@ -275,7 +275,7 @@ static void draw_text(const char* s, float x, float y,
 static void draw_text_center(const char* s, float cx, float cy, bool big = false,
                              int r = 232, int gr = 236, int b = 245)
 {
-    font_p f = big ? g_game->font_big : g_game->font_small;
+    joy_font_p f = big ? g_game->font_big : g_game->font_small;
     if (!f.h) return;
     int size = big ? 22 : 12;
     float w = text_width_estimate(s, size);
@@ -291,8 +291,8 @@ static int text_width(const char* s)
 }
 
 /* 以 (cx, cy) 为中心画精灵：ImageDrawRect 是全标量版（srcrect 固定 NULL 表示
- * 整张图），绕开了 joy_value 无法表达 jrect_t* 的 L3 限制。缺图时仍退色块。 */
-static void draw_sprite(image_p img, float cx, float cy, float size,
+ * 整张图），绕开了 joy_value 无法表达 joy_rect_t* 的 L3 限制。缺图时仍退色块。 */
+static void draw_sprite(joy_image_p img, float cx, float cy, float size,
                         int fr, int fg, int fb)
 {
     if (img.h) {
@@ -323,7 +323,7 @@ static void load_assets(void)
         "C:/Windows/Fonts/Deng.ttf",
     };
     for (size_t i = 0; i < sizeof(kFonts) / sizeof(kFonts[0]); ++i) {
-        font_p small = g_api->FontCreate(g_api->ctx, kFonts[i], 12);
+        joy_font_p small = g_api->FontCreate(g_api->ctx, kFonts[i], 12);
         if (!small.h) continue;
         g_game->font_small = small;
         g_game->font_big = g_api->FontCreate(g_api->ctx, kFonts[i], 22);
@@ -717,8 +717,8 @@ static void render_over(void)
 
 /* ---------------- 冒烟脚本（对应 C# SmokeScript） ---------------- */
 
-static float abi_vec2_sum(vec2_t v) { return v.x + v.y; }
-static float abi_rect_area(jrect_t r) { return r.w * r.h; }
+static float abi_vec2_sum(joy_vec2_t v) { return v.x + v.y; }
+static float abi_rect_area(joy_rect_t r) { return r.w * r.h; }
 
 static void smoke_before_tick(void)
 {
@@ -782,8 +782,8 @@ static void smoke_after_tick(void)
 
     if (!g->checked_abi) {
         g->checked_abi = true;
-        vec2_t v = { 1.5f, 2.5f };
-        jrect_t r = { 0, 0, 4, 5 };
+        joy_vec2_t v = { 1.5f, 2.5f };
+        joy_rect_t r = { 0, 0, 4, 5 };
         g->abi_ok = fabs(abi_vec2_sum(v) - 4.0f) < 0.001f &&
                     fabs(abi_rect_area(r) - 20.0f) < 0.001f;
     }

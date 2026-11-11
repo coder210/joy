@@ -148,7 +148,7 @@ function textCenter(s, cx, cy, big, r, g, b) {
 var imgPlayer, imgEnemy;
 
 // ImageDrawRect 是全标量版（srcrect 固定 NULL 表示整张图），绕开了
-// jrect_t* 无法进 joy_value 的 L3 限制；句柄为空时退回同尺寸色块。
+// joy_rect_t* 无法进 joy_value 的 L3 限制；句柄为空时退回同尺寸色块。
 function sprite(img, cx, cy, size, r, g, b) {
     if (img) {
         B.ImageDrawRect(ren, img, cx - size * 0.5, cy - size * 0.5, size, size);
