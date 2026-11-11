@@ -3,18 +3,18 @@
 
 /* ============ OBB 辅助: 欧拉角(绕X/Y/Z) -> 列主序旋转矩阵 ============ */
 
-/* 列主序 mat44f_t 对方向向量做旋转(忽略平移分量) */
-static vec3f_t mat44f_rotate_dir(mat44f_t m, vec3f_t v) {
-        vec3f_t r;
+/* 列主序 joy_mat44f_t 对方向向量做旋转(忽略平移分量) */
+static joy_vec3f_t mat44f_rotate_dir(joy_mat44f_t m, joy_vec3f_t v) {
+        joy_vec3f_t r;
         r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m4, v.y)), fp_mul(m.m8,  v.z));
         r.y = fp_add(fp_add(fp_mul(m.m1, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m9,  v.z));
         r.z = fp_add(fp_add(fp_mul(m.m2, v.x), fp_mul(m.m6, v.y)), fp_mul(m.m10, v.z));
         return r;
 }
 
-/* 列主序 mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
-static vec3f_t mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
-        vec3f_t r;
+/* 列主序 joy_mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
+static joy_vec3f_t mat44f_rotate_dir_t(joy_mat44f_t m, joy_vec3f_t v) {
+        joy_vec3f_t r;
         r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m1, v.y)), fp_mul(m.m2,  v.z));
         r.y = fp_add(fp_add(fp_mul(m.m4, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m6,  v.z));
         r.z = fp_add(fp_add(fp_mul(m.m8, v.x), fp_mul(m.m9, v.y)), fp_mul(m.m10, v.z));
@@ -22,12 +22,12 @@ static vec3f_t mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
 }
 
 /* 欧拉角(弧度) -> 组合旋转矩阵, 顺序: R = Rz * Ry * Rx */
-static mat44f_t euler_to_rot(vec3f_t euler) {
-        mat44f_t rx = mat44f_rotate_x(euler.x);
-        mat44f_t ry = mat44f_rotate_y(euler.y);
-        mat44f_t rz = mat44f_rotate_z(euler.z);
+static joy_mat44f_t euler_to_rot(joy_vec3f_t euler) {
+        joy_mat44f_t rx = mat44f_rotate_x(euler.x);
+        joy_mat44f_t ry = mat44f_rotate_y(euler.y);
+        joy_mat44f_t rz = mat44f_rotate_z(euler.z);
         /* R = Rz * Ry * Rx */
-        mat44f_t tmp = mat44f_mul(ry, rx);
+        joy_mat44f_t tmp = mat44f_mul(ry, rx);
         return mat44f_mul(rz, tmp);
 }
 
@@ -35,14 +35,14 @@ static mat44f_t euler_to_rot(vec3f_t euler) {
 
 /* 单纯形 (GJK用) */
 typedef struct simplex3d_f {
-	vec3f_t points[4];
+	joy_vec3f_t points[4];
 	int points_num;
 } joy_simplex3d_f_t;
 
 /* EPA面法线 */
 typedef struct {
-	vec3f_t normal;
-	fp_t distance;
+	joy_vec3f_t normal;
+	joy_fp_t distance;
 } joy_epa_face_f_t;
 
 /* EPA边 */
@@ -53,31 +53,31 @@ typedef struct {
 /* kvec_t 展开为匿名 struct, 直接用匿名类型作为形参/传址会让 MSVC 判定为
    互不兼容的匿名类型(C4116/C4133)。起具名别名后同一类型身份, 告警消除。 */
 typedef kvec_t(size_t)       joy_size_buf_t;
-typedef kvec_t(vec3f_t)      joy_vec3f_buf_t;
+typedef kvec_t(joy_vec3f_t)      joy_vec3f_buf_t;
 typedef kvec_t(joy_epa_face_f_t) joy_epa_face_f_buf_t;
 typedef kvec_t(joy_epa_edge_f_t) joy_epa_edge_f_buf_t;
 
 /* ============ 单纯形操作 ============ */
 
-static void simplex_init1_f(joy_simplex3d_f_t *s, vec3f_t p0) {
+static void simplex_init1_f(joy_simplex3d_f_t *s, joy_vec3f_t p0) {
 	s->points[0] = p0;
 	s->points_num = 1;
 }
 
-static void simplex_init2_f(joy_simplex3d_f_t *s, vec3f_t p0, vec3f_t p1) {
+static void simplex_init2_f(joy_simplex3d_f_t *s, joy_vec3f_t p0, joy_vec3f_t p1) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points_num = 2;
 }
 
-static void simplex_init3_f(joy_simplex3d_f_t *s, vec3f_t p0, vec3f_t p1, vec3f_t p2) {
+static void simplex_init3_f(joy_simplex3d_f_t *s, joy_vec3f_t p0, joy_vec3f_t p1, joy_vec3f_t p2) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points[2] = p2;
 	s->points_num = 3;
 }
 
-static void simplex_push_f(joy_simplex3d_f_t *s, vec3f_t p) {
+static void simplex_push_f(joy_simplex3d_f_t *s, joy_vec3f_t p) {
 	s->points[3] = s->points[2];
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
@@ -87,21 +87,21 @@ static void simplex_push_f(joy_simplex3d_f_t *s, vec3f_t p) {
 
 /* ============ 各碰撞体的最远点计算 ============ */
 
-static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
-	vec3f_t result = { fp_zero(), fp_zero(), fp_zero() };
+static joy_vec3f_t find_furthest_point_f(joy_gjk3df_collider_p c, joy_vec3f_t dir) {
+	joy_vec3f_t result = { fp_zero(), fp_zero(), fp_zero() };
 
 	switch (c->type) {
 	case GJK3DF_CTYPE_SPHERE: {
-		vec3f_t ndir = vec3f_normalize(dir);
-		vec3f_t offset = vec3f_scale(ndir, c->radius);
+		joy_vec3f_t ndir = vec3f_normalize(dir);
+		joy_vec3f_t offset = vec3f_scale(ndir, c->radius);
 		result = vec3f_add(c->position, offset);
 		break;
 	}
 	case GJK3DF_CTYPE_BOX: {
 		/* AABB: 根据方向符号取半边长 */
-		fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
-		fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
-		fp_t sz = dir.z > fp_zero() ? c->half_size.z : -c->half_size.z;
+		joy_fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
+		joy_fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
+		joy_fp_t sz = dir.z > fp_zero() ? c->half_size.z : -c->half_size.z;
 		result.x = fp_add(c->position.x, sx);
 		result.y = fp_add(c->position.y, sy);
 		result.z = fp_add(c->position.z, sz);
@@ -109,13 +109,13 @@ static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
 	}
 	case GJK3DF_CTYPE_OBB: {
 		/* 旋转盒: 把 dir 逆旋转到本地空间取 AABB 最远点, 再正旋转回世界 */
-		mat44f_t R = euler_to_rot(c->rotation);
-		vec3f_t local_dir = mat44f_rotate_dir_t(R, dir);  /* 逆旋转(旋转矩阵正交, 用转置) */
-		fp_t sx = local_dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
-		fp_t sy = local_dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
-		fp_t sz = local_dir.z > fp_zero() ? c->half_size.z : -c->half_size.z;
-		vec3f_t local_pt = { sx, sy, sz };
-		vec3f_t world_pt = mat44f_rotate_dir(R, local_pt);
+		joy_mat44f_t R = euler_to_rot(c->rotation);
+		joy_vec3f_t local_dir = mat44f_rotate_dir_t(R, dir);  /* 逆旋转(旋转矩阵正交, 用转置) */
+		joy_fp_t sx = local_dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
+		joy_fp_t sy = local_dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
+		joy_fp_t sz = local_dir.z > fp_zero() ? c->half_size.z : -c->half_size.z;
+		joy_vec3f_t local_pt = { sx, sy, sz };
+		joy_vec3f_t world_pt = mat44f_rotate_dir(R, local_pt);
 		result.x = fp_add(c->position.x, world_pt.x);
 		result.y = fp_add(c->position.y, world_pt.y);
 		result.z = fp_add(c->position.z, world_pt.z);
@@ -123,24 +123,24 @@ static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
 	}
 	case GJK3DF_CTYPE_CAPSULE: {
 		/* 胶囊: 线段(沿axis方向 ± height/2) + 半径 */
-		fp_t len = vec3f_length(dir);
+		joy_fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
-		vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
-		fp_t dot = vec3f_dot(ndir, c->axis);
-		fp_t half_factor = dot > fp_zero() ? fp_half() : -fp_half();
-		vec3f_t end_offset = vec3f_scale(c->axis, fp_mul(half_factor, c->height));
-		vec3f_t center = vec3f_add(c->position, end_offset);
+		joy_vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
+		joy_fp_t dot = vec3f_dot(ndir, c->axis);
+		joy_fp_t half_factor = dot > fp_zero() ? fp_half() : -fp_half();
+		joy_vec3f_t end_offset = vec3f_scale(c->axis, fp_mul(half_factor, c->height));
+		joy_vec3f_t center = vec3f_add(c->position, end_offset);
 		result = vec3f_add(center, vec3f_scale(ndir, c->radius));
 		break;
 	}
 	case GJK3DF_CTYPE_CYLINDER: {
 		/* 圆柱: 底部圆盘 + 顶部圆盘 */
-		fp_t len = vec3f_length(dir);
+		joy_fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
-		vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
-		fp_t hy = ndir.y > fp_zero() ? c->height : fp_zero();
+		joy_vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
+		joy_fp_t hy = ndir.y > fp_zero() ? c->height : fp_zero();
 		/* 投影到水平面求圆盘边界 */
-		fp_t r_scale = fp_sqrt(fp_sub(fp_one(), fp_mul(ndir.y, ndir.y)));
+		joy_fp_t r_scale = fp_sqrt(fp_sub(fp_one(), fp_mul(ndir.y, ndir.y)));
 		result.x = fp_add(c->position.x, fp_mul(ndir.x, fp_mul(r_scale, c->radius)));
 		result.y = fp_add(c->position.y, hy);
 		result.z = fp_add(c->position.z, fp_mul(ndir.z, fp_mul(r_scale, c->radius)));
@@ -148,17 +148,17 @@ static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
 	}
 	case GJK3DF_CTYPE_CONE: {
 		/* 圆锥: 底在 center, 锥顶在 center + (0, height, 0) */
-		fp_t len = vec3f_length(dir);
+		joy_fp_t len = vec3f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
-		vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
-		fp_t sin_theta = c->radius / fp_sqrt(fp_add(fp_pow2(c->radius), fp_pow2(c->height)));
+		joy_vec3f_t ndir = vec3f_scale(dir, fp_div(fp_one(), len));
+		joy_fp_t sin_theta = c->radius / fp_sqrt(fp_add(fp_pow2(c->radius), fp_pow2(c->height)));
 		if (ndir.y > sin_theta) {
 			/* 方向朝上足够多 → 锥顶 */
 			result = c->position;
 			result.y = fp_add(result.y, c->height);
 		} else {
 			/* 底边圆盘 */
-			fp_t dist = fp_sqrt(fp_add(fp_pow2(ndir.x), fp_pow2(ndir.z)));
+			joy_fp_t dist = fp_sqrt(fp_add(fp_pow2(ndir.x), fp_pow2(ndir.z)));
 			if (dist > fp_zero()) {
 				result.x = fp_add(c->position.x, fp_mul(fp_div(ndir.x, dist), c->radius));
 				result.y = c->position.y;
@@ -172,9 +172,9 @@ static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
 		break;
 	}
 	case GJK3DF_CTYPE_MESH: {
-		fp_t max_dot = fp_min_value();
+		joy_fp_t max_dot = fp_min_value();
 		for (int i = 0; i < c->vertices_num; i++) {
-			fp_t d = vec3f_dot(c->vertices[i], dir);
+			joy_fp_t d = vec3f_dot(c->vertices[i], dir);
 			if (d > max_dot) { max_dot = d; result = c->vertices[i]; }
 		}
 		break;
@@ -185,9 +185,9 @@ static vec3f_t find_furthest_point_f(gjk3df_collider_p c, vec3f_t dir) {
 
 /* ============ Minkowski差支持函数 ============ */
 
-static vec3f_t get_support_point_f(gjk3df_collider_p ca, gjk3df_collider_p cb, vec3f_t dir) {
-	vec3f_t a = find_furthest_point_f(ca, dir);
-	vec3f_t b = find_furthest_point_f(cb, vec3f_negate(dir));
+static joy_vec3f_t get_support_point_f(joy_gjk3df_collider_p ca, joy_gjk3df_collider_p cb, joy_vec3f_t dir) {
+	joy_vec3f_t a = find_furthest_point_f(ca, dir);
+	joy_vec3f_t b = find_furthest_point_f(cb, vec3f_negate(dir));
 	return vec3f_sub(a, b);
 }
 
@@ -195,31 +195,31 @@ static vec3f_t get_support_point_f(gjk3df_collider_p ca, gjk3df_collider_p cb, v
 
 /* 相对方向判断: 点积显著为正(余弦 > 1e-4)才视为同向,
    避免对称退化位形下符号在噪声中翻转导致分支路径依赖 */
-static bool same_direction_f(vec3f_t dir, vec3f_t ao) {
-	fp_t dot = vec3f_dot(dir, ao);
+static bool same_direction_f(joy_vec3f_t dir, joy_vec3f_t ao) {
+	joy_fp_t dot = vec3f_dot(dir, ao);
 	if (dot <= fp_zero()) return false;
 	/* (dot / (|dir||ao|))^2 > eps^2, 避免 sqrt */
-	fp_t eps2 = fp_from_float(1e-8f);
-	fp_t len2 = fp_mul(vec3f_square_length(dir), vec3f_square_length(ao));
+	joy_fp_t eps2 = fp_from_float(1e-8f);
+	joy_fp_t len2 = fp_mul(vec3f_square_length(dir), vec3f_square_length(ao));
 	return fp_mul(dot, dot) > fp_mul(eps2, len2);
 }
 
 /* 安全叉积归一化: 三点近共线(叉积退化)时返回 false */
-static bool safe_cross_normalize_f(vec3f_t a, vec3f_t b, vec3f_t *out) {
-	fp_t ab2 = fp_mul(vec3f_square_length(a), vec3f_square_length(b));
+static bool safe_cross_normalize_f(joy_vec3f_t a, joy_vec3f_t b, joy_vec3f_t *out) {
+	joy_fp_t ab2 = fp_mul(vec3f_square_length(a), vec3f_square_length(b));
 	if (ab2 == fp_zero()) return false;
-	vec3f_t n = vec3f_cross(a, b);
-	fp_t len2 = vec3f_square_length(n);
-	fp_t eps2 = fp_from_float(1e-8f);
+	joy_vec3f_t n = vec3f_cross(a, b);
+	joy_fp_t len2 = vec3f_square_length(n);
+	joy_fp_t eps2 = fp_from_float(1e-8f);
 	if (len2 <= fp_mul(ab2, eps2)) return false;
 	*out = vec3f_normalize(n);
 	return true;
 }
 
-static bool gjk_line_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
-	vec3f_t a = s->points[0], b = s->points[1];
-	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
-	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
+static bool gjk_line_f(joy_simplex3d_f_t *s, joy_vec3f_t *dir) {
+	joy_vec3f_t a = s->points[0], b = s->points[1];
+	joy_vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
+	joy_vec3f_t ao = vec3f_normalize(vec3f_negate(a));
 	if (same_direction_f(ab, ao)) {
 		*dir = vec3f_normalize(vec3f_cross(vec3f_cross(ab, ao), ab));
 	} else {
@@ -229,12 +229,12 @@ static bool gjk_line_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	return false;
 }
 
-static bool gjk_triangle_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
-	vec3f_t a = s->points[0], b = s->points[1], c = s->points[2];
-	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
-	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
-	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
-	vec3f_t abc;
+static bool gjk_triangle_f(joy_simplex3d_f_t *s, joy_vec3f_t *dir) {
+	joy_vec3f_t a = s->points[0], b = s->points[1], c = s->points[2];
+	joy_vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
+	joy_vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
+	joy_vec3f_t ao = vec3f_normalize(vec3f_negate(a));
+	joy_vec3f_t abc;
 	if (!safe_cross_normalize_f(ab, ac, &abc)) {
 		/* 三点近共线(退化三角形): 退化为线段处理 */
 		simplex_init2_f(s, a, b);
@@ -265,13 +265,13 @@ static bool gjk_triangle_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	return false;
 }
 
-static bool gjk_tetrahedron_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
-	vec3f_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
-	vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
-	vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
-	vec3f_t ad = vec3f_normalize(vec3f_sub(d, a));
-	vec3f_t ao = vec3f_normalize(vec3f_negate(a));
-	vec3f_t abc, acd, adb;
+static bool gjk_tetrahedron_f(joy_simplex3d_f_t *s, joy_vec3f_t *dir) {
+	joy_vec3f_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
+	joy_vec3f_t ab = vec3f_normalize(vec3f_sub(b, a));
+	joy_vec3f_t ac = vec3f_normalize(vec3f_sub(c, a));
+	joy_vec3f_t ad = vec3f_normalize(vec3f_sub(d, a));
+	joy_vec3f_t ao = vec3f_normalize(vec3f_negate(a));
+	joy_vec3f_t abc, acd, adb;
 	/* 各面退化(近共线)时跳过该分支, 避免法线为噪声方向 */
 	bool has_abc = safe_cross_normalize_f(ab, ac, &abc);
 	bool has_acd = safe_cross_normalize_f(ac, ad, &acd);
@@ -283,7 +283,7 @@ static bool gjk_tetrahedron_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 	return true;
 }
 
-static bool next_simplex_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
+static bool next_simplex_f(joy_simplex3d_f_t *s, joy_vec3f_t *dir) {
 	switch (s->points_num) {
 	case 2: return gjk_line_f(s, dir);
 	case 3: return gjk_triangle_f(s, dir);
@@ -298,27 +298,27 @@ static bool next_simplex_f(joy_simplex3d_f_t *s, vec3f_t *dir) {
 static void get_face_normals_f(joy_vec3f_buf_t *polytope, joy_size_buf_t *faces,
 	joy_epa_face_f_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
-	fp_t min_distance = fp_max_value();
+	joy_fp_t min_distance = fp_max_value();
 
 	for (size_t i = 0; i < faces->n; i += 3) {
-		vec3f_t a = kv_A(*polytope, kv_A(*faces, i));
-		vec3f_t b = kv_A(*polytope, kv_A(*faces, i + 1));
-		vec3f_t c = kv_A(*polytope, kv_A(*faces, i + 2));
+		joy_vec3f_t a = kv_A(*polytope, kv_A(*faces, i));
+		joy_vec3f_t b = kv_A(*polytope, kv_A(*faces, i + 1));
+		joy_vec3f_t c = kv_A(*polytope, kv_A(*faces, i + 2));
 
-		vec3f_t ba = vec3f_normalize(vec3f_sub(b, a));
-		vec3f_t ca = vec3f_normalize(vec3f_sub(c, a));
-		vec3f_t n;
+		joy_vec3f_t ba = vec3f_normalize(vec3f_sub(b, a));
+		joy_vec3f_t ca = vec3f_normalize(vec3f_sub(c, a));
+		joy_vec3f_t n;
 		if (!safe_cross_normalize_f(ba, ca, &n)) {
 			/* 退化面(三点近共线): 法线退化为噪声方向, 跳过该面,
 			   将其距离置为最大避免被选为最近面 */
 			joy_epa_face_f_t face;
-			face.normal = (vec3f_t){ fp_one(), fp_zero(), fp_zero() };
+			face.normal = (joy_vec3f_t){ fp_one(), fp_zero(), fp_zero() };
 			face.distance = fp_max_value();
 			kv_push(joy_epa_face_f_t, *normals, face);
 			continue;
 		}
 
-		fp_t dist = vec3f_dot(n, a);
+		joy_fp_t dist = vec3f_dot(n, a);
 		if (dist < fp_zero()) { n = vec3f_negate(n); dist = -dist; }
 
 		joy_epa_face_f_t face;
@@ -348,7 +348,7 @@ static void add_unique_edge_f(joy_epa_edge_f_buf_t *edges, joy_size_buf_t *faces
 }
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
-static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
+static bool epa_f(joy_simplex3d_f_t *simplex, joy_gjk3df_collider_p ca, joy_gjk3df_collider_p cb, joy_gjk3df_contact_p contact) {
 	joy_vec3f_buf_t polytope;
 	joy_size_buf_t faces;
 	joy_epa_face_f_buf_t normals;
@@ -359,7 +359,7 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 
 	/* 将单纯形点复制到多面体 */
 	for (int i = 0; i < simplex->points_num; i++) {
-		kv_push(vec3f_t, polytope, simplex->points[i]);
+		kv_push(joy_vec3f_t, polytope, simplex->points[i]);
 	}
 
 	/* 四面体的4个面(12个索引) */
@@ -374,11 +374,11 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 	get_face_normals_f(&polytope, &faces, &normals, &min_face);
 
 	/* 备份初始最小面 */
-	vec3f_t bake_min_normal = kv_A(normals, min_face).normal;
-	fp_t bake_min_distance = kv_A(normals, min_face).distance;
+	joy_vec3f_t bake_min_normal = kv_A(normals, min_face).normal;
+	joy_fp_t bake_min_distance = kv_A(normals, min_face).distance;
 
-	vec3f_t min_normal = { fp_zero(), fp_zero(), fp_zero() };
-	fp_t min_distance = fp_max_value();
+	joy_vec3f_t min_normal = { fp_zero(), fp_zero(), fp_zero() };
+	joy_fp_t min_distance = fp_max_value();
 
 	int epa_iter = 0;
 	while (min_distance == fp_max_value() && epa_iter < 64) {
@@ -386,8 +386,8 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 		min_normal = kv_A(normals, min_face).normal;
 		min_distance = kv_A(normals, min_face).distance;
 
-		vec3f_t support = get_support_point_f(ca, cb, min_normal);
-		fp_t s_dist = vec3f_dot(min_normal, support);
+		joy_vec3f_t support = get_support_point_f(ca, cb, min_normal);
+		joy_fp_t s_dist = vec3f_dot(min_normal, support);
 
 		if (fp_abs(fp_sub(s_dist, min_distance)) > fp_from_float(0.001f)) {
 			min_distance = fp_max_value();
@@ -397,7 +397,7 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
-				vec3f_t n = kv_A(normals, i).normal;
+				joy_vec3f_t n = kv_A(normals, i).normal;
 				size_t f = i * 3;
 				if (vec3f_dot(n, support) > vec3f_dot(n, kv_A(polytope, kv_A(faces, f)))) {
 					add_unique_edge_f(&unique_edges, &faces, f, f + 1);
@@ -422,7 +422,7 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 				kv_push(size_t, new_faces, kv_A(unique_edges, i).b);
 				kv_push(size_t, new_faces, new_vertex_index);
 			}
-			kv_push(vec3f_t, polytope, support);
+			kv_push(joy_vec3f_t, polytope, support);
 
 			/* 计算新面的法线 */
 			joy_epa_face_f_buf_t new_normals;
@@ -431,7 +431,7 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 			get_face_normals_f(&polytope, &new_faces, &new_normals, &new_min_face);
 
 			/* 找到全局最小距离的面 */
-			fp_t old_min_dist = fp_max_value();
+			joy_fp_t old_min_dist = fp_max_value();
 			size_t global_min = 0;
 			for (size_t i = 0; i < normals.n; i++) {
 				if (kv_A(normals, i).distance < old_min_dist) {
@@ -467,9 +467,9 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 	/* EPA后处理: 用一组候选方向重新验证穿透深度, 取最小值,
 	   纠正EPA因退化/局部最优收敛到错误支撑面的情况 */
 	{
-		vec3f_t candidates[8];
+		joy_vec3f_t candidates[8];
 		int n = 0;
-		vec3f_t axis[3] = {
+		joy_vec3f_t axis[3] = {
 			{ fp_one(), fp_zero(), fp_zero() },
 			{ fp_zero(), fp_one(), fp_zero() },
 			{ fp_zero(), fp_zero(), fp_one() }
@@ -479,16 +479,16 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 			candidates[n++] = vec3f_negate(axis[i]);
 		}
 		/* 两物体中心连线方向 */
-		vec3f_t delta = vec3f_sub(cb->position, ca->position);
-		fp_t dl = vec3f_length(delta);
+		joy_vec3f_t delta = vec3f_sub(cb->position, ca->position);
+		joy_fp_t dl = vec3f_length(delta);
 		if (dl > fp_zero()) {
 			candidates[n++] = vec3f_scale(delta, fp_div(fp_one(), dl));
 			candidates[n++] = vec3f_scale(vec3f_negate(delta), fp_div(fp_one(), dl));
 		}
 
 		for (int i = 0; i < n; i++) {
-			vec3f_t support = get_support_point_f(ca, cb, candidates[i]);
-			fp_t d = vec3f_dot(candidates[i], support);
+			joy_vec3f_t support = get_support_point_f(ca, cb, candidates[i]);
+			joy_fp_t d = vec3f_dot(candidates[i], support);
 			if (d > fp_zero() && d < min_distance) {
 				min_distance = d;
 				min_normal = candidates[i];
@@ -511,8 +511,8 @@ static bool epa_f(joy_simplex3d_f_t *simplex, gjk3df_collider_p ca, gjk3df_colli
 /* 当 GJK 因对称/共线退化无法构建四面体(如同心球、共线单纯形)时,
    用 ±3轴方向采样穿透距离: 任一方向分离(支持点投影 <= 0)则判定无碰撞,
    否则取最小穿透距离作为深度(法线为该轴方向) */
-static bool degenerate_fallback_f(gjk3df_collider_p ca, gjk3df_collider_p cb, gjk3df_contact_p contact) {
-	vec3f_t axes[6] = {
+static bool degenerate_fallback_f(joy_gjk3df_collider_p ca, joy_gjk3df_collider_p cb, joy_gjk3df_contact_p contact) {
+	joy_vec3f_t axes[6] = {
 		{  fp_one(), fp_zero(), fp_zero() },
 		{ -fp_one(), fp_zero(), fp_zero() },
 		{  fp_zero(),  fp_one(), fp_zero() },
@@ -520,11 +520,11 @@ static bool degenerate_fallback_f(gjk3df_collider_p ca, gjk3df_collider_p cb, gj
 		{  fp_zero(), fp_zero(),  fp_one() },
 		{  fp_zero(), fp_zero(), -fp_one() }
 	};
-	fp_t min_d = fp_max_value();
-	vec3f_t min_n = { fp_zero(), fp_zero(), fp_zero() };
+	joy_fp_t min_d = fp_max_value();
+	joy_vec3f_t min_n = { fp_zero(), fp_zero(), fp_zero() };
 	for (int i = 0; i < 6; i++) {
-		vec3f_t s = get_support_point_f(ca, cb, axes[i]);
-		fp_t d = vec3f_dot(axes[i], s);
+		joy_vec3f_t s = get_support_point_f(ca, cb, axes[i]);
+		joy_fp_t d = vec3f_dot(axes[i], s);
 		if (d <= fp_zero()) return false; /* 该方向分离 */
 		if (d < min_d) { min_d = d; min_n = axes[i]; }
 	}
@@ -534,17 +534,17 @@ static bool degenerate_fallback_f(gjk3df_collider_p ca, gjk3df_collider_p cb, gj
 }
 
 /* ============ 公开API实现 ============ */
-bool joy_math_gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
-	vec3f_t init_dir, gjk3df_contact_p contact)
+bool joy_math_gjk3df_collide(joy_gjk3df_collider_p c1, joy_gjk3df_collider_p c2,
+	joy_vec3f_t init_dir, joy_gjk3df_contact_p contact)
 {
 	joy_simplex3d_f_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
-	vec3f_t support = get_support_point_f(c1, c2, init_dir);
+	joy_vec3f_t support = get_support_point_f(c1, c2, init_dir);
 	simplex_push_f(&simplex, support);
-	vec3f_t dir = vec3f_normalize(vec3f_negate(support));
+	joy_vec3f_t dir = vec3f_normalize(vec3f_negate(support));
 
-	fp_t tiny2 = fp_from_float(1e-8f);
+	joy_fp_t tiny2 = fp_from_float(1e-8f);
 	int gjk_iter = 0;
 	while (gjk_iter < 128) {
 		gjk_iter++;
@@ -584,21 +584,21 @@ bool joy_math_gjk3df_collide(gjk3df_collider_p c1, gjk3df_collider_p c2,
 
 /* ============ 碰撞体初始化函数 ============ */
 
-void joy_math_gjk3df_init_sphere(gjk3df_collider_t *c, vec3f_t pos, fp_t radius) {
+void joy_math_gjk3df_init_sphere(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_SPHERE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void joy_math_gjk3df_init_box(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size) {
+void joy_math_gjk3df_init_box(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_vec3f_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void joy_math_gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_size, vec3f_t rotation) {
+void joy_math_gjk3df_init_obb(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_vec3f_t half_size, joy_vec3f_t rotation) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_OBB;
 	c->position = pos;
@@ -606,7 +606,7 @@ void joy_math_gjk3df_init_obb(gjk3df_collider_t *c, vec3f_t pos, vec3f_t half_si
 	c->rotation = rotation;
 }
 
-void joy_math_gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height, vec3f_t axis) {
+void joy_math_gjk3df_init_capsule(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_fp_t radius, joy_fp_t height, joy_vec3f_t axis) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CAPSULE;
 	c->position = pos;
@@ -615,7 +615,7 @@ void joy_math_gjk3df_init_capsule(gjk3df_collider_t *c, vec3f_t pos, fp_t radius
 	c->axis = vec3f_normalize(axis);
 }
 
-void joy_math_gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void joy_math_gjk3df_init_cylinder(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_fp_t radius, joy_fp_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CYLINDER;
 	c->position = pos;
@@ -623,7 +623,7 @@ void joy_math_gjk3df_init_cylinder(gjk3df_collider_t *c, vec3f_t pos, fp_t radiu
 	c->height = height;
 }
 
-void joy_math_gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, fp_t height) {
+void joy_math_gjk3df_init_cone(joy_gjk3df_collider_t *c, joy_vec3f_t pos, joy_fp_t radius, joy_fp_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_CONE;
 	c->position = pos;
@@ -631,7 +631,7 @@ void joy_math_gjk3df_init_cone(gjk3df_collider_t *c, vec3f_t pos, fp_t radius, f
 	c->height = height;
 }
 
-void joy_math_gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num) {
+void joy_math_gjk3df_init_mesh(joy_gjk3df_collider_t *c, joy_vec3f_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3DF_CTYPE_MESH;
 	c->vertices = vertices;
@@ -639,23 +639,23 @@ void joy_math_gjk3df_init_mesh(gjk3df_collider_t *c, vec3f_t *vertices, int num)
 }
 
 /* ======================================================================== */
-/*              GJK 3D 浮点版 (gjk3d_* / ft_t / vec3_t)                     */
-/* 算法与上方定点数版 (gjk3df_*) 完全一致, 仅类型从 fp_t/vec3f_t 换成       */
-/* ft_t/vec3_t; 命名约定: 定点内部符号带 _f, 浮点内部符号保持干净在同一 TU 共存 */
+/*              GJK 3D 浮点版 (gjk3d_* / joy_ft_t / joy_vec3_t)                     */
+/* 算法与上方定点数版 (gjk3df_*) 完全一致, 仅类型从 joy_fp_t/joy_vec3f_t 换成       */
+/* joy_ft_t/joy_vec3_t; 命名约定: 定点内部符号带 _f, 浮点内部符号保持干净在同一 TU 共存 */
 /* ======================================================================== */
 
 /* ============ 内部类型 ============ */
 
 /* 单纯形 (GJK用); 注意 struct tag 需与定点版 simplex3d 区分, 二者共用 tag 命名空间 */
 typedef struct simplex3d {
-	vec3_t points[4];
+	joy_vec3_t points[4];
 	int points_num;
 } joy_simplex3d_t;
 
 /* EPA面法线 */
 typedef struct {
-	vec3_t normal;
-	ft_t distance;
+	joy_vec3_t normal;
+	joy_ft_t distance;
 } joy_epa_face_t;
 
 /* EPA边 */
@@ -664,31 +664,31 @@ typedef struct {
 } joy_epa_edge_t;
 
 /* EPA kvec 具名别名(joy_size_buf_t 已在定点段定义, 此处复用) */
-typedef kvec_t(vec3_t)     joy_vec3_buf_t;
+typedef kvec_t(joy_vec3_t)     joy_vec3_buf_t;
 typedef kvec_t(joy_epa_face_t) joy_epa_face_buf_t;
 typedef kvec_t(joy_epa_edge_t) joy_epa_edge_buf_t;
 
 /* ============ 单纯形操作 ============ */
 
-static void simplex_init1(joy_simplex3d_t *s, vec3_t p0) {
+static void simplex_init1(joy_simplex3d_t *s, joy_vec3_t p0) {
 	s->points[0] = p0;
 	s->points_num = 1;
 }
 
-static void simplex_init2(joy_simplex3d_t *s, vec3_t p0, vec3_t p1) {
+static void simplex_init2(joy_simplex3d_t *s, joy_vec3_t p0, joy_vec3_t p1) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points_num = 2;
 }
 
-static void simplex_init3(joy_simplex3d_t *s, vec3_t p0, vec3_t p1, vec3_t p2) {
+static void simplex_init3(joy_simplex3d_t *s, joy_vec3_t p0, joy_vec3_t p1, joy_vec3_t p2) {
 	s->points[0] = p0;
 	s->points[1] = p1;
 	s->points[2] = p2;
 	s->points_num = 3;
 }
 
-static void simplex_push(joy_simplex3d_t *s, vec3_t p) {
+static void simplex_push(joy_simplex3d_t *s, joy_vec3_t p) {
 	s->points[3] = s->points[2];
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
@@ -698,21 +698,21 @@ static void simplex_push(joy_simplex3d_t *s, vec3_t p) {
 
 /* ============ 各碰撞体的最远点计算 ============ */
 
-static vec3_t find_furthest_point(gjk3d_collider_p c, vec3_t dir) {
-	vec3_t result = { ft_zero(), ft_zero(), ft_zero() };
+static joy_vec3_t find_furthest_point(joy_gjk3d_collider_p c, joy_vec3_t dir) {
+	joy_vec3_t result = { ft_zero(), ft_zero(), ft_zero() };
 
 	switch (c->type) {
 	case GJK3D_CTYPE_SPHERE: {
-		vec3_t ndir = vec3_normalize(dir);
-		vec3_t offset = vec3_scale(ndir, c->radius);
+		joy_vec3_t ndir = vec3_normalize(dir);
+		joy_vec3_t offset = vec3_scale(ndir, c->radius);
 		result = vec3_add(c->position, offset);
 		break;
 	}
 	case GJK3D_CTYPE_BOX: {
 		/* AABB: 根据方向符号取半边长 */
-		ft_t sx = dir.x > ft_zero() ? c->half_size.x : -c->half_size.x;
-		ft_t sy = dir.y > ft_zero() ? c->half_size.y : -c->half_size.y;
-		ft_t sz = dir.z > ft_zero() ? c->half_size.z : -c->half_size.z;
+		joy_ft_t sx = dir.x > ft_zero() ? c->half_size.x : -c->half_size.x;
+		joy_ft_t sy = dir.y > ft_zero() ? c->half_size.y : -c->half_size.y;
+		joy_ft_t sz = dir.z > ft_zero() ? c->half_size.z : -c->half_size.z;
 		result.x = ft_add(c->position.x, sx);
 		result.y = ft_add(c->position.y, sy);
 		result.z = ft_add(c->position.z, sz);
@@ -720,24 +720,24 @@ static vec3_t find_furthest_point(gjk3d_collider_p c, vec3_t dir) {
 	}
 	case GJK3D_CTYPE_CAPSULE: {
 		/* 胶囊: 线段(沿axis方向 ± height/2) + 半径 */
-		ft_t len = vec3_length(dir);
+		joy_ft_t len = vec3_length(dir);
 		if (len == ft_zero()) { result = c->position; break; }
-		vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
-		ft_t dot = vec3_dot(ndir, c->axis);
-		ft_t half_factor = dot > ft_zero() ? ft_half() : -ft_half();
-		vec3_t end_offset = vec3_scale(c->axis, ft_mul(half_factor, c->height));
-		vec3_t center = vec3_add(c->position, end_offset);
+		joy_vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
+		joy_ft_t dot = vec3_dot(ndir, c->axis);
+		joy_ft_t half_factor = dot > ft_zero() ? ft_half() : -ft_half();
+		joy_vec3_t end_offset = vec3_scale(c->axis, ft_mul(half_factor, c->height));
+		joy_vec3_t center = vec3_add(c->position, end_offset);
 		result = vec3_add(center, vec3_scale(ndir, c->radius));
 		break;
 	}
 	case GJK3D_CTYPE_CYLINDER: {
 		/* 圆柱: 底部圆盘 + 顶部圆盘 */
-		ft_t len = vec3_length(dir);
+		joy_ft_t len = vec3_length(dir);
 		if (len == ft_zero()) { result = c->position; break; }
-		vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
-		ft_t hy = ndir.y > ft_zero() ? c->height : ft_zero();
+		joy_vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
+		joy_ft_t hy = ndir.y > ft_zero() ? c->height : ft_zero();
 		/* 投影到水平面求圆盘边界 */
-		ft_t r_scale = ft_sqrt(ft_sub(ft_one(), ft_mul(ndir.y, ndir.y)));
+		joy_ft_t r_scale = ft_sqrt(ft_sub(ft_one(), ft_mul(ndir.y, ndir.y)));
 		result.x = ft_add(c->position.x, ft_mul(ndir.x, ft_mul(r_scale, c->radius)));
 		result.y = ft_add(c->position.y, hy);
 		result.z = ft_add(c->position.z, ft_mul(ndir.z, ft_mul(r_scale, c->radius)));
@@ -745,17 +745,17 @@ static vec3_t find_furthest_point(gjk3d_collider_p c, vec3_t dir) {
 	}
 	case GJK3D_CTYPE_CONE: {
 		/* 圆锥 */
-		ft_t len = vec3_length(dir);
+		joy_ft_t len = vec3_length(dir);
 		if (len == ft_zero()) { result = c->position; break; }
-		vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
-		ft_t sin_theta = c->radius / ft_sqrt(ft_add(ft_pow2(c->radius), ft_pow2(c->height)));
+		joy_vec3_t ndir = vec3_scale(dir, ft_div(ft_one(), len));
+		joy_ft_t sin_theta = c->radius / ft_sqrt(ft_add(ft_pow2(c->radius), ft_pow2(c->height)));
 		if (ndir.y > sin_theta) {
 			/* 方向朝上足够多 → 锥顶 */
 			result = c->position;
 			result.y = ft_add(result.y, c->height);
 		} else {
 			/* 底边圆盘 */
-			ft_t dist = ft_sqrt(ft_add(ft_pow2(ndir.x), ft_pow2(ndir.z)));
+			joy_ft_t dist = ft_sqrt(ft_add(ft_pow2(ndir.x), ft_pow2(ndir.z)));
 			if (dist > ft_zero()) {
 				result.x = ft_add(c->position.x, ft_mul(ft_div(ndir.x, dist), c->radius));
 				result.y = c->position.y;
@@ -769,9 +769,9 @@ static vec3_t find_furthest_point(gjk3d_collider_p c, vec3_t dir) {
 		break;
 	}
 	case GJK3D_CTYPE_MESH: {
-		ft_t max_dot = ft_min_value();
+		joy_ft_t max_dot = ft_min_value();
 		for (int i = 0; i < c->vertices_num; i++) {
-			ft_t d = vec3_dot(c->vertices[i], dir);
+			joy_ft_t d = vec3_dot(c->vertices[i], dir);
 			if (d > max_dot) { max_dot = d; result = c->vertices[i]; }
 		}
 		break;
@@ -782,9 +782,9 @@ static vec3_t find_furthest_point(gjk3d_collider_p c, vec3_t dir) {
 
 /* ============ Minkowski差支持函数 ============ */
 
-static vec3_t get_support_point(gjk3d_collider_p ca, gjk3d_collider_p cb, vec3_t dir) {
-	vec3_t a = find_furthest_point(ca, dir);
-	vec3_t b = find_furthest_point(cb, vec3_negate(dir));
+static joy_vec3_t get_support_point(joy_gjk3d_collider_p ca, joy_gjk3d_collider_p cb, joy_vec3_t dir) {
+	joy_vec3_t a = find_furthest_point(ca, dir);
+	joy_vec3_t b = find_furthest_point(cb, vec3_negate(dir));
 	return vec3_sub(a, b);
 }
 
@@ -792,31 +792,31 @@ static vec3_t get_support_point(gjk3d_collider_p ca, gjk3d_collider_p cb, vec3_t
 
 /* 相对方向判断: 点积显著为正(余弦 > 1e-4)才视为同向,
    避免对称退化位形下符号在噪声中翻转导致分支路径依赖 */
-static bool same_direction(vec3_t dir, vec3_t ao) {
-	ft_t dot = vec3_dot(dir, ao);
+static bool same_direction(joy_vec3_t dir, joy_vec3_t ao) {
+	joy_ft_t dot = vec3_dot(dir, ao);
 	if (dot <= ft_zero()) return false;
 	/* (dot / (|dir||ao|))^2 > eps^2, 避免 sqrt */
-	ft_t eps2 = ft_from_float(1e-8f);
-	ft_t len2 = ft_mul(vec3_square_length(dir), vec3_square_length(ao));
+	joy_ft_t eps2 = ft_from_float(1e-8f);
+	joy_ft_t len2 = ft_mul(vec3_square_length(dir), vec3_square_length(ao));
 	return ft_mul(dot, dot) > ft_mul(eps2, len2);
 }
 
 /* 安全叉积归一化: 三点近共线(叉积退化)时返回 false */
-static bool safe_cross_normalize(vec3_t a, vec3_t b, vec3_t *out) {
-	ft_t ab2 = ft_mul(vec3_square_length(a), vec3_square_length(b));
+static bool safe_cross_normalize(joy_vec3_t a, joy_vec3_t b, joy_vec3_t *out) {
+	joy_ft_t ab2 = ft_mul(vec3_square_length(a), vec3_square_length(b));
 	if (ab2 == ft_zero()) return false;
-	vec3_t n = vec3_cross(a, b);
-	ft_t len2 = vec3_square_length(n);
-	ft_t eps2 = ft_from_float(1e-8f);
+	joy_vec3_t n = vec3_cross(a, b);
+	joy_ft_t len2 = vec3_square_length(n);
+	joy_ft_t eps2 = ft_from_float(1e-8f);
 	if (len2 <= ft_mul(ab2, eps2)) return false;
 	*out = vec3_normalize(n);
 	return true;
 }
 
-static bool gjk_line(joy_simplex3d_t *s, vec3_t *dir) {
-	vec3_t a = s->points[0], b = s->points[1];
-	vec3_t ab = vec3_normalize(vec3_sub(b, a));
-	vec3_t ao = vec3_normalize(vec3_negate(a));
+static bool gjk_line(joy_simplex3d_t *s, joy_vec3_t *dir) {
+	joy_vec3_t a = s->points[0], b = s->points[1];
+	joy_vec3_t ab = vec3_normalize(vec3_sub(b, a));
+	joy_vec3_t ao = vec3_normalize(vec3_negate(a));
 	if (same_direction(ab, ao)) {
 		*dir = vec3_normalize(vec3_cross(vec3_cross(ab, ao), ab));
 	} else {
@@ -826,12 +826,12 @@ static bool gjk_line(joy_simplex3d_t *s, vec3_t *dir) {
 	return false;
 }
 
-static bool gjk_triangle(joy_simplex3d_t *s, vec3_t *dir) {
-	vec3_t a = s->points[0], b = s->points[1], c = s->points[2];
-	vec3_t ab = vec3_normalize(vec3_sub(b, a));
-	vec3_t ac = vec3_normalize(vec3_sub(c, a));
-	vec3_t ao = vec3_normalize(vec3_negate(a));
-	vec3_t abc;
+static bool gjk_triangle(joy_simplex3d_t *s, joy_vec3_t *dir) {
+	joy_vec3_t a = s->points[0], b = s->points[1], c = s->points[2];
+	joy_vec3_t ab = vec3_normalize(vec3_sub(b, a));
+	joy_vec3_t ac = vec3_normalize(vec3_sub(c, a));
+	joy_vec3_t ao = vec3_normalize(vec3_negate(a));
+	joy_vec3_t abc;
 	if (!safe_cross_normalize(ab, ac, &abc)) {
 		/* 三点近共线(退化三角形): 退化为线段处理 */
 		simplex_init2(s, a, b);
@@ -862,13 +862,13 @@ static bool gjk_triangle(joy_simplex3d_t *s, vec3_t *dir) {
 	return false;
 }
 
-static bool gjk_tetrahedron(joy_simplex3d_t *s, vec3_t *dir) {
-	vec3_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
-	vec3_t ab = vec3_normalize(vec3_sub(b, a));
-	vec3_t ac = vec3_normalize(vec3_sub(c, a));
-	vec3_t ad = vec3_normalize(vec3_sub(d, a));
-	vec3_t ao = vec3_normalize(vec3_negate(a));
-	vec3_t abc, acd, adb;
+static bool gjk_tetrahedron(joy_simplex3d_t *s, joy_vec3_t *dir) {
+	joy_vec3_t a = s->points[0], b = s->points[1], c = s->points[2], d = s->points[3];
+	joy_vec3_t ab = vec3_normalize(vec3_sub(b, a));
+	joy_vec3_t ac = vec3_normalize(vec3_sub(c, a));
+	joy_vec3_t ad = vec3_normalize(vec3_sub(d, a));
+	joy_vec3_t ao = vec3_normalize(vec3_negate(a));
+	joy_vec3_t abc, acd, adb;
 	/* 各面退化(近共线)时跳过该分支, 避免法线为噪声方向 */
 	bool has_abc = safe_cross_normalize(ab, ac, &abc);
 	bool has_acd = safe_cross_normalize(ac, ad, &acd);
@@ -880,7 +880,7 @@ static bool gjk_tetrahedron(joy_simplex3d_t *s, vec3_t *dir) {
 	return true;
 }
 
-static bool next_simplex(joy_simplex3d_t *s, vec3_t *dir) {
+static bool next_simplex(joy_simplex3d_t *s, joy_vec3_t *dir) {
 	switch (s->points_num) {
 	case 2: return gjk_line(s, dir);
 	case 3: return gjk_triangle(s, dir);
@@ -895,27 +895,27 @@ static bool next_simplex(joy_simplex3d_t *s, vec3_t *dir) {
 static void get_face_normals(joy_vec3_buf_t *polytope, joy_size_buf_t *faces,
 	joy_epa_face_buf_t *normals, size_t *min_triangle) {
 	*min_triangle = 0;
-	ft_t min_distance = ft_max_value();
+	joy_ft_t min_distance = ft_max_value();
 
 	for (size_t i = 0; i < faces->n; i += 3) {
-		vec3_t a = kv_A(*polytope, kv_A(*faces, i));
-		vec3_t b = kv_A(*polytope, kv_A(*faces, i + 1));
-		vec3_t c = kv_A(*polytope, kv_A(*faces, i + 2));
+		joy_vec3_t a = kv_A(*polytope, kv_A(*faces, i));
+		joy_vec3_t b = kv_A(*polytope, kv_A(*faces, i + 1));
+		joy_vec3_t c = kv_A(*polytope, kv_A(*faces, i + 2));
 
-		vec3_t ba = vec3_normalize(vec3_sub(b, a));
-		vec3_t ca = vec3_normalize(vec3_sub(c, a));
-		vec3_t n;
+		joy_vec3_t ba = vec3_normalize(vec3_sub(b, a));
+		joy_vec3_t ca = vec3_normalize(vec3_sub(c, a));
+		joy_vec3_t n;
 		if (!safe_cross_normalize(ba, ca, &n)) {
 			/* 退化面(三点近共线): 法线退化为噪声方向, 跳过该面,
 			   将其距离置为最大避免被选为最近面 */
 			joy_epa_face_t face;
-			face.normal = (vec3_t){ ft_one(), ft_zero(), ft_zero() };
+			face.normal = (joy_vec3_t){ ft_one(), ft_zero(), ft_zero() };
 			face.distance = ft_max_value();
 			kv_push(joy_epa_face_t, *normals, face);
 			continue;
 		}
 
-		ft_t dist = vec3_dot(n, a);
+		joy_ft_t dist = vec3_dot(n, a);
 		if (dist < ft_zero()) { n = vec3_negate(n); dist = -dist; }
 
 		joy_epa_face_t face;
@@ -945,7 +945,7 @@ static void add_unique_edge(joy_epa_edge_buf_t *edges, joy_size_buf_t *faces, si
 }
 
 /* EPA主函数: 从单纯形出发构建多面体,计算穿透法线和深度 */
-static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
+static bool epa(joy_simplex3d_t *simplex, joy_gjk3d_collider_p ca, joy_gjk3d_collider_p cb, joy_gjk3d_contact_p contact) {
 	joy_vec3_buf_t polytope;
 	joy_size_buf_t faces;
 	joy_epa_face_buf_t normals;
@@ -956,7 +956,7 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 
 	/* 将单纯形点复制到多面体 */
 	for (int i = 0; i < simplex->points_num; i++) {
-		kv_push(vec3_t, polytope, simplex->points[i]);
+		kv_push(joy_vec3_t, polytope, simplex->points[i]);
 	}
 
 	/* 四面体的4个面(12个索引) */
@@ -971,11 +971,11 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 	get_face_normals(&polytope, &faces, &normals, &min_face);
 
 	/* 备份初始最小面 */
-	vec3_t bake_min_normal = kv_A(normals, min_face).normal;
-	ft_t bake_min_distance = kv_A(normals, min_face).distance;
+	joy_vec3_t bake_min_normal = kv_A(normals, min_face).normal;
+	joy_ft_t bake_min_distance = kv_A(normals, min_face).distance;
 
-	vec3_t min_normal = { ft_zero(), ft_zero(), ft_zero() };
-	ft_t min_distance = ft_max_value();
+	joy_vec3_t min_normal = { ft_zero(), ft_zero(), ft_zero() };
+	joy_ft_t min_distance = ft_max_value();
 
 	int epa_iter = 0;
 	while (min_distance == ft_max_value() && epa_iter < 64) {
@@ -983,8 +983,8 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 		min_normal = kv_A(normals, min_face).normal;
 		min_distance = kv_A(normals, min_face).distance;
 
-		vec3_t support = get_support_point(ca, cb, min_normal);
-		ft_t s_dist = vec3_dot(min_normal, support);
+		joy_vec3_t support = get_support_point(ca, cb, min_normal);
+		joy_ft_t s_dist = vec3_dot(min_normal, support);
 
 		if (ft_abs(ft_sub(s_dist, min_distance)) > 0.001f) {
 			min_distance = ft_max_value();
@@ -994,7 +994,7 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 			kv_init(unique_edges);
 
 			for (size_t i = 0; i < normals.n; i++) {
-				vec3_t n = kv_A(normals, i).normal;
+				joy_vec3_t n = kv_A(normals, i).normal;
 				size_t f = i * 3;
 				if (vec3_dot(n, support) > vec3_dot(n, kv_A(polytope, kv_A(faces, f)))) {
 					add_unique_edge(&unique_edges, &faces, f, f + 1);
@@ -1019,7 +1019,7 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 				kv_push(size_t, new_faces, kv_A(unique_edges, i).b);
 				kv_push(size_t, new_faces, new_vertex_index);
 			}
-			kv_push(vec3_t, polytope, support);
+			kv_push(joy_vec3_t, polytope, support);
 
 			/* 计算新面的法线 */
 			joy_epa_face_buf_t new_normals;
@@ -1028,7 +1028,7 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 			get_face_normals(&polytope, &new_faces, &new_normals, &new_min_face);
 
 			/* 找到全局最小距离的面 */
-			ft_t old_min_dist = ft_max_value();
+			joy_ft_t old_min_dist = ft_max_value();
 			size_t global_min = 0;
 			for (size_t i = 0; i < normals.n; i++) {
 				if (kv_A(normals, i).distance < old_min_dist) {
@@ -1064,9 +1064,9 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 	/* EPA后处理: 用一组候选方向重新验证穿透深度, 取最小值,
 	   纠正EPA因退化/局部最优收敛到错误支撑面的情况 */
 	{
-		vec3_t candidates[8];
+		joy_vec3_t candidates[8];
 		int n = 0;
-		vec3_t axis[3] = {
+		joy_vec3_t axis[3] = {
 			{ ft_one(), ft_zero(), ft_zero() },
 			{ ft_zero(), ft_one(), ft_zero() },
 			{ ft_zero(), ft_zero(), ft_one() }
@@ -1076,16 +1076,16 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 			candidates[n++] = vec3_negate(axis[i]);
 		}
 		/* 两物体中心连线方向 */
-		vec3_t delta = vec3_sub(cb->position, ca->position);
-		ft_t dl = vec3_length(delta);
+		joy_vec3_t delta = vec3_sub(cb->position, ca->position);
+		joy_ft_t dl = vec3_length(delta);
 		if (dl > ft_zero()) {
 			candidates[n++] = vec3_scale(delta, ft_div(ft_one(), dl));
 			candidates[n++] = vec3_scale(vec3_negate(delta), ft_div(ft_one(), dl));
 		}
 
 		for (int i = 0; i < n; i++) {
-			vec3_t support = get_support_point(ca, cb, candidates[i]);
-			ft_t d = vec3_dot(candidates[i], support);
+			joy_vec3_t support = get_support_point(ca, cb, candidates[i]);
+			joy_ft_t d = vec3_dot(candidates[i], support);
 			if (d > ft_zero() && d < min_distance) {
 				min_distance = d;
 				min_normal = candidates[i];
@@ -1108,8 +1108,8 @@ static bool epa(joy_simplex3d_t *simplex, gjk3d_collider_p ca, gjk3d_collider_p 
 /* 当 GJK 因对称/共线退化无法构建四面体(如同心球、共线单纯形)时,
    用 ±3轴方向采样穿透距离: 任一方向分离(支持点投影 <= 0)则判定无碰撞,
    否则取最小穿透距离作为深度(法线为该轴方向) */
-static bool degenerate_fallback(gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_contact_p contact) {
-	vec3_t axes[6] = {
+static bool degenerate_fallback(joy_gjk3d_collider_p ca, joy_gjk3d_collider_p cb, joy_gjk3d_contact_p contact) {
+	joy_vec3_t axes[6] = {
 		{  ft_one(), ft_zero(), ft_zero() },
 		{ -ft_one(), ft_zero(), ft_zero() },
 		{  ft_zero(),  ft_one(), ft_zero() },
@@ -1117,11 +1117,11 @@ static bool degenerate_fallback(gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_
 		{  ft_zero(), ft_zero(),  ft_one() },
 		{  ft_zero(), ft_zero(), -ft_one() }
 	};
-	ft_t min_d = ft_max_value();
-	vec3_t min_n = { ft_zero(), ft_zero(), ft_zero() };
+	joy_ft_t min_d = ft_max_value();
+	joy_vec3_t min_n = { ft_zero(), ft_zero(), ft_zero() };
 	for (int i = 0; i < 6; i++) {
-		vec3_t s = get_support_point(ca, cb, axes[i]);
-		ft_t d = vec3_dot(axes[i], s);
+		joy_vec3_t s = get_support_point(ca, cb, axes[i]);
+		joy_ft_t d = vec3_dot(axes[i], s);
 		if (d <= ft_zero()) return false; /* 该方向分离 */
 		if (d < min_d) { min_d = d; min_n = axes[i]; }
 	}
@@ -1131,17 +1131,17 @@ static bool degenerate_fallback(gjk3d_collider_p ca, gjk3d_collider_p cb, gjk3d_
 }
 
 /* ============ 公开API实现 ============ */
-bool joy_math_gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
-	vec3_t init_dir, gjk3d_contact_p contact)
+bool joy_math_gjk3d_collide(joy_gjk3d_collider_p c1, joy_gjk3d_collider_p c2,
+	joy_vec3_t init_dir, joy_gjk3d_contact_p contact)
 {
 	joy_simplex3d_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
-	vec3_t support = get_support_point(c1, c2, init_dir);
+	joy_vec3_t support = get_support_point(c1, c2, init_dir);
 	simplex_push(&simplex, support);
-	vec3_t dir = vec3_normalize(vec3_negate(support));
+	joy_vec3_t dir = vec3_normalize(vec3_negate(support));
 
-	ft_t tiny2 = ft_from_float(1e-8f);
+	joy_ft_t tiny2 = ft_from_float(1e-8f);
 	int gjk_iter = 0;
 	while (gjk_iter < 128) {
 		gjk_iter++;
@@ -1181,21 +1181,21 @@ bool joy_math_gjk3d_collide(gjk3d_collider_p c1, gjk3d_collider_p c2,
 
 /* ============ 碰撞体初始化函数 ============ */
 
-void joy_math_gjk3d_init_sphere(gjk3d_collider_t *c, vec3_t pos, ft_t radius) {
+void joy_math_gjk3d_init_sphere(joy_gjk3d_collider_t *c, joy_vec3_t pos, joy_ft_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_SPHERE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void joy_math_gjk3d_init_box(gjk3d_collider_t *c, vec3_t pos, vec3_t half_size) {
+void joy_math_gjk3d_init_box(joy_gjk3d_collider_t *c, joy_vec3_t pos, joy_vec3_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void joy_math_gjk3d_init_capsule(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height, vec3_t axis) {
+void joy_math_gjk3d_init_capsule(joy_gjk3d_collider_t *c, joy_vec3_t pos, joy_ft_t radius, joy_ft_t height, joy_vec3_t axis) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CAPSULE;
 	c->position = pos;
@@ -1204,7 +1204,7 @@ void joy_math_gjk3d_init_capsule(gjk3d_collider_t *c, vec3_t pos, ft_t radius, f
 	c->axis = vec3_normalize(axis);
 }
 
-void joy_math_gjk3d_init_cylinder(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
+void joy_math_gjk3d_init_cylinder(joy_gjk3d_collider_t *c, joy_vec3_t pos, joy_ft_t radius, joy_ft_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CYLINDER;
 	c->position = pos;
@@ -1212,7 +1212,7 @@ void joy_math_gjk3d_init_cylinder(gjk3d_collider_t *c, vec3_t pos, ft_t radius, 
 	c->height = height;
 }
 
-void joy_math_gjk3d_init_cone(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t height) {
+void joy_math_gjk3d_init_cone(joy_gjk3d_collider_t *c, joy_vec3_t pos, joy_ft_t radius, joy_ft_t height) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_CONE;
 	c->position = pos;
@@ -1220,7 +1220,7 @@ void joy_math_gjk3d_init_cone(gjk3d_collider_t *c, vec3_t pos, ft_t radius, ft_t
 	c->height = height;
 }
 
-void joy_math_gjk3d_init_mesh(gjk3d_collider_t *c, vec3_t *vertices, int num) {
+void joy_math_gjk3d_init_mesh(joy_gjk3d_collider_t *c, joy_vec3_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK3D_CTYPE_MESH;
 	c->vertices = vertices;
@@ -1234,30 +1234,30 @@ void joy_math_gjk3d_init_mesh(gjk3d_collider_t *c, vec3_t *vertices, int num) {
 /* ---------- 内部类型 ---------- */
 
 typedef struct {
-	vec2f_t points[3];
+	joy_vec2f_t points[3];
 	int points_num;
 } joy_simplex2d_t;
 
-static void simplex2d_push(joy_simplex2d_t *s, vec2f_t p) {
+static void simplex2d_push(joy_simplex2d_t *s, joy_vec2f_t p) {
 	s->points[2] = s->points[1];
 	s->points[1] = s->points[0];
 	s->points[0] = p;
 	if (s->points_num < 3) s->points_num++;
 }
 
-static vec2f_t simplex2d_a(const joy_simplex2d_t *s) { return s->points[0]; }
-static vec2f_t simplex2d_b(const joy_simplex2d_t *s) { return s->points[1]; }
-static vec2f_t simplex2d_c(const joy_simplex2d_t *s) { return s->points[2]; }
+static joy_vec2f_t simplex2d_a(const joy_simplex2d_t *s) { return s->points[0]; }
+static joy_vec2f_t simplex2d_b(const joy_simplex2d_t *s) { return s->points[1]; }
+static joy_vec2f_t simplex2d_c(const joy_simplex2d_t *s) { return s->points[2]; }
 
 /* 2D向量三重积: b*(a·c) - a*(b·c) */
-static vec2f_t vec2f_triple(vec2f_t a, vec2f_t b, vec2f_t c) {
-	fp_t ac = vec2f_dot(a, c);
-	fp_t bc = vec2f_dot(b, c);
+static joy_vec2f_t vec2f_triple(joy_vec2f_t a, joy_vec2f_t b, joy_vec2f_t c) {
+	joy_fp_t ac = vec2f_dot(a, c);
+	joy_fp_t bc = vec2f_dot(b, c);
 	return vec2f_sub(vec2f_scale(b, ac), vec2f_scale(a, bc));
 }
 
-static vec2f_t perp_cw(vec2f_t v) {
-	vec2f_t r;
+static joy_vec2f_t perp_cw(joy_vec2f_t v) {
+	joy_vec2f_t r;
 	r.x = v.y;
 	r.y = -v.x;
 	return r;
@@ -1265,71 +1265,71 @@ static vec2f_t perp_cw(vec2f_t v) {
 
 /* ---------- 各碰撞体的最远点计算 ---------- */
 
-static vec2f_t find_furthest_point_2d(gjk2d_collider_p c, vec2f_t dir) {
-	vec2f_t result = { fp_zero(), fp_zero() };
+static joy_vec2f_t find_furthest_point_2d(joy_gjk2d_collider_p c, joy_vec2f_t dir) {
+	joy_vec2f_t result = { fp_zero(), fp_zero() };
 
 	switch (c->type) {
 	case GJK2D_CTYPE_CIRCLE: {
-		fp_t len = vec2f_length(dir);
+		joy_fp_t len = vec2f_length(dir);
 		if (len < fp_from_float(1e-8f)) { result = c->position; break; }
-		vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+		joy_vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
 		result = vec2f_add(c->position, vec2f_scale(ndir, c->radius));
 		break;
 	}
 	case GJK2D_CTYPE_BOX: {
-		fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
-		fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
+		joy_fp_t sx = dir.x > fp_zero() ? c->half_size.x : -c->half_size.x;
+		joy_fp_t sy = dir.y > fp_zero() ? c->half_size.y : -c->half_size.y;
 		result.x = fp_add(c->position.x, sx);
 		result.y = fp_add(c->position.y, sy);
 		break;
 	}
 	case GJK2D_CTYPE_CAPSULE: {
-		fp_t len = vec2f_length(dir);
+		joy_fp_t len = vec2f_length(dir);
 		if (len == fp_zero()) { result = c->position; break; }
-		vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
-		fp_t dot = vec2f_dot(ndir, c->axis);
-		fp_t half_h = dot > fp_zero() ? fp_mul(fp_half(), c->height) : fp_mul(-fp_half(), c->height);
-		vec2f_t center = vec2f_add(c->position, vec2f_scale(c->axis, half_h));
+		joy_vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+		joy_fp_t dot = vec2f_dot(ndir, c->axis);
+		joy_fp_t half_h = dot > fp_zero() ? fp_mul(fp_half(), c->height) : fp_mul(-fp_half(), c->height);
+		joy_vec2f_t center = vec2f_add(c->position, vec2f_scale(c->axis, half_h));
 		result = vec2f_add(center, vec2f_scale(ndir, c->radius));
 		break;
 	}
 	case GJK2D_CTYPE_POLYGON: {
-		fp_t max_dot = fp_min_value();
+		joy_fp_t max_dot = fp_min_value();
 		for (int i = 0; i < c->vertices_num; i++) {
-			fp_t d = vec2f_dot(c->vertices[i], dir);
+			joy_fp_t d = vec2f_dot(c->vertices[i], dir);
 			if (d > max_dot) { max_dot = d; result = c->vertices[i]; }
 		}
 		break;
 	}
 	case GJK2D_CTYPE_PIE: {
 		/* 扇形: 朝向 +X, 半角 sweep/2 */
-		fp_t h = fp_mul(c->sweep, fp_half());
-		fp_t ch = fp_cos(h), sh = fp_sin(h);
-		fp_t zero = fp_zero();
-		vec2f_t best = c->position;
-		fp_t max_dot = vec2f_dot(best, dir);
+		joy_fp_t h = fp_mul(c->sweep, fp_half());
+		joy_fp_t ch = fp_cos(h), sh = fp_sin(h);
+		joy_fp_t zero = fp_zero();
+		joy_vec2f_t best = c->position;
+		joy_fp_t max_dot = vec2f_dot(best, dir);
 
 		/* 检查弧上点 */
-		fp_t len = vec2f_length(dir);
+		joy_fp_t len = vec2f_length(dir);
 		if (len > zero) {
-			vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
+			joy_vec2f_t ndir = vec2f_scale(dir, fp_div(fp_one(), len));
 			/* 方向在锥内: dir.x>0 且 |dir.y| <= dir.x * tan(h) = dir.x * sh/ch */
-			fp_t dy_abs = fp_abs(ndir.y);
-			fp_t dx_tan = fp_mul(ndir.x, fp_div(sh, ch));
+			joy_fp_t dy_abs = fp_abs(ndir.y);
+			joy_fp_t dx_tan = fp_mul(ndir.x, fp_div(sh, ch));
 			if (ndir.x > zero && dy_abs <= dx_tan) {
-				vec2f_t arcPt = vec2f_add(c->position, vec2f_scale(ndir, c->radius));
-				fp_t d = vec2f_dot(arcPt, dir);
+				joy_vec2f_t arcPt = vec2f_add(c->position, vec2f_scale(ndir, c->radius));
+				joy_fp_t d = vec2f_dot(arcPt, dir);
 				if (d > max_dot) { max_dot = d; best = arcPt; }
 			}
 		}
 
 		/* 检查两个角点 */
-		vec2f_t corners[2] = {
+		joy_vec2f_t corners[2] = {
 			{ fp_add(c->position.x, fp_mul(c->radius, ch)), fp_add(c->position.y, fp_mul(c->radius, sh)) },
 			{ fp_add(c->position.x, fp_mul(c->radius, ch)), fp_sub(c->position.y, fp_mul(c->radius, sh)) }
 		};
 		for (int i = 0; i < 2; i++) {
-			fp_t d = vec2f_dot(corners[i], dir);
+			joy_fp_t d = vec2f_dot(corners[i], dir);
 			if (d > max_dot) { max_dot = d; best = corners[i]; }
 		}
 		result = best;
@@ -1341,38 +1341,38 @@ static vec2f_t find_furthest_point_2d(gjk2d_collider_p c, vec2f_t dir) {
 
 /* ---------- Minkowski差支持函数 ---------- */
 
-static vec2f_t get_support_point_2d(gjk2d_collider_p ca, gjk2d_collider_p cb, vec2f_t dir) {
-	vec2f_t a = find_furthest_point_2d(ca, dir);
-	vec2f_t b = find_furthest_point_2d(cb, vec2f_negate(dir));
+static joy_vec2f_t get_support_point_2d(joy_gjk2d_collider_p ca, joy_gjk2d_collider_p cb, joy_vec2f_t dir) {
+	joy_vec2f_t a = find_furthest_point_2d(ca, dir);
+	joy_vec2f_t b = find_furthest_point_2d(cb, vec2f_negate(dir));
 	return vec2f_sub(a, b);
 }
 
 /* ---------- 2D单纯形检测 ---------- */
 
-static bool simplex2d_check(joy_simplex2d_t *s, vec2f_t *dir) {
-	vec2f_t a = simplex2d_a(s);
-	vec2f_t ao = vec2f_negate(a);    /* 从a指向原点 */
-	vec2f_t ab = vec2f_sub(simplex2d_b(s), a);
+static bool simplex2d_check(joy_simplex2d_t *s, joy_vec2f_t *dir) {
+	joy_vec2f_t a = simplex2d_a(s);
+	joy_vec2f_t ao = vec2f_negate(a);    /* 从a指向原点 */
+	joy_vec2f_t ab = vec2f_sub(simplex2d_b(s), a);
 
 	if (s->points_num == 2) {
 		*dir = vec2f_triple(ab, ao, ab);
-		fp_t m2 = vec2f_dot(*dir, *dir);
+		joy_fp_t m2 = vec2f_dot(*dir, *dir);
 		if (m2 < fp_from_float(1.2e-7f)) {  /* C# MathX.EPSILON≈1.19e-7 */
 			*dir = perp_cw(ab);
 		}
 		*dir = vec2f_normalize(*dir);
 	} else if (s->points_num == 3) {
-		vec2f_t ac = vec2f_sub(simplex2d_c(s), a);
+		joy_vec2f_t ac = vec2f_sub(simplex2d_c(s), a);
 
 		/* v = triple(ab, ac, ac): 垂直于ac的向量,指向ab侧 */
-		vec2f_t v = vec2f_triple(ab, ac, ac);
+		joy_vec2f_t v = vec2f_triple(ab, ac, ac);
 		if (vec2f_dot(v, ao) >= fp_zero()) {
 			/* 原点在ac外侧, 丢弃b, 保留 {a, c} */
 			s->points[1] = s->points[2];
 			*dir = vec2f_normalize(v);
 		} else {
 			/* u = triple(ac, ab, ab): 垂直于ab的向量,指向ac侧 */
-			vec2f_t u = vec2f_triple(ac, ab, ab);
+			joy_vec2f_t u = vec2f_triple(ac, ab, ab);
 			if (vec2f_dot(u, ao) < fp_zero()) {
 				/* 原点在三角形内部 → 碰撞！ */
 				return true;
@@ -1390,17 +1390,17 @@ static bool simplex2d_check(joy_simplex2d_t *s, vec2f_t *dir) {
 /* ---------- EPA (2D版 - 边扩展) ---------- */
 
 typedef struct {
-	vec2f_t p1, p2;
-	vec2f_t normal;
-	fp_t distance;
+	joy_vec2f_t p1, p2;
+	joy_vec2f_t normal;
+	joy_fp_t distance;
 } joy_epa2d_edge_t;
 
 /* 确定缠绕方向 */
 static int get_winding_2d(const joy_simplex2d_t *s) {
-	fp_t total = fp_zero();
+	joy_fp_t total = fp_zero();
 	for (int i = 0; i < s->points_num; i++) {
-		vec2f_t p1 = s->points[i];
-		vec2f_t p2 = s->points[(i + 1) % s->points_num];
+		joy_vec2f_t p1 = s->points[i];
+		joy_vec2f_t p2 = s->points[(i + 1) % s->points_num];
 		total = fp_add(total, vec2f_cross(p1, p2));
 	}
 	return total > fp_zero() ? 1 : -1;
@@ -1408,11 +1408,11 @@ static int get_winding_2d(const joy_simplex2d_t *s) {
 
 static void build_edges_2d(joy_epa2d_edge_t *edges, int *n, const joy_simplex2d_t *s, int winding) {
 	for (int i = 0; i < s->points_num; i++) {
-		vec2f_t p1 = s->points[i];
-		vec2f_t p2 = s->points[(i + 1) % s->points_num];
+		joy_vec2f_t p1 = s->points[i];
+		joy_vec2f_t p2 = s->points[(i + 1) % s->points_num];
 		/* 外向法线 */
-		vec2f_t d = vec2f_sub(p2, p1);
-		vec2f_t nml;
+		joy_vec2f_t d = vec2f_sub(p2, p1);
+		joy_vec2f_t nml;
 		if (winding > 0) {
 			/* 顺时针: CW90 (x,y)->(y,-x) */
 			nml.x = d.y;
@@ -1422,11 +1422,11 @@ static void build_edges_2d(joy_epa2d_edge_t *edges, int *n, const joy_simplex2d_
 			nml.x = -d.y;
 			nml.y = d.x;
 		}
-		fp_t nl = vec2f_length(nml);
+		joy_fp_t nl = vec2f_length(nml);
 		if (nl > fp_zero()) {
 			nml = vec2f_scale(nml, fp_div(fp_one(), nl));
 		}
-		fp_t dist = fp_abs(vec2f_dot(p1, nml));
+		joy_fp_t dist = fp_abs(vec2f_dot(p1, nml));
 		edges[*n].p1 = p1;
 		edges[*n].p2 = p2;
 		edges[*n].normal = nml;
@@ -1448,7 +1448,7 @@ static void sort_edges_2d(joy_epa2d_edge_t *edges, int n) {
 	}
 }
 
-static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_p cb, gjk2d_contact_p contact) {
+static bool epa2d(joy_simplex2d_t *simplex, joy_gjk2d_collider_p ca, joy_gjk2d_collider_p cb, joy_gjk2d_contact_p contact) {
 	if (simplex->points_num < 3) return false;
 
 	int winding = get_winding_2d(simplex);
@@ -1458,13 +1458,13 @@ static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_
 	build_edges_2d(edges, &edge_count, simplex, winding);
 	sort_edges_2d(edges, edge_count);
 
-	vec2f_t best_normal = edges[0].normal;
-	fp_t best_dist = edges[0].distance;
-	fp_t eps = fp_from_float(0.001f);
+	joy_vec2f_t best_normal = edges[0].normal;
+	joy_fp_t best_dist = edges[0].distance;
+	joy_fp_t eps = fp_from_float(0.001f);
 
 	for (int iter = 0; iter < 64; iter++) {
-		vec2f_t support = get_support_point_2d(ca, cb, edges[0].normal);
-		fp_t s_dist = vec2f_dot(support, edges[0].normal);
+		joy_vec2f_t support = get_support_point_2d(ca, cb, edges[0].normal);
+		joy_fp_t s_dist = vec2f_dot(support, edges[0].normal);
 
 		if (fp_abs(fp_sub(s_dist, edges[0].distance)) <= eps) {
 			best_normal = edges[0].normal;
@@ -1473,21 +1473,21 @@ static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_
 		}
 
 		/* 用新点扩展: 将最近的边替换为两条新边 */
-		vec2f_t p1 = edges[0].p1;
-		vec2f_t p2 = edges[0].p2;
+		joy_vec2f_t p1 = edges[0].p1;
+		joy_vec2f_t p2 = edges[0].p2;
 		edges[0] = edges[edge_count - 1];
 		edge_count--;
 
 		/* 添加边 p1→support */
 		{
-			vec2f_t d = vec2f_sub(support, p1);
-			vec2f_t nml;
+			joy_vec2f_t d = vec2f_sub(support, p1);
+			joy_vec2f_t nml;
 			if (winding > 0) {
 				nml.x = d.y; nml.y = -d.x;
 			} else {
 				nml.x = -d.y; nml.y = d.x;
 			}
-			fp_t nl = vec2f_length(nml);
+			joy_fp_t nl = vec2f_length(nml);
 			if (nl > fp_zero()) nml = vec2f_scale(nml, fp_div(fp_one(), nl));
 			edges[edge_count].p1 = p1;
 			edges[edge_count].p2 = support;
@@ -1498,14 +1498,14 @@ static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_
 
 		/* 添加边 support→p2 */
 		{
-			vec2f_t d = vec2f_sub(p2, support);
-			vec2f_t nml;
+			joy_vec2f_t d = vec2f_sub(p2, support);
+			joy_vec2f_t nml;
 			if (winding > 0) {
 				nml.x = d.y; nml.y = -d.x;
 			} else {
 				nml.x = -d.y; nml.y = d.x;
 			}
-			fp_t nl = vec2f_length(nml);
+			joy_fp_t nl = vec2f_length(nml);
 			if (nl > fp_zero()) nml = vec2f_scale(nml, fp_div(fp_one(), nl));
 			edges[edge_count].p1 = support;
 			edges[edge_count].p2 = p2;
@@ -1524,18 +1524,18 @@ static bool epa2d(joy_simplex2d_t *simplex, gjk2d_collider_p ca, gjk2d_collider_
 
 /* ============ 公开API实现 ============ */
 
-bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
-	vec2f_t init_dir, gjk2d_contact_p contact)
+bool joy_math_gjk2d_collide(joy_gjk2d_collider_p c1, joy_gjk2d_collider_p c2,
+	joy_vec2f_t init_dir, joy_gjk2d_contact_p contact)
 {
 	joy_simplex2d_t simplex;
 	memset(&simplex, 0, sizeof(simplex));
 
-	vec2f_t dir = init_dir;
+	joy_vec2f_t dir = init_dir;
 	if (vec2f_length_squared(dir) < fp_from_float(1.2e-7f)) {
 		dir.x = fp_one();
 	}
 
-	vec2f_t support = get_support_point_2d(c1, c2, dir);
+	joy_vec2f_t support = get_support_point_2d(c1, c2, dir);
 	simplex2d_push(&simplex, support);
 
 	if (vec2f_dot(support, dir) <= fp_zero()) {
@@ -1549,7 +1549,7 @@ bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
 
 	for (int i = 0; i < 128; i++) {
 		/* 确保方向为单位向量,防止极小方向导致数值问题 */
-		fp_t dlen = vec2f_length(dir);
+		joy_fp_t dlen = vec2f_length(dir);
 		if (dlen < fp_from_float(1e-8f)) { dir.x = fp_one(); dir.y = fp_zero(); }
 		else dir = vec2f_scale(dir, fp_div(fp_one(), dlen));
 
@@ -1574,21 +1574,21 @@ bool joy_math_gjk2d_collide(gjk2d_collider_p c1, gjk2d_collider_p c2,
 	return false;
 }
 
-void joy_math_gjk2d_init_circle(gjk2d_collider_t *c, vec2f_t pos, fp_t radius) {
+void joy_math_gjk2d_init_circle(joy_gjk2d_collider_t *c, joy_vec2f_t pos, joy_fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_CIRCLE;
 	c->position = pos;
 	c->radius = radius;
 }
 
-void joy_math_gjk2d_init_box(gjk2d_collider_t *c, vec2f_t pos, vec2f_t half_size) {
+void joy_math_gjk2d_init_box(joy_gjk2d_collider_t *c, joy_vec2f_t pos, joy_vec2f_t half_size) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_BOX;
 	c->position = pos;
 	c->half_size = half_size;
 }
 
-void joy_math_gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis, fp_t height, fp_t radius) {
+void joy_math_gjk2d_init_capsule(joy_gjk2d_collider_t *c, joy_vec2f_t pos, joy_vec2f_t axis, joy_fp_t height, joy_fp_t radius) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_CAPSULE;
 	c->position = pos;
@@ -1597,14 +1597,14 @@ void joy_math_gjk2d_init_capsule(gjk2d_collider_t *c, vec2f_t pos, vec2f_t axis,
 	c->radius = radius;
 }
 
-void joy_math_gjk2d_init_polygon(gjk2d_collider_t *c, vec2f_t *vertices, int num) {
+void joy_math_gjk2d_init_polygon(joy_gjk2d_collider_t *c, joy_vec2f_t *vertices, int num) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_POLYGON;
 	c->vertices = vertices;
 	c->vertices_num = num;
 }
 
-void joy_math_gjk2d_init_pie(gjk2d_collider_t *c, vec2f_t pos, fp_t radius, fp_t sweep) {
+void joy_math_gjk2d_init_pie(joy_gjk2d_collider_t *c, joy_vec2f_t pos, joy_fp_t radius, joy_fp_t sweep) {
 	memset(c, 0, sizeof(*c));
 	c->type = GJK2D_CTYPE_PIE;
 	c->position = pos;

@@ -38,12 +38,12 @@ typedef int (*map_node_free_fn)(void* key, void* value);
 typedef struct queue_node {
         void* data;
         struct queue_node* next;
-}queue_node_t;
+}joy_queue_node_t;
 
 typedef struct list_node {
         void* data;
         struct list_node* next;
-}list_node_t;
+}joy_list_node_t;
 
 typedef struct map_node {
         unsigned char color;
@@ -52,21 +52,21 @@ typedef struct map_node {
         struct map_node* left;
         struct map_node* right;
         struct map_node* parent;
-}map_node_t;
+}joy_map_node_t;
 
 
 typedef struct linked_queue {
-        queue_node_t* front;
-        queue_node_t* rear;
+        joy_queue_node_t* front;
+        joy_queue_node_t* rear;
         queue_node_free_fn free_fn;
-}linked_queue_t;
+}joy_linked_queue_t;
 
 
 typedef struct linked_list {
-        list_node_t* head;
-        list_node_t* rear;
+        joy_list_node_t* head;
+        joy_list_node_t* rear;
         list_node_free_fn free_fn;
-}linked_list_t;
+}joy_linked_list_t;
 
 
 typedef struct vector {
@@ -74,13 +74,13 @@ typedef struct vector {
         size_t size;
         size_t capacity;
         size_t elem_size;
-}vector_t;
+}joy_vector_t;
 
 
 typedef struct map {
-        map_node_t* root;
+        joy_map_node_t* root;
         map_node_free_fn free_fn;
-}map_t;
+}joy_map_t;
 
 
 static int
@@ -92,23 +92,23 @@ default_node_free(void* data)
 
 
 static void
-linked_queue_init(linked_queue_t* q, queue_node_free_fn fn)
+linked_queue_init(joy_linked_queue_t* q, queue_node_free_fn fn)
 {
         q->front = q->rear = NULL;
         q->free_fn = fn;
 }
 
 static bool
-linked_queue_isempty(linked_queue_t* q)
+linked_queue_isempty(joy_linked_queue_t* q)
 {
         return (q->front == NULL);
 }
 
 static int
-linked_queue_length(linked_queue_t* q)
+linked_queue_length(joy_linked_queue_t* q)
 {
         int count;
-        queue_node_t* iter;
+        joy_queue_node_t* iter;
         iter = q->front;
         count = 0;
         while (iter) {
@@ -119,10 +119,10 @@ linked_queue_length(linked_queue_t* q)
 }
 
 static void
-linked_queue_enqueue(linked_queue_t* q, void* value)
+linked_queue_enqueue(joy_linked_queue_t* q, void* value)
 {
-        queue_node_t* new_node;
-        new_node = (queue_node_t*)malloc(sizeof(queue_node_t));
+        joy_queue_node_t* new_node;
+        new_node = (joy_queue_node_t*)malloc(sizeof(joy_queue_node_t));
         assert(new_node);
         new_node->data = value;
         new_node->next = NULL;
@@ -136,9 +136,9 @@ linked_queue_enqueue(linked_queue_t* q, void* value)
 }
 
 static void*
-linked_queue_dequeue(linked_queue_t* q)
+linked_queue_dequeue(joy_linked_queue_t* q)
 {
-        queue_node_t* front = q->front;
+        joy_queue_node_t* front = q->front;
         if (!front)
                 return front;
         void* front_data = front->data;
@@ -150,7 +150,7 @@ linked_queue_dequeue(linked_queue_t* q)
 }
 
 static void*
-linked_queue_front(linked_queue_t* q)
+linked_queue_front(joy_linked_queue_t* q)
 {
         if (!linked_queue_isempty(q))
                 return q->front->data;
@@ -158,7 +158,7 @@ linked_queue_front(linked_queue_t* q)
 }
 
 static void
-linked_queue_release(linked_queue_t* q)
+linked_queue_release(joy_linked_queue_t* q)
 {
         while (!linked_queue_isempty(q)) {
                 void* value = linked_queue_dequeue(q);
@@ -167,22 +167,22 @@ linked_queue_release(linked_queue_t* q)
 }
 
 
-static list_node_t*
-list_node_next(list_node_t* node)
+static joy_list_node_t*
+list_node_next(joy_list_node_t* node)
 {
         assert(node);
         return node->next;
 }
 
 static void*
-list_node_getdata(list_node_t* node)
+list_node_getdata(joy_list_node_t* node)
 {
         assert(node);
         return node->data;
 }
 
 static bool
-linked_list_init(linked_list_t* list, list_node_free_fn fn)
+linked_list_init(joy_linked_list_t* list, list_node_free_fn fn)
 {
         assert(list);
         list->head = NULL;
@@ -192,11 +192,11 @@ linked_list_init(linked_list_t* list, list_node_free_fn fn)
 }
 
 static void
-linked_list_release(linked_list_t* list)
+linked_list_release(joy_linked_list_t* list)
 {
-        list_node_t* iter = list->head;
+        joy_list_node_t* iter = list->head;
         while (iter) {
-                list_node_t* tmp = iter;
+                joy_list_node_t* tmp = iter;
                 iter = iter->next;
                 list->free_fn&& list->free_fn(tmp->data);
                 free(tmp);
@@ -205,10 +205,10 @@ linked_list_release(linked_list_t* list)
         list->head = list->rear = NULL;
 }
 
-static list_node_t*
-linked_list_find(linked_list_t* list, const void* data)
+static joy_list_node_t*
+linked_list_find(joy_linked_list_t* list, const void* data)
 {
-        list_node_t* iter = list->head;
+        joy_list_node_t* iter = list->head;
         while (iter) {
                 if (iter->data == data)
                         return iter;
@@ -217,25 +217,25 @@ linked_list_find(linked_list_t* list, const void* data)
         return NULL;
 }
 
-static list_node_t*
-linked_list_first(linked_list_t* list)
+static joy_list_node_t*
+linked_list_first(joy_linked_list_t* list)
 {
         assert(list);
         return list->head;
 }
 
-static list_node_t*
-linked_list_end(linked_list_t* list)
+static joy_list_node_t*
+linked_list_end(joy_linked_list_t* list)
 {
         assert(list);
         return list->rear;
 }
 
 static int
-linked_list_length(linked_list_t* list)
+linked_list_length(joy_linked_list_t* list)
 {
         int count = 0;
-        list_node_t* iter = list->head;
+        joy_list_node_t* iter = list->head;
         while (iter) {
                 count++;
                 iter = iter->next;
@@ -244,9 +244,9 @@ linked_list_length(linked_list_t* list)
 }
 
 static bool
-linked_list_add(linked_list_t* list, void* data)
+linked_list_add(joy_linked_list_t* list, void* data)
 {
-        list_node_t* new_node = (list_node_t*)malloc(sizeof(list_node_t));
+        joy_list_node_t* new_node = (joy_list_node_t*)malloc(sizeof(joy_list_node_t));
         assert(new_node);
         new_node->data = data;
         new_node->next = NULL;
@@ -258,22 +258,22 @@ linked_list_add(linked_list_t* list, void* data)
 }
 
 static bool
-linked_list_remove(linked_list_t* list, const void* data)
+linked_list_remove(joy_linked_list_t* list, const void* data)
 {
         if (!list->head)
                 return false;
         if (list->head->data == data) {
-                list_node_t* tmp = list->head;
+                joy_list_node_t* tmp = list->head;
                 list->head = list->head->next;
                 free(tmp);
                 return true;
         }
 
-        list_node_t* prev = list->head;
-        list_node_t* iter = list->head->next;
+        joy_list_node_t* prev = list->head;
+        joy_list_node_t* iter = list->head->next;
         while (iter) {
                 if (iter->data == data) {
-                        list_node_t* tmp = iter;
+                        joy_list_node_t* tmp = iter;
                         prev->next = iter->next;
                         free(tmp);
                         iter = NULL;
@@ -285,7 +285,7 @@ linked_list_remove(linked_list_t* list, const void* data)
 }
 
 static bool
-vector_init(vector_t* vec, size_t elem_size, size_t capacity)
+vector_init(joy_vector_t* vec, size_t elem_size, size_t capacity)
 {
         assert(vec);
         if (elem_size == 0 || capacity == 0)
@@ -300,7 +300,7 @@ vector_init(vector_t* vec, size_t elem_size, size_t capacity)
 }
 
 static void
-vector_release(vector_t* vec)
+vector_release(joy_vector_t* vec)
 {
         assert(vec);
         free(vec->data);
@@ -310,7 +310,7 @@ vector_release(vector_t* vec)
 }
 
 static bool
-vector_resize(vector_t* vec, size_t new_capacity)
+vector_resize(joy_vector_t* vec, size_t new_capacity)
 {
         void* new_data = realloc(vec->data, new_capacity * vec->elem_size);
         assert(!new_data);
@@ -320,7 +320,7 @@ vector_resize(vector_t* vec, size_t new_capacity)
 }
 
 static bool
-vector_pushback(vector_t* vec, const void* elem)
+vector_pushback(joy_vector_t* vec, const void* elem)
 {
         if (vec->size >= vec->capacity) {
                 if (!vector_resize(vec, vec->capacity * 2))
@@ -333,7 +333,7 @@ vector_pushback(vector_t* vec, const void* elem)
 }
 
 static bool
-vector_popback(vector_t* vec)
+vector_popback(joy_vector_t* vec)
 {
         if (vec->size == 0)
                 return false;
@@ -342,7 +342,7 @@ vector_popback(vector_t* vec)
 }
 
 static void*
-vector_at(vector_t* vec, size_t index)
+vector_at(joy_vector_t* vec, size_t index)
 {
         if (index >= vec->size)
                 return NULL;
@@ -350,7 +350,7 @@ vector_at(vector_t* vec, size_t index)
 }
 
 static bool
-vector_insert(vector_t* vec, size_t index, const void* elem)
+vector_insert(joy_vector_t* vec, size_t index, const void* elem)
 {
         if (index > vec->size)
                 return false;
@@ -369,7 +369,7 @@ vector_insert(vector_t* vec, size_t index, const void* elem)
 }
 
 static bool
-vector_erase(vector_t* vec, size_t index)
+vector_erase(joy_vector_t* vec, size_t index)
 {
         if (index >= vec->size)
                 return false;
@@ -383,7 +383,7 @@ vector_erase(vector_t* vec, size_t index)
 
 
 static void
-_rbtree_destroy(map_node_t* node, map_node_free_fn fn)
+_rbtree_destroy(joy_map_node_t* node, map_node_free_fn fn)
 {
         if (node == NULL)
                 return;
@@ -397,8 +397,8 @@ _rbtree_destroy(map_node_t* node, map_node_free_fn fn)
         free(node);
 }
 
-static map_node_t*
-_search(map_node_t* x, void* key) {
+static joy_map_node_t*
+_search(joy_map_node_t* x, void* key) {
         if (x == NULL || x->key == key)
                 return x;
 
@@ -408,8 +408,8 @@ _search(map_node_t* x, void* key) {
                 return _search(x->right, key);
 }
 
-static map_node_t*
-_iterative_search(map_node_t* x, void* key)
+static joy_map_node_t*
+_iterative_search(joy_map_node_t* x, void* key)
 {
         while ((x != NULL) && (x->key != key))
         {
@@ -422,13 +422,13 @@ _iterative_search(map_node_t* x, void* key)
         return x;
 }
 
-static map_node_t*
+static joy_map_node_t*
 _create_rbtree_node(void* key, void* data,
-        map_node_t* parent, map_node_t* left, map_node_t* right)
+        joy_map_node_t* parent, joy_map_node_t* left, joy_map_node_t* right)
 {
-        map_node_t* p;
+        joy_map_node_t* p;
 
-        if ((p = (map_node_t*)malloc(sizeof(map_node_t))) == NULL)
+        if ((p = (joy_map_node_t*)malloc(sizeof(joy_map_node_t))) == NULL)
                 return NULL;
         p->key = key;
         p->data = data;
@@ -442,9 +442,9 @@ _create_rbtree_node(void* key, void* data,
 
 
 static void
-_rbtree_left_rotate(map_t* map, map_node_t* x)
+_rbtree_left_rotate(joy_map_t* map, joy_map_node_t* x)
 {
-        map_node_t* y = x->right;
+        joy_map_node_t* y = x->right;
 
         x->right = y->left;
         if (y->left != NULL)
@@ -468,9 +468,9 @@ _rbtree_left_rotate(map_t* map, map_node_t* x)
 
 
 static void
-_rbtree_right_rotate(map_t* map, map_node_t* y)
+_rbtree_right_rotate(joy_map_t* map, joy_map_node_t* y)
 {
-        map_node_t* x = y->left;
+        joy_map_node_t* x = y->left;
         y->left = x->right;
         if (x->right != NULL)
                 x->right->parent = y;
@@ -492,13 +492,13 @@ _rbtree_right_rotate(map_t* map, map_node_t* y)
 
 
 static void
-_rbtree_insert_fixup(map_t* map, map_node_t* node)
+_rbtree_insert_fixup(joy_map_t* map, joy_map_node_t* node)
 {
-        map_node_t* parent, * gparent;
+        joy_map_node_t* parent, * gparent;
         while ((parent = rb_parent(node)) && rb_is_red(parent)) {
                 gparent = rb_parent(parent);
                 if (parent == gparent->left) {
-                        map_node_t* uncle = gparent->right;
+                        joy_map_node_t* uncle = gparent->right;
                         if (uncle && rb_is_red(uncle))
                         {
                                 rb_set_black(uncle);
@@ -509,7 +509,7 @@ _rbtree_insert_fixup(map_t* map, map_node_t* node)
                         }
 
                         if (parent->right == node) {
-                                map_node_t* tmp;
+                                joy_map_node_t* tmp;
                                 _rbtree_left_rotate(map, parent);
                                 tmp = parent;
                                 parent = node;
@@ -521,7 +521,7 @@ _rbtree_insert_fixup(map_t* map, map_node_t* node)
                         _rbtree_right_rotate(map, gparent);
                 }
                 else {
-                        map_node_t* uncle = gparent->left;
+                        joy_map_node_t* uncle = gparent->left;
                         if (uncle && rb_is_red(uncle))
                         {
                                 rb_set_black(uncle);
@@ -533,7 +533,7 @@ _rbtree_insert_fixup(map_t* map, map_node_t* node)
 
                         if (parent->left == node)
                         {
-                                map_node_t* tmp;
+                                joy_map_node_t* tmp;
                                 _rbtree_right_rotate(map, parent);
                                 tmp = parent;
                                 parent = node;
@@ -551,10 +551,10 @@ _rbtree_insert_fixup(map_t* map, map_node_t* node)
 
 
 static void
-_rbtree_insert(map_t* map, map_node_t* node)
+_rbtree_insert(joy_map_t* map, joy_map_node_t* node)
 {
-        map_node_t* y = NULL;
-        map_node_t* x = map->root;
+        joy_map_node_t* y = NULL;
+        joy_map_node_t* x = map->root;
 
         while (x != NULL) {
                 y = x;
@@ -581,9 +581,9 @@ _rbtree_insert(map_t* map, map_node_t* node)
 
 
 static void
-_rbtree_delete_fixup(map_t* map, map_node_t* node, map_node_t* parent)
+_rbtree_delete_fixup(joy_map_t* map, joy_map_node_t* node, joy_map_node_t* parent)
 {
-        map_node_t* other;
+        joy_map_node_t* other;
         while ((!node || rb_is_black(node)) && node != map->root)
         {
                 if (parent->left == node)
@@ -662,14 +662,14 @@ _rbtree_delete_fixup(map_t* map, map_node_t* node, map_node_t* parent)
 
 
 static void
-_rbtree_delete(map_t* map, map_node_t* node)
+_rbtree_delete(joy_map_t* map, joy_map_node_t* node)
 {
-        map_node_t* child, * parent;
+        joy_map_node_t* child, * parent;
         int color;
 
         if ((node->left != NULL) && (node->right != NULL))
         {
-                map_node_t* replace = node;
+                joy_map_node_t* replace = node;
                 replace = replace->right;
                 while (replace->left != NULL)
                         replace = replace->left;
@@ -741,7 +741,7 @@ _rbtree_delete(map_t* map, map_node_t* node)
 
 
 static bool 
-map_init(map_t* map, map_node_free_fn fn)
+map_init(joy_map_t* map, map_node_free_fn fn)
 {
         assert(map);
         map->root = NULL;
@@ -750,16 +750,16 @@ map_init(map_t* map, map_node_free_fn fn)
 }
 
 static void 
-map_release(map_t* map)
+map_release(joy_map_t* map)
 {
         assert(map);
         _rbtree_destroy(map->root, map->free_fn);
 }
 
 static int
-map_insert(map_t* map, void* key, void* data)
+map_insert(joy_map_t* map, void* key, void* data)
 {
-        map_node_t* node;
+        joy_map_node_t* node;
         if (_search(map->root, key) != NULL)
                 return -1;
         node = _create_rbtree_node(key, data, NULL, NULL, NULL);
@@ -770,9 +770,9 @@ map_insert(map_t* map, void* key, void* data)
 }
 
 static int
-map_set(map_t* map, void* key, void* data)
+map_set(joy_map_t* map, void* key, void* data)
 {
-        map_node_t* node = _search(map->root, key);
+        joy_map_node_t* node = _search(map->root, key);
         if (node != NULL) {
                 node->data = data;
                 return 0;
@@ -781,9 +781,9 @@ map_set(map_t* map, void* key, void* data)
 }
 
 static void*
-map_remove(map_t* map, void* key)
+map_remove(joy_map_t* map, void* key)
 {
-        map_node_t* z = _search(map->root, key);
+        joy_map_node_t* z = _search(map->root, key);
         if (!z)
                 return NULL;
         void* data = z->data;
@@ -792,28 +792,28 @@ map_remove(map_t* map, void* key)
 }
 
 static void*
-map_search(map_t* map, void* key)
+map_search(joy_map_t* map, void* key)
 {
-        map_node_t* node = _search(map->root, key);
+        joy_map_node_t* node = _search(map->root, key);
         if (node)
                 return node->data;
         return NULL;
 }
 
 static void*
-map_isearch(map_t* map, void* key)
+map_isearch(joy_map_t* map, void* key)
 {
         assert(map);
-        map_node_t* node = _iterative_search(map->root, key);
+        joy_map_node_t* node = _iterative_search(map->root, key);
         if (node)
                 return node->data;
         return NULL;
 }
 
-static map_node_t* 
-map_first(const map_t* map)
+static joy_map_node_t*
+map_first(const joy_map_t* map)
 {
-        map_node_t* n = map->root;
+        joy_map_node_t* n = map->root;
         if (!n)
                 return NULL;
         while (n->left)
@@ -821,10 +821,10 @@ map_first(const map_t* map)
         return n;
 }
 
-static map_node_t* 
-map_last(const map_t* map)
+static joy_map_node_t*
+map_last(const joy_map_t* map)
 {
-        map_node_t* n = map->root;
+        joy_map_node_t* n = map->root;
         if (!n)
                 return NULL;
         while (n->right)
@@ -832,10 +832,10 @@ map_last(const map_t* map)
         return n;
 }
 
-static map_node_t* 
-map_trev_node(map_node_t* node)
+static joy_map_node_t*
+map_trev_node(joy_map_node_t* node)
 {
-        map_node_t* parent;
+        joy_map_node_t* parent;
         if (rb_parent(node) == node)
                 return NULL;
 
@@ -852,10 +852,10 @@ map_trev_node(map_node_t* node)
         return parent;
 }
 
-static map_node_t* 
-map_next_node(map_node_t* node)
+static joy_map_node_t*
+map_next_node(joy_map_node_t* node)
 {
-        map_node_t* parent;
+        joy_map_node_t* parent;
 
         if (rb_parent(node) == node)
                 return NULL;
@@ -874,7 +874,7 @@ map_next_node(map_node_t* node)
 }
 
 static void*
-map_node_getkey(const map_node_t* node)
+map_node_getkey(const joy_map_node_t* node)
 {
         if (node)
                 return node->key;
@@ -882,7 +882,7 @@ map_node_getkey(const map_node_t* node)
 }
 
 static void*
-map_node_getvalue(const map_node_t* node)
+map_node_getvalue(const joy_map_node_t* node)
 {
         if (node)
                 return node->data;
@@ -890,7 +890,7 @@ map_node_getvalue(const map_node_t* node)
 }
 
 static void
-map_node_setvalue(map_node_t* node, void* data)
+map_node_setvalue(joy_map_node_t* node, void* data)
 {
         node->data = data;
 }

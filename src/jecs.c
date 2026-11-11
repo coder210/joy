@@ -152,7 +152,7 @@ typedef struct ecs_component_data {
 
 typedef unsigned long joy_ecs_cid_t;
 #define __int_free(x)
-KLIST_INIT(kecs_system, jecs_system_t, __int_free)
+KLIST_INIT(kecs_system, joy_ecs_system_t, __int_free)
 
 // 组件存储: 内含稀疏集合与位图
 typedef struct component_store {
@@ -165,19 +165,19 @@ KHASH_INIT(kecs_component_data, joy_ecs_cid_t, ecs_component_data_p, 1, kh_int_h
 KHASH_INIT(kecs_meta, joy_ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
 typedef khash_t(kecs_component_data) ecs_entity_t, * joy_ecs_entity_p;
-KHASH_INIT(kecs_entity, jecs_id_t, joy_ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_entity, joy_ecs_id_t, joy_ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
 struct jecs_world {
-        jecs_id_t global_id;
+        joy_ecs_id_t global_id;
         khash_t(kecs_meta)* metas;
         klist_t(kecs_system)* systems;
         khash_t(kecs_component)* components;
         khash_t(kecs_entity)* entities;
 };
 
-jecs_world_p joy_scene_ecs_create() 
+joy_ecs_world_p joy_scene_ecs_create()
 {
-        jecs_world_p world = (jecs_world_p)SDL_malloc(sizeof(jecs_world_t));
+        joy_ecs_world_p world = (joy_ecs_world_p)SDL_malloc(sizeof(joy_ecs_world_t));
         world->metas = kh_init(kecs_meta);
         world->systems = kl_init(kecs_system);
         world->components = kh_init(kecs_component);
@@ -187,9 +187,9 @@ jecs_world_p joy_scene_ecs_create()
 }
 
 
-void joy_scene_ecs_destroy(jecs_world_p world)
+void joy_scene_ecs_destroy(joy_ecs_world_p world)
 {
-        jecs_id_t id;
+        joy_ecs_id_t id;
         joy_ecs_entity_p entity;
         khint_t i, j, p;
         sparse_set_p sparse_set;
@@ -227,9 +227,9 @@ void joy_scene_ecs_destroy(jecs_world_p world)
         SDL_free(world);
 }
 
-void joy_scene_ecs_process(jecs_world_p world, float dt)
+void joy_scene_ecs_process(joy_ecs_world_p world, float dt)
 {
-        jecs_system_t system;
+        joy_ecs_system_t system;
         kliter_t(kecs_system)* p;
         p = kl_begin(world->systems);
         while (p != kl_end(world->systems)) {
@@ -239,9 +239,9 @@ void joy_scene_ecs_process(jecs_world_p world, float dt)
         }
 }
 
-jecs_id_t joy_scene_ecs_spawn(jecs_world_p world)
+joy_ecs_id_t joy_scene_ecs_spawn(joy_ecs_world_p world)
 {
-        jecs_id_t id;
+        joy_ecs_id_t id;
         khint_t k;
         int ret;
         id = world->global_id++;
@@ -250,7 +250,7 @@ jecs_id_t joy_scene_ecs_spawn(jecs_world_p world)
         return id;
 }
 
-void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id)
+void joy_scene_ecs_kill(joy_ecs_world_p world, joy_ecs_id_t id)
 {
         joy_ecs_entity_p entity;
         component_store_t* store;
@@ -285,7 +285,7 @@ void joy_scene_ecs_kill(jecs_world_p world, jecs_id_t id)
         kh_destroy(kecs_component_data, entity);
 }
 
-void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size)
+void joy_scene_ecs_define(joy_ecs_world_p world, const char* name, size_t size)
 {
         joy_ecs_cid_t component_id;
         khint_t k;
@@ -298,7 +298,7 @@ void joy_scene_ecs_define(jecs_world_p world, const char* name, size_t size)
         }
 }
 
-void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const void* ptr, size_t size)
+void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name, const void* ptr, size_t size)
 {
         joy_ecs_entity_p entity;
         joy_ecs_cid_t component_id;
@@ -352,7 +352,7 @@ void joy_scene_ecs_set(jecs_world_p world, jecs_id_t id, const char* name, const
         }
 }
 
-size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, void** data)
+size_t joy_scene_ecs_get(joy_ecs_world_p world, joy_ecs_id_t id, const char* name, void** data)
 {
         joy_ecs_cid_t component_id;
         joy_ecs_entity_p entity;
@@ -373,7 +373,7 @@ size_t joy_scene_ecs_get(jecs_world_p world, jecs_id_t id, const char* name, voi
         return component_data->size;
 }
 
-void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
+void joy_scene_ecs_remove(joy_ecs_world_p world, joy_ecs_id_t id, const char* name)
 {
         joy_ecs_entity_p entity;
         component_store_t* store;
@@ -401,11 +401,11 @@ void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
         }
 }
 //
-//static vector_t(kecs)
-//_intersection(jecs_id_t* a_arr, int a_arr_len, jecs_id_t* b_arr, int b_arr_len)
+//static joy_vector_t(kecs)
+//_intersection(joy_ecs_id_t* a_arr, int a_arr_len, joy_ecs_id_t* b_arr, int b_arr_len)
 //{
-//        vector_t(kecs) vec;
-//        jecs_id_t a, b;
+//        joy_vector_t(kecs) vec;
+//        joy_ecs_id_t a, b;
 //
 //        vector_init(kecs, &vec);
 //        for (size_t i = 0; i < a_arr_len; i++) {
@@ -422,9 +422,9 @@ void joy_scene_ecs_remove(jecs_world_p world, jecs_id_t id, const char* name)
 //        return vec;
 //}
 
-jecs_id_array_t joy_scene_ecs_query(jecs_world_p world, int arg_cnt, ...)
+joy_ecs_id_array_t joy_scene_ecs_query(joy_ecs_world_p world, int arg_cnt, ...)
 {
-        jecs_id_array_t result = { 0 };
+        joy_ecs_id_array_t result = { 0 };
         if (arg_cnt <= 0) {
                 return result;
         }
@@ -444,9 +444,9 @@ jecs_id_array_t joy_scene_ecs_query(jecs_world_p world, int arg_cnt, ...)
         return result;
 }
 
-jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args)
+joy_ecs_id_array_t joy_scene_ecs_queryx(joy_ecs_world_p world, int arg_cnt, char**args)
 {
-        jecs_id_array_t result = { 0 };
+        joy_ecs_id_array_t result = { 0 };
 
         if (arg_cnt <= 0) {
                 return result;
@@ -489,7 +489,7 @@ jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args
                         sparse_set_p sparse_set = store->sparse_set;
 
                         for (int i = 0; i < kv_size(sparse_set->density); i++) {
-                                jecs_id_t id = kv_A(sparse_set->density, i);
+                                joy_ecs_id_t id = kv_A(sparse_set->density, i);
                                 if (bitset_test(result_bitset, id)) {
                                         result.ids[result.num++] = id;
                                 }
@@ -503,7 +503,7 @@ jecs_id_array_t joy_scene_ecs_queryx(jecs_world_p world, int arg_cnt, char**args
 }
 
 
-void joy_scene_ecs_register(jecs_world_p world, jecs_system_t system)
+void joy_scene_ecs_register(joy_ecs_world_p world, joy_ecs_system_t system)
 {
         *kl_pushp(kecs_system, world->systems) = system;
 }
@@ -549,13 +549,13 @@ int ecs_test()
        // sparse_set_destroy(sparse_set);*/
 
 
-       // jecs_world_p world;
+       // joy_ecs_world_p world;
        // world = ecs_create();
        // ecs_define(world, "joy_position_t", sizeof(joy_position_t));
        // ecs_define(world, "joy_velocity_t", sizeof(joy_velocity_t));
 
-       // jecs_id_t id1 = ecs_spawn(world);
-       // jecs_id_t id2 = ecs_spawn(world);
+       // joy_ecs_id_t id1 = ecs_spawn(world);
+       // joy_ecs_id_t id2 = ecs_spawn(world);
        // /*ecs_set(world, id1, "joy_position_t", &(joy_position_t){0.2, 0.3});
        // ecs_set(world, id1, "joy_velocity_t", &(joy_velocity_t){2.2, 4.3});
        // ecs_set(world, id2, "joy_position_t", &(joy_position_t){2.2, 3.3});
@@ -565,16 +565,16 @@ int ecs_test()
        // //ecs_set(world, id1, "joy_velocity_t", &(joy_velocity_t){2, 5});
        // //ecs_kill(world, id2);
 
-       // /*  vector_t entities = ecs_query(world, 2, "joy_position_t", "joy_velocity_t");
+       // /*  joy_vector_t entities = ecs_query(world, 2, "joy_position_t", "joy_velocity_t");
        //   for (int i = 0; i < vector_size(&entities); i++) {
-       //           jecs_id_t id = vector_a(&entities, i);
+       //           joy_ecs_id_t id = vector_a(&entities, i);
        //           joy_position_t* position = (joy_position_t*)ecs_get(world, id, "joy_position_t");
        //           joy_velocity_t* velocity = (joy_velocity_t*)ecs_get(world, id, "joy_velocity_t");
        //           SDL_Log("%d <%f,%f> <%f,%f>", id, position->x, position->y, velocity->x, velocity->y);
        //   }*/
-       // vector_t(kecs) entities = ecs_query(world, 1, "joy_position_t");
+       // joy_vector_t(kecs) entities = ecs_query(world, 1, "joy_position_t");
        // for (int i = 0; i < vector_size(kecs, &entities); i++) {
-       //         jecs_id_t id = vector_a(kecs, &entities, i);
+       //         joy_ecs_id_t id = vector_a(kecs, &entities, i);
        //         //joy_position_t* position = (joy_position_t*)ecs_get(world, id, "joy_position_t");
        //         //SDL_Log("%d <%f,%f>", id, position->x, position->y);
        // }

@@ -16,8 +16,8 @@
  * 覆盖 status:on 的全部 L0/L1，以及可按字段展开的 L2：
  *   - 标量（含 float/double/bool/unsigned long）用原始 C 类型；
  *   - const char* 保持 const char*（非 const char* 是输出缓冲，thunk 也拒绝）；
- *   - 不透明指针 jr2d_p → Jr2d 等强句柄薄包装，不同类型编译期不可混传；
- *   - L2 值结构体（jrect_t / jcolor_t）按字段展开成标量，与 thunk 表 argc 一致。
+ *   - 不透明指针 joy_r2d_p → Jr2d 等强句柄薄包装，不同类型编译期不可混传；
+ *   - L2 值结构体（joy_rect_t / joy_color_t）按字段展开成标量，与 thunk 表 argc 一致。
  * L3（结构体指针 / 输出参数）仍是 status:off，不进表。
  */
 const { SCALAR } = require('./emit_thunks');
@@ -132,7 +132,7 @@ function buildVtableHeader(entries) {
   L.push('');
   L.push('#define JOY_API_VTABLE_ABI 1u');
   L.push('');
-  L.push('/* 不透明句柄的强类型薄包装：jr2d_p → Jr2d。');
+  L.push('/* 不透明句柄的强类型薄包装：joy_r2d_p → Jr2d。');
   L.push(' * Jr2d / Font / Jwindow 在 C 里互不兼容，编译期即可拦住混传。 */');
   for (const h of handles) {
     L.push('typedef struct ' + h + ' { uint64_t h; } ' + h + ';');

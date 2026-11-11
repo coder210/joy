@@ -16,7 +16,7 @@ extern "C" {
 
 #define JOY_API_VTABLE_ABI 1u
 
-/* 不透明句柄的强类型薄包装：jr2d_p → Jr2d。
+/* 不透明句柄的强类型薄包装：joy_r2d_p → Jr2d。
  * Jr2d / Font / Jwindow 在 C 里互不兼容，编译期即可拦住混传。 */
 typedef struct Animation { uint64_t h; } Animation;
 typedef struct AudioBgm { uint64_t h; } AudioBgm;

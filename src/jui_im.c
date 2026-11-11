@@ -24,15 +24,15 @@
 
 typedef struct jui_slot {
         int       id;         /* -1 = 空闲 */
-        button_p  btn;
-        checkbox_p cb;
-        slider_p  sl;
+        joy_button_p  btn;
+        joy_checkbox_p cb;
+        joy_slider_p  sl;
 } joy_ui_slot_t;
 
 struct jui_ctx {
-        jr2d_p r2d;
-        font_p font;
-        jui_theme_t theme;
+        joy_r2d_p r2d;
+        joy_font_p font;
+        joy_ui_theme_t theme;
 
         /* 输入（窗口坐标，内部转逻辑坐标） */
         float  mx, my;             /* 逻辑坐标 */
@@ -54,7 +54,7 @@ struct jui_ctx {
 
         /* 裁剪栈镜像（用于命中测试） */
         int     clip_count;
-        jrect_t clip_stack[32];
+        joy_rect_t clip_stack[32];
         bool    has_clip;
 
         /* 滚动区 */
@@ -68,45 +68,45 @@ struct jui_ctx {
 
 /* ------------------------------ 主题 ------------------------------ */
 
-static jui_theme_t jui_default_theme(void)
+static joy_ui_theme_t jui_default_theme(void)
 {
-        jui_theme_t t;
-        t.text         = (jcolor_t){ 212, 212, 212, 255 };
-        t.btn_normal   = (jcolor_t){ 51,  51,  55,  255 };
-        t.btn_hover    = (jcolor_t){ 70,  70,  75,  255 };
-        t.btn_pressed  = (jcolor_t){ 23,  124, 189, 255 };
-        t.btn_text     = (jcolor_t){ 212, 212, 212, 255 };
-        t.cb_box       = (jcolor_t){ 51,  51,  55,  255 };
-        t.cb_check     = (jcolor_t){ 23,  124, 189, 255 };
-        t.cb_hover     = (jcolor_t){ 70,  70,  75,  255 };
-        t.cb_text      = (jcolor_t){ 212, 212, 212, 255 };
-        t.sl_track     = (jcolor_t){ 51,  51,  55,  255 };
-        t.sl_fill      = (jcolor_t){ 23,  124, 189, 255 };
-        t.sl_thumb     = (jcolor_t){ 150, 150, 156, 255 };
-        t.sl_thumb_hover = (jcolor_t){ 200, 200, 210, 255 };
-        t.panel        = (jcolor_t){ 37,  37,  38,  255 };
-        t.panel_title  = (jcolor_t){ 45,  45,  48,  255 };
-        t.border       = (jcolor_t){ 62,  62,  66,  255 };
+        joy_ui_theme_t t;
+        t.text         = (joy_color_t){ 212, 212, 212, 255 };
+        t.btn_normal   = (joy_color_t){ 51,  51,  55,  255 };
+        t.btn_hover    = (joy_color_t){ 70,  70,  75,  255 };
+        t.btn_pressed  = (joy_color_t){ 23,  124, 189, 255 };
+        t.btn_text     = (joy_color_t){ 212, 212, 212, 255 };
+        t.cb_box       = (joy_color_t){ 51,  51,  55,  255 };
+        t.cb_check     = (joy_color_t){ 23,  124, 189, 255 };
+        t.cb_hover     = (joy_color_t){ 70,  70,  75,  255 };
+        t.cb_text      = (joy_color_t){ 212, 212, 212, 255 };
+        t.sl_track     = (joy_color_t){ 51,  51,  55,  255 };
+        t.sl_fill      = (joy_color_t){ 23,  124, 189, 255 };
+        t.sl_thumb     = (joy_color_t){ 150, 150, 156, 255 };
+        t.sl_thumb_hover = (joy_color_t){ 200, 200, 210, 255 };
+        t.panel        = (joy_color_t){ 37,  37,  38,  255 };
+        t.panel_title  = (joy_color_t){ 45,  45,  48,  255 };
+        t.border       = (joy_color_t){ 62,  62,  66,  255 };
         return t;
 }
 
 /* ------------------------------ 工具 ------------------------------ */
 
-static jrect_t JUI_RECT(float x, float y, float w, float h)
+static joy_rect_t JUI_RECT(float x, float y, float w, float h)
 {
-        jrect_t r; r.x = x; r.y = y; r.w = w; r.h = h; return r;
+        joy_rect_t r; r.x = x; r.y = y; r.w = w; r.h = h; return r;
 }
 
-static bool jui_pt_in(float x, float y, jrect_t r)
+static bool jui_pt_in(float x, float y, joy_rect_t r)
 {
         return x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h;
 }
 
 /* ------------------------------ 生命周期 ------------------------------ */
 
-jui_ctx_p joy_ui_ctx_create(jr2d_p r2d, font_p font)
+joy_ui_ctx_p joy_ui_ctx_create(joy_r2d_p r2d, joy_font_p font)
 {
-        jui_ctx_p ctx = (jui_ctx_p)calloc(1, sizeof(jui_ctx_t));
+        joy_ui_ctx_p ctx = (joy_ui_ctx_p)calloc(1, sizeof(joy_ui_ctx_t));
         if (!ctx) return NULL;
         ctx->r2d  = r2d;
         ctx->font = font;
@@ -114,7 +114,7 @@ jui_ctx_p joy_ui_ctx_create(jr2d_p r2d, font_p font)
         return ctx;
 }
 
-void joy_ui_ctx_destroy(jui_ctx_p ctx)
+void joy_ui_ctx_destroy(joy_ui_ctx_p ctx)
 {
         if (!ctx) return;
         for (int i = 0; i < ctx->slot_count; i++) {
@@ -127,14 +127,14 @@ void joy_ui_ctx_destroy(jui_ctx_p ctx)
         free(ctx);
 }
 
-void joy_ui_set_theme(jui_ctx_p ctx, const jui_theme_t* theme)
+void joy_ui_set_theme(joy_ui_ctx_p ctx, const joy_ui_theme_t* theme)
 {
         if (ctx && theme) ctx->theme = *theme;
 }
 
 /* ------------------------------ 槽位池 ------------------------------ */
 
-static joy_ui_slot_t* jui_get_slot(jui_ctx_p ctx, int id)
+static joy_ui_slot_t* jui_get_slot(joy_ui_ctx_p ctx, int id)
 {
         if (ctx->slot_count < 32) {
                 if (ctx->slot_count >= ctx->slot_cap) {
@@ -161,20 +161,20 @@ static joy_ui_slot_t* jui_get_slot(jui_ctx_p ctx, int id)
 }
 
 /* 每帧结束后清空槽位 id，下帧按需重新分配 */
-static void jui_reset_slots(jui_ctx_p ctx)
+static void jui_reset_slots(joy_ui_ctx_p ctx)
 {
         for (int i = 0; i < ctx->slot_count; i++) ctx->slots[i].id = -1;
 }
 
 /* ------------------------------ 输入 ------------------------------ */
 
-void joy_ui_begin(jui_ctx_p ctx)
+void joy_ui_begin(joy_ui_ctx_p ctx)
 {
         if (!ctx) return;
         ctx->consumed = true;
         /* 由调用方在每帧开始喂入的窗口坐标已存于 ctx->winx/winy，
            这里转为逻辑坐标，供 joy_ui_hit / 控件使用 */
-        vec2_t p = joy_r2d_coordinates_from_window(ctx->r2d, ctx->winx, ctx->winy);
+        joy_vec2_t p = joy_r2d_coordinates_from_window(ctx->r2d, ctx->winx, ctx->winy);
         ctx->mx = p.x;
         ctx->my = p.y;
         ctx->logx = p.x;
@@ -183,7 +183,7 @@ void joy_ui_begin(jui_ctx_p ctx)
         ctx->hot = 0;
 }
 
-void joy_ui_end(jui_ctx_p ctx)
+void joy_ui_end(joy_ui_ctx_p ctx)
 {
         if (!ctx) return;
         ctx->consumed = false;
@@ -195,59 +195,59 @@ void joy_ui_end(jui_ctx_p ctx)
         ctx->widget_seq = 0;
 }
 
-void joy_ui_input_motion(jui_ctx_p ctx, float win_x, float win_y)
+void joy_ui_input_motion(joy_ui_ctx_p ctx, float win_x, float win_y)
 {
         if (!ctx) return;
         ctx->winx = win_x;
         ctx->winy = win_y;
 }
 
-void joy_ui_input_down(jui_ctx_p ctx, int button)
+void joy_ui_input_down(joy_ui_ctx_p ctx, int button)
 {
         if (!ctx) return;
         if (button == 0) { ctx->ldown = true; ctx->lpressed = true; }
 }
 
-void joy_ui_input_up(jui_ctx_p ctx, int button)
+void joy_ui_input_up(joy_ui_ctx_p ctx, int button)
 {
         if (!ctx) return;
         if (button == 0) { ctx->ldown = false; ctx->lreleased = true; }
 }
 
-void joy_ui_input_wheel(jui_ctx_p ctx, float dy)
+void joy_ui_input_wheel(joy_ui_ctx_p ctx, float dy)
 {
         if (!ctx) return;
         ctx->wheel += dy;
 }
 
-void joy_ui_input_key(jui_ctx_p ctx, bool shift, bool ctrl)
+void joy_ui_input_key(joy_ui_ctx_p ctx, bool shift, bool ctrl)
 {
         if (!ctx) return;
         ctx->shift = shift;
         ctx->ctrl  = ctrl;
 }
 
-void joy_ui_get_mouse(jui_ctx_p ctx, float* out_x, float* out_y)
+void joy_ui_get_mouse(joy_ui_ctx_p ctx, float* out_x, float* out_y)
 {
         if (out_x) *out_x = ctx ? ctx->mx : 0.0f;
         if (out_y) *out_y = ctx ? ctx->my : 0.0f;
 }
 
-bool joy_ui_is_down(jui_ctx_p ctx)    { return ctx && ctx->ldown; }
-bool joy_ui_is_pressed(jui_ctx_p ctx) { return ctx && ctx->lpressed; }
-bool joy_ui_is_released(jui_ctx_p ctx){ return ctx && ctx->lreleased; }
-float joy_ui_take_wheel(jui_ctx_p ctx)
+bool joy_ui_is_down(joy_ui_ctx_p ctx)    { return ctx && ctx->ldown; }
+bool joy_ui_is_pressed(joy_ui_ctx_p ctx) { return ctx && ctx->lpressed; }
+bool joy_ui_is_released(joy_ui_ctx_p ctx){ return ctx && ctx->lreleased; }
+float joy_ui_take_wheel(joy_ui_ctx_p ctx)
 {
         if (!ctx || ctx->wheel_used) return 0.0f;
         ctx->wheel_used = true;
         return ctx->wheel;
 }
-bool joy_ui_is_shift(jui_ctx_p ctx)   { return ctx && ctx->shift; }
-bool joy_ui_is_ctrl(jui_ctx_p ctx)    { return ctx && ctx->ctrl; }
+bool joy_ui_is_shift(joy_ui_ctx_p ctx)   { return ctx && ctx->shift; }
+bool joy_ui_is_ctrl(joy_ui_ctx_p ctx)    { return ctx && ctx->ctrl; }
 
 /* ------------------------------ 裁剪 ------------------------------ */
 
-void joy_ui_push_clip(jui_ctx_p ctx, jrect_t rect)
+void joy_ui_push_clip(joy_ui_ctx_p ctx, joy_rect_t rect)
 {
         if (!ctx) return;
         if (ctx->clip_count >= 32) return;
@@ -256,7 +256,7 @@ void joy_ui_push_clip(jui_ctx_p ctx, jrect_t rect)
         ctx->has_clip = true;
 }
 
-void joy_ui_pop_clip(jui_ctx_p ctx)
+void joy_ui_pop_clip(joy_ui_ctx_p ctx)
 {
         if (!ctx || ctx->clip_count <= 0) return;
         ctx->clip_count--;
@@ -264,7 +264,7 @@ void joy_ui_pop_clip(jui_ctx_p ctx)
         ctx->has_clip = ctx->clip_count > 0;
 }
 
-void joy_ui_reset_clip(jui_ctx_p ctx)
+void joy_ui_reset_clip(joy_ui_ctx_p ctx)
 {
         if (!ctx) return;
         ctx->clip_count = 0;
@@ -272,13 +272,13 @@ void joy_ui_reset_clip(jui_ctx_p ctx)
         joy_r2d_reset_clip_stack(ctx->r2d);
 }
 
-bool joy_ui_hit(jui_ctx_p ctx, jrect_t rect)
+bool joy_ui_hit(joy_ui_ctx_p ctx, joy_rect_t rect)
 {
         if (!ctx) return false;
         if (!jui_pt_in(ctx->mx, ctx->my, rect)) return false;
         if (ctx->has_clip) {
                 /* 只需检查最内层裁剪 */
-                jrect_t c = ctx->clip_stack[ctx->clip_count - 1];
+                joy_rect_t c = ctx->clip_stack[ctx->clip_count - 1];
                 if (!jui_pt_in(ctx->mx, ctx->my, c)) return false;
         }
         return true;
@@ -286,28 +286,28 @@ bool joy_ui_hit(jui_ctx_p ctx, jrect_t rect)
 
 /* ------------------------------ 绘制辅助 ------------------------------ */
 
-void joy_ui_fill_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c)
+void joy_ui_fill_rect(joy_ui_ctx_p ctx, joy_rect_t r, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
         joy_math_shape_draw_rectangle(ctx->r2d, "fill", r);
 }
 
-void joy_ui_stroke_rect(jui_ctx_p ctx, jrect_t r, jcolor_t c)
+void joy_ui_stroke_rect(joy_ui_ctx_p ctx, joy_rect_t r, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
         joy_math_shape_draw_rectangle(ctx->r2d, "line", r);
 }
 
-void joy_ui_line(jui_ctx_p ctx, float x1, float y1, float x2, float y2, jcolor_t c)
+void joy_ui_line(joy_ui_ctx_p ctx, float x1, float y1, float x2, float y2, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
         joy_math_shape_draw_line(ctx->r2d, x1, y1, x2, y2);
 }
 
-int joy_ui_text(jui_ctx_p ctx, float x, float y, const char* s, jcolor_t c)
+int joy_ui_text(joy_ui_ctx_p ctx, float x, float y, const char* s, joy_color_t c)
 {
         if (!ctx || !ctx->font || !s) return 0;
         int w, h;
@@ -316,13 +316,13 @@ int joy_ui_text(jui_ctx_p ctx, float x, float y, const char* s, jcolor_t c)
         return w;
 }
 
-bool joy_ui_text_measure(jui_ctx_p ctx, const char* s, jcolor_t c, int* out_w, int* out_h)
+bool joy_ui_text_measure(joy_ui_ctx_p ctx, const char* s, joy_color_t c, int* out_w, int* out_h)
 {
         if (!ctx || !ctx->font || !s) return false;
         return joy_r2d_jtext_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, out_w, out_h);
 }
 
-int joy_ui_text_centered(jui_ctx_p ctx, jrect_t r, const char* s, jcolor_t c)
+int joy_ui_text_centered(joy_ui_ctx_p ctx, joy_rect_t r, const char* s, joy_color_t c)
 {
         if (!ctx || !ctx->font || !s) return 0;
         int w = 0, h = 0;
@@ -334,30 +334,30 @@ int joy_ui_text_centered(jui_ctx_p ctx, jrect_t r, const char* s, jcolor_t c)
 
 /* ------------------------------ 面板 ------------------------------ */
 
-void joy_ui_panel_begin(jui_ctx_p ctx, jrect_t r, const char* title)
+void joy_ui_panel_begin(joy_ui_ctx_p ctx, joy_rect_t r, const char* title)
 {
         if (!ctx) return;
         joy_ui_fill_rect(ctx, r, ctx->theme.panel);
-        jrect_t th = JUI_RECT(r.x, r.y, r.w, 22.0f);
+        joy_rect_t th = JUI_RECT(r.x, r.y, r.w, 22.0f);
         joy_ui_fill_rect(ctx, th, ctx->theme.panel_title);
-        if (title) joy_ui_text(ctx, r.x + 8.0f, r.y + 5.0f, title, (jcolor_t){ 133, 133, 133, 255 });
+        if (title) joy_ui_text(ctx, r.x + 8.0f, r.y + 5.0f, title, (joy_color_t){ 133, 133, 133, 255 });
         joy_ui_line(ctx, r.x, r.y + 22.0f, r.x + r.w, r.y + 22.0f, ctx->theme.border);
         joy_ui_push_clip(ctx, JUI_RECT(r.x + 1.0f, r.y + 23.0f, r.w - 2.0f, r.h - 24.0f));
 }
 
-void joy_ui_panel_end(jui_ctx_p ctx)
+void joy_ui_panel_end(joy_ui_ctx_p ctx)
 {
         if (ctx) joy_ui_pop_clip(ctx);
 }
 
-void joy_ui_panel_frame(jui_ctx_p ctx, jrect_t r)
+void joy_ui_panel_frame(joy_ui_ctx_p ctx, joy_rect_t r)
 {
         if (ctx) joy_ui_stroke_rect(ctx, r, ctx->theme.border);
 }
 
 /* ------------------------------ 滚动 ------------------------------ */
 
-float joy_ui_scroll_begin(jui_ctx_p ctx, int id, jrect_t view, float content_h)
+float joy_ui_scroll_begin(joy_ui_ctx_p ctx, int id, joy_rect_t view, float content_h)
 {
         if (!ctx) return 0.0f;
         float* off = NULL;
@@ -382,12 +382,12 @@ float joy_ui_scroll_begin(jui_ctx_p ctx, int id, jrect_t view, float content_h)
         return *off;
 }
 
-void joy_ui_scroll_end(jui_ctx_p ctx)
+void joy_ui_scroll_end(joy_ui_ctx_p ctx)
 {
         /* 预留：滚动区结束后若需要恢复裁剪，可在这里处理 */
 }
 
-void joy_ui_scroll_set_offset(jui_ctx_p ctx, int id, float off, float content_h, float view_h)
+void joy_ui_scroll_set_offset(joy_ui_ctx_p ctx, int id, float off, float content_h, float view_h)
 {
         float* target = NULL;
         int i;
@@ -410,7 +410,7 @@ void joy_ui_scroll_set_offset(jui_ctx_p ctx, int id, float off, float content_h,
         *target = off;
 }
 
-void joy_ui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off)
+void joy_ui_scrollbar(joy_ui_ctx_p ctx, joy_rect_t view, float content_h, float off)
 {
         if (!ctx || content_h <= view.h) return;
         float thumb_h = view.h * (view.h / content_h);
@@ -420,12 +420,12 @@ void joy_ui_scrollbar(jui_ctx_p ctx, jrect_t view, float content_h, float off)
         joy_ui_fill_rect(ctx, JUI_RECT(view.x + view.w - 6.0f, view.y, 5.0f, view.h),
                       ctx->theme.panel_title);
         joy_ui_fill_rect(ctx, JUI_RECT(view.x + view.w - 6.0f, ty, 5.0f, thumb_h),
-                      (jcolor_t){ 110, 110, 116, 255 });
+                      (joy_color_t){ 110, 110, 116, 255 });
 }
 
 /* ------------------------------ 控件 ------------------------------ */
 
-bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
+bool joy_ui_button(joy_ui_ctx_p ctx, int id, joy_rect_t r, const char* text)
 {
         if (!ctx || !ctx->font) return false;
         joy_ui_slot_t* s = jui_get_slot(ctx, id);
@@ -436,7 +436,7 @@ bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
                 if (!s->btn) return false;
                 joy_ui_button_set_textx(s->btn, ctx->font, text, (int)SDL_strlen(text), ctx->theme.btn_text);
         }
-        button_p b = s->btn;
+        joy_button_p b = s->btn;
         joy_ui_button_set_position(b, r.x, r.y);
         joy_ui_button_set_size(b, r.w, r.h);
         joy_ui_button_set_normal_color(b, ctx->theme.btn_normal);
@@ -457,7 +457,7 @@ bool joy_ui_button(jui_ctx_p ctx, int id, jrect_t r, const char* text)
         return clicked;
 }
 
-bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* label)
+bool joy_ui_checkbox(joy_ui_ctx_p ctx, int id, joy_rect_t r, bool* value, const char* label)
 {
         if (!ctx || !ctx->font) return false;
         joy_ui_slot_t* s = jui_get_slot(ctx, id);
@@ -468,13 +468,13 @@ bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* 
                 s->cb = joy_ui_checkbox_create(r.x / 480.0f, r.y / 320.0f, 14.0f / 480.0f, label);
                 if (!s->cb) return false;
         }
-        checkbox_p cb = s->cb;
+        joy_checkbox_p cb = s->cb;
         joy_ui_checkbox_set_r2d(cb, ctx->r2d);
         joy_ui_checkbox_set_position(cb, (int)r.x, (int)r.y);
         joy_ui_checkbox_set_colors(cb, ctx->theme.cb_box, ctx->theme.cb_check, ctx->theme.cb_hover);
         joy_ui_checkbox_set_text_color(cb, ctx->theme.cb_text);
 
-        checkbox_state_t cur = *value ? JOY_CHECKBOX_CHECKED : JOY_CHECKBOX_UNCHECKED;
+        joy_checkbox_state_t cur = *value ? JOY_CHECKBOX_CHECKED : JOY_CHECKBOX_UNCHECKED;
         if (joy_ui_checkbox_get_state(cb) != cur) joy_ui_checkbox_set_state(cb, cur);
 
         bool hovered = joy_ui_hit(ctx, r);
@@ -491,7 +491,7 @@ bool joy_ui_checkbox(jui_ctx_p ctx, int id, jrect_t r, bool* value, const char* 
         return changed;
 }
 
-bool joy_ui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float minv, float maxv)
+bool joy_ui_slider(joy_ui_ctx_p ctx, int id, joy_rect_t track, float* value, float minv, float maxv)
 {
         if (!ctx) return false;
         joy_ui_slot_t* s = jui_get_slot(ctx, id);
@@ -502,7 +502,7 @@ bool joy_ui_slider(jui_ctx_p ctx, int id, jrect_t track, float* value, float min
                                       minv, maxv, *value);
                 if (!s->sl) return false;
         }
-        slider_p sl = s->sl;
+        joy_slider_p sl = s->sl;
         joy_ui_slider_set_rect(sl, track.x, track.y, track.w, track.h);
         joy_ui_slider_set_range(sl, minv, maxv);
         joy_ui_slider_set_colors(sl, ctx->theme.sl_track, ctx->theme.sl_fill,

@@ -234,16 +234,16 @@ struct audio_bgm {
 };
 
 /* 内部：从已解码 PCM 创建 BGM */
-static audio_bgm_p bgm_from_pcm(const char* path, uint32_t device_id)
+static joy_audio_bgm_p bgm_from_pcm(const char* path, uint32_t device_id)
 {
         (void)path;
         /* 由各格式函数负责解码，本函数仅创建 bgm 对象 */
         return NULL;
 }
 
-static audio_bgm_p bgm_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
+static joy_audio_bgm_p bgm_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
 {
-        audio_bgm_p bgm = (audio_bgm_p)SDL_malloc(sizeof(audio_bgm_t));
+        joy_audio_bgm_p bgm = (joy_audio_bgm_p)SDL_malloc(sizeof(joy_audio_bgm_t));
         if (!bgm) { SDL_free(data); return NULL; }
 
         bgm->spec      = *spec;
@@ -269,7 +269,7 @@ static audio_bgm_p bgm_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 
         return bgm;
 }
 
-audio_bgm_p joy_audio_bgm_create(const char* wav_path, uint32_t device_id)
+joy_audio_bgm_p joy_audio_bgm_create(const char* wav_path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint8* data;
@@ -279,7 +279,7 @@ audio_bgm_p joy_audio_bgm_create(const char* wav_path, uint32_t device_id)
         return bgm_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_bgm_p joy_audio_bgm_create_mp3(const char* path, uint32_t device_id)
+joy_audio_bgm_p joy_audio_bgm_create_mp3(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -288,7 +288,7 @@ audio_bgm_p joy_audio_bgm_create_mp3(const char* path, uint32_t device_id)
         return bgm_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_bgm_p joy_audio_bgm_create_flac(const char* path, uint32_t device_id)
+joy_audio_bgm_p joy_audio_bgm_create_flac(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -297,7 +297,7 @@ audio_bgm_p joy_audio_bgm_create_flac(const char* path, uint32_t device_id)
         return bgm_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_bgm_p joy_audio_bgm_create_ogg(const char* path, uint32_t device_id)
+joy_audio_bgm_p joy_audio_bgm_create_ogg(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -306,14 +306,14 @@ audio_bgm_p joy_audio_bgm_create_ogg(const char* path, uint32_t device_id)
         return bgm_create_from_pcm(&spec, data, len, device_id);
 }
 
-void joy_audio_bgm_stop(audio_bgm_p bgm)
+void joy_audio_bgm_stop(joy_audio_bgm_p bgm)
 {
         if (!bgm || !bgm->stream) return;
         SDL_UnbindAudioStream(bgm->stream);
         SDL_ClearAudioStream(bgm->stream);
 }
 
-void joy_audio_bgm_set_gain(audio_bgm_p bgm, float gain)
+void joy_audio_bgm_set_gain(joy_audio_bgm_p bgm, float gain)
 {
         if (!bgm) return;
         bgm->gain = gain;
@@ -321,7 +321,7 @@ void joy_audio_bgm_set_gain(audio_bgm_p bgm, float gain)
                 SDL_SetAudioStreamGain(bgm->stream, gain);
 }
 
-void joy_audio_bgm_destroy(audio_bgm_p bgm)
+void joy_audio_bgm_destroy(joy_audio_bgm_p bgm)
 {
         if (!bgm) return;
         if (bgm->stream) {
@@ -345,9 +345,9 @@ struct audio_shot {
         SDL_AudioStream* stream;   /* 当前播放流，NULL 表示未播放 */
 };
 
-static audio_shot_p shot_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
+static joy_audio_shot_p shot_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint32 len, uint32_t device_id)
 {
-        audio_shot_p s = (audio_shot_p)SDL_malloc(sizeof(audio_shot_t));
+        joy_audio_shot_p s = (joy_audio_shot_p)SDL_malloc(sizeof(joy_audio_shot_t));
         if (!s) { SDL_free(data); return NULL; }
         s->spec      = *spec;
         s->data      = data;
@@ -358,7 +358,7 @@ static audio_shot_p shot_create_from_pcm(SDL_AudioSpec* spec, Uint8* data, Uint3
         return s;
 }
 
-audio_shot_p joy_audio_shot_create(const char* wav_path, uint32_t device_id)
+joy_audio_shot_p joy_audio_shot_create(const char* wav_path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint8* data;
@@ -368,7 +368,7 @@ audio_shot_p joy_audio_shot_create(const char* wav_path, uint32_t device_id)
         return shot_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_shot_p joy_audio_shot_create_mp3(const char* path, uint32_t device_id)
+joy_audio_shot_p joy_audio_shot_create_mp3(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -377,7 +377,7 @@ audio_shot_p joy_audio_shot_create_mp3(const char* path, uint32_t device_id)
         return shot_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_shot_p joy_audio_shot_create_flac(const char* path, uint32_t device_id)
+joy_audio_shot_p joy_audio_shot_create_flac(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -386,7 +386,7 @@ audio_shot_p joy_audio_shot_create_flac(const char* path, uint32_t device_id)
         return shot_create_from_pcm(&spec, data, len, device_id);
 }
 
-audio_shot_p joy_audio_shot_create_ogg(const char* path, uint32_t device_id)
+joy_audio_shot_p joy_audio_shot_create_ogg(const char* path, uint32_t device_id)
 {
         SDL_AudioSpec spec;
         Uint32 len;
@@ -395,7 +395,7 @@ audio_shot_p joy_audio_shot_create_ogg(const char* path, uint32_t device_id)
         return shot_create_from_pcm(&spec, data, len, device_id);
 }
 
-void joy_audio_shot_play(audio_shot_p shot)
+void joy_audio_shot_play(joy_audio_shot_p shot)
 {
         if (!shot || !shot->data) return;
 
@@ -414,7 +414,7 @@ void joy_audio_shot_play(audio_shot_p shot)
         SDL_PutAudioStreamData(shot->stream, shot->data, shot->len);
 }
 
-void joy_audio_shot_set_gain(audio_shot_p shot, float gain)
+void joy_audio_shot_set_gain(joy_audio_shot_p shot, float gain)
 {
         if (!shot) return;
         shot->gain = gain;
@@ -424,7 +424,7 @@ void joy_audio_shot_set_gain(audio_shot_p shot, float gain)
                 SDL_SetAudioStreamGain(shot->stream, gain);
 }
 
-void joy_audio_shot_destroy(audio_shot_p shot)
+void joy_audio_shot_destroy(joy_audio_shot_p shot)
 {
         if (!shot) return;
         if (shot->stream) {

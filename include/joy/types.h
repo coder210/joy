@@ -13,7 +13,7 @@ extern "C" {
         typedef struct render_mvp {
                 float viewProj[16];
                 float model[16];
-        } render_mvp_t;
+        } joy_render_mvp_t;
 
         /* ---------- 光照结构（与 GLSL std140 布局对齐, 同 main888） ---------- */
         #define JR3D_MAX_LIGHTS 4
@@ -28,126 +28,126 @@ extern "C" {
                 float  target[3];    /* 32 */
                 float  _pad2;        /* 44 */
                 float  color[4];     /* 48 */
-        } jr3d_shader_light_t;       /* 64 字节 */
+        } joy_r3d_shader_light_t;       /* 64 字节 */
         typedef struct jr3d_light_block {
-                jr3d_shader_light_t lights[JR3D_MAX_LIGHTS];
+                joy_r3d_shader_light_t lights[JR3D_MAX_LIGHTS];
                 float ambient[4];
                 float viewPos[4];
-        } jr3d_light_block_t;        /* 288 字节 */
+        } joy_r3d_light_block_t;        /* 288 字节 */
 
 
         typedef struct ray2df {
-                vec2f_t origin, direction;
-        }ray2df_t;
+                joy_vec2f_t origin, direction;
+        }joy_ray2df_t;
 
         typedef struct ray2d_collisionf {
                 bool hit;               // Did the ray hit something?
-                fp_t distance;         // Distance to the nearest hit
-                vec2f_t point;          // Point of the nearest hit
-                vec2f_t normal;         // Surface normal of hit
-        }ray2d_collisionf_t;
+                joy_fp_t distance;         // Distance to the nearest hit
+                joy_vec2f_t point;          // Point of the nearest hit
+                joy_vec2f_t normal;         // Surface normal of hit
+        }joy_ray2d_collisionf_t;
 
 
         /* 锚点约定: 矩形用"左上角(x,y) + 宽高"定位, 区别于 GJK BOX 的"中心 + 半边长" */
         typedef struct rectanglef {
-                fp_t x; // rectangle top-left corner position x
-                fp_t y; // rectangle top-left corner position y
-                fp_t width;
-                fp_t height;
-        }rectanglef_t;
+                joy_fp_t x; // rectangle top-left corner position x
+                joy_fp_t y; // rectangle top-left corner position y
+                joy_fp_t width;
+                joy_fp_t height;
+        }joy_rectanglef_t;
 
         typedef struct circlef {
-                vec2f_t center;
-                fp_t radius;
-        }circlef_t;
+                joy_vec2f_t center;
+                joy_fp_t radius;
+        }joy_circlef_t;
 
         typedef struct polygonf {
-                vec2f_t* vertices;
+                joy_vec2f_t* vertices;
                 int num_vertices;
-        }polygonf_t;
+        }joy_polygonf_t;
 
 
         typedef struct contact2df {
-                vec2f_t sp; // starting point
-                vec2f_t ep; // ending point
-                vec2f_t normal;
-                fp_t depth;
-        }contact2df_t;
+                joy_vec2f_t sp; // starting point
+                joy_vec2f_t ep; // ending point
+                joy_vec2f_t normal;
+                joy_fp_t depth;
+        }joy_contact2df_t;
 
 
         typedef struct ray3df {
-                vec3f_t position, direction;
-        }ray3df_t;
+                joy_vec3f_t position, direction;
+        }joy_ray3df_t;
 
         typedef struct ray3d_collisionf {
                 bool hit;               // Did the ray hit something?
-                fp_t distance;         // Distance to the nearest hit
-                vec3f_t point;          // Point of the nearest hit
-                vec3f_t normal;         // Surface normal of hit
-        }ray3d_collisionf_t;
+                joy_fp_t distance;         // Distance to the nearest hit
+                joy_vec3f_t point;          // Point of the nearest hit
+                joy_vec3f_t normal;         // Surface normal of hit
+        }joy_ray3d_collisionf_t;
 
         typedef struct spheref {
-                vec3f_t position;
-                fp_t radius;
-        }spheref_t;
+                joy_vec3f_t position;
+                joy_fp_t radius;
+        }joy_spheref_t;
 
         typedef struct bounding_boxf {
-                vec3f_t min;            // Minimum vertex box-corner
-                vec3f_t max;            // Maximum vertex box-corner
-        } bounding_boxf_t;
+                joy_vec3f_t min;            // Minimum vertex box-corner
+                joy_vec3f_t max;            // Maximum vertex box-corner
+        } joy_bounding_boxf_t;
 
         typedef struct ray2d {
-                vec2_t origin, direction;
-        }ray2d_t;
+                joy_vec2_t origin, direction;
+        }joy_ray2d_t;
 
         typedef struct ray2d_collision {
                 bool hit;
-                ft_t distance;
-                vec2_t point;
-                vec2_t normal;
-        }ray2d_collision_t;
+                joy_ft_t distance;
+                joy_vec2_t point;
+                joy_vec2_t normal;
+        }joy_ray2d_collision_t;
 
         typedef struct rectangle {
-                ft_t x, y, width, height;
-        }rectangle_t;
+                joy_ft_t x, y, width, height;
+        }joy_rectangle_t;
 
         typedef struct circle {
-                vec2_t center;
-                ft_t radius;
-        }circle_t;
+                joy_vec2_t center;
+                joy_ft_t radius;
+        }joy_circle_t;
 
         typedef struct polygon {
-                vec2_t* vertices;
+                joy_vec2_t* vertices;
                 int num_vertices;
-        }polygon_t;
+        }joy_polygon_t;
 
         typedef struct contact2d {
-                vec2_t sp;
-                vec2_t ep;
-                vec2_t normal;
-                ft_t depth;
-        }contact2d_t;
+                joy_vec2_t sp;
+                joy_vec2_t ep;
+                joy_vec2_t normal;
+                joy_ft_t depth;
+        }joy_contact2d_t;
 
         typedef struct ray3d {
-                vec3_t position, direction;
-        }ray3d_t;
+                joy_vec3_t position, direction;
+        }joy_ray3d_t;
 
         typedef struct ray3d_collision {
                 bool hit;
-                ft_t distance;
-                vec3_t point;
-                vec3_t normal;
-        }ray3d_collision_t;
+                joy_ft_t distance;
+                joy_vec3_t point;
+                joy_vec3_t normal;
+        }joy_ray3d_collision_t;
 
         typedef struct sphere {
-                vec3_t position;
-                ft_t radius;
-        }sphere_t;
+                joy_vec3_t position;
+                joy_ft_t radius;
+        }joy_sphere_t;
 
         typedef struct bounding_box {
-                vec3_t min;
-                vec3_t max;
-        } bounding_box_t;
+                joy_vec3_t min;
+                joy_vec3_t max;
+        } joy_bounding_box_t;
 
 
 
@@ -164,27 +164,27 @@ extern "C" {
         } gjk3df_ctype_k;
 
         /* ---------- 3D碰撞体 ---------- */
-        /* 注意: BOX/OBB 的 position 是中心(half_size 为半边长), 与 rectanglef_t 的"左上角+宽高"语义不同 */
+        /* 注意: BOX/OBB 的 position 是中心(half_size 为半边长), 与 joy_rectanglef_t 的"左上角+宽高"语义不同 */
         typedef struct gjk3df_collider {
                 gjk3df_ctype_k type;
-                vec3f_t position;      /* 中心位置 */
-                fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
-                vec3f_t half_size;     /* BOX/OBB半边长 */
-                fp_t height;           /* 胶囊/圆柱/圆锥高度 */
-                vec3f_t axis;          /* 胶囊朝向(单位向量) */
-                vec3f_t rotation;      /* OBB欧拉角(绕 X/Y/Z 弧度) */
-                vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
+                joy_vec3f_t position;      /* 中心位置 */
+                joy_fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
+                joy_vec3f_t half_size;     /* BOX/OBB半边长 */
+                joy_fp_t height;           /* 胶囊/圆柱/圆锥高度 */
+                joy_vec3f_t axis;          /* 胶囊朝向(单位向量) */
+                joy_vec3f_t rotation;      /* OBB欧拉角(绕 X/Y/Z 弧度) */
+                joy_vec3f_t* vertices;     /* MESH顶点数组(借用的指针,不负责释放) */
                 int vertices_num;
-        } gjk3df_collider_t, * gjk3df_collider_p;
+        } joy_gjk3df_collider_t, * joy_gjk3df_collider_p;
 
         /* ---------- 接触信息(含EPA穿透深度) ---------- */
         typedef struct gjk3df_contact {
-                vec3f_t normal;
-                fp_t depth;
-        } gjk3df_contact_t, * gjk3df_contact_p;
+                joy_vec3f_t normal;
+                joy_fp_t depth;
+        } joy_gjk3df_contact_t, * joy_gjk3df_contact_p;
 
         /* ======================================================================== */
-        /*                        GJK 3D 浮点版 (ft_t/vec3_t)                        */
+        /*                        GJK 3D 浮点版 (joy_ft_t/joy_vec3_t)                        */
         /* ======================================================================== */
         /* ---------- 碰撞体类型 ---------- */
         typedef enum gjk3d_ctype {
@@ -199,20 +199,20 @@ extern "C" {
         /* ---------- 3D碰撞体(浮点) ---------- */
         typedef struct gjk3d_collider {
                 gjk3d_ctype_k type;
-                vec3_t position;       /* 中心位置 */
-                ft_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
-                vec3_t half_size;      /* BOX半边长 */
-                ft_t height;           /* 胶囊/圆柱/圆锥高度 */
-                vec3_t axis;           /* 胶囊朝向(单位向量) */
-                vec3_t* vertices;      /* MESH顶点数组(借用的指针,不负责释放) */
+                joy_vec3_t position;       /* 中心位置 */
+                joy_ft_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
+                joy_vec3_t half_size;      /* BOX半边长 */
+                joy_ft_t height;           /* 胶囊/圆柱/圆锥高度 */
+                joy_vec3_t axis;           /* 胶囊朝向(单位向量) */
+                joy_vec3_t* vertices;      /* MESH顶点数组(借用的指针,不负责释放) */
                 int vertices_num;
-        } gjk3d_collider_t, * gjk3d_collider_p;
+        } joy_gjk3d_collider_t, * joy_gjk3d_collider_p;
 
         /* ---------- 接触信息(含EPA穿透深度) ---------- */
         typedef struct gjk3d_contact {
-                vec3_t normal;
-                ft_t depth;
-        } gjk3d_contact_t, * gjk3d_contact_p;
+                joy_vec3_t normal;
+                joy_ft_t depth;
+        } joy_gjk3d_contact_t, * joy_gjk3d_contact_p;
 
       
 
@@ -227,29 +227,29 @@ extern "C" {
         #define GJK2D_CTYPE_POLYGON  3  /* 凸多边形: vertices数组(预变换到世界坐标) */
         #define GJK2D_CTYPE_PIE      4  /* 扇形: position + radius + sweep(弧度) */
 
-        /* 注意: BOX 的 position 是中心(half_size 为半边长), 与 rectanglef_t 的"左上角+宽高"语义不同 */
+        /* 注意: BOX 的 position 是中心(half_size 为半边长), 与 joy_rectanglef_t 的"左上角+宽高"语义不同 */
         typedef struct gjk2d_collider {
                 gjk2d_ctype_k type;
-                vec2f_t position;       /* 中心位置 */
-                fp_t radius;            /* 圆/胶囊/扇形半径 */
-                vec2f_t half_size;      /* BOX半边长 */
-                fp_t height;            /* 胶囊线段长度 */
-                vec2f_t axis;           /* 胶囊朝向(单位向量) */
-                vec2f_t* vertices;      /* POLYGON顶点数组(借用的指针,不释放) */
+                joy_vec2f_t position;       /* 中心位置 */
+                joy_fp_t radius;            /* 圆/胶囊/扇形半径 */
+                joy_vec2f_t half_size;      /* BOX半边长 */
+                joy_fp_t height;            /* 胶囊线段长度 */
+                joy_vec2f_t axis;           /* 胶囊朝向(单位向量) */
+                joy_vec2f_t* vertices;      /* POLYGON顶点数组(借用的指针,不释放) */
                 int vertices_num;
-                fp_t sweep;             /* 扇形张角(弧度) */
-        } gjk2d_collider_t, * gjk2d_collider_p;
+                joy_fp_t sweep;             /* 扇形张角(弧度) */
+        } joy_gjk2d_collider_t, * joy_gjk2d_collider_p;
 
         typedef struct gjk2d_contact {
-                vec2f_t normal;
-                fp_t depth;
-        } gjk2d_contact_t, * gjk2d_contact_p;
+                joy_vec2f_t normal;
+                joy_fp_t depth;
+        } joy_gjk2d_contact_t, * joy_gjk2d_contact_p;
 
 
 
 
         /* ========== Types ========== */
-        typedef struct janimator janimator_t, * janimator_p;
+        typedef struct janimator joy_animator_t, * joy_animator_p;
 
         /* Parameter types */
         typedef enum {
@@ -257,7 +257,7 @@ extern "C" {
                 JANIM_PARAM_INT,
                 JANIM_PARAM_BOOL,
                 JANIM_PARAM_TRIGGER,
-        } janim_param_type_t;
+        } joy_anim_param_type_t;
 
         /* Condition modes */
         typedef enum {
@@ -268,30 +268,30 @@ extern "C" {
                 JANIM_COND_IF_TRUE,     /* bool param == true */
                 JANIM_COND_IF_FALSE,    /* bool param == false */
                 JANIM_COND_TRIGGER,     /* trigger was set */
-        } janim_cond_mode_t;
+        } joy_anim_cond_mode_t;
 
         /* State enter/exit callback */
         typedef void (*janim_state_cb)(const char* state_name, void* userdata);
 
-        typedef struct label label_t, * label_p;
-        typedef struct button button_t, * button_p;
-        typedef struct combobox_item combobox_item_t, * combobox_item_p;
-        typedef struct combobox combobox_t, * combobox_p;
-        typedef struct combobox_input combobox_input_t, * combobox_input_p;
-        typedef struct datagrid datagrid_t, * datagrid_p;
-        typedef struct radio radio_t, * radio_p;
+        typedef struct label joy_label_t, * joy_label_p;
+        typedef struct button joy_button_t, * joy_button_p;
+        typedef struct combobox_item joy_combobox_item_t, * joy_combobox_item_p;
+        typedef struct combobox joy_combobox_t, * joy_combobox_p;
+        typedef struct combobox_input joy_combobox_input_t, * joy_combobox_input_p;
+        typedef struct datagrid joy_datagrid_t, * joy_datagrid_p;
+        typedef struct radio joy_radio_t, * joy_radio_p;
         typedef enum checkbox_state {
                 JOY_CHECKBOX_UNCHECKED,
                 JOY_CHECKBOX_CHECKED,
                 JOY_CHECKBOX_INDETERMINATE
-        }checkbox_state_t;
-        typedef struct checkbox checkbox_t, * checkbox_p;
-        typedef struct joystick joystick_t, * joystick_p;
-        typedef struct inputbox inputbox_t, * inputbox_p;
-        typedef struct slider slider_t, * slider_p;
-        typedef struct popup popup_t, * popup_p;
-        typedef struct tooltip tooltip_t, * tooltip_p;
-        typedef struct scrollview scrollview_t, * scrollview_p;
+        }joy_checkbox_state_t;
+        typedef struct checkbox joy_checkbox_t, * joy_checkbox_p;
+        typedef struct joystick joy_joystick_t, * joy_joystick_p;
+        typedef struct inputbox joy_inputbox_t, * joy_inputbox_p;
+        typedef struct slider joy_slider_t, * joy_slider_p;
+        typedef struct popup joy_popup_t, * joy_popup_p;
+        typedef struct tooltip joy_tooltip_t, * joy_tooltip_p;
+        typedef struct scrollview joy_scrollview_t, * joy_scrollview_p;
 
 
         /* ---------- 对象（碰撞体/实体） ---------- */
@@ -304,25 +304,25 @@ extern "C" {
             float  width, height; /* 矩形有效 */
             float  rotation;
             bool   visible;
-        }jtilemap_object_t, * jtilemap_object_p;
-        typedef struct jtilemap jtilemap_t, * jtilemap_p;
-        typedef struct jtilemap_tileset jtilemap_tileset_t, * jtilemap_tileset_p;
-        typedef struct jtilemap_tile_layer jtilemap_tile_layer_t, * jtilemap_tile_layer_p;
-        typedef struct jtilemap_object_layer jtilemap_object_layer_t, * jtilemap_object_layer_p;
+        }joy_tilemap_object_t, * joy_tilemap_object_p;
+        typedef struct jtilemap joy_tilemap_t, * joy_tilemap_p;
+        typedef struct jtilemap_tileset joy_tilemap_tileset_t, * joy_tilemap_tileset_p;
+        typedef struct jtilemap_tile_layer joy_tilemap_tile_layer_t, * joy_tilemap_tile_layer_p;
+        typedef struct jtilemap_object_layer joy_tilemap_object_layer_t, * joy_tilemap_object_layer_p;
 
         /* GID 解析结果：在此给出完整定义，使 C++ TU（模板 .cpp）也能看到完整类型，
            从而消除 joy_scene_tilemap_resolve_gid 的 -Wreturn-type-c-linkage 告警 */
         typedef struct jtilemap_gid_resolve {
-                jtilemap_tileset_p tileset;
+                joy_tilemap_tileset_p tileset;
                 int local_id;               /* tileset 内局部 ID */
                 bool has_anim;
                 int  anim_idx;              /* tileset->anims[] 下标，仅 has_anim 时有效 */
-        } jtilemap_gid_resolve_t;
+        } joy_tilemap_gid_resolve_t;
 
         /* ---------- 路径映射回调 ---------- */
-        typedef const char* (*jtilemap_path_remap_t)(const char* original_path);
+        typedef const char* (*joy_tilemap_path_remap_t)(const char* original_path);
         /* ---------- 渲染实例（不透明句柄，可重入） ---------- */
-        typedef struct jtilemap_render_t jtilemap_render_t, * jtilemap_render_p;
+        typedef struct joy_tilemap_render_t joy_tilemap_render_t, * joy_tilemap_render_p;
 
 
         typedef enum {
@@ -336,44 +336,44 @@ extern "C" {
                 int conv;
                 char* data;
                 int len;
-        }net_message_t, * net_message_p;
+        }joy_net_message_t, * joy_net_message_p;
 
-        typedef void (*net_callback)(net_message_p msg, void* userdata);
-        typedef struct kcpserver kcpserver_t, * kcpserver_p;
-        typedef struct kcpclient kcpclient_t, * kcpclient_p;
-        typedef struct tcpserver tcpserver_t, * tcpserver_p;
-        typedef struct tcpclient tcpclient_t, * tcpclient_p;
-        typedef struct wsnetserver wsnetserver_t, * wsnetserver_p;
-        typedef struct wsnetclient wsnetclient_t, * wsnetclient_p;
+        typedef void (*net_callback)(joy_net_message_p msg, void* userdata);
+        typedef struct kcpserver joy_kcpserver_t, * joy_kcpserver_p;
+        typedef struct kcpclient joy_kcpclient_t, * joy_kcpclient_p;
+        typedef struct tcpserver joy_tcpserver_t, * joy_tcpserver_p;
+        typedef struct tcpclient joy_tcpclient_t, * joy_tcpclient_p;
+        typedef struct wsnetserver joy_wsnetserver_t, * joy_wsnetserver_p;
+        typedef struct wsnetclient joy_wsnetclient_t, * joy_wsnetclient_p;
         typedef enum {
                 NET_CLIENT_TCP,
                 NET_CLIENT_KCP,
                 NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
         } net_client_type;
-        typedef struct netclient netclient_t, * netclient_p;
+        typedef struct netclient joy_netclient_t, * joy_netclient_p;
         typedef enum {
                 NET_SERVER_KCP,
                 NET_SERVER_TCP,
                 NET_SERVER_WEBSOCKET,
         } net_server_type;
-        typedef struct netserver netserver_t, * netserver_p;
+        typedef struct netserver joy_netserver_t, * joy_netserver_p;
 
 
-        typedef struct scene_node scene_node_t, * scene_node_p;
-        typedef struct scene scene_t, * scene_p;
-        typedef struct scene_manager scene_manager_t, * scene_manager_p;
+        typedef struct scene_node joy_scene_node_t, * joy_scene_node_p;
+        typedef struct scene joy_scene_t, * joy_scene_p;
+        typedef struct scene_manager joy_scene_manager_t, * joy_scene_manager_p;
 
-        typedef void (*scene_node_update_fn)(scene_node_p, float);
-        typedef void (*scene_node_render_fn)(scene_node_p, const void*);
-        typedef void (*scene_node_destroy_fn)(scene_node_p);
-        typedef void (*scene_node_event_fn)(scene_node_p, const void*);
+        typedef void (*scene_node_update_fn)(joy_scene_node_p, float);
+        typedef void (*scene_node_render_fn)(joy_scene_node_p, const void*);
+        typedef void (*scene_node_destroy_fn)(joy_scene_node_p);
+        typedef void (*scene_node_event_fn)(joy_scene_node_p, const void*);
 
-        typedef void (*scene_load_fn)(scene_p);
-        typedef void (*scene_update_fn)(scene_p, float);
-        typedef void (*scene_render_fn)(scene_p);
-        typedef void (*scene_destroy_fn)(scene_p);
-        typedef void (*scene_event_fn)(scene_p, const void*);
-        typedef void (*scene_fixed_update_fn)(scene_p, float); /* 固定步长更新(Unity FixedUpdate 对应) */
+        typedef void (*scene_load_fn)(joy_scene_p);
+        typedef void (*scene_update_fn)(joy_scene_p, float);
+        typedef void (*scene_render_fn)(joy_scene_p);
+        typedef void (*scene_destroy_fn)(joy_scene_p);
+        typedef void (*scene_event_fn)(joy_scene_p, const void*);
+        typedef void (*scene_fixed_update_fn)(joy_scene_p, float); /* 固定步长更新(Unity FixedUpdate 对应) */
 
 
 
@@ -392,9 +392,9 @@ extern "C" {
                 float rate;                /* 持续发射: 每秒粒子数(<=0 只爆发不持续) */
                 bool  gravity;             /* 是否受重力影响 */
                 float gravity_y;           /* 重力值(正数向下, 如 50.0f) */
-        } jparticle_cfg_t;
+        } joy_particle_cfg_t;
 
-        typedef struct jparticle jparticle_t, * jparticle_p;
+        typedef struct jparticle joy_particle_t, * joy_particle_p;
 
         /* ---------- 光源 ---------- */
         typedef struct jlight {
@@ -402,24 +402,24 @@ extern "C" {
                 float radius;        /* 光照半径 */
                 float r, g, b;       /* 颜色(0-255) */
                 float intensity;     /* 强度 0~1 */
-        } jlight_t;
+        } joy_light_t;
 
-        typedef struct jlight_sys jlight_sys_t, * jlight_sys_p;
+        typedef struct jlight_sys joy_light_sys_t, * joy_light_sys_p;
 
 
-        typedef int jecs_id_t;
-        typedef struct jecs_world jecs_world_t, * jecs_world_p;
-        //VECTOR_INIT(kecs, jecs_id_t);
+        typedef int joy_ecs_id_t;
+        typedef struct jecs_world joy_ecs_world_t, * joy_ecs_world_p;
+        //VECTOR_INIT(kecs, joy_ecs_id_t);
 
         typedef struct jecs_id_array {
-                jecs_id_t ids[512];
+                joy_ecs_id_t ids[512];
                 int num;
-        }jecs_id_array_t, * jecs_id_array_p;
+        }joy_ecs_id_array_t, * joy_ecs_id_array_p;
 
         typedef struct jecs_system {
                 void* arg;
-                void (*cb)(jecs_world_p, void*, float);
-        } jecs_system_t, * jecs_system_p;
+                void (*cb)(joy_ecs_world_p, void*, float);
+        } joy_ecs_system_t, * joy_ecs_system_p;
 
 
         /* ===== 行为树状态 ===== */
@@ -427,24 +427,24 @@ extern "C" {
                 BT_SUCCESS,
                 BT_FAILURE,
                 BT_RUNNING,
-        } bt_status_t;
+        } joy_bt_status_t;
 
         /* ===== 前向声明 ===== */
-        typedef struct bt_node bt_node_t;
+        typedef struct bt_node joy_bt_node_t;
 
         /* ===== 用户回调函数类型 ===== */
-        typedef bt_status_t(*bt_action_fn)(float dt);
+        typedef joy_bt_status_t(*bt_action_fn)(float dt);
         typedef bool        (*bt_condition_fn)(void);
 
         /* ===== 节点生命周期回调 ===== */
-        typedef void     (*bt_enter_fn)(bt_node_t* self);
-        typedef bt_status_t(*bt_tick_fn)(bt_node_t* self, float dt);
-        typedef void     (*bt_exit_fn)(bt_node_t* self);
-        typedef void     (*bt_destroy_fn)(bt_node_t* self);
+        typedef void     (*bt_enter_fn)(joy_bt_node_t* self);
+        typedef joy_bt_status_t(*bt_tick_fn)(joy_bt_node_t* self, float dt);
+        typedef void     (*bt_exit_fn)(joy_bt_node_t* self);
+        typedef void     (*bt_destroy_fn)(joy_bt_node_t* self);
 
         /* ===== 基础节点结构 ===== */
         struct bt_node {
-                bt_status_t   status;      /* 当前运行状态 */
+                joy_bt_status_t   status;      /* 当前运行状态 */
                 bt_enter_fn   enter;       /* 进入回调 */
                 bt_tick_fn    tick;        /* 更新回调 */
                 bt_exit_fn    exit;        /* 退出回调 */
@@ -455,93 +455,93 @@ extern "C" {
         typedef struct bt_state_slot {
                 const char* name;                    /* 状态名称（不可为 NULL） */
                 bt_enter_fn  state_enter;             /* 状态 enter（可为 NULL） */
-                const char* (*state_update)(bt_node_t* node, float dt); /* 返回下一状态名，NULL 表示不切换 */
+                const char* (*state_update)(joy_bt_node_t* node, float dt); /* 返回下一状态名，NULL 表示不切换 */
                 bt_exit_fn   state_exit;              /* 状态 exit（可为 NULL） */
-        } bt_state_slot_t;
+        } joy_bt_state_slot_t;
 
 
 
-        typedef struct audio_shot audio_shot_t, * audio_shot_p;
-        typedef struct audio_bgm audio_bgm_t, * audio_bgm_p;
+        typedef struct audio_shot joy_audio_shot_t, * joy_audio_shot_p;
+        typedef struct audio_bgm joy_audio_bgm_t, * joy_audio_bgm_p;
 
 
-        typedef void* (*module_create_t)(void);
-        typedef int (*module_init_t)(void* inst, void* app, const char* param);
-        typedef int (*module_event_t)(void* inst, void* event);
-        typedef int (*module_update_t)(void* inst, float delta_time);
-        typedef void (*module_release_t)(void* inst);
+        typedef void* (*joy_module_create_t)(void);
+        typedef int (*joy_module_init_t)(void* inst, void* app, const char* param);
+        typedef int (*joy_module_event_t)(void* inst, void* event);
+        typedef int (*joy_module_update_t)(void* inst, float delta_time);
+        typedef void (*joy_module_release_t)(void* inst);
 
         typedef struct module {
                 char name[512];
                 void* handle;
-                module_create_t create;
-                module_init_t init;
-                module_event_t event_handler;
-                module_update_t update;
-                module_release_t release;
-        }module_t, * module_p;
+                joy_module_create_t create;
+                joy_module_init_t init;
+                joy_module_event_t event_handler;
+                joy_module_update_t update;
+                joy_module_release_t release;
+        }joy_module_t, * joy_module_p;
 
-        typedef struct modules modules_t, * modules_p;
-
-
+        typedef struct modules joy_modules_t, * joy_modules_p;
 
 
-        typedef struct box2d_body_t {
+
+
+        typedef struct joy_box2d_body_t {
                 int id;
-                vec2f_t position;
-                fp_t rotation;
-                vec2f_t velocity;
-                fp_t angular_velocity;
-                vec2f_t force;
-                fp_t torque;
-                vec2f_t bounds;
-                fp_t friction;
-                fp_t mass, inv_mass;
-                fp_t I, invI;
-        } box2d_body_t;
+                joy_vec2f_t position;
+                joy_fp_t rotation;
+                joy_vec2f_t velocity;
+                joy_fp_t angular_velocity;
+                joy_vec2f_t force;
+                joy_fp_t torque;
+                joy_vec2f_t bounds;
+                joy_fp_t friction;
+                joy_fp_t mass, inv_mass;
+                joy_fp_t I, invI;
+        } joy_box2d_body_t;
 
 
-        typedef struct box2d_joint_t {
-                mat22f_t M;
-                vec2f_t local_anchor1, local_anchor2;
-                vec2f_t r1, r2;
-                vec2f_t bias;
-                vec2f_t p;		// accumulated impulse
+        typedef struct joy_box2d_joint_t {
+                joy_mat22f_t M;
+                joy_vec2f_t local_anchor1, local_anchor2;
+                joy_vec2f_t r1, r2;
+                joy_vec2f_t bias;
+                joy_vec2f_t p;		// accumulated impulse
                 int id1, id2;
-                fp_t biasfactor;
-                fp_t softness;
-        } box2d_joint_t;
+                joy_fp_t biasfactor;
+                joy_fp_t softness;
+        } joy_box2d_joint_t;
 
 
-        typedef struct box2d_manifold_t {
-                vec2f_t position;
-                vec2f_t normal;
-                fp_t separation;
+        typedef struct joy_box2d_manifold_t {
+                joy_vec2f_t position;
+                joy_vec2f_t normal;
+                joy_fp_t separation;
                 int feature;
-                fp_t pn;	// accumulated normal impulse
-                fp_t pt;	// accumulated tangent impulse
-                vec2f_t r1, r2;
-                fp_t mass_normal, mass_tangent;
-                fp_t bias;
-        } box2d_manifold_t;
+                joy_fp_t pn;	// accumulated normal impulse
+                joy_fp_t pt;	// accumulated tangent impulse
+                joy_vec2f_t r1, r2;
+                joy_fp_t mass_normal, mass_tangent;
+                joy_fp_t bias;
+        } joy_box2d_manifold_t;
 
 
-        typedef union box2d_arbiter_key_t {
+        typedef union joy_box2d_arbiter_key_t {
                 struct id_pair {
                         int id1, id2;
                 } id_pair;
                 int64_t value;
-        } box2d_arbiter_key_t;
+        } joy_box2d_arbiter_key_t;
 
 
-        typedef struct box2d_arbiter_t {
-                box2d_manifold_t manifolds[MAX_POINTS];
+        typedef struct joy_box2d_arbiter_t {
+                joy_box2d_manifold_t manifolds[MAX_POINTS];
                 int num_manifolds, id1, id2;
-                fp_t friction; // combined friction
-        } box2d_arbiter_t;
+                joy_fp_t friction; // combined friction
+        } joy_box2d_arbiter_t;
 
 
-        typedef struct box2d_world_t box2d_world_t;
+        typedef struct joy_box2d_world_t joy_box2d_world_t;
 
 
 
@@ -552,10 +552,10 @@ extern "C" {
         typedef struct jmsgpack_packer {
                 void* data;
                 jmsgpack_write_fn callback;
-        } jmsgpack_packer_t;
+        } joy_msgpack_packer_t;
 
-        typedef struct jmsgpack_zone jmsgpack_zone_t;
-        typedef struct jmsgpack_object jmsgpack_object_t;
+        typedef struct jmsgpack_zone joy_msgpack_zone_t;
+        typedef struct jmsgpack_object joy_msgpack_object_t;
 
         typedef enum {
                 JMSGPACK_OBJECT_NIL = 0x00,
@@ -566,9 +566,9 @@ extern "C" {
                 JMSGPACK_OBJECT_STR = 0x05,
                 JMSGPACK_OBJECT_ARRAY = 0x06,
                 JMSGPACK_OBJECT_MAP = 0x07,
-        } jmsgpack_object_type_t;
+        } joy_msgpack_object_type_t;
 
-        /* jmsgpack_object_t 为不透明句柄（opaque）。
+        /* joy_msgpack_object_t 为不透明句柄（opaque）。
          * 外部不再直接访问其字段，一律通过下方 jmsgpack_object_* 访问器读取；
          * 结构体定义与到 msgpack_object 的转换全部封装在 jmsgpack.c 内部。
          * 这样彻底消除"手写镜像 + 强转"带来的跨平台布局耦合（32/64 位尺寸差异静默出错）。
@@ -576,9 +576,9 @@ extern "C" {
          * ptr[1] 按错误步进读取 → 嵌套解包失败（仅在 wasm 上暴露）。改成不透明后此类问题不可能再现。 */
 
         typedef struct {
-                jmsgpack_zone_t* zone;
-                const jmsgpack_object_t* data;   /* 指向 zone 内的根对象（不透明） */
-        } jmsgpack_unpacked_t;
+                joy_msgpack_zone_t* zone;
+                const joy_msgpack_object_t* data;   /* 指向 zone 内的根对象（不透明） */
+        } joy_msgpack_unpacked_t;
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,7 @@
  *   node api/tools/rename_types.js --dry-run    只打印命中报告，不改文件
  *   node api/tools/rename_types.js --write      执行替换（可配 --only / --map / --tags）
  *   node api/tools/rename_types.js --audit      全词审计旧名残留（合并公开+私有两张表）
+ *   node api/tools/rename_types.js --trim-ws    清理「含新类型名的行」的行尾空白（不增删行）
  *   node api/tools/rename_types.js --check-aliases  校验冻结表与现有生成物类名集合一致
  *
  * 选项：--only <前缀,逗号分隔>  仅处理这些相对路径前缀（如 src/,include/joy/）
@@ -264,6 +265,31 @@ function main() {
     console.log('vtable 句柄类', vCls.size, 'C# sealed 类', cCls.size, '冻结基线', baseline.size);
     console.log('未被冻结表覆盖(vtable):', JSON.stringify(missV));
     console.log('未被冻结表覆盖(C#):', JSON.stringify(missC));
+    return;
+  }
+
+  /* 改名后原本就带行尾空格的行会变成 diff 新增行，被 git diff --check 抓到。
+   * 只清理「含新类型名」的行，不动其它行，也不增删行数（保住 IDL source 行号）。 */
+  if (args.cmd === '--trim-ws') {
+    const newNames = [...new Set(Object.values(map))];
+    const reOf = newNames.map(esc).join('|');
+    const hasNew = new RegExp('(^|[^A-Za-z0-9_])(' + reOf + ')(?=$|[^A-Za-z0-9_])');
+    let nFiles = 0, nLines = 0;
+    for (const r of collectFiles(args.only)) {
+      const fp = P(r);
+      const raw = fs.readFileSync(fp, 'utf8');
+      const eol = readEol(raw);
+      const lines = raw.split(/\r?\n/);
+      let changed = 0;
+      for (let i = 0; i < lines.length; i++) {
+        if (hasNew.test(lines[i]) && /[ \t]+$/.test(lines[i])) {
+          lines[i] = lines[i].replace(/[ \t]+$/, '');
+          changed++;
+        }
+      }
+      if (changed) { fs.writeFileSync(fp, lines.join(eol), 'utf8'); nFiles++; nLines += changed; }
+    }
+    console.log('已清理', nLines, '行行尾空白，涉及', nFiles, '个文件');
     return;
   }
 

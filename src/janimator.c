@@ -8,7 +8,7 @@
 
 typedef struct {
     char param_name[JANIM_MAX_NAME];
-    janim_cond_mode_t mode;
+    joy_anim_cond_mode_t mode;
     float threshold;
 } joy_anim_condition_t;
 
@@ -20,9 +20,9 @@ typedef struct {
 } joy_anim_transition_t;
 
 typedef struct {
-    image_p image;
+    joy_image_p image;
     float duration;
-    jrect_t src_rect;
+    joy_rect_t src_rect;
     bool is_color;     /* true = solid color, no image */
     uint8_t color_r, color_g, color_b, color_a;
 } joy_anim_motion_t;
@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
     char name[JANIM_MAX_NAME];
-    janim_param_type_t type;
+    joy_anim_param_type_t type;
     union {
         float f;
         int i;
@@ -58,7 +58,7 @@ typedef struct {
 } joy_anim_param_t;
 
 struct janimator {
-    jr2d_p renderer;
+    joy_r2d_p renderer;
     kvec_t(joy_anim_state_t) states;
     kvec_t(joy_anim_transition_t) transitions;
     kvec_t(joy_anim_param_t) params;
@@ -74,7 +74,7 @@ struct janimator {
 
 /* ========== Helpers ========== */
 
-static int find_state(janimator_p anim, const char* name)
+static int find_state(joy_animator_p anim, const char* name)
 {
     unsigned int i;
     for (i = 0; i < kv_size(anim->states); i++) {
@@ -84,7 +84,7 @@ static int find_state(janimator_p anim, const char* name)
     return -1;
 }
 
-static int find_param(janimator_p anim, const char* name)
+static int find_param(joy_animator_p anim, const char* name)
 {
     unsigned int i;
     for (i = 0; i < kv_size(anim->params); i++) {
@@ -94,8 +94,8 @@ static int find_param(janimator_p anim, const char* name)
     return -1;
 }
 
-static joy_anim_param_t* get_or_create_param(janimator_p anim, const char* name,
-    janim_param_type_t type)
+static joy_anim_param_t* get_or_create_param(joy_animator_p anim, const char* name,
+    joy_anim_param_type_t type)
 {
     int idx = find_param(anim, name);
     if (idx >= 0) {
@@ -112,7 +112,7 @@ static joy_anim_param_t* get_or_create_param(janimator_p anim, const char* name,
     return &kv_A(anim->params, kv_size(anim->params) - 1);
 }
 
-static void enter_state(janimator_p anim, int idx)
+static void enter_state(joy_animator_p anim, int idx)
 {
     if (anim->on_exit && anim->current_state >= 0 &&
         (unsigned)anim->current_state < kv_size(anim->states))
@@ -134,9 +134,9 @@ static void enter_state(janimator_p anim, int idx)
 
 /* ========== Lifecycle ========== */
 
-janimator_p joy_scene_animator_create(jr2d_p r2d)
+joy_animator_p joy_scene_animator_create(joy_r2d_p r2d)
 {
-    janimator_p anim = (janimator_p)SDL_calloc(1, sizeof(janimator_t));
+    joy_animator_p anim = (joy_animator_p)SDL_calloc(1, sizeof(joy_animator_t));
     if (!anim) return NULL;
     anim->renderer = r2d;
     kv_init(anim->states);
@@ -151,7 +151,7 @@ janimator_p joy_scene_animator_create(jr2d_p r2d)
     return anim;
 }
 
-void joy_scene_animator_destroy(janimator_p anim)
+void joy_scene_animator_destroy(joy_animator_p anim)
 {
     unsigned int i, j;
     if (!anim) return;
@@ -182,45 +182,45 @@ void joy_scene_animator_destroy(janimator_p anim)
 
 /* ========== Parameters ========== */
 
-void joy_scene_animator_set_float(janimator_p anim, const char* name, float v)
+void joy_scene_animator_set_float(joy_animator_p anim, const char* name, float v)
 {
     joy_anim_param_t* p = get_or_create_param(anim, name, JANIM_PARAM_FLOAT);
     p->v.f = v;
 }
 
-void joy_scene_animator_set_int(janimator_p anim, const char* name, int v)
+void joy_scene_animator_set_int(joy_animator_p anim, const char* name, int v)
 {
     joy_anim_param_t* p = get_or_create_param(anim, name, JANIM_PARAM_INT);
     p->v.i = v;
 }
 
-void joy_scene_animator_set_bool(janimator_p anim, const char* name, bool v)
+void joy_scene_animator_set_bool(joy_animator_p anim, const char* name, bool v)
 {
     joy_anim_param_t* p = get_or_create_param(anim, name, JANIM_PARAM_BOOL);
     p->v.b = v ? 1 : 0;
 }
 
-void joy_scene_animator_set_trigger(janimator_p anim, const char* name)
+void joy_scene_animator_set_trigger(joy_animator_p anim, const char* name)
 {
     joy_anim_param_t* p = get_or_create_param(anim, name, JANIM_PARAM_TRIGGER);
     p->trigger_consumed = false;
 }
 
-float joy_scene_animator_get_float(janimator_p anim, const char* name)
+float joy_scene_animator_get_float(joy_animator_p anim, const char* name)
 {
     int idx = find_param(anim, name);
     if (idx < 0) return 0.0f;
     return kv_A(anim->params, idx).v.f;
 }
 
-int joy_scene_animator_get_int(janimator_p anim, const char* name)
+int joy_scene_animator_get_int(joy_animator_p anim, const char* name)
 {
     int idx = find_param(anim, name);
     if (idx < 0) return 0;
     return kv_A(anim->params, idx).v.i;
 }
 
-bool joy_scene_animator_get_bool(janimator_p anim, const char* name)
+bool joy_scene_animator_get_bool(joy_animator_p anim, const char* name)
 {
     int idx = find_param(anim, name);
     if (idx < 0) return false;
@@ -229,7 +229,7 @@ bool joy_scene_animator_get_bool(janimator_p anim, const char* name)
 
 /* ========== States ========== */
 
-void joy_scene_animator_add_state(janimator_p anim, const char* name)
+void joy_scene_animator_add_state(joy_animator_p anim, const char* name)
 {
     joy_anim_state_t s;
     SDL_strlcpy(s.name, name, JANIM_MAX_NAME);
@@ -253,7 +253,7 @@ void joy_scene_animator_add_state(janimator_p anim, const char* name)
     }
 }
 
-void joy_scene_animator_set_default_state(janimator_p anim, const char* name)
+void joy_scene_animator_set_default_state(joy_animator_p anim, const char* name)
 {
     int idx = find_state(anim, name);
     if (idx >= 0) {
@@ -262,8 +262,8 @@ void joy_scene_animator_set_default_state(janimator_p anim, const char* name)
     }
 }
 
-void joy_scene_animator_state_add_clip(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, jrect_t src_rect)
+void joy_scene_animator_state_add_clip(joy_animator_p anim, const char* state_name,
+    const char* image_path, float duration, joy_rect_t src_rect)
 {
     int sidx = find_state(anim, state_name);
     if (sidx < 0) return;
@@ -276,7 +276,7 @@ void joy_scene_animator_state_add_clip(janimator_p anim, const char* state_name,
     kv_push(joy_anim_motion_t, s->clips, m);
 }
 
-void joy_scene_animator_state_add_color(janimator_p anim, const char* state_name,
+void joy_scene_animator_state_add_color(joy_animator_p anim, const char* state_name,
     float duration, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     int sidx = find_state(anim, state_name);
@@ -285,20 +285,20 @@ void joy_scene_animator_state_add_color(janimator_p anim, const char* state_name
     joy_anim_motion_t m;
     m.image = NULL;
     m.duration = duration;
-    m.src_rect = (jrect_t){ 0, 0, (float)w, (float)h };
+    m.src_rect = (joy_rect_t){ 0, 0, (float)w, (float)h };
     m.is_color = true;
     m.color_r = r; m.color_g = g; m.color_b = b; m.color_a = a;
     kv_push(joy_anim_motion_t, s->clips, m);
 }
 
-void joy_scene_animator_state_set_loop(janimator_p anim, const char* state_name, bool loop)
+void joy_scene_animator_state_set_loop(joy_animator_p anim, const char* state_name, bool loop)
 {
     int sidx = find_state(anim, state_name);
     if (sidx >= 0)
         kv_A(anim->states, sidx).loop = loop;
 }
 
-void joy_scene_animator_state_set_speed(janimator_p anim, const char* state_name, float speed)
+void joy_scene_animator_state_set_speed(joy_animator_p anim, const char* state_name, float speed)
 {
     int sidx = find_state(anim, state_name);
     if (sidx >= 0)
@@ -307,7 +307,7 @@ void joy_scene_animator_state_set_speed(janimator_p anim, const char* state_name
 
 /* ========== Blend Tree ========== */
 
-void joy_scene_animator_state_set_blend(janimator_p anim, const char* state_name,
+void joy_scene_animator_state_set_blend(joy_animator_p anim, const char* state_name,
     const char* param_name)
 {
     int sidx = find_state(anim, state_name);
@@ -317,8 +317,8 @@ void joy_scene_animator_state_set_blend(janimator_p anim, const char* state_name
     SDL_strlcpy(s->blend_param, param_name, JANIM_MAX_NAME);
 }
 
-void joy_scene_animator_state_add_motion(janimator_p anim, const char* state_name,
-    const char* image_path, float duration, jrect_t src_rect, float threshold)
+void joy_scene_animator_state_add_motion(joy_animator_p anim, const char* state_name,
+    const char* image_path, float duration, joy_rect_t src_rect, float threshold)
 {
     int sidx = find_state(anim, state_name);
     if (sidx < 0) return;
@@ -334,7 +334,7 @@ void joy_scene_animator_state_add_motion(janimator_p anim, const char* state_nam
 
 /* ========== Transitions ========== */
 
-int joy_scene_animator_add_transition(janimator_p anim, const char* from, const char* to)
+int joy_scene_animator_add_transition(joy_animator_p anim, const char* from, const char* to)
 {
     int from_idx = find_state(anim, from);
     int to_idx = find_state(anim, to);
@@ -348,7 +348,7 @@ int joy_scene_animator_add_transition(janimator_p anim, const char* from, const 
     return (int)(kv_size(anim->transitions) - 1);
 }
 
-int joy_scene_animator_add_any_transition(janimator_p anim, const char* to)
+int joy_scene_animator_add_any_transition(joy_animator_p anim, const char* to)
 {
     int to_idx = find_state(anim, to);
     if (to_idx < 0) return -1;
@@ -361,19 +361,19 @@ int joy_scene_animator_add_any_transition(janimator_p anim, const char* to)
     return (int)(kv_size(anim->transitions) - 1);
 }
 
-void joy_scene_animator_transition_add_cond(janimator_p anim, int trans_idx,
+void joy_scene_animator_transition_add_cond(joy_animator_p anim, int trans_idx,
     const char* param_name, int mode, float threshold)
 {
     if (trans_idx < 0 || (unsigned)trans_idx >= kv_size(anim->transitions))
         return;
     joy_anim_condition_t c;
     SDL_strlcpy(c.param_name, param_name, JANIM_MAX_NAME);
-    c.mode = (janim_cond_mode_t)mode;
+    c.mode = (joy_anim_cond_mode_t)mode;
     c.threshold = threshold;
     kv_push(joy_anim_condition_t, kv_A(anim->transitions, trans_idx).conditions, c);
 }
 
-void joy_scene_animator_transition_set_exit_time(janimator_p anim, int trans_idx, float seconds)
+void joy_scene_animator_transition_set_exit_time(joy_animator_p anim, int trans_idx, float seconds)
 {
     if (trans_idx < 0 || (unsigned)trans_idx >= kv_size(anim->transitions))
         return;
@@ -382,7 +382,7 @@ void joy_scene_animator_transition_set_exit_time(janimator_p anim, int trans_idx
 
 /* ========== Transition checking ========== */
 
-static bool check_condition(janimator_p anim, const joy_anim_condition_t* c)
+static bool check_condition(joy_animator_p anim, const joy_anim_condition_t* c)
 {
     int pidx = find_param(anim, c->param_name);
     if (pidx < 0) return false;
@@ -422,7 +422,7 @@ static bool check_condition(janimator_p anim, const joy_anim_condition_t* c)
     }
 }
 
-static bool check_transition(janimator_p anim, const joy_anim_transition_t* t)
+static bool check_transition(joy_animator_p anim, const joy_anim_transition_t* t)
 {
     unsigned int i;
     if (kv_size(t->conditions) == 0)
@@ -445,7 +445,7 @@ static bool check_transition(janimator_p anim, const joy_anim_transition_t* t)
 
 /* ========== Update ========== */
 
-void joy_scene_animator_update(janimator_p anim, float dt)
+void joy_scene_animator_update(joy_animator_p anim, float dt)
 {
     unsigned int i;
     unsigned int nstates;
@@ -533,7 +533,7 @@ after_transition:
 
 /* ========== Draw ========== */
 
-void joy_scene_animator_draw(janimator_p anim, float x, float y)
+void joy_scene_animator_draw(joy_animator_p anim, float x, float y)
 {
     if (!anim) return;
     if (anim->current_state < 0 || (unsigned)anim->current_state >= kv_size(anim->states))
@@ -550,15 +550,15 @@ void joy_scene_animator_draw(janimator_p anim, float x, float y)
     }
 
     if (m->is_color) {
-        jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
+        joy_rect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         joy_r2d_set_color(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
         joy_math_shape_draw_rectangle(anim->renderer, "fill", r);
     } else if (m->image) {
         float sx = anim->flip_h ? -1.0f : 1.0f;
-        joy_ui_image_draw_ex(m->image, &m->src_rect, (vec2_t){x, y}, 0.0f,
-            (vec2_t){sx, 1.0f}, (vec2_t){0.0f, 0.0f});
+        joy_ui_image_draw_ex(m->image, &m->src_rect, (joy_vec2_t){x, y}, 0.0f,
+            (joy_vec2_t){sx, 1.0f}, (joy_vec2_t){0.0f, 0.0f});
     } else {
-        jrect_t r = { x, y, m->src_rect.w, m->src_rect.h };
+        joy_rect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         joy_r2d_set_color(anim->renderer, 80, 80, 80, 255);
         joy_math_shape_draw_rectangle(anim->renderer, "fill", r);
         joy_r2d_set_color(anim->renderer, 120, 120, 120, 255);
@@ -566,14 +566,14 @@ void joy_scene_animator_draw(janimator_p anim, float x, float y)
     }
 }
 
-void joy_scene_animator_set_flip_h(janimator_p anim, bool flip)
+void joy_scene_animator_set_flip_h(joy_animator_p anim, bool flip)
 {
     if (anim) anim->flip_h = flip;
 }
 
 /* ========== Query ========== */
 
-const char* joy_scene_animator_current_state(janimator_p anim)
+const char* joy_scene_animator_current_state(joy_animator_p anim)
 {
     if (!anim || anim->current_state < 0 ||
         (unsigned)anim->current_state >= kv_size(anim->states))
@@ -583,13 +583,13 @@ const char* joy_scene_animator_current_state(janimator_p anim)
 
 /* ========== Callbacks ========== */
 
-void joy_scene_animator_set_on_enter(janimator_p anim, janim_state_cb cb, void* userdata)
+void joy_scene_animator_set_on_enter(joy_animator_p anim, janim_state_cb cb, void* userdata)
 {
     anim->on_enter = cb;
     anim->cb_userdata = userdata;
 }
 
-void joy_scene_animator_set_on_exit(janimator_p anim, janim_state_cb cb, void* userdata)
+void joy_scene_animator_set_on_exit(joy_animator_p anim, janim_state_cb cb, void* userdata)
 {
     anim->on_exit = cb;
     anim->cb_userdata = userdata;

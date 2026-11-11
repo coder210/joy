@@ -21,7 +21,7 @@ typedef struct kcp_connection
         char ip[JOY_MAX_IP];
         int port;
         int timeout;
-        delay_t updating_delay;
+        joy_delay_t updating_delay;
 } kcp_connection_t, *kcp_connection_p;
 
 typedef struct tcp_connection
@@ -30,7 +30,7 @@ typedef struct tcp_connection
         char ip[JOY_MAX_IP];
         int port;
         int timeout;
-        delay_t updating_delay;
+        joy_delay_t updating_delay;
 } tcp_connection_t, *tcp_connection_p;
 
 KHASH_INIT(kconn, int, kcp_connection_p, 1, kh_int_hash_func, kh_int_hash_equal)
@@ -39,7 +39,7 @@ KHASH_INIT(ktcp_conn, int, tcp_connection_p, 1, kh_int_hash_func, kh_int_hash_eq
 // no-op: free 作为 KMEMPOOL_INIT 析构函数会导致宏内建 free 之后 double-free
 // 消息内部 data 由 kl_begin/kl_end 循环中的 free(msg->data) 负责释放
 static void kmq_free_nop(void* p) {}
-KLIST_INIT(kmq, net_message_t, kmq_free_nop)
+KLIST_INIT(kmq, joy_net_message_t, kmq_free_nop)
 
 struct kcpserver
 {
@@ -58,8 +58,8 @@ struct kcpclient
         char server_ip[JOY_MAX_IP];
         int server_port;
         short timeout;
-        delay_t updating_delay;
-        delay_t connection_delay;
+        joy_delay_t updating_delay;
+        joy_delay_t connection_delay;
         net_callback cb;
         klist_t(kmq) * mq;
         void* userdata;
@@ -80,8 +80,8 @@ struct tcpclient
         char server_ip[JOY_MAX_IP];
         int server_port;
         short timeout;
-        delay_t updating_delay;
-        delay_t connection_delay;
+        joy_delay_t updating_delay;
+        joy_delay_t connection_delay;
         klist_t(kmq) * mq;
 };
 
@@ -114,13 +114,13 @@ JOY_INLINE uint32_t iclock(uint64_t clock64)
 // ==============================
 // 服务端
 // ==============================
-kcpserver_p
+joy_kcpserver_p
 joy_net_kcpserver_create(const char* ip, int port)
 {
-        kcpserver_p ks;
-        ks = (kcpserver_p)malloc(sizeof(kcpserver_t));
+        joy_kcpserver_p ks;
+        ks = (joy_kcpserver_p)malloc(sizeof(joy_kcpserver_t));
         assert(ks);
-        memset(ks, 0, sizeof(kcpserver_t));
+        memset(ks, 0, sizeof(joy_kcpserver_t));
         ks->sockfd = joy_net_sys_udp();
         ks->conv = 1000;
         ks->conns = kh_init(kconn);
@@ -140,7 +140,7 @@ joy_net_kcpserver_create(const char* ip, int port)
         return ks;
 }
 
-int joy_net_kcpserver_destroy(kcpserver_p ks)
+int joy_net_kcpserver_destroy(joy_kcpserver_p ks)
 {
         if (!ks) return 0;
 
@@ -157,7 +157,7 @@ int joy_net_kcpserver_destroy(kcpserver_p ks)
                 }
         }
 
-        net_message_t msg;
+        joy_net_message_t msg;
         while (joy_net_kcpserver_poll_message(ks, &msg))
         {
                 if (msg.data) free(msg.data);
@@ -174,10 +174,10 @@ static int
 kcpserver_output(const char* data, int len, ikcpcb* kcp, void* user)
 {
         IUINT32 conv;
-        kcpserver_p ks;
+        joy_kcpserver_p ks;
         kcp_connection_p conn;
         khint_t k;
-        ks = (kcpserver_p)user;
+        ks = (joy_kcpserver_p)user;
         conv = ikcp_getconv(kcp);
         k = kh_get(kconn, ks->conns, conv);
         if (k != kh_end(ks->conns))
@@ -189,14 +189,14 @@ kcpserver_output(const char* data, int len, ikcpcb* kcp, void* user)
 }
 
 static void
-kcpserver_input(kcpserver_p ks, const char* data, int len,
+kcpserver_input(joy_kcpserver_p ks, const char* data, int len,
         const char* ip, int port)
 {
         char buf[4];
         int conv, ret;
         khint_t k;
         kcp_connection_p conn;
-        net_message_t msg;
+        joy_net_message_t msg;
 
         conv = joy_core_utils_bit2int((uint8_t*)data);
         k = kh_get(kconn, ks->conns, conv);
@@ -268,7 +268,7 @@ kcpserver_input(kcpserver_p ks, const char* data, int len,
         }
 }
 
-void joy_net_kcpserver_send(kcpserver_p ks, int conv, const char* data, int len)
+void joy_net_kcpserver_send(joy_kcpserver_p ks, int conv, const char* data, int len)
 {
         khint_t k;
         kcp_connection_p conn;
@@ -280,7 +280,7 @@ void joy_net_kcpserver_send(kcpserver_p ks, int conv, const char* data, int len)
         }
 }
 
-void joy_net_kcpserver_broadcast(kcpserver_p ks, const char* data, int len)
+void joy_net_kcpserver_broadcast(joy_kcpserver_p ks, const char* data, int len)
 {
         khint_t k;
         kcp_connection_p conn;
@@ -296,7 +296,7 @@ void joy_net_kcpserver_broadcast(kcpserver_p ks, const char* data, int len)
         }
 }
 
-void joy_net_kcpserver_offline(kcpserver_p ks, int conv)
+void joy_net_kcpserver_offline(joy_kcpserver_p ks, int conv)
 {
         khint_t k;
         kcp_connection_p conn;
@@ -308,12 +308,12 @@ void joy_net_kcpserver_offline(kcpserver_p ks, int conv)
         }
 }
 
-void joy_net_kcpserver_update(kcpserver_p ks)
+void joy_net_kcpserver_update(joy_kcpserver_p ks)
 {
         uint64_t current_time;
         int len, port;
         char buf[JOY_MAX_BUFFER], ip[JOY_MAX_IP];
-        net_message_t msg;
+        joy_net_message_t msg;
 
         current_time = joy_net_sys_current_time();
         len = joy_net_sys_recvfrom(ks->sockfd, buf, ip, &port);
@@ -385,12 +385,12 @@ void joy_net_kcpserver_update(kcpserver_p ks)
         free(del_list);
 }
 
-int joy_net_kcpserver_connection_count(kcpserver_p ks)
+int joy_net_kcpserver_connection_count(joy_kcpserver_p ks)
 {
         return kh_size(ks->conns);
 }
 
-bool joy_net_kcpserver_poll_message(kcpserver_p ks, net_message_p msg)
+bool joy_net_kcpserver_poll_message(joy_kcpserver_p ks, joy_net_message_p msg)
 {
         if (!ks || !msg) return false;
         kliter_t(kmq)* p;
@@ -407,7 +407,7 @@ bool joy_net_kcpserver_poll_message(kcpserver_p ks, net_message_p msg)
         }
 }
 
-void joy_net_kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userdata)
+void joy_net_kcpserver_set_callback(joy_kcpserver_p ks, net_callback cb, void* userdata)
 {
         ks->cb = cb;
         ks->userdata = userdata;
@@ -416,12 +416,12 @@ void joy_net_kcpserver_set_callback(kcpserver_p ks, net_callback cb, void* userd
 // ==============================
 // 客户端
 // ==============================
-kcpclient_p joy_net_kcpclient_create(const char* ip, int port)
+joy_kcpclient_p joy_net_kcpclient_create(const char* ip, int port)
 {
-        kcpclient_p kc;
-        kc = (kcpclient_p)malloc(sizeof(kcpclient_t));
+        joy_kcpclient_p kc;
+        kc = (joy_kcpclient_p)malloc(sizeof(joy_kcpclient_t));
         assert(kc);
-        memset(kc, 0, sizeof(kcpclient_t)); // 【修复】初始化全0
+        memset(kc, 0, sizeof(joy_kcpclient_t)); // 【修复】初始化全0
         kc->kcp = NULL;
         kc->sockfd = joy_net_sys_udp();
         strcpy(kc->server_ip, ip);
@@ -437,7 +437,7 @@ kcpclient_p joy_net_kcpclient_create(const char* ip, int port)
         return kc;
 }
 
-void joy_net_kcpclient_destroy(kcpclient_p kc)
+void joy_net_kcpclient_destroy(joy_kcpclient_p kc)
 {
         if (!kc) return;
         joy_net_sys_closesocket(kc->sockfd);
@@ -445,7 +445,7 @@ void joy_net_kcpclient_destroy(kcpclient_p kc)
                 ikcp_release(kc->kcp);
                 kc->kcp = NULL;
         }
-        net_message_t msg;
+        joy_net_message_t msg;
         while (joy_net_kcpclient_poll_message(kc, &msg)) {
                 if (msg.data) free(msg.data);
         }
@@ -457,16 +457,16 @@ static int
 kcpclient_output(const char* data, int size, ikcpcb* kcp, void* user)
 {
         int n;
-        kcpclient_p kc;
-        kc = (kcpclient_p)user;
+        joy_kcpclient_p kc;
+        kc = (joy_kcpclient_p)user;
         n = joy_net_sys_sendto(kc->sockfd, data, size, kc->server_ip, kc->server_port);
         return n;
 }
 
 static void
-kcpclient_input(kcpclient_p kc, const char* data, int sz)
+kcpclient_input(joy_kcpclient_p kc, const char* data, int sz)
 {
-        net_message_t msg;
+        joy_net_message_t msg;
         int conv;
         if (kc->kcp)
         {
@@ -502,7 +502,7 @@ kcpclient_input(kcpclient_p kc, const char* data, int sz)
         }
 }
 
-int joy_net_kcpclient_send(kcpclient_p kc, const char* data, int len)
+int joy_net_kcpclient_send(joy_kcpclient_p kc, const char* data, int len)
 {
         if (kc->kcp)
         {
@@ -511,10 +511,10 @@ int joy_net_kcpclient_send(kcpclient_p kc, const char* data, int len)
         return -1;
 }
 
-void joy_net_kcpclient_update(kcpclient_p kc)
+void joy_net_kcpclient_update(joy_kcpclient_p kc)
 {
         int64_t current_time;
-        net_message_t msg;
+        joy_net_message_t msg;
         char data[4] = { 0 };
         char buf[JOY_MAX_BUFFER];
         char ip[JOY_MAX_IP];
@@ -582,7 +582,7 @@ void joy_net_kcpclient_update(kcpclient_p kc)
         }
 }
 
-bool joy_net_kcpclient_poll_message(kcpclient_p kc, net_message_p msg)
+bool joy_net_kcpclient_poll_message(joy_kcpclient_p kc, joy_net_message_p msg)
 {
         if (!kc || !msg) return false;
         kliter_t(kmq)* p;
@@ -599,7 +599,7 @@ bool joy_net_kcpclient_poll_message(kcpclient_p kc, net_message_p msg)
         }
 }
 
-void joy_net_kcpclient_set_callback(kcpclient_p kc, net_callback cb, void* userdata)
+void joy_net_kcpclient_set_callback(joy_kcpclient_p kc, net_callback cb, void* userdata)
 {
         kc->cb = cb;
         kc->userdata = userdata;
@@ -609,11 +609,11 @@ void joy_net_kcpclient_set_callback(kcpclient_p kc, net_callback cb, void* userd
 ////////////////////////////////tcp//////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-tcpserver_p
+joy_tcpserver_p
 joy_net_tcpserver_create(const char *ip, int port)
 {
-        tcpserver_p tcpserver;
-        tcpserver = (tcpserver_p)malloc(sizeof(tcpserver_t));
+        joy_tcpserver_p tcpserver;
+        tcpserver = (joy_tcpserver_p)malloc(sizeof(joy_tcpserver_t));
         assert(tcpserver);
         tcpserver->sockfd = joy_net_sys_tcp();
         tcpserver->conv = 1000;
@@ -642,7 +642,7 @@ joy_net_tcpserver_create(const char *ip, int port)
         return tcpserver;
 }
 
-int joy_net_tcpserver_destroy(tcpserver_p tcpserver)
+int joy_net_tcpserver_destroy(joy_tcpserver_p tcpserver)
 {
         if (!tcpserver)
                 return 0;
@@ -664,7 +664,7 @@ int joy_net_tcpserver_destroy(tcpserver_p tcpserver)
         for (p = kl_begin(tcpserver->mq);
              p != kl_end(tcpserver->mq); p = kl_next(p))
         {
-                net_message_t *msg = &kl_val(p);
+                joy_net_message_t *msg = &kl_val(p);
                 if (msg->data)
                         free(msg->data);
         }
@@ -678,12 +678,12 @@ int joy_net_tcpserver_destroy(tcpserver_p tcpserver)
 }
 
 static void
-tcpserver_accpet(tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port)
+tcpserver_accpet(joy_tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port)
 {
         int ret, conv;
         khint_t k;
         tcp_connection_p conn;
-        net_message_t msg;
+        joy_net_message_t msg;
 
         conn = (tcp_connection_p)malloc(sizeof(tcp_connection_t));
         assert(conn);
@@ -704,7 +704,7 @@ tcpserver_accpet(tcpserver_p tcpserver, int32_t sockfd, const char *ip, int port
         joy_core_log_debug("connected conv=%d\n", conv);
 }
 
-void joy_net_tcpserver_send(tcpserver_p tcpserver, int conv, const char *data, int len)
+void joy_net_tcpserver_send(joy_tcpserver_p tcpserver, int conv, const char *data, int len)
 {
         khint_t k;
         tcp_connection_p conn;
@@ -716,7 +716,7 @@ void joy_net_tcpserver_send(tcpserver_p tcpserver, int conv, const char *data, i
         }
 }
 
-void joy_net_tcpserver_broadcast(tcpserver_p tcpserver, const char *data, int len)
+void joy_net_tcpserver_broadcast(joy_tcpserver_p tcpserver, const char *data, int len)
 {
         khint_t k;
         tcp_connection_p conn;
@@ -732,7 +732,7 @@ void joy_net_tcpserver_broadcast(tcpserver_p tcpserver, const char *data, int le
         }
 }
 
-void joy_net_tcpserver_offline(tcpserver_p tcpserver, int conv)
+void joy_net_tcpserver_offline(joy_tcpserver_p tcpserver, int conv)
 {
         khint_t k;
         tcp_connection_p conn;
@@ -744,7 +744,7 @@ void joy_net_tcpserver_offline(tcpserver_p tcpserver, int conv)
         }
 }
 
-void joy_net_tcpserver_update(tcpserver_p tcpserver)
+void joy_net_tcpserver_update(joy_tcpserver_p tcpserver)
 {
         uint64_t current_time;
         int64_t sockfd;
@@ -752,7 +752,7 @@ void joy_net_tcpserver_update(tcpserver_p tcpserver)
         char buf[JOY_MAX_BUFFER], ip[JOY_MAX_IP];
         khint_t p;
         tcp_connection_p conn;
-        net_message_t msg;
+        joy_net_message_t msg;
 
         current_time = joy_net_sys_current_time();
         sockfd = joy_net_sys_accept(tcpserver->sockfd, ip, &port);
@@ -803,7 +803,7 @@ void joy_net_tcpserver_update(tcpserver_p tcpserver)
         }
 }
 
-bool joy_net_tcpserver_poll_message(tcpserver_p tcpserver, net_message_p msg)
+bool joy_net_tcpserver_poll_message(joy_tcpserver_p tcpserver, joy_net_message_p msg)
 {
         kliter_t(kmq) * p;
         p = kl_begin(tcpserver->mq);
@@ -819,16 +819,16 @@ bool joy_net_tcpserver_poll_message(tcpserver_p tcpserver, net_message_p msg)
         }
 }
 
-int joy_net_tcpserver_connection_count(tcpserver_p tcpserver)
+int joy_net_tcpserver_connection_count(joy_tcpserver_p tcpserver)
 {
         if (!tcpserver) return 0;
         return (int)kh_size(tcpserver->conns);
 }
 
-tcpclient_p joy_net_tcpclient_create(const char *ip, int port)
+joy_tcpclient_p joy_net_tcpclient_create(const char *ip, int port)
 {
-        tcpclient_p tcpclient;
-        tcpclient = (tcpclient_p)malloc(sizeof(tcpclient_t));
+        joy_tcpclient_p tcpclient;
+        tcpclient = (joy_tcpclient_p)malloc(sizeof(joy_tcpclient_t));
         assert(tcpclient);
         tcpclient->sockfd = joy_net_sys_tcp();
         tcpclient->connected = false;
@@ -845,21 +845,21 @@ tcpclient_p joy_net_tcpclient_create(const char *ip, int port)
         return tcpclient;
 }
 
-void joy_net_tcpclient_destroy(tcpclient_p tcpclient)
+void joy_net_tcpclient_destroy(joy_tcpclient_p tcpclient)
 {
         joy_net_sys_closesocket(tcpclient->sockfd);
         free(tcpclient);
 }
 
-int joy_net_tcpclient_send(tcpclient_p tcpclient, const char *data, int len)
+int joy_net_tcpclient_send(joy_tcpclient_p tcpclient, const char *data, int len)
 {
         return joy_net_sys_send(tcpclient->sockfd, data, len);
 }
 
-void joy_net_tcpclient_update(tcpclient_p tcpclient)
+void joy_net_tcpclient_update(joy_tcpclient_p tcpclient)
 {
         int64_t current_time;
-        net_message_t msg;
+        joy_net_message_t msg;
         char buf[JOY_MAX_BUFFER];
         int len;
         joy_core_log_debug("joy_net_tcpclient_update");
@@ -930,7 +930,7 @@ void joy_net_tcpclient_update(tcpclient_p tcpclient)
         }
 }
 
-bool joy_net_tcpclient_poll_message(tcpclient_p tcpclient, net_message_p msg)
+bool joy_net_tcpclient_poll_message(joy_tcpclient_p tcpclient, joy_net_message_p msg)
 {
         kliter_t(kmq) * p;
         p = kl_begin(tcpclient->mq);
@@ -958,9 +958,9 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         // 获取服务器实例
         // 首先尝试从连接的 user_data 获取（客户端连接会在握手完成后设置）
         // 如果为 NULL，则从 manager 的 user_data 获取（监听连接）
-        wsnetserver_p ws = (wsnetserver_p)c->user_data;
+        joy_wsnetserver_p ws = (joy_wsnetserver_p)c->user_data;
         if (ws == NULL && c->mgr != NULL) {
-                ws = (wsnetserver_p)c->mgr->user_data;
+                ws = (joy_wsnetserver_p)c->mgr->user_data;
         }
         if (ws == NULL) return;
         
@@ -975,7 +975,7 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                         joy_core_log_info("wsnetserver: new connection conv=%d", ctx->conv);
                         
                         // 发送连接消息
-                        net_message_t msg;
+                        joy_net_message_t msg;
                         msg.type = NET_TYPE_CONNECTED;
                         msg.conv = ctx->conv;
                         msg.data = joy_core_utils_strdup("connected", NULL);
@@ -995,8 +995,8 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 
                 if (payload_len > 0 && ctx != NULL && ctx->server != NULL) {
-                        wsnetserver_p server = ctx->server;
-                        net_message_t msg;
+                        joy_wsnetserver_p server = ctx->server;
+                        joy_net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = ctx->conv;
                         msg.data = (char*)malloc(payload_len);
@@ -1022,10 +1022,10 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 // 连接关闭
                 joy_wsnetserver_ctx_t* ctx = (joy_wsnetserver_ctx_t*)c->user_data;
                 if (ctx != NULL && ctx->server != NULL) {
-                        wsnetserver_p server = ctx->server;
+                        joy_wsnetserver_p server = ctx->server;
                         joy_core_log_info("wsnetserver: connection closed conv=%d", ctx->conv);
                         
-                        net_message_t msg;
+                        joy_net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = ctx->conv;
                         msg.data = joy_core_utils_strdup("disconnected", NULL);
@@ -1041,11 +1041,11 @@ static void wsnetserver_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         }
 }
 
-wsnetserver_p joy_net_wsnetserver_create(const char* ip, int port)
+joy_wsnetserver_p joy_net_wsnetserver_create(const char* ip, int port)
 {
-        wsnetserver_p ws = (wsnetserver_p)malloc(sizeof(wsnetserver_t));
+        joy_wsnetserver_p ws = (joy_wsnetserver_p)malloc(sizeof(joy_wsnetserver_t));
         if (!ws) return NULL;
-        memset(ws, 0, sizeof(wsnetserver_t));
+        memset(ws, 0, sizeof(joy_wsnetserver_t));
 
         ws->conv = 1000;
         ws->mq = kl_init(kmq);
@@ -1090,7 +1090,7 @@ wsnetserver_p joy_net_wsnetserver_create(const char* ip, int port)
         return ws;
 }
 
-int joy_net_wsnetserver_destroy(wsnetserver_p ws)
+int joy_net_wsnetserver_destroy(joy_wsnetserver_p ws)
 {
         if (!ws) return 0;
         
@@ -1100,7 +1100,7 @@ int joy_net_wsnetserver_destroy(wsnetserver_p ws)
         // Free messages
         kliter_t(kmq)* p;
         for (p = kl_begin(ws->mq); p != kl_end(ws->mq); p = kl_next(p)) {
-                net_message_t* msg = &kl_val(p);
+                joy_net_message_t* msg = &kl_val(p);
                 if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, ws->mq);
@@ -1109,7 +1109,7 @@ int joy_net_wsnetserver_destroy(wsnetserver_p ws)
         return 1;
 }
 
-void joy_net_wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int len)
+void joy_net_wsnetserver_send(joy_wsnetserver_p ws, int conv, const char* data, int len)
 {
         if (!ws || conv < 0 || !data) return;
         
@@ -1124,7 +1124,7 @@ void joy_net_wsnetserver_send(wsnetserver_p ws, int conv, const char* data, int 
         }
 }
 
-void joy_net_wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len)
+void joy_net_wsnetserver_broadcast(joy_wsnetserver_p ws, const char* data, int len)
 {
         if (!ws || !data) return;
         
@@ -1137,7 +1137,7 @@ void joy_net_wsnetserver_broadcast(wsnetserver_p ws, const char* data, int len)
         }
 }
 
-void joy_net_wsnetserver_offline(wsnetserver_p ws, int conv)
+void joy_net_wsnetserver_offline(joy_wsnetserver_p ws, int conv)
 {
         if (!ws || conv < 0) return;
         
@@ -1154,7 +1154,7 @@ void joy_net_wsnetserver_offline(wsnetserver_p ws, int conv)
         }
 }
 
-void joy_net_wsnetserver_update(wsnetserver_p ws)
+void joy_net_wsnetserver_update(joy_wsnetserver_p ws)
 {
         if (!ws || !ws->initialized) return;
         
@@ -1162,7 +1162,7 @@ void joy_net_wsnetserver_update(wsnetserver_p ws)
         mg_mgr_poll(&ws->mgr, 0);
 }
 
-int joy_net_wsnetserver_connection_count(wsnetserver_p ws)
+int joy_net_wsnetserver_connection_count(joy_wsnetserver_p ws)
 {
         if (!ws) return 0;
         
@@ -1176,7 +1176,7 @@ int joy_net_wsnetserver_connection_count(wsnetserver_p ws)
         return count;
 }
 
-bool joy_net_wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg)
+bool joy_net_wsnetserver_poll_message(joy_wsnetserver_p ws, joy_net_message_p msg)
 {
         if (!ws || !msg) return false;
 
@@ -1189,7 +1189,7 @@ bool joy_net_wsnetserver_poll_message(wsnetserver_p ws, net_message_p msg)
         return false;
 }
 
-void joy_net_wsnetserver_set_callback(wsnetserver_p ws, net_callback cb, void* userdata)
+void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, net_callback cb, void* userdata)
 {
         if (!ws) return;
         ws->cb = cb;
@@ -1219,11 +1219,11 @@ struct wsnetclient
 // Forward declaration for event handler
 static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_data);
 
-wsnetclient_p joy_net_wsnetclient_create(const char* url)
+joy_wsnetclient_p joy_net_wsnetclient_create(const char* url)
 {
-        wsnetclient_p wc = (wsnetclient_p)malloc(sizeof(wsnetclient_t));
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)malloc(sizeof(joy_wsnetclient_t));
         if (!wc) return NULL;
-        memset(wc, 0, sizeof(wsnetclient_t));
+        memset(wc, 0, sizeof(joy_wsnetclient_t));
 
         wc->connected = false;
         wc->connecting = true;
@@ -1266,7 +1266,7 @@ wsnetclient_p joy_net_wsnetclient_create(const char* url)
         return wc;
 }
 
-void joy_net_wsnetclient_destroy(wsnetclient_p wc)
+void joy_net_wsnetclient_destroy(joy_wsnetclient_p wc)
 {
         if (!wc) return;
 
@@ -1281,7 +1281,7 @@ void joy_net_wsnetclient_destroy(wsnetclient_p wc)
         // Free messages
         kliter_t(kmq)* p;
         for (p = kl_begin(wc->mq); p != kl_end(wc->mq); p = kl_next(p)) {
-                net_message_t* msg = &kl_val(p);
+                joy_net_message_t* msg = &kl_val(p);
                 if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, wc->mq);
@@ -1289,7 +1289,7 @@ void joy_net_wsnetclient_destroy(wsnetclient_p wc)
         free(wc);
 }
 
-int joy_net_wsnetclient_send(wsnetclient_p wc, const char* data, int len)
+int joy_net_wsnetclient_send(joy_wsnetclient_p wc, const char* data, int len)
 {
         if (!wc || !wc->connected || !wc->conn || !data || len <= 0) {
                 return -1;
@@ -1300,7 +1300,7 @@ int joy_net_wsnetclient_send(wsnetclient_p wc, const char* data, int len)
         return len;
 }
 
-void joy_net_wsnetclient_update(wsnetclient_p wc)
+void joy_net_wsnetclient_update(joy_wsnetclient_p wc)
 {
         if (!wc || !wc->initialized) return;
 
@@ -1308,7 +1308,7 @@ void joy_net_wsnetclient_update(wsnetclient_p wc)
         mg_mgr_poll(&wc->mgr, 0);
 }
 
-bool joy_net_wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg)
+bool joy_net_wsnetclient_poll_message(joy_wsnetclient_p wc, joy_net_message_p msg)
 {
         if (!wc || !msg) return false;
 
@@ -1321,7 +1321,7 @@ bool joy_net_wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg)
         return false;
 }
 
-void joy_net_wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata)
+void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, void* userdata)
 {
         if (!wc) return;
         wc->cb = cb;
@@ -1334,11 +1334,11 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
         if (c == NULL) return;
 
         // 获取客户端实例
-        wsnetclient_p wc = (wsnetclient_p)c->user_data;
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)c->user_data;
         if (wc == NULL) {
                 // 尝试从 manager 获取
                 if (c->mgr != NULL) {
-                        wc = (wsnetclient_p)c->mgr->user_data;
+                        wc = (joy_wsnetclient_p)c->mgr->user_data;
                 }
         }
         if (wc == NULL) return;
@@ -1366,7 +1366,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 wc->connecting = false;
 
                 // 发送连接消息
-                net_message_t msg;
+                joy_net_message_t msg;
                 msg.type = NET_TYPE_CONNECTED;
                 msg.conv = 0;
                 msg.data = joy_core_utils_strdup("connected", NULL);
@@ -1383,7 +1383,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 int payload_len = (int)wm->size;
 
                 if (payload_len > 0) {
-                        net_message_t msg;
+                        joy_net_message_t msg;
                         msg.type = NET_TYPE_MESSAGE;
                         msg.conv = 0;
                         msg.data = (char*)malloc(payload_len);
@@ -1403,7 +1403,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
                 // 连接关闭
                 if (wc->connected) {
                         wc->connected = false;
-                        net_message_t msg;
+                        joy_net_message_t msg;
                         msg.type = NET_TYPE_DISCONNECTED;
                         msg.conv = 0;
                         msg.data = joy_core_utils_strdup("disconnected", NULL);
@@ -1441,7 +1441,7 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
 {
         (void)eventType;
         (void)e;
-        wsnetclient_p wc = (wsnetclient_p)userData;
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)userData;
         if (!wc) return true;
 
         joy_core_log_info("emscripten_ws: connected!");
@@ -1450,7 +1450,7 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
         wc->connecting = false;
 
         // 发送连接消息
-        net_message_t msg;
+        joy_net_message_t msg;
         msg.type = NET_TYPE_CONNECTED;
         msg.conv = 0;
         msg.data = joy_core_utils_strdup("connected", NULL);
@@ -1468,11 +1468,11 @@ static bool em_ws_onopen(int eventType, const EmscriptenWebSocketOpenEvent* e, v
 static bool em_ws_onmessage(int eventType, const EmscriptenWebSocketMessageEvent* e, void* userData)
 {
         (void)eventType;
-        wsnetclient_p wc = (wsnetclient_p)userData;
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)userData;
         if (!wc) return true;
 
         if (e->numBytes > 0) {
-                net_message_t msg;
+                joy_net_message_t msg;
                 msg.type = NET_TYPE_MESSAGE;
                 msg.conv = 0;
                 msg.len = (int)e->numBytes;
@@ -1497,7 +1497,7 @@ static bool em_ws_onerror(int eventType, const EmscriptenWebSocketErrorEvent* e,
 {
         (void)eventType;
         (void)e;
-        wsnetclient_p wc = (wsnetclient_p)userData;
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)userData;
         if (!wc) return true;
         joy_core_log_error("emscripten_ws: error");
         return true;
@@ -1507,13 +1507,13 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
 {
         (void)eventType;
         (void)e;
-        wsnetclient_p wc = (wsnetclient_p)userData;
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)userData;
         if (!wc) return true;
 
         wc->connected = false;
         wc->connecting = false;
 
-        net_message_t msg;
+        joy_net_message_t msg;
         msg.type = NET_TYPE_DISCONNECTED;
         msg.conv = 0;
         msg.data = joy_core_utils_strdup("disconnected", NULL);
@@ -1528,11 +1528,11 @@ static bool em_ws_onclose(int eventType, const EmscriptenWebSocketCloseEvent* e,
         return true;
 }
 
-wsnetclient_p joy_net_wsnetclient_create(const char* url)
+joy_wsnetclient_p joy_net_wsnetclient_create(const char* url)
 {
-        wsnetclient_p wc = (wsnetclient_p)malloc(sizeof(wsnetclient_t));
+        joy_wsnetclient_p wc = (joy_wsnetclient_p)malloc(sizeof(joy_wsnetclient_t));
         if (!wc) return NULL;
-        memset(wc, 0, sizeof(wsnetclient_t));
+        memset(wc, 0, sizeof(joy_wsnetclient_t));
 
         wc->connected = false;
         wc->connecting = true;
@@ -1578,7 +1578,7 @@ wsnetclient_p joy_net_wsnetclient_create(const char* url)
         return wc;
 }
 
-void joy_net_wsnetclient_destroy(wsnetclient_p wc)
+void joy_net_wsnetclient_destroy(joy_wsnetclient_p wc)
 {
         if (!wc) return;
 
@@ -1590,7 +1590,7 @@ void joy_net_wsnetclient_destroy(wsnetclient_p wc)
         // Free messages
         kliter_t(kmq)* p;
         for (p = kl_begin(wc->mq); p != kl_end(wc->mq); p = kl_next(p)) {
-                net_message_t* msg = &kl_val(p);
+                joy_net_message_t* msg = &kl_val(p);
                 if (msg->data) free(msg->data);
         }
         kl_destroy(kmq, wc->mq);
@@ -1598,7 +1598,7 @@ void joy_net_wsnetclient_destroy(wsnetclient_p wc)
         free(wc);
 }
 
-int joy_net_wsnetclient_send(wsnetclient_p wc, const char* data, int len)
+int joy_net_wsnetclient_send(joy_wsnetclient_p wc, const char* data, int len)
 {
         if (!wc || !wc->connected || !data || len <= 0) {
                 return -1;
@@ -1614,13 +1614,13 @@ int joy_net_wsnetclient_send(wsnetclient_p wc, const char* data, int len)
         }
 }
 
-void joy_net_wsnetclient_update(wsnetclient_p wc)
+void joy_net_wsnetclient_update(joy_wsnetclient_p wc)
 {
         // Emscripten 原生 WebSocket 是异步回调，无需轮询
         (void)wc;
 }
 
-bool joy_net_wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg)
+bool joy_net_wsnetclient_poll_message(joy_wsnetclient_p wc, joy_net_message_p msg)
 {
         if (!wc || !msg) return false;
 
@@ -1633,7 +1633,7 @@ bool joy_net_wsnetclient_poll_message(wsnetclient_p wc, net_message_p msg)
         return false;
 }
 
-void joy_net_wsnetclient_set_callback(wsnetclient_p wc, net_callback cb, void* userdata)
+void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, void* userdata)
 {
         if (!wc) return;
         wc->cb = cb;
@@ -1651,21 +1651,21 @@ struct netclient
 {
         net_client_type type;
         union {
-                kcpclient_p kcp;
-                tcpclient_p tcp;
-                wsnetclient_p ws; // mongoose WebSocket 客户端
+                joy_kcpclient_p kcp;
+                joy_tcpclient_p tcp;
+                joy_wsnetclient_p ws; // mongoose WebSocket 客户端
                 void* ptr;
         } client;
         net_callback cb;
         void* userdata;
 };
 
-netclient_p joy_net_netclient_create(net_client_type type, const char* host, int port)
+joy_netclient_p joy_net_netclient_create(net_client_type type, const char* host, int port)
 {
-        netclient_p nc = (netclient_p)malloc(sizeof(netclient_t));
+        joy_netclient_p nc = (joy_netclient_p)malloc(sizeof(joy_netclient_t));
         if (!nc) return NULL;
 
-        memset(nc, 0, sizeof(netclient_t));
+        memset(nc, 0, sizeof(joy_netclient_t));
         nc->type = type;
         nc->cb = NULL;
         nc->userdata = NULL;
@@ -1708,7 +1708,7 @@ netclient_p joy_net_netclient_create(net_client_type type, const char* host, int
         return nc;
 }
 
-void joy_net_netclient_destroy(netclient_p nc)
+void joy_net_netclient_destroy(joy_netclient_p nc)
 {
         if (!nc) return;
 
@@ -1729,7 +1729,7 @@ void joy_net_netclient_destroy(netclient_p nc)
         free(nc);
 }
 
-int joy_net_netclient_send(netclient_p nc, const char* data, int len)
+int joy_net_netclient_send(joy_netclient_p nc, const char* data, int len)
 {
         if (!nc) return -1;
 
@@ -1745,7 +1745,7 @@ int joy_net_netclient_send(netclient_p nc, const char* data, int len)
         }
 }
 
-void joy_net_netclient_update(netclient_p nc)
+void joy_net_netclient_update(joy_netclient_p nc)
 {
         if (!nc) return;
 
@@ -1764,7 +1764,7 @@ void joy_net_netclient_update(netclient_p nc)
         }
 }
 
-bool joy_net_netclient_poll_message(netclient_p nc, net_message_p msg)
+bool joy_net_netclient_poll_message(joy_netclient_p nc, joy_net_message_p msg)
 {
         if (!nc || !msg) return false;
 
@@ -1780,7 +1780,7 @@ bool joy_net_netclient_poll_message(netclient_p nc, net_message_p msg)
         }
 }
 
-void joy_net_netclient_set_callback(netclient_p nc, net_callback cb, void* userdata)
+void joy_net_netclient_set_callback(joy_netclient_p nc, net_callback cb, void* userdata)
 {
         if (!nc) return;
 
@@ -1802,7 +1802,7 @@ void joy_net_netclient_set_callback(netclient_p nc, net_callback cb, void* userd
         }
 }
 
-net_client_type joy_net_netclient_get_type(netclient_p nc)
+net_client_type joy_net_netclient_get_type(joy_netclient_p nc)
 {
         return nc->type;
 }
@@ -1815,21 +1815,21 @@ struct netserver
 {
         net_server_type type;
         union {
-                kcpserver_p kcp;
-                tcpserver_p tcp;
-                wsnetserver_p ws;
+                joy_kcpserver_p kcp;
+                joy_tcpserver_p tcp;
+                joy_wsnetserver_p ws;
                 void* ptr;
         } server;
         net_callback cb;
         void* userdata;
 };
 
-netserver_p joy_net_netserver_create(net_server_type type, const char* ip, int port)
+joy_netserver_p joy_net_netserver_create(net_server_type type, const char* ip, int port)
 {
-        netserver_p ns = (netserver_p)malloc(sizeof(netserver_t));
+        joy_netserver_p ns = (joy_netserver_p)malloc(sizeof(joy_netserver_t));
         if (!ns) return NULL;
 
-        memset(ns, 0, sizeof(netserver_t));
+        memset(ns, 0, sizeof(joy_netserver_t));
         ns->type = type;
         ns->cb = NULL;
         ns->userdata = NULL;
@@ -1864,7 +1864,7 @@ netserver_p joy_net_netserver_create(net_server_type type, const char* ip, int p
         return ns;
 }
 
-void joy_net_netserver_destroy(netserver_p ns)
+void joy_net_netserver_destroy(joy_netserver_p ns)
 {
         if (!ns) return;
 
@@ -1885,7 +1885,7 @@ void joy_net_netserver_destroy(netserver_p ns)
         free(ns);
 }
 
-void joy_net_netserver_send(netserver_p ns, int conv, const char* data, int len)
+void joy_net_netserver_send(joy_netserver_p ns, int conv, const char* data, int len)
 {
         if (!ns) return;
 
@@ -1904,7 +1904,7 @@ void joy_net_netserver_send(netserver_p ns, int conv, const char* data, int len)
         }
 }
 
-void joy_net_netserver_broadcast(netserver_p ns, const char* data, int len)
+void joy_net_netserver_broadcast(joy_netserver_p ns, const char* data, int len)
 {
         if (!ns) return;
 
@@ -1923,7 +1923,7 @@ void joy_net_netserver_broadcast(netserver_p ns, const char* data, int len)
         }
 }
 
-void joy_net_netserver_offline(netserver_p ns, int conv)
+void joy_net_netserver_offline(joy_netserver_p ns, int conv)
 {
         if (!ns) return;
 
@@ -1942,7 +1942,7 @@ void joy_net_netserver_offline(netserver_p ns, int conv)
         }
 }
 
-void joy_net_netserver_update(netserver_p ns)
+void joy_net_netserver_update(joy_netserver_p ns)
 {
         if (!ns) return;
 
@@ -1961,7 +1961,7 @@ void joy_net_netserver_update(netserver_p ns)
         }
 }
 
-int joy_net_netserver_connection_count(netserver_p ns)
+int joy_net_netserver_connection_count(joy_netserver_p ns)
 {
         if (!ns) return 0;
 
@@ -1977,7 +1977,7 @@ int joy_net_netserver_connection_count(netserver_p ns)
         }
 }
 
-bool joy_net_netserver_poll_message(netserver_p ns, net_message_p msg)
+bool joy_net_netserver_poll_message(joy_netserver_p ns, joy_net_message_p msg)
 {
         if (!ns || !msg) return false;
 
@@ -1993,7 +1993,7 @@ bool joy_net_netserver_poll_message(netserver_p ns, net_message_p msg)
         }
 }
 
-void joy_net_netserver_set_callback(netserver_p ns, net_callback cb, void* userdata)
+void joy_net_netserver_set_callback(joy_netserver_p ns, net_callback cb, void* userdata)
 {
         if (!ns) return;
 
@@ -2015,12 +2015,12 @@ void joy_net_netserver_set_callback(netserver_p ns, net_callback cb, void* userd
         }
 }
 
-net_server_type joy_net_netserver_get_type(netserver_p ns)
+net_server_type joy_net_netserver_get_type(joy_netserver_p ns)
 {
         return ns->type;
 }
 
-void joy_net_netmessage_free_data(net_message_p msg)
+void joy_net_netmessage_free_data(joy_net_message_p msg)
 {
         if (msg && msg->data) {
                 free(msg->data);

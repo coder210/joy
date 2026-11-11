@@ -13,7 +13,7 @@ struct jsx {
 	char* watch_file;
 	SDL_Time last_mtime;
 	duk_context* env;
-	jevent_callbacks_t cbs;   /* C 层事件回调集合 */
+	joy_event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
 /* 最小 console.log：duktape 没有内置 console，旧胶水 base.c 删除后

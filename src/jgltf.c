@@ -35,7 +35,7 @@ typedef struct {
         int   skinned;
         int   joint_count;    /* 该 primitive 关联 skin 的关节数 */
         int  *joint_node;     /* 每个 joint 对应的 node 下标 */
-        mat44_t *inverse_bind;/* 每个 joint 的逆绑定矩阵 */
+        joy_mat44_t *inverse_bind;/* 每个 joint 的逆绑定矩阵 */
         float *bind_verts;    /* lit 布局: pos.xyz + normal.xyz + uv.xy, 每顶点 8 float */
         float *jnt;           /* 每顶点 4 个关节索引(float), 为 skin joints 数组下标 */
         float *wts;           /* 每顶点 4 个权重 */
@@ -44,7 +44,7 @@ typedef struct {
 
 struct jgltf_asset {
         int   refs;
-        jr3d_p r3d;
+        joy_r3d_p r3d;
         cgltf_data *data;
         void *clean_glb;        /* 规范化后的完整 glb 内存：cgltf 的 buffers/bin 与动画采样
                                    读数都指向它，必须存活到 cgltf_free 之后（随 asset 一并释放，
@@ -55,7 +55,7 @@ struct jgltf_asset {
         joy_gltf_prim_src_t *prims;
         int    anim_count;
         float *anim_duration;
-        vec3_t bounds_center;   /* 所有 primitive 绑定姿态的包围球中心（mesh 局部空间） */
+        joy_vec3_t bounds_center;   /* 所有 primitive 绑定姿态的包围球中心（mesh 局部空间） */
         float  bounds_radius;   /* 包围球半径（mesh 局部空间） */
 };
 
@@ -68,27 +68,27 @@ struct jgltf_instance {
         int     node_count;
         cgltf_node **nodes;
         bool   *matrix_mode;
-        mat44_t *static_mat;         /* has_matrix 节点的静态矩阵 */
-        mat44_t *node_world;         /* 各节点世界矩阵（mesh 局部空间） */
-        vec3_t *lcl_t;
-        vec4_t *lcl_r;
-        vec3_t *lcl_s;
+        joy_mat44_t *static_mat;         /* has_matrix 节点的静态矩阵 */
+        joy_mat44_t *node_world;         /* 各节点世界矩阵（mesh 局部空间） */
+        joy_vec3_t *lcl_t;
+        joy_vec4_t *lcl_r;
+        joy_vec3_t *lcl_s;
         int     prim_count;
-        render_mesh_p *gpu;          /* 每 primitive 一个动态蒙皮缓冲 */
+        joy_render_mesh_p *gpu;          /* 每 primitive 一个动态蒙皮缓冲 */
         float **skinned;             /* 每 primitive CPU 蒙皮输出（重叠写 GPU） */
         int     moved_vertices;
-        render_mesh_p bones_mesh;    /* 待销毁的上一帧骨骼线 mesh */
+        joy_render_mesh_p bones_mesh;    /* 待销毁的上一帧骨骼线 mesh */
 };
 
 /* ==================== 数学（最小实现, 只用 <math.h>） ==================== */
 
-/* 四元数到列主序旋转矩阵（与 mat44_t/mat44_mul 的列主序约定一致） */
-static mat44_t quat_to_mat44(vec4_t q) {
+/* 四元数到列主序旋转矩阵（与 joy_mat44_t/mat44_mul 的列主序约定一致） */
+static joy_mat44_t quat_to_mat44(joy_vec4_t q) {
         float l = sqrtf(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
         if (l < 1e-12f) l = 1.0f;
         float x = q.x/l, y = q.y/l, z = q.z/l, w = q.w/l;
         float x2=x*x, y2=y*y, z2=z*z;
-        mat44_t m;
+        joy_mat44_t m;
         m.m0 = 1-2*(y2+z2); m.m4 = 2*(x*y-w*z);  m.m8 = 2*(x*z+w*y);  m.m12 = 0;
         m.m1 = 2*(x*y+w*z);  m.m5 = 1-2*(x2+z2);  m.m9 = 2*(y*z-w*x);  m.m13 = 0;
         m.m2 = 2*(x*z-w*y);  m.m6 = 2*(y*z+w*x);  m.m10= 1-2*(x2+y2);  m.m14 = 0;
@@ -96,11 +96,11 @@ static mat44_t quat_to_mat44(vec4_t q) {
         return m;
 }
 
-static vec4_t quat_slerp(vec4_t a, vec4_t b, float t) {
+static joy_vec4_t quat_slerp(joy_vec4_t a, joy_vec4_t b, float t) {
         float dot = a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;
         if (dot < 0.0f) { dot = -dot; b.x=-b.x; b.y=-b.y; b.z=-b.z; b.w=-b.w; }
         if (dot > 0.9995f) {
-                vec4_t r = { a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t,
+                joy_vec4_t r = { a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t,
                              a.z+(b.z-a.z)*t, a.w+(b.w-a.w)*t };
                 float l = sqrtf(r.x*r.x+r.y*r.y+r.z*r.z+r.w*r.w);
                 if (l) { r.x/=l; r.y/=l; r.z/=l; r.w/=l; }
@@ -110,12 +110,12 @@ static vec4_t quat_slerp(vec4_t a, vec4_t b, float t) {
         float st = sinf(theta);
         float sa = sinf((1-t)*theta)/st;
         float sb = sinf(t*theta)/st;
-        vec4_t r = { a.x*sa + b.x*sb, a.y*sa + b.y*sb, a.z*sa + b.z*sb, a.w*sa + b.w*sb };
+        joy_vec4_t r = { a.x*sa + b.x*sb, a.y*sa + b.y*sb, a.z*sa + b.z*sb, a.w*sa + b.w*sb };
         return r;
 }
 
-static mat44_t mat_from_float16(const float f[16]) {
-        mat44_t m;
+static joy_mat44_t mat_from_float16(const float f[16]) {
+        joy_mat44_t m;
         m.m0=f[0]; m.m1=f[1]; m.m2=f[2]; m.m3=f[3];
         m.m4=f[4]; m.m5=f[5]; m.m6=f[6]; m.m7=f[7];
         m.m8=f[8]; m.m9=f[9]; m.m10=f[10]; m.m11=f[11];
@@ -299,9 +299,9 @@ static void eval_sampler(cgltf_animation_sampler* s, float t, cgltf_size comps, 
         }
         float u = (tk1 > tk) ? (ft - tk) / (tk1 - tk) : 0.0f;
         if (comps == 4) {                    /* rotation: slerp */
-                vec4_t q0 = { v0[0], v0[1], v0[2], v0[3] };
-                vec4_t q1 = { v1[0], v1[1], v1[2], v1[3] };
-                vec4_t q  = quat_slerp(q0, q1, u);
+                joy_vec4_t q0 = { v0[0], v0[1], v0[2], v0[3] };
+                joy_vec4_t q1 = { v1[0], v1[1], v1[2], v1[3] };
+                joy_vec4_t q  = quat_slerp(q0, q1, u);
                 out[0]=q.x; out[1]=q.y; out[2]=q.z; out[3]=q.w;
         } else {                             /* translation / scale: lerp */
                 cgltf_size c;
@@ -346,7 +346,7 @@ static int build_prim(joy_gltf_prim_src_t* out, cgltf_primitive* pr, cgltf_skin*
         if (skin_ok) {
                 cgltf_size j;
                 out->joint_node  = (int*)calloc(skin->joints_count ? skin->joints_count : 1, sizeof(int));
-                out->inverse_bind= (mat44_t*)calloc(skin->joints_count ? skin->joints_count : 1, sizeof(mat44_t));
+                out->inverse_bind= (joy_mat44_t*)calloc(skin->joints_count ? skin->joints_count : 1, sizeof(joy_mat44_t));
                 if (skin->inverse_bind_matrices) {
                         for (j = 0; j < skin->joints_count; j++) {
                                 float f[16];
@@ -384,7 +384,7 @@ static int build_prim(joy_gltf_prim_src_t* out, cgltf_primitive* pr, cgltf_skin*
 }
 
 /* 从 primitive 的 baseColor 贴图(image 的 bufferView)解码出 GPU 纹理；无贴图/失败返回 NULL */
-void* jgltf_prim_load_texture(jr3d_p r3d, cgltf_primitive* pr) {
+void* jgltf_prim_load_texture(joy_r3d_p r3d, cgltf_primitive* pr) {
         if (!pr || !pr->material) return NULL;
         cgltf_texture_view* tv = &pr->material->pbr_metallic_roughness.base_color_texture;
         if (!tv->texture || !tv->texture->image) return NULL;
@@ -403,7 +403,7 @@ void* jgltf_prim_load_texture(jr3d_p r3d, cgltf_primitive* pr) {
         return NULL;
 }
 
-jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
+jgltf_asset_p jgltf_asset_load(joy_r3d_p r3d, const char* path) {
         long fsize; unsigned char* raw; unsigned char* clean; long clen = 0;
         cgltf_options opt; cgltf_data* data = NULL; cgltf_result res;
         jgltf_asset_p a; int mi, pi; cgltf_size i, pc;
@@ -498,7 +498,7 @@ jgltf_asset_p jgltf_asset_load(jr3d_p r3d, const char* path) {
          * 直接扑出视锥导致不可见。 */
         {
                 bool first = true;
-                vec3_t mn = {0,0,0}, mx = {0,0,0};
+                joy_vec3_t mn = {0,0,0}, mx = {0,0,0};
                 int mi2;
                 for (mi2 = 0; mi2 < a->prim_count; mi2++) {
                         joy_gltf_prim_src_t* ps = &a->prims[mi2];
@@ -565,7 +565,7 @@ int jgltf_asset_has_skin(jgltf_asset_p a) {
         for (i = 0; i < a->prim_count; i++) if (a->prims[i].skinned) return 1;
         return 0;
 }
-JOY_API void jgltf_asset_bounds(jgltf_asset_p a, vec3_t* out_center, float* out_radius) {
+JOY_API void jgltf_asset_bounds(jgltf_asset_p a, joy_vec3_t* out_center, float* out_radius) {
         if (a) {
                 if (out_center) *out_center = a->bounds_center;
                 if (out_radius) *out_radius = a->bounds_radius;
@@ -596,11 +596,11 @@ jgltf_instance_p jgltf_instance_create(jgltf_asset_p a) {
         nodes = a->data->nodes;
         inst->nodes = (cgltf_node**)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(cgltf_node*));
         inst->matrix_mode = (bool*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(bool));
-        inst->static_mat = (mat44_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(mat44_t));
-        inst->node_world = (mat44_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(mat44_t));
-        inst->lcl_t = (vec3_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(vec3_t));
-        inst->lcl_r = (vec4_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(vec4_t));
-        inst->lcl_s = (vec3_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(vec3_t));
+        inst->static_mat = (joy_mat44_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(joy_mat44_t));
+        inst->node_world = (joy_mat44_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(joy_mat44_t));
+        inst->lcl_t = (joy_vec3_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(joy_vec3_t));
+        inst->lcl_r = (joy_vec4_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(joy_vec4_t));
+        inst->lcl_s = (joy_vec3_t*)calloc((size_t)(a->node_count ? a->node_count : 1), sizeof(joy_vec3_t));
         for (i = 0; i < a->node_count; i++) {
                 inst->nodes[i] = &nodes[i];
                 if (nodes[i].has_matrix) {
@@ -609,7 +609,7 @@ jgltf_instance_p jgltf_instance_create(jgltf_asset_p a) {
                 }
         }
 
-        inst->gpu = (render_mesh_p*)calloc((size_t)(a->prim_count ? a->prim_count : 1), sizeof(render_mesh_p));
+        inst->gpu = (joy_render_mesh_p*)calloc((size_t)(a->prim_count ? a->prim_count : 1), sizeof(joy_render_mesh_p));
         inst->skinned = (float**)calloc((size_t)(a->prim_count ? a->prim_count : 1), sizeof(float*));
         for (i = 0; i < a->prim_count; i++) {
                 joy_gltf_prim_src_t* src = &a->prims[i];
@@ -673,13 +673,13 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
         /* 1. 从节点静态 TRS 初始化局部变换 */
         for (ni = 0; ni < inst->node_count; ni++) {
                 cgltf_node* nd = inst->nodes[ni];
-                inst->lcl_t[ni] = (vec3_t){0,0,0};
-                inst->lcl_r[ni] = (vec4_t){0,0,0,1};
-                inst->lcl_s[ni] = (vec3_t){1,1,1};
+                inst->lcl_t[ni] = (joy_vec3_t){0,0,0};
+                inst->lcl_r[ni] = (joy_vec4_t){0,0,0,1};
+                inst->lcl_s[ni] = (joy_vec3_t){1,1,1};
                 if (!inst->matrix_mode[ni]) {
-                        if (nd->has_translation) inst->lcl_t[ni] = (vec3_t){nd->translation[0],nd->translation[1],nd->translation[2]};
-                        if (nd->has_rotation)   inst->lcl_r[ni] = (vec4_t){nd->rotation[0],nd->rotation[1],nd->rotation[2],nd->rotation[3]};
-                        if (nd->has_scale)      inst->lcl_s[ni] = (vec3_t){nd->scale[0],nd->scale[1],nd->scale[2]};
+                        if (nd->has_translation) inst->lcl_t[ni] = (joy_vec3_t){nd->translation[0],nd->translation[1],nd->translation[2]};
+                        if (nd->has_rotation)   inst->lcl_r[ni] = (joy_vec4_t){nd->rotation[0],nd->rotation[1],nd->rotation[2],nd->rotation[3]};
+                        if (nd->has_scale)      inst->lcl_s[ni] = (joy_vec3_t){nd->scale[0],nd->scale[1],nd->scale[2]};
                 }
         }
 
@@ -696,11 +696,11 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
                         eval_sampler(ch->sampler, inst->time, 4, out);
                         switch (ch->target_path) {
                         case cgltf_animation_path_type_translation:
-                                inst->lcl_t[ni] = (vec3_t){out[0],out[1],out[2]}; break;
+                                inst->lcl_t[ni] = (joy_vec3_t){out[0],out[1],out[2]}; break;
                         case cgltf_animation_path_type_rotation:
-                                inst->lcl_r[ni] = (vec4_t){out[0],out[1],out[2],out[3]}; break;
+                                inst->lcl_r[ni] = (joy_vec4_t){out[0],out[1],out[2],out[3]}; break;
                         case cgltf_animation_path_type_scale:
-                                inst->lcl_s[ni] = (vec3_t){out[0],out[1],out[2]}; break;
+                                inst->lcl_s[ni] = (joy_vec3_t){out[0],out[1],out[2]}; break;
                         default: break;
                         }
                 }
@@ -708,13 +708,13 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
 
         /* 3. 合成各节点本地/世界矩阵 */
         for (ni = 0; ni < inst->node_count; ni++) {
-                mat44_t local;
+                joy_mat44_t local;
                 if (inst->matrix_mode[ni]) {
                         local = inst->static_mat[ni];
                 } else {
-                        mat44_t T = mat44_translate(inst->lcl_t[ni].x, inst->lcl_t[ni].y, inst->lcl_t[ni].z);
-                        mat44_t R = quat_to_mat44(inst->lcl_r[ni]);
-                        mat44_t S = mat44_scale(inst->lcl_s[ni].x, inst->lcl_s[ni].y, inst->lcl_s[ni].z);
+                        joy_mat44_t T = mat44_translate(inst->lcl_t[ni].x, inst->lcl_t[ni].y, inst->lcl_t[ni].z);
+                        joy_mat44_t R = quat_to_mat44(inst->lcl_r[ni]);
+                        joy_mat44_t S = mat44_scale(inst->lcl_s[ni].x, inst->lcl_s[ni].y, inst->lcl_s[ni].z);
                         local = mat44_mul(T, mat44_mul(R, S));
                 }
                 cgltf_node* nd = inst->nodes[ni];
@@ -738,7 +738,7 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
                 {
                         float* combo = (float*)malloc((size_t)(src->joint_count ? src->joint_count : 1) * 16 * sizeof(float));
                         for (k = 0; k < src->joint_count; k++) {
-                                mat44_t comb = mat44_mul(src->inverse_bind[k],
+                                joy_mat44_t comb = mat44_mul(src->inverse_bind[k],
                                                          inst->node_world[src->joint_node[k]]);
                                 memcpy(combo + k*16, (const float*)&comb, 16 * sizeof(float));
                         }
@@ -777,7 +777,7 @@ void jgltf_instance_update(jgltf_instance_p inst, float dt) {
         }
 }
 
-void jgltf_instance_draw(jr3d_p r3d, jgltf_instance_p inst, const mat44_t* model) {
+void jgltf_instance_draw(joy_r3d_p r3d, jgltf_instance_p inst, const joy_mat44_t* model) {
         int i;
         static int dbg_printed = 0;
         if (!inst || !r3d) return;
@@ -801,11 +801,11 @@ void jgltf_instance_draw(jr3d_p r3d, jgltf_instance_p inst, const mat44_t* model
                 printf("[dbg-draw] prim0 bind_bbox=(%.3f,%.3f,%.3f)-(%.3f,%.3f,%.3f)\n",
                        bmnx,bmny,bmnz, bmxx,bmxy,bmxz);
                 if (inst->asset->prims[0].joint_count > 0) {
-                        mat44_t* ib = inst->asset->prims[0].inverse_bind;
+                        joy_mat44_t* ib = inst->asset->prims[0].inverse_bind;
                         printf("[dbg-draw] invbind0 m0=%.4f m5=%.4f m10=%.4f m12=%.4f m13=%.4f m14=%.4f\n",
                                ib[0].m0, ib[0].m5, ib[0].m10, ib[0].m12, ib[0].m13, ib[0].m14);
                         int jn0 = inst->asset->prims[0].joint_node[0];
-                        mat44_t* w = &inst->node_world[jn0];
+                        joy_mat44_t* w = &inst->node_world[jn0];
                         printf("[dbg-draw] world0 m0=%.4f m5=%.4f m10=%.4f m12=%.4f m13=%.4f m14=%.4f\n",
                                w->m0, w->m5, w->m10, w->m12, w->m13, w->m14);
                 }
@@ -822,11 +822,11 @@ void jgltf_instance_draw(jr3d_p r3d, jgltf_instance_p inst, const mat44_t* model
 }
 
 /* 沿 skin 关节链画线段：每段 = 子关节世界位置 → 父关节世界位置（已按 model 变换到世界） */
-void jgltf_instance_draw_bones(jr3d_p r3d, jgltf_instance_p inst, const mat44_t* model) {
-        jgltf_asset_p a; int j, k, seg; const mat44_t* m;
+void jgltf_instance_draw_bones(joy_r3d_p r3d, jgltf_instance_p inst, const joy_mat44_t* model) {
+        jgltf_asset_p a; int j, k, seg; const joy_mat44_t* m;
         float* verts; int vcount;
-        mat44_t identity;
-        render_mesh_p mesh;
+        joy_mat44_t identity;
+        joy_render_mesh_p mesh;
 
         if (!inst || !r3d || inst->prim_count <= 0) return;
         a = inst->asset;
@@ -849,14 +849,14 @@ void jgltf_instance_draw_bones(jr3d_p r3d, jgltf_instance_p inst, const mat44_t*
                         cgltf_node* cy = inst->nodes[node_i];
                         float px, py, pz, cx, cy2, cz;
                         /* 子关节世界位置 */
-                        const mat44_t* w = &inst->node_world[node_i];
+                        const joy_mat44_t* w = &inst->node_world[node_i];
                         px = (*m).m0*(*w).m12 + (*m).m4*(*w).m13 + (*m).m8*(*w).m14 + (*m).m12;
                         py = (*m).m1*(*w).m12 + (*m).m5*(*w).m13 + (*m).m9*(*w).m14 + (*m).m13;
                         pz = (*m).m2*(*w).m12 + (*m).m6*(*w).m13 + (*m).m10*(*w).m14 + (*m).m14;
                         /* 父关节世界位置（无父则起点取关节自身, 画 0 长线） */
                         if (cy->parent) parent_i = (int)(cy->parent - a->data->nodes);
                         if (parent_i >= 0) {
-                                const mat44_t* pw = &inst->node_world[parent_i];
+                                const joy_mat44_t* pw = &inst->node_world[parent_i];
                                 cx = (*m).m0*(*pw).m12 + (*m).m4*(*pw).m13 + (*m).m8*(*pw).m14 + (*m).m12;
                                 cy2= (*m).m1*(*pw).m12 + (*m).m5*(*pw).m13 + (*m).m9*(*pw).m14 + (*m).m13;
                                 cz = (*m).m2*(*pw).m12 + (*m).m6*(*pw).m13 + (*m).m10*(*pw).m14 + (*m).m14;
@@ -874,7 +874,7 @@ void jgltf_instance_draw_bones(jr3d_p r3d, jgltf_instance_p inst, const mat44_t*
         free(verts);
         if (!mesh) return;
         identity = mat44_identity();
-        joy_r3d_draw_wire_basis(r3d, mesh, &identity, (jcolor_t){255, 80, 80, 255});
+        joy_r3d_draw_wire_basis(r3d, mesh, &identity, (joy_color_t){255, 80, 80, 255});
         if (inst->bones_mesh) joy_r3d_mesh_destroy(r3d, inst->bones_mesh);
         inst->bones_mesh = mesh;
 }

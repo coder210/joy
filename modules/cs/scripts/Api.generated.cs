@@ -1475,6 +1475,18 @@ namespace Joy.Api
         }
     }
 
+    public sealed class Janimator
+    {
+        internal ulong Handle { get; private set; }
+        internal Janimator(ulong handle) { Handle = handle; }
+        ~Janimator()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
     public sealed class AudioBgm
     {
         internal ulong Handle { get; private set; }
@@ -1559,6 +1571,18 @@ namespace Joy.Api
         }
     }
 
+    public sealed class JecsWorld
+    {
+        internal ulong Handle { get; private set; }
+        internal JecsWorld(ulong handle) { Handle = handle; }
+        ~JecsWorld()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
     public sealed class Env
     {
         internal ulong Handle { get; private set; }
@@ -1631,11 +1655,11 @@ namespace Joy.Api
         }
     }
 
-    public sealed class Janimator
+    public sealed class Joystick
     {
         internal ulong Handle { get; private set; }
-        internal Janimator(ulong handle) { Handle = handle; }
-        ~Janimator()
+        internal Joystick(ulong handle) { Handle = handle; }
+        ~Joystick()
         {
             ulong h = Handle;
             Handle = 0;
@@ -1643,11 +1667,47 @@ namespace Joy.Api
         }
     }
 
-    public sealed class JecsWorld
+    public sealed class Kcpclient
     {
         internal ulong Handle { get; private set; }
-        internal JecsWorld(ulong handle) { Handle = handle; }
-        ~JecsWorld()
+        internal Kcpclient(ulong handle) { Handle = handle; }
+        ~Kcpclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Kcpserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Kcpserver(ulong handle) { Handle = handle; }
+        ~Kcpserver()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Label
+    {
+        internal ulong Handle { get; private set; }
+        internal Label(ulong handle) { Handle = handle; }
+        ~Label()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class LcgNum
+    {
+        internal ulong Handle { get; private set; }
+        internal LcgNum(ulong handle) { Handle = handle; }
+        ~LcgNum()
         {
             ulong h = Handle;
             Handle = 0;
@@ -1667,11 +1727,35 @@ namespace Joy.Api
         }
     }
 
-    public sealed class Joystick
+    public sealed class NetMessage
     {
         internal ulong Handle { get; private set; }
-        internal Joystick(ulong handle) { Handle = handle; }
-        ~Joystick()
+        internal NetMessage(ulong handle) { Handle = handle; }
+        ~NetMessage()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Netclient
+    {
+        internal ulong Handle { get; private set; }
+        internal Netclient(ulong handle) { Handle = handle; }
+        ~Netclient()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Netserver
+    {
+        internal ulong Handle { get; private set; }
+        internal Netserver(ulong handle) { Handle = handle; }
+        ~Netserver()
         {
             ulong h = Handle;
             Handle = 0;
@@ -1696,6 +1780,18 @@ namespace Joy.Api
         internal ulong Handle { get; private set; }
         internal JpmConfig(ulong handle) { Handle = handle; }
         ~JpmConfig()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Popup
+    {
+        internal ulong Handle { get; private set; }
+        internal Popup(ulong handle) { Handle = handle; }
+        ~Popup()
         {
             ulong h = Handle;
             Handle = 0;
@@ -1792,198 +1888,6 @@ namespace Joy.Api
         internal ulong Handle { get; private set; }
         internal Jr3dSlider(ulong handle) { Handle = handle; }
         ~Jr3dSlider()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Jtext
-    {
-        internal ulong Handle { get; private set; }
-        internal Jtext(ulong handle) { Handle = handle; }
-        ~Jtext()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class JtilemapObjectLayer
-    {
-        internal ulong Handle { get; private set; }
-        internal JtilemapObjectLayer(ulong handle) { Handle = handle; }
-        ~JtilemapObjectLayer()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Jtilemap
-    {
-        internal ulong Handle { get; private set; }
-        internal Jtilemap(ulong handle) { Handle = handle; }
-        ~Jtilemap()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class JtilemapRender
-    {
-        internal ulong Handle { get; private set; }
-        internal JtilemapRender(ulong handle) { Handle = handle; }
-        ~JtilemapRender()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class JtilemapTileLayer
-    {
-        internal ulong Handle { get; private set; }
-        internal JtilemapTileLayer(ulong handle) { Handle = handle; }
-        ~JtilemapTileLayer()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Jtimer
-    {
-        internal ulong Handle { get; private set; }
-        internal Jtimer(ulong handle) { Handle = handle; }
-        ~Jtimer()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class JuiCtx
-    {
-        internal ulong Handle { get; private set; }
-        internal JuiCtx(ulong handle) { Handle = handle; }
-        ~JuiCtx()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Jwindow
-    {
-        internal ulong Handle { get; private set; }
-        internal Jwindow(ulong handle) { Handle = handle; }
-        ~Jwindow()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Kcpclient
-    {
-        internal ulong Handle { get; private set; }
-        internal Kcpclient(ulong handle) { Handle = handle; }
-        ~Kcpclient()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Kcpserver
-    {
-        internal ulong Handle { get; private set; }
-        internal Kcpserver(ulong handle) { Handle = handle; }
-        ~Kcpserver()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Label
-    {
-        internal ulong Handle { get; private set; }
-        internal Label(ulong handle) { Handle = handle; }
-        ~Label()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class LcgNum
-    {
-        internal ulong Handle { get; private set; }
-        internal LcgNum(ulong handle) { Handle = handle; }
-        ~LcgNum()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class NetMessage
-    {
-        internal ulong Handle { get; private set; }
-        internal NetMessage(ulong handle) { Handle = handle; }
-        ~NetMessage()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Netclient
-    {
-        internal ulong Handle { get; private set; }
-        internal Netclient(ulong handle) { Handle = handle; }
-        ~Netclient()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Netserver
-    {
-        internal ulong Handle { get; private set; }
-        internal Netserver(ulong handle) { Handle = handle; }
-        ~Netserver()
-        {
-            ulong h = Handle;
-            Handle = 0;
-            if (h != 0) Native.Release(h);
-        }
-    }
-
-    public sealed class Popup
-    {
-        internal ulong Handle { get; private set; }
-        internal Popup(ulong handle) { Handle = handle; }
-        ~Popup()
         {
             ulong h = Handle;
             Handle = 0;
@@ -2111,11 +2015,107 @@ namespace Joy.Api
         }
     }
 
+    public sealed class Jtext
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtext(ulong handle) { Handle = handle; }
+        ~Jtext()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapObjectLayer
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapObjectLayer(ulong handle) { Handle = handle; }
+        ~JtilemapObjectLayer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jtilemap
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtilemap(ulong handle) { Handle = handle; }
+        ~Jtilemap()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapRender
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapRender(ulong handle) { Handle = handle; }
+        ~JtilemapRender()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapTileLayer
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapTileLayer(ulong handle) { Handle = handle; }
+        ~JtilemapTileLayer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jtimer
+    {
+        internal ulong Handle { get; private set; }
+        internal Jtimer(ulong handle) { Handle = handle; }
+        ~Jtimer()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
     public sealed class Tooltip
     {
         internal ulong Handle { get; private set; }
         internal Tooltip(ulong handle) { Handle = handle; }
         ~Tooltip()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JuiCtx
+    {
+        internal ulong Handle { get; private set; }
+        internal JuiCtx(ulong handle) { Handle = handle; }
+        ~JuiCtx()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class Jwindow
+    {
+        internal ulong Handle { get; private set; }
+        internal Jwindow(ulong handle) { Handle = handle; }
+        ~Jwindow()
         {
             ulong h = Handle;
             Handle = 0;

@@ -8,34 +8,34 @@
 #include "runtime/joy_obj.h"
 #include "runtime/joy_thunk.h"
 
-static void dtor_joy_core_lcg_random_destroy(void* p) { joy_core_lcg_random_destroy((lcg_num_p)p); }
-static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((jwindow_p)p); }
-static void dtor_joy_r2d_font_destroy(void* p) { joy_r2d_font_destroy((font_p)p); }
-static void dtor_joy_r2d_destroy(void* p) { joy_r2d_destroy((jr2d_p)p); }
-static void dtor_joy_ui_image_destroy(void* p) { joy_ui_image_destroy((image_p)p); }
-static void dtor_joy_r3d_mesh_destroy_one(void* p) { joy_r3d_mesh_destroy_one((render_mesh_p)p); }
+static void dtor_joy_core_lcg_random_destroy(void* p) { joy_core_lcg_random_destroy((joy_lcg_num_p)p); }
+static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((joy_window_p)p); }
+static void dtor_joy_r2d_font_destroy(void* p) { joy_r2d_font_destroy((joy_font_p)p); }
+static void dtor_joy_r2d_destroy(void* p) { joy_r2d_destroy((joy_r2d_p)p); }
+static void dtor_joy_ui_image_destroy(void* p) { joy_ui_image_destroy((joy_image_p)p); }
+static void dtor_joy_r3d_mesh_destroy_one(void* p) { joy_r3d_mesh_destroy_one((joy_render_mesh_p)p); }
 
 static joy_value_t t_joy_core_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
 {
         uint64_t p0;
-        lcg_num_p _r;
+        joy_lcg_num_p _r;
         uint64_t _h;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_create");
         if (a[0].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_create.arg0");
         p0 = (uint64_t)a[0].as.u64;
         _r = joy_core_lcg_random_create(p0);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_core_lcg_random_create");
-        _h = joy_obj_register((void*)_r, "lcg_num_p", dtor_joy_core_lcg_random_destroy, "joy_core_lcg_random_create");
+        _h = joy_obj_register((void*)_r, "joy_lcg_num_p", dtor_joy_core_lcg_random_destroy, "joy_core_lcg_random_create");
         if (!_h) { joy_core_lcg_random_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_core_lcg_random_create"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_core_lcg_random_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        lcg_num_p p0;
+        joy_lcg_num_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_destroy.arg0");
-        p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
+        p0 = (joy_lcg_num_p)joy_obj_deref(a[0].as.handle, "joy_lcg_num_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_destroy.arg0");
         joy_core_lcg_random_destroy(p0);
         return joy_v_null();
@@ -43,11 +43,11 @@ static joy_value_t t_joy_core_lcg_random_destroy(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_core_lcg_random_next(joy_value_t* a, int n, joy_status_t* st)
 {
-        lcg_num_p p0;
+        joy_lcg_num_p p0;
         uint32_t _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_next");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_next.arg0");
-        p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
+        p0 = (joy_lcg_num_p)joy_obj_deref(a[0].as.handle, "joy_lcg_num_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_next.arg0");
         _r = joy_core_lcg_random_next(p0);
         return joy_v_u32((uint32_t)_r);
@@ -55,12 +55,12 @@ static joy_value_t t_joy_core_lcg_random_next(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_core_lcg_random_set_state(joy_value_t* a, int n, joy_status_t* st)
 {
-        lcg_num_p p0;
+        joy_lcg_num_p p0;
         uint64_t p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_lcg_random_set_state");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_set_state.arg0");
         if (a[1].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_lcg_random_set_state.arg1");
-        p0 = (lcg_num_p)joy_obj_deref(a[0].as.handle, "lcg_num_p", st);
+        p0 = (joy_lcg_num_p)joy_obj_deref(a[0].as.handle, "joy_lcg_num_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_lcg_random_set_state.arg0");
         p1 = (uint64_t)a[1].as.u64;
         joy_core_lcg_random_set_state(p0, p1);
@@ -69,7 +69,7 @@ static joy_value_t t_joy_core_lcg_random_set_state(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_scene_procmap_config_add_spawn(joy_value_t* a, int n, joy_status_t* st)
 {
-        jpm_config_p p0;
+        joy_pm_config_p p0;
         int p1;
         int p2;
         int p3;
@@ -78,7 +78,7 @@ static joy_value_t t_joy_scene_procmap_config_add_spawn(joy_value_t* a, int n, j
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_procmap_config_add_spawn.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_procmap_config_add_spawn.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_procmap_config_add_spawn.arg3");
-        p0 = (jpm_config_p)joy_obj_deref(a[0].as.handle, "jpm_config_p", st);
+        p0 = (joy_pm_config_p)joy_obj_deref(a[0].as.handle, "joy_pm_config_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_procmap_config_add_spawn.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -170,10 +170,10 @@ static joy_value_t t_joy_core_kr_hash(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_scene_jtimer_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_destroy.arg0");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_destroy.arg0");
         joy_scene_jtimer_destroy(p0);
         return joy_v_null();
@@ -181,10 +181,10 @@ static joy_value_t t_joy_scene_jtimer_destroy(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_jtimer_trigger(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_trigger");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_trigger.arg0");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_trigger.arg0");
         joy_scene_jtimer_trigger(p0);
         return joy_v_null();
@@ -192,12 +192,12 @@ static joy_value_t t_joy_scene_jtimer_trigger(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_jtimer_set_interval(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_set_interval");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_interval.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_interval.arg1");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_set_interval.arg0");
         p1 = (int)a[1].as.i32;
         joy_scene_jtimer_set_interval(p0, p1);
@@ -206,12 +206,12 @@ static joy_value_t t_joy_scene_jtimer_set_interval(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_scene_jtimer_set_active(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_set_active");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_active.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_set_active.arg1");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_set_active.arg0");
         p1 = (bool)a[1].as.b;
         joy_scene_jtimer_set_active(p0, p1);
@@ -220,10 +220,10 @@ static joy_value_t t_joy_scene_jtimer_set_active(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_jtimer_reset(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_reset");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_reset.arg0");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_reset.arg0");
         joy_scene_jtimer_reset(p0);
         return joy_v_null();
@@ -231,11 +231,11 @@ static joy_value_t t_joy_scene_jtimer_reset(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_scene_jtimer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtimer_p p0;
+        joy_timer_p p0;
         uint64_t _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_jtimer_get_elapsed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_jtimer_get_elapsed.arg0");
-        p0 = (jtimer_p)joy_obj_deref(a[0].as.handle, "jtimer_p", st);
+        p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_jtimer_get_elapsed.arg0");
         _r = joy_scene_jtimer_get_elapsed(p0);
         return joy_v_u64((uint64_t)_r);
@@ -269,7 +269,7 @@ static joy_value_t t_joy_core_create_window(joy_value_t* a, int n, joy_status_t*
         const char* p0;
         int p1;
         int p2;
-        jwindow_p _r;
+        joy_window_p _r;
         uint64_t _h;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_create_window");
         if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_create_window.arg0");
@@ -280,17 +280,17 @@ static joy_value_t t_joy_core_create_window(joy_value_t* a, int n, joy_status_t*
         p2 = (int)a[2].as.i32;
         _r = joy_core_create_window(p0, p1, p2);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_core_create_window");
-        _h = joy_obj_register((void*)_r, "jwindow_p", dtor_joy_core_destroy_window, "joy_core_create_window");
+        _h = joy_obj_register((void*)_r, "joy_window_p", dtor_joy_core_destroy_window, "joy_core_create_window");
         if (!_h) { joy_core_destroy_window(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_core_create_window"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_core_destroy_window(joy_value_t* a, int n, joy_status_t* st)
 {
-        jwindow_p p0;
+        joy_window_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_destroy_window");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_destroy_window.arg0");
-        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        p0 = (joy_window_p)joy_obj_deref(a[0].as.handle, "joy_window_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_destroy_window.arg0");
         joy_core_destroy_window(p0);
         return joy_v_null();
@@ -298,12 +298,12 @@ static joy_value_t t_joy_core_destroy_window(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_core_window_set_fullscreen(joy_value_t* a, int n, joy_status_t* st)
 {
-        jwindow_p p0;
+        joy_window_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_set_fullscreen");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_fullscreen.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_fullscreen.arg1");
-        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        p0 = (joy_window_p)joy_obj_deref(a[0].as.handle, "joy_window_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_window_set_fullscreen.arg0");
         p1 = (bool)a[1].as.b;
         joy_core_window_set_fullscreen(p0, p1);
@@ -312,11 +312,11 @@ static joy_value_t t_joy_core_window_set_fullscreen(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_core_window_get_fullscreen(joy_value_t* a, int n, joy_status_t* st)
 {
-        jwindow_p p0;
+        joy_window_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_get_fullscreen");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_get_fullscreen.arg0");
-        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        p0 = (joy_window_p)joy_obj_deref(a[0].as.handle, "joy_window_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_window_get_fullscreen.arg0");
         _r = joy_core_window_get_fullscreen(p0);
         return joy_v_bool((bool)_r);
@@ -324,12 +324,12 @@ static joy_value_t t_joy_core_window_get_fullscreen(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_core_window_set_icon(joy_value_t* a, int n, joy_status_t* st)
 {
-        jwindow_p p0;
+        joy_window_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_window_set_icon");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_icon.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_window_set_icon.arg1");
-        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        p0 = (joy_window_p)joy_obj_deref(a[0].as.handle, "joy_window_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_window_set_icon.arg0");
         p1 = (const char*)a[1].as.str;
         joy_core_window_set_icon(p0, p1);
@@ -370,14 +370,14 @@ static joy_value_t t_joy_core_log_title(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_core_env_set(joy_value_t* a, int n, joy_status_t* st)
 {
-        env_p p0;
+        joy_env_p p0;
         const char* p1;
         const char* p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_env_set");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_set.arg2");
-        p0 = (env_p)joy_obj_deref(a[0].as.handle, "env_p", st);
+        p0 = (joy_env_p)joy_obj_deref(a[0].as.handle, "joy_env_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_env_set.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
@@ -387,10 +387,10 @@ static joy_value_t t_joy_core_env_set(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_core_env_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        env_p p0;
+        joy_env_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_env_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_env_destroy.arg0");
-        p0 = (env_p)joy_obj_deref(a[0].as.handle, "env_p", st);
+        p0 = (joy_env_p)joy_obj_deref(a[0].as.handle, "joy_env_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_env_destroy.arg0");
         joy_core_env_destroy(p0);
         return joy_v_null();
@@ -398,10 +398,10 @@ static joy_value_t t_joy_core_env_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_core_simple_fps_destory(joy_value_t* a, int n, joy_status_t* st)
 {
-        simple_fps_counter_p p0;
+        joy_simple_fps_counter_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_destory");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_destory.arg0");
-        p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
+        p0 = (joy_simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "joy_simple_fps_counter_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_destory.arg0");
         joy_core_simple_fps_destory(p0);
         return joy_v_null();
@@ -409,10 +409,10 @@ static joy_value_t t_joy_core_simple_fps_destory(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_core_simple_fps_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        simple_fps_counter_p p0;
+        joy_simple_fps_counter_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_update.arg0");
-        p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
+        p0 = (joy_simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "joy_simple_fps_counter_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_update.arg0");
         joy_core_simple_fps_update(p0);
         return joy_v_null();
@@ -420,11 +420,11 @@ static joy_value_t t_joy_core_simple_fps_update(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_core_simple_fps_value(joy_value_t* a, int n, joy_status_t* st)
 {
-        simple_fps_counter_p p0;
+        joy_simple_fps_counter_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_simple_fps_value");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_simple_fps_value.arg0");
-        p0 = (simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "simple_fps_counter_p", st);
+        p0 = (joy_simple_fps_counter_p)joy_obj_deref(a[0].as.handle, "joy_simple_fps_counter_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_core_simple_fps_value.arg0");
         _r = joy_core_simple_fps_value(p0);
         return joy_v_i32((int)_r);
@@ -432,10 +432,10 @@ static joy_value_t t_joy_core_simple_fps_value(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_game_timer_init(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_init");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_init.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_init.arg0");
         joy_scene_game_timer_init(p0);
         return joy_v_null();
@@ -443,10 +443,10 @@ static joy_value_t t_joy_scene_game_timer_init(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_game_timer_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_update.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_update.arg0");
         joy_scene_game_timer_update(p0);
         return joy_v_null();
@@ -454,11 +454,11 @@ static joy_value_t t_joy_scene_game_timer_update(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_game_timer_get_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_delta_time");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_delta_time.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_delta_time.arg0");
         _r = joy_scene_game_timer_get_delta_time(p0);
         return joy_v_f64((float)_r);
@@ -466,11 +466,11 @@ static joy_value_t t_joy_scene_game_timer_get_delta_time(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_scene_game_timer_get_unscaled_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_unscaled_delta_time");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
         _r = joy_scene_game_timer_get_unscaled_delta_time(p0);
         return joy_v_f64((float)_r);
@@ -478,12 +478,12 @@ static joy_value_t t_joy_scene_game_timer_get_unscaled_delta_time(joy_value_t* a
 
 static joy_value_t t_joy_scene_game_timer_set_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_time_scale");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg1");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_time_scale.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_game_timer_set_time_scale(p0, p1);
@@ -492,11 +492,11 @@ static joy_value_t t_joy_scene_game_timer_set_time_scale(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_scene_game_timer_get_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_time_scale");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_time_scale.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_time_scale.arg0");
         _r = joy_scene_game_timer_get_time_scale(p0);
         return joy_v_f64((float)_r);
@@ -504,12 +504,12 @@ static joy_value_t t_joy_scene_game_timer_get_time_scale(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_scene_game_timer_set_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_target_fps");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg1");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_target_fps.arg0");
         p1 = (int)a[1].as.i32;
         joy_scene_game_timer_set_target_fps(p0, p1);
@@ -518,11 +518,11 @@ static joy_value_t t_joy_scene_game_timer_set_target_fps(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_scene_game_timer_get_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
-        game_timer_p p0;
+        joy_game_timer_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_target_fps");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_target_fps.arg0");
-        p0 = (game_timer_p)joy_obj_deref(a[0].as.handle, "game_timer_p", st);
+        p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_target_fps.arg0");
         _r = joy_scene_game_timer_get_target_fps(p0);
         return joy_v_i32((int)_r);
@@ -765,10 +765,10 @@ static joy_value_t t_joy_net_sys_install_crash_handlers(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_net_iocp_server_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        iocp_server_p p0;
+        joy_iocp_server_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_iocp_server_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_iocp_server_destroy.arg0");
-        p0 = (iocp_server_p)joy_obj_deref(a[0].as.handle, "iocp_server_p", st);
+        p0 = (joy_iocp_server_p)joy_obj_deref(a[0].as.handle, "joy_iocp_server_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_iocp_server_destroy.arg0");
         joy_net_iocp_server_destroy(p0);
         return joy_v_null();
@@ -776,12 +776,12 @@ static joy_value_t t_joy_net_iocp_server_destroy(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_iocp_process_events(joy_value_t* a, int n, joy_status_t* st)
 {
-        iocp_server_p p0;
+        joy_iocp_server_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_iocp_process_events");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_iocp_process_events.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_iocp_process_events.arg1");
-        p0 = (iocp_server_p)joy_obj_deref(a[0].as.handle, "iocp_server_p", st);
+        p0 = (joy_iocp_server_p)joy_obj_deref(a[0].as.handle, "joy_iocp_server_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_iocp_process_events.arg0");
         p1 = (int)a[1].as.i32;
         joy_net_iocp_process_events(p0, p1);
@@ -792,7 +792,7 @@ static joy_value_t t_joy_r2d_font_create(joy_value_t* a, int n, joy_status_t* st
 {
         const char* p0;
         int p1;
-        font_p _r;
+        joy_font_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_create");
         if (a[0].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_create.arg0");
@@ -801,17 +801,17 @@ static joy_value_t t_joy_r2d_font_create(joy_value_t* a, int n, joy_status_t* st
         p1 = (int)a[1].as.i32;
         _r = joy_r2d_font_create(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r2d_font_create");
-        _h = joy_obj_register((void*)_r, "font_p", dtor_joy_r2d_font_destroy, "joy_r2d_font_create");
+        _h = joy_obj_register((void*)_r, "joy_font_p", dtor_joy_r2d_font_destroy, "joy_r2d_font_create");
         if (!_h) { joy_r2d_font_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r2d_font_create"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r2d_font_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        font_p p0;
+        joy_font_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_destroy.arg0");
-        p0 = (font_p)joy_obj_deref(a[0].as.handle, "font_p", st);
+        p0 = (joy_font_p)joy_obj_deref(a[0].as.handle, "joy_font_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_font_destroy.arg0");
         joy_r2d_font_destroy(p0);
         return joy_v_null();
@@ -819,11 +819,11 @@ static joy_value_t t_joy_r2d_font_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_font_get_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        font_p p0;
+        joy_font_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_get_scale");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_get_scale.arg0");
-        p0 = (font_p)joy_obj_deref(a[0].as.handle, "font_p", st);
+        p0 = (joy_font_p)joy_obj_deref(a[0].as.handle, "joy_font_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_font_get_scale.arg0");
         _r = joy_r2d_font_get_scale(p0);
         return joy_v_f64((float)_r);
@@ -831,11 +831,11 @@ static joy_value_t t_joy_r2d_font_get_scale(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_font_get_size(joy_value_t* a, int n, joy_status_t* st)
 {
-        font_p p0;
+        joy_font_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_get_size");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_get_size.arg0");
-        p0 = (font_p)joy_obj_deref(a[0].as.handle, "font_p", st);
+        p0 = (joy_font_p)joy_obj_deref(a[0].as.handle, "joy_font_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_font_get_size.arg0");
         _r = joy_r2d_font_get_size(p0);
         return joy_v_i32((int)_r);
@@ -843,11 +843,11 @@ static joy_value_t t_joy_r2d_font_get_size(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r2d_font_get_ascent(joy_value_t* a, int n, joy_status_t* st)
 {
-        font_p p0;
+        joy_font_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_font_get_ascent");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_font_get_ascent.arg0");
-        p0 = (font_p)joy_obj_deref(a[0].as.handle, "font_p", st);
+        p0 = (joy_font_p)joy_obj_deref(a[0].as.handle, "joy_font_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_font_get_ascent.arg0");
         _r = joy_r2d_font_get_ascent(p0);
         return joy_v_i32((int)_r);
@@ -855,26 +855,26 @@ static joy_value_t t_joy_r2d_font_get_ascent(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r2d_create(joy_value_t* a, int n, joy_status_t* st)
 {
-        jwindow_p p0;
-        jr2d_p _r;
+        joy_window_p p0;
+        joy_r2d_p _r;
         uint64_t _h;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_create");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_create.arg0");
-        p0 = (jwindow_p)joy_obj_deref(a[0].as.handle, "jwindow_p", st);
+        p0 = (joy_window_p)joy_obj_deref(a[0].as.handle, "joy_window_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_create.arg0");
         _r = joy_r2d_create(p0);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r2d_create");
-        _h = joy_obj_register((void*)_r, "jr2d_p", dtor_joy_r2d_destroy, "joy_r2d_create");
+        _h = joy_obj_register((void*)_r, "joy_r2d_p", dtor_joy_r2d_destroy, "joy_r2d_create");
         if (!_h) { joy_r2d_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r2d_create"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r2d_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_destroy.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_destroy.arg0");
         joy_r2d_destroy(p0);
         return joy_v_null();
@@ -882,7 +882,7 @@ static joy_value_t t_joy_r2d_destroy(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         uint8_t p1;
         uint8_t p2;
         uint8_t p3;
@@ -894,7 +894,7 @@ static joy_value_t t_joy_r2d_set_color(joy_value_t* a, int n, joy_status_t* st)
         if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_color.arg2");
         if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_color.arg3");
         if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_color.arg4");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_color.arg0");
         p1 = (uint8_t)a[1].as.u32;
         p2 = (uint8_t)a[2].as.u32;
@@ -906,10 +906,10 @@ static joy_value_t t_joy_r2d_set_color(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_begin.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_begin.arg0");
         joy_r2d_begin(p0);
         return joy_v_null();
@@ -917,10 +917,10 @@ static joy_value_t t_joy_r2d_begin(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_end.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_end.arg0");
         joy_r2d_end(p0);
         return joy_v_null();
@@ -928,7 +928,7 @@ static joy_value_t t_joy_r2d_end(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_logical_presentation(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         int p1;
         int p2;
         bool _r;
@@ -936,7 +936,7 @@ static joy_value_t t_joy_r2d_set_logical_presentation(joy_value_t* a, int n, joy
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation.arg2");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_logical_presentation.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -946,7 +946,7 @@ static joy_value_t t_joy_r2d_set_logical_presentation(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_r2d_set_logical_presentation_mode(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         int p1;
         int p2;
         int p3;
@@ -956,7 +956,7 @@ static joy_value_t t_joy_r2d_set_logical_presentation_mode(joy_value_t* a, int n
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation_mode.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation_mode.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_logical_presentation_mode.arg3");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_logical_presentation_mode.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -967,13 +967,13 @@ static joy_value_t t_joy_r2d_set_logical_presentation_mode(joy_value_t* a, int n
 
 static joy_value_t t_joy_r2d_set_vsync(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         int p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_set_vsync");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_vsync.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_vsync.arg1");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_vsync.arg0");
         p1 = (int)a[1].as.i32;
         _r = joy_r2d_set_vsync(p0, p1);
@@ -982,7 +982,7 @@ static joy_value_t t_joy_r2d_set_vsync(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         bool _r;
@@ -990,7 +990,7 @@ static joy_value_t t_joy_r2d_set_scale(joy_value_t* a, int n, joy_status_t* st)
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_scale.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_scale.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_scale.arg2");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_scale.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1000,7 +1000,7 @@ static joy_value_t t_joy_r2d_set_scale(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_colorf(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         float p3;
@@ -1011,7 +1011,7 @@ static joy_value_t t_joy_r2d_set_colorf(joy_value_t* a, int n, joy_status_t* st)
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_colorf.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_colorf.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_colorf.arg4");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_colorf.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1023,13 +1023,13 @@ static joy_value_t t_joy_r2d_set_colorf(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_blend_mode(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         int p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_set_blend_mode");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_blend_mode.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_blend_mode.arg1");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_blend_mode.arg0");
         p1 = (int)a[1].as.i32;
         _r = joy_r2d_set_blend_mode(p0, p1);
@@ -1038,7 +1038,7 @@ static joy_value_t t_joy_r2d_set_blend_mode(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_draw_point(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         bool _r;
@@ -1046,7 +1046,7 @@ static joy_value_t t_joy_r2d_draw_point(joy_value_t* a, int n, joy_status_t* st)
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point.arg2");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_draw_point.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1056,12 +1056,12 @@ static joy_value_t t_joy_r2d_draw_point(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_set_clip_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        jrect_t p1 = { 0 };
+        joy_r2d_p p0;
+        joy_rect_t p1 = { 0 };
         bool _r;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_set_clip_rect");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_clip_rect.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_set_clip_rect.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_set_clip_rect.arg1");
         p1.x = (float)a[1].as.f64;
@@ -1077,10 +1077,10 @@ static joy_value_t t_joy_r2d_set_clip_rect(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r2d_clear_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_clear_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_clear_clip.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_clear_clip.arg0");
         joy_r2d_clear_clip(p0);
         return joy_v_null();
@@ -1088,12 +1088,12 @@ static joy_value_t t_joy_r2d_clear_clip(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r2d_push_clip_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        jrect_t p1 = { 0 };
+        joy_r2d_p p0;
+        joy_rect_t p1 = { 0 };
         bool _r;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_push_clip_rect");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_push_clip_rect.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_push_clip_rect.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_push_clip_rect.arg1");
         p1.x = (float)a[1].as.f64;
@@ -1109,10 +1109,10 @@ static joy_value_t t_joy_r2d_push_clip_rect(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_pop_clip_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_pop_clip_rect");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_pop_clip_rect.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_pop_clip_rect.arg0");
         joy_r2d_pop_clip_rect(p0);
         return joy_v_null();
@@ -1120,10 +1120,10 @@ static joy_value_t t_joy_r2d_pop_clip_rect(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r2d_reset_clip_stack(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_reset_clip_stack");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_reset_clip_stack.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_reset_clip_stack.arg0");
         joy_r2d_reset_clip_stack(p0);
         return joy_v_null();
@@ -1131,7 +1131,7 @@ static joy_value_t t_joy_r2d_reset_clip_stack(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r2d_point_in_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         bool _r;
@@ -1139,7 +1139,7 @@ static joy_value_t t_joy_r2d_point_in_clip(joy_value_t* a, int n, joy_status_t* 
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_point_in_clip.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_point_in_clip.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_point_in_clip.arg2");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_point_in_clip.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1149,7 +1149,7 @@ static joy_value_t t_joy_r2d_point_in_clip(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         float p3;
@@ -1161,7 +1161,7 @@ static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg4");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1173,13 +1173,13 @@ static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_math_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         const char* p1;
-        jrect_t p2 = { 0 };
+        joy_rect_t p2 = { 0 };
         bool _r;
         if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_rectangle");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg1");
         p1 = (const char*)a[1].as.str;
@@ -1197,29 +1197,29 @@ static joy_value_t t_joy_math_shape_draw_rectangle(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_image_create(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         const char* p1;
-        image_p _r;
+        joy_image_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_create");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_create.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_create.arg1");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_create.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_ui_image_create(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_ui_image_create");
-        _h = joy_obj_register((void*)_r, "image_p", dtor_joy_ui_image_destroy, "joy_ui_image_create");
+        _h = joy_obj_register((void*)_r, "joy_image_p", dtor_joy_ui_image_destroy, "joy_ui_image_create");
         if (!_h) { joy_ui_image_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_ui_image_create"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_ui_image_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        image_p p0;
+        joy_image_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_destroy.arg0");
-        p0 = (image_p)joy_obj_deref(a[0].as.handle, "image_p", st);
+        p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_destroy.arg0");
         joy_ui_image_destroy(p0);
         return joy_v_null();
@@ -1227,12 +1227,12 @@ static joy_value_t t_joy_ui_image_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_image_set_alpha(joy_value_t* a, int n, joy_status_t* st)
 {
-        image_p p0;
+        joy_image_p p0;
         uint8_t p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_alpha");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_alpha.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_alpha.arg1");
-        p0 = (image_p)joy_obj_deref(a[0].as.handle, "image_p", st);
+        p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_alpha.arg0");
         p1 = (uint8_t)a[1].as.u32;
         joy_ui_image_set_alpha(p0, p1);
@@ -1241,12 +1241,12 @@ static joy_value_t t_joy_ui_image_set_alpha(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_image_set_blend_mode(joy_value_t* a, int n, joy_status_t* st)
 {
-        image_p p0;
+        joy_image_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_blend_mode");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_blend_mode.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_blend_mode.arg1");
-        p0 = (image_p)joy_obj_deref(a[0].as.handle, "image_p", st);
+        p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_blend_mode.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_image_set_blend_mode(p0, p1);
@@ -1255,12 +1255,12 @@ static joy_value_t t_joy_ui_image_set_blend_mode(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_image_set_scale_mode(joy_value_t* a, int n, joy_status_t* st)
 {
-        image_p p0;
+        joy_image_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_scale_mode");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_scale_mode.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_scale_mode.arg1");
-        p0 = (image_p)joy_obj_deref(a[0].as.handle, "image_p", st);
+        p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_scale_mode.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_image_set_scale_mode(p0, p1);
@@ -1269,17 +1269,17 @@ static joy_value_t t_joy_ui_image_set_scale_mode(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_text_updatex(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtext_p p0;
-        font_p p1;
+        joy_text_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_updatex");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg0");
-        p0 = (jtext_p)joy_obj_deref(a[0].as.handle, "jtext_p", st);
+        p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text_updatex.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_text_updatex.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg2");
         p2 = (const char*)a[2].as.str;
@@ -1299,10 +1299,10 @@ static joy_value_t t_joy_ui_text_updatex(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_ui_text_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtext_p p0;
+        joy_text_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_destroy.arg0");
-        p0 = (jtext_p)joy_obj_deref(a[0].as.handle, "jtext_p", st);
+        p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text_destroy.arg0");
         joy_ui_text_destroy(p0);
         return joy_v_null();
@@ -1310,8 +1310,8 @@ static joy_value_t t_joy_ui_text_destroy(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r2d_jtext_print(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        jtext_p p1;
+        joy_r2d_p p0;
+        joy_text_p p1;
         float p2;
         float p3;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_jtext_print");
@@ -1319,9 +1319,9 @@ static joy_value_t t_joy_r2d_jtext_print(joy_value_t* a, int n, joy_status_t* st
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_print.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_print.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_print.arg3");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_jtext_print.arg0");
-        p1 = (jtext_p)joy_obj_deref(a[1].as.handle, "jtext_p", st);
+        p1 = (joy_text_p)joy_obj_deref(a[1].as.handle, "joy_text_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r2d_jtext_print.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -1331,19 +1331,19 @@ static joy_value_t t_joy_r2d_jtext_print(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r2d_jtext_printx(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        font_p p1;
+        joy_r2d_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         float p5;
         float p6;
         if (n != 10) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_jtext_printx");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printx.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_jtext_printx.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printx.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r2d_jtext_printx.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printx.arg2");
         p2 = (const char*)a[2].as.str;
@@ -1367,7 +1367,7 @@ static joy_value_t t_joy_r2d_jtext_printx(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_draw_point_f(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         bool _r;
@@ -1375,7 +1375,7 @@ static joy_value_t t_joy_r2d_draw_point_f(joy_value_t* a, int n, joy_status_t* s
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point_f.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point_f.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_draw_point_f.arg2");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_draw_point_f.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1385,7 +1385,7 @@ static joy_value_t t_joy_r2d_draw_point_f(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         const char* p1;
         float p2;
         float p3;
@@ -1399,7 +1399,7 @@ static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg4");
         if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg5");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle_f.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
@@ -1412,7 +1412,7 @@ static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
+        joy_r2d_p p0;
         float p1;
         float p2;
         float p3;
@@ -1424,7 +1424,7 @@ static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_statu
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg4");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line_f.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1436,19 +1436,19 @@ static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r2d_jtext_printf(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        font_p p1;
+        joy_r2d_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         float p5;
         float p6;
         if (n != 10) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_jtext_printf");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_jtext_printf.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r2d_jtext_printf.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf.arg2");
         p2 = (const char*)a[2].as.str;
@@ -1472,20 +1472,20 @@ static joy_value_t t_joy_r2d_jtext_printf(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r2d_jtext_printf_scaled(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        font_p p1;
+        joy_r2d_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         float p5;
         float p6;
         float p7;
         if (n != 11) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_jtext_printf_scaled");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf_scaled.arg0");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_jtext_printf_scaled.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf_scaled.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r2d_jtext_printf_scaled.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_jtext_printf_scaled.arg2");
         p2 = (const char*)a[2].as.str;
@@ -1511,11 +1511,11 @@ static joy_value_t t_joy_r2d_jtext_printf_scaled(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_text_get_width(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtext_p p0;
+        joy_text_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_get_width");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_get_width.arg0");
-        p0 = (jtext_p)joy_obj_deref(a[0].as.handle, "jtext_p", st);
+        p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text_get_width.arg0");
         _r = joy_ui_text_get_width(p0);
         return joy_v_i32((int)_r);
@@ -1523,11 +1523,11 @@ static joy_value_t t_joy_ui_text_get_width(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_text_get_height(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtext_p p0;
+        joy_text_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_get_height");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_get_height.arg0");
-        p0 = (jtext_p)joy_obj_deref(a[0].as.handle, "jtext_p", st);
+        p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text_get_height.arg0");
         _r = joy_ui_text_get_height(p0);
         return joy_v_i32((int)_r);
@@ -1570,10 +1570,10 @@ static joy_value_t t_joy_r2d_jtext_cache_sweep(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_animation_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_destroy.arg0");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_destroy.arg0");
         joy_scene_animation_destroy(p0);
         return joy_v_null();
@@ -1581,10 +1581,10 @@ static joy_value_t t_joy_scene_animation_destroy(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_animation_reset(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_reset");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_reset.arg0");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_reset.arg0");
         joy_scene_animation_reset(p0);
         return joy_v_null();
@@ -1592,13 +1592,13 @@ static joy_value_t t_joy_scene_animation_reset(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_animation_add_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         const char* p1;
         float p2;
-        jrect_t p3 = { 0 };
+        joy_rect_t p3 = { 0 };
         if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_add_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg0");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_add_clip.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg1");
         p1 = (const char*)a[1].as.str;
@@ -1618,11 +1618,11 @@ static joy_value_t t_joy_scene_animation_add_clip(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_animation_is_finished(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_is_finished");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_is_finished.arg0");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_is_finished.arg0");
         _r = joy_scene_animation_is_finished(p0);
         return joy_v_bool((bool)_r);
@@ -1630,14 +1630,14 @@ static joy_value_t t_joy_scene_animation_is_finished(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_scene_animation_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg2");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1647,14 +1647,14 @@ static joy_value_t t_joy_scene_animation_set_position(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_scene_animation_set_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_scale");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg2");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_scale.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -1664,12 +1664,12 @@ static joy_value_t t_joy_scene_animation_set_scale(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_scene_animation_set_rotation(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_rotation");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_rotation.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_rotation.arg1");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_rotation.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_animation_set_rotation(p0, p1);
@@ -1678,12 +1678,12 @@ static joy_value_t t_joy_scene_animation_set_rotation(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_scene_animation_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        animation_p p0;
+        joy_animation_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_update.arg1");
-        p0 = (animation_p)joy_obj_deref(a[0].as.handle, "animation_p", st);
+        p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animation_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_animation_update(p0, p1);
@@ -1692,10 +1692,10 @@ static joy_value_t t_joy_scene_animation_update(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_destroy.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_destroy.arg0");
         joy_r3d_destroy(p0);
         return joy_v_null();
@@ -1703,11 +1703,11 @@ static joy_value_t t_joy_r3d_destroy(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_begin.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_begin.arg0");
         _r = joy_r3d_begin(p0);
         return joy_v_bool((bool)_r);
@@ -1715,10 +1715,10 @@ static joy_value_t t_joy_r3d_begin(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_end.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_end.arg0");
         joy_r3d_end(p0);
         return joy_v_null();
@@ -1726,11 +1726,11 @@ static joy_value_t t_joy_r3d_end(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_get_draw_calls(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_get_draw_calls");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_get_draw_calls.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_get_draw_calls.arg0");
         _r = joy_r3d_get_draw_calls(p0);
         return joy_v_i32((int)_r);
@@ -1738,7 +1738,7 @@ static joy_value_t t_joy_r3d_get_draw_calls(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         uint8_t p1;
         uint8_t p2;
         uint8_t p3;
@@ -1747,7 +1747,7 @@ static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg1");
         if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg2");
         if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_clear_color.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_set_clear_color.arg0");
         p1 = (uint8_t)a[1].as.u32;
         p2 = (uint8_t)a[2].as.u32;
@@ -1758,230 +1758,230 @@ static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r3d_mesh_cube(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_cube(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_sphere(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         int p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (int)a[2].as.i32;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_sphere(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_plane(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_plane(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_ramp(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_ramp(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_quad(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p _r;
+        joy_r3d_p p0;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_quad");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_quad.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_quad.arg0");
         _r = joy_r3d_mesh_quad(p0);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_quad");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_quad");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_quad");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_quad"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_cube_wire(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube_wire");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube_wire.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_cube_wire(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube_wire");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_wire");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_wire");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube_wire"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_sphere_wire(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         int p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere_wire");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere_wire.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (int)a[2].as.i32;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_sphere_wire(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere_wire");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_wire");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_wire");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere_wire"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_plane_wire(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane_wire");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane_wire.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_plane_wire(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane_wire");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_wire");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_wire");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane_wire"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_ramp_wire(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp_wire");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp_wire.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_ramp_wire(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp_wire");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_wire");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_wire");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp_wire"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_destroy.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_destroy.arg1");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_destroy.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_mesh_destroy.arg1");
         joy_r3d_mesh_destroy(p0, p1);
         return joy_v_null();
@@ -1989,7 +1989,7 @@ static joy_value_t t_joy_r3d_mesh_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_font_init(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         const char* p1;
         int p2;
         bool _r;
@@ -1997,7 +1997,7 @@ static joy_value_t t_joy_r3d_font_init(joy_value_t* a, int n, joy_status_t* st)
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_init.arg2");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_init.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -2007,8 +2007,8 @@ static joy_value_t t_joy_r3d_font_init(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
         const char* p2;
         float p3;
         float p4;
@@ -2025,9 +2025,9 @@ static joy_value_t t_joy_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* s
         if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg5");
         if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg6");
         if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_draw_2d.arg7");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_draw_2d.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_font_draw_2d.arg1");
         p2 = (const char*)a[2].as.str;
         p3 = (float)a[3].as.f64;
@@ -2041,12 +2041,12 @@ static joy_value_t t_joy_r3d_font_draw_2d(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_font_cache_set_limit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_set_limit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_set_limit.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_set_limit.arg1");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_set_limit.arg0");
         p1 = (int)a[1].as.i32;
         joy_r3d_font_cache_set_limit(p0, p1);
@@ -2055,11 +2055,11 @@ static joy_value_t t_joy_r3d_font_cache_set_limit(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_r3d_font_cache_get_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_get_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_get_count.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_get_count.arg0");
         _r = joy_r3d_font_cache_get_count(p0);
         return joy_v_i32((int)_r);
@@ -2067,10 +2067,10 @@ static joy_value_t t_joy_r3d_font_cache_get_count(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_r3d_font_cache_clear(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_clear");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_clear.arg0");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_clear.arg0");
         joy_r3d_font_cache_clear(p0);
         return joy_v_null();
@@ -2078,12 +2078,12 @@ static joy_value_t t_joy_r3d_font_cache_clear(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_font_cache_sweep(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_font_cache_sweep");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_sweep.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_font_cache_sweep.arg1");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_font_cache_sweep.arg0");
         p1 = (int)a[1].as.i32;
         joy_r3d_font_cache_sweep(p0, p1);
@@ -2092,14 +2092,14 @@ static joy_value_t t_joy_r3d_font_cache_sweep(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_set_logical_presentation(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_set_logical_presentation");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation.arg2");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_set_logical_presentation.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -2109,7 +2109,7 @@ static joy_value_t t_joy_r3d_set_logical_presentation(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_r3d_set_logical_presentation_mode(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int p1;
         int p2;
         int p3;
@@ -2118,7 +2118,7 @@ static joy_value_t t_joy_r3d_set_logical_presentation_mode(joy_value_t* a, int n
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_set_logical_presentation_mode.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_set_logical_presentation_mode.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -2129,9 +2129,9 @@ static joy_value_t t_joy_r3d_set_logical_presentation_mode(joy_value_t* a, int n
 
 static joy_value_t t_joy_r3d_button_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_button_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_button_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_draw");
@@ -2140,11 +2140,11 @@ static joy_value_t t_joy_r3d_button_draw(joy_value_t* a, int n, joy_status_t* st
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_button_draw.arg1");
-        p2 = (jr3d_button_p)joy_obj_deref(a[2].as.handle, "jr3d_button_p", st);
+        p2 = (joy_r3d_button_p)joy_obj_deref(a[2].as.handle, "joy_r3d_button_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_button_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2154,9 +2154,9 @@ static joy_value_t t_joy_r3d_button_draw(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r3d_button_draw_circle(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_button_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_button_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_draw_circle");
@@ -2165,11 +2165,11 @@ static joy_value_t t_joy_r3d_button_draw_circle(joy_value_t* a, int n, joy_statu
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_draw_circle.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg1");
-        p2 = (jr3d_button_p)joy_obj_deref(a[2].as.handle, "jr3d_button_p", st);
+        p2 = (joy_r3d_button_p)joy_obj_deref(a[2].as.handle, "joy_r3d_button_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_button_draw_circle.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2179,8 +2179,8 @@ static joy_value_t t_joy_r3d_button_draw_circle(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_button_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_button_p p1;
+        joy_r3d_p p0;
+        joy_r3d_button_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2189,9 +2189,9 @@ static joy_value_t t_joy_r3d_button_is_hovered(joy_value_t* a, int n, joy_status
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_hovered.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_is_hovered.arg0");
-        p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
+        p1 = (joy_r3d_button_p)joy_obj_deref(a[1].as.handle, "joy_r3d_button_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_button_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2201,8 +2201,8 @@ static joy_value_t t_joy_r3d_button_is_hovered(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_button_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_button_p p1;
+        joy_r3d_p p0;
+        joy_r3d_button_p p1;
         bool p2;
         float p3;
         float p4;
@@ -2213,9 +2213,9 @@ static joy_value_t t_joy_r3d_button_is_pressed(joy_value_t* a, int n, joy_status
         if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_is_pressed.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_is_pressed.arg0");
-        p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
+        p1 = (joy_r3d_button_p)joy_obj_deref(a[1].as.handle, "joy_r3d_button_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_button_is_pressed.arg1");
         p2 = (bool)a[2].as.b;
         p3 = (float)a[3].as.f64;
@@ -2226,8 +2226,8 @@ static joy_value_t t_joy_r3d_button_is_pressed(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_button_release(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_button_p p1;
+        joy_r3d_p p0;
+        joy_r3d_button_p p1;
         float p2;
         float p3;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_release");
@@ -2235,9 +2235,9 @@ static joy_value_t t_joy_r3d_button_release(joy_value_t* a, int n, joy_status_t*
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_release.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_release.arg0");
-        p1 = (jr3d_button_p)joy_obj_deref(a[1].as.handle, "jr3d_button_p", st);
+        p1 = (joy_r3d_button_p)joy_obj_deref(a[1].as.handle, "joy_r3d_button_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_button_release.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2247,10 +2247,10 @@ static joy_value_t t_joy_r3d_button_release(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_button_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_button_p p0;
+        joy_r3d_button_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_button_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_button_destroy.arg0");
-        p0 = (jr3d_button_p)joy_obj_deref(a[0].as.handle, "jr3d_button_p", st);
+        p0 = (joy_r3d_button_p)joy_obj_deref(a[0].as.handle, "joy_r3d_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_button_destroy.arg0");
         joy_r3d_button_destroy(p0);
         return joy_v_null();
@@ -2258,12 +2258,12 @@ static joy_value_t t_joy_r3d_button_destroy(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_label_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_label_p p0;
+        joy_r3d_label_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_set_text.arg1");
-        p0 = (jr3d_label_p)joy_obj_deref(a[0].as.handle, "jr3d_label_p", st);
+        p0 = (joy_r3d_label_p)joy_obj_deref(a[0].as.handle, "joy_r3d_label_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_label_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         joy_r3d_label_set_text(p0, p1);
@@ -2272,9 +2272,9 @@ static joy_value_t t_joy_r3d_label_set_text(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_label_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_label_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_draw");
@@ -2283,11 +2283,11 @@ static joy_value_t t_joy_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_label_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_label_draw.arg1");
-        p2 = (jr3d_label_p)joy_obj_deref(a[2].as.handle, "jr3d_label_p", st);
+        p2 = (joy_r3d_label_p)joy_obj_deref(a[2].as.handle, "joy_r3d_label_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_label_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2297,10 +2297,10 @@ static joy_value_t t_joy_r3d_label_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_label_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_label_p p0;
+        joy_r3d_label_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_label_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_label_destroy.arg0");
-        p0 = (jr3d_label_p)joy_obj_deref(a[0].as.handle, "jr3d_label_p", st);
+        p0 = (joy_r3d_label_p)joy_obj_deref(a[0].as.handle, "joy_r3d_label_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_label_destroy.arg0");
         joy_r3d_label_destroy(p0);
         return joy_v_null();
@@ -2308,12 +2308,12 @@ static joy_value_t t_joy_r3d_label_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r3d_input_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_set_text.arg1");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         joy_r3d_input_set_text(p0, p1);
@@ -2322,8 +2322,8 @@ static joy_value_t t_joy_r3d_input_set_text(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_input_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_input_p p1;
+        joy_r3d_p p0;
+        joy_r3d_input_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2332,9 +2332,9 @@ static joy_value_t t_joy_r3d_input_is_hovered(joy_value_t* a, int n, joy_status_
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_hovered.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_is_hovered.arg0");
-        p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
+        p1 = (joy_r3d_input_p)joy_obj_deref(a[1].as.handle, "joy_r3d_input_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_input_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2344,10 +2344,10 @@ static joy_value_t t_joy_r3d_input_is_hovered(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_input_focus(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_focus");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_focus.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_focus.arg0");
         joy_r3d_input_focus(p0);
         return joy_v_null();
@@ -2355,10 +2355,10 @@ static joy_value_t t_joy_r3d_input_focus(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r3d_input_defocus(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_defocus");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_defocus.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_defocus.arg0");
         joy_r3d_input_defocus(p0);
         return joy_v_null();
@@ -2366,11 +2366,11 @@ static joy_value_t t_joy_r3d_input_defocus(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r3d_input_is_focused(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_is_focused");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_is_focused.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_is_focused.arg0");
         _r = joy_r3d_input_is_focused(p0);
         return joy_v_bool((bool)_r);
@@ -2378,14 +2378,14 @@ static joy_value_t t_joy_r3d_input_is_focused(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_input_start_text_input(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_input_p p1;
+        joy_r3d_p p0;
+        joy_r3d_input_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_start_text_input");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_start_text_input.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_start_text_input.arg1");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_start_text_input.arg0");
-        p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
+        p1 = (joy_r3d_input_p)joy_obj_deref(a[1].as.handle, "joy_r3d_input_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_input_start_text_input.arg1");
         joy_r3d_input_start_text_input(p0, p1);
         return joy_v_null();
@@ -2393,14 +2393,14 @@ static joy_value_t t_joy_r3d_input_start_text_input(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_r3d_input_stop_text_input(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_input_p p1;
+        joy_r3d_p p0;
+        joy_r3d_input_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_stop_text_input");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_stop_text_input.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_stop_text_input.arg1");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_stop_text_input.arg0");
-        p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
+        p1 = (joy_r3d_input_p)joy_obj_deref(a[1].as.handle, "joy_r3d_input_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_input_stop_text_input.arg1");
         joy_r3d_input_stop_text_input(p0, p1);
         return joy_v_null();
@@ -2408,12 +2408,12 @@ static joy_value_t t_joy_r3d_input_stop_text_input(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_r3d_input_insert(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_insert");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_insert.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_insert.arg1");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_insert.arg0");
         p1 = (const char*)a[1].as.str;
         joy_r3d_input_insert(p0, p1);
@@ -2422,10 +2422,10 @@ static joy_value_t t_joy_r3d_input_insert(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_input_backspace(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_backspace");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_backspace.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_backspace.arg0");
         joy_r3d_input_backspace(p0);
         return joy_v_null();
@@ -2433,10 +2433,10 @@ static joy_value_t t_joy_r3d_input_backspace(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r3d_input_delete(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_delete");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_delete.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_delete.arg0");
         joy_r3d_input_delete(p0);
         return joy_v_null();
@@ -2444,10 +2444,10 @@ static joy_value_t t_joy_r3d_input_delete(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_input_cursor_left(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_left");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_left.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_left.arg0");
         joy_r3d_input_cursor_left(p0);
         return joy_v_null();
@@ -2455,10 +2455,10 @@ static joy_value_t t_joy_r3d_input_cursor_left(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_input_cursor_right(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_right");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_right.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_right.arg0");
         joy_r3d_input_cursor_right(p0);
         return joy_v_null();
@@ -2466,10 +2466,10 @@ static joy_value_t t_joy_r3d_input_cursor_right(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_input_cursor_home(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_home");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_home.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_home.arg0");
         joy_r3d_input_cursor_home(p0);
         return joy_v_null();
@@ -2477,10 +2477,10 @@ static joy_value_t t_joy_r3d_input_cursor_home(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_input_cursor_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_cursor_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_cursor_end.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_cursor_end.arg0");
         joy_r3d_input_cursor_end(p0);
         return joy_v_null();
@@ -2488,8 +2488,8 @@ static joy_value_t t_joy_r3d_input_cursor_end(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_input_click(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_input_p p1;
+        joy_r3d_p p0;
+        joy_r3d_input_p p1;
         float p2;
         float p3;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_click");
@@ -2497,9 +2497,9 @@ static joy_value_t t_joy_r3d_input_click(joy_value_t* a, int n, joy_status_t* st
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_click.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_click.arg0");
-        p1 = (jr3d_input_p)joy_obj_deref(a[1].as.handle, "jr3d_input_p", st);
+        p1 = (joy_r3d_input_p)joy_obj_deref(a[1].as.handle, "joy_r3d_input_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_input_click.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2509,10 +2509,10 @@ static joy_value_t t_joy_r3d_input_click(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r3d_input_submit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_submit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_submit.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_submit.arg0");
         joy_r3d_input_submit(p0);
         return joy_v_null();
@@ -2520,9 +2520,9 @@ static joy_value_t t_joy_r3d_input_submit(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_input_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_input_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_draw");
@@ -2531,11 +2531,11 @@ static joy_value_t t_joy_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_input_draw.arg1");
-        p2 = (jr3d_input_p)joy_obj_deref(a[2].as.handle, "jr3d_input_p", st);
+        p2 = (joy_r3d_input_p)joy_obj_deref(a[2].as.handle, "joy_r3d_input_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_input_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2545,10 +2545,10 @@ static joy_value_t t_joy_r3d_input_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_input_p p0;
+        joy_r3d_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_input_destroy.arg0");
-        p0 = (jr3d_input_p)joy_obj_deref(a[0].as.handle, "jr3d_input_p", st);
+        p0 = (joy_r3d_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_input_destroy.arg0");
         joy_r3d_input_destroy(p0);
         return joy_v_null();
@@ -2556,10 +2556,10 @@ static joy_value_t t_joy_r3d_input_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r3d_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_combobox_input_p p0;
+        joy_r3d_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_destroy.arg0");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_destroy.arg0");
         joy_r3d_combobox_input_destroy(p0);
         return joy_v_null();
@@ -2567,12 +2567,12 @@ static joy_value_t t_joy_r3d_combobox_input_destroy(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_r3d_combobox_input_add_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_combobox_input_p p0;
+        joy_r3d_combobox_input_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_add_item");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_add_item.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_add_item.arg1");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_add_item.arg0");
         p1 = (const char*)a[1].as.str;
         joy_r3d_combobox_input_add_item(p0, p1);
@@ -2581,10 +2581,10 @@ static joy_value_t t_joy_r3d_combobox_input_add_item(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_r3d_combobox_input_clear_items(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_combobox_input_p p0;
+        joy_r3d_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_clear_items");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_clear_items.arg0");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_clear_items.arg0");
         joy_r3d_combobox_input_clear_items(p0);
         return joy_v_null();
@@ -2592,12 +2592,12 @@ static joy_value_t t_joy_r3d_combobox_input_clear_items(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_r3d_combobox_input_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_combobox_input_p p0;
+        joy_r3d_combobox_input_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_set_text.arg1");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         joy_r3d_combobox_input_set_text(p0, p1);
@@ -2606,7 +2606,7 @@ static joy_value_t t_joy_r3d_combobox_input_set_text(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_r3d_combobox_input_hit_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_combobox_input_p p0;
+        joy_r3d_combobox_input_p p0;
         float p1;
         float p2;
         int _r;
@@ -2614,7 +2614,7 @@ static joy_value_t t_joy_r3d_combobox_input_hit_item(joy_value_t* a, int n, joy_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_hit_item.arg2");
-        p0 = (jr3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "jr3d_combobox_input_p", st);
+        p0 = (joy_r3d_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_hit_item.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -2624,9 +2624,9 @@ static joy_value_t t_joy_r3d_combobox_input_hit_item(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_r3d_combobox_input_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_combobox_input_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_combobox_input_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_draw");
@@ -2635,11 +2635,11 @@ static joy_value_t t_joy_r3d_combobox_input_draw(joy_value_t* a, int n, joy_stat
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg1");
-        p2 = (jr3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "jr3d_combobox_input_p", st);
+        p2 = (joy_r3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2649,9 +2649,9 @@ static joy_value_t t_joy_r3d_combobox_input_draw(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_combobox_input_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_combobox_input_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_combobox_input_draw_dropdown");
@@ -2660,11 +2660,11 @@ static joy_value_t t_joy_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n,
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_combobox_input_draw_dropdown.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg1");
-        p2 = (jr3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "jr3d_combobox_input_p", st);
+        p2 = (joy_r3d_combobox_input_p)joy_obj_deref(a[2].as.handle, "joy_r3d_combobox_input_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_combobox_input_draw_dropdown.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2674,10 +2674,10 @@ static joy_value_t t_joy_r3d_combobox_input_draw_dropdown(joy_value_t* a, int n,
 
 static joy_value_t t_joy_r3d_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_slider_p p0;
+        joy_r3d_slider_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_destroy.arg0");
-        p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
+        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_destroy.arg0");
         joy_r3d_slider_destroy(p0);
         return joy_v_null();
@@ -2685,12 +2685,12 @@ static joy_value_t t_joy_r3d_slider_destroy(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r3d_slider_set_value(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_slider_p p0;
+        joy_r3d_slider_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_value");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_value.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_value.arg1");
-        p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
+        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_value.arg0");
         p1 = (float)a[1].as.f64;
         joy_r3d_slider_set_value(p0, p1);
@@ -2699,11 +2699,11 @@ static joy_value_t t_joy_r3d_slider_set_value(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_slider_get_value(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_slider_p p0;
+        joy_r3d_slider_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_get_value");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_get_value.arg0");
-        p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
+        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_get_value.arg0");
         _r = joy_r3d_slider_get_value(p0);
         return joy_v_f64((float)_r);
@@ -2711,9 +2711,9 @@ static joy_value_t t_joy_r3d_slider_get_value(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_slider_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_slider_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_slider_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_draw");
@@ -2722,11 +2722,11 @@ static joy_value_t t_joy_r3d_slider_draw(joy_value_t* a, int n, joy_status_t* st
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg1");
-        p2 = (jr3d_slider_p)joy_obj_deref(a[2].as.handle, "jr3d_slider_p", st);
+        p2 = (joy_r3d_slider_p)joy_obj_deref(a[2].as.handle, "joy_r3d_slider_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_slider_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2736,8 +2736,8 @@ static joy_value_t t_joy_r3d_slider_draw(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r3d_slider_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_slider_p p1;
+        joy_r3d_p p0;
+        joy_r3d_slider_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2746,9 +2746,9 @@ static joy_value_t t_joy_r3d_slider_is_pressed(joy_value_t* a, int n, joy_status
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_pressed.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_is_pressed.arg0");
-        p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
+        p1 = (joy_r3d_slider_p)joy_obj_deref(a[1].as.handle, "joy_r3d_slider_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_is_pressed.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2758,12 +2758,12 @@ static joy_value_t t_joy_r3d_slider_is_pressed(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_slider_set_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_slider_p p0;
+        joy_r3d_slider_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_pressed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_pressed.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_pressed.arg1");
-        p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
+        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_pressed.arg0");
         p1 = (bool)a[1].as.b;
         joy_r3d_slider_set_pressed(p0, p1);
@@ -2772,8 +2772,8 @@ static joy_value_t t_joy_r3d_slider_set_pressed(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_slider_drag_move(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_slider_p p1;
+        joy_r3d_p p0;
+        joy_r3d_slider_p p1;
         float p2;
         float p3;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_drag_move");
@@ -2781,9 +2781,9 @@ static joy_value_t t_joy_r3d_slider_drag_move(joy_value_t* a, int n, joy_status_
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_drag_move.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_drag_move.arg0");
-        p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
+        p1 = (joy_r3d_slider_p)joy_obj_deref(a[1].as.handle, "joy_r3d_slider_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_drag_move.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2793,8 +2793,8 @@ static joy_value_t t_joy_r3d_slider_drag_move(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_slider_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_slider_p p1;
+        joy_r3d_p p0;
+        joy_r3d_slider_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2803,9 +2803,9 @@ static joy_value_t t_joy_r3d_slider_is_hovered(joy_value_t* a, int n, joy_status
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_is_hovered.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_is_hovered.arg0");
-        p1 = (jr3d_slider_p)joy_obj_deref(a[1].as.handle, "jr3d_slider_p", st);
+        p1 = (joy_r3d_slider_p)joy_obj_deref(a[1].as.handle, "joy_r3d_slider_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_slider_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2815,12 +2815,12 @@ static joy_value_t t_joy_r3d_slider_is_hovered(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_slider_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_slider_p p0;
+        joy_r3d_slider_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_slider_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_slider_set_hovered.arg1");
-        p0 = (jr3d_slider_p)joy_obj_deref(a[0].as.handle, "jr3d_slider_p", st);
+        p0 = (joy_r3d_slider_p)joy_obj_deref(a[0].as.handle, "joy_r3d_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_slider_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_r3d_slider_set_hovered(p0, p1);
@@ -2829,10 +2829,10 @@ static joy_value_t t_joy_r3d_slider_set_hovered(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_checkbox_p p0;
+        joy_r3d_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_destroy.arg0");
-        p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
+        p0 = (joy_r3d_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_r3d_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_destroy.arg0");
         joy_r3d_checkbox_destroy(p0);
         return joy_v_null();
@@ -2840,10 +2840,10 @@ static joy_value_t t_joy_r3d_checkbox_destroy(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_checkbox_toggle(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_checkbox_p p0;
+        joy_r3d_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_toggle");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_toggle.arg0");
-        p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
+        p0 = (joy_r3d_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_r3d_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_toggle.arg0");
         joy_r3d_checkbox_toggle(p0);
         return joy_v_null();
@@ -2851,8 +2851,8 @@ static joy_value_t t_joy_r3d_checkbox_toggle(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r3d_checkbox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_checkbox_p p1;
+        joy_r3d_p p0;
+        joy_r3d_checkbox_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2861,9 +2861,9 @@ static joy_value_t t_joy_r3d_checkbox_is_pressed(joy_value_t* a, int n, joy_stat
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_pressed.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_is_pressed.arg0");
-        p1 = (jr3d_checkbox_p)joy_obj_deref(a[1].as.handle, "jr3d_checkbox_p", st);
+        p1 = (joy_r3d_checkbox_p)joy_obj_deref(a[1].as.handle, "joy_r3d_checkbox_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_is_pressed.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2873,12 +2873,12 @@ static joy_value_t t_joy_r3d_checkbox_is_pressed(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r3d_checkbox_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_checkbox_p p0;
+        joy_r3d_checkbox_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_hovered.arg1");
-        p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
+        p0 = (joy_r3d_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_r3d_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_r3d_checkbox_set_hovered(p0, p1);
@@ -2887,8 +2887,8 @@ static joy_value_t t_joy_r3d_checkbox_set_hovered(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_r3d_checkbox_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        jr3d_checkbox_p p1;
+        joy_r3d_p p0;
+        joy_r3d_checkbox_p p1;
         float p2;
         float p3;
         bool _r;
@@ -2897,9 +2897,9 @@ static joy_value_t t_joy_r3d_checkbox_is_hovered(joy_value_t* a, int n, joy_stat
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_is_hovered.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_is_hovered.arg0");
-        p1 = (jr3d_checkbox_p)joy_obj_deref(a[1].as.handle, "jr3d_checkbox_p", st);
+        p1 = (joy_r3d_checkbox_p)joy_obj_deref(a[1].as.handle, "joy_r3d_checkbox_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_is_hovered.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -2909,13 +2909,13 @@ static joy_value_t t_joy_r3d_checkbox_is_hovered(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r3d_checkbox_set_colors(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_checkbox_p p0;
-        jcolor_t p1 = { 0 };
-        jcolor_t p2 = { 0 };
-        jcolor_t p3 = { 0 };
+        joy_r3d_checkbox_p p0;
+        joy_color_t p1 = { 0 };
+        joy_color_t p2 = { 0 };
+        joy_color_t p3 = { 0 };
         if (n != 13) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_set_colors");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg0");
-        p0 = (jr3d_checkbox_p)joy_obj_deref(a[0].as.handle, "jr3d_checkbox_p", st);
+        p0 = (joy_r3d_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_r3d_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_set_colors.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_set_colors.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -2947,9 +2947,9 @@ static joy_value_t t_joy_r3d_checkbox_set_colors(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r3d_checkbox_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
-        render_mesh_p p1;
-        jr3d_checkbox_p p2;
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_r3d_checkbox_p p2;
         float p3;
         float p4;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_checkbox_draw");
@@ -2958,11 +2958,11 @@ static joy_value_t t_joy_r3d_checkbox_draw(joy_value_t* a, int n, joy_status_t* 
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_checkbox_draw.arg4");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg0");
-        p1 = (render_mesh_p)joy_obj_deref(a[1].as.handle, "render_mesh_p", st);
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg1");
-        p2 = (jr3d_checkbox_p)joy_obj_deref(a[2].as.handle, "jr3d_checkbox_p", st);
+        p2 = (joy_r3d_checkbox_p)joy_obj_deref(a[2].as.handle, "joy_r3d_checkbox_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_r3d_checkbox_draw.arg2");
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
@@ -2972,7 +2972,7 @@ static joy_value_t t_joy_r3d_checkbox_draw(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         int p1;
         float p2;
         float p3;
@@ -2981,7 +2981,7 @@ static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_grid.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_draw_grid.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (float)a[2].as.f64;
@@ -2992,110 +2992,110 @@ static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_r3d_mesh_cube_lit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube_lit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube_lit.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_cube_lit(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube_lit");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_lit");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_lit");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube_lit"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_sphere_lit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         int p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere_lit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere_lit.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (int)a[2].as.i32;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_sphere_lit(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere_lit");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_lit");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_lit");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere_lit"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_plane_lit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         int p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane_lit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane_lit.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (int)a[3].as.i32;
         _r = joy_r3d_mesh_plane_lit(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane_lit");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_lit");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_lit");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane_lit"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_r3d_mesh_ramp_lit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr3d_p p0;
+        joy_r3d_p p0;
         float p1;
         float p2;
         float p3;
-        render_mesh_p _r;
+        joy_render_mesh_p _r;
         uint64_t _h;
         if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp_lit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg3");
-        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp_lit.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         _r = joy_r3d_mesh_ramp_lit(p0, p1, p2, p3);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp_lit");
-        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_lit");
+        _h = joy_obj_register((void*)_r, "joy_render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_lit");
         if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp_lit"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_animator_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_destroy.arg0");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_destroy.arg0");
         joy_scene_animator_destroy(p0);
         return joy_v_null();
@@ -3103,14 +3103,14 @@ static joy_value_t t_joy_scene_animator_destroy(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_scene_animator_set_float(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_float");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_float.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_float.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_float.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_float.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
@@ -3120,14 +3120,14 @@ static joy_value_t t_joy_scene_animator_set_float(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_animator_set_int(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_int");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_int.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_int.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_int.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_int.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -3137,14 +3137,14 @@ static joy_value_t t_joy_scene_animator_set_int(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_scene_animator_set_bool(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         bool p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_bool");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_bool.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_bool.arg1");
         if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_bool.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_bool.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (bool)a[2].as.b;
@@ -3154,12 +3154,12 @@ static joy_value_t t_joy_scene_animator_set_bool(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_animator_set_trigger(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_trigger");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_trigger.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_trigger.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_trigger.arg0");
         p1 = (const char*)a[1].as.str;
         joy_scene_animator_set_trigger(p0, p1);
@@ -3168,13 +3168,13 @@ static joy_value_t t_joy_scene_animator_set_trigger(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_scene_animator_get_float(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         float _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_get_float");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_float.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_float.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_get_float.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_animator_get_float(p0, p1);
@@ -3183,13 +3183,13 @@ static joy_value_t t_joy_scene_animator_get_float(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_animator_get_int(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         int _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_get_int");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_int.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_int.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_get_int.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_animator_get_int(p0, p1);
@@ -3198,13 +3198,13 @@ static joy_value_t t_joy_scene_animator_get_int(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_scene_animator_get_bool(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_get_bool");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_bool.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_get_bool.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_get_bool.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_animator_get_bool(p0, p1);
@@ -3213,12 +3213,12 @@ static joy_value_t t_joy_scene_animator_get_bool(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_animator_add_state(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_add_state");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_state.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_state.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_add_state.arg0");
         p1 = (const char*)a[1].as.str;
         joy_scene_animator_add_state(p0, p1);
@@ -3227,12 +3227,12 @@ static joy_value_t t_joy_scene_animator_add_state(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_animator_set_default_state(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_default_state");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_default_state.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_default_state.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_default_state.arg0");
         p1 = (const char*)a[1].as.str;
         joy_scene_animator_set_default_state(p0, p1);
@@ -3241,14 +3241,14 @@ static joy_value_t t_joy_scene_animator_set_default_state(joy_value_t* a, int n,
 
 static joy_value_t t_joy_scene_animator_state_add_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         const char* p2;
         float p3;
-        jrect_t p4 = { 0 };
+        joy_rect_t p4 = { 0 };
         if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_state_add_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_clip.arg0");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_add_clip.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_clip.arg1");
         p1 = (const char*)a[1].as.str;
@@ -3270,7 +3270,7 @@ static joy_value_t t_joy_scene_animator_state_add_clip(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_scene_animator_state_add_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         float p2;
         int p3;
@@ -3289,7 +3289,7 @@ static joy_value_t t_joy_scene_animator_state_add_color(joy_value_t* a, int n, j
         if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_color.arg6");
         if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_color.arg7");
         if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_color.arg8");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_add_color.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
@@ -3305,14 +3305,14 @@ static joy_value_t t_joy_scene_animator_state_add_color(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_scene_animator_state_set_loop(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         bool p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_state_set_loop");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_loop.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_loop.arg1");
         if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_loop.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_set_loop.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (bool)a[2].as.b;
@@ -3322,14 +3322,14 @@ static joy_value_t t_joy_scene_animator_state_set_loop(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_scene_animator_state_set_speed(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_state_set_speed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_speed.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_speed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_speed.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_set_speed.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
@@ -3339,14 +3339,14 @@ static joy_value_t t_joy_scene_animator_state_set_speed(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_scene_animator_state_set_blend(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         const char* p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_state_set_blend");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_blend.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_blend.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_set_blend.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_set_blend.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
@@ -3356,15 +3356,15 @@ static joy_value_t t_joy_scene_animator_state_set_blend(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_scene_animator_state_add_motion(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         const char* p2;
         float p3;
-        jrect_t p4 = { 0 };
+        joy_rect_t p4 = { 0 };
         float p5;
         if (n != 9) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_state_add_motion");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_motion.arg0");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_state_add_motion.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_state_add_motion.arg1");
         p1 = (const char*)a[1].as.str;
@@ -3388,7 +3388,7 @@ static joy_value_t t_joy_scene_animator_state_add_motion(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_scene_animator_add_transition(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         const char* p2;
         int _r;
@@ -3396,7 +3396,7 @@ static joy_value_t t_joy_scene_animator_add_transition(joy_value_t* a, int n, jo
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_transition.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_transition.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_transition.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_add_transition.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
@@ -3406,13 +3406,13 @@ static joy_value_t t_joy_scene_animator_add_transition(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_scene_animator_add_any_transition(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         const char* p1;
         int _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_add_any_transition");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_any_transition.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_add_any_transition.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_add_any_transition.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_animator_add_any_transition(p0, p1);
@@ -3421,7 +3421,7 @@ static joy_value_t t_joy_scene_animator_add_any_transition(joy_value_t* a, int n
 
 static joy_value_t t_joy_scene_animator_transition_add_cond(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         int p1;
         const char* p2;
         int p3;
@@ -3432,7 +3432,7 @@ static joy_value_t t_joy_scene_animator_transition_add_cond(joy_value_t* a, int 
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_add_cond.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_add_cond.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_add_cond.arg4");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_transition_add_cond.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -3444,14 +3444,14 @@ static joy_value_t t_joy_scene_animator_transition_add_cond(joy_value_t* a, int 
 
 static joy_value_t t_joy_scene_animator_transition_set_exit_time(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         int p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_transition_set_exit_time");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_set_exit_time.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_set_exit_time.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_transition_set_exit_time.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_transition_set_exit_time.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (float)a[2].as.f64;
@@ -3461,12 +3461,12 @@ static joy_value_t t_joy_scene_animator_transition_set_exit_time(joy_value_t* a,
 
 static joy_value_t t_joy_scene_animator_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_update.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_animator_update(p0, p1);
@@ -3475,14 +3475,14 @@ static joy_value_t t_joy_scene_animator_update(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_animator_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_draw.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_draw.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_draw.arg2");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_draw.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3492,12 +3492,12 @@ static joy_value_t t_joy_scene_animator_draw(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_scene_animator_set_flip_h(joy_value_t* a, int n, joy_status_t* st)
 {
-        janimator_p p0;
+        joy_animator_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animator_set_flip_h");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_flip_h.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animator_set_flip_h.arg1");
-        p0 = (janimator_p)joy_obj_deref(a[0].as.handle, "janimator_p", st);
+        p0 = (joy_animator_p)joy_obj_deref(a[0].as.handle, "joy_animator_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_animator_set_flip_h.arg0");
         p1 = (bool)a[1].as.b;
         joy_scene_animator_set_flip_h(p0, p1);
@@ -3506,10 +3506,10 @@ static joy_value_t t_joy_scene_animator_set_flip_h(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_label_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        label_p p0;
+        joy_label_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_label_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_label_destroy.arg0");
-        p0 = (label_p)joy_obj_deref(a[0].as.handle, "label_p", st);
+        p0 = (joy_label_p)joy_obj_deref(a[0].as.handle, "joy_label_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_label_destroy.arg0");
         joy_ui_label_destroy(p0);
         return joy_v_null();
@@ -3517,10 +3517,10 @@ static joy_value_t t_joy_ui_label_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_label_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        label_p p0;
+        joy_label_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_label_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_label_draw.arg0");
-        p0 = (label_p)joy_obj_deref(a[0].as.handle, "label_p", st);
+        p0 = (joy_label_p)joy_obj_deref(a[0].as.handle, "joy_label_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_label_draw.arg0");
         joy_ui_label_draw(p0);
         return joy_v_null();
@@ -3528,10 +3528,10 @@ static joy_value_t t_joy_ui_label_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_button_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_destroy.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_destroy.arg0");
         joy_ui_button_destroy(p0);
         return joy_v_null();
@@ -3539,14 +3539,14 @@ static joy_value_t t_joy_ui_button_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_button_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_position.arg2");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3556,14 +3556,14 @@ static joy_value_t t_joy_ui_button_set_position(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_button_set_size(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_size");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_size.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_size.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_size.arg2");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_size.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3573,11 +3573,11 @@ static joy_value_t t_joy_ui_button_set_size(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_button_set_normal_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        jcolor_t p1 = { 0 };
+        joy_button_p p0;
+        joy_color_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_normal_color");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_normal_color.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_normal_color.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_normal_color.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -3593,11 +3593,11 @@ static joy_value_t t_joy_ui_button_set_normal_color(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_button_set_hover_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        jcolor_t p1 = { 0 };
+        joy_button_p p0;
+        joy_color_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_hover_color");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_hover_color.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_hover_color.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_hover_color.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -3613,11 +3613,11 @@ static joy_value_t t_joy_ui_button_set_hover_color(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_button_set_pressed_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        jcolor_t p1 = { 0 };
+        joy_button_p p0;
+        joy_color_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_pressed_color");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed_color.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_pressed_color.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed_color.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -3633,14 +3633,14 @@ static joy_value_t t_joy_ui_button_set_pressed_color(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_ui_button_set_image(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        image_p p1;
+        joy_button_p p0;
+        joy_image_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_image");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_image.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_image.arg1");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_image.arg0");
-        p1 = (image_p)joy_obj_deref(a[1].as.handle, "image_p", st);
+        p1 = (joy_image_p)joy_obj_deref(a[1].as.handle, "joy_image_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_button_set_image.arg1");
         joy_ui_button_set_image(p0, p1);
         return joy_v_null();
@@ -3648,14 +3648,14 @@ static joy_value_t t_joy_ui_button_set_image(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_button_set_pressed_image(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        image_p p1;
+        joy_button_p p0;
+        joy_image_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_pressed_image");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed_image.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed_image.arg1");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_pressed_image.arg0");
-        p1 = (image_p)joy_obj_deref(a[1].as.handle, "image_p", st);
+        p1 = (joy_image_p)joy_obj_deref(a[1].as.handle, "joy_image_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_button_set_pressed_image.arg1");
         joy_ui_button_set_pressed_image(p0, p1);
         return joy_v_null();
@@ -3663,17 +3663,17 @@ static joy_value_t t_joy_ui_button_set_pressed_image(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_ui_button_set_textx(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
-        font_p p1;
+        joy_button_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_textx");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_textx.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_textx.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_textx.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_button_set_textx.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_textx.arg2");
         p2 = (const char*)a[2].as.str;
@@ -3693,7 +3693,7 @@ static joy_value_t t_joy_ui_button_set_textx(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_button_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         float p1;
         float p2;
         bool _r;
@@ -3701,7 +3701,7 @@ static joy_value_t t_joy_ui_button_is_hovered(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_hovered.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_hovered.arg2");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_is_hovered.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3711,7 +3711,7 @@ static joy_value_t t_joy_ui_button_is_hovered(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_button_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         float p1;
         float p2;
         bool _r;
@@ -3719,7 +3719,7 @@ static joy_value_t t_joy_ui_button_is_pressed(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_is_pressed.arg2");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3729,12 +3729,12 @@ static joy_value_t t_joy_ui_button_is_pressed(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_button_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_hovered.arg1");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_button_set_hovered(p0, p1);
@@ -3743,12 +3743,12 @@ static joy_value_t t_joy_ui_button_set_hovered(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_button_set_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_pressed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_pressed.arg1");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_pressed.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_button_set_pressed(p0, p1);
@@ -3757,11 +3757,11 @@ static joy_value_t t_joy_ui_button_set_pressed(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_button_get_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_get_pressed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_get_pressed.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_get_pressed.arg0");
         _r = joy_ui_button_get_pressed(p0);
         return joy_v_bool((bool)_r);
@@ -3769,14 +3769,14 @@ static joy_value_t t_joy_ui_button_get_pressed(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_button_set_text_offset(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_set_text_offset");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_text_offset.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_text_offset.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_set_text_offset.arg2");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_set_text_offset.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3786,10 +3786,10 @@ static joy_value_t t_joy_ui_button_set_text_offset(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_button_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        button_p p0;
+        joy_button_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button_draw.arg0");
-        p0 = (button_p)joy_obj_deref(a[0].as.handle, "button_p", st);
+        p0 = (joy_button_p)joy_obj_deref(a[0].as.handle, "joy_button_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button_draw.arg0");
         joy_ui_button_draw(p0);
         return joy_v_null();
@@ -3797,10 +3797,10 @@ static joy_value_t t_joy_ui_button_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_scrollview_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_destroy.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_destroy.arg0");
         joy_ui_scrollview_destroy(p0);
         return joy_v_null();
@@ -3808,7 +3808,7 @@ static joy_value_t t_joy_ui_scrollview_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_scrollview_set_view_px(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float p1;
         float p2;
         float p3;
@@ -3819,7 +3819,7 @@ static joy_value_t t_joy_ui_scrollview_set_view_px(joy_value_t* a, int n, joy_st
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_view_px.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_view_px.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_view_px.arg4");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_set_view_px.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3831,14 +3831,14 @@ static joy_value_t t_joy_ui_scrollview_set_view_px(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_scrollview_set_content(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_set_content");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_content.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_content.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_content.arg2");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_set_content.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3848,14 +3848,14 @@ static joy_value_t t_joy_ui_scrollview_set_content(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_scrollview_set_offset(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_set_offset");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_offset.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_offset.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_offset.arg2");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_set_offset.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3865,10 +3865,10 @@ static joy_value_t t_joy_ui_scrollview_set_offset(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_scrollview_clamp(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_clamp");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_clamp.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_clamp.arg0");
         joy_ui_scrollview_clamp(p0);
         return joy_v_null();
@@ -3876,11 +3876,11 @@ static joy_value_t t_joy_ui_scrollview_clamp(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_scrollview_get_offset_x(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_get_offset_x");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_get_offset_x.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_get_offset_x.arg0");
         _r = joy_ui_scrollview_get_offset_x(p0);
         return joy_v_f64((float)_r);
@@ -3888,11 +3888,11 @@ static joy_value_t t_joy_ui_scrollview_get_offset_x(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_scrollview_get_offset_y(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_get_offset_y");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_get_offset_y.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_get_offset_y.arg0");
         _r = joy_ui_scrollview_get_offset_y(p0);
         return joy_v_f64((float)_r);
@@ -3900,12 +3900,12 @@ static joy_value_t t_joy_ui_scrollview_get_offset_y(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_scrollview_set_show_bar(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_set_show_bar");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_show_bar.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_set_show_bar.arg1");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_set_show_bar.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_scrollview_set_show_bar(p0, p1);
@@ -3914,11 +3914,11 @@ static joy_value_t t_joy_ui_scrollview_set_show_bar(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_scrollview_dragging(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_dragging");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_dragging.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_dragging.arg0");
         _r = joy_ui_scrollview_dragging(p0);
         return joy_v_bool((bool)_r);
@@ -3926,7 +3926,7 @@ static joy_value_t t_joy_ui_scrollview_dragging(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_scrollview_hit(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         float p1;
         float p2;
         bool _r;
@@ -3934,7 +3934,7 @@ static joy_value_t t_joy_ui_scrollview_hit(joy_value_t* a, int n, joy_status_t* 
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_hit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_hit.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_hit.arg2");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_hit.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -3944,10 +3944,10 @@ static joy_value_t t_joy_ui_scrollview_hit(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_scrollview_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_begin.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_begin.arg0");
         joy_ui_scrollview_begin(p0);
         return joy_v_null();
@@ -3955,10 +3955,10 @@ static joy_value_t t_joy_ui_scrollview_begin(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_scrollview_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        scrollview_p p0;
+        joy_scrollview_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollview_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollview_end.arg0");
-        p0 = (scrollview_p)joy_obj_deref(a[0].as.handle, "scrollview_p", st);
+        p0 = (joy_scrollview_p)joy_obj_deref(a[0].as.handle, "joy_scrollview_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollview_end.arg0");
         joy_ui_scrollview_end(p0);
         return joy_v_null();
@@ -3966,10 +3966,10 @@ static joy_value_t t_joy_ui_scrollview_end(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_combobox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_destroy.arg0");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_destroy.arg0");
         joy_ui_combobox_destroy(p0);
         return joy_v_null();
@@ -3977,17 +3977,17 @@ static joy_value_t t_joy_ui_combobox_destroy(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_combobox_add_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
-        font_p p1;
+        joy_combobox_p p0;
+        joy_font_p p1;
         const char* p2;
         int p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_add_item");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_add_item.arg0");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_add_item.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_add_item.arg1");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_combobox_add_item.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_add_item.arg2");
         p2 = (const char*)a[2].as.str;
@@ -4007,7 +4007,7 @@ static joy_value_t t_joy_ui_combobox_add_item(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_combobox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         float p1;
         float p2;
         bool _r;
@@ -4015,7 +4015,7 @@ static joy_value_t t_joy_ui_combobox_is_pressed(joy_value_t* a, int n, joy_statu
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_is_pressed.arg2");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4025,11 +4025,11 @@ static joy_value_t t_joy_ui_combobox_is_pressed(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_combobox_is_open(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_is_open");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_is_open.arg0");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_is_open.arg0");
         _r = joy_ui_combobox_is_open(p0);
         return joy_v_bool((bool)_r);
@@ -4037,12 +4037,12 @@ static joy_value_t t_joy_ui_combobox_is_open(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_combobox_set_open(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_set_open");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_set_open.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_set_open.arg1");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_set_open.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_combobox_set_open(p0, p1);
@@ -4051,7 +4051,7 @@ static joy_value_t t_joy_ui_combobox_set_open(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_combobox_hit_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         float p1;
         float p2;
         int _r;
@@ -4059,7 +4059,7 @@ static joy_value_t t_joy_ui_combobox_hit_item(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_hit_item.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_hit_item.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_hit_item.arg2");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_hit_item.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4069,12 +4069,12 @@ static joy_value_t t_joy_ui_combobox_hit_item(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_combobox_set_selected(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_set_selected");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_set_selected.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_set_selected.arg1");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_set_selected.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_combobox_set_selected(p0, p1);
@@ -4083,11 +4083,11 @@ static joy_value_t t_joy_ui_combobox_set_selected(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_combobox_get_selected(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_get_selected");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_get_selected.arg0");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_get_selected.arg0");
         _r = joy_ui_combobox_get_selected(p0);
         return joy_v_i32((int)_r);
@@ -4095,10 +4095,10 @@ static joy_value_t t_joy_ui_combobox_get_selected(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_combobox_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_p p0;
+        joy_combobox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_draw.arg0");
-        p0 = (combobox_p)joy_obj_deref(a[0].as.handle, "combobox_p", st);
+        p0 = (joy_combobox_p)joy_obj_deref(a[0].as.handle, "joy_combobox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_draw.arg0");
         joy_ui_combobox_draw(p0);
         return joy_v_null();
@@ -4106,10 +4106,10 @@ static joy_value_t t_joy_ui_combobox_draw(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_combobox_input_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_destroy.arg0");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_destroy.arg0");
         joy_ui_combobox_input_destroy(p0);
         return joy_v_null();
@@ -4117,14 +4117,14 @@ static joy_value_t t_joy_ui_combobox_input_destroy(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_combobox_input_add_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_add_item");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_add_item.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_add_item.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_add_item.arg2");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_add_item.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -4134,10 +4134,10 @@ static joy_value_t t_joy_ui_combobox_input_add_item(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_combobox_input_clear_items(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_clear_items");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_clear_items.arg0");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_clear_items.arg0");
         joy_ui_combobox_input_clear_items(p0);
         return joy_v_null();
@@ -4145,12 +4145,12 @@ static joy_value_t t_joy_ui_combobox_input_clear_items(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_ui_combobox_input_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_text.arg1");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         joy_ui_combobox_input_set_text(p0, p1);
@@ -4159,10 +4159,10 @@ static joy_value_t t_joy_ui_combobox_input_set_text(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_combobox_input_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_draw.arg0");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_draw.arg0");
         joy_ui_combobox_input_draw(p0);
         return joy_v_null();
@@ -4170,10 +4170,10 @@ static joy_value_t t_joy_ui_combobox_input_draw(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_combobox_input_draw_dropdown(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_draw_dropdown");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_draw_dropdown.arg0");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_draw_dropdown.arg0");
         joy_ui_combobox_input_draw_dropdown(p0);
         return joy_v_null();
@@ -4181,11 +4181,11 @@ static joy_value_t t_joy_ui_combobox_input_draw_dropdown(joy_value_t* a, int n, 
 
 static joy_value_t t_joy_ui_combobox_input_is_open(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_is_open");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_is_open.arg0");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_is_open.arg0");
         _r = joy_ui_combobox_input_is_open(p0);
         return joy_v_bool((bool)_r);
@@ -4193,14 +4193,14 @@ static joy_value_t t_joy_ui_combobox_input_is_open(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_combobox_input_set_popup_node(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
-        scene_node_p p1;
+        joy_combobox_input_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_set_popup_node");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_popup_node.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_popup_node.arg1");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_set_popup_node.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_combobox_input_set_popup_node.arg1");
         joy_ui_combobox_input_set_popup_node(p0, p1);
         return joy_v_null();
@@ -4208,7 +4208,7 @@ static joy_value_t t_joy_ui_combobox_input_set_popup_node(joy_value_t* a, int n,
 
 static joy_value_t t_joy_ui_combobox_input_hit_item(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         float p1;
         float p2;
         int _r;
@@ -4216,7 +4216,7 @@ static joy_value_t t_joy_ui_combobox_input_hit_item(joy_value_t* a, int n, joy_s
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_hit_item.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_hit_item.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_hit_item.arg2");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_hit_item.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4226,12 +4226,12 @@ static joy_value_t t_joy_ui_combobox_input_hit_item(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_combobox_input_set_open(joy_value_t* a, int n, joy_status_t* st)
 {
-        combobox_input_p p0;
+        joy_combobox_input_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_combobox_input_set_open");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_open.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_combobox_input_set_open.arg1");
-        p0 = (combobox_input_p)joy_obj_deref(a[0].as.handle, "combobox_input_p", st);
+        p0 = (joy_combobox_input_p)joy_obj_deref(a[0].as.handle, "joy_combobox_input_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_combobox_input_set_open.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_combobox_input_set_open(p0, p1);
@@ -4240,12 +4240,12 @@ static joy_value_t t_joy_ui_combobox_input_set_open(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_datagrid_setheaders(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_setheaders");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setheaders.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setheaders.arg1");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_setheaders.arg0");
         p1 = (const char*)a[1].as.str;
         joy_ui_datagrid_setheaders(p0, p1);
@@ -4254,14 +4254,14 @@ static joy_value_t t_joy_ui_datagrid_setheaders(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_datagrid_setheader(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         int p1;
         const char* p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_setheader");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setheader.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setheader.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setheader.arg2");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_setheader.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -4271,7 +4271,7 @@ static joy_value_t t_joy_ui_datagrid_setheader(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_datagrid_setcell(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         int p1;
         int p2;
         const char* p3;
@@ -4280,7 +4280,7 @@ static joy_value_t t_joy_ui_datagrid_setcell(joy_value_t* a, int n, joy_status_t
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setcell.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setcell.arg2");
         if (a[3].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_setcell.arg3");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_setcell.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -4291,10 +4291,10 @@ static joy_value_t t_joy_ui_datagrid_setcell(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_datagrid_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_destroy.arg0");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_destroy.arg0");
         joy_ui_datagrid_destroy(p0);
         return joy_v_null();
@@ -4302,14 +4302,14 @@ static joy_value_t t_joy_ui_datagrid_destroy(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_datagrid_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
-        jr2d_p p1;
+        joy_datagrid_p p0;
+        joy_r2d_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_draw.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_draw.arg1");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_draw.arg0");
-        p1 = (jr2d_p)joy_obj_deref(a[1].as.handle, "jr2d_p", st);
+        p1 = (joy_r2d_p)joy_obj_deref(a[1].as.handle, "joy_r2d_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_datagrid_draw.arg1");
         joy_ui_datagrid_draw(p0, p1);
         return joy_v_null();
@@ -4317,7 +4317,7 @@ static joy_value_t t_joy_ui_datagrid_draw(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_datagrid_hit_row(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         float p1;
         float p2;
         int _r;
@@ -4325,7 +4325,7 @@ static joy_value_t t_joy_ui_datagrid_hit_row(joy_value_t* a, int n, joy_status_t
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_hit_row.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_hit_row.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_hit_row.arg2");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_hit_row.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4335,12 +4335,12 @@ static joy_value_t t_joy_ui_datagrid_hit_row(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_datagrid_scroll(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_scroll");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_scroll.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_scroll.arg1");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_scroll.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_datagrid_scroll(p0, p1);
@@ -4349,12 +4349,12 @@ static joy_value_t t_joy_ui_datagrid_scroll(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_datagrid_set_selected_row(joy_value_t* a, int n, joy_status_t* st)
 {
-        datagrid_p p0;
+        joy_datagrid_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_datagrid_set_selected_row");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_set_selected_row.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_datagrid_set_selected_row.arg1");
-        p0 = (datagrid_p)joy_obj_deref(a[0].as.handle, "datagrid_p", st);
+        p0 = (joy_datagrid_p)joy_obj_deref(a[0].as.handle, "joy_datagrid_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_datagrid_set_selected_row.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_datagrid_set_selected_row(p0, p1);
@@ -4363,10 +4363,10 @@ static joy_value_t t_joy_ui_datagrid_set_selected_row(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_ui_radio_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        radio_p p0;
+        joy_radio_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_radio_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_destroy.arg0");
-        p0 = (radio_p)joy_obj_deref(a[0].as.handle, "radio_p", st);
+        p0 = (joy_radio_p)joy_obj_deref(a[0].as.handle, "joy_radio_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_radio_destroy.arg0");
         joy_ui_radio_destroy(p0);
         return joy_v_null();
@@ -4374,7 +4374,7 @@ static joy_value_t t_joy_ui_radio_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_radio_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        radio_p p0;
+        joy_radio_p p0;
         float p1;
         float p2;
         bool _r;
@@ -4382,7 +4382,7 @@ static joy_value_t t_joy_ui_radio_is_pressed(joy_value_t* a, int n, joy_status_t
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_is_pressed.arg2");
-        p0 = (radio_p)joy_obj_deref(a[0].as.handle, "radio_p", st);
+        p0 = (joy_radio_p)joy_obj_deref(a[0].as.handle, "joy_radio_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_radio_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4392,12 +4392,12 @@ static joy_value_t t_joy_ui_radio_is_pressed(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_radio_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        radio_p p0;
+        joy_radio_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_radio_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_radio_set_hovered.arg1");
-        p0 = (radio_p)joy_obj_deref(a[0].as.handle, "radio_p", st);
+        p0 = (joy_radio_p)joy_obj_deref(a[0].as.handle, "joy_radio_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_radio_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_radio_set_hovered(p0, p1);
@@ -4406,10 +4406,10 @@ static joy_value_t t_joy_ui_radio_set_hovered(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_checkbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
+        joy_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_destroy.arg0");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_destroy.arg0");
         joy_ui_checkbox_destroy(p0);
         return joy_v_null();
@@ -4417,13 +4417,13 @@ static joy_value_t t_joy_ui_checkbox_destroy(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_checkbox_set_colors(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
-        jcolor_t p1 = { 0 };
-        jcolor_t p2 = { 0 };
-        jcolor_t p3 = { 0 };
+        joy_checkbox_p p0;
+        joy_color_t p1 = { 0 };
+        joy_color_t p2 = { 0 };
+        joy_color_t p3 = { 0 };
         if (n != 13) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_set_colors");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_colors.arg0");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_set_colors.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_colors.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -4455,14 +4455,14 @@ static joy_value_t t_joy_ui_checkbox_set_colors(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_checkbox_set_r2d(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
-        jr2d_p p1;
+        joy_checkbox_p p0;
+        joy_r2d_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_set_r2d");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_r2d.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_r2d.arg1");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_set_r2d.arg0");
-        p1 = (jr2d_p)joy_obj_deref(a[1].as.handle, "jr2d_p", st);
+        p1 = (joy_r2d_p)joy_obj_deref(a[1].as.handle, "joy_r2d_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_checkbox_set_r2d.arg1");
         joy_ui_checkbox_set_r2d(p0, p1);
         return joy_v_null();
@@ -4470,14 +4470,14 @@ static joy_value_t t_joy_ui_checkbox_set_r2d(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_checkbox_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
+        joy_checkbox_p p0;
         int p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_position.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_position.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_position.arg2");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_set_position.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -4487,11 +4487,11 @@ static joy_value_t t_joy_ui_checkbox_set_position(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_checkbox_set_text_color(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
-        jcolor_t p1 = { 0 };
+        joy_checkbox_p p0;
+        joy_color_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_set_text_color");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_text_color.arg0");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_set_text_color.arg0");
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_text_color.arg1");
         p1.r = (uint8_t)a[1].as.u32;
@@ -4507,10 +4507,10 @@ static joy_value_t t_joy_ui_checkbox_set_text_color(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_ui_checkbox_toggle(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
+        joy_checkbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_toggle");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_toggle.arg0");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_toggle.arg0");
         joy_ui_checkbox_toggle(p0);
         return joy_v_null();
@@ -4518,7 +4518,7 @@ static joy_value_t t_joy_ui_checkbox_toggle(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_checkbox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
+        joy_checkbox_p p0;
         float p1;
         float p2;
         bool _r;
@@ -4526,7 +4526,7 @@ static joy_value_t t_joy_ui_checkbox_is_pressed(joy_value_t* a, int n, joy_statu
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_is_pressed.arg2");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4536,12 +4536,12 @@ static joy_value_t t_joy_ui_checkbox_is_pressed(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_checkbox_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        checkbox_p p0;
+        joy_checkbox_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_checkbox_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_checkbox_set_hovered.arg1");
-        p0 = (checkbox_p)joy_obj_deref(a[0].as.handle, "checkbox_p", st);
+        p0 = (joy_checkbox_p)joy_obj_deref(a[0].as.handle, "joy_checkbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_checkbox_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_checkbox_set_hovered(p0, p1);
@@ -4550,10 +4550,10 @@ static joy_value_t t_joy_ui_checkbox_set_hovered(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_input_joystick_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_destroy.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_destroy.arg0");
         joy_input_joystick_destroy(p0);
         return joy_v_null();
@@ -4561,14 +4561,14 @@ static joy_value_t t_joy_input_joystick_destroy(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_input_joystick_set_textures(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         const char* p1;
         const char* p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_textures");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg2");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_textures.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
@@ -4578,14 +4578,14 @@ static joy_value_t t_joy_input_joystick_set_textures(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_input_joystick_set_vector(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_vector");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg2");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_vector.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4595,10 +4595,10 @@ static joy_value_t t_joy_input_joystick_set_vector(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_input_joystick_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_draw.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_draw.arg0");
         joy_input_joystick_draw(p0);
         return joy_v_null();
@@ -4606,10 +4606,10 @@ static joy_value_t t_joy_input_joystick_draw(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_input_joystick_reset(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_reset");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_reset.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_reset.arg0");
         joy_input_joystick_reset(p0);
         return joy_v_null();
@@ -4617,14 +4617,14 @@ static joy_value_t t_joy_input_joystick_reset(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_input_joystick_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg2");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4634,12 +4634,12 @@ static joy_value_t t_joy_input_joystick_set_position(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_input_joystick_set_radius(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_radius");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_radius.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_radius.arg1");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_radius.arg0");
         p1 = (float)a[1].as.f64;
         joy_input_joystick_set_radius(p0, p1);
@@ -4648,11 +4648,11 @@ static joy_value_t t_joy_input_joystick_set_radius(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_input_joystick_is_dragging(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_is_dragging");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_is_dragging.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_is_dragging.arg0");
         _r = joy_input_joystick_is_dragging(p0);
         return joy_v_bool((bool)_r);
@@ -4660,14 +4660,14 @@ static joy_value_t t_joy_input_joystick_is_dragging(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_input_joystick_touch_down(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_down");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg2");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_down.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4677,14 +4677,14 @@ static joy_value_t t_joy_input_joystick_touch_down(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_input_joystick_touch_move(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_move");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg2");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_move.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4694,10 +4694,10 @@ static joy_value_t t_joy_input_joystick_touch_move(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_input_joystick_touch_up(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_up");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_up.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_up.arg0");
         joy_input_joystick_touch_up(p0);
         return joy_v_null();
@@ -4705,11 +4705,11 @@ static joy_value_t t_joy_input_joystick_touch_up(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_input_joystick_get_magnitude(joy_value_t* a, int n, joy_status_t* st)
 {
-        joystick_p p0;
+        joy_joystick_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_get_magnitude");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_get_magnitude.arg0");
-        p0 = (joystick_p)joy_obj_deref(a[0].as.handle, "joystick_p", st);
+        p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_input_joystick_get_magnitude.arg0");
         _r = joy_input_joystick_get_magnitude(p0);
         return joy_v_f64((float)_r);
@@ -4717,10 +4717,10 @@ static joy_value_t t_joy_input_joystick_get_magnitude(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_ui_inputbox_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_destroy.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_destroy.arg0");
         joy_ui_inputbox_destroy(p0);
         return joy_v_null();
@@ -4728,12 +4728,12 @@ static joy_value_t t_joy_ui_inputbox_destroy(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_inputbox_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_set_text.arg1");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         joy_ui_inputbox_set_text(p0, p1);
@@ -4742,10 +4742,10 @@ static joy_value_t t_joy_ui_inputbox_set_text(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_inputbox_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_draw.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_draw.arg0");
         joy_ui_inputbox_draw(p0);
         return joy_v_null();
@@ -4753,7 +4753,7 @@ static joy_value_t t_joy_ui_inputbox_draw(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_inputbox_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         float p1;
         float p2;
         bool _r;
@@ -4761,7 +4761,7 @@ static joy_value_t t_joy_ui_inputbox_is_pressed(joy_value_t* a, int n, joy_statu
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_pressed.arg2");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4771,7 +4771,7 @@ static joy_value_t t_joy_ui_inputbox_is_pressed(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_inputbox_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         float p1;
         float p2;
         bool _r;
@@ -4779,7 +4779,7 @@ static joy_value_t t_joy_ui_inputbox_is_hovered(joy_value_t* a, int n, joy_statu
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_hovered.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_hovered.arg2");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_is_hovered.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -4789,10 +4789,10 @@ static joy_value_t t_joy_ui_inputbox_is_hovered(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_inputbox_focus(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_focus");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_focus.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_focus.arg0");
         joy_ui_inputbox_focus(p0);
         return joy_v_null();
@@ -4800,10 +4800,10 @@ static joy_value_t t_joy_ui_inputbox_focus(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_inputbox_defocus(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_defocus");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_defocus.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_defocus.arg0");
         joy_ui_inputbox_defocus(p0);
         return joy_v_null();
@@ -4811,10 +4811,10 @@ static joy_value_t t_joy_ui_inputbox_defocus(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_inputbox_blur(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_blur");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_blur.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_blur.arg0");
         joy_ui_inputbox_blur(p0);
         return joy_v_null();
@@ -4822,14 +4822,14 @@ static joy_value_t t_joy_ui_inputbox_blur(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_inputbox_insert(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_insert");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_insert.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_insert.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_insert.arg2");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_insert.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -4839,10 +4839,10 @@ static joy_value_t t_joy_ui_inputbox_insert(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_inputbox_backspace(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_backspace");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_backspace.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_backspace.arg0");
         joy_ui_inputbox_backspace(p0);
         return joy_v_null();
@@ -4850,10 +4850,10 @@ static joy_value_t t_joy_ui_inputbox_backspace(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_inputbox_delete(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_delete");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_delete.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_delete.arg0");
         joy_ui_inputbox_delete(p0);
         return joy_v_null();
@@ -4861,10 +4861,10 @@ static joy_value_t t_joy_ui_inputbox_delete(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_inputbox_cursor_left(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_cursor_left");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_cursor_left.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_cursor_left.arg0");
         joy_ui_inputbox_cursor_left(p0);
         return joy_v_null();
@@ -4872,10 +4872,10 @@ static joy_value_t t_joy_ui_inputbox_cursor_left(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_inputbox_cursor_right(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_cursor_right");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_cursor_right.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_cursor_right.arg0");
         joy_ui_inputbox_cursor_right(p0);
         return joy_v_null();
@@ -4883,10 +4883,10 @@ static joy_value_t t_joy_ui_inputbox_cursor_right(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_inputbox_cursor_home(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_cursor_home");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_cursor_home.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_cursor_home.arg0");
         joy_ui_inputbox_cursor_home(p0);
         return joy_v_null();
@@ -4894,10 +4894,10 @@ static joy_value_t t_joy_ui_inputbox_cursor_home(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_inputbox_cursor_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_cursor_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_cursor_end.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_cursor_end.arg0");
         joy_ui_inputbox_cursor_end(p0);
         return joy_v_null();
@@ -4905,10 +4905,10 @@ static joy_value_t t_joy_ui_inputbox_cursor_end(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_inputbox_select_left(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_select_left");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_select_left.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_select_left.arg0");
         joy_ui_inputbox_select_left(p0);
         return joy_v_null();
@@ -4916,10 +4916,10 @@ static joy_value_t t_joy_ui_inputbox_select_left(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_inputbox_select_right(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_select_right");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_select_right.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_select_right.arg0");
         joy_ui_inputbox_select_right(p0);
         return joy_v_null();
@@ -4927,10 +4927,10 @@ static joy_value_t t_joy_ui_inputbox_select_right(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_ui_inputbox_select_home(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_select_home");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_select_home.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_select_home.arg0");
         joy_ui_inputbox_select_home(p0);
         return joy_v_null();
@@ -4938,10 +4938,10 @@ static joy_value_t t_joy_ui_inputbox_select_home(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_inputbox_select_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_select_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_select_end.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_select_end.arg0");
         joy_ui_inputbox_select_end(p0);
         return joy_v_null();
@@ -4949,10 +4949,10 @@ static joy_value_t t_joy_ui_inputbox_select_end(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_inputbox_select_all(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_select_all");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_select_all.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_select_all.arg0");
         joy_ui_inputbox_select_all(p0);
         return joy_v_null();
@@ -4960,10 +4960,10 @@ static joy_value_t t_joy_ui_inputbox_select_all(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_inputbox_paste(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_paste");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_paste.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_paste.arg0");
         joy_ui_inputbox_paste(p0);
         return joy_v_null();
@@ -4971,10 +4971,10 @@ static joy_value_t t_joy_ui_inputbox_paste(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_inputbox_copy(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_copy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_copy.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_copy.arg0");
         joy_ui_inputbox_copy(p0);
         return joy_v_null();
@@ -4982,10 +4982,10 @@ static joy_value_t t_joy_ui_inputbox_copy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_inputbox_cut(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_cut");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_cut.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_cut.arg0");
         joy_ui_inputbox_cut(p0);
         return joy_v_null();
@@ -4993,11 +4993,11 @@ static joy_value_t t_joy_ui_inputbox_cut(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_ui_inputbox_is_focused(joy_value_t* a, int n, joy_status_t* st)
 {
-        inputbox_p p0;
+        joy_inputbox_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_inputbox_is_focused");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_inputbox_is_focused.arg0");
-        p0 = (inputbox_p)joy_obj_deref(a[0].as.handle, "inputbox_p", st);
+        p0 = (joy_inputbox_p)joy_obj_deref(a[0].as.handle, "joy_inputbox_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_inputbox_is_focused.arg0");
         _r = joy_ui_inputbox_is_focused(p0);
         return joy_v_bool((bool)_r);
@@ -5005,10 +5005,10 @@ static joy_value_t t_joy_ui_inputbox_is_focused(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_slider_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_destroy.arg0");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_destroy.arg0");
         joy_ui_slider_destroy(p0);
         return joy_v_null();
@@ -5016,12 +5016,12 @@ static joy_value_t t_joy_ui_slider_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_slider_set_value(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_set_value");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_value.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_value.arg1");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_set_value.arg0");
         p1 = (float)a[1].as.f64;
         joy_ui_slider_set_value(p0, p1);
@@ -5030,11 +5030,11 @@ static joy_value_t t_joy_ui_slider_set_value(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_slider_get_value(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_get_value");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_get_value.arg0");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_get_value.arg0");
         _r = joy_ui_slider_get_value(p0);
         return joy_v_f64((float)_r);
@@ -5042,7 +5042,7 @@ static joy_value_t t_joy_ui_slider_get_value(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_slider_set_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         float p2;
         float p3;
@@ -5053,7 +5053,7 @@ static joy_value_t t_joy_ui_slider_set_rect(joy_value_t* a, int n, joy_status_t*
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_rect.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_rect.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_rect.arg4");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_set_rect.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5065,14 +5065,14 @@ static joy_value_t t_joy_ui_slider_set_rect(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_slider_set_range(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_set_range");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_range.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_range.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_range.arg2");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_set_range.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5082,10 +5082,10 @@ static joy_value_t t_joy_ui_slider_set_range(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_slider_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_draw.arg0");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_draw.arg0");
         joy_ui_slider_draw(p0);
         return joy_v_null();
@@ -5093,7 +5093,7 @@ static joy_value_t t_joy_ui_slider_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_slider_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         float p2;
         bool _r;
@@ -5101,7 +5101,7 @@ static joy_value_t t_joy_ui_slider_is_pressed(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_pressed.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_pressed.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_pressed.arg2");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_is_pressed.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5111,12 +5111,12 @@ static joy_value_t t_joy_ui_slider_is_pressed(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_slider_set_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_set_pressed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_pressed.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_pressed.arg1");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_set_pressed.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_slider_set_pressed(p0, p1);
@@ -5125,14 +5125,14 @@ static joy_value_t t_joy_ui_slider_set_pressed(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_slider_drag_move(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_drag_move");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_drag_move.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_drag_move.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_drag_move.arg2");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_drag_move.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5142,7 +5142,7 @@ static joy_value_t t_joy_ui_slider_drag_move(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_slider_is_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         float p1;
         float p2;
         bool _r;
@@ -5150,7 +5150,7 @@ static joy_value_t t_joy_ui_slider_is_hovered(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_hovered.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_hovered.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_is_hovered.arg2");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_is_hovered.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5160,12 +5160,12 @@ static joy_value_t t_joy_ui_slider_is_hovered(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_slider_set_hovered(joy_value_t* a, int n, joy_status_t* st)
 {
-        slider_p p0;
+        joy_slider_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_slider_set_hovered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_hovered.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_slider_set_hovered.arg1");
-        p0 = (slider_p)joy_obj_deref(a[0].as.handle, "slider_p", st);
+        p0 = (joy_slider_p)joy_obj_deref(a[0].as.handle, "joy_slider_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_slider_set_hovered.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_slider_set_hovered(p0, p1);
@@ -5174,10 +5174,10 @@ static joy_value_t t_joy_ui_slider_set_hovered(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_popup_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_destroy.arg0");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_destroy.arg0");
         joy_ui_popup_destroy(p0);
         return joy_v_null();
@@ -5185,14 +5185,14 @@ static joy_value_t t_joy_ui_popup_destroy(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_popup_set_title(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_set_title");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_title.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_title.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_title.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_set_title.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -5202,14 +5202,14 @@ static joy_value_t t_joy_ui_popup_set_title(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_popup_set_content(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_set_content");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_content.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_content.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_content.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_set_content.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -5219,14 +5219,14 @@ static joy_value_t t_joy_ui_popup_set_content(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_popup_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_position.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5236,12 +5236,12 @@ static joy_value_t t_joy_ui_popup_set_position(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_ui_popup_set_visible(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_set_visible");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_visible.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_visible.arg1");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_set_visible.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_popup_set_visible(p0, p1);
@@ -5250,12 +5250,12 @@ static joy_value_t t_joy_ui_popup_set_visible(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_popup_set_closeable(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_set_closeable");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_closeable.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_set_closeable.arg1");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_set_closeable.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_popup_set_closeable(p0, p1);
@@ -5264,18 +5264,18 @@ static joy_value_t t_joy_ui_popup_set_closeable(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_popup_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
-        font_p p1;
-        font_p p2;
+        joy_popup_p p0;
+        joy_font_p p1;
+        joy_font_p p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_draw.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_draw.arg1");
         if (a[2].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_draw.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_draw.arg0");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_popup_draw.arg1");
-        p2 = (font_p)joy_obj_deref(a[2].as.handle, "font_p", st);
+        p2 = (joy_font_p)joy_obj_deref(a[2].as.handle, "joy_font_p", st);
         if (!p2) return joy_v_err(st, *st, "joy_ui_popup_draw.arg2");
         joy_ui_popup_draw(p0, p1, p2);
         return joy_v_null();
@@ -5283,7 +5283,7 @@ static joy_value_t t_joy_ui_popup_draw(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_popup_is_close_clicked(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         float p1;
         float p2;
         bool _r;
@@ -5291,7 +5291,7 @@ static joy_value_t t_joy_ui_popup_is_close_clicked(joy_value_t* a, int n, joy_st
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_close_clicked.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_close_clicked.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_close_clicked.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_is_close_clicked.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5301,7 +5301,7 @@ static joy_value_t t_joy_ui_popup_is_close_clicked(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_popup_is_title_clicked(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         float p1;
         float p2;
         bool _r;
@@ -5309,7 +5309,7 @@ static joy_value_t t_joy_ui_popup_is_title_clicked(joy_value_t* a, int n, joy_st
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_title_clicked.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_title_clicked.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_title_clicked.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_is_title_clicked.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5319,14 +5319,14 @@ static joy_value_t t_joy_ui_popup_is_title_clicked(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_ui_popup_drag_move(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_popup_drag_move");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_drag_move.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_drag_move.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_drag_move.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_drag_move.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5336,7 +5336,7 @@ static joy_value_t t_joy_ui_popup_drag_move(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_popup_is_inside(joy_value_t* a, int n, joy_status_t* st)
 {
-        popup_p p0;
+        joy_popup_p p0;
         float p1;
         float p2;
         bool _r;
@@ -5344,7 +5344,7 @@ static joy_value_t t_joy_ui_popup_is_inside(joy_value_t* a, int n, joy_status_t*
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_inside.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_inside.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_popup_is_inside.arg2");
-        p0 = (popup_p)joy_obj_deref(a[0].as.handle, "popup_p", st);
+        p0 = (joy_popup_p)joy_obj_deref(a[0].as.handle, "joy_popup_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_popup_is_inside.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5354,10 +5354,10 @@ static joy_value_t t_joy_ui_popup_is_inside(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_tooltip_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        tooltip_p p0;
+        joy_tooltip_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_tooltip_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_destroy.arg0");
-        p0 = (tooltip_p)joy_obj_deref(a[0].as.handle, "tooltip_p", st);
+        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_tooltip_destroy.arg0");
         joy_ui_tooltip_destroy(p0);
         return joy_v_null();
@@ -5365,14 +5365,14 @@ static joy_value_t t_joy_ui_tooltip_destroy(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_ui_tooltip_set_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        tooltip_p p0;
+        joy_tooltip_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_tooltip_set_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_text.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_text.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_text.arg2");
-        p0 = (tooltip_p)joy_obj_deref(a[0].as.handle, "tooltip_p", st);
+        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_tooltip_set_text.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -5382,14 +5382,14 @@ static joy_value_t t_joy_ui_tooltip_set_text(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_ui_tooltip_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        tooltip_p p0;
+        joy_tooltip_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_tooltip_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_position.arg2");
-        p0 = (tooltip_p)joy_obj_deref(a[0].as.handle, "tooltip_p", st);
+        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_tooltip_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5399,12 +5399,12 @@ static joy_value_t t_joy_ui_tooltip_set_position(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_ui_tooltip_set_visible(joy_value_t* a, int n, joy_status_t* st)
 {
-        tooltip_p p0;
+        joy_tooltip_p p0;
         bool p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_tooltip_set_visible");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_visible.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_set_visible.arg1");
-        p0 = (tooltip_p)joy_obj_deref(a[0].as.handle, "tooltip_p", st);
+        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_tooltip_set_visible.arg0");
         p1 = (bool)a[1].as.b;
         joy_ui_tooltip_set_visible(p0, p1);
@@ -5413,14 +5413,14 @@ static joy_value_t t_joy_ui_tooltip_set_visible(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_ui_tooltip_draw(joy_value_t* a, int n, joy_status_t* st)
 {
-        tooltip_p p0;
-        font_p p1;
+        joy_tooltip_p p0;
+        joy_font_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_tooltip_draw");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_draw.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_tooltip_draw.arg1");
-        p0 = (tooltip_p)joy_obj_deref(a[0].as.handle, "tooltip_p", st);
+        p0 = (joy_tooltip_p)joy_obj_deref(a[0].as.handle, "joy_tooltip_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_tooltip_draw.arg0");
-        p1 = (font_p)joy_obj_deref(a[1].as.handle, "font_p", st);
+        p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_tooltip_draw.arg1");
         joy_ui_tooltip_draw(p0, p1);
         return joy_v_null();
@@ -5428,10 +5428,10 @@ static joy_value_t t_joy_ui_tooltip_draw(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_ui_ctx_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_ctx_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_ctx_destroy.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_ctx_destroy.arg0");
         joy_ui_ctx_destroy(p0);
         return joy_v_null();
@@ -5439,10 +5439,10 @@ static joy_value_t t_joy_ui_ctx_destroy(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_begin.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_begin.arg0");
         joy_ui_begin(p0);
         return joy_v_null();
@@ -5450,10 +5450,10 @@ static joy_value_t t_joy_ui_begin(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_end.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_end.arg0");
         joy_ui_end(p0);
         return joy_v_null();
@@ -5461,14 +5461,14 @@ static joy_value_t t_joy_ui_end(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_input_motion(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_input_motion");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_motion.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_motion.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_motion.arg2");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_input_motion.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -5478,12 +5478,12 @@ static joy_value_t t_joy_ui_input_motion(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_ui_input_down(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_input_down");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_down.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_down.arg1");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_input_down.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_input_down(p0, p1);
@@ -5492,12 +5492,12 @@ static joy_value_t t_joy_ui_input_down(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_input_up(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_input_up");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_up.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_up.arg1");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_input_up.arg0");
         p1 = (int)a[1].as.i32;
         joy_ui_input_up(p0, p1);
@@ -5506,12 +5506,12 @@ static joy_value_t t_joy_ui_input_up(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_input_wheel(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_input_wheel");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_wheel.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_wheel.arg1");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_input_wheel.arg0");
         p1 = (float)a[1].as.f64;
         joy_ui_input_wheel(p0, p1);
@@ -5520,14 +5520,14 @@ static joy_value_t t_joy_ui_input_wheel(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_input_key(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool p1;
         bool p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_input_key");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_key.arg0");
         if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_key.arg1");
         if (a[2].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_input_key.arg2");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_input_key.arg0");
         p1 = (bool)a[1].as.b;
         p2 = (bool)a[2].as.b;
@@ -5537,11 +5537,11 @@ static joy_value_t t_joy_ui_input_key(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_is_down(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_is_down");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_is_down.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_is_down.arg0");
         _r = joy_ui_is_down(p0);
         return joy_v_bool((bool)_r);
@@ -5549,11 +5549,11 @@ static joy_value_t t_joy_ui_is_down(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_is_pressed");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_is_pressed.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_is_pressed.arg0");
         _r = joy_ui_is_pressed(p0);
         return joy_v_bool((bool)_r);
@@ -5561,11 +5561,11 @@ static joy_value_t t_joy_ui_is_pressed(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_is_released(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_is_released");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_is_released.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_is_released.arg0");
         _r = joy_ui_is_released(p0);
         return joy_v_bool((bool)_r);
@@ -5573,11 +5573,11 @@ static joy_value_t t_joy_ui_is_released(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_take_wheel(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_take_wheel");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_take_wheel.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_take_wheel.arg0");
         _r = joy_ui_take_wheel(p0);
         return joy_v_f64((float)_r);
@@ -5585,11 +5585,11 @@ static joy_value_t t_joy_ui_take_wheel(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_is_shift(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_is_shift");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_is_shift.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_is_shift.arg0");
         _r = joy_ui_is_shift(p0);
         return joy_v_bool((bool)_r);
@@ -5597,11 +5597,11 @@ static joy_value_t t_joy_ui_is_shift(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_is_ctrl(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_is_ctrl");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_is_ctrl.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_is_ctrl.arg0");
         _r = joy_ui_is_ctrl(p0);
         return joy_v_bool((bool)_r);
@@ -5609,11 +5609,11 @@ static joy_value_t t_joy_ui_is_ctrl(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_push_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_push_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_push_clip.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_push_clip.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_push_clip.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5629,10 +5629,10 @@ static joy_value_t t_joy_ui_push_clip(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_pop_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_pop_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_pop_clip.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_pop_clip.arg0");
         joy_ui_pop_clip(p0);
         return joy_v_null();
@@ -5640,10 +5640,10 @@ static joy_value_t t_joy_ui_pop_clip(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_reset_clip(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_reset_clip");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_reset_clip.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_reset_clip.arg0");
         joy_ui_reset_clip(p0);
         return joy_v_null();
@@ -5651,12 +5651,12 @@ static joy_value_t t_joy_ui_reset_clip(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_hit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         bool _r;
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_hit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_hit.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_hit.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_hit.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5672,12 +5672,12 @@ static joy_value_t t_joy_ui_hit(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_fill_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
-        jcolor_t p2 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
+        joy_color_t p2 = { 0 };
         if (n != 9) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_fill_rect");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_fill_rect.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_fill_rect.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_fill_rect.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5701,12 +5701,12 @@ static joy_value_t t_joy_ui_fill_rect(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_stroke_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
-        jcolor_t p2 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
+        joy_color_t p2 = { 0 };
         if (n != 9) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_stroke_rect");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_stroke_rect.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_stroke_rect.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_stroke_rect.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5730,15 +5730,15 @@ static joy_value_t t_joy_ui_stroke_rect(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_line(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         float p1;
         float p2;
         float p3;
         float p4;
-        jcolor_t p5 = { 0 };
+        joy_color_t p5 = { 0 };
         if (n != 9) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_line");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_line.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_line.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_line.arg1");
         p1 = (float)a[1].as.f64;
@@ -5762,15 +5762,15 @@ static joy_value_t t_joy_ui_line(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_text(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         float p1;
         float p2;
         const char* p3;
-        jcolor_t p4 = { 0 };
+        joy_color_t p4 = { 0 };
         int _r;
         if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text.arg1");
         p1 = (float)a[1].as.f64;
@@ -5792,14 +5792,14 @@ static joy_value_t t_joy_ui_text(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_text_centered(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         const char* p2;
-        jcolor_t p3 = { 0 };
+        joy_color_t p3 = { 0 };
         int _r;
         if (n != 10) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_centered");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_centered.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_text_centered.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_centered.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5825,12 +5825,12 @@ static joy_value_t t_joy_ui_text_centered(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_ui_panel_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         const char* p2;
         if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_panel_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_panel_begin.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_panel_begin.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_panel_begin.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5848,10 +5848,10 @@ static joy_value_t t_joy_ui_panel_begin(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_panel_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_panel_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_panel_end.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_panel_end.arg0");
         joy_ui_panel_end(p0);
         return joy_v_null();
@@ -5859,11 +5859,11 @@ static joy_value_t t_joy_ui_panel_end(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_panel_frame(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_panel_frame");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_panel_frame.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_panel_frame.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_panel_frame.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5879,14 +5879,14 @@ static joy_value_t t_joy_ui_panel_frame(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_scroll_begin(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         int p1;
-        jrect_t p2 = { 0 };
+        joy_rect_t p2 = { 0 };
         float p3;
         float _r;
         if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scroll_begin");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_begin.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scroll_begin.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_begin.arg1");
         p1 = (int)a[1].as.i32;
@@ -5906,10 +5906,10 @@ static joy_value_t t_joy_ui_scroll_begin(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_ui_scroll_end(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scroll_end");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_end.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scroll_end.arg0");
         joy_ui_scroll_end(p0);
         return joy_v_null();
@@ -5917,13 +5917,13 @@ static joy_value_t t_joy_ui_scroll_end(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_scrollbar(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
-        jrect_t p1 = { 0 };
+        joy_ui_ctx_p p0;
+        joy_rect_t p1 = { 0 };
         float p2;
         float p3;
         if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_scrollbar");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollbar.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scrollbar.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scrollbar.arg1");
         p1.x = (float)a[1].as.f64;
@@ -5943,7 +5943,7 @@ static joy_value_t t_joy_ui_scrollbar(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_ui_scroll_set_offset(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         int p1;
         float p2;
         float p3;
@@ -5954,7 +5954,7 @@ static joy_value_t t_joy_ui_scroll_set_offset(joy_value_t* a, int n, joy_status_
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_set_offset.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_set_offset.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_scroll_set_offset.arg4");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_scroll_set_offset.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (float)a[2].as.f64;
@@ -5966,14 +5966,14 @@ static joy_value_t t_joy_ui_scroll_set_offset(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_ui_button(joy_value_t* a, int n, joy_status_t* st)
 {
-        jui_ctx_p p0;
+        joy_ui_ctx_p p0;
         int p1;
-        jrect_t p2 = { 0 };
+        joy_rect_t p2 = { 0 };
         const char* p3;
         bool _r;
         if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_button");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button.arg0");
-        p0 = (jui_ctx_p)joy_obj_deref(a[0].as.handle, "jui_ctx_p", st);
+        p0 = (joy_ui_ctx_p)joy_obj_deref(a[0].as.handle, "joy_ui_ctx_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_button.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_button.arg1");
         p1 = (int)a[1].as.i32;
@@ -5993,10 +5993,10 @@ static joy_value_t t_joy_ui_button(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_scene_tilemap_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_destroy.arg0");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_destroy.arg0");
         joy_scene_tilemap_destroy(p0);
         return joy_v_null();
@@ -6004,11 +6004,11 @@ static joy_value_t t_joy_scene_tilemap_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_tilemap_get_width(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_get_width");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_width.arg0");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_width.arg0");
         _r = joy_scene_tilemap_get_width(p0);
         return joy_v_i32((int)_r);
@@ -6016,11 +6016,11 @@ static joy_value_t t_joy_scene_tilemap_get_width(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_tilemap_get_height(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_get_height");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_height.arg0");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_height.arg0");
         _r = joy_scene_tilemap_get_height(p0);
         return joy_v_i32((int)_r);
@@ -6028,11 +6028,11 @@ static joy_value_t t_joy_scene_tilemap_get_height(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_tilemap_get_tilewidth(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_get_tilewidth");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_tilewidth.arg0");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_tilewidth.arg0");
         _r = joy_scene_tilemap_get_tilewidth(p0);
         return joy_v_i32((int)_r);
@@ -6040,11 +6040,11 @@ static joy_value_t t_joy_scene_tilemap_get_tilewidth(joy_value_t* a, int n, joy_
 
 static joy_value_t t_joy_scene_tilemap_get_tileheight(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_get_tileheight");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_tileheight.arg0");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_tileheight.arg0");
         _r = joy_scene_tilemap_get_tileheight(p0);
         return joy_v_i32((int)_r);
@@ -6052,7 +6052,7 @@ static joy_value_t t_joy_scene_tilemap_get_tileheight(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_scene_tilemap_get_anim_tileid(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         int p1;
         uint32_t p2;
         int _r;
@@ -6060,7 +6060,7 @@ static joy_value_t t_joy_scene_tilemap_get_anim_tileid(joy_value_t* a, int n, jo
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_anim_tileid.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_anim_tileid.arg1");
         if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_anim_tileid.arg2");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_anim_tileid.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (uint32_t)a[2].as.u32;
@@ -6070,45 +6070,45 @@ static joy_value_t t_joy_scene_tilemap_get_anim_tileid(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_scene_tilemap_find_tile_layer(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         const char* p1;
-        jtilemap_tile_layer_p _r;
+        joy_tilemap_tile_layer_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_find_tile_layer");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_tile_layer.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_tile_layer.arg1");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_find_tile_layer.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_tilemap_find_tile_layer(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_tilemap_find_tile_layer");
-        _h = joy_obj_register((void*)_r, "jtilemap_tile_layer_p", NULL, "joy_scene_tilemap_find_tile_layer");
+        _h = joy_obj_register((void*)_r, "joy_tilemap_tile_layer_p", NULL, "joy_scene_tilemap_find_tile_layer");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_tilemap_find_tile_layer"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_tilemap_find_object_layer(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_p p0;
+        joy_tilemap_p p0;
         const char* p1;
-        jtilemap_object_layer_p _r;
+        joy_tilemap_object_layer_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_find_object_layer");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_object_layer.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_object_layer.arg1");
-        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        p0 = (joy_tilemap_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_find_object_layer.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_tilemap_find_object_layer(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_tilemap_find_object_layer");
-        _h = joy_obj_register((void*)_r, "jtilemap_object_layer_p", NULL, "joy_scene_tilemap_find_object_layer");
+        _h = joy_obj_register((void*)_r, "joy_tilemap_object_layer_p", NULL, "joy_scene_tilemap_find_object_layer");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_tilemap_find_object_layer"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_tilemap_get_tile(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_tile_layer_p p0;
+        joy_tilemap_tile_layer_p p0;
         int p1;
         int p2;
         int _r;
@@ -6116,7 +6116,7 @@ static joy_value_t t_joy_scene_tilemap_get_tile(joy_value_t* a, int n, joy_statu
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_tile.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_tile.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_get_tile.arg2");
-        p0 = (jtilemap_tile_layer_p)joy_obj_deref(a[0].as.handle, "jtilemap_tile_layer_p", st);
+        p0 = (joy_tilemap_tile_layer_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_tile_layer_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_get_tile.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -6126,8 +6126,8 @@ static joy_value_t t_joy_scene_tilemap_get_tile(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_scene_tilemap_render_all(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_render_p p0;
-        jtilemap_p p1;
+        joy_tilemap_render_p p0;
+        joy_tilemap_p p1;
         float p2;
         float p3;
         uint32_t p4;
@@ -6137,9 +6137,9 @@ static joy_value_t t_joy_scene_tilemap_render_all(joy_value_t* a, int n, joy_sta
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_all.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_all.arg3");
         if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_all.arg4");
-        p0 = (jtilemap_render_p)joy_obj_deref(a[0].as.handle, "jtilemap_render_p", st);
+        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_all.arg0");
-        p1 = (jtilemap_p)joy_obj_deref(a[1].as.handle, "jtilemap_p", st);
+        p1 = (joy_tilemap_p)joy_obj_deref(a[1].as.handle, "joy_tilemap_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_tilemap_render_all.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -6150,8 +6150,8 @@ static joy_value_t t_joy_scene_tilemap_render_all(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_tilemap_render_tiles(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_render_p p0;
-        jtilemap_p p1;
+        joy_tilemap_render_p p0;
+        joy_tilemap_p p1;
         float p2;
         float p3;
         uint32_t p4;
@@ -6161,9 +6161,9 @@ static joy_value_t t_joy_scene_tilemap_render_tiles(joy_value_t* a, int n, joy_s
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_tiles.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_tiles.arg3");
         if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_tiles.arg4");
-        p0 = (jtilemap_render_p)joy_obj_deref(a[0].as.handle, "jtilemap_render_p", st);
+        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_tiles.arg0");
-        p1 = (jtilemap_p)joy_obj_deref(a[1].as.handle, "jtilemap_p", st);
+        p1 = (joy_tilemap_p)joy_obj_deref(a[1].as.handle, "joy_tilemap_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_tilemap_render_tiles.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -6174,12 +6174,12 @@ static joy_value_t t_joy_scene_tilemap_render_tiles(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_scene_tilemap_render_set_tile_px(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_render_p p0;
+        joy_tilemap_render_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_render_set_tile_px");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_set_tile_px.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_set_tile_px.arg1");
-        p0 = (jtilemap_render_p)joy_obj_deref(a[0].as.handle, "jtilemap_render_p", st);
+        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_set_tile_px.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_tilemap_render_set_tile_px(p0, p1);
@@ -6188,8 +6188,8 @@ static joy_value_t t_joy_scene_tilemap_render_set_tile_px(joy_value_t* a, int n,
 
 static joy_value_t t_joy_scene_tilemap_render_layer(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_render_p p0;
-        jtilemap_p p1;
+        joy_tilemap_render_p p0;
+        joy_tilemap_p p1;
         const char* p2;
         float p3;
         float p4;
@@ -6202,9 +6202,9 @@ static joy_value_t t_joy_scene_tilemap_render_layer(joy_value_t* a, int n, joy_s
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_layer.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_layer.arg4");
         if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_layer.arg5");
-        p0 = (jtilemap_render_p)joy_obj_deref(a[0].as.handle, "jtilemap_render_p", st);
+        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_layer.arg0");
-        p1 = (jtilemap_p)joy_obj_deref(a[1].as.handle, "jtilemap_p", st);
+        p1 = (joy_tilemap_p)joy_obj_deref(a[1].as.handle, "joy_tilemap_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_tilemap_render_layer.arg1");
         p2 = (const char*)a[2].as.str;
         p3 = (float)a[3].as.f64;
@@ -6216,10 +6216,10 @@ static joy_value_t t_joy_scene_tilemap_render_layer(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_scene_tilemap_render_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jtilemap_render_p p0;
+        joy_tilemap_render_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_render_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_render_destroy.arg0");
-        p0 = (jtilemap_render_p)joy_obj_deref(a[0].as.handle, "jtilemap_render_p", st);
+        p0 = (joy_tilemap_render_p)joy_obj_deref(a[0].as.handle, "joy_tilemap_render_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_render_destroy.arg0");
         joy_scene_tilemap_render_destroy(p0);
         return joy_v_null();
@@ -6227,11 +6227,11 @@ static joy_value_t t_joy_scene_tilemap_render_destroy(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_net_kcpserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_destroy.arg0");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_destroy.arg0");
         _r = joy_net_kcpserver_destroy(p0);
         return joy_v_i32((int)_r);
@@ -6239,7 +6239,7 @@ static joy_value_t t_joy_net_kcpserver_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_kcpserver_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         int p1;
         const char* p2;
         int p3;
@@ -6248,7 +6248,7 @@ static joy_value_t t_joy_net_kcpserver_send(joy_value_t* a, int n, joy_status_t*
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_send.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_send.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_send.arg3");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_send.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -6259,14 +6259,14 @@ static joy_value_t t_joy_net_kcpserver_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_kcpserver_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_broadcast");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_broadcast.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_broadcast.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_broadcast.arg2");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_broadcast.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6276,12 +6276,12 @@ static joy_value_t t_joy_net_kcpserver_broadcast(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_kcpserver_offline(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_offline");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_offline.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_offline.arg1");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_offline.arg0");
         p1 = (int)a[1].as.i32;
         joy_net_kcpserver_offline(p0, p1);
@@ -6290,10 +6290,10 @@ static joy_value_t t_joy_net_kcpserver_offline(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_kcpserver_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_update.arg0");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_update.arg0");
         joy_net_kcpserver_update(p0);
         return joy_v_null();
@@ -6301,11 +6301,11 @@ static joy_value_t t_joy_net_kcpserver_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_kcpserver_connection_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
+        joy_kcpserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_connection_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_connection_count.arg0");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_connection_count.arg0");
         _r = joy_net_kcpserver_connection_count(p0);
         return joy_v_i32((int)_r);
@@ -6313,15 +6313,15 @@ static joy_value_t t_joy_net_kcpserver_connection_count(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_net_kcpserver_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpserver_p p0;
-        net_message_p p1;
+        joy_kcpserver_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpserver_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpserver_poll_message.arg1");
-        p0 = (kcpserver_p)joy_obj_deref(a[0].as.handle, "kcpserver_p", st);
+        p0 = (joy_kcpserver_p)joy_obj_deref(a[0].as.handle, "joy_kcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpserver_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_kcpserver_poll_message.arg1");
         _r = joy_net_kcpserver_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6329,10 +6329,10 @@ static joy_value_t t_joy_net_kcpserver_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_kcpclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpclient_p p0;
+        joy_kcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_destroy.arg0");
-        p0 = (kcpclient_p)joy_obj_deref(a[0].as.handle, "kcpclient_p", st);
+        p0 = (joy_kcpclient_p)joy_obj_deref(a[0].as.handle, "joy_kcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpclient_destroy.arg0");
         joy_net_kcpclient_destroy(p0);
         return joy_v_null();
@@ -6340,7 +6340,7 @@ static joy_value_t t_joy_net_kcpclient_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_kcpclient_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpclient_p p0;
+        joy_kcpclient_p p0;
         const char* p1;
         int p2;
         int _r;
@@ -6348,7 +6348,7 @@ static joy_value_t t_joy_net_kcpclient_send(joy_value_t* a, int n, joy_status_t*
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_send.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_send.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_send.arg2");
-        p0 = (kcpclient_p)joy_obj_deref(a[0].as.handle, "kcpclient_p", st);
+        p0 = (joy_kcpclient_p)joy_obj_deref(a[0].as.handle, "joy_kcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpclient_send.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6358,10 +6358,10 @@ static joy_value_t t_joy_net_kcpclient_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_kcpclient_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpclient_p p0;
+        joy_kcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpclient_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_update.arg0");
-        p0 = (kcpclient_p)joy_obj_deref(a[0].as.handle, "kcpclient_p", st);
+        p0 = (joy_kcpclient_p)joy_obj_deref(a[0].as.handle, "joy_kcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpclient_update.arg0");
         joy_net_kcpclient_update(p0);
         return joy_v_null();
@@ -6369,15 +6369,15 @@ static joy_value_t t_joy_net_kcpclient_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_kcpclient_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        kcpclient_p p0;
-        net_message_p p1;
+        joy_kcpclient_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_kcpclient_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_kcpclient_poll_message.arg1");
-        p0 = (kcpclient_p)joy_obj_deref(a[0].as.handle, "kcpclient_p", st);
+        p0 = (joy_kcpclient_p)joy_obj_deref(a[0].as.handle, "joy_kcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_kcpclient_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_kcpclient_poll_message.arg1");
         _r = joy_net_kcpclient_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6385,11 +6385,11 @@ static joy_value_t t_joy_net_kcpclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_tcpserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_destroy.arg0");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_destroy.arg0");
         _r = joy_net_tcpserver_destroy(p0);
         return joy_v_i32((int)_r);
@@ -6397,7 +6397,7 @@ static joy_value_t t_joy_net_tcpserver_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_tcpserver_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         int p1;
         const char* p2;
         int p3;
@@ -6406,7 +6406,7 @@ static joy_value_t t_joy_net_tcpserver_send(joy_value_t* a, int n, joy_status_t*
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_send.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_send.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_send.arg3");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_send.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -6417,14 +6417,14 @@ static joy_value_t t_joy_net_tcpserver_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_tcpserver_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_broadcast");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_broadcast.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_broadcast.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_broadcast.arg2");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_broadcast.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6434,12 +6434,12 @@ static joy_value_t t_joy_net_tcpserver_broadcast(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_tcpserver_offline(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_offline");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_offline.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_offline.arg1");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_offline.arg0");
         p1 = (int)a[1].as.i32;
         joy_net_tcpserver_offline(p0, p1);
@@ -6448,10 +6448,10 @@ static joy_value_t t_joy_net_tcpserver_offline(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_tcpserver_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_update.arg0");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_update.arg0");
         joy_net_tcpserver_update(p0);
         return joy_v_null();
@@ -6459,11 +6459,11 @@ static joy_value_t t_joy_net_tcpserver_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_tcpserver_connection_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
+        joy_tcpserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_connection_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_connection_count.arg0");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_connection_count.arg0");
         _r = joy_net_tcpserver_connection_count(p0);
         return joy_v_i32((int)_r);
@@ -6471,15 +6471,15 @@ static joy_value_t t_joy_net_tcpserver_connection_count(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_net_tcpserver_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpserver_p p0;
-        net_message_p p1;
+        joy_tcpserver_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpserver_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpserver_poll_message.arg1");
-        p0 = (tcpserver_p)joy_obj_deref(a[0].as.handle, "tcpserver_p", st);
+        p0 = (joy_tcpserver_p)joy_obj_deref(a[0].as.handle, "joy_tcpserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpserver_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_tcpserver_poll_message.arg1");
         _r = joy_net_tcpserver_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6487,10 +6487,10 @@ static joy_value_t t_joy_net_tcpserver_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_tcpclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpclient_p p0;
+        joy_tcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_destroy.arg0");
-        p0 = (tcpclient_p)joy_obj_deref(a[0].as.handle, "tcpclient_p", st);
+        p0 = (joy_tcpclient_p)joy_obj_deref(a[0].as.handle, "joy_tcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpclient_destroy.arg0");
         joy_net_tcpclient_destroy(p0);
         return joy_v_null();
@@ -6498,7 +6498,7 @@ static joy_value_t t_joy_net_tcpclient_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_tcpclient_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpclient_p p0;
+        joy_tcpclient_p p0;
         const char* p1;
         int p2;
         int _r;
@@ -6506,7 +6506,7 @@ static joy_value_t t_joy_net_tcpclient_send(joy_value_t* a, int n, joy_status_t*
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_send.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_send.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_send.arg2");
-        p0 = (tcpclient_p)joy_obj_deref(a[0].as.handle, "tcpclient_p", st);
+        p0 = (joy_tcpclient_p)joy_obj_deref(a[0].as.handle, "joy_tcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpclient_send.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6516,10 +6516,10 @@ static joy_value_t t_joy_net_tcpclient_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_tcpclient_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpclient_p p0;
+        joy_tcpclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpclient_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_update.arg0");
-        p0 = (tcpclient_p)joy_obj_deref(a[0].as.handle, "tcpclient_p", st);
+        p0 = (joy_tcpclient_p)joy_obj_deref(a[0].as.handle, "joy_tcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpclient_update.arg0");
         joy_net_tcpclient_update(p0);
         return joy_v_null();
@@ -6527,15 +6527,15 @@ static joy_value_t t_joy_net_tcpclient_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_tcpclient_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        tcpclient_p p0;
-        net_message_p p1;
+        joy_tcpclient_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_tcpclient_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_tcpclient_poll_message.arg1");
-        p0 = (tcpclient_p)joy_obj_deref(a[0].as.handle, "tcpclient_p", st);
+        p0 = (joy_tcpclient_p)joy_obj_deref(a[0].as.handle, "joy_tcpclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_tcpclient_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_tcpclient_poll_message.arg1");
         _r = joy_net_tcpclient_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6543,11 +6543,11 @@ static joy_value_t t_joy_net_tcpclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_wsnetserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_destroy.arg0");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_destroy.arg0");
         _r = joy_net_wsnetserver_destroy(p0);
         return joy_v_i32((int)_r);
@@ -6555,7 +6555,7 @@ static joy_value_t t_joy_net_wsnetserver_destroy(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_wsnetserver_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         int p1;
         const char* p2;
         int p3;
@@ -6564,7 +6564,7 @@ static joy_value_t t_joy_net_wsnetserver_send(joy_value_t* a, int n, joy_status_
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_send.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_send.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_send.arg3");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_send.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -6575,14 +6575,14 @@ static joy_value_t t_joy_net_wsnetserver_send(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_wsnetserver_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_broadcast");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_broadcast.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_broadcast.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_broadcast.arg2");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_broadcast.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6592,12 +6592,12 @@ static joy_value_t t_joy_net_wsnetserver_broadcast(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_net_wsnetserver_offline(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_offline");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_offline.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_offline.arg1");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_offline.arg0");
         p1 = (int)a[1].as.i32;
         joy_net_wsnetserver_offline(p0, p1);
@@ -6606,10 +6606,10 @@ static joy_value_t t_joy_net_wsnetserver_offline(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_wsnetserver_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_update.arg0");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_update.arg0");
         joy_net_wsnetserver_update(p0);
         return joy_v_null();
@@ -6617,11 +6617,11 @@ static joy_value_t t_joy_net_wsnetserver_update(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_net_wsnetserver_connection_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
+        joy_wsnetserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_connection_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_connection_count.arg0");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_connection_count.arg0");
         _r = joy_net_wsnetserver_connection_count(p0);
         return joy_v_i32((int)_r);
@@ -6629,15 +6629,15 @@ static joy_value_t t_joy_net_wsnetserver_connection_count(joy_value_t* a, int n,
 
 static joy_value_t t_joy_net_wsnetserver_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetserver_p p0;
-        net_message_p p1;
+        joy_wsnetserver_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetserver_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetserver_poll_message.arg1");
-        p0 = (wsnetserver_p)joy_obj_deref(a[0].as.handle, "wsnetserver_p", st);
+        p0 = (joy_wsnetserver_p)joy_obj_deref(a[0].as.handle, "joy_wsnetserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetserver_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_wsnetserver_poll_message.arg1");
         _r = joy_net_wsnetserver_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6645,10 +6645,10 @@ static joy_value_t t_joy_net_wsnetserver_poll_message(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_net_wsnetclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetclient_p p0;
+        joy_wsnetclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_destroy.arg0");
-        p0 = (wsnetclient_p)joy_obj_deref(a[0].as.handle, "wsnetclient_p", st);
+        p0 = (joy_wsnetclient_p)joy_obj_deref(a[0].as.handle, "joy_wsnetclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetclient_destroy.arg0");
         joy_net_wsnetclient_destroy(p0);
         return joy_v_null();
@@ -6656,7 +6656,7 @@ static joy_value_t t_joy_net_wsnetclient_destroy(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_wsnetclient_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetclient_p p0;
+        joy_wsnetclient_p p0;
         const char* p1;
         int p2;
         int _r;
@@ -6664,7 +6664,7 @@ static joy_value_t t_joy_net_wsnetclient_send(joy_value_t* a, int n, joy_status_
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_send.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_send.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_send.arg2");
-        p0 = (wsnetclient_p)joy_obj_deref(a[0].as.handle, "wsnetclient_p", st);
+        p0 = (joy_wsnetclient_p)joy_obj_deref(a[0].as.handle, "joy_wsnetclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetclient_send.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6674,10 +6674,10 @@ static joy_value_t t_joy_net_wsnetclient_send(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_wsnetclient_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetclient_p p0;
+        joy_wsnetclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetclient_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_update.arg0");
-        p0 = (wsnetclient_p)joy_obj_deref(a[0].as.handle, "wsnetclient_p", st);
+        p0 = (joy_wsnetclient_p)joy_obj_deref(a[0].as.handle, "joy_wsnetclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetclient_update.arg0");
         joy_net_wsnetclient_update(p0);
         return joy_v_null();
@@ -6685,15 +6685,15 @@ static joy_value_t t_joy_net_wsnetclient_update(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_net_wsnetclient_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        wsnetclient_p p0;
-        net_message_p p1;
+        joy_wsnetclient_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_wsnetclient_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_wsnetclient_poll_message.arg1");
-        p0 = (wsnetclient_p)joy_obj_deref(a[0].as.handle, "wsnetclient_p", st);
+        p0 = (joy_wsnetclient_p)joy_obj_deref(a[0].as.handle, "joy_wsnetclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_wsnetclient_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_wsnetclient_poll_message.arg1");
         _r = joy_net_wsnetclient_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6701,10 +6701,10 @@ static joy_value_t t_joy_net_wsnetclient_poll_message(joy_value_t* a, int n, joy
 
 static joy_value_t t_joy_net_netclient_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        netclient_p p0;
+        joy_netclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netclient_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_destroy.arg0");
-        p0 = (netclient_p)joy_obj_deref(a[0].as.handle, "netclient_p", st);
+        p0 = (joy_netclient_p)joy_obj_deref(a[0].as.handle, "joy_netclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netclient_destroy.arg0");
         joy_net_netclient_destroy(p0);
         return joy_v_null();
@@ -6712,7 +6712,7 @@ static joy_value_t t_joy_net_netclient_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_netclient_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        netclient_p p0;
+        joy_netclient_p p0;
         const char* p1;
         int p2;
         int _r;
@@ -6720,7 +6720,7 @@ static joy_value_t t_joy_net_netclient_send(joy_value_t* a, int n, joy_status_t*
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_send.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_send.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_send.arg2");
-        p0 = (netclient_p)joy_obj_deref(a[0].as.handle, "netclient_p", st);
+        p0 = (joy_netclient_p)joy_obj_deref(a[0].as.handle, "joy_netclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netclient_send.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6730,10 +6730,10 @@ static joy_value_t t_joy_net_netclient_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_netclient_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        netclient_p p0;
+        joy_netclient_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netclient_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_update.arg0");
-        p0 = (netclient_p)joy_obj_deref(a[0].as.handle, "netclient_p", st);
+        p0 = (joy_netclient_p)joy_obj_deref(a[0].as.handle, "joy_netclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netclient_update.arg0");
         joy_net_netclient_update(p0);
         return joy_v_null();
@@ -6741,15 +6741,15 @@ static joy_value_t t_joy_net_netclient_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_netclient_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        netclient_p p0;
-        net_message_p p1;
+        joy_netclient_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netclient_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netclient_poll_message.arg1");
-        p0 = (netclient_p)joy_obj_deref(a[0].as.handle, "netclient_p", st);
+        p0 = (joy_netclient_p)joy_obj_deref(a[0].as.handle, "joy_netclient_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netclient_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_netclient_poll_message.arg1");
         _r = joy_net_netclient_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6757,10 +6757,10 @@ static joy_value_t t_joy_net_netclient_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_netserver_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_destroy.arg0");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_destroy.arg0");
         joy_net_netserver_destroy(p0);
         return joy_v_null();
@@ -6768,7 +6768,7 @@ static joy_value_t t_joy_net_netserver_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_netserver_send(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         int p1;
         const char* p2;
         int p3;
@@ -6777,7 +6777,7 @@ static joy_value_t t_joy_net_netserver_send(joy_value_t* a, int n, joy_status_t*
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_send.arg1");
         if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_send.arg2");
         if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_send.arg3");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_send.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (const char*)a[2].as.str;
@@ -6788,14 +6788,14 @@ static joy_value_t t_joy_net_netserver_send(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_net_netserver_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         const char* p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_broadcast");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_broadcast.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_broadcast.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_broadcast.arg2");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_broadcast.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
@@ -6805,12 +6805,12 @@ static joy_value_t t_joy_net_netserver_broadcast(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_net_netserver_offline(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_offline");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_offline.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_offline.arg1");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_offline.arg0");
         p1 = (int)a[1].as.i32;
         joy_net_netserver_offline(p0, p1);
@@ -6819,10 +6819,10 @@ static joy_value_t t_joy_net_netserver_offline(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_net_netserver_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_update.arg0");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_update.arg0");
         joy_net_netserver_update(p0);
         return joy_v_null();
@@ -6830,11 +6830,11 @@ static joy_value_t t_joy_net_netserver_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_net_netserver_connection_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
+        joy_netserver_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_connection_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_connection_count.arg0");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_connection_count.arg0");
         _r = joy_net_netserver_connection_count(p0);
         return joy_v_i32((int)_r);
@@ -6842,15 +6842,15 @@ static joy_value_t t_joy_net_netserver_connection_count(joy_value_t* a, int n, j
 
 static joy_value_t t_joy_net_netserver_poll_message(joy_value_t* a, int n, joy_status_t* st)
 {
-        netserver_p p0;
-        net_message_p p1;
+        joy_netserver_p p0;
+        joy_net_message_p p1;
         bool _r;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netserver_poll_message");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_poll_message.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netserver_poll_message.arg1");
-        p0 = (netserver_p)joy_obj_deref(a[0].as.handle, "netserver_p", st);
+        p0 = (joy_netserver_p)joy_obj_deref(a[0].as.handle, "joy_netserver_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netserver_poll_message.arg0");
-        p1 = (net_message_p)joy_obj_deref(a[1].as.handle, "net_message_p", st);
+        p1 = (joy_net_message_p)joy_obj_deref(a[1].as.handle, "joy_net_message_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_net_netserver_poll_message.arg1");
         _r = joy_net_netserver_poll_message(p0, p1);
         return joy_v_bool((bool)_r);
@@ -6858,10 +6858,10 @@ static joy_value_t t_joy_net_netserver_poll_message(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_net_netmessage_free_data(joy_value_t* a, int n, joy_status_t* st)
 {
-        net_message_p p0;
+        joy_net_message_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_netmessage_free_data");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_netmessage_free_data.arg0");
-        p0 = (net_message_p)joy_obj_deref(a[0].as.handle, "net_message_p", st);
+        p0 = (joy_net_message_p)joy_obj_deref(a[0].as.handle, "joy_net_message_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_net_netmessage_free_data.arg0");
         joy_net_netmessage_free_data(p0);
         return joy_v_null();
@@ -6869,10 +6869,10 @@ static joy_value_t t_joy_net_netmessage_free_data(joy_value_t* a, int n, joy_sta
 
 static joy_value_t t_joy_scene_node_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_destroy.arg0");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_destroy.arg0");
         joy_scene_node_destroy(p0);
         return joy_v_null();
@@ -6880,14 +6880,14 @@ static joy_value_t t_joy_scene_node_destroy(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_scene_node_add_child(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
-        scene_node_p p1;
+        joy_scene_node_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_add_child");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_add_child.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_add_child.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_add_child.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_node_add_child.arg1");
         joy_scene_node_add_child(p0, p1);
         return joy_v_null();
@@ -6895,14 +6895,14 @@ static joy_value_t t_joy_scene_node_add_child(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_node_remove_child(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
-        scene_node_p p1;
+        joy_scene_node_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_remove_child");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_remove_child.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_remove_child.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_remove_child.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_node_remove_child.arg1");
         joy_scene_node_remove_child(p0, p1);
         return joy_v_null();
@@ -6910,11 +6910,11 @@ static joy_value_t t_joy_scene_node_remove_child(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_node_get_child_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_get_child_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_get_child_count.arg0");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_get_child_count.arg0");
         _r = joy_scene_node_get_child_count(p0);
         return joy_v_i32((int)_r);
@@ -6922,14 +6922,14 @@ static joy_value_t t_joy_scene_node_get_child_count(joy_value_t* a, int n, joy_s
 
 static joy_value_t t_joy_scene_node_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_position.arg2");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -6939,14 +6939,14 @@ static joy_value_t t_joy_scene_node_set_position(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_node_set_world_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_world_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_world_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_world_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_world_position.arg2");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_world_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -6956,12 +6956,12 @@ static joy_value_t t_joy_scene_node_set_world_position(joy_value_t* a, int n, jo
 
 static joy_value_t t_joy_scene_node_set_rotation(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_rotation");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_rotation.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_rotation.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_rotation.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_node_set_rotation(p0, p1);
@@ -6970,11 +6970,11 @@ static joy_value_t t_joy_scene_node_set_rotation(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_node_get_rotation(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_get_rotation");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_get_rotation.arg0");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_get_rotation.arg0");
         _r = joy_scene_node_get_rotation(p0);
         return joy_v_f64((float)_r);
@@ -6982,14 +6982,14 @@ static joy_value_t t_joy_scene_node_get_rotation(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_scene_node_set_scale(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_scale");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_scale.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_scale.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_scale.arg2");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_scale.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -6999,12 +6999,12 @@ static joy_value_t t_joy_scene_node_set_scale(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_node_set_zorder(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_zorder");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_zorder.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_zorder.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_zorder.arg0");
         p1 = (int)a[1].as.i32;
         joy_scene_node_set_zorder(p0, p1);
@@ -7013,11 +7013,11 @@ static joy_value_t t_joy_scene_node_set_zorder(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_node_get_zorder(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_get_zorder");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_get_zorder.arg0");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_get_zorder.arg0");
         _r = joy_scene_node_get_zorder(p0);
         return joy_v_i32((int)_r);
@@ -7025,12 +7025,12 @@ static joy_value_t t_joy_scene_node_get_zorder(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_node_set_name(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_name");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_name.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_name.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_name.arg0");
         p1 = (const char*)a[1].as.str;
         joy_scene_node_set_name(p0, p1);
@@ -7039,12 +7039,12 @@ static joy_value_t t_joy_scene_node_set_name(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_scene_node_set_tag(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         const char* p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_set_tag");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_tag.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_set_tag.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_set_tag.arg0");
         p1 = (const char*)a[1].as.str;
         joy_scene_node_set_tag(p0, p1);
@@ -7053,50 +7053,50 @@ static joy_value_t t_joy_scene_node_set_tag(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_scene_find_node_by_name(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         const char* p1;
-        scene_node_p _r;
+        joy_scene_node_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_find_node_by_name");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_find_node_by_name.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_find_node_by_name(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_find_node_by_name");
-        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_find_node_by_name");
+        _h = joy_obj_register((void*)_r, "joy_scene_node_p", NULL, "joy_scene_find_node_by_name");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_find_node_by_name"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_find_node_by_name_deep(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
+        joy_scene_p p0;
         const char* p1;
-        scene_node_p _r;
+        joy_scene_node_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_find_node_by_name_deep");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name_deep.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name_deep.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_find_node_by_name_deep.arg0");
         p1 = (const char*)a[1].as.str;
         _r = joy_scene_find_node_by_name_deep(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_find_node_by_name_deep");
-        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_find_node_by_name_deep");
+        _h = joy_obj_register((void*)_r, "joy_scene_node_p", NULL, "joy_scene_find_node_by_name_deep");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_find_node_by_name_deep"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_node_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_node_p p0;
+        joy_scene_node_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_node_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_node_update.arg1");
-        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        p0 = (joy_scene_node_p)joy_obj_deref(a[0].as.handle, "joy_scene_node_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_node_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_node_update(p0, p1);
@@ -7105,10 +7105,10 @@ static joy_value_t t_joy_scene_node_update(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
+        joy_scene_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_destroy.arg0");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_destroy.arg0");
         joy_scene_destroy(p0);
         return joy_v_null();
@@ -7116,14 +7116,14 @@ static joy_value_t t_joy_scene_destroy(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_scene_add_root_node(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
-        scene_node_p p1;
+        joy_scene_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_add_root_node");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_add_root_node.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_add_root_node.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_add_root_node.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_add_root_node.arg1");
         joy_scene_add_root_node(p0, p1);
         return joy_v_null();
@@ -7131,14 +7131,14 @@ static joy_value_t t_joy_scene_add_root_node(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_scene_remove_root_node(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
-        scene_node_p p1;
+        joy_scene_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_remove_root_node");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_remove_root_node.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_remove_root_node.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_remove_root_node.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_remove_root_node.arg1");
         joy_scene_remove_root_node(p0, p1);
         return joy_v_null();
@@ -7146,11 +7146,11 @@ static joy_value_t t_joy_scene_remove_root_node(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_scene_get_root_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
+        joy_scene_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_get_root_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_root_count.arg0");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_get_root_count.arg0");
         _r = joy_scene_get_root_count(p0);
         return joy_v_i32((int)_r);
@@ -7158,31 +7158,31 @@ static joy_value_t t_joy_scene_get_root_count(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_get_root_at(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
+        joy_scene_p p0;
         int p1;
-        scene_node_p _r;
+        joy_scene_node_p _r;
         uint64_t _h;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_get_root_at");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_root_at.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_root_at.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_get_root_at.arg0");
         p1 = (int)a[1].as.i32;
         _r = joy_scene_get_root_at(p0, p1);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_get_root_at");
-        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_get_root_at");
+        _h = joy_obj_register((void*)_r, "joy_scene_node_p", NULL, "joy_scene_get_root_at");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_get_root_at"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
+        joy_scene_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_update.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_update(p0, p1);
@@ -7191,14 +7191,14 @@ static joy_value_t t_joy_scene_update(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_scene_set_popup_node(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
-        scene_node_p p1;
+        joy_scene_p p0;
+        joy_scene_node_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_set_popup_node");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_set_popup_node.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_set_popup_node.arg1");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_set_popup_node.arg0");
-        p1 = (scene_node_p)joy_obj_deref(a[1].as.handle, "scene_node_p", st);
+        p1 = (joy_scene_node_p)joy_obj_deref(a[1].as.handle, "joy_scene_node_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_set_popup_node.arg1");
         joy_scene_set_popup_node(p0, p1);
         return joy_v_null();
@@ -7206,26 +7206,26 @@ static joy_value_t t_joy_scene_set_popup_node(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_get_popup_node(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_p p0;
-        scene_node_p _r;
+        joy_scene_p p0;
+        joy_scene_node_p _r;
         uint64_t _h;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_get_popup_node");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_popup_node.arg0");
-        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        p0 = (joy_scene_p)joy_obj_deref(a[0].as.handle, "joy_scene_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_get_popup_node.arg0");
         _r = joy_scene_get_popup_node(p0);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_get_popup_node");
-        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_get_popup_node");
+        _h = joy_obj_register((void*)_r, "joy_scene_node_p", NULL, "joy_scene_get_popup_node");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_get_popup_node"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_manager_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
+        joy_scene_manager_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_destroy.arg0");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_destroy.arg0");
         joy_scene_manager_destroy(p0);
         return joy_v_null();
@@ -7233,14 +7233,14 @@ static joy_value_t t_joy_scene_manager_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_manager_push(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
-        scene_p p1;
+        joy_scene_manager_p p0;
+        joy_scene_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_push");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_push.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_push.arg1");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_push.arg0");
-        p1 = (scene_p)joy_obj_deref(a[1].as.handle, "scene_p", st);
+        p1 = (joy_scene_p)joy_obj_deref(a[1].as.handle, "joy_scene_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_manager_push.arg1");
         joy_scene_manager_push(p0, p1);
         return joy_v_null();
@@ -7248,14 +7248,14 @@ static joy_value_t t_joy_scene_manager_push(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_scene_manager_replace(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
-        scene_p p1;
+        joy_scene_manager_p p0;
+        joy_scene_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_replace");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_replace.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_replace.arg1");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_replace.arg0");
-        p1 = (scene_p)joy_obj_deref(a[1].as.handle, "scene_p", st);
+        p1 = (joy_scene_p)joy_obj_deref(a[1].as.handle, "joy_scene_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_scene_manager_replace.arg1");
         joy_scene_manager_replace(p0, p1);
         return joy_v_null();
@@ -7263,10 +7263,10 @@ static joy_value_t t_joy_scene_manager_replace(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_scene_manager_pop(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
+        joy_scene_manager_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_pop");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_pop.arg0");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_pop.arg0");
         joy_scene_manager_pop(p0);
         return joy_v_null();
@@ -7274,12 +7274,12 @@ static joy_value_t t_joy_scene_manager_pop(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_manager_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
+        joy_scene_manager_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_update.arg1");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_manager_update(p0, p1);
@@ -7288,27 +7288,27 @@ static joy_value_t t_joy_scene_manager_update(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_scene_manager_get_current(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
-        scene_p _r;
+        joy_scene_manager_p p0;
+        joy_scene_p _r;
         uint64_t _h;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_get_current");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_get_current.arg0");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_get_current.arg0");
         _r = joy_scene_manager_get_current(p0);
         if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_manager_get_current");
-        _h = joy_obj_register((void*)_r, "scene_p", NULL, "joy_scene_manager_get_current");
+        _h = joy_obj_register((void*)_r, "joy_scene_p", NULL, "joy_scene_manager_get_current");
         if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_manager_get_current"); }
         return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_manager_get_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        scene_manager_p p0;
+        joy_scene_manager_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_get_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_get_count.arg0");
-        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        p0 = (joy_scene_manager_p)joy_obj_deref(a[0].as.handle, "joy_scene_manager_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_manager_get_count.arg0");
         _r = joy_scene_manager_get_count(p0);
         return joy_v_i32((int)_r);
@@ -7316,10 +7316,10 @@ static joy_value_t t_joy_scene_manager_get_count(joy_value_t* a, int n, joy_stat
 
 static joy_value_t t_joy_r2d_particle_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_destroy.arg0");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_destroy.arg0");
         joy_r2d_particle_destroy(p0);
         return joy_v_null();
@@ -7327,14 +7327,14 @@ static joy_value_t t_joy_r2d_particle_destroy(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r2d_particle_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         float p1;
         float p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_set_position");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_set_position.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_set_position.arg1");
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_set_position.arg2");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -7344,10 +7344,10 @@ static joy_value_t t_joy_r2d_particle_set_position(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_r2d_particle_emit(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_emit");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_emit.arg0");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_emit.arg0");
         joy_r2d_particle_emit(p0);
         return joy_v_null();
@@ -7355,10 +7355,10 @@ static joy_value_t t_joy_r2d_particle_emit(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_r2d_particle_clear(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_clear");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_clear.arg0");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_clear.arg0");
         joy_r2d_particle_clear(p0);
         return joy_v_null();
@@ -7366,12 +7366,12 @@ static joy_value_t t_joy_r2d_particle_clear(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_particle_update(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_update");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_update.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_update.arg1");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_update.arg0");
         p1 = (float)a[1].as.f64;
         joy_r2d_particle_update(p0, p1);
@@ -7380,14 +7380,14 @@ static joy_value_t t_joy_r2d_particle_update(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r2d_particle_render(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
-        jr2d_p p1;
+        joy_particle_p p0;
+        joy_r2d_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_render");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_render.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_render.arg1");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_render.arg0");
-        p1 = (jr2d_p)joy_obj_deref(a[1].as.handle, "jr2d_p", st);
+        p1 = (joy_r2d_p)joy_obj_deref(a[1].as.handle, "joy_r2d_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r2d_particle_render.arg1");
         joy_r2d_particle_render(p0, p1);
         return joy_v_null();
@@ -7395,11 +7395,11 @@ static joy_value_t t_joy_r2d_particle_render(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_r2d_particle_count(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         int _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_count");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_count.arg0");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_count.arg0");
         _r = joy_r2d_particle_count(p0);
         return joy_v_i32((int)_r);
@@ -7407,11 +7407,11 @@ static joy_value_t t_joy_r2d_particle_count(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_r2d_particle_is_active(joy_value_t* a, int n, joy_status_t* st)
 {
-        jparticle_p p0;
+        joy_particle_p p0;
         bool _r;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_particle_is_active");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_particle_is_active.arg0");
-        p0 = (jparticle_p)joy_obj_deref(a[0].as.handle, "jparticle_p", st);
+        p0 = (joy_particle_p)joy_obj_deref(a[0].as.handle, "joy_particle_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r2d_particle_is_active.arg0");
         _r = joy_r2d_particle_is_active(p0);
         return joy_v_bool((bool)_r);
@@ -7419,10 +7419,10 @@ static joy_value_t t_joy_r2d_particle_is_active(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_light_sys_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_sys_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_destroy.arg0");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_sys_destroy.arg0");
         joy_r3d_light_sys_destroy(p0);
         return joy_v_null();
@@ -7430,14 +7430,14 @@ static joy_value_t t_joy_r3d_light_sys_destroy(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_light_sys_resize(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         int p1;
         int p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_sys_resize");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg1");
         if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_sys_resize.arg2");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_sys_resize.arg0");
         p1 = (int)a[1].as.i32;
         p2 = (int)a[2].as.i32;
@@ -7447,12 +7447,12 @@ static joy_value_t t_joy_r3d_light_sys_resize(joy_value_t* a, int n, joy_status_
 
 static joy_value_t t_joy_r3d_light_remove(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         int p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_remove");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_remove.arg0");
         if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_remove.arg1");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_remove.arg0");
         p1 = (int)a[1].as.i32;
         joy_r3d_light_remove(p0, p1);
@@ -7461,10 +7461,10 @@ static joy_value_t t_joy_r3d_light_remove(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_r3d_light_clear(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_clear");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_clear.arg0");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_clear.arg0");
         joy_r3d_light_clear(p0);
         return joy_v_null();
@@ -7472,7 +7472,7 @@ static joy_value_t t_joy_r3d_light_clear(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_r3d_light_add_occluder(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         float p1;
         float p2;
         float p3;
@@ -7484,7 +7484,7 @@ static joy_value_t t_joy_r3d_light_add_occluder(joy_value_t* a, int n, joy_statu
         if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg2");
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_add_occluder.arg4");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_add_occluder.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
@@ -7496,10 +7496,10 @@ static joy_value_t t_joy_r3d_light_add_occluder(joy_value_t* a, int n, joy_statu
 
 static joy_value_t t_joy_r3d_light_clear_occluders(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_clear_occluders");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_clear_occluders.arg0");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_clear_occluders.arg0");
         joy_r3d_light_clear_occluders(p0);
         return joy_v_null();
@@ -7507,7 +7507,7 @@ static joy_value_t t_joy_r3d_light_clear_occluders(joy_value_t* a, int n, joy_st
 
 static joy_value_t t_joy_r3d_light_set_ambient(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
+        joy_light_sys_p p0;
         uint8_t p1;
         uint8_t p2;
         uint8_t p3;
@@ -7516,7 +7516,7 @@ static joy_value_t t_joy_r3d_light_set_ambient(joy_value_t* a, int n, joy_status
         if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg1");
         if (a[2].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg2");
         if (a[3].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_set_ambient.arg3");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_set_ambient.arg0");
         p1 = (uint8_t)a[1].as.u32;
         p2 = (uint8_t)a[2].as.u32;
@@ -7527,14 +7527,14 @@ static joy_value_t t_joy_r3d_light_set_ambient(joy_value_t* a, int n, joy_status
 
 static joy_value_t t_joy_r3d_light_render(joy_value_t* a, int n, joy_status_t* st)
 {
-        jlight_sys_p p0;
-        jr2d_p p1;
+        joy_light_sys_p p0;
+        joy_r2d_p p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_light_render");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_render.arg0");
         if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_light_render.arg1");
-        p0 = (jlight_sys_p)joy_obj_deref(a[0].as.handle, "jlight_sys_p", st);
+        p0 = (joy_light_sys_p)joy_obj_deref(a[0].as.handle, "joy_light_sys_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_r3d_light_render.arg0");
-        p1 = (jr2d_p)joy_obj_deref(a[1].as.handle, "jr2d_p", st);
+        p1 = (joy_r2d_p)joy_obj_deref(a[1].as.handle, "joy_r2d_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_r3d_light_render.arg1");
         joy_r3d_light_render(p0, p1);
         return joy_v_null();
@@ -7542,10 +7542,10 @@ static joy_value_t t_joy_r3d_light_render(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_scene_ecs_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        jecs_world_p p0;
+        joy_ecs_world_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_ecs_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_destroy.arg0");
-        p0 = (jecs_world_p)joy_obj_deref(a[0].as.handle, "jecs_world_p", st);
+        p0 = (joy_ecs_world_p)joy_obj_deref(a[0].as.handle, "joy_ecs_world_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_ecs_destroy.arg0");
         joy_scene_ecs_destroy(p0);
         return joy_v_null();
@@ -7553,12 +7553,12 @@ static joy_value_t t_joy_scene_ecs_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_ecs_process(joy_value_t* a, int n, joy_status_t* st)
 {
-        jecs_world_p p0;
+        joy_ecs_world_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_ecs_process");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_process.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_process.arg1");
-        p0 = (jecs_world_p)joy_obj_deref(a[0].as.handle, "jecs_world_p", st);
+        p0 = (joy_ecs_world_p)joy_obj_deref(a[0].as.handle, "joy_ecs_world_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_ecs_process.arg0");
         p1 = (float)a[1].as.f64;
         joy_scene_ecs_process(p0, p1);
@@ -7567,14 +7567,14 @@ static joy_value_t t_joy_scene_ecs_process(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_scene_ecs_define(joy_value_t* a, int n, joy_status_t* st)
 {
-        jecs_world_p p0;
+        joy_ecs_world_p p0;
         const char* p1;
         size_t p2;
         if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_ecs_define");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_define.arg0");
         if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_define.arg1");
         if (a[2].kind != JOY_V_U64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_ecs_define.arg2");
-        p0 = (jecs_world_p)joy_obj_deref(a[0].as.handle, "jecs_world_p", st);
+        p0 = (joy_ecs_world_p)joy_obj_deref(a[0].as.handle, "joy_ecs_world_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_scene_ecs_define.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (size_t)a[2].as.u64;
@@ -7658,10 +7658,10 @@ static joy_value_t t_joy_audio_create_ogg(joy_value_t* a, int n, joy_status_t* s
 
 static joy_value_t t_joy_audio_shot_play(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_shot_p p0;
+        joy_audio_shot_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_play");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_play.arg0");
-        p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
+        p0 = (joy_audio_shot_p)joy_obj_deref(a[0].as.handle, "joy_audio_shot_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_shot_play.arg0");
         joy_audio_shot_play(p0);
         return joy_v_null();
@@ -7669,12 +7669,12 @@ static joy_value_t t_joy_audio_shot_play(joy_value_t* a, int n, joy_status_t* st
 
 static joy_value_t t_joy_audio_shot_set_gain(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_shot_p p0;
+        joy_audio_shot_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_set_gain");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_set_gain.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_set_gain.arg1");
-        p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
+        p0 = (joy_audio_shot_p)joy_obj_deref(a[0].as.handle, "joy_audio_shot_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_shot_set_gain.arg0");
         p1 = (float)a[1].as.f64;
         joy_audio_shot_set_gain(p0, p1);
@@ -7683,10 +7683,10 @@ static joy_value_t t_joy_audio_shot_set_gain(joy_value_t* a, int n, joy_status_t
 
 static joy_value_t t_joy_audio_shot_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_shot_p p0;
+        joy_audio_shot_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_shot_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_shot_destroy.arg0");
-        p0 = (audio_shot_p)joy_obj_deref(a[0].as.handle, "audio_shot_p", st);
+        p0 = (joy_audio_shot_p)joy_obj_deref(a[0].as.handle, "joy_audio_shot_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_shot_destroy.arg0");
         joy_audio_shot_destroy(p0);
         return joy_v_null();
@@ -7694,10 +7694,10 @@ static joy_value_t t_joy_audio_shot_destroy(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_audio_bgm_stop(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_bgm_p p0;
+        joy_audio_bgm_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_stop");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_stop.arg0");
-        p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
+        p0 = (joy_audio_bgm_p)joy_obj_deref(a[0].as.handle, "joy_audio_bgm_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_stop.arg0");
         joy_audio_bgm_stop(p0);
         return joy_v_null();
@@ -7705,12 +7705,12 @@ static joy_value_t t_joy_audio_bgm_stop(joy_value_t* a, int n, joy_status_t* st)
 
 static joy_value_t t_joy_audio_bgm_set_gain(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_bgm_p p0;
+        joy_audio_bgm_p p0;
         float p1;
         if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_set_gain");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_set_gain.arg0");
         if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_set_gain.arg1");
-        p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
+        p0 = (joy_audio_bgm_p)joy_obj_deref(a[0].as.handle, "joy_audio_bgm_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_set_gain.arg0");
         p1 = (float)a[1].as.f64;
         joy_audio_bgm_set_gain(p0, p1);
@@ -7719,10 +7719,10 @@ static joy_value_t t_joy_audio_bgm_set_gain(joy_value_t* a, int n, joy_status_t*
 
 static joy_value_t t_joy_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
-        audio_bgm_p p0;
+        joy_audio_bgm_p p0;
         if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_audio_bgm_destroy");
         if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_audio_bgm_destroy.arg0");
-        p0 = (audio_bgm_p)joy_obj_deref(a[0].as.handle, "audio_bgm_p", st);
+        p0 = (joy_audio_bgm_p)joy_obj_deref(a[0].as.handle, "joy_audio_bgm_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_audio_bgm_destroy.arg0");
         joy_audio_bgm_destroy(p0);
         return joy_v_null();
@@ -7730,8 +7730,8 @@ static joy_value_t t_joy_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* 
 
 static joy_value_t t_joy_ui_image_draw_rect(joy_value_t* a, int n, joy_status_t* st)
 {
-        jr2d_p p0;
-        image_p p1;
+        joy_r2d_p p0;
+        joy_image_p p1;
         float p2;
         float p3;
         float p4;
@@ -7743,9 +7743,9 @@ static joy_value_t t_joy_ui_image_draw_rect(joy_value_t* a, int n, joy_status_t*
         if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg3");
         if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg4");
         if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg5");
-        p0 = (jr2d_p)joy_obj_deref(a[0].as.handle, "jr2d_p", st);
+        p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
         if (!p0) return joy_v_err(st, *st, "joy_ui_image_draw_rect.arg0");
-        p1 = (image_p)joy_obj_deref(a[1].as.handle, "image_p", st);
+        p1 = (joy_image_p)joy_obj_deref(a[1].as.handle, "joy_image_p", st);
         if (!p1) return joy_v_err(st, *st, "joy_ui_image_draw_rect.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
@@ -15595,7 +15595,7 @@ const char* joy_api_selftest(void)
         if (joy_obj_destroy_count() != dead0 + 1) return "auto-destroy";
         if (joy_obj_live_count() != live0) return "live-after-release";
         st = JOY_OK;
-        if (joy_obj_deref(r.as.handle, "lcg_num_p", &st) != NULL)
+        if (joy_obj_deref(r.as.handle, "joy_lcg_num_p", &st) != NULL)
                 return "stale-handle";
 
         return NULL;

@@ -645,12 +645,12 @@ typedef struct iocp_server
         bool is_running;                      // 服务器运行状态
         CRITICAL_SECTION critical_section;    // 线程同步临界区
 
-} iocp_server_t, * iocp_server_p;
+} joy_iocp_server_t, * joy_iocp_server_p;
 
 // 函数声明
-static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_packet_ptr packet);
+static void iocp_post_accept_operation(joy_iocp_server_p server, iocp_operation_packet_ptr packet);
 static int iocp_post_receive_operation(iocp_client_session_ptr session);
-static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_packet_ptr packet);
+static void iocp_handle_accept_completion(joy_iocp_server_p server, iocp_operation_packet_ptr packet);
 static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session);
 static void iocp_cleanup_client_session(iocp_client_session_ptr session);
 
@@ -668,7 +668,7 @@ static void iocp_cleanup_client_session(iocp_client_session_ptr session)
 }
 
 // 投递AcceptEx操作
-static void iocp_post_accept_operation(iocp_server_p server, iocp_operation_packet_ptr packet)
+static void iocp_post_accept_operation(joy_iocp_server_p server, iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
 
@@ -777,7 +777,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
 }
 
 // 处理Accept完成事件
-static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_packet_ptr packet)
+static void iocp_handle_accept_completion(joy_iocp_server_p server, iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
 
@@ -844,7 +844,7 @@ static void iocp_handle_accept_completion(iocp_server_p server, iocp_operation_p
 }
 
 // 创建IOCP服务器
-iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
+joy_iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
 {
         WSADATA wsa_data;
         if (WSAStartup(MAKEWORD(2, 2), &wsa_data) != 0) {
@@ -856,7 +856,7 @@ iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
         GUID guid_acceptex = WSAID_ACCEPTEX;
         GUID guid_get_acceptex_sockaddrs = WSAID_GETACCEPTEXSOCKADDRS;
 
-        iocp_server_p server = (iocp_server_p)calloc(1, sizeof(iocp_server_t));
+        joy_iocp_server_p server = (joy_iocp_server_p)calloc(1, sizeof(joy_iocp_server_t));
         if (!server) {
                 return NULL;
         }
@@ -946,7 +946,7 @@ error_cleanup:
 }
 
 // 销毁IOCP服务器
-void joy_net_iocp_server_destroy(iocp_server_p server)
+void joy_net_iocp_server_destroy(joy_iocp_server_p server)
 {
         if (!server) return;
 
@@ -971,7 +971,7 @@ void joy_net_iocp_server_destroy(iocp_server_p server)
 }
 
 // 处理IOCP事件
-void joy_net_iocp_process_events(iocp_server_p server, int timeout_ms)
+void joy_net_iocp_process_events(joy_iocp_server_p server, int timeout_ms)
 {
         if (!server || !server->is_running) return;
 
@@ -1042,18 +1042,18 @@ void joy_net_iocp_process_events(iocp_server_p server, int timeout_ms)
 #else
 
 // 非Windows平台的空实现
-iocp_server_p joy_net_iocp_server_create(const char* bind_ip, int bind_port)
+joy_iocp_server_p joy_net_iocp_server_create(const char* bind_ip, int bind_port)
 {
         printf("IOCP is only supported on Windows platform");
         return NULL;
 }
 
-void joy_net_iocp_server_destroy(iocp_server_p server)
+void joy_net_iocp_server_destroy(joy_iocp_server_p server)
 {
         (void)server;
 }
 
-void joy_net_iocp_process_events(iocp_server_p server, int timeout_ms)
+void joy_net_iocp_process_events(joy_iocp_server_p server, int timeout_ms)
 {
         (void)server;
         (void)timeout_ms;

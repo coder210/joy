@@ -60,9 +60,9 @@ uint64_t joy_core_get_ticks(void)
 	return SDL_GetTicks();
 }
 
-jwindow_p joy_core_create_window(const char* title, int w, int h)
+joy_window_p joy_core_create_window(const char* title, int w, int h)
 {
-        jwindow_p window = (jwindow_p)SDL_malloc(sizeof(jwindow_t));
+        joy_window_p window = (joy_window_p)SDL_malloc(sizeof(joy_window_t));
         window->sdl_window = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
         if (!window->sdl_window) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "joy_core_create_window failed: %s", SDL_GetError());
@@ -72,7 +72,7 @@ jwindow_p joy_core_create_window(const char* title, int w, int h)
         return window;
 }
 
-void joy_core_destroy_window(jwindow_p win)
+void joy_core_destroy_window(joy_window_p win)
 {
 	if (win) {
                 SDL_DestroyWindow(win->sdl_window);
@@ -80,23 +80,23 @@ void joy_core_destroy_window(jwindow_p win)
 	}
 }
 
-void* joy_core_get_raw_window(jwindow_p win)
+void* joy_core_get_raw_window(joy_window_p win)
 {
 	return win->sdl_window;
 }
 
-void joy_core_window_set_fullscreen(jwindow_p win, bool fullscreen)
+void joy_core_window_set_fullscreen(joy_window_p win, bool fullscreen)
 {
 	if (win) SDL_SetWindowFullscreen(win->sdl_window, fullscreen);
 }
 
-bool joy_core_window_get_fullscreen(jwindow_p win)
+bool joy_core_window_get_fullscreen(joy_window_p win)
 {
         if (!win) return false;
         return (SDL_GetWindowFlags(win->sdl_window) & SDL_WINDOW_FULLSCREEN) != 0;
 }
 
-void joy_core_window_set_icon(jwindow_p win, const char* png_path)
+void joy_core_window_set_icon(joy_window_p win, const char* png_path)
 {
         if (!win || !png_path) return;
 
@@ -167,7 +167,7 @@ static const char* key_name(SDL_Keycode k)
 }
 
 
-void joy_core_dispatch_event(jevent_callbacks_t cbs, 
+void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 	const void* ev, void* arg)
 {
 	const SDL_Event* event = (SDL_Event*)ev;
@@ -458,48 +458,48 @@ void joy_core_log_title(int type)
 	}
 }
 
-env_p joy_core_env_create(void)
+joy_env_p joy_core_env_create(void)
 {
-	env_p env;
-	env = SDL_malloc(sizeof(env_t));
+	joy_env_p env;
+	env = SDL_malloc(sizeof(joy_env_t));
 	SDL_assert(env);
 	env->sdl_env = SDL_CreateEnvironment(true);
 	SDL_assert(env->sdl_env);
 	return env;
 }
 
-const char* joy_core_env_get(env_p env, const char* key)
+const char* joy_core_env_get(joy_env_p env, const char* key)
 {
 	return SDL_GetEnvironmentVariable(env->sdl_env, key);
 }
 
-void joy_core_env_set(env_p env, const char* key, const char* value)
+void joy_core_env_set(joy_env_p env, const char* key, const char* value)
 {
 	SDL_SetEnvironmentVariable(env->sdl_env, key, value, true);
 }
 
-void joy_core_env_destroy(env_p env)
+void joy_core_env_destroy(joy_env_p env)
 {
 	SDL_assert(env);
 	SDL_DestroyEnvironment(env->sdl_env);
 	SDL_free(env);
 }
 
-simple_fps_counter_p joy_core_simple_fps_create()
+joy_simple_fps_counter_p joy_core_simple_fps_create()
 {
-	simple_fps_counter_p fps;
-	fps = (simple_fps_counter_p)SDL_malloc(sizeof(simple_fps_counter_t));
+	joy_simple_fps_counter_p fps;
+	fps = (joy_simple_fps_counter_p)SDL_malloc(sizeof(joy_simple_fps_counter_t));
 	fps->fps = fps->frame_count = 0;
 	fps->last_time = SDL_GetTicks();
 	return fps;
 }
 
-void joy_core_simple_fps_destory(simple_fps_counter_p fps)
+void joy_core_simple_fps_destory(joy_simple_fps_counter_p fps)
 {
 	SDL_free(fps);
 }
 
-void joy_core_simple_fps_update(simple_fps_counter_p fps)
+void joy_core_simple_fps_update(joy_simple_fps_counter_p fps)
 {
 	fps->frame_count++;
 	fps->current_time = SDL_GetTicks();
@@ -513,12 +513,12 @@ void joy_core_simple_fps_update(simple_fps_counter_p fps)
 	}
 }
 
-int joy_core_simple_fps_value(simple_fps_counter_p fps)
+int joy_core_simple_fps_value(joy_simple_fps_counter_p fps)
 {
 	return fps->fps;
 }
 
-static void limit_frame_rate(game_timer_p timer, float current_delta_time)
+static void limit_frame_rate(joy_game_timer_p timer, float current_delta_time)
 {
 	if (!timer) return;
 
@@ -532,7 +532,7 @@ static void limit_frame_rate(game_timer_p timer, float current_delta_time)
 	// 如果 current_delta_time >= target_frame_time，不做任何事，delta_time 保持原值
 }
 
-void joy_scene_game_timer_init(game_timer_p timer)
+void joy_scene_game_timer_init(joy_game_timer_p timer)
 {
 	if (!timer) return;
 	Uint64 now = SDL_GetTicksNS();
@@ -545,7 +545,7 @@ void joy_scene_game_timer_init(game_timer_p timer)
 	joy_core_log_info("[Gametimer] Initialized. Last time: %llu ns", (unsigned long long)now);
 }
 
-void joy_scene_game_timer_update(game_timer_p timer)
+void joy_scene_game_timer_update(joy_game_timer_p timer)
 {
 	if (!timer) return;
 
@@ -568,19 +568,19 @@ void joy_scene_game_timer_update(game_timer_p timer)
 
 
 
-float joy_scene_game_timer_get_delta_time(const game_timer_p timer)
+float joy_scene_game_timer_get_delta_time(const joy_game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)(timer->delta_time * timer->time_scale);
 }
 
-float joy_scene_game_timer_get_unscaled_delta_time(const game_timer_p timer)
+float joy_scene_game_timer_get_unscaled_delta_time(const joy_game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)timer->delta_time;
 }
 
-void joy_scene_game_timer_set_time_scale(game_timer_p timer, float scale)
+void joy_scene_game_timer_set_time_scale(joy_game_timer_p timer, float scale)
 {
 	if (!timer) return;
 	if (scale < 0.0f) {
@@ -590,13 +590,13 @@ void joy_scene_game_timer_set_time_scale(game_timer_p timer, float scale)
 	timer->time_scale = (double)scale;
 }
 
-float joy_scene_game_timer_get_time_scale(const game_timer_p timer)
+float joy_scene_game_timer_get_time_scale(const joy_game_timer_p timer)
 {
 	if (!timer) return 1.0f;
 	return (float)timer->time_scale;
 }
 
-void joy_scene_game_timer_set_target_fps(game_timer_p timer, int fps)
+void joy_scene_game_timer_set_target_fps(joy_game_timer_p timer, int fps)
 {
 	if (!timer) return;
 
@@ -619,7 +619,7 @@ void joy_scene_game_timer_set_target_fps(game_timer_p timer, int fps)
 	}
 }
 
-int joy_scene_game_timer_get_target_fps(const game_timer_p timer)
+int joy_scene_game_timer_get_target_fps(const joy_game_timer_p timer)
 {
 	if (!timer) return 0;
 	return timer->target_fps;

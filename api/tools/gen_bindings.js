@@ -66,7 +66,7 @@ const SCALARS = new Set([
   'int8_t', 'uint8_t', 'int16_t', 'uint16_t',
   'int32_t', 'uint32_t', 'int64_t', 'uint64_t',
   'size_t', 'ssize_t', 'intptr_t', 'uintptr_t',
-  'fp_t', 'ft_t',
+  'joy_fp_t', 'joy_ft_t',
 ]);
 
 /* ------------------------------------------------------------------ parse */
@@ -167,7 +167,7 @@ function domainOf(name) {
  * 1. 只有名字里确实含 `_create` 才做精确替换；否则 replace 是恒等变换，
  *    get_* / find_* / wrap_* 会把 owns 填成自己。
  * 2. 候选 dtor 必须恰好一个参数、类型与 ret 严格相等；否则 byDomain 兜底
- *    会把 joy_r3d_destroy(jr3d_p) 套到返回 void* 的 GPU 对象上。 */
+ *    会把 joy_r3d_destroy(joy_r3d_p) 套到返回 void* 的 GPU 对象上。 */
 function inferOwns(name, ret, declByName) {
   if (!isOpaque(ret)) return null;
   const domain = domainOf(name);

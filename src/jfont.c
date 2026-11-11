@@ -12,11 +12,11 @@ struct jfont {
 	int line_gap;
 };
 
-font_p joy_r2d_font_create(const char* filename, int fontsize)
+joy_font_p joy_r2d_font_create(const char* filename, int fontsize)
 {
 	size_t data_size;
 	unsigned char* fontdata;
-	font_p font;
+	joy_font_p font;
 
 	fontdata = SDL_LoadFile(filename, &data_size);
 	if (!fontdata) {
@@ -24,7 +24,7 @@ font_p joy_r2d_font_create(const char* filename, int fontsize)
 		return NULL;
 	}
 
-	font = (font_p)SDL_calloc(1, sizeof(font_t));
+	font = (joy_font_p)SDL_calloc(1, sizeof(joy_font_t));
 	if (!font) {
 		SDL_free(fontdata);
 		return NULL;
@@ -48,7 +48,7 @@ font_p joy_r2d_font_create(const char* filename, int fontsize)
 	return font;
 }
 
-void joy_r2d_font_destroy(font_p font)
+void joy_r2d_font_destroy(joy_font_p font)
 {
 	if (!font) return;
 
@@ -62,17 +62,17 @@ void joy_r2d_font_destroy(font_p font)
 	SDL_free(font);
 }
 
-float joy_r2d_font_get_scale(font_p font)
+float joy_r2d_font_get_scale(joy_font_p font)
 {
 	return font->scale;
 }
 
-int joy_r2d_font_get_size(font_p font)
+int joy_r2d_font_get_size(joy_font_p font)
 {
 	return font->fontsize;
 }
 
-int joy_r2d_font_get_ascent(font_p font)
+int joy_r2d_font_get_ascent(joy_font_p font)
 {
 	return font->ascent;
 }

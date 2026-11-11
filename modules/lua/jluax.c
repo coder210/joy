@@ -25,7 +25,7 @@ struct luax {
         char* watch_file;
         SDL_Time last_mtime;
         lua_State* env;
-        jevent_callbacks_t cbs;   /* C 层事件回调集合 */
+        joy_event_callbacks_t cbs;   /* C 层事件回调集合 */
 };
 
 

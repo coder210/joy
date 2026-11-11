@@ -91,12 +91,12 @@
 | 函数 | 原因 | 位置 |
 |---|---|---|
 | `joy_core_lcg_random_get_state` | 非不透明指针 / 输出参数：uint64_t* | include/joy/defs.h:183 |
-| `joy_scene_procmap_config_default` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:239 |
-| `joy_scene_procmap_generate_seed` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:245 |
-| `joy_scene_procmap_generate` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:247 |
+| `joy_scene_procmap_config_default` | 非不透明指针 / 输出参数：joy_pm_config_t* | include/joy/defs.h:239 |
+| `joy_scene_procmap_generate_seed` | 非不透明指针 / 输出参数：joy_pm_config_t* | include/joy/defs.h:245 |
+| `joy_scene_procmap_generate` | 非不透明指针 / 输出参数：joy_pm_config_t* | include/joy/defs.h:247 |
 | `joy_scene_procmap_rasterize` | 数组参数 | include/joy/defs.h:249 |
 | `joy_scene_procmap_bfs` | 数组参数 | include/joy/defs.h:252 |
-| `joy_scene_procmap_sample_open_tiles` | 非不透明指针 / 输出参数：jpm_config_t* | include/joy/defs.h:255 |
+| `joy_scene_procmap_sample_open_tiles` | 非不透明指针 / 输出参数：joy_pm_config_t* | include/joy/defs.h:255 |
 | `joy_core_utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:50 |
 | `joy_core_utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/api.h:60 |
 | `joy_core_utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/api.h:72 |
@@ -158,7 +158,7 @@
 | `joy_r3d_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:584 |
 | `joy_r3d_input_set_onsubmit` | 函数指针 / 回调 | include/joy/api.h:586 |
 | `joy_r3d_combobox_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/api.h:626 |
-| `joy_r3d_checkbox_set_state` | 未知类型需人工标注：jr3d_checkbox_state_t | include/joy/api.h:697 |
+| `joy_r3d_checkbox_set_state` | 未知类型需人工标注：joy_r3d_checkbox_state_t | include/joy/api.h:697 |
 | `joy_r3d_draw_mesh_solid_basis` | 结构体指针参数 | include/joy/api.h:722 |
 | `joy_r3d_draw_wire_basis` | 结构体指针参数 | include/joy/api.h:728 |
 | `joy_r3d_set_light_block` | 结构体指针参数 | include/joy/api.h:747 |
@@ -184,43 +184,43 @@
 | `joy_math_collision2df_get_ray_rectangle` | 结构体按值返回 | include/joy/api.h:816 |
 | `joy_math_collision2df_get_ray_rectanglex` | 结构体按值返回 | include/joy/api.h:818 |
 | `joy_math_collision2df_get_ray_polygon` | 结构体按值返回 | include/joy/api.h:820 |
-| `joy_math_collision2df_check_point_rectangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:822 |
-| `joy_math_collision2df_check_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:824 |
-| `joy_math_collision2df_get_squared_distance_point_circle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:825 |
-| `joy_math_collision2df_check_point_triangle` | 未知类型需人工标注：vec2f_t | include/joy/api.h:826 |
-| `joy_math_collision2df_check_lines` | 未知类型需人工标注：vec2f_t | include/joy/api.h:828 |
-| `joy_math_collision2df_check_point_line` | 未知类型需人工标注：vec2f_t | include/joy/api.h:830 |
+| `joy_math_collision2df_check_point_rectangle` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:822 |
+| `joy_math_collision2df_check_point_circle` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:824 |
+| `joy_math_collision2df_get_squared_distance_point_circle` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:825 |
+| `joy_math_collision2df_check_point_triangle` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:826 |
+| `joy_math_collision2df_check_lines` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:828 |
+| `joy_math_collision2df_check_point_line` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:830 |
 | `joy_math_collision2df_get_circles` | 结构体指针参数 | include/joy/api.h:837 |
 | `joy_math_collision2df_get_rectangles` | 结构体指针参数 | include/joy/api.h:839 |
-| `joy_math_find_min_separation` | 非不透明指针 / 输出参数：vec2f_t* | include/joy/api.h:842 |
+| `joy_math_find_min_separation` | 非不透明指针 / 输出参数：joy_vec2f_t* | include/joy/api.h:842 |
 | `joy_math_collision2df_get_polygons` | 结构体指针参数 | include/joy/api.h:844 |
-| `joy_math_collision2df_swept_obb` | 未知类型需人工标注：vec2f_t | include/joy/api.h:866 |
-| `joy_tilemap_sweep_x` | 非不透明指针 / 输出参数：fp_t* | include/joy/api.h:876 |
-| `joy_tilemap_sweep_y` | 非不透明指针 / 输出参数：fp_t* | include/joy/api.h:878 |
+| `joy_math_collision2df_swept_obb` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:866 |
+| `joy_tilemap_sweep_x` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/api.h:876 |
+| `joy_tilemap_sweep_y` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/api.h:878 |
 | `joy_math_collision3df_get_ray_triangle` | 结构体按值返回 | include/joy/api.h:881 |
 | `joy_math_collision3df_get_ray_quad` | 结构体按值返回 | include/joy/api.h:883 |
 | `joy_math_collision3df_get_ray_sphere` | 结构体按值返回 | include/joy/api.h:885 |
 | `joy_math_collision3df_get_ray_box` | 结构体按值返回 | include/joy/api.h:887 |
 | `joy_math_collision3df_get_ray_obb` | 结构体按值返回 | include/joy/api.h:890 |
-| `joy_math_gjk2d_collide` | 未知类型需人工标注：vec2f_t | include/joy/api.h:900 |
-| `joy_math_gjk2d_init_circle` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:902 |
-| `joy_math_gjk2d_init_box` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:903 |
-| `joy_math_gjk2d_init_capsule` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:904 |
-| `joy_math_gjk2d_init_polygon` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:905 |
-| `joy_math_gjk2d_init_pie` | 非不透明指针 / 输出参数：gjk2d_collider_t* | include/joy/api.h:906 |
-| `joy_math_gjk3df_init_sphere` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:910 |
-| `joy_math_gjk3df_init_box` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:911 |
-| `joy_math_gjk3df_init_obb` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:912 |
-| `joy_math_gjk3df_init_capsule` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:913 |
-| `joy_math_gjk3df_init_cylinder` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:914 |
-| `joy_math_gjk3df_init_cone` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:915 |
-| `joy_math_gjk3df_init_mesh` | 非不透明指针 / 输出参数：gjk3df_collider_t* | include/joy/api.h:916 |
-| `joy_math_gjk3d_init_sphere` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:923 |
-| `joy_math_gjk3d_init_box` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:924 |
-| `joy_math_gjk3d_init_capsule` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:925 |
-| `joy_math_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:926 |
-| `joy_math_gjk3d_init_cone` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:927 |
-| `joy_math_gjk3d_init_mesh` | 非不透明指针 / 输出参数：gjk3d_collider_t* | include/joy/api.h:928 |
+| `joy_math_gjk2d_collide` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:900 |
+| `joy_math_gjk2d_init_circle` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | include/joy/api.h:902 |
+| `joy_math_gjk2d_init_box` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | include/joy/api.h:903 |
+| `joy_math_gjk2d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | include/joy/api.h:904 |
+| `joy_math_gjk2d_init_polygon` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | include/joy/api.h:905 |
+| `joy_math_gjk2d_init_pie` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | include/joy/api.h:906 |
+| `joy_math_gjk3df_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:910 |
+| `joy_math_gjk3df_init_box` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:911 |
+| `joy_math_gjk3df_init_obb` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:912 |
+| `joy_math_gjk3df_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:913 |
+| `joy_math_gjk3df_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:914 |
+| `joy_math_gjk3df_init_cone` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:915 |
+| `joy_math_gjk3df_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | include/joy/api.h:916 |
+| `joy_math_gjk3d_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:923 |
+| `joy_math_gjk3d_init_box` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:924 |
+| `joy_math_gjk3d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:925 |
+| `joy_math_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:926 |
+| `joy_math_gjk3d_init_cone` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:927 |
+| `joy_math_gjk3d_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/api.h:928 |
 | `joy_scene_animator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:959 |
 | `joy_scene_animator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/api.h:960 |
 | `joy_ui_label_create` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1034 |
@@ -230,20 +230,20 @@
 | `joy_ui_combobox_set_text` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1101 |
 | `joy_ui_combobox_add_itemx` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1105 |
 | `joy_ui_layout_grid_create` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1122 |
-| `joy_ui_layout_grid_destroy` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1124 |
-| `joy_ui_layout_grid_next_row` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1125 |
-| `joy_ui_layout_grid_set_row` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1126 |
-| `joy_ui_layout_grid_cell` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1128 |
-| `joy_ui_layout_grid_label` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1130 |
-| `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：jlayout_grid_t* | include/joy/api.h:1135 |
+| `joy_ui_layout_grid_destroy` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1124 |
+| `joy_ui_layout_grid_next_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1125 |
+| `joy_ui_layout_grid_set_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1126 |
+| `joy_ui_layout_grid_cell` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1128 |
+| `joy_ui_layout_grid_label` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1130 |
+| `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/api.h:1135 |
 | `joy_ui_datagrid_addrow` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1157 |
-| `joy_ui_checkbox_set_state` | 未知类型需人工标注：checkbox_state_t | include/joy/api.h:1172 |
+| `joy_ui_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | include/joy/api.h:1172 |
 | `joy_input_joystick_set_dir_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1196 |
 | `joy_input_joystick_set_textures_for_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/api.h:1198 |
 | `joy_input_joystick_get_direction` | 结构体按值返回 | include/joy/api.h:1208 |
 | `joy_ui_inputbox_set_callback` | 函数指针 / 回调 | include/joy/api.h:1215 |
 | `joy_ui_process_widget_event` | 非不透明指针 / 输出参数：void** | include/joy/api.h:1276 |
-| `joy_ui_set_theme` | 非不透明指针 / 输出参数：jui_theme_t* | include/joy/api.h:1306 |
+| `joy_ui_set_theme` | 非不透明指针 / 输出参数：joy_ui_theme_t* | include/joy/api.h:1306 |
 | `joy_ui_get_mouse` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1320 |
 | `joy_ui_text_measure` | 非不透明指针 / 输出参数：int* | include/joy/api.h:1340 |
 | `joy_ui_checkbox` | 非不透明指针 / 输出参数：bool* | include/joy/api.h:1357 |
@@ -253,7 +253,7 @@
 | `joy_scene_tilemap_get_tile_uv` | 数组参数 | include/joy/api.h:1370 |
 | `joy_scene_tilemap_object_layer_foreach` | 函数指针 / 回调 | include/joy/api.h:1377 |
 | `joy_scene_tilemap_object_layer_foreach_all` | 函数指针 / 回调 | include/joy/api.h:1378 |
-| `joy_scene_tilemap_render_create` | 未知类型需人工标注：jtilemap_path_remap_t | include/joy/api.h:1381 |
+| `joy_scene_tilemap_render_create` | 未知类型需人工标注：joy_tilemap_path_remap_t | include/joy/api.h:1381 |
 | `joy_net_kcpserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1411 |
 | `joy_net_kcpclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1417 |
 | `joy_net_wsnetserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/api.h:1439 |
@@ -265,8 +265,8 @@
 | `joy_scene_node_get_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1475 |
 | `joy_scene_node_get_world_position` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1477 |
 | `joy_scene_node_get_scale` | 非不透明指针 / 输出参数：float* | include/joy/api.h:1481 |
-| `joy_scene_find_nodes_by_tag` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1492 |
-| `joy_scene_find_nodes_by_tag_deep` | 非不透明指针 / 输出参数：scene_node_p* | include/joy/api.h:1493 |
+| `joy_scene_find_nodes_by_tag` | 非不透明指针 / 输出参数：joy_scene_node_p* | include/joy/api.h:1492 |
+| `joy_scene_find_nodes_by_tag_deep` | 非不透明指针 / 输出参数：joy_scene_node_p* | include/joy/api.h:1493 |
 | `joy_scene_node_set_update_callback` | 未知类型需人工标注：scene_node_update_fn | include/joy/api.h:1494 |
 | `joy_scene_node_set_render_callback` | 未知类型需人工标注：scene_node_render_fn | include/joy/api.h:1495 |
 | `joy_scene_node_set_destroy_callback` | 未知类型需人工标注：scene_node_destroy_fn | include/joy/api.h:1496 |
@@ -278,21 +278,21 @@
 | `joy_scene_set_event_callback` | 未知类型需人工标注：scene_event_fn | include/joy/api.h:1514 |
 | `joy_scene_set_fixed_update_callback` | 未知类型需人工标注：scene_fixed_update_fn | include/joy/api.h:1515 |
 | `joy_r2d_particle_cfg_default` | 结构体按值返回 | include/joy/api.h:1533 |
-| `joy_scene_ecs_kill` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1563 |
-| `joy_scene_ecs_set` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1565 |
-| `joy_scene_ecs_get` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1566 |
-| `joy_scene_ecs_remove` | 未知类型需人工标注：jecs_id_t | include/joy/api.h:1567 |
+| `joy_scene_ecs_kill` | 未知类型需人工标注：joy_ecs_id_t | include/joy/api.h:1563 |
+| `joy_scene_ecs_set` | 未知类型需人工标注：joy_ecs_id_t | include/joy/api.h:1565 |
+| `joy_scene_ecs_get` | 未知类型需人工标注：joy_ecs_id_t | include/joy/api.h:1566 |
+| `joy_scene_ecs_remove` | 未知类型需人工标注：joy_ecs_id_t | include/joy/api.h:1567 |
 | `joy_scene_ecs_query` | 可变参数 | include/joy/api.h:1568 |
 | `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | include/joy/api.h:1569 |
-| `joy_scene_ecs_register` | 未知类型需人工标注：jecs_system_t | include/joy/api.h:1570 |
-| `joy_math_box2d_create_world` | 未知类型需人工标注：vec2f_t | include/joy/api.h:1644 |
-| `joy_math_box2d_clear_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1645 |
-| `joy_math_box2d_destroy_world` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1646 |
-| `joy_math_box2d_step` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1647 |
-| `joy_math_box2d_create_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1648 |
-| `joy_math_box2d_destroy_body` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1649 |
-| `joy_math_box2d_create_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1650 |
-| `joy_math_box2d_destroy_joint` | 非不透明指针 / 输出参数：box2d_world_t* | include/joy/api.h:1651 |
+| `joy_scene_ecs_register` | 未知类型需人工标注：joy_ecs_system_t | include/joy/api.h:1570 |
+| `joy_math_box2d_create_world` | 未知类型需人工标注：joy_vec2f_t | include/joy/api.h:1644 |
+| `joy_math_box2d_clear_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1645 |
+| `joy_math_box2d_destroy_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1646 |
+| `joy_math_box2d_step` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1647 |
+| `joy_math_box2d_create_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1648 |
+| `joy_math_box2d_destroy_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1649 |
+| `joy_math_box2d_create_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1650 |
+| `joy_math_box2d_destroy_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | include/joy/api.h:1651 |
 | `joy_math_box2d_foreach_bodies` | 函数指针 / 回调 | include/joy/api.h:1652 |
 | `joy_math_box2d_foreach_joints` | 函数指针 / 回调 | include/joy/api.h:1653 |
 | `joy_math_box2d_foreach_arbiters` | 函数指针 / 回调 | include/joy/api.h:1654 |

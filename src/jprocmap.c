@@ -7,32 +7,32 @@ Date: 2026.8.29
 History:
         2026.8.29  从 project_proxy3d/shared/systems/procedural_map.h 迁移并参数化。
         所有坐标用"十分之一米"整数；生成结果仅由 seed 决定 → 完全确定性，可用作帧同步依据。
-        参数（网格尺寸/出生安全区/障碍密度与高度/簇大小范围）全部集中在 jpm_config_t 中。
+        参数（网格尺寸/出生安全区/障碍密度与高度/簇大小范围）全部集中在 joy_pm_config_t 中。
 *************************************************/
 
 #include "joy.h"
 
 /* ============ 内部辅助 ============ */
 
-static int jpm_rand_mod(random_num_p rng, int mod)
+static int jpm_rand_mod(joy_random_num_p rng, int mod)
 {
         if (mod <= 0) return 0;
         return (int)(joy_core_utils_random_next(rng) % (uint32_t)mod);
 }
 
 /* 格 → 世界坐标（十分之一米）：世界原点落在网格中心附近，与默认 config 完全一致 */
-static int jpm_grid_center10(const jpm_config_t* cfg, int g)
+static int jpm_grid_center10(const joy_pm_config_t* cfg, int g)
 {
         return (g - cfg->grid_n / 2) * 10 + 5;
 }
 
 /* 该格中心是否落入任意出生安全区 */
-static bool jpm_in_spawn_zone(const jpm_config_t* cfg, int gx, int gz)
+static bool jpm_in_spawn_zone(const joy_pm_config_t* cfg, int gx, int gz)
 {
         int x10 = jpm_grid_center10(cfg, gx);
         int z10 = jpm_grid_center10(cfg, gz);
         for (int s = 0; s < cfg->spawn_count; s++) {
-                const jpm_spawn_t* sp = &cfg->spawns[s];
+                const joy_pm_spawn_t* sp = &cfg->spawns[s];
                 int dx = x10 - sp->cx10, dz = z10 - sp->cz10;
                 if (dx * dx + dz * dz < sp->radius10 * sp->radius10) return true;
         }
@@ -40,8 +40,8 @@ static bool jpm_in_spawn_zone(const jpm_config_t* cfg, int gx, int gz)
 }
 
 /* 整数栅格化（含 pad 外扩）：把我方障碍实体重建为可通行栅格。内部使用 joy_scene_procmap_rasterize 的统一口径 */
-static void jpm_rasterize_impl(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
-                               const jpm_obstacle_t* obs, int n)
+static void jpm_rasterize_impl(const joy_pm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+                               const joy_pm_obstacle_t* obs, int n)
 {
         int grid_n = cfg->grid_n;
         for (int i = 0; i < grid_n * grid_n; i++) walkable[i] = true;
@@ -49,7 +49,7 @@ static void jpm_rasterize_impl(const jpm_config_t* cfg, bool walkable[JPM_MAX_CE
         const int offset10 = cfg->offset10;
         const int pad10    = cfg->pad10;
         for (int k = 0; k < n; k++) {
-                const jpm_obstacle_t* o = &obs[k];
+                const joy_pm_obstacle_t* o = &obs[k];
                 int gx0 = (o->x10 - o->hx10 - pad10 + offset10) / 10;
                 int gx1 = (o->x10 + o->hx10 + pad10 + offset10) / 10;
                 int gz0 = (o->z10 - o->hz10 - pad10 + offset10) / 10;
@@ -92,14 +92,14 @@ static int jpm_bfs_impl(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, 
 }
 
 /* 连接每一格与所属障碍（重叠格取最小编号，确定性）；开放格为 -1 */
-static void jpm_build_cell_mask(const jpm_config_t* cfg, const jpm_obstacle_t* obs, int n,
+static void jpm_build_cell_mask(const joy_pm_config_t* cfg, const joy_pm_obstacle_t* obs, int n,
                                 int cellobs[JPM_MAX_CELLS])
 {
         int grid_n = cfg->grid_n;
         const int offset10 = cfg->offset10, pad10 = cfg->pad10;
         for (int i = 0; i < grid_n * grid_n; i++) cellobs[i] = -1;
         for (int k = 0; k < n; k++) {
-                const jpm_obstacle_t* o = &obs[k];
+                const joy_pm_obstacle_t* o = &obs[k];
                 int x0 = (o->x10 - o->hx10 - pad10 + offset10) / 10;
                 int x1 = (o->x10 + o->hx10 + pad10 + offset10) / 10;
                 int z0 = (o->z10 - o->hz10 - pad10 + offset10) / 10;
@@ -119,7 +119,7 @@ static void jpm_build_cell_mask(const jpm_config_t* cfg, const jpm_obstacle_t* o
  * 必须整块移除障碍实体（非仅凿开格子图）——游戏运行时可通行网格是从障碍碰撞体
  * 重新栅格化的（不读本布局 walkable），只有真删障碍实体，游戏网格与修复结果才一致。
  * 完全确定性：只由布局决定，无随机；每轮至少移除 1 块，单调收敛、必然终止。 */
-static void jpm_repair_connectivity(const jpm_config_t* cfg, jpm_layout_t* out)
+static void jpm_repair_connectivity(const joy_pm_config_t* cfg, joy_pm_layout_t* out)
 {
         int grid_n = cfg->grid_n;
         const int dx4[4] = { 1, -1, 0, 0 };
@@ -213,7 +213,7 @@ static int  bsp_wall_count;
 
 /* 递归切分矩形 [x0..x1]×[y0..y1]。min_size 为房间最小边长，深度受 max_depth 限制。
  * 每刀优先切更长的一侧，并在两子区域间留一条隔墙。完全确定性（仅依赖 rng）。 */
-static void bsp_split_rec(random_num_p rng, int min_size, int depth, int max_depth,
+static void bsp_split_rec(joy_random_num_p rng, int min_size, int depth, int max_depth,
                           int x0, int y0, int x1, int y1)
 {
         int w = x1 - x0 + 1, h = y1 - y0 + 1;
@@ -256,7 +256,7 @@ static void bsp_split_rec(random_num_p rng, int min_size, int depth, int max_dep
 
 /* ============ 公开接口 ============ */
 
-void joy_scene_procmap_config_default(jpm_config_t* cfg)
+void joy_scene_procmap_config_default(joy_pm_config_t* cfg)
 {
         cfg->grid_n       = 20;
         cfg->offset10     = 100;   /* 10m */
@@ -273,7 +273,7 @@ void joy_scene_procmap_config_default(jpm_config_t* cfg)
         joy_scene_procmap_config_add_spawn(cfg, 100, 100, 22);
 }
 
-void joy_scene_procmap_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10)
+void joy_scene_procmap_config_add_spawn(joy_pm_config_p cfg, int cx10, int cz10, int radius10)
 {
         if (cfg->spawn_count >= JPM_MAX_SPAWN) return;
         cfg->spawns[cfg->spawn_count].cx10 = cx10;
@@ -287,8 +287,8 @@ uint32_t joy_scene_procmap_wave_seed(uint32_t base_seed, int wave)
         return base_seed + (uint32_t)wave * 1000003u;
 }
 
-void joy_scene_procmap_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
-                   const jpm_obstacle_t* obs, int n)
+void joy_scene_procmap_rasterize(const joy_pm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+                   const joy_pm_obstacle_t* obs, int n)
 {
         jpm_rasterize_impl(cfg, walkable, obs, n);
 }
@@ -298,11 +298,11 @@ int joy_scene_procmap_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx
         return jpm_bfs_impl(walkable, grid_n, sx, sz);
 }
 
-void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out)
+void joy_scene_procmap_generate_seed(const joy_pm_config_t* cfg, uint32_t seed, joy_pm_layout_t* out)
 {
         int grid_n = cfg->grid_n;
         const int min_size = 5;   /* 房间最小边长（格） */
-        random_num_p rng = joy_core_utils_random_create(seed);
+        joy_random_num_p rng = joy_core_utils_random_create(seed);
         out->seed = (int)seed;
         out->count = 0;
 
@@ -335,7 +335,7 @@ void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm
                                         int r1 = r - 1;
                                         int zmn = (r0 - grid_n / 2) * 10;
                                         int zmx = (r1 - grid_n / 2 + 1) * 10;
-                                        jpm_obstacle_t* o = &out->obs[n++];
+                                        joy_pm_obstacle_t* o = &out->obs[n++];
                                         o->gx0 = fx; o->gz0 = r0; o->gw = 1; o->gh = r1 - r0 + 1;
                                         o->x10  = jpm_grid_center10(cfg, fx);
                                         o->z10  = (zmn + zmx) / 2;
@@ -357,7 +357,7 @@ void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm
                                         int c1 = c - 1;
                                         int xmn = (c0 - grid_n / 2) * 10;
                                         int xmx = (c1 - grid_n / 2 + 1) * 10;
-                                        jpm_obstacle_t* o = &out->obs[n++];
+                                        joy_pm_obstacle_t* o = &out->obs[n++];
                                         o->gx0 = c0; o->gz0 = fr; o->gw = c1 - c0 + 1; o->gh = 1;
                                         o->x10  = (xmn + xmx) / 2;
                                         o->z10  = jpm_grid_center10(cfg, fr);
@@ -377,14 +377,14 @@ void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm
         joy_core_utils_random_destroy(rng);
 }
 
-void joy_scene_procmap_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out)
+void joy_scene_procmap_generate(const joy_pm_config_t* cfg, joy_random_num_p rng, joy_pm_layout_t* out)
 {
         uint32_t seed = joy_core_utils_random_next(rng);
         joy_scene_procmap_generate_seed(cfg, seed, out);
 }
 
-int joy_scene_procmap_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
-                          const jpm_layout_t* L, int count, int min_dist10,
+int joy_scene_procmap_sample_open_tiles(joy_random_num_p rng, const joy_pm_config_t* cfg,
+                          const joy_pm_layout_t* L, int count, int min_dist10,
                           int* out_tiles)
 {
         int grid_n = cfg->grid_n;

@@ -12,7 +12,7 @@ History:
 #include "joy.h"
 
 
-KHASH_INIT(kmod, const char*, module_p, 1, kh_str_hash_func, kh_str_hash_equal)
+KHASH_INIT(kmod, const char*, joy_module_p, 1, kh_str_hash_func, kh_str_hash_equal)
 
 
 struct modules {
@@ -64,7 +64,7 @@ static void* _try_open(const char* path, const char* name)
 	return dl;
 }
 
-static int _open_sym(module_p mod)
+static int _open_sym(joy_module_p mod)
 {
 	size_t name_size, total_size;
 	char* tmp;
@@ -76,32 +76,32 @@ static int _open_sym(module_p mod)
 	}
 	SDL_memcpy(tmp, mod->name, name_size);
 	SDL_strlcpy(tmp + name_size, "_create", total_size);
-	mod->create = (module_create_t)SDL_LoadFunction(mod->handle, tmp);
+	mod->create = (joy_module_create_t)SDL_LoadFunction(mod->handle, tmp);
 	SDL_strlcpy(tmp + name_size, "_init", total_size);
-	mod->init = (module_init_t)SDL_LoadFunction(mod->handle, tmp);
+	mod->init = (joy_module_init_t)SDL_LoadFunction(mod->handle, tmp);
 	SDL_strlcpy(tmp + name_size, "_event", total_size);
-	mod->event_handler = (module_event_t)SDL_LoadFunction(mod->handle, tmp);
+	mod->event_handler = (joy_module_event_t)SDL_LoadFunction(mod->handle, tmp);
 	SDL_strlcpy(tmp + name_size, "_update", total_size);
-	mod->update = (module_update_t)SDL_LoadFunction(mod->handle, tmp);
+	mod->update = (joy_module_update_t)SDL_LoadFunction(mod->handle, tmp);
 	SDL_strlcpy(tmp + name_size, "_release", total_size);
-	mod->release = (module_release_t)SDL_LoadFunction(mod->handle, tmp);
+	mod->release = (joy_module_release_t)SDL_LoadFunction(mod->handle, tmp);
 	SDL_free(tmp);
 	return mod->init != NULL;
 }
 
-modules_p joy_script_module_create(const char* path)
+joy_modules_p joy_script_module_create(const char* path)
 {
-	modules_p mods;
-	mods = SDL_malloc(sizeof(modules_t));
+	joy_modules_p mods;
+	mods = SDL_malloc(sizeof(joy_modules_t));
 	SDL_strlcpy(mods->path, path, 1024);
 	mods->mods = kh_init(kmod);
 	return mods;
 }
 
-void joy_script_module_destroy(modules_p modules)
+void joy_script_module_destroy(joy_modules_p modules)
 {
 	const char* name;
-	module_p mod;
+	joy_module_p mod;
 	khint_t p;
 	for (p = kh_begin(modules->mods); p != kh_end(modules->mods); p++) {
 		if (kh_exist(modules->mods, p)) {
@@ -117,7 +117,7 @@ void joy_script_module_destroy(modules_p modules)
 	SDL_free(modules);
 }
 
-bool joy_script_module_query(modules_p modules, const char* name, module_p *mod)
+bool joy_script_module_query(joy_modules_p modules, const char* name, joy_module_p *mod)
 {
 	khint_t k;
 	k = kh_get(kmod, modules->mods, name);
@@ -130,20 +130,20 @@ bool joy_script_module_query(modules_p modules, const char* name, module_p *mod)
 	}
 }
 
-void joy_script_module_register(modules_p modules, const char* name,
-	module_create_t create,
-	module_init_t init,
-	module_event_t event_handler,
-	module_update_t update,
-	module_release_t release)
+void joy_script_module_register(joy_modules_p modules, const char* name,
+	joy_module_create_t create,
+	joy_module_init_t init,
+	joy_module_event_t event_handler,
+	joy_module_update_t update,
+	joy_module_release_t release)
 {
-	module_p mod;
+	joy_module_p mod;
 	int ret;
 	khint_t k;
 
 	k = kh_get(kmod, modules->mods, name);
 	if (k == kh_end(modules->mods)) {
-		mod = (module_p)SDL_malloc(sizeof(module_t));
+		mod = (joy_module_p)SDL_malloc(sizeof(joy_module_t));
 		SDL_strlcpy(mod->name, name, 512);
 		mod->handle = NULL;
 		mod->create = create;
@@ -156,11 +156,11 @@ void joy_script_module_register(modules_p modules, const char* name,
 	}
 }
 
-void joy_script_module_require(modules_p modules, const char* name)
+void joy_script_module_require(joy_modules_p modules, const char* name)
 {
 	int ret;
 	void *handle;
-	module_p mod;
+	joy_module_p mod;
 	khint_t k;
 
 	k = kh_get(kmod, modules->mods, name);
@@ -169,7 +169,7 @@ void joy_script_module_require(modules_p modules, const char* name)
 	}
 	handle = _try_open(modules->path, name);
 	if (handle) {
-		mod = (module_p)SDL_malloc(sizeof(module_t));
+		mod = (joy_module_p)SDL_malloc(sizeof(joy_module_t));
 		SDL_strlcpy(mod->name, name, 512);
 		if (_open_sym(mod)) {
 			k = kh_put(kmod, modules->mods, mod->name, &ret);
@@ -186,7 +186,7 @@ void joy_script_module_require(modules_p modules, const char* name)
 	}
 }
 
-bool joy_script_modules_retire(modules_p modules, const char* name, module_p *mod)
+bool joy_script_modules_retire(joy_modules_p modules, const char* name, joy_module_p *mod)
 {
 	khint_t k;
 	k = kh_get(kmod, modules->mods, name);
@@ -201,7 +201,7 @@ bool joy_script_modules_retire(modules_p modules, const char* name, module_p *mo
 	}
 }
 
-void* joy_script_module_instance_create(module_p mod)
+void* joy_script_module_instance_create(joy_module_p mod)
 {
 	void* inst;
 	if (mod->create) {
@@ -213,28 +213,28 @@ void* joy_script_module_instance_create(module_p mod)
 	return inst;
 }
 
-void joy_script_module_instance_init(module_p mod, void* inst, void* ctx, const char* param)
+void joy_script_module_instance_init(joy_module_p mod, void* inst, void* ctx, const char* param)
 {
 	if (mod->init) {
 		mod->init(inst, ctx, param);
 	}
 }
 
-void joy_script_module_instance_event(module_p mod, void* inst, void *event)
+void joy_script_module_instance_event(joy_module_p mod, void* inst, void *event)
 {
 	if (mod->event_handler) {
 		mod->event_handler(inst, event);
 	}
 }
 
-void joy_script_module_instance_update(module_p mod, void* inst, float delta_time)
+void joy_script_module_instance_update(joy_module_p mod, void* inst, float delta_time)
 {
 	if (mod->update) {
 		mod->update(inst, delta_time);
 	}
 }
 
-void joy_script_module_instance_release(module_p mod, void* inst)
+void joy_script_module_instance_release(joy_module_p mod, void* inst)
 {
 	if (mod->release) {
 		mod->release(inst);

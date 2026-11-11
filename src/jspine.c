@@ -5,8 +5,8 @@
  * 移植到 SDL3（SDL_Vertex.color 在 SDL3 是 SDL_FColor）并接入 joy 的 jr2d。
  *
  * 面向 ECS 的两层结构：
- *   jspine_asset_t    共享资源（atlas + skeletonData + animationStateData），多实体复用
- *   jspine_instance_t 组件：每实体一份，纯数据，可直接 emplace 进 ECS（entt 等）
+ *   joy_spine_asset_t    共享资源（atlas + skeletonData + animationStateData），多实体复用
+ *   joy_spine_instance_t 组件：每实体一份，纯数据，可直接 emplace 进 ECS（entt 等）
  *
  * 未启用 JOY_USE_SPINE 时本文件为空编译单元，不影响任何项目。
  *****************************************************************************/
@@ -181,9 +181,9 @@ static int collect_attachment(spSlot *slot, spAttachment *attachment,
 
 /* ==================== 共享资源 ==================== */
 
-jspine_asset_p joy_r2d_spine_asset_load(jr2d_p r2d, const char *atlas_path, const char *skeleton_path,
+joy_spine_asset_p joy_r2d_spine_asset_load(joy_r2d_p r2d, const char *atlas_path, const char *skeleton_path,
                                  float scale) {
-        jspine_asset_p asset;
+        joy_spine_asset_p asset;
         spSkeletonJson *json = NULL;
         spSkeletonBinary *binary = NULL;
 
@@ -192,7 +192,7 @@ jspine_asset_p joy_r2d_spine_asset_load(jr2d_p r2d, const char *atlas_path, cons
         /* 全局：让 spine 使用 y 向下的坐标系，与屏幕坐标一致 */
         spBone_setYDown(-1);
 
-        asset = (jspine_asset_p) calloc(1, sizeof(jspine_asset_t));
+        asset = (joy_spine_asset_p) calloc(1, sizeof(joy_spine_asset_t));
         if (!asset) return NULL;
         asset->scale = scale > 0 ? scale : 1.0f;
 
@@ -234,7 +234,7 @@ jspine_asset_p joy_r2d_spine_asset_load(jr2d_p r2d, const char *atlas_path, cons
         return asset;
 }
 
-void joy_r2d_spine_asset_free(jspine_asset_p asset) {
+void joy_r2d_spine_asset_free(joy_spine_asset_p asset) {
         if (!asset) return;
         if (asset->state_data) spAnimationStateData_dispose(asset->state_data);
         if (asset->data) spSkeletonData_dispose(asset->data);
@@ -242,27 +242,27 @@ void joy_r2d_spine_asset_free(jspine_asset_p asset) {
         free(asset);
 }
 
-spSkeletonData *jspine_asset_data(jspine_asset_p asset) {
+spSkeletonData *jspine_asset_data(joy_spine_asset_p asset) {
         return asset ? asset->data : NULL;
 }
 
-int joy_r2d_spine_asset_animation_count(jspine_asset_p asset) {
+int joy_r2d_spine_asset_animation_count(joy_spine_asset_p asset) {
         return (asset && asset->data) ? asset->data->animationsCount : 0;
 }
 
-const char *jspine_asset_animation_name(jspine_asset_p asset, int index) {
+const char *jspine_asset_animation_name(joy_spine_asset_p asset, int index) {
         if (!asset || !asset->data || index < 0 || index >= asset->data->animationsCount) return NULL;
         return asset->data->animations[index]->name;
 }
 
-float joy_r2d_spine_asset_animation_duration(jspine_asset_p asset, int index) {
+float joy_r2d_spine_asset_animation_duration(joy_spine_asset_p asset, int index) {
         if (!asset || !asset->data || index < 0 || index >= asset->data->animationsCount) return 0;
         return asset->data->animations[index]->duration;
 }
 
 /* ==================== 组件（实例） ==================== */
 
-bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset) {
+bool joy_r2d_spine_instance_init(joy_spine_instance_p inst, joy_spine_asset_p asset) {
         joy_spine_draw_cache_t *cache;
 
         if (!inst || !asset) return false;
@@ -299,7 +299,7 @@ bool joy_r2d_spine_instance_init(jspine_instance_p inst, jspine_asset_p asset) {
         return true;
 }
 
-void joy_r2d_spine_instance_free(jspine_instance_p inst) {
+void joy_r2d_spine_instance_free(joy_spine_instance_p inst) {
         joy_spine_draw_cache_t *cache;
         if (!inst) return;
         cache = (joy_spine_draw_cache_t *) inst->draw_cache;
@@ -315,13 +315,13 @@ void joy_r2d_spine_instance_free(jspine_instance_p inst) {
         memset(inst, 0, sizeof(*inst)); /* asset 不属于实例，不释放 */
 }
 
-void joy_r2d_spine_instance_reset(jspine_instance_p inst) {
+void joy_r2d_spine_instance_reset(joy_spine_instance_p inst) {
         if (!inst || !inst->skeleton) return;
         spSkeleton_setToSetupPose(inst->skeleton);
         spSkeleton_updateWorldTransform(inst->skeleton);
 }
 
-bool joy_r2d_spine_instance_set_animation(jspine_instance_p inst, int track, const char *name, bool loop) {
+bool joy_r2d_spine_instance_set_animation(joy_spine_instance_p inst, int track, const char *name, bool loop) {
         spAnimation *animation;
         if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
         animation = spSkeletonData_findAnimation(inst->asset->data, name);
@@ -332,7 +332,7 @@ bool joy_r2d_spine_instance_set_animation(jspine_instance_p inst, int track, con
         return true;
 }
 
-bool joy_r2d_spine_instance_add_animation(jspine_instance_p inst, int track, const char *name, bool loop,
+bool joy_r2d_spine_instance_add_animation(joy_spine_instance_p inst, int track, const char *name, bool loop,
                                    float delay) {
         spAnimation *animation;
         if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
@@ -343,7 +343,7 @@ bool joy_r2d_spine_instance_add_animation(jspine_instance_p inst, int track, con
 }
 
 /* 组件字段 -> spine 骨架（不推进动画、不算世界变换） */
-static void jspine_sync_fields(jspine_instance_p inst) {
+static void jspine_sync_fields(joy_spine_instance_p inst) {
         spSkeleton *skeleton = inst->skeleton;
         skeleton->x = inst->x;
         skeleton->y = inst->y;
@@ -357,13 +357,13 @@ static void jspine_sync_fields(jspine_instance_p inst) {
 }
 
 /* 只同步变换（不推进动画）：暂停、或改完字段想立刻生效时调用 */
-void joy_r2d_spine_instance_sync(jspine_instance_p inst) {
+void joy_r2d_spine_instance_sync(joy_spine_instance_p inst) {
         if (!inst || !inst->skeleton) return;
         jspine_sync_fields(inst);
         spSkeleton_updateWorldTransform(inst->skeleton);
 }
 
-void joy_r2d_spine_instance_update(jspine_instance_p inst, float dt) {
+void joy_r2d_spine_instance_update(joy_spine_instance_p inst, float dt) {
         spSkeleton *skeleton;
         if (!inst || !inst->skeleton) return;
         skeleton = inst->skeleton;
@@ -377,7 +377,7 @@ void joy_r2d_spine_instance_update(jspine_instance_p inst, float dt) {
         spSkeleton_updateWorldTransform(skeleton);
 }
 
-void joy_r2d_spine_instance_draw(jr2d_p r2d, jspine_instance_p inst) {
+void joy_r2d_spine_instance_draw(joy_r2d_p r2d, joy_spine_instance_p inst) {
         SDL_Renderer *renderer;
         spSkeleton *skeleton;
         spSkeletonClipping *clipper;
@@ -481,35 +481,35 @@ void joy_r2d_spine_instance_draw(jr2d_p r2d, jspine_instance_p inst) {
 
 /* ==================== 变换/状态便捷接口 ==================== */
 
-void joy_r2d_spine_instance_set_position(jspine_instance_p inst, float x, float y) {
+void joy_r2d_spine_instance_set_position(joy_spine_instance_p inst, float x, float y) {
         if (inst) { inst->x = x; inst->y = y; }
 }
 
-void joy_r2d_spine_instance_set_scale(jspine_instance_p inst, float sx, float sy) {
+void joy_r2d_spine_instance_set_scale(joy_spine_instance_p inst, float sx, float sy) {
         if (inst) { inst->scale_x = sx; inst->scale_y = sy; }
 }
 
-void joy_r2d_spine_instance_set_rotation(jspine_instance_p inst, float degrees) {
+void joy_r2d_spine_instance_set_rotation(joy_spine_instance_p inst, float degrees) {
         if (inst) inst->rotation = degrees;
 }
 
-void joy_r2d_spine_instance_set_flip_x(jspine_instance_p inst, bool flip) {
+void joy_r2d_spine_instance_set_flip_x(joy_spine_instance_p inst, bool flip) {
         if (inst) inst->flip_x = flip;
 }
 
-void joy_r2d_spine_instance_set_alpha(jspine_instance_p inst, float alpha) {
+void joy_r2d_spine_instance_set_alpha(joy_spine_instance_p inst, float alpha) {
         if (inst) inst->alpha = alpha;
 }
 
-void joy_r2d_spine_instance_set_tint(jspine_instance_p inst, jcolor_t tint) {
+void joy_r2d_spine_instance_set_tint(joy_spine_instance_p inst, joy_color_t tint) {
         if (inst) inst->tint = tint;
 }
 
-const char *jspine_instance_animation(jspine_instance_p inst) {
+const char *jspine_instance_animation(joy_spine_instance_p inst) {
         return (inst && inst->animation[0]) ? inst->animation : NULL;
 }
 
-bool joy_r2d_spine_instance_bounds(jspine_instance_p inst, float *out_x, float *out_y, float *out_w,
+bool joy_r2d_spine_instance_bounds(joy_spine_instance_p inst, float *out_x, float *out_y, float *out_w,
                             float *out_h) {
         spSkeleton *skeleton;
         joy_spine_draw_cache_t *cache;

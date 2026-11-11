@@ -154,34 +154,34 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct delay {
                 uint64_t time;
                 short timeout;
-        } delay_t;
+        } joy_delay_t;
 
-        typedef struct random_num random_num_t, * random_num_p;
+        typedef struct random_num joy_random_num_t, * joy_random_num_p;
 
         // Mersenne Twister 内部状态大小（624 个 uint32 + 1 个 index）
         #define JOY_MT_N 624
 
         // 可重置随机数（Mersenne Twister），用于帧同步保证 server/client 随机序列一致
-        JOY_API random_num_p joy_core_utils_random_create(uint32_t seed);
-        JOY_API void         joy_core_utils_random_destroy(random_num_p rnum);
-        JOY_API uint32_t     joy_core_utils_random_next(random_num_p rnum);
+        JOY_API joy_random_num_p joy_core_utils_random_create(uint32_t seed);
+        JOY_API void         joy_core_utils_random_destroy(joy_random_num_p rnum);
+        JOY_API uint32_t     joy_core_utils_random_next(joy_random_num_p rnum);
         // 导出/恢复随机数内部状态（帧同步：客户端 join 时需用服务端当前状态恢复，
         // 仅同步 seed 会让已推进的 random 与初始状态不同步，导致 AI 随机序列分叉）
-        JOY_API void         joy_core_utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out);
-        JOY_API void         joy_core_utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in);
+        JOY_API void         joy_core_utils_random_get_state(joy_random_num_p rnum, uint32_t* mt_out, int* index_out);
+        JOY_API void         joy_core_utils_random_set_state(joy_random_num_p rnum, const uint32_t* mt_in, int index_in);
 
-        typedef struct lcg_num lcg_num_t, * lcg_num_p;
+        typedef struct lcg_num joy_lcg_num_t, * joy_lcg_num_p;
 
         // 单状态线性同余随机数（LCG，64 位状态）。状态仅 1 个 uint64，
         // 帧同步时"每帧快照"只需同步 8 字节，比 Mersenne Twister（mt[624]+index≈2.5KB）
         // 小得多。用法与 utils_random_* 一致。
-        JOY_API lcg_num_p   joy_core_lcg_random_create(uint64_t seed);
-        JOY_API void        joy_core_lcg_random_destroy(lcg_num_p lcg);
-        JOY_API uint32_t    joy_core_lcg_random_next(lcg_num_p lcg);
+        JOY_API joy_lcg_num_p   joy_core_lcg_random_create(uint64_t seed);
+        JOY_API void        joy_core_lcg_random_destroy(joy_lcg_num_p lcg);
+        JOY_API uint32_t    joy_core_lcg_random_next(joy_lcg_num_p lcg);
         // 导出/恢复 LCG 当前状态（单值）。帧同步：客户端 join 时用服务端当前状态恢复，
         // 保证两端从同一推进位置继续，随机序列一致。
-        JOY_API void        joy_core_lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out);
-        JOY_API void        joy_core_lcg_random_set_state(lcg_num_p lcg, uint64_t state);
+        JOY_API void        joy_core_lcg_random_get_state(joy_lcg_num_p lcg, uint64_t* state_out);
+        JOY_API void        joy_core_lcg_random_set_state(joy_lcg_num_p lcg, uint64_t state);
 
         // ============ 泛洪聚团程序化地图生成（jprocmap） ============
         // 程序化生成"带连片掩体的开放竞技场"地图：若干锚点（开放且远离出生安全区的格）
@@ -191,7 +191,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         //
         // 参数全部可配置（网格尺寸、出生点/安全区、障碍密度/高度、簇大小范围）。
 
-        // 网格/容量上限（固定数组，避免动态分配；实际尺寸由 jpm_config_t.grid_n 决定）
+        // 网格/容量上限（固定数组，避免动态分配；实际尺寸由 joy_pm_config_t.grid_n 决定）
         #define JPM_MAX_GRID_N 128         // 网格边长上限（格，对齐 128×128 手绘大图容量）
         #define JPM_MAX_CELLS  (JPM_MAX_GRID_N*JPM_MAX_GRID_N)
         #define JPM_MAX_OBS    160         // 障碍物数量上限
@@ -204,13 +204,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 int sy10;        // 高度（十分之一米）
                 int gx0, gz0;    // 占用格子（左/下角格）
                 int gw, gh;      // 占用格子数（宽/深，恒 1）
-        } jpm_obstacle_t, * jpm_obstacle_p;
+        } joy_pm_obstacle_t, * joy_pm_obstacle_p;
 
         // 出生安全区：以世界坐标（十分之一米）为圆心、radius10 为半径的保护区
         typedef struct jpm_spawn {
                 int cx10, cz10;  // 安全区圆心（世界坐标，十分之一米）
                 int radius10;    // 安全区半径（十分之一米）
-        } jpm_spawn_t;
+        } joy_pm_spawn_t;
 
         // 生成配置（可配置参数集中于此）。BSP 模式复用 density 作为房间分块粒度的参考
         typedef struct jpm_config {
@@ -224,42 +224,42 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 int cluster_min;   // 每簇最小格数，默认 5
                 int cluster_max;   // 每簇最大格数，默认 10
                 int spawn_count;               // 出生安全区数量
-                jpm_spawn_t spawns[JPM_MAX_SPAWN];  // 出生安全区列表（spawns[0] = 玩家区）
-        } jpm_config_t, * jpm_config_p;
+                joy_pm_spawn_t spawns[JPM_MAX_SPAWN];  // 出生安全区列表（spawns[0] = 玩家区）
+        } joy_pm_config_t, * joy_pm_config_p;
 
         // 生成结果布局
         typedef struct jpm_layout {
-                jpm_obstacle_t obs[JPM_MAX_OBS];
+                joy_pm_obstacle_t obs[JPM_MAX_OBS];
                 int  count;                     // 实际障碍数
                 int  seed;                      // 实际使用的生成 seed（调试用）
                 bool walkable[JPM_MAX_CELLS];   // 生成后的可通行栅格（含 pad 外扩）
-        } jpm_layout_t, * jpm_layout_p;
+        } joy_pm_layout_t, * joy_pm_layout_p;
 
         // 默认配置：填充一组与游戏一致的默认参数（20×20、玩家(0,0)+敌人(10m,10m) 安全区等）
-        JOY_API void joy_scene_procmap_config_default(jpm_config_t* cfg);
+        JOY_API void joy_scene_procmap_config_default(joy_pm_config_t* cfg);
         // 追加一个出生安全区（世界坐标圆心 + 半径，十分之一米）
-        JOY_API void joy_scene_procmap_config_add_spawn(jpm_config_p cfg, int cx10, int cz10, int radius10);
+        JOY_API void joy_scene_procmap_config_add_spawn(joy_pm_config_p cfg, int cx10, int cz10, int radius10);
         // 波次换图 seed：由初始 seed 与波次号确定性派生（纯函数，不依赖随机流）
         JOY_API uint32_t joy_scene_procmap_wave_seed(uint32_t base_seed, int wave);
         // 由给定 seed 确定性生成布局
-        JOY_API void joy_scene_procmap_generate_seed(const jpm_config_t* cfg, uint32_t seed, jpm_layout_t* out);
+        JOY_API void joy_scene_procmap_generate_seed(const joy_pm_config_t* cfg, uint32_t seed, joy_pm_layout_t* out);
         // 从上层随机流抽取 1 个 seed 生成布局（初始生成用）
-        JOY_API void joy_scene_procmap_generate(const jpm_config_t* cfg, random_num_p rng, jpm_layout_t* out);
+        JOY_API void joy_scene_procmap_generate(const joy_pm_config_t* cfg, joy_random_num_p rng, joy_pm_layout_t* out);
         // 整数栅格化：按配置从障碍实体重建可通行栅格（含 pad 外扩）
-        JOY_API void joy_scene_procmap_rasterize(const jpm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
-                                   const jpm_obstacle_t* obs, int n);
+        JOY_API void joy_scene_procmap_rasterize(const joy_pm_config_t* cfg, bool walkable[JPM_MAX_CELLS],
+                                   const joy_pm_obstacle_t* obs, int n);
         // 4 方向 BFS：返回从起点可达的格子总数（用于连通性校验）
         JOY_API int joy_scene_procmap_bfs(const bool walkable[JPM_MAX_CELLS], int grid_n, int sx, int sz);
         // 从布局开放格中随机采样 count 个格子（洗牌取前 count），返回实际采样数；
         // min_dist10 限制距玩家区（spawns[0] 圆心）的最小距离（十分之一米）。
-        JOY_API int joy_scene_procmap_sample_open_tiles(random_num_p rng, const jpm_config_t* cfg,
-                                          const jpm_layout_t* L, int count, int min_dist10,
+        JOY_API int joy_scene_procmap_sample_open_tiles(joy_random_num_p rng, const joy_pm_config_t* cfg,
+                                          const joy_pm_layout_t* L, int count, int min_dist10,
                                           int* out_tiles);
 
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
-        typedef struct jtimer jtimer_t, *jtimer_p;
+        typedef struct jtimer joy_timer_t, *joy_timer_p;
 
-        typedef union jwindow jwindow_t, * jwindow_p;
+        typedef union jwindow joy_window_t, * joy_window_p;
 
         typedef void (*jevent_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
         typedef void (*jevent_keyreleased_fn)(const char* key, int scancode, void* arg);
@@ -279,10 +279,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 jevent_textinput_fn on_textinput;
                 jevent_resize_fn on_resize;
                 jevent_process_event_fn on_process_event;
-        } jevent_callbacks_t;
+        } joy_event_callbacks_t;
 
-        typedef struct env env_t, * env_p;
-        typedef struct simple_fps_counter simple_fps_counter_t, * simple_fps_counter_p;
+        typedef struct env joy_env_t, * joy_env_p;
+        typedef struct simple_fps_counter joy_simple_fps_counter_t, * joy_simple_fps_counter_p;
         typedef struct game_timer {
                 int64_t last_time;          // 上一帧结束时的纳秒时间戳
                 int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
@@ -290,7 +290,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 double time_scale;         // 时间缩放因子
                 int target_fps;            // 目标 FPS（0 表示不限制）
                 double target_frame_time;  // 目标每帧时间（秒）
-        } game_timer_t, * game_timer_p;
+        } joy_game_timer_t, * joy_game_timer_p;
 
         typedef struct jrect
         {
@@ -298,7 +298,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 float y;
                 float w;
                 float h;
-        } jrect_t;
+        } joy_rect_t;
 
         typedef struct jcolor
         {
@@ -306,19 +306,19 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 uint8_t g;
                 uint8_t b;
                 uint8_t a;
-        } jcolor_t;
+        } joy_color_t;
 
 
-        typedef struct iocp_server iocp_server_t, * iocp_server_p;
+        typedef struct iocp_server joy_iocp_server_t, * joy_iocp_server_p;
 
-        typedef struct jfont font_t, * font_p;
-        typedef struct jr2d jr2d_t, * jr2d_p;
-        typedef struct image image_t, * image_p;
-        typedef struct jtext jtext_t, * jtext_p;
-        typedef struct animation animation_t, * animation_p;
-        typedef struct jlayout_grid jlayout_grid_t;   // 栅格布局（见下方 jlayout_*）
-        typedef struct jr3d   jr3d_t, * jr3d_p;          /* 3D 渲染上下文 */
-        typedef struct render_mesh render_mesh_t, * render_mesh_p;  /* 网格 */
+        typedef struct jfont joy_font_t, * joy_font_p;
+        typedef struct jr2d joy_r2d_t, * joy_r2d_p;
+        typedef struct image joy_image_t, * joy_image_p;
+        typedef struct jtext joy_text_t, * joy_text_p;
+        typedef struct animation joy_animation_t, * joy_animation_p;
+        typedef struct jlayout_grid joy_layout_grid_t;   // 栅格布局（见下方 jlayout_*）
+        typedef struct jr3d   joy_r3d_t, * joy_r3d_p;          /* 3D 渲染上下文 */
+        typedef struct render_mesh joy_render_mesh_t, * joy_render_mesh_p;  /* 网格 */
 
 #ifdef __cplusplus
 }

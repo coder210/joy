@@ -1174,8 +1174,11 @@ function pascal(s) {
 /* 脚本层方法名：三个后端统一用 PascalCase，参数顺序与 joy.h 一致。 */
 function methodName(name) { return ALIASES.get(name) || pascal(name); }
 
-/* 句柄对象的强类型类名：lcg_num_p → LcgNum。 */
-function handleClass(ret) { return pascal(ret.replace(/_p$/, '')); }
+/* 句柄对象的强类型类名。C 类型名统一为 joy_<概念>_p 后，用冻结表把脚本层
+ * 类名钉在改名前的基线上（TYPE_RENAME_TASK.md §4），否则 Jr2d 会变成 JoyR2d，
+ * 波及 vtable 的 57 个强句柄 typedef、C# 的 57 个句柄类与四份示例。 */
+const HANDLE_ALIASES = require('../idl/handle_aliases.json');
+function handleClass(ret) { return HANDLE_ALIASES[ret] || pascal(ret.replace(/_p$/, '')); }
 
 module.exports = {
   isOpaque, pascal, methodName, handleClass,

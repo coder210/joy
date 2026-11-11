@@ -1,12 +1,12 @@
 #include "joy.h"
 
-ray2d_collisionf_t 
-joy_math_collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
+joy_ray2d_collisionf_t
+joy_math_collision2df_get_ray_circle(joy_ray2df_t ray, joy_circlef_t circle)
 {
-        vec2f_t seg;
-        fp_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
-        ray2d_collisionf_t result = {0};
-        vec2f_t distance;
+        joy_vec2f_t seg;
+        joy_fp_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
+        joy_ray2d_collisionf_t result = {0};
+        joy_vec2f_t distance;
 
         r_sq = fp_pow2(circle.radius);
         seg = vec2f_sub(circle.center, ray.origin);
@@ -67,10 +67,10 @@ joy_math_collision2df_get_ray_circle(ray2df_t ray, circlef_t circle)
 }
 
 // 辅助函数：计算矩形碰撞点的法线（轴对齐边界专用）
-static vec2f_t collision2df_calculate_rect_normal(vec2f_t point, vec2f_t min, vec2f_t max)
+static joy_vec2f_t collision2df_calculate_rect_normal(joy_vec2f_t point, joy_vec2f_t min, joy_vec2f_t max)
 {
-        vec2f_t normal = { fp_zero(), fp_zero() };
-        const fp_t epsilon = fp_from_float(0.001f); // 极小值，避免浮点误差
+        joy_vec2f_t normal = { fp_zero(), fp_zero() };
+        const joy_fp_t epsilon = fp_from_float(0.001f); // 极小值，避免浮点误差
 
         // 左边界
         if (fp_abs(fp_sub(point.x, min.x)) < epsilon) {
@@ -93,15 +93,15 @@ static vec2f_t collision2df_calculate_rect_normal(vec2f_t point, vec2f_t min, ve
 }
 
 // 放在函数上方 / 头文件中
-#define SWAP(a, b)  do { fp_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
+#define SWAP(a, b)  do { joy_fp_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
 
 // 射线-矩形碰撞检测（修复版）
-ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(ray2df_t ray, rectanglef_t rect)
+joy_ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(joy_ray2df_t ray, joy_rectanglef_t rect)
 {
-        ray2d_collisionf_t result = { 0 };
-        vec2f_t min, max;
-        fp_t t_min, t_max, inv_dir;
-        fp_t t1, t2, tmp;
+        joy_ray2d_collisionf_t result = { 0 };
+        joy_vec2f_t min, max;
+        joy_fp_t t_min, t_max, inv_dir;
+        joy_fp_t t1, t2, tmp;
 
 
         ray.direction = vec2f_normalize(ray.direction);
@@ -162,7 +162,7 @@ ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(ray2df_t ray, rectang
         result.distance = t_min;
 
         // 碰撞点 = 起点 + t_min * 方向
-        vec2f_t delta = {
+        joy_vec2f_t delta = {
             fp_mul(t_min, ray.direction.x),
             fp_mul(t_min, ray.direction.y)
         };
@@ -176,16 +176,16 @@ ray2d_collisionf_t joy_math_collision2df_get_ray_rectangle(ray2df_t ray, rectang
 
 
 
-ray2d_collisionf_t 
-joy_math_collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t angle)
+joy_ray2d_collisionf_t
+joy_math_collision2df_get_ray_rectanglex(joy_ray2df_t ray, joy_rectanglef_t rect, joy_fp_t angle)
 {
-        ray2d_collisionf_t result={0};
-        vec2f_t half_extents, center, local_origin, local_dir;
-        fp_t rotation, t_min, t_max;
-        fp_t t1, t2, tmp, inv_dir, t;
-        vec2f_t local_hit;
+        joy_ray2d_collisionf_t result={0};
+        joy_vec2f_t half_extents, center, local_origin, local_dir;
+        joy_fp_t rotation, t_min, t_max;
+        joy_fp_t t1, t2, tmp, inv_dir, t;
+        joy_vec2f_t local_hit;
 
-        const fp_t EPSILON = fp_from_float(0.0001f);
+        const joy_fp_t EPSILON = fp_from_float(0.0001f);
 
         half_extents.x = fp_mul(rect.width, fp_half());
         half_extents.y = fp_mul(rect.height, fp_half());
@@ -251,7 +251,7 @@ joy_math_collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t a
 
         /* 正确计算法线：确定被撞击的 OBB 面，然后旋回世界空间 */
         {
-                vec2f_t local_normal = {0, 0};
+                joy_vec2f_t local_normal = {0, 0};
                 if (fp_abs(fp_sub(fp_abs(local_hit.x), half_extents.x)) < fp_mul(half_extents.x, fp_from_float(0.01f))) {
                         local_normal.x = local_hit.x > fp_zero() ? fp_one() : fp_from_float(-1);
                 }
@@ -260,8 +260,8 @@ joy_math_collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t a
                 }
                 /* 若同时命中角点，只取一个轴向（离边缘更近的那个） */
                 if (local_normal.x != fp_zero() && local_normal.y != fp_zero()) {
-                        fp_t dx = fp_abs(fp_sub(fp_abs(local_hit.x), half_extents.x));
-                        fp_t dy = fp_abs(fp_sub(fp_abs(local_hit.y), half_extents.y));
+                        joy_fp_t dx = fp_abs(fp_sub(fp_abs(local_hit.x), half_extents.x));
+                        joy_fp_t dy = fp_abs(fp_sub(fp_abs(local_hit.y), half_extents.y));
                         if (dx < dy) local_normal.y = 0;
                         else         local_normal.x = 0;
                 }
@@ -271,14 +271,14 @@ joy_math_collision2df_get_ray_rectanglex(ray2df_t ray, rectanglef_t rect, fp_t a
         return result;
 }
 
-ray2d_collisionf_t 
-joy_math_collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
+joy_ray2d_collisionf_t
+joy_math_collision2df_get_ray_polygon(joy_ray2df_t ray, joy_polygonf_t polygon)
 {
-        ray2d_collisionf_t result = {0};
-        vec2f_t edge_start, edge_end, edge_vec, diff;
-        fp_t denom, t, u;
-        fp_t closest_t = fp_max_value();
-        vec2f_t hit_edge = {0, 0};
+        joy_ray2d_collisionf_t result = {0};
+        joy_vec2f_t edge_start, edge_end, edge_vec, diff;
+        joy_fp_t denom, t, u;
+        joy_fp_t closest_t = fp_max_value();
+        joy_vec2f_t hit_edge = {0, 0};
 
         if (polygon.num_vertices < 3)
                 return result;
@@ -325,65 +325,65 @@ joy_math_collision2df_get_ray_polygon(ray2df_t ray, polygonf_t polygon)
 }
 
 bool 
-joy_math_collision2df_check_point_rectangle(vec2f_t point, rectanglef_t rect)
+joy_math_collision2df_check_point_rectangle(joy_vec2f_t point, joy_rectanglef_t rect)
 {
         return (point.x >= rect.x && point.x <= fp_add(rect.x, rect.width)
              && point.y >= rect.y && point.y <= fp_add(rect.y, rect.height));
 }
 
 bool 
-joy_math_collision2df_check_point_circle(vec2f_t point, circlef_t circle)
+joy_math_collision2df_check_point_circle(joy_vec2f_t point, joy_circlef_t circle)
 {
-        vec2f_t diff = vec2f_sub(point, circle.center);
+        joy_vec2f_t diff = vec2f_sub(point, circle.center);
         return vec2f_length_squared(diff) <= fp_pow2(circle.radius);
 }
 
-fp_t
-joy_math_collision2df_get_squared_distance_point_circle(vec2f_t point, circlef_t circle)
+joy_fp_t
+joy_math_collision2df_get_squared_distance_point_circle(joy_vec2f_t point, joy_circlef_t circle)
 {
-        vec2f_t diff = vec2f_sub(point, circle.center);
+        joy_vec2f_t diff = vec2f_sub(point, circle.center);
         return vec2f_length_squared(diff);
 }
 
 bool 
-joy_math_collision2df_check_point_triangle(vec2f_t point, vec2f_t p1, vec2f_t p2, vec2f_t p3)
+joy_math_collision2df_check_point_triangle(joy_vec2f_t point, joy_vec2f_t p1, joy_vec2f_t p2, joy_vec2f_t p3)
 {
         /* Barycentric coordinate method */
-        vec2f_t v0 = vec2f_sub(p3, p1);
-        vec2f_t v1 = vec2f_sub(p2, p1);
-        vec2f_t v2 = vec2f_sub(point, p1);
+        joy_vec2f_t v0 = vec2f_sub(p3, p1);
+        joy_vec2f_t v1 = vec2f_sub(p2, p1);
+        joy_vec2f_t v2 = vec2f_sub(point, p1);
 
-        fp_t dot00 = vec2f_dot(v0, v0);
-        fp_t dot01 = vec2f_dot(v0, v1);
-        fp_t dot02 = vec2f_dot(v0, v2);
-        fp_t dot11 = vec2f_dot(v1, v1);
-        fp_t dot12 = vec2f_dot(v1, v2);
+        joy_fp_t dot00 = vec2f_dot(v0, v0);
+        joy_fp_t dot01 = vec2f_dot(v0, v1);
+        joy_fp_t dot02 = vec2f_dot(v0, v2);
+        joy_fp_t dot11 = vec2f_dot(v1, v1);
+        joy_fp_t dot12 = vec2f_dot(v1, v2);
 
-        fp_t denom = fp_sub(fp_mul(dot00, dot11), fp_mul(dot01, dot01));
+        joy_fp_t denom = fp_sub(fp_mul(dot00, dot11), fp_mul(dot01, dot01));
         if (denom == fp_zero())
                 return false;
 
-        fp_t inv_denom = fp_div(fp_one(), denom);
-        fp_t u = fp_mul(fp_sub(fp_mul(dot11, dot02), fp_mul(dot01, dot12)), inv_denom);
-        fp_t v = fp_mul(fp_sub(fp_mul(dot00, dot12), fp_mul(dot01, dot02)), inv_denom);
+        joy_fp_t inv_denom = fp_div(fp_one(), denom);
+        joy_fp_t u = fp_mul(fp_sub(fp_mul(dot11, dot02), fp_mul(dot01, dot12)), inv_denom);
+        joy_fp_t v = fp_mul(fp_sub(fp_mul(dot00, dot12), fp_mul(dot01, dot02)), inv_denom);
 
         return (u >= fp_zero() && v >= fp_zero()
              && fp_add(u, v) <= fp_one());
 }
 
 bool 
-joy_math_collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2, vec2f_t*cp)
+joy_math_collision2df_check_lines(joy_vec2f_t a1, joy_vec2f_t b1, joy_vec2f_t a2, joy_vec2f_t b2, joy_vec2f_t*cp)
 {
-        vec2f_t r = vec2f_sub(b1, a1);
-        vec2f_t s = vec2f_sub(b2, a2);
-        fp_t denom = vec2f_cross(r, s);
+        joy_vec2f_t r = vec2f_sub(b1, a1);
+        joy_vec2f_t s = vec2f_sub(b2, a2);
+        joy_fp_t denom = vec2f_cross(r, s);
 
         if (denom == fp_zero())
                 return false; /* parallel */
 
-        vec2f_t diff = vec2f_sub(a2, a1);
-        fp_t t = fp_div(vec2f_cross(diff, s), denom);
-        fp_t u = fp_div(vec2f_cross(diff, r), denom);
+        joy_vec2f_t diff = vec2f_sub(a2, a1);
+        joy_fp_t t = fp_div(vec2f_cross(diff, s), denom);
+        joy_fp_t u = fp_div(vec2f_cross(diff, r), denom);
 
         if (t >= fp_zero() && t <= fp_one()
          && u >= fp_zero() && u <= fp_one()) {
@@ -397,29 +397,29 @@ joy_math_collision2df_check_lines(vec2f_t a1, vec2f_t b1, vec2f_t a2, vec2f_t b2
 }
 
 bool 
-joy_math_collision2df_check_point_line(vec2f_t point, vec2f_t p1, vec2f_t p2, fp_t threshold)
+joy_math_collision2df_check_point_line(joy_vec2f_t point, joy_vec2f_t p1, joy_vec2f_t p2, joy_fp_t threshold)
 {
-        vec2f_t ab = vec2f_sub(p2, p1);
-        vec2f_t ap = vec2f_sub(point, p1);
-        fp_t ab_len_sq = vec2f_length_squared(ab);
+        joy_vec2f_t ab = vec2f_sub(p2, p1);
+        joy_vec2f_t ap = vec2f_sub(point, p1);
+        joy_fp_t ab_len_sq = vec2f_length_squared(ab);
 
         if (ab_len_sq == fp_zero())
                 return vec2f_length_squared(ap) <= fp_pow2(threshold);
 
-        fp_t proj = fp_div(vec2f_dot(ap, ab), ab_len_sq);
+        joy_fp_t proj = fp_div(vec2f_dot(ap, ab), ab_len_sq);
         proj = fp_clamp(proj, fp_zero(), fp_one());
 
-        vec2f_t closest = vec2f_add(p1, vec2f_scale(ab, proj));
-        vec2f_t diff = vec2f_sub(point, closest);
+        joy_vec2f_t closest = vec2f_add(p1, vec2f_scale(ab, proj));
+        joy_vec2f_t diff = vec2f_sub(point, closest);
 
         return vec2f_length_squared(diff) <= fp_pow2(threshold);
 }
 
 bool 
-joy_math_collision2df_check_circles(circlef_t a, circlef_t b)
+joy_math_collision2df_check_circles(joy_circlef_t a, joy_circlef_t b)
 {
-        vec2f_t distance;
-        fp_t distance_squared, radius_sum;
+        joy_vec2f_t distance;
+        joy_fp_t distance_squared, radius_sum;
 
         distance = vec2f_sub(b.center, a.center);
         distance_squared = vec2f_length_squared(distance);
@@ -430,7 +430,7 @@ joy_math_collision2df_check_circles(circlef_t a, circlef_t b)
 
 /* aabb */
 bool 
-joy_math_collision2df_check_rectangles(rectanglef_t a, rectanglef_t b)
+joy_math_collision2df_check_rectangles(joy_rectanglef_t a, joy_rectanglef_t b)
 {
         if (a.x > fp_add(b.x, b.width))
                 return false;
@@ -449,7 +449,7 @@ joy_math_collision2df_check_rectangles(rectanglef_t a, rectanglef_t b)
  * 任意速度都不会穿墙/穿平台。格边界是整数且轴对齐，故退化为整数行/列扫描。 */
 
 static int
-joy_tilemap_floor_to_int(fp_t x)
+joy_tilemap_floor_to_int(joy_fp_t x)
 {
         return (int)(x >> FP_FRACTIONAL_PLACES);
 }
@@ -471,17 +471,17 @@ joy_tilemap_col_blocked(int c, int r0, int r1, joy_tilemap_solid_fn solid)
 }
 
 bool
-joy_tilemap_sweep_x(fp_t* px, fp_t* py, fp_t dx, fp_t w, fp_t h, joy_tilemap_solid_fn solid)
+joy_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
 {
         if (dx == fp_zero()) return false;
-        const fp_t EPS = fp_from_float(0.001f);
+        const joy_fp_t EPS = fp_from_float(0.001f);
 
         /* X 扫掠期间行跨度保持不变 */
         const int ry0 = joy_tilemap_floor_to_int(*py);
         const int ry1 = joy_tilemap_floor_to_int(fp_sub(fp_add(*py, h), EPS));
 
         if (dx > fp_zero()) {                                   /* 向右：右缘向右跨列 */
-                const fp_t r_old = fp_add(*px, w);
+                const joy_fp_t r_old = fp_add(*px, w);
                 const int c0 = joy_tilemap_floor_to_int(fp_sub(r_old, EPS)) + 1;
                 const int c1 = joy_tilemap_floor_to_int(fp_sub(fp_add(r_old, dx), EPS));
                 for (int c = c0; c <= c1; c++) {                /* 由近及远，首个阻挡即最先接触 */
@@ -505,18 +505,18 @@ joy_tilemap_sweep_x(fp_t* px, fp_t* py, fp_t dx, fp_t w, fp_t h, joy_tilemap_sol
 }
 
 bool
-joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h, joy_tilemap_solid_fn solid)
+joy_tilemap_sweep_y(joy_fp_t* px, joy_fp_t* py, joy_fp_t* vy, joy_fp_t tick, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
 {
-        const fp_t dy = fp_mul(*vy, tick);
+        const joy_fp_t dy = fp_mul(*vy, tick);
         if (dy == fp_zero()) return false;
-        const fp_t EPS = fp_from_float(0.001f);
+        const joy_fp_t EPS = fp_from_float(0.001f);
 
         /* Y 扫掠期间列跨度保持不变 */
         const int cx0 = joy_tilemap_floor_to_int(*px);
         const int cx1 = joy_tilemap_floor_to_int(fp_sub(fp_add(*px, w), EPS));
 
         if (dy > fp_zero()) {                                   /* 下落：底边向下跨行 */
-                const fp_t b_old = fp_add(*py, h);
+                const joy_fp_t b_old = fp_add(*py, h);
                 const int r0 = joy_tilemap_floor_to_int(fp_sub(b_old, EPS)) + 1;
                 const int r1 = joy_tilemap_floor_to_int(fp_sub(fp_add(b_old, dy), EPS));
                 for (int r = r0; r <= r1; r++) {                /* 自上而下，首个阻挡即最先接触 */
@@ -543,13 +543,13 @@ joy_tilemap_sweep_y(fp_t* px, fp_t* py, fp_t* vy, fp_t tick, fp_t w, fp_t h, joy
 
 /* SAT-based polygon-polygon overlap test */
 bool 
-joy_math_collision2df_check_polygons(polygonf_t a, polygonf_t b)
+joy_math_collision2df_check_polygons(joy_polygonf_t a, joy_polygonf_t b)
 {
-        vec2f_t axis, point;
-        fp_t ab_sep = joy_math_find_min_separation(a, b, &axis, &point);
+        joy_vec2f_t axis, point;
+        joy_fp_t ab_sep = joy_math_find_min_separation(a, b, &axis, &point);
         if (ab_sep >= fp_zero())
                 return false;
-        fp_t ba_sep = joy_math_find_min_separation(b, a, &axis, &point);
+        joy_fp_t ba_sep = joy_math_find_min_separation(b, a, &axis, &point);
         if (ba_sep >= fp_zero())
                 return false;
         return true;
@@ -558,27 +558,27 @@ joy_math_collision2df_check_polygons(polygonf_t a, polygonf_t b)
 /* OBB 沿 (dx,dy) 平移的扫掠凸包（Andrew monotone chain，8 点）。
  * 语义/绕序约定见 joy.h 中 joy_math_collision2df_swept_obb 的注释。 */
 void 
-joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
-        fp_t half_long, fp_t half_short, fp_t dx, fp_t dy,
-        vec2f_t* out, int* out_count)
+joy_math_collision2df_swept_obb(joy_vec2f_t center, joy_vec2f_t axis,
+        joy_fp_t half_long, joy_fp_t half_short, joy_fp_t dx, joy_fp_t dy,
+        joy_vec2f_t* out, int* out_count)
 {
         if (!out || !out_count) return;
         *out_count = 0;
 
-        const fp_t one = fp_one();
-        const fp_t neg = fp_sub(fp_zero(), one);
+        const joy_fp_t one = fp_one();
+        const joy_fp_t neg = fp_sub(fp_zero(), one);
 
         /* 长轴分量 pl，短轴分量 ps（axis 逆时针 90° = (-ay, ax)） */
-        vec2f_t pl, ps;
+        joy_vec2f_t pl, ps;
         pl.x = fp_mul(axis.x, half_long);
         pl.y = fp_mul(axis.y, half_long);
         ps.x = fp_mul(fp_sub(fp_zero(), axis.y), half_short);
         ps.y = fp_mul(axis.x, half_short);
 
         /* 起点盒 4 顶点 + 终点盒 4 顶点（终点 = 起点 + 位移） */
-        const fp_t sx[4] = { one, neg, neg, one };
-        const fp_t sy[4] = { one, one, neg, neg };
-        vec2f_t p[8];
+        const joy_fp_t sx[4] = { one, neg, neg, one };
+        const joy_fp_t sy[4] = { one, one, neg, neg };
+        joy_vec2f_t p[8];
         for (int i = 0; i < 4; i++) {
                 p[i].x = fp_add(fp_add(center.x, fp_mul(sx[i], pl.x)), fp_mul(sy[i], ps.x));
                 p[i].y = fp_add(fp_add(center.y, fp_mul(sx[i], pl.y)), fp_mul(sy[i], ps.y));
@@ -588,7 +588,7 @@ joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
 
         /* 按 x、再按 y 排序（n=8，插入排序足够） */
         for (int i = 1; i < 8; i++) {
-                vec2f_t key = p[i];
+                joy_vec2f_t key = p[i];
                 int j = i - 1;
                 while (j >= 0 && (p[j].x > key.x
                         || (p[j].x == key.x && p[j].y > key.y))) {
@@ -598,14 +598,14 @@ joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
                 p[j + 1] = key;
         }
 
-        vec2f_t h[8];
+        joy_vec2f_t h[8];
         int n = 0;
 
         /* 下凸壳 */
         for (int i = 0; i < 8; i++) {
                 while (n >= 2) {
-                        vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
-                        vec2f_t v = vec2f_sub(p[i], h[n - 2]);
+                        joy_vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
+                        joy_vec2f_t v = vec2f_sub(p[i], h[n - 2]);
                         if (vec2f_cross(u, v) > fp_zero()) break;
                         n--;
                 }
@@ -615,8 +615,8 @@ joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
         const int lower = n + 1;
         for (int i = 6; i >= 0; i--) {
                 while (n >= lower) {
-                        vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
-                        vec2f_t v = vec2f_sub(p[i], h[n - 2]);
+                        joy_vec2f_t u = vec2f_sub(h[n - 1], h[n - 2]);
+                        joy_vec2f_t v = vec2f_sub(p[i], h[n - 2]);
                         if (vec2f_cross(u, v) > fp_zero()) break;
                         n--;
                 }
@@ -627,15 +627,15 @@ joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
 
         /* 统一绕序为「y 向下坐标系的顺时针」（有向面积 > 0）：
          * vec2f_normal 对这种绕序给出外法线，joy_math_find_min_separation 依赖它。 */
-        fp_t area = fp_zero();
+        joy_fp_t area = fp_zero();
         for (int i = 0; i < n; i++) {
-                vec2f_t a = h[i];
-                vec2f_t b = h[(i + 1) % n];
+                joy_vec2f_t a = h[i];
+                joy_vec2f_t b = h[(i + 1) % n];
                 area = fp_add(area, fp_sub(fp_mul(a.x, b.y), fp_mul(b.x, a.y)));
         }
         if (area < fp_zero()) {
                 for (int i = 0; i < n / 2; i++) {
-                        vec2f_t t = h[i];
+                        joy_vec2f_t t = h[i];
                         h[i] = h[n - 1 - i];
                         h[n - 1 - i] = t;
                 }
@@ -647,39 +647,39 @@ joy_math_collision2df_swept_obb(vec2f_t center, vec2f_t axis,
 
 /* Circle vs AABB: find closest point on rect to circle center */
 bool 
-joy_math_collision2df_check_circle_rectangle(circlef_t a, rectanglef_t b)
+joy_math_collision2df_check_circle_rectangle(joy_circlef_t a, joy_rectanglef_t b)
 {
-        vec2f_t closest;
+        joy_vec2f_t closest;
         closest.x = fp_clamp(a.center.x, b.x, fp_add(b.x, b.width));
         closest.y = fp_clamp(a.center.y, b.y, fp_add(b.y, b.height));
 
-        vec2f_t diff = vec2f_sub(a.center, closest);
+        joy_vec2f_t diff = vec2f_sub(a.center, closest);
         return vec2f_length_squared(diff) <= fp_pow2(a.radius);
 }
 
 /* Circle vs convex polygon */
 bool 
-joy_math_collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
+joy_math_collision2df_check_circle_polygon(joy_circlef_t a, joy_polygonf_t b)
 {
         if (b.num_vertices < 3)
                 return false;
 
         /* 1. Check distance from center to each edge */
         for (int i = 0; i < b.num_vertices; i++) {
-                vec2f_t e1 = b.vertices[i];
-                vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
-                vec2f_t edge = vec2f_sub(e2, e1);
-                vec2f_t to_center = vec2f_sub(a.center, e1);
+                joy_vec2f_t e1 = b.vertices[i];
+                joy_vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                joy_vec2f_t edge = vec2f_sub(e2, e1);
+                joy_vec2f_t to_center = vec2f_sub(a.center, e1);
 
-                fp_t edge_len_sq = vec2f_length_squared(edge);
+                joy_fp_t edge_len_sq = vec2f_length_squared(edge);
                 if (edge_len_sq == fp_zero())
                         continue;
 
-                fp_t t = fp_div(vec2f_dot(to_center, edge), edge_len_sq);
+                joy_fp_t t = fp_div(vec2f_dot(to_center, edge), edge_len_sq);
                 t = fp_clamp(t, fp_zero(), fp_one());
 
-                vec2f_t closest = vec2f_add(e1, vec2f_scale(edge, t));
-                vec2f_t diff = vec2f_sub(a.center, closest);
+                joy_vec2f_t closest = vec2f_add(e1, vec2f_scale(edge, t));
+                joy_vec2f_t diff = vec2f_sub(a.center, closest);
 
                 if (vec2f_length_squared(diff) <= fp_pow2(a.radius))
                         return true;
@@ -689,11 +689,11 @@ joy_math_collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
         {
                 bool inside = true;
                 for (int i = 0; i < b.num_vertices; i++) {
-                        vec2f_t e1 = b.vertices[i];
-                        vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
-                        vec2f_t edge = vec2f_sub(e2, e1);
-                        vec2f_t normal = vec2f_normal(edge); /* inward normal */
-                        vec2f_t to_center = vec2f_sub(a.center, e1);
+                        joy_vec2f_t e1 = b.vertices[i];
+                        joy_vec2f_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                        joy_vec2f_t edge = vec2f_sub(e2, e1);
+                        joy_vec2f_t normal = vec2f_normal(edge); /* inward normal */
+                        joy_vec2f_t to_center = vec2f_sub(a.center, e1);
                         if (vec2f_dot(to_center, normal) < fp_zero()) {
                                 inside = false;
                                 break;
@@ -707,10 +707,10 @@ joy_math_collision2df_check_circle_polygon(circlef_t a, polygonf_t b)
 }
 
 int 
-joy_math_collision2df_get_circles(circlef_t a, circlef_t b, contact2df_t *contact)
+joy_math_collision2df_get_circles(joy_circlef_t a, joy_circlef_t b, joy_contact2df_t *contact)
 {
-        vec2f_t distance;
-        fp_t distance_squared, radius_sum;
+        joy_vec2f_t distance;
+        joy_fp_t distance_squared, radius_sum;
 
         distance = vec2f_sub(b.center, a.center);
         distance_squared = vec2f_length_squared(distance);
@@ -727,9 +727,9 @@ joy_math_collision2df_get_circles(circlef_t a, circlef_t b, contact2df_t *contac
 }
 
 int 
-joy_math_collision2df_get_rectangles(rectanglef_t a, fp_t a_angle, 
-        rectanglef_t b, fp_t b_angle,
-	contact2df_t *contact)
+joy_math_collision2df_get_rectangles(joy_rectanglef_t a, joy_fp_t a_angle,
+        joy_rectanglef_t b, joy_fp_t b_angle,
+	joy_contact2df_t *contact)
 {
         /*
         Setup
@@ -738,18 +738,18 @@ joy_math_collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 	把矩形放到以中心为(0,0)的局部坐标系第一象限的顶点
 	那么 a_h / b_h 就是右上角第一象限的点
         */
-        vec2f_t a_bounds, b_bounds;
-        vec2f_t a_h, b_h, a_pos, b_pos;
-        mat22f_t a_rot, b_rot, a_rotT, b_rotT;
-        vec2f_t dp, a_d, b_d;
-        mat22f_t c, abs_c, abs_ct;
-        vec2f_t abs_a_d, abs_b_d;
-        vec2f_t a_face, b_face;
-	vec2f_t normal;
-	fp_t separation, r_separation, a_res, b_res;
+        joy_vec2f_t a_bounds, b_bounds;
+        joy_vec2f_t a_h, b_h, a_pos, b_pos;
+        joy_mat22f_t a_rot, b_rot, a_rotT, b_rotT;
+        joy_vec2f_t dp, a_d, b_d;
+        joy_mat22f_t c, abs_c, abs_ct;
+        joy_vec2f_t abs_a_d, abs_b_d;
+        joy_vec2f_t a_face, b_face;
+	joy_vec2f_t normal;
+	joy_fp_t separation, r_separation, a_res, b_res;
 
-	const fp_t relative_tol = FPFF(0.95f);
-	const fp_t absolute_tol = FPFF(0.01f);
+	const joy_fp_t relative_tol = FPFF(0.95f);
+	const joy_fp_t absolute_tol = FPFF(0.01f);
 
         a_bounds.x = a.width; a_bounds.y = a.height;
         b_bounds.x = b.width; b_bounds.y = b.height;
@@ -856,19 +856,19 @@ joy_math_collision2df_get_rectangles(rectanglef_t a, fp_t a_angle,
 }
 
 
-static vec2f_t edge_at(polygonf_t poly, int index)
+static joy_vec2f_t edge_at(joy_polygonf_t poly, int index)
 {
-        vec2f_t next_vertex, curr_vertex;
+        joy_vec2f_t next_vertex, curr_vertex;
         curr_vertex = poly.vertices[index];
         next_vertex = poly.vertices[(index + 1) % poly.num_vertices];
         return vec2f_sub(next_vertex, curr_vertex);
 }
 
-fp_t 
-joy_math_find_min_separation(polygonf_t a, polygonf_t b, vec2f_t *axis, vec2f_t *point)
+joy_fp_t
+joy_math_find_min_separation(joy_polygonf_t a, joy_polygonf_t b, joy_vec2f_t *axis, joy_vec2f_t *point)
 {
-        fp_t separation, min_sep, proj;
-        vec2f_t va, vb, normal, min_vertex;
+        joy_fp_t separation, min_sep, proj;
+        joy_vec2f_t va, vb, normal, min_vertex;
         separation = fp_min_value();
         for (int i = 0; i < a.num_vertices; i++) {
                 va = a.vertices[i];
@@ -892,11 +892,11 @@ joy_math_find_min_separation(polygonf_t a, polygonf_t b, vec2f_t *axis, vec2f_t 
 }
 
 int 
-joy_math_collision2df_get_polygons(polygonf_t a, polygonf_t b, contact2df_t *contact)
+joy_math_collision2df_get_polygons(joy_polygonf_t a, joy_polygonf_t b, joy_contact2df_t *contact)
 {
-        vec2f_t a_axis, b_axis, a_point, b_point;
-        vec2f_t distance;
-        fp_t ab_sep, ba_sep;
+        joy_vec2f_t a_axis, b_axis, a_point, b_point;
+        joy_vec2f_t distance;
+        joy_fp_t ab_sep, ba_sep;
         ab_sep = joy_math_find_min_separation(a, b, &a_axis, &a_point);
         if (ab_sep >= 0)
                 return 0;
@@ -921,14 +921,14 @@ joy_math_collision2df_get_polygons(polygonf_t a, polygonf_t b, contact2df_t *con
 }
 
 
-ray3d_collisionf_t
-joy_math_collision3df_get_ray_triangle(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3)
+joy_ray3d_collisionf_t
+joy_math_collision3df_get_ray_triangle(joy_ray3df_t ray, joy_vec3f_t p1, joy_vec3f_t p2, joy_vec3f_t p3)
 {
-        const fp_t EPSILON = fp_from_float(0.000001f);
-        ray3d_collisionf_t result = {0};
-        vec3f_t edge1, edge2;
-        vec3f_t p, q, tv;
-        fp_t det, inv_det, u, v, t;
+        const joy_fp_t EPSILON = fp_from_float(0.000001f);
+        joy_ray3d_collisionf_t result = {0};
+        joy_vec3f_t edge1, edge2;
+        joy_vec3f_t p, q, tv;
+        joy_fp_t det, inv_det, u, v, t;
 
         ray.direction = vec3f_normalize(ray.direction);
 
@@ -980,32 +980,32 @@ joy_math_collision3df_get_ray_triangle(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec
         return result;
 }
 
-ray3d_collisionf_t 
-joy_math_collision3df_get_ray_quad(ray3df_t ray, vec3f_t p1, vec3f_t p2, vec3f_t p3, vec3f_t p4)
+joy_ray3d_collisionf_t
+joy_math_collision3df_get_ray_quad(joy_ray3df_t ray, joy_vec3f_t p1, joy_vec3f_t p2, joy_vec3f_t p3, joy_vec3f_t p4)
 {
-        ray3d_collisionf_t result;
+        joy_ray3d_collisionf_t result;
         result = joy_math_collision3df_get_ray_triangle(ray, p1, p2, p4);
         if (!result.hit)
                 result = joy_math_collision3df_get_ray_triangle(ray, p2, p3, p4);
         return result;
 }
  
-ray3d_collisionf_t 
-joy_math_collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
+joy_ray3d_collisionf_t
+joy_math_collision3df_get_ray_sphere(joy_ray3df_t ray, joy_spheref_t sphere)
 {
-        ray3d_collisionf_t result = {0};
-        vec3f_t ray_sphere_pos = vec3f_sub(ray.position, sphere.position);
-        fp_t dist_sq = vec3f_square_length(ray_sphere_pos);
-        fp_t a = vec3f_dot(ray_sphere_pos, ray.direction);
-        fp_t b = fp_sub(dist_sq, fp_pow2(sphere.radius));
-        fp_t c = fp_sub(fp_pow2(a), b);
+        joy_ray3d_collisionf_t result = {0};
+        joy_vec3f_t ray_sphere_pos = vec3f_sub(ray.position, sphere.position);
+        joy_fp_t dist_sq = vec3f_square_length(ray_sphere_pos);
+        joy_fp_t a = vec3f_dot(ray_sphere_pos, ray.direction);
+        joy_fp_t b = fp_sub(dist_sq, fp_pow2(sphere.radius));
+        joy_fp_t c = fp_sub(fp_pow2(a), b);
 
         /* 判别式 < 0: 无交点 */
         if (c < fp_zero())
                 return result;
 
-        fp_t d = fp_sqrt(c);
-        fp_t t = fp_sub(-a, d);
+        joy_fp_t d = fp_sqrt(c);
+        joy_fp_t t = fp_sub(-a, d);
         /* 若第一个交点在射线后方, 取第二个 */
         if (t < fp_zero())
                 t = fp_add(-a, d);
@@ -1021,14 +1021,14 @@ joy_math_collision3df_get_ray_sphere(ray3df_t ray, spheref_t sphere)
         return result;
 }
 
-ray3d_collisionf_t
-joy_math_collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
+joy_ray3d_collisionf_t
+joy_math_collision3df_get_ray_box(joy_ray3df_t ray, joy_bounding_boxf_t box)
 {
         /* Slabs method (ray-AABB) */
-        ray3d_collisionf_t result = {0};
-        vec3f_t dirfrac;
-        fp_t t1, t2, tmin, tmax;
-        const fp_t EPSILON = fp_from_float(0.00001f);
+        joy_ray3d_collisionf_t result = {0};
+        joy_vec3f_t dirfrac;
+        joy_fp_t t1, t2, tmin, tmax;
+        const joy_fp_t EPSILON = fp_from_float(0.00001f);
 
         ray.direction = vec3f_normalize(ray.direction);
 
@@ -1061,7 +1061,7 @@ joy_math_collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
         if (tmax < fp_zero())
                 return result;
 
-        fp_t t = tmin >= fp_zero() ? tmin : tmax;
+        joy_fp_t t = tmin >= fp_zero() ? tmin : tmax;
         if (t < EPSILON)
                 return result;
 
@@ -1071,10 +1071,10 @@ joy_math_collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
                 vec3f_scale(ray.direction, t));
 
         /* Compute normal from which slab was hit */
-        vec3f_t center = vec3f_scale(vec3f_add(box.min, box.max), fp_half());
-        vec3f_t hit_to_center = vec3f_sub(center, result.point);
-        vec3f_t half = vec3f_scale(vec3f_sub(box.max, box.min), fp_half());
-        vec3f_t abs_hit = vec3f_abs(hit_to_center);
+        joy_vec3f_t center = vec3f_scale(vec3f_add(box.min, box.max), fp_half());
+        joy_vec3f_t hit_to_center = vec3f_sub(center, result.point);
+        joy_vec3f_t half = vec3f_scale(vec3f_sub(box.max, box.min), fp_half());
+        joy_vec3f_t abs_hit = vec3f_abs(hit_to_center);
 
         result.normal.x = (fp_abs(fp_sub(abs_hit.x, half.x)) < EPSILON)
                 ? (hit_to_center.x > fp_zero() ? fp_one() : fp_from_float(-1))
@@ -1090,18 +1090,18 @@ joy_math_collision3df_get_ray_box(ray3df_t ray, bounding_boxf_t box)
         return result;
 }
 
-/* 列主序 mat44f_t 对方向向量做旋转(忽略平移分量) —— 与 jgjk.c 内 OBB 辅助一致 */
-static vec3f_t jcoll_obb_mat44f_rotate_dir(mat44f_t m, vec3f_t v) {
-        vec3f_t r;
+/* 列主序 joy_mat44f_t 对方向向量做旋转(忽略平移分量) —— 与 jgjk.c 内 OBB 辅助一致 */
+static joy_vec3f_t jcoll_obb_mat44f_rotate_dir(joy_mat44f_t m, joy_vec3f_t v) {
+        joy_vec3f_t r;
         r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m4, v.y)), fp_mul(m.m8,  v.z));
         r.y = fp_add(fp_add(fp_mul(m.m1, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m9,  v.z));
         r.z = fp_add(fp_add(fp_mul(m.m2, v.x), fp_mul(m.m6, v.y)), fp_mul(m.m10, v.z));
         return r;
 }
 
-/* 列主序 mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
-static vec3f_t jcoll_obb_mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
-        vec3f_t r;
+/* 列主序 joy_mat44f_t 的转置对方向向量做旋转(即逆旋转，旋转矩阵正交) */
+static joy_vec3f_t jcoll_obb_mat44f_rotate_dir_t(joy_mat44f_t m, joy_vec3f_t v) {
+        joy_vec3f_t r;
         r.x = fp_add(fp_add(fp_mul(m.m0, v.x), fp_mul(m.m1, v.y)), fp_mul(m.m2,  v.z));
         r.y = fp_add(fp_add(fp_mul(m.m4, v.x), fp_mul(m.m5, v.y)), fp_mul(m.m6,  v.z));
         r.z = fp_add(fp_add(fp_mul(m.m8, v.x), fp_mul(m.m9, v.y)), fp_mul(m.m10, v.z));
@@ -1109,34 +1109,34 @@ static vec3f_t jcoll_obb_mat44f_rotate_dir_t(mat44f_t m, vec3f_t v) {
 }
 
 /* 欧拉角(弧度) -> 组合旋转矩阵, 顺序: R = Rz * Ry * Rx（与 jgjk.c euler_to_rot 一致） */
-static mat44f_t jcoll_obb_euler_to_rot(vec3f_t euler) {
-        mat44f_t rx = mat44f_rotate_x(euler.x);
-        mat44f_t ry = mat44f_rotate_y(euler.y);
-        mat44f_t rz = mat44f_rotate_z(euler.z);
-        mat44f_t tmp = mat44f_mul(ry, rx);
+static joy_mat44f_t jcoll_obb_euler_to_rot(joy_vec3f_t euler) {
+        joy_mat44f_t rx = mat44f_rotate_x(euler.x);
+        joy_mat44f_t ry = mat44f_rotate_y(euler.y);
+        joy_mat44f_t rz = mat44f_rotate_z(euler.z);
+        joy_mat44f_t tmp = mat44f_mul(ry, rx);
         return mat44f_mul(rz, tmp);
 }
 
 /* OBB(旋转盒)射线检测: 把射线变换到 OBB 局部坐标系(用旋转矩阵的转置做逆旋转),
  * 在局部系内做 slab(AABB) 求交, 再把命中点与法线旋回世界空间。
- * 全程定点(fp_t), 帧同步确定。 */
-ray3d_collisionf_t
-joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_size, vec3f_t rotation)
+ * 全程定点(joy_fp_t), 帧同步确定。 */
+joy_ray3d_collisionf_t
+joy_math_collision3df_get_ray_obb(joy_ray3df_t ray, joy_vec3f_t position, joy_vec3f_t half_size, joy_vec3f_t rotation)
 {
-        ray3d_collisionf_t result = {0};
-        const fp_t EPSILON = fp_from_float(0.0001f);
+        joy_ray3d_collisionf_t result = {0};
+        const joy_fp_t EPSILON = fp_from_float(0.0001f);
 
-        mat44f_t R = jcoll_obb_euler_to_rot(rotation);   /* 世界旋转矩阵 M = R */
+        joy_mat44f_t R = jcoll_obb_euler_to_rot(rotation);   /* 世界旋转矩阵 M = R */
 
         /* 射线原点与方向变换到 OBB 局部系: M^-1 = M^T (正交矩阵) */
-        vec3f_t rel = vec3f_sub(ray.position, position);
-        vec3f_t local_origin = jcoll_obb_mat44f_rotate_dir_t(R, rel);
-        vec3f_t local_dir    = jcoll_obb_mat44f_rotate_dir_t(R, ray.direction);
+        joy_vec3f_t rel = vec3f_sub(ray.position, position);
+        joy_vec3f_t local_origin = jcoll_obb_mat44f_rotate_dir_t(R, rel);
+        joy_vec3f_t local_dir    = jcoll_obb_mat44f_rotate_dir_t(R, ray.direction);
 
         /* t_min 初值取最小值: 便于区分"起点在盒内"(t_min<0)和"起点在盒外"(t_min>0) */
-        fp_t t_min = fp_min_value();
-        fp_t t_max = fp_max_value();
-        fp_t t1, t2, tmp, inv_dir;
+        joy_fp_t t_min = fp_min_value();
+        joy_fp_t t_max = fp_max_value();
+        joy_fp_t t1, t2, tmp, inv_dir;
 
         /* X slab */
         if (fp_abs(local_dir.x) < EPSILON) {
@@ -1188,17 +1188,17 @@ joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_s
 
         if (t_max < fp_zero()) return result;          /* 盒子在射线反方向 */
 
-        fp_t t = t_min >= fp_zero() ? t_min : t_max;
+        joy_fp_t t = t_min >= fp_zero() ? t_min : t_max;
         if (t < EPSILON) return result;                 /* 起点恰好贴盒面之类: 容差避免自命中 */
 
         /* 局部命中点 */
-        vec3f_t local_hit;
+        joy_vec3f_t local_hit;
         local_hit.x = fp_add(local_origin.x, fp_mul(local_dir.x, t));
         local_hit.y = fp_add(local_origin.y, fp_mul(local_dir.y, t));
         local_hit.z = fp_add(local_origin.z, fp_mul(local_dir.z, t));
 
         /* 局部法线: 判定命中哪一面(slab法) */
-        vec3f_t local_normal = { fp_zero(), fp_zero(), fp_zero() };
+        joy_vec3f_t local_normal = { fp_zero(), fp_zero(), fp_zero() };
         if (fp_abs(fp_sub(fp_abs(local_hit.x), half_size.x)) < fp_mul(half_size.x, fp_from_float(0.01f)))
                 local_normal.x = local_hit.x > fp_zero() ? fp_one() : fp_from_float(-1);
         if (fp_abs(fp_sub(fp_abs(local_hit.y), half_size.y)) < fp_mul(half_size.y, fp_from_float(0.01f)))
@@ -1210,18 +1210,18 @@ joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_s
                     + (local_normal.y != fp_zero() ? 1 : 0)
                     + (local_normal.z != fp_zero() ? 1 : 0);
         while (n_count > 1) {
-                fp_t dm = fp_max_value();
+                joy_fp_t dm = fp_max_value();
                 int drop = -1;
                 if (local_normal.x != fp_zero()) {
-                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.x), half_size.x));
+                        joy_fp_t d = fp_abs(fp_sub(fp_abs(local_hit.x), half_size.x));
                         if (d < dm) { dm = d; drop = 0; }
                 }
                 if (local_normal.y != fp_zero()) {
-                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.y), half_size.y));
+                        joy_fp_t d = fp_abs(fp_sub(fp_abs(local_hit.y), half_size.y));
                         if (d < dm) { dm = d; drop = 1; }
                 }
                 if (local_normal.z != fp_zero()) {
-                        fp_t d = fp_abs(fp_sub(fp_abs(local_hit.z), half_size.z));
+                        joy_fp_t d = fp_abs(fp_sub(fp_abs(local_hit.z), half_size.z));
                         if (d < dm) { dm = d; drop = 2; }
                 }
                 if (drop == 0) local_normal.x = fp_zero();
@@ -1231,7 +1231,7 @@ joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_s
         }
 
         /* 旋回世界空间: hit point 需要旋转 + 平移, normal 只需旋转 */
-        vec3f_t world_hit = jcoll_obb_mat44f_rotate_dir(R, local_hit);
+        joy_vec3f_t world_hit = jcoll_obb_mat44f_rotate_dir(R, local_hit);
         world_hit = vec3f_add(world_hit, position);
 
         result.hit = true;
@@ -1243,16 +1243,16 @@ joy_math_collision3df_get_ray_obb(ray3df_t ray, vec3f_t position, vec3f_t half_s
 }
 
 bool
-joy_math_collision3df_check_spheres(spheref_t a, spheref_t b)
+joy_math_collision3df_check_spheres(joy_spheref_t a, joy_spheref_t b)
 {
-        vec3f_t diff = vec3f_sub(b.position, a.position);
-        fp_t dist_sq = vec3f_square_length(diff);
-        fp_t radius_sum = fp_add(a.radius, b.radius);
+        joy_vec3f_t diff = vec3f_sub(b.position, a.position);
+        joy_fp_t dist_sq = vec3f_square_length(diff);
+        joy_fp_t radius_sum = fp_add(a.radius, b.radius);
         return dist_sq <= fp_pow2(radius_sum);
 }
 
 bool 
-joy_math_collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
+joy_math_collision3df_check_boxes(joy_bounding_boxf_t a, joy_bounding_boxf_t b)
 {
         return (a.min.x <= b.max.x && a.max.x >= b.min.x
              && a.min.y <= b.max.y && a.max.y >= b.min.y
@@ -1260,28 +1260,28 @@ joy_math_collision3df_check_boxes(bounding_boxf_t a, bounding_boxf_t b)
 }
 
 bool 
-joy_math_collision3df_check_box_sphere(bounding_boxf_t a, spheref_t b)
+joy_math_collision3df_check_box_sphere(joy_bounding_boxf_t a, joy_spheref_t b)
 {
-        vec3f_t closest;
+        joy_vec3f_t closest;
         closest.x = fp_clamp(b.position.x, a.min.x, a.max.x);
         closest.y = fp_clamp(b.position.y, a.min.y, a.max.y);
         closest.z = fp_clamp(b.position.z, a.min.z, a.max.z);
 
-        vec3f_t diff = vec3f_sub(b.position, closest);
+        joy_vec3f_t diff = vec3f_sub(b.position, closest);
         return vec3f_square_length(diff) <= fp_pow2(b.radius);
 }
 
 /* =================================================================
- * 浮点版本（ft_t = float）
+ * 浮点版本（joy_ft_t = float）
  * ================================================================= */
 
-ray2d_collision_t 
-joy_math_collision2d_get_ray_circle(ray2d_t ray, circle_t circle)
+joy_ray2d_collision_t
+joy_math_collision2d_get_ray_circle(joy_ray2d_t ray, joy_circle_t circle)
 {
-        vec2_t seg;
-        ft_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
-        ray2d_collision_t result = {0};
-        vec2_t distance;
+        joy_vec2_t seg;
+        joy_ft_t r_sq, d_sq, seg_len_sq, seg_proj, dx;
+        joy_ray2d_collision_t result = {0};
+        joy_vec2_t distance;
 
         r_sq = circle.radius * circle.radius;
         seg = vec2_sub(circle.center, ray.origin);
@@ -1327,10 +1327,10 @@ joy_math_collision2d_get_ray_circle(ray2d_t ray, circle_t circle)
         }
 }
 
-static vec2_t collision2d_calculate_rect_normal(vec2_t point, vec2_t min, vec2_t max)
+static joy_vec2_t collision2d_calculate_rect_normal(joy_vec2_t point, joy_vec2_t min, joy_vec2_t max)
 {
-        vec2_t normal = { 0, 0 };
-        const ft_t epsilon = 0.001f;
+        joy_vec2_t normal = { 0, 0 };
+        const joy_ft_t epsilon = 0.001f;
         if (fabsf(point.x - min.x) < epsilon)
                 normal.x = -1.0f;
         else if (fabsf(point.x - max.x) < epsilon)
@@ -1342,13 +1342,13 @@ static vec2_t collision2d_calculate_rect_normal(vec2_t point, vec2_t min, vec2_t
         return vec2_normalize(normal);
 }
 
-#define SWAP_FT(a, b)  do { ft_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
+#define SWAP_FT(a, b)  do { joy_ft_t tmp = (a); (a) = (b); (b) = tmp; } while(0)
 
-ray2d_collision_t joy_math_collision2d_get_ray_rectangle(ray2d_t ray, rectangle_t rect)
+joy_ray2d_collision_t joy_math_collision2d_get_ray_rectangle(joy_ray2d_t ray, joy_rectangle_t rect)
 {
-        ray2d_collision_t result = { 0 };
-        vec2_t min, max;
-        ft_t t_min, t_max, inv_dir, t1, t2;
+        joy_ray2d_collision_t result = { 0 };
+        joy_vec2_t min, max;
+        joy_ft_t t_min, t_max, inv_dir, t1, t2;
 
         ray.direction = vec2_normalize(ray.direction);
         min.x = rect.x; min.y = rect.y;
@@ -1379,20 +1379,20 @@ ray2d_collision_t joy_math_collision2d_get_ray_rectangle(ray2d_t ray, rectangle_
         }
         result.hit = true;
         result.distance = t_min;
-        vec2_t delta = { t_min * ray.direction.x, t_min * ray.direction.y };
+        joy_vec2_t delta = { t_min * ray.direction.x, t_min * ray.direction.y };
         result.point = vec2_add(ray.origin, delta);
         result.normal = collision2d_calculate_rect_normal(result.point, min, max);
         return result;
 }
 
-ray2d_collision_t 
-joy_math_collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angle)
+joy_ray2d_collision_t
+joy_math_collision2d_get_ray_rectanglex(joy_ray2d_t ray, joy_rectangle_t rect, joy_ft_t angle)
 {
-        ray2d_collision_t result = {0};
-        vec2_t half_extents, center, local_origin, local_dir;
-        ft_t rotation, t_min, t_max, t1, t2, tmp, inv_dir, t;
-        vec2_t local_hit;
-        const ft_t EPSILON = 0.0001f;
+        joy_ray2d_collision_t result = {0};
+        joy_vec2_t half_extents, center, local_origin, local_dir;
+        joy_ft_t rotation, t_min, t_max, t1, t2, tmp, inv_dir, t;
+        joy_vec2_t local_hit;
+        const joy_ft_t EPSILON = 0.0001f;
 
         half_extents.x = rect.width * 0.5f;
         half_extents.y = rect.height * 0.5f;
@@ -1437,9 +1437,9 @@ joy_math_collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angl
         result.point = vec2_add(vec2_rotate(local_hit, rotation), center);
         result.distance = vec2_length(vec2_sub(result.point, ray.origin));
         {
-                vec2_t ln = {0, 0};
-                ft_t dx = fabsf(fabsf(local_hit.x) - half_extents.x);
-                ft_t dy = fabsf(fabsf(local_hit.y) - half_extents.y);
+                joy_vec2_t ln = {0, 0};
+                joy_ft_t dx = fabsf(fabsf(local_hit.x) - half_extents.x);
+                joy_ft_t dy = fabsf(fabsf(local_hit.y) - half_extents.y);
                 if (dx < half_extents.x * 0.01f) ln.x = local_hit.x > 0 ? 1.0f : -1.0f;
                 if (dy < half_extents.y * 0.01f) ln.y = local_hit.y > 0 ? 1.0f : -1.0f;
                 if (ln.x != 0 && ln.y != 0) { if (dx < dy) ln.y = 0; else ln.x = 0; }
@@ -1448,14 +1448,14 @@ joy_math_collision2d_get_ray_rectanglex(ray2d_t ray, rectangle_t rect, ft_t angl
         return result;
 }
 
-ray2d_collision_t 
-joy_math_collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
+joy_ray2d_collision_t
+joy_math_collision2d_get_ray_polygon(joy_ray2d_t ray, joy_polygon_t polygon)
 {
-        ray2d_collision_t result = {0};
-        vec2_t edge_start, edge_end, edge_vec, diff;
-        ft_t denom, t, u;
-        ft_t closest_t = FLT_MAX;
-        vec2_t hit_edge = {0, 0};
+        joy_ray2d_collision_t result = {0};
+        joy_vec2_t edge_start, edge_end, edge_vec, diff;
+        joy_ft_t denom, t, u;
+        joy_ft_t closest_t = FLT_MAX;
+        joy_vec2_t hit_edge = {0, 0};
 
         if (polygon.num_vertices < 3) return result;
         ray.direction = vec2_normalize(ray.direction);
@@ -1485,51 +1485,51 @@ joy_math_collision2d_get_ray_polygon(ray2d_t ray, polygon_t polygon)
         return result;
 }
 
-bool joy_math_collision2d_check_point_rectangle(vec2_t point, rectangle_t rect)
+bool joy_math_collision2d_check_point_rectangle(joy_vec2_t point, joy_rectangle_t rect)
 {
         return point.x >= rect.x && point.x <= rect.x + rect.width
             && point.y >= rect.y && point.y <= rect.y + rect.height;
 }
 
-bool joy_math_collision2d_check_point_circle(vec2_t point, circle_t circle)
+bool joy_math_collision2d_check_point_circle(joy_vec2_t point, joy_circle_t circle)
 {
-        vec2_t diff = vec2_sub(point, circle.center);
+        joy_vec2_t diff = vec2_sub(point, circle.center);
         return vec2_length_squared(diff) <= circle.radius * circle.radius;
 }
 
-ft_t joy_math_collision2d_get_squared_distance_point_circle(vec2_t point, circle_t circle)
+joy_ft_t joy_math_collision2d_get_squared_distance_point_circle(joy_vec2_t point, joy_circle_t circle)
 {
-        vec2_t diff = vec2_sub(point, circle.center);
+        joy_vec2_t diff = vec2_sub(point, circle.center);
         return vec2_length_squared(diff);
 }
 
-bool joy_math_collision2d_check_point_triangle(vec2_t point, vec2_t p1, vec2_t p2, vec2_t p3)
+bool joy_math_collision2d_check_point_triangle(joy_vec2_t point, joy_vec2_t p1, joy_vec2_t p2, joy_vec2_t p3)
 {
-        vec2_t v0 = vec2_sub(p3, p1);
-        vec2_t v1 = vec2_sub(p2, p1);
-        vec2_t v2 = vec2_sub(point, p1);
-        ft_t dot00 = vec2_dot(v0, v0);
-        ft_t dot01 = vec2_dot(v0, v1);
-        ft_t dot02 = vec2_dot(v0, v2);
-        ft_t dot11 = vec2_dot(v1, v1);
-        ft_t dot12 = vec2_dot(v1, v2);
-        ft_t denom = dot00 * dot11 - dot01 * dot01;
+        joy_vec2_t v0 = vec2_sub(p3, p1);
+        joy_vec2_t v1 = vec2_sub(p2, p1);
+        joy_vec2_t v2 = vec2_sub(point, p1);
+        joy_ft_t dot00 = vec2_dot(v0, v0);
+        joy_ft_t dot01 = vec2_dot(v0, v1);
+        joy_ft_t dot02 = vec2_dot(v0, v2);
+        joy_ft_t dot11 = vec2_dot(v1, v1);
+        joy_ft_t dot12 = vec2_dot(v1, v2);
+        joy_ft_t denom = dot00 * dot11 - dot01 * dot01;
         if (denom == 0.0f) return false;
-        ft_t inv_denom = 1.0f / denom;
-        ft_t u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
-        ft_t v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
+        joy_ft_t inv_denom = 1.0f / denom;
+        joy_ft_t u = (dot11 * dot02 - dot01 * dot12) * inv_denom;
+        joy_ft_t v = (dot00 * dot12 - dot01 * dot02) * inv_denom;
         return u >= 0 && v >= 0 && u + v <= 1.0f;
 }
 
-bool joy_math_collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2, vec2_t* cp)
+bool joy_math_collision2d_check_lines(joy_vec2_t a1, joy_vec2_t b1, joy_vec2_t a2, joy_vec2_t b2, joy_vec2_t* cp)
 {
-        vec2_t r = vec2_sub(b1, a1);
-        vec2_t s = vec2_sub(b2, a2);
-        ft_t denom = vec2_cross(r, s);
+        joy_vec2_t r = vec2_sub(b1, a1);
+        joy_vec2_t s = vec2_sub(b2, a2);
+        joy_ft_t denom = vec2_cross(r, s);
         if (denom == 0.0f) return false;
-        vec2_t diff = vec2_sub(a2, a1);
-        ft_t t = vec2_cross(diff, s) / denom;
-        ft_t u = vec2_cross(diff, r) / denom;
+        joy_vec2_t diff = vec2_sub(a2, a1);
+        joy_ft_t t = vec2_cross(diff, s) / denom;
+        joy_ft_t u = vec2_cross(diff, r) / denom;
         if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
                 if (cp) { cp->x = a1.x + r.x * t; cp->y = a1.y + r.y * t; }
                 return true;
@@ -1537,29 +1537,29 @@ bool joy_math_collision2d_check_lines(vec2_t a1, vec2_t b1, vec2_t a2, vec2_t b2
         return false;
 }
 
-bool joy_math_collision2d_check_point_line(vec2_t point, vec2_t p1, vec2_t p2, ft_t threshold)
+bool joy_math_collision2d_check_point_line(joy_vec2_t point, joy_vec2_t p1, joy_vec2_t p2, joy_ft_t threshold)
 {
-        vec2_t ab = vec2_sub(p2, p1);
-        vec2_t ap = vec2_sub(point, p1);
-        ft_t ab_len_sq = vec2_length_squared(ab);
+        joy_vec2_t ab = vec2_sub(p2, p1);
+        joy_vec2_t ap = vec2_sub(point, p1);
+        joy_ft_t ab_len_sq = vec2_length_squared(ab);
         if (ab_len_sq == 0)
                 return vec2_length_squared(ap) <= threshold * threshold;
-        ft_t proj = vec2_dot(ap, ab) / ab_len_sq;
+        joy_ft_t proj = vec2_dot(ap, ab) / ab_len_sq;
         proj = fminf(fmaxf(proj, 0), 1);
-        vec2_t closest = vec2_add(p1, vec2_scale(ab, proj));
-        vec2_t diff = vec2_sub(point, closest);
+        joy_vec2_t closest = vec2_add(p1, vec2_scale(ab, proj));
+        joy_vec2_t diff = vec2_sub(point, closest);
         return vec2_length_squared(diff) <= threshold * threshold;
 }
 
-bool joy_math_collision2d_check_circles(circle_t a, circle_t b)
+bool joy_math_collision2d_check_circles(joy_circle_t a, joy_circle_t b)
 {
-        vec2_t distance = vec2_sub(b.center, a.center);
-        ft_t dist_sq = vec2_length_squared(distance);
-        ft_t radius_sum = a.radius + b.radius;
+        joy_vec2_t distance = vec2_sub(b.center, a.center);
+        joy_ft_t dist_sq = vec2_length_squared(distance);
+        joy_ft_t radius_sum = a.radius + b.radius;
         return dist_sq <= radius_sum * radius_sum;
 }
 
-bool joy_math_collision2d_check_rectangles(rectangle_t a, rectangle_t b)
+bool joy_math_collision2d_check_rectangles(joy_rectangle_t a, joy_rectangle_t b)
 {
         if (a.x > b.x + b.width) return false;
         if (a.x + a.width < b.x) return false;
@@ -1568,35 +1568,35 @@ bool joy_math_collision2d_check_rectangles(rectangle_t a, rectangle_t b)
         return true;
 }
 
-bool joy_math_collision2d_check_circle_rectangle(circle_t a, rectangle_t b)
+bool joy_math_collision2d_check_circle_rectangle(joy_circle_t a, joy_rectangle_t b)
 {
-        vec2_t closest;
+        joy_vec2_t closest;
         closest.x = fminf(fmaxf(a.center.x, b.x), b.x + b.width);
         closest.y = fminf(fmaxf(a.center.y, b.y), b.y + b.height);
-        vec2_t diff = vec2_sub(a.center, closest);
+        joy_vec2_t diff = vec2_sub(a.center, closest);
         return vec2_length_squared(diff) <= a.radius * a.radius;
 }
 
 /* ---- 辅助：获取多边形某条边 ---- */
-static vec2_t poly_edge(polygon_t poly, int index)
+static joy_vec2_t poly_edge(joy_polygon_t poly, int index)
 {
-        vec2_t curr = poly.vertices[index];
-        vec2_t next = poly.vertices[(index + 1) % poly.num_vertices];
+        joy_vec2_t curr = poly.vertices[index];
+        joy_vec2_t next = poly.vertices[(index + 1) % poly.num_vertices];
         return vec2_sub(next, curr);
 }
 
 /* ---- 辅助：计算多边形间最小分离 ---- */
-static ft_t poly_min_sep(polygon_t a, polygon_t b, vec2_t* axis, vec2_t* point)
+static joy_ft_t poly_min_sep(joy_polygon_t a, joy_polygon_t b, joy_vec2_t* axis, joy_vec2_t* point)
 {
-        ft_t separation = -FLT_MAX;
+        joy_ft_t separation = -FLT_MAX;
         for (int i = 0; i < a.num_vertices; i++) {
-                vec2_t va = a.vertices[i];
-                vec2_t normal = vec2_normal(poly_edge(a, i));
-                ft_t min_sep = FLT_MAX;
-                vec2_t min_vertex = {0,0};
+                joy_vec2_t va = a.vertices[i];
+                joy_vec2_t normal = vec2_normal(poly_edge(a, i));
+                joy_ft_t min_sep = FLT_MAX;
+                joy_vec2_t min_vertex = {0,0};
                 for (int j = 0; j < b.num_vertices; j++) {
-                        vec2_t vb = b.vertices[j];
-                        ft_t proj = vec2_dot(vec2_sub(vb, va), normal);
+                        joy_vec2_t vb = b.vertices[j];
+                        joy_ft_t proj = vec2_dot(vec2_sub(vb, va), normal);
                         if (proj < min_sep) { min_sep = proj; min_vertex = vb; }
                 }
                 if (min_sep > separation) {
@@ -1608,40 +1608,40 @@ static ft_t poly_min_sep(polygon_t a, polygon_t b, vec2_t* axis, vec2_t* point)
         return separation;
 }
 
-bool joy_math_collision2d_check_polygons(polygon_t a, polygon_t b)
+bool joy_math_collision2d_check_polygons(joy_polygon_t a, joy_polygon_t b)
 {
-        vec2_t axis, point;
-        ft_t ab_sep = poly_min_sep(a, b, &axis, &point);
+        joy_vec2_t axis, point;
+        joy_ft_t ab_sep = poly_min_sep(a, b, &axis, &point);
         if (ab_sep >= 0) return false;
-        ft_t ba_sep = poly_min_sep(b, a, &axis, &point);
+        joy_ft_t ba_sep = poly_min_sep(b, a, &axis, &point);
         if (ba_sep >= 0) return false;
         return true;
 }
 
-bool joy_math_collision2d_check_circle_polygon(circle_t a, polygon_t b)
+bool joy_math_collision2d_check_circle_polygon(joy_circle_t a, joy_polygon_t b)
 {
         if (b.num_vertices < 3) return false;
         for (int i = 0; i < b.num_vertices; i++) {
-                vec2_t e1 = b.vertices[i];
-                vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
-                vec2_t edge = vec2_sub(e2, e1);
-                vec2_t to_center = vec2_sub(a.center, e1);
-                ft_t edge_len_sq = vec2_length_squared(edge);
+                joy_vec2_t e1 = b.vertices[i];
+                joy_vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                joy_vec2_t edge = vec2_sub(e2, e1);
+                joy_vec2_t to_center = vec2_sub(a.center, e1);
+                joy_ft_t edge_len_sq = vec2_length_squared(edge);
                 if (edge_len_sq == 0) continue;
-                ft_t t = vec2_dot(to_center, edge) / edge_len_sq;
+                joy_ft_t t = vec2_dot(to_center, edge) / edge_len_sq;
                 t = fminf(fmaxf(t, 0), 1);
-                vec2_t closest = vec2_add(e1, vec2_scale(edge, t));
-                vec2_t diff = vec2_sub(a.center, closest);
+                joy_vec2_t closest = vec2_add(e1, vec2_scale(edge, t));
+                joy_vec2_t diff = vec2_sub(a.center, closest);
                 if (vec2_length_squared(diff) <= a.radius * a.radius) return true;
         }
         {
                 bool inside = true;
                 for (int i = 0; i < b.num_vertices; i++) {
-                        vec2_t e1 = b.vertices[i];
-                        vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
-                        vec2_t edge = vec2_sub(e2, e1);
-                        vec2_t normal = vec2_normal(edge);
-                        vec2_t to_center = vec2_sub(a.center, e1);
+                        joy_vec2_t e1 = b.vertices[i];
+                        joy_vec2_t e2 = b.vertices[(i + 1) % b.num_vertices];
+                        joy_vec2_t edge = vec2_sub(e2, e1);
+                        joy_vec2_t normal = vec2_normal(edge);
+                        joy_vec2_t to_center = vec2_sub(a.center, e1);
                         if (vec2_dot(to_center, normal) < 0) { inside = false; break; }
                 }
                 if (inside) return true;
@@ -1649,11 +1649,11 @@ bool joy_math_collision2d_check_circle_polygon(circle_t a, polygon_t b)
         return false;
 }
 
-int joy_math_collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contact)
+int joy_math_collision2d_get_circles(joy_circle_t a, joy_circle_t b, joy_contact2d_t* contact)
 {
-        vec2_t distance = vec2_sub(b.center, a.center);
-        ft_t dist_sq = vec2_length_squared(distance);
-        ft_t radius_sum = a.radius + b.radius;
+        joy_vec2_t distance = vec2_sub(b.center, a.center);
+        joy_ft_t dist_sq = vec2_length_squared(distance);
+        joy_ft_t radius_sum = a.radius + b.radius;
         if (dist_sq > radius_sum * radius_sum) return 0;
         contact->normal = vec2_normalize(distance);
         contact->sp = vec2_sub(b.center, vec2_scale(contact->normal, b.radius));
@@ -1662,14 +1662,14 @@ int joy_math_collision2d_get_circles(circle_t a, circle_t b, contact2d_t* contac
         return 1;
 }
 
-int joy_math_collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
-        rectangle_t b, ft_t b_angle, contact2d_t* contact)
+int joy_math_collision2d_get_rectangles(joy_rectangle_t a, joy_ft_t a_angle,
+        joy_rectangle_t b, joy_ft_t b_angle, joy_contact2d_t* contact)
 {
-        vec2_t a_bounds, b_bounds, a_h, b_h, a_pos, b_pos;
-        mat22_t a_rot, b_rot, a_rotT, b_rotT, c, abs_c, abs_ct;
-        vec2_t dp, a_d, b_d, abs_a_d, abs_b_d, a_face, b_face;
-        vec2_t normal;
-        ft_t separation, r_separation;
+        joy_vec2_t a_bounds, b_bounds, a_h, b_h, a_pos, b_pos;
+        joy_mat22_t a_rot, b_rot, a_rotT, b_rotT, c, abs_c, abs_ct;
+        joy_vec2_t dp, a_d, b_d, abs_a_d, abs_b_d, a_face, b_face;
+        joy_vec2_t normal;
+        joy_ft_t separation, r_separation;
 
         a_bounds.x = a.width; a_bounds.y = a.height;
         b_bounds.x = b.width; b_bounds.y = b.height;
@@ -1678,8 +1678,8 @@ int joy_math_collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
         a_pos.x = a.x + a_h.x; a_pos.y = a.y + a_h.y;
         b_pos.x = b.x + b_h.x; b_pos.y = b.y + b_h.y;
 
-        ft_t a_res = a_angle * 3.14159265f / 180.0f;
-        ft_t b_res = b_angle * 3.14159265f / 180.0f;
+        joy_ft_t a_res = a_angle * 3.14159265f / 180.0f;
+        joy_ft_t b_res = b_angle * 3.14159265f / 180.0f;
         a_rot = mat22_rotate(a_res);
         b_rot = mat22_rotate(b_res);
         a_rotT = mat22_transpose(a_rot);
@@ -1717,12 +1717,12 @@ int joy_math_collision2d_get_rectangles(rectangle_t a, ft_t a_angle,
         return 1;
 }
 
-int joy_math_collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* contact)
+int joy_math_collision2d_get_polygons(joy_polygon_t a, joy_polygon_t b, joy_contact2d_t* contact)
 {
-        vec2_t a_axis, b_axis, a_point, b_point, distance;
-        ft_t ab_sep = poly_min_sep(a, b, &a_axis, &a_point);
+        joy_vec2_t a_axis, b_axis, a_point, b_point, distance;
+        joy_ft_t ab_sep = poly_min_sep(a, b, &a_axis, &a_point);
         if (ab_sep >= 0) return 0;
-        ft_t ba_sep = poly_min_sep(b, a, &b_axis, &b_point);
+        joy_ft_t ba_sep = poly_min_sep(b, a, &b_axis, &b_point);
         if (ba_sep >= 0) return 0;
         if (ab_sep > ba_sep) {
                 contact->depth = -ab_sep;
@@ -1740,13 +1740,13 @@ int joy_math_collision2d_get_polygons(polygon_t a, polygon_t b, contact2d_t* con
         return 1;
 }
 
-ray3d_collision_t
-joy_math_collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3)
+joy_ray3d_collision_t
+joy_math_collision3d_get_ray_triangle(joy_ray3d_t ray, joy_vec3_t p1, joy_vec3_t p2, joy_vec3_t p3)
 {
-        const ft_t EPSILON = 0.000001f;
-        ray3d_collision_t result = {0};
-        vec3_t edge1, edge2, p, q, tv;
-        ft_t det, inv_det, u, v, t;
+        const joy_ft_t EPSILON = 0.000001f;
+        joy_ray3d_collision_t result = {0};
+        joy_vec3_t edge1, edge2, p, q, tv;
+        joy_ft_t det, inv_det, u, v, t;
 
         ray.direction = vec3_normalize(ray.direction);
         edge1 = vec3_sub(p2, p1);
@@ -1771,26 +1771,26 @@ joy_math_collision3d_get_ray_triangle(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t 
         return result;
 }
 
-ray3d_collision_t 
-joy_math_collision3d_get_ray_quad(ray3d_t ray, vec3_t p1, vec3_t p2, vec3_t p3, vec3_t p4)
+joy_ray3d_collision_t
+joy_math_collision3d_get_ray_quad(joy_ray3d_t ray, joy_vec3_t p1, joy_vec3_t p2, joy_vec3_t p3, joy_vec3_t p4)
 {
-        ray3d_collision_t result = joy_math_collision3d_get_ray_triangle(ray, p1, p2, p4);
+        joy_ray3d_collision_t result = joy_math_collision3d_get_ray_triangle(ray, p1, p2, p4);
         if (!result.hit) result = joy_math_collision3d_get_ray_triangle(ray, p2, p3, p4);
         return result;
 }
 
-ray3d_collision_t 
-joy_math_collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
+joy_ray3d_collision_t
+joy_math_collision3d_get_ray_sphere(joy_ray3d_t ray, joy_sphere_t sphere)
 {
-        ray3d_collision_t result = {0};
-        vec3_t rs = vec3_sub(ray.position, sphere.position);
-        ft_t dist_sq = vec3_square_length(rs);
-        ft_t a = vec3_dot(rs, ray.direction);
-        ft_t b = dist_sq - sphere.radius * sphere.radius;
-        ft_t c = a * a - b;
+        joy_ray3d_collision_t result = {0};
+        joy_vec3_t rs = vec3_sub(ray.position, sphere.position);
+        joy_ft_t dist_sq = vec3_square_length(rs);
+        joy_ft_t a = vec3_dot(rs, ray.direction);
+        joy_ft_t b = dist_sq - sphere.radius * sphere.radius;
+        joy_ft_t c = a * a - b;
         if (c < 0) return result;
-        ft_t d = sqrtf(c);
-        ft_t t = -a - d;
+        joy_ft_t d = sqrtf(c);
+        joy_ft_t t = -a - d;
         if (t < 0) t = -a + d;
         if (t >= 0) {
                 result.hit = true;
@@ -1801,13 +1801,13 @@ joy_math_collision3d_get_ray_sphere(ray3d_t ray, sphere_t sphere)
         return result;
 }
 
-ray3d_collision_t
-joy_math_collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
+joy_ray3d_collision_t
+joy_math_collision3d_get_ray_box(joy_ray3d_t ray, joy_bounding_box_t box)
 {
-        ray3d_collision_t result = {0};
-        vec3_t dirfrac;
-        ft_t t1, t2, tmin, tmax;
-        const ft_t EPSILON = 0.00001f;
+        joy_ray3d_collision_t result = {0};
+        joy_vec3_t dirfrac;
+        joy_ft_t t1, t2, tmin, tmax;
+        const joy_ft_t EPSILON = 0.00001f;
 
         ray.direction = vec3_normalize(ray.direction);
         dirfrac.x = 1.0f / ray.direction.x;
@@ -1834,17 +1834,17 @@ joy_math_collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
         if (tmin > tmax) return result;
         if (tmax < 0) return result;
 
-        ft_t t = tmin >= 0 ? tmin : tmax;
+        joy_ft_t t = tmin >= 0 ? tmin : tmax;
         if (t < EPSILON) return result;
 
         result.hit = true;
         result.distance = t;
         result.point = vec3_add(ray.position, vec3_scale(ray.direction, t));
 
-        vec3_t center = vec3_scale(vec3_add(box.min, box.max), 0.5f);
-        vec3_t htc = vec3_sub(center, result.point);
-        vec3_t half = vec3_scale(vec3_sub(box.max, box.min), 0.5f);
-        vec3_t abs_hit = vec3_abs(htc);
+        joy_vec3_t center = vec3_scale(vec3_add(box.min, box.max), 0.5f);
+        joy_vec3_t htc = vec3_sub(center, result.point);
+        joy_vec3_t half = vec3_scale(vec3_sub(box.max, box.min), 0.5f);
+        joy_vec3_t abs_hit = vec3_abs(htc);
 
         result.normal.x = (fabsf(abs_hit.x - half.x) < EPSILON) ? (htc.x > 0 ? 1 : -1) : 0;
         result.normal.y = (fabsf(abs_hit.y - half.y) < EPSILON) ? (htc.y > 0 ? 1 : -1) : 0;
@@ -1853,28 +1853,28 @@ joy_math_collision3d_get_ray_box(ray3d_t ray, bounding_box_t box)
         return result;
 }
 
-bool joy_math_collision3d_check_spheres(sphere_t a, sphere_t b)
+bool joy_math_collision3d_check_spheres(joy_sphere_t a, joy_sphere_t b)
 {
-        vec3_t diff = vec3_sub(b.position, a.position);
-        ft_t dist_sq = vec3_square_length(diff);
-        ft_t radius_sum = a.radius + b.radius;
+        joy_vec3_t diff = vec3_sub(b.position, a.position);
+        joy_ft_t dist_sq = vec3_square_length(diff);
+        joy_ft_t radius_sum = a.radius + b.radius;
         return dist_sq <= radius_sum * radius_sum;
 }
 
-bool joy_math_collision3d_check_boxes(bounding_box_t a, bounding_box_t b)
+bool joy_math_collision3d_check_boxes(joy_bounding_box_t a, joy_bounding_box_t b)
 {
         return a.min.x <= b.max.x && a.max.x >= b.min.x
             && a.min.y <= b.max.y && a.max.y >= b.min.y
             && a.min.z <= b.max.z && a.max.z >= b.min.z;
 }
 
-bool joy_math_collision3d_check_box_sphere(bounding_box_t a, sphere_t b)
+bool joy_math_collision3d_check_box_sphere(joy_bounding_box_t a, joy_sphere_t b)
 {
-        vec3_t closest;
+        joy_vec3_t closest;
         closest.x = fminf(fmaxf(b.position.x, a.min.x), a.max.x);
         closest.y = fminf(fmaxf(b.position.y, a.min.y), a.max.y);
         closest.z = fminf(fmaxf(b.position.z, a.min.z), a.max.z);
-        vec3_t diff = vec3_sub(b.position, closest);
+        joy_vec3_t diff = vec3_sub(b.position, closest);
         return vec3_square_length(diff) <= b.radius * b.radius;
 }
 

@@ -36,8 +36,8 @@ const PATHS = {
 
 /* 只映射到 emit_thunks.js / emit_cs.js 都认识的 C 类型。 */
 const SCALARS = {
-  'fp_t': 'int64_t',
-  'ft_t': 'float',
+  'joy_fp_t': 'int64_t',
+  'joy_ft_t': 'float',
   'float': 'float',
   'double': 'double',
   'int': 'int32_t',
@@ -173,7 +173,7 @@ function makePacked(spec) {
       L.push('        ' + d.varName + '.' + f.expr + ' = ' + d.varName + '_' + f.flat + ';');
     }
   }
-  L.push('        vec2_t _r;');
+  L.push('        joy_vec2_t _r;');
   L.push('        float _v0, _v1;');
   L.push('        uint32_t _b0, _b1;');
   L.push('        _r = ' + spec.orig + '(' + spec.callArgs.join(', ') + ');');
@@ -246,8 +246,8 @@ function generate(src) {
         fieldExpr: fld.expr,
       }));
     }
-    /* vec2_t 的两个 float 正好能塞进 uint64_t，给一个一次调用拿到结果版本。 */
-    if (f.ret === 'vec2_t' && retFields.length === 2) {
+    /* joy_vec2_t 的两个 float 正好能塞进 uint64_t，给一个一次调用拿到结果版本。 */
+    if (f.ret === 'joy_vec2_t' && retFields.length === 2) {
       add(Object.assign({}, base, {
         cname: 'joy_math_' + f.name,
         ret: 'uint64_t',

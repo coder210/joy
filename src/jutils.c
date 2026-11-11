@@ -138,7 +138,7 @@ joy_core_utils_int2bit(uint8_t* buf, int value)
 }
 
 bool
-joy_core_utils_wait_delay(delay_t* delay, uint64_t current_time)
+joy_core_utils_wait_delay(joy_delay_t* delay, uint64_t current_time)
 {
 	if (current_time - delay->time >= delay->timeout) {
 		delay->time = current_time;
@@ -350,11 +350,11 @@ joy_core_utils_read_script(const char* file, size_t* data_size)
 	return data;
 }
 
-random_num_p
+joy_random_num_p
 joy_core_utils_random_create(uint32_t seed)
 {
-	random_num_p rnum;
-	rnum = (random_num_p)SDL_malloc(sizeof(random_num_t));
+	joy_random_num_p rnum;
+	rnum = (joy_random_num_p)SDL_malloc(sizeof(joy_random_num_t));
 	SDL_assert(rnum);
 	rnum->mt[0] = seed;
 	rnum->index = 0;
@@ -366,13 +366,13 @@ joy_core_utils_random_create(uint32_t seed)
 }
 
 void
-joy_core_utils_random_destroy(random_num_p rnum)
+joy_core_utils_random_destroy(joy_random_num_p rnum)
 {
 	SDL_free(rnum);
 }
 
 uint32_t
-joy_core_utils_random_next(random_num_p rnum)
+joy_core_utils_random_next(joy_random_num_p rnum)
 {
 	const uint32_t matrix_a = 0x9908b0df;
 	const uint32_t upper_mask = 0x80000000;
@@ -396,7 +396,7 @@ joy_core_utils_random_next(random_num_p rnum)
 }
 
 void
-joy_core_utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_out)
+joy_core_utils_random_get_state(joy_random_num_p rnum, uint32_t* mt_out, int* index_out)
 {
 	if (rnum) {
 		if (mt_out) SDL_memcpy(mt_out, rnum->mt, sizeof(uint32_t) * MT_N);
@@ -405,7 +405,7 @@ joy_core_utils_random_get_state(random_num_p rnum, uint32_t* mt_out, int* index_
 }
 
 void
-joy_core_utils_random_set_state(random_num_p rnum, const uint32_t* mt_in, int index_in)
+joy_core_utils_random_set_state(joy_random_num_p rnum, const uint32_t* mt_in, int index_in)
 {
 	if (rnum) {
 		if (mt_in) SDL_memcpy(rnum->mt, mt_in, sizeof(uint32_t) * MT_N);
@@ -425,36 +425,36 @@ struct lcg_num {
 	uint64_t state;
 };
 
-lcg_num_p
+joy_lcg_num_p
 joy_core_lcg_random_create(uint64_t seed)
 {
-	lcg_num_p lcg = (lcg_num_p)SDL_malloc(sizeof(lcg_num_t));
+	joy_lcg_num_p lcg = (joy_lcg_num_p)SDL_malloc(sizeof(joy_lcg_num_t));
 	SDL_assert(lcg);
 	lcg->state = seed ? seed : 0x9e3779b97f4a7c15ULL; // 0 种子退化为默认非零初值
 	return lcg;
 }
 
 void
-joy_core_lcg_random_destroy(lcg_num_p lcg)
+joy_core_lcg_random_destroy(joy_lcg_num_p lcg)
 {
 	SDL_free(lcg);
 }
 
 uint32_t
-joy_core_lcg_random_next(lcg_num_p lcg)
+joy_core_lcg_random_next(joy_lcg_num_p lcg)
 {
 	lcg->state = LCG_A * lcg->state + LCG_C;
 	return (uint32_t)(lcg->state >> 32); // 取高 32 位，避免低位的短周期相关
 }
 
 void
-joy_core_lcg_random_get_state(lcg_num_p lcg, uint64_t* state_out)
+joy_core_lcg_random_get_state(joy_lcg_num_p lcg, uint64_t* state_out)
 {
 	if (lcg && state_out) *state_out = lcg->state;
 }
 
 void
-joy_core_lcg_random_set_state(lcg_num_p lcg, uint64_t state)
+joy_core_lcg_random_set_state(joy_lcg_num_p lcg, uint64_t state)
 {
 	if (lcg) lcg->state = state;
 }
@@ -757,9 +757,9 @@ struct jtimer {
 	void* userdata;            // 用户数据
 };
 
-jtimer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata)
+joy_timer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata)
 {
-	jtimer_p jtimer = (jtimer_p)malloc(sizeof(struct jtimer));
+	joy_timer_p jtimer = (joy_timer_p)malloc(sizeof(struct jtimer));
 	if (!jtimer) return NULL;
 
 	jtimer->last_time = SDL_GetTicks();
@@ -771,14 +771,14 @@ jtimer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdat
 	return jtimer;
 }
 
-void joy_scene_jtimer_destroy(jtimer_p jtimer)
+void joy_scene_jtimer_destroy(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		free(jtimer);
 	}
 }
 
-void joy_scene_jtimer_trigger(jtimer_p jtimer)
+void joy_scene_jtimer_trigger(joy_timer_p jtimer)
 {
 	if (!jtimer || !jtimer->active || !jtimer->callback) {
 		return;
@@ -803,14 +803,14 @@ void joy_scene_jtimer_trigger(jtimer_p jtimer)
 	}
 }
 
-void joy_scene_jtimer_set_interval(jtimer_p jtimer, int interval)
+void joy_scene_jtimer_set_interval(joy_timer_p jtimer, int interval)
 {
 	if (jtimer) {
 		jtimer->interval = interval;
 	}
 }
 
-void joy_scene_jtimer_set_active(jtimer_p jtimer, bool active)
+void joy_scene_jtimer_set_active(joy_timer_p jtimer, bool active)
 {
 	if (jtimer) {
 		jtimer->active = active;
@@ -820,14 +820,14 @@ void joy_scene_jtimer_set_active(jtimer_p jtimer, bool active)
 	}
 }
 
-void joy_scene_jtimer_reset(jtimer_p jtimer)
+void joy_scene_jtimer_reset(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		jtimer->last_time = SDL_GetTicks();
 	}
 }
 
-uint64_t joy_scene_jtimer_get_elapsed(jtimer_p jtimer)
+uint64_t joy_scene_jtimer_get_elapsed(joy_timer_p jtimer)
 {
 	if (!jtimer) return 0;
 	return SDL_GetTicks() - jtimer->last_time;

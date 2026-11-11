@@ -92,7 +92,7 @@ struct jtilemap_tile_layer {
 /* ---------- 对象图层 ---------- */
 struct jtilemap_object_layer {
         jtilemap_layer_t base;
-        kvec_t(jtilemap_object_t) objects;
+        kvec_t(joy_tilemap_object_t) objects;
 };
 
 
@@ -122,7 +122,7 @@ struct jtilemap {
         int tilewidth;      /* 默认瓦片宽度 */
         int tileheight;     /* 默认瓦片高度 */
 
-        kvec_t(jtilemap_tileset_t) tilesets;
+        kvec_t(joy_tilemap_tileset_t) tilesets;
 
         /* layers 数组中每一项是 jtilemap_layer_p（实际为 *tile_layer / *object_layer / *image_layer） */
         kvec_t(void*) layers;
@@ -132,15 +132,15 @@ struct jtilemap {
         kvec_t(joy_tilemap_anim_state_t) anim_states;
 };
 
-/* GID 解析结果类型已在 joy.h 中完整定义（jtilemap_gid_resolve_t），此处不再重复定义 */
+/* GID 解析结果类型已在 joy.h 中完整定义（joy_tilemap_gid_resolve_t），此处不再重复定义 */
 
 
-KHASH_MAP_INIT_STR(tex_cache, image_p)
+KHASH_MAP_INIT_STR(tex_cache, joy_image_p)
 
-struct jtilemap_render_t {
-        jr2d_p                 r2d;
+struct joy_tilemap_render_t {
+        joy_r2d_p                 r2d;
         char* asset_base;
-        jtilemap_path_remap_t  remap;
+        joy_tilemap_path_remap_t  remap;
         float                  view_w;
         float                  view_h;
         float                  tile_px;   /* 每格目标像素；<=0 时用 map.tilewidth（兼容默认） */
@@ -155,7 +155,7 @@ JOY_INLINE int jtilemap_gid_flags(int raw_gid) { return raw_gid & ~JTILEMAP_GID_
 
 /* ==================== 构建 tileset 动画加速表 ==================== */
 
-static void build_tileset_anim_map(jtilemap_tileset_t* ts)
+static void build_tileset_anim_map(joy_tilemap_tileset_t* ts)
 {
     if (ts->tilecount <= 0) return;
 
@@ -184,13 +184,13 @@ static void build_tileset_anim_map(jtilemap_tileset_t* ts)
 
 /* ==================== 收集所有有动画的 GID ==================== */
 
-static void collect_anim_gids(jtilemap_p tm)
+static void collect_anim_gids(joy_tilemap_p tm)
 {
     kv_init(tm->anim_gids);
     kv_init(tm->anim_states);
 
     for (size_t t = 0; t < kv_size(tm->tilesets); t++) {
-        jtilemap_tileset_t* ts = &kv_A(tm->tilesets, t);
+        joy_tilemap_tileset_t* ts = &kv_A(tm->tilesets, t);
         if (!ts->tile_anim_map) continue;
 
         for (int i = 0; i < ts->tilecount; i++) {
@@ -267,7 +267,7 @@ static void parse_animation_cjson(cJSON* arr, joy_tilemap_anim_t* anim)
     }
 }
 
-static bool parse_tileset_cjson(cJSON* j, jtilemap_tileset_t* ts)
+static bool parse_tileset_cjson(cJSON* j, joy_tilemap_tileset_t* ts)
 {
     memset(ts, 0, sizeof(*ts));
     kv_init(ts->anims);
@@ -316,9 +316,9 @@ static bool parse_tileset_cjson(cJSON* j, jtilemap_tileset_t* ts)
     return true;
 }
 
-static jtilemap_tile_layer_p parse_tile_layer_cjson(cJSON* j)
+static joy_tilemap_tile_layer_p parse_tile_layer_cjson(cJSON* j)
 {
-    jtilemap_tile_layer_p layer = (jtilemap_tile_layer_p)calloc(1, sizeof(jtilemap_tile_layer_t));
+    joy_tilemap_tile_layer_p layer = (joy_tilemap_tile_layer_p)calloc(1, sizeof(joy_tilemap_tile_layer_t));
     if (!layer) return NULL;
 
     layer->base.type = JTILEMAP_LAYER_TILE;
@@ -354,9 +354,9 @@ static jtilemap_tile_layer_p parse_tile_layer_cjson(cJSON* j)
     return layer;
 }
 
-static jtilemap_object_layer_p parse_object_layer_cjson(cJSON* j)
+static joy_tilemap_object_layer_p parse_object_layer_cjson(cJSON* j)
 {
-    jtilemap_object_layer_p layer = (jtilemap_object_layer_p)calloc(1, sizeof(jtilemap_object_layer_t));
+    joy_tilemap_object_layer_p layer = (joy_tilemap_object_layer_p)calloc(1, sizeof(joy_tilemap_object_layer_t));
     if (!layer) return NULL;
 
     layer->base.type = JTILEMAP_LAYER_OBJECT;
@@ -376,7 +376,7 @@ static jtilemap_object_layer_p parse_object_layer_cjson(cJSON* j)
         for (int i = 0; i < n; i++) {
             cJSON* o = cJSON_GetArrayItem(objs, i);
             if (!o || o->type != cJSON_Object) continue;
-            jtilemap_object_t obj;
+            joy_tilemap_object_t obj;
             memset(&obj, 0, sizeof(obj));
 
             obj.id       = cj_get_integer(o, "id", 0);
@@ -405,7 +405,7 @@ static jtilemap_object_layer_p parse_object_layer_cjson(cJSON* j)
             else if (cJSON_GetObjectItem(o, "polyline"))      obj.shape = JTILEMAP_SHAPE_POLYLINE;
             else                                             obj.shape = JTILEMAP_SHAPE_RECT;
 
-            kv_push(jtilemap_object_t, layer->objects, obj);
+            kv_push(joy_tilemap_object_t, layer->objects, obj);
         }
     }
     return layer;
@@ -432,14 +432,14 @@ static joy_tilemap_image_layer_p parse_image_layer_cjson(cJSON* j)
     return layer;
 }
 
-jtilemap_p jtilemap_load_cjson(cJSON* root)
+joy_tilemap_p jtilemap_load_cjson(cJSON* root)
 {
     if (!root || root->type != cJSON_Object) {
         joy_core_log_error("jtilemap_load_cjson: root is not an object");
         return NULL;
     }
 
-    jtilemap_p tm = (jtilemap_p)calloc(1, sizeof(jtilemap_t));
+    joy_tilemap_p tm = (joy_tilemap_p)calloc(1, sizeof(joy_tilemap_t));
     if (!tm) {
         joy_core_log_error("jtilemap_load_cjson: out of memory");
         return NULL;
@@ -467,10 +467,10 @@ jtilemap_p jtilemap_load_cjson(cJSON* root)
         for (int i = 0; i < n; i++) {
             cJSON* tj = cJSON_GetArrayItem(ts_arr, i);
             if (!tj || tj->type != cJSON_Object) continue;
-            jtilemap_tileset_t ts;
+            joy_tilemap_tileset_t ts;
             if (parse_tileset_cjson(tj, &ts)) {
                 build_tileset_anim_map(&ts);
-                kv_push(jtilemap_tileset_t, tm->tilesets, ts);
+                kv_push(joy_tilemap_tileset_t, tm->tilesets, ts);
             }
         }
     }
@@ -508,7 +508,7 @@ jtilemap_p jtilemap_load_cjson(cJSON* root)
     return tm;
 }
 
-jtilemap_p joy_scene_tilemap_load_file_json(const char* filename)
+joy_tilemap_p joy_scene_tilemap_load_file_json(const char* filename)
 {
     if (!filename) {
         joy_core_log_error("joy_scene_tilemap_load_file_json: filename is NULL");
@@ -535,14 +535,14 @@ jtilemap_p joy_scene_tilemap_load_file_json(const char* filename)
         return NULL;
     }
 
-    jtilemap_p tm = jtilemap_load_cjson(root);
+    joy_tilemap_p tm = jtilemap_load_cjson(root);
     cJSON_Delete(root);
     return tm;
 }
 
 /* ==================== 获取 deco 独立瓦片图片路径 ==================== */
 
-const char* joy_scene_tilemap_get_tile_image(const jtilemap_tileset_p ts, int local_id)
+const char* joy_scene_tilemap_get_tile_image(const joy_tilemap_tileset_p ts, int local_id)
 {
     if (!ts) return NULL;
     for (size_t i = 0; i < kv_size(ts->tile_defs); i++) {
@@ -552,7 +552,7 @@ const char* joy_scene_tilemap_get_tile_image(const jtilemap_tileset_p ts, int lo
     return NULL;
 }
 
-bool joy_scene_tilemap_get_tile_def_size(const jtilemap_tileset_p ts, int local_id,
+bool joy_scene_tilemap_get_tile_def_size(const joy_tilemap_tileset_p ts, int local_id,
                                           int* out_w, int* out_h)
 {
     if (!ts) return false;
@@ -573,7 +573,7 @@ static void destroy_anim(joy_tilemap_anim_t* anim)
     kv_destroy(anim->frames);
 }
 
-static void destroy_tileset(jtilemap_tileset_t* ts)
+static void destroy_tileset(joy_tilemap_tileset_t* ts)
 {
     free(ts->name);
     free(ts->image);
@@ -586,7 +586,7 @@ static void destroy_tileset(jtilemap_tileset_t* ts)
     free(ts->tile_anim_map);
 }
 
-static void destroy_object(jtilemap_object_t* obj)
+static void destroy_object(joy_tilemap_object_t* obj)
 {
     free(obj->name);
     free(obj->type);
@@ -599,12 +599,12 @@ static void destroy_layer(void* layer)
 
     switch (base->type) {
     case JTILEMAP_LAYER_TILE: {
-        jtilemap_tile_layer_p tl = (jtilemap_tile_layer_p)layer;
+        joy_tilemap_tile_layer_p tl = (joy_tilemap_tile_layer_p)layer;
         free(tl->data);
         break;
     }
     case JTILEMAP_LAYER_OBJECT: {
-        jtilemap_object_layer_p ol = (jtilemap_object_layer_p)layer;
+        joy_tilemap_object_layer_p ol = (joy_tilemap_object_layer_p)layer;
         for (size_t i = 0; i < kv_size(ol->objects); i++)
             destroy_object(&kv_A(ol->objects, i));
         kv_destroy(ol->objects);
@@ -620,23 +620,23 @@ static void destroy_layer(void* layer)
     free(layer);
 }
 
-int joy_scene_tilemap_get_width(const jtilemap_p tm) {
+int joy_scene_tilemap_get_width(const joy_tilemap_p tm) {
     return tm ? tm->width : 0;
 }
 
-int joy_scene_tilemap_get_height(const jtilemap_p tm) {
+int joy_scene_tilemap_get_height(const joy_tilemap_p tm) {
     return tm ? tm->height : 0;
 }
 
-int joy_scene_tilemap_get_tilewidth(const jtilemap_p tm) {
+int joy_scene_tilemap_get_tilewidth(const joy_tilemap_p tm) {
     return tm ? tm->tilewidth : 0;
 }
 
-int joy_scene_tilemap_get_tileheight(const jtilemap_p tm) {
+int joy_scene_tilemap_get_tileheight(const joy_tilemap_p tm) {
     return tm ? tm->tileheight : 0;
 }
 
-void joy_scene_tilemap_destroy(jtilemap_p tm)
+void joy_scene_tilemap_destroy(joy_tilemap_p tm)
 {
     if (!tm) return;
 
@@ -661,19 +661,19 @@ void joy_scene_tilemap_destroy(jtilemap_p tm)
 
 /* ==================== GID 解析 ==================== */
 
-jtilemap_gid_resolve_t joy_scene_tilemap_resolve_gid(const jtilemap_p tm, int gid)
+joy_tilemap_gid_resolve_t joy_scene_tilemap_resolve_gid(const joy_tilemap_p tm, int gid)
 {
-    jtilemap_gid_resolve_t result;
+    joy_tilemap_gid_resolve_t result;
     memset(&result, 0, sizeof(result));
 
     if (!tm || gid <= 0) return result;
 
     /* 找到 firstgid ≤ gid 且最大的 tileset */
-    jtilemap_tileset_p best_ts = NULL;
+    joy_tilemap_tileset_p best_ts = NULL;
     int best_firstgid = 0;
 
     for (size_t i = 0; i < kv_size(tm->tilesets); i++) {
-        jtilemap_tileset_p ts = &kv_A(tm->tilesets, i);
+        joy_tilemap_tileset_p ts = &kv_A(tm->tilesets, i);
         if (ts->firstgid <= gid && ts->firstgid >= best_firstgid) {
             best_ts = ts;
             best_firstgid = ts->firstgid;
@@ -700,9 +700,9 @@ jtilemap_gid_resolve_t joy_scene_tilemap_resolve_gid(const jtilemap_p tm, int gi
 
 /* ==================== 动画帧计算 ==================== */
 
-int joy_scene_tilemap_get_anim_tileid(const jtilemap_p tm, int gid, uint32_t time_ms)
+int joy_scene_tilemap_get_anim_tileid(const joy_tilemap_p tm, int gid, uint32_t time_ms)
 {
-    jtilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
+    joy_tilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
     if (!res.has_anim) return res.local_id;
 
     joy_tilemap_anim_t* anim = &kv_A(res.tileset->anims, (size_t)res.anim_idx);
@@ -728,7 +728,7 @@ int joy_scene_tilemap_get_anim_tileid(const jtilemap_p tm, int gid, uint32_t tim
 
 /* ==================== 纹理坐标计算 ==================== */
 
-bool joy_scene_tilemap_get_tile_uv(const jtilemap_p tm, int gid,
+bool joy_scene_tilemap_get_tile_uv(const joy_tilemap_p tm, int gid,
                                    uint32_t time_ms, float out_rect[4])
 {
     if (!tm || !out_rect) return false;
@@ -736,10 +736,10 @@ bool joy_scene_tilemap_get_tile_uv(const jtilemap_p tm, int gid,
     memset(out_rect, 0, 4 * sizeof(float));
     if (gid <= 0) return false;
 
-    jtilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
+    joy_tilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
     if (!res.tileset) return false;
 
-    jtilemap_tileset_p ts = res.tileset;
+    joy_tilemap_tileset_p ts = res.tileset;
 
     /* 确定当前显示的局部瓦片 ID（考虑动画） */
     int local_id = res.local_id;
@@ -767,7 +767,7 @@ bool joy_scene_tilemap_get_tile_uv(const jtilemap_p tm, int gid,
 
 /* ==================== 图层查询 ==================== */
 
-jtilemap_tile_layer_p joy_scene_tilemap_find_tile_layer(const jtilemap_p tm,
+joy_tilemap_tile_layer_p joy_scene_tilemap_find_tile_layer(const joy_tilemap_p tm,
                                                          const char* name)
 {
     if (!tm || !name) return NULL;
@@ -776,13 +776,13 @@ jtilemap_tile_layer_p joy_scene_tilemap_find_tile_layer(const jtilemap_p tm,
         jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
         if (base->type == JTILEMAP_LAYER_TILE && base->name &&
             strcmp(base->name, name) == 0) {
-            return (jtilemap_tile_layer_p)base;
+            return (joy_tilemap_tile_layer_p)base;
         }
     }
     return NULL;
 }
 
-jtilemap_object_layer_p joy_scene_tilemap_find_object_layer(const jtilemap_p tm,
+joy_tilemap_object_layer_p joy_scene_tilemap_find_object_layer(const joy_tilemap_p tm,
                                                             const char* name)
 {
     if (!tm || !name) return NULL;
@@ -791,17 +791,17 @@ jtilemap_object_layer_p joy_scene_tilemap_find_object_layer(const jtilemap_p tm,
         jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
         if (base->type == JTILEMAP_LAYER_OBJECT && base->name &&
             strcmp(base->name, name) == 0) {
-            return (jtilemap_object_layer_p)base;
+            return (joy_tilemap_object_layer_p)base;
         }
     }
     return NULL;
 }
 
-void joy_scene_tilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void* arg), void*arg)
+void joy_scene_tilemap_object_layer_foreach(joy_tilemap_object_layer_p ol, void (*callback)(joy_tilemap_object_p obj, void* arg), void*arg)
 {
     if (ol) {
         for (size_t i = 0; i < kv_size(ol->objects); i++) {
-            jtilemap_object_t* obj = &kv_A(ol->objects, i);
+            joy_tilemap_object_t* obj = &kv_A(ol->objects, i);
             if (obj->shape != JTILEMAP_SHAPE_RECT)
                 continue;
             callback(obj, arg);
@@ -811,17 +811,17 @@ void joy_scene_tilemap_object_layer_foreach(jtilemap_object_layer_p ol, void (*c
 }
 
 /* 遍历对象层内全部对象（不过滤形状：point/ellipse/polyline 等也回调；用于出生点解析） */
-void joy_scene_tilemap_object_layer_foreach_all(jtilemap_object_layer_p ol, void (*callback)(jtilemap_object_p obj, void* arg), void* arg)
+void joy_scene_tilemap_object_layer_foreach_all(joy_tilemap_object_layer_p ol, void (*callback)(joy_tilemap_object_p obj, void* arg), void* arg)
 {
     if (ol) {
         for (size_t i = 0; i < kv_size(ol->objects); i++) {
-            jtilemap_object_t* obj = &kv_A(ol->objects, i);
+            joy_tilemap_object_t* obj = &kv_A(ol->objects, i);
             callback(obj, arg);
         }
     }
 }
 
-int joy_scene_tilemap_get_tile(const jtilemap_tile_layer_p layer, int tx, int ty)
+int joy_scene_tilemap_get_tile(const joy_tilemap_tile_layer_p layer, int tx, int ty)
 {
     if (!layer || !layer->data) return 0;
     if (tx < 0 || tx >= layer->width || ty < 0 || ty >= layer->height)
@@ -842,7 +842,7 @@ static const char* default_remap(const char* path)
         return buf;
 }
 
-static image_p load_texture_internal(jtilemap_render_p r, const char* path)
+static joy_image_p load_texture_internal(joy_tilemap_render_p r, const char* path)
 {
         if (!path || !*path) return NULL;
         khiter_t k = kh_get(tex_cache, r->tex_cache, path);
@@ -877,7 +877,7 @@ static image_p load_texture_internal(jtilemap_render_p r, const char* path)
                 return NULL;
         }
 
-        image_p img = joy_ui_image_create_from_data(r->r2d, data, w, h);
+        joy_image_p img = joy_ui_image_create_from_data(r->r2d, data, w, h);
         stbi_image_free(data);
         if (!img) return NULL;
 
@@ -888,15 +888,15 @@ static image_p load_texture_internal(jtilemap_render_p r, const char* path)
         return img;
 }
 
-static image_p load_tileset_tex(jtilemap_render_p r, const jtilemap_tileset_t* ts)
+static joy_image_p load_tileset_tex(joy_tilemap_render_p r, const joy_tilemap_tileset_t* ts)
 {
         if (!ts || !ts->image) return NULL;
         const char* mapped = r->remap ? r->remap(ts->image) : ts->image;
         return load_texture_internal(r, mapped);
 }
 
-static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
-        const jtilemap_tile_layer_p layer,
+static void render_tile_layer_internal(joy_tilemap_render_p r, joy_tilemap_p tm,
+        const joy_tilemap_tile_layer_p layer,
         float cam_x, float cam_y, uint32_t time_ms)
 {
         if (!layer->base.visible) return;
@@ -920,7 +920,7 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         if (raw_gid == 0) continue;
                         int gid = jtilemap_clean_gid(raw_gid);
                         int flags = jtilemap_gid_flags(raw_gid);
-                        jtilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
+                        joy_tilemap_gid_resolve_t res = joy_scene_tilemap_resolve_gid(tm, gid);
                         if (!res.tileset) continue;
 
                         /* 瓦片网格步长取 map 的 tilewidth/tileheight（这是 Tiled 里
@@ -946,27 +946,27 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         const char* deco_img = joy_scene_tilemap_get_tile_image(res.tileset, res.local_id);
                         if (deco_img) {
                                 const char* mapped = r->remap ? r->remap(deco_img) : deco_img;
-                                image_p timg = load_texture_internal(r, mapped);
+                                joy_image_p timg = load_texture_internal(r, mapped);
                                 if (!timg) continue;
                                 joy_ui_image_set_alpha(timg, alpha);
                                 int dw = dst_iw, dh = dst_ih;
                                 joy_scene_tilemap_get_tile_def_size(res.tileset, res.local_id, &dw, &dh);
-                                joy_ui_image_draw1(timg, NULL, &(jrect_t){ (float)dst_ix, (float)dst_iy, (float)dw, (float)dh });
+                                joy_ui_image_draw1(timg, NULL, &(joy_rect_t){ (float)dst_ix, (float)dst_iy, (float)dw, (float)dh });
                                 continue;
                         }
 
                         float uv[4];
                         if (!joy_scene_tilemap_get_tile_uv(tm, gid, time_ms, uv)) continue;
 
-                        image_p timg = load_tileset_tex(r, res.tileset);
+                        joy_image_p timg = load_tileset_tex(r, res.tileset);
                         if (!timg) {
                                 joy_r2d_set_color(r->r2d, 255, 0, 255, 255);
-                                joy_math_shape_draw_rectangle(r->r2d, "fill", (jrect_t) { (float)dst_ix, (float)dst_iy, (float)dst_iw, (float)dst_ih });
+                                joy_math_shape_draw_rectangle(r->r2d, "fill", (joy_rect_t) { (float)dst_ix, (float)dst_iy, (float)dst_iw, (float)dst_ih });
                                 continue;
                         }
 
                         joy_ui_image_set_alpha(timg, alpha);
-                        jrect_t src = { uv[0], uv[1], uv[2], uv[3] };
+                        joy_rect_t src = { uv[0], uv[1], uv[2], uv[3] };
 
                         /* Tiled 翻转标志（bit D/H/V）→ SDL 旋转角 + 水平/垂直翻转。
                          * 官方语义（正交地图）：先对角镜像（transpose，x/y 互换），
@@ -993,9 +993,9 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
                         }
 
                         /* 旋转/翻转绕瓦片中心：position 传目标中心，origin 传源中心。 */
-                        vec2_t pos = { (float)dst_ix + dst_iw * 0.5f, (float)dst_iy + dst_ih * 0.5f };
-                        vec2_t org = { ts_tw * 0.5f, ts_th * 0.5f };
-                        vec2_t scl = {
+                        joy_vec2_t pos = { (float)dst_ix + dst_iw * 0.5f, (float)dst_iy + dst_ih * 0.5f };
+                        joy_vec2_t org = { ts_tw * 0.5f, ts_th * 0.5f };
+                        joy_vec2_t scl = {
                                 (sdl_flip_h ? -1.0f : 1.0f) * ((float)dst_iw / ts_tw),
                                 (sdl_flip_v ? -1.0f : 1.0f) * ((float)dst_ih / ts_th)
                         };
@@ -1004,22 +1004,22 @@ static void render_tile_layer_internal(jtilemap_render_p r, jtilemap_p tm,
         }
 }
 
-static void render_object_layer_internal(const jtilemap_object_layer_p layer,
-        float cam_x, float cam_y, jr2d_p r2d)
+static void render_object_layer_internal(const joy_tilemap_object_layer_p layer,
+        float cam_x, float cam_y, joy_r2d_p r2d)
 {
         if (!layer->base.visible) return;
         cam_x = cam_x * layer->base.parallaxx - layer->base.offsetx;
         cam_y = cam_y * layer->base.parallaxy - layer->base.offsety;
         joy_r2d_set_color(r2d, 255, 85, 0, 255);
         for (size_t i = 0; i < kv_size(layer->objects); i++) {
-                jtilemap_object_t* obj = &kv_A(layer->objects, i);
+                joy_tilemap_object_t* obj = &kv_A(layer->objects, i);
                 if (!obj->visible || obj->shape != JTILEMAP_SHAPE_RECT) continue;
                 if (obj->width <= 0.0f || obj->height <= 0.0f || obj->width > 10000.0f || obj->height > 10000.0f) continue;
-                joy_math_shape_draw_rectangle(r2d, "line", (jrect_t) { obj->x - cam_x, obj->y - cam_y, obj->width, obj->height });
+                joy_math_shape_draw_rectangle(r2d, "line", (joy_rect_t) { obj->x - cam_x, obj->y - cam_y, obj->width, obj->height });
         }
 }
 
-static void render_image_layer_internal(jtilemap_render_p r,
+static void render_image_layer_internal(joy_tilemap_render_p r,
         const joy_tilemap_image_layer_p layer,
         float cam_x, float cam_y)
 {
@@ -1028,7 +1028,7 @@ static void render_image_layer_internal(jtilemap_render_p r,
         cam_y = cam_y * layer->base.parallaxy - layer->base.offsety;
 
         const char* mapped = r->remap ? r->remap(layer->image) : layer->image;
-        image_p timg = load_texture_internal(r, mapped);
+        joy_image_p timg = load_texture_internal(r, mapped);
         if (!timg) return;
 
         float tex_w = 0, tex_h = 0;
@@ -1042,16 +1042,16 @@ static void render_image_layer_internal(jtilemap_render_p r,
 
         for (float py = start_y; py < vp_h; py += tex_h)
                 for (float px = start_x; px < vp_w; px += tex_w)
-                        joy_ui_image_draw1(timg, NULL, &(jrect_t){ px, py, tex_w, tex_h });
+                        joy_ui_image_draw1(timg, NULL, &(joy_rect_t){ px, py, tex_w, tex_h });
 }
 
 /* ======================== 公共 API ======================== */
 
-jtilemap_render_p joy_scene_tilemap_render_create(jr2d_p renderer,
+joy_tilemap_render_p joy_scene_tilemap_render_create(joy_r2d_p renderer,
         const char* asset_base_path,
-        jtilemap_path_remap_t remap)
+        joy_tilemap_path_remap_t remap)
 {
-        jtilemap_render_p r = (jtilemap_render_p)calloc(1, sizeof(jtilemap_render_t));
+        joy_tilemap_render_p r = (joy_tilemap_render_p)calloc(1, sizeof(joy_tilemap_render_t));
         if (!r) return NULL;
         r->r2d = renderer;
         r->remap = remap ? remap : default_remap;
@@ -1063,12 +1063,12 @@ jtilemap_render_p joy_scene_tilemap_render_create(jr2d_p renderer,
         return r;
 }
 
-void joy_scene_tilemap_render_set_tile_px(jtilemap_render_p r, float px)
+void joy_scene_tilemap_render_set_tile_px(joy_tilemap_render_p r, float px)
 {
         if (r) r->tile_px = px;
 }
 
-void joy_scene_tilemap_render_all(jtilemap_render_p r, jtilemap_p tm,
+void joy_scene_tilemap_render_all(joy_tilemap_render_p r, joy_tilemap_p tm,
         float camera_x, float camera_y,
         uint32_t time_ms)
 {
@@ -1087,10 +1087,10 @@ void joy_scene_tilemap_render_all(jtilemap_render_p r, jtilemap_p tm,
                 jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
                 switch (base->type) {
                 case JTILEMAP_LAYER_TILE:
-                        render_tile_layer_internal(r, tm, (jtilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
+                        render_tile_layer_internal(r, tm, (joy_tilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
                         break;
                 case JTILEMAP_LAYER_OBJECT:
-                        render_object_layer_internal((jtilemap_object_layer_p)base, camera_x, camera_y, r->r2d);
+                        render_object_layer_internal((joy_tilemap_object_layer_p)base, camera_x, camera_y, r->r2d);
                         break;
                 case JTILEMAP_LAYER_IMAGE:
                         render_image_layer_internal(r, (joy_tilemap_image_layer_p)base, camera_x, camera_y);
@@ -1101,7 +1101,7 @@ void joy_scene_tilemap_render_all(jtilemap_render_p r, jtilemap_p tm,
 
 /* 只渲染瓦片层（Ground/Object 等），跳过对象层（Collision/Player 的调试线框）与图片层。
  * 运行时关卡渲染应使用本接口：对象的碰撞/出生线框属于编辑期辅助，不该出现在游戏画面里。 */
-void joy_scene_tilemap_render_tiles(jtilemap_render_p r, jtilemap_p tm,
+void joy_scene_tilemap_render_tiles(joy_tilemap_render_p r, joy_tilemap_p tm,
         float camera_x, float camera_y,
         uint32_t time_ms)
 {
@@ -1119,11 +1119,11 @@ void joy_scene_tilemap_render_tiles(jtilemap_render_p r, jtilemap_p tm,
         for (size_t i = 0; i < kv_size(tm->layers); i++) {
                 jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
                 if (base->type == JTILEMAP_LAYER_TILE)
-                        render_tile_layer_internal(r, tm, (jtilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
+                        render_tile_layer_internal(r, tm, (joy_tilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
         }
 }
 
-bool joy_scene_tilemap_render_layer(jtilemap_render_p r, jtilemap_p tm,
+bool joy_scene_tilemap_render_layer(joy_tilemap_render_p r, joy_tilemap_p tm,
         const char* layer_name,
         float camera_x, float camera_y,
         uint32_t time_ms)
@@ -1135,10 +1135,10 @@ bool joy_scene_tilemap_render_layer(jtilemap_render_p r, jtilemap_p tm,
                 if (!base->name || strcmp(base->name, layer_name) != 0) continue;
                 switch (base->type) {
                 case JTILEMAP_LAYER_TILE:
-                        render_tile_layer_internal(r, tm, (jtilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
+                        render_tile_layer_internal(r, tm, (joy_tilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
                         return true;
                 case JTILEMAP_LAYER_OBJECT:
-                        render_object_layer_internal((jtilemap_object_layer_p)base, camera_x, camera_y, r->r2d);
+                        render_object_layer_internal((joy_tilemap_object_layer_p)base, camera_x, camera_y, r->r2d);
                         return true;
                 case JTILEMAP_LAYER_IMAGE:
                         render_image_layer_internal(r, (joy_tilemap_image_layer_p)base, camera_x, camera_y);
@@ -1148,12 +1148,12 @@ bool joy_scene_tilemap_render_layer(jtilemap_render_p r, jtilemap_p tm,
         return false;
 }
 
-void joy_scene_tilemap_render_destroy(jtilemap_render_p r)
+void joy_scene_tilemap_render_destroy(joy_tilemap_render_p r)
 {
         if (!r) return;
         if (r->tex_cache) {
                 const char* key;
-                image_p timg;
+                joy_image_p timg;
                 kh_foreach(r->tex_cache, key, timg, {
                         if (timg) joy_ui_image_destroy(timg);
                         free((void*)key);
