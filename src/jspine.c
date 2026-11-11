@@ -18,7 +18,7 @@
 #include <spine/extension.h>
 
 #include "joy.h"
-#include "external/stb_image.h" /* 实现在 src/vendor_impl.c（STB_IMAGE_IMPLEMENTATION） */
+#include "external/stb_image.h" /* 实现在 src/jvendor_impl.c（STB_IMAGE_IMPLEMENTATION） */
 
 #include <float.h>
 #include <stdlib.h>

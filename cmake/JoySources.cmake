@@ -13,7 +13,7 @@
 #
 # 生成物 api/generated/jmath_wrappers.c 列在 math 域，等 IDL 改 manifest 后
 # 由记录类型取代；src/jlut.c 是两张三角查表的唯一定义（原 jlut.h 数据）；
-# src/vendor_impl.c 是 stb/dr 系列全仓唯一实现翻译单元，必须保留。
+# src/jvendor_impl.c 是 stb/dr 系列全仓唯一实现翻译单元，必须保留。
 # ============================================================
 
 set(JOY_SRC_CORE
@@ -65,7 +65,7 @@ set(JOY_SRC_AUDIO
 )
 
 set(JOY_SRC_INTERNAL
-    src/vendor_impl.c
+    src/jvendor_impl.c
 )
 
 # external/ 顶层：vendored 第三方 + 一个自有包装（aes_util.c）。
