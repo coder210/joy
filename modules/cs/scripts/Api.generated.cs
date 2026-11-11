@@ -250,6 +250,24 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dSetClearColor(ulong r, uint cr, uint cg, uint cb);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshCube(ulong r, float w, float h, float d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshSphere(ulong r, float radius, int slices, int stacks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshPlane(ulong r, float w, float d, int segs);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshRamp(ulong r, float w, float l, float h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshQuad(ulong r);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshCubeWire(ulong r, float w, float h, float d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshSphereWire(ulong r, float radius, int slices, int stacks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshPlaneWire(ulong r, float w, float d, int segs);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshRampWire(ulong r, float w, float l, float h);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dMeshDestroy(ulong r, ulong m);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R3dFontInit(ulong r, string ttf_path, int pixel_height);
@@ -369,6 +387,14 @@ namespace Joy.Api
         internal static extern void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dDrawGrid(ulong r, int slices, float spacing, float line_width);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshCubeLit(ulong r, float w, float h, float d);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshSphereLit(ulong r, float radius, int slices, int stacks);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshPlaneLit(ulong r, float w, float d, int segs);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong R3dMeshRampLit(ulong r, float w, float l, float h);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JanimatorDestroy(ulong anim);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -752,6 +778,10 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int JtilemapGetAnimTileid(ulong tm, int gid, uint time_ms);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong JtilemapFindTileLayer(ulong tm, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong JtilemapFindObjectLayer(ulong tm, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int JtilemapGetTile(ulong layer, int tx, int ty);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void JtilemapRenderAll(ulong r, ulong tm, float camera_x, float camera_y, uint time_ms);
@@ -880,6 +910,10 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneNodeSetTag(ulong node, string tag);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SceneFindNodeByName(ulong root, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SceneFindNodeByNameDeep(ulong scene, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneNodeUpdate(ulong node, float delta_time);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneDestroy(ulong scene);
@@ -890,9 +924,13 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int SceneGetRootCount(ulong scene);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SceneGetRootAt(ulong scene, int index);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneUpdate(ulong scene, float delta_time);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneSetPopupNode(ulong scene, ulong node);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SceneGetPopupNode(ulong scene);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneManagerDestroy(ulong mgr);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -903,6 +941,8 @@ namespace Joy.Api
         internal static extern void SceneManagerPop(ulong mgr);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SceneManagerUpdate(ulong mgr, float delta_time);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong SceneManagerGetCurrent(ulong mgr);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern int SceneManagerGetCount(ulong mgr);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -1764,6 +1804,18 @@ namespace Joy.Api
         internal ulong Handle { get; private set; }
         internal Jtext(ulong handle) { Handle = handle; }
         ~Jtext()
+        {
+            ulong h = Handle;
+            Handle = 0;
+            if (h != 0) Native.Release(h);
+        }
+    }
+
+    public sealed class JtilemapObjectLayer
+    {
+        internal ulong Handle { get; private set; }
+        internal JtilemapObjectLayer(ulong handle) { Handle = handle; }
+        ~JtilemapObjectLayer()
         {
             ulong h = Handle;
             Handle = 0;
@@ -2678,6 +2730,69 @@ namespace Joy.Api
             if (r == null) throw new ArgumentNullException(nameof(r));
             Native.R3dSetClearColor(r.Handle, cr, cg, cb);
         }
+        public static RenderMesh R3dMeshCube(Jr3d r, float w, float h, float d)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshCube(r.Handle, w, h, d);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_cube failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshSphere(Jr3d r, float radius, int slices, int stacks)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshSphere(r.Handle, radius, slices, stacks);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_sphere failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshPlane(Jr3d r, float w, float d, int segs)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshPlane(r.Handle, w, d, segs);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_plane failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshRamp(Jr3d r, float w, float l, float h)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshRamp(r.Handle, w, l, h);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_ramp failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshQuad(Jr3d r)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshQuad(r.Handle);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_quad failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshCubeWire(Jr3d r, float w, float h, float d)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshCubeWire(r.Handle, w, h, d);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_cube_wire failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshSphereWire(Jr3d r, float radius, int slices, int stacks)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshSphereWire(r.Handle, radius, slices, stacks);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_sphere_wire failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshPlaneWire(Jr3d r, float w, float d, int segs)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshPlaneWire(r.Handle, w, d, segs);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_plane_wire failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshRampWire(Jr3d r, float w, float l, float h)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshRampWire(r.Handle, w, l, h);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_ramp_wire failed");
+            return new RenderMesh(__h);
+        }
         public static void R3dMeshDestroy(Jr3d r, RenderMesh m)
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
@@ -3007,6 +3122,34 @@ namespace Joy.Api
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
             Native.R3dDrawGrid(r.Handle, slices, spacing, line_width);
+        }
+        public static RenderMesh R3dMeshCubeLit(Jr3d r, float w, float h, float d)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshCubeLit(r.Handle, w, h, d);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_cube_lit failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshSphereLit(Jr3d r, float radius, int slices, int stacks)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshSphereLit(r.Handle, radius, slices, stacks);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_sphere_lit failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshPlaneLit(Jr3d r, float w, float d, int segs)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshPlaneLit(r.Handle, w, d, segs);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_plane_lit failed");
+            return new RenderMesh(__h);
+        }
+        public static RenderMesh R3dMeshRampLit(Jr3d r, float w, float l, float h)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            ulong __h = Native.R3dMeshRampLit(r.Handle, w, l, h);
+            if (__h == 0) throw new InvalidOperationException("joy_r3d_mesh_ramp_lit failed");
+            return new RenderMesh(__h);
         }
         public static void JanimatorDestroy(Janimator anim)
         {
@@ -3973,6 +4116,20 @@ namespace Joy.Api
             if (tm == null) throw new ArgumentNullException(nameof(tm));
             return Native.JtilemapGetAnimTileid(tm.Handle, gid, time_ms);
         }
+        public static JtilemapTileLayer JtilemapFindTileLayer(Jtilemap tm, string name)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            ulong __h = Native.JtilemapFindTileLayer(tm.Handle, name);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_tilemap_find_tile_layer failed");
+            return new JtilemapTileLayer(__h);
+        }
+        public static JtilemapObjectLayer JtilemapFindObjectLayer(Jtilemap tm, string name)
+        {
+            if (tm == null) throw new ArgumentNullException(nameof(tm));
+            ulong __h = Native.JtilemapFindObjectLayer(tm.Handle, name);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_tilemap_find_object_layer failed");
+            return new JtilemapObjectLayer(__h);
+        }
         public static int JtilemapGetTile(JtilemapTileLayer layer, int tx, int ty)
         {
             if (layer == null) throw new ArgumentNullException(nameof(layer));
@@ -4306,6 +4463,20 @@ namespace Joy.Api
             if (node == null) throw new ArgumentNullException(nameof(node));
             Native.SceneNodeSetTag(node.Handle, tag);
         }
+        public static SceneNode SceneFindNodeByName(SceneNode root, string name)
+        {
+            if (root == null) throw new ArgumentNullException(nameof(root));
+            ulong __h = Native.SceneFindNodeByName(root.Handle, name);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_find_node_by_name failed");
+            return new SceneNode(__h);
+        }
+        public static SceneNode SceneFindNodeByNameDeep(Scene scene, string name)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            ulong __h = Native.SceneFindNodeByNameDeep(scene.Handle, name);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_find_node_by_name_deep failed");
+            return new SceneNode(__h);
+        }
         public static void SceneNodeUpdate(SceneNode node, float delta_time)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
@@ -4333,6 +4504,13 @@ namespace Joy.Api
             if (scene == null) throw new ArgumentNullException(nameof(scene));
             return Native.SceneGetRootCount(scene.Handle);
         }
+        public static SceneNode SceneGetRootAt(Scene scene, int index)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            ulong __h = Native.SceneGetRootAt(scene.Handle, index);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_get_root_at failed");
+            return new SceneNode(__h);
+        }
         public static void SceneUpdate(Scene scene, float delta_time)
         {
             if (scene == null) throw new ArgumentNullException(nameof(scene));
@@ -4343,6 +4521,13 @@ namespace Joy.Api
             if (scene == null) throw new ArgumentNullException(nameof(scene));
             if (node == null) throw new ArgumentNullException(nameof(node));
             Native.SceneSetPopupNode(scene.Handle, node.Handle);
+        }
+        public static SceneNode SceneGetPopupNode(Scene scene)
+        {
+            if (scene == null) throw new ArgumentNullException(nameof(scene));
+            ulong __h = Native.SceneGetPopupNode(scene.Handle);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_get_popup_node failed");
+            return new SceneNode(__h);
         }
         public static void SceneManagerDestroy(SceneManager mgr)
         {
@@ -4370,6 +4555,13 @@ namespace Joy.Api
         {
             if (mgr == null) throw new ArgumentNullException(nameof(mgr));
             Native.SceneManagerUpdate(mgr.Handle, delta_time);
+        }
+        public static Scene SceneManagerGetCurrent(SceneManager mgr)
+        {
+            if (mgr == null) throw new ArgumentNullException(nameof(mgr));
+            ulong __h = Native.SceneManagerGetCurrent(mgr.Handle);
+            if (__h == 0) throw new InvalidOperationException("joy_scene_manager_get_current failed");
+            return new Scene(__h);
         }
         public static int SceneManagerGetCount(SceneManager mgr)
         {

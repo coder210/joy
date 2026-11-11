@@ -1,11 +1,9 @@
-# 交接文档（临时）
+# joy 交付记录（已收口）
 
-> 用途：让接手的 AI / 人快速接手本仓库当前状态。任务收敛后可删除。
-> 快照时间：2026-11-11（本轮提交后 HEAD 会前进，**当前提交一律以 `git log -1` 为准**，
-> 本文件里的 hash 与时间只是快照）。
-> 本轮提交前 HEAD 为 `69ffaa64`；2026-11-10 ~ 11 完成两轮改名收尾、构建 /
-> 生成链路加固、文档对齐，见 §3 的 11~13 与 §7 的「已完成」。
-> **§7 是接手后的待办清单**：按优先级排好，每项写了具体位置、做法、验证与风险。
+> **项目于 2026-11-11 收口，没有计划内工作。本文不是待办清单。**
+> 用途：记录仓库的最终状态与已知事实，供以后查阅或另开新议题时参考。
+> 当前提交一律以 `git log -1` 为准；收口提交前 HEAD 为 `240f5f7a`。
+> §3 记录已完成的实现，§7 写明交付范围与「明确不做」的方向，§10 是验收结果。
 
 ## 1. 项目是什么
 
@@ -22,7 +20,8 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 | L2 | 值类型结构体按字段展开 | 能，需 `structs.js` 认得字段类型 |
 | L3 | 结构体指针 / 出参 / 回调 / 可变参 | 不能，`status:off`，消费方退化 |
 
-当前：**1156 条 IDL，701 条 `status:on`，vtable 701 个强签名**。
+当前：**1157 条 IDL，721 条 `status:on`，vtable 721 个强签名**（其中 7 条是
+`borrowed` 借用句柄见 §3 的 14，13 条 3D mesh 靠单参数 dtor 开放见 §3 的 15）。
 
 ## 2. 当前状态
 
@@ -84,6 +83,27 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    （名字写旧会让该 API 完全不进自检，修正后 `joy_api_vtable.c` 多 6 行），
    以及 `gen_bindings.js` 的 `SKIP_NAMES` 里已不存在的 `jecs_test`。
    剩余 16 处旧名全部是改名记录 / 旧胶水历史留档，有意保留，不要再清。
+14. **借用句柄语义（机制 A，2026-11-11）**：IDL 新增人工字段 `borrowed`；
+   `emit_thunks.js` 的 `ownsIssue()` 放行借用条目，thunk 用
+   `joy_obj_register(..., NULL, ...)` 注册、不生成 dtor 包装、注册失败不释放指针；
+   `gen_bindings.js` 的 `mergeIdl()` 把 `borrowed` 列为人工字段（随改名继承、
+   `--scan` 不覆盖），`--check` 校验与 `owns` 互斥，`coverage.md` 单列借用统计。
+   12 条已裁决的借用句柄里 **7 条 typed 句柄已开放**（`status:on` 701 → 708）；
+   另 5 条返回 `void*`，因 C# 强句柄与 C++ vtable 都不支持 `void*`（会生成非法
+   `Void*` 类名），`canEmitCs()` 补上与 `okHandle()` 一致的拦截，这 5 条保持
+   `off`。验证：`--scan` 幂等且 borrowed 保留、`--check` OK、全量构建 0 错误、
+   `ctest` 4/4。
+15. **单参数 dtor 包装（机制 B，2026-11-11）**：`src/jr3d.c` 给 `render_mesh`
+   加 `jr3d_p owner` 回指，11 处 `SDL_calloc(1, sizeof(render_mesh_t))` 统一改走
+   `r3d_mesh_alloc(r)`；`include/joy/api.h` 末尾新增
+   `joy_r3d_mesh_destroy_one(render_mesh_p)`，内部转调
+   `joy_r3d_mesh_destroy(m->owner, m)`（复用延迟释放队列，避免 GPU buffer 提前
+   释放）。15 条 mesh 的 `owns` 全部指向它，**13 条开放**（`status:on` 708 → 721，
+   IDL 1156 → 1157）。另 2 条 `mesh_custom*` 因 `void*` 缓冲参数被 `canOpen`
+   拦下、11 条返回 `void*` 的 SDL GPU 对象因 `canEmitCs`/`okHandle` 排除
+   `void*` 保持 `off`，note 已写明原因。**约束**：mesh 句柄不得比创建它的 r3d
+   上下文活得久（owner 会悬空）。验证：`--scan` 幂等、`--check` OK、
+   全量构建 0 错误、`ctest` 4/4。
 
 具体内容：
 
@@ -202,43 +222,79 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 | `runtimes/windows-x64/coreclr.dll` | 是本地编译版，可考虑换成官方包同名 DLL |
 | `src/jgltf.c` | **预存语法错误**，`JOY_ENABLE_GLTF` 默认关、不编译；文件本身待修 |
 
-## 7. 接下来要做的事（接手清单）
+## 7. 项目收口（2026-11-11）
 
-**接手第一步**：本轮提交后工作区应干净、`main` 与 `origin/main` 同步。先跑一遍
-§10 自检清单确认基线，再按下表挑一项。不确定某项该不该做时，先问人，不要凭
-文档猜——下面标了「决策项」的都需要人来定。
+**本项目到此结束，没有计划内工作。** 前几节是已完成的实现与已知事实，本节
+剩下的是「已评估后明确排除的方向」——**不是待办，不要再从中挑任务继续做**。
+若以后出现新需求，另开议题，不要把这里当 backlog。
+
+### 交付范围（已完成）
+生成链路（IDL → thunk / vtable / C# / 四语言示例）、公开 API 命名统一、
+`borrowed` 借用语义、单参数 mesh dtor、四平台 CLR 运行时入库、Android 4 个
+APK、Web Pages 部署、桌面 / Android / Web 三套 CI。当前 **1157 条 IDL，
+721 条 `status:on`**；验收结果见 §10。
 
 ### 已完成，不要当待办
 Android CI + 4 个 APK、Web Pages 部署、P1 命名统一、两轮改名收尾、根 CMake
 的 CLR 探测统一、`canThunk()` 参数上限、`SELFTEST_SAFE` 白名单修正、
-`SKIP_NAMES` 清理。均见 §3。
+`SKIP_NAMES` 清理、**借用句柄语义（机制 A，7 条已开放）**、**单参数 mesh dtor
+（机制 B，13 条已开放）**。均见 §3。
 
-### 待办（按优先级，含做法 / 验证 / 风险）
+### #1 的真实状态（2026-11-11 核实；A、B 均已实现）
 
-| # | 事项 | 具体位置与做法 | 怎么验证 | 风险 / 前置 |
-|---|---|---|---|---|
-| 1 | **38 条 `owns` 待裁决** | `api/generated/coverage.md` 的「所有权待裁决」段。逐条判断返回句柄是「拥有」还是「借用」（`get_*`/`wrap_*` 多为借用），裁决后填 IDL 的 `owns`/`note`，再用 `--enable name:<api>` 逐条开放。L1 的 130 条 `status:off` 主要卡在这里 | `--check` + 全量构建 + `ctest` 4/4 | **高**：借用句柄误配析构会 double free。**不要批量猜**，先出一份「明显拥有 / 疑似借用 / 需人确认」分类清单交人裁决 |
-| 2 | **L3 出参通道** | L3 共 **206** 条，出参类最值得做。给 `api/runtime/joy_value.h` 的 `joy_value_t` 加出参语义，同步 `emit_thunks.js` / `emit_cs.js` / 三端适配。建议先拿 `joy_r2d_jtext_measurex`（`int*` 出参）做最小闭环，成功后可去掉四份示例的「文字宽度按字号估算」 | `--check` + 四语言冒烟 + 文字居中效果对比 | 中高：跨 VM 边界，cpp/lua/js/csharp 四端都要同步；`canThunk()` 的 16 参数上限仍然生效 |
-| 3 | **Android 真机 / 模拟器冒烟** | CI 加 `android-emulator-runner`（慢、不稳），或手动装 4 个 flavor 的 APK 跑 `--smoke` | 四个包都能启动、冒烟指纹与桌面一致 | 中：需要设备/模拟器，本机无 NDK，做不了；桌面 dummy 驱动不能替代 |
-| 4 | **是否放开 X 级 73 条**（决策项） | `script` 33 / `core` 20 / `r2d` 19 / `scene` 1。去掉 `gen_bindings.js` 的 `SKIP_DOMAINS`/`SKIP_PREFIXES` 对应项即可，命名已就位 | `--scan` 幂等 + `--check` + 全量构建 | 先确认这些 API 真的要暴露（带函数指针参数或当初有意排除），别顺手全开 |
-| 5 | **`src/jgltf.c`** | `JOY_ENABLE_GLTF` 默认关、文件整体被 `#ifdef JOY_USE_GLTF` 包裹而从不编译，文档称有预存语法错（未独立验证）。先修文件，再决定要不要开放开关 | 单独用 `-DJOY_ENABLE_GLTF=ON` 配置编译 | 低：不影响现有构建 |
-| 6 | **`runtimes/windows-x64/coreclr.dll` 换官方包** | 现版本内嵌 `C:\Users\liwei\Downloads\runtime-8.0.17\...` 本地编译路径。换 `Microsoft.NETCore.App.Runtime.Mono.win-x64/8.0.17` 里的同名 DLL，`coreclr.import.lib` 需重新生成 | Windows 全量构建 + `ctest` 4/4（重点看 `example_csharp_smoke`） | 中：二进制替换，导入库必须配套；别顺手动其它平台的 BCL |
-| 7 | **iOS / wasm 的 `JOY_GAME_STATIC` 验证** | `examples/cpp/CMakeLists.txt` 在 `IOS OR EMSCRIPTEN` 默认 ON，但只在桌面验证过 | 需 Xcode / Emscripten 工具链 | 环境受限，本机做不了 |
-| 8 | **6 条 `joy` 域例外**（决策项，**不是漏网**） | `joy_fov_*`(4) / `joy_tilemap_sweep_x|y`(2)，L3 / `off` / 不暴露。要归域得同时改 `api.h` 声明、`src/` 定义、IDL、`legacy_names.txt` 与生成物 | `--scan` + `--check` + 全量构建 | 低收益：不暴露，改名却要动公开头。**当前决定保持现状**，见 §2 / §10 |
+`api/generated/coverage.md` 那 38 条**不是「还没裁决」**：IDL 的 `note` 已逐条写明
+所有权语义，缺的是生成链路的机制。精确分组：
 
-### 建议的开工顺序
-1. 跑 §10 自检清单确认基线（约 1 分钟）。
-2. 想继续扩容生成链路 → 先做 #1 的**分类清单**，交人裁决后再动 IDL。
-3. #2 是独立架构项，等 #1 稳定再动。
-4. #3 / #7 需要设备或其它工具链，交给 CI 或人工；#4 / #8 是决策项，先问人。
-5. #5 / #6 属于低优先的清理，随时可做，互不依赖。
+| 分组 | 条数 | 代表 | 为什么填不了 `owns` |
+|---|---|---|---|
+| 借用句柄 | **12** | `joy_core_get_raw_window`、`joy_r2d_unwrap`、`joy_r3d_get_device`；9 条 `joy_scene_*`（`tilemap_find_*_layer`、`node_get_userdata`、`find_node_by_name*`、`get_root_at`、`get_popup_node`、`get_userdata`、`manager_get_current`） | 填了会让生成链路注册析构 → double free。正确语义是「**不注册析构**」，但 IDL 没有这个状态 |
+| 新建但 dtor 不可用 | **26** | 全是 `joy_r3d_*`：11 条新建 SDL GPU 对象（`load_shader` / `create_pipeline` / `upload_buffer` / `create_*_texture` / `create_sampler` / `create_*_pipeline` / `load_texture_png` / `gen_checkerboard`），15 条 `mesh_*` 系列 | 释放需 `(device,obj)` 双参数且不在 `joy.h`；`r3d_mesh_destroy(jr3d_p, render_mesh_p)` 也是双参数 |
+
+卡点在 `api/tools/emit_thunks.js` 的 `ownsIssue()`：只接受「**单参数、参数类型与
+`ret` 严格相同**」的析构函数，且没有「借用」状态。L1 的 130 条 `status:off` 里
+有 79 条无 `owns`，主要就是这批。
+
+**两条机制（A、B 均已实现）**：
+
+- **A. 借用语义 —— 已实现（2026-11-11）**：IDL 加 `borrowed` 人工字段，
+  `ownsIssue()` 放行且不注册 dtor，thunk 用 `joy_obj_register(..., NULL, ...)`；
+  `--check` 校验与 `owns` 互斥，`coverage.md` 单列统计。12 条借用里 **7 条
+  typed 句柄已开放**（`status:on` 701 → 708）；另 5 条返回 `void*` 因 C#
+  强句柄 / C++ vtable 不支持 `void*` 而保持 `off`。见 §3 的 14。
+- **B. 单参数 dtor 包装 —— 已实现（2026-11-11）**：`src/jr3d.c` 给
+  `render_mesh` 加 `owner` 回指、11 处分配统一走 `r3d_mesh_alloc(r)`，新增公开
+  API `joy_r3d_mesh_destroy_one(render_mesh_p)` 内部转调双参数
+  `joy_r3d_mesh_destroy(m->owner, m)`；15 条 mesh 的 `owns` 全部指向它，
+  **13 条已开放**（`status:on` 708 → 721）。见 §3 的 15。
+
+**仍未开放的条目**（不是遗漏，是类型 / 签名限制，均保持 `off` 且已写入 note）：
+B 的 26 条里 13 条开放、另 13 条保持 off（11 条返回 `void*` 的 SDL GPU 对象，
+2 条 `mesh_custom*` 含 `void*` 缓冲参数需手写适配）；A 的 12 条借用里 5 条
+`void*` 保持 off。C# 强句柄（`canEmitCs`）、C++ vtable（`okHandle`）与
+`canOpen` 共同排除 `void*`，**不要为了凑数放开**。
+
+改生成器 / 引擎后必须全量回归：`--scan` 幂等 + `--check` + 全量构建 +
+`ctest` 4/4 + 三个 CI 工作流。
+
+### 明确不做（已评估，非待办）
+
+| 方向 | 结论 |
+|---|---|
+| 继续扩容 `status:on`：L3 出参通道 / 放开 X 级 73 条 / 放开 `void*` 句柄 | 不做。L3 要给 `joy_value` 加出参通道并四端同步，属于新架构；X 级当初有意排除；`void*` 没有强句柄类型，放开会破坏类型安全 |
+| Android 真机 / iOS / wasm 工具链验证 | 不在本机范围（无 NDK / Xcode / Emscripten），现有 CI 已覆盖能覆盖的部分 |
+| `src/jgltf.c` 修语法错、Windows `coreclr.dll` 换官方包 | 低价值清理，不影响现有构建；等功能真被用到再说 |
+| 6 条 `joy` 域例外、全仓剩余 16 处历史旧名 | **有意保留，不是漏网**，见 §2 / §3 的 13 / §10 |
+| 再做一轮命名 / 文档「收尾」 | 不做。已全仓审计并清完该清的，重复清理只产生噪声 |
+
+**完成判定**：`--check` 通过 + 全量构建 0 错误 + `ctest` 4/4 + CI 三工作流
+success。四项均已满足，所以没有遗留任务。
 
 ## 8. 提交风格
 
 中文、`type(scope): 摘要`，正文用 `- ` 列改动点、最后一行写验证结果。
 参考 `git log -3`。
 
-## 9. 自动化踩坑（给下一任 AI，省得重踩）
+## 9. 自动化踩坑（历史经验）
 
 本仓库的改名/生成链路在 PowerShell + 中文环境下有几个反直觉的坑，按发生频率排序：
 
@@ -287,14 +343,18 @@ Android CI + 4 个 APK、Web Pages 部署、P1 命名统一、两轮改名收尾
    第四个 `cleanup-artifacts.yml` 是定时清理，没有 push 运行记录。出网正常。
    Web 站点本身用 `Invoke-WebRequest` 直接 GET `https://coder210.github.io/joy/` 验证。
 
-## 10. 接手前自检清单
+## 10. 交付验收（已完成）
 
-- [ ] `node api/tools/gen_bindings.js --check` 通过（report/thunks/vtable/cs glue/jmath 最新）
-- [ ] `cmake --build build --config Debug` 全量 0 错误（**构建已不依赖 compat.h**）
-- [ ] `ctest --test-dir build -C Debug --timeout 25` 四语言冒烟 4/4
-- [ ] GitHub Actions 三个构建型工作流均 `success`（见 §9.8）
-- [ ] 想继续 §7 的某一项时，先读 `api/README.md`（命名域表 + 15 批改名记录）与本节踩坑
-- [ ] §2 的 6 条 `joy` 域例外是**有意保留**，不要误当成改名漏网去「修」
-- [ ] 全仓还留有 16 处旧名，全部在改名记录 / 旧胶水历史留档里（见 §3 的 13），**不要再清**
-- [ ] §7 的 #1（38 条 `owns`）、#4（放开 X 级）、#8（6 条例外）是决策项，先问人再动
+| 项 | 结果 |
+|---|---|
+| `node api/tools/gen_bindings.js --check` | OK（1157 条，6 个生成物最新） |
+| `cmake --build build --config Debug` | 0 错误，构建不依赖 `compat.h` |
+| `ctest --test-dir build -C Debug --timeout 25` | 四语言冒烟 4/4 |
+| GitHub Actions 三个构建型工作流 | success（见 §9.8） |
+
+以下是**有意保留的事实**，别误当成缺陷去「修」：
+
+- 6 条 `joy` 域例外（L3 / `off` / 不暴露）与全仓剩余 16 处历史旧名，见 §2 / §3 的 13。
+- `void*` 返回 / 参数被 `canEmitCs` / `okHandle` / `canOpen` 排除；借用句柄靠 `borrowed` + `dtor=NULL` 实现。
+- mesh 句柄不得比创建它的 r3d 上下文活得久：`joy_r3d_mesh_destroy_one` 依赖 `m->owner`。
 

@@ -1838,6 +1838,156 @@ static void icall_R3dSetClearColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32
         return;
 }
 
+static uint64_t icall_R3dMeshCube(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_cube", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_cube", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshSphere(uint64_t p0, float p1, int32_t p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_i32((int32_t)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_sphere", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_sphere", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshPlane(uint64_t p0, float p1, float p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_plane", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_plane", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshRamp(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_ramp", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_ramp", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshQuad(uint64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_handle((uint64_t)p0);
+        r = joy_api_call("joy_r3d_mesh_quad", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_quad", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshCubeWire(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_cube_wire", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_cube_wire", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshSphereWire(uint64_t p0, float p1, int32_t p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_i32((int32_t)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_sphere_wire", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_sphere_wire", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshPlaneWire(uint64_t p0, float p1, float p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_plane_wire", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_plane_wire", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshRampWire(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_ramp_wire", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_ramp_wire", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_R3dMeshDestroy(uint64_t p0, uint64_t p1)
 {
         joy_status_t st = JOY_OK;
@@ -2758,6 +2908,74 @@ static void icall_R3dDrawGrid(uint64_t p0, int32_t p1, float p2, float p3)
                 return;
         }
         return;
+}
+
+static uint64_t icall_R3dMeshCubeLit(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_cube_lit", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_cube_lit", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshSphereLit(uint64_t p0, float p1, int32_t p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_i32((int32_t)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_sphere_lit", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_sphere_lit", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshPlaneLit(uint64_t p0, float p1, float p2, int32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_i32((int32_t)p3);
+        r = joy_api_call("joy_r3d_mesh_plane_lit", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_plane_lit", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_R3dMeshRampLit(uint64_t p0, float p1, float p2, float p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        r = joy_api_call("joy_r3d_mesh_ramp_lit", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_mesh_ramp_lit", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
 }
 
 static void icall_JanimatorDestroy(uint64_t p0)
@@ -5710,6 +5928,42 @@ static int32_t icall_JtilemapGetAnimTileid(uint64_t p0, int32_t p1, uint32_t p2)
         return (int32_t)r.as.i32;
 }
 
+static uint64_t icall_JtilemapFindTileLayer(uint64_t p0, MonoString* p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        r = joy_api_call("joy_scene_tilemap_find_tile_layer", args, 2, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_find_tile_layer", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_JtilemapFindObjectLayer(uint64_t p0, MonoString* p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        r = joy_api_call("joy_scene_tilemap_find_object_layer", args, 2, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_tilemap_find_object_layer", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static int32_t icall_JtilemapGetTile(uint64_t p0, int32_t p1, int32_t p2)
 {
         joy_status_t st = JOY_OK;
@@ -6679,6 +6933,42 @@ static void icall_SceneNodeSetTag(uint64_t p0, MonoString* p1)
         return;
 }
 
+static uint64_t icall_SceneFindNodeByName(uint64_t p0, MonoString* p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        r = joy_api_call("joy_scene_find_node_by_name", args, 2, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_find_node_by_name", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
+static uint64_t icall_SceneFindNodeByNameDeep(uint64_t p0, MonoString* p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        char* s1 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        s1 = p1 ? mono_string_to_utf8(p1) : NULL;
+        args[1] = joy_v_str((const char*)s1);
+        r = joy_api_call("joy_scene_find_node_by_name_deep", args, 2, &st);
+        if (s1) mono_free(s1);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_find_node_by_name_deep", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_SceneNodeUpdate(uint64_t p0, float p1)
 {
         joy_status_t st = JOY_OK;
@@ -6748,6 +7038,21 @@ static int32_t icall_SceneGetRootCount(uint64_t p0)
         return (int32_t)r.as.i32;
 }
 
+static uint64_t icall_SceneGetRootAt(uint64_t p0, int32_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_i32((int32_t)p1);
+        r = joy_api_call("joy_scene_get_root_at", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_get_root_at", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
+}
+
 static void icall_SceneUpdate(uint64_t p0, float p1)
 {
         joy_status_t st = JOY_OK;
@@ -6774,6 +7079,20 @@ static void icall_SceneSetPopupNode(uint64_t p0, uint64_t p1)
                 return;
         }
         return;
+}
+
+static uint64_t icall_SceneGetPopupNode(uint64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_handle((uint64_t)p0);
+        r = joy_api_call("joy_scene_get_popup_node", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_get_popup_node", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
 }
 
 static void icall_SceneManagerDestroy(uint64_t p0)
@@ -6842,6 +7161,20 @@ static void icall_SceneManagerUpdate(uint64_t p0, float p1)
                 return;
         }
         return;
+}
+
+static uint64_t icall_SceneManagerGetCurrent(uint64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_handle((uint64_t)p0);
+        r = joy_api_call("joy_scene_manager_get_current", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_manager_get_current", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (uint64_t)r.as.handle;
 }
 
 static int32_t icall_SceneManagerGetCount(uint64_t p0)
@@ -11085,6 +11418,15 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dEnd", (const void*)icall_R3dEnd);
         csx_register_internal_call("Joy.Api.Native::R3dGetDrawCalls", (const void*)icall_R3dGetDrawCalls);
         csx_register_internal_call("Joy.Api.Native::R3dSetClearColor", (const void*)icall_R3dSetClearColor);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshCube", (const void*)icall_R3dMeshCube);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshSphere", (const void*)icall_R3dMeshSphere);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshPlane", (const void*)icall_R3dMeshPlane);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshRamp", (const void*)icall_R3dMeshRamp);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshQuad", (const void*)icall_R3dMeshQuad);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshCubeWire", (const void*)icall_R3dMeshCubeWire);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshSphereWire", (const void*)icall_R3dMeshSphereWire);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshPlaneWire", (const void*)icall_R3dMeshPlaneWire);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshRampWire", (const void*)icall_R3dMeshRampWire);
         csx_register_internal_call("Joy.Api.Native::R3dMeshDestroy", (const void*)icall_R3dMeshDestroy);
         csx_register_internal_call("Joy.Api.Native::R3dFontInit", (const void*)icall_R3dFontInit);
         csx_register_internal_call("Joy.Api.Native::R3dFontDraw2d", (const void*)icall_R3dFontDraw2d);
@@ -11145,6 +11487,10 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxSetColors", (const void*)icall_R3dCheckboxSetColors);
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxDraw", (const void*)icall_R3dCheckboxDraw);
         csx_register_internal_call("Joy.Api.Native::R3dDrawGrid", (const void*)icall_R3dDrawGrid);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshCubeLit", (const void*)icall_R3dMeshCubeLit);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshSphereLit", (const void*)icall_R3dMeshSphereLit);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshPlaneLit", (const void*)icall_R3dMeshPlaneLit);
+        csx_register_internal_call("Joy.Api.Native::R3dMeshRampLit", (const void*)icall_R3dMeshRampLit);
         csx_register_internal_call("Joy.Api.Native::JanimatorDestroy", (const void*)icall_JanimatorDestroy);
         csx_register_internal_call("Joy.Api.Native::JanimatorSetFloat", (const void*)icall_JanimatorSetFloat);
         csx_register_internal_call("Joy.Api.Native::JanimatorSetInt", (const void*)icall_JanimatorSetInt);
@@ -11336,6 +11682,8 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JtilemapGetTilewidth", (const void*)icall_JtilemapGetTilewidth);
         csx_register_internal_call("Joy.Api.Native::JtilemapGetTileheight", (const void*)icall_JtilemapGetTileheight);
         csx_register_internal_call("Joy.Api.Native::JtilemapGetAnimTileid", (const void*)icall_JtilemapGetAnimTileid);
+        csx_register_internal_call("Joy.Api.Native::JtilemapFindTileLayer", (const void*)icall_JtilemapFindTileLayer);
+        csx_register_internal_call("Joy.Api.Native::JtilemapFindObjectLayer", (const void*)icall_JtilemapFindObjectLayer);
         csx_register_internal_call("Joy.Api.Native::JtilemapGetTile", (const void*)icall_JtilemapGetTile);
         csx_register_internal_call("Joy.Api.Native::JtilemapRenderAll", (const void*)icall_JtilemapRenderAll);
         csx_register_internal_call("Joy.Api.Native::JtilemapRenderTiles", (const void*)icall_JtilemapRenderTiles);
@@ -11400,18 +11748,23 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::SceneNodeGetZorder", (const void*)icall_SceneNodeGetZorder);
         csx_register_internal_call("Joy.Api.Native::SceneNodeSetName", (const void*)icall_SceneNodeSetName);
         csx_register_internal_call("Joy.Api.Native::SceneNodeSetTag", (const void*)icall_SceneNodeSetTag);
+        csx_register_internal_call("Joy.Api.Native::SceneFindNodeByName", (const void*)icall_SceneFindNodeByName);
+        csx_register_internal_call("Joy.Api.Native::SceneFindNodeByNameDeep", (const void*)icall_SceneFindNodeByNameDeep);
         csx_register_internal_call("Joy.Api.Native::SceneNodeUpdate", (const void*)icall_SceneNodeUpdate);
         csx_register_internal_call("Joy.Api.Native::SceneDestroy", (const void*)icall_SceneDestroy);
         csx_register_internal_call("Joy.Api.Native::SceneAddRootNode", (const void*)icall_SceneAddRootNode);
         csx_register_internal_call("Joy.Api.Native::SceneRemoveRootNode", (const void*)icall_SceneRemoveRootNode);
         csx_register_internal_call("Joy.Api.Native::SceneGetRootCount", (const void*)icall_SceneGetRootCount);
+        csx_register_internal_call("Joy.Api.Native::SceneGetRootAt", (const void*)icall_SceneGetRootAt);
         csx_register_internal_call("Joy.Api.Native::SceneUpdate", (const void*)icall_SceneUpdate);
         csx_register_internal_call("Joy.Api.Native::SceneSetPopupNode", (const void*)icall_SceneSetPopupNode);
+        csx_register_internal_call("Joy.Api.Native::SceneGetPopupNode", (const void*)icall_SceneGetPopupNode);
         csx_register_internal_call("Joy.Api.Native::SceneManagerDestroy", (const void*)icall_SceneManagerDestroy);
         csx_register_internal_call("Joy.Api.Native::SceneManagerPush", (const void*)icall_SceneManagerPush);
         csx_register_internal_call("Joy.Api.Native::SceneManagerReplace", (const void*)icall_SceneManagerReplace);
         csx_register_internal_call("Joy.Api.Native::SceneManagerPop", (const void*)icall_SceneManagerPop);
         csx_register_internal_call("Joy.Api.Native::SceneManagerUpdate", (const void*)icall_SceneManagerUpdate);
+        csx_register_internal_call("Joy.Api.Native::SceneManagerGetCurrent", (const void*)icall_SceneManagerGetCurrent);
         csx_register_internal_call("Joy.Api.Native::SceneManagerGetCount", (const void*)icall_SceneManagerGetCount);
         csx_register_internal_call("Joy.Api.Native::JparticleDestroy", (const void*)icall_JparticleDestroy);
         csx_register_internal_call("Joy.Api.Native::JparticleSetPosition", (const void*)icall_JparticleSetPosition);

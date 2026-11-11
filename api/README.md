@@ -24,8 +24,8 @@
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待裁决、L3 手写清单 |
 | `thunks_generated.c` | 工具生成，勿手改 | `status: on` 的 L0/L1 及可展开的 L2 会生成 thunk、注册表与自检 |
-| `generated/joy_api_vtable.h` | 工具生成，勿手改 | 701 个强签名函数指针 + 56 个句柄薄包装 typedef（`jr2d_p`→`Jr2d`，编译期不可混传）+ `abi_version` / `size` |
-| `generated/joy_api_vtable.c` | 工具生成，勿手改 | 701 个 shim（强签名 ↔ `joy_value`）、宿主侧填表 `joy_api_vtable_init()`、自检 `joy_api_vtable_selftest()` |
+| `generated/joy_api_vtable.h` | 工具生成，勿手改 | 721 个强签名函数指针 + 56 个句柄薄包装 typedef（`jr2d_p`→`Jr2d`，编译期不可混传）+ `abi_version` / `size` |
+| `generated/joy_api_vtable.c` | 工具生成，勿手改 | 721 个 shim（强签名 ↔ `joy_value`）、宿主侧填表 `joy_api_vtable_init()`、自检 `joy_api_vtable_selftest()` |
 | `modules/cs/bindings/api/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
 | `modules/lua/bindings/lapi.c` | 人工 | Lua 薄适配：遍历注册表、`joy_value` ↔ Lua 值、句柄 userdata `__gc` |
@@ -258,9 +258,40 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 | `name` / `domain` / `level` / `reason` / `ret` / `params` / `source` | **自动** | 每次 `--scan` 从 `include/joy/{defs,api}.h` 重新解析并覆盖，不要手改 |
 | `status` | **人工** | `off` / `on`。可手改，也可用 `--enable` / `--disable` 批量改 |
 | `owns` | **人工** | 配对析构函数名。`--scan` 首次会推断填充，之后永不覆盖；推断错的会进「所有权待裁决」清单 |
+| `borrowed` | **人工** | `true` = 返回借用句柄，thunk 用 `dtor=NULL` 注册；`joy_obj_release` 只减引用、不释放底层对象。与 `owns` 互斥，`--scan` 不覆盖 |
 | `note` | **人工** | 备注，永不覆盖 |
 
-`--scan` 按 `name` 合并：自动字段刷新，`status` / `owns` / `note` 原样保留。
+`--scan` 按 `name` 合并：自动字段刷新，`status` / `owns` / `borrowed` / `note` 原样保留。
+
+### 借用句柄（`borrowed`）
+
+`borrowed: true` 只用于返回 `*_p` 句柄、但所有权仍归引擎的函数（getter / find /
+unwrap 等）。`emit_thunks.js` 的 `ownsIssue()` 会放行这类条目而不要求 `owns`，
+生成的 thunk 用 `joy_obj_register(ptr, tag, NULL, name)` 注册，注册失败时也不
+释放指针。`api/runtime/joy_obj.c` 的 `joy_obj_release()` 只在 `dtor != NULL` 时
+调用析构，所以脚本层 GC 不会 double free。
+
+`--check` 校验 `borrowed` 必须配句柄返回、且不能与 `owns` 同时存在。返回
+`void*` 的条目即使标了 `borrowed` 也不能开放：C# 强句柄（`emit_cs.js` 的
+`canEmitCs`）与 C++ vtable（`emit_vtable.js` 的 `okHandle`）都排除 `void*`，
+否则会生成非法的 `Void*` 类名，且所有 `void*` 共用 tag 失去类型安全。当前
+12 条借用句柄里 7 条已开放，5 条 `void*` 保持 `status:off`。
+
+### 单参数 dtor 包装（`owns` 的另一条出路）
+
+3D mesh 原本只能靠 `joy_r3d_mesh_destroy(jr3d_p, render_mesh_p)` 双参数销毁，
+不满足 `ownsIssue()` 的「单参数、参数类型与 `ret` 严格相同」硬校验。引擎侧
+（`src/jr3d.c`）给 `render_mesh` 加了 `owner` 回指，11 处网格分配统一走
+`r3d_mesh_alloc(r)`，并新增公开 API
+`void joy_r3d_mesh_destroy_one(render_mesh_p)` 转调双参数版本（复用延迟释放队列，
+避免释放仍被 GPU 引用的 buffer）。15 条 mesh 的 `owns` 全部指向它，13 条已开放。
+
+**生命周期约束**：mesh 句柄不得比创建它的 r3d 上下文活得久，否则 `owner`
+悬空；脚本层需保证先销毁 mesh 再销毁 r3d。
+
+返回 `void*` 的 SDL GPU 对象（`load_shader` / `create_pipeline` /
+`create_*_texture` 等）以及含 `void*` 缓冲参数的 `mesh_custom*` 仍保持 `off`：
+前者没有强句柄类型，后者脚本层传不了裸缓冲。
 `include/joy/{defs,api}.h` 里删掉的条目不会丢，会保留并标 `orphan: true`，在报告里单列。
 
 ## P1 / P2：共享运行层与 thunk

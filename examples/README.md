@@ -125,7 +125,7 @@ SDL_SharedObject* lib = SDL_LoadObject("cpp/JoyGameCpp.dll");
 const JoyGameHooks* hooks = ((const JoyGameHooks* (*)(void))
     SDL_LoadFunction(lib, "joy_game_get_hooks"))();
 
-JoyApi api;                        /* 701 个强签名函数指针 */
+JoyApi api;                        /* 721 个强签名函数指针 */
 joy_api_vtable_init(&api, NULL);   /* 宿主是唯一链接 joy::all 的一方 */
 hooks->init(hooks->game, &api, smoke_frames);
 hooks->on_frame(hooks->game, dt, &input, &result);

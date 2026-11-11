@@ -1653,6 +1653,147 @@ static void shim_joy_r3d_set_clear_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint
         return;
 }
 
+static RenderMesh shim_joy_r3d_mesh_cube(void* _jv_ctx, Jr3d r, float w, float h, float d)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(h);
+        _jv_args[3] = joy_v_f64(d);
+        _jv_r = joy_api_call("joy_r3d_mesh_cube", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_sphere(void* _jv_ctx, Jr3d r, float radius, int slices, int stacks)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(radius);
+        _jv_args[2] = joy_v_i32(slices);
+        _jv_args[3] = joy_v_i32(stacks);
+        _jv_r = joy_api_call("joy_r3d_mesh_sphere", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_plane(void* _jv_ctx, Jr3d r, float w, float d, int segs)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(d);
+        _jv_args[3] = joy_v_i32(segs);
+        _jv_r = joy_api_call("joy_r3d_mesh_plane", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_ramp(void* _jv_ctx, Jr3d r, float w, float l, float h)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(l);
+        _jv_args[3] = joy_v_f64(h);
+        _jv_r = joy_api_call("joy_r3d_mesh_ramp", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_quad(void* _jv_ctx, Jr3d r)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_r = joy_api_call("joy_r3d_mesh_quad", _jv_args, 1, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_cube_wire(void* _jv_ctx, Jr3d r, float w, float h, float d)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(h);
+        _jv_args[3] = joy_v_f64(d);
+        _jv_r = joy_api_call("joy_r3d_mesh_cube_wire", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_sphere_wire(void* _jv_ctx, Jr3d r, float radius, int slices, int stacks)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(radius);
+        _jv_args[2] = joy_v_i32(slices);
+        _jv_args[3] = joy_v_i32(stacks);
+        _jv_r = joy_api_call("joy_r3d_mesh_sphere_wire", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_plane_wire(void* _jv_ctx, Jr3d r, float w, float d, int segs)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(d);
+        _jv_args[3] = joy_v_i32(segs);
+        _jv_r = joy_api_call("joy_r3d_mesh_plane_wire", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_ramp_wire(void* _jv_ctx, Jr3d r, float w, float l, float h)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(l);
+        _jv_args[3] = joy_v_f64(h);
+        _jv_r = joy_api_call("joy_r3d_mesh_ramp_wire", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
 static void shim_joy_r3d_mesh_destroy(void* _jv_ctx, Jr3d r, RenderMesh m)
 {
         joy_value_t _jv_args[2];
@@ -2526,6 +2667,70 @@ static void shim_joy_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spac
         (void)_jv_r;
         (void)_jv_st;
         return;
+}
+
+static RenderMesh shim_joy_r3d_mesh_cube_lit(void* _jv_ctx, Jr3d r, float w, float h, float d)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(h);
+        _jv_args[3] = joy_v_f64(d);
+        _jv_r = joy_api_call("joy_r3d_mesh_cube_lit", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_sphere_lit(void* _jv_ctx, Jr3d r, float radius, int slices, int stacks)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(radius);
+        _jv_args[2] = joy_v_i32(slices);
+        _jv_args[3] = joy_v_i32(stacks);
+        _jv_r = joy_api_call("joy_r3d_mesh_sphere_lit", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_plane_lit(void* _jv_ctx, Jr3d r, float w, float d, int segs)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(d);
+        _jv_args[3] = joy_v_i32(segs);
+        _jv_r = joy_api_call("joy_r3d_mesh_plane_lit", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static RenderMesh shim_joy_r3d_mesh_ramp_lit(void* _jv_ctx, Jr3d r, float w, float l, float h)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        RenderMesh _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(w);
+        _jv_args[2] = joy_v_f64(l);
+        _jv_args[3] = joy_v_f64(h);
+        _jv_r = joy_api_call("joy_r3d_mesh_ramp_lit", _jv_args, 4, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
 }
 
 static void shim_joy_scene_animator_destroy(void* _jv_ctx, Janimator anim)
@@ -5262,6 +5467,34 @@ static int shim_joy_scene_tilemap_get_anim_tileid(void* _jv_ctx, Jtilemap tm, in
         return (int) _jv_r.as.i32;
 }
 
+static JtilemapTileLayer shim_joy_scene_tilemap_find_tile_layer(void* _jv_ctx, Jtilemap tm, const char* name)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        JtilemapTileLayer _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(tm.h);
+        _jv_args[1] = joy_v_str(name);
+        _jv_r = joy_api_call("joy_scene_tilemap_find_tile_layer", _jv_args, 2, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static JtilemapObjectLayer shim_joy_scene_tilemap_find_object_layer(void* _jv_ctx, Jtilemap tm, const char* name)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        JtilemapObjectLayer _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(tm.h);
+        _jv_args[1] = joy_v_str(name);
+        _jv_r = joy_api_call("joy_scene_tilemap_find_object_layer", _jv_args, 2, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
 static int shim_joy_scene_tilemap_get_tile(void* _jv_ctx, JtilemapTileLayer layer, int tx, int ty)
 {
         joy_value_t _jv_args[3];
@@ -6138,6 +6371,34 @@ static void shim_joy_scene_node_set_tag(void* _jv_ctx, SceneNode node, const cha
         return;
 }
 
+static SceneNode shim_joy_scene_find_node_by_name(void* _jv_ctx, SceneNode root, const char* name)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        SceneNode _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(root.h);
+        _jv_args[1] = joy_v_str(name);
+        _jv_r = joy_api_call("joy_scene_find_node_by_name", _jv_args, 2, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
+static SceneNode shim_joy_scene_find_node_by_name_deep(void* _jv_ctx, Scene scene, const char* name)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        SceneNode _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(scene.h);
+        _jv_args[1] = joy_v_str(name);
+        _jv_r = joy_api_call("joy_scene_find_node_by_name_deep", _jv_args, 2, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
 static void shim_joy_scene_node_update(void* _jv_ctx, SceneNode node, float delta_time)
 {
         joy_value_t _jv_args[2];
@@ -6205,6 +6466,20 @@ static int shim_joy_scene_get_root_count(void* _jv_ctx, Scene scene)
         return (int) _jv_r.as.i32;
 }
 
+static SceneNode shim_joy_scene_get_root_at(void* _jv_ctx, Scene scene, int index)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        SceneNode _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(scene.h);
+        _jv_args[1] = joy_v_i32(index);
+        _jv_r = joy_api_call("joy_scene_get_root_at", _jv_args, 2, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
+}
+
 static void shim_joy_scene_update(void* _jv_ctx, Scene scene, float delta_time)
 {
         joy_value_t _jv_args[2];
@@ -6231,6 +6506,19 @@ static void shim_joy_scene_set_popup_node(void* _jv_ctx, Scene scene, SceneNode 
         (void)_jv_r;
         (void)_jv_st;
         return;
+}
+
+static SceneNode shim_joy_scene_get_popup_node(void* _jv_ctx, Scene scene)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        SceneNode _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(scene.h);
+        _jv_r = joy_api_call("joy_scene_get_popup_node", _jv_args, 1, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
 }
 
 static void shim_joy_scene_manager_destroy(void* _jv_ctx, SceneManager mgr)
@@ -6299,6 +6587,19 @@ static void shim_joy_scene_manager_update(void* _jv_ctx, SceneManager mgr, float
         (void)_jv_r;
         (void)_jv_st;
         return;
+}
+
+static Scene shim_joy_scene_manager_get_current(void* _jv_ctx, SceneManager mgr)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        Scene _jv_out;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(mgr.h);
+        _jv_r = joy_api_call("joy_scene_manager_get_current", _jv_args, 1, &_jv_st);
+        _jv_out.h = (_jv_st == JOY_OK && _jv_r.kind == JOY_V_HANDLE) ? _jv_r.as.handle : 0;
+        return _jv_out;
 }
 
 static int shim_joy_scene_manager_get_count(void* _jv_ctx, SceneManager mgr)
@@ -10082,6 +10383,15 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dEnd = shim_joy_r3d_end;
         api->R3dGetDrawCalls = shim_joy_r3d_get_draw_calls;
         api->R3dSetClearColor = shim_joy_r3d_set_clear_color;
+        api->R3dMeshCube = shim_joy_r3d_mesh_cube;
+        api->R3dMeshSphere = shim_joy_r3d_mesh_sphere;
+        api->R3dMeshPlane = shim_joy_r3d_mesh_plane;
+        api->R3dMeshRamp = shim_joy_r3d_mesh_ramp;
+        api->R3dMeshQuad = shim_joy_r3d_mesh_quad;
+        api->R3dMeshCubeWire = shim_joy_r3d_mesh_cube_wire;
+        api->R3dMeshSphereWire = shim_joy_r3d_mesh_sphere_wire;
+        api->R3dMeshPlaneWire = shim_joy_r3d_mesh_plane_wire;
+        api->R3dMeshRampWire = shim_joy_r3d_mesh_ramp_wire;
         api->R3dMeshDestroy = shim_joy_r3d_mesh_destroy;
         api->R3dFontInit = shim_joy_r3d_font_init;
         api->R3dFontDraw2d = shim_joy_r3d_font_draw_2d;
@@ -10142,6 +10452,10 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dCheckboxSetColors = shim_joy_r3d_checkbox_set_colors;
         api->R3dCheckboxDraw = shim_joy_r3d_checkbox_draw;
         api->R3dDrawGrid = shim_joy_r3d_draw_grid;
+        api->R3dMeshCubeLit = shim_joy_r3d_mesh_cube_lit;
+        api->R3dMeshSphereLit = shim_joy_r3d_mesh_sphere_lit;
+        api->R3dMeshPlaneLit = shim_joy_r3d_mesh_plane_lit;
+        api->R3dMeshRampLit = shim_joy_r3d_mesh_ramp_lit;
         api->JanimatorDestroy = shim_joy_scene_animator_destroy;
         api->JanimatorSetFloat = shim_joy_scene_animator_set_float;
         api->JanimatorSetInt = shim_joy_scene_animator_set_int;
@@ -10333,6 +10647,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JtilemapGetTilewidth = shim_joy_scene_tilemap_get_tilewidth;
         api->JtilemapGetTileheight = shim_joy_scene_tilemap_get_tileheight;
         api->JtilemapGetAnimTileid = shim_joy_scene_tilemap_get_anim_tileid;
+        api->JtilemapFindTileLayer = shim_joy_scene_tilemap_find_tile_layer;
+        api->JtilemapFindObjectLayer = shim_joy_scene_tilemap_find_object_layer;
         api->JtilemapGetTile = shim_joy_scene_tilemap_get_tile;
         api->JtilemapRenderAll = shim_joy_scene_tilemap_render_all;
         api->JtilemapRenderTiles = shim_joy_scene_tilemap_render_tiles;
@@ -10397,18 +10713,23 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->SceneNodeGetZorder = shim_joy_scene_node_get_zorder;
         api->SceneNodeSetName = shim_joy_scene_node_set_name;
         api->SceneNodeSetTag = shim_joy_scene_node_set_tag;
+        api->SceneFindNodeByName = shim_joy_scene_find_node_by_name;
+        api->SceneFindNodeByNameDeep = shim_joy_scene_find_node_by_name_deep;
         api->SceneNodeUpdate = shim_joy_scene_node_update;
         api->SceneDestroy = shim_joy_scene_destroy;
         api->SceneAddRootNode = shim_joy_scene_add_root_node;
         api->SceneRemoveRootNode = shim_joy_scene_remove_root_node;
         api->SceneGetRootCount = shim_joy_scene_get_root_count;
+        api->SceneGetRootAt = shim_joy_scene_get_root_at;
         api->SceneUpdate = shim_joy_scene_update;
         api->SceneSetPopupNode = shim_joy_scene_set_popup_node;
+        api->SceneGetPopupNode = shim_joy_scene_get_popup_node;
         api->SceneManagerDestroy = shim_joy_scene_manager_destroy;
         api->SceneManagerPush = shim_joy_scene_manager_push;
         api->SceneManagerReplace = shim_joy_scene_manager_replace;
         api->SceneManagerPop = shim_joy_scene_manager_pop;
         api->SceneManagerUpdate = shim_joy_scene_manager_update;
+        api->SceneManagerGetCurrent = shim_joy_scene_manager_get_current;
         api->SceneManagerGetCount = shim_joy_scene_manager_get_count;
         api->JparticleDestroy = shim_joy_r2d_particle_destroy;
         api->JparticleSetPosition = shim_joy_r2d_particle_set_position;

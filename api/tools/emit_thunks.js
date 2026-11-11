@@ -44,6 +44,12 @@ function q(s) { return '"' + s + '"'; }
  * 指针交给析构函数，运行时才崩，必须在生成阶段拦住。 */
 function ownsIssue(e, byName) {
   if (!isOpaque(e.ret)) return null;
+  /* 借用句柄：IDL 人工标记 borrowed 后不需要 owns；thunk 用 dtor=NULL 注册，
+   * joy_obj_release 只减引用、不调用析构（api/runtime/joy_obj.c:115）。 */
+  if (e.borrowed) {
+    if (e.owns) return '借用句柄不能同时填 owns：' + e.name;
+    return null;
+  }
   if (!e.owns) return '返回句柄但缺 owns';
   const f = byName.get(e.owns);
   if (!f) return 'owns 指向不存在的函数：' + e.owns;
@@ -118,7 +124,8 @@ function emitThunk(e, dtorName) {
       L.push('        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, ' + q(e.name) + ');');
       L.push('        _h = joy_obj_register((void*)_r, ' + q(e.ret) + ', '
         + dtorName + ', ' + q(e.name) + ');');
-      L.push('        if (!_h) { ' + e.owns + '(_r);'
+      /* 借用句柄没有 dtor，注册失败时也不能释放 _r（所有权仍归引擎）。 */
+      L.push('        if (!_h) { ' + (e.borrowed ? '' : e.owns + '(_r);')
         + ' return joy_v_err(st, JOY_ERR_CAPACITY, ' + q(e.name) + '); }');
       L.push('        return joy_v_handle(_h);');
     } else {
@@ -301,7 +308,10 @@ function buildThunks(entries) {
       if (issue) throw new Error(e.name + ': ' + issue);
     }
   }
-  const owners = [...new Set(open.filter(e => isOpaque(e.ret)).map(e => e.owns))];
+  /* borrowed 句柄不生成 dtor 包装：thunk 里直接传 NULL。 */
+  const owners = [...new Set(open
+    .filter(e => isOpaque(e.ret) && !e.borrowed && e.owns)
+    .map(e => e.owns))];
 
   const L = [];
   L.push('/* ============================================================');
@@ -321,7 +331,7 @@ function buildThunks(entries) {
   if (owners.length) L.push('');
 
   for (const e of open) {
-    const dtorName = isOpaque(e.ret) ? 'dtor_' + e.owns : null;
+    const dtorName = isOpaque(e.ret) ? (e.borrowed ? 'NULL' : 'dtor_' + e.owns) : null;
     L.push(e.level === 'L2' ? emitL2Thunk(e, layouts) : emitThunk(e, dtorName));
   }
 

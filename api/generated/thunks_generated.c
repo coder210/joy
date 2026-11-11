@@ -13,6 +13,7 @@ static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((jwi
 static void dtor_joy_r2d_font_destroy(void* p) { joy_r2d_font_destroy((font_p)p); }
 static void dtor_joy_r2d_destroy(void* p) { joy_r2d_destroy((jr2d_p)p); }
 static void dtor_joy_ui_image_destroy(void* p) { joy_ui_image_destroy((image_p)p); }
+static void dtor_joy_r3d_mesh_destroy_one(void* p) { joy_r3d_mesh_destroy_one((render_mesh_p)p); }
 
 static joy_value_t t_joy_core_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
 {
@@ -1755,6 +1756,222 @@ static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t
         return joy_v_null();
 }
 
+static joy_value_t t_joy_r3d_mesh_cube(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_cube(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_sphere(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        int p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (int)a[2].as.i32;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_sphere(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_plane(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_plane(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_ramp(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_ramp(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_quad(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_quad");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_quad.arg0");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_quad.arg0");
+        _r = joy_r3d_mesh_quad(p0);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_quad");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_quad");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_quad"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_cube_wire(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube_wire");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_wire.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube_wire.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_cube_wire(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube_wire");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_wire");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube_wire"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_sphere_wire(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        int p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere_wire");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_wire.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere_wire.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (int)a[2].as.i32;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_sphere_wire(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere_wire");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_wire");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere_wire"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_plane_wire(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane_wire");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_wire.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane_wire.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_plane_wire(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane_wire");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_wire");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane_wire"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_ramp_wire(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp_wire");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_wire.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp_wire.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_ramp_wire(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp_wire");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_wire");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp_wire"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_joy_r3d_mesh_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         jr3d_p p0;
@@ -2771,6 +2988,106 @@ static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
         p3 = (float)a[3].as.f64;
         joy_r3d_draw_grid(p0, p1, p2, p3);
         return joy_v_null();
+}
+
+static joy_value_t t_joy_r3d_mesh_cube_lit(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_cube_lit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_cube_lit.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_cube_lit.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_cube_lit(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_cube_lit");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_cube_lit");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_cube_lit"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_sphere_lit(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        int p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_sphere_lit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_sphere_lit.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_sphere_lit.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (int)a[2].as.i32;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_sphere_lit(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_sphere_lit");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_sphere_lit");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_sphere_lit"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_plane_lit(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        int p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_plane_lit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg2");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_plane_lit.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_plane_lit.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (int)a[3].as.i32;
+        _r = joy_r3d_mesh_plane_lit(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_plane_lit");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_plane_lit");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_plane_lit"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_r3d_mesh_ramp_lit(joy_value_t* a, int n, joy_status_t* st)
+{
+        jr3d_p p0;
+        float p1;
+        float p2;
+        float p3;
+        render_mesh_p _r;
+        uint64_t _h;
+        if (n != 4) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_mesh_ramp_lit");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_mesh_ramp_lit.arg3");
+        p0 = (jr3d_p)joy_obj_deref(a[0].as.handle, "jr3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_mesh_ramp_lit.arg0");
+        p1 = (float)a[1].as.f64;
+        p2 = (float)a[2].as.f64;
+        p3 = (float)a[3].as.f64;
+        _r = joy_r3d_mesh_ramp_lit(p0, p1, p2, p3);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r3d_mesh_ramp_lit");
+        _h = joy_obj_register((void*)_r, "render_mesh_p", dtor_joy_r3d_mesh_destroy_one, "joy_r3d_mesh_ramp_lit");
+        if (!_h) { joy_r3d_mesh_destroy_one(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r3d_mesh_ramp_lit"); }
+        return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_animator_destroy(joy_value_t* a, int n, joy_status_t* st)
@@ -5751,6 +6068,44 @@ static joy_value_t t_joy_scene_tilemap_get_anim_tileid(joy_value_t* a, int n, jo
         return joy_v_i32((int)_r);
 }
 
+static joy_value_t t_joy_scene_tilemap_find_tile_layer(joy_value_t* a, int n, joy_status_t* st)
+{
+        jtilemap_p p0;
+        const char* p1;
+        jtilemap_tile_layer_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_find_tile_layer");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_tile_layer.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_tile_layer.arg1");
+        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_find_tile_layer.arg0");
+        p1 = (const char*)a[1].as.str;
+        _r = joy_scene_tilemap_find_tile_layer(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_tilemap_find_tile_layer");
+        _h = joy_obj_register((void*)_r, "jtilemap_tile_layer_p", NULL, "joy_scene_tilemap_find_tile_layer");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_tilemap_find_tile_layer"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_scene_tilemap_find_object_layer(joy_value_t* a, int n, joy_status_t* st)
+{
+        jtilemap_p p0;
+        const char* p1;
+        jtilemap_object_layer_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_tilemap_find_object_layer");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_object_layer.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_tilemap_find_object_layer.arg1");
+        p0 = (jtilemap_p)joy_obj_deref(a[0].as.handle, "jtilemap_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_tilemap_find_object_layer.arg0");
+        p1 = (const char*)a[1].as.str;
+        _r = joy_scene_tilemap_find_object_layer(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_tilemap_find_object_layer");
+        _h = joy_obj_register((void*)_r, "jtilemap_object_layer_p", NULL, "joy_scene_tilemap_find_object_layer");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_tilemap_find_object_layer"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_joy_scene_tilemap_get_tile(joy_value_t* a, int n, joy_status_t* st)
 {
         jtilemap_tile_layer_p p0;
@@ -6696,6 +7051,44 @@ static joy_value_t t_joy_scene_node_set_tag(joy_value_t* a, int n, joy_status_t*
         return joy_v_null();
 }
 
+static joy_value_t t_joy_scene_find_node_by_name(joy_value_t* a, int n, joy_status_t* st)
+{
+        scene_node_p p0;
+        const char* p1;
+        scene_node_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_find_node_by_name");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name.arg1");
+        p0 = (scene_node_p)joy_obj_deref(a[0].as.handle, "scene_node_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_find_node_by_name.arg0");
+        p1 = (const char*)a[1].as.str;
+        _r = joy_scene_find_node_by_name(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_find_node_by_name");
+        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_find_node_by_name");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_find_node_by_name"); }
+        return joy_v_handle(_h);
+}
+
+static joy_value_t t_joy_scene_find_node_by_name_deep(joy_value_t* a, int n, joy_status_t* st)
+{
+        scene_p p0;
+        const char* p1;
+        scene_node_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_find_node_by_name_deep");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name_deep.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_find_node_by_name_deep.arg1");
+        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_find_node_by_name_deep.arg0");
+        p1 = (const char*)a[1].as.str;
+        _r = joy_scene_find_node_by_name_deep(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_find_node_by_name_deep");
+        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_find_node_by_name_deep");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_find_node_by_name_deep"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_joy_scene_node_update(joy_value_t* a, int n, joy_status_t* st)
 {
         scene_node_p p0;
@@ -6763,6 +7156,25 @@ static joy_value_t t_joy_scene_get_root_count(joy_value_t* a, int n, joy_status_
         return joy_v_i32((int)_r);
 }
 
+static joy_value_t t_joy_scene_get_root_at(joy_value_t* a, int n, joy_status_t* st)
+{
+        scene_p p0;
+        int p1;
+        scene_node_p _r;
+        uint64_t _h;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_get_root_at");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_root_at.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_root_at.arg1");
+        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_get_root_at.arg0");
+        p1 = (int)a[1].as.i32;
+        _r = joy_scene_get_root_at(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_get_root_at");
+        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_get_root_at");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_get_root_at"); }
+        return joy_v_handle(_h);
+}
+
 static joy_value_t t_joy_scene_update(joy_value_t* a, int n, joy_status_t* st)
 {
         scene_p p0;
@@ -6790,6 +7202,22 @@ static joy_value_t t_joy_scene_set_popup_node(joy_value_t* a, int n, joy_status_
         if (!p1) return joy_v_err(st, *st, "joy_scene_set_popup_node.arg1");
         joy_scene_set_popup_node(p0, p1);
         return joy_v_null();
+}
+
+static joy_value_t t_joy_scene_get_popup_node(joy_value_t* a, int n, joy_status_t* st)
+{
+        scene_p p0;
+        scene_node_p _r;
+        uint64_t _h;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_get_popup_node");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_get_popup_node.arg0");
+        p0 = (scene_p)joy_obj_deref(a[0].as.handle, "scene_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_get_popup_node.arg0");
+        _r = joy_scene_get_popup_node(p0);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_get_popup_node");
+        _h = joy_obj_register((void*)_r, "scene_node_p", NULL, "joy_scene_get_popup_node");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_get_popup_node"); }
+        return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_manager_destroy(joy_value_t* a, int n, joy_status_t* st)
@@ -6856,6 +7284,22 @@ static joy_value_t t_joy_scene_manager_update(joy_value_t* a, int n, joy_status_
         p1 = (float)a[1].as.f64;
         joy_scene_manager_update(p0, p1);
         return joy_v_null();
+}
+
+static joy_value_t t_joy_scene_manager_get_current(joy_value_t* a, int n, joy_status_t* st)
+{
+        scene_manager_p p0;
+        scene_p _r;
+        uint64_t _h;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_manager_get_current");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_manager_get_current.arg0");
+        p0 = (scene_manager_p)joy_obj_deref(a[0].as.handle, "scene_manager_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_scene_manager_get_current.arg0");
+        _r = joy_scene_manager_get_current(p0);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_scene_manager_get_current");
+        _h = joy_obj_register((void*)_r, "scene_p", NULL, "joy_scene_manager_get_current");
+        if (!_h) {  return joy_v_err(st, JOY_ERR_CAPACITY, "joy_scene_manager_get_current"); }
+        return joy_v_handle(_h);
 }
 
 static joy_value_t t_joy_scene_manager_get_count(joy_value_t* a, int n, joy_status_t* st)
@@ -11534,6 +11978,15 @@ static const joy_value_kind k_joy_r3d_begin[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_end[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_get_draw_calls[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_set_clear_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_mesh_cube[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_mesh_sphere[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_plane[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_ramp[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_mesh_quad[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r3d_mesh_cube_wire[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_mesh_sphere_wire[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_plane_wire[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_ramp_wire[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_mesh_destroy[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_font_init[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_joy_r3d_font_draw_2d[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
@@ -11594,6 +12047,10 @@ static const joy_value_kind k_joy_r3d_checkbox_is_hovered[] = { JOY_V_HANDLE, JO
 static const joy_value_kind k_joy_r3d_checkbox_set_colors[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_joy_r3d_checkbox_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_draw_grid[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_mesh_cube_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_mesh_sphere_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_I32, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_plane_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_I32 };
+static const joy_value_kind k_joy_r3d_mesh_ramp_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_scene_animator_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_animator_set_float[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64 };
 static const joy_value_kind k_joy_scene_animator_set_int[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_I32 };
@@ -11785,6 +12242,8 @@ static const joy_value_kind k_joy_scene_tilemap_get_height[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_tilemap_get_tilewidth[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_tilemap_get_tileheight[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_tilemap_get_anim_tileid[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_U32 };
+static const joy_value_kind k_joy_scene_tilemap_find_tile_layer[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_scene_tilemap_find_object_layer[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_joy_scene_tilemap_get_tile[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_scene_tilemap_render_all[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_U32 };
 static const joy_value_kind k_joy_scene_tilemap_render_tiles[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_U32 };
@@ -11849,18 +12308,23 @@ static const joy_value_kind k_joy_scene_node_set_zorder[] = { JOY_V_HANDLE, JOY_
 static const joy_value_kind k_joy_scene_node_get_zorder[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_node_set_name[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_joy_scene_node_set_tag[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_scene_find_node_by_name[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_scene_find_node_by_name_deep[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_joy_scene_node_update[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_scene_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_add_root_node[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_remove_root_node[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_get_root_count[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_get_root_at[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_joy_scene_update[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_scene_set_popup_node[] = { JOY_V_HANDLE, JOY_V_HANDLE };
+static const joy_value_kind k_joy_scene_get_popup_node[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_push[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_replace[] = { JOY_V_HANDLE, JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_pop[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_update[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_scene_manager_get_current[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_scene_manager_get_count[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_particle_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_particle_set_position[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
@@ -12224,6 +12688,15 @@ static const joy_thunk_entry s_thunks[] = {
         { "r3d", "joy_r3d_end", "R3dEnd", t_joy_r3d_end, 1, k_joy_r3d_end, JOY_V_NULL },
         { "r3d", "joy_r3d_get_draw_calls", "R3dGetDrawCalls", t_joy_r3d_get_draw_calls, 1, k_joy_r3d_get_draw_calls, JOY_V_I32 },
         { "r3d", "joy_r3d_set_clear_color", "R3dSetClearColor", t_joy_r3d_set_clear_color, 4, k_joy_r3d_set_clear_color, JOY_V_NULL },
+        { "r3d", "joy_r3d_mesh_cube", "R3dMeshCube", t_joy_r3d_mesh_cube, 4, k_joy_r3d_mesh_cube, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_sphere", "R3dMeshSphere", t_joy_r3d_mesh_sphere, 4, k_joy_r3d_mesh_sphere, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_plane", "R3dMeshPlane", t_joy_r3d_mesh_plane, 4, k_joy_r3d_mesh_plane, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_ramp", "R3dMeshRamp", t_joy_r3d_mesh_ramp, 4, k_joy_r3d_mesh_ramp, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_quad", "R3dMeshQuad", t_joy_r3d_mesh_quad, 1, k_joy_r3d_mesh_quad, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_cube_wire", "R3dMeshCubeWire", t_joy_r3d_mesh_cube_wire, 4, k_joy_r3d_mesh_cube_wire, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_sphere_wire", "R3dMeshSphereWire", t_joy_r3d_mesh_sphere_wire, 4, k_joy_r3d_mesh_sphere_wire, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_plane_wire", "R3dMeshPlaneWire", t_joy_r3d_mesh_plane_wire, 4, k_joy_r3d_mesh_plane_wire, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_ramp_wire", "R3dMeshRampWire", t_joy_r3d_mesh_ramp_wire, 4, k_joy_r3d_mesh_ramp_wire, JOY_V_HANDLE },
         { "r3d", "joy_r3d_mesh_destroy", "R3dMeshDestroy", t_joy_r3d_mesh_destroy, 2, k_joy_r3d_mesh_destroy, JOY_V_NULL },
         { "r3d", "joy_r3d_font_init", "R3dFontInit", t_joy_r3d_font_init, 3, k_joy_r3d_font_init, JOY_V_BOOL },
         { "r3d", "joy_r3d_font_draw_2d", "R3dFontDraw2d", t_joy_r3d_font_draw_2d, 8, k_joy_r3d_font_draw_2d, JOY_V_BOOL },
@@ -12284,6 +12757,10 @@ static const joy_thunk_entry s_thunks[] = {
         { "r3d", "joy_r3d_checkbox_set_colors", "R3dCheckboxSetColors", t_joy_r3d_checkbox_set_colors, 13, k_joy_r3d_checkbox_set_colors, JOY_V_NULL },
         { "r3d", "joy_r3d_checkbox_draw", "R3dCheckboxDraw", t_joy_r3d_checkbox_draw, 5, k_joy_r3d_checkbox_draw, JOY_V_NULL },
         { "r3d", "joy_r3d_draw_grid", "R3dDrawGrid", t_joy_r3d_draw_grid, 4, k_joy_r3d_draw_grid, JOY_V_NULL },
+        { "r3d", "joy_r3d_mesh_cube_lit", "R3dMeshCubeLit", t_joy_r3d_mesh_cube_lit, 4, k_joy_r3d_mesh_cube_lit, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_sphere_lit", "R3dMeshSphereLit", t_joy_r3d_mesh_sphere_lit, 4, k_joy_r3d_mesh_sphere_lit, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_plane_lit", "R3dMeshPlaneLit", t_joy_r3d_mesh_plane_lit, 4, k_joy_r3d_mesh_plane_lit, JOY_V_HANDLE },
+        { "r3d", "joy_r3d_mesh_ramp_lit", "R3dMeshRampLit", t_joy_r3d_mesh_ramp_lit, 4, k_joy_r3d_mesh_ramp_lit, JOY_V_HANDLE },
         { "scene", "joy_scene_animator_destroy", "JanimatorDestroy", t_joy_scene_animator_destroy, 1, k_joy_scene_animator_destroy, JOY_V_NULL },
         { "scene", "joy_scene_animator_set_float", "JanimatorSetFloat", t_joy_scene_animator_set_float, 3, k_joy_scene_animator_set_float, JOY_V_NULL },
         { "scene", "joy_scene_animator_set_int", "JanimatorSetInt", t_joy_scene_animator_set_int, 3, k_joy_scene_animator_set_int, JOY_V_NULL },
@@ -12475,6 +12952,8 @@ static const joy_thunk_entry s_thunks[] = {
         { "scene", "joy_scene_tilemap_get_tilewidth", "JtilemapGetTilewidth", t_joy_scene_tilemap_get_tilewidth, 1, k_joy_scene_tilemap_get_tilewidth, JOY_V_I32 },
         { "scene", "joy_scene_tilemap_get_tileheight", "JtilemapGetTileheight", t_joy_scene_tilemap_get_tileheight, 1, k_joy_scene_tilemap_get_tileheight, JOY_V_I32 },
         { "scene", "joy_scene_tilemap_get_anim_tileid", "JtilemapGetAnimTileid", t_joy_scene_tilemap_get_anim_tileid, 3, k_joy_scene_tilemap_get_anim_tileid, JOY_V_I32 },
+        { "scene", "joy_scene_tilemap_find_tile_layer", "JtilemapFindTileLayer", t_joy_scene_tilemap_find_tile_layer, 2, k_joy_scene_tilemap_find_tile_layer, JOY_V_HANDLE },
+        { "scene", "joy_scene_tilemap_find_object_layer", "JtilemapFindObjectLayer", t_joy_scene_tilemap_find_object_layer, 2, k_joy_scene_tilemap_find_object_layer, JOY_V_HANDLE },
         { "scene", "joy_scene_tilemap_get_tile", "JtilemapGetTile", t_joy_scene_tilemap_get_tile, 3, k_joy_scene_tilemap_get_tile, JOY_V_I32 },
         { "scene", "joy_scene_tilemap_render_all", "JtilemapRenderAll", t_joy_scene_tilemap_render_all, 5, k_joy_scene_tilemap_render_all, JOY_V_NULL },
         { "scene", "joy_scene_tilemap_render_tiles", "JtilemapRenderTiles", t_joy_scene_tilemap_render_tiles, 5, k_joy_scene_tilemap_render_tiles, JOY_V_NULL },
@@ -12539,18 +13018,23 @@ static const joy_thunk_entry s_thunks[] = {
         { "scene", "joy_scene_node_get_zorder", "SceneNodeGetZorder", t_joy_scene_node_get_zorder, 1, k_joy_scene_node_get_zorder, JOY_V_I32 },
         { "scene", "joy_scene_node_set_name", "SceneNodeSetName", t_joy_scene_node_set_name, 2, k_joy_scene_node_set_name, JOY_V_NULL },
         { "scene", "joy_scene_node_set_tag", "SceneNodeSetTag", t_joy_scene_node_set_tag, 2, k_joy_scene_node_set_tag, JOY_V_NULL },
+        { "scene", "joy_scene_find_node_by_name", "SceneFindNodeByName", t_joy_scene_find_node_by_name, 2, k_joy_scene_find_node_by_name, JOY_V_HANDLE },
+        { "scene", "joy_scene_find_node_by_name_deep", "SceneFindNodeByNameDeep", t_joy_scene_find_node_by_name_deep, 2, k_joy_scene_find_node_by_name_deep, JOY_V_HANDLE },
         { "scene", "joy_scene_node_update", "SceneNodeUpdate", t_joy_scene_node_update, 2, k_joy_scene_node_update, JOY_V_NULL },
         { "scene", "joy_scene_destroy", "SceneDestroy", t_joy_scene_destroy, 1, k_joy_scene_destroy, JOY_V_NULL },
         { "scene", "joy_scene_add_root_node", "SceneAddRootNode", t_joy_scene_add_root_node, 2, k_joy_scene_add_root_node, JOY_V_NULL },
         { "scene", "joy_scene_remove_root_node", "SceneRemoveRootNode", t_joy_scene_remove_root_node, 2, k_joy_scene_remove_root_node, JOY_V_NULL },
         { "scene", "joy_scene_get_root_count", "SceneGetRootCount", t_joy_scene_get_root_count, 1, k_joy_scene_get_root_count, JOY_V_I32 },
+        { "scene", "joy_scene_get_root_at", "SceneGetRootAt", t_joy_scene_get_root_at, 2, k_joy_scene_get_root_at, JOY_V_HANDLE },
         { "scene", "joy_scene_update", "SceneUpdate", t_joy_scene_update, 2, k_joy_scene_update, JOY_V_NULL },
         { "scene", "joy_scene_set_popup_node", "SceneSetPopupNode", t_joy_scene_set_popup_node, 2, k_joy_scene_set_popup_node, JOY_V_NULL },
+        { "scene", "joy_scene_get_popup_node", "SceneGetPopupNode", t_joy_scene_get_popup_node, 1, k_joy_scene_get_popup_node, JOY_V_HANDLE },
         { "scene", "joy_scene_manager_destroy", "SceneManagerDestroy", t_joy_scene_manager_destroy, 1, k_joy_scene_manager_destroy, JOY_V_NULL },
         { "scene", "joy_scene_manager_push", "SceneManagerPush", t_joy_scene_manager_push, 2, k_joy_scene_manager_push, JOY_V_NULL },
         { "scene", "joy_scene_manager_replace", "SceneManagerReplace", t_joy_scene_manager_replace, 2, k_joy_scene_manager_replace, JOY_V_NULL },
         { "scene", "joy_scene_manager_pop", "SceneManagerPop", t_joy_scene_manager_pop, 1, k_joy_scene_manager_pop, JOY_V_NULL },
         { "scene", "joy_scene_manager_update", "SceneManagerUpdate", t_joy_scene_manager_update, 2, k_joy_scene_manager_update, JOY_V_NULL },
+        { "scene", "joy_scene_manager_get_current", "SceneManagerGetCurrent", t_joy_scene_manager_get_current, 1, k_joy_scene_manager_get_current, JOY_V_HANDLE },
         { "scene", "joy_scene_manager_get_count", "SceneManagerGetCount", t_joy_scene_manager_get_count, 1, k_joy_scene_manager_get_count, JOY_V_I32 },
         { "r2d", "joy_r2d_particle_destroy", "JparticleDestroy", t_joy_r2d_particle_destroy, 1, k_joy_r2d_particle_destroy, JOY_V_NULL },
         { "r2d", "joy_r2d_particle_set_position", "JparticleSetPosition", t_joy_r2d_particle_set_position, 3, k_joy_r2d_particle_set_position, JOY_V_NULL },
@@ -13188,6 +13672,33 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r3d_set_clear_color", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_set_clear_color";
         st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_cube", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_cube";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_sphere", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_sphere";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_plane", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_plane";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_ramp", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_ramp";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_quad", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_quad";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_cube_wire", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_cube_wire";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_sphere_wire", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_sphere_wire";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_plane_wire", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_plane_wire";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_ramp_wire", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_ramp_wire";
+        st = JOY_OK;
         joy_api_call("joy_r3d_mesh_destroy", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_destroy";
         st = JOY_OK;
@@ -13367,6 +13878,18 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_r3d_draw_grid", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_grid";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_cube_lit", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_cube_lit";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_sphere_lit", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_sphere_lit";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_plane_lit", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_plane_lit";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_mesh_ramp_lit", NULL, 5, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_ramp_lit";
         st = JOY_OK;
         joy_api_call("joy_scene_animator_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_animator_destroy";
@@ -13941,6 +14464,12 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_scene_tilemap_get_anim_tileid", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_tilemap_get_anim_tileid";
         st = JOY_OK;
+        joy_api_call("joy_scene_tilemap_find_tile_layer", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_tilemap_find_tile_layer";
+        st = JOY_OK;
+        joy_api_call("joy_scene_tilemap_find_object_layer", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_tilemap_find_object_layer";
+        st = JOY_OK;
         joy_api_call("joy_scene_tilemap_get_tile", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_tilemap_get_tile";
         st = JOY_OK;
@@ -14133,6 +14662,12 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_scene_node_set_tag", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_node_set_tag";
         st = JOY_OK;
+        joy_api_call("joy_scene_find_node_by_name", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_find_node_by_name";
+        st = JOY_OK;
+        joy_api_call("joy_scene_find_node_by_name_deep", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_find_node_by_name_deep";
+        st = JOY_OK;
         joy_api_call("joy_scene_node_update", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_node_update";
         st = JOY_OK;
@@ -14148,11 +14683,17 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_scene_get_root_count", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_get_root_count";
         st = JOY_OK;
+        joy_api_call("joy_scene_get_root_at", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_get_root_at";
+        st = JOY_OK;
         joy_api_call("joy_scene_update", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_update";
         st = JOY_OK;
         joy_api_call("joy_scene_set_popup_node", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_set_popup_node";
+        st = JOY_OK;
+        joy_api_call("joy_scene_get_popup_node", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_get_popup_node";
         st = JOY_OK;
         joy_api_call("joy_scene_manager_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_manager_destroy";
@@ -14168,6 +14709,9 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_scene_manager_update", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_manager_update";
+        st = JOY_OK;
+        joy_api_call("joy_scene_manager_get_current", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_scene_manager_get_current";
         st = JOY_OK;
         joy_api_call("joy_scene_manager_get_count", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_scene_manager_get_count";

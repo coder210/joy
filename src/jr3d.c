@@ -16,11 +16,20 @@
 #define MAX_COLOR_CACHE 256
 
 struct render_mesh {
+	jr3d_p         owner;  /* 创建它的 r3d 上下文，供单参数 dtor 使用 */
 	SDL_GPUBuffer* buffer;
 	SDL_GPUBuffer* index_buffer;   /* 可选: 非空表示用索引绘制 */
 	int            vertex_count;
 	int            index_count;
 };
+
+/* 统一分配网格：记录 owner，让 joy_r3d_mesh_destroy_one 能还原双参数销毁上下文。 */
+static render_mesh_p r3d_mesh_alloc(jr3d_p r)
+{
+	render_mesh_p m = SDL_calloc(1, sizeof(render_mesh_t));
+	if (m) m->owner = r;
+	return m;
+}
 
 struct jr3d {
 	SDL_GPUDevice*     dev;
@@ -1051,7 +1060,7 @@ render_mesh_p joy_r3d_mesh_custom(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
 	(void)r;
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 5 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -3086,7 +3095,7 @@ render_mesh_p joy_r3d_mesh_quad(jr3d_p r)
 	};
 	static const Uint32 indices[6] = { 0, 1, 2, 0, 2, 3 };
 
-	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	render_mesh_p m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	m->index_buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, indices, sizeof(indices));
@@ -3129,7 +3138,7 @@ render_mesh_p joy_r3d_mesh_cube_wire(jr3d_p r, float w, float h, float d)
 	WIRE_V(-hw,-hh, hd); WIRE_V(-hw, hh, hd);
 #undef WIRE_V
 
-	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	render_mesh_p m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -3174,7 +3183,7 @@ render_mesh_p joy_r3d_mesh_sphere_wire(jr3d_p r, float radius, int slices, int s
 		}
 	}
 
-	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	render_mesh_p m = r3d_mesh_alloc(r);
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
 	SDL_free(verts);
@@ -3204,7 +3213,7 @@ render_mesh_p joy_r3d_mesh_plane_wire(jr3d_p r, float w, float d, int segs)
 		verts[vi++] = x; verts[vi++] = 0; verts[vi++] =  hd; verts[vi++] = 0; verts[vi++] = 0;
 	}
 
-	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	render_mesh_p m = r3d_mesh_alloc(r);
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)total * 5 * sizeof(float));
 	SDL_free(verts);
@@ -3235,7 +3244,7 @@ render_mesh_p joy_r3d_mesh_ramp_wire(jr3d_p r, float w, float l, float h)
 	RAMP_WIRE_V( hw,0, hl); RAMP_WIRE_V( hw,h, hl);  /* F-D 右竖 */
 #undef RAMP_WIRE_V
 
-	render_mesh_p m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	render_mesh_p m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -3269,7 +3278,7 @@ render_mesh_p joy_r3d_mesh_cube_lit(jr3d_p r, float w, float h, float d)
 	/* -Y */ LIT_V(-hw,-hh,-hd,0,-1,0,0,0); LIT_V( hw,-hh,-hd,0,-1,0,1,0); LIT_V( hw,-hh, hd,0,-1,0,1,1);
 	         LIT_V( hw,-hh, hd,0,-1,0,1,1); LIT_V(-hw,-hh, hd,0,-1,0,0,1); LIT_V(-hw,-hh,-hd,0,-1,0,0,0);
 #undef LIT_V
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -3306,6 +3315,15 @@ void joy_r3d_mesh_destroy(jr3d_p r, render_mesh_p m)
 			r->pending_buffers[r->pending_count++] = m->index_buffer;
 	}
 	SDL_free(m);
+}
+
+/* 生成链路专用：joy_r3d_mesh_destroy 的单参数版本，供 IDL 的 owns 使用。
+ * render_mesh 内部记了创建它的 r3d_p（owner），所以 dtor 只需一个参数。
+ * 约束：mesh 句柄不得比创建它的 r3d 上下文活得久，否则 owner 悬空。 */
+void joy_r3d_mesh_destroy_one(render_mesh_p m)
+{
+	if (!m) return;
+	joy_r3d_mesh_destroy(m->owner, m);
 }
 
 render_mesh_p joy_r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int stacks)
@@ -3350,7 +3368,7 @@ render_mesh_p joy_r3d_mesh_sphere_lit(jr3d_p r, float radius, int slices, int st
 			}
 		}
 	}
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
@@ -3386,7 +3404,7 @@ render_mesh_p joy_r3d_mesh_plane_lit(jr3d_p r, float w, float d, int segs)
 			verts[vi++]=x1; verts[vi++]=0; verts[vi++]=z1; verts[vi++]=0; verts[vi++]=1; verts[vi++]=0; verts[vi++]=u1; verts[vi++]=v1;
 		}
 	}
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) { SDL_free(verts); return NULL; }
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vcount * 8 * sizeof(float));
 	SDL_free(verts);
@@ -3425,7 +3443,7 @@ render_mesh_p joy_r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 	RV(w,0,0, 1,0,0, 0,0); RV(w,h,l, 1,0,0, 1,1); RV(w,0,l, 1,0,0, 1,0);
 	RV(w,h,l, 1,0,0, 1,1); RV(w,0,0, 1,0,0, 0,0); RV(w,0,l, 1,0,0, 0,0);
 #undef RV
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, sizeof(verts));
 	if (!m->buffer) { SDL_free(m); return NULL; }
@@ -3436,7 +3454,7 @@ render_mesh_p joy_r3d_mesh_ramp_lit(jr3d_p r, float w, float l, float h)
 render_mesh_p joy_r3d_mesh_custom_lit(jr3d_p r, const void* verts, int vertex_count)
 {
 	render_mesh_p m;
-	m = (render_mesh_p)SDL_calloc(1, sizeof(render_mesh_t));
+	m = r3d_mesh_alloc(r);
 	if (!m) return NULL;
 	m->buffer = (SDL_GPUBuffer*)joy_r3d_upload_buffer(r->dev, verts, (size_t)vertex_count * 8 * sizeof(float));
 	if (!m->buffer) { SDL_free(m); return NULL; }

@@ -1691,6 +1691,13 @@ extern "C" {
         JOY_API void joy_ui_image_draw_rect(jr2d_p r2d, image_p image,
                                      float x, float y, float w, float h);
 
+        /* 生成链路专用：joy_r3d_mesh_destroy 的单参数版本，供 IDL 的 owns 使用。
+         * render_mesh 内部记了创建它的 r3d_p（owner），所以 dtor 只需一个参数，
+         * 能通过 ownsIssue() 的「单参数、参数类型与 ret 严格相同」硬校验。
+         * 约束：mesh 句柄不得比创建它的 r3d 上下文活得久，否则 owner 悬空。
+         * 声明放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
+        JOY_API void joy_r3d_mesh_destroy_one(render_mesh_p m);
+
 #ifdef __cplusplus
 }
 #endif

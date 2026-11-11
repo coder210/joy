@@ -285,6 +285,9 @@ function mergeIdl(fresh) {
     return {
       ...f,
       owns: owns && renames.has(owns) ? renames.get(owns) : owns,
+      /* borrowed 是人工字段：--scan 不许覆盖，随改名继承（未标记时为 undefined，
+       * JSON.stringify 会省略，不产生整文件 diff）。 */
+      borrowed: o.borrowed !== undefined ? o.borrowed : f.borrowed,
       status: o.status || 'off',
       note: o.note || '',
     };
@@ -332,7 +335,10 @@ function buildReport(entries, meta) {
   const byName = new Map(entries.map(e => [e.name, e]));
   const on = entries.filter(e => e.status === 'on').length;
   const orphan = entries.filter(e => e.orphan);
-  const needsOwns = entries.filter(e => e.level !== 'X' && isOpaque(e.ret) && !e.owns);
+  /* borrowed 是已裁决的借用句柄，不算「待人工确认 owns」。 */
+  const needsOwns = entries.filter(e => e.level !== 'X' && isOpaque(e.ret)
+    && !e.owns && !e.borrowed);
+  const borrowedCount = entries.filter(e => e.borrowed).length;
   const ownsIssues = entries
     .filter(e => e.level !== 'X' && isOpaque(e.ret) && ownsIssue(e, byName))
     .map(e => ({ e, why: ownsIssue(e, byName) }));
@@ -357,6 +363,9 @@ function buildReport(entries, meta) {
   L.push('| `joy.h` 中值类型 `typedef struct` | ' + meta.structs.size + ' |');
   L.push('| IDL 条目 | ' + entries.length + ' |');
   L.push('| 已开放（`status: on`） | ' + on + ' |');
+  const borrowedOpen = entries.filter(e => e.borrowed && e.status === 'on').length;
+  L.push('| 借用句柄（`borrowed`，不注册析构） | ' + borrowedCount
+    + '（已开放 ' + borrowedOpen + '） |');
   L.push('| 待人工确认 `owns` | ' + needsOwns.length + ' |');
   L.push('| 所有权待裁决（类型不匹配 / 缺 `owns`） | ' + ownsIssues.length + ' |');
   L.push('| orphan（`joy.h` 中已消失） | ' + orphan.length + ' |');
@@ -470,6 +479,10 @@ function check(entries) {
     if (names.has(e.name)) errors.push('重复 name: ' + e.name);
     names.add(e.name);
     if (!e.level || !LEVEL_DESC[e.level]) errors.push('缺 level: ' + e.name);
+    if (e.borrowed) {
+      if (!isOpaque(e.ret)) errors.push('borrowed 只能用于返回句柄: ' + e.name);
+      if (e.owns) errors.push('borrowed 与 owns 互斥: ' + e.name);
+    }
     if (e.status === 'on' && e.level !== 'L0' && e.level !== 'L1'
         && !(e.level === 'L2' && canExpand(e, meta.structs))) {
       errors.push('只支持 L0/L1 及可展开的 L2 自动 thunk，不能 status:on: '

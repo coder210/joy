@@ -52,6 +52,9 @@ function canEmitCs(e) {
   if (e.level !== 'L0' && e.level !== 'L1' && !l2) return '仅 L0/L1';
   if (!e.params) return '复杂签名需手写适配';
   if (e.ret === 'char*') return '字符串返回需人工标注所有权';
+  /* 与 emit_vtable.js 的 okHandle 一致：void* 没有强句柄薄包装，
+   * 生成 C# 类名会得到非法的 `Void*`，且所有 void* 共用 tag 失去类型安全。 */
+  if (e.ret === 'void*') return 'void* 返回无强句柄类型，需手写适配';
   if (e.ret !== 'void' && !isOpaque(e.ret) && !MAP[e.ret]) return '不支持返回类型：' + e.ret;
   for (const p of paramsOf(e)) {
     if (!isOpaque(p.ctype) && !MAP[p.ctype]) return '不支持参数类型：' + p.ctype;
