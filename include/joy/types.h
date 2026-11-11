@@ -535,7 +535,7 @@ extern "C" {
 
 
         typedef struct joy_box2d_arbiter_t {
-                joy_box2d_manifold_t manifolds[MAX_POINTS];
+                joy_box2d_manifold_t manifolds[JOY_MAX_POINTS];
                 int num_manifolds, id1, id2;
                 joy_fp_t friction; // combined friction
         } joy_box2d_arbiter_t;

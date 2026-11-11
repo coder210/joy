@@ -384,7 +384,7 @@ _prestep(joy_box2d_joint_t* joint, joy_box2d_body_t* body1, joy_box2d_body_t* bo
 	joy_vec2f_t p2 = vec2f_add(body2->position, joint->r2);
 	joy_vec2f_t dp = vec2f_sub(p2, p1);
 
-	if (POSITION_CORRECTION) {
+	if (JOY_POSITION_CORRECTION) {
 		joy_fp_t bias_factor = fp_mul(fp_negate(joint->biasfactor), inv_dt);
 		joint->bias = vec2f_scale(dp, bias_factor);
 	}
@@ -393,7 +393,7 @@ _prestep(joy_box2d_joint_t* joint, joy_box2d_body_t* body1, joy_box2d_body_t* bo
 		joint->bias.y = fp_zero();
 	}
 
-	if (WARM_STARTING) {
+	if (JOY_WARM_STARTING) {
 		joy_vec2f_t tmp2;
 		tmp2 = vec2f_scale(joint->p, body1->inv_mass);
 		body1->velocity = vec2f_sub(body1->velocity, tmp2);
@@ -469,7 +469,7 @@ _arbiter_update(joy_box2d_arbiter_t* arbiter, joy_box2d_manifold_t* manifolds, i
 		if (k > -1) {
 			joy_box2d_manifold_t* c = manifolds + i;
 			joy_box2d_manifold_t* c_old = arbiter->manifolds + k;
-			if (WARM_STARTING) {
+			if (JOY_WARM_STARTING) {
 				c->pn = c_old->pn;
 				c->pt = c_old->pt;
 			}
@@ -490,7 +490,7 @@ _arbiter_update(joy_box2d_arbiter_t* arbiter, joy_box2d_manifold_t* manifolds, i
 static void
 _arbiter_prestep(joy_box2d_arbiter_t* arbiter, joy_box2d_body_t* b1, joy_box2d_body_t* b2, joy_fp_t inv_dt) {
 	const joy_fp_t k_allowed_penetration = fp_from_float(0.01f);
-	joy_fp_t k_biasfactor = POSITION_CORRECTION ? fp_from_float(0.2f) : fp_zero();
+	joy_fp_t k_biasfactor = JOY_POSITION_CORRECTION ? fp_from_float(0.2f) : fp_zero();
 	joy_vec2f_t tmp;
 
 	for (int i = 0; i < arbiter->num_manifolds; ++i) {
@@ -516,7 +516,7 @@ _arbiter_prestep(joy_box2d_arbiter_t* arbiter, joy_box2d_body_t* b1, joy_box2d_b
 		joy_fp_t corr_sep = fp_min(fp_zero(), fp_add(m->separation, k_allowed_penetration));
 		m->bias = fp_mul(fp_mul(fp_negate(k_biasfactor), inv_dt), corr_sep);
 
-		if (ACCUMULATE_IMPULSES) {
+		if (JOY_ACCUMULATE_IMPULSES) {
 			joy_vec2f_t n_pn = vec2f_scale(m->normal, m->pn);
 			joy_vec2f_t t_pt = vec2f_scale(tangent, m->pt);
 
@@ -550,7 +550,7 @@ _arbiter_apply_impulse(joy_box2d_arbiter_t* arbiter, joy_box2d_body_t* b1, joy_b
 		joy_fp_t vn = fp_negate(vec2f_dot(dv, m->normal));
 		joy_fp_t dpn = fp_mul(m->mass_normal, fp_add(vn, m->bias));
 
-		if (ACCUMULATE_IMPULSES) {
+		if (JOY_ACCUMULATE_IMPULSES) {
 			joy_fp_t pn0 = m->pn;
 			m->pn = fp_max(fp_add(pn0, dpn), fp_zero());
 			dpn = fp_sub(m->pn, pn0);
@@ -580,7 +580,7 @@ _arbiter_apply_impulse(joy_box2d_arbiter_t* arbiter, joy_box2d_body_t* b1, joy_b
 		joy_fp_t vt = fp_negate(vec2f_dot(dv, tangent));
 		joy_fp_t dpt = fp_mul(m->mass_tangent, vt);
 
-		if (ACCUMULATE_IMPULSES) {
+		if (JOY_ACCUMULATE_IMPULSES) {
 			joy_fp_t max_pt = fp_mul(arbiter->friction, m->pn);
 			joy_fp_t old_ti = m->pt;
 			m->pt = fp_clamp(fp_add(old_ti, dpt), fp_negate(max_pt), max_pt);

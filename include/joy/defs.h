@@ -64,9 +64,9 @@ enum { PIXELS_PER_METER = 50 };
 static inline float meters_to_pixels(float meters) { return meters * (float)PIXELS_PER_METER; }
 static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXELS_PER_METER; }
 
-#define POPUP_MAX_TITLE 128
-#define POPUP_MAX_CONTENT 2048
-#define TOOLTIP_MAX_TEXT 256
+#define JOY_POPUP_MAX_TITLE 128
+#define JOY_POPUP_MAX_CONTENT 2048
+#define JOY_TOOLTIP_MAX_TEXT 256
 
 /* ---------- 分层类型常量 ---------- */
 #define JTILEMAP_LAYER_TILE     0
@@ -86,10 +86,10 @@ static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXE
 #define JTILEMAP_FLIP_D       0x20000000
 #define JTILEMAP_GID_MASK     0x1FFFFFFF
 
-#define ACCUMULATE_IMPULSES 1
-#define WARM_STARTING 1
-#define POSITION_CORRECTION 1
-#define MAX_POINTS 2
+#define JOY_ACCUMULATE_IMPULSES 1
+#define JOY_WARM_STARTING 1
+#define JOY_POSITION_CORRECTION 1
+#define JOY_MAX_POINTS 2
 
 
 #define jVERTOR_INIT(name, type) \

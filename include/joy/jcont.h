@@ -7,8 +7,8 @@ Version: 1.0
 Date: 2021.11.14
 History:
 *************************************************/
-#ifndef CONT_H
-#define CONT_H
+#ifndef JOY_JCONT_H
+#define JOY_JCONT_H
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -17,15 +17,15 @@ History:
 #include "jconfig.h"
 
 
-#define RED		0
-#define BLACK	        1
+#define JOY_RED		0
+#define JOY_BLACK	        1
 
 #define rb_parent(r)   ((r)->parent)
 #define rb_color(r) ((r)->color)
-#define rb_is_red(r)   ((r)->color==RED)
-#define rb_is_black(r)  ((r)->color==BLACK)
-#define rb_set_black(r)  do { (r)->color = BLACK; } while (0)
-#define rb_set_red(r)  do { (r)->color = RED; } while (0)
+#define rb_is_red(r)   ((r)->color==JOY_RED)
+#define rb_is_black(r)  ((r)->color==JOY_BLACK)
+#define rb_set_black(r)  do { (r)->color = JOY_BLACK; } while (0)
+#define rb_set_red(r)  do { (r)->color = JOY_RED; } while (0)
 #define rb_set_parent(r,p)  do { (r)->parent = (p); } while (0)
 #define rb_set_color(r,c)  do { (r)->color = (c); } while (0)
 
@@ -435,7 +435,7 @@ _create_rbtree_node(void* key, void* data,
         p->left = left;
         p->right = right;
         p->parent = parent;
-        p->color = BLACK;
+        p->color = JOY_BLACK;
 
         return p;
 }
@@ -575,7 +575,7 @@ _rbtree_insert(joy_map_t* map, joy_map_node_t* node)
                 map->root = node;
         }
 
-        node->color = RED;
+        node->color = JOY_RED;
         _rbtree_insert_fixup(map, node);
 }
 
@@ -705,7 +705,7 @@ _rbtree_delete(joy_map_t* map, joy_map_node_t* node)
                 replace->left = node->left;
                 node->left->parent = replace;
 
-                if (color == BLACK)
+                if (color == JOY_BLACK)
                         _rbtree_delete_fixup(map, child, parent);
                 free(node);
 
@@ -733,7 +733,7 @@ _rbtree_delete(joy_map_t* map, joy_map_node_t* node)
         else
                 map->root = child;
 
-        if (color == BLACK)
+        if (color == JOY_BLACK)
                 _rbtree_delete_fixup(map, child, parent);
         free(node);
 }

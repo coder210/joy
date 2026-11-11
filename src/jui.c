@@ -191,8 +191,8 @@ struct popup {
         joy_color_t title_text_color;
         bool visible;
         bool closeable;
-        char title[POPUP_MAX_TITLE];
-        char content[POPUP_MAX_CONTENT];
+        char title[JOY_POPUP_MAX_TITLE];
+        char content[JOY_POPUP_MAX_CONTENT];
         bool close_hovered;
         bool is_dragging;
         float drag_off_x, drag_off_y;
@@ -202,7 +202,7 @@ struct popup {
 struct tooltip {
         joy_r2d_p r2d;
         float x, y;
-        char text[TOOLTIP_MAX_TEXT];
+        char text[JOY_TOOLTIP_MAX_TEXT];
         int text_len;
         joy_color_t bg_color;
         joy_color_t border_color;
@@ -2989,7 +2989,7 @@ void joy_ui_popup_set_title(joy_popup_p p, const char* text, int len)
 {
         if (!p || !text) return;
         if (len < 0) len = (int)strlen(text);
-        if (len >= POPUP_MAX_TITLE) len = POPUP_MAX_TITLE - 1;
+        if (len >= JOY_POPUP_MAX_TITLE) len = JOY_POPUP_MAX_TITLE - 1;
         memcpy(p->title, text, len);
         p->title[len] = '\0';
 }
@@ -2998,7 +2998,7 @@ void joy_ui_popup_set_content(joy_popup_p p, const char* text, int len)
 {
         if (!p || !text) return;
         if (len < 0) len = (int)strlen(text);
-        if (len >= POPUP_MAX_CONTENT) len = POPUP_MAX_CONTENT - 1;
+        if (len >= JOY_POPUP_MAX_CONTENT) len = JOY_POPUP_MAX_CONTENT - 1;
         memcpy(p->content, text, len);
         p->content[len] = '\0';
 }
@@ -3154,7 +3154,7 @@ void joy_ui_tooltip_set_text(joy_tooltip_p t, const char* text, int len)
 {
         if (!t || !text) return;
         if (len < 0) len = (int)strlen(text);
-        if (len >= TOOLTIP_MAX_TEXT) len = TOOLTIP_MAX_TEXT - 1;
+        if (len >= JOY_TOOLTIP_MAX_TEXT) len = JOY_TOOLTIP_MAX_TEXT - 1;
         memcpy(t->text, text, len);
         t->text[len] = '\0';
         t->text_len = len;

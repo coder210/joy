@@ -7,8 +7,8 @@ Version: 1.0
 Date: 2023.1.29
 History:
 *************************************************/
-#ifndef MATHX_H
-#define MATHX_H
+#ifndef JOY_JMATH_H
+#define JOY_JMATH_H
 #include <stdbool.h>
 #include <stdint.h>
 #include <assert.h>
@@ -18,22 +18,22 @@ History:
 #include "jconfig.h"
 
 
-#define FP_NUM_BITS 64
-#define FP_FRACTIONAL_PLACES 32
-#define FP_ONE (1LL << FP_FRACTIONAL_PLACES)
+#define JOY_FP_NUM_BITS 64
+#define JOY_FP_FRACTIONAL_PLACES 32
+#define JOY_FP_ONE (1LL << JOY_FP_FRACTIONAL_PLACES)
 
-#define FP_MAX_VALUE 9223372036854775807LL
-#define FP_MIN_VALUE (-9223372036854775807LL - 1LL)
-#define FP_PI_TIMES_2 0x6487ED511
-#define FP_PI 0x3243F6A88
-#define FP_PI_OVER_2 0x1921FB544
-#define FP_PI_OVER_4 0xC90FDAA2
-#define FP_E 0x2B7E15162
-#define FP_EPOW4 0x3699205C4E
-#define FP_LN2 0xB17217F7
-#define FP_LNMAX 0x157CD0E702
-#define FP_LNMIN (-0x162E42FEFA)
-#define FP_LUT_SIZE (int)(FP_PI >> 16)
+#define JOY_FP_MAX_VALUE 9223372036854775807LL
+#define JOY_FP_MIN_VALUE (-9223372036854775807LL - 1LL)
+#define JOY_FP_PI_TIMES_2 0x6487ED511
+#define JOY_FP_PI 0x3243F6A88
+#define JOY_FP_PI_OVER_2 0x1921FB544
+#define JOY_FP_PI_OVER_4 0xC90FDAA2
+#define JOY_FP_E 0x2B7E15162
+#define JOY_FP_EPOW4 0x3699205C4E
+#define JOY_FP_LN2 0xB17217F7
+#define JOY_FP_LNMAX 0x157CD0E702
+#define JOY_FP_LNMIN (-0x162E42FEFA)
+#define JOY_FP_LUT_SIZE (int)(JOY_FP_PI >> 16)
 
 #define joy_fp_t int64_t
 #define joy_ft_t float
@@ -101,25 +101,25 @@ typedef struct mat44 {
 
 JOY_INLINE joy_fp_t fp_from_float(float a)
 {
-	return (joy_fp_t)(FP_ONE * a);
+	return (joy_fp_t)(JOY_FP_ONE * a);
 }
 
 JOY_INLINE float fp_to_float(joy_fp_t a)
 {
-	return a * 1.0f / FP_ONE;
+	return a * 1.0f / JOY_FP_ONE;
 }
 
 // 无符号 32 位整数值 → 定点数（与 fp_from_int 对称，语义为整数部分）。
 // 注意值域：a 接近 2^32 时 (joy_fp_t)a<<32 可能溢出 int64，请保证 a 不接近 2^32。纯整数、帧同步确定性。
 JOY_INLINE joy_fp_t fp_from_uint(uint32_t a)
 {
-	return (joy_fp_t)a << FP_FRACTIONAL_PLACES;
+	return (joy_fp_t)a << JOY_FP_FRACTIONAL_PLACES;
 }
 
 // 有符号 32 位整数值 → 定点数，纯整数、帧同步确定性。
 JOY_INLINE joy_fp_t fp_from_int(int32_t a)
 {
-	return (joy_fp_t)a << FP_FRACTIONAL_PLACES;
+	return (joy_fp_t)a << JOY_FP_FRACTIONAL_PLACES;
 }
 
 // 32 位小数 → 定点数：把 a∈[0,2^32) 当作定点数 [0,1.0) 的小数部分（整数部分为 0）。
@@ -129,17 +129,17 @@ JOY_INLINE joy_fp_t fp_from_fraction(uint32_t a)
 	return (joy_fp_t)a;
 }
 
-#define FPFF fp_from_float
-#define FPTF fp_to_float
+#define JOY_FPFF fp_from_float
+#define JOY_FPTF fp_to_float
 
 JOY_INLINE joy_fp_t fp_min_value()
 {
-	return FP_MIN_VALUE;
+	return JOY_FP_MIN_VALUE;
 }
 
 JOY_INLINE joy_fp_t fp_max_value()
 {
-	return FP_MAX_VALUE;
+	return JOY_FP_MAX_VALUE;
 }
 
 JOY_INLINE joy_fp_t fp_add(joy_fp_t a, joy_fp_t b)
@@ -158,17 +158,17 @@ static joy_fp_t fp_mul(joy_fp_t a, joy_fp_t b)
 	int64_t xl = a;
 	int64_t yl = b;
 	uint64_t xlo = (uint64_t)(xl & 0x00000000FFFFFFFF);
-	int64_t xhi = xl >> FP_FRACTIONAL_PLACES;
+	int64_t xhi = xl >> JOY_FP_FRACTIONAL_PLACES;
 	uint64_t ylo = (uint64_t)(yl & 0x00000000FFFFFFFF);
-	int64_t yhi = yl >> FP_FRACTIONAL_PLACES;
+	int64_t yhi = yl >> JOY_FP_FRACTIONAL_PLACES;
 	uint64_t lolo = xlo * ylo;
 	int64_t lohi = (int64_t)xlo * yhi;
 	int64_t hilo = xhi * (int64_t)ylo;
 	int64_t hihi = xhi * yhi;
-	uint64_t loResult = lolo >> FP_FRACTIONAL_PLACES;
+	uint64_t loResult = lolo >> JOY_FP_FRACTIONAL_PLACES;
 	int64_t midResult1 = lohi;
 	int64_t midResult2 = hilo;
-	int64_t hiResult = hihi << FP_FRACTIONAL_PLACES;
+	int64_t hiResult = hihi << JOY_FP_FRACTIONAL_PLACES;
 	return (int64_t)loResult + midResult1 + midResult2 + hiResult;
 }
 
@@ -197,7 +197,7 @@ static joy_fp_t fp_div(joy_fp_t a, joy_fp_t b)
 	uint64_t remainder = (uint64_t)(xl >= 0 ? xl : -xl);
 	uint64_t divider = (uint64_t)(yl >= 0 ? yl : -yl);
 	uint64_t quotient = 0;
-	int bitPos = FP_NUM_BITS / 2 + 1;
+	int bitPos = JOY_FP_NUM_BITS / 2 + 1;
 
 	// If the divider is divisible by 2^n, take advantage of it.
 	while ((divider & 0xF) == 0 && bitPos >= 4) {
@@ -220,7 +220,7 @@ static joy_fp_t fp_div(joy_fp_t a, joy_fp_t b)
 
 		// Detect overflow
 		if ((div & ~(0xFFFFFFFFFFFFFFFF >> bitPos)) != 0) {
-			if (((xl ^ yl) & FP_MIN_VALUE) == 0)
+			if (((xl ^ yl) & JOY_FP_MIN_VALUE) == 0)
                                 return fp_max_value();
 			else 
 				return fp_min_value();
@@ -233,7 +233,7 @@ static joy_fp_t fp_div(joy_fp_t a, joy_fp_t b)
 	// rounding
 	++quotient;
 	int64_t result = (int64_t)(quotient >> 1);
-	if (((xl ^ yl) & FP_MIN_VALUE) != 0) {
+	if (((xl ^ yl) & JOY_FP_MIN_VALUE) != 0) {
 		result = -result;
 	}
 	return result;
@@ -247,8 +247,8 @@ static joy_fp_t fp_eq(joy_fp_t a, joy_fp_t b)
 static joy_fp_t fp_abs(joy_fp_t x)
 {
 	joy_fp_t r;
-	if (x == FP_MIN_VALUE) {
-		r = FP_MAX_VALUE;
+	if (x == JOY_FP_MIN_VALUE) {
+		r = JOY_FP_MAX_VALUE;
 	}
 	else {
 		joy_fp_t mask = x >> 63;
@@ -266,7 +266,7 @@ static joy_fp_t fp_sqrt(joy_fp_t x)
 	uint64_t num = (uint64_t)xl;
 	uint64_t result = 0;
 
-	uint64_t bit = (uint64_t)1 << (FP_NUM_BITS - 2);
+	uint64_t bit = (uint64_t)1 << (JOY_FP_NUM_BITS - 2);
 
 	while (bit > num) bit >>= 2;
 
@@ -283,17 +283,17 @@ static joy_fp_t fp_sqrt(joy_fp_t x)
 		}
 
 		if (i == 0) {
-			if (num > ((uint64_t)1 << (FP_NUM_BITS / 2)) - 1) {
+			if (num > ((uint64_t)1 << (JOY_FP_NUM_BITS / 2)) - 1) {
 				num -= result;
-				num = (num << (FP_NUM_BITS / 2)) - 0x80000000;
-				result = (result << (FP_NUM_BITS / 2)) + 0x80000000;
+				num = (num << (JOY_FP_NUM_BITS / 2)) - 0x80000000;
+				result = (result << (JOY_FP_NUM_BITS / 2)) + 0x80000000;
 			}
 			else {
-				num <<= (FP_NUM_BITS / 2);
-				result <<= (FP_NUM_BITS / 2);
+				num <<= (JOY_FP_NUM_BITS / 2);
+				result <<= (JOY_FP_NUM_BITS / 2);
 			}
 
-			bit = (uint64_t)1 << (FP_NUM_BITS / 2 - 2);
+			bit = (uint64_t)1 << (JOY_FP_NUM_BITS / 2 - 2);
 		}
 	}
 
@@ -312,20 +312,20 @@ clamp_sin_value(joy_fp_t angle, bool *flip_horizontal, bool *flip_vertical)
 	}
 
 	if (angle < 0) {
-		clamped2Pi += FP_PI_TIMES_2;
+		clamped2Pi += JOY_FP_PI_TIMES_2;
 	}
 
-	*flip_vertical = clamped2Pi >= FP_PI;
+	*flip_vertical = clamped2Pi >= JOY_FP_PI;
 
 	int64_t clampedPi = clamped2Pi;
-	while (clampedPi >= FP_PI) {
-		clampedPi -= FP_PI;
+	while (clampedPi >= JOY_FP_PI) {
+		clampedPi -= JOY_FP_PI;
 	}
 
-	*flip_horizontal = clampedPi >= FP_PI_OVER_2;
+	*flip_horizontal = clampedPi >= JOY_FP_PI_OVER_2;
 	int64_t clampedPiOver2 = clampedPi;
-	if (clampedPiOver2 >= FP_PI_OVER_2) {
-		clampedPiOver2 -= FP_PI_OVER_2;
+	if (clampedPiOver2 >= JOY_FP_PI_OVER_2) {
+		clampedPiOver2 -= JOY_FP_PI_OVER_2;
 	}
 
 	return clampedPiOver2;
@@ -337,7 +337,7 @@ static joy_fp_t fp_sin(joy_fp_t x)
 	bool flip_vertical = false;
 	joy_fp_t clampedL = clamp_sin_value(x, &flip_horizontal, &flip_vertical);
 	unsigned int rawIndex = (unsigned int)(clampedL >> 15);
-	rawIndex = rawIndex >= FP_LUT_SIZE ? FP_LUT_SIZE - 1 : rawIndex;
+	rawIndex = rawIndex >= JOY_FP_LUT_SIZE ? JOY_FP_LUT_SIZE - 1 : rawIndex;
 	int sin_lut_length = sizeof(SIN_LUT) / sizeof(SIN_LUT[0]);
 	int index = flip_horizontal ? sin_lut_length - 1 - rawIndex : rawIndex;
 	joy_fp_t nearest_value = SIN_LUT[index];
@@ -346,7 +346,7 @@ static joy_fp_t fp_sin(joy_fp_t x)
 
 static joy_fp_t fp_cos(joy_fp_t x)
 {
-	joy_fp_t angle = x + (x > 0 ? -FP_PI - FP_PI_OVER_2 : FP_PI_OVER_2);
+	joy_fp_t angle = x + (x > 0 ? -JOY_FP_PI - JOY_FP_PI_OVER_2 : JOY_FP_PI_OVER_2);
 	return fp_sin(angle);
 }
 
@@ -415,7 +415,7 @@ static joy_fp_t fp_floor(joy_fp_t value)
 static joy_fp_t fp_ceil(joy_fp_t value)
 {
 	bool has_fractional = (value & 0x00000000FFFFFFFFLL) != 0;
-	return has_fractional ? fp_floor(value) + FP_ONE : value;
+	return has_fractional ? fp_floor(value) + JOY_FP_ONE : value;
 }
 
 // Fix64.Round：四舍五入到最近整数，恰为 .5 时取偶数（银行家舍入）
@@ -424,14 +424,14 @@ static joy_fp_t fp_round(joy_fp_t value)
 	uint64_t fractional = (uint64_t)(value & 0x00000000FFFFFFFFLL);
 	joy_fp_t integral = fp_floor(value);
 	if (fractional < 0x80000000ULL) return integral;
-	if (fractional > 0x80000000ULL) return integral + FP_ONE;
-	return (integral & FP_ONE) == 0 ? integral : integral + FP_ONE;
+	if (fractional > 0x80000000ULL) return integral + JOY_FP_ONE;
+	return (integral & JOY_FP_ONE) == 0 ? integral : integral + JOY_FP_ONE;
 }
 
 // Fix64.% / FastMod：定点取模（raw 取模即小数取模）
 static joy_fp_t fp_mod(joy_fp_t x, joy_fp_t y)
 {
-	if (x == FP_MIN_VALUE && y == -1) return 0;
+	if (x == JOY_FP_MIN_VALUE && y == -1) return 0;
 	return x % y;
 }
 
@@ -439,18 +439,18 @@ static joy_fp_t fp_mod(joy_fp_t x, joy_fp_t y)
 static joy_fp_t fp_tan(joy_fp_t x)
 {
 	int64_t lut_len = (int64_t)(sizeof(tan_lut) / sizeof(tan_lut[0]));
-	joy_fp_t clampedPi = fp_mod(x, FP_PI);
+	joy_fp_t clampedPi = fp_mod(x, JOY_FP_PI);
 	bool flip = false;
 	if (clampedPi < 0) { clampedPi = -clampedPi; flip = true; }
-	if (clampedPi > FP_PI_OVER_2) {
+	if (clampedPi > JOY_FP_PI_OVER_2) {
 		flip = !flip;
-		clampedPi = FP_PI_OVER_2 - (clampedPi - FP_PI_OVER_2);
+		clampedPi = JOY_FP_PI_OVER_2 - (clampedPi - JOY_FP_PI_OVER_2);
 	}
-	joy_fp_t lut_interval = fp_div(fp_from_int((int)(lut_len - 1)), FP_PI_OVER_2);
+	joy_fp_t lut_interval = fp_div(fp_from_int((int)(lut_len - 1)), JOY_FP_PI_OVER_2);
 	joy_fp_t raw_index = fp_mul(clampedPi, lut_interval);
 	joy_fp_t rounded = fp_round(raw_index);
 	joy_fp_t index_error = fp_sub(raw_index, rounded);
-	int64_t idx = rounded >> FP_FRACTIONAL_PLACES;
+	int64_t idx = rounded >> JOY_FP_FRACTIONAL_PLACES;
 	int sign = index_error > 0 ? 1 : (index_error < 0 ? -1 : 0);
 	if (idx >= lut_len - 1) idx = lut_len - 1;
 	if (idx < 0) idx = 0;
@@ -471,7 +471,7 @@ static joy_fp_t fp_atan(joy_fp_t z)
 	if (neg) z = -z;
 	joy_fp_t result;
 	if (z == fp_one()) {
-		result = FP_PI_OVER_4;
+		result = JOY_FP_PI_OVER_4;
 	} else {
 		bool invert = z > fp_one();
 		if (invert) z = fp_div(fp_one(), z);
@@ -491,7 +491,7 @@ static joy_fp_t fp_atan(joy_fp_t z)
 			if (term == 0) break;
 		}
 		result = fp_div(fp_mul(result, z), zSqPlusOne);
-		if (invert) result = fp_sub(FP_PI_OVER_2, result);
+		if (invert) result = fp_sub(JOY_FP_PI_OVER_2, result);
 	}
 	if (neg) result = -result;
 	return result;
@@ -501,14 +501,14 @@ static joy_fp_t fp_atan(joy_fp_t z)
 static joy_fp_t fp_atan2(joy_fp_t y, joy_fp_t x)
 {
 	if (x == 0) {
-		if (y > 0) return FP_PI_OVER_2;
+		if (y > 0) return JOY_FP_PI_OVER_2;
 		if (y == 0) return 0;
-		return -FP_PI_OVER_2;
+		return -JOY_FP_PI_OVER_2;
 	}
 	joy_fp_t atan = fp_atan(fp_div(y, x));
 	if (x < 0) {
-		if (y < 0) return fp_sub(atan, FP_PI);
-		return fp_add(atan, FP_PI);
+		if (y < 0) return fp_sub(atan, JOY_FP_PI);
+		return fp_add(atan, JOY_FP_PI);
 	}
 	return atan;
 }
@@ -516,9 +516,9 @@ static joy_fp_t fp_atan2(joy_fp_t y, joy_fp_t x)
 // Fix64.Acos：反余弦（基于 Atan + Sqrt）
 static joy_fp_t fp_acos(joy_fp_t x)
 {
-	if (x == 0) return FP_PI_OVER_2;
+	if (x == 0) return JOY_FP_PI_OVER_2;
 	joy_fp_t result = fp_atan(fp_div(fp_sqrt(fp_sub(fp_one(), fp_mul(x, x))), x));
-	if (x < 0) return fp_add(result, FP_PI);
+	if (x < 0) return fp_add(result, JOY_FP_PI);
 	return result;
 }
 
@@ -526,9 +526,9 @@ static joy_fp_t fp_acos(joy_fp_t x)
 static joy_fp_t fp_exp(joy_fp_t x)
 {
 	if (x == 0) return fp_one();
-	if (x == fp_one()) return FP_E;
-	if (x >= FP_LNMAX) return fp_max_value();
-	if (x <= FP_LNMIN) return 0;
+	if (x == fp_one()) return JOY_FP_E;
+	if (x >= JOY_FP_LNMAX) return fp_max_value();
+	if (x <= JOY_FP_LNMIN) return 0;
 	bool neg = x < 0;
 	if (neg) x = -x;
 	joy_fp_t result = fp_add(x, fp_one());
@@ -547,8 +547,8 @@ static joy_fp_t fp_ln(joy_fp_t x)
 {
 	if (x <= 0) return 0;
 	int scaling = 0;
-	while (x > FP_EPOW4) { x = fp_div(x, FP_EPOW4); scaling += 4; }
-	while (x < fp_one()) { x = fp_mul(x, FP_EPOW4); scaling -= 4; }
+	while (x > JOY_FP_EPOW4) { x = fp_div(x, JOY_FP_EPOW4); scaling += 4; }
+	while (x < fp_one()) { x = fp_mul(x, JOY_FP_EPOW4); scaling -= 4; }
 	joy_fp_t guess = fp_from_int(2);
 	joy_fp_t delta = 0;
 	int count = 0;
@@ -590,11 +590,11 @@ static joy_fp_t fp_sin_interp(joy_fp_t x)
 	bool flip_vertical = false;
 	joy_fp_t clamped = clamp_sin_value(x, &flip_horizontal, &flip_vertical);
 	int64_t len = (int64_t)(sizeof(SIN_LUT) / sizeof(SIN_LUT[0]));
-	joy_fp_t lut_interval = fp_div(fp_from_int((int)(len - 1)), FP_PI_OVER_2);
+	joy_fp_t lut_interval = fp_div(fp_from_int((int)(len - 1)), JOY_FP_PI_OVER_2);
 	joy_fp_t raw_index = fp_mul(clamped, lut_interval);
 	joy_fp_t rounded = fp_round(raw_index);
 	joy_fp_t index_error = fp_sub(raw_index, rounded);
-	int64_t base = rounded >> FP_FRACTIONAL_PLACES;
+	int64_t base = rounded >> JOY_FP_FRACTIONAL_PLACES;
 	int sign = index_error > 0 ? 1 : (index_error < 0 ? -1 : 0);
 	if (base >= len - 1) base = len - 1;
 	if (base < 0) base = 0;
@@ -612,7 +612,7 @@ static joy_fp_t fp_sin_interp(joy_fp_t x)
 // Fix64.Cos（插值版）：角度偏移后复用 fp_sin_interp
 static joy_fp_t fp_cos_interp(joy_fp_t x)
 {
-	joy_fp_t angle = x + (x > 0 ? -FP_PI - FP_PI_OVER_2 : FP_PI_OVER_2);
+	joy_fp_t angle = x + (x > 0 ? -JOY_FP_PI - JOY_FP_PI_OVER_2 : JOY_FP_PI_OVER_2);
 	return fp_sin_interp(angle);
 }
 
@@ -1122,8 +1122,8 @@ JOY_INLINE float ft_to_float(joy_ft_t x)
 	return x;
 }
 
-#define FTFF ft_from_float
-#define FTTf ft_to_float
+#define JOY_FTFF ft_from_float
+#define JOY_FTTf ft_to_float
 
 JOY_INLINE joy_ft_t ft_min_value()
 {
@@ -1753,4 +1753,4 @@ JOY_INLINE joy_mat44_t mat44_lookAt(joy_vec3_t eye, joy_vec3_t center, joy_vec3_
 }
 
 
-#endif //!MATHX_H
+#endif //!JOY_JMATH_H

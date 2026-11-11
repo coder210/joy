@@ -451,7 +451,7 @@ joy_math_collision2df_check_rectangles(joy_rectanglef_t a, joy_rectanglef_t b)
 static int
 joy_tilemap_floor_to_int(joy_fp_t x)
 {
-        return (int)(x >> FP_FRACTIONAL_PLACES);
+        return (int)(x >> JOY_FP_FRACTIONAL_PLACES);
 }
 
 static bool
@@ -748,8 +748,8 @@ joy_math_collision2df_get_rectangles(joy_rectanglef_t a, joy_fp_t a_angle,
 	joy_vec2f_t normal;
 	joy_fp_t separation, r_separation, a_res, b_res;
 
-	const joy_fp_t relative_tol = FPFF(0.95f);
-	const joy_fp_t absolute_tol = FPFF(0.01f);
+	const joy_fp_t relative_tol = JOY_FPFF(0.95f);
+	const joy_fp_t absolute_tol = JOY_FPFF(0.01f);
 
         a_bounds.x = a.width; a_bounds.y = a.height;
         b_bounds.x = b.width; b_bounds.y = b.height;

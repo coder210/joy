@@ -1,5 +1,5 @@
-#ifndef CONIFG_H
-#define CONIFG_H
+#ifndef JOY_JCONFIG_H
+#define JOY_JCONFIG_H
 
 #if defined(_WIN32) || defined(_WIN64)
 #       define JOY_WIN
@@ -44,4 +44,4 @@
 #define JOY_MAX_IP 127 
 
 
-#endif // !CONIFG_H
+#endif // !JOY_JCONFIG_H

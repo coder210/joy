@@ -27,6 +27,7 @@ const P = (...s) => path.join(ROOT, ...s);
 
 const MAP_FILE = P('api/idl/type_rename_map.json');
 const PRIVATE_MAP_FILE = P('api/idl/private_type_map.json');
+const MACRO_MAP_FILE = P('api/idl/macro_rename_map.json');
 const ALIAS_FILE = P('api/idl/handle_aliases.json');
 
 /* §3.2 标准 C 类型（含 SCALARS 里出现的别名），不能加 joy_ */
@@ -136,6 +137,7 @@ function buildPrivateMap(publicMap) {
 function loadMap(which) {
   const read = f => JSON.parse(fs.readFileSync(f, 'utf8'));
   if (which === 'private') return read(PRIVATE_MAP_FILE);
+  if (which === 'macros') return read(MACRO_MAP_FILE);
   if (which === 'all') return { ...read(MAP_FILE), ...read(PRIVATE_MAP_FILE) };
   return read(MAP_FILE);
 }
