@@ -106,14 +106,17 @@ typedef struct joy_font joy_font_t, *joy_font_p;
 #define jvector_p(name) jvector_##name##_p
 ```
 
-真类型在 `include/joy/jcont.h:72-77`：`typedef struct vector { ... } vector_t;`
+真类型原本在 `include/joy/jcont.h:72-77`（`typedef struct vector { ... } vector_t;`）。
+**该头已于 2026-11-11 删除**（孤岛头、无人使用），所以这个类型本身也不复存在；
+`jvector_t(name)` 宏展开出的 `jvector_##name##_t` 由 `defs.h` 的 `jVERTOR_INIT`
+宏自行定义，与 jcont 无关。
 
-处理方式：
+处理方式（本任务实际采用）：
 
-- `vector_t` → `joy_vector_t`（正常改名，这是 jcont 的容器结构体）
-- **宏不要改成 `joy_vector_t` / `joy_vector_p`** —— 宏会被预处理直接替换，和类型名撞车。
-  建议改为 `joy_vector_decl(name)` / `joy_vector_handle(name)`，或干脆保持原名。
-- 映射表里**不要**给 `jvector_t` / `jvector_p` 建条目，这是假冲突。
+- 批 2 曾把 `vector_t` 改成 `joy_vector_t`；随后 `jcont.h` 删除，该类型随之移除
+- **宏保持原名** `jvector_t` / `jvector_p` —— 宏会被预处理直接替换，改成
+  `joy_vector_t` 会和类型名撞车
+- 映射表里**不给** `jvector_t` / `jvector_p` 建条目，这是假冲突
 
 ### 3.4 `fp_t` / `ft_t` 是 `#define` 标量宏
 

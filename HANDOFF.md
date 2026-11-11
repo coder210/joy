@@ -28,10 +28,13 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 ## 2. 当前状态
 
 - 工作区状态以 `git status` 为准；本轮收尾前 `main` 与 `origin/main` 同步。
-- 桌面（Windows / VS2022 / Debug）：全量构建 0 错误，`ctest` 4/4 通过；**构建已不再依赖 `compat.h` 兼容宏**（P1 收尾真正改了源码）。2026-11-11 复验仍是 0 错误 / 4/4（含本轮新增的 vtable 自检条目）。
+- 桌面（Windows / VS2022 / Debug）：全量构建 0 错误，`ctest` 4/4 通过；**构建不依赖任何旧名兼容宏**。2026-11-11 复验仍是 0 错误 / 4/4（含本轮新增的 vtable 自检条目）。
 - `node api/tools/gen_bindings.js --check` 通过（report/thunks/vtable/cs glue/jmath 全部最新）。
+- **`compat.h` 与 `jcont.h` 已删除**（2026-11-11）：前者是空兼容层、后者是仅被
+  `src/jutils.c` 死引用且从未使用符号的 900 行孤岛容器头；已移除 `joy.h` 与
+  `jutils.c` 两处 include，删除后全量构建 0 错误。
 - **公开 API 命名迁移 P1 基本完成**：1150 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
-  调用点 / 生成物四处 C 符号一致，`compat.h` 宏块已清空。**6 条例外**：
+  调用点 / 生成物四处 C 符号一致。**6 条例外**：
   `joy_fov_*`(4) 与 `joy_tilemap_sweep_x|y`(2)，域名回退成白名单外的 `joy`，
   均为 L3 / `status:off` / 不暴露；因在 `legacy_names.txt` 豁免名单里 `--check`
   查不到。本轮决定保持现状（不暴露，改名收益低于动公开头的风险），只如实记录。
@@ -106,6 +109,13 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    `void*` 保持 `off`，note 已写明原因。**约束**：mesh 句柄不得比创建它的 r3d
    上下文活得久（owner 会悬空）。验证：`--scan` 幂等、`--check` OK、
    全量构建 0 错误、`ctest` 4/4。
+16. **删除 `compat.h` / `jcont.h`（2026-11-11）**：`compat.h` 在 P1 收尾清空宏块后
+   只剩 include guard，唯一引用是 `joy.h:17`；`jcont.h` 是 900 行孤岛容器头
+   （队列/链表/vector/红黑树），不被 `joy.h` 链与 `DECL_SOURCES` 包含，唯一引用
+   `src/jutils.c:8` 是死引用（其中 50 个符号一个都没被使用，`src/jecs.c` 里
+   `joy_vector_t` 等命中全在注释块中）。删除两个文件 + 两处 include，并清理
+   `rename_types.js` 的 tag 采集列表、`gen_bindings.js` 与三份文档里的过期描述。
+   删除后全量构建 0 错误。
 
 具体内容：
 
@@ -179,8 +189,9 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 `--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`。
 **迁移已收尾**：`api/idl/rename_map.json` 现有 **1150 条**旧名→新名映射
 （2026-11-10 清掉 4 条无声明的 `utils_aes_*` 死映射），`--scan` 据此继承
-`status`/`owns`/`note`；`include/joy/compat.h` 宏块已清空，仅作 `joy.h` 的占位
-`#include`，不再有 `#define` 桥接。`script`(33) 与 `core` 域里的
+`status`/`owns`/`note`；`include/joy/compat.h` 与 `include/joy/jcont.h` 均已删除，
+全仓不再有 `#define` 桥接。`legacy_names.txt` 仍须保留（6 条例外靠它豁免）。
+`script`(33) 与 `core` 域里的
 `joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
 thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域名不在
 10 域白名单（见 §2），因 legacy 豁免不被门禁拦截。脚本层 PascalCase 方法名由
@@ -331,10 +342,12 @@ success。四项均已满足，所以没有遗留任务。
    改名点是该脚本里 3 处 `'<prefix>_' + f.name`（已改为 `'joy_math_' + f.name`），
    不是 `api.h`。改完必须重跑 `node api/tools/jmath_wrap.js` 重新生成包装头。
 
-5. **`compat.h` 已清空，别再往里塞 `#define`。**
+5. **`compat.h` 已删除，不要重建。**
    P1 收尾把 `src/`/`examples`/`modules` 共 57 个手写源文件的 1881 处旧名
-   **真正改成 `joy_*`**，之后 `compat.h` 的宏块已删除（仅留空占位 `#include`）。
-   后续新增改名若要向后兼容，直接改源码，不要再靠宏桥接。
+   **真正改成 `joy_*`**，兼容宏清空后该文件连同 `joy.h` 的 include 一起删除。
+   后续新增改名直接改源码，不要再靠 `#define` 桥接。
+   同理 `jcont.h`（900 行孤岛容器头）已删除：它不被 `joy.h` 链包含，
+   仅 `src/jutils.c` 有一行死引用，且其中符号从未被使用。
 
 6. **`--scan` 会丢弃「源码里已不存在」的 IDL 过期条目。**
    改名前务必先 `--scan` 确认真实条目：曾发现 IDL 里残留 `utils_mouse_pos`/

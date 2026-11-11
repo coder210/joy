@@ -5,7 +5,6 @@
 #include "external/des.h"
 #include <SDL3/SDL.h>
 #include "joy.h"
-#include "jcont.h"
 
 
 #define MT_N 624

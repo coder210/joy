@@ -515,9 +515,10 @@ function check(entries) {
     if (!e) { errors.push('joy.h 新增 API 未进 IDL，请跑 --scan: ' + f.name); continue; }
     if (auto(e) !== auto(f)) errors.push('joy.h 签名已变更，请跑 --scan: ' + f.name);
   }
-  /* P0 命名门禁：只卡新增，不卡存量。存量 1156 条冻结在 legacy_names.txt；
-   * 迁移产生的新名符合 joy_<域>_<动作> 即放行，旧名由 compat.h 兜住。
-   * 全量迁移完成后删掉豁免文件，门禁自动变成全量强制。 */
+  /* P0 命名门禁：只卡新增，不卡存量。存量冻结在 legacy_names.txt；
+   * 迁移产生的新名符合 joy_<域>_<动作> 即放行。旧名兼容层 compat.h 已删除，
+   * 所有源码与生成物统一使用 joy_* 新名；legacy_names.txt 仍保留，因为 6 条
+   * joy_fov_* / joy_tilemap_sweep_* 例外的域名不在白名单，需靠豁免过门禁。 */
   const legacy = new Set(
     fs.existsSync(LEGACY_NAMES)
       ? fs.readFileSync(LEGACY_NAMES, 'utf8').split(/\r?\n/).filter(Boolean)

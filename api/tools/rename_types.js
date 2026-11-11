@@ -210,9 +210,8 @@ function doReplace(src, map, tags) {
 function buildTagMap() {
   const dir = P('include/joy');
   const out = new Set();
-  for (const f of ['types.h', 'defs.h', 'jmath.h', 'jcont.h']) {
+  for (const f of ['types.h', 'defs.h', 'jmath.h']) {
     const fp = path.join(dir, f);
-    if (!fs.existsSync(fp)) continue;
     const s = fs.readFileSync(fp, 'utf8');
     let m;
     const re = /\btypedef\s+struct\s+(\w+)\s/g;

@@ -34,8 +34,11 @@
 | `runtime/joy_obj.*` | 人工 | 句柄表、引用计数、类型 tag 校验、自动析构 |
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
 | `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
-| `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的 1156 条存量 API 名，命名门禁的豁免基线；全量迁移后删除 |
-| `include/joy/compat.h` | 人工 | 空兼容层占位文件，`joy.h` 引入；P1 收尾已把 `src/` 与各模块定义、调用点真正改名，宏块清空，不再靠 `#define` 桥接 |
+| `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的存量 API 名，命名门禁的豁免基线。**不能删除**：6 条 `joy_fov_*` / `joy_tilemap_sweep_*` 例外的域名不在白名单，靠它过门禁 |
+
+> `include/joy/compat.h`（旧名兼容层）与 `include/joy/jcont.h`（孤岛容器头）已于
+> 2026-11-11 删除：前者在 P1 收尾清空宏块后已无内容，后者仅被 `src/jutils.c`
+> 死引用且从未使用其中符号。两者都不在 `joy.h` 链与生成链内。
 
 ## 公开 API 命名规范（P0 起，分阶段迁移）
 
@@ -79,9 +82,9 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 - 迁移改名时在 `naming.js` 的 `ALIASES` 登记 `新C名 → 旧PascalCase名`，使
   三端方法名与 `api->R2dCreate` 保持冻结；不能用「剥掉 `joy_<域>`」自动推导
   （历史名如 `JanimatorCreate` 会坏）。
-- `compat.h` 曾放旧名 `#define` 桥接；P1 收尾已把 `src/` 与各模块里的定义与调用点
-  真正改成 `joy_*` 新名，宏块清空，该文件仅作为 `joy.h` 的占位 include 保留。
-  若日后需要重新开放旧名兼容，在下方补 `#define` 即可。
+- P0 曾用 `compat.h` 放旧名 `#define` 桥接；P1 收尾已把 `src/` 与各模块里的定义与
+  调用点真正改成 `joy_*` 新名，随后该文件连同 `joy.h` 的 include 一起删除。
+  现在全仓不存在任何旧名兼容宏。
 
 ### 迁移顺序（P1 进行中）
 
@@ -163,13 +166,13 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
   切到新符号——等于"只重定义了名字、没改源码"。收尾阶段用字符边界批量替换，把
   `src/`（jui.c 538、jr3d.c 281、jnetwork.c 187、jr2d.c 143 …）、`examples/`、
   `modules/` 共 57 个手写源文件里的 1881 处旧名全部改成 `joy_*` 新名；改写后
-  手写源零旧名残留，且**不再需要兼容宏**即可编译通过，`compat.h` 宏块清空（仅留
-  空占位，防 `joy.h` 的 `#include` 失效）。
+  手写源零旧名残留，且**不再需要兼容宏**即可编译通过；`compat.h` 当时清空宏块
+  留作占位，2026-11-11 已连同 include 一并删除。
 - **`script`（33 条）与 `utils`（20 条）收尾**：二者都曾因带函数指针参数 / 属于有意排除项
   而留在 `SKIP_DOMAINS` 里（X 级，不进 thunk/vtable/C# 绑定）。按同样方式把它们的
   定义与调用点真正改名——`script` → `joy_script_*`（仍归 `script` 域、X 级），
   `utils` → `joy_core_utils_*`（归 `core` 域、靠 `SKIP_PREFIXES` 维持 X 级）；
-  旧 `utils`/`jspine`/`modules`/`module` 等死域从跳过清单里清掉。`compat.h` 不再需要。
+  旧 `utils`/`jspine`/`modules`/`module` 等死域从跳过清单里清掉。
 
 映射见 `idl/rename_map.json`（累加式）。
 
@@ -185,7 +188,8 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
    最后 `math` / `r3d` 大域；`jmath_wrappers.h` 的 220 条走 `jmath_wrap.js`。
 3. **改名必须原位替换**，不要增删 `api.h` / `defs.h` 的行，否则 IDL 的
    `source` 行号整体漂移（见 `HANDOFF.md`）。
-4. 全迁完删除 `legacy_names.txt` 与 `compat.h`。
+4. `legacy_names.txt` **必须保留**：6 条 `joy_fov_*` / `joy_tilemap_sweep_*` 例外的
+   域名回退成白名单外的 `joy`，删掉会让 `--check` 立刻失败。`compat.h` 已删除。
 
 ### vtable 的自检边界
 
