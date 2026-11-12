@@ -160,11 +160,13 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
      故 IDL / thunks / vtable / C# glue 零变化。
    - 验证：`--scan` 幂等（1157 条）、`--check` OK、默认构建 0 错误、
      `ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
-   - **仍未修（单独排期）**：SDL 类型进入公开头（`jdefs.h:17`、`japi.h:584/626`）、
-     `jr2d.c` 承载 UI/场景 API、无资源管理器/绘制指令层、两套分配器并存、
-     事件抽象空转、Winsock 初始化/清理缺少引用计数等，见架构审视报告。
-     其中 `jecs.c` 越界写、`jsys.c` 返回值写反、`bitset` 泄漏与函数级
-     `static` GPU 资源已在第 20 条修复。
+   - **仍未修（单独排期）**：`jr2d.c` 承载 UI/场景 API、无资源管理器/绘制
+     指令层、两套分配器并存、Winsock 初始化/清理缺少引用计数、
+     `set_sock_*timeo` 在 macOS/UNIX 仍为空实现；控件 `void* event` API 与
+     `joy_ui_process_widget_event` 空壳待真实消费者（见第 23 条）。
+     SDL 类型进入公开头、事件抽象的平台依赖部分已在第 23 条完成。
+     其中 `jecs.c` 越界写、`jsys.c` 返回值写反、`bitset` 泄漏、函数级
+     `static` GPU 资源及第 21 条的 13 处运行期缺陷均已修复（第 20/21 条）。
 20. **继续处理：纯 bug 与函数级 static GPU 资源（2026-11-12）**：承接第 19 条，
     把已确证的 3 个纯 bug + 4 处 GPU 资源全部收口，**公开头零改动**。
     - **3 个纯 bug**：`jecs.c` 的 `joy_scene_ecs_queryx` 对固定容量 `ids[512]`
