@@ -7,9 +7,20 @@
 #   api/generated/   工具生成，勿手改
 #   external/ vendored 第三方（含一个自有包装 aes_util.c）
 #
-# 下面的 core/math/render/... 分组只用于清单阅读与 IDE 分组展示，
-# 不在路径里重复表达，也不承诺模块边界：历史上的文件名前缀不足以定义域，
-# 与其让目录名给出错误承诺，不如把归属只记在这一份清单里。
+# 下面的分组表达职责分层与模块边界，不只是 IDE 展示：每个 .c 都是独立编译单元，
+# 各自持有私有 static 作用域与依赖集，不因"都调用了 jr2d"就合并成巨型 TU。
+# 按职责分四层（RENDER 组内部也分层）：
+#   绘制基础层    jr2d / jfont / jlight —— 纹理、图元、文字缓存、字体与光照，
+#                 提供被上层复用的绘制能力（jlight 复用 jr2d 的图元接口）
+#   2D 功能模块层 jparticle / jtilemap / jui / jui_im —— 各自持有独立数据模型
+#                 （粒子池 / 瓦片图层 / 控件树 / 即时模式状态），可独立演进
+#   场景层        jscene / janimator（SCENE 组）—— 数据驱动、与渲染解耦；
+#                 janimator 只持有一个 joy_r2d_p 句柄设颜色，不属于渲染层
+#   可选适配层    jgltf / jspine / jmodule —— 由 JOY_ENABLE_GLTF / _SPINE /
+#                 _PLUGINS 控制，默认不参与构建；整文件由 JOY_USE_* 包裹，
+#                 保持"未启用即空编译单元"的隔离语义，勿并入必编译的 TU
+# jr3d 与 jgltf 属 3D，勿按"2D"归并；physics / behavior / net / audio 各自独立。
+# 增删文件在这里登记，归属也只记在这一份清单里。
 #
 # 生成物 api/generated/jmath_wrappers.c 列在 math 域，等 IDL 改 manifest 后
 # 由记录类型取代；src/jlut.c 是两张三角查表的唯一定义（原 jlut.h 数据）；
