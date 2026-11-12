@@ -8,12 +8,12 @@
 /* 裁剪栈最大深度：嵌套面板（窗口 > 面板 > 滚动区 > 列表项）足够用 */
 #define R2D_CLIP_STACK_MAX 32
 
-/* 帧计数，由 joy_r2d_begin() 递增。文字缓存用它做 LRU 的时间基准，
- * 定义在文件顶部是因为 joy_r2d_begin() 的位置在缓存实现之前。 */
-static Uint64 g_frame = 0;
-
 struct jr2d {
         SDL_Renderer* sdl;
+
+        /* 每个 renderer 独立的帧时钟，由各自的 joy_r2d_begin() 递增。
+         * 文字缓存条目按 owner 归属到对应时钟，多实例不会互相推进 LRU。 */
+        Uint64 frame;
 
         /* 裁剪状态。clip_enabled 为 false 时表示无裁剪。
          * 栈保存 push 之前的 (enabled, rect)，pop 时原样恢复。 */
@@ -23,6 +23,10 @@ struct jr2d {
         bool     stack_enabled[R2D_CLIP_STACK_MAX];
         joy_rect_t  stack_rect[R2D_CLIP_STACK_MAX];
 };
+
+/* 实现在下方文字缓存区（此刻 jtext_entry 尚未定义）：只清掉属于该
+ * renderer 的缓存条目，供 joy_r2d_destroy 使用。 */
+static void jtext_cache_clear_for(joy_r2d_p r2d);
 
 struct image {
         SDL_Texture* texture;
@@ -99,8 +103,9 @@ joy_vec2_t joy_r2d_coordinates_from_window(joy_r2d_p r2d, float x, float y)
 void joy_r2d_destroy(joy_r2d_p r2d)
 {
         if (!r2d) return;
-        /* 缓存的纹理隶属于这个 renderer，必须整体释放，否则会留下悬空纹理 */
-        joy_r2d_jtext_cache_clear();
+        /* 只释放属于这个 renderer 的缓存纹理。SDL 纹理不可跨 renderer 使用，
+         * 若沿用全局 clear 会连带销毁其它存活 renderer 的纹理，造成悬空。 */
+        jtext_cache_clear_for(r2d);
         SDL_DestroyRenderer(r2d->sdl);
         SDL_free(r2d);
 }
@@ -115,8 +120,8 @@ bool joy_r2d_set_color(joy_r2d_p r2d, uint8_t r, uint8_t g, uint8_t b, uint8_t a
         return SDL_SetRenderDrawColor(r2d->sdl, r, g, b, a);
 }
 
-/* 递增帧计数：文字缓存以帧为单位判断条目是否闲置 */
-void joy_r2d_begin(joy_r2d_p r2d) { g_frame++; SDL_RenderClear(r2d->sdl); }
+/* 递增本实例帧时钟：文字缓存以帧为单位判断条目是否闲置 */
+void joy_r2d_begin(joy_r2d_p r2d) { r2d->frame++; SDL_RenderClear(r2d->sdl); }
 void joy_r2d_end(joy_r2d_p r2d) { SDL_RenderPresent(r2d->sdl); }
 
 bool joy_r2d_set_logical_presentation(joy_r2d_p r2d, int w, int h)
@@ -1067,12 +1072,13 @@ typedef struct jtext_entry {
         struct jtext_entry* hash_next;
         struct jtext_entry* lru_prev;
         struct jtext_entry* lru_next;
+        joy_r2d_p owner;        /* 纹理隶属于哪个 renderer；缓存键的一部分 */
         joy_font_p    font;
         joy_color_t  color;
         int       len;
         char*     str;          /* 内容拷贝，len 字节，额外补一个 '\0' 便于调试 */
         joy_text_p   tex;
-        Uint64    last_frame;
+        Uint64    last_frame;   /* 以 owner->frame 为时间基准 */
 } joy_text_entry_t;
 
 static joy_text_entry_t* g_buckets[JTEXT_CACHE_BUCKETS];
@@ -1081,7 +1087,8 @@ static joy_text_entry_t* g_lru_tail;    /* 最久未用 */
 static int            g_cache_count = 0;
 static int            g_cache_limit = JTEXT_CACHE_DEFAULT_LIMIT;
 
-static Uint64 jtext_hash(joy_font_p font, joy_color_t c, const char* s, int len)
+static Uint64 jtext_hash(joy_r2d_p owner, joy_font_p font,
+        joy_color_t c, const char* s, int len)
 {
         Uint64 h = 1469598103934665603ULL;          /* FNV-1a 64 */
         const unsigned char* p;
@@ -1093,6 +1100,9 @@ static Uint64 jtext_hash(joy_font_p font, joy_color_t c, const char* s, int len)
                         h *= 1099511628211ULL;              \
                 }                                           \
         } while (0)
+        /* owner 必须进键：SDL 纹理不可跨 renderer 使用，两个 renderer
+         * 打印同一段文字也不能命中同一张纹理。 */
+        JTEXT_HASH_BYTES(&owner, sizeof(owner));
         JTEXT_HASH_BYTES(&font, sizeof(font));
         JTEXT_HASH_BYTES(&c, sizeof(c));
         if (s && len > 0) JTEXT_HASH_BYTES(s, len);
@@ -1127,24 +1137,41 @@ static void jtext_entry_free(joy_text_entry_t* e)
         SDL_free(e);
 }
 
-/* 淘汰最久未使用的条目 */
-static void jtext_evict_one(void)
+/* 摘除并释放指定条目（可从哈希桶与 LRU 链的任意位置移除） */
+static void jtext_entry_remove(joy_text_entry_t* e)
 {
-        joy_text_entry_t* victim = g_lru_tail;
         joy_text_entry_t** pp;
         Uint64 bucket;
-        if (!victim) return;
 
-        bucket = jtext_hash(victim->font, victim->color, victim->str, victim->len)
+        if (!e) return;
+        bucket = jtext_hash(e->owner, e->font, e->color, e->str, e->len)
                  % JTEXT_CACHE_BUCKETS;
         pp = &g_buckets[bucket];
         while (*pp) {
-                if (*pp == victim) { *pp = victim->hash_next; break; }
+                if (*pp == e) { *pp = e->hash_next; break; }
                 pp = &(*pp)->hash_next;
         }
-        jtext_lru_unlink(victim);
-        jtext_entry_free(victim);
+        jtext_lru_unlink(e);
+        jtext_entry_free(e);
         g_cache_count--;
+}
+
+/* 淘汰最久未使用的条目 */
+static void jtext_evict_one(void)
+{
+        jtext_entry_remove(g_lru_tail);
+}
+
+/* 只清除属于指定 renderer 的条目。destroy 后 SDL_Renderer 已失效，
+ * 这些纹理必须随之释放；其它 renderer 的条目保持不动。 */
+static void jtext_cache_clear_for(joy_r2d_p r2d)
+{
+        joy_text_entry_t* e = g_lru_head;
+        while (e) {
+                joy_text_entry_t* next = e->lru_next;
+                if (e->owner == r2d) jtext_entry_remove(e);
+                e = next;
+        }
 }
 
 static joy_text_p jtext_cache_get(joy_r2d_p r2d, joy_font_p font,
@@ -1156,14 +1183,14 @@ static joy_text_p jtext_cache_get(joy_r2d_p r2d, joy_font_p font,
 
         if (!r2d || !font || !str || len <= 0) return NULL;
 
-        bucket = jtext_hash(font, color, str, len) % JTEXT_CACHE_BUCKETS;
+        bucket = jtext_hash(r2d, font, color, str, len) % JTEXT_CACHE_BUCKETS;
 
         for (e = g_buckets[bucket]; e; e = e->hash_next) {
-                if (e->font == font && e->len == len
+                if (e->owner == r2d && e->font == font && e->len == len
                         && e->color.r == color.r && e->color.g == color.g
                         && e->color.b == color.b && e->color.a == color.a
                         && SDL_memcmp(e->str, str, (size_t)len) == 0) {
-                        e->last_frame = g_frame;
+                        e->last_frame = r2d->frame;
                         jtext_lru_unlink(e);
                         jtext_lru_push_front(e);
                         return e->tex;
@@ -1182,11 +1209,12 @@ static joy_text_p jtext_cache_get(joy_r2d_p r2d, joy_font_p font,
         SDL_memcpy(e->str, str, (size_t)len);
         e->str[len] = '\0';
 
+        e->owner      = r2d;
         e->font       = font;
         e->color      = color;
         e->len        = len;
         e->tex        = tex;
-        e->last_frame = g_frame;
+        e->last_frame = r2d->frame;
 
         e->hash_next = g_buckets[bucket];
         g_buckets[bucket] = e;
@@ -1212,12 +1240,14 @@ int joy_r2d_jtext_cache_get_count(void)
         return g_cache_count;
 }
 
-/* 回收空闲超过 max_idle_frames 帧的条目（单位：帧，由 joy_r2d_begin 推进） */
+/* 回收空闲超过 max_idle_frames 帧的条目（单位：帧）。
+ * 每个条目按自己 owner 的帧时钟判断，多实例互不干扰。 */
 void joy_r2d_jtext_cache_sweep(int max_idle_frames)
 {
         if (max_idle_frames < 0) return;
         while (g_lru_tail
-               && (g_frame - g_lru_tail->last_frame) > (Uint64)max_idle_frames) {
+               && (g_lru_tail->owner->frame - g_lru_tail->last_frame)
+                  > (Uint64)max_idle_frames) {
                 jtext_evict_one();
         }
 }

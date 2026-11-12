@@ -73,6 +73,9 @@ if(JOY_ENABLE_SPINE)
         target_include_directories(joy_all INTERFACE "${JOY_ROOT}/spine/spine-c/include")
     endif()
 endif()
+if(JOY_ENABLE_PLUGINS)
+    target_compile_definitions(joy_all INTERFACE JOY_USE_PLUGINS)
+endif()
 
 # 平台与工具链配置：源码注入下这些宏会作用于宿主的全部 TU（含宿主自身代码），
 # 这是与旧 joy_add.cmake 一致的语义，不是新增行为。

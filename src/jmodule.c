@@ -6,7 +6,14 @@ Author: ydlc
 Version: 1.0
 Date: 2021.3.3
 History:
+
+插件系统为可选模块：由 JOY_ENABLE_PLUGINS 控制（见 cmake/JoySources.cmake），
+CMake 转发为 JOY_USE_PLUGINS。未启用时本文件为空编译单元，不影响任何项目。
+公开声明在 japi.h 的 JOY_USE_PLUGINS 条件段内，两者必须同步。
 *************************************************/
+
+#ifdef JOY_USE_PLUGINS
+
 #include <SDL3/SDL.h>
 #include "external/klib/khash.h"
 #include "joy.h"
@@ -240,3 +247,5 @@ void joy_script_module_instance_release(joy_module_p mod, void* inst)
 		mod->release(inst);
 	}
 }
+
+#endif /* JOY_USE_PLUGINS */

@@ -14,11 +14,20 @@
 #                 提供被上层复用的绘制能力（jlight 复用 jr2d 的图元接口）
 #   2D 功能模块层 jparticle / jtilemap / jui / jui_im —— 各自持有独立数据模型
 #                 （粒子池 / 瓦片图层 / 控件树 / 即时模式状态），可独立演进
-#   场景层        jscene / janimator（SCENE 组）—— 数据驱动、与渲染解耦；
-#                 janimator 只持有一个 joy_r2d_p 句柄设颜色，不属于渲染层
+#   场景层        jscene / janimator（SCENE 组）—— 数据驱动为主；
+#                 注意 janimator 仍直接调 joy_ui_image_create/draw_ex 建纹理并绘制，
+#                 尚未与渲染层完全解耦（见下方"已知偏差"）
 #   可选适配层    jgltf / jspine / jmodule —— 由 JOY_ENABLE_GLTF / _SPINE /
-#                 _PLUGINS 控制，默认不参与构建；整文件由 JOY_USE_* 包裹，
-#                 保持"未启用即空编译单元"的隔离语义，勿并入必编译的 TU
+#                 _PLUGINS 控制，默认不参与构建；三个 .c 都整文件由对应的
+#                 JOY_USE_GLTF / JOY_USE_SPINE / JOY_USE_PLUGINS 包裹，
+#                 保持"未启用即空编译单元"的隔离语义，勿并入必编译的 TU。
+#                 JOY_ENABLE_* 由 JoyTargets.cmake 转发成 JOY_USE_*；
+#                 japi.h 的 spine / module 声明也放在同名条件段内
+# 已知偏差（清单描述的是目标分层，实现尚未对齐）：
+#   - jr2d.c 内还实现了整套 joy_ui_image_*/joy_ui_text_* 与 joy_scene_animation_*
+#   - CORE 组的 jcore/jutils/jecs/jprocmap 导出 joy_scene_*，PHYSICS 组的
+#     jcollision.c 导出 joy_tilemap_sweep_*；命名域与分组不一致
+#   - jgltf.c 的公开符号在 include/ 里没有对应声明（三个可选模块边界仍未统一）
 # jr3d 与 jgltf 属 3D，勿按"2D"归并；physics / behavior / net / audio 各自独立。
 # 增删文件在这里登记，归属也只记在这一份清单里。
 #

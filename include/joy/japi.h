@@ -299,9 +299,9 @@ extern "C" {
          * joy_r2d_jtext_printx() 以前的实现是 joy_ui_text_createx() -> joy_r2d_jtext_print() -> joy_ui_text_destroy()，
          * 即每次调用都创建并销毁一张 SDL 纹理。inputbox、datagrid、popup、tooltip、
          * combobox_input 等控件都走这条路径，一个带选区的 inputbox 每帧要建 3~4 张纹理。
-         * 现在 joy_r2d_jtext_printx 改为按 (font, color, 内容) 缓存并 LRU 复用。
+         * 现在按 (renderer, font, color, 内容) 缓存 LRU 复用，纹理不跨 renderer 串用。
          *
-         * 帧计数由 joy_r2d_begin() 递增，因此 sweep 的 idle 单位是“帧”。
+         * 帧时钟每实例独立，sweep 单位为帧；下列 4 个接口作用于全局表（clear 清所有实例）。
          * 注意：这只影响 joy_r2d_jtext_printx；joy_ui_text_createx 仍由调用方自行持有与释放。
          */
         JOY_API void joy_r2d_jtext_cache_clear(void);
@@ -1622,7 +1622,7 @@ extern "C" {
         JOY_API void joy_audio_bgm_set_gain(joy_audio_bgm_p bgm, float gain);
         JOY_API void joy_audio_bgm_destroy(joy_audio_bgm_p bgm);
 
-
+#ifdef JOY_USE_PLUGINS  /* 见 JoySources.cmake 的可选适配层；源码在 jmodule.c */
         JOY_API joy_modules_p joy_script_module_create(const char* path);
         JOY_API void joy_script_module_destroy(joy_modules_p modules);
         JOY_API bool joy_script_module_query(joy_modules_p modules, const char* name, joy_module_p* mod);
@@ -1639,7 +1639,7 @@ extern "C" {
         JOY_API void joy_script_module_instance_event(joy_module_p mod, void* inst, void* event);
         JOY_API void joy_script_module_instance_update(joy_module_p mod, void* inst, float delta_time);
         JOY_API void joy_script_module_instance_release(joy_module_p mod, void* inst);
-
+#endif /* JOY_USE_PLUGINS */
 
         JOY_API joy_box2d_world_t* joy_math_box2d_create_world(joy_vec2f_t gravity, int iterations);
         JOY_API void joy_math_box2d_clear_world(joy_box2d_world_t* world);

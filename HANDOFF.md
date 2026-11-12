@@ -136,6 +136,31 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    - 这些函数都不在 IDL / 生成物内（`japi.h` 的 `bt_*` 声明不带 `JOY_API`），
      故 `--scan`/`--check` 零变化（仍 1157 条）；全量构建 0 错误、`ctest` 4/4、
      旧名 0 残留、42 个新名齐全。
+19. **架构审视后的前三项修复（2026-11-12）**：只读审视 `src/` 全部 `.c` 后，
+   按优先级落地前三项，第 4 项（平台抽象 / 按 API 域拆文件）单独排期未动。
+   - **修注释事实错误**：上一轮写进 `JoySources.cmake` 的"janimator 只设颜色、
+     与渲染解耦"（实际调 `joy_ui_image_create/draw_ex`）与"三个可选模块整文件
+     被 `JOY_USE_*` 包裹"（`jmodule.c` 当时没有）均不符实，已改正；并新增
+     "已知偏差"段记录命名域与分组不一致、`jgltf.c` 缺公开声明等未修项。
+   - **补齐 PLUGINS 边界**：`JOY_ENABLE_PLUGINS` 原本没有对应的 `JOY_USE_PLUGINS`，
+     `jmodule.c` 无条件包裹、`japi.h` 却无条件声明 11 个 `joy_script_module_*`
+     （默认 OFF 构建下调用会链接失败）。现在 `JoyTargets.cmake` 转发宏、
+     `jmodule.c` 整文件 `#ifdef`、`japi.h:1625/1642` 用**原有空行**放置
+     `#ifdef`/`#endif`，因此 `source` 行号零漂移、`--check` 直接 OK。
+     已用独立构建目录验证 `-DJOY_ENABLE_PLUGINS=ON` 下 4 个宿主均编过。
+   - **消除 `jr2d` 假句柄**：文字缓存原是 6 个进程级 `static`（`g_frame`、
+     `g_buckets`/`g_lru_*`/`g_cache_*`），哈希键不含 `r2d` → 两个 renderer
+     会跨用同一张 `SDL_Texture`，`joy_r2d_destroy(A)` 还会清掉存活 B 的纹理。
+     改为：`struct jr2d` 持有独立 `frame`；条目带 `owner` 并纳入哈希与命中比较；
+     新增内部 `jtext_cache_clear_for(r2d)` 让 destroy 只清自己；sweep 按各条目
+     `owner->frame` 判断。**4 个公开 cache API 签名与全局语义保持不变**，
+     故 IDL / thunks / vtable / C# glue 零变化。
+   - 验证：`--scan` 幂等（1157 条）、`--check` OK、默认构建 0 错误、
+     `ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
+   - **仍未修（单独排期）**：SDL 类型进入公开头（`jdefs.h:17`、`japi.h:584/626`）、
+     `jr2d.c` 承载 UI/场景 API、无资源管理器/绘制指令层、两套分配器并存、
+     事件抽象空转、`jecs.c:494` 对 `ids[512]` 无边界检查、
+     `jsys.c:247` 的 `WSACleanup` 返回值写反等，见架构审视报告。
 
 具体内容：
 
