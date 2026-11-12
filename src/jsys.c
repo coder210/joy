@@ -1,4 +1,5 @@
 #include "joy.h"
+#include <string.h>
 
 #if defined(__ANDROID__)
 #  include <unistd.h>
@@ -740,7 +741,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                 if (send_packet) {
                         ULONG to_copy = bytes_transferred;
                         if (to_copy > JOY_MAX_BUFFER) to_copy = JOY_MAX_BUFFER;
-                        SDL_memcpy(send_packet->buffer, packet->buffer, to_copy);
+                        memcpy(send_packet->buffer, packet->buffer, to_copy);
                         send_packet->wsabuffer.buf = (char*)send_packet->buffer;
                         send_packet->wsabuffer.len = to_copy;
                         send_packet->operation_type = IOCP_OPERATION_SEND;

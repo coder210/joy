@@ -13,6 +13,9 @@ History:
 #include "external/cJSON.h"
 #include <stdlib.h>
 #include <string.h>
+/* 公共头不再间接提供 SDL 声明：本 TU 用到 SDL_LoadFile / SDL_free，
+ * 必须自己包含 SDL 头，否则 Android clang 在 C99 下报隐式函数声明。 */
+#include <SDL3/SDL.h>
 #include "joy.h"
 
 

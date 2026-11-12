@@ -18,6 +18,9 @@
 #include "external/cgltf/cgltf.h"
 
 #include "joy.h"
+/* 本 TU 用 SDL_IOFromFile / SDL_ReadIO / SDL_WriteIO / SDL_CloseIO 与 Sint64，
+ * 公共头不再间接提供 SDL 声明，启用 JOY_USE_GLTF 时必须自己包含。 */
+#include <SDL3/SDL.h>
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -277,6 +277,24 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
        消费者）；文本输入的标量通道（`const char*` 返回值的跨语言生命周期
        尚未验证）；其余 20+ 个 `const void* event` API 仍是 `off`；以及第 19
        条列的按 API 域拆 `jr2d.c`、资源管理器、两套分配器等。
+     24. **Android CI 回归修复：补齐 SDL 显式依赖（2026-11-12）**：第 23 条把
+     `jdefs.h:17` 的 `<SDL3/SDL_events.h>` 换成 `<stdint.h>` 后，Android clang
+     （C99 严格模式）报 `src/jtilemap.c` 的 `SDL_LoadFile` / `SDL_free`
+     隐式函数声明。根因是这些 TU 长期靠 joy.h 间接拿 SDL 声明，公共头去
+     SDL 依赖后隐式依赖才暴露；桌面构建因其它头恰好补齐声明而未报错。
+     - 全仓区分大小写扫描 `SDL_*` 与 `Uint*/Sint*` 标识符，确认真实受影响的
+       只有 3 个 TU：`jtilemap.c`（`SDL_LoadFile` / `SDL_free`）、`jgltf.c`
+       （`SDL_IOFromFile` / `ReadIO` / `WriteIO` / `CloseIO` / `GetIOSize`、
+       `Sint64`，仅 `JOY_USE_GLTF` 启用时编译）、`jsys.c`（第 21 条 IOCP
+       修复引入的 `SDL_memcpy`）。其余命中都是注释或
+       `examples/cpp/src/game.cpp` 的自有 `SDL_SCANCODE_*` 枚举。
+     - 修复：前两个 TU 显式 `#include <SDL3/SDL.h>`（聚合头确实含
+       `SDL_stdinc.h` / `SDL_filesystem.h` / `SDL_iostream.h`，覆盖全部所需
+       声明）；`jsys.c` 改用标准 `memcpy` 并显式包含 `<string.h>`，
+       系统层不再依赖 SDL。
+     - 复查扫描后真实隐式依赖为 0；`--check` OK（1170 条，生成物零变化）、
+       默认构建 0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误。
+     - 注意：本地没有 Android NDK，Android 端仍以 CI 复验为准。
 
     具体内容：
 
