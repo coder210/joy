@@ -1509,22 +1509,22 @@ bool joy_r2d_set_blend_mode(joy_r2d_p r2d, int mode)
 }
 
 /* ===== 低级纹理操作 ===== */
-void* r2d_create_texture_from_surface(joy_r2d_p r2d, void* surface)
+void* joy_r2d_create_texture_from_surface(joy_r2d_p r2d, void* surface)
 {
         return (void*)SDL_CreateTextureFromSurface(r2d->sdl, (SDL_Surface*)surface);
 }
 
-void r2d_destroy_texture(void* texture)
+void joy_r2d_destroy_texture(void* texture)
 {
         if (texture) SDL_DestroyTexture((SDL_Texture*)texture);
 }
 
-void r2d_set_texture_alpha(void* texture, uint8_t alpha)
+void joy_r2d_set_texture_alpha(void* texture, uint8_t alpha)
 {
         SDL_SetTextureAlphaMod((SDL_Texture*)texture, alpha);
 }
 
-void r2d_set_texture_blend_mode(void* texture, int mode)
+void joy_r2d_set_texture_blend_mode(void* texture, int mode)
 {
         SDL_BlendMode sdl_mode = SDL_BLENDMODE_NONE;
         switch (mode) {
@@ -1536,12 +1536,12 @@ void r2d_set_texture_blend_mode(void* texture, int mode)
         SDL_SetTextureBlendMode((SDL_Texture*)texture, sdl_mode);
 }
 
-bool r2d_get_texture_size(void* texture, float* w, float* h)
+bool joy_r2d_get_texture_size(void* texture, float* w, float* h)
 {
         return SDL_GetTextureSize((SDL_Texture*)texture, w, h);
 }
 
-bool r2d_render_texture(joy_r2d_p r2d, void* texture, const joy_rect_t* src, const joy_rect_t* dst)
+bool joy_r2d_render_texture(joy_r2d_p r2d, void* texture, const joy_rect_t* src, const joy_rect_t* dst)
 {
         SDL_Texture* tex = (SDL_Texture*)texture;
         const SDL_FRect* s = src ? (const SDL_FRect*)src : NULL;
@@ -1549,7 +1549,7 @@ bool r2d_render_texture(joy_r2d_p r2d, void* texture, const joy_rect_t* src, con
         return SDL_RenderTexture(r2d->sdl, tex, s, d);
 }
 
-bool r2d_render_texture_rotated(joy_r2d_p r2d, void* texture, const joy_rect_t* src, const joy_rect_t* dst, double angle, int flip)
+bool joy_r2d_render_texture_rotated(joy_r2d_p r2d, void* texture, const joy_rect_t* src, const joy_rect_t* dst, double angle, int flip)
 {
         SDL_FlipMode f = SDL_FLIP_NONE;
         if (flip == JR2D_FLIP_H)  f = SDL_FLIP_HORIZONTAL;
@@ -1559,19 +1559,19 @@ bool r2d_render_texture_rotated(joy_r2d_p r2d, void* texture, const joy_rect_t* 
                 (const SDL_FRect*)src, (const SDL_FRect*)dst, angle, NULL, f);
 }
 
-void* r2d_create_texture(joy_r2d_p r2d, int w, int h)
+void* joy_r2d_create_texture(joy_r2d_p r2d, int w, int h)
 {
         return (void*)SDL_CreateTexture(r2d->sdl, SDL_PIXELFORMAT_RGBA8888,
                 SDL_TEXTUREACCESS_STREAMING, w, h);
 }
 
-void r2d_update_texture(void* texture, const joy_rect_t* rect, const void* pixels, int pitch)
+void joy_r2d_update_texture(void* texture, const joy_rect_t* rect, const void* pixels, int pitch)
 {
         SDL_UpdateTexture((SDL_Texture*)texture,
                 (const SDL_Rect*)rect, pixels, pitch);
 }
 
-bool r2d_render_geometry(joy_r2d_p r2d, void* texture,
+bool joy_r2d_render_geometry(joy_r2d_p r2d, void* texture,
                 const float* vert_data, int vertex_count,
                 const int* indices, int index_count)
 {
@@ -1685,9 +1685,9 @@ void joy_fov_draw_2d(joy_r2d_p r, float px, float py,
 
     SDL_Texture* tex = joy_fov_gradient_tex_2d(r);
     if (tex)
-        r2d_render_geometry(r, tex, vert, vcount, idx, tri_count * 3);
+        joy_r2d_render_geometry(r, tex, vert, vcount, idx, tri_count * 3);
     else
-        r2d_render_geometry(r, NULL, vert, vcount, idx, tri_count * 3);
+        joy_r2d_render_geometry(r, NULL, vert, vcount, idx, tri_count * 3);
 
     SDL_free(vert);
     SDL_free(idx);

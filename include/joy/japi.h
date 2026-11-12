@@ -1572,33 +1572,33 @@ extern "C" {
 
 
         /* ===== 运行与生命周期管理 ===== */
-        joy_bt_status_t bt_node_run(joy_bt_node_t* node, float dt);
-        void        bt_node_reset(joy_bt_node_t* node);
-        void        bt_node_destroy(joy_bt_node_t* node);
+        joy_bt_status_t joy_bt_node_run(joy_bt_node_t* node, float dt);
+        void        joy_bt_node_reset(joy_bt_node_t* node);
+        void        joy_bt_node_destroy(joy_bt_node_t* node);
         /* Action: 执行动作，返回 SUCCESS / FAILURE / RUNNING */
-        joy_bt_node_t* bt_action_create(bt_action_fn fn);
-        joy_bt_node_t* bt_action_createv(bt_action_fn fn, void* userdata);
-        void bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
-        void* bt_action_get_userdata(joy_bt_node_t* node);
+        joy_bt_node_t* joy_bt_action_create(bt_action_fn fn);
+        joy_bt_node_t* joy_bt_action_createv(bt_action_fn fn, void* userdata);
+        void joy_bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
+        void* joy_bt_action_get_userdata(joy_bt_node_t* node);
         /* Condition: 条件判断，true → SUCCESS, false → FAILURE */
-        joy_bt_node_t* bt_condition_create(bt_condition_fn pred);
+        joy_bt_node_t* joy_bt_condition_create(bt_condition_fn pred);
         /* Wait: 等待指定秒数 */
-        joy_bt_node_t* bt_wait_create(float seconds);
+        joy_bt_node_t* joy_bt_wait_create(float seconds);
         /* ===== 组合节点 ===== */
         /* Sequence: 顺序执行全部子节点，全部成功才返回 SUCCESS */
-        joy_bt_node_t* bt_sequence_create(joy_bt_node_t** children, int count);
+        joy_bt_node_t* joy_bt_sequence_create(joy_bt_node_t** children, int count);
         /* Selector: 顺序尝试子节点，任一成功即返回 SUCCESS */
-        joy_bt_node_t* bt_selector_create(joy_bt_node_t** children, int count);
+        joy_bt_node_t* joy_bt_selector_create(joy_bt_node_t** children, int count);
         /* Parallel: 并行执行，success_count 个成功即成功 */
-        joy_bt_node_t* bt_parallel_create(joy_bt_node_t** children, int count, int success_count);
+        joy_bt_node_t* joy_bt_parallel_create(joy_bt_node_t** children, int count, int success_count);
         /* Inverter: 反转子节点结果 */
         joy_bt_node_t* bt_inverter_create(joy_bt_node_t* child);
         /* Succeeder: 总是返回 SUCCESS */
         joy_bt_node_t* bt_succeeder_create(joy_bt_node_t* child);
         /* Repeater: 重复子节点 times 次（-1 无限） */
         joy_bt_node_t* bt_repeater_create(joy_bt_node_t* child, int times);
-        joy_bt_node_t* bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial);
-        void       bt_statemachine_transition(joy_bt_node_t* node, const char* state_name);
+        joy_bt_node_t* joy_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial);
+        void       joy_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name);
 
 
         JOY_API uint32_t joy_audio_open_device();

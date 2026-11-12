@@ -505,7 +505,7 @@ void joy_r2d_spine_instance_set_tint(joy_spine_instance_p inst, joy_color_t tint
         if (inst) inst->tint = tint;
 }
 
-const char *jspine_instance_animation(joy_spine_instance_p inst) {
+const char *joy_spine_instance_animation(joy_spine_instance_p inst) {
         return (inst && inst->animation[0]) ? inst->animation : NULL;
 }
 

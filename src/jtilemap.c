@@ -432,16 +432,16 @@ static joy_tilemap_image_layer_p parse_image_layer_cjson(cJSON* j)
     return layer;
 }
 
-joy_tilemap_p jtilemap_load_cjson(cJSON* root)
+joy_tilemap_p joy_tilemap_load_cjson(cJSON* root)
 {
     if (!root || root->type != cJSON_Object) {
-        joy_core_log_error("jtilemap_load_cjson: root is not an object");
+        joy_core_log_error("joy_tilemap_load_cjson: root is not an object");
         return NULL;
     }
 
     joy_tilemap_p tm = (joy_tilemap_p)calloc(1, sizeof(joy_tilemap_t));
     if (!tm) {
-        joy_core_log_error("jtilemap_load_cjson: out of memory");
+        joy_core_log_error("joy_tilemap_load_cjson: out of memory");
         return NULL;
     }
 
@@ -535,7 +535,7 @@ joy_tilemap_p joy_scene_tilemap_load_file_json(const char* filename)
         return NULL;
     }
 
-    joy_tilemap_p tm = jtilemap_load_cjson(root);
+    joy_tilemap_p tm = joy_tilemap_load_cjson(root);
     cJSON_Delete(root);
     return tm;
 }

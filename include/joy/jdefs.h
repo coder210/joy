@@ -322,7 +322,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         /* jr2d 内部几何绘制原语，供 jlight.c 复用（替代原先的跨文件 extern 前向声明）。
          * 非 joy_ 公开 API，不进入 IDL / 生成链。 */
-        bool r2d_render_geometry(joy_r2d_p r2d, void* texture,
+        bool joy_r2d_render_geometry(joy_r2d_p r2d, void* texture,
                                  const float* vert_data, int vertex_count,
                                  const int* indices, int index_count);
 

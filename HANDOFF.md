@@ -121,7 +121,21 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
    改为在 `jmath.h` 提供 `JOY_PI`，三文件删各自 define、使用点改 `JOY_PI`。
    另 `jlight.c` 用 `extern` 前向声明 `jr2d.c` 内部的 `r2d_render_geometry`（跨文件
    复用内部函数的反模式），改为在 `jdefs.h` 正式声明该函数、`jlight.c` 删 extern 块。
-   验证：`--scan` 幂等（1157 条，r2d_render_geometry 不进 IDL）、`--check` OK、构建 0 错误、`ctest` 4/4。
+   该函数随后按第 18 条统一改名为 `joy_r2d_render_geometry`。
+   验证：`--scan` 幂等（1157 条，不进 IDL）、`--check` OK、构建 0 错误、`ctest` 4/4。
+18. **`src/` 非内部函数统一加 `joy_` 前缀（2026-11-12）**：42 个非 `static`、
+   无 `joy_` 前缀的函数全部改名，共 77 处（10 个文件）：`jbehavior.c` 的 `bt_*` 14 个
+   （含 `japi.h` 14 条公开声明）、`jr2d.c` 的 `r2d_*` 9 个、`jr3d.c` 的 `r3d_*` 9 个、
+   `jgltf.c` 的 `jgltf_*` 5 个、`jspine.c` 的 `jspine_instance_animation`、
+   `jui.c` 的 `label_handle_event`/`radio_render`、`jecs.c` 的 `ecs_test`、
+   `jtilemap.c` 的 `jtilemap_load_cjson`。
+   - 命名口径：`jgltf_*`/`jspine_*`/`jtilemap_*` 开头的 `j` 视作 joy 缩写，**展开**为
+     `joy_gltf_*`/`joy_spine_*`/`joy_tilemap_*`（不叠加成 `joy_jgltf_*`）。
+   - `jspine.c` 的 `_spAtlasPage_createTexture`/`_spAtlasPage_disposeTexture`/
+     `_spUtil_readFile` 是 spine 第三方回调，**保持原名**。
+   - 这些函数都不在 IDL / 生成物内（`japi.h` 的 `bt_*` 声明不带 `JOY_API`），
+     故 `--scan`/`--check` 零变化（仍 1157 条）；全量构建 0 错误、`ctest` 4/4、
+     旧名 0 残留、42 个新名齐全。
 
 具体内容：
 
@@ -339,7 +353,7 @@ success。四项均已满足，所以没有遗留任务。
    正则 `(^|[^A-Za-z0-9_])name(?=$|[^A-Za-z0-9_])`：
    - 不用 `\b` —— 经 PowerShell 传递后 `\b` 会变成退格符（U+0008），匹配数为 0 且文件不动。
    - 不加边界会误伤子串（如 `r2d_create` 命中 `r2d_create_pipeline`）。
-   - 对一组名字批量替换时，旧名互不为前缀子串（如 `r2d_create` 与 `r2d_create_texture`）
+   - 对一组名字批量替换时，旧名互不为前缀子串（如 `r2d_create` 与 `joy_r2d_create_texture`）
      靠边界互不干扰，顺序无所谓。
 
 4. **`jmath` 220 条不手写，走 `jmath_wrap.js`。**

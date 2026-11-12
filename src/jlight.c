@@ -357,7 +357,7 @@ void joy_r3d_light_render(joy_light_sys_p s, joy_r2d_p r2d){
         if(ni>0){
             joy_ui_image_set_blend_mode(grad, JR2D_BLEND_ADD);
             joy_ui_image_set_alpha(grad, 255);
-            r2d_render_geometry(r2d, grad, verts, nv, idx, ni);
+            joy_r2d_render_geometry(r2d, grad, verts, nv, idx, ni);
         }
         SDL_free(idx);SDL_free(verts);
     }

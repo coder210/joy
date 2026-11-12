@@ -286,7 +286,7 @@ void joy_ui_label_draw(joy_label_p label)
         joy_r2d_jtext_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
-void label_handle_event(joy_label_p label, void* event)
+void joy_label_handle_event(joy_label_p label, void* event)
 {
         (void)label;
         (void)event;
@@ -1537,7 +1537,7 @@ static void radio_update_layout(joy_radio_p rb)
         rb->hit_area.h = rb->size;
 }
 
-void radio_render(joy_radio_p radio, joy_r2d_p r2d)
+void joy_radio_render(joy_radio_p radio, joy_r2d_p r2d)
 {
         if (!radio) return;
 
@@ -3197,7 +3197,7 @@ void joy_ui_tooltip_draw(joy_tooltip_p t, joy_font_p font)
 
 /* =================================================================
  * 通用事件处理函数
- * 将 label_handle_event 重命名为 joy_ui_label_process_event，风格统一
+ * 将 joy_label_handle_event 重命名为 joy_ui_label_process_event，风格统一
  * ================================================================= */
 
 void joy_ui_label_process_event(joy_label_p label, const void* ev)

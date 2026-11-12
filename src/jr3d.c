@@ -278,7 +278,7 @@ void* joy_r3d_create_line_pipeline(void* device,
 
 /* 实体填充 pipeline: 与非 lit pipeline 相同的 vertex format/shader,
    仅开启深度写入, 用于"填充+描边"画风的填充 pass（提供遮挡与层次） */
-void* r3d_create_solid_pipeline(void* device,
+void* joy_r3d_create_solid_pipeline(void* device,
 	void* vertex_shader, void* fragment_shader,
 	int swapchain_format, int depth_format)
 {
@@ -662,7 +662,7 @@ joy_r3d_p joy_r3d_create(joy_window_p win, const char* shader_dir)
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 
 	/* 实体填充 pipeline（写深度, 用于"填充+描边"画风的填充 pass） */
-	r->solid_pipeline = (SDL_GPUGraphicsPipeline*)r3d_create_solid_pipeline(r->dev,
+	r->solid_pipeline = (SDL_GPUGraphicsPipeline*)joy_r3d_create_solid_pipeline(r->dev,
 		r->vs, r->fs, (int)fmt, (int)SDL_GPU_TEXTUREFORMAT_D16_UNORM);
 
 	r->sampler = (SDL_GPUSampler*)joy_r3d_create_sampler(r->dev);
@@ -2268,14 +2268,14 @@ static void r3d_input_update_sel(joy_r3d_input_p inp)
 	inp->sel_end = inp->cursor_pos;
 }
 
-void r3d_input_select_left(joy_r3d_input_p inp)
+void joy_r3d_input_select_left(joy_r3d_input_p inp)
 {
 	if (!inp || inp->cursor_pos <= 0) return;
 	inp->cursor_pos = r3d_input_prev_char(inp->text, inp->cursor_pos);
 	r3d_input_update_sel(inp);
 }
 
-void r3d_input_select_right(joy_r3d_input_p inp)
+void joy_r3d_input_select_right(joy_r3d_input_p inp)
 {
 	int cur = (int)SDL_strlen(inp->text);
 	if (!inp || inp->cursor_pos >= cur) return;
@@ -2283,7 +2283,7 @@ void r3d_input_select_right(joy_r3d_input_p inp)
 	r3d_input_update_sel(inp);
 }
 
-void r3d_input_select_home(joy_r3d_input_p inp)
+void joy_r3d_input_select_home(joy_r3d_input_p inp)
 {
 	if (!inp) return;
 	r3d_input_update_sel(inp);
@@ -2291,7 +2291,7 @@ void r3d_input_select_home(joy_r3d_input_p inp)
 	inp->sel_end = 0;
 }
 
-void r3d_input_select_end(joy_r3d_input_p inp)
+void joy_r3d_input_select_end(joy_r3d_input_p inp)
 {
 	if (!inp) return;
 	r3d_input_update_sel(inp);
@@ -2299,7 +2299,7 @@ void r3d_input_select_end(joy_r3d_input_p inp)
 	inp->sel_end = inp->cursor_pos;
 }
 
-void r3d_input_select_all(joy_r3d_input_p inp)
+void joy_r3d_input_select_all(joy_r3d_input_p inp)
 {
 	if (!inp) return;
 	inp->sel_start = 0;
@@ -2307,14 +2307,14 @@ void r3d_input_select_all(joy_r3d_input_p inp)
 	inp->cursor_pos = inp->sel_end;
 }
 
-void r3d_input_paste(joy_r3d_input_p inp)
+void joy_r3d_input_paste(joy_r3d_input_p inp)
 {
 	if (!inp) return;
 	char* clip = SDL_GetClipboardText();
 	if (clip) { r3d_input_insert_at(NULL, inp, clip, (int)SDL_strlen(clip)); SDL_free(clip); }
 }
 
-void r3d_input_copy(joy_r3d_input_p inp)
+void joy_r3d_input_copy(joy_r3d_input_p inp)
 {
 	if (!inp || (int)SDL_strlen(inp->text) <= 0) return;
 	if (r3d_input_has_sel(inp)) {
@@ -2331,7 +2331,7 @@ void r3d_input_copy(joy_r3d_input_p inp)
 	}
 }
 
-void r3d_input_cut(joy_r3d_input_p inp)
+void joy_r3d_input_cut(joy_r3d_input_p inp)
 {
 	if (!inp || (int)SDL_strlen(inp->text) <= 0) return;
 	if (r3d_input_has_sel(inp)) {
@@ -2395,32 +2395,32 @@ bool joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, SDL_Event* eve
 		case SDL_SCANCODE_BACKSPACE: joy_r3d_input_backspace(inp); break;
 		case SDL_SCANCODE_DELETE:    joy_r3d_input_delete(inp); break;
 		case SDL_SCANCODE_LEFT:
-			if (mod & SDL_KMOD_SHIFT) r3d_input_select_left(inp);
+			if (mod & SDL_KMOD_SHIFT) joy_r3d_input_select_left(inp);
 			else joy_r3d_input_cursor_left(inp);
 			break;
 		case SDL_SCANCODE_RIGHT:
-			if (mod & SDL_KMOD_SHIFT) r3d_input_select_right(inp);
+			if (mod & SDL_KMOD_SHIFT) joy_r3d_input_select_right(inp);
 			else joy_r3d_input_cursor_right(inp);
 			break;
 		case SDL_SCANCODE_HOME:
-			if (mod & SDL_KMOD_SHIFT) r3d_input_select_home(inp);
+			if (mod & SDL_KMOD_SHIFT) joy_r3d_input_select_home(inp);
 			else joy_r3d_input_cursor_home(inp);
 			break;
 		case SDL_SCANCODE_END:
-			if (mod & SDL_KMOD_SHIFT) r3d_input_select_end(inp);
+			if (mod & SDL_KMOD_SHIFT) joy_r3d_input_select_end(inp);
 			else joy_r3d_input_cursor_end(inp);
 			break;
 		case SDL_SCANCODE_A:
-			if (mod & SDL_KMOD_CTRL) r3d_input_select_all(inp);
+			if (mod & SDL_KMOD_CTRL) joy_r3d_input_select_all(inp);
 			break;
 		case SDL_SCANCODE_V:
-			if (mod & SDL_KMOD_CTRL) r3d_input_paste(inp);
+			if (mod & SDL_KMOD_CTRL) joy_r3d_input_paste(inp);
 			break;
 		case SDL_SCANCODE_C:
-			if (mod & SDL_KMOD_CTRL) r3d_input_copy(inp);
+			if (mod & SDL_KMOD_CTRL) joy_r3d_input_copy(inp);
 			break;
 		case SDL_SCANCODE_X:
-			if (mod & SDL_KMOD_CTRL) r3d_input_cut(inp);
+			if (mod & SDL_KMOD_CTRL) joy_r3d_input_cut(inp);
 			break;
 		case SDL_SCANCODE_RETURN:
 		case SDL_SCANCODE_KP_ENTER:

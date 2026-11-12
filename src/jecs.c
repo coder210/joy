@@ -518,7 +518,7 @@ typedef struct velocity {
 }joy_velocity_t;
 
 
-int ecs_test()
+int joy_ecs_test()
 {
        // sparse_set_p sparse_set;
        // sparse_set = sparse_set_create();
