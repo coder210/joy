@@ -1822,6 +1822,22 @@ static bool shim_joy_r3d_font_init(void* _jv_ctx, Jr3d r, const char* ttf_path, 
         return (bool) _jv_r.as.b;
 }
 
+static void shim_joy_r3d_font_set_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t cg, uint8_t cb)
+{
+        joy_value_t _jv_args[4];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_u32(cr);
+        _jv_args[2] = joy_v_u32(cg);
+        _jv_args[3] = joy_v_u32(cb);
+        _jv_r = joy_api_call("joy_r3d_font_set_color", _jv_args, 4, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
 static bool shim_joy_r3d_font_draw_2d(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH)
 {
         joy_value_t _jv_args[8];
@@ -1837,6 +1853,54 @@ static bool shim_joy_r3d_font_draw_2d(void* _jv_ctx, Jr3d r, RenderMesh m, const
         _jv_args[6] = joy_v_f64(winW);
         _jv_args[7] = joy_v_f64(winH);
         _jv_r = joy_api_call("joy_r3d_font_draw_2d", _jv_args, 8, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
+static bool shim_joy_r3d_font_draw_2d_color(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint8_t cr, uint8_t cg, uint8_t cb)
+{
+        joy_value_t _jv_args[11];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_str(text);
+        _jv_args[3] = joy_v_f64(pixelX);
+        _jv_args[4] = joy_v_f64(pixelY);
+        _jv_args[5] = joy_v_f64(fontSize);
+        _jv_args[6] = joy_v_f64(winW);
+        _jv_args[7] = joy_v_f64(winH);
+        _jv_args[8] = joy_v_u32(cr);
+        _jv_args[9] = joy_v_u32(cg);
+        _jv_args[10] = joy_v_u32(cb);
+        _jv_r = joy_api_call("joy_r3d_font_draw_2d_color", _jv_args, 11, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
+static bool shim_joy_r3d_font_draw_2d_outline(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint8_t cr, uint8_t cg, uint8_t cb, uint8_t or_, uint8_t og, uint8_t ob, float outline)
+{
+        joy_value_t _jv_args[15];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_str(text);
+        _jv_args[3] = joy_v_f64(pixelX);
+        _jv_args[4] = joy_v_f64(pixelY);
+        _jv_args[5] = joy_v_f64(fontSize);
+        _jv_args[6] = joy_v_f64(winW);
+        _jv_args[7] = joy_v_f64(winH);
+        _jv_args[8] = joy_v_u32(cr);
+        _jv_args[9] = joy_v_u32(cg);
+        _jv_args[10] = joy_v_u32(cb);
+        _jv_args[11] = joy_v_u32(or_);
+        _jv_args[12] = joy_v_u32(og);
+        _jv_args[13] = joy_v_u32(ob);
+        _jv_args[14] = joy_v_f64(outline);
+        _jv_r = joy_api_call("joy_r3d_font_draw_2d_outline", _jv_args, 15, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -2014,6 +2078,52 @@ static void shim_joy_r3d_button_destroy(void* _jv_ctx, Jr3dButton btn)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_r = joy_api_call("joy_r3d_button_destroy", _jv_args, 1, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_r3d_draw_rect_2d(void* _jv_ctx, Jr3d r, RenderMesh m, float x, float y, float w, float h, uint8_t cr, uint8_t cg, uint8_t cb, float winW, float winH)
+{
+        joy_value_t _jv_args[11];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_f64(x);
+        _jv_args[3] = joy_v_f64(y);
+        _jv_args[4] = joy_v_f64(w);
+        _jv_args[5] = joy_v_f64(h);
+        _jv_args[6] = joy_v_u32(cr);
+        _jv_args[7] = joy_v_u32(cg);
+        _jv_args[8] = joy_v_u32(cb);
+        _jv_args[9] = joy_v_f64(winW);
+        _jv_args[10] = joy_v_f64(winH);
+        _jv_r = joy_api_call("joy_r3d_draw_rect_2d", _jv_args, 11, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_r3d_draw_mesh_2d(void* _jv_ctx, Jr3d r, RenderMesh m, float cx, float cy, float sx, float sy, uint8_t cr, uint8_t cg, uint8_t cb, float winW, float winH)
+{
+        joy_value_t _jv_args[11];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_f64(cx);
+        _jv_args[3] = joy_v_f64(cy);
+        _jv_args[4] = joy_v_f64(sx);
+        _jv_args[5] = joy_v_f64(sy);
+        _jv_args[6] = joy_v_u32(cr);
+        _jv_args[7] = joy_v_u32(cg);
+        _jv_args[8] = joy_v_u32(cb);
+        _jv_args[9] = joy_v_f64(winW);
+        _jv_args[10] = joy_v_f64(winH);
+        _jv_r = joy_api_call("joy_r3d_draw_mesh_2d", _jv_args, 11, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -7186,6 +7296,30 @@ static float shim_joy_input_get_wheel(void* _jv_ctx)
         return (float) _jv_r.as.f64;
 }
 
+static bool shim_joy_input_was_key_pressed(void* _jv_ctx, int scancode)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(scancode);
+        _jv_r = joy_api_call("joy_input_was_key_pressed", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
+static bool shim_joy_input_was_key_released(void* _jv_ctx, int scancode)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(scancode);
+        _jv_r = joy_api_call("joy_input_was_key_released", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
 static int64_t shim_joy_math_fp_from_float(void* _jv_ctx, float a)
 {
         joy_value_t _jv_args[1];
@@ -10530,7 +10664,10 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dMeshRampWire = shim_joy_r3d_mesh_ramp_wire;
         api->R3dMeshDestroy = shim_joy_r3d_mesh_destroy;
         api->R3dFontInit = shim_joy_r3d_font_init;
+        api->R3dFontSetColor = shim_joy_r3d_font_set_color;
         api->R3dFontDraw2d = shim_joy_r3d_font_draw_2d;
+        api->R3dFontDraw2dColor = shim_joy_r3d_font_draw_2d_color;
+        api->R3dFontDraw2dOutline = shim_joy_r3d_font_draw_2d_outline;
         api->R3dFontCacheSetLimit = shim_joy_r3d_font_cache_set_limit;
         api->R3dFontCacheGetCount = shim_joy_r3d_font_cache_get_count;
         api->R3dFontCacheClear = shim_joy_r3d_font_cache_clear;
@@ -10543,6 +10680,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dButtonIsPressed = shim_joy_r3d_button_is_pressed;
         api->R3dButtonRelease = shim_joy_r3d_button_release;
         api->R3dButtonDestroy = shim_joy_r3d_button_destroy;
+        api->R3dDrawRect2d = shim_joy_r3d_draw_rect_2d;
+        api->R3dDrawMesh2d = shim_joy_r3d_draw_mesh_2d;
         api->R3dLabelSetText = shim_joy_r3d_label_set_text;
         api->R3dLabelDraw = shim_joy_r3d_label_draw;
         api->R3dLabelDestroy = shim_joy_r3d_label_destroy;
@@ -10910,6 +11049,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JoyInputGetMouseX = shim_joy_input_get_mouse_x;
         api->JoyInputGetMouseY = shim_joy_input_get_mouse_y;
         api->JoyInputGetWheel = shim_joy_input_get_wheel;
+        api->JoyInputWasKeyPressed = shim_joy_input_was_key_pressed;
+        api->JoyInputWasKeyReleased = shim_joy_input_was_key_released;
         api->JmathFpFromFloat = shim_joy_math_fp_from_float;
         api->JmathFpToFloat = shim_joy_math_fp_to_float;
         api->JmathFpFromUint = shim_joy_math_fp_from_uint;

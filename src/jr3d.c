@@ -2371,8 +2371,11 @@ void joy_r3d_input_cut(joy_r3d_input_p inp)
 }
 
 /* ===================== 统一事件处理 (对齐 jr2d joy_ui_inputbox_process_event) ===================== */
-bool joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, SDL_Event* event)
+/* 事件参数在公共头里是 const void*；SDL_Event 只在平台适配代码内强转,
+ * 这样 include/joy/ 不再需要 SDL_events.h。 */
+bool joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, const void* ev)
 {
+	const SDL_Event* event = (const SDL_Event*)ev;
 	if (!r || !inp || !event) return false;
 
 	if (event->type == SDL_EVENT_MOUSE_MOTION) {
@@ -2644,8 +2647,9 @@ int joy_r3d_combobox_input_hit_item(joy_r3d_combobox_input_p ci, float x, float 
 	return -1;
 }
 
-bool joy_r3d_combobox_input_handle_event(joy_r3d_p r, joy_r3d_combobox_input_p ci, SDL_Event* event)
+bool joy_r3d_combobox_input_handle_event(joy_r3d_p r, joy_r3d_combobox_input_p ci, const void* ev)
 {
+	const SDL_Event* event = (const SDL_Event*)ev;
 	if (!r || !ci || !event) return false;
 
 	if (event->type == SDL_EVENT_MOUSE_MOTION) {

@@ -14,21 +14,21 @@
 #include <stddef.h>
 #include <joy/jconfig.h>
 #include <joy/jmath.h>
-#include <SDL3/SDL_events.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* 事件类型常量（无需 SDL 头文件即可判断事件类型） */
-#define JOY_EVENT_QUIT              0x100
-#define JOY_EVENT_KEY_DOWN          0x300
-#define JOY_EVENT_KEY_UP            0x301
-#define JOY_EVENT_TEXT_INPUT        0x303
-#define JOY_EVENT_MOUSE_MOTION      0x400
-#define JOY_EVENT_MOUSE_BUTTON_DOWN 0x401
-#define JOY_EVENT_MOUSE_BUTTON_UP   0x402
-#define JOY_EVENT_WINDOW_RESIZED    0x701
+/* 公共头不再包含任何 SDL 头：事件/输入统一走 joy_input_* 标量状态快照，
+ * SDL_Event 只在 src/ 的平台适配代码里出现。原先这里放的是从 SDL3 枚举
+ * 抄来的 JOY_EVENT_* 数值常量，全仓零使用，已移除；适配层若需要判断事件
+ * 类型，应在对应 .c 内包含 <SDL3/SDL_events.h> 并直接使用 SDL_EVENT_*。
+ * 这里保留与原来相同的行数，避免打乱 joy.idl 既有条目的 source 行号。
+ *
+ * 公开头改用标准整数类型（uint8_t 等），不再借用 SDL 的 Uint8 别名。
+ *
+ */
 
 /* ---------- 混合模式 ---------- */
 #define JR2D_BLEND_NONE  0

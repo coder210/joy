@@ -143,6 +143,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     luax_call_joy(g_lua, "frame_end", 0, dt);     /* 冒烟观察 + 断言 */
 
     g_frame++;
+    joy_input_end_frame();   /* 四端统一：清掉本帧滚轮增量与按键边沿 */
 
     if (lua_global_bool("quit")) {
         g_exit_code = lua_global_int("exit_code");

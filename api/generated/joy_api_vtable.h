@@ -272,7 +272,10 @@ typedef struct JoyApi {
         RenderMesh (*R3dMeshRampWire)(void* _jv_ctx, Jr3d r, float w, float l, float h);
         void (*R3dMeshDestroy)(void* _jv_ctx, Jr3d r, RenderMesh m);
         bool (*R3dFontInit)(void* _jv_ctx, Jr3d r, const char* ttf_path, int pixel_height);
+        void (*R3dFontSetColor)(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t cg, uint8_t cb);
         bool (*R3dFontDraw2d)(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH);
+        bool (*R3dFontDraw2dColor)(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint8_t cr, uint8_t cg, uint8_t cb);
+        bool (*R3dFontDraw2dOutline)(void* _jv_ctx, Jr3d r, RenderMesh m, const char* text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint8_t cr, uint8_t cg, uint8_t cb, uint8_t or_, uint8_t og, uint8_t ob, float outline);
         void (*R3dFontCacheSetLimit)(void* _jv_ctx, Jr3d r, int max_entries);
         int (*R3dFontCacheGetCount)(void* _jv_ctx, Jr3d r);
         void (*R3dFontCacheClear)(void* _jv_ctx, Jr3d r);
@@ -285,6 +288,8 @@ typedef struct JoyApi {
         bool (*R3dButtonIsPressed)(void* _jv_ctx, Jr3d r, Jr3dButton btn, bool mouse_down, float mx, float my);
         void (*R3dButtonRelease)(void* _jv_ctx, Jr3d r, Jr3dButton btn, float mx, float my);
         void (*R3dButtonDestroy)(void* _jv_ctx, Jr3dButton btn);
+        void (*R3dDrawRect2d)(void* _jv_ctx, Jr3d r, RenderMesh m, float x, float y, float w, float h, uint8_t cr, uint8_t cg, uint8_t cb, float winW, float winH);
+        void (*R3dDrawMesh2d)(void* _jv_ctx, Jr3d r, RenderMesh m, float cx, float cy, float sx, float sy, uint8_t cr, uint8_t cg, uint8_t cb, float winW, float winH);
         void (*R3dLabelSetText)(void* _jv_ctx, Jr3dLabel l, const char* text);
         void (*R3dLabelDraw)(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dLabel l, float winW, float winH);
         void (*R3dLabelDestroy)(void* _jv_ctx, Jr3dLabel l);
@@ -652,6 +657,8 @@ typedef struct JoyApi {
         float (*JoyInputGetMouseX)(void* _jv_ctx);
         float (*JoyInputGetMouseY)(void* _jv_ctx);
         float (*JoyInputGetWheel)(void* _jv_ctx);
+        bool (*JoyInputWasKeyPressed)(void* _jv_ctx, int scancode);
+        bool (*JoyInputWasKeyReleased)(void* _jv_ctx, int scancode);
         int64_t (*JmathFpFromFloat)(void* _jv_ctx, float a);
         float (*JmathFpToFloat)(void* _jv_ctx, int64_t a);
         int64_t (*JmathFpFromUint)(void* _jv_ctx, uint32_t a);

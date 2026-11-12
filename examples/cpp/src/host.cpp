@@ -177,31 +177,25 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
 {
     (void)appstate;
 
-    /* 四端统一：同一份 SDL 事件既喂引擎层状态快照（供生成链绑定查询），
-     * 也维护 g_input（Native DLL 的 ABI 快照，暂保留双写，P2 再收敛）。 */
+    /* 引擎层状态快照是唯一状态源。g_input 不再由宿主维护，而是在每帧
+     * on_frame 前从 joy_input_* getter 重建出的 Native DLL ABI 快照。 */
     switch (e->type) {
     case SDL_EVENT_KEY_DOWN:
         joy_input_feed_key((int)e->key.scancode, true);
-        if (e->key.scancode < 512) g_input.keys[e->key.scancode] = true;
         break;
     case SDL_EVENT_KEY_UP:
         joy_input_feed_key((int)e->key.scancode, false);
-        if (e->key.scancode < 512) g_input.keys[e->key.scancode] = false;
         break;
     case SDL_EVENT_MOUSE_MOTION:
         joy_input_feed_mouse_move(e->motion.x, e->motion.y);
-        g_input.mouse_x = e->motion.x;
-        g_input.mouse_y = e->motion.y;
         break;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         joy_input_feed_mouse_move(e->button.x, e->button.y);
         joy_input_feed_mouse_button((int)e->button.button, true);
-        if (e->button.button == 1) g_input.mouse_left = true;
         break;
     case SDL_EVENT_MOUSE_BUTTON_UP:
         joy_input_feed_mouse_move(e->button.x, e->button.y);
         joy_input_feed_mouse_button((int)e->button.button, false);
-        if (e->button.button == 1) g_input.mouse_left = false;
         break;
     case SDL_EVENT_MOUSE_WHEEL:
         joy_input_feed_wheel(e->wheel.y);
@@ -232,10 +226,17 @@ SDL_AppResult SDL_AppIterate(void* appstate)
         if (dt > 0.05) dt = 0.05;   /* 与 C# GameApp.Tick 的上限一致 */
     }
 
+    /* 从引擎层唯一状态源重建 Native DLL 的输入快照 */
+    for (int i = 0; i < 512; i++)
+        g_input.keys[i] = joy_input_is_key_down(i);
+    g_input.mouse_x = joy_input_get_mouse_x();
+    g_input.mouse_y = joy_input_get_mouse_y();
+    g_input.mouse_left = joy_input_is_mouse_button_down(1);
+
     JoyFrameResult r;
     memset(&r, 0, sizeof(r));
     g_hooks->on_frame(g_hooks->game, dt, &g_input, &r);
-    joy_input_end_frame();   /* 清掉本帧滚轮增量 */
+    joy_input_end_frame();   /* 清掉本帧滚轮增量与按键边沿 */
 
     if (r.quit) {
         if (g_smoke) {

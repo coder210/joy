@@ -398,7 +398,7 @@ extern "C" {
         JOY_API bool joy_r3d_font_draw_3d(joy_r3d_p r, joy_render_mesh_p m, const char* text,
                                        joy_vec3_t topLeft, float yaw, float pitch, float size);
         /* 设置 3D 世界文字颜色(RGB 烘焙进下一段 bake 的纹理, 需在 draw_3d 前调用) */
-        JOY_API void joy_r3d_font_set_color(joy_r3d_p r, Uint8 cr, Uint8 cg, Uint8 cb);
+        JOY_API void joy_r3d_font_set_color(joy_r3d_p r, uint8_t cr, uint8_t cg, uint8_t cb);
         /* 固定朝向绘制文字(不随相机变化): 始终水平直立、正对 -Z。
            topLeft 为左上角锚点(世界坐标), size 为文字世界高度。 */
         JOY_API bool joy_r3d_font_draw_fixed(joy_r3d_p r, joy_render_mesh_p m, const char* text,
@@ -416,13 +416,13 @@ extern "C" {
         JOY_API bool joy_r3d_font_draw_2d_color(joy_r3d_p r, joy_render_mesh_p m, const char* text,
                                             float pixelX, float pixelY, float fontSize,
                                             float winW, float winH,
-                                            Uint8 cr, Uint8 cg, Uint8 cb);
+                                            uint8_t cr, uint8_t cg, uint8_t cb);
         /* 带描边的 2D HUD 文字: 主色 + 描边色(4 方向偏移), 任何背景下可读 */
         JOY_API bool joy_r3d_font_draw_2d_outline(joy_r3d_p r, joy_render_mesh_p m, const char* text,
                                               float pixelX, float pixelY, float fontSize,
                                               float winW, float winH,
-                                              Uint8 cr, Uint8 cg, Uint8 cb,
-                                              Uint8 or_, Uint8 og, Uint8 ob,
+                                              uint8_t cr, uint8_t cg, uint8_t cb,
+                                              uint8_t or_, uint8_t og, uint8_t ob,
                                               float outline);
         /* 取当前渲染尺寸(像素, 与视口一致), 用于 2D HUD 投影。可传 NULL 忽略某一项 */
         JOY_API void joy_r3d_get_window_size(joy_r3d_p r, int* outW, int* outH);
@@ -499,13 +499,13 @@ extern "C" {
         /* 2D 实心矩形绘制(逻辑/窗口像素坐标, 左上角 x,y 尺寸 w,h, 颜色 cr,cg,cb) */
         JOY_API void joy_r3d_draw_rect_2d(joy_r3d_p r, joy_render_mesh_p m,
                                       float x, float y, float w, float h,
-                                      Uint8 cr, Uint8 cg, Uint8 cb,
+                                      uint8_t cr, uint8_t cg, uint8_t cb,
                                       float winW, float winH);
 
         /* 2D 自定义实心色 mesh 绘制(逻辑坐标, 中心 cx,cy 缩放 sx,sy, 用于环形/扇形等) */
         JOY_API void joy_r3d_draw_mesh_2d(joy_r3d_p r, joy_render_mesh_p m,
                                       float cx, float cy, float sx, float sy,
-                                      Uint8 cr, Uint8 cg, Uint8 cb,
+                                      uint8_t cr, uint8_t cg, uint8_t cb,
                                       float winW, float winH);
 
         /* 2D 贴图 quad 绘制(逻辑坐标左上 (x,y) 尺寸 w,h, 单位 quad 自带 UV)。
@@ -581,7 +581,7 @@ extern "C" {
         /* 统一事件处理(对齐 jr2d joy_ui_inputbox_process_event): 内部处理
            鼠标聚焦/定位、文本输入、键盘(退格/删除/方向/Home/End/回车)。
            返回 true 表示事件已被输入框消费(调用方应停止后续处理, 如相机旋转)。 */
-        JOY_API bool   joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, SDL_Event* event);
+        JOY_API bool   joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, const void* event);
         /* 设置回车提交回调 */
         JOY_API void   joy_r3d_input_set_onsubmit(joy_r3d_input_p inp, void (*cb)(joy_r3d_input_p));
         /* 触发提交(调用 on_submit); 供回车事件调用 */
@@ -623,7 +623,7 @@ extern "C" {
         /* 命中测试: 返回点击的下拉列表项索引, 未展开或未命中返回 -1 */
         JOY_API int joy_r3d_combobox_input_hit_item(joy_r3d_combobox_input_p ci, float x, float y);
         /* 统一事件处理: 鼠标(箭头切换/列表选中/外部关闭) + 键盘(上下导航/回车选中) + 文本输入 */
-        JOY_API bool joy_r3d_combobox_input_handle_event(joy_r3d_p r, joy_r3d_combobox_input_p ci, SDL_Event* event);
+        JOY_API bool joy_r3d_combobox_input_handle_event(joy_r3d_p r, joy_r3d_combobox_input_p ci, const void* event);
         /* 绘制(输入框 + 箭头 + 展开的下拉列表) */
         JOY_API void joy_r3d_combobox_input_draw(joy_r3d_p r, joy_render_mesh_p m, joy_r3d_combobox_input_p ci, float winW, float winH);
         /* 仅绘制展开的下拉列表(供场景在最后调用, 保证列表在最上层不被其他控件遮挡) */
@@ -1715,6 +1715,9 @@ extern "C" {
         JOY_API float joy_input_get_mouse_x(void);
         JOY_API float joy_input_get_mouse_y(void);
         JOY_API float joy_input_get_wheel(void);
+        /* 帧级边沿：本帧是否刚按下 / 抬起，由 end_frame 清零 */
+        JOY_API bool  joy_input_was_key_pressed(int scancode);
+        JOY_API bool  joy_input_was_key_released(int scancode);
 
 #ifdef __cplusplus
 }

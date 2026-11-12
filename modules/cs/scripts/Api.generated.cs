@@ -272,7 +272,13 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R3dFontInit(ulong r, string ttf_path, int pixel_height);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dFontSetColor(ulong r, uint cr, uint cg, uint cb);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool R3dFontDraw2d(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dFontDraw2dColor(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool R3dFontDraw2dOutline(ulong r, ulong m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb, uint or_, uint og, uint ob, float outline);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dFontCacheSetLimit(ulong r, int max_entries);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -297,6 +303,10 @@ namespace Joy.Api
         internal static extern void R3dButtonRelease(ulong r, ulong btn, float mx, float my);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dButtonDestroy(ulong btn);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDrawRect2d(ulong r, ulong m, float x, float y, float w, float h, uint cr, uint cg, uint cb, float winW, float winH);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDrawMesh2d(ulong r, ulong m, float cx, float cy, float sx, float sy, uint cr, uint cg, uint cb, float winW, float winH);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dLabelSetText(ulong l, string text);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -1031,6 +1041,10 @@ namespace Joy.Api
         internal static extern float JoyInputGetMouseY();
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern float JoyInputGetWheel();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JoyInputWasKeyPressed(int scancode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JoyInputWasKeyReleased(int scancode);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern long JmathFpFromFloat(float a);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -2826,11 +2840,28 @@ namespace Joy.Api
             if (r == null) throw new ArgumentNullException(nameof(r));
             return Native.R3dFontInit(r.Handle, ttf_path, pixel_height);
         }
+        public static void R3dFontSetColor(Jr3d r, uint cr, uint cg, uint cb)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dFontSetColor(r.Handle, cr, cg, cb);
+        }
         public static bool R3dFontDraw2d(Jr3d r, RenderMesh m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH)
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
             if (m == null) throw new ArgumentNullException(nameof(m));
             return Native.R3dFontDraw2d(r.Handle, m.Handle, text, pixelX, pixelY, fontSize, winW, winH);
+        }
+        public static bool R3dFontDraw2dColor(Jr3d r, RenderMesh m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            return Native.R3dFontDraw2dColor(r.Handle, m.Handle, text, pixelX, pixelY, fontSize, winW, winH, cr, cg, cb);
+        }
+        public static bool R3dFontDraw2dOutline(Jr3d r, RenderMesh m, string text, float pixelX, float pixelY, float fontSize, float winW, float winH, uint cr, uint cg, uint cb, uint or_, uint og, uint ob, float outline)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            return Native.R3dFontDraw2dOutline(r.Handle, m.Handle, text, pixelX, pixelY, fontSize, winW, winH, cr, cg, cb, or_, og, ob, outline);
         }
         public static void R3dFontCacheSetLimit(Jr3d r, int max_entries)
         {
@@ -2898,6 +2929,18 @@ namespace Joy.Api
         {
             if (btn == null) throw new ArgumentNullException(nameof(btn));
             Native.R3dButtonDestroy(btn.Handle);
+        }
+        public static void R3dDrawRect2d(Jr3d r, RenderMesh m, float x, float y, float w, float h, uint cr, uint cg, uint cb, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.R3dDrawRect2d(r.Handle, m.Handle, x, y, w, h, cr, cg, cb, winW, winH);
+        }
+        public static void R3dDrawMesh2d(Jr3d r, RenderMesh m, float cx, float cy, float sx, float sy, uint cr, uint cg, uint cb, float winW, float winH)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.R3dDrawMesh2d(r.Handle, m.Handle, cx, cy, sx, sy, cr, cg, cb, winW, winH);
         }
         public static void R3dLabelSetText(Jr3dLabel l, string text)
         {
@@ -4790,6 +4833,14 @@ namespace Joy.Api
         public static float JoyInputGetWheel()
         {
             return Native.JoyInputGetWheel();
+        }
+        public static bool JoyInputWasKeyPressed(int scancode)
+        {
+            return Native.JoyInputWasKeyPressed(scancode);
+        }
+        public static bool JoyInputWasKeyReleased(int scancode)
+        {
+            return Native.JoyInputWasKeyReleased(scancode);
         }
         public static long JmathFpFromFloat(float a)
         {

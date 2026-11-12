@@ -10,10 +10,10 @@
 
 | 项 | 数量 |
 |---|---|
-| `joy.h` 中 `JOY_API` 声明 | 1168 |
+| `joy.h` 中 `JOY_API` 声明 | 1170 |
 | `joy.h` 中值类型 `typedef struct` | 47 |
-| IDL 条目 | 1168 |
-| 已开放（`status: on`） | 732 |
+| IDL 条目 | 1170 |
+| 已开放（`status: on`） | 739 |
 | 借用句柄（`borrowed`，不注册析构） | 12（已开放 7） |
 | 待人工确认 `owns` | 11 |
 | 所有权待裁决（类型不匹配 / 缺 `owns`） | 11 |
@@ -21,10 +21,10 @@
 
 | 级别 | 含义 | 数量 |
 |---|---|---|
-| L0 | 纯标量 + const char*，可直接生成 | 275 |
-| L1 | 不透明指针 → 句柄，需所有权测试 | 540 |
+| L0 | 纯标量 + const char*，可直接生成 | 277 |
+| L1 | 不透明指针 → 句柄，需所有权测试 | 547 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
-| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 206 |
+| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 199 |
 | X | 有意排除，不进绑定层 | 73 |
 
 开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与
@@ -36,12 +36,12 @@
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | core | 14 | 23 | 1 | 9 | 20 | 67 |
-| input | 11 | 14 | 0 | 3 | 0 | 28 |
+| input | 13 | 14 | 0 | 3 | 0 | 30 |
 | joy | 0 | 0 | 0 | 6 | 0 | 6 |
 | math | 220 | 3 | 27 | 63 | 0 | 313 |
 | net | 19 | 56 | 0 | 23 | 0 | 98 |
 | r2d | 4 | 33 | 6 | 12 | 19 | 74 |
-| r3d | 0 | 110 | 14 | 23 | 0 | 147 |
+| r3d | 0 | 117 | 14 | 16 | 0 | 147 |
 | scene | 1 | 117 | 3 | 38 | 1 | 160 |
 | script | 0 | 0 | 0 | 0 | 33 | 33 |
 | ui | 0 | 170 | 23 | 29 | 0 | 222 |
@@ -144,20 +144,13 @@
 | `joy_r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/japi.h:340 |
 | `joy_r3d_mat44_to_float16` | 数组参数 | include/joy/japi.h:344 |
 | `joy_r3d_load_texture_png` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:389 |
-| `joy_r3d_font_set_color` | 未知类型需人工标注：Uint8 | include/joy/japi.h:401 |
-| `joy_r3d_font_draw_2d_color` | 未知类型需人工标注：Uint8 | include/joy/japi.h:416 |
-| `joy_r3d_font_draw_2d_outline` | 未知类型需人工标注：Uint8 | include/joy/japi.h:421 |
 | `joy_r3d_get_window_size` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:428 |
 | `joy_r3d_world_to_screen` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:446 |
 | `joy_r3d_get_logical_presentation` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:458 |
 | `joy_r3d_window_to_logical` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:460 |
 | `joy_r3d_logical_to_window` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:462 |
 | `joy_r3d_button_set_onclick` | 函数指针 / 回调 | include/joy/japi.h:493 |
-| `joy_r3d_draw_rect_2d` | 未知类型需人工标注：Uint8 | include/joy/japi.h:500 |
-| `joy_r3d_draw_mesh_2d` | 未知类型需人工标注：Uint8 | include/joy/japi.h:506 |
-| `joy_r3d_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/japi.h:584 |
 | `joy_r3d_input_set_onsubmit` | 函数指针 / 回调 | include/joy/japi.h:586 |
-| `joy_r3d_combobox_input_handle_event` | 非不透明指针 / 输出参数：SDL_Event* | include/joy/japi.h:626 |
 | `joy_r3d_checkbox_set_state` | 未知类型需人工标注：joy_r3d_checkbox_state_t | include/joy/japi.h:697 |
 | `joy_r3d_draw_mesh_solid_basis` | 结构体指针参数 | include/joy/japi.h:722 |
 | `joy_r3d_draw_wire_basis` | 结构体指针参数 | include/joy/japi.h:728 |

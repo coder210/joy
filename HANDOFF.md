@@ -22,9 +22,11 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 | L2 | 值类型结构体按字段展开 | 能，需 `structs.js` 认得字段类型 |
 | L3 | 结构体指针 / 出参 / 回调 / 可变参 | 不能，`status:off`，消费方退化 |
 
-当前：**1168 条 IDL，732 条 `status:on`，vtable 732 个强签名**（其中 7 条是
+当前：**1170 条 IDL，739 条 `status:on`，vtable 739 个强签名**（其中 7 条是
 `borrowed` 借用句柄见 §3 的 14，13 条 3D mesh 靠单参数 dtor 开放见 §3 的 15；
-较收口时 +11 条是 §3 的 22 新增的输入状态标量 API）。
+较收口时 IDL +13 条（§3 的 22 新增 11 条输入 API、§3 的 23 新增 2 条边沿
+API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类后开放的
+5 条 r3d 绘制 API）。
 
 ## 2. 当前状态
 
@@ -233,12 +235,48 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
        拿不到的能力。
      - 验证：`--scan` + `--check` OK、默认构建 0 错误（`jinput.c` 在 4 个宿主
        均编译）、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
-     - **后续（未做）**：P2 给高频 UI 控件加标量入口、用内部私有事件对象把
-       `jui.c:3583` 的空壳 `joy_ui_process_widget_event` 做实、收敛 C++ 宿主的
-       `g_input` 双写；P0（`jdefs.h` 去 SDL include、删零使用的 `JOY_EVENT_*`）
-       必须等 `japi.h:584/626` 的 `SDL_Event*` 有了标量替代才能做，顺序据此
-       调整；P3 再评估是否走到 A。Lua / JS 暂未处理 `SDL_EVENT_MOUSE_WHEEL`，
+     - **后续状态**：P0（`jdefs.h` 去 SDL include、删 `JOY_EVENT_*`）与
+       `g_input` 双写收敛已在第 23 条完成，顺序按第 23 条的只读结论调整；
+       控件标量入口与 `joy_ui_process_widget_event` 空壳仍待真实消费者；
+       P3 再评估是否走到 A。Lua / JS 暂未处理 `SDL_EVENT_MOUSE_WHEEL`，
        该端滚轮查询恒 0。
+     23. **B 方案 P2 前半：公开头去 SDL 依赖 + 状态快照完整化（2026-11-12）**：
+     承接第 22 条，兑现"公开头解耦"，并补上帧级离散输入。
+     - **范围调整（重要）**：先做只读梳理，确认 `jui.c` 的 20 多个
+       `joy_ui_*_process_event` 与 `jr3d.c` 的两条 `*_handle_event`
+       **全仓库没有外部调用点**（只有 `jr3d.c` 内部两处转发），
+       `joy_ui_process_widget_event`（`jui.c:3583`）仍是只有 `(void)e;` 的空壳。
+       给死 API 逐个加标量入口没有收益，因此本轮**不做控件标量入口**；
+       等出现真实消费者再补。
+     - **P0 完成**：`jdefs.h:17` 的 `<SDL3/SDL_events.h>` 换成 `<stdint.h>`，
+       零使用的 `JOY_EVENT_*`（数值抄自 SDL3 枚举）整块移除，用等行数注释
+       保持后续 `JOY_API` 行号不变；`japi.h` 的 6 处 `Uint8` 改成 `uint8_t`；
+       `japi.h:584/626` 的 `SDL_Event* event` 改成 `const void* event`，
+       `jr3d.c` 两个实现内部强转回 `const SDL_Event*`。至此 `include/joy/`
+       不再包含任何 SDL 头、不再出现 SDL 类型，与 `joy_game_hooks.h:21`
+       的 DLL 解耦约定一致。
+     - **顺带的生成链收益**：`Uint8` 是生成器不认识的未知类型，曾把 5 条
+       r3d 绘制 API（`joy_r3d_font_set_color` / `font_draw_2d_color` /
+       `font_draw_2d_outline` / `draw_rect_2d` / `draw_mesh_2d`）误判为
+       `L3/off`；换成 `uint8_t` 后降为 `L1`，点名开放成功（实现都在
+       `jr3d.c`）。两条 `SDL_Event*` 改成 `void*` 后仍是 `off`，保持原状。
+     - **帧级离散输入**：`src/jinput.c` 增加 `s_key_pressed` /
+       `s_key_released` 两个帧级边沿数组，`feed_key` 一次喂入持续状态与边沿，
+       `end_frame` 每帧清边沿与滚轮；新增 `joy_input_was_key_pressed` /
+       `was_key_released` 两条纯标量 API。Lua / JS 宿主补上
+       `joy_input_end_frame()`，四端现在按同一节奏清理帧级状态。
+     - **收敛双写**：C++ 宿主 `SDL_AppEvent` 不再维护第二份 `g_input`，
+       改为每帧 `on_frame` 前从 `joy_input_*` getter 重建这份 Native DLL
+       ABI 快照；状态源只剩引擎层一份。
+     - 生成链：IDL 1168 → 1170、`status:on` / vtable 732 → 739，
+       `--enable` 点名开放 7 条、0 skipped，既有条目 `source` 行号零漂移。
+     - 验证：`--scan` + `--check` OK、默认构建 0 错误（公开头不再含 SDL 头，
+       全部编译单元仍通过）、`ctest` 4/4、PLUGINS=ON 构建 0 错误、
+       `git diff --check` 0。
+     - **仍未做**：控件标量入口与 `joy_ui_process_widget_event` 空壳（等真实
+       消费者）；文本输入的标量通道（`const char*` 返回值的跨语言生命周期
+       尚未验证）；其余 20+ 个 `const void* event` API 仍是 `off`；以及第 19
+       条列的按 API 域拆 `jr2d.c`、资源管理器、两套分配器等。
 
     具体内容：
 

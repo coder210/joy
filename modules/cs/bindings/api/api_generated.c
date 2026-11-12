@@ -2021,6 +2021,22 @@ static int32_t icall_R3dFontInit(uint64_t p0, MonoString* p1, int32_t p2)
         return (int32_t)r.as.b;
 }
 
+static void icall_R3dFontSetColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32_t p3)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[4];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_u32((uint32_t)p1);
+        args[2] = joy_v_u32((uint32_t)p2);
+        args[3] = joy_v_u32((uint32_t)p3);
+        (void)joy_api_call("joy_r3d_font_set_color", args, 4, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_set_color", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7)
 {
         joy_status_t st = JOY_OK;
@@ -2040,6 +2056,64 @@ static int32_t icall_R3dFontDraw2d(uint64_t p0, uint64_t p1, MonoString* p2, flo
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static int32_t icall_R3dFontDraw2dColor(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[11];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        r = joy_api_call("joy_r3d_font_draw_2d_color", args, 11, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d_color", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static int32_t icall_R3dFontDraw2dOutline(uint64_t p0, uint64_t p1, MonoString* p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11, uint32_t p12, uint32_t p13, float p14)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[15];
+        char* s2 = NULL;
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        s2 = p2 ? mono_string_to_utf8(p2) : NULL;
+        args[2] = joy_v_str((const char*)s2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        args[11] = joy_v_u32((uint32_t)p11);
+        args[12] = joy_v_u32((uint32_t)p12);
+        args[13] = joy_v_u32((uint32_t)p13);
+        args[14] = joy_v_f64((double)p14);
+        r = joy_api_call("joy_r3d_font_draw_2d_outline", args, 15, &st);
+        if (s2) mono_free(s2);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_font_draw_2d_outline", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.b;
@@ -2224,6 +2298,52 @@ static void icall_R3dButtonDestroy(uint64_t p0)
         (void)joy_api_call("joy_r3d_button_destroy", args, 1, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_button_destroy", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_R3dDrawRect2d(uint64_t p0, uint64_t p1, float p2, float p3, float p4, float p5, uint32_t p6, uint32_t p7, uint32_t p8, float p9, float p10)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[11];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_f64((double)p9);
+        args[10] = joy_v_f64((double)p10);
+        (void)joy_api_call("joy_r3d_draw_rect_2d", args, 11, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_rect_2d", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_R3dDrawMesh2d(uint64_t p0, uint64_t p1, float p2, float p3, float p4, float p5, uint32_t p6, uint32_t p7, uint32_t p8, float p9, float p10)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[11];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_u32((uint32_t)p6);
+        args[7] = joy_v_u32((uint32_t)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_f64((double)p9);
+        args[10] = joy_v_f64((double)p10);
+        (void)joy_api_call("joy_r3d_draw_mesh_2d", args, 11, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_mesh_2d", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -7798,6 +7918,34 @@ static float icall_JoyInputGetWheel(void)
         return (float)r.as.f64;
 }
 
+static int32_t icall_JoyInputWasKeyPressed(int32_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i32((int32_t)p0);
+        r = joy_api_call("joy_input_was_key_pressed", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_was_key_pressed", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static int32_t icall_JoyInputWasKeyReleased(int32_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i32((int32_t)p0);
+        r = joy_api_call("joy_input_was_key_released", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_was_key_released", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
 static int64_t icall_JmathFpFromFloat(float p0)
 {
         joy_status_t st = JOY_OK;
@@ -11570,7 +11718,10 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dMeshRampWire", (const void*)icall_R3dMeshRampWire);
         csx_register_internal_call("Joy.Api.Native::R3dMeshDestroy", (const void*)icall_R3dMeshDestroy);
         csx_register_internal_call("Joy.Api.Native::R3dFontInit", (const void*)icall_R3dFontInit);
+        csx_register_internal_call("Joy.Api.Native::R3dFontSetColor", (const void*)icall_R3dFontSetColor);
         csx_register_internal_call("Joy.Api.Native::R3dFontDraw2d", (const void*)icall_R3dFontDraw2d);
+        csx_register_internal_call("Joy.Api.Native::R3dFontDraw2dColor", (const void*)icall_R3dFontDraw2dColor);
+        csx_register_internal_call("Joy.Api.Native::R3dFontDraw2dOutline", (const void*)icall_R3dFontDraw2dOutline);
         csx_register_internal_call("Joy.Api.Native::R3dFontCacheSetLimit", (const void*)icall_R3dFontCacheSetLimit);
         csx_register_internal_call("Joy.Api.Native::R3dFontCacheGetCount", (const void*)icall_R3dFontCacheGetCount);
         csx_register_internal_call("Joy.Api.Native::R3dFontCacheClear", (const void*)icall_R3dFontCacheClear);
@@ -11583,6 +11734,8 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dButtonIsPressed", (const void*)icall_R3dButtonIsPressed);
         csx_register_internal_call("Joy.Api.Native::R3dButtonRelease", (const void*)icall_R3dButtonRelease);
         csx_register_internal_call("Joy.Api.Native::R3dButtonDestroy", (const void*)icall_R3dButtonDestroy);
+        csx_register_internal_call("Joy.Api.Native::R3dDrawRect2d", (const void*)icall_R3dDrawRect2d);
+        csx_register_internal_call("Joy.Api.Native::R3dDrawMesh2d", (const void*)icall_R3dDrawMesh2d);
         csx_register_internal_call("Joy.Api.Native::R3dLabelSetText", (const void*)icall_R3dLabelSetText);
         csx_register_internal_call("Joy.Api.Native::R3dLabelDraw", (const void*)icall_R3dLabelDraw);
         csx_register_internal_call("Joy.Api.Native::R3dLabelDestroy", (const void*)icall_R3dLabelDestroy);
@@ -11950,6 +12103,8 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JoyInputGetMouseX", (const void*)icall_JoyInputGetMouseX);
         csx_register_internal_call("Joy.Api.Native::JoyInputGetMouseY", (const void*)icall_JoyInputGetMouseY);
         csx_register_internal_call("Joy.Api.Native::JoyInputGetWheel", (const void*)icall_JoyInputGetWheel);
+        csx_register_internal_call("Joy.Api.Native::JoyInputWasKeyPressed", (const void*)icall_JoyInputWasKeyPressed);
+        csx_register_internal_call("Joy.Api.Native::JoyInputWasKeyReleased", (const void*)icall_JoyInputWasKeyReleased);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromFloat", (const void*)icall_JmathFpFromFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpToFloat", (const void*)icall_JmathFpToFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromUint", (const void*)icall_JmathFpFromUint);
