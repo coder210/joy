@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
         /* ---------- MVP 结构（无 SDL 依赖） ---------- */
-        typedef struct render_mvp {
+        typedef struct joy_render_mvp {
                 float viewProj[16];
                 float model[16];
         } joy_render_mvp_t;
@@ -19,7 +19,7 @@ extern "C" {
         #define JR3D_MAX_LIGHTS 4
         #define JR3D_LIGHT_DIRECTIONAL 0
         #define JR3D_LIGHT_POINT 1
-        typedef struct jr3d_shader_light {
+        typedef struct joy_r3d_shader_light {
                 int    enabled;      /* 0 */
                 int    type;         /* 4 */
                 int    _pad0[2];     /* 8 */
@@ -29,18 +29,18 @@ extern "C" {
                 float  _pad2;        /* 44 */
                 float  color[4];     /* 48 */
         } joy_r3d_shader_light_t;       /* 64 字节 */
-        typedef struct jr3d_light_block {
+        typedef struct joy_r3d_light_block {
                 joy_r3d_shader_light_t lights[JR3D_MAX_LIGHTS];
                 float ambient[4];
                 float viewPos[4];
         } joy_r3d_light_block_t;        /* 288 字节 */
 
 
-        typedef struct ray2df {
+        typedef struct joy_ray2df {
                 joy_vec2f_t origin, direction;
         }joy_ray2df_t;
 
-        typedef struct ray2d_collisionf {
+        typedef struct joy_ray2d_collisionf {
                 bool hit;               // Did the ray hit something?
                 joy_fp_t distance;         // Distance to the nearest hit
                 joy_vec2f_t point;          // Point of the nearest hit
@@ -49,25 +49,25 @@ extern "C" {
 
 
         /* 锚点约定: 矩形用"左上角(x,y) + 宽高"定位, 区别于 GJK BOX 的"中心 + 半边长" */
-        typedef struct rectanglef {
+        typedef struct joy_rectanglef {
                 joy_fp_t x; // rectangle top-left corner position x
                 joy_fp_t y; // rectangle top-left corner position y
                 joy_fp_t width;
                 joy_fp_t height;
         }joy_rectanglef_t;
 
-        typedef struct circlef {
+        typedef struct joy_circlef {
                 joy_vec2f_t center;
                 joy_fp_t radius;
         }joy_circlef_t;
 
-        typedef struct polygonf {
+        typedef struct joy_polygonf {
                 joy_vec2f_t* vertices;
                 int num_vertices;
         }joy_polygonf_t;
 
 
-        typedef struct contact2df {
+        typedef struct joy_contact2df {
                 joy_vec2f_t sp; // starting point
                 joy_vec2f_t ep; // ending point
                 joy_vec2f_t normal;
@@ -75,11 +75,11 @@ extern "C" {
         }joy_contact2df_t;
 
 
-        typedef struct ray3df {
+        typedef struct joy_ray3df {
                 joy_vec3f_t position, direction;
         }joy_ray3df_t;
 
-        typedef struct ray3d_collisionf {
+        typedef struct joy_ray3d_collisionf {
                 bool hit;               // Did the ray hit something?
                 joy_fp_t distance;         // Distance to the nearest hit
                 joy_vec3f_t point;          // Point of the nearest hit
@@ -91,48 +91,48 @@ extern "C" {
                 joy_fp_t radius;
         }joy_spheref_t;
 
-        typedef struct bounding_boxf {
+        typedef struct joy_bounding_boxf {
                 joy_vec3f_t min;            // Minimum vertex box-corner
                 joy_vec3f_t max;            // Maximum vertex box-corner
         } joy_bounding_boxf_t;
 
-        typedef struct ray2d {
+        typedef struct joy_ray2d {
                 joy_vec2_t origin, direction;
         }joy_ray2d_t;
 
-        typedef struct ray2d_collision {
+        typedef struct joy_ray2d_collision {
                 bool hit;
                 joy_ft_t distance;
                 joy_vec2_t point;
                 joy_vec2_t normal;
         }joy_ray2d_collision_t;
 
-        typedef struct rectangle {
+        typedef struct joy_rectangle {
                 joy_ft_t x, y, width, height;
         }joy_rectangle_t;
 
-        typedef struct circle {
+        typedef struct joy_circle {
                 joy_vec2_t center;
                 joy_ft_t radius;
         }joy_circle_t;
 
-        typedef struct polygon {
+        typedef struct joy_polygon {
                 joy_vec2_t* vertices;
                 int num_vertices;
         }joy_polygon_t;
 
-        typedef struct contact2d {
+        typedef struct joy_contact2d {
                 joy_vec2_t sp;
                 joy_vec2_t ep;
                 joy_vec2_t normal;
                 joy_ft_t depth;
         }joy_contact2d_t;
 
-        typedef struct ray3d {
+        typedef struct joy_ray3d {
                 joy_vec3_t position, direction;
         }joy_ray3d_t;
 
-        typedef struct ray3d_collision {
+        typedef struct joy_ray3d_collision {
                 bool hit;
                 joy_ft_t distance;
                 joy_vec3_t point;
@@ -144,7 +144,7 @@ extern "C" {
                 joy_ft_t radius;
         }joy_sphere_t;
 
-        typedef struct bounding_box {
+        typedef struct joy_bounding_box {
                 joy_vec3_t min;
                 joy_vec3_t max;
         } joy_bounding_box_t;
@@ -165,7 +165,7 @@ extern "C" {
 
         /* ---------- 3D碰撞体 ---------- */
         /* 注意: BOX/OBB 的 position 是中心(half_size 为半边长), 与 joy_rectanglef_t 的"左上角+宽高"语义不同 */
-        typedef struct gjk3df_collider {
+        typedef struct joy_gjk3df_collider {
                 gjk3df_ctype_k type;
                 joy_vec3f_t position;      /* 中心位置 */
                 joy_fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
@@ -178,7 +178,7 @@ extern "C" {
         } joy_gjk3df_collider_t, * joy_gjk3df_collider_p;
 
         /* ---------- 接触信息(含EPA穿透深度) ---------- */
-        typedef struct gjk3df_contact {
+        typedef struct joy_gjk3df_contact {
                 joy_vec3f_t normal;
                 joy_fp_t depth;
         } joy_gjk3df_contact_t, * joy_gjk3df_contact_p;
@@ -197,7 +197,7 @@ extern "C" {
         } gjk3d_ctype_k;
 
         /* ---------- 3D碰撞体(浮点) ---------- */
-        typedef struct gjk3d_collider {
+        typedef struct joy_gjk3d_collider {
                 gjk3d_ctype_k type;
                 joy_vec3_t position;       /* 中心位置 */
                 joy_ft_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
@@ -209,7 +209,7 @@ extern "C" {
         } joy_gjk3d_collider_t, * joy_gjk3d_collider_p;
 
         /* ---------- 接触信息(含EPA穿透深度) ---------- */
-        typedef struct gjk3d_contact {
+        typedef struct joy_gjk3d_contact {
                 joy_vec3_t normal;
                 joy_ft_t depth;
         } joy_gjk3d_contact_t, * joy_gjk3d_contact_p;
@@ -228,7 +228,7 @@ extern "C" {
         #define GJK2D_CTYPE_PIE      4  /* 扇形: position + radius + sweep(弧度) */
 
         /* 注意: BOX 的 position 是中心(half_size 为半边长), 与 joy_rectanglef_t 的"左上角+宽高"语义不同 */
-        typedef struct gjk2d_collider {
+        typedef struct joy_gjk2d_collider {
                 gjk2d_ctype_k type;
                 joy_vec2f_t position;       /* 中心位置 */
                 joy_fp_t radius;            /* 圆/胶囊/扇形半径 */
@@ -240,7 +240,7 @@ extern "C" {
                 joy_fp_t sweep;             /* 扇形张角(弧度) */
         } joy_gjk2d_collider_t, * joy_gjk2d_collider_p;
 
-        typedef struct gjk2d_contact {
+        typedef struct joy_gjk2d_contact {
                 joy_vec2f_t normal;
                 joy_fp_t depth;
         } joy_gjk2d_contact_t, * joy_gjk2d_contact_p;
@@ -249,7 +249,7 @@ extern "C" {
 
 
         /* ========== Types ========== */
-        typedef struct janimator joy_animator_t, * joy_animator_p;
+        typedef struct joy_animator joy_animator_t, * joy_animator_p;
 
         /* Parameter types */
         typedef enum {
@@ -273,29 +273,29 @@ extern "C" {
         /* State enter/exit callback */
         typedef void (*janim_state_cb)(const char* state_name, void* userdata);
 
-        typedef struct label joy_label_t, * joy_label_p;
-        typedef struct button joy_button_t, * joy_button_p;
-        typedef struct combobox_item joy_combobox_item_t, * joy_combobox_item_p;
-        typedef struct combobox joy_combobox_t, * joy_combobox_p;
-        typedef struct combobox_input joy_combobox_input_t, * joy_combobox_input_p;
-        typedef struct datagrid joy_datagrid_t, * joy_datagrid_p;
-        typedef struct radio joy_radio_t, * joy_radio_p;
+        typedef struct joy_label joy_label_t, * joy_label_p;
+        typedef struct joy_button joy_button_t, * joy_button_p;
+        typedef struct joy_combobox_item joy_combobox_item_t, * joy_combobox_item_p;
+        typedef struct joy_combobox joy_combobox_t, * joy_combobox_p;
+        typedef struct joy_combobox_input joy_combobox_input_t, * joy_combobox_input_p;
+        typedef struct joy_datagrid joy_datagrid_t, * joy_datagrid_p;
+        typedef struct joy_radio joy_radio_t, * joy_radio_p;
         typedef enum checkbox_state {
                 JOY_CHECKBOX_UNCHECKED,
                 JOY_CHECKBOX_CHECKED,
                 JOY_CHECKBOX_INDETERMINATE
         }joy_checkbox_state_t;
-        typedef struct checkbox joy_checkbox_t, * joy_checkbox_p;
-        typedef struct joystick joy_joystick_t, * joy_joystick_p;
-        typedef struct inputbox joy_inputbox_t, * joy_inputbox_p;
-        typedef struct slider joy_slider_t, * joy_slider_p;
-        typedef struct popup joy_popup_t, * joy_popup_p;
-        typedef struct tooltip joy_tooltip_t, * joy_tooltip_p;
-        typedef struct scrollview joy_scrollview_t, * joy_scrollview_p;
+        typedef struct joy_checkbox joy_checkbox_t, * joy_checkbox_p;
+        typedef struct joy_joystick joy_joystick_t, * joy_joystick_p;
+        typedef struct joy_inputbox joy_inputbox_t, * joy_inputbox_p;
+        typedef struct joy_slider joy_slider_t, * joy_slider_p;
+        typedef struct joy_popup joy_popup_t, * joy_popup_p;
+        typedef struct joy_tooltip joy_tooltip_t, * joy_tooltip_p;
+        typedef struct joy_scrollview joy_scrollview_t, * joy_scrollview_p;
 
 
         /* ---------- 对象（碰撞体/实体） ---------- */
-        typedef struct jtilemap_object {
+        typedef struct joy_tilemap_object {
             int    id;
             char* name;
             char* type;         /* 用户自定义类型 */
@@ -305,14 +305,14 @@ extern "C" {
             float  rotation;
             bool   visible;
         }joy_tilemap_object_t, * joy_tilemap_object_p;
-        typedef struct jtilemap joy_tilemap_t, * joy_tilemap_p;
-        typedef struct jtilemap_tileset joy_tilemap_tileset_t, * joy_tilemap_tileset_p;
-        typedef struct jtilemap_tile_layer joy_tilemap_tile_layer_t, * joy_tilemap_tile_layer_p;
-        typedef struct jtilemap_object_layer joy_tilemap_object_layer_t, * joy_tilemap_object_layer_p;
+        typedef struct joy_tilemap joy_tilemap_t, * joy_tilemap_p;
+        typedef struct joy_tilemap_tileset joy_tilemap_tileset_t, * joy_tilemap_tileset_p;
+        typedef struct joy_tilemap_tile_layer joy_tilemap_tile_layer_t, * joy_tilemap_tile_layer_p;
+        typedef struct joy_tilemap_object_layer joy_tilemap_object_layer_t, * joy_tilemap_object_layer_p;
 
         /* GID 解析结果：在此给出完整定义，使 C++ TU（模板 .cpp）也能看到完整类型，
            从而消除 joy_scene_tilemap_resolve_gid 的 -Wreturn-type-c-linkage 告警 */
-        typedef struct jtilemap_gid_resolve {
+        typedef struct joy_tilemap_gid_resolve {
                 joy_tilemap_tileset_p tileset;
                 int local_id;               /* tileset 内局部 ID */
                 bool has_anim;
@@ -331,7 +331,7 @@ extern "C" {
                 NET_TYPE_MESSAGE = 0x3,
         } net_event_type_k;
 
-        typedef struct net_message {
+        typedef struct joy_net_message {
                 net_event_type_k type;
                 int conv;
                 char* data;
@@ -339,29 +339,29 @@ extern "C" {
         }joy_net_message_t, * joy_net_message_p;
 
         typedef void (*net_callback)(joy_net_message_p msg, void* userdata);
-        typedef struct kcpserver joy_kcpserver_t, * joy_kcpserver_p;
-        typedef struct kcpclient joy_kcpclient_t, * joy_kcpclient_p;
-        typedef struct tcpserver joy_tcpserver_t, * joy_tcpserver_p;
-        typedef struct tcpclient joy_tcpclient_t, * joy_tcpclient_p;
-        typedef struct wsnetserver joy_wsnetserver_t, * joy_wsnetserver_p;
-        typedef struct wsnetclient joy_wsnetclient_t, * joy_wsnetclient_p;
+        typedef struct joy_kcpserver joy_kcpserver_t, * joy_kcpserver_p;
+        typedef struct joy_kcpclient joy_kcpclient_t, * joy_kcpclient_p;
+        typedef struct joy_tcpserver joy_tcpserver_t, * joy_tcpserver_p;
+        typedef struct joy_tcpclient joy_tcpclient_t, * joy_tcpclient_p;
+        typedef struct joy_wsnetserver joy_wsnetserver_t, * joy_wsnetserver_p;
+        typedef struct joy_wsnetclient joy_wsnetclient_t, * joy_wsnetclient_p;
         typedef enum {
                 NET_CLIENT_TCP,
                 NET_CLIENT_KCP,
                 NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
         } net_client_type;
-        typedef struct netclient joy_netclient_t, * joy_netclient_p;
+        typedef struct joy_netclient joy_netclient_t, * joy_netclient_p;
         typedef enum {
                 NET_SERVER_KCP,
                 NET_SERVER_TCP,
                 NET_SERVER_WEBSOCKET,
         } net_server_type;
-        typedef struct netserver joy_netserver_t, * joy_netserver_p;
+        typedef struct joy_netserver joy_netserver_t, * joy_netserver_p;
 
 
-        typedef struct scene_node joy_scene_node_t, * joy_scene_node_p;
-        typedef struct scene joy_scene_t, * joy_scene_p;
-        typedef struct scene_manager joy_scene_manager_t, * joy_scene_manager_p;
+        typedef struct joy_scene_node joy_scene_node_t, * joy_scene_node_p;
+        typedef struct joy_scene joy_scene_t, * joy_scene_p;
+        typedef struct joy_scene_manager joy_scene_manager_t, * joy_scene_manager_p;
 
         typedef void (*scene_node_update_fn)(joy_scene_node_p, float);
         typedef void (*scene_node_render_fn)(joy_scene_node_p, const void*);
@@ -378,7 +378,7 @@ extern "C" {
 
 
         /* ---------- 粒子发射器配置 ---------- */
-        typedef struct jparticle_cfg {
+        typedef struct joy_particle_cfg {
                 float x, y;                /* 发射位置 */
                 float spawn_radius;        /* 生成半径(粒子在此范围内随机生成) */
                 float direction;           /* 基础方向(度) */
@@ -394,29 +394,29 @@ extern "C" {
                 float gravity_y;           /* 重力值(正数向下, 如 50.0f) */
         } joy_particle_cfg_t;
 
-        typedef struct jparticle joy_particle_t, * joy_particle_p;
+        typedef struct joy_particle joy_particle_t, * joy_particle_p;
 
         /* ---------- 光源 ---------- */
-        typedef struct jlight {
+        typedef struct joy_light {
                 float x, y;          /* 位置(像素坐标) */
                 float radius;        /* 光照半径 */
                 float r, g, b;       /* 颜色(0-255) */
                 float intensity;     /* 强度 0~1 */
         } joy_light_t;
 
-        typedef struct jlight_sys joy_light_sys_t, * joy_light_sys_p;
+        typedef struct joy_light_sys joy_light_sys_t, * joy_light_sys_p;
 
 
         typedef int joy_ecs_id_t;
-        typedef struct jecs_world joy_ecs_world_t, * joy_ecs_world_p;
+        typedef struct joy_ecs_world joy_ecs_world_t, * joy_ecs_world_p;
         //VECTOR_INIT(kecs, joy_ecs_id_t);
 
-        typedef struct jecs_id_array {
+        typedef struct joy_ecs_id_array {
                 joy_ecs_id_t ids[512];
                 int num;
         }joy_ecs_id_array_t, * joy_ecs_id_array_p;
 
-        typedef struct jecs_system {
+        typedef struct joy_ecs_system {
                 void* arg;
                 void (*cb)(joy_ecs_world_p, void*, float);
         } joy_ecs_system_t, * joy_ecs_system_p;
@@ -430,7 +430,7 @@ extern "C" {
         } joy_bt_status_t;
 
         /* ===== 前向声明 ===== */
-        typedef struct bt_node joy_bt_node_t;
+        typedef struct joy_bt_node joy_bt_node_t;
 
         /* ===== 用户回调函数类型 ===== */
         typedef joy_bt_status_t(*bt_action_fn)(float dt);
@@ -443,7 +443,7 @@ extern "C" {
         typedef void     (*bt_destroy_fn)(joy_bt_node_t* self);
 
         /* ===== 基础节点结构 ===== */
-        struct bt_node {
+        struct joy_bt_node {
                 joy_bt_status_t   status;      /* 当前运行状态 */
                 bt_enter_fn   enter;       /* 进入回调 */
                 bt_tick_fn    tick;        /* 更新回调 */
@@ -452,7 +452,7 @@ extern "C" {
         };
 
         /* ===== 内嵌状态机节点 ===== */
-        typedef struct bt_state_slot {
+        typedef struct joy_bt_state_slot {
                 const char* name;                    /* 状态名称（不可为 NULL） */
                 bt_enter_fn  state_enter;             /* 状态 enter（可为 NULL） */
                 const char* (*state_update)(joy_bt_node_t* node, float dt); /* 返回下一状态名，NULL 表示不切换 */
@@ -461,8 +461,8 @@ extern "C" {
 
 
 
-        typedef struct audio_shot joy_audio_shot_t, * joy_audio_shot_p;
-        typedef struct audio_bgm joy_audio_bgm_t, * joy_audio_bgm_p;
+        typedef struct joy_audio_shot joy_audio_shot_t, * joy_audio_shot_p;
+        typedef struct joy_audio_bgm joy_audio_bgm_t, * joy_audio_bgm_p;
 
 
         typedef void* (*joy_module_create_t)(void);
@@ -471,7 +471,7 @@ extern "C" {
         typedef int (*joy_module_update_t)(void* inst, float delta_time);
         typedef void (*joy_module_release_t)(void* inst);
 
-        typedef struct module {
+        typedef struct joy_module {
                 char name[512];
                 void* handle;
                 joy_module_create_t create;
@@ -481,7 +481,7 @@ extern "C" {
                 joy_module_release_t release;
         }joy_module_t, * joy_module_p;
 
-        typedef struct modules joy_modules_t, * joy_modules_p;
+        typedef struct joy_modules joy_modules_t, * joy_modules_p;
 
 
 
@@ -527,7 +527,7 @@ extern "C" {
 
 
         typedef union joy_box2d_arbiter_key_t {
-                struct id_pair {
+                struct joy_id_pair {
                         int id1, id2;
                 } id_pair;
                 int64_t value;
@@ -549,13 +549,13 @@ extern "C" {
         typedef int (*jmsgpack_write_fn)(void* data, const char* buf, size_t len);
 
         /* ===== 类型别名 ===== */
-        typedef struct jmsgpack_packer {
+        typedef struct joy_msgpack_packer {
                 void* data;
                 jmsgpack_write_fn callback;
         } joy_msgpack_packer_t;
 
-        typedef struct jmsgpack_zone joy_msgpack_zone_t;
-        typedef struct jmsgpack_object joy_msgpack_object_t;
+        typedef struct joy_msgpack_zone joy_msgpack_zone_t;
+        typedef struct joy_msgpack_object joy_msgpack_object_t;
 
         typedef enum {
                 JMSGPACK_OBJECT_NIL = 0x00,

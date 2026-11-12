@@ -22,14 +22,14 @@
 
 /* ------------------------------ 结构定义 ------------------------------ */
 
-typedef struct jui_slot {
+typedef struct joy_ui_slot {
         int       id;         /* -1 = 空闲 */
         joy_button_p  btn;
         joy_checkbox_p cb;
         joy_slider_p  sl;
 } joy_ui_slot_t;
 
-struct jui_ctx {
+struct joy_ui_ctx {
         joy_r2d_p r2d;
         joy_font_p font;
         joy_ui_theme_t theme;

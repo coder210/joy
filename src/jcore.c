@@ -7,7 +7,7 @@ union jwindow {
 };
 
 
-struct env {
+struct joy_env {
 	SDL_Environment* sdl_env;
 };
 
@@ -30,7 +30,7 @@ typedef enum log_color {
 	LOG_COLOR_BRIGHT_WHITE = 97
 } joy_log_color_k;
 
-struct simple_fps_counter {
+struct joy_simple_fps_counter {
 	int frame_count;
 	int fps;
 	Uint64 last_time;

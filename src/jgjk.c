@@ -34,7 +34,7 @@ static joy_mat44f_t euler_to_rot(joy_vec3f_t euler) {
 /* ============ 内部类型 ============ */
 
 /* 单纯形 (GJK用) */
-typedef struct simplex3d_f {
+typedef struct joy_simplex3d_f {
 	joy_vec3f_t points[4];
 	int points_num;
 } joy_simplex3d_f_t;
@@ -647,7 +647,7 @@ void joy_math_gjk3df_init_mesh(joy_gjk3df_collider_t *c, joy_vec3f_t *vertices, 
 /* ============ 内部类型 ============ */
 
 /* 单纯形 (GJK用); 注意 struct tag 需与定点版 simplex3d 区分, 二者共用 tag 命名空间 */
-typedef struct simplex3d {
+typedef struct joy_simplex3d {
 	joy_vec3_t points[4];
 	int points_num;
 } joy_simplex3d_t;

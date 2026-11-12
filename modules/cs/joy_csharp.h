@@ -22,13 +22,13 @@
 typedef struct _MonoClass MonoClass;
 typedef struct _MonoObject MonoObject;
 typedef struct _MonoMethod MonoMethod;
-typedef struct csx_method csx_method_t, * csx_method_p;
+typedef struct joy_csx_method csx_method_t, * csx_method_p;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct csx csx_t, * csx_p;
+typedef struct joy_csx csx_t, * csx_p;
 
 /* 创建 / 销毁运行时句柄 */
 csx_p csx_create(void);

@@ -223,7 +223,7 @@ bool joy_audio_create_ogg(const char* filepath, uint32_t device_id)
 
 /* ==================== 背景音乐 ==================== */
 
-struct audio_bgm {
+struct joy_audio_bgm {
         SDL_AudioSpec    spec;
         Uint8*           data;
         Uint32           len;
@@ -336,7 +336,7 @@ void joy_audio_bgm_destroy(joy_audio_bgm_p bgm)
 
 /* ==================== 一次性音效 ==================== */
 
-struct audio_shot {
+struct joy_audio_shot {
         SDL_AudioSpec    spec;
         Uint8*           data;
         Uint32           len;

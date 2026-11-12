@@ -470,8 +470,8 @@ extern "C" {
         } joy_r3d_button_state_t;
 
         /* 按钮对象(屏幕像素坐标, 原点左上) */
-        typedef struct jr3d_button joy_r3d_button_t, * joy_r3d_button_p;
-        struct jr3d_button {
+        typedef struct joy_r3d_button joy_r3d_button_t, * joy_r3d_button_p;
+        struct joy_r3d_button {
             float x, y, w, h;          /* 位置与尺寸(像素) */
             char  text[128];           /* 按钮文字 */
             joy_r3d_button_state_t state; /* 当前状态 */
@@ -515,8 +515,8 @@ extern "C" {
                                      void* tex, float winW, float winH);
 
         /* ---------- 2D UI: label (仿 jr2d, 纯文字 2D HUD, 固定屏幕位置) ---------- */
-        typedef struct jr3d_label joy_r3d_label_t, * joy_r3d_label_p;
-        struct jr3d_label {
+        typedef struct joy_r3d_label joy_r3d_label_t, * joy_r3d_label_p;
+        struct joy_r3d_label {
             float x, y;          /* 左上角位置(像素) */
             float fontSize;      /* 字号(像素) */
             uint8_t r, g, b;     /* 文字颜色 */
@@ -534,8 +534,8 @@ extern "C" {
 
         /* ---------- 2D UI: input (仿 jr2d inputbox, 屏幕像素坐标, 不随相机变化) ---------- */
         /* 输入框对象(屏幕像素坐标, 原点左上) */
-        typedef struct jr3d_input joy_r3d_input_t, * joy_r3d_input_p;
-        struct jr3d_input {
+        typedef struct joy_r3d_input joy_r3d_input_t, * joy_r3d_input_p;
+        struct joy_r3d_input {
             float x, y, w, h;       /* 位置与尺寸(像素) */
             float fontSize;         /* 字号(像素) */
             uint8_t r, g, b;        /* 文字颜色 */
@@ -593,8 +593,8 @@ extern "C" {
 
         /* ---------- 2D UI: combobox_input (可输入下拉列表框, 仿 jr2d combobox_input) ---------- */
         /* 可输入下拉列表框: 左侧为文本输入框, 右侧为下拉箭头, 展开后显示列表项 */
-        typedef struct jr3d_combobox_input joy_r3d_combobox_input_t, * joy_r3d_combobox_input_p;
-        struct jr3d_combobox_input {
+        typedef struct joy_r3d_combobox_input joy_r3d_combobox_input_t, * joy_r3d_combobox_input_p;
+        struct joy_r3d_combobox_input {
             joy_r3d_input_p input;          /* 内部输入框(文本编辑复用 r3d_input) */
             float x, y, w, h;            /* 整体区域(像素) */
             float fontSize;              /* 字号(像素) */
@@ -631,8 +631,8 @@ extern "C" {
 
         /* ---------- 2D UI: slider (仿 jr2d slider, 屏幕像素坐标, 不随相机变化) ---------- */
         /* 滑块对象(屏幕像素坐标, 原点左上) */
-        typedef struct jr3d_slider joy_r3d_slider_t, * joy_r3d_slider_p;
-        struct jr3d_slider {
+        typedef struct joy_r3d_slider joy_r3d_slider_t, * joy_r3d_slider_p;
+        struct joy_r3d_slider {
             float x, y, w, h;          /* 滑轨区域(像素) */
             float min, max;            /* 取值范围 */
             float value;               /* 当前值 */
@@ -674,8 +674,8 @@ extern "C" {
             JOY_R3D_CHECKBOX_INDETERMINATE
         } joy_r3d_checkbox_state_t;
 
-        typedef struct jr3d_checkbox joy_r3d_checkbox_t, * joy_r3d_checkbox_p;
-        struct jr3d_checkbox {
+        typedef struct joy_r3d_checkbox joy_r3d_checkbox_t, * joy_r3d_checkbox_p;
+        struct joy_r3d_checkbox {
             float x, y;                 /* 方框左上角(像素) */
             float size;                 /* 方框边长 */
             joy_r3d_checkbox_state_t state;
@@ -969,13 +969,13 @@ extern "C" {
 #ifdef JOY_USE_SPINE
 #include <spine/spine.h>
 
-        typedef struct jspine_asset joy_spine_asset_t, * joy_spine_asset_p;
+        typedef struct joy_spine_asset joy_spine_asset_t, * joy_spine_asset_p;
 
 #define JSPINE_NAME_MAX 64
 
         /* ECS 组件：ecs.emplace<joy_spine_instance_t>(e) 后调用 joy_r2d_spine_instance_init，
          * 销毁前必须调用 joy_r2d_spine_instance_free（不会释放 asset）。 */
-        typedef struct jspine_instance {
+        typedef struct joy_spine_instance {
                 joy_spine_asset_p asset;              /* 共享资源（不拥有） */
                 spSkeleton *skeleton;              /* 拥有的实例数据 */
                 spAnimationState *state;
@@ -1290,10 +1290,10 @@ extern "C" {
          * jui 原本完全没有裁剪，而滚动面板是编辑器的基础，缺了它内容会溢出面板。
          * ====================================================================== */
 
-        typedef struct jui_ctx joy_ui_ctx_t, * joy_ui_ctx_p;
+        typedef struct joy_ui_ctx joy_ui_ctx_t, * joy_ui_ctx_p;
 
         /* 即时模式层用到的配色 */
-        typedef struct jui_theme {
+        typedef struct joy_ui_theme {
                 joy_color_t text;
                 joy_color_t btn_normal, btn_hover, btn_pressed, btn_text;
                 joy_color_t cb_box, cb_check, cb_hover, cb_text;

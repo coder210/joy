@@ -39,22 +39,22 @@ History:
 #define joy_fp_t int64_t
 #define joy_ft_t float
 
-typedef struct vec2f {
+typedef struct joy_vec2f {
 	joy_fp_t x, y;
 } joy_vec2f_t, *joy_vec2f_p;
 
 
-typedef struct vec3f {
+typedef struct joy_vec3f {
 	joy_fp_t x, y, z;
 } joy_vec3f_t;
 
 
-typedef struct vec4f {
+typedef struct joy_vec4f {
 	joy_fp_t x, y, z, w;
 } joy_vec4f_t;
 
 
-typedef struct mat22f {
+typedef struct joy_mat22f {
 	joy_vec2f_t col1;
 	joy_vec2f_t col2;
 } joy_mat22f_t;
@@ -62,7 +62,7 @@ typedef struct mat22f {
 
 // Column-major layout: m0,m4,m8,m12 = column 1, m1,m5,m9,m13 = column 2, etc.
 // (same convention as GLSL mat4 / joy_mat44_t / the rest of the mat44f_* functions)
-typedef struct mat44f {
+typedef struct joy_mat44f {
 	joy_fp_t m0, m4, m8, m12;  // Column 1 (4 components)
 	joy_fp_t m1, m5, m9, m13;  // Column 2 (4 components)
 	joy_fp_t m2, m6, m10, m14; // Column 3 (4 components)
@@ -72,26 +72,26 @@ typedef struct mat44f {
 
 
 
-typedef struct vec2 {
+typedef struct joy_vec2 {
 	joy_ft_t x, y;
 } joy_vec2_t;
 
-typedef struct vec3 {
+typedef struct joy_vec3 {
 	joy_ft_t x, y, z;
 } joy_vec3_t;
 
-typedef struct vec4 {
+typedef struct joy_vec4 {
 	joy_ft_t x, y, z, w;
 } joy_vec4_t;
 
-typedef struct mat22 {
+typedef struct joy_mat22 {
 	joy_vec2_t col1;
 	joy_vec2_t col2;
 } joy_mat22_t;
 
 // Column-major layout: m0,m4,m8,m12 = column 1, m1,m5,m9,m13 = column 2, etc.
 // (same convention as GLSL mat4 / joy_mat44f_t / the rest of the mat44_* functions)
-typedef struct mat44 {
+typedef struct joy_mat44 {
 	joy_ft_t m0, m4, m8, m12;  // Column 1 (4 components)
 	joy_ft_t m1, m5, m9, m13;  // Column 2 (4 components)
 	joy_ft_t m2, m6, m10, m14; // Column 3 (4 components)

@@ -154,7 +154,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
    - **消除 `jr2d` 假句柄**：文字缓存原是 6 个进程级 `static`（`g_frame`、
      `g_buckets`/`g_lru_*`/`g_cache_*`），哈希键不含 `r2d` → 两个 renderer
      会跨用同一张 `SDL_Texture`，`joy_r2d_destroy(A)` 还会清掉存活 B 的纹理。
-     改为：`struct jr2d` 持有独立 `frame`；条目带 `owner` 并纳入哈希与命中比较；
+     改为：`struct joy_r2d` 持有独立 `frame`；条目带 `owner` 并纳入哈希与命中比较；
      新增内部 `jtext_cache_clear_for(r2d)` 让 destroy 只清自己；sweep 按各条目
      `owner->frame` 判断。**4 个公开 cache API 签名与全局语义保持不变**，
      故 IDL / thunks / vtable / C# glue 零变化。
@@ -176,7 +176,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       成功返回 0，原 `return r != 0` 写反，改为 `== 0`。
     - **4 处函数级 `static` GPU 资源**：`jr2d.c` 的 FOV 渐变 `SDL_Texture*`、
       `jr3d.c` 的单位圆盘 mesh / FOV 渐变 `SDL_GPUTexture*` / FOV 上一帧 mesh
-      全部改为 `struct jr2d` / `struct jr3d` 的字段（两者 create 都用
+      全部改为 `struct joy_r2d` / `struct joy_r3d` 的字段（两者 create 都用
       `SDL_calloc`，新字段自动为 NULL）。这些对象绑定创建它们的 renderer /
       GPU device，进程级缓存会让第二个实例跨设备复用，且销毁时无处释放。
     - **释放顺序**：`joy_r2d_destroy` 在 `SDL_DestroyRenderer` 前销毁 FOV 纹理；
@@ -482,7 +482,9 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 > 新增 `api/idl/{type_rename_map,private_type_map,handle_aliases,macro_rename_map}.json`
 > 与 `api/tools/rename_types.js`（支持 `--build-map/--dry-run/--write/--audit/--trim-ws`）。
 > 要点：脚本层 57 个句柄类名由 `handle_aliases.json` 冻结，C 类型改名后 C#/vtable
-> 类名逐字不变；`struct tag` 因 127 个无后缀通用词会误伤变量而**有意保持原名**。
+> 类名逐字不变。`struct tag` **已于 2026-11-13 补做统一**：147 个 tag 定向改名
+> 为 `joy_*`（含 `jevent_callbacks → joy_event_callbacks`），现全仓 161 种 tag
+> 全部合规，详见 `TYPE_RENAME_TASK.md` 头部「执行结果」。
 
 ### 交付范围（已完成）
 生成链路（IDL → thunk / vtable / C# / 四语言示例）、公开 API 命名统一、
@@ -607,8 +609,14 @@ success。四项均已满足，所以没有遗留任务。
      重新采集，批 2 改完头后会算出 `joy_x -> joy_x` 自映射。
    - 采集类型名要**剥离注释**：`src/jr3d.c` 与 `api.h` 注释里的 `r3d_p` 是少写 `j` 的
      笔误，进映射表会把冻结表 `joy_r3d_p` 的类名从 `Jr3d` 覆盖成 `R3d`。`（注：这里的 `api.h` 指原主头，现已改名 `japi.h`）
-   - `struct tag`（`label`/`button`/`circle` 等 127 个无后缀通用词）**不能全词替换**，
-     会误伤同名变量；类型与 tag 在 C 里属不同命名空间，保持原名即可。
+   - `struct tag` **不能全词替换**：`scene` / `image` / `label` / `button` 等通用词
+     同时是变量名、字段名、参数名（实测 `scene` 379 处裸用）。2026-11-13 改用
+     `(\bstruct\s+)tag` **定向替换**，只匹配 `struct <tag>` 这一模式，147 个 tag
+     统一为 `joy_*` 且不动同名变量，`--check` 与全部生成物零变化。
+   - 类型与 tag 在 C 里属不同命名空间；生成器只按 typedef 别名采集（`structs.js`
+     的正则里 `\w*` 只是跳过 tag），所以 tag 改名不影响 IDL / 生成物 / 脚本层类名。
+     排除项：PascalCase 强句柄类名（脚本层冻结）、`http_message` / `_Mono*` /
+     `stat` 等系统与第三方 tag。
    - `--trim-ws`：改名后原本带行尾空格的行变成 diff 新增行，会被 `git diff --check`
      抓到；只清含新名行的行尾空白，不增删行。
    - PowerShell 里内联 `node -e` 的 `\\\\b` 会被叠加转义成匹配字面反斜杠，导致

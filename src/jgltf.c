@@ -45,7 +45,7 @@ typedef struct {
         void  *tex;           /* baseColor 贴图的 SDL 纹理(joy_r3d_create_texture), 无则 NULL */
 } joy_gltf_prim_src_t;
 
-struct jgltf_asset {
+struct joy_gltf_asset {
         int   refs;
         joy_r3d_p r3d;
         cgltf_data *data;
@@ -62,7 +62,7 @@ struct jgltf_asset {
         float  bounds_radius;   /* 包围球半径（mesh 局部空间） */
 };
 
-struct jgltf_instance {
+struct joy_gltf_instance {
         jgltf_asset_p asset;
         int     anim_index;
         float   time;

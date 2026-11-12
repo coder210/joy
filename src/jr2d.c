@@ -8,7 +8,7 @@
 /* 裁剪栈最大深度：嵌套面板（窗口 > 面板 > 滚动区 > 列表项）足够用 */
 #define R2D_CLIP_STACK_MAX 32
 
-struct jr2d {
+struct joy_r2d {
         SDL_Renderer* sdl;
 
         /* 每个 renderer 独立的帧时钟，由各自的 joy_r2d_begin() 递增。
@@ -35,26 +35,26 @@ struct jr2d {
  * renderer 的缓存条目，供 joy_r2d_destroy 使用。 */
 static void jtext_cache_clear_for(joy_r2d_p r2d);
 
-struct image {
+struct joy_image {
         SDL_Texture* texture;
         char filepath[JOY_MAX_PATH];
 };
 
-struct jtext {
+struct joy_text {
         SDL_Texture* texture;
         int real_width;
         int real_height;
 };
 
 
-typedef struct animation_clip {
+typedef struct joy_animation_clip {
         joy_image_p image;
         float duration;
         joy_rect_t src_rect;
 }animation_clip_t, * animation_clip_p;
 
 
-struct animation {
+struct joy_animation {
         joy_r2d_p r2d;
         kvec_t(animation_clip_t) clips;
         bool is_loop;
@@ -1082,10 +1082,10 @@ void joy_r2d_jtext_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str
 #define JTEXT_CACHE_BUCKETS       1024
 #define JTEXT_CACHE_DEFAULT_LIMIT 900
 
-typedef struct jtext_entry {
-        struct jtext_entry* hash_next;
-        struct jtext_entry* lru_prev;
-        struct jtext_entry* lru_next;
+typedef struct joy_text_entry {
+        struct joy_text_entry* hash_next;
+        struct joy_text_entry* lru_prev;
+        struct joy_text_entry* lru_next;
         joy_r2d_p owner;        /* 纹理隶属于哪个 renderer；缓存键的一部分 */
         joy_font_p    font;
         joy_color_t  color;

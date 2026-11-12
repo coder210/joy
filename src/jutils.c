@@ -10,7 +10,7 @@
 #define MT_N 624
 #define MT_M 397
 
-struct random_num {
+struct joy_random_num {
 	int index;
 	uint32_t mt[MT_N];
 };
@@ -420,7 +420,7 @@ joy_core_utils_random_set_state(joy_random_num_p rnum, const uint32_t* mt_in, in
 #define LCG_A 6364136223846793005ULL
 #define LCG_C 1442695040888963407ULL
 
-struct lcg_num {
+struct joy_lcg_num {
 	uint64_t state;
 };
 
@@ -748,7 +748,7 @@ int joy_net_unpack_string(const char* buf, char* value, int type_size, int offse
 
 
 
-struct jtimer {
+struct joy_timer {
 	uint64_t last_time;        // 上次触发的时间点（SDL_GetTicks）
 	int interval;              // 触发间隔（毫秒）
 	bool active;               // 是否激活
@@ -758,7 +758,7 @@ struct jtimer {
 
 joy_timer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata)
 {
-	joy_timer_p jtimer = (joy_timer_p)malloc(sizeof(struct jtimer));
+	joy_timer_p jtimer = (joy_timer_p)malloc(sizeof(struct joy_timer));
 	if (!jtimer) return NULL;
 
 	jtimer->last_time = SDL_GetTicks();

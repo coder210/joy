@@ -47,7 +47,7 @@ typedef struct {
 typedef joy_tilemap_tile_def_t* joy_tilemap_tile_def_p;
 
 /* ---------- 图块集 ---------- */
-struct jtilemap_tileset {
+struct joy_tilemap_tileset {
         char* name;
         int    firstgid;
         int    tilewidth;
@@ -75,7 +75,7 @@ struct jtilemap_tileset {
 
 
 /* ---------- 图层基类 ---------- */
-typedef struct jtilemap_layer {
+typedef struct joy_tilemap_layer {
         int   type;          /* JTILEMAP_LAYER_* */
         char* name;
         bool  visible;
@@ -85,7 +85,7 @@ typedef struct jtilemap_layer {
 } jtilemap_layer_t, * jtilemap_layer_p;
 
 /* ---------- 瓦片图层 ---------- */
-struct jtilemap_tile_layer {
+struct joy_tilemap_tile_layer {
         jtilemap_layer_t base;
         int   width;         /* 瓦片列数 */
         int   height;        /* 瓦片行数 */
@@ -93,7 +93,7 @@ struct jtilemap_tile_layer {
 };
 
 /* ---------- 对象图层 ---------- */
-struct jtilemap_object_layer {
+struct joy_tilemap_object_layer {
         jtilemap_layer_t base;
         kvec_t(joy_tilemap_object_t) objects;
 };
@@ -114,7 +114,7 @@ typedef struct {
 } joy_tilemap_anim_state_t;
 
 /* ---------- 主地图 ---------- */
-struct jtilemap {
+struct joy_tilemap {
         char* version;
         char* tiledversion;
         char* orientation;

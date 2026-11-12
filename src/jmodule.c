@@ -22,7 +22,7 @@ CMake 转发为 JOY_USE_PLUGINS。未启用时本文件为空编译单元，不�
 KHASH_INIT(kmod, const char*, joy_module_p, 1, kh_str_hash_func, kh_str_hash_equal)
 
 
-struct modules {
+struct joy_modules {
 	char path[1024];
 	khash_t(kmod)* mods;
 };

@@ -15,13 +15,13 @@
 #include <sys/stat.h>
 
 // 动态数组，存储已加载的程序集
-typedef struct assembly_list {
+typedef struct joy_assembly_list {
         MonoAssembly** items;
         int count;
         int capacity;
 } assembly_list_t, * assembly_list_p;
 
-struct csx {
+struct joy_csx {
         MonoDomain* domain;
         MonoThread* thread;           // 主线程 attach 句柄（其它线程见 csx_thread_attach）
         assembly_list_t assemblies;   // 所有已加载的程序集
@@ -29,7 +29,7 @@ struct csx {
 };
 
 /* 缓存下来的静态方法句柄（帧回调等高频路径用） */
-struct csx_method {
+struct joy_csx_method {
         MonoMethod* method;
 };
 

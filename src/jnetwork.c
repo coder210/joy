@@ -15,7 +15,7 @@
 #include <emscripten/websocket.h>
 #endif
 
-typedef struct kcp_connection
+typedef struct joy_kcp_connection
 {
         ikcpcb *kcp;
         char ip[JOY_MAX_IP];
@@ -24,7 +24,7 @@ typedef struct kcp_connection
         joy_delay_t updating_delay;
 } kcp_connection_t, *kcp_connection_p;
 
-typedef struct tcp_connection
+typedef struct joy_tcp_connection
 {
         int64_t sockfd;
         char ip[JOY_MAX_IP];
@@ -41,7 +41,7 @@ KHASH_INIT(ktcp_conn, int, tcp_connection_p, 1, kh_int_hash_func, kh_int_hash_eq
 static void kmq_free_nop(void* p) {}
 KLIST_INIT(kmq, joy_net_message_t, kmq_free_nop)
 
-struct kcpserver
+struct joy_kcpserver
 {
         int64_t sockfd;
         int conv;
@@ -51,7 +51,7 @@ struct kcpserver
         void* userdata;
 };
 
-struct kcpclient
+struct joy_kcpclient
 {
         ikcpcb *kcp;
         int64_t sockfd;
@@ -65,7 +65,7 @@ struct kcpclient
         void* userdata;
 };
 
-struct tcpserver
+struct joy_tcpserver
 {
         int64_t sockfd;
         int conv;
@@ -73,7 +73,7 @@ struct tcpserver
         klist_t(kmq) * mq;
 };
 
-struct tcpclient
+struct joy_tcpclient
 {
         int64_t sockfd;
         bool connected;
@@ -90,10 +90,10 @@ struct tcpclient
 // Mongoose 连接上下文（存储在 mg_connection::user_data 中）
 typedef struct {
         int conv;                      // Connection ID
-        struct wsnetserver* server;    // 服务器实例指针（用于后续事件访问）
+        struct joy_wsnetserver* server;    // 服务器实例指针（用于后续事件访问）
 } joy_wsnetserver_ctx_t;
 
-struct wsnetserver {
+struct joy_wsnetserver {
         struct mg_mgr mgr;             // Mongoose manager
         int conv;                      // Next conv ID
         klist_t(kmq) * mq;             // Message queue
@@ -1203,7 +1203,7 @@ void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, net_callback cb, voi
 
 #ifndef JOY_EMSCRIPTEN
 
-struct wsnetclient
+struct joy_wsnetclient
 {
         struct mg_mgr mgr;             // Mongoose manager
         struct mg_connection* conn;   // 连接
@@ -1420,7 +1420,7 @@ static void wsnetclient_ev_handler(struct mg_connection* c, int ev, void* ev_dat
 
 #else
 
-struct wsnetclient {
+struct joy_wsnetclient {
         int ws_socket;                 // emscripten WebSocket socket descriptor
         bool connected;                // 连接状态
         char url[512];                 // WebSocket URL
@@ -1647,7 +1647,7 @@ void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, voi
 // ==============================
 // Unified NetClient (封装 kcp/tcp/ws)
 // ==============================
-struct netclient
+struct joy_netclient
 {
         net_client_type type;
         union {
@@ -1811,7 +1811,7 @@ net_client_type joy_net_netclient_get_type(joy_netclient_p nc)
 // Unified NetServer (封装 kcp/tcp/ws 服务器)
 // ==============================
 
-struct netserver
+struct joy_netserver
 {
         net_server_type type;
         union {

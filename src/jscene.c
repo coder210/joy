@@ -14,15 +14,15 @@ History:
 // 节点结构体（定义在 .c 中，外部不可见）
 // ============================================================
 
-struct scene_node {
+struct joy_scene_node {
     float local_x, local_y;
     float rotation;
     float scale_x, scale_y;
     float world_x, world_y;
 
-    struct scene_node* parent;
-    struct scene_node* first_child;
-    struct scene_node* next_sibling;
+    struct joy_scene_node* parent;
+    struct joy_scene_node* first_child;
+    struct joy_scene_node* next_sibling;
     int child_count;
 
     scene_node_update_fn  on_update;
@@ -44,9 +44,9 @@ struct scene_node {
 
 joy_scene_node_p joy_scene_node_create(void)
 {
-    struct scene_node* n = (struct scene_node*)SDL_malloc(sizeof(struct scene_node));
+    struct joy_scene_node* n = (struct joy_scene_node*)SDL_malloc(sizeof(struct joy_scene_node));
     SDL_assert(n);
-    SDL_memset(n, 0, sizeof(struct scene_node));
+    SDL_memset(n, 0, sizeof(struct joy_scene_node));
     n->scale_x = 1.0f;
     n->scale_y = 1.0f;
     n->is_root = false;
@@ -83,8 +83,8 @@ void joy_scene_node_add_child(joy_scene_node_p parent, joy_scene_node_p child)
 void joy_scene_node_remove_child(joy_scene_node_p parent, joy_scene_node_p child)
 {
     if (!parent || !child) return;
-    struct scene_node* prev = NULL;
-    struct scene_node* curr = parent->first_child;
+    struct joy_scene_node* prev = NULL;
+    struct joy_scene_node* curr = parent->first_child;
     while (curr) {
         if (curr == child) {
             if (prev) {
@@ -269,7 +269,7 @@ void joy_scene_node_handle_event(joy_scene_node_p node, const void* e)
 // 场景结构体
 // ============================================================
 
-struct scene {
+struct joy_scene {
     joy_scene_node_p* root_nodes;
     int root_count;
     int root_capacity;
@@ -295,9 +295,9 @@ struct scene {
 
 joy_scene_p joy_scene_create(const char* name)
 {
-    joy_scene_p s = (joy_scene_p)SDL_malloc(sizeof(struct scene));
+    joy_scene_p s = (joy_scene_p)SDL_malloc(sizeof(struct joy_scene));
     SDL_assert(s);
-    SDL_memset(s, 0, sizeof(struct scene));
+    SDL_memset(s, 0, sizeof(struct joy_scene));
     if (name) SDL_strlcpy(s->name, name, sizeof(s->name));
     s->root_capacity = 16;
     s->root_nodes = (joy_scene_node_p*)SDL_malloc(sizeof(joy_scene_node_p) * s->root_capacity);
@@ -352,7 +352,7 @@ joy_scene_node_p joy_scene_get_root_at(joy_scene_p scene, int index)
     return scene->root_nodes[index];
 }
 
-/* ===== 场景级递归查找（依赖 struct scene 定义） ===== */
+/* ===== 场景级递归查找（依赖 struct joy_scene 定义） ===== */
 joy_scene_node_p joy_scene_find_node_by_name_deep(joy_scene_p scene, const char* name) {
     if (!scene || !name) return NULL;
     for (int i = 0; i < scene->root_count; i++) {
@@ -435,7 +435,7 @@ joy_scene_node_p joy_scene_get_popup_node(joy_scene_p scene) { return scene ? sc
 // 场景管理器结构体
 // ============================================================
 
-struct scene_manager {
+struct joy_scene_manager {
     joy_scene_p* scenes;
     int scene_count;
     int scene_capacity;
@@ -447,9 +447,9 @@ struct scene_manager {
 
 joy_scene_manager_p joy_scene_manager_create(void)
 {
-    struct scene_manager* mgr = (struct scene_manager*)SDL_malloc(sizeof(struct scene_manager));
+    struct joy_scene_manager* mgr = (struct joy_scene_manager*)SDL_malloc(sizeof(struct joy_scene_manager));
     SDL_assert(mgr);
-    SDL_memset(mgr, 0, sizeof(struct scene_manager));
+    SDL_memset(mgr, 0, sizeof(struct joy_scene_manager));
     mgr->scene_capacity = 8;
     mgr->scenes = (joy_scene_p*)SDL_malloc(sizeof(joy_scene_p) * mgr->scene_capacity);
     SDL_assert(mgr->scenes);

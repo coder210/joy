@@ -57,7 +57,7 @@ typedef struct {
     bool trigger_consumed;  /* trigger fires once then consumed */
 } joy_anim_param_t;
 
-struct janimator {
+struct joy_animator {
     joy_r2d_p renderer;
     kvec_t(joy_anim_state_t) states;
     kvec_t(joy_anim_transition_t) transitions;

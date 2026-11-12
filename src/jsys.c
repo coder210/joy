@@ -592,7 +592,7 @@ void joy_net_sys_install_crash_handlers()
 #ifdef JOY_WIN
 
 // 客户端会话结构
-typedef struct iocp_client_session
+typedef struct joy_iocp_client_session
 {
         char client_ip[JOY_MAX_IP];
         int client_port;
@@ -604,7 +604,7 @@ typedef struct iocp_client_session
 } iocp_client_session_t, * iocp_client_session_ptr;
 
 // IOCP操作包结构
-typedef struct iocp_operation_packet {
+typedef struct joy_iocp_operation_packet {
         WSAOVERLAPPED overlapped;
         WSABUF wsabuffer;
         int operation_type;           // 操作类型
@@ -618,7 +618,7 @@ typedef struct iocp_operation_packet {
 } iocp_operation_packet_t, * iocp_operation_packet_ptr;
 
 // IOCP服务器实例结构
-typedef struct iocp_server
+typedef struct joy_iocp_server
 {
         HANDLE completion_port;               // IOCP完成端口句柄
         SOCKET listen_socket;                 // 监听套接字

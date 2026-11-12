@@ -23,7 +23,7 @@ static void jui_fpx(joy_r2d_p r2d, float fx, float fy, float fw, float fh, float
 
 typedef kvec_t(char*) joy_dg_row_t;
 
-struct label {
+struct joy_label {
         joy_r2d_p r2d;
         joy_vec2_t position;
         joy_text_p text;
@@ -31,7 +31,7 @@ struct label {
 };
 
 
-struct button {
+struct joy_button {
         joy_r2d_p r2d;   // 渲染器
         joy_vec2_t position;      // 位置
         float width;              // 宽度
@@ -48,13 +48,13 @@ struct button {
         bool is_pressed;
 };
 
-struct combobox_item {
+struct joy_combobox_item {
         joy_rect_t rect;
         joy_text_p text;
         bool is_selected;
 };
 
-struct combobox {
+struct joy_combobox {
         joy_rect_t main_rect;
         joy_rect_t dropdown_rect;
         joy_combobox_item_t items[20];
@@ -70,7 +70,7 @@ struct combobox {
         joy_r2d_p r2d;
 };
 
-struct datagrid {
+struct joy_datagrid {
         joy_r2d_p r2d;
         int x, y;              // 位置
         int width, height;     // 尺寸
@@ -92,7 +92,7 @@ struct datagrid {
         joy_color_t selected_color;
 };
 
-struct radio {
+struct joy_radio {
         joy_r2d_p r2d;                // 渲染器（布局换算用）
         int x, y;                  // 位置
         int size;                  // 大小
@@ -115,7 +115,7 @@ struct radio {
 static void checkbox_update_layout(joy_checkbox_p cb);
 static void radio_update_layout(joy_radio_p rb);
 
-struct checkbox {
+struct joy_checkbox {
         joy_r2d_p r2d;                 // 渲染器（坐标转换用）
         int x, y;                   // 位置
         int size;                   // 大小
@@ -134,7 +134,7 @@ struct checkbox {
         joy_rect_t hit_area;           // 点击区域
 };
 
-struct inputbox {
+struct joy_inputbox {
         joy_r2d_p r2d;
         joy_rect_t rect;               // 位置和大小
         joy_color_t bg_color;           // 背景色
@@ -155,12 +155,12 @@ struct inputbox {
         bool hovered;                 // 鼠标悬停
         uint64_t cursor_timer;          // 光标闪烁计时
         bool cursor_visible;          // 光标是否可见
-        void (*on_submit)(struct inputbox* ti, void* userdata);
-        void (*on_change)(struct inputbox* ti, void* userdata);
+        void (*on_submit)(struct joy_inputbox* ti, void* userdata);
+        void (*on_change)(struct joy_inputbox* ti, void* userdata);
         void* cb_userdata;
 };
 
-struct slider {
+struct joy_slider {
         joy_r2d_p r2d;
         joy_rect_t track;             // 滑轨区域
         float min, max;              // 取值范围
@@ -176,7 +176,7 @@ struct slider {
 
 
 
-struct popup {
+struct joy_popup {
         joy_r2d_p r2d;
         float x, y, w, h;
         float title_height;         // title bar height (set in draw)
@@ -199,7 +199,7 @@ struct popup {
 };
 
 
-struct tooltip {
+struct joy_tooltip {
         joy_r2d_p r2d;
         float x, y;
         char text[JOY_TOOLTIP_MAX_TEXT];
@@ -212,7 +212,7 @@ struct tooltip {
 };
 
 
-struct joystick {
+struct joy_joystick {
         joy_r2d_p r2d;
         joy_rect_t background;
         joy_rect_t handle;
@@ -724,7 +724,7 @@ void joy_ui_combobox_draw(joy_combobox_p combobox)
 
 /* ===== 可输入下拉列表框 (combobox_input) ===== */
 
-struct combobox_input {
+struct joy_combobox_input {
         joy_r2d_p r2d;
         joy_rect_t rect;               // 整体控件区域
         joy_color_t bg_color;          // 背景色
@@ -758,7 +758,7 @@ struct combobox_input {
         bool arrow_hovered;
 
         // 回调
-        void (*on_change)(struct combobox_input* ci, void* userdata);
+        void (*on_change)(struct joy_combobox_input* ci, void* userdata);
         void* cb_userdata;
 
         // 弹层节点（展开时自动挂载，关闭时自动卸载）
@@ -3228,7 +3228,7 @@ void joy_ui_button_process_event(joy_button_p btn, const void* ev)
  *  - 点击/滑动用"本次按下累计位移"区分，位移小=点击、大=滑动；
  *  - 裁剪用 joy_r2d_set_clip_rect（替换语义，非入栈），故 begin 时保存旧裁剪、end 时还原。
  */
-struct scrollview {
+struct joy_scrollview {
         joy_r2d_p r2d;
         joy_rect_t view;               // 视口（逻辑像素）
         float content_w, content_h; // 内容尺寸（逻辑像素）
@@ -3598,7 +3598,7 @@ void joy_ui_process_widget_event(void** widgets, int count, const void* event)
  * 纯几何计算 + 可选标签绘制，不持有任何控件；矩形以“逻辑像素”表示
  * （场景用 s = lh/320 把设计像素换算成逻辑像素后传入）。
  * ================================================================= */
-struct jlayout_grid {
+struct joy_layout_grid {
         float ox, oy, width, row_h, pad;
         int   ncols;
         float* col_fracs;

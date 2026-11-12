@@ -47,7 +47,7 @@ typedef enum joy_box2d_edge_e {
 
 
 typedef union joy_box2d_feature_t {
-	struct box2d_edges_t {
+	struct joy_box2d_edges_t {
 		char in_edge1;
 		char out_edge1;
 		char in_edge2;

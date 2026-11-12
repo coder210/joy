@@ -5,7 +5,7 @@
 #include "joy.h"
 
 // ==================== Bitset 实现 ====================
-typedef struct bitset {
+typedef struct joy_bitset {
         uint64_t* words;
         int nwords;      // 当前 word 数量
         int capacity;    // 当前能表示的最大实体 ID + 1
@@ -145,7 +145,7 @@ static void sparse_set_insert(sparse_set_p sparse_set, int value) {
 }
 
 
-typedef struct ecs_component_data {
+typedef struct joy_ecs_component_data {
         size_t size;
         void* data;
 }ecs_component_data_t, *ecs_component_data_p;
@@ -155,7 +155,7 @@ typedef unsigned long joy_ecs_cid_t;
 KLIST_INIT(kecs_system, joy_ecs_system_t, __int_free)
 
 // 组件存储: 内含稀疏集合与位图
-typedef struct component_store {
+typedef struct joy_component_store {
         sparse_set_p sparse_set;
         joy_bitset_t* bitset;
 } component_store_t, *component_store_p;
@@ -167,7 +167,7 @@ KHASH_INIT(kecs_meta, joy_ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_eq
 typedef khash_t(kecs_component_data) ecs_entity_t, * joy_ecs_entity_p;
 KHASH_INIT(kecs_entity, joy_ecs_id_t, joy_ecs_entity_p, 1, kh_int_hash_func, kh_int_hash_equal)
 
-struct jecs_world {
+struct joy_ecs_world {
         joy_ecs_id_t global_id;
         khash_t(kecs_meta)* metas;
         klist_t(kecs_system)* systems;
@@ -516,11 +516,11 @@ void joy_scene_ecs_register(joy_ecs_world_p world, joy_ecs_system_t system)
 }
 
 
-typedef struct position {
+typedef struct joy_position {
         float x, y;
 }joy_position_t;
 
-typedef struct velocity {
+typedef struct joy_velocity {
         float x, y;
 }joy_velocity_t;
 

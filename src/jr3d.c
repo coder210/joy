@@ -11,7 +11,7 @@
 
 #define MAX_COLOR_CACHE 256
 
-struct render_mesh {
+struct joy_render_mesh {
 	joy_r3d_p         owner;  /* 创建它的 r3d 上下文，供单参数 dtor 使用 */
 	SDL_GPUBuffer* buffer;
 	SDL_GPUBuffer* index_buffer;   /* 可选: 非空表示用索引绘制 */
@@ -27,7 +27,7 @@ static joy_render_mesh_p r3d_mesh_alloc(joy_r3d_p r)
 	return m;
 }
 
-struct jr3d {
+struct joy_r3d {
 	SDL_GPUDevice*     dev;
 	SDL_Window*        win;
 	SDL_GPUShader*     vs;

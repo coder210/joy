@@ -2,7 +2,7 @@
 #include <SDL3/SDL.h>
 #include "joy.h"
 
-struct jfont {
+struct joy_font {
 	stbtt_fontinfo fontinfo;
 	unsigned char* fontdata;
 	int fontsize;

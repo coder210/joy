@@ -7,7 +7,7 @@
 static duk_ret_t js_set_env(duk_context* ctx);
 static duk_ret_t js_get_env(duk_context* ctx);
 
-struct jsx {
+struct joy_jsx {
 	duk_context* ctx;
 	void* userdata;
 	char* watch_file;

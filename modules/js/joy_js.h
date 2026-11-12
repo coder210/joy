@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-typedef struct jsx jsx_t, * jsx_p;
+typedef struct joy_jsx jsx_t, * jsx_p;
 
 /* 创建 / 销毁 JS 运行时 */
 jsx_p jsx_create(void);

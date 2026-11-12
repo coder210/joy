@@ -21,7 +21,7 @@ typedef struct {
 } joy_particle_inner_t;
 
 /* 发射器 */
-struct jparticle {
+struct joy_particle {
         joy_particle_cfg_t cfg;
         float emit_acc;         /* 持续发射累积时间 */
         kvec_t(joy_particle_inner_t) particles;

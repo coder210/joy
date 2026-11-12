@@ -8,12 +8,12 @@
 
 
 /* ---------- 遮挡线段(墙壁/柱子等) ---------- */
-typedef struct jlight_occluder {
+typedef struct joy_light_occluder {
         float x1, y1, x2, y2;
 } joy_light_occluder_t;
 
 /* ---------- 灯光系统 ---------- */
-struct jlight_sys {
+struct joy_light_sys {
         int width, height;
         joy_image_p lightmap;
         joy_image_p gradient;
@@ -28,10 +28,10 @@ struct jlight_sys {
 typedef struct { float x, y; } v2;
 static v2 v2f(float x, float y) { v2 v={x,y}; return v; }
 
-typedef struct seg SEG;
-typedef struct ep  EP;
-struct ep  { v2 pos; int begin; int seg_id; float angle; };
-struct seg { int p1_id, p2_id; float d; };
+typedef struct joy_seg SEG;
+typedef struct joy_ep  EP;
+struct joy_ep  { v2 pos; int begin; int seg_id; float angle; };
+struct joy_seg { int p1_id, p2_id; float d; };
 
 #define EP_POS(vc,id)  ((vc)->eps.a[(id)].pos)
 #define EP_ANG(vc,id)  ((vc)->eps.a[(id)].angle)

@@ -93,7 +93,7 @@ static inline float pixels_to_meters(float pixels) { return pixels / (float)PIXE
 
 
 #define jVERTOR_INIT(name, type) \
-typedef struct jvector_##name { \
+typedef struct joy_vector_##name { \
         type *a; \
         int m; \
         int n; \
@@ -151,12 +151,12 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
 
 
-        typedef struct delay {
+        typedef struct joy_delay {
                 uint64_t time;
                 short timeout;
         } joy_delay_t;
 
-        typedef struct random_num joy_random_num_t, * joy_random_num_p;
+        typedef struct joy_random_num joy_random_num_t, * joy_random_num_p;
 
         // Mersenne Twister 内部状态大小（624 个 uint32 + 1 个 index）
         #define JOY_MT_N 624
@@ -170,7 +170,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         JOY_API void         joy_core_utils_random_get_state(joy_random_num_p rnum, uint32_t* mt_out, int* index_out);
         JOY_API void         joy_core_utils_random_set_state(joy_random_num_p rnum, const uint32_t* mt_in, int index_in);
 
-        typedef struct lcg_num joy_lcg_num_t, * joy_lcg_num_p;
+        typedef struct joy_lcg_num joy_lcg_num_t, * joy_lcg_num_p;
 
         // 单状态线性同余随机数（LCG，64 位状态）。状态仅 1 个 uint64，
         // 帧同步时"每帧快照"只需同步 8 字节，比 Mersenne Twister（mt[624]+index≈2.5KB）
@@ -198,7 +198,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         #define JPM_MAX_SPAWN  8           // 出生安全区数量上限
 
         // 单个障碍实体（世界坐标用十分之一米整数）
-        typedef struct jpm_obstacle {
+        typedef struct joy_pm_obstacle {
                 int x10, z10;    // 中心坐标（十分之一米，格子对齐）
                 int hx10, hz10;  // XZ 半尺寸（十分之一米，单格 = 5）
                 int sy10;        // 高度（十分之一米）
@@ -207,13 +207,13 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } joy_pm_obstacle_t, * joy_pm_obstacle_p;
 
         // 出生安全区：以世界坐标（十分之一米）为圆心、radius10 为半径的保护区
-        typedef struct jpm_spawn {
+        typedef struct joy_pm_spawn {
                 int cx10, cz10;  // 安全区圆心（世界坐标，十分之一米）
                 int radius10;    // 安全区半径（十分之一米）
         } joy_pm_spawn_t;
 
         // 生成配置（可配置参数集中于此）。BSP 模式复用 density 作为房间分块粒度的参考
-        typedef struct jpm_config {
+        typedef struct joy_pm_config {
                 int grid_n;        // 网格边长（格），默认 20
                 int offset10;      // 世界坐标 → 网格坐标平移（十分之一米），默认 100（10m）
                 int pad10;         // 障碍外扩边距（十分之一米），默认 6（0.6m）
@@ -228,7 +228,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } joy_pm_config_t, * joy_pm_config_p;
 
         // 生成结果布局
-        typedef struct jpm_layout {
+        typedef struct joy_pm_layout {
                 joy_pm_obstacle_t obs[JPM_MAX_OBS];
                 int  count;                     // 实际障碍数
                 int  seed;                      // 实际使用的生成 seed（调试用）
@@ -257,7 +257,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                           int* out_tiles);
 
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
-        typedef struct jtimer joy_timer_t, *joy_timer_p;
+        typedef struct joy_timer joy_timer_t, *joy_timer_p;
 
         typedef union jwindow joy_window_t, * joy_window_p;
 
@@ -270,7 +270,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef void (*jevent_resize_fn)(int w, int h, void* arg);
         typedef void (*jevent_process_event_fn)(const void* event, void* arg);
 
-        typedef struct jevent_callbacks {
+        typedef struct joy_event_callbacks {
                 jevent_keypressed_fn on_keypressed;
                 jevent_keyreleased_fn on_keyreleased;
                 jevent_mousepressed_fn on_mousepressed;
@@ -281,9 +281,9 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 jevent_process_event_fn on_process_event;
         } joy_event_callbacks_t;
 
-        typedef struct env joy_env_t, * joy_env_p;
-        typedef struct simple_fps_counter joy_simple_fps_counter_t, * joy_simple_fps_counter_p;
-        typedef struct game_timer {
+        typedef struct joy_env joy_env_t, * joy_env_p;
+        typedef struct joy_simple_fps_counter joy_simple_fps_counter_t, * joy_simple_fps_counter_p;
+        typedef struct joy_game_timer {
                 int64_t last_time;          // 上一帧结束时的纳秒时间戳
                 int64_t frame_start_time;   // 当前帧开始时的纳秒时间戳
                 double delta_time;         // 未缩放的帧间隔时间（秒）
@@ -292,7 +292,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 double target_frame_time;  // 目标每帧时间（秒）
         } joy_game_timer_t, * joy_game_timer_p;
 
-        typedef struct jrect
+        typedef struct joy_rect
         {
                 float x;
                 float y;
@@ -300,7 +300,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                 float h;
         } joy_rect_t;
 
-        typedef struct jcolor
+        typedef struct joy_color
         {
                 uint8_t r;
                 uint8_t g;
@@ -309,16 +309,16 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         } joy_color_t;
 
 
-        typedef struct iocp_server joy_iocp_server_t, * joy_iocp_server_p;
+        typedef struct joy_iocp_server joy_iocp_server_t, * joy_iocp_server_p;
 
-        typedef struct jfont joy_font_t, * joy_font_p;
-        typedef struct jr2d joy_r2d_t, * joy_r2d_p;
-        typedef struct image joy_image_t, * joy_image_p;
-        typedef struct jtext joy_text_t, * joy_text_p;
-        typedef struct animation joy_animation_t, * joy_animation_p;
-        typedef struct jlayout_grid joy_layout_grid_t;   // 栅格布局（见下方 jlayout_*）
-        typedef struct jr3d   joy_r3d_t, * joy_r3d_p;          /* 3D 渲染上下文 */
-        typedef struct render_mesh joy_render_mesh_t, * joy_render_mesh_p;  /* 网格 */
+        typedef struct joy_font joy_font_t, * joy_font_p;
+        typedef struct joy_r2d joy_r2d_t, * joy_r2d_p;
+        typedef struct joy_image joy_image_t, * joy_image_p;
+        typedef struct joy_text joy_text_t, * joy_text_p;
+        typedef struct joy_animation joy_animation_t, * joy_animation_p;
+        typedef struct joy_layout_grid joy_layout_grid_t;   // 栅格布局（见下方 jlayout_*）
+        typedef struct joy_r3d   joy_r3d_t, * joy_r3d_p;          /* 3D 渲染上下文 */
+        typedef struct joy_render_mesh joy_render_mesh_t, * joy_render_mesh_p;  /* 网格 */
 
         /* jr2d 内部几何绘制原语，供 jlight.c 复用（替代原先的跨文件 extern 前向声明）。
          * 非 joy_ 公开 API，不进入 IDL / 生成链。 */

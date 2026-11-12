@@ -28,10 +28,18 @@
   在批 2 已达标。
 - **任务书 §5 漏列一处硬编码**：`gen_bindings.js` 的 `SCALARS` 里也有 `fp_t`/`ft_t`，
   已由全词替换同步为 `joy_fp_t`/`joy_ft_t`。
-- **struct tag 未改**：任务书 §1 要求 tag 同前缀，但 133 个 tag 中 127 个不带 `_t/_p`
-  后缀（如 `label`/`button`/`circle`），全词替换会误伤同名变量/字段/参数。
-  §2 的 231 条口径本就只统计带后缀的类型名，故维持 tag 原名，类型与 tag 分属
-  C 的两个命名空间，不影响编译与生成物。
+- **struct tag 已于 2026-11-13 补做统一**（用户强调「joy 中的结构体一定 `joy_*`」）：
+  当时因「通用词 tag 全词替换会误伤变量」而一刀切未改，实测该风险只对 43 个
+  通用词成立，另有 116 个 tag 无同名变量。改用 `(\bstruct\s+)tag` **定向替换**
+  （只改 `struct <tag>` 这一模式，不碰同名变量/字段/参数），**147 个 tag /
+  236 处 / 29 文件**全部改为 `joy_*`，含点名的
+  `jevent_callbacks → joy_event_callbacks`、`jrect → joy_rect`、
+  `jcolor → joy_color`、`joystick → joy_joystick`、`jsx → joy_jsx`，
+  以及 `jVERTOR_INIT` 宏体的 `struct jvector_##name → struct joy_vector_##name`。
+  排除：PascalCase 强句柄类名（脚本层由 `handle_aliases.json` 冻结）、
+  `http_message` / `_Mono*` / `stat` 等系统与第三方 tag、以及全部生成物。
+  独立审计：**161 种 tag 全部 `joy_*`，0 残留**；`--check` 零变化、生成物零
+  diff、全量构建 0 错误、`ctest` 4/4。
 
 **最终验收**：`--scan` 幂等（IDL 字节不变）、1157 条 / 721 `on`、level 分布不变、
 人工字段 `borrowed`/`owns`/`note` 全保留、vtable 与 C# 各 57 个类名逐字一致且无
@@ -115,7 +123,9 @@ typedef struct joy_font joy_font_t, *joy_font_p;
 
 - 批 2 曾把 `vector_t` 改成 `joy_vector_t`；随后 `jcont.h` 删除，该类型随之移除
 - **宏保持原名** `jvector_t` / `jvector_p` —— 宏会被预处理直接替换，改成
-  `joy_vector_t` 会和类型名撞车
+  `joy_vector_t` 会和类型名撞车。2026-11-13 的 tag 统一只把**宏体里的
+  `struct jvector_##name`** 改成 `struct joy_vector_##name`，宏名与宏展开出的
+  typedef 名（`jvector_##name##_t` / `_p`）保持不变，所有使用点不受影响。
 - 映射表里**不给** `jvector_t` / `jvector_p` 建条目，这是假冲突
 
 ### 3.4 `fp_t` / `ft_t` 是 `#define` 标量宏

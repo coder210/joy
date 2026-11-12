@@ -26,7 +26,7 @@
 
 /* ==================== 内部类型 ==================== */
 
-struct jspine_asset {
+struct joy_spine_asset {
         spAtlas *atlas;
         spSkeletonData *data;
         spAnimationStateData *state_data; /* 共享的 mix 配置 */
@@ -40,7 +40,7 @@ typedef struct {
         int capacity;
 } joy_spine_vertex_array_t;
 
-typedef struct jspine_draw_cache {
+typedef struct joy_spine_draw_cache {
         joy_spine_vertex_array_t vertices;
         spIntArray *indices;
         spFloatArray *world_vertices;
