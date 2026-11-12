@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-typedef struct luax luax_t, * luax_p;
+typedef struct joy_luax luax_t, * luax_p;
 
 /* 创建 / 销毁 Lua 运行时 */
 luax_p luax_create(void);

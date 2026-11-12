@@ -86,7 +86,7 @@ extern "C" {
                 joy_vec3f_t normal;         // Surface normal of hit
         }joy_ray3d_collisionf_t;
 
-        typedef struct spheref {
+        typedef struct joy_spheref {
                 joy_vec3f_t position;
                 joy_fp_t radius;
         }joy_spheref_t;
@@ -139,7 +139,7 @@ extern "C" {
                 joy_vec3_t normal;
         }joy_ray3d_collision_t;
 
-        typedef struct sphere {
+        typedef struct joy_sphere {
                 joy_vec3_t position;
                 joy_ft_t radius;
         }joy_sphere_t;
@@ -153,7 +153,7 @@ extern "C" {
 
 
         /* ---------- 碰撞体类型 ---------- */
-        typedef enum gjk3df_ctype {
+        typedef enum joy_gjk3df_ctype {
                 GJK3DF_CTYPE_SPHERE,   /* 球体: position + radius */
                 GJK3DF_CTYPE_BOX,      /* AABB盒: position + half_size */
                 GJK3DF_CTYPE_CAPSULE,  /* 胶囊: position(中心) + radius + height + axis */
@@ -161,12 +161,12 @@ extern "C" {
                 GJK3DF_CTYPE_CONE,     /* 圆锥: position + radius + height */
                 GJK3DF_CTYPE_MESH,     /* 自定义网格: vertices数组 */
                 GJK3DF_CTYPE_OBB       /* 旋转盒: position + half_size + rotation(欧拉角) */
-        } gjk3df_ctype_k;
+        } joy_gjk3df_ctype_k;
 
         /* ---------- 3D碰撞体 ---------- */
         /* 注意: BOX/OBB 的 position 是中心(half_size 为半边长), 与 joy_rectanglef_t 的"左上角+宽高"语义不同 */
         typedef struct joy_gjk3df_collider {
-                gjk3df_ctype_k type;
+                joy_gjk3df_ctype_k type;
                 joy_vec3f_t position;      /* 中心位置 */
                 joy_fp_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
                 joy_vec3f_t half_size;     /* BOX/OBB半边长 */
@@ -187,18 +187,18 @@ extern "C" {
         /*                        GJK 3D 浮点版 (joy_ft_t/joy_vec3_t)                        */
         /* ======================================================================== */
         /* ---------- 碰撞体类型 ---------- */
-        typedef enum gjk3d_ctype {
+        typedef enum joy_gjk3d_ctype {
                 GJK3D_CTYPE_SPHERE,   /* 球体: position + radius */
                 GJK3D_CTYPE_BOX,      /* AABB盒: position + half_size */
                 GJK3D_CTYPE_CAPSULE,  /* 胶囊: position(中心) + radius + height + axis */
                 GJK3D_CTYPE_CYLINDER, /* 圆柱: position + radius + height */
                 GJK3D_CTYPE_CONE,     /* 圆锥: position + radius + height */
                 GJK3D_CTYPE_MESH      /* 自定义网格: vertices数组 */
-        } gjk3d_ctype_k;
+        } joy_gjk3d_ctype_k;
 
         /* ---------- 3D碰撞体(浮点) ---------- */
         typedef struct joy_gjk3d_collider {
-                gjk3d_ctype_k type;
+                joy_gjk3d_ctype_k type;
                 joy_vec3_t position;       /* 中心位置 */
                 joy_ft_t radius;           /* 球体/胶囊/圆柱/圆锥半径 */
                 joy_vec3_t half_size;      /* BOX半边长 */
@@ -280,7 +280,7 @@ extern "C" {
         typedef struct joy_combobox_input joy_combobox_input_t, * joy_combobox_input_p;
         typedef struct joy_datagrid joy_datagrid_t, * joy_datagrid_p;
         typedef struct joy_radio joy_radio_t, * joy_radio_p;
-        typedef enum checkbox_state {
+        typedef enum joy_checkbox_state {
                 JOY_CHECKBOX_UNCHECKED,
                 JOY_CHECKBOX_CHECKED,
                 JOY_CHECKBOX_INDETERMINATE
@@ -329,16 +329,16 @@ extern "C" {
                 NET_TYPE_CONNECTED = 0x1,
                 NET_TYPE_DISCONNECTED = 0x2,
                 NET_TYPE_MESSAGE = 0x3,
-        } net_event_type_k;
+        } joy_net_event_type_k;
 
         typedef struct joy_net_message {
-                net_event_type_k type;
+                joy_net_event_type_k type;
                 int conv;
                 char* data;
                 int len;
         }joy_net_message_t, * joy_net_message_p;
 
-        typedef void (*net_callback)(joy_net_message_p msg, void* userdata);
+        typedef void (*joy_net_callback)(joy_net_message_p msg, void* userdata);
         typedef struct joy_kcpserver joy_kcpserver_t, * joy_kcpserver_p;
         typedef struct joy_kcpclient joy_kcpclient_t, * joy_kcpclient_p;
         typedef struct joy_tcpserver joy_tcpserver_t, * joy_tcpserver_p;
@@ -349,13 +349,13 @@ extern "C" {
                 NET_CLIENT_TCP,
                 NET_CLIENT_KCP,
                 NET_CLIENT_WEBSOCKET, // WebSocket: emscripten用原生, 非emscripten用mongoose
-        } net_client_type;
+        } joy_net_client_type;
         typedef struct joy_netclient joy_netclient_t, * joy_netclient_p;
         typedef enum {
                 NET_SERVER_KCP,
                 NET_SERVER_TCP,
                 NET_SERVER_WEBSOCKET,
-        } net_server_type;
+        } joy_net_server_type;
         typedef struct joy_netserver joy_netserver_t, * joy_netserver_p;
 
 

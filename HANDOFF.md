@@ -482,15 +482,16 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 > 新增 `api/idl/{type_rename_map,private_type_map,handle_aliases,macro_rename_map}.json`
 > 与 `api/tools/rename_types.js`（支持 `--build-map/--dry-run/--write/--audit/--trim-ws`）。
 > 要点：脚本层 57 个句柄类名由 `handle_aliases.json` 冻结，C 类型改名后 C#/vtable
-> 类名逐字不变。`struct tag` **已于 2026-11-13 补做统一**：147 个 tag 定向改名
-> 为 `joy_*`（含 `jevent_callbacks → joy_event_callbacks`），现全仓 161 种 tag
-> 全部合规，详见 `TYPE_RENAME_TASK.md` 头部「执行结果」。
+> 类名逐字不变。`struct/enum/union tag` **已于 2026-11-13 分两批补做统一**
+> （含 `jevent_callbacks → joy_event_callbacks`），现全仓 178 种 tag 全部 `joy_*`；
+> 不带 `_t`/`_p` 后缀的公开类型别名也一并统一。两次补做的原因、白名单修正与
+> 验收见 `TYPE_RENAME_TASK.md` 头部「执行结果」。
 
 ### 交付范围（已完成）
 生成链路（IDL → thunk / vtable / C# / 四语言示例）、公开 API 命名统一、
 `borrowed` 借用语义、单参数 mesh dtor、四平台 CLR 运行时入库、Android 4 个
-APK、Web Pages 部署、桌面 / Android / Web 三套 CI。当前 **1157 条 IDL，
-721 条 `status:on`**；验收结果见 §10。
+APK、Web Pages 部署、桌面 / Android / Web 三套 CI。当前 **1170 条 IDL，
+739 条 `status:on`**；验收结果见 §10。
 
 ### 已完成，不要当待办
 Android CI + 4 个 APK、Web Pages 部署、P1 命名统一、两轮改名收尾、根 CMake
@@ -611,12 +612,22 @@ success。四项均已满足，所以没有遗留任务。
      笔误，进映射表会把冻结表 `joy_r3d_p` 的类名从 `Jr3d` 覆盖成 `R3d`。`（注：这里的 `api.h` 指原主头，现已改名 `japi.h`）
    - `struct tag` **不能全词替换**：`scene` / `image` / `label` / `button` 等通用词
      同时是变量名、字段名、参数名（实测 `scene` 379 处裸用）。2026-11-13 改用
-     `(\bstruct\s+)tag` **定向替换**，只匹配 `struct <tag>` 这一模式，147 个 tag
-     统一为 `joy_*` 且不动同名变量，`--check` 与全部生成物零变化。
+     `(\b(?:struct|enum|union)\s+)tag` **定向替换**，只匹配 tag 位置，两批共
+     160 个 tag 统一为 `joy_*` 且不动同名变量。
+   - **白名单必须按前缀精确写**：第一批把 `sp` 写成整串，误把 `sphere` /
+     `spheref` / `sparse_set` 当 spine 第三方跳过；`mg_` 若写成整串会漏掉
+     `mg_mgr`。正确写法是 `mg_` 前缀 + `sp[A-Z]`（只排 CamelCase 的 spine 类型）。
+     同理 `joystick` / `jsx` 的 `j` 属单词本身，要用前缀保护，否则会削成
+     `joy_oystick_*`。这两点让第一批的「0 残留」结论一度失真。
    - 类型与 tag 在 C 里属不同命名空间；生成器只按 typedef 别名采集（`structs.js`
      的正则里 `\w*` 只是跳过 tag），所以 tag 改名不影响 IDL / 生成物 / 脚本层类名。
      排除项：PascalCase 强句柄类名（脚本层冻结）、`http_message` / `_Mono*` /
      `stat` 等系统与第三方 tag。
+   - 11-11 的「231 条只统计带 `_t`/`_p` 后缀别名」口径漏了 `gjk3d_ctype_k` /
+     `net_event_type_k` / `net_client_type` / `net_server_type` /
+     `joystick_dir_mode` / `net_callback` 这类**不带后缀的公开类型别名**，
+     2026-11-13 第二批补上。改它们会触碰 IDL 的自动字段，需 `--scan` +
+     重新 emit；本次 6 条相关条目均为 `off`，`open=739` 不变。
    - `--trim-ws`：改名后原本带行尾空格的行变成 diff 新增行，会被 `git diff --check`
      抓到；只清含新名行的行尾空白，不增删行。
    - PowerShell 里内联 `node -e` 的 `\\\\b` 会被叠加转义成匹配字面反斜杠，导致
@@ -626,7 +637,7 @@ success。四项均已满足，所以没有遗留任务。
 
 | 项 | 结果 |
 |---|---|
-| `node api/tools/gen_bindings.js --check` | OK（1157 条，6 个生成物最新） |
+| `node api/tools/gen_bindings.js --check` | OK（1170 条，6 个生成物最新） |
 | `cmake --build build --config Debug` | 0 错误，构建不依赖 `compat.h` |
 | `ctest --test-dir build -C Debug --timeout 25` | 四语言冒烟 4/4 |
 | GitHub Actions 三个构建型工作流 | success（见 §9.8） |

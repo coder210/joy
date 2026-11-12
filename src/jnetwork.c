@@ -46,7 +46,7 @@ struct joy_kcpserver
         int64_t sockfd;
         int conv;
         khash_t(kconn) * conns;
-        net_callback cb;
+        joy_net_callback cb;
         klist_t(kmq) * mq;
         void* userdata;
 };
@@ -60,7 +60,7 @@ struct joy_kcpclient
         short timeout;
         joy_delay_t updating_delay;
         joy_delay_t connection_delay;
-        net_callback cb;
+        joy_net_callback cb;
         klist_t(kmq) * mq;
         void* userdata;
 };
@@ -97,7 +97,7 @@ struct joy_wsnetserver {
         struct mg_mgr mgr;             // Mongoose manager
         int conv;                      // Next conv ID
         klist_t(kmq) * mq;             // Message queue
-        net_callback cb;               // Global callback
+        joy_net_callback cb;               // Global callback
         void* userdata;                // Global user data
         bool initialized;              // Init flag
 };
@@ -407,7 +407,7 @@ bool joy_net_kcpserver_poll_message(joy_kcpserver_p ks, joy_net_message_p msg)
         }
 }
 
-void joy_net_kcpserver_set_callback(joy_kcpserver_p ks, net_callback cb, void* userdata)
+void joy_net_kcpserver_set_callback(joy_kcpserver_p ks, joy_net_callback cb, void* userdata)
 {
         ks->cb = cb;
         ks->userdata = userdata;
@@ -599,7 +599,7 @@ bool joy_net_kcpclient_poll_message(joy_kcpclient_p kc, joy_net_message_p msg)
         }
 }
 
-void joy_net_kcpclient_set_callback(joy_kcpclient_p kc, net_callback cb, void* userdata)
+void joy_net_kcpclient_set_callback(joy_kcpclient_p kc, joy_net_callback cb, void* userdata)
 {
         kc->cb = cb;
         kc->userdata = userdata;
@@ -1189,7 +1189,7 @@ bool joy_net_wsnetserver_poll_message(joy_wsnetserver_p ws, joy_net_message_p ms
         return false;
 }
 
-void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, net_callback cb, void* userdata)
+void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, joy_net_callback cb, void* userdata)
 {
         if (!ws) return;
         ws->cb = cb;
@@ -1210,7 +1210,7 @@ struct joy_wsnetclient
         bool connected;                // 连接状态
         char url[512];                 // WebSocket URL
         klist_t(kmq) * mq;            // Message queue
-        net_callback cb;               // Global callback
+        joy_net_callback cb;               // Global callback
         void* userdata;                // Global user data
         bool initialized;              // Init flag
         bool connecting;               // 连接中标志
@@ -1321,7 +1321,7 @@ bool joy_net_wsnetclient_poll_message(joy_wsnetclient_p wc, joy_net_message_p ms
         return false;
 }
 
-void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, void* userdata)
+void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, joy_net_callback cb, void* userdata)
 {
         if (!wc) return;
         wc->cb = cb;
@@ -1425,7 +1425,7 @@ struct joy_wsnetclient {
         bool connected;                // 连接状态
         char url[512];                 // WebSocket URL
         klist_t(kmq)* mq;            // Message queue
-        net_callback cb;               // Global callback
+        joy_net_callback cb;               // Global callback
         void* userdata;                // Global user data
         bool initialized;              // Init flag
         bool connecting;               // 连接中标志
@@ -1633,7 +1633,7 @@ bool joy_net_wsnetclient_poll_message(joy_wsnetclient_p wc, joy_net_message_p ms
         return false;
 }
 
-void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, void* userdata)
+void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, joy_net_callback cb, void* userdata)
 {
         if (!wc) return;
         wc->cb = cb;
@@ -1649,18 +1649,18 @@ void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, voi
 // ==============================
 struct joy_netclient
 {
-        net_client_type type;
+        joy_net_client_type type;
         union {
                 joy_kcpclient_p kcp;
                 joy_tcpclient_p tcp;
                 joy_wsnetclient_p ws; // mongoose WebSocket 客户端
                 void* ptr;
         } client;
-        net_callback cb;
+        joy_net_callback cb;
         void* userdata;
 };
 
-joy_netclient_p joy_net_netclient_create(net_client_type type, const char* host, int port)
+joy_netclient_p joy_net_netclient_create(joy_net_client_type type, const char* host, int port)
 {
         joy_netclient_p nc = (joy_netclient_p)malloc(sizeof(joy_netclient_t));
         if (!nc) return NULL;
@@ -1780,7 +1780,7 @@ bool joy_net_netclient_poll_message(joy_netclient_p nc, joy_net_message_p msg)
         }
 }
 
-void joy_net_netclient_set_callback(joy_netclient_p nc, net_callback cb, void* userdata)
+void joy_net_netclient_set_callback(joy_netclient_p nc, joy_net_callback cb, void* userdata)
 {
         if (!nc) return;
 
@@ -1802,7 +1802,7 @@ void joy_net_netclient_set_callback(joy_netclient_p nc, net_callback cb, void* u
         }
 }
 
-net_client_type joy_net_netclient_get_type(joy_netclient_p nc)
+joy_net_client_type joy_net_netclient_get_type(joy_netclient_p nc)
 {
         return nc->type;
 }
@@ -1813,18 +1813,18 @@ net_client_type joy_net_netclient_get_type(joy_netclient_p nc)
 
 struct joy_netserver
 {
-        net_server_type type;
+        joy_net_server_type type;
         union {
                 joy_kcpserver_p kcp;
                 joy_tcpserver_p tcp;
                 joy_wsnetserver_p ws;
                 void* ptr;
         } server;
-        net_callback cb;
+        joy_net_callback cb;
         void* userdata;
 };
 
-joy_netserver_p joy_net_netserver_create(net_server_type type, const char* ip, int port)
+joy_netserver_p joy_net_netserver_create(joy_net_server_type type, const char* ip, int port)
 {
         joy_netserver_p ns = (joy_netserver_p)malloc(sizeof(joy_netserver_t));
         if (!ns) return NULL;
@@ -1993,7 +1993,7 @@ bool joy_net_netserver_poll_message(joy_netserver_p ns, joy_net_message_p msg)
         }
 }
 
-void joy_net_netserver_set_callback(joy_netserver_p ns, net_callback cb, void* userdata)
+void joy_net_netserver_set_callback(joy_netserver_p ns, joy_net_callback cb, void* userdata)
 {
         if (!ns) return;
 
@@ -2015,7 +2015,7 @@ void joy_net_netserver_set_callback(joy_netserver_p ns, net_callback cb, void* u
         }
 }
 
-net_server_type joy_net_netserver_get_type(joy_netserver_p ns)
+joy_net_server_type joy_net_netserver_get_type(joy_netserver_p ns)
 {
         return ns->type;
 }

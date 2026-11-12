@@ -231,7 +231,7 @@ struct joy_joystick {
         joy_image_p thumb_default;  // 默认摇杆头
         joy_image_p mode_base[5];   // 各方向模式专属底圈（NULL=回退默认）
         joy_image_p mode_thumb[5];  // 各方向模式专属摇杆头
-        joystick_dir_mode dir_mode;  // 方向约束模式（默认全方向）
+        joy_joystick_dir_mode dir_mode;  // 方向约束模式（默认全方向）
 };
 
 static float distance_squared(float x1, float y1, float x2, float y2) {
@@ -1933,7 +1933,7 @@ void joy_input_joystick_set_textures(joy_joystick_p joystick, const char* base_p
 }
 
 // 为某个方向模式注册专属纹理；切换该模式时自动换上，未注册则回退默认纹理。
-void joy_input_joystick_set_textures_for_mode(joy_joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path)
+void joy_input_joystick_set_textures_for_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode, const char* base_path, const char* thumb_path)
 {
         if (!joystick) return;
         if (mode < 0 || mode > JOYSTICK_DIR_HORIZONTAL) return;
@@ -1986,7 +1986,7 @@ void joy_input_joystick_set_radius(joy_joystick_p joystick, float radius)
 }
 
 // 设置方向约束模式（全方向/四向/八向/仅上/下/左/右）
-void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joystick_dir_mode mode)
+void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode)
 {
         if (!joystick) return;
         joystick->dir_mode = mode;
@@ -1996,7 +1996,7 @@ void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joystick_dir_mode 
 }
 
 // 前向声明（定义见下方）；供 joy_input_joystick_set_vector 在定义前调用，避免 static 函数“定义前使用”被当成隐式声明
-static void joystick_apply_dir_mode(joystick_dir_mode mode, joy_vec2_t* d);
+static void joystick_apply_dir_mode(joy_joystick_dir_mode mode, joy_vec2_t* d);
 
 // 以方向向量驱动摇杆（无需触摸），用于键盘/外部输入同步显示。
 // (dx,dy) 为方向（屏幕坐标，y 向下）；长度>0 即视为按下（满量程），为 0 则回中。
@@ -2018,7 +2018,7 @@ void joy_input_joystick_set_vector(joy_joystick_p j, float dx, float dy)
 }
 
 // 按方向模式吸附/约束方向向量 d（屏幕坐标，y 向下；保留其长度=强度）
-static void joystick_apply_dir_mode(joystick_dir_mode mode, joy_vec2_t* d)
+static void joystick_apply_dir_mode(joy_joystick_dir_mode mode, joy_vec2_t* d)
 {
         float len = sqrtf(d->x * d->x + d->y * d->y);
         if (len < 1e-6f) return;

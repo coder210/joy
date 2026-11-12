@@ -41,6 +41,30 @@
   独立审计：**161 种 tag 全部 `joy_*`，0 残留**；`--check` 零变化、生成物零
   diff、全量构建 0 错误、`ctest` 4/4。
 
+- **2026-11-13 二次补做（用户指出 `jtypes.h` 仍有残留）**：上一批工具把 `sp`
+  写成了整串白名单，误把 `sphere` / `spheref` / `sparse_set` 当成 spine 第三方
+  跳过；且定向替换只匹配 `struct`，漏了 `enum` / `union` 的 tag。另有一批
+  **不带 `_t`/`_p` 后缀的公开类型别名**（`gjk3d_ctype_k` / `net_event_type_k` /
+  `net_client_type` / `net_server_type` / `joystick_dir_mode` / `net_callback`）
+  因 11-11 的「231 条只统计带后缀别名」口径而漏收。本次修正：
+  - 第三方白名单改为**前缀精确匹配**（`mg_` 前缀、`sp[A-Z]` 只排 CamelCase），
+    `mg_mgr` / `mg_connection` 等 mongoose 类型不再被误改。
+  - `joystick` / `jsx` 的 `j` 属单词本身，用前缀保护，避免削成 `joy_oystick_*`。
+  - tag 定向替换扩展到 `struct|enum|union`，补齐 **13 种 / 15 处**
+    （`sphere` / `spheref` / `sparse_set` / `gjk3d(f)_ctype` / `checkbox_state` /
+    `jwindow` / `log_color` / `luax*` / `iocp_operation` / `packet_format` /
+    `jr3d_checkbox_state`）；公开类型别名 **7 种 / 47 处**统一为 `joy_*`。
+  - 只改「类型名」位置，不动同名成员 / 变量（`packet_format` / `id_pair` /
+    `client` / `server` / `e` / `v` / `as`）；`src/*.c` 的私有 typedef 别名
+    不在本次范围（11-11 已评估全词替换会误伤变量）。
+  - tag 带 `_t` 后缀且与 typedef 同名的历史写法（`joy_tilemap_render_t`、
+    `joy_box2d_*_t`，`jtypes.h:325/489/504/516/529/537/544`）**有意保持**，
+    它们已是 `joy_*` 且改动无收益。
+  - 6 条相关 IDL 条目均为 `status:off`，`--scan` 只刷新自动字段（`reason` /
+    `ctype`），人工字段与 `open=739` 不变；生成物仅 `coverage.md` 10 行文案变化。
+  - 验证：独立审计 **178 种 `joy_*` tag / 0 残留 / 旧别名 0**、`--check` OK、
+    全量构建 0 错误、`ctest` 4/4、`diff --check` 0。
+
 **最终验收**：`--scan` 幂等（IDL 字节不变）、1157 条 / 721 `on`、level 分布不变、
 人工字段 `borrowed`/`owns`/`note` 全保留、vtable 与 C# 各 57 个类名逐字一致且无
 `Joy*` 泄漏、全仓手写源与生成物 0 处旧类型名/旧宏名、`git diff --check` 0、

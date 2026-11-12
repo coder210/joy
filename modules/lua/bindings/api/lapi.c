@@ -25,7 +25,7 @@
 #define LUAX_HANDLE_MT "joy.handle"
 #define LUAX_MAX_ARGS  16
 
-typedef struct luax_handle {
+typedef struct joy_luax_handle {
         uint64_t h;
 } luax_handle;
 

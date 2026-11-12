@@ -84,7 +84,7 @@ static void bitset_copy(joy_bitset_t* dest, joy_bitset_t* src) {
 // ==================== Sparse Set with Bitset ====================
 KHASH_INIT(ksparse, int, int, 1, kh_int_hash_func, kh_int_hash_equal)
 
-typedef struct sparse_set {
+typedef struct joy_sparse_set {
         kvec_t(int) density;
         khash_t(ksparse)* sparse;
         joy_bitset_t* bitset;  // 辅助位图

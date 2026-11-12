@@ -622,13 +622,13 @@ typedef struct joy_iocp_server
 {
         HANDLE completion_port;               // IOCP完成端口句柄
         SOCKET listen_socket;                 // 监听套接字
-        enum packet_format {
+        enum joy_packet_format {
                 PACKET_FORMAT_TCP_BINARY = 0, // TCP二进制封包
                 PACKET_FORMAT_TCP_JSON,       // TCP JSON封包
                 PACKET_FORMAT_WEBSOCKET_JSON  // WebSocket JSON封包
         } packet_format;
         int heartbeat_interval;               // 心跳检测间隔(秒)
-        enum iocp_operation {
+        enum joy_iocp_operation {
                 IOCP_OPERATION_ACCEPT = 0,
                 IOCP_OPERATION_RECEIVE,
                 IOCP_OPERATION_SEND,

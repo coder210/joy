@@ -259,7 +259,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct joy_timer joy_timer_t, *joy_timer_p;
 
-        typedef union jwindow joy_window_t, * joy_window_p;
+        typedef union joy_window joy_window_t, * joy_window_p;
 
         typedef void (*jevent_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
         typedef void (*jevent_keyreleased_fn)(const char* key, int scancode, void* arg);

@@ -2,7 +2,7 @@
 #include "external/stb_image.h"
 #include <SDL3/SDL.h>
 
-union jwindow {
+union joy_window {
         SDL_Window* sdl_window;
 };
 
@@ -11,7 +11,7 @@ struct joy_env {
 	SDL_Environment* sdl_env;
 };
 
-typedef enum log_color {
+typedef enum joy_log_color {
 	LOG_COLOR_BLACK = 30,
 	LOG_COLOR_RED = 31,
 	LOG_COLOR_GREEN = 32,

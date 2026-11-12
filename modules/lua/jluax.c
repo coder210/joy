@@ -19,7 +19,7 @@ History:
 static int l_set_env(lua_State* L);
 static int l_get_env(lua_State* L);
 
-struct luax {
+struct joy_luax {
         lua_State* L;
         void* userdata;
         char* watch_file;

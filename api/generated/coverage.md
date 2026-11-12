@@ -231,8 +231,8 @@
 | `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/japi.h:1135 |
 | `joy_ui_datagrid_addrow` | 非不透明指针 / 输出参数：char** | include/joy/japi.h:1157 |
 | `joy_ui_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | include/joy/japi.h:1172 |
-| `joy_input_joystick_set_dir_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/japi.h:1196 |
-| `joy_input_joystick_set_textures_for_mode` | 未知类型需人工标注：joystick_dir_mode | include/joy/japi.h:1198 |
+| `joy_input_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1196 |
+| `joy_input_joystick_set_textures_for_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1198 |
 | `joy_input_joystick_get_direction` | 结构体按值返回 | include/joy/japi.h:1208 |
 | `joy_ui_inputbox_set_callback` | 函数指针 / 回调 | include/joy/japi.h:1215 |
 | `joy_ui_process_widget_event` | 非不透明指针 / 输出参数：void** | include/joy/japi.h:1276 |
@@ -247,14 +247,14 @@
 | `joy_scene_tilemap_object_layer_foreach` | 函数指针 / 回调 | include/joy/japi.h:1377 |
 | `joy_scene_tilemap_object_layer_foreach_all` | 函数指针 / 回调 | include/joy/japi.h:1378 |
 | `joy_scene_tilemap_render_create` | 未知类型需人工标注：joy_tilemap_path_remap_t | include/joy/japi.h:1381 |
-| `joy_net_kcpserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1411 |
-| `joy_net_kcpclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1417 |
-| `joy_net_wsnetserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1439 |
-| `joy_net_wsnetclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1445 |
-| `joy_net_netclient_create` | 未知类型需人工标注：net_client_type | include/joy/japi.h:1446 |
-| `joy_net_netclient_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1451 |
-| `joy_net_netserver_create` | 未知类型需人工标注：net_server_type | include/joy/japi.h:1453 |
-| `joy_net_netserver_set_callback` | 未知类型需人工标注：net_callback | include/joy/japi.h:1461 |
+| `joy_net_kcpserver_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1411 |
+| `joy_net_kcpclient_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1417 |
+| `joy_net_wsnetserver_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1439 |
+| `joy_net_wsnetclient_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1445 |
+| `joy_net_netclient_create` | 未知类型需人工标注：joy_net_client_type | include/joy/japi.h:1446 |
+| `joy_net_netclient_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1451 |
+| `joy_net_netserver_create` | 未知类型需人工标注：joy_net_server_type | include/joy/japi.h:1453 |
+| `joy_net_netserver_set_callback` | 未知类型需人工标注：joy_net_callback | include/joy/japi.h:1461 |
 | `joy_scene_node_get_position` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:1475 |
 | `joy_scene_node_get_world_position` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:1477 |
 | `joy_scene_node_get_scale` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:1481 |

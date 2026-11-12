@@ -668,7 +668,7 @@ extern "C" {
         JOY_API void joy_r3d_slider_set_hovered(joy_r3d_slider_p s, bool v);
 
         /* ---------- 2D UI: checkbox (仿 jr2d checkbox, 屏幕像素坐标, 不随相机变化) ---------- */
-        typedef enum jr3d_checkbox_state {
+        typedef enum joy_r3d_checkbox_state {
             JOY_R3D_CHECKBOX_UNCHECKED = 0,
             JOY_R3D_CHECKBOX_CHECKED,
             JOY_R3D_CHECKBOX_INDETERMINATE
@@ -1189,13 +1189,13 @@ extern "C" {
                 JOYSTICK_DIR_8WAY,           // 四向 + 四个斜角（八向）
                 JOYSTICK_DIR_VERTICAL,       // 仅 上/下
                 JOYSTICK_DIR_HORIZONTAL,     // 仅 左/右
-        } joystick_dir_mode;
+        } joy_joystick_dir_mode;
 
         JOY_API void joy_input_joystick_destroy(joy_joystick_p joystick);
         JOY_API void joy_input_joystick_set_textures(joy_joystick_p joystick, const char* base_path, const char* thumb_path);
-        JOY_API void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joystick_dir_mode mode);
+        JOY_API void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode);
         JOY_API void joy_input_joystick_set_vector(joy_joystick_p joystick, float dx, float dy);
-        JOY_API void joy_input_joystick_set_textures_for_mode(joy_joystick_p joystick, joystick_dir_mode mode, const char* base_path, const char* thumb_path);
+        JOY_API void joy_input_joystick_set_textures_for_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode, const char* base_path, const char* thumb_path);
         JOY_API void joy_input_joystick_draw(joy_joystick_p joystick);
         JOY_API void joy_input_joystick_reset(joy_joystick_p joystick);
         JOY_API void joy_input_joystick_set_position(joy_joystick_p joystick, float x, float y);
@@ -1408,13 +1408,13 @@ extern "C" {
         JOY_API void joy_net_kcpserver_update(joy_kcpserver_p ks);
         JOY_API int joy_net_kcpserver_connection_count(joy_kcpserver_p ks);
         JOY_API bool joy_net_kcpserver_poll_message(joy_kcpserver_p ks, joy_net_message_p msg);
-        JOY_API void joy_net_kcpserver_set_callback(joy_kcpserver_p ks, net_callback cb, void* userdata);
+        JOY_API void joy_net_kcpserver_set_callback(joy_kcpserver_p ks, joy_net_callback cb, void* userdata);
         JOY_API joy_kcpclient_p joy_net_kcpclient_create(const char* ip, int port);
         JOY_API void joy_net_kcpclient_destroy(joy_kcpclient_p kc);
         JOY_API int joy_net_kcpclient_send(joy_kcpclient_p kc, const char* data, int len);
         JOY_API void joy_net_kcpclient_update(joy_kcpclient_p kc);
         JOY_API bool joy_net_kcpclient_poll_message(joy_kcpclient_p kc, joy_net_message_p msg);
-        JOY_API void joy_net_kcpclient_set_callback(joy_kcpclient_p kc, net_callback cb, void* userdata);
+        JOY_API void joy_net_kcpclient_set_callback(joy_kcpclient_p kc, joy_net_callback cb, void* userdata);
         JOY_API joy_tcpserver_p joy_net_tcpserver_create(const char* ip, int port);
         JOY_API int joy_net_tcpserver_destroy(joy_tcpserver_p tcpserver);
         JOY_API void joy_net_tcpserver_send(joy_tcpserver_p tcpserver, int conv, const char* data, int len);
@@ -1436,21 +1436,21 @@ extern "C" {
         JOY_API void joy_net_wsnetserver_update(joy_wsnetserver_p ws);
         JOY_API int joy_net_wsnetserver_connection_count(joy_wsnetserver_p ws);
         JOY_API bool joy_net_wsnetserver_poll_message(joy_wsnetserver_p ws, joy_net_message_p msg);
-        JOY_API void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, net_callback cb, void* userdata);
+        JOY_API void joy_net_wsnetserver_set_callback(joy_wsnetserver_p ws, joy_net_callback cb, void* userdata);
         JOY_API joy_wsnetclient_p joy_net_wsnetclient_create(const char* url);
         JOY_API void joy_net_wsnetclient_destroy(joy_wsnetclient_p wc);
         JOY_API int joy_net_wsnetclient_send(joy_wsnetclient_p wc, const char* data, int len);
         JOY_API void joy_net_wsnetclient_update(joy_wsnetclient_p wc);
         JOY_API bool joy_net_wsnetclient_poll_message(joy_wsnetclient_p wc, joy_net_message_p msg);
-        JOY_API void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, net_callback cb, void* userdata);
-        JOY_API joy_netclient_p joy_net_netclient_create(net_client_type type, const char* host, int port);
+        JOY_API void joy_net_wsnetclient_set_callback(joy_wsnetclient_p wc, joy_net_callback cb, void* userdata);
+        JOY_API joy_netclient_p joy_net_netclient_create(joy_net_client_type type, const char* host, int port);
         JOY_API void joy_net_netclient_destroy(joy_netclient_p nc);
         JOY_API int joy_net_netclient_send(joy_netclient_p nc, const char* data, int len);
         JOY_API void joy_net_netclient_update(joy_netclient_p nc);
         JOY_API bool joy_net_netclient_poll_message(joy_netclient_p nc, joy_net_message_p msg);
-        JOY_API void joy_net_netclient_set_callback(joy_netclient_p nc, net_callback cb, void* userdata);
-        JOY_API net_client_type joy_net_netclient_get_type(joy_netclient_p nc);
-        JOY_API joy_netserver_p joy_net_netserver_create(net_server_type type, const char* ip, int port);
+        JOY_API void joy_net_netclient_set_callback(joy_netclient_p nc, joy_net_callback cb, void* userdata);
+        JOY_API joy_net_client_type joy_net_netclient_get_type(joy_netclient_p nc);
+        JOY_API joy_netserver_p joy_net_netserver_create(joy_net_server_type type, const char* ip, int port);
         JOY_API void joy_net_netserver_destroy(joy_netserver_p ns);
         JOY_API void joy_net_netserver_send(joy_netserver_p ns, int conv, const char* data, int len);
         JOY_API void joy_net_netserver_broadcast(joy_netserver_p ns, const char* data, int len);
@@ -1458,8 +1458,8 @@ extern "C" {
         JOY_API void joy_net_netserver_update(joy_netserver_p ns);
         JOY_API int joy_net_netserver_connection_count(joy_netserver_p ns);
         JOY_API bool joy_net_netserver_poll_message(joy_netserver_p ns, joy_net_message_p msg);
-        JOY_API void joy_net_netserver_set_callback(joy_netserver_p ns, net_callback cb, void* userdata);
-        JOY_API net_server_type joy_net_netserver_get_type(joy_netserver_p ns);
+        JOY_API void joy_net_netserver_set_callback(joy_netserver_p ns, joy_net_callback cb, void* userdata);
+        JOY_API joy_net_server_type joy_net_netserver_get_type(joy_netserver_p ns);
         JOY_API void joy_net_netmessage_free_data(joy_net_message_p msg);
 
 
