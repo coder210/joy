@@ -176,6 +176,8 @@ void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 		float x = (float)event->button.x;
 		float y = (float)event->button.y;
 		int b = event->button.button;
+		joy_input_feed_mouse_move(x, y);
+		joy_input_feed_mouse_button(b, true);
 		if (cbs.on_mousepressed)
 			cbs.on_mousepressed(x, y, b, arg);
 		else
@@ -186,6 +188,8 @@ void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 		float x = (float)event->button.x;
 		float y = (float)event->button.y;
 		int b = event->button.button;
+		joy_input_feed_mouse_move(x, y);
+		joy_input_feed_mouse_button(b, false);
 		if (cbs.on_mousereleased)
 			cbs.on_mousereleased(x, y, b, arg);
 		else
@@ -197,6 +201,7 @@ void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 		float y = (float)event->motion.y;
 		float dx = event->motion.xrel;
 		float dy = event->motion.yrel;
+		joy_input_feed_mouse_move(x, y);
 		if (cbs.on_mousemoved)
 			cbs.on_mousemoved(x, y, dx, dy, arg);
 		else
@@ -204,6 +209,9 @@ void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 		break;
 	}
 	case SDL_EVENT_KEY_DOWN: {
+		/* 状态按 scancode 记录, 不受 key_name() 的小键名表限制；
+		   必须放在 name 判空之前, 否则未收录的键永远查不到。 */
+		joy_input_feed_key((int)event->key.scancode, true);
 		const char* name = key_name(event->key.key);
 		if (!name) break;
 		int sc = event->key.scancode;
@@ -218,6 +226,7 @@ void joy_core_dispatch_event(joy_event_callbacks_t cbs,
 		break;
 	}
 	case SDL_EVENT_KEY_UP: {
+		joy_input_feed_key((int)event->key.scancode, false);
 		const char* name = key_name(event->key.key);
 		if (!name) break;
 		int sc = event->key.scancode;

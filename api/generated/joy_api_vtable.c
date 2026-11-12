@@ -7050,6 +7050,142 @@ static void shim_joy_ui_image_draw_rect(void* _jv_ctx, Jr2d r2d, Image image, fl
         return;
 }
 
+static void shim_joy_input_feed_key(void* _jv_ctx, int scancode, bool down)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(scancode);
+        _jv_args[1] = joy_v_bool(down);
+        _jv_r = joy_api_call("joy_input_feed_key", _jv_args, 2, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_input_feed_mouse_move(void* _jv_ctx, float x, float y)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_f64(x);
+        _jv_args[1] = joy_v_f64(y);
+        _jv_r = joy_api_call("joy_input_feed_mouse_move", _jv_args, 2, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_input_feed_mouse_button(void* _jv_ctx, int button, bool down)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(button);
+        _jv_args[1] = joy_v_bool(down);
+        _jv_r = joy_api_call("joy_input_feed_mouse_button", _jv_args, 2, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_input_feed_wheel(void* _jv_ctx, float dy)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_f64(dy);
+        _jv_r = joy_api_call("joy_input_feed_wheel", _jv_args, 1, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_input_end_frame(void* _jv_ctx)
+{
+        joy_value_t* _jv_args = NULL;
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_r = joy_api_call("joy_input_end_frame", _jv_args, 0, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_input_reset(void* _jv_ctx)
+{
+        joy_value_t* _jv_args = NULL;
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_r = joy_api_call("joy_input_reset", _jv_args, 0, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static bool shim_joy_input_is_key_down(void* _jv_ctx, int scancode)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(scancode);
+        _jv_r = joy_api_call("joy_input_is_key_down", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
+static bool shim_joy_input_is_mouse_button_down(void* _jv_ctx, int button)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i32(button);
+        _jv_r = joy_api_call("joy_input_is_mouse_button_down", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
+        return (bool) _jv_r.as.b;
+}
+
+static float shim_joy_input_get_mouse_x(void* _jv_ctx)
+{
+        joy_value_t* _jv_args = NULL;
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_r = joy_api_call("joy_input_get_mouse_x", _jv_args, 0, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
+        return (float) _jv_r.as.f64;
+}
+
+static float shim_joy_input_get_mouse_y(void* _jv_ctx)
+{
+        joy_value_t* _jv_args = NULL;
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_r = joy_api_call("joy_input_get_mouse_y", _jv_args, 0, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
+        return (float) _jv_r.as.f64;
+}
+
+static float shim_joy_input_get_wheel(void* _jv_ctx)
+{
+        joy_value_t* _jv_args = NULL;
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_r = joy_api_call("joy_input_get_wheel", _jv_args, 0, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
+        return (float) _jv_r.as.f64;
+}
+
 static int64_t shim_joy_math_fp_from_float(void* _jv_ctx, float a)
 {
         joy_value_t _jv_args[1];
@@ -10763,6 +10899,17 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->AudioBgmSetGain = shim_joy_audio_bgm_set_gain;
         api->AudioBgmDestroy = shim_joy_audio_bgm_destroy;
         api->ImageDrawRect = shim_joy_ui_image_draw_rect;
+        api->JoyInputFeedKey = shim_joy_input_feed_key;
+        api->JoyInputFeedMouseMove = shim_joy_input_feed_mouse_move;
+        api->JoyInputFeedMouseButton = shim_joy_input_feed_mouse_button;
+        api->JoyInputFeedWheel = shim_joy_input_feed_wheel;
+        api->JoyInputEndFrame = shim_joy_input_end_frame;
+        api->JoyInputReset = shim_joy_input_reset;
+        api->JoyInputIsKeyDown = shim_joy_input_is_key_down;
+        api->JoyInputIsMouseButtonDown = shim_joy_input_is_mouse_button_down;
+        api->JoyInputGetMouseX = shim_joy_input_get_mouse_x;
+        api->JoyInputGetMouseY = shim_joy_input_get_mouse_y;
+        api->JoyInputGetWheel = shim_joy_input_get_wheel;
         api->JmathFpFromFloat = shim_joy_math_fp_from_float;
         api->JmathFpToFloat = shim_joy_math_fp_to_float;
         api->JmathFpFromUint = shim_joy_math_fp_from_uint;

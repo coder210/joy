@@ -1698,6 +1698,24 @@ extern "C" {
          * 声明放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
         JOY_API void joy_r3d_mesh_destroy_one(joy_render_mesh_p m);
 
+        /* ---- 输入状态快照（B 方案 P1）：宿主把 SDL 事件翻译成标量喂入，
+         * 消费方用这组纯标量 getter 查询当前状态，不必接触 SDL_Event。
+         * 全部是 L0/L1，生成链可直接产出四端绑定；旧的
+         * *_process_event(const void*) 暂时保留，新逻辑应走这组 API。
+         * 状态是进程级单例输入流，与 joy 的单窗口模型一致。
+         * 声明放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
+        JOY_API void  joy_input_feed_key(int scancode, bool down);
+        JOY_API void  joy_input_feed_mouse_move(float x, float y);
+        JOY_API void  joy_input_feed_mouse_button(int button, bool down);
+        JOY_API void  joy_input_feed_wheel(float dy);
+        JOY_API void  joy_input_end_frame(void);
+        JOY_API void  joy_input_reset(void);
+        JOY_API bool  joy_input_is_key_down(int scancode);
+        JOY_API bool  joy_input_is_mouse_button_down(int button);
+        JOY_API float joy_input_get_mouse_x(void);
+        JOY_API float joy_input_get_mouse_y(void);
+        JOY_API float joy_input_get_wheel(void);
+
 #ifdef __cplusplus
 }
 #endif

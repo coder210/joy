@@ -23,6 +23,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
 
+#include <joy/joy.h>
 #include "joy_game_hooks.h"
 #include "generated/joy_api_vtable.h"
 
@@ -176,22 +177,34 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
 {
     (void)appstate;
 
+    /* 四端统一：同一份 SDL 事件既喂引擎层状态快照（供生成链绑定查询），
+     * 也维护 g_input（Native DLL 的 ABI 快照，暂保留双写，P2 再收敛）。 */
     switch (e->type) {
     case SDL_EVENT_KEY_DOWN:
+        joy_input_feed_key((int)e->key.scancode, true);
         if (e->key.scancode < 512) g_input.keys[e->key.scancode] = true;
         break;
     case SDL_EVENT_KEY_UP:
+        joy_input_feed_key((int)e->key.scancode, false);
         if (e->key.scancode < 512) g_input.keys[e->key.scancode] = false;
         break;
     case SDL_EVENT_MOUSE_MOTION:
+        joy_input_feed_mouse_move(e->motion.x, e->motion.y);
         g_input.mouse_x = e->motion.x;
         g_input.mouse_y = e->motion.y;
         break;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        joy_input_feed_mouse_move(e->button.x, e->button.y);
+        joy_input_feed_mouse_button((int)e->button.button, true);
         if (e->button.button == 1) g_input.mouse_left = true;
         break;
     case SDL_EVENT_MOUSE_BUTTON_UP:
+        joy_input_feed_mouse_move(e->button.x, e->button.y);
+        joy_input_feed_mouse_button((int)e->button.button, false);
         if (e->button.button == 1) g_input.mouse_left = false;
+        break;
+    case SDL_EVENT_MOUSE_WHEEL:
+        joy_input_feed_wheel(e->wheel.y);
         break;
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
@@ -222,6 +235,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     JoyFrameResult r;
     memset(&r, 0, sizeof(r));
     g_hooks->on_frame(g_hooks->game, dt, &g_input, &r);
+    joy_input_end_frame();   /* 清掉本帧滚轮增量 */
 
     if (r.quit) {
         if (g_smoke) {

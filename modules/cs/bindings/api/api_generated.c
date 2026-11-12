@@ -7657,6 +7657,147 @@ static void icall_ImageDrawRect(uint64_t p0, uint64_t p1, float p2, float p3, fl
         return;
 }
 
+static void icall_JoyInputFeedKey(int32_t p0, int32_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[2];
+        args[0] = joy_v_i32((int32_t)p0);
+        args[1] = joy_v_bool((int32_t)p1);
+        (void)joy_api_call("joy_input_feed_key", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_feed_key", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JoyInputFeedMouseMove(float p0, float p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[2];
+        args[0] = joy_v_f64((double)p0);
+        args[1] = joy_v_f64((double)p1);
+        (void)joy_api_call("joy_input_feed_mouse_move", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_feed_mouse_move", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JoyInputFeedMouseButton(int32_t p0, int32_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[2];
+        args[0] = joy_v_i32((int32_t)p0);
+        args[1] = joy_v_bool((int32_t)p1);
+        (void)joy_api_call("joy_input_feed_mouse_button", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_feed_mouse_button", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JoyInputFeedWheel(float p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[1];
+        args[0] = joy_v_f64((double)p0);
+        (void)joy_api_call("joy_input_feed_wheel", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_feed_wheel", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JoyInputEndFrame(void)
+{
+        joy_status_t st = JOY_OK;
+        (void)joy_api_call("joy_input_end_frame", NULL, 0, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_end_frame", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_JoyInputReset(void)
+{
+        joy_status_t st = JOY_OK;
+        (void)joy_api_call("joy_input_reset", NULL, 0, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_reset", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static int32_t icall_JoyInputIsKeyDown(int32_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i32((int32_t)p0);
+        r = joy_api_call("joy_input_is_key_down", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_is_key_down", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static int32_t icall_JoyInputIsMouseButtonDown(int32_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i32((int32_t)p0);
+        r = joy_api_call("joy_input_is_mouse_button_down", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_is_mouse_button_down", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int32_t)r.as.b;
+}
+
+static float icall_JoyInputGetMouseX(void)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        r = joy_api_call("joy_input_get_mouse_x", NULL, 0, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_get_mouse_x", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (float)r.as.f64;
+}
+
+static float icall_JoyInputGetMouseY(void)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        r = joy_api_call("joy_input_get_mouse_y", NULL, 0, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_get_mouse_y", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (float)r.as.f64;
+}
+
+static float icall_JoyInputGetWheel(void)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        r = joy_api_call("joy_input_get_wheel", NULL, 0, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_input_get_wheel", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (float)r.as.f64;
+}
+
 static int64_t icall_JmathFpFromFloat(float p0)
 {
         joy_status_t st = JOY_OK;
@@ -11798,6 +11939,17 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::AudioBgmSetGain", (const void*)icall_AudioBgmSetGain);
         csx_register_internal_call("Joy.Api.Native::AudioBgmDestroy", (const void*)icall_AudioBgmDestroy);
         csx_register_internal_call("Joy.Api.Native::ImageDrawRect", (const void*)icall_ImageDrawRect);
+        csx_register_internal_call("Joy.Api.Native::JoyInputFeedKey", (const void*)icall_JoyInputFeedKey);
+        csx_register_internal_call("Joy.Api.Native::JoyInputFeedMouseMove", (const void*)icall_JoyInputFeedMouseMove);
+        csx_register_internal_call("Joy.Api.Native::JoyInputFeedMouseButton", (const void*)icall_JoyInputFeedMouseButton);
+        csx_register_internal_call("Joy.Api.Native::JoyInputFeedWheel", (const void*)icall_JoyInputFeedWheel);
+        csx_register_internal_call("Joy.Api.Native::JoyInputEndFrame", (const void*)icall_JoyInputEndFrame);
+        csx_register_internal_call("Joy.Api.Native::JoyInputReset", (const void*)icall_JoyInputReset);
+        csx_register_internal_call("Joy.Api.Native::JoyInputIsKeyDown", (const void*)icall_JoyInputIsKeyDown);
+        csx_register_internal_call("Joy.Api.Native::JoyInputIsMouseButtonDown", (const void*)icall_JoyInputIsMouseButtonDown);
+        csx_register_internal_call("Joy.Api.Native::JoyInputGetMouseX", (const void*)icall_JoyInputGetMouseX);
+        csx_register_internal_call("Joy.Api.Native::JoyInputGetMouseY", (const void*)icall_JoyInputGetMouseY);
+        csx_register_internal_call("Joy.Api.Native::JoyInputGetWheel", (const void*)icall_JoyInputGetWheel);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromFloat", (const void*)icall_JmathFpFromFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpToFloat", (const void*)icall_JmathFpToFloat);
         csx_register_internal_call("Joy.Api.Native::JmathFpFromUint", (const void*)icall_JmathFpFromUint);

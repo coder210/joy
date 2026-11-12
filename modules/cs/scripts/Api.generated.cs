@@ -1010,6 +1010,28 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void ImageDrawRect(ulong r2d, ulong image, float x, float y, float w, float h);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputFeedKey(int scancode, bool down);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputFeedMouseMove(float x, float y);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputFeedMouseButton(int button, bool down);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputFeedWheel(float dy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputEndFrame();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void JoyInputReset();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JoyInputIsKeyDown(int scancode);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool JoyInputIsMouseButtonDown(int button);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JoyInputGetMouseX();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JoyInputGetMouseY();
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern float JoyInputGetWheel();
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern long JmathFpFromFloat(float a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern float JmathFpToFloat(long a);
@@ -4724,6 +4746,50 @@ namespace Joy.Api
             if (r2d == null) throw new ArgumentNullException(nameof(r2d));
             if (image == null) throw new ArgumentNullException(nameof(image));
             Native.ImageDrawRect(r2d.Handle, image.Handle, x, y, w, h);
+        }
+        public static void JoyInputFeedKey(int scancode, bool down)
+        {
+            Native.JoyInputFeedKey(scancode, down);
+        }
+        public static void JoyInputFeedMouseMove(float x, float y)
+        {
+            Native.JoyInputFeedMouseMove(x, y);
+        }
+        public static void JoyInputFeedMouseButton(int button, bool down)
+        {
+            Native.JoyInputFeedMouseButton(button, down);
+        }
+        public static void JoyInputFeedWheel(float dy)
+        {
+            Native.JoyInputFeedWheel(dy);
+        }
+        public static void JoyInputEndFrame()
+        {
+            Native.JoyInputEndFrame();
+        }
+        public static void JoyInputReset()
+        {
+            Native.JoyInputReset();
+        }
+        public static bool JoyInputIsKeyDown(int scancode)
+        {
+            return Native.JoyInputIsKeyDown(scancode);
+        }
+        public static bool JoyInputIsMouseButtonDown(int button)
+        {
+            return Native.JoyInputIsMouseButtonDown(button);
+        }
+        public static float JoyInputGetMouseX()
+        {
+            return Native.JoyInputGetMouseX();
+        }
+        public static float JoyInputGetMouseY()
+        {
+            return Native.JoyInputGetMouseY();
+        }
+        public static float JoyInputGetWheel()
+        {
+            return Native.JoyInputGetWheel();
         }
         public static long JmathFpFromFloat(float a)
         {

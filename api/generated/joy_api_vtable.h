@@ -641,6 +641,17 @@ typedef struct JoyApi {
         void (*AudioBgmSetGain)(void* _jv_ctx, AudioBgm bgm, float gain);
         void (*AudioBgmDestroy)(void* _jv_ctx, AudioBgm bgm);
         void (*ImageDrawRect)(void* _jv_ctx, Jr2d r2d, Image image, float x, float y, float w, float h);
+        void (*JoyInputFeedKey)(void* _jv_ctx, int scancode, bool down);
+        void (*JoyInputFeedMouseMove)(void* _jv_ctx, float x, float y);
+        void (*JoyInputFeedMouseButton)(void* _jv_ctx, int button, bool down);
+        void (*JoyInputFeedWheel)(void* _jv_ctx, float dy);
+        void (*JoyInputEndFrame)(void* _jv_ctx);
+        void (*JoyInputReset)(void* _jv_ctx);
+        bool (*JoyInputIsKeyDown)(void* _jv_ctx, int scancode);
+        bool (*JoyInputIsMouseButtonDown)(void* _jv_ctx, int button);
+        float (*JoyInputGetMouseX)(void* _jv_ctx);
+        float (*JoyInputGetMouseY)(void* _jv_ctx);
+        float (*JoyInputGetWheel)(void* _jv_ctx);
         int64_t (*JmathFpFromFloat)(void* _jv_ctx, float a);
         float (*JmathFpToFloat)(void* _jv_ctx, int64_t a);
         int64_t (*JmathFpFromUint)(void* _jv_ctx, uint32_t a);

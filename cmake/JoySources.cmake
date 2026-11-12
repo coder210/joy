@@ -38,6 +38,7 @@
 
 set(JOY_SRC_CORE
     src/jcore.c
+    src/jinput.c
     src/jsys.c
     src/jecs.c
     src/jutils.c

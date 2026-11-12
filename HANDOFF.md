@@ -22,8 +22,9 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 | L2 | 值类型结构体按字段展开 | 能，需 `structs.js` 认得字段类型 |
 | L3 | 结构体指针 / 出参 / 回调 / 可变参 | 不能，`status:off`，消费方退化 |
 
-当前：**1157 条 IDL，721 条 `status:on`，vtable 721 个强签名**（其中 7 条是
-`borrowed` 借用句柄见 §3 的 14，13 条 3D mesh 靠单参数 dtor 开放见 §3 的 15）。
+当前：**1168 条 IDL，732 条 `status:on`，vtable 732 个强签名**（其中 7 条是
+`borrowed` 借用句柄见 §3 的 14，13 条 3D mesh 靠单参数 dtor 开放见 §3 的 15；
+较收口时 +11 条是 §3 的 22 新增的输入状态标量 API）。
 
 ## 2. 当前状态
 
@@ -205,6 +206,39 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
        仍是空实现后返回 0。与第 19 条的排期项一并留待单独处理。
      - 验证：`--scan` 幂等（1157 条）、`--check` OK、生成物零变化、默认构建
        0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
+     22. **B 方案 P1：引擎层输入状态快照（2026-11-12）**：按"不暴露事件对象、
+     只给标量状态"的路线做第一步，目的是验证生成链能吃到事件能力。
+     - **选 B 的依据**：`api/tools/structs.js` 只放行字段全是已知标量的 POD
+       结构体（数组 / 嵌套 / 指针一律不展开），事件结构必然含 `char text[]` /
+       union / 枚举，按值传进不了 L2；按指针传又退化成不透明句柄，脚本端仍
+       读不到字段。A 方案（自有 `joy_event_t`）要兑现就得先改三个生成器。
+       纯标量是现成 L0，且项目已有两次同思路先例（`image_draw_rect` 绕开
+       L3 的 `jrect_t*`、`joy_game_hooks.h` 的 `JoyInput` 快照）。
+     - **引擎层**：新增 `src/jinput.c`（登记进 `JOY_SRC_CORE`），进程级单例
+       状态（按键 / 鼠标按钮 / 坐标 / 滚轮帧增量），11 条纯标量 API：
+       `joy_input_feed_*` 由宿主喂入、`is_*` / `get_*` 供查询、`end_frame`
+       清帧级增量、`reset` 全清。明确是单窗口单例，不提供句柄、
+       不假装支持多实例。
+     - **四端喂入**：C++ 宿主在 `SDL_AppEvent` 里喂入（`g_input` 供 Native
+       DLL ABI，暂保留双写）；Lua / JS 走 `joy_core_dispatch_event`，在
+       `jcore.c` 翻译鼠标/键盘事件时顺带喂入，按键按 scancode 记录且放在
+       `key_name()` 判空之前，绕过只有 8 个键的键名表；C# 的
+       `csclib_input.c` 从自持第二份 `s_keys/s_mouse_*` 改为薄转发到引擎层，
+       宿主原有的 `csx_input_end_frame()` 自动接上。
+     - **生成链**：声明全部放在 `japi.h` 末尾，既有条目 `source` 行号零漂移；
+       `--scan` 后 11 条默认 `off`（`status` 是人工字段，不自动开），用
+       `--enable name:<API>` 点名开放，0 skipped。IDL 1157 → 1168、
+       `status:on` / vtable 721 → 732，thunks / vtable / cs glue / C# 自动
+       生成 11 个强签名。这正是 `*_process_event(const void*)`（L1 却 `off`）
+       拿不到的能力。
+     - 验证：`--scan` + `--check` OK、默认构建 0 错误（`jinput.c` 在 4 个宿主
+       均编译）、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
+     - **后续（未做）**：P2 给高频 UI 控件加标量入口、用内部私有事件对象把
+       `jui.c:3583` 的空壳 `joy_ui_process_widget_event` 做实、收敛 C++ 宿主的
+       `g_input` 双写；P0（`jdefs.h` 去 SDL include、删零使用的 `JOY_EVENT_*`）
+       必须等 `japi.h:584/626` 的 `SDL_Event*` 有了标量替代才能做，顺序据此
+       调整；P3 再评估是否走到 A。Lua / JS 暂未处理 `SDL_EVENT_MOUSE_WHEEL`，
+       该端滚轮查询恒 0。
 
     具体内容：
 

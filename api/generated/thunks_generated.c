@@ -7755,6 +7755,115 @@ static joy_value_t t_joy_ui_image_draw_rect(joy_value_t* a, int n, joy_status_t*
         return joy_v_null();
 }
 
+static joy_value_t t_joy_input_feed_key(joy_value_t* a, int n, joy_status_t* st)
+{
+        int p0;
+        bool p1;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_feed_key");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_key.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_key.arg1");
+        p0 = (int)a[0].as.i32;
+        p1 = (bool)a[1].as.b;
+        joy_input_feed_key(p0, p1);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_feed_mouse_move(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        float p1;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_feed_mouse_move");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_mouse_move.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_mouse_move.arg1");
+        p0 = (float)a[0].as.f64;
+        p1 = (float)a[1].as.f64;
+        joy_input_feed_mouse_move(p0, p1);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_feed_mouse_button(joy_value_t* a, int n, joy_status_t* st)
+{
+        int p0;
+        bool p1;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_feed_mouse_button");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_mouse_button.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_mouse_button.arg1");
+        p0 = (int)a[0].as.i32;
+        p1 = (bool)a[1].as.b;
+        joy_input_feed_mouse_button(p0, p1);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_feed_wheel(joy_value_t* a, int n, joy_status_t* st)
+{
+        float p0;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_feed_wheel");
+        if (a[0].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_feed_wheel.arg0");
+        p0 = (float)a[0].as.f64;
+        joy_input_feed_wheel(p0);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_end_frame(joy_value_t* a, int n, joy_status_t* st)
+{
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_end_frame");
+        joy_input_end_frame();
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_reset(joy_value_t* a, int n, joy_status_t* st)
+{
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_reset");
+        joy_input_reset();
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_input_is_key_down(joy_value_t* a, int n, joy_status_t* st)
+{
+        int p0;
+        bool _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_is_key_down");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_is_key_down.arg0");
+        p0 = (int)a[0].as.i32;
+        _r = joy_input_is_key_down(p0);
+        return joy_v_bool((bool)_r);
+}
+
+static joy_value_t t_joy_input_is_mouse_button_down(joy_value_t* a, int n, joy_status_t* st)
+{
+        int p0;
+        bool _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_is_mouse_button_down");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_is_mouse_button_down.arg0");
+        p0 = (int)a[0].as.i32;
+        _r = joy_input_is_mouse_button_down(p0);
+        return joy_v_bool((bool)_r);
+}
+
+static joy_value_t t_joy_input_get_mouse_x(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_get_mouse_x");
+        _r = joy_input_get_mouse_x();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_joy_input_get_mouse_y(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_get_mouse_y");
+        _r = joy_input_get_mouse_y();
+        return joy_v_f64((float)_r);
+}
+
+static joy_value_t t_joy_input_get_wheel(joy_value_t* a, int n, joy_status_t* st)
+{
+        float _r;
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_get_wheel");
+        _r = joy_input_get_wheel();
+        return joy_v_f64((float)_r);
+}
+
 static joy_value_t t_joy_math_fp_from_float(joy_value_t* a, int n, joy_status_t* st)
 {
         float p0;
@@ -12357,6 +12466,12 @@ static const joy_value_kind k_joy_audio_bgm_stop[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_audio_bgm_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_audio_bgm_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_image_draw_rect[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_input_feed_key[] = { JOY_V_I32, JOY_V_BOOL };
+static const joy_value_kind k_joy_input_feed_mouse_move[] = { JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_input_feed_mouse_button[] = { JOY_V_I32, JOY_V_BOOL };
+static const joy_value_kind k_joy_input_feed_wheel[] = { JOY_V_F64 };
+static const joy_value_kind k_joy_input_is_key_down[] = { JOY_V_I32 };
+static const joy_value_kind k_joy_input_is_mouse_button_down[] = { JOY_V_I32 };
 static const joy_value_kind k_joy_math_fp_from_float[] = { JOY_V_F64 };
 static const joy_value_kind k_joy_math_fp_to_float[] = { JOY_V_I64 };
 static const joy_value_kind k_joy_math_fp_from_uint[] = { JOY_V_U32 };
@@ -13068,6 +13183,17 @@ static const joy_thunk_entry s_thunks[] = {
         { "audio", "joy_audio_bgm_set_gain", "AudioBgmSetGain", t_joy_audio_bgm_set_gain, 2, k_joy_audio_bgm_set_gain, JOY_V_NULL },
         { "audio", "joy_audio_bgm_destroy", "AudioBgmDestroy", t_joy_audio_bgm_destroy, 1, k_joy_audio_bgm_destroy, JOY_V_NULL },
         { "ui", "joy_ui_image_draw_rect", "ImageDrawRect", t_joy_ui_image_draw_rect, 6, k_joy_ui_image_draw_rect, JOY_V_NULL },
+        { "input", "joy_input_feed_key", "JoyInputFeedKey", t_joy_input_feed_key, 2, k_joy_input_feed_key, JOY_V_NULL },
+        { "input", "joy_input_feed_mouse_move", "JoyInputFeedMouseMove", t_joy_input_feed_mouse_move, 2, k_joy_input_feed_mouse_move, JOY_V_NULL },
+        { "input", "joy_input_feed_mouse_button", "JoyInputFeedMouseButton", t_joy_input_feed_mouse_button, 2, k_joy_input_feed_mouse_button, JOY_V_NULL },
+        { "input", "joy_input_feed_wheel", "JoyInputFeedWheel", t_joy_input_feed_wheel, 1, k_joy_input_feed_wheel, JOY_V_NULL },
+        { "input", "joy_input_end_frame", "JoyInputEndFrame", t_joy_input_end_frame, 0, NULL, JOY_V_NULL },
+        { "input", "joy_input_reset", "JoyInputReset", t_joy_input_reset, 0, NULL, JOY_V_NULL },
+        { "input", "joy_input_is_key_down", "JoyInputIsKeyDown", t_joy_input_is_key_down, 1, k_joy_input_is_key_down, JOY_V_BOOL },
+        { "input", "joy_input_is_mouse_button_down", "JoyInputIsMouseButtonDown", t_joy_input_is_mouse_button_down, 1, k_joy_input_is_mouse_button_down, JOY_V_BOOL },
+        { "input", "joy_input_get_mouse_x", "JoyInputGetMouseX", t_joy_input_get_mouse_x, 0, NULL, JOY_V_F64 },
+        { "input", "joy_input_get_mouse_y", "JoyInputGetMouseY", t_joy_input_get_mouse_y, 0, NULL, JOY_V_F64 },
+        { "input", "joy_input_get_wheel", "JoyInputGetWheel", t_joy_input_get_wheel, 0, NULL, JOY_V_F64 },
         { "math", "joy_math_fp_from_float", "JmathFpFromFloat", t_joy_math_fp_from_float, 1, k_joy_math_fp_from_float, JOY_V_I64 },
         { "math", "joy_math_fp_to_float", "JmathFpToFloat", t_joy_math_fp_to_float, 1, k_joy_math_fp_to_float, JOY_V_F64 },
         { "math", "joy_math_fp_from_uint", "JmathFpFromUint", t_joy_math_fp_from_uint, 1, k_joy_math_fp_from_uint, JOY_V_I64 },
@@ -14811,6 +14937,39 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_ui_image_draw_rect", NULL, 7, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_draw_rect";
+        st = JOY_OK;
+        joy_api_call("joy_input_feed_key", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_feed_key";
+        st = JOY_OK;
+        joy_api_call("joy_input_feed_mouse_move", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_feed_mouse_move";
+        st = JOY_OK;
+        joy_api_call("joy_input_feed_mouse_button", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_feed_mouse_button";
+        st = JOY_OK;
+        joy_api_call("joy_input_feed_wheel", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_feed_wheel";
+        st = JOY_OK;
+        joy_api_call("joy_input_end_frame", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_end_frame";
+        st = JOY_OK;
+        joy_api_call("joy_input_reset", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_reset";
+        st = JOY_OK;
+        joy_api_call("joy_input_is_key_down", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_is_key_down";
+        st = JOY_OK;
+        joy_api_call("joy_input_is_mouse_button_down", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_is_mouse_button_down";
+        st = JOY_OK;
+        joy_api_call("joy_input_get_mouse_x", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_get_mouse_x";
+        st = JOY_OK;
+        joy_api_call("joy_input_get_mouse_y", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_get_mouse_y";
+        st = JOY_OK;
+        joy_api_call("joy_input_get_wheel", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_input_get_wheel";
         st = JOY_OK;
         joy_api_call("joy_math_fp_from_float", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_from_float";
