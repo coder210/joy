@@ -15,6 +15,10 @@ struct jr2d {
          * 文字缓存条目按 owner 归属到对应时钟，多实例不会互相推进 LRU。 */
         Uint64 frame;
 
+        /* FOV 渐变纹理按 renderer 持有: SDL_Texture 绑定创建它的 renderer,
+         * 不能用函数级 static 缓存，否则多实例会跨 renderer 复用并悬空。 */
+        SDL_Texture* fov_gradient_tex;
+
         /* 裁剪状态。clip_enabled 为 false 时表示无裁剪。
          * 栈保存 push 之前的 (enabled, rect)，pop 时原样恢复。 */
         bool     clip_enabled;
@@ -106,6 +110,8 @@ void joy_r2d_destroy(joy_r2d_p r2d)
         /* 只释放属于这个 renderer 的缓存纹理。SDL 纹理不可跨 renderer 使用，
          * 若沿用全局 clear 会连带销毁其它存活 renderer 的纹理，造成悬空。 */
         jtext_cache_clear_for(r2d);
+        /* FOV 渐变纹理是本 renderer 创建的, 必须在销毁 renderer 前释放 */
+        if (r2d->fov_gradient_tex) SDL_DestroyTexture(r2d->fov_gradient_tex);
         SDL_DestroyRenderer(r2d->sdl);
         SDL_free(r2d);
 }
@@ -1634,11 +1640,12 @@ bool joy_r2d_render_geometry(joy_r2d_p r2d, void* texture,
 
 #define JOY_FOV_2D_DEG2RAD 0.0174532925f
 
-/* 一次性渐变纹理: v=0 透明 → v=1 全浓(墨雾 alpha 205)。惰性创建并缓存复用 */
+/* 一次性渐变纹理: v=0 透明 → v=1 全浓(墨雾 alpha 205)。
+ * 按 renderer 实例惰性创建并缓存，由 joy_r2d_destroy 释放。 */
 static SDL_Texture* joy_fov_gradient_tex_2d(joy_r2d_p r)
 {
-    static SDL_Texture* s_tex = NULL;
-    if (s_tex) return s_tex;
+    if (!r) return NULL;
+    if (r->fov_gradient_tex) return r->fov_gradient_tex;
     const int H = 256;
     SDL_Surface* surf = SDL_CreateSurface(1, H, SDL_PIXELFORMAT_RGBA32);
     if (!surf) return NULL;
@@ -1654,10 +1661,10 @@ static SDL_Texture* joy_fov_gradient_tex_2d(joy_r2d_p r)
         px[(size_t)y * surf->pitch + 2] = 38;
         px[(size_t)y * surf->pitch + 3] = a;
     }
-    s_tex = SDL_CreateTextureFromSurface(r->sdl, surf);
+    r->fov_gradient_tex = SDL_CreateTextureFromSurface(r->sdl, surf);
     SDL_DestroySurface(surf);
-    if (s_tex) SDL_SetTextureBlendMode(s_tex, SDL_BLENDMODE_BLEND);
-    return s_tex;
+    if (r->fov_gradient_tex) SDL_SetTextureBlendMode(r->fov_gradient_tex, SDL_BLENDMODE_BLEND);
+    return r->fov_gradient_tex;
 }
 
 /* px/py: 观察点在输出像素坐标; radii[seg] 每方向可见半径(像素);

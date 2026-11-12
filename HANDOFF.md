@@ -159,8 +159,26 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
      `ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
    - **仍未修（单独排期）**：SDL 类型进入公开头（`jdefs.h:17`、`japi.h:584/626`）、
      `jr2d.c` 承载 UI/场景 API、无资源管理器/绘制指令层、两套分配器并存、
-     事件抽象空转、`jecs.c:494` 对 `ids[512]` 无边界检查、
-     `jsys.c:247` 的 `WSACleanup` 返回值写反等，见架构审视报告。
+     事件抽象空转、Winsock 初始化/清理缺少引用计数等，见架构审视报告。
+     其中 `jecs.c` 越界写、`jsys.c` 返回值写反、`bitset` 泄漏与函数级
+     `static` GPU 资源已在第 20 条修复。
+20. **继续处理：纯 bug 与函数级 static GPU 资源（2026-11-12）**：承接第 19 条，
+    把已确证的 3 个纯 bug + 4 处 GPU 资源全部收口，**公开头零改动**。
+    - **3 个纯 bug**：`jecs.c` 的 `joy_scene_ecs_queryx` 对固定容量 `ids[512]`
+      无上界检查，改为按 `sizeof(result.ids)/sizeof(result.ids[0])` 截断；
+      `joy_scene_ecs_destroy` 漏掉 `store->bitset`（它与 `sparse_set` 内部的
+      `bitset` 是两份独立分配），补 `bitset_destroy`；`jsys.c` 的 `WSACleanup`
+      成功返回 0，原 `return r != 0` 写反，改为 `== 0`。
+    - **4 处函数级 `static` GPU 资源**：`jr2d.c` 的 FOV 渐变 `SDL_Texture*`、
+      `jr3d.c` 的单位圆盘 mesh / FOV 渐变 `SDL_GPUTexture*` / FOV 上一帧 mesh
+      全部改为 `struct jr2d` / `struct jr3d` 的字段（两者 create 都用
+      `SDL_calloc`，新字段自动为 NULL）。这些对象绑定创建它们的 renderer /
+      GPU device，进程级缓存会让第二个实例跨设备复用，且销毁时无处释放。
+    - **释放顺序**：`joy_r2d_destroy` 在 `SDL_DestroyRenderer` 前销毁 FOV 纹理；
+      `joy_r3d_destroy` 在销毁 device 前释放 FOV 纹理，并把两个共享 mesh 经
+      `joy_r3d_mesh_destroy` 推入延迟队列，由 `r3d_flush_pending` 统一释放。
+    - 验证：`--scan` 幂等（1157 条）、`--check` OK、生成物零变化、
+      默认构建 0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
 
 具体内容：
 

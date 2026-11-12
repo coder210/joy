@@ -211,11 +211,12 @@ void joy_scene_ecs_destroy(joy_ecs_world_p world)
                 }
         }
 
-        // 销毁组件存储: 释放稀疏集合与位图
+        // 销毁组件存储: 稀疏集合与 store->bitset 是两份独立分配, 都要释放
         for (khint_t i = kh_begin(world->components); i != kh_end(world->components); i++) {
                 if (kh_exist(world->components, i)) {
                         component_store_t* store = kh_val(world->components, i);
                         sparse_set_destroy(store->sparse_set);
+                        bitset_destroy(store->bitset);
                         SDL_free(store);
                 }
         }
@@ -489,6 +490,9 @@ joy_ecs_id_array_t joy_scene_ecs_queryx(joy_ecs_world_p world, int arg_cnt, char
                         sparse_set_p sparse_set = store->sparse_set;
 
                         for (int i = 0; i < kv_size(sparse_set->density); i++) {
+                                /* 结果是固定容量数组, 命中数超上限就截断, 不能越界写 */
+                                if (result.num >= (int)(sizeof(result.ids) / sizeof(result.ids[0])))
+                                        break;
                                 joy_ecs_id_t id = kv_A(sparse_set->density, i);
                                 if (bitset_test(result_bitset, id)) {
                                         result.ids[result.num++] = id;

@@ -244,7 +244,7 @@ bool joy_net_sys_release_netenv(void)
 #if defined(JOY_WIN)
 	int r;
 	r = WSACleanup();
-	return r != 0;
+	return r == 0;   /* WSACleanup 成功返回 0, 失败返回 SOCKET_ERROR */
 #elif defined(JOY_LINUX)
 	return true;
 #elif defined(JOY_MACOS)

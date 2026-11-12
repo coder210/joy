@@ -103,6 +103,12 @@ struct jr3d {
 	SDL_GPUBuffer**    pending_buffers;
 	int                pending_count;
 	int                pending_cap;
+
+	/* 惰性创建的共享 GPU 资源: 必须按实例持有。函数级 static 会让第二个 r3d
+	   复用绑定在首个 device 上的纹理/mesh, 且销毁设备时无处释放。 */
+	joy_render_mesh_p  unit_disc;         /* 单位圆盘 mesh(圆形按钮等复用) */
+	SDL_GPUTexture*    fov_gradient_tex;  /* FOV 渐变纹理 */
+	joy_render_mesh_p  fov_prev_mesh;     /* FOV 上一帧 mesh, 延迟释放 */
 };
 
 /* 前向声明: 延迟释放队列的 buffer, 在 joy_r3d_end / joy_r3d_destroy 后统一释放 */
@@ -729,6 +735,7 @@ void joy_r3d_destroy(joy_r3d_p r)
 	r->color_count = 0;
 
 	if (r->depth)    SDL_ReleaseGPUTexture(r->dev, r->depth);
+	if (r->dev && r->fov_gradient_tex) SDL_ReleaseGPUTexture(r->dev, r->fov_gradient_tex);
 	if (r->sampler)  SDL_ReleaseGPUSampler(r->dev, r->sampler);
 	if (r->pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->pipeline);
 	if (r->line_pipeline) SDL_ReleaseGPUGraphicsPipeline(r->dev, r->line_pipeline);
@@ -752,6 +759,9 @@ void joy_r3d_destroy(joy_r3d_p r)
 		if (!in_slot) SDL_ReleaseGPUTexture(r->dev, r->font_tex);
 	}
 	if (r->dev) {
+		/* 惰性共享 mesh 的 GPU buffer 走延迟队列, 必须在 flush 之前入队 */
+		if (r->unit_disc)     { joy_r3d_mesh_destroy(r, r->unit_disc); r->unit_disc = NULL; }
+		if (r->fov_prev_mesh) { joy_r3d_mesh_destroy(r, r->fov_prev_mesh); r->fov_prev_mesh = NULL; }
 		r3d_flush_pending(r); /* 释放所有延迟队列中的 buffer */
 		if (r->pending_buffers) SDL_free(r->pending_buffers);
 		SDL_ReleaseWindowFromGPUDevice(r->dev, r->win);
@@ -1888,11 +1898,12 @@ void joy_r3d_button_destroy(joy_r3d_button_p btn)
 	if (btn) SDL_free(btn);
 }
 
-/* 单位圆盘 mesh(半径1), 供圆形按钮/圆环等 2D 绘制复用, 惰性创建一次 */
+/* 单位圆盘 mesh(半径1), 供圆形按钮/圆环等 2D 绘制复用,
+   按 r3d 实例惰性创建一次, 由 joy_r3d_destroy 释放 */
 static joy_render_mesh_p r3d_unit_disc(joy_r3d_p r)
 {
-	static joy_render_mesh_p disc = NULL;
-	if (disc) return disc;
+	if (!r) return NULL;
+	if (r->unit_disc) return r->unit_disc;
 	enum { SEGS = 40 };
 	float rim[SEGS * 2];
 	for (int i = 0; i < SEGS; i++) {
@@ -1907,8 +1918,8 @@ static joy_render_mesh_p r3d_unit_disc(joy_r3d_p r)
 		verts[vi++]=rim[i*2]; verts[vi++]=rim[i*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
 		verts[vi++]=rim[j*2]; verts[vi++]=rim[j*2+1]; verts[vi++]=0; verts[vi++]=0; verts[vi++]=0;
 	}
-	disc = joy_r3d_mesh_custom(r, verts, vi / 5);
-	return disc;
+	r->unit_disc = joy_r3d_mesh_custom(r, verts, vi / 5);
+	return r->unit_disc;
 }
 
 /* 圆形按钮: 深色描边圆 + 填充圆(圆形版 joy_r3d_button_draw), 文字处理同矩形按钮。
@@ -3661,11 +3672,12 @@ bool joy_fov_compute_radii(const joy_fov_rect* blocks, int n,
 	return true;
 }
 
-/* 渐变纹理: v=0 透明 → v=1 全浓, 每帧复用采样以实现软边(一次性惰性创建) */
+/* 渐变纹理: v=0 透明 → v=1 全浓, 每帧复用采样以实现软边。
+   按 device 实例惰性创建, 由 joy_r3d_destroy 释放 */
 static void* joy_fov_gradient_texture(joy_r3d_p r)
 {
-	static void* s_tex = NULL;
-	if (s_tex) return s_tex;
+	if (!r) return NULL;
+	if (r->fov_gradient_tex) return r->fov_gradient_tex;
 	const int H = 256;
 	unsigned char* px = (unsigned char*)SDL_malloc((size_t)H * 4);
 	if (!px) return NULL;
@@ -3674,9 +3686,9 @@ static void* joy_fov_gradient_texture(joy_r3d_p r)
 		px[(size_t)y * 4 + 0] = 54; px[(size_t)y * 4 + 1] = 56;
 		px[(size_t)y * 4 + 2] = 62; px[(size_t)y * 4 + 3] = a;
 	}
-	s_tex = joy_r3d_create_texture(r, 1, H, px, 0);
+	r->fov_gradient_tex = (SDL_GPUTexture*)joy_r3d_create_texture(r, 1, H, px, 0);
 	SDL_free(px);
-	return s_tex;
+	return r->fov_gradient_tex;
 }
 
 void joy_fov_draw(joy_r3d_p r, float px, float py, float pz,
@@ -3724,10 +3736,10 @@ void joy_fov_draw(joy_r3d_p r, float px, float py, float pz,
 	SDL_free(verts);
 	if (!mesh) return;
 
-	/* 上一帧 mesh 在本帧绘制后延迟释放, 避免 GPU buffer 在被引用时销毁悬空 */
-	static joy_render_mesh_p s_prev = NULL;
-	if (s_prev) { joy_r3d_mesh_destroy(r, s_prev); s_prev = NULL; }
-	s_prev = mesh;
+	/* 上一帧 mesh 在本帧绘制后延迟释放, 避免 GPU buffer 在被引用时销毁悬空。
+	   按实例保存, 否则多个 r3d 会互相销毁对方持有的 mesh */
+	if (r->fov_prev_mesh) { joy_r3d_mesh_destroy(r, r->fov_prev_mesh); r->fov_prev_mesh = NULL; }
+	r->fov_prev_mesh = mesh;
 
 	void* tex = joy_fov_gradient_texture(r);
 	if (!tex) return;
