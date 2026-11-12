@@ -19,6 +19,9 @@ struct jr2d {
          * 不能用函数级 static 缓存，否则多实例会跨 renderer 复用并悬空。 */
         SDL_Texture* fov_gradient_tex;
 
+        /* joy_r2d_wrap 借用外部 renderer, 销毁时不能连带销毁它 */
+        bool owns_sdl;
+
         /* 裁剪状态。clip_enabled 为 false 时表示无裁剪。
          * 栈保存 push 之前的 (enabled, rect)，pop 时原样恢复。 */
         bool     clip_enabled;
@@ -68,9 +71,11 @@ struct animation {
 joy_r2d_p joy_r2d_create(joy_window_p win)
 {
         int w, h;
+        /* joy_core_get_raw_window 会直接解引用 win, 必须先判空 */
+        if (!win) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "joy_r2d_create: null window"); return NULL; }
         SDL_Window* raw = (SDL_Window*)joy_core_get_raw_window(win);
-        SDL_GetWindowSize(raw, &w, &h);
         if (!raw) { SDL_LogError(SDL_LOG_CATEGORY_RENDER, "joy_r2d_create: null window"); return NULL; }
+        SDL_GetWindowSize(raw, &w, &h);
         joy_r2d_p r2d = (joy_r2d_p)SDL_calloc(1, sizeof(joy_r2d_t));
         if (!r2d) return NULL;
         r2d->sdl = SDL_CreateRenderer(raw, NULL);
@@ -79,6 +84,7 @@ joy_r2d_p joy_r2d_create(joy_window_p win)
                 SDL_free(r2d);
                 return NULL;
         }
+        r2d->owns_sdl = true;
         joy_r2d_set_logical_presentation(r2d, w, h);
         return r2d;
 }
@@ -88,6 +94,8 @@ joy_r2d_p joy_r2d_wrap(void* sdl_renderer)
         joy_r2d_p r2d = (joy_r2d_p)SDL_calloc(1, sizeof(joy_r2d_t));
         if (!r2d) return NULL;
         r2d->sdl = (SDL_Renderer*)sdl_renderer;
+        /* 借用外部 renderer, 销毁时不能替宿主把它销毁掉 */
+        r2d->owns_sdl = false;
         return r2d;
 }
 
@@ -112,7 +120,7 @@ void joy_r2d_destroy(joy_r2d_p r2d)
         jtext_cache_clear_for(r2d);
         /* FOV 渐变纹理是本 renderer 创建的, 必须在销毁 renderer 前释放 */
         if (r2d->fov_gradient_tex) SDL_DestroyTexture(r2d->fov_gradient_tex);
-        SDL_DestroyRenderer(r2d->sdl);
+        if (r2d->owns_sdl) SDL_DestroyRenderer(r2d->sdl);
         SDL_free(r2d);
 }
 
@@ -1176,6 +1184,18 @@ static void jtext_cache_clear_for(joy_r2d_p r2d)
         while (e) {
                 joy_text_entry_t* next = e->lru_next;
                 if (e->owner == r2d) jtext_entry_remove(e);
+                e = next;
+        }
+}
+
+/* 内部: 只清掉用该字体烘焙的条目, 供 jfont.c 销毁字体时调用。
+ * 全局 clear 会连带销毁其它存活 renderer 的文字纹理。 */
+void joy_r2d_jtext_cache_clear_for_font(joy_font_p font)
+{
+        joy_text_entry_t* e = g_lru_head;
+        while (e) {
+                joy_text_entry_t* next = e->lru_next;
+                if (e->font == font) jtext_entry_remove(e);
                 e = next;
         }
 }

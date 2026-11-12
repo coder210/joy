@@ -259,31 +259,17 @@ bool joy_net_sys_release_netenv(void)
 
 int joy_net_sys_anyaddr(void)
 {
-#if defined(JOY_WIN)
-	int anyaddr = htonl(INADDR_ANY);
-	return anyaddr;
-#elif defined(JOY_LINUX)
-	int anyaddr = (int)htonl(INADDR_ANY);
-	return anyaddr;
-#elif defined(JOY_MACOS)
-	return true;
-#elif defined(JOY_UNIX)
-	return true;
-#else
-	return false;
-#endif
+	/* INADDR_ANY 恒为 0, 网络字节序下仍是 0。原来 macOS/UNIX 分支返回
+	 * true(1), 会把绑定地址变成 1.0.0.0 导致 bind 失败。 */
+	return 0;
 }
 
 bool joy_net_sys_closesocket(int64_t sockfd)
 {
 #if defined(JOY_WIN)
-	return closesocket(sockfd) == 0;
-#elif defined(JOY_LINUX)
-	return close(sockfd) == 0;
-#elif defined(JOY_MACOS)
-	return true;
-#elif defined(JOY_UNIX)
-	return true;
+	return closesocket((SOCKET)sockfd) == 0;
+#elif defined(JOY_LINUX) || defined(JOY_MACOS) || defined(JOY_UNIX)
+	return close((int)sockfd) == 0;
 #else
 	return false;
 #endif
@@ -481,7 +467,8 @@ int joy_net_sys_recv(int64_t sockfd, char* buf)
 {
 	int n;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
-	n = recv(sockfd, buf, JOY_MAX_BUFFER, 0);
+	/* 调用方的 buf 是 char[JOY_MAX_BUFFER], 留 1 字节给结尾的 '\0' */
+	n = recv(sockfd, buf, JOY_MAX_BUFFER - 1, 0);
 	if (n > 0) buf[n] = 0;
 #else
 	n = -1;
@@ -497,13 +484,18 @@ int joy_net_sys_recvfrom(int64_t sockfd, char* buf, char* ip, int* port)
 #else
 	socklen_t len;
 #endif
+	if (ip) ip[0] = '\0';
+	if (port) *port = 0;
 #if defined(JOY_WIN) || defined(JOY_LINUX)
 	struct sockaddr_in peer;
 	len = sizeof(peer);
 	n = recvfrom(sockfd, buf, JOY_MAX_BUFFER, 0,
 		(struct sockaddr*)&peer, &len);
-	strcpy(ip, inet_ntoa(peer.sin_addr));
-	*port = ntohs(peer.sin_port);
+	/* 只有成功收到数据时 peer 才被填充, 失败时不能读未初始化内容 */
+	if (n >= 0 && ip && port) {
+		strcpy(ip, inet_ntoa(peer.sin_addr));
+		*port = ntohs(peer.sin_port);
+	}
 #else
 	n = -1;
 #endif
@@ -742,15 +734,16 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
                 //printf("Received %lu bytes from client %s:%d",
                  //       bytes_transferred, session->client_ip, session->client_port);
 
-                // 示例：回显数据
-                WSABUF wsa_buffer;
-                wsa_buffer.buf = packet->buffer;
-                wsa_buffer.len = bytes_transferred;
-
+                // 示例：回显数据。WSASend 是重叠 IO, 缓冲必须活到完成事件;
+                // 本函数末尾会 free(packet), 不能直接引用 packet->buffer。
                 iocp_operation_packet_ptr send_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
                 if (send_packet) {
+                        ULONG to_copy = bytes_transferred;
+                        if (to_copy > JOY_MAX_BUFFER) to_copy = JOY_MAX_BUFFER;
+                        SDL_memcpy(send_packet->buffer, packet->buffer, to_copy);
+                        send_packet->wsabuffer.buf = (char*)send_packet->buffer;
+                        send_packet->wsabuffer.len = to_copy;
                         send_packet->operation_type = IOCP_OPERATION_SEND;
-                        send_packet->wsabuffer = wsa_buffer;
                         send_packet->associated_session = session;
                         send_packet->target_socket = session->client_socket;
 
@@ -858,8 +851,12 @@ joy_iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
 
         joy_iocp_server_p server = (joy_iocp_server_p)calloc(1, sizeof(joy_iocp_server_t));
         if (!server) {
+                WSACleanup();   /* 与上面的 WSAStartup 配对 */
                 return NULL;
         }
+        /* calloc 把 SOCKET 置 0, 但 0 不是 INVALID_SOCKET; 失败清理路径
+           会误把 0 当成有效套接字交给 closesocket。 */
+        server->listen_socket = INVALID_SOCKET;
 
         InitializeCriticalSection(&server->critical_section);
         server->is_running = true;

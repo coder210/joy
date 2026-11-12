@@ -54,9 +54,9 @@ void joy_r2d_font_destroy(joy_font_p font)
 
 	/* 文字缓存以 font 指针作为键的一部分。字体释放后该指针失效，
 	 * 若新字体恰好分配到同一地址，缓存会命中用旧字体烘焙的纹理，
-	 * 渲染出错误的字形。这里整体清空缓存以杜绝该隐患
-	 * （字体销毁是低频操作，代价可接受）。 */
-	joy_r2d_jtext_cache_clear();
+	 * 渲染出错误的字形。只清掉该字体的条目即可：整体 clear 会连带
+	 * 销毁其它仍存活 renderer 的文字纹理。 */
+	joy_r2d_jtext_cache_clear_for_font(font);
 
 	if (font->fontdata) SDL_free(font->fontdata);
 	SDL_free(font);

@@ -832,14 +832,27 @@ int joy_scene_tilemap_get_tile(const joy_tilemap_tile_layer_p layer, int tx, int
 
 
 
+/* 返回输入串去掉前导 ./ 与分隔符后的偏移, 不复制。
+ * 原来的 static char buf[1024] 被所有 render 实例共享, 且曾直接作为哈希表的
+ * key 保存, destroy 时 free 静态数组会破坏堆。 */
 static const char* default_remap(const char* path)
 {
         if (!path || !*path) return path;
-        const char* p = path;
-        while (*p == '.' || *p == '/' || *p == '\\') p++;
-        static char buf[1024];
-        snprintf(buf, sizeof(buf), "%s", p);
-        return buf;
+        while (*path == '.' || *path == '/' || *path == '\\') path++;
+        return path;
+}
+
+/* 哈希表一律接管 key 的堆副本, destroy 才能无条件 free(key)。
+ * 失败条目(value=NULL)也入表, 避免每帧重复尝试加载同一缺失资源。 */
+static void tex_cache_store(joy_tilemap_render_p r, const char* path, joy_image_p img)
+{
+        char* key = joy_core_utils_strdup(path, NULL);
+        if (!key) return;
+        int ret;
+        khiter_t ki = kh_put(tex_cache, r->tex_cache, key, &ret);
+        if (ki == kh_end(r->tex_cache)) { free(key); return; }
+        if (ret == 0) free(key);   /* 桶已存在, 沿用原 key, 不能替换 */
+        kh_value(r->tex_cache, ki) = img;
 }
 
 static joy_image_p load_texture_internal(joy_tilemap_render_p r, const char* path)
@@ -861,9 +874,7 @@ static joy_image_p load_texture_internal(joy_tilemap_render_p r, const char* pat
         size_t file_sz = 0;
         stbi_uc* filedata = (stbi_uc*)SDL_LoadFile(full_path, &file_sz);
         if (!filedata) {
-                int ret;
-                khiter_t ki = kh_put(tex_cache, r->tex_cache, path, &ret);
-                kh_value(r->tex_cache, ki) = NULL;
+                tex_cache_store(r, path, NULL);
                 return NULL;
         }
 
@@ -871,20 +882,18 @@ static joy_image_p load_texture_internal(joy_tilemap_render_p r, const char* pat
         unsigned char* data = stbi_load_from_memory(filedata, (int)file_sz, &w, &h, &ch, 4);
         SDL_free(filedata);
         if (!data) {
-                int ret;
-                khiter_t ki = kh_put(tex_cache, r->tex_cache, path, &ret);
-                kh_value(r->tex_cache, ki) = NULL;
+                tex_cache_store(r, path, NULL);
                 return NULL;
         }
 
         joy_image_p img = joy_ui_image_create_from_data(r->r2d, data, w, h);
         stbi_image_free(data);
-        if (!img) return NULL;
+        if (!img) {
+                tex_cache_store(r, path, NULL);
+                return NULL;
+        }
 
-        char* key = joy_core_utils_strdup(path, NULL);
-        int ret;
-        khiter_t ki = kh_put(tex_cache, r->tex_cache, key, &ret);
-        kh_value(r->tex_cache, ki) = img;
+        tex_cache_store(r, path, img);
         return img;
 }
 

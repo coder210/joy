@@ -323,10 +323,12 @@ void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name,
         k = kh_get(kecs_component_data, entity, component_id);
 
         if (k == kh_end(entity)) {
+                /* 缓冲按注册时的 meta 分配, 拷贝长度不能超过它, 否则越界写 */
+                size_t copy_size = size < meta ? size : meta;
                 component_data = (ecs_component_data_p)SDL_malloc(sizeof(ecs_component_data_t));
                 component_data->data = SDL_malloc(meta);
-                component_data->size = size;
-                SDL_memcpy(component_data->data, ptr, component_data->size);
+                component_data->size = copy_size;
+                SDL_memcpy(component_data->data, ptr, copy_size);
                 k = kh_put(kecs_component_data, entity, component_id, &ret);
                 kh_val(entity, k) = component_data;
 
@@ -347,9 +349,10 @@ void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name,
                 bitset_set(store->bitset, id);
         }
         else {
+                size_t copy_size = size < meta ? size : meta;
                 component_data = kh_val(entity, k);
-                component_data->size = size;
-                SDL_memcpy(component_data->data, ptr, component_data->size);
+                component_data->size = copy_size;
+                SDL_memcpy(component_data->data, ptr, copy_size);
         }
 }
 

@@ -178,12 +178,13 @@ void joy_script_module_require(joy_modules_p modules, const char* name)
 	if (handle) {
 		mod = (joy_module_p)SDL_malloc(sizeof(joy_module_t));
 		SDL_strlcpy(mod->name, name, 512);
+		mod->handle = handle;   /* _open_sym 与 destroy 都要用到 DLL 句柄 */
 		if (_open_sym(mod)) {
 			k = kh_put(kmod, modules->mods, mod->name, &ret);
 			kh_val(modules->mods, k) = mod;
 		}
 		else {
-			SDL_UnloadObject(mod->handle);
+			SDL_UnloadObject(handle);
 			joy_core_log_error("%s register failed.", mod->name);
 			SDL_free(mod);
 		}
@@ -197,13 +198,13 @@ bool joy_script_modules_retire(joy_modules_p modules, const char* name, joy_modu
 {
 	khint_t k;
 	k = kh_get(kmod, modules->mods, name);
-	if (k == kh_end(modules->mods)) {
+	if (k != kh_end(modules->mods)) {
 		*mod = kh_val(modules->mods, k);
 		kh_del(kmod, modules->mods, k);
 		return true;
 	}
 	else {
-		joy_core_log_error("%s register failed.", name);
+		joy_core_log_error("%s not found.", name);
 		return false;
 	}
 }

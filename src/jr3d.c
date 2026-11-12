@@ -767,8 +767,9 @@ void joy_r3d_destroy(joy_r3d_p r)
 		SDL_ReleaseWindowFromGPUDevice(r->dev, r->win);
 		SDL_DestroyGPUDevice(r->dev);
 	}
-	/* stbtt 持有 font_ttf_buf 内部偏移指针, 仅程序退出时释放(可接受) */
-	if (r->font_ttf_buf) free(r->font_ttf_buf);
+	/* SDL_LoadFile 分配的缓冲必须走 SDL_free; 此时 r3d 即将销毁,
+	   font_info 不会再被使用, 释放其偏移指针指向的缓冲是安全的。 */
+	if (r->font_ttf_buf) SDL_free(r->font_ttf_buf);
 	SDL_free(r);
 }
 
@@ -1155,25 +1156,31 @@ bool joy_r3d_font_init(joy_r3d_p r, const char* ttf_path, int pixel_height)
 {
 	if (!r || !ttf_path || pixel_height <= 0) return false;
 
+	/* 重新 init 时先释放旧字体缓冲与全部烘焙纹理。旧缓冲被 font_info 持有偏移
+	   指针, 但下面马上 InitFont 重新绑定, 期间不调用任何 stbtt 函数, 安全。
+	   不能用 memset 直接丢弃 GPU 纹理句柄, 那是泄漏。 */
+	joy_r3d_font_cache_clear(r);
+	if (r->font_ttf_buf) { SDL_free(r->font_ttf_buf); r->font_ttf_buf = NULL; }
+
 	// 读取 ttf (工作目录为 build/<config>, 字体在 joy_editor/fonts/arial.ttf)
 	// 走 SDL_LoadFile：安卓上资源在 APK 内，fopen 读不到。
-	// 注意: stbtt_fontinfo 内部保存指向 font_ttf_buf 的偏移指针, 该缓冲必须存活到程序结束, 不能 free
 	size_t ttf_sz = 0;
 	r->font_ttf_buf = (unsigned char*)SDL_LoadFile(ttf_path, &ttf_sz);
 	if (!r->font_ttf_buf) { SDL_Log("font: open %s failed", ttf_path); return false; }
 
-	// 注意: stbtt_fontinfo 内部保存指向 font_ttf_buf 的偏移指针, 该缓冲必须存活到程序结束, 不能 free
-	if (!stbtt_InitFont(&r->font_info, r->font_ttf_buf, 0)) { SDL_Log("font: InitFont failed"); return false; }
+	if (!stbtt_InitFont(&r->font_info, r->font_ttf_buf, 0)) {
+		SDL_Log("font: InitFont failed");
+		SDL_free(r->font_ttf_buf);   /* SDL_LoadFile 必须用 SDL_free 释放 */
+		r->font_ttf_buf = NULL;
+		return false;
+	}
 	r->font_scale = stbtt_ScaleForPixelHeight(&r->font_info, (float)pixel_height);
 
 	int ascent = 0, descent = 0, lineGap = 0;
 	stbtt_GetFontVMetrics(&r->font_info, &ascent, &descent, &lineGap);
 	r->font_ascent = (int)(ascent * r->font_scale);
 	r->font_pix_h  = pixel_height;
-	r->font_tex    = NULL;
 	r->font_cache[0] = '\0';
-	r->font_slots_used = 0;
-	memset(r->font_slots, 0, sizeof(r->font_slots));
 	SDL_Log("font: ready scale=%.3f ascent=%d", r->font_scale, r->font_ascent);
 	return true;
 }

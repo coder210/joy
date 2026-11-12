@@ -179,8 +179,34 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
       `joy_r3d_mesh_destroy` 推入延迟队列，由 `r3d_flush_pending` 统一释放。
     - 验证：`--scan` 幂等（1157 条）、`--check` OK、生成物零变化、
       默认构建 0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
+    21. **继续修复：运行期缺陷二批（2026-11-12）**：对 `src/*.c` 再做一轮只读审视，
+     修 13 处可确证的缺陷，公开 API 签名与 IDL 仍零改动。
+     - **崩溃 / 越界**：`jr2d.c` 的 `joy_r2d_create` 在 `SDL_GetWindowSize` 前
+       先判空（`joy_core_get_raw_window(NULL)` 会直接解引用）；`joy_r2d_wrap`
+       借用的外部 renderer 不再被 `joy_r2d_destroy` 销毁（新增 `owns_sdl`）；
+       `jecs.c` 组件拷贝长度按注册的 `meta` 截断；`jsys.c` 的 `recv` 留 1 字节
+       给尾零、`recvfrom` 失败时不再读未初始化的 `peer`；`jtilemap.c` 的
+       `default_remap` 去掉共享 `static buf`，所有哈希 key 改为堆副本（原先
+       失败条目把静态数组 / 外来字符串当 key，destroy 会 `free` 非堆内存）。
+     - **句柄 / 生命周期**：`jmodule.c` 补 `mod->handle = handle`（原先
+       `_open_sym` 拿野指针去 `SDL_LoadFunction`、失败时卸载野句柄），并修正
+       `joy_script_modules_retire` 查不到却对 `kh_end` 取值的条件写反；
+       `jsys.c` 的 IOCP 回显把数据复制进发送包自有的 buffer（原先 `WSASend`
+       异步引用本函数末尾就 `free` 的接收包），create 的 `calloc` 失败补
+       `WSACleanup`、`listen_socket` 显式置 `INVALID_SOCKET`（避免
+       `closesocket(0)`）；`jr3d.c` 字体重复 init 先释放旧 ttf 缓冲与全部烘焙
+       纹理，`SDL_LoadFile` 的缓冲统一走 `SDL_free`（原 `free` 跨 CRT 堆）。
+     - **缓存隔离 / 平台分支**：`jfont.c` 销毁字体改为只清该字体的缓存条目
+       （`jdefs.h` 末尾追加不带 `JOY_API` 的内部声明，位于最后一个公开声明
+       之后，故 `source` 行号零漂移）；`jsys.c` 的 `anyaddr` 统一返回 0
+       （macOS/UNIX 原返回 `true`=1.0.0.0）、`closesocket` 各平台真正关闭句柄。
+     - **本轮未做**：Winsock 多处各自 `WSAStartup/WSACleanup` 的引用计数收敛
+       （当前每处自行配对，仅补齐失败路径）；`set_sock_*timeo` 在 macOS/UNIX
+       仍是空实现后返回 0。与第 19 条的排期项一并留待单独处理。
+     - 验证：`--scan` 幂等（1157 条）、`--check` OK、生成物零变化、默认构建
+       0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
 
-具体内容：
+    具体内容：
 
 1. **`image_draw_rect`**（`include/joy/japi.h` 末尾、`src/jr2d.c`）
    全标量 L1，`srcrect` 固定 NULL，坐标是**像素**。绕开 `image_draw1` 的

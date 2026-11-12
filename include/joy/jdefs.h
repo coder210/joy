@@ -326,6 +326,10 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                  const float* vert_data, int vertex_count,
                                  const int* indices, int index_count);
 
+        /* jr2d 内部按字体清理文字缓存, 供 jfont.c 销毁字体时调用;
+         * 非 joy_ 公开 API, 不进入 IDL / 生成链。 */
+        void joy_r2d_jtext_cache_clear_for_font(joy_font_p font);
+
 #ifdef __cplusplus
 }
 #endif
