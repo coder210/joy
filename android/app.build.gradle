@@ -54,6 +54,8 @@ android {
     sourceSets {
         // SDL 工程的 src/main 里只有 Java/res/Manifest；清空默认的
         // jniLibs/assets，避免以后上游带进无关资源混进每个 flavor。
+        // 每个 flavor 的 res 目录覆盖 main 的 @string/app_name，让安装后的
+        // 应用名与该后端 desktop 窗口标题一致（资源由 workflow 从 android/labels/ 复制）。
         main {
             jniLibs.srcDirs = []
             assets.srcDirs = []
@@ -61,18 +63,22 @@ android {
         cpp {
             jniLibs.srcDirs = ['src/cpp/jniLibs']
             assets.srcDirs = ['src/cpp/assets']
+            res.srcDirs = ['src/cpp/res']
         }
         lua {
             jniLibs.srcDirs = ['src/lua/jniLibs']
             assets.srcDirs = ['src/lua/assets']
+            res.srcDirs = ['src/lua/res']
         }
         js {
             jniLibs.srcDirs = ['src/js/jniLibs']
             assets.srcDirs = ['src/js/assets']
+            res.srcDirs = ['src/js/res']
         }
         csharp {
             jniLibs.srcDirs = ['src/csharp/jniLibs']
             assets.srcDirs = ['src/csharp/assets']
+            res.srcDirs = ['src/csharp/res']
         }
     }
 

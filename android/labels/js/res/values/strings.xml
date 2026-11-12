@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- productFlavor 资源覆盖 SDL/android-project 的 @string/app_name。
+     与 desktop 窗口标题一致：examples/js/src/main.js 的 "Joy JS Topdown"。 -->
+<resources>
+    <string name="app_name">Joy JS Topdown</string>
+</resources>

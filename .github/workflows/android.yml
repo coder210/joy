@@ -183,6 +183,25 @@ jobs:
             assets="build-apk/app/src/$backend/assets"
             mkdir -p "$jni" "$assets"
 
+            # flavor 的 res 覆盖 main 的 @string/app_name：安装后的名称与
+            # 该后端 desktop 窗口标题一致。desktop 源码是唯一数据源，
+            # 任一侧改动不同步就直接在这里拦住，避免又变回统一的 "Game"。
+            case "$backend" in
+              cpp)    src='examples/cpp/src/game.cpp';          label='Joy CPP Topdown' ;;
+              lua)    src='examples/lua/src/main.lua';          label='Joy Lua Topdown' ;;
+              js)     src='examples/js/src/main.js';            label='Joy JS Topdown' ;;
+              csharp) src='examples/csharp/runtime/GameApp.cs'; label='Joy C# Topdown' ;;
+            esac
+            grep -Fq "\"$label\"" "$src" \
+              || { echo "::error::$src 窗口标题已变更，请同步 android/labels/$backend"; exit 1; }
+            grep -Fq "<string name=\"app_name\">$label</string>" \
+              "android/labels/$backend/res/values/strings.xml" \
+              || { echo "::error::$backend 应用名与 desktop 标题不一致"; exit 1; }
+
+            label_res="build-apk/app/src/$backend/res/values"
+            mkdir -p "$label_res"
+            cp "android/labels/$backend/res/values/strings.xml" "$label_res/strings.xml"
+
             # SDLActivity.getLibraries() 依次 System.loadLibrary("SDL3", "main")。
             cp "$sdl3" "$jni/libSDL3.so"
             cp "$mono" "$jni/libmonosgen-2.0.so"

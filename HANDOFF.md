@@ -297,6 +297,27 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
      - 复查扫描后真实隐式依赖为 0；`--check` OK（1170 条，生成物零变化）、
        默认构建 0 错误、`ctest` 4/4、PLUGINS=ON 构建 0 错误。
      - 注意：本地没有 Android NDK，Android 端仍以 CI 复验为准。
+25. **Android APK 应用名对齐 desktop（2026-11-12）**：CI 出的 4 个 APK 安装后
+    统一显示 `Game`。根因是 `SDL/android-project/app/src/main/res/values/strings.xml`
+    的 `<string name="app_name">Game</string>` 被唯一的 AndroidManifest 用
+    `android:label="@string/app_name"` 引用，而 4 个 productFlavor 只差异化了
+    `applicationIdSuffix` / jniLibs / assets，没有按 flavor 覆盖 label。
+    - 目标名称取 desktop 各后端窗口标题：`examples/cpp/src/game.cpp` 的
+      "Joy CPP Topdown"、`examples/lua/src/main.lua` 的 "Joy Lua Topdown"、
+      `examples/js/src/main.js` 的 "Joy JS Topdown"、
+      `examples/csharp/runtime/GameApp.cs` 的 "Joy C# Topdown"。
+    - 做法：新增 `android/labels/<backend>/res/values/strings.xml` 四份，
+      `.github/workflows/android.yml` 在打包循环里复制到
+      `build-apk/app/src/<backend>/res/values/`，`android/app.build.gradle`
+      为每个 flavor 显式声明 `res.srcDirs`。AGP 资源合并里 flavor 优先于
+      main，同名 `app_name` 被覆盖；**不改 SDL 上游文件、不改 manifest**。
+    - 防漂移：workflow 用 `grep -F` 校验 desktop 源码的窗口标题与
+      `android/labels/` 的 `app_name` 一致，任一侧改动不同步即失败。
+      desktop 源码是唯一数据源。
+    - 验证：4 份 XML 均可解析、映射本地模拟全成立、`--check` OK（1170 条，
+      生成物零变化）、`git diff --check` 0；桌面构建 / ctest 不受影响。
+    - 注意：本地无 Android SDK/Gradle，flavor 资源覆盖是否生效以 CI 产出的
+      APK 安装结果为准；launcher 名称约 15 字符，部分启动器可能截断。
 
     具体内容：
 
