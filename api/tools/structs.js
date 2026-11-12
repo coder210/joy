@@ -21,7 +21,7 @@ function stripComments(src) {
  * 生成物里可见的标准 C 类型：joy_api_vtable.h 只 include stdint/stdbool/stddef，
  * 看不到 joy_ft_t；而且 SCALARS 不认别名会把 joy_vec2_t / joy_vec3_t / mat*.h 判成
  * 「布局不可展开」，连带一批 L2（joy_math_shape_draw_circle / joy_ui_image_draw /
- * joy_r2d_jtext_printf）开不了。 */
+ * joy_r2d_text_printf）开不了。 */
 const TYPE_ALIASES = { 'joy_ft_t': 'float' };
 
 function normType(t) {

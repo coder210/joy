@@ -283,7 +283,7 @@ void joy_ui_label_draw(joy_label_p label)
         //dest_rect.w = label->text->w;
         //dest_rect.h = label->text->h;
         //SDL_RenderTexture(r2d, label->text, NULL, &dest_rect);
-        joy_r2d_jtext_print(label->r2d, label->text, label->position.x, label->position.y);
+        joy_r2d_text_print(label->r2d, label->text, label->position.x, label->position.y);
 }
 
 void joy_label_handle_event(joy_label_p label, void* event)
@@ -502,7 +502,7 @@ void joy_ui_button_draw(joy_button_p btn)
                 float height = joy_ui_text_get_height(btn->text);
                 dest_rect.x = rect.x + (rect.w - widht) / 2.0f + btn->text_pos.x;
                 dest_rect.y = rect.y + (rect.h - height) / 2.0f + btn->text_pos.y;
-                joy_r2d_jtext_print(r2d, btn->text, dest_rect.x, dest_rect.y);
+                joy_r2d_text_print(r2d, btn->text, dest_rect.x, dest_rect.y);
         }
 }
 
@@ -646,7 +646,7 @@ void joy_ui_combobox_draw(joy_combobox_p combobox)
                 // 注：jtext 的内部结构（real_height）在 jui.c 不可见，无法精确垂直居中，
                 // 这里用按分辨率换算的顶部偏移（设计稿 2px）。
                 joy_text_p t = combobox->items[combobox->selected_index].text;
-                joy_r2d_jtext_print(r2d, t, combobox->main_rect.x + 5.0f * s,
+                joy_r2d_text_print(r2d, t, combobox->main_rect.x + 5.0f * s,
                             combobox->main_rect.y + 2.0f * s);
         }
 
@@ -699,7 +699,7 @@ void joy_ui_combobox_draw(joy_combobox_p combobox)
                         if (item->text) {
                                 // 顶部偏移按分辨率换算（设计稿 2px）：
                                 // item_height 已同步放大，文字不会溢出到下一项
-                                joy_r2d_jtext_print(r2d, item->text, item_rect.x + 5.0f * s,
+                                joy_r2d_text_print(r2d, item->text, item_rect.x + 5.0f * s,
                                             item_rect.y + 2.0f * s);
                         }
                 }
@@ -990,7 +990,7 @@ void joy_ui_combobox_input_draw(joy_combobox_input_p ci)
                 float text_x = rect.x + 4.0f * s;
                 float text_y = rect.y + (rect.h - (float)joy_r2d_font_get_size(ci->font)) / 2.0f;
                 float ox = text_x - (float)ci->scroll_offset;
-                joy_r2d_jtext_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
+                joy_r2d_text_printx(r, ci->font, ci->buffer, ci->text_len, ci->text_color, ox, text_y);
         }
 
         // 恢复裁剪
@@ -1093,7 +1093,7 @@ void joy_ui_combobox_input_draw_dropdown(joy_combobox_input_p ci)
                 float th = (float)joy_r2d_font_get_size(ci->font);
                 float ty = item_rect.y + (item_rect.h - th) * 0.5f;
                 if (ty < item_rect.y) ty = item_rect.y;
-                joy_r2d_jtext_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
+                joy_r2d_text_printx(r, ci->font, ci->items[i], (int)strlen(ci->items[i]),
                         ci->text_color, item_rect.x + 4.0f * s, ty);
         }
 }
@@ -1386,7 +1386,7 @@ void joy_ui_datagrid_draw(joy_datagrid_p grid, joy_r2d_p r2d)
                 int y = grid->y;
                 for (int col = 0; col < grid->col_count; col++) {
                         joy_text_p tex = grid->headers[col];
-                        joy_r2d_jtext_print(r2d, tex, x, y);
+                        joy_r2d_text_print(r2d, tex, x, y);
 
                         // 绘制垂直分隔线
                         joy_r2d_set_color(r2d, grid_color.r, grid_color.g, grid_color.b, grid_color.a);
@@ -1417,7 +1417,7 @@ void joy_ui_datagrid_draw(joy_datagrid_p grid, joy_r2d_p r2d)
                                 char* text = kv_A(kv_A(grid->data, row), col);
                                 if (text) {
                                         joy_color_t c = { 0,0,0,255 };
-                                        joy_r2d_jtext_printx(r2d, grid->font, text, (int)strlen(text), c, (float)x + 2, (float)y);
+                                        joy_r2d_text_printx(r2d, grid->font, text, (int)strlen(text), c, (float)x + 2, (float)y);
                                 }
                         }
 
@@ -1589,7 +1589,7 @@ void joy_radio_render(joy_radio_p radio, joy_r2d_p r2d)
 
         // 渲染标签文本
         if (radio->label) {
-                /* 标签文本 — 由外部传入 font 后使用 joy_r2d_jtext_printx 渲染 */
+                /* 标签文本 — 由外部传入 font 后使用 joy_r2d_text_printx 渲染 */
         }
 }
 
@@ -1853,7 +1853,7 @@ void joy_ui_checkbox_draw(joy_checkbox_p checkbox, joy_r2d_p r2d, void* font)
                 int lw = 0, lh = 0;
                 joy_r2d_get_logical_presentation(r2d, &lw, &lh, NULL);
                 const float scale = (lw > 0) ? ((float)lw / 480.0f) : 1.0f;
-                joy_r2d_jtext_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
+                joy_r2d_text_printx(r2d, f, checkbox->label, (int)strlen(checkbox->label), tc,
                         cx + sz + 8.0f * scale,
                         cy + (sz - (float)joy_r2d_font_get_size(f)) / 2);
         }
@@ -2679,20 +2679,20 @@ void joy_ui_inputbox_draw(joy_inputbox_p ti)
                         joy_color_t white = { 255, 255, 255, 255 };
                         /* 选中前部分 */
                         if (a > 0)
-                                joy_r2d_jtext_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
+                                joy_r2d_text_printx(r, ti->font, ti->buffer, a, ti->text_color, ox, text_y);
                         /* 选中部分（白色） */
                         if (b > a) {
                                 float offset_before = (float)joy_ui_text_get_width(joy_ui_text_createx(r, ti->font, ti->buffer, a, ti->text_color));
-                                joy_r2d_jtext_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
+                                joy_r2d_text_printx(r, ti->font, ti->buffer + a, b - a, white, ox + offset_before, text_y);
                         }
                         /* 选中后部分 */
                         if (b < ti->text_len) {
                                 float offset_sel = (float)joy_ui_text_get_width(joy_ui_text_createx(r, ti->font, ti->buffer, b, ti->text_color));
-                                joy_r2d_jtext_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
+                                joy_r2d_text_printx(r, ti->font, ti->buffer + b, ti->text_len - b, ti->text_color, ox + offset_sel, text_y);
                         }
                 }
                 else {
-                        joy_r2d_jtext_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
+                        joy_r2d_text_printx(r, ti->font, ti->buffer, ti->text_len, ti->text_color, ox, text_y);
                 }
         }
 
@@ -3028,7 +3028,7 @@ static void popup_draw_text_lines(joy_r2d_p r2d, joy_font_p font, const char* te
                 if (!end) end = start + strlen(start);
                 int line_len = (int)(end - start);
                 if (line_len > 0) {
-                        joy_r2d_jtext_printx(r2d, font, start, line_len, color, x, y);
+                        joy_r2d_text_printx(r2d, font, start, line_len, color, x, y);
                         y += (float)joy_r2d_font_get_size(font) + 4;
                 }
                 if (*end == '\n') end++;
@@ -3069,7 +3069,7 @@ void joy_ui_popup_draw(joy_popup_p p, joy_font_p title_font, joy_font_p content_
         /* 标题文字 */
         if (p->title[0] && title_font) {
                 int title_len = (int)strlen(p->title);
-                joy_r2d_jtext_printx(r, title_font, p->title, title_len, p->title_text_color,
+                joy_r2d_text_printx(r, title_font, p->title, title_len, p->title_text_color,
                         x + p->padding, y + (p->title_height - (float)joy_r2d_font_get_size(title_font)) / 2);
         }
 
@@ -3191,7 +3191,7 @@ void joy_ui_tooltip_draw(joy_tooltip_p t, joy_font_p font)
         joy_math_shape_draw_rectangle(r, "line", (joy_rect_t) { t->x, t->y, tw, th });
 
         /* 文字 */
-        joy_r2d_jtext_printx(r, font, t->text, t->text_len, t->text_color,
+        joy_r2d_text_printx(r, font, t->text, t->text_len, t->text_color,
                 t->x + t->padding, t->y + t->padding / 2);
 }
 
@@ -3660,12 +3660,12 @@ void joy_ui_layout_grid_label(joy_layout_grid_t* g, joy_r2d_p r2d, joy_font_p fo
         float lx, ly, lw, lh;
         joy_ui_layout_grid_cell(g, col, &lx, &ly, &lw, &lh);
         int tw = 0, th = 0;
-        joy_r2d_jtext_measurex(r2d, font, text, n, c, &tw, &th);
+        joy_r2d_text_measurex(r2d, font, text, n, c, &tw, &th);
         int wl = 0, hl = 0;
         joy_r2d_get_logical_presentation(r2d, &wl, &hl, NULL);
         float text_x = lx;                                   // 左对齐
         float text_y = ly + ((lh - (float)th) * 0.5f);       // 垂直居中
-        joy_r2d_jtext_printf(r2d, font, text, n, c,
+        joy_r2d_text_printf(r2d, font, text, n, c,
                      (wl > 0 ? text_x / (float)wl : 0.0f),
                      (hl > 0 ? text_y / (float)hl : 0.0f));
         if (cx) *cx = lx; if (cy) *cy = ly; if (cw) *cw = lw; if (ch) *ch = lh;

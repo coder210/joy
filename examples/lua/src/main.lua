@@ -139,7 +139,7 @@ local function text(s, x, y, r, g, b)
     B.JtextPrintx(ren, font_small, s, #s, r or 232, g or 236, b or 245, 255, x, y)
 end
 
--- 生成链路里 joy_r2d_jtext_measurex 是 L3（int* 输出参数）尚未开放，
+-- 生成链路里 joy_r2d_text_measurex 是 L3（int* 输出参数）尚未开放，
 -- 用字号 × 字符数近似宽度做居中
 local function text_width(s, size)
     local n = utf8.len(s) or #s

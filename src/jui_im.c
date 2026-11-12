@@ -11,7 +11,7 @@
  *  关键设计：
  *   - 复用 jui 的 button / checkbox / slider（retained 实例），按 id 池化。
  *   - 裁剪基于 joy_r2d_push_clip_rect / joy_r2d_pop_clip_rect，滚动面板的基础。
- *   - 文字统一走 joy_r2d_jtext_printx 缓存，避免每帧建销纹理。
+ *   - 文字统一走 joy_r2d_text_printx 缓存，避免每帧建销纹理。
  * ============================================================================ */
 
 #include <SDL3/SDL.h>
@@ -311,23 +311,23 @@ int joy_ui_text(joy_ui_ctx_p ctx, float x, float y, const char* s, joy_color_t c
 {
         if (!ctx || !ctx->font || !s) return 0;
         int w, h;
-        if (!joy_r2d_jtext_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, &w, &h)) return 0;
-        joy_r2d_jtext_printx(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, x, y);
+        if (!joy_r2d_text_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, &w, &h)) return 0;
+        joy_r2d_text_printx(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, x, y);
         return w;
 }
 
 bool joy_ui_text_measure(joy_ui_ctx_p ctx, const char* s, joy_color_t c, int* out_w, int* out_h)
 {
         if (!ctx || !ctx->font || !s) return false;
-        return joy_r2d_jtext_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, out_w, out_h);
+        return joy_r2d_text_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, out_w, out_h);
 }
 
 int joy_ui_text_centered(joy_ui_ctx_p ctx, joy_rect_t r, const char* s, joy_color_t c)
 {
         if (!ctx || !ctx->font || !s) return 0;
         int w = 0, h = 0;
-        if (!joy_r2d_jtext_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, &w, &h)) return 0;
-        joy_r2d_jtext_printx(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c,
+        if (!joy_r2d_text_measurex(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c, &w, &h)) return 0;
+        joy_r2d_text_printx(ctx->r2d, ctx->font, s, (int)SDL_strlen(s), c,
                      r.x + (r.w - w) * 0.5f, r.y + (r.h - h) * 0.5f);
         return w;
 }

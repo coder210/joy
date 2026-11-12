@@ -84,13 +84,13 @@ extern "C" {
         JOY_API int joy_net_pack_string(char* buf, const char* value, int type_size, int offset);
         JOY_API int joy_net_unpack_string(const char* buf, char* value, int type_size, int offset);
        
-        JOY_API joy_timer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata);
-        JOY_API void joy_scene_jtimer_destroy(joy_timer_p timer);
-        JOY_API void joy_scene_jtimer_trigger(joy_timer_p timer);
-        JOY_API void joy_scene_jtimer_set_interval(joy_timer_p timer, int interval);
-        JOY_API void joy_scene_jtimer_set_active(joy_timer_p timer, bool active);
-        JOY_API void joy_scene_jtimer_reset(joy_timer_p timer);
-        JOY_API uint64_t joy_scene_jtimer_get_elapsed(joy_timer_p timer);
+        JOY_API joy_timer_p joy_scene_timer_create(int interval, joy_timer_callback cb, void* userdata);
+        JOY_API void joy_scene_timer_destroy(joy_timer_p timer);
+        JOY_API void joy_scene_timer_trigger(joy_timer_p timer);
+        JOY_API void joy_scene_timer_set_interval(joy_timer_p timer, int interval);
+        JOY_API void joy_scene_timer_set_active(joy_timer_p timer, bool active);
+        JOY_API void joy_scene_timer_reset(joy_timer_p timer);
+        JOY_API uint64_t joy_scene_timer_get_elapsed(joy_timer_p timer);
 
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  core  ///////////////////////////////////
@@ -263,8 +263,8 @@ extern "C" {
         JOY_API void joy_ui_text_updatex(joy_text_p text, joy_font_p font, const char* str, int len, joy_color_t color);
         JOY_API void joy_ui_text_update(joy_text_p text, joy_font_p font, const int* codepoints, int num_codepoints, joy_color_t color);
         JOY_API void joy_ui_text_destroy(joy_text_p jtext_tex);
-        JOY_API void joy_r2d_jtext_print(joy_r2d_p r2d, joy_text_p jtext_tex, float x, float y);
-        JOY_API void joy_r2d_jtext_printx(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color, float x, float y);
+        JOY_API void joy_r2d_text_print(joy_r2d_p r2d, joy_text_p jtext_tex, float x, float y);
+        JOY_API void joy_r2d_text_printx(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color, float x, float y);
 
         /* ==================== 比例坐标（0~1）绘制接口 ====================
          *
@@ -288,30 +288,30 @@ extern "C" {
                                       float fx, float fy, float fw, float fh);
 
         /* 文字位置用比例（字号仍由 font 的烘焙尺寸决定；*_scaled 可再乘一个缩放系数） */
-        JOY_API void    joy_r2d_jtext_printf(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
+        JOY_API void    joy_r2d_text_printf(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
                                      joy_color_t color, float fx, float fy);
-        JOY_API void    joy_r2d_jtext_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
+        JOY_API void    joy_r2d_text_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
                                             joy_color_t color, float fx, float fy, float scale);
         JOY_API int joy_ui_text_get_width(joy_text_p jtext_tex);
         JOY_API int joy_ui_text_get_height(joy_text_p jtext_tex);
 
         /* 文字纹理缓存
-         * joy_r2d_jtext_printx() 以前的实现是 joy_ui_text_createx() -> joy_r2d_jtext_print() -> joy_ui_text_destroy()，
+         * joy_r2d_text_printx() 以前的实现是 joy_ui_text_createx() -> joy_r2d_text_print() -> joy_ui_text_destroy()，
          * 即每次调用都创建并销毁一张 SDL 纹理。inputbox、datagrid、popup、tooltip、
          * combobox_input 等控件都走这条路径，一个带选区的 inputbox 每帧要建 3~4 张纹理。
          * 现在按 (renderer, font, color, 内容) 缓存 LRU 复用，纹理不跨 renderer 串用。
          *
          * 帧时钟每实例独立，sweep 单位为帧；下列 4 个接口作用于全局表（clear 清所有实例）。
-         * 注意：这只影响 joy_r2d_jtext_printx；joy_ui_text_createx 仍由调用方自行持有与释放。
+         * 注意：这只影响 joy_r2d_text_printx；joy_ui_text_createx 仍由调用方自行持有与释放。
          */
-        JOY_API void joy_r2d_jtext_cache_clear(void);
-        JOY_API void joy_r2d_jtext_cache_set_limit(int max_entries);
-        JOY_API int  joy_r2d_jtext_cache_get_count(void);
-        JOY_API void joy_r2d_jtext_cache_sweep(int max_idle_frames);
+        JOY_API void joy_r2d_text_cache_clear(void);
+        JOY_API void joy_r2d_text_cache_set_limit(int max_entries);
+        JOY_API int  joy_r2d_text_cache_get_count(void);
+        JOY_API void joy_r2d_text_cache_sweep(int max_idle_frames);
 
         /* 测量文本尺寸，同样走缓存（命中缓存时不产生任何纹理开销）。
-         * joy_r2d_jtext_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
-        JOY_API bool joy_r2d_jtext_measurex(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
+         * joy_r2d_text_printx 不返回宽高，而布局（右对齐、居中、换行）必须能测量。 */
+        JOY_API bool joy_r2d_text_measurex(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
                 joy_color_t color, int* out_w, int* out_h);
 
         /* 简单动画 */
@@ -438,7 +438,7 @@ extern "C" {
         /* 清空缓存并释放全部缓存纹理(字体销毁前调用) */
         JOY_API void joy_r3d_font_cache_clear(joy_r3d_p r);
         /* 回收闲置超过 max_idle_frames 帧的缓存条目并释放其纹理(单位: 渲染帧,
-           由 joy_r3d_begin 推进)。对齐 joy_r2d_jtext_cache_sweep 的语义, 供周期性调用清理
+           由 joy_r3d_begin 推进)。对齐 joy_r2d_text_cache_sweep 的语义, 供周期性调用清理
            一次性文本(如滚动的聊天记录), 避免缓存长期被历史文本占满。 */
         JOY_API void joy_r3d_font_cache_sweep(joy_r3d_p r, int max_idle_frames);
 

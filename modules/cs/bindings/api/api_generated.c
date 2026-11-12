@@ -194,9 +194,9 @@ static void icall_JtimerDestroy(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("joy_scene_jtimer_destroy", args, 1, &st);
+        (void)joy_api_call("joy_scene_timer_destroy", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_destroy", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_destroy", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -207,9 +207,9 @@ static void icall_JtimerTrigger(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("joy_scene_jtimer_trigger", args, 1, &st);
+        (void)joy_api_call("joy_scene_timer_trigger", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_trigger", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_trigger", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -221,9 +221,9 @@ static void icall_JtimerSetInterval(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_i32((int32_t)p1);
-        (void)joy_api_call("joy_scene_jtimer_set_interval", args, 2, &st);
+        (void)joy_api_call("joy_scene_timer_set_interval", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_set_interval", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_set_interval", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -235,9 +235,9 @@ static void icall_JtimerSetActive(uint64_t p0, int32_t p1)
         joy_value_t args[2];
         args[0] = joy_v_handle((uint64_t)p0);
         args[1] = joy_v_bool((int32_t)p1);
-        (void)joy_api_call("joy_scene_jtimer_set_active", args, 2, &st);
+        (void)joy_api_call("joy_scene_timer_set_active", args, 2, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_set_active", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_set_active", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -248,9 +248,9 @@ static void icall_JtimerReset(uint64_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        (void)joy_api_call("joy_scene_jtimer_reset", args, 1, &st);
+        (void)joy_api_call("joy_scene_timer_reset", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_reset", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_reset", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -262,9 +262,9 @@ static uint64_t icall_JtimerGetElapsed(uint64_t p0)
         joy_value_t r;
         joy_value_t args[1];
         args[0] = joy_v_handle((uint64_t)p0);
-        r = joy_api_call("joy_scene_jtimer_get_elapsed", args, 1, &st);
+        r = joy_api_call("joy_scene_timer_get_elapsed", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_jtimer_get_elapsed", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_scene_timer_get_elapsed", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (uint64_t)r.as.u64;
@@ -1431,9 +1431,9 @@ static void icall_JtextPrint(uint64_t p0, uint64_t p1, float p2, float p3)
         args[1] = joy_v_handle((uint64_t)p1);
         args[2] = joy_v_f64((double)p2);
         args[3] = joy_v_f64((double)p3);
-        (void)joy_api_call("joy_r2d_jtext_print", args, 4, &st);
+        (void)joy_api_call("joy_r2d_text_print", args, 4, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_print", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_print", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1455,10 +1455,10 @@ static void icall_JtextPrintx(uint64_t p0, uint64_t p1, MonoString* p2, int32_t 
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_f64((double)p8);
         args[9] = joy_v_f64((double)p9);
-        (void)joy_api_call("joy_r2d_jtext_printx", args, 10, &st);
+        (void)joy_api_call("joy_r2d_text_printx", args, 10, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_printx", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printx", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1536,10 +1536,10 @@ static void icall_JtextPrintf(uint64_t p0, uint64_t p1, MonoString* p2, int32_t 
         args[7] = joy_v_u32((uint32_t)p7);
         args[8] = joy_v_f64((double)p8);
         args[9] = joy_v_f64((double)p9);
-        (void)joy_api_call("joy_r2d_jtext_printf", args, 10, &st);
+        (void)joy_api_call("joy_r2d_text_printf", args, 10, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_printf", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printf", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1562,10 +1562,10 @@ static void icall_JtextPrintfScaled(uint64_t p0, uint64_t p1, MonoString* p2, in
         args[8] = joy_v_f64((double)p8);
         args[9] = joy_v_f64((double)p9);
         args[10] = joy_v_f64((double)p10);
-        (void)joy_api_call("joy_r2d_jtext_printf_scaled", args, 11, &st);
+        (void)joy_api_call("joy_r2d_text_printf_scaled", args, 11, &st);
         if (s2) mono_free(s2);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_printf_scaled", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_printf_scaled", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1602,9 +1602,9 @@ static int32_t icall_TextGetHeight(uint64_t p0)
 static void icall_JtextCacheClear(void)
 {
         joy_status_t st = JOY_OK;
-        (void)joy_api_call("joy_r2d_jtext_cache_clear", NULL, 0, &st);
+        (void)joy_api_call("joy_r2d_text_cache_clear", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_cache_clear", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_cache_clear", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1615,9 +1615,9 @@ static void icall_JtextCacheSetLimit(int32_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_i32((int32_t)p0);
-        (void)joy_api_call("joy_r2d_jtext_cache_set_limit", args, 1, &st);
+        (void)joy_api_call("joy_r2d_text_cache_set_limit", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_cache_set_limit", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_cache_set_limit", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -1627,9 +1627,9 @@ static int32_t icall_JtextCacheGetCount(void)
 {
         joy_status_t st = JOY_OK;
         joy_value_t r;
-        r = joy_api_call("joy_r2d_jtext_cache_get_count", NULL, 0, &st);
+        r = joy_api_call("joy_r2d_text_cache_get_count", NULL, 0, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_cache_get_count", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_cache_get_count", joy_status_name(st), joy_last_error_where());
                 return 0;
         }
         return (int32_t)r.as.i32;
@@ -1640,9 +1640,9 @@ static void icall_JtextCacheSweep(int32_t p0)
         joy_status_t st = JOY_OK;
         joy_value_t args[1];
         args[0] = joy_v_i32((int32_t)p0);
-        (void)joy_api_call("joy_r2d_jtext_cache_sweep", args, 1, &st);
+        (void)joy_api_call("joy_r2d_text_cache_sweep", args, 1, &st);
         if (st != JOY_OK) {
-                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_jtext_cache_sweep", joy_status_name(st), joy_last_error_where());
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r2d_text_cache_sweep", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;

@@ -56,7 +56,7 @@ void joy_r2d_font_destroy(joy_font_p font)
 	 * 若新字体恰好分配到同一地址，缓存会命中用旧字体烘焙的纹理，
 	 * 渲染出错误的字形。只清掉该字体的条目即可：整体 clear 会连带
 	 * 销毁其它仍存活 renderer 的文字纹理。 */
-	joy_r2d_jtext_cache_clear_for_font(font);
+	joy_r2d_text_cache_clear_for_font(font);
 
 	if (font->fontdata) SDL_free(font->fontdata);
 	SDL_free(font);

@@ -112,7 +112,7 @@
 | `joy_net_unpack_int64` | 非不透明指针 / 输出参数：int64_t* | include/joy/japi.h:83 |
 | `joy_net_pack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:84 |
 | `joy_net_unpack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:85 |
-| `joy_scene_jtimer_create` | 未知类型需人工标注：jtimer_callback | include/joy/japi.h:87 |
+| `joy_scene_timer_create` | 未知类型需人工标注：joy_timer_callback | include/joy/japi.h:87 |
 | `joy_core_get_mouse_pos` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:105 |
 | `joy_core_log_info` | 可变参数 | include/joy/japi.h:125 |
 | `joy_core_log_debug` | 可变参数 | include/joy/japi.h:126 |
@@ -139,7 +139,7 @@
 | `joy_r2d_frect` | 结构体按值返回 | include/joy/japi.h:279 |
 | `joy_r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:280 |
 | `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/japi.h:287 |
-| `joy_r2d_jtext_measurex` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:314 |
+| `joy_r2d_text_measurex` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:314 |
 | `joy_scene_animation_draw` | 结构体指针参数 | include/joy/japi.h:327 |
 | `joy_r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/japi.h:340 |
 | `joy_r3d_mat44_to_float16` | 数组参数 | include/joy/japi.h:344 |

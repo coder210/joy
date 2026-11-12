@@ -202,13 +202,13 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 **不参与运行时调用**，由编译期签名、`joy_api_vtable_init()` 填表和
 `--check` 生成物一致性保证。新增纯函数到白名单前请确认它无副作用、结果确定。
 
-`status:on` 的 L2（`joy_r2d_jtext_printx` / `joy_math_shape_draw_rectangle` /
-`joy_r2d_jtext_printf` 等 30 条）已按 `structs.js` 的字段布局展开成标量进表，
+`status:on` 的 L2（`joy_r2d_text_printx` / `joy_math_shape_draw_rectangle` /
+`joy_r2d_text_printf` 等 30 条）已按 `structs.js` 的字段布局展开成标量进表，
 与 thunk 表 argc 一致；`structs.js` 会把 `jmath.h` 的 `#define ft_t float`
 归一化，否则 `vec2_t` / `mat22_t` 之类会被判成不可展开。L3（结构体指针 /
 输出参数）仍是 `status:off`，不在表内；图片绘制改由全标量 L1
 `joy_ui_image_draw_rect` 绕开 `jrect_t*`，四份示例已恢复真实贴图。剩下的
-退化只有文字宽度按字号估算（`joy_r2d_jtext_measurex` 是 `int*` 出参，暂无
+退化只有文字宽度按字号估算（`joy_r2d_text_measurex` 是 `int*` 出参，暂无
 对应标量包装）。
 
 ## 命令

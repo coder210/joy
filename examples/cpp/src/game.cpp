@@ -216,7 +216,7 @@ static const JoyApi* g_api = NULL;   /* 宿主注入；DLL 内所有引擎调用
  * 全部经 g_api 的强签名函数指针调用，坐标一律用像素：*_f 系列是归一化比例，
  * 会经 joy_r2d_fpx() 乘窗口宽高，传像素坐标会把精灵放大到屏幕外。
  * 图片绘制走全标量 L1 ImageDrawRect（srcrect 固定 NULL），绕开 joy_rect_t*
- * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（joy_r2d_jtext_measurex
+ * 无法进 joy_value 的 L3 限制；只有文字宽度仍按字号估算（joy_r2d_text_measurex
  * 是 int* 出参）。绘制不参与冒烟指纹，逻辑与指纹数值不变。 */
 
 static void set_color(joy_r2d_p r2d, int r, int gr, int b, int a)

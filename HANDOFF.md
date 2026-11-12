@@ -352,6 +352,19 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       lint 0、`git diff --check` 0。
     - 保留：`src/jr3d.c` 的 `joy_r3d_load_texture_png()` 仍有一处
       `SDL_GetBasePath()` 兜底（引擎层 r3d，不在四端 2D 链路内）。
+27. **去掉域名后重复的 `j` 前缀（2026-11-13）**：`joy_scene_jtimer_*`(7) →
+    `joy_scene_timer_*`、`joy_r2d_jtext_*`(9) → `joy_r2d_text_*`，连同内部声明
+    `joy_r2d_jtext_cache_clear_for_font` 与配套 typedef `jtimer_callback` →
+    `joy_timer_callback`，共 18 种 C 符号 / 100 处。`naming.js` 的 `ALIASES`
+    同步改 key 但保留 `JtimerCreate` / `JtextPrintx` 等脚本层方法名（四份示例
+    零改动）；`rename_map.json` 追加 16 条继承映射，故 `--scan` 后 14 条
+    `status:on` / 2 条 `off` 与 `owns` 全部保留，`open=739` 不变。
+    - **有意保留**：`joy_core_jenkins_hash`（算法名）、`joy_input_joystick_*`
+      （单词本身）、`joy_box2d_joint_t`、`api/README.md` 里历史叙述的
+      `joy_ui_jui_begin`；以及 `src/jr2d.c` 的私有 `static jtext_*` 与参数名
+      `jtext_tex`（非 `joy_*` 函数名，11-12 已明确只处理非 static 函数）。
+    - 验证：`--scan` 幂等（IDL 字节不变）、`--check` OK、生成物仅因 C 名刷新、
+      全量构建 0 错误、`ctest` 4/4、`diff --check` 0。
 
     具体内容：
 
@@ -423,9 +436,14 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 现已统一为 `joy_<域>_<动作>`，10 个域的封闭白名单在
 `api/tools/naming.js` 的 `DOMAINS`（归并表与门禁说明见 `api/README.md`）。
 `--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`。
-**迁移已收尾**：`api/idl/rename_map.json` 现有 **1150 条**旧名→新名映射
-（2026-11-10 清掉 4 条无声明的 `utils_aes_*` 死映射），`--scan` 据此继承
-`status`/`owns`/`note`；`include/joy/compat.h` 与 `include/joy/jcont.h` 均已删除，
+**迁移已收尾**：`api/idl/rename_map.json` 现有 **1166 条**旧名→新名映射
+（2026-11-10 清掉 4 条无声明的 `utils_aes_*` 死映射；2026-11-13 追加 16 条，
+去掉 `joy_scene_jtimer_*` / `joy_r2d_jtext_*` 域名后重复的历史 `j` 前缀）。
+`--scan` 据此继承 `status`/`owns`/`borrowed`/`note`：**C 函数改名必须先在映射表
+追加一层「旧 C 名 → 新 C 名」再 `--scan`**，否则新名被当成新条目、`status:on`
+会被重置成 `off`、`owns` 也会丢。同时 `naming.js` 的 `ALIASES` 要同步改 key
+（value 是冻结的脚本层方法名，保持不变），否则脚本层会退化成
+`pascal(newName)`。`include/joy/compat.h` 与 `include/joy/jcont.h` 均已删除，
 全仓不再有 `#define` 桥接。`legacy_names.txt` 仍须保留（6 条例外靠它豁免）。
 `script`(33) 与 `core` 域里的
 `joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进

@@ -1148,5 +1148,21 @@
   "utils_wait_delay": "joy_core_utils_wait_delay",
   "utils_md5x": "joy_core_utils_md5x",
   "utils_des_crypt": "joy_core_utils_des_crypt",
-  "utils_des_decrypt": "joy_core_utils_des_decrypt"
+  "utils_des_decrypt": "joy_core_utils_des_decrypt",
+  "joy_scene_jtimer_create": "joy_scene_timer_create",
+  "joy_scene_jtimer_destroy": "joy_scene_timer_destroy",
+  "joy_scene_jtimer_trigger": "joy_scene_timer_trigger",
+  "joy_scene_jtimer_set_interval": "joy_scene_timer_set_interval",
+  "joy_scene_jtimer_set_active": "joy_scene_timer_set_active",
+  "joy_scene_jtimer_reset": "joy_scene_timer_reset",
+  "joy_scene_jtimer_get_elapsed": "joy_scene_timer_get_elapsed",
+  "joy_r2d_jtext_print": "joy_r2d_text_print",
+  "joy_r2d_jtext_printx": "joy_r2d_text_printx",
+  "joy_r2d_jtext_printf": "joy_r2d_text_printf",
+  "joy_r2d_jtext_printf_scaled": "joy_r2d_text_printf_scaled",
+  "joy_r2d_jtext_cache_clear": "joy_r2d_text_cache_clear",
+  "joy_r2d_jtext_cache_set_limit": "joy_r2d_text_cache_set_limit",
+  "joy_r2d_jtext_cache_get_count": "joy_r2d_text_cache_get_count",
+  "joy_r2d_jtext_cache_sweep": "joy_r2d_text_cache_sweep",
+  "joy_r2d_jtext_measurex": "joy_r2d_text_measurex"
 }

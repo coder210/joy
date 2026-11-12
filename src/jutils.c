@@ -752,11 +752,11 @@ struct joy_timer {
 	uint64_t last_time;        // 上次触发的时间点（SDL_GetTicks）
 	int interval;              // 触发间隔（毫秒）
 	bool active;               // 是否激活
-	jtimer_callback callback;   // 回调函数
+	joy_timer_callback callback;   // 回调函数
 	void* userdata;            // 用户数据
 };
 
-joy_timer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* userdata)
+joy_timer_p joy_scene_timer_create(int interval, joy_timer_callback cb, void* userdata)
 {
 	joy_timer_p jtimer = (joy_timer_p)malloc(sizeof(struct joy_timer));
 	if (!jtimer) return NULL;
@@ -770,14 +770,14 @@ joy_timer_p joy_scene_jtimer_create(int interval, jtimer_callback cb, void* user
 	return jtimer;
 }
 
-void joy_scene_jtimer_destroy(joy_timer_p jtimer)
+void joy_scene_timer_destroy(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		free(jtimer);
 	}
 }
 
-void joy_scene_jtimer_trigger(joy_timer_p jtimer)
+void joy_scene_timer_trigger(joy_timer_p jtimer)
 {
 	if (!jtimer || !jtimer->active || !jtimer->callback) {
 		return;
@@ -802,14 +802,14 @@ void joy_scene_jtimer_trigger(joy_timer_p jtimer)
 	}
 }
 
-void joy_scene_jtimer_set_interval(joy_timer_p jtimer, int interval)
+void joy_scene_timer_set_interval(joy_timer_p jtimer, int interval)
 {
 	if (jtimer) {
 		jtimer->interval = interval;
 	}
 }
 
-void joy_scene_jtimer_set_active(joy_timer_p jtimer, bool active)
+void joy_scene_timer_set_active(joy_timer_p jtimer, bool active)
 {
 	if (jtimer) {
 		jtimer->active = active;
@@ -819,14 +819,14 @@ void joy_scene_jtimer_set_active(joy_timer_p jtimer, bool active)
 	}
 }
 
-void joy_scene_jtimer_reset(joy_timer_p jtimer)
+void joy_scene_timer_reset(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		jtimer->last_time = SDL_GetTicks();
 	}
 }
 
-uint64_t joy_scene_jtimer_get_elapsed(joy_timer_p jtimer)
+uint64_t joy_scene_timer_get_elapsed(joy_timer_p jtimer)
 {
 	if (!jtimer) return 0;
 	return SDL_GetTicks() - jtimer->last_time;

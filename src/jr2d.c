@@ -994,7 +994,7 @@ void joy_ui_text_destroy(joy_text_p text)
         SDL_free(text);
 }
 
-void joy_r2d_jtext_print(joy_r2d_p r2d,
+void joy_r2d_text_print(joy_r2d_p r2d,
         joy_text_p text,
         float x, float y)
 {
@@ -1045,17 +1045,17 @@ void joy_ui_image_draw_rect(joy_r2d_p r2d, joy_image_p image, float x, float y, 
         joy_ui_image_draw1(image, NULL, &dest);
 }
 
-void joy_r2d_jtext_printf(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color,
+void joy_r2d_text_printf(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color,
         float fx, float fy)
 {
         float x = 0.0f, y = 0.0f;
         joy_r2d_fpx(r2d, fx, fy, 0.0f, 0.0f, &x, &y, NULL, NULL);
-        joy_r2d_jtext_printx(r2d, font, str, len, color, x, y);
+        joy_r2d_text_printx(r2d, font, str, len, color, x, y);
 }
 
 /* 位置为比例，且绘制尺寸 = 字号 × scale（用于需要按屏幕比例缩放字号的场合）。
- * 不走 joy_r2d_jtext_printx 的纹理缓存（缓存条目尺寸固定），这里按次创建再释放。 */
-void joy_r2d_jtext_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color,
+ * 不走 joy_r2d_text_printx 的纹理缓存（缓存条目尺寸固定），这里按次创建再释放。 */
+void joy_r2d_text_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color,
         float fx, float fy, float scale)
 {
         joy_text_p tex = joy_ui_text_createx(r2d, font, str, len, color);
@@ -1069,13 +1069,13 @@ void joy_r2d_jtext_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str
 
 /* ===================== 文字纹理缓存 =====================
  *
- * 旧实现里 joy_r2d_jtext_printx() 是 joy_ui_text_createx() -> joy_r2d_jtext_print() -> joy_ui_text_destroy()，
+ * 旧实现里 joy_r2d_text_printx() 是 joy_ui_text_createx() -> joy_r2d_text_print() -> joy_ui_text_destroy()，
  * 每次调用都新建并销毁一张 SDL 纹理。inputbox / datagrid / popup / tooltip /
  * combobox_input 都走这条路径；其中 joy_ui_inputbox_draw 还会为测量子串宽度额外
  * 创建两张纹理，一个带选区的 inputbox 每帧要建 3~4 张。
  *
  * 这里按 (font, color, 内容字节) 缓存纹理并 LRU 复用。
- * 注意只有 joy_r2d_jtext_printx 走缓存；joy_ui_text_createx 仍由调用方自行持有与释放，
+ * 注意只有 joy_r2d_text_printx 走缓存；joy_ui_text_createx 仍由调用方自行持有与释放，
  * 因此 label / button 这类自己缓存 jtext 的控件不受影响。
  */
 
@@ -1190,7 +1190,7 @@ static void jtext_cache_clear_for(joy_r2d_p r2d)
 
 /* 内部: 只清掉用该字体烘焙的条目, 供 jfont.c 销毁字体时调用。
  * 全局 clear 会连带销毁其它存活 renderer 的文字纹理。 */
-void joy_r2d_jtext_cache_clear_for_font(joy_font_p font)
+void joy_r2d_text_cache_clear_for_font(joy_font_p font)
 {
         joy_text_entry_t* e = g_lru_head;
         while (e) {
@@ -1249,26 +1249,26 @@ static joy_text_p jtext_cache_get(joy_r2d_p r2d, joy_font_p font,
         return e->tex;
 }
 
-void joy_r2d_jtext_cache_clear(void)
+void joy_r2d_text_cache_clear(void)
 {
         while (g_lru_head) jtext_evict_one();
 }
 
-void joy_r2d_jtext_cache_set_limit(int max_entries)
+void joy_r2d_text_cache_set_limit(int max_entries)
 {
         if (max_entries < 16) max_entries = 16;
         g_cache_limit = max_entries;
         while (g_cache_count > g_cache_limit) jtext_evict_one();
 }
 
-int joy_r2d_jtext_cache_get_count(void)
+int joy_r2d_text_cache_get_count(void)
 {
         return g_cache_count;
 }
 
 /* 回收空闲超过 max_idle_frames 帧的条目（单位：帧）。
  * 每个条目按自己 owner 的帧时钟判断，多实例互不干扰。 */
-void joy_r2d_jtext_cache_sweep(int max_idle_frames)
+void joy_r2d_text_cache_sweep(int max_idle_frames)
 {
         if (max_idle_frames < 0) return;
         while (g_lru_tail
@@ -1278,16 +1278,16 @@ void joy_r2d_jtext_cache_sweep(int max_idle_frames)
         }
 }
 
-void joy_r2d_jtext_printx(joy_r2d_p r2d, joy_font_p font,
+void joy_r2d_text_printx(joy_r2d_p r2d, joy_font_p font,
         const char* str, int len, joy_color_t color, float x, float y)
 {
         joy_text_p t = jtext_cache_get(r2d, font, str, len, color);
         if (t) {
-                joy_r2d_jtext_print(r2d, t, x, y);
+                joy_r2d_text_print(r2d, t, x, y);
         }
 }
 
-bool joy_r2d_jtext_measurex(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
+bool joy_r2d_text_measurex(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
         joy_color_t color, int* out_w, int* out_h)
 {
         joy_text_p t;

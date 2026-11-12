@@ -204,7 +204,7 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
 | `joy_r2d_font_create` | `FontCreate` | `(path, size)` → handle |
 | `joy_ui_image_create` | `ImageCreate` | `(r2d, path)` → handle |
 | `joy_math_shape_draw_rectangle` | `ShapeDrawRectangle` | `(r2d, mode, x, y, w, h)`（`jrect_t` 按字段展开） |
-| `joy_r2d_jtext_printx` | `JtextPrintx` | `(r2d, font, str, len, cr, cg, cb, ca, x, y)` |
+| `joy_r2d_text_printx` | `JtextPrintx` | `(r2d, font, str, len, cr, cg, cb, ca, x, y)` |
 
 脚本层名字由 `api/tools/naming.js` 的 `ALIASES` 冻结，C 名改了也不跟着变。
 
@@ -213,7 +213,7 @@ C# 是强类型包装 `Joy.Api.Bindings.Xxx(...)`（返回 `Jwindow` / `Jr2d` / 
 
 **仍然只能走旧胶水 / 退化的两处**（`L3` 未开放，见第 5 节）：
 事件输入（`keypressed` / `mousepressed` 回调不在 IDL）、文字宽度测量
-（`joy_r2d_jtext_measurex` 是 `int*` 输出参数）。图片绘制已由全标量 L1
+（`joy_r2d_text_measurex` 是 `int*` 输出参数）。图片绘制已由全标量 L1
 `joy_ui_image_draw_rect` 绕开 `jrect_t*`：四份示例统一用 `ImageCreate` +
 `ImageDrawRect` 画真实贴图，加载失败才退回同尺寸色块。
 

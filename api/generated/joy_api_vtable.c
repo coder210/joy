@@ -156,33 +156,33 @@ static unsigned long shim_joy_core_kr_hash(void* _jv_ctx, const char* str, int s
         return (unsigned long) _jv_r.as.u64;
 }
 
-static void shim_joy_scene_jtimer_destroy(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_timer_destroy(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("joy_scene_jtimer_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_scene_jtimer_trigger(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_timer_trigger(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("joy_scene_jtimer_trigger", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_trigger", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_scene_jtimer_set_interval(void* _jv_ctx, Jtimer timer, int interval)
+static void shim_joy_scene_timer_set_interval(void* _jv_ctx, Jtimer timer, int interval)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -190,13 +190,13 @@ static void shim_joy_scene_jtimer_set_interval(void* _jv_ctx, Jtimer timer, int 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
         _jv_args[1] = joy_v_i32(interval);
-        _jv_r = joy_api_call("joy_scene_jtimer_set_interval", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_set_interval", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_scene_jtimer_set_active(void* _jv_ctx, Jtimer timer, bool active)
+static void shim_joy_scene_timer_set_active(void* _jv_ctx, Jtimer timer, bool active)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -204,33 +204,33 @@ static void shim_joy_scene_jtimer_set_active(void* _jv_ctx, Jtimer timer, bool a
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
         _jv_args[1] = joy_v_bool(active);
-        _jv_r = joy_api_call("joy_scene_jtimer_set_active", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_set_active", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_scene_jtimer_reset(void* _jv_ctx, Jtimer timer)
+static void shim_joy_scene_timer_reset(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("joy_scene_jtimer_reset", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_reset", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static uint64_t shim_joy_scene_jtimer_get_elapsed(void* _jv_ctx, Jtimer timer)
+static uint64_t shim_joy_scene_timer_get_elapsed(void* _jv_ctx, Jtimer timer)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(timer.h);
-        _jv_r = joy_api_call("joy_scene_jtimer_get_elapsed", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_scene_timer_get_elapsed", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_U64) return (uint64_t)0;
         return (uint64_t) _jv_r.as.u64;
 }
@@ -1269,7 +1269,7 @@ static void shim_joy_ui_text_destroy(void* _jv_ctx, Jtext jtext_tex)
         return;
 }
 
-static void shim_joy_r2d_jtext_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, float x, float y)
+static void shim_joy_r2d_text_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, float x, float y)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -1279,13 +1279,13 @@ static void shim_joy_r2d_jtext_print(void* _jv_ctx, Jr2d r2d, Jtext jtext_tex, f
         _jv_args[1] = joy_v_handle(jtext_tex.h);
         _jv_args[2] = joy_v_f64(x);
         _jv_args[3] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_r2d_jtext_print", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_print", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_r2d_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float x, float y)
+static void shim_joy_r2d_text_printx(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float x, float y)
 {
         joy_value_t _jv_args[10];
         joy_value_t _jv_r;
@@ -1301,7 +1301,7 @@ static void shim_joy_r2d_jtext_printx(void* _jv_ctx, Jr2d r2d, Font font, const 
         _jv_args[7] = joy_v_u32(color_a);
         _jv_args[8] = joy_v_f64(x);
         _jv_args[9] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_r2d_jtext_printx", _jv_args, 10, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_printx", _jv_args, 10, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -1354,7 +1354,7 @@ static bool shim_joy_math_shape_draw_line_f(void* _jv_ctx, Jr2d r2d, float fx1, 
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_r2d_jtext_printf(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy)
+static void shim_joy_r2d_text_printf(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy)
 {
         joy_value_t _jv_args[10];
         joy_value_t _jv_r;
@@ -1370,13 +1370,13 @@ static void shim_joy_r2d_jtext_printf(void* _jv_ctx, Jr2d r2d, Font font, const 
         _jv_args[7] = joy_v_u32(color_a);
         _jv_args[8] = joy_v_f64(fx);
         _jv_args[9] = joy_v_f64(fy);
-        _jv_r = joy_api_call("joy_r2d_jtext_printf", _jv_args, 10, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_printf", _jv_args, 10, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_r2d_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy, float scale)
+static void shim_joy_r2d_text_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a, float fx, float fy, float scale)
 {
         joy_value_t _jv_args[11];
         joy_value_t _jv_r;
@@ -1393,7 +1393,7 @@ static void shim_joy_r2d_jtext_printf_scaled(void* _jv_ctx, Jr2d r2d, Font font,
         _jv_args[8] = joy_v_f64(fx);
         _jv_args[9] = joy_v_f64(fy);
         _jv_args[10] = joy_v_f64(scale);
-        _jv_r = joy_api_call("joy_r2d_jtext_printf_scaled", _jv_args, 11, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_printf_scaled", _jv_args, 11, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -1423,50 +1423,50 @@ static int shim_joy_ui_text_get_height(void* _jv_ctx, Jtext jtext_tex)
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_r2d_jtext_cache_clear(void* _jv_ctx)
+static void shim_joy_r2d_text_cache_clear(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("joy_r2d_jtext_cache_clear", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_cache_clear", _jv_args, 0, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_r2d_jtext_cache_set_limit(void* _jv_ctx, int max_entries)
+static void shim_joy_r2d_text_cache_set_limit(void* _jv_ctx, int max_entries)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(max_entries);
-        _jv_r = joy_api_call("joy_r2d_jtext_cache_set_limit", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_cache_set_limit", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_r2d_jtext_cache_get_count(void* _jv_ctx)
+static int shim_joy_r2d_text_cache_get_count(void* _jv_ctx)
 {
         joy_value_t* _jv_args = NULL;
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
-        _jv_r = joy_api_call("joy_r2d_jtext_cache_get_count", _jv_args, 0, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_cache_get_count", _jv_args, 0, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_r2d_jtext_cache_sweep(void* _jv_ctx, int max_idle_frames)
+static void shim_joy_r2d_text_cache_sweep(void* _jv_ctx, int max_idle_frames)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_i32(max_idle_frames);
-        _jv_r = joy_api_call("joy_r2d_jtext_cache_sweep", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_cache_sweep", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10543,12 +10543,12 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JenkinsHash = shim_joy_core_jenkins_hash;
         api->Murmur3Hash = shim_joy_core_murmur3_hash;
         api->KrHash = shim_joy_core_kr_hash;
-        api->JtimerDestroy = shim_joy_scene_jtimer_destroy;
-        api->JtimerTrigger = shim_joy_scene_jtimer_trigger;
-        api->JtimerSetInterval = shim_joy_scene_jtimer_set_interval;
-        api->JtimerSetActive = shim_joy_scene_jtimer_set_active;
-        api->JtimerReset = shim_joy_scene_jtimer_reset;
-        api->JtimerGetElapsed = shim_joy_scene_jtimer_get_elapsed;
+        api->JtimerDestroy = shim_joy_scene_timer_destroy;
+        api->JtimerTrigger = shim_joy_scene_timer_trigger;
+        api->JtimerSetInterval = shim_joy_scene_timer_set_interval;
+        api->JtimerSetActive = shim_joy_scene_timer_set_active;
+        api->JtimerReset = shim_joy_scene_timer_reset;
+        api->JtimerGetElapsed = shim_joy_scene_timer_get_elapsed;
         api->InitEnv = shim_joy_core_init_env;
         api->QuitEnv = shim_joy_core_quit_env;
         api->GetTicks = shim_joy_core_get_ticks;
@@ -10627,19 +10627,19 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->ImageSetScaleMode = shim_joy_ui_image_set_scale_mode;
         api->TextUpdatex = shim_joy_ui_text_updatex;
         api->TextDestroy = shim_joy_ui_text_destroy;
-        api->JtextPrint = shim_joy_r2d_jtext_print;
-        api->JtextPrintx = shim_joy_r2d_jtext_printx;
+        api->JtextPrint = shim_joy_r2d_text_print;
+        api->JtextPrintx = shim_joy_r2d_text_printx;
         api->R2dDrawPointF = shim_joy_r2d_draw_point_f;
         api->ShapeDrawRectangleF = shim_joy_math_shape_draw_rectangle_f;
         api->ShapeDrawLineF = shim_joy_math_shape_draw_line_f;
-        api->JtextPrintf = shim_joy_r2d_jtext_printf;
-        api->JtextPrintfScaled = shim_joy_r2d_jtext_printf_scaled;
+        api->JtextPrintf = shim_joy_r2d_text_printf;
+        api->JtextPrintfScaled = shim_joy_r2d_text_printf_scaled;
         api->TextGetWidth = shim_joy_ui_text_get_width;
         api->TextGetHeight = shim_joy_ui_text_get_height;
-        api->JtextCacheClear = shim_joy_r2d_jtext_cache_clear;
-        api->JtextCacheSetLimit = shim_joy_r2d_jtext_cache_set_limit;
-        api->JtextCacheGetCount = shim_joy_r2d_jtext_cache_get_count;
-        api->JtextCacheSweep = shim_joy_r2d_jtext_cache_sweep;
+        api->JtextCacheClear = shim_joy_r2d_text_cache_clear;
+        api->JtextCacheSetLimit = shim_joy_r2d_text_cache_set_limit;
+        api->JtextCacheGetCount = shim_joy_r2d_text_cache_get_count;
+        api->JtextCacheSweep = shim_joy_r2d_text_cache_sweep;
         api->AnimationDestroy = shim_joy_scene_animation_destroy;
         api->AnimationReset = shim_joy_scene_animation_reset;
         api->AnimationAddClip = shim_joy_scene_animation_add_clip;

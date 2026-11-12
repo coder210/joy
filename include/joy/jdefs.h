@@ -256,7 +256,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
                                           const joy_pm_layout_t* L, int count, int min_dist10,
                                           int* out_tiles);
 
-        typedef void (*jtimer_callback)(int actual_interval, int interval, void* userdata);
+        typedef void (*joy_timer_callback)(int actual_interval, int interval, void* userdata);
         typedef struct joy_timer joy_timer_t, *joy_timer_p;
 
         typedef union joy_window joy_window_t, * joy_window_p;
@@ -328,7 +328,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         /* jr2d 内部按字体清理文字缓存, 供 jfont.c 销毁字体时调用;
          * 非 joy_ 公开 API, 不进入 IDL / 生成链。 */
-        void joy_r2d_jtext_cache_clear_for_font(joy_font_p font);
+        void joy_r2d_text_cache_clear_for_font(joy_font_p font);
 
 #ifdef __cplusplus
 }
