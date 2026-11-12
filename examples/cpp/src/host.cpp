@@ -87,23 +87,18 @@ static bool load_game(void)
     g_hooks = joy_game_get_hooks();
     return validate_hooks(g_hooks);
 #else
-    char path[1024];
-    const char* base = SDL_GetBasePath();
-    if (!base) return false;
-
 #  if defined(__ANDROID__)
     /* APK 只有 lib/<abi>/*.so 会被系统解压并加入 linker 搜索路径；
-     * assets/ 是压缩数据，dlopen 打不开。SDL_GetBasePath() 在 Android
-     * 返回 "./"，拼相对路径没有意义，直接用裸库名让 linker 查找。 */
-    (void)base;
-    SDL_snprintf(path, sizeof(path), "%s", JOY_GAME_DLL_NAME);
+     * assets/ 是压缩数据，dlopen 打不开，用裸库名让 linker 查找。 */
+    const char* path = JOY_GAME_DLL_NAME;
 #  elif defined(_WIN32)
-    SDL_snprintf(path, sizeof(path), "%scpp\\%s", base, JOY_GAME_DLL_NAME);
+    const char* path = "cpp\\" JOY_GAME_DLL_NAME;
 #  else
-    SDL_snprintf(path, sizeof(path), "%scpp/%s", base, JOY_GAME_DLL_NAME);
+    const char* path = "cpp/" JOY_GAME_DLL_NAME;
 #  endif
-    /* 不要 SDL_free(base)：SDL3 的 SDL_GetBasePath() 返回内部 CachedBasePath
-     * 静态缓存，释放它会在进程退出时造成堆损坏（0xC0000374）。 */
+    /* 相对运行期资源根：SDL_AppInit 已把 CWD 对齐到 exe 目录。
+     * 不用 SDL_GetBasePath() 拼绝对基址 —— 它在 Android 返回 "./"、
+     * iOS 返回 bundle 路径，桌面之外的语义都不一致。 */
 
     g_lib = SDL_LoadObject(path);
     if (!g_lib) {
@@ -132,6 +127,9 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     (void)appstate;
 
     joy_examples_setup_mobile_display();  /* 必须在游戏 DLL 建窗口之前 */
+    /* 资源（sprites/、fonts/）与游戏 DLL（cpp/）都是相对路径，先把 CWD
+     * 对齐到 exe 目录，否则从 IDE / 仓库根启动会静默退化成纯色块。 */
+    joy_examples_align_working_dir(argc > 0 ? argv[0] : NULL);
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
     g_smoke = g_smoke_frames > 0;

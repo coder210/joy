@@ -71,6 +71,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     (void)appstate;
 
     joy_examples_setup_mobile_display();  /* 必须在脚本建窗口之前 */
+    /* scripts/、sprites/、fonts/ 都是相对资源根的路径 */
+    joy_examples_align_working_dir(argc > 0 ? argv[0] : NULL);
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
 

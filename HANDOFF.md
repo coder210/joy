@@ -318,6 +318,40 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       生成物零变化）、`git diff --check` 0；桌面构建 / ctest 不受影响。
     - 注意：本地无 Android SDK/Gradle，flavor 资源覆盖是否生效以 CI 产出的
       APK 安装结果为准；launcher 名称约 15 字符，部分启动器可能截断。
+26. **四端相对资源路径根治「贴图又不见了」（2026-11-12）**：`example_cpp`
+    从 IDE 默认调试目录 / 仓库根启动时，玩家与敌人退化为纯色块。根因是
+    `load_assets()` 传 `sprites/player.png` 这类相对路径，而 `load_png()`
+    直接交给 `SDL_LoadFile()` 按**进程 CWD** 解析；`examples/CMakeLists.txt`
+    注释声称「桌面靠 chdir 到 exe 目录」，但源码里从未有 chdir（只有
+    `csharp_host` 自己用 `SDL_GetBasePath()` 做过）。本地实证：从
+    `build/Debug` 启动无告警，从仓库根启动必现
+    `[warn] missing sprites/player.png` / `enemy.png`。
+    - 按用户要求**全程相对路径、不使用 `SDL_GetBasePath()`**（Android 返回
+      `"./"`、iOS 返回 bundle 路径，跨平台语义不一致）。
+      `examples/mobile_display.h` 新增四端共享的
+      `joy_examples_align_working_dir(argv0)`：只从 `argv[0]` 取最后一个
+      `/` 或 `\` 的目录部分并 `chdir`；Android / wasm 为空实现。
+    - 四个宿主在 `SDL_AppInit` 最前面调用。`cpp/src/host.cpp` 的
+      `load_game()` 移除 `SDL_GetBasePath()`，桌面改相对
+      `"cpp/JoyGameCpp.dll"`、Android 仍用裸库名；`csharp_host` 删掉旧的
+      `chdir_to_exe_dir()`，`MONO_LIB_DIR` 改相对 `"lib"`，Linux/macOS 的
+      CLR shim 预加载改 `"./<name>"`（裸库名只搜系统路径）。
+      `examples/` 下 `SDL_GetBasePath` 实际调用归零。
+    - `cpp/src/game.cpp` 的 `game_init()` 增加 `JoyApi` 校验：
+      `abi_version` 相等且 `size` **严格等于** `sizeof(JoyApi)`。vtable
+      按 IDL 顺序生成、新增指针可能插在中间，`size >=` 拦不住反向错配；
+      错配时 `ImageCreate` / `ImageDrawRect` 静默指到别的 API，只表现为
+      贴图变块。
+    - 防复发：`.github/workflows/desktop.yml` 新增
+      `Verify relative assets from foreign CWD`，从仓库根启动
+      `example_cpp --smoke 3`，输出含 `missing sprites/player.png` 即失败
+      （ctest 从构建树内跑，抓不到这类回归）。CMake / README 里与实现不符
+      的 chdir 注释同步改正。
+    - 验证：四 target 全量重编 0 错误、`--check` OK（1170 条）、`ctest` 4/4、
+      从仓库根四端冒烟均 `exit=0` 且无 missing 告警、从资源根对照通过、
+      lint 0、`git diff --check` 0。
+    - 保留：`src/jr3d.c` 的 `joy_r3d_load_texture_png()` 仍有一处
+      `SDL_GetBasePath()` 兜底（引擎层 r3d，不在四端 2D 链路内）。
 
     具体内容：
 

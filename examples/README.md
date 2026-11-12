@@ -96,6 +96,11 @@ C# 是例外：`csharp/` 只放托管工程，native 宿主独立在 `csharp_hos
 `scripts/`、`cpp/`、`lib/`、`JoyGame.dll` 直接铺开），Android 是构建树的
 `pack/`，打包时原样成为 APK 的 `assets/` 根。两者相对布局一致，宿主一律按
 `fonts/simhei.ttf` / `scripts/main.lua` / `JoyGame.dll` 这类相对路径加载。
+桌面四个宿主启动时统一调用 `joy_examples_align_working_dir(argv[0])`
+（`mobile_display.h`）把 CWD 切到 exe 目录；不用 `SDL_GetBasePath()` 拼绝对
+基址（Android 返回 `./`、iOS 返回 bundle 路径）。漏掉这步时，从 IDE 默认
+调试目录 / 仓库根 / 快捷方式启动会找不到 `sprites/`，贴图静默退化成纯色块，
+CI 的 `Verify relative assets from foreign CWD` 就是为此设的门禁。
 原因：Android 的 `SDL_IOFromFile` 会把路径原样交给 `AAssetManager`，其路径
 已经相对 APK 的 `assets/` 根，写成 `assets/foo` 会去找 `assets/assets/foo`；
 `joy_topdown_template` 也是这套布局。`coreclr.dll` 是原生库，仍留在 exe 旁

@@ -134,7 +134,10 @@ set(JOY_EXAMPLE_ASSETS "${CMAKE_CURRENT_LIST_DIR}/assets")
 # 代码里的资源路径一律不带 "assets/" 前缀（与 joy_topdown_template 一致）：
 # Android 的 SDL_IOFromFile 会把路径原样交给 AAssetManager，而 AAssetManager
 # 的路径已经相对 APK 的 assets/ 根，写成 "assets/foo" 会去找
-# "assets/assets/foo"；桌面则靠 chdir 到 exe 目录解析同一套相对路径。
+# "assets/assets/foo"；桌面由四个宿主在 SDL_AppInit 里统一调用
+# joy_examples_align_working_dir(argv[0])（见 mobile_display.h）把 CWD 对齐到
+# 该资源根，相对路径才与 APK 侧一致。不要用 SDL_GetBasePath() 拼绝对基址：
+# 它在 Android 返回 "./"、iOS 返回 bundle 路径，跨平台语义不统一。
 if(ANDROID)
     set(JOY_EXAMPLE_ASSET_ROOT "${CMAKE_BINARY_DIR}/pack")
 else()

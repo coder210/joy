@@ -835,6 +835,18 @@ static void input_end_frame(void)
 static bool game_init(void* game, const JoyApi* api, int smoke_frames)
 {
     Game* g = (Game*)game;
+    /* 宿主与游戏 DLL 分别编译：vtable 增减函数指针会改变结构体布局，
+     * 错配时 ImageCreate / ImageDrawRect 等指针会静默指到别的 API，
+     * 表现为贴图退化成色块而不是崩溃。按 IDL 顺序生成的字段可能插在中间，
+     * 不能假定只在末尾追加，所以这里要求 size 严格相等。 */
+    if (!api || api->abi_version != JOY_API_VTABLE_ABI
+        || api->size != (uint32_t)sizeof(JoyApi)) {
+        fprintf(stderr,
+                "[host] incompatible JoyApi (got abi=%u size=%u, expect abi=%u size=%u)\n",
+                api ? api->abi_version : 0u, api ? api->size : 0u,
+                (unsigned)JOY_API_VTABLE_ABI, (unsigned)sizeof(JoyApi));
+        return false;
+    }
     g_api = api;
     g->rng.seed(12345u);
     g->smoke_frames = smoke_frames;

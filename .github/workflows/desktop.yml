@@ -111,6 +111,27 @@ jobs:
           ctest --test-dir build/examples -C Release \
             --output-on-failure --timeout 25 2>&1 | tee ctest.log
 
+      # 资源路径全是相对路径：宿主必须自己把 CWD 对齐到资源根，否则从 IDE /
+      # 仓库根 / 快捷方式启动会静默退化成纯色块。ctest 是从构建树内跑的，
+      # 抓不到这个回归；这里特意从仓库根启动，让贴图缺失直接变成 CI 失败。
+      - name: Verify relative assets from foreign CWD
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=build/examples/Release
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            exe="$out/example_cpp.exe"
+          else
+            exe="$out/example_cpp"
+          fi
+          ( cd "$GITHUB_WORKSPACE" && "./$exe" --smoke 3 ) 2>&1 | tee foreign-cwd.log
+          grep -Fq '[host] smoke finished' foreign-cwd.log \
+            || { echo "::error::example_cpp smoke did not finish from foreign CWD"; exit 1; }
+          if grep -Fq 'missing sprites/player.png' foreign-cwd.log; then
+            echo "::error::sprites/player.png not resolved from foreign CWD"
+            exit 1
+          fi
+
       # 构建树里 CMake 会自动加指向 SDL/ 的 rpath，ctest 能过；用户把 artifact
       # 解压到任意目录后只剩 $ORIGIN / @loader_path 可用。上传前按「解压后的
       # 目录」自检，避免再出现 libSDL3.so.0 找不到。
@@ -171,7 +192,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          logs=(build-base.log build-csharp.log configure.log restore.log binding-gate.log ctest.log)
+          logs=(build-base.log build-csharp.log configure.log restore.log binding-gate.log ctest.log foreign-cwd.log)
           present=()
           for f in "${logs[@]}"; do
             [ -f "$f" ] && present+=("$f")

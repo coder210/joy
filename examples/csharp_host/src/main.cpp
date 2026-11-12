@@ -26,12 +26,6 @@
 
 #include "../../mobile_display.h"
 
-#if defined(_WIN32)
-#include <direct.h>
-#else
-#include <unistd.h>
-#endif
-
 static const int APP_W = 480;
 static const int APP_H = 320;
 
@@ -53,19 +47,6 @@ static int find_arg(int argc, char* argv[], const char* name)
         if (strcmp(argv[i], name) == 0) return i;
     }
     return -1;
-}
-
-/* 把工作目录切到 exe 目录：资源根就是 exe 同目录，JoyGame.dll / fonts/ 等
- * 都按不带 assets/ 前缀的相对路径加载 */
-static void chdir_to_exe_dir(void)
-{
-    const char* base = SDL_GetBasePath();
-    if (!base) return;
-#if defined(_WIN32)
-    _chdir(base);
-#else
-    chdir(base);
-#endif
 }
 
 /* BCL 与绑定程序集放在 lib/：csx_setup_mono_dirs() 只认系统 Mono 路径
@@ -132,19 +113,18 @@ static bool setup_clr_dirs(void)
     SDL_Log("[cs] CLR dirs: %s", pref);
     SDL_free(pref);
 #else
-    const char* base = SDL_GetBasePath();
-    if (!base) return true;
-    char lib[512];
+    /* CWD 已由 joy_examples_align_working_dir() 对齐到 exe 目录：
+     * MONO_LIB_DIR 用相对路径即可（csx_setup_mono_dirs 用 stat() 校验），
+     * 不再依赖 SDL_GetBasePath() 拼绝对基址。 */
 #  if defined(_WIN32)
-    snprintf(lib, sizeof(lib), "%slib", base);
-    _putenv_s("MONO_LIB_DIR", lib);
+    _putenv_s("MONO_LIB_DIR", "lib");
 #  else
-    snprintf(lib, sizeof(lib), "%slib", base);
-    setenv("MONO_LIB_DIR", lib, 1);
+    setenv("MONO_LIB_DIR", "lib", 1);
 
     /* Linux/macOS 的 runtime pack 把 CoreLib 的 P/Invoke 目标拆成独立 shim，
      * 而 libcoreclr.so/.dylib 没有 DT_RUNPATH，dlopen 不会自动搜 exe 目录。
-     * 在 csx_create() 之前按绝对路径预加载，后续同名加载直接复用；
+     * 在 csx_create() 之前按带 '/' 的相对路径预加载（裸库名只搜系统路径，
+     * "./" 前缀才按 CWD 解析），后续同名加载直接复用；
      * 清单与 runtimes/<platform>/ 入库的 libSystem.* 一致，缺失的忽略。 */
     static const char* const kClrShims[] = {
         "libSystem.Native.so", "libSystem.Native.dylib",
@@ -158,7 +138,7 @@ static bool setup_clr_dirs(void)
     };
     for (int i = 0; kClrShims[i]; ++i) {
         char path[512];
-        snprintf(path, sizeof(path), "%s%s", base, kClrShims[i]);
+        snprintf(path, sizeof(path), "./%s", kClrShims[i]);
         if (!SDL_LoadObject(path)) SDL_ClearError();
     }
 #  endif
@@ -171,7 +151,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     (void)appstate;
 
     joy_examples_setup_mobile_display();  /* 必须在 JoyGame 建窗口之前 */
-    chdir_to_exe_dir();
+    /* JoyGame.dll / lib/ / fonts/ 都是相对资源根的路径 */
+    joy_examples_align_working_dir(argc > 0 ? argv[0] : NULL);
     if (!setup_clr_dirs()) return SDL_APP_FAILURE;
 
     int i = find_arg(argc, argv, "--smoke");
