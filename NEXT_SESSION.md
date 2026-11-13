@@ -13,8 +13,8 @@
 
 `src/` 已收拢为 **9 个域 = 9 个 `joy_<域>.c` + 9 个同名 `.h`**（另有 1 个登记的数据分片），
 一个域不再有多个 `.c`；新增 `audit_domain_layout.js` 门禁把三条规则固化到 CI。
-本轮全部改动已作为**一次提交**推送到 `origin/main`，`main` 与远端同步。
-**三条 CI 是否针对本轮全绿尚未确认**，见 §3.0 T5；按 §6 约定，CI 出结果前不要宣布完成。
+本轮改动已提交推送到 `origin/main`，工作区干净（末尾另有一次纯 `docs:` 状态回填提交）。
+**`35fa0ea1` 的三条 CI 全部 success**，见 §3.0 T5；按 §6 约定已等到结果才收尾。
 
 ## 1. 最近做了什么（按提交）
 
@@ -24,9 +24,10 @@
 | `795d021a` | 固化域纯度规则为可执行门禁 | 新增 `api/tools/audit_domain_purity.js` + CI gate |
 | `bc2b9c1f` | P0-a：补齐 `src/jgltf.c` 缺失的 glTF 句柄 typedef | 2 行 typedef + 全文件句柄写法统一 |
 | `a0c3cabe` | P0-b：3 个从未实现的 `r3d_mesh_skinned_*` 走最小降级适配，GLTF 实建可链接 | 3 处调用替换 + 注释 |
-| **本轮收尾提交（见 `git log -1`）** | 见下方四项，同一次提交 | `src/` 20 个新文件 / 26 个旧 `.c` 删除 / 11 个契约源 / 13 条 API 改名 |
+| **`35fa0ea1`（本轮重构）** | 见下方四项，同一次提交 | `src/` 20 个新文件 / 26 个旧 `.c` 删除 / 11 个契约源 / 13 条 API 改名 |
+| 紧随其后的 `docs:` 提交 | 只回填本页的 CI 结论与提交号，不改任何代码 | 1 文件 |
 
-本轮收尾提交包含四件事（细节见「关键决策」段）：
+`35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
 - **一域一 `.c` 一 `.h`**：28 个旧 `.c` 按域物理合并为域文件，新增 R1–R4 布局门禁并接入 Desktop CI；
 - **反转声明归属方向**：公开声明全部下沉 `src/joy_<域>.h`，`japi.h` 改为纯 include 聚合，
@@ -85,7 +86,7 @@
 | `--check` | OK（report/thunks/vtable/cs glue/jmath 全部最新）、`--scan` 内容幂等 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
 | `ctest` | 4/4 |
-| CI | 上一轮 3/3 success；**本轮推送后的三条 CI 尚未确认**（§3.0 T5） |
+| CI | `35fa0ea1` 的 Desktop / Android / Web **3/3 success**（已通过 Actions API 核实，§3.0 T5） |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
 ### 域 → 文件 归属表（9 个域 `.c` + 1 个数据分片，均配同名 `.h`）
@@ -109,8 +110,9 @@
 
 ### 3.0 本轮遗留待办（换 AI 交接，优先看这里）
 
-> 用户临时换 AI，本轮**只做了「把待办写进文档 + 提交 + 推送」**。
-> 下面 T1–T6 都**没有执行**，不要误以为已完成。§3.1 起的 P0–P3 是更早一轮的项：
+> 用户临时换 AI，本轮**只做了「把待办写进文档 + 提交 + 推送」**，没有动业务代码。
+> **待办只剩 T1–T4**：T1 必须先让用户拍板；T5（CI 复核）已随收尾完成；
+> T6 只是提交状态说明。§3.1 起的 P0–P3 是更早一轮的项：
 > P0 两条已修、P1 需先定口径、P2/P3 明确「不是待办」。
 
 #### T1（必须先让用户拍板）`r3d` 的 3D 控件与 `ui` 的 2D 控件归属不一致
@@ -174,11 +176,17 @@ JOY_API joy_button_p joy_ui_button_create(joy_r2d_p r2d, float cx, float cy,
 等历史名。这是**有意保留的历史记录**，用户未要求改，别当成待修 bug；
 建议在开头加一句「历史记录，当前结构以 `NEXT_SESSION.md` 为准」即可。
 
-#### T5 推送后确认 CI
+#### T5 推送后 CI 复核 —— 已完成，无需下一任再查
 
-本轮提交已 push 到 `origin/main`，但 Desktop（Windows/Linux/macOS）/ Android /
-Web 三条工作流**尚未针对本轮确认**。本机没有 `gh` CLI，需到 GitHub Actions 页面
-查看，或装 `gh` 后 `gh run list --limit 3`。按 §6 约定，CI 出结果前不要宣布完成。
+`35fa0ea1` 的三条工作流已全部 `completed / success`（通过 GitHub Actions API 核实）：
+
+- Desktop examples (4 backends) #76，19:01:32Z 完成；
+- Android APKs (cpp/lua/js/csharp) #79，19:01:18Z 完成；
+- Web examples (cpp/lua/js) #60，19:00:50Z 完成。
+
+本机没有 `gh` CLI，用的是公开 Actions REST 接口
+`https://api.github.com/repos/coder210/joy/actions/runs?head_sha=HEAD_SHA`（仓库为 public）。
+本项已结；之后纯文档提交也会触发三条 CI，按 §6 仍需确认结果，但不属于本轮遗留待办。
 
 #### T6 提交状态（下一任无需处理，仅作说明）
 
