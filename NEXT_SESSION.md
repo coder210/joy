@@ -74,40 +74,51 @@
 
 ## 3. 下一步（按优先级）
 
-### P0 — 修 `src/jgltf.c` 的预存编译错误（有明确修法，约 10 分钟）
+### P0 — `src/jgltf.c` 预存缺陷（P0-a 已完成，P0-b 待定口径）
 
-`HANDOFF.md` §6 记着「`src/jgltf.c` 预存语法错误，文件本身待修」，本轮已定位到根因：
+#### P0-a 句柄别名缺失 —— 已修（2026-11-13）
+
+`struct joy_gltf_asset` / `struct joy_gltf_instance` 从未 typedef 成句柄类型，
+全文却用旧的 `jgltf_asset_p` / `jgltf_instance_p`（收口版 `240f5f7a` 即如此，
+不是改名引入）。已补两行 typedef 并全量替换为 `joy_*` 前缀：
+
+- asset 的 typedef **必须放在 `struct joy_gltf_instance` 之前**：该结构体第一个
+  字段就引用它。原记录里「放在 instance 定义之后」是错的。
+- `jgltf_asset_p` 是函数 `jgltf_asset_prim_count` 的前缀，全词替换会把它误改成
+  `joy_gltf_asset_prim_count`，被域纯度门禁判成 `gltf` 域混域；该行已还原。
+
+`cmake -S examples -B build/opt_check -DJOY_ENABLE_GLTF=ON -DJOY_ENABLE_SPINE=ON`
+的**编译阶段已通过**（`jgltf.obj` 生成成功）；生成链 / 域纯度 / 默认构建 /
+`ctest` 均不受影响。
+
+#### P0-b 三个 r3d 动态蒙皮 API 从未实现 —— 需先定口径，不要直接动手
+
+同一个实建在**链接期**仍失败：
 
 ```text
-src/jgltf.c:66    jgltf_asset_p asset;              → error: unknown type name 'jgltf_asset_p'
-src/jgltf.c:409   jgltf_asset_p jgltf_asset_load(...)
+jgltf.obj : error LNK2019: 无法解析的外部符号 r3d_mesh_skinned_create
+jgltf.obj : error LNK2019: 无法解析的外部符号 r3d_mesh_skinned_update
+jgltf.obj : error LNK2019: 无法解析的外部符号 r3d_draw_mesh_skinned
 ```
 
-文件里定义了 `struct joy_gltf_asset {...}`（`src/jgltf.c:48`）和
-`struct joy_gltf_instance {...}`（`:65`），但**从未给它们 typedef 别名**；
-全文却用 `jgltf_asset_p` 指代。收口版本 `240f5f7a` 里同样没有这个 typedef，
-所以是**一直在的预存缺陷**，与本轮改名无关（`9f9f0cde` 只改了 5 个函数名）。
+历史核查：`git log --all -S'r3d_mesh_skinned_create'` 只命中目录重构；
+`f124824f` / `240f5f7a` 全仓只有 `jgltf.c` / `jgltf.h` 的调用与注释，
+**从来没有实现**。这不是改名遗漏，`jgltf.c` 是从未链接过的半成品，
+原记录「约 10 分钟可修完」的判断不成立。
 
-修法：
+现有可对齐的 API：`joy_r3d_mesh_custom_lit(r, verts, vc)`、
+`joy_r3d_draw_mesh_lit(r, m, model, tex)`、`joy_r3d_mesh_destroy(r, m)`；
+**没有动态顶点更新接口**。两条路线先问用户再动：
 
-1. 在 `struct joy_gltf_instance` 定义之后补一行
-   `typedef struct joy_gltf_asset joy_gltf_asset_t, *joy_gltf_asset_p;`
-   （`joy_gltf_instance` 同理，若它在别处也被用）。
-2. 把该文件内所有 `jgltf_asset_p` 全词替换为 `joy_gltf_asset_p`。
-3. 验证（`JOY_ENABLE_GLTF` 默认 OFF，桌面构建覆盖不到，必须单独查语法）：
+1. 最小降级：在 `jgltf.c` 内做静态适配，`update` 用「销毁旧 mesh + 按新顶点
+   重建」代替。能过链接，但每帧建销 GPU buffer，且无 GLTF 模型/真机可验运行。
+2. 正式补齐：在 `jr3d.c` 实现动态可写网格（create / update / draw），要动 GPU
+   资源生命周期与延迟释放队列，属新功能而不是修缺陷。
 
-   ```powershell
-   gcc -fsyntax-only -I. -Iinclude -Iinclude/joy -ISDL/include `
-       -Imsgpack/include -DJOY_USE_GLTF src/jgltf.c
-   ```
-
-   注意 `#include "external/cgltf/cgltf.h"` 是相对仓库根的，`-I.` 不能少；
-   `#include "joy.h"` 需要 `-Iinclude/joy`。
-4. 修完跑一次 `-DJOY_ENABLE_GLTF=ON` 的实际构建确认（不只是语法检查）。
-
-> 修之前先确认 `jgltf.c` 里这 5 个函数是否真的是它自己的：`joy_r3d_gltf_asset_animation_name` /
-   `_animation_duration` / `_has_skin` / `_bounds` / `joy_r3d_gltf_instance_draw_bones`。
-   它们不在 IDL（可选模块默认不构建，`--scan` 扫不到），改类型名不影响生成链。
+> **验证方式纠正**：根入口 `cmake -S . -B ...` 默认 `JOY_BUILD_EXAMPLES=OFF`，
+> `joy::all` 是 INTERFACE，不会编译/链接 `jgltf.c`；此前记的「SPINE+GLTF 独立
+> 构建 0 错误」是这种空验证。必须用 `cmake -S examples -B ...` 并构建具体
+> target 才覆盖得到（见 §5 第 5 条）。本机没有 gcc，`gcc -fsyntax-only` 不可用。
 
 ### P1 — 公共句柄类型的前缀与域不一致（需先定口径，不要直接动手）
 
@@ -196,8 +207,10 @@ cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 必须 4/4
 
 # 5. 可选模块（默认 OFF，改过 jspine/jgltf/jmodule 必查）
-cmake -S . -B build/opt_check -DJOY_ENABLE_SPINE=ON -DJOY_ENABLE_GLTF=ON
-cmake --build build/opt_check --config Debug
+#    必须用 examples 入口并指定 target：根入口 JOY_BUILD_EXAMPLES=OFF 时
+#    joy::all 是 INTERFACE，不会真正编译/链接 jgltf.c
+cmake -S examples -B build/opt_check -DJOY_ENABLE_SPINE=ON -DJOY_ENABLE_GLTF=ON
+cmake --build build/opt_check --config Debug --target example_cpp
 
 # 6. 收尾
 git --no-pager diff --check                   # 无输出

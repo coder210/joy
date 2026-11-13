@@ -439,6 +439,28 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       修法与验证命令记在 `NEXT_SESSION.md` 的 P0。
     - 验证：全仓 26 个 `.c` / 1013 条函数定义 0 混域、`--check` OK（1170 条）、
       全量 Debug 构建 0 错误、`ctest` 4/4、`diff --check` 0、CI 三工作流全绿。
+31. **修 `src/jgltf.c` 预存句柄别名缺失（2026-11-13，P0-a）**：
+    `struct joy_gltf_asset` / `struct joy_gltf_instance` 从未 typedef 成句柄，
+    全文却用 `jgltf_asset_p` / `jgltf_instance_p`，`JOY_USE_GLTF` 一开就编译不过
+    （收口版 `240f5f7a` 即如此，非改名引入）。
+    - 补 `joy_gltf_asset_t/_p` 与 `joy_gltf_instance_t/_p` 两行 typedef；asset
+      的别名必须放在 `struct joy_gltf_instance` **之前**（其第一个字段就用它），
+      `NEXT_SESSION.md` 原记录的「放在之后」无法编译。旧别名全量替换，
+      函数名 `jgltf_asset_prim_count` 因是 `jgltf_asset_p` 的前缀被误伤一次，
+      已还原，域纯度门禁恢复 1013 条 / 0 混域。
+    - 这些类型只在 `src/jgltf.c` 内使用，未进 `japi.h` / IDL，生成物零变化。
+    - **实建发现第二层缺口**：`cmake -S examples -B build/opt_check
+      -DJOY_ENABLE_GLTF=ON -DJOY_ENABLE_SPINE=ON --target example_cpp`
+      编译阶段已通过，链接期报 3 个未解析符号
+      `r3d_mesh_skinned_create` / `_update` / `r3d_draw_mesh_skinned`。
+      历史核查（`f124824f` / `240f5f7a`）确认**全仓从未实现过**，
+      `jgltf.c` 是从未链接的半成品；两条修复路线与口径确认记在
+      `NEXT_SESSION.md` P0-b，本轮不擅自扩范围。
+    - 同时纠正验证方式：根入口 `cmake -S .` 默认 `JOY_BUILD_EXAMPLES=OFF`，
+      `joy::all` 是 INTERFACE，不会编译/链接 `jgltf.c`，此前记录的
+      「SPINE+GLTF 独立构建 0 错误」属空验证；已改 `NEXT_SESSION.md` §5 第 5 条。
+    - 验证：`--check` OK（1170 条）、域纯度 0 混域、默认全量 Debug 构建
+      0 错误、`ctest` 4/4、`diff --check` 0。
 
     具体内容：
 
@@ -561,7 +583,7 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 | iOS / wasm（C++/lua/js） | `JOY_GAME_STATIC` 静态形态只在桌面验证过，两平台工具链都没跑 |
 | C# 在 iOS / wasm | iOS 禁 JIT。wasm 不是「.NET 8 不支持」：.NET 8 正式支持 `browser-wasm`，但那是 SDK 托管的 interpreter 应用；joy 的 C# 后端是嵌入 MonoVM 的宿主 + `InternalCall` 绑定，宿主模型不兼容。Web 已定方案 A：只发 cpp / lua / js，见 `examples/README.md` 平台矩阵 |
 | `runtimes/windows-x64/coreclr.dll` | 是本地编译版，可考虑换成官方包同名 DLL |
-| `src/jgltf.c` | **预存语法错误**，`JOY_ENABLE_GLTF` 默认关、不编译；文件本身待修 |
+| `src/jgltf.c` | 句柄 typedef 缺失的预存语法错误**已修**（2026-11-13，见 §3 的 31）；但 `JOY_ENABLE_GLTF=ON` 实建在链接期仍缺 3 个从未实现的 `r3d_*_skinned*` 符号，属新功能缺口而非改名遗漏，见 `NEXT_SESSION.md` P0-b。默认 OFF，不影响现有构建 |
 
 ## 7. 项目收口（2026-11-11）
 
