@@ -242,7 +242,7 @@ void joy_r2d_spine_asset_free(joy_spine_asset_p asset) {
         free(asset);
 }
 
-spSkeletonData *jspine_asset_data(joy_spine_asset_p asset) {
+spSkeletonData *joy_r2d_spine_asset_data(joy_spine_asset_p asset) {
         return asset ? asset->data : NULL;
 }
 
@@ -250,7 +250,7 @@ int joy_r2d_spine_asset_animation_count(joy_spine_asset_p asset) {
         return (asset && asset->data) ? asset->data->animationsCount : 0;
 }
 
-const char *jspine_asset_animation_name(joy_spine_asset_p asset, int index) {
+const char *joy_r2d_spine_asset_animation_name(joy_spine_asset_p asset, int index) {
         if (!asset || !asset->data || index < 0 || index >= asset->data->animationsCount) return NULL;
         return asset->data->animations[index]->name;
 }

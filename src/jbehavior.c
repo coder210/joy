@@ -46,7 +46,7 @@ static void stop_child(joy_bt_node_t* child) {
  * ================================================================= */
 typedef struct {
     joy_bt_node_t base;
-    bt_action_fn fn;
+    joy_bt_action_fn fn;
     void* userdata;
 } joy_bt_action_t;
 
@@ -55,7 +55,7 @@ static joy_bt_status_t action_tick(joy_bt_node_t* self, float dt) {
     return a->fn ? a->fn(dt) : BT_SUCCESS;
 }
 
-joy_bt_node_t* joy_bt_action_create(bt_action_fn fn) {
+joy_bt_node_t* joy_bt_action_create(joy_bt_action_fn fn) {
     joy_bt_action_t* a = (joy_bt_action_t*)calloc(1, sizeof(joy_bt_action_t));
     assert(a);
     a->base.tick = action_tick;
@@ -63,7 +63,7 @@ joy_bt_node_t* joy_bt_action_create(bt_action_fn fn) {
     return (joy_bt_node_t*)a;
 }
 
-joy_bt_node_t* joy_bt_action_createv(bt_action_fn fn, void* userdata) {
+joy_bt_node_t* joy_bt_action_createv(joy_bt_action_fn fn, void* userdata) {
     joy_bt_action_t* a = (joy_bt_action_t*)joy_bt_action_create(fn);
     a->userdata = userdata;
     return (joy_bt_node_t*)a;
@@ -83,7 +83,7 @@ void* joy_bt_action_get_userdata(joy_bt_node_t* node) {
  * ================================================================= */
 typedef struct {
     joy_bt_node_t base;
-    bt_condition_fn pred;
+    joy_bt_condition_fn pred;
 } joy_bt_condition_t;
 
 static joy_bt_status_t condition_tick(joy_bt_node_t* self, float dt) {
@@ -92,7 +92,7 @@ static joy_bt_status_t condition_tick(joy_bt_node_t* self, float dt) {
     return (c->pred && c->pred()) ? BT_SUCCESS : BT_FAILURE;
 }
 
-joy_bt_node_t* joy_bt_condition_create(bt_condition_fn pred) {
+joy_bt_node_t* joy_bt_condition_create(joy_bt_condition_fn pred) {
     joy_bt_condition_t* c = (joy_bt_condition_t*)calloc(1, sizeof(joy_bt_condition_t));
     assert(c);
     c->base.tick = condition_tick;

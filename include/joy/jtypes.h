@@ -271,7 +271,7 @@ extern "C" {
         } joy_anim_cond_mode_t;
 
         /* State enter/exit callback */
-        typedef void (*janim_state_cb)(const char* state_name, void* userdata);
+        typedef void (*joy_anim_state_cb)(const char* state_name, void* userdata);
 
         typedef struct joy_label joy_label_t, * joy_label_p;
         typedef struct joy_button joy_button_t, * joy_button_p;
@@ -363,17 +363,17 @@ extern "C" {
         typedef struct joy_scene joy_scene_t, * joy_scene_p;
         typedef struct joy_scene_manager joy_scene_manager_t, * joy_scene_manager_p;
 
-        typedef void (*scene_node_update_fn)(joy_scene_node_p, float);
-        typedef void (*scene_node_render_fn)(joy_scene_node_p, const void*);
-        typedef void (*scene_node_destroy_fn)(joy_scene_node_p);
-        typedef void (*scene_node_event_fn)(joy_scene_node_p, const void*);
+        typedef void (*joy_scene_node_update_fn)(joy_scene_node_p, float);
+        typedef void (*joy_scene_node_render_fn)(joy_scene_node_p, const void*);
+        typedef void (*joy_scene_node_destroy_fn)(joy_scene_node_p);
+        typedef void (*joy_scene_node_event_fn)(joy_scene_node_p, const void*);
 
-        typedef void (*scene_load_fn)(joy_scene_p);
-        typedef void (*scene_update_fn)(joy_scene_p, float);
-        typedef void (*scene_render_fn)(joy_scene_p);
-        typedef void (*scene_destroy_fn)(joy_scene_p);
-        typedef void (*scene_event_fn)(joy_scene_p, const void*);
-        typedef void (*scene_fixed_update_fn)(joy_scene_p, float); /* 固定步长更新(Unity FixedUpdate 对应) */
+        typedef void (*joy_scene_load_fn)(joy_scene_p);
+        typedef void (*joy_scene_update_fn)(joy_scene_p, float);
+        typedef void (*joy_scene_render_fn)(joy_scene_p);
+        typedef void (*joy_scene_destroy_fn)(joy_scene_p);
+        typedef void (*joy_scene_event_fn)(joy_scene_p, const void*);
+        typedef void (*joy_scene_fixed_update_fn)(joy_scene_p, float); /* 固定步长更新(Unity FixedUpdate 对应) */
 
 
 
@@ -433,30 +433,30 @@ extern "C" {
         typedef struct joy_bt_node joy_bt_node_t;
 
         /* ===== 用户回调函数类型 ===== */
-        typedef joy_bt_status_t(*bt_action_fn)(float dt);
-        typedef bool        (*bt_condition_fn)(void);
+        typedef joy_bt_status_t(*joy_bt_action_fn)(float dt);
+        typedef bool        (*joy_bt_condition_fn)(void);
 
         /* ===== 节点生命周期回调 ===== */
-        typedef void     (*bt_enter_fn)(joy_bt_node_t* self);
-        typedef joy_bt_status_t(*bt_tick_fn)(joy_bt_node_t* self, float dt);
-        typedef void     (*bt_exit_fn)(joy_bt_node_t* self);
-        typedef void     (*bt_destroy_fn)(joy_bt_node_t* self);
+        typedef void     (*joy_bt_enter_fn)(joy_bt_node_t* self);
+        typedef joy_bt_status_t(*joy_bt_tick_fn)(joy_bt_node_t* self, float dt);
+        typedef void     (*joy_bt_exit_fn)(joy_bt_node_t* self);
+        typedef void     (*joy_bt_destroy_fn)(joy_bt_node_t* self);
 
         /* ===== 基础节点结构 ===== */
         struct joy_bt_node {
                 joy_bt_status_t   status;      /* 当前运行状态 */
-                bt_enter_fn   enter;       /* 进入回调 */
-                bt_tick_fn    tick;        /* 更新回调 */
-                bt_exit_fn    exit;        /* 退出回调 */
-                bt_destroy_fn destroy;     /* 销毁回调 */
+                joy_bt_enter_fn   enter;       /* 进入回调 */
+                joy_bt_tick_fn    tick;        /* 更新回调 */
+                joy_bt_exit_fn    exit;        /* 退出回调 */
+                joy_bt_destroy_fn destroy;     /* 销毁回调 */
         };
 
         /* ===== 内嵌状态机节点 ===== */
         typedef struct joy_bt_state_slot {
                 const char* name;                    /* 状态名称（不可为 NULL） */
-                bt_enter_fn  state_enter;             /* 状态 enter（可为 NULL） */
+                joy_bt_enter_fn  state_enter;             /* 状态 enter（可为 NULL） */
                 const char* (*state_update)(joy_bt_node_t* node, float dt); /* 返回下一状态名，NULL 表示不切换 */
-                bt_exit_fn   state_exit;              /* 状态 exit（可为 NULL） */
+                joy_bt_exit_fn   state_exit;              /* 状态 exit（可为 NULL） */
         } joy_bt_state_slot_t;
 
 
@@ -546,12 +546,12 @@ extern "C" {
 
 
         /* ===== 装箱回调类型 ===== */
-        typedef int (*jmsgpack_write_fn)(void* data, const char* buf, size_t len);
+        typedef int (*joy_msgpack_write_fn)(void* data, const char* buf, size_t len);
 
         /* ===== 类型别名 ===== */
         typedef struct joy_msgpack_packer {
                 void* data;
-                jmsgpack_write_fn callback;
+                joy_msgpack_write_fn callback;
         } joy_msgpack_packer_t;
 
         typedef struct joy_msgpack_zone joy_msgpack_zone_t;

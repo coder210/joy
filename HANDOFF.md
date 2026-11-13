@@ -365,6 +365,28 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       `jtext_tex`（非 `joy_*` 函数名，11-12 已明确只处理非 static 函数）。
     - 验证：`--scan` 幂等（IDL 字节不变）、`--check` OK、生成物仅因 C 名刷新、
       全量构建 0 错误、`ctest` 4/4、`diff --check` 0。
+28. **全仓命名残留清扫（2026-11-13）**：对 `include/joy/*.h` + `src/*.c`
+    全量审计后，补掉 3 类残留，共 40 种 C 符号 / 172 处 / 12 文件：
+    - `japi.h` / `jspine.c` 在 `#ifdef JOY_USE_SPINE` 段内的两个公开 API
+      `jspine_asset_data` / `jspine_asset_animation_name` → `joy_r2d_spine_asset_*`。
+      它们不进 IDL（可选模块默认不构建），是 P1 改名的漏网；已用
+      `-DJOY_ENABLE_SPINE=ON` 独立构建验证 0 错误。
+    - 公开头 26 个函数指针 typedef（`jevent_*_fn` / `bt_*_fn` /
+      `scene_*_fn` / `janim_state_cb` / `jmsgpack_write_fn`）→ `joy_*`。
+      11-11 类型统一只收 `_t`/`_p` 后缀，`_fn`/`_cb` 被漏；其中 13 条相关
+      IDL 条目全是 `L3/off` 或 `X/off`，`--scan` 只刷新 `reason`/`ctype`。
+    - `src` 私有 12 个 typedef 别名（`animation_clip_t/p`、`component_store_*`、
+      `ecs_component_data_*`、`sparse_set_*`、`iocp_operation_packet_*`、
+      `jtilemap_layer_*`）→ `joy_*`，只在各自 `.c` 内。`iocp_operation_packet_ptr`
+      的 `_ptr` 后缀按现有约定保留，只加前缀。
+    - **有意不动**：公开头 42 个非 `JOY_` 宏（26 个项目 `J` 前缀、9 个
+      `jvector_*` 函数式宏、5 个 `GJK2D_CTYPE_*`、2 个标量别名）——11-11 批 4
+      已评估；`src` 私有 62 个宏；`joystick`/`jenkins`/`joint` 的 `j` 属单词；
+      以及「命名域 ↔ 物理文件不对齐」的架构偏差（10 个 `.c` 混域，见
+      `cmake/JoySources.cmake:26-30`，已给方案、单独排期）。
+    - 验证：全仓旧名 0 残留、`--scan` 幂等、`--check` OK、`open=739` 不变、
+      全量构建 0 错误、`ctest` 4/4、SPINE=ON 独立构建 0 错误、
+      `diff --check` 0、lint 0。
 
     具体内容：
 

@@ -615,7 +615,7 @@ typedef struct joy_iocp_operation_packet {
         unsigned char buffer[JOY_MAX_BUFFER + 1];
         int direction;                // 0:接收, 1:发送
         iocp_client_session_ptr associated_session; // 关联的客户端会话
-} iocp_operation_packet_t, * iocp_operation_packet_ptr;
+} joy_iocp_operation_packet_t, * joy_iocp_operation_packet_ptr;
 
 // IOCP服务器实例结构
 typedef struct joy_iocp_server
@@ -641,10 +641,10 @@ typedef struct joy_iocp_server
 } joy_iocp_server_t, * joy_iocp_server_p;
 
 // 函数声明
-static void iocp_post_accept_operation(joy_iocp_server_p server, iocp_operation_packet_ptr packet);
+static void iocp_post_accept_operation(joy_iocp_server_p server, joy_iocp_operation_packet_ptr packet);
 static int iocp_post_receive_operation(iocp_client_session_ptr session);
-static void iocp_handle_accept_completion(joy_iocp_server_p server, iocp_operation_packet_ptr packet);
-static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session);
+static void iocp_handle_accept_completion(joy_iocp_server_p server, joy_iocp_operation_packet_ptr packet);
+static void iocp_handle_receive_completion(joy_iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session);
 static void iocp_cleanup_client_session(iocp_client_session_ptr session);
 
 // 清理客户端会话资源
@@ -661,7 +661,7 @@ static void iocp_cleanup_client_session(iocp_client_session_ptr session)
 }
 
 // 投递AcceptEx操作
-static void iocp_post_accept_operation(joy_iocp_server_p server, iocp_operation_packet_ptr packet)
+static void iocp_post_accept_operation(joy_iocp_server_p server, joy_iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
 
@@ -698,7 +698,7 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
 {
         if (!session || session->client_socket == INVALID_SOCKET) return -1;
 
-        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
+        joy_iocp_operation_packet_ptr packet = (joy_iocp_operation_packet_ptr)calloc(1, sizeof(joy_iocp_operation_packet_t));
         if (!packet) return -1;
 
         packet->operation_type = IOCP_OPERATION_RECEIVE;
@@ -724,7 +724,7 @@ static int iocp_post_receive_operation(iocp_client_session_ptr session)
 }
 
 // 处理接收完成事件
-static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session)
+static void iocp_handle_receive_completion(joy_iocp_operation_packet_ptr packet, DWORD bytes_transferred, iocp_client_session_ptr session)
 {
         if (!packet || !session) return;
 
@@ -737,7 +737,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
 
                 // 示例：回显数据。WSASend 是重叠 IO, 缓冲必须活到完成事件;
                 // 本函数末尾会 free(packet), 不能直接引用 packet->buffer。
-                iocp_operation_packet_ptr send_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
+                joy_iocp_operation_packet_ptr send_packet = (joy_iocp_operation_packet_ptr)calloc(1, sizeof(joy_iocp_operation_packet_t));
                 if (send_packet) {
                         ULONG to_copy = bytes_transferred;
                         if (to_copy > JOY_MAX_BUFFER) to_copy = JOY_MAX_BUFFER;
@@ -771,7 +771,7 @@ static void iocp_handle_receive_completion(iocp_operation_packet_ptr packet, DWO
 }
 
 // 处理Accept完成事件
-static void iocp_handle_accept_completion(joy_iocp_server_p server, iocp_operation_packet_ptr packet)
+static void iocp_handle_accept_completion(joy_iocp_server_p server, joy_iocp_operation_packet_ptr packet)
 {
         if (!server || !packet) return;
 
@@ -828,7 +828,7 @@ static void iocp_handle_accept_completion(joy_iocp_server_p server, iocp_operati
         }
 
         // 重新投递Accept操作，准备接受下一个连接
-        iocp_operation_packet_ptr new_packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
+        joy_iocp_operation_packet_ptr new_packet = (joy_iocp_operation_packet_ptr)calloc(1, sizeof(joy_iocp_operation_packet_t));
         if (new_packet) {
                 iocp_post_accept_operation(server, new_packet);
         }
@@ -930,7 +930,7 @@ joy_iocp_server_p joy_net_iocp_server_create(const char* ip, int port)
         }
 
         // 投递初始的Accept操作
-        iocp_operation_packet_ptr packet = (iocp_operation_packet_ptr)calloc(1, sizeof(iocp_operation_packet_t));
+        joy_iocp_operation_packet_ptr packet = (joy_iocp_operation_packet_ptr)calloc(1, sizeof(joy_iocp_operation_packet_t));
         if (packet) {
                 iocp_post_accept_operation(server, packet);
         }
@@ -975,7 +975,7 @@ void joy_net_iocp_process_events(joy_iocp_server_p server, int timeout_ms)
 
         DWORD bytes_transferred = 0;
         ULONG_PTR completion_key = 0;
-        iocp_operation_packet_ptr operation_packet = NULL;
+        joy_iocp_operation_packet_ptr operation_packet = NULL;
 
         BOOL result = GetQueuedCompletionStatus(server->completion_port,
                 &bytes_transferred,

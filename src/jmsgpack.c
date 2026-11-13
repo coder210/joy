@@ -6,7 +6,7 @@
 
 /* ===== Packer ===== */
 
-void joy_script_msgpack__packer_init(joy_msgpack_packer_t* pk, void* data, jmsgpack_write_fn cb) {
+void joy_script_msgpack__packer_init(joy_msgpack_packer_t* pk, void* data, joy_msgpack_write_fn cb) {
     msgpack_packer p;
     msgpack_packer_init(&p, data, (msgpack_packer_write)cb);
     pk->data = p.data;

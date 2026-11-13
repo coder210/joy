@@ -51,12 +51,12 @@ typedef struct joy_animation_clip {
         joy_image_p image;
         float duration;
         joy_rect_t src_rect;
-}animation_clip_t, * animation_clip_p;
+}joy_animation_clip_t, * joy_animation_clip_p;
 
 
 struct joy_animation {
         joy_r2d_p r2d;
-        kvec_t(animation_clip_t) clips;
+        kvec_t(joy_animation_clip_t) clips;
         bool is_loop;
         int idx_frame;
         float total_time;
@@ -1353,11 +1353,11 @@ void joy_scene_animation_add_clip(joy_animation_p animation,
         const char* image_path, float duration,
         joy_rect_t src_rect)
 {
-        animation_clip_t animation_clip;
+        joy_animation_clip_t animation_clip;
         animation_clip.image = joy_ui_image_create(animation->r2d, image_path);
         animation_clip.duration = duration;
         animation_clip.src_rect = src_rect;
-        kv_push(animation_clip_t, animation->clips, animation_clip);
+        kv_push(joy_animation_clip_t, animation->clips, animation_clip);
 }
 
 bool joy_scene_animation_is_finished(joy_animation_p animation)
@@ -1389,7 +1389,7 @@ void joy_scene_animation_set_rotation(joy_animation_p animation, float rotation)
 
 void joy_scene_animation_update(joy_animation_p animation, float dt)
 {
-        animation_clip_p animation_clip;
+        joy_animation_clip_p animation_clip;
         if (kv_size(animation->clips) <= 0) {
                 return;
         }
@@ -1412,7 +1412,7 @@ void joy_scene_animation_update(joy_animation_p animation, float dt)
 
 void joy_scene_animation_draw(joy_animation_p animation, joy_rect_t* camera)
 {
-        animation_clip_p animation_clip;
+        joy_animation_clip_p animation_clip;
         float r_x, r_y;
         joy_rect_t dest_rect;
         joy_vec2_t center = { 0 };

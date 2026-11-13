@@ -25,10 +25,10 @@ struct joy_scene_node {
     struct joy_scene_node* next_sibling;
     int child_count;
 
-    scene_node_update_fn  on_update;
-    scene_node_render_fn  on_render;
-    scene_node_destroy_fn on_destroy;
-    scene_node_event_fn   on_event;
+    joy_scene_node_update_fn  on_update;
+    joy_scene_node_render_fn  on_render;
+    joy_scene_node_destroy_fn on_destroy;
+    joy_scene_node_event_fn   on_event;
 
     void* userdata;
     int zorder;
@@ -216,10 +216,10 @@ int joy_scene_find_nodes_by_tag(joy_scene_node_p root, const char* tag, joy_scen
     return find_tag_r(root, tag, out, max, 0);
 }
 
-void joy_scene_node_set_update_callback(joy_scene_node_p node, scene_node_update_fn cb) { if (node) node->on_update = cb; }
-void joy_scene_node_set_render_callback(joy_scene_node_p node, scene_node_render_fn cb) { if (node) node->on_render = cb; }
-void joy_scene_node_set_destroy_callback(joy_scene_node_p node, scene_node_destroy_fn cb) { if (node) node->on_destroy = cb; }
-void joy_scene_node_set_event_callback(joy_scene_node_p node, scene_node_event_fn cb) { if (node) node->on_event = cb; }
+void joy_scene_node_set_update_callback(joy_scene_node_p node, joy_scene_node_update_fn cb) { if (node) node->on_update = cb; }
+void joy_scene_node_set_render_callback(joy_scene_node_p node, joy_scene_node_render_fn cb) { if (node) node->on_render = cb; }
+void joy_scene_node_set_destroy_callback(joy_scene_node_p node, joy_scene_node_destroy_fn cb) { if (node) node->on_destroy = cb; }
+void joy_scene_node_set_event_callback(joy_scene_node_p node, joy_scene_node_event_fn cb) { if (node) node->on_event = cb; }
 
 void joy_scene_node_update(joy_scene_node_p node, float delta_time)
 {
@@ -275,13 +275,13 @@ struct joy_scene {
     int root_capacity;
     joy_scene_node_p popup_node;   // 弹层节点，渲染时保证在最上层
 
-    scene_load_fn    on_load;
-    scene_update_fn  on_update;
-    scene_render_fn  on_render;
-    scene_destroy_fn on_destroy;
-    scene_event_fn   on_event;
+    joy_scene_load_fn    on_load;
+    joy_scene_update_fn  on_update;
+    joy_scene_render_fn  on_render;
+    joy_scene_destroy_fn on_destroy;
+    joy_scene_event_fn   on_event;
 
-    scene_fixed_update_fn on_fixed_update; /* 固定步长更新回调(Unity FixedUpdate 对应)，NULL=不用 */
+    joy_scene_fixed_update_fn on_fixed_update; /* 固定步长更新回调(Unity FixedUpdate 对应)，NULL=不用 */
     float fixed_step;                      /* 固定步长(s)；<=0 表示关闭固定步长调度 */
     float fixed_accum;                     /* 固定步长累加器 */
 
@@ -407,17 +407,17 @@ void joy_scene_handle_event(joy_scene_p scene, const void* e)
     }
 }
 
-void joy_scene_set_load_callback(joy_scene_p scene, scene_load_fn cb) { if (scene) scene->on_load = cb; }
-void joy_scene_set_update_callback(joy_scene_p scene, scene_update_fn cb)
+void joy_scene_set_load_callback(joy_scene_p scene, joy_scene_load_fn cb) { if (scene) scene->on_load = cb; }
+void joy_scene_set_update_callback(joy_scene_p scene, joy_scene_update_fn cb)
 { 
         if (scene) scene->on_update = cb;
 }
-void joy_scene_set_render_callback(joy_scene_p scene, scene_render_fn cb) { if (scene) scene->on_render = cb; }
-void joy_scene_set_destroy_callback(joy_scene_p scene, scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
-void joy_scene_set_event_callback(joy_scene_p scene, scene_event_fn cb) { if (scene) scene->on_event = cb; }
+void joy_scene_set_render_callback(joy_scene_p scene, joy_scene_render_fn cb) { if (scene) scene->on_render = cb; }
+void joy_scene_set_destroy_callback(joy_scene_p scene, joy_scene_destroy_fn cb) { if (scene) scene->on_destroy = cb; }
+void joy_scene_set_event_callback(joy_scene_p scene, joy_scene_event_fn cb) { if (scene) scene->on_event = cb; }
 
 /* 启用固定步长更新(Unity FixedUpdate 对应)。step<=0 关闭，回调可传 NULL */
-void joy_scene_set_fixed_update_callback(joy_scene_p scene, scene_fixed_update_fn cb, float step) {
+void joy_scene_set_fixed_update_callback(joy_scene_p scene, joy_scene_fixed_update_fn cb, float step) {
 	if (scene) {
 		scene->on_fixed_update = cb;
 		scene->fixed_step = step;

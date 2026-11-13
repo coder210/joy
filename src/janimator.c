@@ -66,8 +66,8 @@ struct joy_animator {
     int default_state;
     int current_state;
 
-    janim_state_cb on_enter;
-    janim_state_cb on_exit;
+    joy_anim_state_cb on_enter;
+    joy_anim_state_cb on_exit;
     void* cb_userdata;
     bool flip_h;  /* horizontal flip */
 };
@@ -583,13 +583,13 @@ const char* joy_scene_animator_current_state(joy_animator_p anim)
 
 /* ========== Callbacks ========== */
 
-void joy_scene_animator_set_on_enter(joy_animator_p anim, janim_state_cb cb, void* userdata)
+void joy_scene_animator_set_on_enter(joy_animator_p anim, joy_anim_state_cb cb, void* userdata)
 {
     anim->on_enter = cb;
     anim->cb_userdata = userdata;
 }
 
-void joy_scene_animator_set_on_exit(joy_animator_p anim, janim_state_cb cb, void* userdata)
+void joy_scene_animator_set_on_exit(joy_animator_p anim, joy_anim_state_cb cb, void* userdata)
 {
     anim->on_exit = cb;
     anim->cb_userdata = userdata;

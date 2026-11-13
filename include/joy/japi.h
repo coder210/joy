@@ -956,8 +956,8 @@ extern "C" {
         JOY_API void joy_scene_animator_draw(joy_animator_p anim, float x, float y);
         JOY_API void joy_scene_animator_set_flip_h(joy_animator_p anim, bool flip);
         JOY_API const char* joy_scene_animator_current_state(joy_animator_p anim);
-        JOY_API void joy_scene_animator_set_on_enter(joy_animator_p anim, janim_state_cb cb, void* userdata);
-        JOY_API void joy_scene_animator_set_on_exit(joy_animator_p anim, janim_state_cb cb, void* userdata);
+        JOY_API void joy_scene_animator_set_on_enter(joy_animator_p anim, joy_anim_state_cb cb, void* userdata);
+        JOY_API void joy_scene_animator_set_on_exit(joy_animator_p anim, joy_anim_state_cb cb, void* userdata);
 
 
         /* ==================== Spine 骨骼动画（jspine，可选模块） ====================
@@ -998,9 +998,9 @@ extern "C" {
         JOY_API joy_spine_asset_p joy_r2d_spine_asset_load(joy_r2d_p r2d, const char *atlas_path,
                                                  const char *skeleton_path, float scale);
         JOY_API void joy_r2d_spine_asset_free(joy_spine_asset_p asset);
-        JOY_API spSkeletonData *jspine_asset_data(joy_spine_asset_p asset);
+        JOY_API spSkeletonData *joy_r2d_spine_asset_data(joy_spine_asset_p asset);
         JOY_API int joy_r2d_spine_asset_animation_count(joy_spine_asset_p asset);
-        JOY_API const char *jspine_asset_animation_name(joy_spine_asset_p asset, int index);
+        JOY_API const char *joy_r2d_spine_asset_animation_name(joy_spine_asset_p asset, int index);
         JOY_API float joy_r2d_spine_asset_animation_duration(joy_spine_asset_p asset, int index);
 
         /* ---- 组件（实例） ---- */
@@ -1491,10 +1491,10 @@ extern "C" {
         JOY_API joy_scene_node_p joy_scene_find_node_by_name_deep(joy_scene_p scene, const char* name);
         JOY_API int  joy_scene_find_nodes_by_tag(joy_scene_node_p root, const char* tag, joy_scene_node_p* out, int max);
         JOY_API int  joy_scene_find_nodes_by_tag_deep(joy_scene_p scene, const char* tag, joy_scene_node_p* out, int max);
-        JOY_API void joy_scene_node_set_update_callback(joy_scene_node_p node, scene_node_update_fn cb);
-        JOY_API void joy_scene_node_set_render_callback(joy_scene_node_p node, scene_node_render_fn cb);
-        JOY_API void joy_scene_node_set_destroy_callback(joy_scene_node_p node, scene_node_destroy_fn cb);
-        JOY_API void joy_scene_node_set_event_callback(joy_scene_node_p node, scene_node_event_fn cb);
+        JOY_API void joy_scene_node_set_update_callback(joy_scene_node_p node, joy_scene_node_update_fn cb);
+        JOY_API void joy_scene_node_set_render_callback(joy_scene_node_p node, joy_scene_node_render_fn cb);
+        JOY_API void joy_scene_node_set_destroy_callback(joy_scene_node_p node, joy_scene_node_destroy_fn cb);
+        JOY_API void joy_scene_node_set_event_callback(joy_scene_node_p node, joy_scene_node_event_fn cb);
         JOY_API void joy_scene_node_handle_event(joy_scene_node_p node, const void* e);
         JOY_API void joy_scene_node_update(joy_scene_node_p node, float delta_time);
         JOY_API void joy_scene_node_render(joy_scene_node_p node, const void* arg);
@@ -1507,12 +1507,12 @@ extern "C" {
         JOY_API void joy_scene_update(joy_scene_p scene, float delta_time);
         JOY_API void joy_scene_render(joy_scene_p scene, const void* arg);
         JOY_API void joy_scene_handle_event(joy_scene_p scene, const void* e);
-        JOY_API void joy_scene_set_load_callback(joy_scene_p scene, scene_load_fn cb);
-        JOY_API void joy_scene_set_update_callback(joy_scene_p scene, scene_update_fn cb);
-        JOY_API void joy_scene_set_render_callback(joy_scene_p scene, scene_render_fn cb);
-        JOY_API void joy_scene_set_destroy_callback(joy_scene_p scene, scene_destroy_fn cb);
-        JOY_API void joy_scene_set_event_callback(joy_scene_p scene, scene_event_fn cb);
-        JOY_API void joy_scene_set_fixed_update_callback(joy_scene_p scene, scene_fixed_update_fn cb, float fixed_step);
+        JOY_API void joy_scene_set_load_callback(joy_scene_p scene, joy_scene_load_fn cb);
+        JOY_API void joy_scene_set_update_callback(joy_scene_p scene, joy_scene_update_fn cb);
+        JOY_API void joy_scene_set_render_callback(joy_scene_p scene, joy_scene_render_fn cb);
+        JOY_API void joy_scene_set_destroy_callback(joy_scene_p scene, joy_scene_destroy_fn cb);
+        JOY_API void joy_scene_set_event_callback(joy_scene_p scene, joy_scene_event_fn cb);
+        JOY_API void joy_scene_set_fixed_update_callback(joy_scene_p scene, joy_scene_fixed_update_fn cb, float fixed_step);
         JOY_API void joy_scene_set_popup_node(joy_scene_p scene, joy_scene_node_p node);
         JOY_API joy_scene_node_p joy_scene_get_popup_node(joy_scene_p scene);
         JOY_API void joy_scene_set_userdata(joy_scene_p scene, void* ud);
@@ -1576,12 +1576,12 @@ extern "C" {
         void        joy_bt_node_reset(joy_bt_node_t* node);
         void        joy_bt_node_destroy(joy_bt_node_t* node);
         /* Action: 执行动作，返回 SUCCESS / FAILURE / RUNNING */
-        joy_bt_node_t* joy_bt_action_create(bt_action_fn fn);
-        joy_bt_node_t* joy_bt_action_createv(bt_action_fn fn, void* userdata);
+        joy_bt_node_t* joy_bt_action_create(joy_bt_action_fn fn);
+        joy_bt_node_t* joy_bt_action_createv(joy_bt_action_fn fn, void* userdata);
         void joy_bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
         void* joy_bt_action_get_userdata(joy_bt_node_t* node);
         /* Condition: 条件判断，true → SUCCESS, false → FAILURE */
-        joy_bt_node_t* joy_bt_condition_create(bt_condition_fn pred);
+        joy_bt_node_t* joy_bt_condition_create(joy_bt_condition_fn pred);
         /* Wait: 等待指定秒数 */
         joy_bt_node_t* joy_bt_wait_create(float seconds);
         /* ===== 组合节点 ===== */
@@ -1653,7 +1653,7 @@ extern "C" {
         JOY_API void joy_math_box2d_foreach_joints(joy_box2d_world_t* world, void (*iterator)(joy_box2d_joint_t*, joy_box2d_body_t*, joy_box2d_body_t*));
         JOY_API void joy_math_box2d_foreach_arbiters(joy_box2d_world_t* world, void (*iterator)(joy_box2d_arbiter_t*));
 
-        JOY_API void joy_script_msgpack_packer_init(joy_msgpack_packer_t* pk, void* data, jmsgpack_write_fn cb);
+        JOY_API void joy_script_msgpack_packer_init(joy_msgpack_packer_t* pk, void* data, joy_msgpack_write_fn cb);
         JOY_API int  joy_script_msgpack_pack_int(joy_msgpack_packer_t* pk, int d);
         JOY_API int  joy_script_msgpack_pack_int64(joy_msgpack_packer_t* pk, int64_t d);
         JOY_API int  joy_script_msgpack_pack_uint(joy_msgpack_packer_t* pk, unsigned int d);

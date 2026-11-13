@@ -261,24 +261,24 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
 
         typedef union joy_window joy_window_t, * joy_window_p;
 
-        typedef void (*jevent_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
-        typedef void (*jevent_keyreleased_fn)(const char* key, int scancode, void* arg);
-        typedef void (*jevent_mousepressed_fn)(float x, float y, int button, void* arg);
-        typedef void (*jevent_mousereleased_fn)(float x, float y, int button, void* arg);
-        typedef void (*jevent_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
-        typedef void (*jevent_textinput_fn)(const char* text, void* arg);
-        typedef void (*jevent_resize_fn)(int w, int h, void* arg);
-        typedef void (*jevent_process_event_fn)(const void* event, void* arg);
+        typedef void (*joy_event_keypressed_fn)(const char* key, int scancode, bool repeat, bool ctrl, bool shift, bool alt, void* arg);
+        typedef void (*joy_event_keyreleased_fn)(const char* key, int scancode, void* arg);
+        typedef void (*joy_event_mousepressed_fn)(float x, float y, int button, void* arg);
+        typedef void (*joy_event_mousereleased_fn)(float x, float y, int button, void* arg);
+        typedef void (*joy_event_mousemoved_fn)(float x, float y, float dx, float dy, void* arg);
+        typedef void (*joy_event_textinput_fn)(const char* text, void* arg);
+        typedef void (*joy_event_resize_fn)(int w, int h, void* arg);
+        typedef void (*joy_event_process_event_fn)(const void* event, void* arg);
 
         typedef struct joy_event_callbacks {
-                jevent_keypressed_fn on_keypressed;
-                jevent_keyreleased_fn on_keyreleased;
-                jevent_mousepressed_fn on_mousepressed;
-                jevent_mousereleased_fn on_mousereleased;
-                jevent_mousemoved_fn on_mousemoved;
-                jevent_textinput_fn on_textinput;
-                jevent_resize_fn on_resize;
-                jevent_process_event_fn on_process_event;
+                joy_event_keypressed_fn on_keypressed;
+                joy_event_keyreleased_fn on_keyreleased;
+                joy_event_mousepressed_fn on_mousepressed;
+                joy_event_mousereleased_fn on_mousereleased;
+                joy_event_mousemoved_fn on_mousemoved;
+                joy_event_textinput_fn on_textinput;
+                joy_event_resize_fn on_resize;
+                joy_event_process_event_fn on_process_event;
         } joy_event_callbacks_t;
 
         typedef struct joy_env joy_env_t, * joy_env_p;

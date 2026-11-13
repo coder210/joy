@@ -82,11 +82,11 @@ typedef struct joy_tilemap_layer {
         float opacity;
         float offsetx, offsety;
         float parallaxx, parallaxy;
-} jtilemap_layer_t, * jtilemap_layer_p;
+} joy_tilemap_layer_t, * joy_tilemap_layer_p;
 
 /* ---------- 瓦片图层 ---------- */
 struct joy_tilemap_tile_layer {
-        jtilemap_layer_t base;
+        joy_tilemap_layer_t base;
         int   width;         /* 瓦片列数 */
         int   height;        /* 瓦片行数 */
         int* data;          /* 展平 GID 数组，行优先：data[y * width + x] */
@@ -94,14 +94,14 @@ struct joy_tilemap_tile_layer {
 
 /* ---------- 对象图层 ---------- */
 struct joy_tilemap_object_layer {
-        jtilemap_layer_t base;
+        joy_tilemap_layer_t base;
         kvec_t(joy_tilemap_object_t) objects;
 };
 
 
 /* ---------- 图片图层 ---------- */
 typedef struct {
-        jtilemap_layer_t base;
+        joy_tilemap_layer_t base;
         char* image;
         bool  repeatx;
         bool  repeaty;
@@ -127,7 +127,7 @@ struct joy_tilemap {
 
         kvec_t(joy_tilemap_tileset_t) tilesets;
 
-        /* layers 数组中每一项是 jtilemap_layer_p（实际为 *tile_layer / *object_layer / *image_layer） */
+        /* layers 数组中每一项是 joy_tilemap_layer_p（实际为 *tile_layer / *object_layer / *image_layer） */
         kvec_t(void*) layers;
 
         /* 运行时：每加载一个 tile layer 时收集所有有动画的 gid 及启动时间 */
@@ -597,7 +597,7 @@ static void destroy_object(joy_tilemap_object_t* obj)
 
 static void destroy_layer(void* layer)
 {
-    jtilemap_layer_p base = (jtilemap_layer_p)layer;
+    joy_tilemap_layer_p base = (joy_tilemap_layer_p)layer;
     free(base->name);
 
     switch (base->type) {
@@ -776,7 +776,7 @@ joy_tilemap_tile_layer_p joy_scene_tilemap_find_tile_layer(const joy_tilemap_p t
     if (!tm || !name) return NULL;
 
     for (size_t i = 0; i < kv_size(tm->layers); i++) {
-        jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+        joy_tilemap_layer_p base = (joy_tilemap_layer_p)kv_A(tm->layers, i);
         if (base->type == JTILEMAP_LAYER_TILE && base->name &&
             strcmp(base->name, name) == 0) {
             return (joy_tilemap_tile_layer_p)base;
@@ -791,7 +791,7 @@ joy_tilemap_object_layer_p joy_scene_tilemap_find_object_layer(const joy_tilemap
     if (!tm || !name) return NULL;
 
     for (size_t i = 0; i < kv_size(tm->layers); i++) {
-        jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+        joy_tilemap_layer_p base = (joy_tilemap_layer_p)kv_A(tm->layers, i);
         if (base->type == JTILEMAP_LAYER_OBJECT && base->name &&
             strcmp(base->name, name) == 0) {
             return (joy_tilemap_object_layer_p)base;
@@ -1096,7 +1096,7 @@ void joy_scene_tilemap_render_all(joy_tilemap_render_p r, joy_tilemap_p tm,
         }
 
         for (size_t i = 0; i < kv_size(tm->layers); i++) {
-                jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+                joy_tilemap_layer_p base = (joy_tilemap_layer_p)kv_A(tm->layers, i);
                 switch (base->type) {
                 case JTILEMAP_LAYER_TILE:
                         render_tile_layer_internal(r, tm, (joy_tilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
@@ -1129,7 +1129,7 @@ void joy_scene_tilemap_render_tiles(joy_tilemap_render_p r, joy_tilemap_p tm,
         }
 
         for (size_t i = 0; i < kv_size(tm->layers); i++) {
-                jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+                joy_tilemap_layer_p base = (joy_tilemap_layer_p)kv_A(tm->layers, i);
                 if (base->type == JTILEMAP_LAYER_TILE)
                         render_tile_layer_internal(r, tm, (joy_tilemap_tile_layer_p)base, camera_x, camera_y, time_ms);
         }
@@ -1143,7 +1143,7 @@ bool joy_scene_tilemap_render_layer(joy_tilemap_render_p r, joy_tilemap_p tm,
         if (!r || !tm || !r->r2d || !layer_name) return false;
 
         for (size_t i = 0; i < kv_size(tm->layers); i++) {
-                jtilemap_layer_p base = (jtilemap_layer_p)kv_A(tm->layers, i);
+                joy_tilemap_layer_p base = (joy_tilemap_layer_p)kv_A(tm->layers, i);
                 if (!base->name || strcmp(base->name, layer_name) != 0) continue;
                 switch (base->type) {
                 case JTILEMAP_LAYER_TILE:

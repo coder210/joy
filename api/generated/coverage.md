@@ -214,8 +214,8 @@
 | `joy_math_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/japi.h:926 |
 | `joy_math_gjk3d_init_cone` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/japi.h:927 |
 | `joy_math_gjk3d_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | include/joy/japi.h:928 |
-| `joy_scene_animator_set_on_enter` | 未知类型需人工标注：janim_state_cb | include/joy/japi.h:959 |
-| `joy_scene_animator_set_on_exit` | 未知类型需人工标注：janim_state_cb | include/joy/japi.h:960 |
+| `joy_scene_animator_set_on_enter` | 未知类型需人工标注：joy_anim_state_cb | include/joy/japi.h:959 |
+| `joy_scene_animator_set_on_exit` | 未知类型需人工标注：joy_anim_state_cb | include/joy/japi.h:960 |
 | `joy_ui_label_create` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:1034 |
 | `joy_ui_label_set_text` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:1036 |
 | `joy_ui_button_get_position` | 结构体按值返回 | include/joy/japi.h:1042 |
@@ -260,16 +260,16 @@
 | `joy_scene_node_get_scale` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:1481 |
 | `joy_scene_find_nodes_by_tag` | 非不透明指针 / 输出参数：joy_scene_node_p* | include/joy/japi.h:1492 |
 | `joy_scene_find_nodes_by_tag_deep` | 非不透明指针 / 输出参数：joy_scene_node_p* | include/joy/japi.h:1493 |
-| `joy_scene_node_set_update_callback` | 未知类型需人工标注：scene_node_update_fn | include/joy/japi.h:1494 |
-| `joy_scene_node_set_render_callback` | 未知类型需人工标注：scene_node_render_fn | include/joy/japi.h:1495 |
-| `joy_scene_node_set_destroy_callback` | 未知类型需人工标注：scene_node_destroy_fn | include/joy/japi.h:1496 |
-| `joy_scene_node_set_event_callback` | 未知类型需人工标注：scene_node_event_fn | include/joy/japi.h:1497 |
-| `joy_scene_set_load_callback` | 未知类型需人工标注：scene_load_fn | include/joy/japi.h:1510 |
-| `joy_scene_set_update_callback` | 未知类型需人工标注：scene_update_fn | include/joy/japi.h:1511 |
-| `joy_scene_set_render_callback` | 未知类型需人工标注：scene_render_fn | include/joy/japi.h:1512 |
-| `joy_scene_set_destroy_callback` | 未知类型需人工标注：scene_destroy_fn | include/joy/japi.h:1513 |
-| `joy_scene_set_event_callback` | 未知类型需人工标注：scene_event_fn | include/joy/japi.h:1514 |
-| `joy_scene_set_fixed_update_callback` | 未知类型需人工标注：scene_fixed_update_fn | include/joy/japi.h:1515 |
+| `joy_scene_node_set_update_callback` | 未知类型需人工标注：joy_scene_node_update_fn | include/joy/japi.h:1494 |
+| `joy_scene_node_set_render_callback` | 未知类型需人工标注：joy_scene_node_render_fn | include/joy/japi.h:1495 |
+| `joy_scene_node_set_destroy_callback` | 未知类型需人工标注：joy_scene_node_destroy_fn | include/joy/japi.h:1496 |
+| `joy_scene_node_set_event_callback` | 未知类型需人工标注：joy_scene_node_event_fn | include/joy/japi.h:1497 |
+| `joy_scene_set_load_callback` | 未知类型需人工标注：joy_scene_load_fn | include/joy/japi.h:1510 |
+| `joy_scene_set_update_callback` | 未知类型需人工标注：joy_scene_update_fn | include/joy/japi.h:1511 |
+| `joy_scene_set_render_callback` | 未知类型需人工标注：joy_scene_render_fn | include/joy/japi.h:1512 |
+| `joy_scene_set_destroy_callback` | 未知类型需人工标注：joy_scene_destroy_fn | include/joy/japi.h:1513 |
+| `joy_scene_set_event_callback` | 未知类型需人工标注：joy_scene_event_fn | include/joy/japi.h:1514 |
+| `joy_scene_set_fixed_update_callback` | 未知类型需人工标注：joy_scene_fixed_update_fn | include/joy/japi.h:1515 |
 | `joy_r2d_particle_cfg_default` | 结构体按值返回 | include/joy/japi.h:1533 |
 | `joy_scene_ecs_kill` | 未知类型需人工标注：joy_ecs_id_t | include/joy/japi.h:1563 |
 | `joy_scene_ecs_set` | 未知类型需人工标注：joy_ecs_id_t | include/joy/japi.h:1565 |

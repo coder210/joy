@@ -88,29 +88,29 @@ typedef struct joy_sparse_set {
         kvec_t(int) density;
         khash_t(ksparse)* sparse;
         joy_bitset_t* bitset;  // 辅助位图
-} sparse_set_t, * sparse_set_p;
+} joy_sparse_set_t, * joy_sparse_set_p;
 
-static sparse_set_p sparse_set_create() {
-        sparse_set_p sparse_set = (sparse_set_p)SDL_malloc(sizeof(sparse_set_t));
+static joy_sparse_set_p sparse_set_create() {
+        joy_sparse_set_p sparse_set = (joy_sparse_set_p)SDL_malloc(sizeof(joy_sparse_set_t));
         kv_init(sparse_set->density);
         sparse_set->sparse = kh_init(ksparse);
         sparse_set->bitset = bitset_create(256);  // 初始支持 256 个实体
         return sparse_set;
 }
 
-static void sparse_set_destroy(sparse_set_p sparse_set) {
+static void sparse_set_destroy(joy_sparse_set_p sparse_set) {
         kv_destroy(sparse_set->density);
         kh_destroy(ksparse, sparse_set->sparse);
         bitset_destroy(sparse_set->bitset);
         SDL_free(sparse_set);
 }
 
-static bool sparse_set_contain(sparse_set_p sparse_set, int value) {
+static bool sparse_set_contain(joy_sparse_set_p sparse_set, int value) {
         khint_t k = kh_get(ksparse, sparse_set->sparse, value);
         return k != kh_end(sparse_set->sparse);
 }
 
-static void sparse_set_remove(sparse_set_p sparse_set, int value) {
+static void sparse_set_remove(joy_sparse_set_p sparse_set, int value) {
         khint_t k = kh_get(ksparse, sparse_set->sparse, value);
         if (k != kh_end(sparse_set->sparse)) {
                 int index = kh_val(sparse_set->sparse, k);
@@ -133,7 +133,7 @@ static void sparse_set_remove(sparse_set_p sparse_set, int value) {
         }
 }
 
-static void sparse_set_insert(sparse_set_p sparse_set, int value) {
+static void sparse_set_insert(joy_sparse_set_p sparse_set, int value) {
         if (!sparse_set_contain(sparse_set, value)) {
                 kv_push(int, sparse_set->density, value);
                 int index = kv_size(sparse_set->density) - 1;
@@ -148,7 +148,7 @@ static void sparse_set_insert(sparse_set_p sparse_set, int value) {
 typedef struct joy_ecs_component_data {
         size_t size;
         void* data;
-}ecs_component_data_t, *ecs_component_data_p;
+}joy_ecs_component_data_t, *joy_ecs_component_data_p;
 
 typedef unsigned long joy_ecs_cid_t;
 #define __int_free(x)
@@ -156,12 +156,12 @@ KLIST_INIT(kecs_system, joy_ecs_system_t, __int_free)
 
 // 组件存储: 内含稀疏集合与位图
 typedef struct joy_component_store {
-        sparse_set_p sparse_set;
+        joy_sparse_set_p sparse_set;
         joy_bitset_t* bitset;
-} component_store_t, *component_store_p;
+} joy_component_store_t, *joy_component_store_p;
 
-KHASH_INIT(kecs_component, joy_ecs_cid_t, component_store_p, 1, kh_int_hash_func, kh_int_hash_equal)
-KHASH_INIT(kecs_component_data, joy_ecs_cid_t, ecs_component_data_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_component, joy_ecs_cid_t, joy_component_store_p, 1, kh_int_hash_func, kh_int_hash_equal)
+KHASH_INIT(kecs_component_data, joy_ecs_cid_t, joy_ecs_component_data_p, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(kecs_meta, joy_ecs_cid_t, size_t, 1, kh_int_hash_func, kh_int_hash_equal)
 
 typedef khash_t(kecs_component_data) ecs_entity_t, * joy_ecs_entity_p;
@@ -192,8 +192,8 @@ void joy_scene_ecs_destroy(joy_ecs_world_p world)
         joy_ecs_id_t id;
         joy_ecs_entity_p entity;
         khint_t i, j, p;
-        sparse_set_p sparse_set;
-        ecs_component_data_p component_data;
+        joy_sparse_set_p sparse_set;
+        joy_ecs_component_data_p component_data;
 
         // 销毁实体
         for (khint_t i = kh_begin(world->entities); i != kh_end(world->entities); i++) {
@@ -214,7 +214,7 @@ void joy_scene_ecs_destroy(joy_ecs_world_p world)
         // 销毁组件存储: 稀疏集合与 store->bitset 是两份独立分配, 都要释放
         for (khint_t i = kh_begin(world->components); i != kh_end(world->components); i++) {
                 if (kh_exist(world->components, i)) {
-                        component_store_t* store = kh_val(world->components, i);
+                        joy_component_store_t* store = kh_val(world->components, i);
                         sparse_set_destroy(store->sparse_set);
                         bitset_destroy(store->bitset);
                         SDL_free(store);
@@ -254,10 +254,10 @@ joy_ecs_id_t joy_scene_ecs_spawn(joy_ecs_world_p world)
 void joy_scene_ecs_kill(joy_ecs_world_p world, joy_ecs_id_t id)
 {
         joy_ecs_entity_p entity;
-        component_store_t* store;
+        joy_component_store_t* store;
         joy_ecs_cid_t component_id;
         khint_t k, p;
-        ecs_component_data_p component_data;
+        joy_ecs_component_data_p component_data;
 
         k = kh_get(kecs_entity, world->entities, id);
         if (k == kh_end(world->entities)) {
@@ -303,10 +303,10 @@ void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name,
 {
         joy_ecs_entity_p entity;
         joy_ecs_cid_t component_id;
-        component_store_t* store;
+        joy_component_store_t* store;
         size_t meta;
         khint_t k;
-        ecs_component_data_p component_data;
+        joy_ecs_component_data_p component_data;
         int ret;
 
         component_id = joy_core_murmur3_hash(name);
@@ -325,7 +325,7 @@ void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name,
         if (k == kh_end(entity)) {
                 /* 缓冲按注册时的 meta 分配, 拷贝长度不能超过它, 否则越界写 */
                 size_t copy_size = size < meta ? size : meta;
-                component_data = (ecs_component_data_p)SDL_malloc(sizeof(ecs_component_data_t));
+                component_data = (joy_ecs_component_data_p)SDL_malloc(sizeof(joy_ecs_component_data_t));
                 component_data->data = SDL_malloc(meta);
                 component_data->size = copy_size;
                 SDL_memcpy(component_data->data, ptr, copy_size);
@@ -336,7 +336,7 @@ void joy_scene_ecs_set(joy_ecs_world_p world, joy_ecs_id_t id, const char* name,
                 k = kh_get(kecs_component, world->components, component_id);
                 if (k == kh_end(world->components)) {
                         k = kh_put(kecs_component, world->components, component_id, &ret);
-                        store = (component_store_p)SDL_malloc(sizeof(component_store_t));
+                        store = (joy_component_store_p)SDL_malloc(sizeof(joy_component_store_t));
                         store->sparse_set = sparse_set_create();
                         store->bitset = bitset_create(world->global_id + 64); // 预留空间
                         kh_val(world->components, k) = store;
@@ -360,7 +360,7 @@ size_t joy_scene_ecs_get(joy_ecs_world_p world, joy_ecs_id_t id, const char* nam
 {
         joy_ecs_cid_t component_id;
         joy_ecs_entity_p entity;
-        ecs_component_data_p component_data;
+        joy_ecs_component_data_p component_data;
         khint_t k;
         component_id = joy_core_murmur3_hash(name);
         k = kh_get(kecs_entity, world->entities, id);
@@ -380,8 +380,8 @@ size_t joy_scene_ecs_get(joy_ecs_world_p world, joy_ecs_id_t id, const char* nam
 void joy_scene_ecs_remove(joy_ecs_world_p world, joy_ecs_id_t id, const char* name)
 {
         joy_ecs_entity_p entity;
-        component_store_t* store;
-        ecs_component_data_p component_data;
+        joy_component_store_t* store;
+        joy_ecs_component_data_p component_data;
         khint_t k;
 
         joy_ecs_cid_t component_id = joy_core_murmur3_hash(name);
@@ -471,7 +471,7 @@ joy_ecs_id_array_t joy_scene_ecs_queryx(joy_ecs_world_p world, int arg_cnt, char
                         return result;
                 }
 
-                component_store_t* store = kh_val(world->components, k);
+                joy_component_store_t* store = kh_val(world->components, k);
 
                 if (first) {
                         bitset_copy(result_bitset, store->bitset);
@@ -489,8 +489,8 @@ joy_ecs_id_array_t joy_scene_ecs_queryx(joy_ecs_world_p world, int arg_cnt, char
                 khint_t k = kh_get(kecs_component, world->components, first_cid);
 
                 if (k != kh_end(world->components)) {
-                        component_store_t* store = kh_val(world->components, k);
-                        sparse_set_p sparse_set = store->sparse_set;
+                        joy_component_store_t* store = kh_val(world->components, k);
+                        joy_sparse_set_p sparse_set = store->sparse_set;
 
                         for (int i = 0; i < kv_size(sparse_set->density); i++) {
                                 /* 结果是固定容量数组, 命中数超上限就截断, 不能越界写 */
@@ -527,7 +527,7 @@ typedef struct joy_velocity {
 
 int joy_ecs_test()
 {
-       // sparse_set_p sparse_set;
+       // joy_sparse_set_p sparse_set;
        // sparse_set = sparse_set_create();
 
        // for (int i = 0; i < 100000; i++) {
