@@ -74,7 +74,7 @@
 
 ## 3. 下一步（按优先级）
 
-### P0 — `src/jgltf.c` 预存缺陷（P0-a 已完成，P0-b 待定口径）
+### P0 — `src/jgltf.c` 预存缺陷（P0-a 句柄别名已修，P0-b 已最小降级适配）
 
 #### P0-a 句柄别名缺失 —— 已修（2026-11-13）
 
@@ -91,7 +91,7 @@
 的**编译阶段已通过**（`jgltf.obj` 生成成功）；生成链 / 域纯度 / 默认构建 /
 `ctest` 均不受影响。
 
-#### P0-b 三个 r3d 动态蒙皮 API 从未实现 —— 需先定口径，不要直接动手
+#### P0-b 三个 r3d 动态蒙皮 API 从未实现 —— 已最小降级适配（2026-11-13）
 
 同一个实建在**链接期**仍失败：
 
@@ -108,12 +108,18 @@ jgltf.obj : error LNK2019: 无法解析的外部符号 r3d_draw_mesh_skinned
 
 现有可对齐的 API：`joy_r3d_mesh_custom_lit(r, verts, vc)`、
 `joy_r3d_draw_mesh_lit(r, m, model, tex)`、`joy_r3d_mesh_destroy(r, m)`；
-**没有动态顶点更新接口**。两条路线先问用户再动：
+**没有动态顶点更新接口**。已与用户确认走**最小降级**（路线 1）：
 
-1. 最小降级：在 `jgltf.c` 内做静态适配，`update` 用「销毁旧 mesh + 按新顶点
-   重建」代替。能过链接，但每帧建销 GPU buffer，且无 GLTF 模型/真机可验运行。
-2. 正式补齐：在 `jr3d.c` 实现动态可写网格（create / update / draw），要动 GPU
-   资源生命周期与延迟释放队列，属新功能而不是修缺陷。
+- `create`：`r3d_mesh_skinned_create` → `joy_r3d_mesh_custom_lit(r, buf, vertex_count)`；
+- `update`：改为「`joy_r3d_mesh_destroy` 销毁旧 mesh + 按新顶点 `joy_r3d_mesh_custom_lit`
+  重建」，`inst->gpu[ni]` 指回新 mesh；
+- `draw`：`r3d_draw_mesh_skinned` → `joy_r3d_draw_mesh_lit(r, m, model, tex)`。
+  文件头注释也同步更新为降级路径说明。
+- 代价：每帧建销 GPU buffer（蒙皮网格走延迟释放队列），且无 GLTF 模型 / 真机可
+  验运行；正式补齐（路线 2）仍属新功能缺口，未做。
+- 验证：`cmake -S examples -B build/opt_check -DJOY_ENABLE_GLTF=ON -DJOY_ENABLE_SPINE=ON
+  --target example_cpp` 链接通过（`example_cpp.exe` 生成，0 错误）；
+  `--check` / 域纯度 / 默认 `ctest` 4/4 均不受影响。
 
 > **验证方式纠正**：根入口 `cmake -S . -B ...` 默认 `JOY_BUILD_EXAMPLES=OFF`，
 > `joy::all` 是 INTERFACE，不会编译/链接 `jgltf.c`；此前记的「SPINE+GLTF 独立

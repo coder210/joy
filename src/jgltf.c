@@ -1,12 +1,14 @@
 /******************************************************************************
  * jgltf —— joy 的 glTF/glb 加载 + CPU 骨骼蒙皮动画 + 绘制模块（可选, 需定义 JOY_USE_GLTF）
  *
- * 渲染：基于 joy 的 jr3d 动态蒙皮网格接口（r3d_mesh_skinned_create/update/draw）。
+ * 渲染：降级路径——每帧用 joy_r3d_mesh_custom_lit 按新顶点重建 lit mesh、
+ *      joy_r3d_draw_mesh_lit 绘制（r3d_mesh_skinned_* 动态蒙皮接口从未实现，
+ *      属新功能缺口，见 NEXT_SESSION P0-b；当前无 GLTF 模型 / 真机可验运行）。
  * 加载：先把带 BOM / 头部杂散字节的"畸形 glb"在内存中归一化重建为 clean glb
  *      （算法照抄 build/norm_test/norm_test.c），再用 cgltf 解析 + 加载 buffer。
  *
  * 说明：
- *   - r3d_draw_mesh_skinned 走非索引三角形列表绘制，因此带 INDICES 的 primitive
+ *   - 走非索引三角形列表绘制，因此带 INDICES 的 primitive
  *     在加载时按索引展开成非索引进制顶点（skin 属性随顶点复制），交给 GPU 时
  *     不建索引缓冲。
  *   - 未启用 JOY_USE_GLTF 时本文件为空编译单元，不影响任何项目。
@@ -627,7 +629,7 @@ joy_gltf_instance_p jgltf_instance_create(joy_gltf_asset_p a) {
                 float* buf = (float*)malloc((size_t)src->vertex_count * 8 * sizeof(float));
                 memcpy(buf, src->bind_verts, (size_t)src->vertex_count * 8 * sizeof(float));
                 inst->skinned[i] = buf;
-                inst->gpu[i] = r3d_mesh_skinned_create(a->r3d, buf, src->vertex_count, NULL, 0);
+                inst->gpu[i] = joy_r3d_mesh_custom_lit(a->r3d, buf, src->vertex_count);
         }
         return inst;
 }
@@ -784,7 +786,8 @@ void jgltf_instance_update(joy_gltf_instance_p inst, float dt) {
                         }
                         free(combo);
                 }
-                r3d_mesh_skinned_update(a->r3d, inst->gpu[ni], out, vc);
+                joy_r3d_mesh_destroy(a->r3d, inst->gpu[ni]);
+                inst->gpu[ni] = joy_r3d_mesh_custom_lit(a->r3d, out, vc);
         }
 }
 
@@ -828,7 +831,7 @@ void jgltf_instance_draw(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat4
                 if (!inst->gpu[i]) continue;
                 void* tex = inst->asset->prims[i].tex;
                 if (!tex) tex = inst->asset->white_tex;
-                r3d_draw_mesh_skinned(r3d, inst->gpu[i], model, tex);
+                joy_r3d_draw_mesh_lit(r3d, inst->gpu[i], model, tex);
         }
 }
 

@@ -454,8 +454,10 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       编译阶段已通过，链接期报 3 个未解析符号
       `r3d_mesh_skinned_create` / `_update` / `r3d_draw_mesh_skinned`。
       历史核查（`f124824f` / `240f5f7a`）确认**全仓从未实现过**，
-      `jgltf.c` 是从未链接的半成品；两条修复路线与口径确认记在
-      `NEXT_SESSION.md` P0-b，本轮不擅自扩范围。
+      `jgltf.c` 是从未链接的半成品。已与用户确认走最小降级（路线 1）：
+      `create`→`joy_r3d_mesh_custom_lit`、`update`→销毁旧 mesh + 重建、
+      `draw`→`joy_r3d_draw_mesh_lit`；GLTF+SPINE 实建链接通过（原 3 个未解析符号消失）。
+      正式补齐（路线 2）仍属新功能缺口，未做；详见 `NEXT_SESSION.md` P0-b。
     - 同时纠正验证方式：根入口 `cmake -S .` 默认 `JOY_BUILD_EXAMPLES=OFF`，
       `joy::all` 是 INTERFACE，不会编译/链接 `jgltf.c`，此前记录的
       「SPINE+GLTF 独立构建 0 错误」属空验证；已改 `NEXT_SESSION.md` §5 第 5 条。
