@@ -1,5 +1,8 @@
 # joy 交付记录（已收口）
 
+> **换 AI 交接请先读 `NEXT_SESSION.md`**：那里是当前状态、下一步优先级与踩坑清单；
+> 本文（`HANDOFF.md`）是历史交付记录与已知事实的完整来源。
+>
 > **项目于 2026-11-11 收口，收口时没有计划内工作。本文不是待办清单。**
 > 用途：记录仓库的最终状态与已知事实，供以后查阅或另开新议题时参考。
 > **收口后另开的新议题不在本文范围**：C 类型名统一，任务书见 `TYPE_RENAME_TASK.md`
@@ -418,6 +421,24 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
       `borrowed=12` / `owns=83` / `note=42` 全部保留、`domain` 分布随新名
       刷新、`--scan` 幂等、`--check` OK、全量 Debug 构建 0 错误、
       `ctest` 4/4、SPINE+GLTF 独立构建 0 错误、`diff --check` 0、lint 0。
+30. **域纯度规则固化为门禁（2026-11-13）**：新增 `api/tools/audit_domain_purity.js`，
+    只统计**函数定义**（签名后紧跟 `{`），排除跨域调用、注释提及、共享句柄类型，
+    混域时打印文件/行号并退出码 1；`desktop.yml` 在 Binding generator gate 之后
+    增加 Domain purity gate。同时清理 `jr2d.c` 两处注释里点名的 `joy_ui_*`
+    （`L176`、`L1074`），清理后该文件内 `joy_ui_` / `joy_math_` 字样为 0。
+    - 核查结论：`jr2d.c` 的 92 条函数定义已全是 `joy_r2d_*`，编译产物
+      `jr2d.obj` 的 96 个函数符号同样全是 `joy_r2d_*`；用户看到的
+      `joy_ui_*` / `joy_math_*` 函数是 `321ceabf` 及更早的状态
+      （旧版 `r2d:51 ui:21 math:8 scene:10 fov:2`）。
+    - 保留的正常现象：`jr2d.c` 调 `joy_core_get_raw_window` /
+      `joy_core_utf8_decode_all` / `joy_core_utils_get_current_time`
+      （本文件无定义，属单向依赖）；`joy_image_p` / `joy_text_p` /
+      `joy_animation_p` 是 `jdefs.h` 的共享句柄类型，不是函数。
+    - 顺带核实：`src/jgltf.c` 的预存编译错误根因是 `struct joy_gltf_asset`
+      从未 typedef 成 `jgltf_asset_p`（收口版本 `240f5f7a` 即如此，非改名引入），
+      修法与验证命令记在 `NEXT_SESSION.md` 的 P0。
+    - 验证：全仓 26 个 `.c` / 1013 条函数定义 0 混域、`--check` OK（1170 条）、
+      全量 Debug 构建 0 错误、`ctest` 4/4、`diff --check` 0、CI 三工作流全绿。
 
     具体内容：
 
