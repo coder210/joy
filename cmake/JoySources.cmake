@@ -39,6 +39,8 @@
 #   - jr3d 与 jgltf 属 3D，勿按"2D"归并
 # 改公开 API 的 C 名必须同步 api/idl/rename_map.json（继承 status/owns）与
 # api/tools/naming.js 的 ALIASES（冻结脚本层方法名），再跑 --scan / --check。
+# 这条规则由 `node api/tools/audit_domain_purity.js` 校验（CI 的 Domain purity
+# gate 会跑），退出码非 0 即存在混域，必须修掉再提交。
 # 增删文件在这里登记，归属也只记在这一份清单里。
 #
 # 生成物 api/generated/jmath_wrappers.c 列在 math 域，等 IDL 改 manifest 后

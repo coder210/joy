@@ -78,6 +78,10 @@ FOV 等渲染层功能归 `r2d`（或 `r3d`），控件（joystick 等）归 `ui
 `scene`，glTF 归 `r3d`。全仓 26 个含 `joy_*` 定义的 `.c` 已全部纯域、
 0 混域；完整文件归属表见 `cmake/JoySources.cmake` 头部。
 
+该规则由 `node api/tools/audit_domain_purity.js` 校验（CI 的 Domain purity
+gate）：只统计**函数定义**（签名后紧跟 `{`），不把跨域调用、注释提及、共享
+句柄类型（`joy_image_p` 等）算作混域。退出码非 0 即存在混域，必须修掉再提交。
+
 改公开 API 的 C 名必须同步两处，否则 `--scan` 会重置 `status:on`、脚本层
 方法名会退化成 `pascal(新名)`：`api/idl/rename_map.json` 追加「当前名 → 新名」
 以继承 `status` / `owns` / `note` / `borrowed`；`api/tools/naming.js` 的

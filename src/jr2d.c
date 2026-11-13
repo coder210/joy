@@ -173,7 +173,7 @@ bool joy_r2d_set_scale(joy_r2d_p r2d, float sx, float sy)
 
 /* ===================== 比例坐标（0~1）基础转换 =====================
  *
- * 与 jui 里 joy_ui_button_create / joy_ui_joystick_create 等控件的百分比语义一致：
+ * 与 jui 里按钮 / 摇杆等控件的百分比语义一致：
  *   x / w → 逻辑分辨率的宽；y / h → 逻辑分辨率的高。
  * 未启用逻辑分辨率时回退到渲染输出尺寸，保证任何配置下都有效。
  */
@@ -1071,7 +1071,7 @@ void joy_r2d_text_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str,
  *
  * 旧实现里 joy_r2d_text_printx() 是 joy_r2d_text_createx() -> joy_r2d_text_print() -> joy_r2d_text_destroy()，
  * 每次调用都新建并销毁一张 SDL 纹理。inputbox / datagrid / popup / tooltip /
- * combobox_input 都走这条路径；其中 joy_ui_inputbox_draw 还会为测量子串宽度额外
+ * combobox_input 都走这条路径；其中输入框绘制还会为测量子串宽度额外
  * 创建两张纹理，一个带选区的 inputbox 每帧要建 3~4 张。
  *
  * 这里按 (font, color, 内容字节) 缓存纹理并 LRU 复用。
