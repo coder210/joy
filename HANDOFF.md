@@ -38,7 +38,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
   `jutils.c` 两处 include，删除后全量构建 0 错误。
 - **公开 API 命名迁移 P1 基本完成**：1150 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
   调用点 / 生成物四处 C 符号一致。**6 条例外**：
-  `joy_fov_*`(4) 与 `joy_tilemap_sweep_x|y`(2)，域名回退成白名单外的 `joy`，
+  `joy_fov_*`(4) 与 `joy_math_tilemap_sweep_x|y`(2)，域名回退成白名单外的 `joy`，
   均为 L3 / `status:off` / 不暴露；因在 `legacy_names.txt` 豁免名单里 `--check`
   查不到。本轮决定保持现状（不暴露，改名收益低于动公开头的风险），只如实记录。
 - Android：CI 已多次跑通（`Android APKs` 工作流 `success`），**已产出 4 个 APK**（见 §6）。
@@ -142,7 +142,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 19. **架构审视后的前三项修复（2026-11-12）**：只读审视 `src/` 全部 `.c` 后，
    按优先级落地前三项，第 4 项（平台抽象 / 按 API 域拆文件）单独排期未动。
    - **修注释事实错误**：上一轮写进 `JoySources.cmake` 的"janimator 只设颜色、
-     与渲染解耦"（实际调 `joy_ui_image_create/draw_ex`）与"三个可选模块整文件
+     与渲染解耦"（实际调 `joy_r2d_image_create/draw_ex`）与"三个可选模块整文件
      被 `JOY_USE_*` 包裹"（`jmodule.c` 当时没有）均不符实，已改正；并新增
      "已知偏差"段记录命名域与分组不一致、`jgltf.c` 缺公开声明等未修项。
    - **补齐 PLUGINS 边界**：`JOY_ENABLE_PLUGINS` 原本没有对应的 `JOY_USE_PLUGINS`，
@@ -160,11 +160,12 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
      故 IDL / thunks / vtable / C# glue 零变化。
    - 验证：`--scan` 幂等（1157 条）、`--check` OK、默认构建 0 错误、
      `ctest` 4/4、PLUGINS=ON 构建 0 错误、`git diff --check` 0。
-   - **仍未修（单独排期）**：`jr2d.c` 承载 UI/场景 API、无资源管理器/绘制
-     指令层、两套分配器并存、Winsock 初始化/清理缺少引用计数、
-     `set_sock_*timeo` 在 macOS/UNIX 仍为空实现；控件 `void* event` API 与
-     `joy_ui_process_widget_event` 空壳待真实消费者（见第 23 条）。
-     SDL 类型进入公开头、事件抽象的平台依赖部分已在第 23 条完成。
+   - **仍未修（单独排期）**：无资源管理器/绘制指令层、两套分配器并存、
+     Winsock 初始化/清理缺少引用计数、`set_sock_*timeo` 在 macOS/UNIX 仍为
+     空实现；控件 `void* event` API 与 `joy_ui_process_widget_event` 空壳待
+     真实消费者（见第 23 条）。`jr2d.c` 承载 UI/场景 API 一项已于
+     2026-11-13 第 29 条解决。SDL 类型进入公开头、事件抽象的平台依赖部分
+     已在第 23 条完成。
      其中 `jecs.c` 越界写、`jsys.c` 返回值写反、`bitset` 泄漏、函数级
      `static` GPU 资源及第 21 条的 13 处运行期缺陷均已修复（第 20/21 条）。
 20. **继续处理：纯 bug 与函数级 static GPU 资源（2026-11-12）**：承接第 19 条，
@@ -278,7 +279,8 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
      - **仍未做**：控件标量入口与 `joy_ui_process_widget_event` 空壳（等真实
        消费者）；文本输入的标量通道（`const char*` 返回值的跨语言生命周期
        尚未验证）；其余 20+ 个 `const void* event` API 仍是 `off`；以及第 19
-       条列的按 API 域拆 `jr2d.c`、资源管理器、两套分配器等。
+       条列的资源管理器、两套分配器等。按 API 域拆 `jr2d.c` 一项已于
+       2026-11-13 第 29 条以「域名跟着文件走」的方式解决。
      24. **Android CI 回归修复：补齐 SDL 显式依赖（2026-11-12）**：第 23 条把
      `jdefs.h:17` 的 `<SDL3/SDL_events.h>` 换成 `<stdint.h>` 后，Android clang
      （C99 严格模式）报 `src/jtilemap.c` 的 `SDL_LoadFile` / `SDL_free`
@@ -382,11 +384,40 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
     - **有意不动**：公开头 42 个非 `JOY_` 宏（26 个项目 `J` 前缀、9 个
       `jvector_*` 函数式宏、5 个 `GJK2D_CTYPE_*`、2 个标量别名）——11-11 批 4
       已评估；`src` 私有 62 个宏；`joystick`/`jenkins`/`joint` 的 `j` 属单词；
-      以及「命名域 ↔ 物理文件不对齐」的架构偏差（10 个 `.c` 混域，见
-      `cmake/JoySources.cmake:26-30`，已给方案、单独排期）。
+      以及「命名域 ↔ 物理文件不对齐」的架构偏差（当时 10 个 `.c` 混域）。
+      **这一项已于 2026-11-13 第 29 条解决**：26 个 `.c` 全部纯域、0 混域。
     - 验证：全仓旧名 0 残留、`--scan` 幂等、`--check` OK、`open=739` 不变、
       全量构建 0 错误、`ctest` 4/4、SPINE=ON 独立构建 0 错误、
       `diff --check` 0、lint 0。
+29. **源码按域重划：一个 `.c` 只承载一个域（2026-11-13）**。用户指出
+    `jr2d.c` 混了 5 个域，且域归属本身不合理——`joy_ui_image_create` 是
+    渲染层资源而非 ui 控件。做法不是搬 400 条函数，而是**让函数名的域前缀
+    跟着文件的技术职责走**：119 条改名 / 562 处 / 25 文件，26 个含 `joy_*`
+    定义的 `.c` 全部纯域、0 混域。
+    - 归属判据：纹理 / 文字 / 图元 / 动画 / 2D FOV → `r2d`；3D FOV / glTF
+      → `r3d`；控件（joystick / label / radio）→ `ui`；行为树 → `scene`；
+      tilemap 碰撞 → `math`；网络打包工具留在 `jutils.c` → `core`。
+      一个域允许多个 `.c`（按子系统拆分），不合并成巨型 TU。
+    - **顺带修了两个真实缺陷**：`jecs.c` 定义 `joy_ecs_test` 但 `japi.h`
+      声明 `joy_scene_ecs_test`；`jspine.c` 定义 `joy_spine_instance_animation`
+      但 `japi.h` 声明 `joy_r2d_spine_instance_animation`（条件编译下从未
+      暴露）。改名后定义与声明对齐，SPINE=ON + GLTF=ON 独立构建 0 错误。
+    - **必须同步两处**：`rename_map.json` 追加 119 条「当前名 → 新名」，
+      否则 `--scan` 会把 84 条 `status:on` 重置成 `off` 并丢掉 `owns`；
+      `naming.js` 的 `ALIASES` 同步改 key、保留 value，否则脚本层方法名
+      退化成 `pascal(新名)`。旧名留在 `legacy_names.txt` 里作为历史豁免，
+      不动（6 条 `fov`/`tilemap` 旧名）。
+    - `jbehavior.c`（bt 域）/ `jgltf.c`（gltf 域）两个非白名单「概念域」
+      一并收编为 `scene` / `r3d`，改名时**保留概念段**（`joy_bt_node_run`
+      → `joy_scene_bt_node_run`），避免 `joy_scene_node_run` 这类过泛名与
+      已有名字撞车。
+    - 文档同步：`cmake/JoySources.cmake` 头部「已知偏差」段换成完整文件
+      归属表；`api/README.md` 域表条数改为实测值并写明新的硬规则。
+    - 验证：26 个 `.c` 混域 0、旧名 0 残留、注册表 739 条的**脚本层方法名
+      集合逐字不变**（旧 key 0 残留 / 新 key 85 条）、`status:on=739` /
+      `borrowed=12` / `owns=83` / `note=42` 全部保留、`domain` 分布随新名
+      刷新、`--scan` 幂等、`--check` OK、全量 Debug 构建 0 错误、
+      `ctest` 4/4、SPINE+GLTF 独立构建 0 错误、`diff --check` 0、lint 0。
 
     具体内容：
 

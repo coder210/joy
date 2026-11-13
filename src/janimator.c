@@ -161,11 +161,11 @@ void joy_scene_animator_destroy(joy_animator_p anim)
         joy_anim_state_t* s = &kv_A(anim->states, i);
         for (j = 0; j < kv_size(s->clips); j++)
             if (kv_A(s->clips, j).image)
-                joy_ui_image_destroy(kv_A(s->clips, j).image);
+                joy_r2d_image_destroy(kv_A(s->clips, j).image);
         kv_destroy(s->clips);
         for (j = 0; j < kv_size(s->motions); j++)
             if (kv_A(s->motions, j).image)
-                joy_ui_image_destroy(kv_A(s->motions, j).image);
+                joy_r2d_image_destroy(kv_A(s->motions, j).image);
         kv_destroy(s->motions);
         kv_destroy(s->thresholds);
     }
@@ -269,7 +269,7 @@ void joy_scene_animator_state_add_clip(joy_animator_p anim, const char* state_na
     if (sidx < 0) return;
     joy_anim_state_t* s = &kv_A(anim->states, sidx);
     joy_anim_motion_t m;
-    m.image = joy_ui_image_create(anim->renderer, image_path);
+    m.image = joy_r2d_image_create(anim->renderer, image_path);
     m.duration = duration;
     m.src_rect = src_rect;
     m.is_color = false;
@@ -324,7 +324,7 @@ void joy_scene_animator_state_add_motion(joy_animator_p anim, const char* state_
     if (sidx < 0) return;
     joy_anim_state_t* s = &kv_A(anim->states, sidx);
     joy_anim_motion_t m;
-    m.image = joy_ui_image_create(anim->renderer, image_path);
+    m.image = joy_r2d_image_create(anim->renderer, image_path);
     m.duration = duration;
     m.src_rect = src_rect;
     m.is_color = false;
@@ -552,17 +552,17 @@ void joy_scene_animator_draw(joy_animator_p anim, float x, float y)
     if (m->is_color) {
         joy_rect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         joy_r2d_set_color(anim->renderer, m->color_r, m->color_g, m->color_b, m->color_a);
-        joy_math_shape_draw_rectangle(anim->renderer, "fill", r);
+        joy_r2d_shape_draw_rectangle(anim->renderer, "fill", r);
     } else if (m->image) {
         float sx = anim->flip_h ? -1.0f : 1.0f;
-        joy_ui_image_draw_ex(m->image, &m->src_rect, (joy_vec2_t){x, y}, 0.0f,
+        joy_r2d_image_draw_ex(m->image, &m->src_rect, (joy_vec2_t){x, y}, 0.0f,
             (joy_vec2_t){sx, 1.0f}, (joy_vec2_t){0.0f, 0.0f});
     } else {
         joy_rect_t r = { x, y, m->src_rect.w, m->src_rect.h };
         joy_r2d_set_color(anim->renderer, 80, 80, 80, 255);
-        joy_math_shape_draw_rectangle(anim->renderer, "fill", r);
+        joy_r2d_shape_draw_rectangle(anim->renderer, "fill", r);
         joy_r2d_set_color(anim->renderer, 120, 120, 120, 255);
-        joy_math_shape_draw_rectangle(anim->renderer, "line", r);
+        joy_r2d_shape_draw_rectangle(anim->renderer, "line", r);
     }
 }
 

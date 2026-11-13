@@ -7,7 +7,7 @@
  *
  * 这里按 C 类型名把宿主对象登记成借用句柄（dtor 为 NULL）：
  *   - 脚本层可以拿它调绘制类 API（joy_r2d_set_colorf /
- *     joy_math_shape_draw_rectangle …）；
+ *     joy_r2d_shape_draw_rectangle …）；
  *   - 引用计数归零时不会释放底层对象，所有权仍在宿主手里。
  * 一个宿主对象只应登记一次（在 Host.OnInit 里），否则每帧都会占用一个槽位。
  */

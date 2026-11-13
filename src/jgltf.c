@@ -552,23 +552,23 @@ void jgltf_asset_release(jgltf_asset_p a) {
 }
 
 int jgltf_asset_animation_count(jgltf_asset_p a) { return a ? a->anim_count : 0; }
-const char* joy_gltf_asset_animation_name(jgltf_asset_p a, int index) {
+const char* joy_r3d_gltf_asset_animation_name(jgltf_asset_p a, int index) {
         if (!a || index < 0 || index >= a->anim_count) return NULL;
         return a->data->animations[index].name;
 }
-float joy_gltf_asset_animation_duration(jgltf_asset_p a, int index) {
+float joy_r3d_gltf_asset_animation_duration(jgltf_asset_p a, int index) {
         if (!a || index < 0 || index >= a->anim_count) return 0.0f;
         return a->anim_duration[index];
 }
 int jgltf_asset_node_count(jgltf_asset_p a) { return a ? a->node_count : 0; }
 int jgltf_asset_prim_count(jgltf_asset_p a) { return a ? a->prim_count : 0; }
-int joy_gltf_asset_has_skin(jgltf_asset_p a) {
+int joy_r3d_gltf_asset_has_skin(jgltf_asset_p a) {
         int i;
         if (!a) return 0;
         for (i = 0; i < a->prim_count; i++) if (a->prims[i].skinned) return 1;
         return 0;
 }
-JOY_API void joy_gltf_asset_bounds(jgltf_asset_p a, joy_vec3_t* out_center, float* out_radius) {
+JOY_API void joy_r3d_gltf_asset_bounds(jgltf_asset_p a, joy_vec3_t* out_center, float* out_radius) {
         if (a) {
                 if (out_center) *out_center = a->bounds_center;
                 if (out_radius) *out_radius = a->bounds_radius;
@@ -825,7 +825,7 @@ void jgltf_instance_draw(joy_r3d_p r3d, jgltf_instance_p inst, const joy_mat44_t
 }
 
 /* 沿 skin 关节链画线段：每段 = 子关节世界位置 → 父关节世界位置（已按 model 变换到世界） */
-void joy_gltf_instance_draw_bones(joy_r3d_p r3d, jgltf_instance_p inst, const joy_mat44_t* model) {
+void joy_r3d_gltf_instance_draw_bones(joy_r3d_p r3d, jgltf_instance_p inst, const joy_mat44_t* model) {
         jgltf_asset_p a; int j, k, seg; const joy_mat44_t* m;
         float* verts; int vcount;
         joy_mat44_t identity;

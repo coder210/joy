@@ -3637,7 +3637,7 @@ void joy_r3d_draw_mesh_solid_basis(joy_r3d_p r, joy_render_mesh_p m, const joy_m
 
 #define JOY_FOV_DEG2RAD 0.0174532925f
 
-float joy_fov_ray_dist(const joy_fov_rect* blocks, int n,
+float joy_r3d_fov_ray_dist(const joy_fov_rect* blocks, int n,
                        float px, float pz, float dx, float dz)
 {
 	float best = 1e9f;
@@ -3668,7 +3668,7 @@ float joy_fov_ray_dist(const joy_fov_rect* blocks, int n,
 	return best;
 }
 
-bool joy_fov_compute_radii(const joy_fov_rect* blocks, int n,
+bool joy_r3d_fov_compute_radii(const joy_fov_rect* blocks, int n,
                            float px, float pz, float vis_radius,
                            float angle_start, float angle_step, int seg,
                            float* out)
@@ -3677,7 +3677,7 @@ bool joy_fov_compute_radii(const joy_fov_rect* blocks, int n,
 	for (int i = 0; i < seg; i++) {
 		float a = (angle_start + angle_step * i) * JOY_FOV_DEG2RAD;
 		float dx = sinf(a), dz = cosf(a);
-		float rd = joy_fov_ray_dist(blocks, n, px, pz, dx, dz);
+		float rd = joy_r3d_fov_ray_dist(blocks, n, px, pz, dx, dz);
 		out[i] = (rd < vis_radius) ? rd : vis_radius;
 	}
 	return true;
@@ -3685,7 +3685,7 @@ bool joy_fov_compute_radii(const joy_fov_rect* blocks, int n,
 
 /* 渐变纹理: v=0 透明 → v=1 全浓, 每帧复用采样以实现软边。
    按 device 实例惰性创建, 由 joy_r3d_destroy 释放 */
-static void* joy_fov_gradient_texture(joy_r3d_p r)
+static void* joy_r3d_fov_gradient_texture(joy_r3d_p r)
 {
 	if (!r) return NULL;
 	if (r->fov_gradient_tex) return r->fov_gradient_tex;
@@ -3702,7 +3702,7 @@ static void* joy_fov_gradient_texture(joy_r3d_p r)
 	return r->fov_gradient_tex;
 }
 
-void joy_fov_draw(joy_r3d_p r, float px, float py, float pz,
+void joy_r3d_fov_draw(joy_r3d_p r, float px, float py, float pz,
                   const float* radii, int seg,
                   float feather, float outer_radius)
 {
@@ -3752,7 +3752,7 @@ void joy_fov_draw(joy_r3d_p r, float px, float py, float pz,
 	if (r->fov_prev_mesh) { joy_r3d_mesh_destroy(r, r->fov_prev_mesh); r->fov_prev_mesh = NULL; }
 	r->fov_prev_mesh = mesh;
 
-	void* tex = joy_fov_gradient_texture(r);
+	void* tex = joy_r3d_fov_gradient_texture(r);
 	if (!tex) return;
 	/* 主动绑定 base pipeline(采样纹理 alpha 混合), 单位模型矩阵, 雾面顶点已是世界坐标 */
 	joy_mat44_t idm = mat44_identity();

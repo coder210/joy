@@ -541,7 +541,7 @@ static void limit_frame_rate(joy_game_timer_p timer, float current_delta_time)
 	// 如果 current_delta_time >= target_frame_time，不做任何事，delta_time 保持原值
 }
 
-void joy_scene_game_timer_init(joy_game_timer_p timer)
+void joy_core_game_timer_init(joy_game_timer_p timer)
 {
 	if (!timer) return;
 	Uint64 now = SDL_GetTicksNS();
@@ -554,7 +554,7 @@ void joy_scene_game_timer_init(joy_game_timer_p timer)
 	joy_core_log_info("[Gametimer] Initialized. Last time: %llu ns", (unsigned long long)now);
 }
 
-void joy_scene_game_timer_update(joy_game_timer_p timer)
+void joy_core_game_timer_update(joy_game_timer_p timer)
 {
 	if (!timer) return;
 
@@ -577,19 +577,19 @@ void joy_scene_game_timer_update(joy_game_timer_p timer)
 
 
 
-float joy_scene_game_timer_get_delta_time(const joy_game_timer_p timer)
+float joy_core_game_timer_get_delta_time(const joy_game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)(timer->delta_time * timer->time_scale);
 }
 
-float joy_scene_game_timer_get_unscaled_delta_time(const joy_game_timer_p timer)
+float joy_core_game_timer_get_unscaled_delta_time(const joy_game_timer_p timer)
 {
 	if (!timer) return 0.0f;
 	return (float)timer->delta_time;
 }
 
-void joy_scene_game_timer_set_time_scale(joy_game_timer_p timer, float scale)
+void joy_core_game_timer_set_time_scale(joy_game_timer_p timer, float scale)
 {
 	if (!timer) return;
 	if (scale < 0.0f) {
@@ -599,13 +599,13 @@ void joy_scene_game_timer_set_time_scale(joy_game_timer_p timer, float scale)
 	timer->time_scale = (double)scale;
 }
 
-float joy_scene_game_timer_get_time_scale(const joy_game_timer_p timer)
+float joy_core_game_timer_get_time_scale(const joy_game_timer_p timer)
 {
 	if (!timer) return 1.0f;
 	return (float)timer->time_scale;
 }
 
-void joy_scene_game_timer_set_target_fps(joy_game_timer_p timer, int fps)
+void joy_core_game_timer_set_target_fps(joy_game_timer_p timer, int fps)
 {
 	if (!timer) return;
 
@@ -628,7 +628,7 @@ void joy_scene_game_timer_set_target_fps(joy_game_timer_p timer, int fps)
 	}
 }
 
-int joy_scene_game_timer_get_target_fps(const joy_game_timer_p timer)
+int joy_core_game_timer_get_target_fps(const joy_game_timer_p timer)
 {
 	if (!timer) return 0;
 	return timer->target_fps;

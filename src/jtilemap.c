@@ -435,16 +435,16 @@ static joy_tilemap_image_layer_p parse_image_layer_cjson(cJSON* j)
     return layer;
 }
 
-joy_tilemap_p joy_tilemap_load_cjson(cJSON* root)
+joy_tilemap_p joy_scene_tilemap_load_cjson(cJSON* root)
 {
     if (!root || root->type != cJSON_Object) {
-        joy_core_log_error("joy_tilemap_load_cjson: root is not an object");
+        joy_core_log_error("joy_scene_tilemap_load_cjson: root is not an object");
         return NULL;
     }
 
     joy_tilemap_p tm = (joy_tilemap_p)calloc(1, sizeof(joy_tilemap_t));
     if (!tm) {
-        joy_core_log_error("joy_tilemap_load_cjson: out of memory");
+        joy_core_log_error("joy_scene_tilemap_load_cjson: out of memory");
         return NULL;
     }
 
@@ -538,7 +538,7 @@ joy_tilemap_p joy_scene_tilemap_load_file_json(const char* filename)
         return NULL;
     }
 
-    joy_tilemap_p tm = joy_tilemap_load_cjson(root);
+    joy_tilemap_p tm = joy_scene_tilemap_load_cjson(root);
     cJSON_Delete(root);
     return tm;
 }
@@ -889,7 +889,7 @@ static joy_image_p load_texture_internal(joy_tilemap_render_p r, const char* pat
                 return NULL;
         }
 
-        joy_image_p img = joy_ui_image_create_from_data(r->r2d, data, w, h);
+        joy_image_p img = joy_r2d_image_create_from_data(r->r2d, data, w, h);
         stbi_image_free(data);
         if (!img) {
                 tex_cache_store(r, path, NULL);
@@ -960,10 +960,10 @@ static void render_tile_layer_internal(joy_tilemap_render_p r, joy_tilemap_p tm,
                                 const char* mapped = r->remap ? r->remap(deco_img) : deco_img;
                                 joy_image_p timg = load_texture_internal(r, mapped);
                                 if (!timg) continue;
-                                joy_ui_image_set_alpha(timg, alpha);
+                                joy_r2d_image_set_alpha(timg, alpha);
                                 int dw = dst_iw, dh = dst_ih;
                                 joy_scene_tilemap_get_tile_def_size(res.tileset, res.local_id, &dw, &dh);
-                                joy_ui_image_draw1(timg, NULL, &(joy_rect_t){ (float)dst_ix, (float)dst_iy, (float)dw, (float)dh });
+                                joy_r2d_image_draw1(timg, NULL, &(joy_rect_t){ (float)dst_ix, (float)dst_iy, (float)dw, (float)dh });
                                 continue;
                         }
 
@@ -973,11 +973,11 @@ static void render_tile_layer_internal(joy_tilemap_render_p r, joy_tilemap_p tm,
                         joy_image_p timg = load_tileset_tex(r, res.tileset);
                         if (!timg) {
                                 joy_r2d_set_color(r->r2d, 255, 0, 255, 255);
-                                joy_math_shape_draw_rectangle(r->r2d, "fill", (joy_rect_t) { (float)dst_ix, (float)dst_iy, (float)dst_iw, (float)dst_ih });
+                                joy_r2d_shape_draw_rectangle(r->r2d, "fill", (joy_rect_t) { (float)dst_ix, (float)dst_iy, (float)dst_iw, (float)dst_ih });
                                 continue;
                         }
 
-                        joy_ui_image_set_alpha(timg, alpha);
+                        joy_r2d_image_set_alpha(timg, alpha);
                         joy_rect_t src = { uv[0], uv[1], uv[2], uv[3] };
 
                         /* Tiled 翻转标志（bit D/H/V）→ SDL 旋转角 + 水平/垂直翻转。
@@ -986,7 +986,7 @@ static void render_tile_layer_internal(joy_tilemap_render_p r, joy_tilemap_p tm,
                          * 这 8 种组合（暴力枚举见 _test_flip.py）：
                          *   D=0:  angle=0°，flip_h=H, flip_v=V
                          *   D=1:  angle=90°，flip_h=V, flip_v=!H
-                         * joy_ui_image_draw_ex 的 rotation 参数按弧度处理（内部 *180/π）。
+                         * joy_r2d_image_draw_ex 的 rotation 参数按弧度处理（内部 *180/π）。
                          */
                         bool tiled_h = (flags & JTILEMAP_FLIP_H) != 0;
                         bool tiled_v = (flags & JTILEMAP_FLIP_V) != 0;
@@ -1011,7 +1011,7 @@ static void render_tile_layer_internal(joy_tilemap_render_p r, joy_tilemap_p tm,
                                 (sdl_flip_h ? -1.0f : 1.0f) * ((float)dst_iw / ts_tw),
                                 (sdl_flip_v ? -1.0f : 1.0f) * ((float)dst_ih / ts_th)
                         };
-                        joy_ui_image_draw_ex(timg, &src, pos, angle_rad, scl, org);
+                        joy_r2d_image_draw_ex(timg, &src, pos, angle_rad, scl, org);
                 }
         }
 }
@@ -1027,7 +1027,7 @@ static void render_object_layer_internal(const joy_tilemap_object_layer_p layer,
                 joy_tilemap_object_t* obj = &kv_A(layer->objects, i);
                 if (!obj->visible || obj->shape != JTILEMAP_SHAPE_RECT) continue;
                 if (obj->width <= 0.0f || obj->height <= 0.0f || obj->width > 10000.0f || obj->height > 10000.0f) continue;
-                joy_math_shape_draw_rectangle(r2d, "line", (joy_rect_t) { obj->x - cam_x, obj->y - cam_y, obj->width, obj->height });
+                joy_r2d_shape_draw_rectangle(r2d, "line", (joy_rect_t) { obj->x - cam_x, obj->y - cam_y, obj->width, obj->height });
         }
 }
 
@@ -1044,7 +1044,7 @@ static void render_image_layer_internal(joy_tilemap_render_p r,
         if (!timg) return;
 
         float tex_w = 0, tex_h = 0;
-        joy_ui_image_get_size(timg, &tex_w, &tex_h);
+        joy_r2d_image_get_size(timg, &tex_w, &tex_h);
 
         float vp_w = r->view_w, vp_h = r->view_h;
         float start_x = (layer->repeatx ? fmodf(-cam_x, tex_w) : -cam_x);
@@ -1054,7 +1054,7 @@ static void render_image_layer_internal(joy_tilemap_render_p r,
 
         for (float py = start_y; py < vp_h; py += tex_h)
                 for (float px = start_x; px < vp_w; px += tex_w)
-                        joy_ui_image_draw1(timg, NULL, &(joy_rect_t){ px, py, tex_w, tex_h });
+                        joy_r2d_image_draw1(timg, NULL, &(joy_rect_t){ px, py, tex_w, tex_h });
 }
 
 /* ======================== 公共 API ======================== */
@@ -1167,7 +1167,7 @@ void joy_scene_tilemap_render_destroy(joy_tilemap_render_p r)
                 const char* key;
                 joy_image_p timg;
                 kh_foreach(r->tex_cache, key, timg, {
-                        if (timg) joy_ui_image_destroy(timg);
+                        if (timg) joy_r2d_image_destroy(timg);
                         free((void*)key);
                         });
                 kh_destroy(tex_cache, r->tex_cache);

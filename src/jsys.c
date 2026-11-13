@@ -1084,7 +1084,7 @@ void joy_net_iocp_process_events(joy_iocp_server_p server, int timeout_ms)
  *   1) 只有 Windows 分支，其它平台直接 return 0（安卓上列表是空的）；
  *   2) AF_UNSPEC 会把 IPv6 一起收进来。
  */
-int joy_core_get_local_ips(char ips[][JOY_MAX_IP], int max_count)
+int joy_net_get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 {
         if (!ips || max_count <= 0) return 0;
 

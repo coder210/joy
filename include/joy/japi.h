@@ -71,26 +71,26 @@ extern "C" {
          */
         JOY_API size_t joy_core_utf8_decode_all(const char* s, size_t len,
                 int32_t* out_codes, size_t out_capacity);
-        JOY_API int joy_net_pack_int8(char* buf, int8_t value, int offset);
-        JOY_API int joy_net_pack_int16(char* buf, int16_t value, int offset);
-        JOY_API int joy_net_pack_int32(char* buf, int32_t value, int offset);
-        JOY_API int joy_net_pack_uint32(char* buf, uint32_t value, int offset);
-        JOY_API int joy_net_pack_int64(char* buf, int64_t value, int offset);
-        JOY_API int joy_net_unpack_int8(const char* buf, int8_t* value, int offset);
-        JOY_API int joy_net_unpack_int16(const char* buf, int16_t* value, int offset);
-        JOY_API int joy_net_unpack_int32(const char* buf, int32_t* value, int offset);
-        JOY_API int joy_net_unpack_uint32(const char* buf, uint32_t* value, int offset);
-        JOY_API int joy_net_unpack_int64(const char* buf, int64_t* value, int offset);
-        JOY_API int joy_net_pack_string(char* buf, const char* value, int type_size, int offset);
-        JOY_API int joy_net_unpack_string(const char* buf, char* value, int type_size, int offset);
+        JOY_API int joy_core_pack_int8(char* buf, int8_t value, int offset);
+        JOY_API int joy_core_pack_int16(char* buf, int16_t value, int offset);
+        JOY_API int joy_core_pack_int32(char* buf, int32_t value, int offset);
+        JOY_API int joy_core_pack_uint32(char* buf, uint32_t value, int offset);
+        JOY_API int joy_core_pack_int64(char* buf, int64_t value, int offset);
+        JOY_API int joy_core_unpack_int8(const char* buf, int8_t* value, int offset);
+        JOY_API int joy_core_unpack_int16(const char* buf, int16_t* value, int offset);
+        JOY_API int joy_core_unpack_int32(const char* buf, int32_t* value, int offset);
+        JOY_API int joy_core_unpack_uint32(const char* buf, uint32_t* value, int offset);
+        JOY_API int joy_core_unpack_int64(const char* buf, int64_t* value, int offset);
+        JOY_API int joy_core_pack_string(char* buf, const char* value, int type_size, int offset);
+        JOY_API int joy_core_unpack_string(const char* buf, char* value, int type_size, int offset);
        
-        JOY_API joy_timer_p joy_scene_timer_create(int interval, joy_timer_callback cb, void* userdata);
-        JOY_API void joy_scene_timer_destroy(joy_timer_p timer);
-        JOY_API void joy_scene_timer_trigger(joy_timer_p timer);
-        JOY_API void joy_scene_timer_set_interval(joy_timer_p timer, int interval);
-        JOY_API void joy_scene_timer_set_active(joy_timer_p timer, bool active);
-        JOY_API void joy_scene_timer_reset(joy_timer_p timer);
-        JOY_API uint64_t joy_scene_timer_get_elapsed(joy_timer_p timer);
+        JOY_API joy_timer_p joy_core_timer_create(int interval, joy_timer_callback cb, void* userdata);
+        JOY_API void joy_core_timer_destroy(joy_timer_p timer);
+        JOY_API void joy_core_timer_trigger(joy_timer_p timer);
+        JOY_API void joy_core_timer_set_interval(joy_timer_p timer, int interval);
+        JOY_API void joy_core_timer_set_active(joy_timer_p timer, bool active);
+        JOY_API void joy_core_timer_reset(joy_timer_p timer);
+        JOY_API uint64_t joy_core_timer_get_elapsed(joy_timer_p timer);
 
         ///////////////////////////////////////////////////////////////////////
         ////////////////////////////  core  ///////////////////////////////////
@@ -137,14 +137,14 @@ extern "C" {
         JOY_API void joy_core_simple_fps_update(joy_simple_fps_counter_p fps);
         JOY_API int joy_core_simple_fps_value(joy_simple_fps_counter_p fps);
 
-        JOY_API void joy_scene_game_timer_init(joy_game_timer_p clock);
-        JOY_API void joy_scene_game_timer_update(joy_game_timer_p clock);
-        JOY_API float joy_scene_game_timer_get_delta_time(const joy_game_timer_p clock);
-        JOY_API float joy_scene_game_timer_get_unscaled_delta_time(const joy_game_timer_p clock);
-        JOY_API void joy_scene_game_timer_set_time_scale(joy_game_timer_p clock, float scale);
-        JOY_API float joy_scene_game_timer_get_time_scale(const joy_game_timer_p clock);
-        JOY_API void joy_scene_game_timer_set_target_fps(joy_game_timer_p clock, int fps);
-        JOY_API int joy_scene_game_timer_get_target_fps(const joy_game_timer_p clock);
+        JOY_API void joy_core_game_timer_init(joy_game_timer_p clock);
+        JOY_API void joy_core_game_timer_update(joy_game_timer_p clock);
+        JOY_API float joy_core_game_timer_get_delta_time(const joy_game_timer_p clock);
+        JOY_API float joy_core_game_timer_get_unscaled_delta_time(const joy_game_timer_p clock);
+        JOY_API void joy_core_game_timer_set_time_scale(joy_game_timer_p clock, float scale);
+        JOY_API float joy_core_game_timer_get_time_scale(const joy_game_timer_p clock);
+        JOY_API void joy_core_game_timer_set_target_fps(joy_game_timer_p clock, int fps);
+        JOY_API int joy_core_game_timer_get_target_fps(const joy_game_timer_p clock);
 
         /** 获取剪贴板文本（调用者负责释放返回的字符串） */
         JOY_API char* joy_core_get_clipboard_text(void);
@@ -154,7 +154,7 @@ extern "C" {
 
         JOY_API bool joy_net_sys_init_netenv(void);
         JOY_API bool joy_net_sys_release_netenv(void);
-        JOY_API int joy_core_get_local_ips(char ips[][JOY_MAX_IP], int max_count);
+        JOY_API int joy_net_get_local_ips(char ips[][JOY_MAX_IP], int max_count);
         JOY_API int joy_net_sys_anyaddr(void);
         JOY_API bool joy_net_sys_closesocket(int64_t sockfd);
         JOY_API int joy_net_sys_set_sock_sndtimeo(int64_t sockfd, int ms);
@@ -235,40 +235,40 @@ extern "C" {
         JOY_API bool joy_r2d_point_in_clip(joy_r2d_p r2d, float x, float y);
 
         /* 形状绘制 */
-        JOY_API bool joy_math_shape_draw_line(joy_r2d_p r2d, float x1, float y1, float x2, float y2);
+        JOY_API bool joy_r2d_shape_draw_line(joy_r2d_p r2d, float x1, float y1, float x2, float y2);
         JOY_API bool joy_r2d_draw_lines(joy_r2d_p r2d, const joy_vec2_t* points, int count);
-        JOY_API bool joy_math_shape_draw_rectangle(joy_r2d_p r2d, const char* mode, joy_rect_t rect);
-        JOY_API bool joy_math_shape_draw_polygon(joy_r2d_p r2d, const char* mode, joy_vec2_t* points, int point_count, joy_color_t color);
-        JOY_API bool joy_math_shape_draw_circle(joy_r2d_p r2d, const char* mode, joy_vec2_t center, float radius, int segments);
-        JOY_API bool joy_math_shape_draw_grid(joy_r2d_p r2d, joy_vec2_t start, joy_vec2_t end, float grid_size);
-        JOY_API bool joy_math_shape_draw_gridx(joy_r2d_p r2d, joy_vec2_t position, int rows, int cols, float grid_size);
+        JOY_API bool joy_r2d_shape_draw_rectangle(joy_r2d_p r2d, const char* mode, joy_rect_t rect);
+        JOY_API bool joy_r2d_shape_draw_polygon(joy_r2d_p r2d, const char* mode, joy_vec2_t* points, int point_count, joy_color_t color);
+        JOY_API bool joy_r2d_shape_draw_circle(joy_r2d_p r2d, const char* mode, joy_vec2_t center, float radius, int segments);
+        JOY_API bool joy_r2d_shape_draw_grid(joy_r2d_p r2d, joy_vec2_t start, joy_vec2_t end, float grid_size);
+        JOY_API bool joy_r2d_shape_draw_gridx(joy_r2d_p r2d, joy_vec2_t position, int rows, int cols, float grid_size);
 
         /* 图片操作 */
-        JOY_API joy_image_p joy_ui_image_create(joy_r2d_p r2d, const char* filename);
-        JOY_API joy_image_p joy_ui_image_create_from_data(joy_r2d_p r2d, const void* rgba_pixels, int w, int h);
-        JOY_API joy_image_p joy_ui_image_create_empty(joy_r2d_p r2d, int w, int h);
-        JOY_API void  joy_ui_image_destroy(joy_image_p image);
-        JOY_API void  joy_ui_image_draw(joy_image_p image, joy_vec2_t position);
-        JOY_API void  joy_ui_image_draw1(joy_image_p image, const joy_rect_t* srcrect, const joy_rect_t* destrect);
-        JOY_API void  joy_ui_image_draw_ex(joy_image_p image, const joy_rect_t* srcrect, joy_vec2_t position, float rotation, joy_vec2_t scale, joy_vec2_t origin);
-        JOY_API void  joy_ui_image_set_alpha(joy_image_p image, uint8_t alpha);
-        JOY_API void  joy_ui_image_set_blend_mode(joy_image_p image, int mode);
-        JOY_API bool  joy_ui_image_get_size(joy_image_p image, float* w, float* h);
-        JOY_API void  joy_ui_image_update(joy_image_p image, const joy_rect_t* rect, const void* pixels, int pitch);
-        JOY_API void  joy_ui_image_set_scale_mode(joy_image_p image, int nearest);
+        JOY_API joy_image_p joy_r2d_image_create(joy_r2d_p r2d, const char* filename);
+        JOY_API joy_image_p joy_r2d_image_create_from_data(joy_r2d_p r2d, const void* rgba_pixels, int w, int h);
+        JOY_API joy_image_p joy_r2d_image_create_empty(joy_r2d_p r2d, int w, int h);
+        JOY_API void  joy_r2d_image_destroy(joy_image_p image);
+        JOY_API void  joy_r2d_image_draw(joy_image_p image, joy_vec2_t position);
+        JOY_API void  joy_r2d_image_draw1(joy_image_p image, const joy_rect_t* srcrect, const joy_rect_t* destrect);
+        JOY_API void  joy_r2d_image_draw_ex(joy_image_p image, const joy_rect_t* srcrect, joy_vec2_t position, float rotation, joy_vec2_t scale, joy_vec2_t origin);
+        JOY_API void  joy_r2d_image_set_alpha(joy_image_p image, uint8_t alpha);
+        JOY_API void  joy_r2d_image_set_blend_mode(joy_image_p image, int mode);
+        JOY_API bool  joy_r2d_image_get_size(joy_image_p image, float* w, float* h);
+        JOY_API void  joy_r2d_image_update(joy_image_p image, const joy_rect_t* rect, const void* pixels, int pitch);
+        JOY_API void  joy_r2d_image_set_scale_mode(joy_image_p image, int nearest);
 
         /* 文字 */
-        JOY_API joy_text_p joy_ui_text_createx(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color);
-        JOY_API joy_text_p joy_ui_text_create(joy_r2d_p r2d, joy_font_p font, const int* codepoints, int num_codepoints, joy_color_t color);
-        JOY_API void joy_ui_text_updatex(joy_text_p text, joy_font_p font, const char* str, int len, joy_color_t color);
-        JOY_API void joy_ui_text_update(joy_text_p text, joy_font_p font, const int* codepoints, int num_codepoints, joy_color_t color);
-        JOY_API void joy_ui_text_destroy(joy_text_p jtext_tex);
+        JOY_API joy_text_p joy_r2d_text_createx(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color);
+        JOY_API joy_text_p joy_r2d_text_create(joy_r2d_p r2d, joy_font_p font, const int* codepoints, int num_codepoints, joy_color_t color);
+        JOY_API void joy_r2d_text_updatex(joy_text_p text, joy_font_p font, const char* str, int len, joy_color_t color);
+        JOY_API void joy_r2d_text_update(joy_text_p text, joy_font_p font, const int* codepoints, int num_codepoints, joy_color_t color);
+        JOY_API void joy_r2d_text_destroy(joy_text_p jtext_tex);
         JOY_API void joy_r2d_text_print(joy_r2d_p r2d, joy_text_p jtext_tex, float x, float y);
         JOY_API void joy_r2d_text_printx(joy_r2d_p r2d, joy_font_p font, const char* str, int len, joy_color_t color, float x, float y);
 
         /* ==================== 比例坐标（0~1）绘制接口 ====================
          *
-         * 语义与 joy_ui_button_create / joy_input_joystick_create / joy_ui_popup_create 等控件的百分比参数完全一致：
+         * 语义与 joy_ui_button_create / joy_ui_joystick_create / joy_ui_popup_create 等控件的百分比参数完全一致：
          *   x / w 相对"逻辑分辨率的宽"，y / h 相对"逻辑分辨率的高"。
          *
          * 这样绘制层(shape/image/text)与控件层用同一套坐标：逻辑分辨率变化时
@@ -281,10 +281,10 @@ extern "C" {
                                 float* x, float* y, float* w, float* h);
 
         JOY_API bool    joy_r2d_draw_point_f(joy_r2d_p r2d, float fx, float fy);
-        JOY_API bool    joy_math_shape_draw_rectangle_f(joy_r2d_p r2d, const char* mode,
+        JOY_API bool    joy_r2d_shape_draw_rectangle_f(joy_r2d_p r2d, const char* mode,
                                                float fx, float fy, float fw, float fh);
-        JOY_API bool    joy_math_shape_draw_line_f(joy_r2d_p r2d, float fx1, float fy1, float fx2, float fy2);
-        JOY_API void    joy_ui_image_draw1_f(joy_r2d_p r2d, joy_image_p image, const joy_rect_t* srcrect,
+        JOY_API bool    joy_r2d_shape_draw_line_f(joy_r2d_p r2d, float fx1, float fy1, float fx2, float fy2);
+        JOY_API void    joy_r2d_image_draw1_f(joy_r2d_p r2d, joy_image_p image, const joy_rect_t* srcrect,
                                       float fx, float fy, float fw, float fh);
 
         /* 文字位置用比例（字号仍由 font 的烘焙尺寸决定；*_scaled 可再乘一个缩放系数） */
@@ -292,17 +292,17 @@ extern "C" {
                                      joy_color_t color, float fx, float fy);
         JOY_API void    joy_r2d_text_printf_scaled(joy_r2d_p r2d, joy_font_p font, const char* str, int len,
                                             joy_color_t color, float fx, float fy, float scale);
-        JOY_API int joy_ui_text_get_width(joy_text_p jtext_tex);
-        JOY_API int joy_ui_text_get_height(joy_text_p jtext_tex);
+        JOY_API int joy_r2d_text_get_width(joy_text_p jtext_tex);
+        JOY_API int joy_r2d_text_get_height(joy_text_p jtext_tex);
 
         /* 文字纹理缓存
-         * joy_r2d_text_printx() 以前的实现是 joy_ui_text_createx() -> joy_r2d_text_print() -> joy_ui_text_destroy()，
+         * joy_r2d_text_printx() 以前的实现是 joy_r2d_text_createx() -> joy_r2d_text_print() -> joy_r2d_text_destroy()，
          * 即每次调用都创建并销毁一张 SDL 纹理。inputbox、datagrid、popup、tooltip、
          * combobox_input 等控件都走这条路径，一个带选区的 inputbox 每帧要建 3~4 张纹理。
          * 现在按 (renderer, font, color, 内容) 缓存 LRU 复用，纹理不跨 renderer 串用。
          *
          * 帧时钟每实例独立，sweep 单位为帧；下列 4 个接口作用于全局表（clear 清所有实例）。
-         * 注意：这只影响 joy_r2d_text_printx；joy_ui_text_createx 仍由调用方自行持有与释放。
+         * 注意：这只影响 joy_r2d_text_printx；joy_r2d_text_createx 仍由调用方自行持有与释放。
          */
         JOY_API void joy_r2d_text_cache_clear(void);
         JOY_API void joy_r2d_text_cache_set_limit(int max_entries);
@@ -315,16 +315,16 @@ extern "C" {
                 joy_color_t color, int* out_w, int* out_h);
 
         /* 简单动画 */
-        JOY_API joy_animation_p joy_scene_animation_create(joy_r2d_p r2d);
-        JOY_API void joy_scene_animation_destroy(joy_animation_p animation);
-        JOY_API void joy_scene_animation_reset(joy_animation_p animation);
-        JOY_API void joy_scene_animation_add_clip(joy_animation_p animation, const char* image_path, float duration, joy_rect_t src_rect);
-        JOY_API bool joy_scene_animation_is_finished(joy_animation_p animation);
-        JOY_API void joy_scene_animation_set_position(joy_animation_p animation, float x, float y);
-        JOY_API void joy_scene_animation_set_scale(joy_animation_p animation, float x, float y);
-        JOY_API void joy_scene_animation_set_rotation(joy_animation_p animation, float rotation);
-        JOY_API void joy_scene_animation_update(joy_animation_p animation, float dt);
-        JOY_API void joy_scene_animation_draw(joy_animation_p animation, joy_rect_t* camera);
+        JOY_API joy_animation_p joy_r2d_animation_create(joy_r2d_p r2d);
+        JOY_API void joy_r2d_animation_destroy(joy_animation_p animation);
+        JOY_API void joy_r2d_animation_reset(joy_animation_p animation);
+        JOY_API void joy_r2d_animation_add_clip(joy_animation_p animation, const char* image_path, float duration, joy_rect_t src_rect);
+        JOY_API bool joy_r2d_animation_is_finished(joy_animation_p animation);
+        JOY_API void joy_r2d_animation_set_position(joy_animation_p animation, float x, float y);
+        JOY_API void joy_r2d_animation_set_scale(joy_animation_p animation, float x, float y);
+        JOY_API void joy_r2d_animation_set_rotation(joy_animation_p animation, float rotation);
+        JOY_API void joy_r2d_animation_update(joy_animation_p animation, float dt);
+        JOY_API void joy_r2d_animation_draw(joy_animation_p animation, joy_rect_t* camera);
 
 
         ///////////////////////////////////////////////////////////////////////
@@ -760,24 +760,24 @@ extern "C" {
 
         /* 从 (px,pz) 沿归一化方向 (dx,dz) 求最近遮挡距离；无命中返回 1e9。
            blockers 为 NULL 或 n==0 时视为无遮挡(返回 1e9)。 */
-        JOY_API float joy_fov_ray_dist(const joy_fov_rect* blockers, int n,
+        JOY_API float joy_r3d_fov_ray_dist(const joy_fov_rect* blockers, int n,
                 float px, float pz, float dx, float dz);
         /* 计算观察点周围 seg 个方向的可见半径(每方向=min(视距,遮挡距离), 逐角精确射线)。
            angle_start/angle_step 单位度；out 长度 seg。返回 false 仅当入参非法。 */
-        JOY_API bool joy_fov_compute_radii(const joy_fov_rect* blockers, int n,
+        JOY_API bool joy_r3d_fov_compute_radii(const joy_fov_rect* blockers, int n,
                 float px, float pz, float vis_radius,
                 float angle_start, float angle_step, int seg, float* out);
         /* 绘制羽化视野网格: 观察点(py 为雾面高度), radii[seg] 每方向可见半径,
            feather=可见边界的羽化宽度(alpha 渐变), outer_radius=完全遮蔽的雾外径。
            需在 joy_r3d_begin/joy_r3d_end 之间调用。 */
-        JOY_API void joy_fov_draw(joy_r3d_p r, float px, float py, float pz,
+        JOY_API void joy_r3d_fov_draw(joy_r3d_p r, float px, float py, float pz,
                 const float* radii, int seg, float feather, float outer_radius);
         /* 2D 视野绘制: 在像素平面构造 A/B/C 三环羽化多边形, 复刻 3D 的渐变纹理软边。
            px/py 为观察点在输出像素坐标, radii[seg] 每方向可见半径(像素),
            feather/outer_radius 亦为像素。需在 joy_r2d_begin/joy_r2d_end 与地图同一坐标系(相机相对像素)下调用。
-           射线遮挡仍用上方的 joy_fov_compute_radii 计算(其 px/pz 即 2D 的 x/y。若担心模板冲突,
+           射线遮挡仍用上方的 joy_r3d_fov_compute_radii 计算(其 px/pz 即 2D 的 x/y。若担心模板冲突,
            2D 侧也可直接以世界米为单位计算后乘以 PPM 得到像素半径)。 */
-        JOY_API void joy_fov_draw_2d(joy_r2d_p r, float px, float py,
+        JOY_API void joy_r2d_fov_draw_2d(joy_r2d_p r, float px, float py,
                 const float* radii, int seg, float feather, float outer_radius);
 
         ///////////////////////////////////////////////////////////////////////
@@ -869,13 +869,13 @@ extern "C" {
 
         /* ---- 瓦片地图扫掠碰撞（定点数，帧同步确定）----
          * solid(col,row) 返回 true 表示该格不可通行；实现须对越界格也返回 true（视为墙）。
-         * joy_tilemap_sweep_x: 沿 X 推进 dx（可负）；撞墙则把 *px 贴到该格边界并返回 true。
-         * joy_tilemap_sweep_y: 沿 Y 推进 vy*tick（vy>0 下落、<0 上升）；撞到则把 *py 贴到格边界、
+         * joy_math_tilemap_sweep_x: 沿 X 推进 dx（可负）；撞墙则把 *px 贴到该格边界并返回 true。
+         * joy_math_tilemap_sweep_y: 沿 Y 推进 vy*tick（vy>0 下落、<0 上升）；撞到则把 *py 贴到格边界、
          *                      并把 *vy 清零，返回 true。 */
         typedef bool (*joy_tilemap_solid_fn)(int col, int row);
-        JOY_API bool joy_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_t h,
+        JOY_API bool joy_math_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_t h,
                 joy_tilemap_solid_fn solid);
-        JOY_API bool joy_tilemap_sweep_y(joy_fp_t* px, joy_fp_t* py, joy_fp_t* vy, joy_fp_t tick, joy_fp_t w, joy_fp_t h,
+        JOY_API bool joy_math_tilemap_sweep_y(joy_fp_t* px, joy_fp_t* py, joy_fp_t* vy, joy_fp_t tick, joy_fp_t w, joy_fp_t h,
                 joy_tilemap_solid_fn solid);
 
         JOY_API joy_ray3d_collisionf_t joy_math_collision3df_get_ray_triangle(joy_ray3df_t ray,
@@ -1181,8 +1181,8 @@ extern "C" {
         JOY_API void joy_ui_checkbox_set_hovered(joy_checkbox_p cb, bool v);
         JOY_API void joy_ui_checkbox_draw(joy_checkbox_p cb, joy_r2d_p r2d, void* font);
         JOY_API void joy_ui_checkbox_process_event(joy_checkbox_p cb, const void* event);
-        JOY_API joy_joystick_p joy_input_joystick_create(joy_r2d_p r2d, float cx, float cy, float radius_frac);
-        // 摇杆方向模式：约束/量化 joy_input_joystick_get_direction 输出的方向
+        JOY_API joy_joystick_p joy_ui_joystick_create(joy_r2d_p r2d, float cx, float cy, float radius_frac);
+        // 摇杆方向模式：约束/量化 joy_ui_joystick_get_direction 输出的方向
         typedef enum {
                 JOYSTICK_DIR_OMNI = 0,       // 全方向（模拟，默认）
                 JOYSTICK_DIR_4WAY,           // 上/下/左/右 四向
@@ -1191,23 +1191,23 @@ extern "C" {
                 JOYSTICK_DIR_HORIZONTAL,     // 仅 左/右
         } joy_joystick_dir_mode;
 
-        JOY_API void joy_input_joystick_destroy(joy_joystick_p joystick);
-        JOY_API void joy_input_joystick_set_textures(joy_joystick_p joystick, const char* base_path, const char* thumb_path);
-        JOY_API void joy_input_joystick_set_dir_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode);
-        JOY_API void joy_input_joystick_set_vector(joy_joystick_p joystick, float dx, float dy);
-        JOY_API void joy_input_joystick_set_textures_for_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode, const char* base_path, const char* thumb_path);
-        JOY_API void joy_input_joystick_draw(joy_joystick_p joystick);
-        JOY_API void joy_input_joystick_reset(joy_joystick_p joystick);
-        JOY_API void joy_input_joystick_set_position(joy_joystick_p joystick, float x, float y);
+        JOY_API void joy_ui_joystick_destroy(joy_joystick_p joystick);
+        JOY_API void joy_ui_joystick_set_textures(joy_joystick_p joystick, const char* base_path, const char* thumb_path);
+        JOY_API void joy_ui_joystick_set_dir_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode);
+        JOY_API void joy_ui_joystick_set_vector(joy_joystick_p joystick, float dx, float dy);
+        JOY_API void joy_ui_joystick_set_textures_for_mode(joy_joystick_p joystick, joy_joystick_dir_mode mode, const char* base_path, const char* thumb_path);
+        JOY_API void joy_ui_joystick_draw(joy_joystick_p joystick);
+        JOY_API void joy_ui_joystick_reset(joy_joystick_p joystick);
+        JOY_API void joy_ui_joystick_set_position(joy_joystick_p joystick, float x, float y);
         /* 布局需要：逻辑分辨率变化（自适应宽高比/旋转）时改变摇杆半径，保持设计尺寸 */
-        JOY_API void joy_input_joystick_set_radius(joy_joystick_p joystick, float radius);
-        JOY_API bool joy_input_joystick_is_dragging(joy_joystick_p joystick);
-        JOY_API void joy_input_joystick_touch_down(joy_joystick_p joystick, float x, float y);
-        JOY_API void joy_input_joystick_touch_move(joy_joystick_p joystick, float x, float y);
-        JOY_API void joy_input_joystick_touch_up(joy_joystick_p joystick);
-        JOY_API joy_vec2_t joy_input_joystick_get_direction(joy_joystick_p joystick);
-        JOY_API float joy_input_joystick_get_magnitude(joy_joystick_p joystick);
-        JOY_API void joy_input_joystick_process_event(joy_joystick_p js, const void* event);
+        JOY_API void joy_ui_joystick_set_radius(joy_joystick_p joystick, float radius);
+        JOY_API bool joy_ui_joystick_is_dragging(joy_joystick_p joystick);
+        JOY_API void joy_ui_joystick_touch_down(joy_joystick_p joystick, float x, float y);
+        JOY_API void joy_ui_joystick_touch_move(joy_joystick_p joystick, float x, float y);
+        JOY_API void joy_ui_joystick_touch_up(joy_joystick_p joystick);
+        JOY_API joy_vec2_t joy_ui_joystick_get_direction(joy_joystick_p joystick);
+        JOY_API float joy_ui_joystick_get_magnitude(joy_joystick_p joystick);
+        JOY_API void joy_ui_joystick_process_event(joy_joystick_p js, const void* event);
         JOY_API joy_inputbox_p joy_ui_inputbox_create(joy_r2d_p r2d, float fx, float fy, float fw, float fh, joy_font_p font);
         JOY_API void joy_ui_inputbox_destroy(joy_inputbox_p ti);
         JOY_API void joy_ui_inputbox_set_text(joy_inputbox_p ti, const char* text);
@@ -1572,33 +1572,33 @@ extern "C" {
 
 
         /* ===== 运行与生命周期管理 ===== */
-        joy_bt_status_t joy_bt_node_run(joy_bt_node_t* node, float dt);
-        void        joy_bt_node_reset(joy_bt_node_t* node);
-        void        joy_bt_node_destroy(joy_bt_node_t* node);
+        joy_bt_status_t joy_scene_bt_node_run(joy_bt_node_t* node, float dt);
+        void        joy_scene_bt_node_reset(joy_bt_node_t* node);
+        void        joy_scene_bt_node_destroy(joy_bt_node_t* node);
         /* Action: 执行动作，返回 SUCCESS / FAILURE / RUNNING */
-        joy_bt_node_t* joy_bt_action_create(joy_bt_action_fn fn);
-        joy_bt_node_t* joy_bt_action_createv(joy_bt_action_fn fn, void* userdata);
-        void joy_bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
-        void* joy_bt_action_get_userdata(joy_bt_node_t* node);
+        joy_bt_node_t* joy_scene_bt_action_create(joy_bt_action_fn fn);
+        joy_bt_node_t* joy_scene_bt_action_createv(joy_bt_action_fn fn, void* userdata);
+        void joy_scene_bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
+        void* joy_scene_bt_action_get_userdata(joy_bt_node_t* node);
         /* Condition: 条件判断，true → SUCCESS, false → FAILURE */
-        joy_bt_node_t* joy_bt_condition_create(joy_bt_condition_fn pred);
+        joy_bt_node_t* joy_scene_bt_condition_create(joy_bt_condition_fn pred);
         /* Wait: 等待指定秒数 */
-        joy_bt_node_t* joy_bt_wait_create(float seconds);
+        joy_bt_node_t* joy_scene_bt_wait_create(float seconds);
         /* ===== 组合节点 ===== */
         /* Sequence: 顺序执行全部子节点，全部成功才返回 SUCCESS */
-        joy_bt_node_t* joy_bt_sequence_create(joy_bt_node_t** children, int count);
+        joy_bt_node_t* joy_scene_bt_sequence_create(joy_bt_node_t** children, int count);
         /* Selector: 顺序尝试子节点，任一成功即返回 SUCCESS */
-        joy_bt_node_t* joy_bt_selector_create(joy_bt_node_t** children, int count);
+        joy_bt_node_t* joy_scene_bt_selector_create(joy_bt_node_t** children, int count);
         /* Parallel: 并行执行，success_count 个成功即成功 */
-        joy_bt_node_t* joy_bt_parallel_create(joy_bt_node_t** children, int count, int success_count);
+        joy_bt_node_t* joy_scene_bt_parallel_create(joy_bt_node_t** children, int count, int success_count);
         /* Inverter: 反转子节点结果 */
         joy_bt_node_t* bt_inverter_create(joy_bt_node_t* child);
         /* Succeeder: 总是返回 SUCCESS */
         joy_bt_node_t* bt_succeeder_create(joy_bt_node_t* child);
         /* Repeater: 重复子节点 times 次（-1 无限） */
         joy_bt_node_t* bt_repeater_create(joy_bt_node_t* child, int times);
-        joy_bt_node_t* joy_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial);
-        void       joy_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name);
+        joy_bt_node_t* joy_scene_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial);
+        void       joy_scene_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name);
 
 
         JOY_API uint32_t joy_audio_open_device();
@@ -1679,16 +1679,16 @@ extern "C" {
         JOY_API bool                 joy_script_msgpack_object_boolean(const joy_msgpack_object_t* o);
         JOY_API double               joy_script_msgpack_object_f64(const joy_msgpack_object_t* o);
 
-        /* 生成链路专用：joy_ui_image_draw1 去掉 joy_rect_t* 指针后的全标量版本。
+        /* 生成链路专用：joy_r2d_image_draw1 去掉 joy_rect_t* 指针后的全标量版本。
          * srcrect 固定 NULL（整张图），目标矩形摊成 4 个 float。joy_value
-         * 表达不了 joy_rect_t*，L3 的 joy_ui_image_draw1 无法自动生成 thunk；这条 L1
+         * 表达不了 joy_rect_t*，L3 的 joy_r2d_image_draw1 无法自动生成 thunk；这条 L1
          * 让四个后端都能画贴图，且参数保持编译期强类型。
          *
-         * 坐标是【像素】，不是归一化比例：不要走 joy_r2d_frect / joy_ui_image_draw1_f，
+         * 坐标是【像素】，不是归一化比例：不要走 joy_r2d_frect / joy_r2d_image_draw1_f，
          * 那些 *_f 系列会乘窗口宽高，把 x=227 放大成 108960。命名用 _rect
          * 而不是 _f，就是为了和归一化系列区分开。
          * 声明刻意放在文件末尾，避免打乱 joy.idl 既有条目的 source 行号。 */
-        JOY_API void joy_ui_image_draw_rect(joy_r2d_p r2d, joy_image_p image,
+        JOY_API void joy_r2d_image_draw_rect(joy_r2d_p r2d, joy_image_p image,
                                      float x, float y, float w, float h);
 
         /* 生成链路专用：joy_r3d_mesh_destroy 的单参数版本，供 IDL 的 owns 使用。

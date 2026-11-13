@@ -290,21 +290,21 @@ void joy_ui_fill_rect(joy_ui_ctx_p ctx, joy_rect_t r, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
-        joy_math_shape_draw_rectangle(ctx->r2d, "fill", r);
+        joy_r2d_shape_draw_rectangle(ctx->r2d, "fill", r);
 }
 
 void joy_ui_stroke_rect(joy_ui_ctx_p ctx, joy_rect_t r, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
-        joy_math_shape_draw_rectangle(ctx->r2d, "line", r);
+        joy_r2d_shape_draw_rectangle(ctx->r2d, "line", r);
 }
 
 void joy_ui_line(joy_ui_ctx_p ctx, float x1, float y1, float x2, float y2, joy_color_t c)
 {
         if (!ctx) return;
         joy_r2d_set_color(ctx->r2d, c.r, c.g, c.b, c.a);
-        joy_math_shape_draw_line(ctx->r2d, x1, y1, x2, y2);
+        joy_r2d_shape_draw_line(ctx->r2d, x1, y1, x2, y2);
 }
 
 int joy_ui_text(joy_ui_ctx_p ctx, float x, float y, const char* s, joy_color_t c)

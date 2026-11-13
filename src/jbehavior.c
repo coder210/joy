@@ -12,7 +12,7 @@ History:
 /* =================================================================
  * 基础生命周期
  * ================================================================= */
-joy_bt_status_t joy_bt_node_run(joy_bt_node_t* node, float dt) {
+joy_bt_status_t joy_scene_bt_node_run(joy_bt_node_t* node, float dt) {
     if (!node) return BT_FAILURE;
     if (node->status != BT_RUNNING) {
         if (node->enter) node->enter(node);
@@ -24,11 +24,11 @@ joy_bt_status_t joy_bt_node_run(joy_bt_node_t* node, float dt) {
     return node->status;
 }
 
-void joy_bt_node_reset(joy_bt_node_t* node) {
+void joy_scene_bt_node_reset(joy_bt_node_t* node) {
     if (node) node->status = BT_FAILURE;
 }
 
-void joy_bt_node_destroy(joy_bt_node_t* node) {
+void joy_scene_bt_node_destroy(joy_bt_node_t* node) {
     if (!node) return;
     if (node->destroy) node->destroy(node);
     free(node);
@@ -55,7 +55,7 @@ static joy_bt_status_t action_tick(joy_bt_node_t* self, float dt) {
     return a->fn ? a->fn(dt) : BT_SUCCESS;
 }
 
-joy_bt_node_t* joy_bt_action_create(joy_bt_action_fn fn) {
+joy_bt_node_t* joy_scene_bt_action_create(joy_bt_action_fn fn) {
     joy_bt_action_t* a = (joy_bt_action_t*)calloc(1, sizeof(joy_bt_action_t));
     assert(a);
     a->base.tick = action_tick;
@@ -63,17 +63,17 @@ joy_bt_node_t* joy_bt_action_create(joy_bt_action_fn fn) {
     return (joy_bt_node_t*)a;
 }
 
-joy_bt_node_t* joy_bt_action_createv(joy_bt_action_fn fn, void* userdata) {
-    joy_bt_action_t* a = (joy_bt_action_t*)joy_bt_action_create(fn);
+joy_bt_node_t* joy_scene_bt_action_createv(joy_bt_action_fn fn, void* userdata) {
+    joy_bt_action_t* a = (joy_bt_action_t*)joy_scene_bt_action_create(fn);
     a->userdata = userdata;
     return (joy_bt_node_t*)a;
 }
 
-void joy_bt_action_set_userdata(joy_bt_node_t* node, void* userdata) {
+void joy_scene_bt_action_set_userdata(joy_bt_node_t* node, void* userdata) {
     if (node) ((joy_bt_action_t*)node)->userdata = userdata;
 }
 
-void* joy_bt_action_get_userdata(joy_bt_node_t* node) {
+void* joy_scene_bt_action_get_userdata(joy_bt_node_t* node) {
     if (node) return ((joy_bt_action_t*)node)->userdata;
     return NULL;
 }
@@ -92,7 +92,7 @@ static joy_bt_status_t condition_tick(joy_bt_node_t* self, float dt) {
     return (c->pred && c->pred()) ? BT_SUCCESS : BT_FAILURE;
 }
 
-joy_bt_node_t* joy_bt_condition_create(joy_bt_condition_fn pred) {
+joy_bt_node_t* joy_scene_bt_condition_create(joy_bt_condition_fn pred) {
     joy_bt_condition_t* c = (joy_bt_condition_t*)calloc(1, sizeof(joy_bt_condition_t));
     assert(c);
     c->base.tick = condition_tick;
@@ -119,7 +119,7 @@ static joy_bt_status_t wait_tick(joy_bt_node_t* self, float dt) {
     return w->elapsed >= w->seconds ? BT_SUCCESS : BT_RUNNING;
 }
 
-joy_bt_node_t* joy_bt_wait_create(float seconds) {
+joy_bt_node_t* joy_scene_bt_wait_create(float seconds) {
     joy_bt_wait_t* w = (joy_bt_wait_t*)calloc(1, sizeof(joy_bt_wait_t));
     assert(w);
     w->base.enter = wait_enter;
@@ -157,7 +157,7 @@ static joy_bt_status_t combo_tick(joy_bt_node_t* self, float dt) {
 
     while (c->index <= c->count) {
         joy_bt_node_t* child = c->children[c->index - 1];
-        joy_bt_status_t s = joy_bt_node_run(child, dt);
+        joy_bt_status_t s = joy_scene_bt_node_run(child, dt);
         if (s == BT_RUNNING) return BT_RUNNING;
 
         if (c->type == COMBO_SEQUENCE) {
@@ -203,11 +203,11 @@ static joy_bt_node_t* combo_create(combo_type_t type, joy_bt_node_t** children, 
     return (joy_bt_node_t*)c;
 }
 
-joy_bt_node_t* joy_bt_sequence_create(joy_bt_node_t** children, int count) {
+joy_bt_node_t* joy_scene_bt_sequence_create(joy_bt_node_t** children, int count) {
     return combo_create(COMBO_SEQUENCE, children, count);
 }
 
-joy_bt_node_t* joy_bt_selector_create(joy_bt_node_t** children, int count) {
+joy_bt_node_t* joy_scene_bt_selector_create(joy_bt_node_t** children, int count) {
     return combo_create(COMBO_SELECTOR, children, count);
 }
 
@@ -225,7 +225,7 @@ static joy_bt_status_t parallel_tick(joy_bt_node_t* self, float dt) {
     joy_bt_parallel_t* p = (joy_bt_parallel_t*)self;
     int suc = 0, fail = 0;
     for (int i = 0; i < p->count; i++) {
-        joy_bt_status_t s = joy_bt_node_run(p->children[i], dt);
+        joy_bt_status_t s = joy_scene_bt_node_run(p->children[i], dt);
         if (s == BT_SUCCESS) suc++;
         else if (s == BT_FAILURE) fail++;
     }
@@ -246,7 +246,7 @@ static void parallel_destroy(joy_bt_node_t* self) {
     }
 }
 
-joy_bt_node_t* joy_bt_parallel_create(joy_bt_node_t** children, int count, int success_count) {
+joy_bt_node_t* joy_scene_bt_parallel_create(joy_bt_node_t** children, int count, int success_count) {
     joy_bt_parallel_t* p = (joy_bt_parallel_t*)calloc(1, sizeof(joy_bt_parallel_t));
     assert(p);
     p->base.tick    = parallel_tick;
@@ -271,14 +271,14 @@ typedef struct {
 } joy_bt_decorator1_t;
 
 static joy_bt_status_t inverter_tick(joy_bt_node_t* self, float dt) {
-    joy_bt_status_t s = joy_bt_node_run(((joy_bt_decorator1_t*)self)->child, dt);
+    joy_bt_status_t s = joy_scene_bt_node_run(((joy_bt_decorator1_t*)self)->child, dt);
     if (s == BT_SUCCESS) return BT_FAILURE;
     if (s == BT_FAILURE) return BT_SUCCESS;
     return BT_RUNNING;
 }
 
 static joy_bt_status_t succeeder_tick(joy_bt_node_t* self, float dt) {
-    joy_bt_node_run(((joy_bt_decorator1_t*)self)->child, dt);
+    joy_scene_bt_node_run(((joy_bt_decorator1_t*)self)->child, dt);
     return BT_SUCCESS;
 }
 
@@ -328,7 +328,7 @@ static void repeater_enter(joy_bt_node_t* self) {
 
 static joy_bt_status_t repeater_tick(joy_bt_node_t* self, float dt) {
     joy_bt_repeater_t* r = (joy_bt_repeater_t*)self;
-    joy_bt_status_t s = joy_bt_node_run(r->child, dt);
+    joy_bt_status_t s = joy_scene_bt_node_run(r->child, dt);
     if (s == BT_RUNNING) return BT_RUNNING;
     r->count++;
     if (r->times > 0 && r->count >= r->times) {
@@ -336,7 +336,7 @@ static joy_bt_status_t repeater_tick(joy_bt_node_t* self, float dt) {
         return BT_SUCCESS;
     }
     stop_child(r->child);
-    joy_bt_node_reset(r->child);
+    joy_scene_bt_node_reset(r->child);
     return BT_RUNNING;
 }
 
@@ -418,7 +418,7 @@ static void sm_destroy(joy_bt_node_t* self) {
     if (sm->states) free(sm->states);
 }
 
-joy_bt_node_t* joy_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial) {
+joy_bt_node_t* joy_scene_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial) {
     joy_bt_statemachine_t* sm = (joy_bt_statemachine_t*)calloc(1, sizeof(joy_bt_statemachine_t));
     assert(sm);
     sm->base.enter   = sm_enter;
@@ -436,7 +436,7 @@ joy_bt_node_t* joy_bt_statemachine_create(joy_bt_state_slot_t* states, int count
     return (joy_bt_node_t*)sm;
 }
 
-void joy_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name) {
+void joy_scene_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name) {
     joy_bt_statemachine_t* sm = (joy_bt_statemachine_t*)node;
     if (node->tick != sm_tick) return;
     for (int i = 0; i < sm->count; i++) {

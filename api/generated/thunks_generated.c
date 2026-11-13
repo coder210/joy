@@ -12,7 +12,7 @@ static void dtor_joy_core_lcg_random_destroy(void* p) { joy_core_lcg_random_dest
 static void dtor_joy_core_destroy_window(void* p) { joy_core_destroy_window((joy_window_p)p); }
 static void dtor_joy_r2d_font_destroy(void* p) { joy_r2d_font_destroy((joy_font_p)p); }
 static void dtor_joy_r2d_destroy(void* p) { joy_r2d_destroy((joy_r2d_p)p); }
-static void dtor_joy_ui_image_destroy(void* p) { joy_ui_image_destroy((joy_image_p)p); }
+static void dtor_joy_r2d_image_destroy(void* p) { joy_r2d_image_destroy((joy_image_p)p); }
 static void dtor_joy_r3d_mesh_destroy_one(void* p) { joy_r3d_mesh_destroy_one((joy_render_mesh_p)p); }
 
 static joy_value_t t_joy_core_lcg_random_create(joy_value_t* a, int n, joy_status_t* st)
@@ -168,76 +168,76 @@ static joy_value_t t_joy_core_kr_hash(joy_value_t* a, int n, joy_status_t* st)
         return joy_v_u64((unsigned long)_r);
 }
 
-static joy_value_t t_joy_scene_timer_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_destroy.arg0");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_destroy.arg0");
-        joy_scene_timer_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_destroy.arg0");
+        joy_core_timer_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_timer_trigger(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_trigger(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_trigger");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_trigger.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_trigger");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_trigger.arg0");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_trigger.arg0");
-        joy_scene_timer_trigger(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_trigger.arg0");
+        joy_core_timer_trigger(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_timer_set_interval(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_set_interval(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_set_interval");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_set_interval.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_set_interval.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_set_interval");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_set_interval.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_set_interval.arg1");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_set_interval.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_set_interval.arg0");
         p1 = (int)a[1].as.i32;
-        joy_scene_timer_set_interval(p0, p1);
+        joy_core_timer_set_interval(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_timer_set_active(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_set_active(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
         bool p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_set_active");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_set_active.arg0");
-        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_set_active.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_set_active");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_set_active.arg0");
+        if (a[1].kind != JOY_V_BOOL) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_set_active.arg1");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_set_active.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_set_active.arg0");
         p1 = (bool)a[1].as.b;
-        joy_scene_timer_set_active(p0, p1);
+        joy_core_timer_set_active(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_timer_reset(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_reset(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_reset");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_reset.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_reset");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_reset.arg0");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_reset.arg0");
-        joy_scene_timer_reset(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_reset.arg0");
+        joy_core_timer_reset(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_timer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_timer_get_elapsed(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_timer_p p0;
         uint64_t _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_timer_get_elapsed");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_timer_get_elapsed.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_timer_get_elapsed");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_timer_get_elapsed.arg0");
         p0 = (joy_timer_p)joy_obj_deref(a[0].as.handle, "joy_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_timer_get_elapsed.arg0");
-        _r = joy_scene_timer_get_elapsed(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_timer_get_elapsed.arg0");
+        _r = joy_core_timer_get_elapsed(p0);
         return joy_v_u64((uint64_t)_r);
 }
 
@@ -430,101 +430,101 @@ static joy_value_t t_joy_core_simple_fps_value(joy_value_t* a, int n, joy_status
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_scene_game_timer_init(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_init(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_init");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_init.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_init");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_init.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_init.arg0");
-        joy_scene_game_timer_init(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_init.arg0");
+        joy_core_game_timer_init(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_game_timer_update(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_update(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_update");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_update.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_update");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_update.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_update.arg0");
-        joy_scene_game_timer_update(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_update.arg0");
+        joy_core_game_timer_update(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_game_timer_get_delta_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_get_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_delta_time");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_delta_time.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_get_delta_time");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_get_delta_time.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_delta_time.arg0");
-        _r = joy_scene_game_timer_get_delta_time(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_get_delta_time.arg0");
+        _r = joy_core_game_timer_get_delta_time(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_joy_scene_game_timer_get_unscaled_delta_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_get_unscaled_delta_time(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_unscaled_delta_time");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_get_unscaled_delta_time");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_get_unscaled_delta_time.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_unscaled_delta_time.arg0");
-        _r = joy_scene_game_timer_get_unscaled_delta_time(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_get_unscaled_delta_time.arg0");
+        _r = joy_core_game_timer_get_unscaled_delta_time(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_joy_scene_game_timer_set_time_scale(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_set_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_time_scale");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_time_scale.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_set_time_scale");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_set_time_scale.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_set_time_scale.arg1");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_time_scale.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_set_time_scale.arg0");
         p1 = (float)a[1].as.f64;
-        joy_scene_game_timer_set_time_scale(p0, p1);
+        joy_core_game_timer_set_time_scale(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_game_timer_get_time_scale(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_get_time_scale(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_time_scale");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_time_scale.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_get_time_scale");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_get_time_scale.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_time_scale.arg0");
-        _r = joy_scene_game_timer_get_time_scale(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_get_time_scale.arg0");
+        _r = joy_core_game_timer_get_time_scale(p0);
         return joy_v_f64((float)_r);
 }
 
-static joy_value_t t_joy_scene_game_timer_set_target_fps(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_set_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_set_target_fps");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_set_target_fps.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_set_target_fps");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_set_target_fps.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_set_target_fps.arg1");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_set_target_fps.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_set_target_fps.arg0");
         p1 = (int)a[1].as.i32;
-        joy_scene_game_timer_set_target_fps(p0, p1);
+        joy_core_game_timer_set_target_fps(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_game_timer_get_target_fps(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_core_game_timer_get_target_fps(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_game_timer_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_game_timer_get_target_fps");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_game_timer_get_target_fps.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_core_game_timer_get_target_fps");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_core_game_timer_get_target_fps.arg0");
         p0 = (joy_game_timer_p)joy_obj_deref(a[0].as.handle, "joy_game_timer_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_game_timer_get_target_fps.arg0");
-        _r = joy_scene_game_timer_get_target_fps(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_core_game_timer_get_target_fps.arg0");
+        _r = joy_core_game_timer_get_target_fps(p0);
         return joy_v_i32((int)_r);
 }
 
@@ -1147,7 +1147,7 @@ static joy_value_t t_joy_r2d_point_in_clip(joy_value_t* a, int n, joy_status_t* 
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_shape_draw_line(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         float p1;
@@ -1155,156 +1155,156 @@ static joy_value_t t_joy_math_shape_draw_line(joy_value_t* a, int n, joy_status_
         float p3;
         float p4;
         bool _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_line");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_shape_draw_line");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line.arg4");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_shape_draw_line.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = joy_math_shape_draw_line(p0, p1, p2, p3, p4);
+        _r = joy_r2d_shape_draw_line(p0, p1, p2, p3, p4);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_math_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_shape_draw_rectangle(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         const char* p1;
         joy_rect_t p2 = { 0 };
         bool _r;
-        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_rectangle");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg0");
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_shape_draw_rectangle");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg0");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg1");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_shape_draw_rectangle.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg1");
         p1 = (const char*)a[1].as.str;
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg2");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg2");
         p2.x = (float)a[2].as.f64;
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg3");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg3");
         p2.y = (float)a[3].as.f64;
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg4");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg4");
         p2.w = (float)a[4].as.f64;
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle.arg5");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle.arg5");
         p2.h = (float)a[5].as.f64;
-        _r = joy_math_shape_draw_rectangle(p0, p1, p2);
+        _r = joy_r2d_shape_draw_rectangle(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_ui_image_create(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_create(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         const char* p1;
         joy_image_p _r;
         uint64_t _h;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_create");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_create.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_create.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_create");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_create.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_create.arg1");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_create.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_create.arg0");
         p1 = (const char*)a[1].as.str;
-        _r = joy_ui_image_create(p0, p1);
-        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_ui_image_create");
-        _h = joy_obj_register((void*)_r, "joy_image_p", dtor_joy_ui_image_destroy, "joy_ui_image_create");
-        if (!_h) { joy_ui_image_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_ui_image_create"); }
+        _r = joy_r2d_image_create(p0, p1);
+        if (!_r) return joy_v_err(st, JOY_ERR_CREATE, "joy_r2d_image_create");
+        _h = joy_obj_register((void*)_r, "joy_image_p", dtor_joy_r2d_image_destroy, "joy_r2d_image_create");
+        if (!_h) { joy_r2d_image_destroy(_r); return joy_v_err(st, JOY_ERR_CAPACITY, "joy_r2d_image_create"); }
         return joy_v_handle(_h);
 }
 
-static joy_value_t t_joy_ui_image_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_image_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_destroy.arg0");
         p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_destroy.arg0");
-        joy_ui_image_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_destroy.arg0");
+        joy_r2d_image_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_image_set_alpha(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_set_alpha(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_image_p p0;
         uint8_t p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_alpha");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_alpha.arg0");
-        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_alpha.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_set_alpha");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_alpha.arg0");
+        if (a[1].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_alpha.arg1");
         p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_alpha.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_set_alpha.arg0");
         p1 = (uint8_t)a[1].as.u32;
-        joy_ui_image_set_alpha(p0, p1);
+        joy_r2d_image_set_alpha(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_image_set_blend_mode(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_set_blend_mode(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_image_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_blend_mode");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_blend_mode.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_blend_mode.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_set_blend_mode");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_blend_mode.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_blend_mode.arg1");
         p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_blend_mode.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_set_blend_mode.arg0");
         p1 = (int)a[1].as.i32;
-        joy_ui_image_set_blend_mode(p0, p1);
+        joy_r2d_image_set_blend_mode(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_image_set_scale_mode(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_set_scale_mode(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_image_p p0;
         int p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_set_scale_mode");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_scale_mode.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_set_scale_mode.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_set_scale_mode");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_scale_mode.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_set_scale_mode.arg1");
         p0 = (joy_image_p)joy_obj_deref(a[0].as.handle, "joy_image_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_set_scale_mode.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_set_scale_mode.arg0");
         p1 = (int)a[1].as.i32;
-        joy_ui_image_set_scale_mode(p0, p1);
+        joy_r2d_image_set_scale_mode(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_text_updatex(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_text_updatex(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_text_p p0;
         joy_font_p p1;
         const char* p2;
         int p3;
         joy_color_t p4 = { 0 };
-        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_updatex");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg0");
+        if (n != 8) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_text_updatex");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg0");
         p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_text_updatex.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg1");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_text_updatex.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg1");
         p1 = (joy_font_p)joy_obj_deref(a[1].as.handle, "joy_font_p", st);
-        if (!p1) return joy_v_err(st, *st, "joy_ui_text_updatex.arg1");
-        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg2");
+        if (!p1) return joy_v_err(st, *st, "joy_r2d_text_updatex.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg2");
         p2 = (const char*)a[2].as.str;
-        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg3");
+        if (a[3].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg3");
         p3 = (int)a[3].as.i32;
-        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg4");
+        if (a[4].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg4");
         p4.r = (uint8_t)a[4].as.u32;
-        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg5");
+        if (a[5].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg5");
         p4.g = (uint8_t)a[5].as.u32;
-        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg6");
+        if (a[6].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg6");
         p4.b = (uint8_t)a[6].as.u32;
-        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_updatex.arg7");
+        if (a[7].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_updatex.arg7");
         p4.a = (uint8_t)a[7].as.u32;
-        joy_ui_text_updatex(p0, p1, p2, p3, p4);
+        joy_r2d_text_updatex(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_text_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_text_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_text_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_text_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_destroy.arg0");
         p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_text_destroy.arg0");
-        joy_ui_text_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_text_destroy.arg0");
+        joy_r2d_text_destroy(p0);
         return joy_v_null();
 }
 
@@ -1383,7 +1383,7 @@ static joy_value_t t_joy_r2d_draw_point_f(joy_value_t* a, int n, joy_status_t* s
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_shape_draw_rectangle_f(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         const char* p1;
@@ -1392,25 +1392,25 @@ static joy_value_t t_joy_math_shape_draw_rectangle_f(joy_value_t* a, int n, joy_
         float p4;
         float p5;
         bool _r;
-        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_rectangle_f");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg4");
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_rectangle_f.arg5");
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_shape_draw_rectangle_f");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_rectangle_f.arg5");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_rectangle_f.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_shape_draw_rectangle_f.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
         p5 = (float)a[5].as.f64;
-        _r = joy_math_shape_draw_rectangle_f(p0, p1, p2, p3, p4, p5);
+        _r = joy_r2d_shape_draw_rectangle_f(p0, p1, p2, p3, p4, p5);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_shape_draw_line_f(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         float p1;
@@ -1418,19 +1418,19 @@ static joy_value_t t_joy_math_shape_draw_line_f(joy_value_t* a, int n, joy_statu
         float p3;
         float p4;
         bool _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_shape_draw_line_f");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_shape_draw_line_f.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_shape_draw_line_f");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line_f.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line_f.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line_f.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line_f.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_shape_draw_line_f.arg4");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_math_shape_draw_line_f.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_shape_draw_line_f.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
-        _r = joy_math_shape_draw_line_f(p0, p1, p2, p3, p4);
+        _r = joy_r2d_shape_draw_line_f(p0, p1, p2, p3, p4);
         return joy_v_bool((bool)_r);
 }
 
@@ -1509,27 +1509,27 @@ static joy_value_t t_joy_r2d_text_printf_scaled(joy_value_t* a, int n, joy_statu
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_text_get_width(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_text_get_width(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_text_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_get_width");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_get_width.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_text_get_width");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_get_width.arg0");
         p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_text_get_width.arg0");
-        _r = joy_ui_text_get_width(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_text_get_width.arg0");
+        _r = joy_r2d_text_get_width(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_ui_text_get_height(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_text_get_height(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_text_p p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_text_get_height");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_text_get_height.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_text_get_height");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_text_get_height.arg0");
         p0 = (joy_text_p)joy_obj_deref(a[0].as.handle, "joy_text_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_text_get_height.arg0");
-        _r = joy_ui_text_get_height(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_text_get_height.arg0");
+        _r = joy_r2d_text_get_height(p0);
         return joy_v_i32((int)_r);
 }
 
@@ -1568,125 +1568,125 @@ static joy_value_t t_joy_r2d_text_cache_sweep(joy_value_t* a, int n, joy_status_
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_destroy.arg0");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_destroy.arg0");
-        joy_scene_animation_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_destroy.arg0");
+        joy_r2d_animation_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_reset(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_reset(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_reset");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_reset.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_reset");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_reset.arg0");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_reset.arg0");
-        joy_scene_animation_reset(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_reset.arg0");
+        joy_r2d_animation_reset(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_add_clip(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_add_clip(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         const char* p1;
         float p2;
         joy_rect_t p3 = { 0 };
-        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_add_clip");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg0");
+        if (n != 7) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_add_clip");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg0");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_add_clip.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg1");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_add_clip.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg1");
         p1 = (const char*)a[1].as.str;
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg2");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg2");
         p2 = (float)a[2].as.f64;
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg3");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg3");
         p3.x = (float)a[3].as.f64;
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg4");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg4");
         p3.y = (float)a[4].as.f64;
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg5");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg5");
         p3.w = (float)a[5].as.f64;
-        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_add_clip.arg6");
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_add_clip.arg6");
         p3.h = (float)a[6].as.f64;
-        joy_scene_animation_add_clip(p0, p1, p2, p3);
+        joy_r2d_animation_add_clip(p0, p1, p2, p3);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_is_finished(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_is_finished(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_is_finished");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_is_finished.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_is_finished");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_is_finished.arg0");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_is_finished.arg0");
-        _r = joy_scene_animation_is_finished(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_is_finished.arg0");
+        _r = joy_r2d_animation_is_finished(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_scene_animation_set_position(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_position");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_position.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_set_position");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_position.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_position.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_position.arg2");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_position.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_scene_animation_set_position(p0, p1, p2);
+        joy_r2d_animation_set_position(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_set_scale(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_set_scale(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_scale");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_scale.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_set_scale");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_scale.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_scale.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_scale.arg2");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_scale.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_set_scale.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_scene_animation_set_scale(p0, p1, p2);
+        joy_r2d_animation_set_scale(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_set_rotation(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_set_rotation(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_set_rotation");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_rotation.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_set_rotation.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_set_rotation");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_rotation.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_set_rotation.arg1");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_set_rotation.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_set_rotation.arg0");
         p1 = (float)a[1].as.f64;
-        joy_scene_animation_set_rotation(p0, p1);
+        joy_r2d_animation_set_rotation(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_scene_animation_update(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_animation_update(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_animation_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_scene_animation_update");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_update.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_scene_animation_update.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_animation_update");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_update.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_animation_update.arg1");
         p0 = (joy_animation_p)joy_obj_deref(a[0].as.handle, "joy_animation_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_scene_animation_update.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_animation_update.arg0");
         p1 = (float)a[1].as.f64;
-        joy_scene_animation_update(p0, p1);
+        joy_r2d_animation_update(p0, p1);
         return joy_v_null();
 }
 
@@ -4750,170 +4750,170 @@ static joy_value_t t_joy_ui_checkbox_set_hovered(joy_value_t* a, int n, joy_stat
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_destroy(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_destroy(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_destroy");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_destroy.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_destroy");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_destroy.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_destroy.arg0");
-        joy_input_joystick_destroy(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_destroy.arg0");
+        joy_ui_joystick_destroy(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_set_textures(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_set_textures(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         const char* p1;
         const char* p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_textures");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg1");
-        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_textures.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_set_textures");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_textures.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_textures.arg1");
+        if (a[2].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_textures.arg2");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_textures.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_set_textures.arg0");
         p1 = (const char*)a[1].as.str;
         p2 = (const char*)a[2].as.str;
-        joy_input_joystick_set_textures(p0, p1, p2);
+        joy_ui_joystick_set_textures(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_set_vector(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_set_vector(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_vector");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_vector.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_set_vector");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_vector.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_vector.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_vector.arg2");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_vector.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_set_vector.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_input_joystick_set_vector(p0, p1, p2);
+        joy_ui_joystick_set_vector(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_draw(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_draw(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_draw");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_draw.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_draw");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_draw.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_draw.arg0");
-        joy_input_joystick_draw(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_draw.arg0");
+        joy_ui_joystick_draw(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_reset(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_reset(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_reset");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_reset.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_reset");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_reset.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_reset.arg0");
-        joy_input_joystick_reset(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_reset.arg0");
+        joy_ui_joystick_reset(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_set_position(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_set_position(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_position");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_position.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_set_position");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_position.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_position.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_position.arg2");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_position.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_set_position.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_input_joystick_set_position(p0, p1, p2);
+        joy_ui_joystick_set_position(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_set_radius(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_set_radius(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float p1;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_set_radius");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_radius.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_set_radius.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_set_radius");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_radius.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_set_radius.arg1");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_set_radius.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_set_radius.arg0");
         p1 = (float)a[1].as.f64;
-        joy_input_joystick_set_radius(p0, p1);
+        joy_ui_joystick_set_radius(p0, p1);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_is_dragging(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_is_dragging(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_is_dragging");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_is_dragging.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_is_dragging");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_is_dragging.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_is_dragging.arg0");
-        _r = joy_input_joystick_is_dragging(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_is_dragging.arg0");
+        _r = joy_ui_joystick_is_dragging(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_input_joystick_touch_down(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_touch_down(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_down");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_down.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_touch_down");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_down.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_down.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_down.arg2");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_down.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_touch_down.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_input_joystick_touch_down(p0, p1, p2);
+        joy_ui_joystick_touch_down(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_touch_move(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_touch_move(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float p1;
         float p2;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_move");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg0");
-        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_move.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_touch_move");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_move.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_move.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_move.arg2");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_move.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_touch_move.arg0");
         p1 = (float)a[1].as.f64;
         p2 = (float)a[2].as.f64;
-        joy_input_joystick_touch_move(p0, p1, p2);
+        joy_ui_joystick_touch_move(p0, p1, p2);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_touch_up(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_touch_up(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_touch_up");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_touch_up.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_touch_up");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_touch_up.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_touch_up.arg0");
-        joy_input_joystick_touch_up(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_touch_up.arg0");
+        joy_ui_joystick_touch_up(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_input_joystick_get_magnitude(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_ui_joystick_get_magnitude(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_joystick_p p0;
         float _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_input_joystick_get_magnitude");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_input_joystick_get_magnitude.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_joystick_get_magnitude");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_joystick_get_magnitude.arg0");
         p0 = (joy_joystick_p)joy_obj_deref(a[0].as.handle, "joy_joystick_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_input_joystick_get_magnitude.arg0");
-        _r = joy_input_joystick_get_magnitude(p0);
+        if (!p0) return joy_v_err(st, *st, "joy_ui_joystick_get_magnitude.arg0");
+        _r = joy_ui_joystick_get_magnitude(p0);
         return joy_v_f64((float)_r);
 }
 
@@ -7930,7 +7930,7 @@ static joy_value_t t_joy_audio_bgm_destroy(joy_value_t* a, int n, joy_status_t* 
         return joy_v_null();
 }
 
-static joy_value_t t_joy_ui_image_draw_rect(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_r2d_image_draw_rect(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r2d_p p0;
         joy_image_p p1;
@@ -7938,22 +7938,22 @@ static joy_value_t t_joy_ui_image_draw_rect(joy_value_t* a, int n, joy_status_t*
         float p3;
         float p4;
         float p5;
-        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_ui_image_draw_rect");
-        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg0");
-        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg1");
-        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg2");
-        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg3");
-        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg4");
-        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_ui_image_draw_rect.arg5");
+        if (n != 6) return joy_v_err(st, JOY_ERR_ARGC, "joy_r2d_image_draw_rect");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg2");
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg3");
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg4");
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r2d_image_draw_rect.arg5");
         p0 = (joy_r2d_p)joy_obj_deref(a[0].as.handle, "joy_r2d_p", st);
-        if (!p0) return joy_v_err(st, *st, "joy_ui_image_draw_rect.arg0");
+        if (!p0) return joy_v_err(st, *st, "joy_r2d_image_draw_rect.arg0");
         p1 = (joy_image_p)joy_obj_deref(a[1].as.handle, "joy_image_p", st);
-        if (!p1) return joy_v_err(st, *st, "joy_ui_image_draw_rect.arg1");
+        if (!p1) return joy_v_err(st, *st, "joy_r2d_image_draw_rect.arg1");
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         p4 = (float)a[4].as.f64;
         p5 = (float)a[5].as.f64;
-        joy_ui_image_draw_rect(p0, p1, p2, p3, p4, p5);
+        joy_r2d_image_draw_rect(p0, p1, p2, p3, p4, p5);
         return joy_v_null();
 }
 
@@ -12214,12 +12214,12 @@ static const joy_value_kind k_joy_core_fnv1a_hash[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_joy_core_jenkins_hash[] = { JOY_V_STR, JOY_V_I32 };
 static const joy_value_kind k_joy_core_murmur3_hash[] = { JOY_V_STR };
 static const joy_value_kind k_joy_core_kr_hash[] = { JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_joy_scene_timer_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_timer_trigger[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_timer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_joy_scene_timer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_joy_scene_timer_reset[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_timer_get_elapsed[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_timer_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_timer_trigger[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_timer_set_interval[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_core_timer_set_active[] = { JOY_V_HANDLE, JOY_V_BOOL };
+static const joy_value_kind k_joy_core_timer_reset[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_timer_get_elapsed[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_create_window[] = { JOY_V_STR, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_core_destroy_window[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_window_set_fullscreen[] = { JOY_V_HANDLE, JOY_V_BOOL };
@@ -12232,14 +12232,14 @@ static const joy_value_kind k_joy_core_env_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_destory[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_update[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_simple_fps_value[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_init[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_update[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_get_delta_time[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_get_unscaled_delta_time[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_set_time_scale[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_joy_scene_game_timer_get_time_scale[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_joy_scene_game_timer_get_target_fps[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_init[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_update[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_get_delta_time[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_get_unscaled_delta_time[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_set_time_scale[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_core_game_timer_get_time_scale[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_core_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_core_game_timer_get_target_fps[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_set_clipboard_text[] = { JOY_V_STR };
 static const joy_value_kind k_joy_net_sys_closesocket[] = { JOY_V_I64 };
 static const joy_value_kind k_joy_net_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
@@ -12278,34 +12278,34 @@ static const joy_value_kind k_joy_r2d_push_clip_rect[] = { JOY_V_HANDLE, JOY_V_F
 static const joy_value_kind k_joy_r2d_pop_clip_rect[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_reset_clip_stack[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_point_in_clip[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_math_shape_draw_line[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_math_shape_draw_rectangle[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_ui_image_create[] = { JOY_V_HANDLE, JOY_V_STR };
-static const joy_value_kind k_joy_ui_image_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_ui_image_set_alpha[] = { JOY_V_HANDLE, JOY_V_U32 };
-static const joy_value_kind k_joy_ui_image_set_blend_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_joy_ui_image_set_scale_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
-static const joy_value_kind k_joy_ui_text_updatex[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
-static const joy_value_kind k_joy_ui_text_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_shape_draw_line[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_shape_draw_rectangle[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_image_create[] = { JOY_V_HANDLE, JOY_V_STR };
+static const joy_value_kind k_joy_r2d_image_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_image_set_alpha[] = { JOY_V_HANDLE, JOY_V_U32 };
+static const joy_value_kind k_joy_r2d_image_set_blend_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_r2d_image_set_scale_mode[] = { JOY_V_HANDLE, JOY_V_I32 };
+static const joy_value_kind k_joy_r2d_text_updatex[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r2d_text_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_text_print[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_text_printx[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_draw_point_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_math_shape_draw_rectangle_f[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_math_shape_draw_line_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_shape_draw_rectangle_f[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_shape_draw_line_f[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_text_printf[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r2d_text_printf_scaled[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_STR, JOY_V_I32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_ui_text_get_width[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_ui_text_get_height[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_text_get_width[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_text_get_height[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r2d_text_cache_set_limit[] = { JOY_V_I32 };
 static const joy_value_kind k_joy_r2d_text_cache_sweep[] = { JOY_V_I32 };
-static const joy_value_kind k_joy_scene_animation_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_animation_reset[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_animation_add_clip[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_scene_animation_is_finished[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_scene_animation_set_position[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_scene_animation_set_scale[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_scene_animation_set_rotation[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_joy_scene_animation_update[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_animation_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_animation_reset[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_animation_add_clip[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_animation_is_finished[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_r2d_animation_set_position[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_animation_set_scale[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_animation_set_rotation[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_animation_update[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_begin[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_end[] = { JOY_V_HANDLE };
@@ -12480,18 +12480,18 @@ static const joy_value_kind k_joy_ui_checkbox_set_text_color[] = { JOY_V_HANDLE,
 static const joy_value_kind k_joy_ui_checkbox_toggle[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_checkbox_is_pressed[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_ui_checkbox_set_hovered[] = { JOY_V_HANDLE, JOY_V_BOOL };
-static const joy_value_kind k_joy_input_joystick_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_input_joystick_set_textures[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
-static const joy_value_kind k_joy_input_joystick_set_vector[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_input_joystick_draw[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_input_joystick_reset[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_input_joystick_set_position[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_input_joystick_set_radius[] = { JOY_V_HANDLE, JOY_V_F64 };
-static const joy_value_kind k_joy_input_joystick_is_dragging[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_input_joystick_touch_down[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_input_joystick_touch_move[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
-static const joy_value_kind k_joy_input_joystick_touch_up[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_input_joystick_get_magnitude[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_destroy[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_set_textures[] = { JOY_V_HANDLE, JOY_V_STR, JOY_V_STR };
+static const joy_value_kind k_joy_ui_joystick_set_vector[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_ui_joystick_draw[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_reset[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_set_position[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_ui_joystick_set_radius[] = { JOY_V_HANDLE, JOY_V_F64 };
+static const joy_value_kind k_joy_ui_joystick_is_dragging[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_touch_down[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_ui_joystick_touch_move[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_ui_joystick_touch_up[] = { JOY_V_HANDLE };
+static const joy_value_kind k_joy_ui_joystick_get_magnitude[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_inputbox_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_ui_inputbox_set_text[] = { JOY_V_HANDLE, JOY_V_STR };
 static const joy_value_kind k_joy_ui_inputbox_draw[] = { JOY_V_HANDLE };
@@ -12694,7 +12694,7 @@ static const joy_value_kind k_joy_audio_shot_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_audio_bgm_stop[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_audio_bgm_set_gain[] = { JOY_V_HANDLE, JOY_V_F64 };
 static const joy_value_kind k_joy_audio_bgm_destroy[] = { JOY_V_HANDLE };
-static const joy_value_kind k_joy_ui_image_draw_rect[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r2d_image_draw_rect[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_input_feed_key[] = { JOY_V_I32, JOY_V_BOOL };
 static const joy_value_kind k_joy_input_feed_mouse_move[] = { JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_input_feed_mouse_button[] = { JOY_V_I32, JOY_V_BOOL };
@@ -12924,12 +12924,12 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_jenkins_hash", "JenkinsHash", t_joy_core_jenkins_hash, 2, k_joy_core_jenkins_hash, JOY_V_U64 },
         { "core", "joy_core_murmur3_hash", "Murmur3Hash", t_joy_core_murmur3_hash, 1, k_joy_core_murmur3_hash, JOY_V_U64 },
         { "core", "joy_core_kr_hash", "KrHash", t_joy_core_kr_hash, 2, k_joy_core_kr_hash, JOY_V_U64 },
-        { "scene", "joy_scene_timer_destroy", "JtimerDestroy", t_joy_scene_timer_destroy, 1, k_joy_scene_timer_destroy, JOY_V_NULL },
-        { "scene", "joy_scene_timer_trigger", "JtimerTrigger", t_joy_scene_timer_trigger, 1, k_joy_scene_timer_trigger, JOY_V_NULL },
-        { "scene", "joy_scene_timer_set_interval", "JtimerSetInterval", t_joy_scene_timer_set_interval, 2, k_joy_scene_timer_set_interval, JOY_V_NULL },
-        { "scene", "joy_scene_timer_set_active", "JtimerSetActive", t_joy_scene_timer_set_active, 2, k_joy_scene_timer_set_active, JOY_V_NULL },
-        { "scene", "joy_scene_timer_reset", "JtimerReset", t_joy_scene_timer_reset, 1, k_joy_scene_timer_reset, JOY_V_NULL },
-        { "scene", "joy_scene_timer_get_elapsed", "JtimerGetElapsed", t_joy_scene_timer_get_elapsed, 1, k_joy_scene_timer_get_elapsed, JOY_V_U64 },
+        { "core", "joy_core_timer_destroy", "JtimerDestroy", t_joy_core_timer_destroy, 1, k_joy_core_timer_destroy, JOY_V_NULL },
+        { "core", "joy_core_timer_trigger", "JtimerTrigger", t_joy_core_timer_trigger, 1, k_joy_core_timer_trigger, JOY_V_NULL },
+        { "core", "joy_core_timer_set_interval", "JtimerSetInterval", t_joy_core_timer_set_interval, 2, k_joy_core_timer_set_interval, JOY_V_NULL },
+        { "core", "joy_core_timer_set_active", "JtimerSetActive", t_joy_core_timer_set_active, 2, k_joy_core_timer_set_active, JOY_V_NULL },
+        { "core", "joy_core_timer_reset", "JtimerReset", t_joy_core_timer_reset, 1, k_joy_core_timer_reset, JOY_V_NULL },
+        { "core", "joy_core_timer_get_elapsed", "JtimerGetElapsed", t_joy_core_timer_get_elapsed, 1, k_joy_core_timer_get_elapsed, JOY_V_U64 },
         { "core", "joy_core_init_env", "InitEnv", t_joy_core_init_env, 0, NULL, JOY_V_BOOL },
         { "core", "joy_core_quit_env", "QuitEnv", t_joy_core_quit_env, 0, NULL, JOY_V_NULL },
         { "core", "joy_core_get_ticks", "GetTicks", t_joy_core_get_ticks, 0, NULL, JOY_V_U64 },
@@ -12946,14 +12946,14 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_simple_fps_destory", "SimpleFpsDestory", t_joy_core_simple_fps_destory, 1, k_joy_core_simple_fps_destory, JOY_V_NULL },
         { "core", "joy_core_simple_fps_update", "SimpleFpsUpdate", t_joy_core_simple_fps_update, 1, k_joy_core_simple_fps_update, JOY_V_NULL },
         { "core", "joy_core_simple_fps_value", "SimpleFpsValue", t_joy_core_simple_fps_value, 1, k_joy_core_simple_fps_value, JOY_V_I32 },
-        { "scene", "joy_scene_game_timer_init", "GameTimerInit", t_joy_scene_game_timer_init, 1, k_joy_scene_game_timer_init, JOY_V_NULL },
-        { "scene", "joy_scene_game_timer_update", "GameTimerUpdate", t_joy_scene_game_timer_update, 1, k_joy_scene_game_timer_update, JOY_V_NULL },
-        { "scene", "joy_scene_game_timer_get_delta_time", "GameTimerGetDeltaTime", t_joy_scene_game_timer_get_delta_time, 1, k_joy_scene_game_timer_get_delta_time, JOY_V_F64 },
-        { "scene", "joy_scene_game_timer_get_unscaled_delta_time", "GameTimerGetUnscaledDeltaTime", t_joy_scene_game_timer_get_unscaled_delta_time, 1, k_joy_scene_game_timer_get_unscaled_delta_time, JOY_V_F64 },
-        { "scene", "joy_scene_game_timer_set_time_scale", "GameTimerSetTimeScale", t_joy_scene_game_timer_set_time_scale, 2, k_joy_scene_game_timer_set_time_scale, JOY_V_NULL },
-        { "scene", "joy_scene_game_timer_get_time_scale", "GameTimerGetTimeScale", t_joy_scene_game_timer_get_time_scale, 1, k_joy_scene_game_timer_get_time_scale, JOY_V_F64 },
-        { "scene", "joy_scene_game_timer_set_target_fps", "GameTimerSetTargetFps", t_joy_scene_game_timer_set_target_fps, 2, k_joy_scene_game_timer_set_target_fps, JOY_V_NULL },
-        { "scene", "joy_scene_game_timer_get_target_fps", "GameTimerGetTargetFps", t_joy_scene_game_timer_get_target_fps, 1, k_joy_scene_game_timer_get_target_fps, JOY_V_I32 },
+        { "core", "joy_core_game_timer_init", "GameTimerInit", t_joy_core_game_timer_init, 1, k_joy_core_game_timer_init, JOY_V_NULL },
+        { "core", "joy_core_game_timer_update", "GameTimerUpdate", t_joy_core_game_timer_update, 1, k_joy_core_game_timer_update, JOY_V_NULL },
+        { "core", "joy_core_game_timer_get_delta_time", "GameTimerGetDeltaTime", t_joy_core_game_timer_get_delta_time, 1, k_joy_core_game_timer_get_delta_time, JOY_V_F64 },
+        { "core", "joy_core_game_timer_get_unscaled_delta_time", "GameTimerGetUnscaledDeltaTime", t_joy_core_game_timer_get_unscaled_delta_time, 1, k_joy_core_game_timer_get_unscaled_delta_time, JOY_V_F64 },
+        { "core", "joy_core_game_timer_set_time_scale", "GameTimerSetTimeScale", t_joy_core_game_timer_set_time_scale, 2, k_joy_core_game_timer_set_time_scale, JOY_V_NULL },
+        { "core", "joy_core_game_timer_get_time_scale", "GameTimerGetTimeScale", t_joy_core_game_timer_get_time_scale, 1, k_joy_core_game_timer_get_time_scale, JOY_V_F64 },
+        { "core", "joy_core_game_timer_set_target_fps", "GameTimerSetTargetFps", t_joy_core_game_timer_set_target_fps, 2, k_joy_core_game_timer_set_target_fps, JOY_V_NULL },
+        { "core", "joy_core_game_timer_get_target_fps", "GameTimerGetTargetFps", t_joy_core_game_timer_get_target_fps, 1, k_joy_core_game_timer_get_target_fps, JOY_V_I32 },
         { "core", "joy_core_set_clipboard_text", "SetClipboardText", t_joy_core_set_clipboard_text, 1, k_joy_core_set_clipboard_text, JOY_V_NULL },
         { "net", "joy_net_sys_init_netenv", "SysInitNetenv", t_joy_net_sys_init_netenv, 0, NULL, JOY_V_BOOL },
         { "net", "joy_net_sys_release_netenv", "SysReleaseNetenv", t_joy_net_sys_release_netenv, 0, NULL, JOY_V_BOOL },
@@ -12999,36 +12999,36 @@ static const joy_thunk_entry s_thunks[] = {
         { "r2d", "joy_r2d_pop_clip_rect", "R2dPopClipRect", t_joy_r2d_pop_clip_rect, 1, k_joy_r2d_pop_clip_rect, JOY_V_NULL },
         { "r2d", "joy_r2d_reset_clip_stack", "R2dResetClipStack", t_joy_r2d_reset_clip_stack, 1, k_joy_r2d_reset_clip_stack, JOY_V_NULL },
         { "r2d", "joy_r2d_point_in_clip", "R2dPointInClip", t_joy_r2d_point_in_clip, 3, k_joy_r2d_point_in_clip, JOY_V_BOOL },
-        { "math", "joy_math_shape_draw_line", "ShapeDrawLine", t_joy_math_shape_draw_line, 5, k_joy_math_shape_draw_line, JOY_V_BOOL },
-        { "math", "joy_math_shape_draw_rectangle", "ShapeDrawRectangle", t_joy_math_shape_draw_rectangle, 6, k_joy_math_shape_draw_rectangle, JOY_V_BOOL },
-        { "ui", "joy_ui_image_create", "ImageCreate", t_joy_ui_image_create, 2, k_joy_ui_image_create, JOY_V_HANDLE },
-        { "ui", "joy_ui_image_destroy", "ImageDestroy", t_joy_ui_image_destroy, 1, k_joy_ui_image_destroy, JOY_V_NULL },
-        { "ui", "joy_ui_image_set_alpha", "ImageSetAlpha", t_joy_ui_image_set_alpha, 2, k_joy_ui_image_set_alpha, JOY_V_NULL },
-        { "ui", "joy_ui_image_set_blend_mode", "ImageSetBlendMode", t_joy_ui_image_set_blend_mode, 2, k_joy_ui_image_set_blend_mode, JOY_V_NULL },
-        { "ui", "joy_ui_image_set_scale_mode", "ImageSetScaleMode", t_joy_ui_image_set_scale_mode, 2, k_joy_ui_image_set_scale_mode, JOY_V_NULL },
-        { "ui", "joy_ui_text_updatex", "TextUpdatex", t_joy_ui_text_updatex, 8, k_joy_ui_text_updatex, JOY_V_NULL },
-        { "ui", "joy_ui_text_destroy", "TextDestroy", t_joy_ui_text_destroy, 1, k_joy_ui_text_destroy, JOY_V_NULL },
+        { "r2d", "joy_r2d_shape_draw_line", "ShapeDrawLine", t_joy_r2d_shape_draw_line, 5, k_joy_r2d_shape_draw_line, JOY_V_BOOL },
+        { "r2d", "joy_r2d_shape_draw_rectangle", "ShapeDrawRectangle", t_joy_r2d_shape_draw_rectangle, 6, k_joy_r2d_shape_draw_rectangle, JOY_V_BOOL },
+        { "r2d", "joy_r2d_image_create", "ImageCreate", t_joy_r2d_image_create, 2, k_joy_r2d_image_create, JOY_V_HANDLE },
+        { "r2d", "joy_r2d_image_destroy", "ImageDestroy", t_joy_r2d_image_destroy, 1, k_joy_r2d_image_destroy, JOY_V_NULL },
+        { "r2d", "joy_r2d_image_set_alpha", "ImageSetAlpha", t_joy_r2d_image_set_alpha, 2, k_joy_r2d_image_set_alpha, JOY_V_NULL },
+        { "r2d", "joy_r2d_image_set_blend_mode", "ImageSetBlendMode", t_joy_r2d_image_set_blend_mode, 2, k_joy_r2d_image_set_blend_mode, JOY_V_NULL },
+        { "r2d", "joy_r2d_image_set_scale_mode", "ImageSetScaleMode", t_joy_r2d_image_set_scale_mode, 2, k_joy_r2d_image_set_scale_mode, JOY_V_NULL },
+        { "r2d", "joy_r2d_text_updatex", "TextUpdatex", t_joy_r2d_text_updatex, 8, k_joy_r2d_text_updatex, JOY_V_NULL },
+        { "r2d", "joy_r2d_text_destroy", "TextDestroy", t_joy_r2d_text_destroy, 1, k_joy_r2d_text_destroy, JOY_V_NULL },
         { "r2d", "joy_r2d_text_print", "JtextPrint", t_joy_r2d_text_print, 4, k_joy_r2d_text_print, JOY_V_NULL },
         { "r2d", "joy_r2d_text_printx", "JtextPrintx", t_joy_r2d_text_printx, 10, k_joy_r2d_text_printx, JOY_V_NULL },
         { "r2d", "joy_r2d_draw_point_f", "R2dDrawPointF", t_joy_r2d_draw_point_f, 3, k_joy_r2d_draw_point_f, JOY_V_BOOL },
-        { "math", "joy_math_shape_draw_rectangle_f", "ShapeDrawRectangleF", t_joy_math_shape_draw_rectangle_f, 6, k_joy_math_shape_draw_rectangle_f, JOY_V_BOOL },
-        { "math", "joy_math_shape_draw_line_f", "ShapeDrawLineF", t_joy_math_shape_draw_line_f, 5, k_joy_math_shape_draw_line_f, JOY_V_BOOL },
+        { "r2d", "joy_r2d_shape_draw_rectangle_f", "ShapeDrawRectangleF", t_joy_r2d_shape_draw_rectangle_f, 6, k_joy_r2d_shape_draw_rectangle_f, JOY_V_BOOL },
+        { "r2d", "joy_r2d_shape_draw_line_f", "ShapeDrawLineF", t_joy_r2d_shape_draw_line_f, 5, k_joy_r2d_shape_draw_line_f, JOY_V_BOOL },
         { "r2d", "joy_r2d_text_printf", "JtextPrintf", t_joy_r2d_text_printf, 10, k_joy_r2d_text_printf, JOY_V_NULL },
         { "r2d", "joy_r2d_text_printf_scaled", "JtextPrintfScaled", t_joy_r2d_text_printf_scaled, 11, k_joy_r2d_text_printf_scaled, JOY_V_NULL },
-        { "ui", "joy_ui_text_get_width", "TextGetWidth", t_joy_ui_text_get_width, 1, k_joy_ui_text_get_width, JOY_V_I32 },
-        { "ui", "joy_ui_text_get_height", "TextGetHeight", t_joy_ui_text_get_height, 1, k_joy_ui_text_get_height, JOY_V_I32 },
+        { "r2d", "joy_r2d_text_get_width", "TextGetWidth", t_joy_r2d_text_get_width, 1, k_joy_r2d_text_get_width, JOY_V_I32 },
+        { "r2d", "joy_r2d_text_get_height", "TextGetHeight", t_joy_r2d_text_get_height, 1, k_joy_r2d_text_get_height, JOY_V_I32 },
         { "r2d", "joy_r2d_text_cache_clear", "JtextCacheClear", t_joy_r2d_text_cache_clear, 0, NULL, JOY_V_NULL },
         { "r2d", "joy_r2d_text_cache_set_limit", "JtextCacheSetLimit", t_joy_r2d_text_cache_set_limit, 1, k_joy_r2d_text_cache_set_limit, JOY_V_NULL },
         { "r2d", "joy_r2d_text_cache_get_count", "JtextCacheGetCount", t_joy_r2d_text_cache_get_count, 0, NULL, JOY_V_I32 },
         { "r2d", "joy_r2d_text_cache_sweep", "JtextCacheSweep", t_joy_r2d_text_cache_sweep, 1, k_joy_r2d_text_cache_sweep, JOY_V_NULL },
-        { "scene", "joy_scene_animation_destroy", "AnimationDestroy", t_joy_scene_animation_destroy, 1, k_joy_scene_animation_destroy, JOY_V_NULL },
-        { "scene", "joy_scene_animation_reset", "AnimationReset", t_joy_scene_animation_reset, 1, k_joy_scene_animation_reset, JOY_V_NULL },
-        { "scene", "joy_scene_animation_add_clip", "AnimationAddClip", t_joy_scene_animation_add_clip, 7, k_joy_scene_animation_add_clip, JOY_V_NULL },
-        { "scene", "joy_scene_animation_is_finished", "AnimationIsFinished", t_joy_scene_animation_is_finished, 1, k_joy_scene_animation_is_finished, JOY_V_BOOL },
-        { "scene", "joy_scene_animation_set_position", "AnimationSetPosition", t_joy_scene_animation_set_position, 3, k_joy_scene_animation_set_position, JOY_V_NULL },
-        { "scene", "joy_scene_animation_set_scale", "AnimationSetScale", t_joy_scene_animation_set_scale, 3, k_joy_scene_animation_set_scale, JOY_V_NULL },
-        { "scene", "joy_scene_animation_set_rotation", "AnimationSetRotation", t_joy_scene_animation_set_rotation, 2, k_joy_scene_animation_set_rotation, JOY_V_NULL },
-        { "scene", "joy_scene_animation_update", "AnimationUpdate", t_joy_scene_animation_update, 2, k_joy_scene_animation_update, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_destroy", "AnimationDestroy", t_joy_r2d_animation_destroy, 1, k_joy_r2d_animation_destroy, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_reset", "AnimationReset", t_joy_r2d_animation_reset, 1, k_joy_r2d_animation_reset, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_add_clip", "AnimationAddClip", t_joy_r2d_animation_add_clip, 7, k_joy_r2d_animation_add_clip, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_is_finished", "AnimationIsFinished", t_joy_r2d_animation_is_finished, 1, k_joy_r2d_animation_is_finished, JOY_V_BOOL },
+        { "r2d", "joy_r2d_animation_set_position", "AnimationSetPosition", t_joy_r2d_animation_set_position, 3, k_joy_r2d_animation_set_position, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_set_scale", "AnimationSetScale", t_joy_r2d_animation_set_scale, 3, k_joy_r2d_animation_set_scale, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_set_rotation", "AnimationSetRotation", t_joy_r2d_animation_set_rotation, 2, k_joy_r2d_animation_set_rotation, JOY_V_NULL },
+        { "r2d", "joy_r2d_animation_update", "AnimationUpdate", t_joy_r2d_animation_update, 2, k_joy_r2d_animation_update, JOY_V_NULL },
         { "r3d", "joy_r3d_destroy", "R3dDestroy", t_joy_r3d_destroy, 1, k_joy_r3d_destroy, JOY_V_NULL },
         { "r3d", "joy_r3d_begin", "R3dBegin", t_joy_r3d_begin, 1, k_joy_r3d_begin, JOY_V_BOOL },
         { "r3d", "joy_r3d_end", "R3dEnd", t_joy_r3d_end, 1, k_joy_r3d_end, JOY_V_NULL },
@@ -13203,18 +13203,18 @@ static const joy_thunk_entry s_thunks[] = {
         { "ui", "joy_ui_checkbox_toggle", "CheckboxToggle", t_joy_ui_checkbox_toggle, 1, k_joy_ui_checkbox_toggle, JOY_V_NULL },
         { "ui", "joy_ui_checkbox_is_pressed", "CheckboxIsPressed", t_joy_ui_checkbox_is_pressed, 3, k_joy_ui_checkbox_is_pressed, JOY_V_BOOL },
         { "ui", "joy_ui_checkbox_set_hovered", "CheckboxSetHovered", t_joy_ui_checkbox_set_hovered, 2, k_joy_ui_checkbox_set_hovered, JOY_V_NULL },
-        { "input", "joy_input_joystick_destroy", "JoystickDestroy", t_joy_input_joystick_destroy, 1, k_joy_input_joystick_destroy, JOY_V_NULL },
-        { "input", "joy_input_joystick_set_textures", "JoystickSetTextures", t_joy_input_joystick_set_textures, 3, k_joy_input_joystick_set_textures, JOY_V_NULL },
-        { "input", "joy_input_joystick_set_vector", "JoystickSetVector", t_joy_input_joystick_set_vector, 3, k_joy_input_joystick_set_vector, JOY_V_NULL },
-        { "input", "joy_input_joystick_draw", "JoystickDraw", t_joy_input_joystick_draw, 1, k_joy_input_joystick_draw, JOY_V_NULL },
-        { "input", "joy_input_joystick_reset", "JoystickReset", t_joy_input_joystick_reset, 1, k_joy_input_joystick_reset, JOY_V_NULL },
-        { "input", "joy_input_joystick_set_position", "JoystickSetPosition", t_joy_input_joystick_set_position, 3, k_joy_input_joystick_set_position, JOY_V_NULL },
-        { "input", "joy_input_joystick_set_radius", "JoystickSetRadius", t_joy_input_joystick_set_radius, 2, k_joy_input_joystick_set_radius, JOY_V_NULL },
-        { "input", "joy_input_joystick_is_dragging", "JoystickIsDragging", t_joy_input_joystick_is_dragging, 1, k_joy_input_joystick_is_dragging, JOY_V_BOOL },
-        { "input", "joy_input_joystick_touch_down", "JoystickTouchDown", t_joy_input_joystick_touch_down, 3, k_joy_input_joystick_touch_down, JOY_V_NULL },
-        { "input", "joy_input_joystick_touch_move", "JoystickTouchMove", t_joy_input_joystick_touch_move, 3, k_joy_input_joystick_touch_move, JOY_V_NULL },
-        { "input", "joy_input_joystick_touch_up", "JoystickTouchUp", t_joy_input_joystick_touch_up, 1, k_joy_input_joystick_touch_up, JOY_V_NULL },
-        { "input", "joy_input_joystick_get_magnitude", "JoystickGetMagnitude", t_joy_input_joystick_get_magnitude, 1, k_joy_input_joystick_get_magnitude, JOY_V_F64 },
+        { "ui", "joy_ui_joystick_destroy", "JoystickDestroy", t_joy_ui_joystick_destroy, 1, k_joy_ui_joystick_destroy, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_set_textures", "JoystickSetTextures", t_joy_ui_joystick_set_textures, 3, k_joy_ui_joystick_set_textures, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_set_vector", "JoystickSetVector", t_joy_ui_joystick_set_vector, 3, k_joy_ui_joystick_set_vector, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_draw", "JoystickDraw", t_joy_ui_joystick_draw, 1, k_joy_ui_joystick_draw, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_reset", "JoystickReset", t_joy_ui_joystick_reset, 1, k_joy_ui_joystick_reset, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_set_position", "JoystickSetPosition", t_joy_ui_joystick_set_position, 3, k_joy_ui_joystick_set_position, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_set_radius", "JoystickSetRadius", t_joy_ui_joystick_set_radius, 2, k_joy_ui_joystick_set_radius, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_is_dragging", "JoystickIsDragging", t_joy_ui_joystick_is_dragging, 1, k_joy_ui_joystick_is_dragging, JOY_V_BOOL },
+        { "ui", "joy_ui_joystick_touch_down", "JoystickTouchDown", t_joy_ui_joystick_touch_down, 3, k_joy_ui_joystick_touch_down, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_touch_move", "JoystickTouchMove", t_joy_ui_joystick_touch_move, 3, k_joy_ui_joystick_touch_move, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_touch_up", "JoystickTouchUp", t_joy_ui_joystick_touch_up, 1, k_joy_ui_joystick_touch_up, JOY_V_NULL },
+        { "ui", "joy_ui_joystick_get_magnitude", "JoystickGetMagnitude", t_joy_ui_joystick_get_magnitude, 1, k_joy_ui_joystick_get_magnitude, JOY_V_F64 },
         { "ui", "joy_ui_inputbox_destroy", "InputboxDestroy", t_joy_ui_inputbox_destroy, 1, k_joy_ui_inputbox_destroy, JOY_V_NULL },
         { "ui", "joy_ui_inputbox_set_text", "InputboxSetText", t_joy_ui_inputbox_set_text, 2, k_joy_ui_inputbox_set_text, JOY_V_NULL },
         { "ui", "joy_ui_inputbox_draw", "InputboxDraw", t_joy_ui_inputbox_draw, 1, k_joy_ui_inputbox_draw, JOY_V_NULL },
@@ -13418,7 +13418,7 @@ static const joy_thunk_entry s_thunks[] = {
         { "audio", "joy_audio_bgm_stop", "AudioBgmStop", t_joy_audio_bgm_stop, 1, k_joy_audio_bgm_stop, JOY_V_NULL },
         { "audio", "joy_audio_bgm_set_gain", "AudioBgmSetGain", t_joy_audio_bgm_set_gain, 2, k_joy_audio_bgm_set_gain, JOY_V_NULL },
         { "audio", "joy_audio_bgm_destroy", "AudioBgmDestroy", t_joy_audio_bgm_destroy, 1, k_joy_audio_bgm_destroy, JOY_V_NULL },
-        { "ui", "joy_ui_image_draw_rect", "ImageDrawRect", t_joy_ui_image_draw_rect, 6, k_joy_ui_image_draw_rect, JOY_V_NULL },
+        { "r2d", "joy_r2d_image_draw_rect", "ImageDrawRect", t_joy_r2d_image_draw_rect, 6, k_joy_r2d_image_draw_rect, JOY_V_NULL },
         { "input", "joy_input_feed_key", "JoyInputFeedKey", t_joy_input_feed_key, 2, k_joy_input_feed_key, JOY_V_NULL },
         { "input", "joy_input_feed_mouse_move", "JoyInputFeedMouseMove", t_joy_input_feed_mouse_move, 2, k_joy_input_feed_mouse_move, JOY_V_NULL },
         { "input", "joy_input_feed_mouse_button", "JoyInputFeedMouseButton", t_joy_input_feed_mouse_button, 2, k_joy_input_feed_mouse_button, JOY_V_NULL },
@@ -13706,23 +13706,23 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_kr_hash", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_kr_hash";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_destroy";
+        joy_api_call("joy_core_timer_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_destroy";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_trigger", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_trigger";
+        joy_api_call("joy_core_timer_trigger", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_trigger";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_set_interval", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_set_interval";
+        joy_api_call("joy_core_timer_set_interval", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_set_interval";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_set_active", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_set_active";
+        joy_api_call("joy_core_timer_set_active", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_set_active";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_reset", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_reset";
+        joy_api_call("joy_core_timer_reset", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_reset";
         st = JOY_OK;
-        joy_api_call("joy_scene_timer_get_elapsed", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_timer_get_elapsed";
+        joy_api_call("joy_core_timer_get_elapsed", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_timer_get_elapsed";
         st = JOY_OK;
         joy_api_call("joy_core_init_env", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_init_env";
@@ -13772,29 +13772,29 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_simple_fps_value", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_simple_fps_value";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_init", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_init";
+        joy_api_call("joy_core_game_timer_init", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_init";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_update", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_update";
+        joy_api_call("joy_core_game_timer_update", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_update";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_get_delta_time", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_delta_time";
+        joy_api_call("joy_core_game_timer_get_delta_time", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_get_delta_time";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_get_unscaled_delta_time", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_unscaled_delta_time";
+        joy_api_call("joy_core_game_timer_get_unscaled_delta_time", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_get_unscaled_delta_time";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_set_time_scale", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_set_time_scale";
+        joy_api_call("joy_core_game_timer_set_time_scale", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_set_time_scale";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_get_time_scale", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_time_scale";
+        joy_api_call("joy_core_game_timer_get_time_scale", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_get_time_scale";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_set_target_fps", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_set_target_fps";
+        joy_api_call("joy_core_game_timer_set_target_fps", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_set_target_fps";
         st = JOY_OK;
-        joy_api_call("joy_scene_game_timer_get_target_fps", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_game_timer_get_target_fps";
+        joy_api_call("joy_core_game_timer_get_target_fps", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_core_game_timer_get_target_fps";
         st = JOY_OK;
         joy_api_call("joy_core_set_clipboard_text", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_set_clipboard_text";
@@ -13931,32 +13931,32 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_point_in_clip", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_point_in_clip";
         st = JOY_OK;
-        joy_api_call("joy_math_shape_draw_line", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_line";
+        joy_api_call("joy_r2d_shape_draw_line", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_shape_draw_line";
         st = JOY_OK;
-        joy_api_call("joy_math_shape_draw_rectangle", NULL, 7, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_rectangle";
+        joy_api_call("joy_r2d_shape_draw_rectangle", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_shape_draw_rectangle";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_create", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_create";
+        joy_api_call("joy_r2d_image_create", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_create";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_destroy";
+        joy_api_call("joy_r2d_image_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_destroy";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_set_alpha", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_set_alpha";
+        joy_api_call("joy_r2d_image_set_alpha", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_set_alpha";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_set_blend_mode", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_set_blend_mode";
+        joy_api_call("joy_r2d_image_set_blend_mode", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_set_blend_mode";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_set_scale_mode", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_set_scale_mode";
+        joy_api_call("joy_r2d_image_set_scale_mode", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_set_scale_mode";
         st = JOY_OK;
-        joy_api_call("joy_ui_text_updatex", NULL, 9, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_text_updatex";
+        joy_api_call("joy_r2d_text_updatex", NULL, 9, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_updatex";
         st = JOY_OK;
-        joy_api_call("joy_ui_text_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_text_destroy";
+        joy_api_call("joy_r2d_text_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_destroy";
         st = JOY_OK;
         joy_api_call("joy_r2d_text_print", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_print";
@@ -13967,11 +13967,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_draw_point_f", NULL, 4, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_draw_point_f";
         st = JOY_OK;
-        joy_api_call("joy_math_shape_draw_rectangle_f", NULL, 7, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_rectangle_f";
+        joy_api_call("joy_r2d_shape_draw_rectangle_f", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_shape_draw_rectangle_f";
         st = JOY_OK;
-        joy_api_call("joy_math_shape_draw_line_f", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_math_shape_draw_line_f";
+        joy_api_call("joy_r2d_shape_draw_line_f", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_shape_draw_line_f";
         st = JOY_OK;
         joy_api_call("joy_r2d_text_printf", NULL, 11, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_printf";
@@ -13979,11 +13979,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_text_printf_scaled", NULL, 12, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_printf_scaled";
         st = JOY_OK;
-        joy_api_call("joy_ui_text_get_width", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_text_get_width";
+        joy_api_call("joy_r2d_text_get_width", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_get_width";
         st = JOY_OK;
-        joy_api_call("joy_ui_text_get_height", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_text_get_height";
+        joy_api_call("joy_r2d_text_get_height", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_get_height";
         st = JOY_OK;
         joy_api_call("joy_r2d_text_cache_clear", NULL, 1, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_cache_clear";
@@ -13997,29 +13997,29 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_text_cache_sweep", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r2d_text_cache_sweep";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_destroy";
+        joy_api_call("joy_r2d_animation_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_destroy";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_reset", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_reset";
+        joy_api_call("joy_r2d_animation_reset", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_reset";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_add_clip", NULL, 8, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_add_clip";
+        joy_api_call("joy_r2d_animation_add_clip", NULL, 8, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_add_clip";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_is_finished", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_is_finished";
+        joy_api_call("joy_r2d_animation_is_finished", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_is_finished";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_set_position", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_set_position";
+        joy_api_call("joy_r2d_animation_set_position", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_set_position";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_set_scale", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_set_scale";
+        joy_api_call("joy_r2d_animation_set_scale", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_set_scale";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_set_rotation", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_set_rotation";
+        joy_api_call("joy_r2d_animation_set_rotation", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_set_rotation";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_update", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_scene_animation_update";
+        joy_api_call("joy_r2d_animation_update", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_animation_update";
         st = JOY_OK;
         joy_api_call("joy_r3d_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_destroy";
@@ -14543,41 +14543,41 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_ui_checkbox_set_hovered", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_ui_checkbox_set_hovered";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_destroy", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_destroy";
+        joy_api_call("joy_ui_joystick_destroy", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_destroy";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_set_textures", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_set_textures";
+        joy_api_call("joy_ui_joystick_set_textures", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_set_textures";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_set_vector", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_set_vector";
+        joy_api_call("joy_ui_joystick_set_vector", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_set_vector";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_draw", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_draw";
+        joy_api_call("joy_ui_joystick_draw", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_draw";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_reset", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_reset";
+        joy_api_call("joy_ui_joystick_reset", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_reset";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_set_position", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_set_position";
+        joy_api_call("joy_ui_joystick_set_position", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_set_position";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_set_radius", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_set_radius";
+        joy_api_call("joy_ui_joystick_set_radius", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_set_radius";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_is_dragging", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_is_dragging";
+        joy_api_call("joy_ui_joystick_is_dragging", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_is_dragging";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_touch_down", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_touch_down";
+        joy_api_call("joy_ui_joystick_touch_down", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_touch_down";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_touch_move", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_touch_move";
+        joy_api_call("joy_ui_joystick_touch_move", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_touch_move";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_touch_up", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_touch_up";
+        joy_api_call("joy_ui_joystick_touch_up", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_touch_up";
         st = JOY_OK;
-        joy_api_call("joy_input_joystick_get_magnitude", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_input_joystick_get_magnitude";
+        joy_api_call("joy_ui_joystick_get_magnitude", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_ui_joystick_get_magnitude";
         st = JOY_OK;
         joy_api_call("joy_ui_inputbox_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_ui_inputbox_destroy";
@@ -15188,8 +15188,8 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_audio_bgm_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_audio_bgm_destroy";
         st = JOY_OK;
-        joy_api_call("joy_ui_image_draw_rect", NULL, 7, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_ui_image_draw_rect";
+        joy_api_call("joy_r2d_image_draw_rect", NULL, 7, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r2d_image_draw_rect";
         st = JOY_OK;
         joy_api_call("joy_input_feed_key", NULL, 3, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_input_feed_key";
@@ -15900,11 +15900,11 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_push_clip_rect", args, 5, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r2d_push_clip_rect";
         st = JOY_OK;
-        joy_api_call("joy_math_shape_draw_rectangle", args, 6, &st);
-        if (st != JOY_ERR_TYPE) return "L2/joy_math_shape_draw_rectangle";
+        joy_api_call("joy_r2d_shape_draw_rectangle", args, 6, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r2d_shape_draw_rectangle";
         st = JOY_OK;
-        joy_api_call("joy_ui_text_updatex", args, 8, &st);
-        if (st != JOY_ERR_TYPE) return "L2/joy_ui_text_updatex";
+        joy_api_call("joy_r2d_text_updatex", args, 8, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r2d_text_updatex";
         st = JOY_OK;
         joy_api_call("joy_r2d_text_printx", args, 10, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r2d_text_printx";
@@ -15915,8 +15915,8 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_text_printf_scaled", args, 11, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r2d_text_printf_scaled";
         st = JOY_OK;
-        joy_api_call("joy_scene_animation_add_clip", args, 7, &st);
-        if (st != JOY_ERR_TYPE) return "L2/joy_scene_animation_add_clip";
+        joy_api_call("joy_r2d_animation_add_clip", args, 7, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r2d_animation_add_clip";
         st = JOY_OK;
         joy_api_call("joy_r3d_checkbox_set_colors", args, 13, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r3d_checkbox_set_colors";

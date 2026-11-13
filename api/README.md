@@ -54,23 +54,34 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 
 ### 域表（把现有 85 个自发生长的 domain 归并成 10 个）
 
-| 域 | 吸收的历史 domain | 约条数 |
+| 域 | 吸收的历史 domain | IDL 条数（2026-11-13 实测） |
 |---|---|---|
-| `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 | ~60 |
-| `math` | jmath(220) / collision* / gjk* / box2d / shape | ~300 |
-| `r2d` | r2d / font / jtext / jspine / jparticle | ~100 |
-| `r3d` | r3d / jlight / jgltf | ~150 |
-| `ui` | jui / jui_im / jlayout / image + 全部控件域 | ~230 |
-| `scene` | scene / game / jecs / jtilemap / janimator / animation / jtimer / jpm | ~150 |
-| `net` | net* / tcp* / kcp* / ws* / iocp / pack / unpack / netmessage | ~90 |
+| `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 / game_timer / pack / unpack | 93 |
+| `math` | jmath(220) / collision* / gjk* / box2d / tilemap 碰撞（shape 已移到 r2d） | 307 |
+| `r2d` | r2d / font / jtext / jspine / jparticle / **image / text / animation / shape / fov(2D)** | 114 |
+| `r3d` | r3d / jlight / jgltf / fov(3D) | 150 |
+| `ui` | jui / jui_im / jlayout / 控件域 / **joystick** | 218 |
+| `scene` | scene / game / jecs / jtilemap / janimator / jpm / **bt** | 135 |
+| `net` | net* / tcp* / kcp* / ws* / iocp / netmessage | 87 |
 | `audio` | audio | 20 |
-| `input` | joystick / mouse | ~20 |
-| `script` | modules / module / moudles / jmsgpack | ~30 |
+| `input` | mouse / 输入状态快照 | 13 |
+| `script` | modules / module / moudles / jmsgpack | 33 |
 
-划分原则：按「谁会一起改 / 谁依赖谁」分，不按文件、不按算法；一个 API 只属
-一个域，跨域时归被调用方；控件、协议、碰撞维度一律合并。域清单封闭，防止
-再次长到 85 个（`GENERIC_FIRST` 兜底漏出的 `min` / `raw` / `should` 等垃圾域
-一并收编）。
+划分原则：按「谁会一起改 / 谁依赖谁」分；一个 API 只属一个域，跨域时归被
+调用方；控件、协议、碰撞维度一律合并。域清单封闭，防止再次长到 85 个
+（`GENERIC_FIRST` 兜底漏出的 `min` / `raw` / `should` 等垃圾域一并收编）。
+
+**2026-11-13 起追加一条硬规则**：一个 `.c` 只承载一个域的公开接口，函数名
+前缀必须与该文件的域一致；一个域可以有多个 `.c`（按子系统拆分，不合并成
+巨型 TU）。域归属按**技术职责**判定，不按历史名：纹理 / 文字 / 图元 / 动画 /
+FOV 等渲染层功能归 `r2d`（或 `r3d`），控件（joystick 等）归 `ui`，行为树归
+`scene`，glTF 归 `r3d`。全仓 26 个含 `joy_*` 定义的 `.c` 已全部纯域、
+0 混域；完整文件归属表见 `cmake/JoySources.cmake` 头部。
+
+改公开 API 的 C 名必须同步两处，否则 `--scan` 会重置 `status:on`、脚本层
+方法名会退化成 `pascal(新名)`：`api/idl/rename_map.json` 追加「当前名 → 新名」
+以继承 `status` / `owns` / `note` / `borrowed`；`api/tools/naming.js` 的
+`ALIASES` 同步改 key、保留 value（脚本层方法名冻结）。
 
 ### 门禁与生成链路
 
@@ -202,12 +213,12 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 **不参与运行时调用**，由编译期签名、`joy_api_vtable_init()` 填表和
 `--check` 生成物一致性保证。新增纯函数到白名单前请确认它无副作用、结果确定。
 
-`status:on` 的 L2（`joy_r2d_text_printx` / `joy_math_shape_draw_rectangle` /
+`status:on` 的 L2（`joy_r2d_text_printx` / `joy_r2d_shape_draw_rectangle` /
 `joy_r2d_text_printf` 等 30 条）已按 `structs.js` 的字段布局展开成标量进表，
 与 thunk 表 argc 一致；`structs.js` 会把 `jmath.h` 的 `#define ft_t float`
 归一化，否则 `vec2_t` / `mat22_t` 之类会被判成不可展开。L3（结构体指针 /
 输出参数）仍是 `status:off`，不在表内；图片绘制改由全标量 L1
-`joy_ui_image_draw_rect` 绕开 `jrect_t*`，四份示例已恢复真实贴图。剩下的
+`joy_r2d_image_draw_rect` 绕开 `jrect_t*`，四份示例已恢复真实贴图。剩下的
 退化只有文字宽度按字号估算（`joy_r2d_text_measurex` 是 `int*` 出参，暂无
 对应标量包装）。
 

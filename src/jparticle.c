@@ -170,7 +170,7 @@ void joy_r2d_particle_render(joy_particle_p p, joy_r2d_p r2d) {
         float half = pt->size * 0.5f;
         joy_rect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
         joy_r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);
-        joy_math_shape_draw_rectangle(r2d, "fill", r);
+        joy_r2d_shape_draw_rectangle(r2d, "fill", r);
     }
 }
 

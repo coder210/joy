@@ -35,16 +35,15 @@
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
-| core | 14 | 23 | 1 | 9 | 20 | 67 |
-| input | 13 | 14 | 0 | 3 | 0 | 30 |
-| joy | 0 | 0 | 0 | 6 | 0 | 6 |
-| math | 220 | 3 | 27 | 63 | 0 | 313 |
-| net | 19 | 56 | 0 | 23 | 0 | 98 |
-| r2d | 4 | 33 | 6 | 12 | 19 | 74 |
-| r3d | 0 | 117 | 14 | 16 | 0 | 147 |
-| scene | 1 | 117 | 3 | 38 | 1 | 160 |
+| core | 14 | 37 | 1 | 21 | 20 | 93 |
+| input | 13 | 0 | 0 | 0 | 0 | 13 |
+| math | 220 | 0 | 23 | 64 | 0 | 307 |
+| net | 19 | 56 | 0 | 12 | 0 | 87 |
+| r2d | 4 | 55 | 14 | 22 | 19 | 114 |
+| r3d | 0 | 117 | 14 | 19 | 0 | 150 |
+| scene | 1 | 95 | 2 | 36 | 1 | 135 |
 | script | 0 | 0 | 0 | 0 | 33 | 33 |
-| ui | 0 | 170 | 23 | 29 | 0 | 222 |
+| ui | 0 | 173 | 20 | 25 | 0 | 218 |
 
 ## 待办：返回句柄但缺 `owns`
 
@@ -100,24 +99,24 @@
 | `joy_core_utf8_decode` | 非不透明指针 / 输出参数：int32_t* | include/joy/japi.h:50 |
 | `joy_core_utf8_next` | 非不透明指针 / 输出参数：size_t* | include/joy/japi.h:60 |
 | `joy_core_utf8_decode_all` | 非不透明指针 / 输出参数：int32_t* | include/joy/japi.h:72 |
-| `joy_net_pack_int8` | 非 const char* 输出缓冲 | include/joy/japi.h:74 |
-| `joy_net_pack_int16` | 非 const char* 输出缓冲 | include/joy/japi.h:75 |
-| `joy_net_pack_int32` | 非 const char* 输出缓冲 | include/joy/japi.h:76 |
-| `joy_net_pack_uint32` | 非 const char* 输出缓冲 | include/joy/japi.h:77 |
-| `joy_net_pack_int64` | 非 const char* 输出缓冲 | include/joy/japi.h:78 |
-| `joy_net_unpack_int8` | 非不透明指针 / 输出参数：int8_t* | include/joy/japi.h:79 |
-| `joy_net_unpack_int16` | 非不透明指针 / 输出参数：int16_t* | include/joy/japi.h:80 |
-| `joy_net_unpack_int32` | 非不透明指针 / 输出参数：int32_t* | include/joy/japi.h:81 |
-| `joy_net_unpack_uint32` | 非不透明指针 / 输出参数：uint32_t* | include/joy/japi.h:82 |
-| `joy_net_unpack_int64` | 非不透明指针 / 输出参数：int64_t* | include/joy/japi.h:83 |
-| `joy_net_pack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:84 |
-| `joy_net_unpack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:85 |
-| `joy_scene_timer_create` | 未知类型需人工标注：joy_timer_callback | include/joy/japi.h:87 |
+| `joy_core_pack_int8` | 非 const char* 输出缓冲 | include/joy/japi.h:74 |
+| `joy_core_pack_int16` | 非 const char* 输出缓冲 | include/joy/japi.h:75 |
+| `joy_core_pack_int32` | 非 const char* 输出缓冲 | include/joy/japi.h:76 |
+| `joy_core_pack_uint32` | 非 const char* 输出缓冲 | include/joy/japi.h:77 |
+| `joy_core_pack_int64` | 非 const char* 输出缓冲 | include/joy/japi.h:78 |
+| `joy_core_unpack_int8` | 非不透明指针 / 输出参数：int8_t* | include/joy/japi.h:79 |
+| `joy_core_unpack_int16` | 非不透明指针 / 输出参数：int16_t* | include/joy/japi.h:80 |
+| `joy_core_unpack_int32` | 非不透明指针 / 输出参数：int32_t* | include/joy/japi.h:81 |
+| `joy_core_unpack_uint32` | 非不透明指针 / 输出参数：uint32_t* | include/joy/japi.h:82 |
+| `joy_core_unpack_int64` | 非不透明指针 / 输出参数：int64_t* | include/joy/japi.h:83 |
+| `joy_core_pack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:84 |
+| `joy_core_unpack_string` | 非 const char* 输出缓冲 | include/joy/japi.h:85 |
+| `joy_core_timer_create` | 未知类型需人工标注：joy_timer_callback | include/joy/japi.h:87 |
 | `joy_core_get_mouse_pos` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:105 |
 | `joy_core_log_info` | 可变参数 | include/joy/japi.h:125 |
 | `joy_core_log_debug` | 可变参数 | include/joy/japi.h:126 |
 | `joy_core_log_error` | 可变参数 | include/joy/japi.h:127 |
-| `joy_core_get_local_ips` | 数组参数 | include/joy/japi.h:157 |
+| `joy_net_get_local_ips` | 数组参数 | include/joy/japi.h:157 |
 | `joy_net_sys_accept` | 非 const char* 输出缓冲 | include/joy/japi.h:171 |
 | `joy_net_sys_recv` | 非 const char* 输出缓冲 | include/joy/japi.h:173 |
 | `joy_net_sys_recvfrom` | 非 const char* 输出缓冲 | include/joy/japi.h:174 |
@@ -129,18 +128,18 @@
 | `joy_r2d_draw_points` | 结构体指针参数 | include/joy/japi.h:222 |
 | `joy_r2d_get_clip_rect` | 结构体指针参数 | include/joy/japi.h:230 |
 | `joy_r2d_draw_lines` | 结构体指针参数 | include/joy/japi.h:239 |
-| `joy_math_shape_draw_polygon` | 结构体指针参数 | include/joy/japi.h:241 |
-| `joy_ui_image_draw1` | 结构体指针参数 | include/joy/japi.h:252 |
-| `joy_ui_image_draw_ex` | 结构体指针参数 | include/joy/japi.h:253 |
-| `joy_ui_image_get_size` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:256 |
-| `joy_ui_image_update` | 结构体指针参数 | include/joy/japi.h:257 |
-| `joy_ui_text_create` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:262 |
-| `joy_ui_text_update` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:264 |
+| `joy_r2d_shape_draw_polygon` | 结构体指针参数 | include/joy/japi.h:241 |
+| `joy_r2d_image_draw1` | 结构体指针参数 | include/joy/japi.h:252 |
+| `joy_r2d_image_draw_ex` | 结构体指针参数 | include/joy/japi.h:253 |
+| `joy_r2d_image_get_size` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:256 |
+| `joy_r2d_image_update` | 结构体指针参数 | include/joy/japi.h:257 |
+| `joy_r2d_text_create` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:262 |
+| `joy_r2d_text_update` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:264 |
 | `joy_r2d_frect` | 结构体按值返回 | include/joy/japi.h:279 |
 | `joy_r2d_fpx` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:280 |
-| `joy_ui_image_draw1_f` | 结构体指针参数 | include/joy/japi.h:287 |
+| `joy_r2d_image_draw1_f` | 结构体指针参数 | include/joy/japi.h:287 |
 | `joy_r2d_text_measurex` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:314 |
-| `joy_scene_animation_draw` | 结构体指针参数 | include/joy/japi.h:327 |
+| `joy_r2d_animation_draw` | 结构体指针参数 | include/joy/japi.h:327 |
 | `joy_r3d_create_solid_texture` | 未知类型需人工标注：unsigned char | include/joy/japi.h:340 |
 | `joy_r3d_mat44_to_float16` | 数组参数 | include/joy/japi.h:344 |
 | `joy_r3d_load_texture_png` | 非不透明指针 / 输出参数：int* | include/joy/japi.h:389 |
@@ -157,10 +156,10 @@
 | `joy_r3d_set_light_block` | 结构体指针参数 | include/joy/japi.h:747 |
 | `joy_r3d_draw_mesh_lit` | 结构体指针参数 | include/joy/japi.h:749 |
 | `joy_r3d_draw_mesh_lit_color` | 结构体指针参数 | include/joy/japi.h:750 |
-| `joy_fov_ray_dist` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/japi.h:763 |
-| `joy_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/japi.h:767 |
-| `joy_fov_draw` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:773 |
-| `joy_fov_draw_2d` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:780 |
+| `joy_r3d_fov_ray_dist` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/japi.h:763 |
+| `joy_r3d_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | include/joy/japi.h:767 |
+| `joy_r3d_fov_draw` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:773 |
+| `joy_r2d_fov_draw_2d` | 非不透明指针 / 输出参数：float* | include/joy/japi.h:780 |
 | `joy_math_collision2d_get_ray_circle` | 结构体按值返回 | include/joy/japi.h:788 |
 | `joy_math_collision2d_get_ray_rectangle` | 结构体按值返回 | include/joy/japi.h:789 |
 | `joy_math_collision2d_get_ray_rectanglex` | 结构体按值返回 | include/joy/japi.h:790 |
@@ -188,8 +187,8 @@
 | `joy_math_find_min_separation` | 非不透明指针 / 输出参数：joy_vec2f_t* | include/joy/japi.h:842 |
 | `joy_math_collision2df_get_polygons` | 结构体指针参数 | include/joy/japi.h:844 |
 | `joy_math_collision2df_swept_obb` | 未知类型需人工标注：joy_vec2f_t | include/joy/japi.h:866 |
-| `joy_tilemap_sweep_x` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/japi.h:876 |
-| `joy_tilemap_sweep_y` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/japi.h:878 |
+| `joy_math_tilemap_sweep_x` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/japi.h:876 |
+| `joy_math_tilemap_sweep_y` | 非不透明指针 / 输出参数：joy_fp_t* | include/joy/japi.h:878 |
 | `joy_math_collision3df_get_ray_triangle` | 结构体按值返回 | include/joy/japi.h:881 |
 | `joy_math_collision3df_get_ray_quad` | 结构体按值返回 | include/joy/japi.h:883 |
 | `joy_math_collision3df_get_ray_sphere` | 结构体按值返回 | include/joy/japi.h:885 |
@@ -231,9 +230,9 @@
 | `joy_ui_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | include/joy/japi.h:1135 |
 | `joy_ui_datagrid_addrow` | 非不透明指针 / 输出参数：char** | include/joy/japi.h:1157 |
 | `joy_ui_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | include/joy/japi.h:1172 |
-| `joy_input_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1196 |
-| `joy_input_joystick_set_textures_for_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1198 |
-| `joy_input_joystick_get_direction` | 结构体按值返回 | include/joy/japi.h:1208 |
+| `joy_ui_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1196 |
+| `joy_ui_joystick_set_textures_for_mode` | 未知类型需人工标注：joy_joystick_dir_mode | include/joy/japi.h:1198 |
+| `joy_ui_joystick_get_direction` | 结构体按值返回 | include/joy/japi.h:1208 |
 | `joy_ui_inputbox_set_callback` | 函数指针 / 回调 | include/joy/japi.h:1215 |
 | `joy_ui_process_widget_event` | 非不透明指针 / 输出参数：void** | include/joy/japi.h:1276 |
 | `joy_ui_set_theme` | 非不透明指针 / 输出参数：joy_ui_theme_t* | include/joy/japi.h:1306 |

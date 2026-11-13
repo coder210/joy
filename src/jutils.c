@@ -674,73 +674,73 @@ size_t joy_core_utf8_decode_all(const char* s, size_t len, int32_t* out_codes, s
 }
 
 
-int joy_net_pack_int8(char* buf, int8_t value, int offset)
+int joy_core_pack_int8(char* buf, int8_t value, int offset)
 {
 	int type_size = sizeof(int8_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int joy_net_pack_int16(char* buf, int16_t value, int offset)
+int joy_core_pack_int16(char* buf, int16_t value, int offset)
 {
 	int type_size = sizeof(int16_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int joy_net_pack_int32(char* buf, int32_t value, int offset)
+int joy_core_pack_int32(char* buf, int32_t value, int offset)
 {
 	int type_size = sizeof(int32_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int joy_net_pack_uint32(char* buf, uint32_t value, int offset)
+int joy_core_pack_uint32(char* buf, uint32_t value, int offset)
 {
 	int type_size = sizeof(uint32_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
-int joy_net_pack_int64(char* buf, int64_t value, int offset)
+int joy_core_pack_int64(char* buf, int64_t value, int offset)
 {
 	int type_size = sizeof(int64_t);
 	SDL_memcpy(buf + offset, &value, type_size);
 	return offset + type_size;
 }
 
-int joy_net_unpack_int8(const char* buf, int8_t* value, int offset)
+int joy_core_unpack_int8(const char* buf, int8_t* value, int offset)
 {
 	int type_size = sizeof(int8_t);
 	*value = *((int8_t*)(buf + offset));
 	return offset + type_size;
 }
-int joy_net_unpack_int16(const char* buf, int16_t* value, int offset)
+int joy_core_unpack_int16(const char* buf, int16_t* value, int offset)
 {
 	int type_size = sizeof(int16_t);
 	*value = *((int16_t*)(buf + offset));
 	return offset + type_size;
 }
-int joy_net_unpack_int32(const char* buf, int32_t* value, int offset)
+int joy_core_unpack_int32(const char* buf, int32_t* value, int offset)
 {
 	int type_size = sizeof(int32_t);
 	*value = *((int32_t*)(buf + offset));
 	return offset + type_size;
 }
-int joy_net_unpack_uint32(const char* buf, uint32_t* value, int offset)
+int joy_core_unpack_uint32(const char* buf, uint32_t* value, int offset)
 {
 	int type_size = sizeof(uint32_t);
 	*value = *((uint32_t*)(buf + offset));
 	return offset + type_size;
 }
-int joy_net_unpack_int64(const char* buf, int64_t* value, int offset)
+int joy_core_unpack_int64(const char* buf, int64_t* value, int offset)
 {
 	int type_size = sizeof(int64_t);
 	*value = *((int64_t*)(buf + offset));
 	return offset + type_size;
 }
-int joy_net_pack_string(char* buf, const char* value, int type_size, int offset)
+int joy_core_pack_string(char* buf, const char* value, int type_size, int offset)
 {
 	memcpy(buf + offset, value, type_size);
 	return offset + type_size;
 }
-int joy_net_unpack_string(const char* buf, char* value, int type_size, int offset)
+int joy_core_unpack_string(const char* buf, char* value, int type_size, int offset)
 {
 	memcpy(value, buf + offset, type_size);
 	return offset + type_size;
@@ -756,7 +756,7 @@ struct joy_timer {
 	void* userdata;            // 用户数据
 };
 
-joy_timer_p joy_scene_timer_create(int interval, joy_timer_callback cb, void* userdata)
+joy_timer_p joy_core_timer_create(int interval, joy_timer_callback cb, void* userdata)
 {
 	joy_timer_p jtimer = (joy_timer_p)malloc(sizeof(struct joy_timer));
 	if (!jtimer) return NULL;
@@ -770,14 +770,14 @@ joy_timer_p joy_scene_timer_create(int interval, joy_timer_callback cb, void* us
 	return jtimer;
 }
 
-void joy_scene_timer_destroy(joy_timer_p jtimer)
+void joy_core_timer_destroy(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		free(jtimer);
 	}
 }
 
-void joy_scene_timer_trigger(joy_timer_p jtimer)
+void joy_core_timer_trigger(joy_timer_p jtimer)
 {
 	if (!jtimer || !jtimer->active || !jtimer->callback) {
 		return;
@@ -802,14 +802,14 @@ void joy_scene_timer_trigger(joy_timer_p jtimer)
 	}
 }
 
-void joy_scene_timer_set_interval(joy_timer_p jtimer, int interval)
+void joy_core_timer_set_interval(joy_timer_p jtimer, int interval)
 {
 	if (jtimer) {
 		jtimer->interval = interval;
 	}
 }
 
-void joy_scene_timer_set_active(joy_timer_p jtimer, bool active)
+void joy_core_timer_set_active(joy_timer_p jtimer, bool active)
 {
 	if (jtimer) {
 		jtimer->active = active;
@@ -819,14 +819,14 @@ void joy_scene_timer_set_active(joy_timer_p jtimer, bool active)
 	}
 }
 
-void joy_scene_timer_reset(joy_timer_p jtimer)
+void joy_core_timer_reset(joy_timer_p jtimer)
 {
 	if (jtimer) {
 		jtimer->last_time = SDL_GetTicks();
 	}
 }
 
-uint64_t joy_scene_timer_get_elapsed(joy_timer_p jtimer)
+uint64_t joy_core_timer_get_elapsed(joy_timer_p jtimer)
 {
 	if (!jtimer) return 0;
 	return SDL_GetTicks() - jtimer->last_time;

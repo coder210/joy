@@ -449,13 +449,13 @@ joy_math_collision2df_check_rectangles(joy_rectanglef_t a, joy_rectanglef_t b)
  * 任意速度都不会穿墙/穿平台。格边界是整数且轴对齐，故退化为整数行/列扫描。 */
 
 static int
-joy_tilemap_floor_to_int(joy_fp_t x)
+joy_math_tilemap_floor_to_int(joy_fp_t x)
 {
         return (int)(x >> JOY_FP_FRACTIONAL_PLACES);
 }
 
 static bool
-joy_tilemap_row_blocked(int r, int c0, int c1, joy_tilemap_solid_fn solid)
+joy_math_tilemap_row_blocked(int r, int c0, int c1, joy_tilemap_solid_fn solid)
 {
         for (int c = c0; c <= c1; c++)
                 if (solid(c, r)) return true;
@@ -463,7 +463,7 @@ joy_tilemap_row_blocked(int r, int c0, int c1, joy_tilemap_solid_fn solid)
 }
 
 static bool
-joy_tilemap_col_blocked(int c, int r0, int r1, joy_tilemap_solid_fn solid)
+joy_math_tilemap_col_blocked(int c, int r0, int r1, joy_tilemap_solid_fn solid)
 {
         for (int r = r0; r <= r1; r++)
                 if (solid(c, r)) return true;
@@ -471,30 +471,30 @@ joy_tilemap_col_blocked(int c, int r0, int r1, joy_tilemap_solid_fn solid)
 }
 
 bool
-joy_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
+joy_math_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
 {
         if (dx == fp_zero()) return false;
         const joy_fp_t EPS = fp_from_float(0.001f);
 
         /* X 扫掠期间行跨度保持不变 */
-        const int ry0 = joy_tilemap_floor_to_int(*py);
-        const int ry1 = joy_tilemap_floor_to_int(fp_sub(fp_add(*py, h), EPS));
+        const int ry0 = joy_math_tilemap_floor_to_int(*py);
+        const int ry1 = joy_math_tilemap_floor_to_int(fp_sub(fp_add(*py, h), EPS));
 
         if (dx > fp_zero()) {                                   /* 向右：右缘向右跨列 */
                 const joy_fp_t r_old = fp_add(*px, w);
-                const int c0 = joy_tilemap_floor_to_int(fp_sub(r_old, EPS)) + 1;
-                const int c1 = joy_tilemap_floor_to_int(fp_sub(fp_add(r_old, dx), EPS));
+                const int c0 = joy_math_tilemap_floor_to_int(fp_sub(r_old, EPS)) + 1;
+                const int c1 = joy_math_tilemap_floor_to_int(fp_sub(fp_add(r_old, dx), EPS));
                 for (int c = c0; c <= c1; c++) {                /* 由近及远，首个阻挡即最先接触 */
-                        if (joy_tilemap_col_blocked(c, ry0, ry1, solid)) {
+                        if (joy_math_tilemap_col_blocked(c, ry0, ry1, solid)) {
                                 *px = fp_sub(fp_from_int(c), w); /* 贴到该列左边界 */
                                 return true;
                         }
                 }
         } else {                                                /* 向左：左缘向左跨列 */
-                const int c0 = joy_tilemap_floor_to_int(*px) - 1;
-                const int c1 = joy_tilemap_floor_to_int(fp_add(*px, dx));
+                const int c0 = joy_math_tilemap_floor_to_int(*px) - 1;
+                const int c1 = joy_math_tilemap_floor_to_int(fp_add(*px, dx));
                 for (int c = c0; c >= c1; c--) {
-                        if (joy_tilemap_col_blocked(c, ry0, ry1, solid)) {
+                        if (joy_math_tilemap_col_blocked(c, ry0, ry1, solid)) {
                                 *px = fp_from_int(c + 1);        /* 贴到该列右边界 */
                                 return true;
                         }
@@ -505,32 +505,32 @@ joy_tilemap_sweep_x(joy_fp_t* px, joy_fp_t* py, joy_fp_t dx, joy_fp_t w, joy_fp_
 }
 
 bool
-joy_tilemap_sweep_y(joy_fp_t* px, joy_fp_t* py, joy_fp_t* vy, joy_fp_t tick, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
+joy_math_tilemap_sweep_y(joy_fp_t* px, joy_fp_t* py, joy_fp_t* vy, joy_fp_t tick, joy_fp_t w, joy_fp_t h, joy_tilemap_solid_fn solid)
 {
         const joy_fp_t dy = fp_mul(*vy, tick);
         if (dy == fp_zero()) return false;
         const joy_fp_t EPS = fp_from_float(0.001f);
 
         /* Y 扫掠期间列跨度保持不变 */
-        const int cx0 = joy_tilemap_floor_to_int(*px);
-        const int cx1 = joy_tilemap_floor_to_int(fp_sub(fp_add(*px, w), EPS));
+        const int cx0 = joy_math_tilemap_floor_to_int(*px);
+        const int cx1 = joy_math_tilemap_floor_to_int(fp_sub(fp_add(*px, w), EPS));
 
         if (dy > fp_zero()) {                                   /* 下落：底边向下跨行 */
                 const joy_fp_t b_old = fp_add(*py, h);
-                const int r0 = joy_tilemap_floor_to_int(fp_sub(b_old, EPS)) + 1;
-                const int r1 = joy_tilemap_floor_to_int(fp_sub(fp_add(b_old, dy), EPS));
+                const int r0 = joy_math_tilemap_floor_to_int(fp_sub(b_old, EPS)) + 1;
+                const int r1 = joy_math_tilemap_floor_to_int(fp_sub(fp_add(b_old, dy), EPS));
                 for (int r = r0; r <= r1; r++) {                /* 自上而下，首个阻挡即最先接触 */
-                        if (joy_tilemap_row_blocked(r, cx0, cx1, solid)) {
+                        if (joy_math_tilemap_row_blocked(r, cx0, cx1, solid)) {
                                 *py = fp_sub(fp_from_int(r), h); /* 贴到该行顶边（落地） */
                                 *vy = fp_zero();
                                 return true;
                         }
                 }
         } else {                                                /* 上升：顶边向上跨行 */
-                const int r0 = joy_tilemap_floor_to_int(*py) - 1;
-                const int r1 = joy_tilemap_floor_to_int(fp_add(*py, dy));
+                const int r0 = joy_math_tilemap_floor_to_int(*py) - 1;
+                const int r1 = joy_math_tilemap_floor_to_int(fp_add(*py, dy));
                 for (int r = r0; r >= r1; r--) {
-                        if (joy_tilemap_row_blocked(r, cx0, cx1, solid)) {
+                        if (joy_math_tilemap_row_blocked(r, cx0, cx1, solid)) {
                                 *py = fp_from_int(r + 1);        /* 贴到该行底边（撞顶） */
                                 *vy = fp_zero();
                                 return true;
