@@ -74,6 +74,10 @@ jobs:
         shell: bash
         run: node api/tools/audit_domain_purity.js 2>&1 | tee domain-purity.log
 
+      - name: Domain layout gate
+        shell: bash
+        run: node api/tools/audit_domain_layout.js 2>&1 | tee domain-layout.log
+
       - name: Configure
         shell: bash
         run: |

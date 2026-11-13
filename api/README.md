@@ -52,11 +52,11 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 脚本层与 C++ vtable 仍是 PascalCase，由 `naming.js` 的 `methodName()` 生成 ——
 **两层命名是有意分层，不是不一致**。
 
-### 域表（把现有 85 个自发生长的 domain 归并成 10 个）
+### 域表（把现有 85 个自发生长的 domain 归并成 9 个）
 
-| 域 | 吸收的历史 domain | IDL 条数（2026-11-13 实测） |
+| 域 | 吸收的历史 domain | IDL 条数 |
 |---|---|---|
-| `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 / game_timer / pack / unpack | 93 |
+| `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 / game_timer / pack / unpack / **input(13) / 输入状态快照** | 106 |
 | `math` | jmath(220) / collision* / gjk* / box2d / tilemap 碰撞（shape 已移到 r2d） | 307 |
 | `r2d` | r2d / font / jtext / jspine / jparticle / **image / text / animation / shape / fov(2D)** | 114 |
 | `r3d` | r3d / jlight / jgltf / fov(3D) | 150 |
@@ -64,8 +64,12 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 | `scene` | scene / game / jecs / jtilemap / janimator / jpm / **bt** | 135 |
 | `net` | net* / tcp* / kcp* / ws* / iocp / netmessage | 87 |
 | `audio` | audio | 20 |
-| `input` | mouse / 输入状态快照 | 13 |
 | `script` | modules / module / moudles / jmsgpack | 33 |
+
+`input` 域已并回 `core`：13 个 API 统一为 `joy_core_input_*`，
+声明与实现物理并入 `src/joy_core.h` / `src/joy_core.c`。改名时
+`rename_map.json` 追加 13 条继承映射（保住 `status:on`），`api/tools/naming.js`
+的 `ALIASES` 把新名钉回旧的 `JoyInput*` 脚本层方法名，四端绑定零改动。
 
 划分原则：按「谁会一起改 / 谁依赖谁」分；一个 API 只属一个域，跨域时归被
 调用方；控件、协议、碰撞维度一律合并。域清单封闭，防止再次长到 85 个
@@ -233,7 +237,7 @@ gate）：只统计**函数定义**（签名后紧跟 `{`），不把跨域调�
 ```powershell
 node third_party/joy/api/tools/gen_bindings.js            # 重生成报告 + thunks + vtable + cs glue
 node third_party/joy/api/tools/gen_bindings.js --emit     # 同上（显式写法）
-node third_party/joy/api/tools/gen_bindings.js --scan     # 从两个契约头更新 joy.idl + 重生成全部产物
+node third_party/joy/api/tools/gen_bindings.js --scan     # 从 DECL_SOURCES 十一个契约头更新 joy.idl + 重生成全部产物
 node third_party/joy/api/tools/jmath_wrap.js              # 改过 jmath.h 后先跑：重生成 jmath_wrappers.{h,c}
 node third_party/joy/api/tools/gen_bindings.js --enable L0|L1|all|domain:<名>|name:<API>
 node third_party/joy/api/tools/gen_bindings.js --disable <同样的选择子>
@@ -247,6 +251,22 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 `--scan`，因为 `.h` 是契约输入。`--check` 直接调用该模块的 `check()` 汇总错误，
 不再起子进程；改过 `jmath.h` 后两个生成物任一过期、或 `joy.h` 少了那行 include，
 都会让门禁失败。`--scan` 是幂等的：同一份契约头连续跑两次，产物字节不变。
+
+### 声明归属地与 `--scan` 顺序稳定
+
+公开 API 声明按域归属在 `src/joy_<域>.h`（`joy_<域>.c` 的配套头），
+`include/joy/japi.h` 只是逐个 `#include "../../src/joy_<域>.h"` 的聚合入口，
+自身不含任何 `JOY_API` 声明。每个域头自带 include guard、`extern "C"` 与
+`<joy/jtypes.h>`，**不得**反过来 include `joy.h`，否则形成循环包含；
+`audit_domain_layout.js` 的 R5 会把方向错误拦在 CI 外；R6 单独管理
+`DATA_SHARDS` 白名单里的纯数据分片（当前只有 `src/joy_lut.c`），
+它们不参与「一域一 .c」，但必须配同名 `.h` 且不含任何函数定义。
+
+`DECL_SOURCES` 共 11 个来源：`include/joy/jdefs.h` + 9 个域头 +
+`api/generated/jmath_wrappers.h`。`--scan` 从它们解析出全部 1170 条声明。
+
+`mergeIdl()` 让已有条目沿用旧 IDL 顺序、全新条目追加末尾，因此声明在文件之间
+搬迁只会刷新 `source` 等自动字段，不会重排 `joy.idl` 及下游生成物。
 
 ### 批量开放
 
@@ -269,12 +289,12 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 {"name":"joy_r2d_font_create","domain":"r2d","level":"L1","reason":"不透明指针 → 句柄 / 所有权","status":"on",
  "owns":"joy_r2d_font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true},
  {"name":"fontsize","ctype":"int","isConst":false}],
- "source":"include/joy/japi.h:190","note":""}
+ "source":"src/joy_r2d.h:190","note":""}
 ```
 
 | 字段 | 归属 | 说明 |
 |---|---|---|
-| `name` / `domain` / `level` / `reason` / `ret` / `params` / `source` | **自动** | 每次 `--scan` 从 `include/joy/{defs,api}.h` 重新解析并覆盖，不要手改 |
+| `name` / `domain` / `level` / `reason` / `ret` / `params` / `source` | **自动** | 每次 `--scan` 从 12 个 `DECL_SOURCES` 契约头重新解析并覆盖，不要手改 |
 | `status` | **人工** | `off` / `on`。可手改，也可用 `--enable` / `--disable` 批量改 |
 | `owns` | **人工** | 配对析构函数名。`--scan` 首次会推断填充，之后永不覆盖；推断错的会进「所有权待裁决」清单 |
 | `borrowed` | **人工** | `true` = 返回借用句柄，thunk 用 `dtor=NULL` 注册；`joy_obj_release` 只减引用、不释放底层对象。与 `owns` 互斥，`--scan` 不覆盖 |
@@ -427,8 +447,8 @@ node third_party/joy/api/tools/gen_bindings.js --check
 ```
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
-**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、三个契约头
-（`include/joy/jdefs.h` + `include/joy/japi.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
+**开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、11 个契约头
+（`include/joy/jdefs.h` + 9 个 `src/joy_<域>.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
 `thunks_generated.c`、`modules/cs/bindings/api/api_generated.c`、
 `modules/cs/scripts/Api.generated.cs` 四个生成物，以及
 `generated/jmath_wrappers.{h,c}`、`include/joy/joy.h` 里那行 include 都是最新的。

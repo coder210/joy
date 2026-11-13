@@ -1283,5 +1283,18 @@
   "joy_scene_timer_set_interval": "joy_core_timer_set_interval",
   "joy_scene_timer_set_active": "joy_core_timer_set_active",
   "joy_scene_timer_reset": "joy_core_timer_reset",
-  "joy_scene_timer_get_elapsed": "joy_core_timer_get_elapsed"
+  "joy_scene_timer_get_elapsed": "joy_core_timer_get_elapsed",
+  "joy_input_feed_key": "joy_core_input_feed_key",
+  "joy_input_feed_mouse_move": "joy_core_input_feed_mouse_move",
+  "joy_input_feed_mouse_button": "joy_core_input_feed_mouse_button",
+  "joy_input_feed_wheel": "joy_core_input_feed_wheel",
+  "joy_input_end_frame": "joy_core_input_end_frame",
+  "joy_input_reset": "joy_core_input_reset",
+  "joy_input_is_key_down": "joy_core_input_is_key_down",
+  "joy_input_is_mouse_button_down": "joy_core_input_is_mouse_button_down",
+  "joy_input_get_mouse_x": "joy_core_input_get_mouse_x",
+  "joy_input_get_mouse_y": "joy_core_input_get_mouse_y",
+  "joy_input_get_wheel": "joy_core_input_get_wheel",
+  "joy_input_was_key_pressed": "joy_core_input_was_key_pressed",
+  "joy_input_was_key_released": "joy_core_input_was_key_released"
 }

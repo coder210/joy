@@ -2,15 +2,17 @@
 /*
  * joy 绑定 API 契约工具（P0）
  *
- * 只做三件事：解析 include/joy/ 分域头、维护 api/idl/joy.idl、产出 api/generated/coverage.md。
+ * 只做三件事：解析 DECL_SOURCES 契约头、维护 api/idl/joy.idl、产出 api/generated/coverage.md。
  * P0 阶段不生成任何会被调用的胶水代码，现有各模块的 bindings 目录一行不动。
+ * 契约头共 11 个：jdefs.h + 9 个 src/joy_<域>.h + generated/jmath_wrappers.h。
+ * japi.h 只做 include 聚合，本身不含声明；声明按域归属到对应配套头。
  *
  * 用法（任意目录，零 npm 依赖，只用 Node 内置 fs/path）：
  *   node api/tools/gen_bindings.js            从 joy.idl 重生成 coverage.md（幂等）
- *   node api/tools/gen_bindings.js --scan     从 joy.h 更新 joy.idl（保留人工字段）并重生成报告
+ *   node api/tools/gen_bindings.js --scan     从契约头更新 joy.idl（保留人工字段）并重生成报告
  *   node api/tools/gen_bindings.js --check    只校验不写文件，供 CI 做「生成物无 diff」门禁
  *
- * 三段结构：parse（解析 joy.h）→ classify（分级 / 推断所有权）→ emit（IDL / 报告）。
+ * 三段结构：parse（解析契约头）→ classify（分级 / 推断所有权）→ emit（IDL / 报告）。
  */
 'use strict';
 
@@ -224,11 +226,22 @@ function classify(name, ret, params, reason, structs) {
   return { level: 'L0', reason: '纯标量 + const char*' };
 }
 
-/* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「joy.h 原生声明」
- * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。 */
+/* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「原生声明」
+ * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。
+ * 9 个域的声明归属地是 src/joy_<域>.h；include/joy/japi.h 只是 include 聚合，
+ * 本身不含任何 JOY_API 声明，因此 9 个域头必须逐个登记为来源。
+ * input 已并回 core：13 个 API 统一为 joy_core_input_*，声明并入 src/joy_core.h。 */
 const DECL_SOURCES = [
   { label: 'include/joy/jdefs.h', file: path.join(JOY_REPO, 'include/joy/jdefs.h') },
-  { label: 'include/joy/japi.h', file: path.join(JOY_REPO, 'include/joy/japi.h') },
+  { label: 'src/joy_core.h', file: path.join(JOY_REPO, 'src/joy_core.h') },
+  { label: 'src/joy_math.h', file: path.join(JOY_REPO, 'src/joy_math.h') },
+  { label: 'src/joy_r2d.h', file: path.join(JOY_REPO, 'src/joy_r2d.h') },
+  { label: 'src/joy_r3d.h', file: path.join(JOY_REPO, 'src/joy_r3d.h') },
+  { label: 'src/joy_ui.h', file: path.join(JOY_REPO, 'src/joy_ui.h') },
+  { label: 'src/joy_scene.h', file: path.join(JOY_REPO, 'src/joy_scene.h') },
+  { label: 'src/joy_net.h', file: path.join(JOY_REPO, 'src/joy_net.h') },
+  { label: 'src/joy_script.h', file: path.join(JOY_REPO, 'src/joy_script.h') },
+  { label: 'src/joy_audio.h', file: path.join(JOY_REPO, 'src/joy_audio.h') },
   { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },
 ];
 
@@ -275,7 +288,20 @@ function mergeIdl(fresh) {
   const renames = loadRenames();
   const renamedFrom = new Map([...renames].map(([from, to]) => [to, from]));
   const byName = new Map(old.map(e => [e.name, e]));
-  const result = fresh.map(f => {
+  /* 声明在文件之间搬迁（如 math 声明从 japi.h 移到 src/joy_math.h）不应重排 IDL：
+   * 已存在的条目沿用旧 IDL 顺序，全新条目追加末尾。否则 --scan 会顺带重排
+   * joy.idl 及所有下游生成物，产生与本次改动无关的海量 diff。 */
+  const oldOrder = new Map(old.map((e, i) => [e.name, i]));
+  /* 改名的新条目沿用旧名在 IDL 中的位置，否则会整批排到文件末尾，
+   * 顺带重排 thunks / vtable / C# 胶水。先查本名（重排后幂等），
+   * 再回退到 renamedFrom 的旧名（首次改名生效）。 */
+  const rank = n => {
+    if (oldOrder.has(n)) return oldOrder.get(n);
+    const prev = renamedFrom.get(n);
+    return prev && oldOrder.has(prev) ? oldOrder.get(prev) : Number.MAX_SAFE_INTEGER;
+  };
+  const ordered = [...fresh].sort((a, b) => rank(a.name) - rank(b.name));
+  const result = ordered.map(f => {
     /* 本批改名的新条目从旧名继承人工字段，并把 owns 里指向旧名的也换掉。 */
     /* rename_map 可以跨批累加：旧名条目已被上一批消费掉时回退到按本名匹配，
      * 否则第二次 --scan 会把已开放的 status 又清成 off。 */

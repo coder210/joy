@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
-const DOMAINS = ['core', 'math', 'r2d', 'r3d', 'ui', 'scene', 'net', 'audio', 'input', 'script'];
+const DOMAINS = ['core', 'math', 'r2d', 'r3d', 'ui', 'scene', 'net', 'audio', 'script'];
 
 /* 去注释、去行注释，保留换行以维持行号 */
 function strip(s) {

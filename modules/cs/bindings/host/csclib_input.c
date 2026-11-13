@@ -16,37 +16,37 @@
 
 void csx_input_key(int scancode, bool down)
 {
-        joy_input_feed_key(scancode, down);
+        joy_core_input_feed_key(scancode, down);
 }
 
 void csx_input_mouse_move(float x, float y)
 {
-        joy_input_feed_mouse_move(x, y);
+        joy_core_input_feed_mouse_move(x, y);
 }
 
 void csx_input_mouse_button(int button, bool down)
 {
-        joy_input_feed_mouse_button(button, down);
+        joy_core_input_feed_mouse_button(button, down);
 }
 
-void csx_input_wheel(float dy) { joy_input_feed_wheel(dy); }
+void csx_input_wheel(float dy) { joy_core_input_feed_wheel(dy); }
 
-void csx_input_end_frame(void) { joy_input_end_frame(); }
+void csx_input_end_frame(void) { joy_core_input_end_frame(); }
 
 /* ---------------- C# 调用 ---------------- */
 
 static bool w_key_down(int scancode)
 {
-        return joy_input_is_key_down(scancode);
+        return joy_core_input_is_key_down(scancode);
 }
 
 static bool w_mouse_button(int button)
 {
-        return joy_input_is_mouse_button_down(button);
+        return joy_core_input_is_mouse_button_down(button);
 }
 
-static float w_mouse_x(void) { return joy_input_get_mouse_x(); }
-static float w_mouse_y(void) { return joy_input_get_mouse_y(); }
+static float w_mouse_x(void) { return joy_core_input_get_mouse_x(); }
+static float w_mouse_y(void) { return joy_core_input_get_mouse_y(); }
 
 void csopen_input(void)
 {

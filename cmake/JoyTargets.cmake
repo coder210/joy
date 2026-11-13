@@ -16,9 +16,9 @@
 get_filename_component(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 get_filename_component(JOY_INCLUDE_ROOT "${JOY_ROOT}/.." ABSOLUTE)
 
-option(JOY_ENABLE_GLTF   "编译 jgltf.c（默认关闭：文件整体被 JOY_USE_GLTF 包裹）" OFF)
-option(JOY_ENABLE_SPINE  "编译 jspine.c 并链接 spine-c" OFF)
-option(JOY_ENABLE_PLUGINS "编译 jmodule.c 插件系统（SDL_LoadObject）" OFF)
+option(JOY_ENABLE_GLTF   "启用 joy_r3d.c 中的 glTF 分片（JOY_USE_GLTF）" OFF)
+option(JOY_ENABLE_SPINE  "启用 joy_r2d.c 中的 spine 分片并链接 spine-c" OFF)
+option(JOY_ENABLE_PLUGINS "启用 joy_script.c 中的插件分片（SDL_LoadObject）" OFF)
 # 旧手写胶水 modules/*/bindings/legacy/ 已整体删除，开关随之移除；
 # 脚本层只剩 IDL 驱动的 Joy.Api.Bindings，宿主接口留在 modules/cs/bindings/host/。
 

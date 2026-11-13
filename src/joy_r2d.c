@@ -1,3 +1,15 @@
+/******************************************************************************
+ * src/joy_r2d.c —— r2d 域唯一实现文件（一个域一个 .c，配 joy_r2d.h）
+ * 职责：2D 渲染 / 字体 / 粒子 / spine
+ * 合并自：jr2d.c / jfont.c / jparticle.c / jspine.c
+ * 说明：本域公开 API 声明在配套头 src/joy_r2d.h，由 include/joy/japi.h 聚合包含；
+ *       本文件是该域唯一的编译单元。
+ *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
+ ******************************************************************************/
+
+#include "joy_r2d.h"
+
+/* ==================== 合并自 src/jr2d.c ==================== */
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "external/stb_truetype.h"
@@ -1749,3 +1761,841 @@ void joy_r2d_fov_draw_2d(joy_r2d_p r, float px, float py,
     SDL_free(vert);
     SDL_free(idx);
 }
+
+/* 恢复「独立 TU」语义：本分片的私有宏不外泄到同域后续分片 */
+#undef R2D_CLIP_STACK_MAX
+#undef JTEXT_CACHE_BUCKETS
+#undef JTEXT_CACHE_DEFAULT_LIMIT
+#undef JTEXT_HASH_BYTES
+#undef JOY_FOV_2D_DEG2RAD
+#undef PUT_VERT
+
+/* ==================== 结束 src/jr2d.c ==================== */
+
+/* ==================== 合并自 src/jfont.c ==================== */
+#include "external/stb_truetype.h"
+#include <SDL3/SDL.h>
+#include "joy.h"
+
+struct joy_font {
+	stbtt_fontinfo fontinfo;
+	unsigned char* fontdata;
+	int fontsize;
+	float scale;
+	int ascent;
+	int descent;
+	int line_gap;
+};
+
+joy_font_p joy_r2d_font_create(const char* filename, int fontsize)
+{
+	size_t data_size;
+	unsigned char* fontdata;
+	joy_font_p font;
+
+	fontdata = SDL_LoadFile(filename, &data_size);
+	if (!fontdata) {
+		joy_core_log_info("Failed to load font file: %s", filename);
+		return NULL;
+	}
+
+	font = (joy_font_p)SDL_calloc(1, sizeof(joy_font_t));
+	if (!font) {
+		SDL_free(fontdata);
+		return NULL;
+	}
+
+	if (!stbtt_InitFont(&font->fontinfo, fontdata, 0)) {
+		joy_core_log_info("Failed to initialize font");
+		SDL_free(fontdata);
+		SDL_free(font);
+		return NULL;
+	}
+
+	font->fontdata = fontdata;
+	font->fontsize = fontsize;
+
+	stbtt_GetFontVMetrics(&font->fontinfo, &font->ascent, &font->descent, &font->line_gap);
+	font->scale = stbtt_ScaleForPixelHeight(&font->fontinfo, fontsize);
+	font->ascent = roundf(font->ascent * font->scale);
+	font->descent = roundf(font->descent * font->scale);
+
+	return font;
+}
+
+void joy_r2d_font_destroy(joy_font_p font)
+{
+	if (!font) return;
+
+	/* 文字缓存以 font 指针作为键的一部分。字体释放后该指针失效，
+	 * 若新字体恰好分配到同一地址，缓存会命中用旧字体烘焙的纹理，
+	 * 渲染出错误的字形。只清掉该字体的条目即可：整体 clear 会连带
+	 * 销毁其它仍存活 renderer 的文字纹理。 */
+	joy_r2d_text_cache_clear_for_font(font);
+
+	if (font->fontdata) SDL_free(font->fontdata);
+	SDL_free(font);
+}
+
+float joy_r2d_font_get_scale(joy_font_p font)
+{
+	return font->scale;
+}
+
+int joy_r2d_font_get_size(joy_font_p font)
+{
+	return font->fontsize;
+}
+
+int joy_r2d_font_get_ascent(joy_font_p font)
+{
+	return font->ascent;
+}
+
+/* ==================== 结束 src/jfont.c ==================== */
+
+/* ==================== 合并自 src/jparticle.c ==================== */
+/************************************************
+Copyright: 2021-2028, lanchong.xyz/Ltd.
+File name: jparticle.c
+Description: 2D 粒子系统实现
+Author: ydlc
+Version: 1.0
+Date: 2024.7.15
+History:
+*************************************************/
+#include "external/klib/kvec.h"
+#include "joy.h"
+
+/* ======================== 内部粒子结构 ======================== */
+typedef struct {
+    float x, y;
+    float vx, vy;
+    float life;       /* 剩余生命 */
+    float max_life;   /* 初始生命(用于插值) */
+    float size;
+    float r, g, b, a;
+} joy_particle_inner_t;
+
+/* 发射器 */
+struct joy_particle {
+        joy_particle_cfg_t cfg;
+        float emit_acc;         /* 持续发射累积时间 */
+        kvec_t(joy_particle_inner_t) particles;
+};
+
+/* ======================== 工具函数 ======================== */
+static float randf(float min, float max) {
+    return min + (float)rand() / (float)RAND_MAX * (max - min);
+}
+
+static float deg2rad(float deg) {
+    return deg * (float)JOY_PI / 180.0f;
+}
+
+/* ======================== 默认配置 ======================== */
+joy_particle_cfg_t joy_r2d_particle_cfg_default(void) {
+    joy_particle_cfg_t cfg;
+    cfg.x = 0; cfg.y = 0;
+    cfg.spawn_radius = 0;
+    cfg.direction = -90;   /* 默认向上 */
+    cfg.spread = 30;
+    cfg.speed_min = 50;  cfg.speed_max = 100;
+    cfg.lifetime_min = 0.5f; cfg.lifetime_max = 1.5f;
+    cfg.size_start = 4; cfg.size_end = 1;
+    cfg.r = 255; cfg.g = 255; cfg.b = 255; cfg.a = 255;
+    cfg.fadeout = 0.8f;
+    cfg.burst = 20;
+    cfg.rate = 0;
+    cfg.gravity = false;
+    cfg.gravity_y = 50.0f;
+    return cfg;
+}
+
+/* ======================== 创建/销毁 ======================== */
+joy_particle_p joy_r2d_particle_create(joy_particle_cfg_t cfg) {
+    joy_particle_p p = (joy_particle_p)malloc(sizeof(joy_particle_t));
+    if (!p) return NULL;
+    p->cfg = cfg;
+    p->emit_acc = 0;
+    kv_init(p->particles);
+    return p;
+}
+
+void joy_r2d_particle_destroy(joy_particle_p p) {
+    if (!p) return;
+    kv_destroy(p->particles);
+    free(p);
+}
+
+/* ======================== 控制 ======================== */
+void joy_r2d_particle_set_position(joy_particle_p p, float x, float y) {
+    if (!p) return;
+    p->cfg.x = x;
+    p->cfg.y = y;
+}
+
+void joy_r2d_particle_clear(joy_particle_p p) {
+    if (!p) return;
+    p->particles.n = 0;
+    p->emit_acc = 0;
+}
+
+/* ======================== 发射粒子 ======================== */
+void joy_r2d_particle_emit(joy_particle_p p) {
+    if (!p) return;
+    joy_particle_cfg_t* c = &p->cfg;
+    int n = c->burst > 0 ? c->burst : 1;
+    for (int i = 0; i < n; i++) {
+        joy_particle_inner_t pt = {0};
+        /* 位置 */
+        float angle = randf(0, (float)JOY_PI * 2);
+        float r = randf(0, c->spawn_radius);
+        pt.x = c->x + cosf(angle) * r;
+        pt.y = c->y + sinf(angle) * r;
+        /* 速度方向 */
+        float dir = deg2rad(c->direction + randf(-c->spread, c->spread));
+        float speed = randf(c->speed_min, c->speed_max);
+        pt.vx = cosf(dir) * speed;
+        pt.vy = sinf(dir) * speed;
+        /* 生命周期 */
+        pt.max_life = randf(c->lifetime_min, c->lifetime_max);
+        pt.life = pt.max_life;
+        /* 大小 */
+        pt.size = randf(c->size_start, c->size_end > c->size_start
+                        ? c->size_end : c->size_start);
+        /* 颜色 */
+        pt.r = c->r;
+        pt.g = c->g;
+        pt.b = c->b;
+        pt.a = c->a;
+        kv_push(joy_particle_inner_t, p->particles, pt);
+    }
+}
+
+/* ======================== 更新 ======================== */
+void joy_r2d_particle_update(joy_particle_p p, float dt) {
+    if (!p) return;
+    joy_particle_cfg_t* c = &p->cfg;
+
+    /* 持续发射 */
+    if (c->rate > 0) {
+        p->emit_acc += dt;
+        float interval = 1.0f / c->rate;
+        while (p->emit_acc >= interval) {
+            p->emit_acc -= interval;
+            joy_r2d_particle_emit(p);
+        }
+    }
+
+    /* 更新每个粒子 */
+    size_t w = 0;
+    for (size_t i = 0; i < p->particles.n; i++) {
+        joy_particle_inner_t* pt = &kv_A(p->particles, i);
+        pt->life -= dt;
+        if (pt->life <= 0) continue; /* 死亡 */
+
+        /* 移动 */
+        pt->x += pt->vx * dt;
+        pt->y += pt->vy * dt;
+
+        /* 重力 */
+        if (c->gravity) pt->vy += c->gravity_y * dt;
+
+        /* 淡出 alpha */
+        float life_ratio = pt->life / pt->max_life;
+        if (life_ratio < c->fadeout) {
+            pt->a = c->a * (life_ratio / c->fadeout);
+        }
+
+        /* 缩小 */
+        float t = 1.0f - life_ratio;
+        pt->size = c->size_start + (c->size_end - c->size_start) * t;
+
+        /* 保留 */
+        if (w != i) kv_A(p->particles, w) = kv_A(p->particles, i);
+        w++;
+    }
+    p->particles.n = w;
+}
+
+/* ======================== 渲染 ======================== */
+void joy_r2d_particle_render(joy_particle_p p, joy_r2d_p r2d) {
+    if (!p || !r2d) return;
+    for (size_t i = 0; i < p->particles.n; i++) {
+        joy_particle_inner_t* pt = &kv_A(p->particles, i);
+        float half = pt->size * 0.5f;
+        joy_rect_t r = { pt->x - half, pt->y - half, pt->size, pt->size };
+        joy_r2d_set_color(r2d, (uint8_t)pt->r, (uint8_t)pt->g, (uint8_t)pt->b, (uint8_t)pt->a);
+        joy_r2d_shape_draw_rectangle(r2d, "fill", r);
+    }
+}
+
+/* ======================== 查询 ======================== */
+int joy_r2d_particle_count(joy_particle_p p) {
+    return p ? (int)p->particles.n : 0;
+}
+
+bool joy_r2d_particle_is_active(joy_particle_p p) {
+    return p && p->particles.n > 0;
+}
+
+/* ==================== 结束 src/jparticle.c ==================== */
+
+/* ==================== 合并自 src/jspine.c ==================== */
+/******************************************************************************
+ * jspine —— joy 的 Spine 骨骼动画模块（可选，需定义 JOY_USE_SPINE 并链接 spine-c）
+ *
+ * 渲染实现基于 Spine 官方 spine-sdl 封装（spine-runtimes 4.1，spine-sdl/src/spine-sdl-c.c），
+ * 移植到 SDL3（SDL_Vertex.color 在 SDL3 是 SDL_FColor）并接入 joy 的 jr2d。
+ *
+ * 面向 ECS 的两层结构：
+ *   joy_spine_asset_t    共享资源（atlas + skeletonData + animationStateData），多实体复用
+ *   joy_spine_instance_t 组件：每实体一份，纯数据，可直接 emplace 进 ECS（entt 等）
+ *
+ * 未启用 JOY_USE_SPINE 时本文件为空编译单元，不影响任何项目。
+ *****************************************************************************/
+
+#ifdef JOY_USE_SPINE
+
+#include <SDL3/SDL.h>
+#include <spine/spine.h>
+#include <spine/extension.h>
+
+#include "joy.h"
+#include "external/stb_image.h" /* 实现在 src/jvendor_impl.c（STB_IMAGE_IMPLEMENTATION） */
+
+#include <float.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ==================== 内部类型 ==================== */
+
+struct joy_spine_asset {
+        spAtlas *atlas;
+        spSkeletonData *data;
+        spAnimationStateData *state_data; /* 共享的 mix 配置 */
+        float scale;
+};
+
+/* 顶点缓存（组件里以 void* 持有，避免 joy.h 暴露 SDL 类型） */
+typedef struct {
+        SDL_Vertex *items;
+        int size;
+        int capacity;
+} joy_spine_vertex_array_t;
+
+typedef struct joy_spine_draw_cache {
+        joy_spine_vertex_array_t vertices;
+        spIntArray *indices;
+        spFloatArray *world_vertices;
+} joy_spine_draw_cache_t;
+
+/* ==================== spine-c 要求的宿主回调 ==================== */
+
+void _spAtlasPage_createTexture(spAtlasPage *self, const char *path) {
+        int width = 0, height = 0, components = 0;
+        stbi_uc *image_data;
+        SDL_Texture *texture;
+        size_t file_len = 0;
+        stbi_uc *filedata;
+
+        /* 不能用 stbi_load(path)：它内部走 stdio fopen，Android 的资源在
+         * APK 内读不到。先经 SDL_LoadFile（AAssetManager）取到内存再解码。 */
+        filedata = (stbi_uc *)SDL_LoadFile(path, &file_len);
+        if (!filedata) {
+                printf("[jspine] atlas page read failed: '%s' (%s)\n", path, SDL_GetError());
+                return;
+        }
+        image_data = stbi_load_from_memory(filedata, (int)file_len, &width, &height, &components, 4);
+        SDL_free(filedata);
+        if (!image_data) {
+                printf("[jspine] atlas page decode failed: '%s' (%s)\n",
+                       path, stbi_failure_reason() ? stbi_failure_reason() : "unknown");
+                return;
+        }
+        texture = SDL_CreateTexture((SDL_Renderer *) self->atlas->rendererObject,
+                                    SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, width, height);
+        if (!texture) {
+                printf("[jspine] SDL_CreateTexture failed: %s\n", SDL_GetError());
+                stbi_image_free(image_data);
+                return;
+        }
+        if (!SDL_UpdateTexture(texture, NULL, image_data, width * 4)) {
+                printf("[jspine] SDL_UpdateTexture failed: %s\n", SDL_GetError());
+                SDL_DestroyTexture(texture);
+                stbi_image_free(image_data);
+                return;
+        }
+        stbi_image_free(image_data);
+        self->rendererObject = texture;
+}
+
+void _spAtlasPage_disposeTexture(spAtlasPage *self) {
+        if (self && self->rendererObject) SDL_DestroyTexture((SDL_Texture *) self->rendererObject);
+}
+
+char *_spUtil_readFile(const char *path, int *length) {
+        size_t size = 0;
+        char *filedata;
+        char *data;
+
+        if (length) *length = 0;
+        /* spine 的默认 _spReadFile() 直接 fopen，Android 的 APK assets 读不到；
+         * .atlas / .json / .skel 全部改走 SDL_LoadFile（AAssetManager）。
+         * 返回值由 spine 用 FREE()/_spFree() 释放，所以必须换成 spine 自己的
+         * MALLOC() 分配一份，不能把 SDL 的缓冲直接交出去（分配器不能混用）。 */
+        filedata = (char *)SDL_LoadFile(path, &size);
+        if (!filedata) return NULL;
+        data = MALLOC(char, (int)size + 1);
+        if (!data) {
+                SDL_free(filedata);
+                return NULL;
+        }
+        memcpy(data, filedata, size);
+        data[size] = '\0';
+        SDL_free(filedata);
+        if (length) *length = (int)size;
+        return data;
+}
+
+/* ==================== 内部工具 ==================== */
+
+static void vertex_array_clear(joy_spine_vertex_array_t *arr) {
+        if (arr) arr->size = 0;
+}
+
+static void vertex_array_add(joy_spine_vertex_array_t *arr, SDL_Vertex v) {
+        int i;
+        if (!arr) return;
+        if (arr->size == arr->capacity) {
+                int new_cap = arr->capacity > 0 ? arr->capacity * 2 : 32;
+                SDL_Vertex *new_items = (SDL_Vertex *) calloc((size_t) new_cap, sizeof(SDL_Vertex));
+                if (!new_items) return;
+                for (i = 0; i < arr->size; i++) new_items[i] = arr->items[i];
+                free(arr->items);
+                arr->items = new_items;
+                arr->capacity = new_cap;
+        }
+        arr->items[arr->size++] = v;
+}
+
+static int ends_with(const char *path, const char *suffix) {
+        size_t plen = strlen(path);
+        size_t slen = strlen(suffix);
+        if (slen > plen) return 0;
+#ifdef _MSC_VER
+        return _stricmp(path + plen - slen, suffix) == 0;
+#else
+        return strcasecmp(path + plen - slen, suffix) == 0;
+#endif
+}
+
+/* 收集一个 slot 的世界顶点/UV/索引/纹理，返回值：0=无可绘制内容，1=ok */
+static int collect_attachment(spSlot *slot, spAttachment *attachment,
+                              spFloatArray *world_vertices,
+                              float **out_uvs, unsigned short **out_indices,
+                              int *out_vertices_count, int *out_indices_count,
+                              SDL_Texture **out_texture) {
+        if (attachment->type == SP_ATTACHMENT_REGION) {
+                static unsigned short quad_indices[] = {0, 1, 2, 2, 3, 0};
+                spRegionAttachment *region = (spRegionAttachment *) attachment;
+                spFloatArray_setSize(world_vertices, 8);
+                spRegionAttachment_computeWorldVertices(region, slot, world_vertices->items, 0, 2);
+                *out_uvs = region->uvs;
+                *out_indices = quad_indices;
+                *out_vertices_count = 4;
+                *out_indices_count = 6;
+                *out_texture = (SDL_Texture *) ((spAtlasRegion *) region->rendererObject)->page->rendererObject;
+                return 1;
+        } else if (attachment->type == SP_ATTACHMENT_MESH) {
+                spMeshAttachment *mesh = (spMeshAttachment *) attachment;
+                spFloatArray_setSize(world_vertices, mesh->super.worldVerticesLength);
+                spVertexAttachment_computeWorldVertices(SUPER(mesh), slot, 0,
+                                                        mesh->super.worldVerticesLength,
+                                                        world_vertices->items, 0, 2);
+                *out_uvs = mesh->uvs;
+                *out_indices = mesh->triangles;
+                *out_vertices_count = mesh->super.worldVerticesLength >> 1;
+                *out_indices_count = mesh->trianglesCount;
+                *out_texture = (SDL_Texture *) ((spAtlasRegion *) mesh->rendererObject)->page->rendererObject;
+                return 1;
+        }
+        return 0;
+}
+
+/* ==================== 共享资源 ==================== */
+
+joy_spine_asset_p joy_r2d_spine_asset_load(joy_r2d_p r2d, const char *atlas_path, const char *skeleton_path,
+                                 float scale) {
+        joy_spine_asset_p asset;
+        spSkeletonJson *json = NULL;
+        spSkeletonBinary *binary = NULL;
+
+        if (!r2d || !atlas_path || !skeleton_path) return NULL;
+
+        /* 全局：让 spine 使用 y 向下的坐标系，与屏幕坐标一致 */
+        spBone_setYDown(-1);
+
+        asset = (joy_spine_asset_p) calloc(1, sizeof(joy_spine_asset_t));
+        if (!asset) return NULL;
+        asset->scale = scale > 0 ? scale : 1.0f;
+
+        /* renderer 作为 atlas 的 rendererObject，回调里用它建纹理 */
+        asset->atlas = spAtlas_createFromFile(atlas_path, joy_r2d_unwrap(r2d));
+        if (!asset->atlas) {
+                printf("[jspine] atlas read failed: %s\n", atlas_path);
+                free(asset);
+                return NULL;
+        }
+
+        if (ends_with(skeleton_path, ".skel")) {
+                binary = spSkeletonBinary_create(asset->atlas);
+                binary->scale = asset->scale;
+                asset->data = spSkeletonBinary_readSkeletonDataFile(binary, skeleton_path);
+                if (!asset->data) {
+                        printf("[jspine] skeleton binary failed: %s\n",
+                               binary->error ? binary->error : "(unknown)");
+                }
+                spSkeletonBinary_dispose(binary);
+        } else {
+                json = spSkeletonJson_create(asset->atlas);
+                json->scale = asset->scale;
+                asset->data = spSkeletonJson_readSkeletonDataFile(json, skeleton_path);
+                if (!asset->data) {
+                        printf("[jspine] skeleton json failed: %s\n",
+                               json->error ? json->error : "(unknown)");
+                }
+                spSkeletonJson_dispose(json);
+        }
+        if (!asset->data) {
+                spAtlas_dispose(asset->atlas);
+                free(asset);
+                return NULL;
+        }
+
+        asset->state_data = spAnimationStateData_create(asset->data);
+        asset->state_data->defaultMix = 0.2f;
+        return asset;
+}
+
+void joy_r2d_spine_asset_free(joy_spine_asset_p asset) {
+        if (!asset) return;
+        if (asset->state_data) spAnimationStateData_dispose(asset->state_data);
+        if (asset->data) spSkeletonData_dispose(asset->data);
+        if (asset->atlas) spAtlas_dispose(asset->atlas);
+        free(asset);
+}
+
+spSkeletonData *joy_r2d_spine_asset_data(joy_spine_asset_p asset) {
+        return asset ? asset->data : NULL;
+}
+
+int joy_r2d_spine_asset_animation_count(joy_spine_asset_p asset) {
+        return (asset && asset->data) ? asset->data->animationsCount : 0;
+}
+
+const char *joy_r2d_spine_asset_animation_name(joy_spine_asset_p asset, int index) {
+        if (!asset || !asset->data || index < 0 || index >= asset->data->animationsCount) return NULL;
+        return asset->data->animations[index]->name;
+}
+
+float joy_r2d_spine_asset_animation_duration(joy_spine_asset_p asset, int index) {
+        if (!asset || !asset->data || index < 0 || index >= asset->data->animationsCount) return 0;
+        return asset->data->animations[index]->duration;
+}
+
+/* ==================== 组件（实例） ==================== */
+
+bool joy_r2d_spine_instance_init(joy_spine_instance_p inst, joy_spine_asset_p asset) {
+        joy_spine_draw_cache_t *cache;
+
+        if (!inst || !asset) return false;
+        memset(inst, 0, sizeof(*inst));
+
+        inst->asset = asset;
+        inst->skeleton = spSkeleton_create(asset->data);
+        inst->state = spAnimationState_create(asset->state_data);
+        inst->clipper = spSkeletonClipping_create();
+
+        cache = (joy_spine_draw_cache_t *) calloc(1, sizeof(joy_spine_draw_cache_t));
+        if (!cache) {
+                spSkeleton_dispose(inst->skeleton);
+                spAnimationState_dispose(inst->state);
+                spSkeletonClipping_dispose(inst->clipper);
+                memset(inst, 0, sizeof(*inst));
+                return false;
+        }
+        cache->indices = spIntArray_create(12);
+        cache->world_vertices = spFloatArray_create(64);
+        inst->draw_cache = cache;
+
+        /* 默认状态 */
+        inst->scale_x = 1.0f;
+        inst->scale_y = 1.0f;
+        inst->time_scale = 1.0f;
+        inst->alpha = 1.0f;
+        inst->tint.r = 255; inst->tint.g = 255; inst->tint.b = 255; inst->tint.a = 255;
+        inst->visible = true;
+        inst->zorder = 0;
+
+        spSkeleton_setToSetupPose(inst->skeleton);
+        spSkeleton_updateWorldTransform(inst->skeleton);
+        return true;
+}
+
+void joy_r2d_spine_instance_free(joy_spine_instance_p inst) {
+        joy_spine_draw_cache_t *cache;
+        if (!inst) return;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
+        if (cache) {
+                if (cache->indices) spIntArray_dispose(cache->indices);
+                if (cache->world_vertices) spFloatArray_dispose(cache->world_vertices);
+                free(cache->vertices.items);
+                free(cache);
+        }
+        if (inst->clipper) spSkeletonClipping_dispose(inst->clipper);
+        if (inst->state) spAnimationState_dispose(inst->state);
+        if (inst->skeleton) spSkeleton_dispose(inst->skeleton);
+        memset(inst, 0, sizeof(*inst)); /* asset 不属于实例，不释放 */
+}
+
+void joy_r2d_spine_instance_reset(joy_spine_instance_p inst) {
+        if (!inst || !inst->skeleton) return;
+        spSkeleton_setToSetupPose(inst->skeleton);
+        spSkeleton_updateWorldTransform(inst->skeleton);
+}
+
+bool joy_r2d_spine_instance_set_animation(joy_spine_instance_p inst, int track, const char *name, bool loop) {
+        spAnimation *animation;
+        if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
+        animation = spSkeletonData_findAnimation(inst->asset->data, name);
+        if (!animation) return false;
+        spAnimationState_setAnimation(inst->state, track, animation, loop ? 1 : 0);
+        strncpy(inst->animation, name, JSPINE_NAME_MAX - 1);
+        inst->animation[JSPINE_NAME_MAX - 1] = '\0';
+        return true;
+}
+
+bool joy_r2d_spine_instance_add_animation(joy_spine_instance_p inst, int track, const char *name, bool loop,
+                                   float delay) {
+        spAnimation *animation;
+        if (!inst || !inst->state || !inst->asset || !inst->asset->data || !name) return false;
+        animation = spSkeletonData_findAnimation(inst->asset->data, name);
+        if (!animation) return false;
+        spAnimationState_addAnimation(inst->state, track, animation, loop ? 1 : 0, delay);
+        return true;
+}
+
+/* 组件字段 -> spine 骨架（不推进动画、不算世界变换） */
+static void jspine_sync_fields(joy_spine_instance_p inst) {
+        spSkeleton *skeleton = inst->skeleton;
+        skeleton->x = inst->x;
+        skeleton->y = inst->y;
+        skeleton->scaleX = inst->scale_x * (inst->flip_x ? -1.0f : 1.0f);
+        skeleton->scaleY = inst->scale_y;
+        if (skeleton->root) skeleton->root->rotation = inst->rotation;
+        skeleton->color.r = inst->tint.r / 255.0f;
+        skeleton->color.g = inst->tint.g / 255.0f;
+        skeleton->color.b = inst->tint.b / 255.0f;
+        skeleton->color.a = inst->alpha * (inst->tint.a / 255.0f);
+}
+
+/* 只同步变换（不推进动画）：暂停、或改完字段想立刻生效时调用 */
+void joy_r2d_spine_instance_sync(joy_spine_instance_p inst) {
+        if (!inst || !inst->skeleton) return;
+        jspine_sync_fields(inst);
+        spSkeleton_updateWorldTransform(inst->skeleton);
+}
+
+void joy_r2d_spine_instance_update(joy_spine_instance_p inst, float dt) {
+        spSkeleton *skeleton;
+        if (!inst || !inst->skeleton) return;
+        skeleton = inst->skeleton;
+
+        jspine_sync_fields(inst);
+
+        if (inst->state) {
+                spAnimationState_update(inst->state, dt * inst->time_scale);
+                spAnimationState_apply(inst->state, skeleton);
+        }
+        spSkeleton_updateWorldTransform(skeleton);
+}
+
+void joy_r2d_spine_instance_draw(joy_r2d_p r2d, joy_spine_instance_p inst) {
+        SDL_Renderer *renderer;
+        spSkeleton *skeleton;
+        spSkeletonClipping *clipper;
+        joy_spine_draw_cache_t *cache;
+        int i;
+
+        if (!r2d || !inst || !inst->skeleton || !inst->visible) return;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
+        if (!cache) return;
+
+        renderer = (SDL_Renderer *) joy_r2d_unwrap(r2d);
+        skeleton = inst->skeleton;
+        clipper = inst->clipper;
+
+        for (i = 0; i < skeleton->slotsCount; ++i) {
+                spSlot *slot = skeleton->drawOrder[i];
+                spAttachment *attachment = slot->attachment;
+                spFloatArray *vertices = cache->world_vertices;
+                spColor *attachment_color = NULL;
+                float *uvs = NULL;
+                unsigned short *indices = NULL;
+                int vertices_count = 0;
+                int indices_count = 0;
+                SDL_Texture *texture = NULL;
+                SDL_Vertex sdl_vertex;
+                int ii;
+
+                if (!attachment) {
+                        if (clipper) spSkeletonClipping_clipEnd(clipper, slot);
+                        continue;
+                }
+                if (slot->color.a == 0 || !slot->bone->active) {
+                        if (clipper) spSkeletonClipping_clipEnd(clipper, slot);
+                        continue;
+                }
+
+                if (!collect_attachment(slot, attachment, vertices, &uvs, &indices,
+                                        &vertices_count, &indices_count, &texture)) {
+                        if (attachment->type == SP_ATTACHMENT_CLIPPING) {
+                                spSkeletonClipping_clipStart(clipper, slot,
+                                                             (spClippingAttachment *) attachment);
+                        }
+                        continue;
+                }
+                attachment_color = (attachment->type == SP_ATTACHMENT_REGION)
+                                   ? &((spRegionAttachment *) attachment)->color
+                                   : &((spMeshAttachment *) attachment)->color;
+                if (attachment_color->a == 0 || !texture) {
+                        if (clipper) spSkeletonClipping_clipEnd(clipper, slot);
+                        continue;
+                }
+
+                /* SDL3: SDL_Vertex.color 是 SDL_FColor（0.0~1.0） */
+                sdl_vertex.color.r = skeleton->color.r * slot->color.r * attachment_color->r;
+                sdl_vertex.color.g = skeleton->color.g * slot->color.g * attachment_color->g;
+                sdl_vertex.color.b = skeleton->color.b * slot->color.b * attachment_color->b;
+                sdl_vertex.color.a = skeleton->color.a * slot->color.a * attachment_color->a;
+
+                if (clipper && spSkeletonClipping_isClipping(clipper)) {
+                        spSkeletonClipping_clipTriangles(clipper, vertices->items, vertices_count << 1,
+                                                         indices, indices_count, uvs, 2);
+                        vertices = clipper->clippedVertices;
+                        vertices_count = clipper->clippedVertices->size >> 1;
+                        uvs = clipper->clippedUVs->items;
+                        indices = (unsigned short *) clipper->clippedTriangles->items;
+                        indices_count = clipper->clippedTriangles->size;
+                }
+
+                vertex_array_clear(&cache->vertices);
+                for (ii = 0; ii < vertices_count << 1; ii += 2) {
+                        sdl_vertex.position.x = vertices->items[ii];
+                        sdl_vertex.position.y = vertices->items[ii + 1];
+                        sdl_vertex.tex_coord.x = uvs[ii];
+                        sdl_vertex.tex_coord.y = uvs[ii + 1];
+                        vertex_array_add(&cache->vertices, sdl_vertex);
+                }
+                spIntArray_clear(cache->indices);
+                for (ii = 0; ii < indices_count; ii++)
+                        spIntArray_add(cache->indices, indices[ii]);
+
+                switch (slot->data->blendMode) {
+                        case SP_BLEND_MODE_MULTIPLY:
+                                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_MOD);
+                                break;
+                        case SP_BLEND_MODE_ADDITIVE:
+                                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_ADD);
+                                break;
+                        case SP_BLEND_MODE_SCREEN:
+                        case SP_BLEND_MODE_NORMAL:
+                        default:
+                                SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+                                break;
+                }
+
+                SDL_RenderGeometry(renderer, texture, cache->vertices.items, cache->vertices.size,
+                                   cache->indices->items, indices_count);
+                if (clipper) spSkeletonClipping_clipEnd(clipper, slot);
+        }
+        if (clipper) spSkeletonClipping_clipEnd2(clipper);
+}
+
+/* ==================== 变换/状态便捷接口 ==================== */
+
+void joy_r2d_spine_instance_set_position(joy_spine_instance_p inst, float x, float y) {
+        if (inst) { inst->x = x; inst->y = y; }
+}
+
+void joy_r2d_spine_instance_set_scale(joy_spine_instance_p inst, float sx, float sy) {
+        if (inst) { inst->scale_x = sx; inst->scale_y = sy; }
+}
+
+void joy_r2d_spine_instance_set_rotation(joy_spine_instance_p inst, float degrees) {
+        if (inst) inst->rotation = degrees;
+}
+
+void joy_r2d_spine_instance_set_flip_x(joy_spine_instance_p inst, bool flip) {
+        if (inst) inst->flip_x = flip;
+}
+
+void joy_r2d_spine_instance_set_alpha(joy_spine_instance_p inst, float alpha) {
+        if (inst) inst->alpha = alpha;
+}
+
+void joy_r2d_spine_instance_set_tint(joy_spine_instance_p inst, joy_color_t tint) {
+        if (inst) inst->tint = tint;
+}
+
+const char *joy_r2d_spine_instance_animation(joy_spine_instance_p inst) {
+        return (inst && inst->animation[0]) ? inst->animation : NULL;
+}
+
+bool joy_r2d_spine_instance_bounds(joy_spine_instance_p inst, float *out_x, float *out_y, float *out_w,
+                            float *out_h) {
+        spSkeleton *skeleton;
+        joy_spine_draw_cache_t *cache;
+        float min_x = FLT_MAX, min_y = FLT_MAX, max_x = -FLT_MAX, max_y = -FLT_MAX;
+        int i, found = 0;
+
+        if (!inst || !inst->skeleton) return false;
+        skeleton = inst->skeleton;
+        cache = (joy_spine_draw_cache_t *) inst->draw_cache;
+        if (!cache) return false;
+
+        for (i = 0; i < skeleton->slotsCount; i++) {
+                spSlot *slot = skeleton->drawOrder[i];
+                spAttachment *attachment = slot->attachment;
+                float *uvs = NULL;
+                unsigned short *indices = NULL;
+                int vertices_count = 0, indices_count = 0;
+                SDL_Texture *texture = NULL;
+                int v;
+
+                if (!attachment) continue;
+                if (!collect_attachment(slot, attachment, cache->world_vertices, &uvs, &indices,
+                                        &vertices_count, &indices_count, &texture)) continue;
+                for (v = 0; v < vertices_count; v++) {
+                        float x = cache->world_vertices->items[v * 2];
+                        float y = cache->world_vertices->items[v * 2 + 1];
+                        if (x < min_x) min_x = x;
+                        if (y < min_y) min_y = y;
+                        if (x > max_x) max_x = x;
+                        if (y > max_y) max_y = y;
+                }
+                found = 1;
+        }
+        if (!found) return false;
+        if (out_x) *out_x = min_x;
+        if (out_y) *out_y = min_y;
+        if (out_w) *out_w = max_x - min_x;
+        if (out_h) *out_h = max_y - min_y;
+        return true;
+}
+
+#endif /* JOY_USE_SPINE */
+
+/* ==================== 结束 src/jspine.c ==================== */

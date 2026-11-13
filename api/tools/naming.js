@@ -17,7 +17,7 @@
  */
 const NS_PREFIX = 'joy';
 const DOMAINS = new Set([
-  'core',   // env/window/log/error/ticks/clipboard/event/utf8/hash
+  'core',   // env/window/log/error/ticks/clipboard/event/utf8/hash + input/输入状态快照
   'math',   // jmath + collision*/gjk*/box2d/shape
   'r2d',    // r2d/font/jtext/image/jspine/jparticle
   'r3d',    // r3d/jlight/jgltf
@@ -25,7 +25,6 @@ const DOMAINS = new Set([
   'scene',  // scene/game/jecs/jtilemap/janimator/animation/jtimer/jpm
   'net',    // net*/tcp*/kcp*/ws*/iocp/pack/unpack/netmessage
   'audio',  // audio
-  'input',  // joystick/mouse
   'script', // modules/module/jmsgpack
 ]);
 
@@ -1161,6 +1160,21 @@ const ALIASES = new Map([
   ['joy_math_vec3_div_y', 'JmathVec3DivY'],
   ['joy_math_vec3_div_z', 'JmathVec3DivZ'],
   ['joy_math_ft_radians', 'JmathFtRadians'],
+  /* input 域并回 core 后统一前缀为 joy_core_input_*；值仍是旧名推导出的
+   * PascalCase，保证 Lua / JS / C# 三端方法名与 vtable 成员一字不变。 */
+  ['joy_core_input_feed_key', 'JoyInputFeedKey'],
+  ['joy_core_input_feed_mouse_move', 'JoyInputFeedMouseMove'],
+  ['joy_core_input_feed_mouse_button', 'JoyInputFeedMouseButton'],
+  ['joy_core_input_feed_wheel', 'JoyInputFeedWheel'],
+  ['joy_core_input_end_frame', 'JoyInputEndFrame'],
+  ['joy_core_input_reset', 'JoyInputReset'],
+  ['joy_core_input_is_key_down', 'JoyInputIsKeyDown'],
+  ['joy_core_input_is_mouse_button_down', 'JoyInputIsMouseButtonDown'],
+  ['joy_core_input_get_mouse_x', 'JoyInputGetMouseX'],
+  ['joy_core_input_get_mouse_y', 'JoyInputGetMouseY'],
+  ['joy_core_input_get_wheel', 'JoyInputGetWheel'],
+  ['joy_core_input_was_key_pressed', 'JoyInputWasKeyPressed'],
+  ['joy_core_input_was_key_released', 'JoyInputWasKeyReleased'],
 ]);
 
 function isOpaque(t) {

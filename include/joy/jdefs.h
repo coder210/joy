@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-/* 公共头不再包含任何 SDL 头：事件/输入统一走 joy_input_* 标量状态快照，
+/* 公共头不再包含任何 SDL 头：事件/输入统一走 joy_core_input_* 标量状态快照，
  * SDL_Event 只在 src/ 的平台适配代码里出现。原先这里放的是从 SDL3 枚举
  * 抄来的 JOY_EVENT_* 数值常量，全仓零使用，已移除；适配层若需要判断事件
  * 类型，应在对应 .c 内包含 <SDL3/SDL_events.h> 并直接使用 SDL_EVENT_*。

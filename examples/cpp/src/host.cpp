@@ -176,27 +176,27 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* e)
     (void)appstate;
 
     /* 引擎层状态快照是唯一状态源。g_input 不再由宿主维护，而是在每帧
-     * on_frame 前从 joy_input_* getter 重建出的 Native DLL ABI 快照。 */
+     * on_frame 前从 joy_core_input_* getter 重建出的 Native DLL ABI 快照。 */
     switch (e->type) {
     case SDL_EVENT_KEY_DOWN:
-        joy_input_feed_key((int)e->key.scancode, true);
+        joy_core_input_feed_key((int)e->key.scancode, true);
         break;
     case SDL_EVENT_KEY_UP:
-        joy_input_feed_key((int)e->key.scancode, false);
+        joy_core_input_feed_key((int)e->key.scancode, false);
         break;
     case SDL_EVENT_MOUSE_MOTION:
-        joy_input_feed_mouse_move(e->motion.x, e->motion.y);
+        joy_core_input_feed_mouse_move(e->motion.x, e->motion.y);
         break;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        joy_input_feed_mouse_move(e->button.x, e->button.y);
-        joy_input_feed_mouse_button((int)e->button.button, true);
+        joy_core_input_feed_mouse_move(e->button.x, e->button.y);
+        joy_core_input_feed_mouse_button((int)e->button.button, true);
         break;
     case SDL_EVENT_MOUSE_BUTTON_UP:
-        joy_input_feed_mouse_move(e->button.x, e->button.y);
-        joy_input_feed_mouse_button((int)e->button.button, false);
+        joy_core_input_feed_mouse_move(e->button.x, e->button.y);
+        joy_core_input_feed_mouse_button((int)e->button.button, false);
         break;
     case SDL_EVENT_MOUSE_WHEEL:
-        joy_input_feed_wheel(e->wheel.y);
+        joy_core_input_feed_wheel(e->wheel.y);
         break;
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
@@ -226,15 +226,15 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 
     /* 从引擎层唯一状态源重建 Native DLL 的输入快照 */
     for (int i = 0; i < 512; i++)
-        g_input.keys[i] = joy_input_is_key_down(i);
-    g_input.mouse_x = joy_input_get_mouse_x();
-    g_input.mouse_y = joy_input_get_mouse_y();
-    g_input.mouse_left = joy_input_is_mouse_button_down(1);
+        g_input.keys[i] = joy_core_input_is_key_down(i);
+    g_input.mouse_x = joy_core_input_get_mouse_x();
+    g_input.mouse_y = joy_core_input_get_mouse_y();
+    g_input.mouse_left = joy_core_input_is_mouse_button_down(1);
 
     JoyFrameResult r;
     memset(&r, 0, sizeof(r));
     g_hooks->on_frame(g_hooks->game, dt, &g_input, &r);
-    joy_input_end_frame();   /* 清掉本帧滚轮增量与按键边沿 */
+    joy_core_input_end_frame();   /* 清掉本帧滚轮增量与按键边沿 */
 
     if (r.quit) {
         if (g_smoke) {

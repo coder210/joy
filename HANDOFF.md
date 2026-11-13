@@ -13,8 +13,8 @@
 ## 1. 项目是什么
 
 joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_bindings.js` 从
-`include/joy/japi.h` 生成四份后端的绑定（C++ vtable、C thunk、C# P/Invoke、jmath
-包装）。`examples/` 下有 cpp / lua / js / csharp 四份功能相同的示例，**它们同时是
+11 个契约头（`jdefs.h` + 9 个 `src/joy_<域>.h` + `jmath_wrappers.h`）生成四份
+后端的绑定（C++ vtable、C thunk、C# P/Invoke、jmath 包装）；`japi.h` 只做聚合。`examples/` 下有 cpp / lua / js / csharp 四份功能相同的示例，**它们同时是
 给以后项目用的模板**，所以改动要按模板标准处理（注释、平台分支、可覆盖参数）。
 
 生成链路的分级（`api/idl/joy.idl` 每条带 `level` + `status`）：
@@ -523,7 +523,8 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374）。
 
 ### 生成链路的正确操作顺序
-1. 改 `include/joy/japi.h`（**声明放文件末尾**，避免 IDL `source` 行号整体漂移）
+1. 改所属域的配套头 `src/joy_<域>.h`（声明按域归属，`japi.h` 只做聚合；
+   `source` 行号由 `--scan` 刷新，无需再靠「放文件末尾」规避漂移）
 2. `node api/tools/gen_bindings.js --scan`
 3. `node api/tools/gen_bindings.js --enable name:<api_name>`（必须带 `name:` 前缀）
 4. `node api/tools/gen_bindings.js --check`
@@ -531,7 +532,7 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 
 ### 公开 API 命名（P1 已完成）
 `j` 前缀是最初设计的项目命名空间，后来没贯彻，IDL 里一度长出 85 个 domain。
-现已统一为 `joy_<域>_<动作>`，10 个域的封闭白名单在
+现已统一为 `joy_<域>_<动作>`，9 个域的封闭白名单在
 `api/tools/naming.js` 的 `DOMAINS`（归并表与门禁说明见 `api/README.md`）。
 `--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`。
 **迁移已收尾**：`api/idl/rename_map.json` 现有 **1166 条**旧名→新名映射
@@ -547,8 +548,8 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 `joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
 thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域名不在
 10 域白名单（见 §2），因 legacy 豁免不被门禁拦截。脚本层 PascalCase 方法名由
-`ALIASES` 冻结，C 名改了不受影响。**新增声明仍放 `japi.h` 末尾，改名必须原位
-替换**，避免 IDL 的 `source` 行号整体漂移。
+`ALIASES` 冻结，C 名改了不受影响。**新增声明写到所属域的 `src/joy_<域>.h`，
+改名必须原位替换**；`source` 行号由 `--scan` 刷新，条目顺序由 `mergeIdl()` 保持稳定。
 
 ### 其他
 - `examples/csharp/obj` 已从版本库移除，`.gitignore` 有 `obj/`，不要加回来。

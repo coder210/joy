@@ -25,7 +25,7 @@ function(joy_add_sources TARGET)
         set_property(GLOBAL PROPERTY JOY_REQUESTED_MODULES ${JAS_MODULES})
     endif()
     if(JAS_SPINE)
-        set(JOY_ENABLE_SPINE ON CACHE BOOL "编译 jspine.c 并链接 spine-c" FORCE)
+        set(JOY_ENABLE_SPINE ON CACHE BOOL "启用 joy_r2d.c 中的 spine 分片并链接 spine-c" FORCE)
     endif()
     if(JAS_EXCLUDE)
         message(WARNING

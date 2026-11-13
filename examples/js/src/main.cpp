@@ -143,7 +143,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     jsx_call_joy(g_js, "frame_end", 0, dt);
 
     g_frame++;
-    joy_input_end_frame();   /* 四端统一：清掉本帧滚轮增量与按键边沿 */
+    joy_core_input_end_frame();   /* 四端统一：清掉本帧滚轮增量与按键边沿 */
 
     if (global_bool("quit")) {
         g_exit_code = global_int("exit_code");
