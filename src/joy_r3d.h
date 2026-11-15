@@ -265,7 +265,7 @@ extern "C" {
         JOY_API void   joy_r3d_input_cursor_end(joy_r3d_input_p inp);
         /* 鼠标点击定位光标: 屏幕像素坐标 (mx,my) -> cursor_pos(并聚焦) */
         JOY_API void   joy_r3d_input_click(joy_r3d_p r, joy_r3d_input_p inp, float mx, float my);
-        /* 统一事件处理(对齐 jr2d joy_ui_inputbox_process_event): 内部处理
+        /* 统一事件处理(对齐 2D 输入框的事件处理): 内部处理
            鼠标聚焦/定位、文本输入、键盘(退格/删除/方向/Home/End/回车)。
            返回 true 表示事件已被输入框消费(调用方应停止后续处理, 如相机旋转)。 */
         JOY_API bool   joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, const void* event);

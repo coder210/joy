@@ -2268,7 +2268,7 @@ static void r3d_input_scroll_to_cursor(joy_r3d_p r, joy_r3d_input_p inp)
 	if (inp->scroll < 0) inp->scroll = 0;
 }
 
-/* 在 cursor_pos 处插入 (对齐 joy_ui_inputbox_insert, 自动删除选中) */
+/* 在 cursor_pos 处插入 (对齐 2D 输入框的插入逻辑, 自动删除选中) */
 static void r3d_input_insert_at(joy_r3d_p r, joy_r3d_input_p inp, const char* s, int len)
 {
 	if (!inp || !s || len <= 0) return;
@@ -2382,7 +2382,7 @@ void joy_r3d_input_cut(joy_r3d_input_p inp)
 	}
 }
 
-/* ===================== 统一事件处理 (对齐 jr2d joy_ui_inputbox_process_event) ===================== */
+/* ===================== 统一事件处理 (对齐 2D 输入框的事件处理) ===================== */
 /* 事件参数在公共头里是 const void*；SDL_Event 只在平台适配代码内强转,
  * 这样 include/joy/ 不再需要 SDL_events.h。 */
 bool joy_r3d_input_handle_event(joy_r3d_p r, joy_r3d_input_p inp, const void* ev)

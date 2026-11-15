@@ -3,7 +3,14 @@ This is an easy game framework.
 
 ## 目录
 
-- `joy.h` / `j*.c` / `external/` / `test/` —— 引擎核心。不依赖任何脚本运行时。
+- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，8 个域各一对文件
+  （`core` / `math` / `r2d` / `r3d` / `scene` / `net` / `script` / `audio`），
+  另有数据分片 `src/joy_lut.{c,h}`。不依赖任何脚本运行时。
+  域边界按渲染上下文划分：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖
+  `joy_r3d_p` 的 3D HUD 控件归 `r3d`，两边都不单设 UI 文件。
+- `include/joy/japi.h` —— 公开 API 聚合入口，只逐个 include 8 个域头，
+  自身不含声明；`include/joy/jdefs.h` 提供公开类型。
+- `external/` / `test/` —— 第三方源码与测试。
 - `api/` —— 与脚本语言无关的绑定 API 契约：IDL、覆盖率报告、共享 C 运行层与各后端薄适配生成物，见 `api/README.md`。
 - `modules/` —— 可选的脚本后端：`lua`、`js`、`cs`。
 - `SDL/` `msgpack/` `spine/` —— 第三方源码。

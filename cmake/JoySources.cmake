@@ -3,7 +3,7 @@
 #
 # 这份清单就是架构文档：增删文件必须在这里登记，路径全部相对 JOY_ROOT
 # （由 JoyTargets.cmake 设置为本仓库根）。源码按性质分三处，互不混放：
-#   src/             人工实现，9 个域文件 + 1 个显式登记的数据分片
+#   src/             人工实现，8 个域文件 + 1 个显式登记的数据分片
 #   api/generated/   工具生成，勿手改
 #   external/        vendored 第三方（含一个自有包装 aes_util.c）
 #
@@ -12,8 +12,11 @@
 #   2. 一个域只有一个 .c —— src/joy_<域>.c；
 #   3. 每个 .c 必配一个同名内部头 —— src/joy_<域>.h，且 .c 必须 include 它。
 #   函数名前缀 joy_<域>_ 必须与文件名、配套头的域一致。
-#   域白名单（9 个）：core math r2d r3d ui scene net script audio。
+#   域白名单（8 个）：core math r2d r3d scene net script audio。
 #   input 已并回 core：13 个 API 统一为 joy_core_input_*，域前缀与文件名一致。
+#   ui 已并回 r2d：218 个 API 统一为 joy_r2d_*（begin/end 避让帧起止 -> joy_r2d_im_*），
+#   声明与实现并入 src/joy_r2d.h / .c。域边界按渲染上下文划分：依赖 joy_r2d_p 的
+#   2D 控件归 r2d，依赖 joy_r3d_p 的 3D HUD 控件归 r3d，两边都不再单设 UI 文件。
 #   4. 数据分片例外：src/joy_lut.c（SIN_LUT / tan_lut）不含任何函数定义，
 #      不算域实现文件，但同样配 src/joy_lut.h 且必须 include 它；
 #      白名单在 audit_domain_layout.js 的 DATA_SHARDS，新增数据分片必须登记。
@@ -22,7 +25,8 @@
 # 用 #undef 隔离私有宏，避免污染同域后续分片。分片归属：
 #   core   jvendor_impl / jcore / jutils     math  jcollision / jgjk / jbox2d
 #   r2d    jr2d / jfont / jparticle / jspine r3d  jr3d / jlight / jgltf
-#   ui     jui / jui_im                      scene jscene / janimator / jtilemap /
+#          / jui / jui_im（原 ui 域并入）
+#                                           scene jscene / janimator / jtilemap /
 #                                                 jecs / jprocmap / jbehavior
 #   net    jnetwork / jsys                   script jmsgpack / jmodule
 #   audio  jaudio                           core   jinput（原 input 域并入）
@@ -64,10 +68,6 @@ set(JOY_SRC_R3D
     src/joy_r3d.c
 )
 
-set(JOY_SRC_UI
-    src/joy_ui.c
-)
-
 set(JOY_SRC_SCENE
     src/joy_scene.c
 )
@@ -104,7 +104,6 @@ set(JOY_ALL_SOURCE_GROUPS
     JOY_SRC_MATH
     JOY_SRC_R2D
     JOY_SRC_R3D
-    JOY_SRC_UI
     JOY_SRC_SCENE
     JOY_SRC_NET
     JOY_SRC_SCRIPT

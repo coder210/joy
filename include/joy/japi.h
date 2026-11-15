@@ -11,7 +11,6 @@
 #include "../../src/joy_math.h"
 #include "../../src/joy_r2d.h"
 #include "../../src/joy_r3d.h"
-#include "../../src/joy_ui.h"
 #include "../../src/joy_scene.h"
 #include "../../src/joy_net.h"
 #include "../../src/joy_script.h"

@@ -1,4 +1,4 @@
-# 交接：当前进展与下一步（2026-11-14）
+# 交接：当前进展与下一步（2026-11-15）
 
 > 换 AI 交接文档。先读这一页，再读 `HANDOFF.md` 的 §2 / §4 / §5 / §6 / §7。
 > 本文件只记**当前状态**与**接下来该做什么**；历史细节在 `HANDOFF.md`。
@@ -11,10 +11,15 @@
 
 ## 0. 一句话现状
 
-`src/` 已收拢为 **9 个域 = 9 个 `joy_<域>.c` + 9 个同名 `.h`**（另有 1 个登记的数据分片），
-一个域不再有多个 `.c`；新增 `audit_domain_layout.js` 门禁把三条规则固化到 CI。
-本轮改动已提交推送到 `origin/main`，工作区干净（末尾另有一次纯 `docs:` 状态回填提交）。
-**`35fa0ea1` 的三条 CI 全部 success**，见 §3.0 T5；按 §6 约定已等到结果才收尾。
+`src/` 现为 **8 个域 = 8 个 `joy_<域>.c` + 8 个同名 `.h`**（另有 1 个登记的数据分片），
+一个域不再有多个 `.c`。**2026-11-15 按用户拍板把 `ui` 域并回 `r2d`**：
+依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`，
+两边都不再单设 UI 文件，域边界按渲染上下文划分。218 条 `joy_ui_*` 统一为
+`joy_r2d_*`，`src/joy_ui.{h,c}` 删除，`DECL_SOURCES` 由 11 个变 10 个。
+两个域门禁 + `--check` + 全量 Debug 构建 + `ctest` 4/4 + 可选模块全开实链均通过。
+**§3.0 的 T1 已按此方案解决，不要再向用户追问 A / C。**
+
+历史基线：`35fa0ea1` 的三条 CI 全部 success（§3.0 T5）；按 §6 约定推送后等到结果才收尾。
 
 ## 1. 最近做了什么（按提交）
 
@@ -26,6 +31,7 @@
 | `a0c3cabe` | P0-b：3 个从未实现的 `r3d_mesh_skinned_*` 走最小降级适配，GLTF 实建可链接 | 3 处调用替换 + 注释 |
 | **`35fa0ea1`（本轮重构）** | 见下方四项，同一次提交 | `src/` 20 个新文件 / 26 个旧 `.c` 删除 / 11 个契约源 / 13 条 API 改名 |
 | 紧随其后的 `docs:` 提交 | 只回填本页的 CI 结论与提交号，不改任何代码 | 1 文件 |
+| **本轮：`ui` 并回 `r2d`（2026-11-15）** | 见下方「关键决策」新增段 | 218 条改名 / 2 文件删除 / 域白名单 9→8 |
 
 `35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
@@ -38,6 +44,9 @@
   域白名单 10 → 9，`DOMAIN_ALIASES` 临时机制已删除，`open=739` / `status:on` 不丢、orphan 0。
 
 ### 关键决策：物理合并 + 数据分片例外
+
+> 以下两节是 `35fa0ea1` 当时（9 域 / 11 个契约源）的历史记录，数字按当时状态保留；
+> **当前为 8 域 / 10 个契约源**，以 §0、§2 与「`ui` 并回 `r2d`」段为准。
 
 用户提出更严格的组织规则：**一个 `.c` 一定是一个域；一个域不允许多个 `.c`；
 每个 `.c` 要有一个头文件**。此前（第 29 条）的「一个域可以有多个 `.c`、
@@ -61,16 +70,44 @@
 - 生成物 `api/generated/`、第三方 `external/`、`examples/`、`modules/` 不属于
   `src/` 手写域实现，不在本规则管辖内。
 
-### 域归属判据（沿用）
+### 关键决策：`ui` 并回 `r2d`（2026-11-15，本轮）
+
+用户从「代码优雅」角度指出：2D 的 UI 有单独文件（`joy_ui.c`），3D 的却没有，
+两边不统一。讨论后确定统一方向是**两边都不单设 UI 文件，各自内聚到渲染器**，
+而不是把 3D 控件拆出独立文件。理由：控件不是独立抽象，是渲染器能力的延伸
+（按钮 = 矩形 + 文字，输入框要测宽、烘焙字形），实现直接读写渲染器私有状态
+（r3d 的 `font_cache` / `rp`，r2d 的 font/text 句柄）；按「谁依赖谁、谁一起改」
+内聚到各自渲染 TU，才是真对称。拆独立文件反而要暴露 `struct joy_r3d` 私有字段。
+
+- 物理合并：`src/joy_ui.c/.h` 的声明与实现并入 `src/joy_r2d.h/.c`，两个 ui 文件删除；
+  `japi.h` 去掉该聚合 include，`cmake/JoySources.cmake` 去掉 `JOY_SRC_UI` 组。
+- 改名 218 条：`joy_ui_*` → `joy_r2d_*`。`joy_ui_begin/end` 与 r2d 帧起止
+  `joy_r2d_begin/end` 撞名，避让为 `joy_r2d_im_begin/end`（im = immediate mode）。
+  `rename_map.json` 追加 218 条链式映射继承 `status` / `owns` / `note`，
+  `naming.js` 的 `ALIASES` 只改 key 保留 value，脚本层方法名冻结、四端零改动。
+- 白名单 9→8：`audit_domain_purity.js`、`audit_domain_layout.js`、
+  `naming.js` 的 `DOMAINS` 去掉 `ui`；`DECL_SOURCES` 11→10；数据分片仍为唯一例外。
+- 合并期踩坑（已处理）：两个孤儿定义 `joy_ui_label_handle_event` /
+  `joy_ui_radio_render` 不在 IDL、无声明无调用，但会被 R4 判混域，已改前缀；
+  ui 分片 12 个私有宏在合并段末尾 `#undef`；两个 .c 的 static/typedef/struct/
+  `#define` 重名扫描结果为 0，`#if/#endif` 各自平衡、无 BOM。
+- **未动**：`joy_ui_ctx_p` / `joy_ui_theme_t` / `joy_ui_slot_t` 等类型名
+  （P1 明确「类型名是否跟域走」需先定口径，且 `handle_aliases.json` 冻结脚本层
+  类名 `JuiCtx`）；`HANDOFF.md` 的历史旧名（T4 有意保留）。
+
+### 域归属判据（现行）
 
 | 判据 | 归入 |
 |---|---|
 | 纹理 / 文字 / 图元 / 动画 / 2D FOV | `r2d` |
-| 3D FOV / glTF | `r3d` |
-| 控件（joystick / label / radio） | `ui` |
+| 依赖 `joy_r2d_p` 的 2D 控件 / 即时模式 UI（原 ui 域） | `r2d` |
+| 3D 渲染 / 3D FOV / glTF / 依赖 `joy_r3d_p` 的 3D HUD 控件 | `r3d` |
 | 行为树（bt） | `scene` |
 | tilemap 碰撞扫描 | `math` |
 | 网络打包 / 时间工具 | `core` |
+
+**边界口诀：看 API 第一个句柄参数是 `joy_r2d_p` 还是 `joy_r3d_p`。**
+`ui` 不再是域，也不再有同名文件；域白名单 8 个：`core math r2d r3d scene net script audio`。
 
 **一个域只有一个 `.c`，一个 `.c` 只有一个域，且必须配一个同名 `.h`。**
 显式登记的数据分片（`joy_lut.c`）是唯一例外：它同样配同名 `.h`，
@@ -80,88 +117,64 @@
 
 | 项 | 值 |
 |---|---|
-| HEAD / 远端 | 见 `git log -1`；本轮改动已 push，`main` 与 `origin/main` 同步 |
+| HEAD / 远端 | 见 `git log -1`；本轮改动按 §6 约定提交并推送，推送后需等三条 CI |
 | IDL | 1170 条，`status:on` 739 条，vtable 739；`--scan` 幂等、orphan 0 |
-| 域布局 | `src/` **10 个 `.c`（9 域实现 + 1 数据分片）/ 10 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0** |
-| `--check` | OK（report/thunks/vtable/cs glue/jmath 全部最新）、`--scan` 内容幂等 |
+| 域布局 | `src/` **9 个 `.c`（8 域实现 + 1 数据分片）/ 9 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0** |
+| `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
-| `ctest` | 4/4 |
-| CI | `35fa0ea1` 的 Desktop / Android / Web **3/3 success**（已通过 Actions API 核实，§3.0 T5） |
+| `ctest` | 4/4（`--timeout 25`） |
+| CI | `35fa0ea1` 的 Desktop / Android / Web **3/3 success**（历史，§3.0 T5）；本轮推送结果待确认 |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
-### 域 → 文件 归属表（9 个域 `.c` + 1 个数据分片，均配同名 `.h`）
+### 域 → 文件 归属表（8 个域 `.c` + 1 个数据分片，均配同名 `.h`）
 
 | 域 | 文件（函数定义条数） | 合并自分片 |
 |---|---|---|
 | `core` | `joy_core.c`(110) | `jvendor_impl` / `jcore` / `jutils` / **`joy_input`（原 input 域）** |
 | `math` | `joy_math.c`(90) | `jcollision` / `jgjk` / `jbox2d` |
-| `r2d` | `joy_r2d.c`(129) | `jr2d` / `jfont` / `jparticle` / `jspine` |
-| `r3d` | `joy_r3d.c`(165) | `jr3d` / `jlight` / `jgltf` |
-| `ui` | `joy_ui.c`(220) | `jui` / `jui_im` |
+| `r2d` | `joy_r2d.c`(349) | `jr2d` / `jfont` / `jparticle` / `jspine` / **`jui` / `jui_im`（原 ui 域）** |
+| `r3d` | `joy_r3d.c`(165) | `jr3d` / `jlight` / `jgltf` / 3D HUD 控件 |
 | `scene` | `joy_scene.c`(150) | `jscene` / `janimator` / `jtilemap` / `jecs` / `jprocmap` / `jbehavior` |
 | `net` | `joy_net.c`(96) | `jnetwork` / `jsys` |
 | `script` | `joy_script.c`(33) | `jmsgpack` / `jmodule` |
 | `audio` | `joy_audio.c`(20) | `jaudio` |
 | 数据分片 | `joy_lut.c`(0) | `jlut`（`SIN_LUT` / `tan_lut`，不在域集合内） |
 
-函数定义总数 1013 条，与合并前 26 个 `.c` 的统计逐字一致（一次纯搬运，无增删）。
+函数定义总数 1013 条，与 `35fa0ea1` 合并前逐字一致；本轮 218 条改名只换前缀，
+`joy_ui_*` 的 IDL `domain` 由 `ui` 变为 `r2d`（114 → 332 条），总数仍 1170。
 
 ## 3. 下一步（按优先级）
 
 ### 3.0 本轮遗留待办（换 AI 交接，优先看这里）
 
-> 用户临时换 AI，本轮**只做了「把待办写进文档 + 提交 + 推送」**，没有动业务代码。
-> **待办只剩 T1–T4**：T1 必须先让用户拍板；T5（CI 复核）已随收尾完成；
+> **2026-11-15 更新**：用户就「2D 的 UI 有单独文件、3D 没有，不统一」拍板，
+> 已把 `ui` 域并回 `r2d`（见 §1「关键决策」）。**T1 已解决，不要再追问 A / C。**
+> 现行待办只剩 **T3（需用户决策）**；T2 已顺带处理；T4 有意保留；T5 已结；
 > T6 只是提交状态说明。§3.1 起的 P0–P3 是更早一轮的项：
 > P0 两条已修、P1 需先定口径、P2/P3 明确「不是待办」。
 
-#### T1（必须先让用户拍板）`r3d` 的 3D 控件与 `ui` 的 2D 控件归属不一致
+#### T1 —— 已解决（`ui` 并回 `r2d`，2026-11-15）
 
-现象：`src/joy_r3d.h/.c` 里有 `joy_r3d_button_*`、`joy_r3d_slider_*`、
-`joy_r3d_combobox_*`、`joy_r3d_checkbox_*`、`joy_r3d_label_*`、`joy_r3d_input_*`
-共 **65 条** 3D 控件 API（其中 `status:on` 50 条；分布 input 22 / slider 11 /
-combobox 10 / checkbox 10 / button 8 / label 4），而 2D 控件在 `src/joy_ui.h/.c`。
-IDL 里 `ui` 域的 3D 控件条目为 0，外部 C 调用点也基本为 0（名字主要存在于
-IDL / 文档 / 生成物）。
+原问题：`r3d` 有 65 条 3D 控件 API（`joy_r3d_button_*` 等，`status:on` 50 条），
+`ui` 域有 218 条 2D 控件 API，两条划分轴混用。原拟 A（只写边界规则）/ C
+（65 条改名搬进 `joy_ui.*`），用户从「代码优雅」角度选了第三条路：
+**两边都不单设 UI 文件，各自内聚到渲染器**。
 
-定性：不是「放错文件」，是**两种划分轴混用** —— `ui` 按控件职责划，
-`r2d` / `r3d` 按渲染技术层划。两者的依赖完全不同：
+已实施：删除 `src/joy_ui.{h,c}`，218 条 `joy_ui_*` 改名 `joy_r2d_*` 并入
+`src/joy_r2d.{h,c}`；`joy_ui_begin/end` 避让帧起止为 `joy_r2d_im_begin/end`；
+域白名单 9→8、`DECL_SOURCES` 11→10；`api/README.md`、`cmake/JoySources.cmake`、
+本文件、`src/joy_r2d.{h,c}` 头部、`src/joy_r3d.h/.c` 失效注释均已同步。
+`joy_r3d_*` 的 65 条 3D 控件保持原名与位置不变（归 r3d 渲染器）。
 
-```c
-/* 3D 控件：强依赖 3D 渲染器与 mesh */
-JOY_API void joy_r3d_button_draw(joy_r3d_p r, joy_render_mesh_p m,
-                                 joy_r3d_button_p btn, float winW, float winH);
-/* 2D 控件：强依赖 2D 渲染器 */
-JOY_API joy_button_p joy_ui_button_create(joy_r2d_p r2d, float cx, float cy,
-                                          float wf, float hf);
-```
+验收：`--check OK 1170`、两个门禁 0 违规、全量 Debug 构建 0 错误、
+GLTF+SPINE+PLUGINS 全开实链 0 错误、`ctest --timeout 25` 4/4、`open=739`、
+orphan 0、IDL `domain` 里 `ui` 归零（`r2d` 114→332）。
 
-`api/idl/handle_aliases.json` 里 6 个 3D 控件句柄类名（`Jr3dButton` 等）已冻结脚本层名字。
+#### T2 —— 已解决（`README.md` 与 `api/README.md`）
 
-方案（**先问用户选 A 还是 C，不要自己决定**）：
-
-- **A（推荐，零代码风险）**：不改代码，只把边界规则写清楚 —— `ui` = 依赖
-  `joy_r2d_p` 的 2D 控件体系；依赖 `joy_r3d_p` / `joy_render_mesh_p` 的 3D 控件
-  归 `r3d`（与渲染管线同域，避免同域文件里塞进另一条渲染链的依赖）。
-  需同步：`api/README.md` 域表、本文件 §2 域归属判据表、
-  `cmake/JoySources.cmake` 头部、`HANDOFF.md` 第 29 条判据（394–403 行）、
-  `src/joy_r3d.h` 头部注释。
-- **B（已排除）**：只搬文件、保留 `joy_r3d_*` 名字 → `audit_domain_layout.js`
-  的 R4 会判混域；除非恢复本轮已删除的 `DOMAIN_ALIASES`，不要走。
-- **C（彻底统一，成本高）**：65 条改名 `joy_ui_3d_*` 并搬到 `joy_ui.h/.c`。
-  动手前按项目约定**先做只读冲突扫描**（同名 `static` / `typedef` / `#define`、
-  `#if` 平衡、分片边界），再依次同步 `rename_map.json`、`naming.js` 的 `ALIASES`
-  （只改 key 不改 value）、`type_rename_map.json`、`handle_aliases.json`、
-  `joy.idl`、`api/generated/*` 与 C# glue（C 名变、PascalCase 方法名不变）、
-  两个门禁、`cmake/JoySources.cmake`、`api/README.md`、本文件。
-  验收：`--check OK`、`--scan` 内容幂等、`open=739`、orphan 0、默认构建 0、
-  `ctest` 4/4、`git diff --check` 0。
-
-#### T2 `README.md` 目录说明仍是旧的
-
-第 6 行还写 `` `joy.h` / `j*.c` / `external/` / `test/` ``，与现在的
-`src/joy_<域>.c` + 9 个域头 + `japi.h` 纯聚合不符。改为按域描述，
-并说明 `japi.h` 是聚合入口（见 T3）。
+`README.md` 第 6 行的旧目录说明、`api/README.md` 的域表 / 硬规则 /
+契约头数量 / 开放数（668→739、721→739）已按 8 域现状改写。
+`HANDOFF.md` 的历史旧名按 T4 有意保留，未动。
 
 #### T3 `japi.h` 的安装分发风险（需要决策，不是 bug）
 
@@ -339,7 +352,7 @@ iOS / wasm 静态形态、Android 真机冒烟、C# 在 iOS/wasm（宿主模型�
 ## 5. 验证命令（复制即用）
 
 ```powershell
-cd d:/github/joy
+cd e:/c++/joy
 
 # 1. 两个域门禁（纯域 + 布局：一域一 .c、每 .c 配同名 .h）
 node api/tools/audit_domain_purity.js        # 退出码 0 = 通过

@@ -10,7 +10,7 @@
  *      只算函数定义，不算跨域调用、注释、声明与共享句柄类型。
  *   R5 引用方向：域配套头是该域声明的归属地，不得反向 include 聚合门面 joy.h，
  *      须自带 <joy/jtypes.h> 与 extern "C"；include/joy/japi.h 必须逐个
- *      include 9 个域头，且自身不得残留 JOY_API 声明。
+ *      include 8 个域头，且自身不得残留 JOY_API 声明。
  *   R6 数据分片：DATA_SHARDS 里显式登记的文件不是域实现文件，不参与 R1/R2，
  *      但必须配同名 .h、include 它、不反向 include joy.h，且不得含 joy_* 函数定义。
  *
@@ -25,7 +25,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
 const SRC = path.join(ROOT, 'src');
-const DOMAINS = ['core', 'math', 'r2d', 'r3d', 'ui', 'scene', 'net', 'script', 'audio'];
+const DOMAINS = ['core', 'math', 'r2d', 'r3d', 'scene', 'net', 'script', 'audio'];
 /* 数据分片白名单：只放纯数据、没有任何 joy_* 函数定义的文件。
  * 新增数据分片必须同时登记在 cmake/JoySources.cmake 的对应源码组里。 */
 const DATA_SHARDS = ['joy_lut.c'];

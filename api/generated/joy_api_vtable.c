@@ -3191,46 +3191,46 @@ static void shim_joy_scene_animator_set_flip_h(void* _jv_ctx, Janimator anim, bo
         return;
 }
 
-static void shim_joy_ui_label_destroy(void* _jv_ctx, Label label)
+static void shim_joy_r2d_label_destroy(void* _jv_ctx, Label label)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(label.h);
-        _jv_r = joy_api_call("joy_ui_label_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_label_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_label_draw(void* _jv_ctx, Label label)
+static void shim_joy_r2d_label_draw(void* _jv_ctx, Label label)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(label.h);
-        _jv_r = joy_api_call("joy_ui_label_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_label_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_destroy(void* _jv_ctx, Button btn)
+static void shim_joy_r2d_button_destroy(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("joy_ui_button_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_position(void* _jv_ctx, Button btn, float x, float y)
+static void shim_joy_r2d_button_set_position(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3239,13 +3239,13 @@ static void shim_joy_ui_button_set_position(void* _jv_ctx, Button btn, float x, 
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_button_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_size(void* _jv_ctx, Button btn, float width, float height)
+static void shim_joy_r2d_button_set_size(void* _jv_ctx, Button btn, float width, float height)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3254,13 +3254,13 @@ static void shim_joy_ui_button_set_size(void* _jv_ctx, Button btn, float width, 
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(width);
         _jv_args[2] = joy_v_f64(height);
-        _jv_r = joy_api_call("joy_ui_button_set_size", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_size", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_normal_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_button_set_normal_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3271,13 +3271,13 @@ static void shim_joy_ui_button_set_normal_color(void* _jv_ctx, Button btn, uint8
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_button_set_normal_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_normal_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_hover_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_button_set_hover_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3288,13 +3288,13 @@ static void shim_joy_ui_button_set_hover_color(void* _jv_ctx, Button btn, uint8_
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_button_set_hover_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_hover_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_pressed_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_button_set_pressed_color(void* _jv_ctx, Button btn, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3305,13 +3305,13 @@ static void shim_joy_ui_button_set_pressed_color(void* _jv_ctx, Button btn, uint
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_button_set_pressed_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_pressed_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_image(void* _jv_ctx, Button btn, Image image)
+static void shim_joy_r2d_button_set_image(void* _jv_ctx, Button btn, Image image)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3319,13 +3319,13 @@ static void shim_joy_ui_button_set_image(void* _jv_ctx, Button btn, Image image)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_handle(image.h);
-        _jv_r = joy_api_call("joy_ui_button_set_image", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_image", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_pressed_image(void* _jv_ctx, Button btn, Image image)
+static void shim_joy_r2d_button_set_pressed_image(void* _jv_ctx, Button btn, Image image)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3333,13 +3333,13 @@ static void shim_joy_ui_button_set_pressed_image(void* _jv_ctx, Button btn, Imag
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_handle(image.h);
-        _jv_r = joy_api_call("joy_ui_button_set_pressed_image", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_pressed_image", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_textx(void* _jv_ctx, Button btn, Font fontinfo, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_button_set_textx(void* _jv_ctx, Button btn, Font fontinfo, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -3353,13 +3353,13 @@ static void shim_joy_ui_button_set_textx(void* _jv_ctx, Button btn, Font fontinf
         _jv_args[5] = joy_v_u32(color_g);
         _jv_args[6] = joy_v_u32(color_b);
         _jv_args[7] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_button_set_textx", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_textx", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_button_is_hovered(void* _jv_ctx, Button btn, float x, float y)
+static bool shim_joy_r2d_button_is_hovered(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3368,12 +3368,12 @@ static bool shim_joy_ui_button_is_hovered(void* _jv_ctx, Button btn, float x, fl
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_button_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_button_is_pressed(void* _jv_ctx, Button btn, float x, float y)
+static bool shim_joy_r2d_button_is_pressed(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3382,12 +3382,12 @@ static bool shim_joy_ui_button_is_pressed(void* _jv_ctx, Button btn, float x, fl
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_button_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_button_set_hovered(void* _jv_ctx, Button btn, bool v)
+static void shim_joy_r2d_button_set_hovered(void* _jv_ctx, Button btn, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3395,13 +3395,13 @@ static void shim_joy_ui_button_set_hovered(void* _jv_ctx, Button btn, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_button_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_set_pressed(void* _jv_ctx, Button btn, bool v)
+static void shim_joy_r2d_button_set_pressed(void* _jv_ctx, Button btn, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3409,25 +3409,25 @@ static void shim_joy_ui_button_set_pressed(void* _jv_ctx, Button btn, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_button_set_pressed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_pressed", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_button_get_pressed(void* _jv_ctx, Button btn)
+static bool shim_joy_r2d_button_get_pressed(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("joy_ui_button_get_pressed", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_get_pressed", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_button_set_text_offset(void* _jv_ctx, Button btn, float x, float y)
+static void shim_joy_r2d_button_set_text_offset(void* _jv_ctx, Button btn, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3436,39 +3436,39 @@ static void shim_joy_ui_button_set_text_offset(void* _jv_ctx, Button btn, float 
         _jv_args[0] = joy_v_handle(btn.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_button_set_text_offset", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_set_text_offset", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_button_draw(void* _jv_ctx, Button btn)
+static void shim_joy_r2d_button_draw(void* _jv_ctx, Button btn)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(btn.h);
-        _jv_r = joy_api_call("joy_ui_button_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_destroy(void* _jv_ctx, Scrollview v)
+static void shim_joy_r2d_scrollview_destroy(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_set_view_px(void* _jv_ctx, Scrollview v, float x, float y, float w, float h)
+static void shim_joy_r2d_scrollview_set_view_px(void* _jv_ctx, Scrollview v, float x, float y, float w, float h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -3479,13 +3479,13 @@ static void shim_joy_ui_scrollview_set_view_px(void* _jv_ctx, Scrollview v, floa
         _jv_args[2] = joy_v_f64(y);
         _jv_args[3] = joy_v_f64(w);
         _jv_args[4] = joy_v_f64(h);
-        _jv_r = joy_api_call("joy_ui_scrollview_set_view_px", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_set_view_px", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_set_content(void* _jv_ctx, Scrollview v, float content_w, float content_h)
+static void shim_joy_r2d_scrollview_set_content(void* _jv_ctx, Scrollview v, float content_w, float content_h)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3494,13 +3494,13 @@ static void shim_joy_ui_scrollview_set_content(void* _jv_ctx, Scrollview v, floa
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(content_w);
         _jv_args[2] = joy_v_f64(content_h);
-        _jv_r = joy_api_call("joy_ui_scrollview_set_content", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_set_content", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_set_offset(void* _jv_ctx, Scrollview v, float ox, float oy)
+static void shim_joy_r2d_scrollview_set_offset(void* _jv_ctx, Scrollview v, float ox, float oy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3509,50 +3509,50 @@ static void shim_joy_ui_scrollview_set_offset(void* _jv_ctx, Scrollview v, float
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(ox);
         _jv_args[2] = joy_v_f64(oy);
-        _jv_r = joy_api_call("joy_ui_scrollview_set_offset", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_set_offset", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_clamp(void* _jv_ctx, Scrollview v)
+static void shim_joy_r2d_scrollview_clamp(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_clamp", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_clamp", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_joy_ui_scrollview_get_offset_x(void* _jv_ctx, Scrollview v)
+static float shim_joy_r2d_scrollview_get_offset_x(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_get_offset_x", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_get_offset_x", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static float shim_joy_ui_scrollview_get_offset_y(void* _jv_ctx, Scrollview v)
+static float shim_joy_r2d_scrollview_get_offset_y(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_get_offset_y", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_get_offset_y", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_joy_ui_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, bool show)
+static void shim_joy_r2d_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, bool show)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3560,25 +3560,25 @@ static void shim_joy_ui_scrollview_set_show_bar(void* _jv_ctx, Scrollview v, boo
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_bool(show);
-        _jv_r = joy_api_call("joy_ui_scrollview_set_show_bar", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_set_show_bar", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_scrollview_dragging(void* _jv_ctx, Scrollview v)
+static bool shim_joy_r2d_scrollview_dragging(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_dragging", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_dragging", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x, float win_y)
+static bool shim_joy_r2d_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x, float win_y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3587,51 +3587,51 @@ static bool shim_joy_ui_scrollview_hit(void* _jv_ctx, Scrollview v, float win_x,
         _jv_args[0] = joy_v_handle(v.h);
         _jv_args[1] = joy_v_f64(win_x);
         _jv_args[2] = joy_v_f64(win_y);
-        _jv_r = joy_api_call("joy_ui_scrollview_hit", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_hit", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_scrollview_begin(void* _jv_ctx, Scrollview v)
+static void shim_joy_r2d_scrollview_begin(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_begin", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_begin", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollview_end(void* _jv_ctx, Scrollview v)
+static void shim_joy_r2d_scrollview_end(void* _jv_ctx, Scrollview v)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(v.h);
-        _jv_r = joy_api_call("joy_ui_scrollview_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollview_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_destroy(void* _jv_ctx, Combobox combobox)
+static void shim_joy_r2d_combobox_destroy(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("joy_ui_combobox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_add_item(void* _jv_ctx, Combobox combobox, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_combobox_add_item(void* _jv_ctx, Combobox combobox, Font font, const char* str, int len, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -3645,13 +3645,13 @@ static void shim_joy_ui_combobox_add_item(void* _jv_ctx, Combobox combobox, Font
         _jv_args[5] = joy_v_u32(color_g);
         _jv_args[6] = joy_v_u32(color_b);
         _jv_args[7] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_combobox_add_item", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_add_item", _jv_args, 8, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_combobox_is_pressed(void* _jv_ctx, Combobox combobox, float x, float y)
+static bool shim_joy_r2d_combobox_is_pressed(void* _jv_ctx, Combobox combobox, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3660,24 +3660,24 @@ static bool shim_joy_ui_combobox_is_pressed(void* _jv_ctx, Combobox combobox, fl
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_combobox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_combobox_is_open(void* _jv_ctx, Combobox combobox)
+static bool shim_joy_r2d_combobox_is_open(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("joy_ui_combobox_is_open", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_is_open", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_combobox_set_open(void* _jv_ctx, Combobox combobox, bool v)
+static void shim_joy_r2d_combobox_set_open(void* _jv_ctx, Combobox combobox, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3685,13 +3685,13 @@ static void shim_joy_ui_combobox_set_open(void* _jv_ctx, Combobox combobox, bool
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_combobox_set_open", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_set_open", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_ui_combobox_hit_item(void* _jv_ctx, Combobox combobox, float x, float y)
+static int shim_joy_r2d_combobox_hit_item(void* _jv_ctx, Combobox combobox, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3700,12 +3700,12 @@ static int shim_joy_ui_combobox_hit_item(void* _jv_ctx, Combobox combobox, float
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_combobox_hit_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_hit_item", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_ui_combobox_set_selected(void* _jv_ctx, Combobox combobox, int index)
+static void shim_joy_r2d_combobox_set_selected(void* _jv_ctx, Combobox combobox, int index)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3713,51 +3713,51 @@ static void shim_joy_ui_combobox_set_selected(void* _jv_ctx, Combobox combobox, 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
         _jv_args[1] = joy_v_i32(index);
-        _jv_r = joy_api_call("joy_ui_combobox_set_selected", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_set_selected", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_ui_combobox_get_selected(void* _jv_ctx, Combobox combobox)
+static int shim_joy_r2d_combobox_get_selected(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("joy_ui_combobox_get_selected", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_get_selected", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_ui_combobox_draw(void* _jv_ctx, Combobox combobox)
+static void shim_joy_r2d_combobox_draw(void* _jv_ctx, Combobox combobox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(combobox.h);
-        _jv_r = joy_api_call("joy_ui_combobox_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_destroy(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_r2d_combobox_input_destroy(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci, const char* str, int len)
+static void shim_joy_r2d_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci, const char* str, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3766,26 +3766,26 @@ static void shim_joy_ui_combobox_input_add_item(void* _jv_ctx, ComboboxInput ci,
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("joy_ui_combobox_input_add_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_add_item", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_clear_items(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_r2d_combobox_input_clear_items(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_clear_items", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_clear_items", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci, const char* str)
+static void shim_joy_r2d_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci, const char* str)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3793,51 +3793,51 @@ static void shim_joy_ui_combobox_input_set_text(void* _jv_ctx, ComboboxInput ci,
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_str(str);
-        _jv_r = joy_api_call("joy_ui_combobox_input_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_draw(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_r2d_combobox_input_draw(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_combobox_input_draw_dropdown(void* _jv_ctx, ComboboxInput ci)
+static void shim_joy_r2d_combobox_input_draw_dropdown(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_draw_dropdown", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_draw_dropdown", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_combobox_input_is_open(void* _jv_ctx, ComboboxInput ci)
+static bool shim_joy_r2d_combobox_input_is_open(void* _jv_ctx, ComboboxInput ci)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_is_open", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_is_open", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInput ci, SceneNode node)
+static void shim_joy_r2d_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInput ci, SceneNode node)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3845,13 +3845,13 @@ static void shim_joy_ui_combobox_input_set_popup_node(void* _jv_ctx, ComboboxInp
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_handle(node.h);
-        _jv_r = joy_api_call("joy_ui_combobox_input_set_popup_node", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_set_popup_node", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_ui_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, float x, float y)
+static int shim_joy_r2d_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3860,12 +3860,12 @@ static int shim_joy_ui_combobox_input_hit_item(void* _jv_ctx, ComboboxInput ci, 
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_combobox_input_hit_item", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_hit_item", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_ui_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci, bool v)
+static void shim_joy_r2d_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3873,13 +3873,13 @@ static void shim_joy_ui_combobox_input_set_open(void* _jv_ctx, ComboboxInput ci,
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ci.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_combobox_input_set_open", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_combobox_input_set_open", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const char* headers)
+static void shim_joy_r2d_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const char* headers)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3887,13 +3887,13 @@ static void shim_joy_ui_datagrid_setheaders(void* _jv_ctx, Datagrid grid, const 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_str(headers);
-        _jv_r = joy_api_call("joy_ui_datagrid_setheaders", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_setheaders", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_setheader(void* _jv_ctx, Datagrid grid, int index, const char* header)
+static void shim_joy_r2d_datagrid_setheader(void* _jv_ctx, Datagrid grid, int index, const char* header)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3902,13 +3902,13 @@ static void shim_joy_ui_datagrid_setheader(void* _jv_ctx, Datagrid grid, int ind
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(index);
         _jv_args[2] = joy_v_str(header);
-        _jv_r = joy_api_call("joy_ui_datagrid_setheader", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_setheader", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_index, int col_index, const char* data)
+static void shim_joy_r2d_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_index, int col_index, const char* data)
 {
         joy_value_t _jv_args[4];
         joy_value_t _jv_r;
@@ -3918,26 +3918,26 @@ static void shim_joy_ui_datagrid_setcell(void* _jv_ctx, Datagrid grid, int row_i
         _jv_args[1] = joy_v_i32(row_index);
         _jv_args[2] = joy_v_i32(col_index);
         _jv_args[3] = joy_v_str(data);
-        _jv_r = joy_api_call("joy_ui_datagrid_setcell", _jv_args, 4, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_setcell", _jv_args, 4, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_destroy(void* _jv_ctx, Datagrid grid)
+static void shim_joy_r2d_datagrid_destroy(void* _jv_ctx, Datagrid grid)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
-        _jv_r = joy_api_call("joy_ui_datagrid_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
+static void shim_joy_r2d_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3945,13 +3945,13 @@ static void shim_joy_ui_datagrid_draw(void* _jv_ctx, Datagrid grid, Jr2d r2d)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("joy_ui_datagrid_draw", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_draw", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_ui_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, float y)
+static int shim_joy_r2d_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -3960,12 +3960,12 @@ static int shim_joy_ui_datagrid_hit_row(void* _jv_ctx, Datagrid grid, float x, f
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_datagrid_hit_row", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_hit_row", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_ui_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
+static void shim_joy_r2d_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3973,13 +3973,13 @@ static void shim_joy_ui_datagrid_scroll(void* _jv_ctx, Datagrid grid, int lines)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(lines);
-        _jv_r = joy_api_call("joy_ui_datagrid_scroll", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_scroll", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row)
+static void shim_joy_r2d_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, int row)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -3987,26 +3987,26 @@ static void shim_joy_ui_datagrid_set_selected_row(void* _jv_ctx, Datagrid grid, 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(grid.h);
         _jv_args[1] = joy_v_i32(row);
-        _jv_r = joy_api_call("joy_ui_datagrid_set_selected_row", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_datagrid_set_selected_row", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_radio_destroy(void* _jv_ctx, Radio radio)
+static void shim_joy_r2d_radio_destroy(void* _jv_ctx, Radio radio)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(radio.h);
-        _jv_r = joy_api_call("joy_ui_radio_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_radio_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_radio_is_pressed(void* _jv_ctx, Radio radio, float x, float y)
+static bool shim_joy_r2d_radio_is_pressed(void* _jv_ctx, Radio radio, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4015,12 +4015,12 @@ static bool shim_joy_ui_radio_is_pressed(void* _jv_ctx, Radio radio, float x, fl
         _jv_args[0] = joy_v_handle(radio.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_radio_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_radio_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
+static void shim_joy_r2d_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4028,26 +4028,26 @@ static void shim_joy_ui_radio_set_hovered(void* _jv_ctx, Radio radio, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(radio.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_radio_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_radio_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_destroy(void* _jv_ctx, Checkbox checkbox)
+static void shim_joy_r2d_checkbox_destroy(void* _jv_ctx, Checkbox checkbox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
-        _jv_r = joy_api_call("joy_ui_checkbox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
+static void shim_joy_r2d_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a)
 {
         joy_value_t _jv_args[13];
         joy_value_t _jv_r;
@@ -4066,13 +4066,13 @@ static void shim_joy_ui_checkbox_set_colors(void* _jv_ctx, Checkbox checkbox, ui
         _jv_args[10] = joy_v_u32(hover_g);
         _jv_args[11] = joy_v_u32(hover_b);
         _jv_args[12] = joy_v_u32(hover_a);
-        _jv_r = joy_api_call("joy_ui_checkbox_set_colors", _jv_args, 13, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_set_colors", _jv_args, 13, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d r2d)
+static void shim_joy_r2d_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d r2d)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4080,13 +4080,13 @@ static void shim_joy_ui_checkbox_set_r2d(void* _jv_ctx, Checkbox checkbox, Jr2d 
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
         _jv_args[1] = joy_v_handle(r2d.h);
-        _jv_r = joy_api_call("joy_ui_checkbox_set_r2d", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_set_r2d", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, int x, int y)
+static void shim_joy_r2d_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, int x, int y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4095,13 +4095,13 @@ static void shim_joy_ui_checkbox_set_position(void* _jv_ctx, Checkbox checkbox, 
         _jv_args[0] = joy_v_handle(checkbox.h);
         _jv_args[1] = joy_v_i32(x);
         _jv_args[2] = joy_v_i32(y);
-        _jv_r = joy_api_call("joy_ui_checkbox_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+static void shim_joy_r2d_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -4112,26 +4112,26 @@ static void shim_joy_ui_checkbox_set_text_color(void* _jv_ctx, Checkbox checkbox
         _jv_args[2] = joy_v_u32(color_g);
         _jv_args[3] = joy_v_u32(color_b);
         _jv_args[4] = joy_v_u32(color_a);
-        _jv_r = joy_api_call("joy_ui_checkbox_set_text_color", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_set_text_color", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_checkbox_toggle(void* _jv_ctx, Checkbox checkbox)
+static void shim_joy_r2d_checkbox_toggle(void* _jv_ctx, Checkbox checkbox)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(checkbox.h);
-        _jv_r = joy_api_call("joy_ui_checkbox_toggle", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_toggle", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x, float y)
+static bool shim_joy_r2d_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4140,12 +4140,12 @@ static bool shim_joy_ui_checkbox_is_pressed(void* _jv_ctx, Checkbox cb, float x,
         _jv_args[0] = joy_v_handle(cb.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_checkbox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
+static void shim_joy_r2d_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4153,26 +4153,26 @@ static void shim_joy_ui_checkbox_set_hovered(void* _jv_ctx, Checkbox cb, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(cb.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_checkbox_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_checkbox_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_destroy(void* _jv_ctx, Joystick joystick)
+static void shim_joy_r2d_joystick_destroy(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_set_textures(void* _jv_ctx, Joystick joystick, const char* base_path, const char* thumb_path)
+static void shim_joy_r2d_joystick_set_textures(void* _jv_ctx, Joystick joystick, const char* base_path, const char* thumb_path)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4181,13 +4181,13 @@ static void shim_joy_ui_joystick_set_textures(void* _jv_ctx, Joystick joystick, 
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_str(base_path);
         _jv_args[2] = joy_v_str(thumb_path);
-        _jv_r = joy_api_call("joy_ui_joystick_set_textures", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_set_textures", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_set_vector(void* _jv_ctx, Joystick joystick, float dx, float dy)
+static void shim_joy_r2d_joystick_set_vector(void* _jv_ctx, Joystick joystick, float dx, float dy)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4196,39 +4196,39 @@ static void shim_joy_ui_joystick_set_vector(void* _jv_ctx, Joystick joystick, fl
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(dx);
         _jv_args[2] = joy_v_f64(dy);
-        _jv_r = joy_api_call("joy_ui_joystick_set_vector", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_set_vector", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_draw(void* _jv_ctx, Joystick joystick)
+static void shim_joy_r2d_joystick_draw(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_reset(void* _jv_ctx, Joystick joystick)
+static void shim_joy_r2d_joystick_reset(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_reset", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_reset", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_set_position(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_r2d_joystick_set_position(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4237,13 +4237,13 @@ static void shim_joy_ui_joystick_set_position(void* _jv_ctx, Joystick joystick, 
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_joystick_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_set_radius(void* _jv_ctx, Joystick joystick, float radius)
+static void shim_joy_r2d_joystick_set_radius(void* _jv_ctx, Joystick joystick, float radius)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4251,25 +4251,25 @@ static void shim_joy_ui_joystick_set_radius(void* _jv_ctx, Joystick joystick, fl
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(radius);
-        _jv_r = joy_api_call("joy_ui_joystick_set_radius", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_set_radius", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_joystick_is_dragging(void* _jv_ctx, Joystick joystick)
+static bool shim_joy_r2d_joystick_is_dragging(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_is_dragging", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_is_dragging", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_joystick_touch_down(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_r2d_joystick_touch_down(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4278,13 +4278,13 @@ static void shim_joy_ui_joystick_touch_down(void* _jv_ctx, Joystick joystick, fl
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_joystick_touch_down", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_touch_down", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_touch_move(void* _jv_ctx, Joystick joystick, float x, float y)
+static void shim_joy_r2d_joystick_touch_move(void* _jv_ctx, Joystick joystick, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4293,51 +4293,51 @@ static void shim_joy_ui_joystick_touch_move(void* _jv_ctx, Joystick joystick, fl
         _jv_args[0] = joy_v_handle(joystick.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_joystick_touch_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_touch_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_joystick_touch_up(void* _jv_ctx, Joystick joystick)
+static void shim_joy_r2d_joystick_touch_up(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_touch_up", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_touch_up", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_joy_ui_joystick_get_magnitude(void* _jv_ctx, Joystick joystick)
+static float shim_joy_r2d_joystick_get_magnitude(void* _jv_ctx, Joystick joystick)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(joystick.h);
-        _jv_r = joy_api_call("joy_ui_joystick_get_magnitude", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_joystick_get_magnitude", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_joy_ui_inputbox_destroy(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_destroy(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char* text)
+static void shim_joy_r2d_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char* text)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4345,26 +4345,26 @@ static void shim_joy_ui_inputbox_set_text(void* _jv_ctx, Inputbox ti, const char
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_str(text);
-        _jv_r = joy_api_call("joy_ui_inputbox_set_text", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_set_text", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_draw(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_draw(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x, float y)
+static bool shim_joy_r2d_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4373,12 +4373,12 @@ static bool shim_joy_ui_inputbox_is_pressed(void* _jv_ctx, Inputbox ti, float x,
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_inputbox_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x, float y)
+static bool shim_joy_r2d_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4387,51 +4387,51 @@ static bool shim_joy_ui_inputbox_is_hovered(void* _jv_ctx, Inputbox ti, float x,
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_inputbox_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_inputbox_focus(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_focus(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_focus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_focus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_defocus(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_defocus(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_defocus", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_defocus", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_blur(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_blur(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_blur", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_blur", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* s, int len)
+static void shim_joy_r2d_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* s, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4440,220 +4440,220 @@ static void shim_joy_ui_inputbox_insert(void* _jv_ctx, Inputbox ti, const char* 
         _jv_args[0] = joy_v_handle(ti.h);
         _jv_args[1] = joy_v_str(s);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("joy_ui_inputbox_insert", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_insert", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_backspace(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_backspace(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_backspace", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_backspace", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_delete(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_delete(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_delete", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_delete", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_cursor_left(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_cursor_left(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_cursor_left", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_cursor_left", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_cursor_right(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_cursor_right(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_cursor_right", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_cursor_right", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_cursor_home(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_cursor_home(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_cursor_home", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_cursor_home", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_cursor_end(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_cursor_end(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_cursor_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_cursor_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_select_left(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_select_left(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_select_left", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_select_left", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_select_right(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_select_right(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_select_right", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_select_right", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_select_home(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_select_home(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_select_home", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_select_home", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_select_end(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_select_end(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_select_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_select_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_select_all(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_select_all(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_select_all", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_select_all", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_paste(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_paste(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_paste", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_paste", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_copy(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_copy(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_copy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_copy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_inputbox_cut(void* _jv_ctx, Inputbox ti)
+static void shim_joy_r2d_inputbox_cut(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_cut", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_cut", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_inputbox_is_focused(void* _jv_ctx, Inputbox ti)
+static bool shim_joy_r2d_inputbox_is_focused(void* _jv_ctx, Inputbox ti)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ti.h);
-        _jv_r = joy_api_call("joy_ui_inputbox_is_focused", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_inputbox_is_focused", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_slider_destroy(void* _jv_ctx, Slider s)
+static void shim_joy_r2d_slider_destroy(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("joy_ui_slider_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_slider_set_value(void* _jv_ctx, Slider s, float v)
+static void shim_joy_r2d_slider_set_value(void* _jv_ctx, Slider s, float v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4661,25 +4661,25 @@ static void shim_joy_ui_slider_set_value(void* _jv_ctx, Slider s, float v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(v);
-        _jv_r = joy_api_call("joy_ui_slider_set_value", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_set_value", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_joy_ui_slider_get_value(void* _jv_ctx, Slider s)
+static float shim_joy_r2d_slider_get_value(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("joy_ui_slider_get_value", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_get_value", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_joy_ui_slider_set_rect(void* _jv_ctx, Slider s, float x, float y, float w, float h)
+static void shim_joy_r2d_slider_set_rect(void* _jv_ctx, Slider s, float x, float y, float w, float h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -4690,13 +4690,13 @@ static void shim_joy_ui_slider_set_rect(void* _jv_ctx, Slider s, float x, float 
         _jv_args[2] = joy_v_f64(y);
         _jv_args[3] = joy_v_f64(w);
         _jv_args[4] = joy_v_f64(h);
-        _jv_r = joy_api_call("joy_ui_slider_set_rect", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_set_rect", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_slider_set_range(void* _jv_ctx, Slider s, float min, float max)
+static void shim_joy_r2d_slider_set_range(void* _jv_ctx, Slider s, float min, float max)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4705,26 +4705,26 @@ static void shim_joy_ui_slider_set_range(void* _jv_ctx, Slider s, float min, flo
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(min);
         _jv_args[2] = joy_v_f64(max);
-        _jv_r = joy_api_call("joy_ui_slider_set_range", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_set_range", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_slider_draw(void* _jv_ctx, Slider s)
+static void shim_joy_r2d_slider_draw(void* _jv_ctx, Slider s)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
-        _jv_r = joy_api_call("joy_ui_slider_draw", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_draw", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_slider_is_pressed(void* _jv_ctx, Slider s, float x, float y)
+static bool shim_joy_r2d_slider_is_pressed(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4733,12 +4733,12 @@ static bool shim_joy_ui_slider_is_pressed(void* _jv_ctx, Slider s, float x, floa
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_slider_is_pressed", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_is_pressed", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
+static void shim_joy_r2d_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4746,13 +4746,13 @@ static void shim_joy_ui_slider_set_pressed(void* _jv_ctx, Slider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_slider_set_pressed", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_set_pressed", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_slider_drag_move(void* _jv_ctx, Slider s, float x, float y)
+static void shim_joy_r2d_slider_drag_move(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4761,13 +4761,13 @@ static void shim_joy_ui_slider_drag_move(void* _jv_ctx, Slider s, float x, float
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_slider_drag_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_drag_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_slider_is_hovered(void* _jv_ctx, Slider s, float x, float y)
+static bool shim_joy_r2d_slider_is_hovered(void* _jv_ctx, Slider s, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4776,12 +4776,12 @@ static bool shim_joy_ui_slider_is_hovered(void* _jv_ctx, Slider s, float x, floa
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_slider_is_hovered", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_is_hovered", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
+static void shim_joy_r2d_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4789,26 +4789,26 @@ static void shim_joy_ui_slider_set_hovered(void* _jv_ctx, Slider s, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(s.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_slider_set_hovered", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_slider_set_hovered", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_destroy(void* _jv_ctx, Popup p)
+static void shim_joy_r2d_popup_destroy(void* _jv_ctx, Popup p)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
-        _jv_r = joy_api_call("joy_ui_popup_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_set_title(void* _jv_ctx, Popup p, const char* text, int len)
+static void shim_joy_r2d_popup_set_title(void* _jv_ctx, Popup p, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4817,13 +4817,13 @@ static void shim_joy_ui_popup_set_title(void* _jv_ctx, Popup p, const char* text
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("joy_ui_popup_set_title", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_set_title", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_set_content(void* _jv_ctx, Popup p, const char* text, int len)
+static void shim_joy_r2d_popup_set_content(void* _jv_ctx, Popup p, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4832,13 +4832,13 @@ static void shim_joy_ui_popup_set_content(void* _jv_ctx, Popup p, const char* te
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("joy_ui_popup_set_content", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_set_content", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_set_position(void* _jv_ctx, Popup p, float x, float y)
+static void shim_joy_r2d_popup_set_position(void* _jv_ctx, Popup p, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4847,13 +4847,13 @@ static void shim_joy_ui_popup_set_position(void* _jv_ctx, Popup p, float x, floa
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_popup_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_set_visible(void* _jv_ctx, Popup p, bool v)
+static void shim_joy_r2d_popup_set_visible(void* _jv_ctx, Popup p, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4861,13 +4861,13 @@ static void shim_joy_ui_popup_set_visible(void* _jv_ctx, Popup p, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_popup_set_visible", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_set_visible", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
+static void shim_joy_r2d_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -4875,13 +4875,13 @@ static void shim_joy_ui_popup_set_closeable(void* _jv_ctx, Popup p, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_popup_set_closeable", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_set_closeable", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font content_font)
+static void shim_joy_r2d_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font content_font)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4890,13 +4890,13 @@ static void shim_joy_ui_popup_draw(void* _jv_ctx, Popup p, Font title_font, Font
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_handle(title_font.h);
         _jv_args[2] = joy_v_handle(content_font.h);
-        _jv_r = joy_api_call("joy_ui_popup_draw", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_draw", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_r2d_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4905,12 +4905,12 @@ static bool shim_joy_ui_popup_is_close_clicked(void* _jv_ctx, Popup p, float mx,
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("joy_ui_popup_is_close_clicked", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_is_close_clicked", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_r2d_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4919,12 +4919,12 @@ static bool shim_joy_ui_popup_is_title_clicked(void* _jv_ctx, Popup p, float mx,
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("joy_ui_popup_is_title_clicked", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_is_title_clicked", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_popup_drag_move(void* _jv_ctx, Popup p, float mx, float my)
+static void shim_joy_r2d_popup_drag_move(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4933,13 +4933,13 @@ static void shim_joy_ui_popup_drag_move(void* _jv_ctx, Popup p, float mx, float 
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("joy_ui_popup_drag_move", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_drag_move", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_popup_is_inside(void* _jv_ctx, Popup p, float mx, float my)
+static bool shim_joy_r2d_popup_is_inside(void* _jv_ctx, Popup p, float mx, float my)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4948,25 +4948,25 @@ static bool shim_joy_ui_popup_is_inside(void* _jv_ctx, Popup p, float mx, float 
         _jv_args[0] = joy_v_handle(p.h);
         _jv_args[1] = joy_v_f64(mx);
         _jv_args[2] = joy_v_f64(my);
-        _jv_r = joy_api_call("joy_ui_popup_is_inside", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_popup_is_inside", _jv_args, 3, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_tooltip_destroy(void* _jv_ctx, Tooltip t)
+static void shim_joy_r2d_tooltip_destroy(void* _jv_ctx, Tooltip t)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
-        _jv_r = joy_api_call("joy_ui_tooltip_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_tooltip_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* text, int len)
+static void shim_joy_r2d_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* text, int len)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4975,13 +4975,13 @@ static void shim_joy_ui_tooltip_set_text(void* _jv_ctx, Tooltip t, const char* t
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_str(text);
         _jv_args[2] = joy_v_i32(len);
-        _jv_r = joy_api_call("joy_ui_tooltip_set_text", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_tooltip_set_text", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, float y)
+static void shim_joy_r2d_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, float y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -4990,13 +4990,13 @@ static void shim_joy_ui_tooltip_set_position(void* _jv_ctx, Tooltip t, float x, 
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_f64(x);
         _jv_args[2] = joy_v_f64(y);
-        _jv_r = joy_api_call("joy_ui_tooltip_set_position", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_tooltip_set_position", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
+static void shim_joy_r2d_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5004,13 +5004,13 @@ static void shim_joy_ui_tooltip_set_visible(void* _jv_ctx, Tooltip t, bool v)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_bool(v);
-        _jv_r = joy_api_call("joy_ui_tooltip_set_visible", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_tooltip_set_visible", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
+static void shim_joy_r2d_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5018,52 +5018,52 @@ static void shim_joy_ui_tooltip_draw(void* _jv_ctx, Tooltip t, Font font)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(t.h);
         _jv_args[1] = joy_v_handle(font.h);
-        _jv_r = joy_api_call("joy_ui_tooltip_draw", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_tooltip_draw", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_ctx_destroy(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_ctx_destroy(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_ctx_destroy", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_ctx_destroy", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_begin(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_im_begin(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_begin", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_im_begin", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_end(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_im_end(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_im_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_input_motion(void* _jv_ctx, JuiCtx ctx, float win_x, float win_y)
+static void shim_joy_r2d_input_motion(void* _jv_ctx, JuiCtx ctx, float win_x, float win_y)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5072,13 +5072,13 @@ static void shim_joy_ui_input_motion(void* _jv_ctx, JuiCtx ctx, float win_x, flo
         _jv_args[0] = joy_v_handle(ctx.h);
         _jv_args[1] = joy_v_f64(win_x);
         _jv_args[2] = joy_v_f64(win_y);
-        _jv_r = joy_api_call("joy_ui_input_motion", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_input_motion", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_input_down(void* _jv_ctx, JuiCtx ctx, int button)
+static void shim_joy_r2d_input_down(void* _jv_ctx, JuiCtx ctx, int button)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5086,13 +5086,13 @@ static void shim_joy_ui_input_down(void* _jv_ctx, JuiCtx ctx, int button)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
         _jv_args[1] = joy_v_i32(button);
-        _jv_r = joy_api_call("joy_ui_input_down", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_input_down", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_input_up(void* _jv_ctx, JuiCtx ctx, int button)
+static void shim_joy_r2d_input_up(void* _jv_ctx, JuiCtx ctx, int button)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5100,13 +5100,13 @@ static void shim_joy_ui_input_up(void* _jv_ctx, JuiCtx ctx, int button)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
         _jv_args[1] = joy_v_i32(button);
-        _jv_r = joy_api_call("joy_ui_input_up", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_input_up", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_input_wheel(void* _jv_ctx, JuiCtx ctx, float dy)
+static void shim_joy_r2d_input_wheel(void* _jv_ctx, JuiCtx ctx, float dy)
 {
         joy_value_t _jv_args[2];
         joy_value_t _jv_r;
@@ -5114,13 +5114,13 @@ static void shim_joy_ui_input_wheel(void* _jv_ctx, JuiCtx ctx, float dy)
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
         _jv_args[1] = joy_v_f64(dy);
-        _jv_r = joy_api_call("joy_ui_input_wheel", _jv_args, 2, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_input_wheel", _jv_args, 2, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_input_key(void* _jv_ctx, JuiCtx ctx, bool shift, bool ctrl)
+static void shim_joy_r2d_input_key(void* _jv_ctx, JuiCtx ctx, bool shift, bool ctrl)
 {
         joy_value_t _jv_args[3];
         joy_value_t _jv_r;
@@ -5129,85 +5129,85 @@ static void shim_joy_ui_input_key(void* _jv_ctx, JuiCtx ctx, bool shift, bool ct
         _jv_args[0] = joy_v_handle(ctx.h);
         _jv_args[1] = joy_v_bool(shift);
         _jv_args[2] = joy_v_bool(ctrl);
-        _jv_r = joy_api_call("joy_ui_input_key", _jv_args, 3, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_input_key", _jv_args, 3, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_is_down(void* _jv_ctx, JuiCtx ctx)
+static bool shim_joy_r2d_is_down(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_is_down", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_is_down", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_is_pressed(void* _jv_ctx, JuiCtx ctx)
+static bool shim_joy_r2d_is_pressed(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_is_pressed", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_is_pressed", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_is_released(void* _jv_ctx, JuiCtx ctx)
+static bool shim_joy_r2d_is_released(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_is_released", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_is_released", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static float shim_joy_ui_take_wheel(void* _jv_ctx, JuiCtx ctx)
+static float shim_joy_r2d_take_wheel(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_take_wheel", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_take_wheel", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static bool shim_joy_ui_is_shift(void* _jv_ctx, JuiCtx ctx)
+static bool shim_joy_r2d_is_shift(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_is_shift", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_is_shift", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static bool shim_joy_ui_is_ctrl(void* _jv_ctx, JuiCtx ctx)
+static bool shim_joy_r2d_is_ctrl(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_is_ctrl", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_is_ctrl", _jv_args, 1, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_push_clip(void* _jv_ctx, JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+static void shim_joy_r2d_push_clip(void* _jv_ctx, JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5218,39 +5218,39 @@ static void shim_joy_ui_push_clip(void* _jv_ctx, JuiCtx ctx, float rect_x, float
         _jv_args[2] = joy_v_f64(rect_y);
         _jv_args[3] = joy_v_f64(rect_w);
         _jv_args[4] = joy_v_f64(rect_h);
-        _jv_r = joy_api_call("joy_ui_push_clip", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_push_clip", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_pop_clip(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_pop_clip(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_pop_clip", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_pop_clip", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_reset_clip(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_reset_clip(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_reset_clip", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_reset_clip", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_hit(void* _jv_ctx, JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
+static bool shim_joy_r2d_hit(void* _jv_ctx, JuiCtx ctx, float rect_x, float rect_y, float rect_w, float rect_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5261,12 +5261,12 @@ static bool shim_joy_ui_hit(void* _jv_ctx, JuiCtx ctx, float rect_x, float rect_
         _jv_args[2] = joy_v_f64(rect_y);
         _jv_args[3] = joy_v_f64(rect_w);
         _jv_args[4] = joy_v_f64(rect_h);
-        _jv_r = joy_api_call("joy_ui_hit", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_hit", _jv_args, 5, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
 
-static void shim_joy_ui_fill_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
+static void shim_joy_r2d_fill_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
 {
         joy_value_t _jv_args[9];
         joy_value_t _jv_r;
@@ -5281,13 +5281,13 @@ static void shim_joy_ui_fill_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float r_
         _jv_args[6] = joy_v_u32(c_g);
         _jv_args[7] = joy_v_u32(c_b);
         _jv_args[8] = joy_v_u32(c_a);
-        _jv_r = joy_api_call("joy_ui_fill_rect", _jv_args, 9, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_fill_rect", _jv_args, 9, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_stroke_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
+static void shim_joy_r2d_stroke_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
 {
         joy_value_t _jv_args[9];
         joy_value_t _jv_r;
@@ -5302,13 +5302,13 @@ static void shim_joy_ui_stroke_rect(void* _jv_ctx, JuiCtx ctx, float r_x, float 
         _jv_args[6] = joy_v_u32(c_g);
         _jv_args[7] = joy_v_u32(c_b);
         _jv_args[8] = joy_v_u32(c_a);
-        _jv_r = joy_api_call("joy_ui_stroke_rect", _jv_args, 9, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_stroke_rect", _jv_args, 9, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_line(void* _jv_ctx, JuiCtx ctx, float x1, float y1, float x2, float y2, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
+static void shim_joy_r2d_line(void* _jv_ctx, JuiCtx ctx, float x1, float y1, float x2, float y2, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
 {
         joy_value_t _jv_args[9];
         joy_value_t _jv_r;
@@ -5323,13 +5323,13 @@ static void shim_joy_ui_line(void* _jv_ctx, JuiCtx ctx, float x1, float y1, floa
         _jv_args[6] = joy_v_u32(c_g);
         _jv_args[7] = joy_v_u32(c_b);
         _jv_args[8] = joy_v_u32(c_a);
-        _jv_r = joy_api_call("joy_ui_line", _jv_args, 9, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_line", _jv_args, 9, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static int shim_joy_ui_text(void* _jv_ctx, JuiCtx ctx, float x, float y, const char* s, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
+static int shim_joy_r2d_text(void* _jv_ctx, JuiCtx ctx, float x, float y, const char* s, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
 {
         joy_value_t _jv_args[8];
         joy_value_t _jv_r;
@@ -5343,12 +5343,12 @@ static int shim_joy_ui_text(void* _jv_ctx, JuiCtx ctx, float x, float y, const c
         _jv_args[5] = joy_v_u32(c_g);
         _jv_args[6] = joy_v_u32(c_b);
         _jv_args[7] = joy_v_u32(c_a);
-        _jv_r = joy_api_call("joy_ui_text", _jv_args, 8, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text", _jv_args, 8, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static int shim_joy_ui_text_centered(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, const char* s, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
+static int shim_joy_r2d_text_centered(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, const char* s, uint8_t c_r, uint8_t c_g, uint8_t c_b, uint8_t c_a)
 {
         joy_value_t _jv_args[10];
         joy_value_t _jv_r;
@@ -5364,12 +5364,12 @@ static int shim_joy_ui_text_centered(void* _jv_ctx, JuiCtx ctx, float r_x, float
         _jv_args[7] = joy_v_u32(c_g);
         _jv_args[8] = joy_v_u32(c_b);
         _jv_args[9] = joy_v_u32(c_a);
-        _jv_r = joy_api_call("joy_ui_text_centered", _jv_args, 10, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_text_centered", _jv_args, 10, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I32) return (int)0;
         return (int) _jv_r.as.i32;
 }
 
-static void shim_joy_ui_panel_begin(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, const char* title)
+static void shim_joy_r2d_panel_begin(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h, const char* title)
 {
         joy_value_t _jv_args[6];
         joy_value_t _jv_r;
@@ -5381,26 +5381,26 @@ static void shim_joy_ui_panel_begin(void* _jv_ctx, JuiCtx ctx, float r_x, float 
         _jv_args[3] = joy_v_f64(r_w);
         _jv_args[4] = joy_v_f64(r_h);
         _jv_args[5] = joy_v_str(title);
-        _jv_r = joy_api_call("joy_ui_panel_begin", _jv_args, 6, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_panel_begin", _jv_args, 6, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_panel_end(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_panel_end(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_panel_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_panel_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_panel_frame(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h)
+static void shim_joy_r2d_panel_frame(void* _jv_ctx, JuiCtx ctx, float r_x, float r_y, float r_w, float r_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5411,13 +5411,13 @@ static void shim_joy_ui_panel_frame(void* _jv_ctx, JuiCtx ctx, float r_x, float 
         _jv_args[2] = joy_v_f64(r_y);
         _jv_args[3] = joy_v_f64(r_w);
         _jv_args[4] = joy_v_f64(r_h);
-        _jv_r = joy_api_call("joy_ui_panel_frame", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_panel_frame", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static float shim_joy_ui_scroll_begin(void* _jv_ctx, JuiCtx ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h)
+static float shim_joy_r2d_scroll_begin(void* _jv_ctx, JuiCtx ctx, int id, float view_x, float view_y, float view_w, float view_h, float content_h)
 {
         joy_value_t _jv_args[7];
         joy_value_t _jv_r;
@@ -5430,25 +5430,25 @@ static float shim_joy_ui_scroll_begin(void* _jv_ctx, JuiCtx ctx, int id, float v
         _jv_args[4] = joy_v_f64(view_w);
         _jv_args[5] = joy_v_f64(view_h);
         _jv_args[6] = joy_v_f64(content_h);
-        _jv_r = joy_api_call("joy_ui_scroll_begin", _jv_args, 7, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scroll_begin", _jv_args, 7, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_F64) return (float)0;
         return (float) _jv_r.as.f64;
 }
 
-static void shim_joy_ui_scroll_end(void* _jv_ctx, JuiCtx ctx)
+static void shim_joy_r2d_scroll_end(void* _jv_ctx, JuiCtx ctx)
 {
         joy_value_t _jv_args[1];
         joy_value_t _jv_r;
         joy_status_t _jv_st = JOY_OK;
         (void)_jv_ctx;
         _jv_args[0] = joy_v_handle(ctx.h);
-        _jv_r = joy_api_call("joy_ui_scroll_end", _jv_args, 1, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scroll_end", _jv_args, 1, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scrollbar(void* _jv_ctx, JuiCtx ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off)
+static void shim_joy_r2d_scrollbar(void* _jv_ctx, JuiCtx ctx, float view_x, float view_y, float view_w, float view_h, float content_h, float off)
 {
         joy_value_t _jv_args[7];
         joy_value_t _jv_r;
@@ -5461,13 +5461,13 @@ static void shim_joy_ui_scrollbar(void* _jv_ctx, JuiCtx ctx, float view_x, float
         _jv_args[4] = joy_v_f64(view_h);
         _jv_args[5] = joy_v_f64(content_h);
         _jv_args[6] = joy_v_f64(off);
-        _jv_r = joy_api_call("joy_ui_scrollbar", _jv_args, 7, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scrollbar", _jv_args, 7, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static void shim_joy_ui_scroll_set_offset(void* _jv_ctx, JuiCtx ctx, int id, float off, float content_h, float view_h)
+static void shim_joy_r2d_scroll_set_offset(void* _jv_ctx, JuiCtx ctx, int id, float off, float content_h, float view_h)
 {
         joy_value_t _jv_args[5];
         joy_value_t _jv_r;
@@ -5478,13 +5478,13 @@ static void shim_joy_ui_scroll_set_offset(void* _jv_ctx, JuiCtx ctx, int id, flo
         _jv_args[2] = joy_v_f64(off);
         _jv_args[3] = joy_v_f64(content_h);
         _jv_args[4] = joy_v_f64(view_h);
-        _jv_r = joy_api_call("joy_ui_scroll_set_offset", _jv_args, 5, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_scroll_set_offset", _jv_args, 5, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
 }
 
-static bool shim_joy_ui_button(void* _jv_ctx, JuiCtx ctx, int id, float r_x, float r_y, float r_w, float r_h, const char* text)
+static bool shim_joy_r2d_button(void* _jv_ctx, JuiCtx ctx, int id, float r_x, float r_y, float r_w, float r_h, const char* text)
 {
         joy_value_t _jv_args[7];
         joy_value_t _jv_r;
@@ -5497,7 +5497,7 @@ static bool shim_joy_ui_button(void* _jv_ctx, JuiCtx ctx, int id, float r_x, flo
         _jv_args[4] = joy_v_f64(r_w);
         _jv_args[5] = joy_v_f64(r_h);
         _jv_args[6] = joy_v_str(text);
-        _jv_r = joy_api_call("joy_ui_button", _jv_args, 7, &_jv_st);
+        _jv_r = joy_api_call("joy_r2d_button", _jv_args, 7, &_jv_st);
         if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_BOOL) return (bool)0;
         return (bool) _jv_r.as.b;
 }
@@ -10754,168 +10754,168 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JanimatorUpdate = shim_joy_scene_animator_update;
         api->JanimatorDraw = shim_joy_scene_animator_draw;
         api->JanimatorSetFlipH = shim_joy_scene_animator_set_flip_h;
-        api->LabelDestroy = shim_joy_ui_label_destroy;
-        api->LabelDraw = shim_joy_ui_label_draw;
-        api->ButtonDestroy = shim_joy_ui_button_destroy;
-        api->ButtonSetPosition = shim_joy_ui_button_set_position;
-        api->ButtonSetSize = shim_joy_ui_button_set_size;
-        api->ButtonSetNormalColor = shim_joy_ui_button_set_normal_color;
-        api->ButtonSetHoverColor = shim_joy_ui_button_set_hover_color;
-        api->ButtonSetPressedColor = shim_joy_ui_button_set_pressed_color;
-        api->ButtonSetImage = shim_joy_ui_button_set_image;
-        api->ButtonSetPressedImage = shim_joy_ui_button_set_pressed_image;
-        api->ButtonSetTextx = shim_joy_ui_button_set_textx;
-        api->ButtonIsHovered = shim_joy_ui_button_is_hovered;
-        api->ButtonIsPressed = shim_joy_ui_button_is_pressed;
-        api->ButtonSetHovered = shim_joy_ui_button_set_hovered;
-        api->ButtonSetPressed = shim_joy_ui_button_set_pressed;
-        api->ButtonGetPressed = shim_joy_ui_button_get_pressed;
-        api->ButtonSetTextOffset = shim_joy_ui_button_set_text_offset;
-        api->ButtonDraw = shim_joy_ui_button_draw;
-        api->ScrollviewDestroy = shim_joy_ui_scrollview_destroy;
-        api->ScrollviewSetViewPx = shim_joy_ui_scrollview_set_view_px;
-        api->ScrollviewSetContent = shim_joy_ui_scrollview_set_content;
-        api->ScrollviewSetOffset = shim_joy_ui_scrollview_set_offset;
-        api->ScrollviewClamp = shim_joy_ui_scrollview_clamp;
-        api->ScrollviewGetOffsetX = shim_joy_ui_scrollview_get_offset_x;
-        api->ScrollviewGetOffsetY = shim_joy_ui_scrollview_get_offset_y;
-        api->ScrollviewSetShowBar = shim_joy_ui_scrollview_set_show_bar;
-        api->ScrollviewDragging = shim_joy_ui_scrollview_dragging;
-        api->ScrollviewHit = shim_joy_ui_scrollview_hit;
-        api->ScrollviewBegin = shim_joy_ui_scrollview_begin;
-        api->ScrollviewEnd = shim_joy_ui_scrollview_end;
-        api->ComboboxDestroy = shim_joy_ui_combobox_destroy;
-        api->ComboboxAddItem = shim_joy_ui_combobox_add_item;
-        api->ComboboxIsPressed = shim_joy_ui_combobox_is_pressed;
-        api->ComboboxIsOpen = shim_joy_ui_combobox_is_open;
-        api->ComboboxSetOpen = shim_joy_ui_combobox_set_open;
-        api->ComboboxHitItem = shim_joy_ui_combobox_hit_item;
-        api->ComboboxSetSelected = shim_joy_ui_combobox_set_selected;
-        api->ComboboxGetSelected = shim_joy_ui_combobox_get_selected;
-        api->ComboboxDraw = shim_joy_ui_combobox_draw;
-        api->ComboboxInputDestroy = shim_joy_ui_combobox_input_destroy;
-        api->ComboboxInputAddItem = shim_joy_ui_combobox_input_add_item;
-        api->ComboboxInputClearItems = shim_joy_ui_combobox_input_clear_items;
-        api->ComboboxInputSetText = shim_joy_ui_combobox_input_set_text;
-        api->ComboboxInputDraw = shim_joy_ui_combobox_input_draw;
-        api->ComboboxInputDrawDropdown = shim_joy_ui_combobox_input_draw_dropdown;
-        api->ComboboxInputIsOpen = shim_joy_ui_combobox_input_is_open;
-        api->ComboboxInputSetPopupNode = shim_joy_ui_combobox_input_set_popup_node;
-        api->ComboboxInputHitItem = shim_joy_ui_combobox_input_hit_item;
-        api->ComboboxInputSetOpen = shim_joy_ui_combobox_input_set_open;
-        api->DatagridSetheaders = shim_joy_ui_datagrid_setheaders;
-        api->DatagridSetheader = shim_joy_ui_datagrid_setheader;
-        api->DatagridSetcell = shim_joy_ui_datagrid_setcell;
-        api->DatagridDestroy = shim_joy_ui_datagrid_destroy;
-        api->DatagridDraw = shim_joy_ui_datagrid_draw;
-        api->DatagridHitRow = shim_joy_ui_datagrid_hit_row;
-        api->DatagridScroll = shim_joy_ui_datagrid_scroll;
-        api->DatagridSetSelectedRow = shim_joy_ui_datagrid_set_selected_row;
-        api->RadioDestroy = shim_joy_ui_radio_destroy;
-        api->RadioIsPressed = shim_joy_ui_radio_is_pressed;
-        api->RadioSetHovered = shim_joy_ui_radio_set_hovered;
-        api->CheckboxDestroy = shim_joy_ui_checkbox_destroy;
-        api->CheckboxSetColors = shim_joy_ui_checkbox_set_colors;
-        api->CheckboxSetR2d = shim_joy_ui_checkbox_set_r2d;
-        api->CheckboxSetPosition = shim_joy_ui_checkbox_set_position;
-        api->CheckboxSetTextColor = shim_joy_ui_checkbox_set_text_color;
-        api->CheckboxToggle = shim_joy_ui_checkbox_toggle;
-        api->CheckboxIsPressed = shim_joy_ui_checkbox_is_pressed;
-        api->CheckboxSetHovered = shim_joy_ui_checkbox_set_hovered;
-        api->JoystickDestroy = shim_joy_ui_joystick_destroy;
-        api->JoystickSetTextures = shim_joy_ui_joystick_set_textures;
-        api->JoystickSetVector = shim_joy_ui_joystick_set_vector;
-        api->JoystickDraw = shim_joy_ui_joystick_draw;
-        api->JoystickReset = shim_joy_ui_joystick_reset;
-        api->JoystickSetPosition = shim_joy_ui_joystick_set_position;
-        api->JoystickSetRadius = shim_joy_ui_joystick_set_radius;
-        api->JoystickIsDragging = shim_joy_ui_joystick_is_dragging;
-        api->JoystickTouchDown = shim_joy_ui_joystick_touch_down;
-        api->JoystickTouchMove = shim_joy_ui_joystick_touch_move;
-        api->JoystickTouchUp = shim_joy_ui_joystick_touch_up;
-        api->JoystickGetMagnitude = shim_joy_ui_joystick_get_magnitude;
-        api->InputboxDestroy = shim_joy_ui_inputbox_destroy;
-        api->InputboxSetText = shim_joy_ui_inputbox_set_text;
-        api->InputboxDraw = shim_joy_ui_inputbox_draw;
-        api->InputboxIsPressed = shim_joy_ui_inputbox_is_pressed;
-        api->InputboxIsHovered = shim_joy_ui_inputbox_is_hovered;
-        api->InputboxFocus = shim_joy_ui_inputbox_focus;
-        api->InputboxDefocus = shim_joy_ui_inputbox_defocus;
-        api->InputboxBlur = shim_joy_ui_inputbox_blur;
-        api->InputboxInsert = shim_joy_ui_inputbox_insert;
-        api->InputboxBackspace = shim_joy_ui_inputbox_backspace;
-        api->InputboxDelete = shim_joy_ui_inputbox_delete;
-        api->InputboxCursorLeft = shim_joy_ui_inputbox_cursor_left;
-        api->InputboxCursorRight = shim_joy_ui_inputbox_cursor_right;
-        api->InputboxCursorHome = shim_joy_ui_inputbox_cursor_home;
-        api->InputboxCursorEnd = shim_joy_ui_inputbox_cursor_end;
-        api->InputboxSelectLeft = shim_joy_ui_inputbox_select_left;
-        api->InputboxSelectRight = shim_joy_ui_inputbox_select_right;
-        api->InputboxSelectHome = shim_joy_ui_inputbox_select_home;
-        api->InputboxSelectEnd = shim_joy_ui_inputbox_select_end;
-        api->InputboxSelectAll = shim_joy_ui_inputbox_select_all;
-        api->InputboxPaste = shim_joy_ui_inputbox_paste;
-        api->InputboxCopy = shim_joy_ui_inputbox_copy;
-        api->InputboxCut = shim_joy_ui_inputbox_cut;
-        api->InputboxIsFocused = shim_joy_ui_inputbox_is_focused;
-        api->SliderDestroy = shim_joy_ui_slider_destroy;
-        api->SliderSetValue = shim_joy_ui_slider_set_value;
-        api->SliderGetValue = shim_joy_ui_slider_get_value;
-        api->SliderSetRect = shim_joy_ui_slider_set_rect;
-        api->SliderSetRange = shim_joy_ui_slider_set_range;
-        api->SliderDraw = shim_joy_ui_slider_draw;
-        api->SliderIsPressed = shim_joy_ui_slider_is_pressed;
-        api->SliderSetPressed = shim_joy_ui_slider_set_pressed;
-        api->SliderDragMove = shim_joy_ui_slider_drag_move;
-        api->SliderIsHovered = shim_joy_ui_slider_is_hovered;
-        api->SliderSetHovered = shim_joy_ui_slider_set_hovered;
-        api->PopupDestroy = shim_joy_ui_popup_destroy;
-        api->PopupSetTitle = shim_joy_ui_popup_set_title;
-        api->PopupSetContent = shim_joy_ui_popup_set_content;
-        api->PopupSetPosition = shim_joy_ui_popup_set_position;
-        api->PopupSetVisible = shim_joy_ui_popup_set_visible;
-        api->PopupSetCloseable = shim_joy_ui_popup_set_closeable;
-        api->PopupDraw = shim_joy_ui_popup_draw;
-        api->PopupIsCloseClicked = shim_joy_ui_popup_is_close_clicked;
-        api->PopupIsTitleClicked = shim_joy_ui_popup_is_title_clicked;
-        api->PopupDragMove = shim_joy_ui_popup_drag_move;
-        api->PopupIsInside = shim_joy_ui_popup_is_inside;
-        api->TooltipDestroy = shim_joy_ui_tooltip_destroy;
-        api->TooltipSetText = shim_joy_ui_tooltip_set_text;
-        api->TooltipSetPosition = shim_joy_ui_tooltip_set_position;
-        api->TooltipSetVisible = shim_joy_ui_tooltip_set_visible;
-        api->TooltipDraw = shim_joy_ui_tooltip_draw;
-        api->JuiCtxDestroy = shim_joy_ui_ctx_destroy;
-        api->JuiBegin = shim_joy_ui_begin;
-        api->JuiEnd = shim_joy_ui_end;
-        api->JuiInputMotion = shim_joy_ui_input_motion;
-        api->JuiInputDown = shim_joy_ui_input_down;
-        api->JuiInputUp = shim_joy_ui_input_up;
-        api->JuiInputWheel = shim_joy_ui_input_wheel;
-        api->JuiInputKey = shim_joy_ui_input_key;
-        api->JuiIsDown = shim_joy_ui_is_down;
-        api->JuiIsPressed = shim_joy_ui_is_pressed;
-        api->JuiIsReleased = shim_joy_ui_is_released;
-        api->JuiTakeWheel = shim_joy_ui_take_wheel;
-        api->JuiIsShift = shim_joy_ui_is_shift;
-        api->JuiIsCtrl = shim_joy_ui_is_ctrl;
-        api->JuiPushClip = shim_joy_ui_push_clip;
-        api->JuiPopClip = shim_joy_ui_pop_clip;
-        api->JuiResetClip = shim_joy_ui_reset_clip;
-        api->JuiHit = shim_joy_ui_hit;
-        api->JuiFillRect = shim_joy_ui_fill_rect;
-        api->JuiStrokeRect = shim_joy_ui_stroke_rect;
-        api->JuiLine = shim_joy_ui_line;
-        api->JuiText = shim_joy_ui_text;
-        api->JuiTextCentered = shim_joy_ui_text_centered;
-        api->JuiPanelBegin = shim_joy_ui_panel_begin;
-        api->JuiPanelEnd = shim_joy_ui_panel_end;
-        api->JuiPanelFrame = shim_joy_ui_panel_frame;
-        api->JuiScrollBegin = shim_joy_ui_scroll_begin;
-        api->JuiScrollEnd = shim_joy_ui_scroll_end;
-        api->JuiScrollbar = shim_joy_ui_scrollbar;
-        api->JuiScrollSetOffset = shim_joy_ui_scroll_set_offset;
-        api->JuiButton = shim_joy_ui_button;
+        api->LabelDestroy = shim_joy_r2d_label_destroy;
+        api->LabelDraw = shim_joy_r2d_label_draw;
+        api->ButtonDestroy = shim_joy_r2d_button_destroy;
+        api->ButtonSetPosition = shim_joy_r2d_button_set_position;
+        api->ButtonSetSize = shim_joy_r2d_button_set_size;
+        api->ButtonSetNormalColor = shim_joy_r2d_button_set_normal_color;
+        api->ButtonSetHoverColor = shim_joy_r2d_button_set_hover_color;
+        api->ButtonSetPressedColor = shim_joy_r2d_button_set_pressed_color;
+        api->ButtonSetImage = shim_joy_r2d_button_set_image;
+        api->ButtonSetPressedImage = shim_joy_r2d_button_set_pressed_image;
+        api->ButtonSetTextx = shim_joy_r2d_button_set_textx;
+        api->ButtonIsHovered = shim_joy_r2d_button_is_hovered;
+        api->ButtonIsPressed = shim_joy_r2d_button_is_pressed;
+        api->ButtonSetHovered = shim_joy_r2d_button_set_hovered;
+        api->ButtonSetPressed = shim_joy_r2d_button_set_pressed;
+        api->ButtonGetPressed = shim_joy_r2d_button_get_pressed;
+        api->ButtonSetTextOffset = shim_joy_r2d_button_set_text_offset;
+        api->ButtonDraw = shim_joy_r2d_button_draw;
+        api->ScrollviewDestroy = shim_joy_r2d_scrollview_destroy;
+        api->ScrollviewSetViewPx = shim_joy_r2d_scrollview_set_view_px;
+        api->ScrollviewSetContent = shim_joy_r2d_scrollview_set_content;
+        api->ScrollviewSetOffset = shim_joy_r2d_scrollview_set_offset;
+        api->ScrollviewClamp = shim_joy_r2d_scrollview_clamp;
+        api->ScrollviewGetOffsetX = shim_joy_r2d_scrollview_get_offset_x;
+        api->ScrollviewGetOffsetY = shim_joy_r2d_scrollview_get_offset_y;
+        api->ScrollviewSetShowBar = shim_joy_r2d_scrollview_set_show_bar;
+        api->ScrollviewDragging = shim_joy_r2d_scrollview_dragging;
+        api->ScrollviewHit = shim_joy_r2d_scrollview_hit;
+        api->ScrollviewBegin = shim_joy_r2d_scrollview_begin;
+        api->ScrollviewEnd = shim_joy_r2d_scrollview_end;
+        api->ComboboxDestroy = shim_joy_r2d_combobox_destroy;
+        api->ComboboxAddItem = shim_joy_r2d_combobox_add_item;
+        api->ComboboxIsPressed = shim_joy_r2d_combobox_is_pressed;
+        api->ComboboxIsOpen = shim_joy_r2d_combobox_is_open;
+        api->ComboboxSetOpen = shim_joy_r2d_combobox_set_open;
+        api->ComboboxHitItem = shim_joy_r2d_combobox_hit_item;
+        api->ComboboxSetSelected = shim_joy_r2d_combobox_set_selected;
+        api->ComboboxGetSelected = shim_joy_r2d_combobox_get_selected;
+        api->ComboboxDraw = shim_joy_r2d_combobox_draw;
+        api->ComboboxInputDestroy = shim_joy_r2d_combobox_input_destroy;
+        api->ComboboxInputAddItem = shim_joy_r2d_combobox_input_add_item;
+        api->ComboboxInputClearItems = shim_joy_r2d_combobox_input_clear_items;
+        api->ComboboxInputSetText = shim_joy_r2d_combobox_input_set_text;
+        api->ComboboxInputDraw = shim_joy_r2d_combobox_input_draw;
+        api->ComboboxInputDrawDropdown = shim_joy_r2d_combobox_input_draw_dropdown;
+        api->ComboboxInputIsOpen = shim_joy_r2d_combobox_input_is_open;
+        api->ComboboxInputSetPopupNode = shim_joy_r2d_combobox_input_set_popup_node;
+        api->ComboboxInputHitItem = shim_joy_r2d_combobox_input_hit_item;
+        api->ComboboxInputSetOpen = shim_joy_r2d_combobox_input_set_open;
+        api->DatagridSetheaders = shim_joy_r2d_datagrid_setheaders;
+        api->DatagridSetheader = shim_joy_r2d_datagrid_setheader;
+        api->DatagridSetcell = shim_joy_r2d_datagrid_setcell;
+        api->DatagridDestroy = shim_joy_r2d_datagrid_destroy;
+        api->DatagridDraw = shim_joy_r2d_datagrid_draw;
+        api->DatagridHitRow = shim_joy_r2d_datagrid_hit_row;
+        api->DatagridScroll = shim_joy_r2d_datagrid_scroll;
+        api->DatagridSetSelectedRow = shim_joy_r2d_datagrid_set_selected_row;
+        api->RadioDestroy = shim_joy_r2d_radio_destroy;
+        api->RadioIsPressed = shim_joy_r2d_radio_is_pressed;
+        api->RadioSetHovered = shim_joy_r2d_radio_set_hovered;
+        api->CheckboxDestroy = shim_joy_r2d_checkbox_destroy;
+        api->CheckboxSetColors = shim_joy_r2d_checkbox_set_colors;
+        api->CheckboxSetR2d = shim_joy_r2d_checkbox_set_r2d;
+        api->CheckboxSetPosition = shim_joy_r2d_checkbox_set_position;
+        api->CheckboxSetTextColor = shim_joy_r2d_checkbox_set_text_color;
+        api->CheckboxToggle = shim_joy_r2d_checkbox_toggle;
+        api->CheckboxIsPressed = shim_joy_r2d_checkbox_is_pressed;
+        api->CheckboxSetHovered = shim_joy_r2d_checkbox_set_hovered;
+        api->JoystickDestroy = shim_joy_r2d_joystick_destroy;
+        api->JoystickSetTextures = shim_joy_r2d_joystick_set_textures;
+        api->JoystickSetVector = shim_joy_r2d_joystick_set_vector;
+        api->JoystickDraw = shim_joy_r2d_joystick_draw;
+        api->JoystickReset = shim_joy_r2d_joystick_reset;
+        api->JoystickSetPosition = shim_joy_r2d_joystick_set_position;
+        api->JoystickSetRadius = shim_joy_r2d_joystick_set_radius;
+        api->JoystickIsDragging = shim_joy_r2d_joystick_is_dragging;
+        api->JoystickTouchDown = shim_joy_r2d_joystick_touch_down;
+        api->JoystickTouchMove = shim_joy_r2d_joystick_touch_move;
+        api->JoystickTouchUp = shim_joy_r2d_joystick_touch_up;
+        api->JoystickGetMagnitude = shim_joy_r2d_joystick_get_magnitude;
+        api->InputboxDestroy = shim_joy_r2d_inputbox_destroy;
+        api->InputboxSetText = shim_joy_r2d_inputbox_set_text;
+        api->InputboxDraw = shim_joy_r2d_inputbox_draw;
+        api->InputboxIsPressed = shim_joy_r2d_inputbox_is_pressed;
+        api->InputboxIsHovered = shim_joy_r2d_inputbox_is_hovered;
+        api->InputboxFocus = shim_joy_r2d_inputbox_focus;
+        api->InputboxDefocus = shim_joy_r2d_inputbox_defocus;
+        api->InputboxBlur = shim_joy_r2d_inputbox_blur;
+        api->InputboxInsert = shim_joy_r2d_inputbox_insert;
+        api->InputboxBackspace = shim_joy_r2d_inputbox_backspace;
+        api->InputboxDelete = shim_joy_r2d_inputbox_delete;
+        api->InputboxCursorLeft = shim_joy_r2d_inputbox_cursor_left;
+        api->InputboxCursorRight = shim_joy_r2d_inputbox_cursor_right;
+        api->InputboxCursorHome = shim_joy_r2d_inputbox_cursor_home;
+        api->InputboxCursorEnd = shim_joy_r2d_inputbox_cursor_end;
+        api->InputboxSelectLeft = shim_joy_r2d_inputbox_select_left;
+        api->InputboxSelectRight = shim_joy_r2d_inputbox_select_right;
+        api->InputboxSelectHome = shim_joy_r2d_inputbox_select_home;
+        api->InputboxSelectEnd = shim_joy_r2d_inputbox_select_end;
+        api->InputboxSelectAll = shim_joy_r2d_inputbox_select_all;
+        api->InputboxPaste = shim_joy_r2d_inputbox_paste;
+        api->InputboxCopy = shim_joy_r2d_inputbox_copy;
+        api->InputboxCut = shim_joy_r2d_inputbox_cut;
+        api->InputboxIsFocused = shim_joy_r2d_inputbox_is_focused;
+        api->SliderDestroy = shim_joy_r2d_slider_destroy;
+        api->SliderSetValue = shim_joy_r2d_slider_set_value;
+        api->SliderGetValue = shim_joy_r2d_slider_get_value;
+        api->SliderSetRect = shim_joy_r2d_slider_set_rect;
+        api->SliderSetRange = shim_joy_r2d_slider_set_range;
+        api->SliderDraw = shim_joy_r2d_slider_draw;
+        api->SliderIsPressed = shim_joy_r2d_slider_is_pressed;
+        api->SliderSetPressed = shim_joy_r2d_slider_set_pressed;
+        api->SliderDragMove = shim_joy_r2d_slider_drag_move;
+        api->SliderIsHovered = shim_joy_r2d_slider_is_hovered;
+        api->SliderSetHovered = shim_joy_r2d_slider_set_hovered;
+        api->PopupDestroy = shim_joy_r2d_popup_destroy;
+        api->PopupSetTitle = shim_joy_r2d_popup_set_title;
+        api->PopupSetContent = shim_joy_r2d_popup_set_content;
+        api->PopupSetPosition = shim_joy_r2d_popup_set_position;
+        api->PopupSetVisible = shim_joy_r2d_popup_set_visible;
+        api->PopupSetCloseable = shim_joy_r2d_popup_set_closeable;
+        api->PopupDraw = shim_joy_r2d_popup_draw;
+        api->PopupIsCloseClicked = shim_joy_r2d_popup_is_close_clicked;
+        api->PopupIsTitleClicked = shim_joy_r2d_popup_is_title_clicked;
+        api->PopupDragMove = shim_joy_r2d_popup_drag_move;
+        api->PopupIsInside = shim_joy_r2d_popup_is_inside;
+        api->TooltipDestroy = shim_joy_r2d_tooltip_destroy;
+        api->TooltipSetText = shim_joy_r2d_tooltip_set_text;
+        api->TooltipSetPosition = shim_joy_r2d_tooltip_set_position;
+        api->TooltipSetVisible = shim_joy_r2d_tooltip_set_visible;
+        api->TooltipDraw = shim_joy_r2d_tooltip_draw;
+        api->JuiCtxDestroy = shim_joy_r2d_ctx_destroy;
+        api->JuiBegin = shim_joy_r2d_im_begin;
+        api->JuiEnd = shim_joy_r2d_im_end;
+        api->JuiInputMotion = shim_joy_r2d_input_motion;
+        api->JuiInputDown = shim_joy_r2d_input_down;
+        api->JuiInputUp = shim_joy_r2d_input_up;
+        api->JuiInputWheel = shim_joy_r2d_input_wheel;
+        api->JuiInputKey = shim_joy_r2d_input_key;
+        api->JuiIsDown = shim_joy_r2d_is_down;
+        api->JuiIsPressed = shim_joy_r2d_is_pressed;
+        api->JuiIsReleased = shim_joy_r2d_is_released;
+        api->JuiTakeWheel = shim_joy_r2d_take_wheel;
+        api->JuiIsShift = shim_joy_r2d_is_shift;
+        api->JuiIsCtrl = shim_joy_r2d_is_ctrl;
+        api->JuiPushClip = shim_joy_r2d_push_clip;
+        api->JuiPopClip = shim_joy_r2d_pop_clip;
+        api->JuiResetClip = shim_joy_r2d_reset_clip;
+        api->JuiHit = shim_joy_r2d_hit;
+        api->JuiFillRect = shim_joy_r2d_fill_rect;
+        api->JuiStrokeRect = shim_joy_r2d_stroke_rect;
+        api->JuiLine = shim_joy_r2d_line;
+        api->JuiText = shim_joy_r2d_text;
+        api->JuiTextCentered = shim_joy_r2d_text_centered;
+        api->JuiPanelBegin = shim_joy_r2d_panel_begin;
+        api->JuiPanelEnd = shim_joy_r2d_panel_end;
+        api->JuiPanelFrame = shim_joy_r2d_panel_frame;
+        api->JuiScrollBegin = shim_joy_r2d_scroll_begin;
+        api->JuiScrollEnd = shim_joy_r2d_scroll_end;
+        api->JuiScrollbar = shim_joy_r2d_scrollbar;
+        api->JuiScrollSetOffset = shim_joy_r2d_scroll_set_offset;
+        api->JuiButton = shim_joy_r2d_button;
         api->JtilemapDestroy = shim_joy_scene_tilemap_destroy;
         api->JtilemapGetWidth = shim_joy_scene_tilemap_get_width;
         api->JtilemapGetHeight = shim_joy_scene_tilemap_get_height;
