@@ -246,7 +246,7 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 | `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
 | `ctest` | 4/4（`--timeout 25`） |
-| CI | 本轮 `d46d05ed` 的 Desktop / Android / Web **3/3 success**（Actions API 核实）；`e4e0d272` / `82030b54` / `35fa0ea1` 同为 3/3（历史，§3.0 T5） |
+| CI | 本轮 `a37ed53b` 的 Desktop / Android / Web **3/3 success**（Actions API 核实）；`d46d05ed` / `e4e0d272` / `82030b54` / `35fa0ea1` 同为 3/3（历史，§3.0 T5） |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
 ### 域 → 文件 归属表（9 个手写域 `.c` + 1 个数据分片，均配同名 `.h`）
