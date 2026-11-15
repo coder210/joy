@@ -47,6 +47,7 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
 | **本轮：`joy_math` → `joy_collision`（2026-11-15）** | 见下方「关键决策」新增段 | 87 条改名 / 2 文件改名 / 布局门禁新增生成物域 |
 | **本轮：`jsys` 分片拆为 `sys` 域（2026-11-15）** | 见下方「关键决策」新增段 | 23 条改名 / 2 文件新增 / 手写域 8→9、契约源 10→11 |
 | **本轮：`src` 文件名改回 `j<域>.{c,h}`（2026-11-16）** | 见下方「关键决策」新增段 | 20 文件改名 / 1370 处引用 / 门禁 R1 改文件名规则 |
+| **本轮：让 `src/*.h` 在 VS 中显示（2026-11-16）** | 见下方「关键决策」新增段 | 2 个 CMake 文件 / 新增 `joy_collect_headers()` / 17 个头登记进 IDE |
 
 `35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
@@ -57,6 +58,32 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
   `joy_math.c` 从 56032 行缩到 4543 行，新增 R6 白名单；
 - **`input` 并回 `core` 并统一前缀**：13 个 `joy_input_*` → `joy_core_input_*`，
   域白名单 10 → 9，`DOMAIN_ALIASES` 临时机制已删除，`open=739` / `status:on` 不丢、orphan 0。
+
+### 关键决策：让 `src/*.h` 在 VS 解决方案里显示（2026-11-16，本轮）
+
+用户反馈 `src/` 下的 `.h` 在 VS 里看不到。**根因不是 VS 设置，是 CMake**：
+CMake 只把登记进 `target_sources` 的文件列进解决方案资源管理器，而
+`cmake/JoySources.cmake` 的各源码组 `JOY_SRC_*` 只登记 `.c`，
+`joy_collect_sources()` 也只收集 `.c`；`joy_ide_source_groups()` 从
+`joy_all` 的 `INTERFACE_SOURCES` 取文件做 `source_group(TREE ...)`，
+头文件从没进过这个集合。改名前后都一样，与 `j<域>` 那次重构无关。
+
+- **修法**：`JoySources.cmake` 新增两份显式头文件清单
+  `JOY_HEADERS_SRC`（10 个 `src/j<域>.h`，含数据分片 `jlut.h`）与
+  `JOY_HEADERS_PUBLIC`（7 个 `include/joy/*.h`），加
+  `joy_collect_headers(OUT)`；`JoyTargets.cmake` 调用它并把结果一并
+  `target_sources(joy_all INTERFACE ... ${_joy_headers})`。
+- **不生成编译规则**：`.h` 由 CMake 自动标为 `HEADER_FILE_ONLY`，只影响 IDE。
+  实测 `example_cpp.vcxproj` 的 `ClCompile` 仍是 76 项、其中 `.h` 0 个，
+  `ClInclude` 由 2 → 19；`.filters` 分组为 `joy\src` 10 项、
+  `joy\include\joy` 7 项，符合 `source_group(TREE)` 的目录树规则。
+- **新增约定**：以后增删 `.h` 必须同步改 `JOY_HEADERS_SRC` /
+  `JOY_HEADERS_PUBLIC`，否则 VS 里又会看不到；`JOY_SRC_*` 与头文件清单
+  是两份独立清单，别只改一处。已写进 `JoySources.cmake` 头部注释。
+- 验证：根构建与 `examples/` 独立构建两条路径重新 configure 后，
+  cpp / lua / js / csharp_host 四个 target 的 `.vcxproj` 都登记了 17–18 个
+  joy 头；全量 Debug 构建 0 错误、可选模块全开实链 0 错误、`ctest` 4/4、
+  两门禁 + `--check` 全绿、清单与磁盘差集 0、`git diff --check` 0。
 
 ### 关键决策：`src` 文件名由 `joy_<域>.{c,h}` 改回 `j<域>.{c,h}`（2026-11-16，本轮）
 

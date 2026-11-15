@@ -24,6 +24,9 @@ option(JOY_ENABLE_PLUGINS "启用 jscript.c 中的插件分片（SDL_LoadObject�
 
 include("${CMAKE_CURRENT_LIST_DIR}/JoySources.cmake")
 joy_collect_sources(_joy_sources)
+# 头文件不参与编译，但要登记进 target，joy_ide_source_groups() 才能把它们
+# 挂进 VS 筛选器（否则解决方案里只有 .c，看不到配套头与公开声明）。
+joy_collect_headers(_joy_headers)
 
 # api/ 的运行层与生成 thunk：调用 joy.h 里的 C 函数，必须与 joy 源码同 target。
 set(_joy_api_sources
@@ -38,8 +41,9 @@ add_library(joy_all INTERFACE)
 add_library(joy::all ALIAS joy_all)
 
 # INTERFACE sources 会原样编进 link 本目标的 target；路径必须是绝对路径，
-# 否则会按消费方的 CMakeLists 位置解析。
-target_sources(joy_all INTERFACE ${_joy_sources} ${_joy_api_sources})
+# 否则会按消费方的 CMakeLists 位置解析。.h 由 CMake 自动标记 HEADER_FILE_ONLY，
+# 只进 IDE 筛选器、不生成编译规则。
+target_sources(joy_all INTERFACE ${_joy_sources} ${_joy_api_sources} ${_joy_headers})
 
 target_include_directories(joy_all INTERFACE
     "${JOY_INCLUDE_ROOT}"

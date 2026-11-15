@@ -8,6 +8,13 @@
 #   api/generated/   工具生成，勿手改
 #   external/        vendored 第三方（含一个自有包装 aes_util.c）
 #
+# 除了编译用的 .c 清单，本文件末尾还有一份头文件清单（JOY_HEADERS_SRC /
+# JOY_HEADERS_PUBLIC）。CMake 只会把登记进 target_sources 的文件列到 VS 的
+# 解决方案资源管理器里：.c 由 joy_collect_sources() 收集、.h 由
+# joy_collect_headers() 收集，两者一起登记进 joy_all 的 INTERFACE sources。
+# .h 由 CMake 自动标为 HEADER_FILE_ONLY，只影响 IDE、不生成编译规则。
+# 新增/删除 .h 时同样要在这里登记，否则 VS 里看不到该文件。
+#
 # 组织规则（2026-11-13 起，由 api/tools/audit_domain_layout.js 强制校验）：
 #   1. 一个 .c 只承载一个域的函数定义；
 #   2. 一个域只有一个 .c —— src/j<域>.c；
@@ -136,6 +143,50 @@ set(JOY_ALL_SOURCE_GROUPS
 function(joy_collect_sources OUT)
     set(_all "")
     foreach(_group IN LISTS JOY_ALL_SOURCE_GROUPS)
+        foreach(_f IN LISTS ${_group})
+            list(APPEND _all "${JOY_ROOT}/${_f}")
+        endforeach()
+    endforeach()
+    set(${OUT} ${_all} PARENT_SCOPE)
+endfunction()
+
+# --------------------------------------------------------------- IDE 头文件
+# CMake 只会把登记进 target_sources 的文件列进 VS 解决方案资源管理器。
+# 上面的源码组只含 .c；若不同时登记 .h，joy\src 筛选器下就只有实现文件，
+# 配套域头与公开 API 声明全都看不见。.h 不是编译单元（CMake 自动按
+# HEADER_FILE_ONLY 处理），登记只影响 IDE，不改变编译与链接结果。
+# 与源码组一样用显式清单：新增域文件必须在这里同步登记配套头。
+set(JOY_HEADERS_SRC
+    src/jcore.h
+    src/jcollision.h
+    src/jr2d.h
+    src/jr3d.h
+    src/jscene.h
+    src/jnet.h
+    src/jsys.h
+    src/jscript.h
+    src/jaudio.h
+    src/jlut.h
+)
+
+set(JOY_HEADERS_PUBLIC
+    include/joy/jconfig.h
+    include/joy/jdefs.h
+    include/joy/jtypes.h
+    include/joy/jlut.h
+    include/joy/jmath.h
+    include/joy/japi.h
+    include/joy/joy.h
+)
+
+set(JOY_ALL_HEADER_GROUPS
+    JOY_HEADERS_SRC
+    JOY_HEADERS_PUBLIC
+)
+
+function(joy_collect_headers OUT)
+    set(_all "")
+    foreach(_group IN LISTS JOY_ALL_HEADER_GROUPS)
         foreach(_f IN LISTS ${_group})
             list(APPEND _all "${JOY_ROOT}/${_f}")
         endforeach()
