@@ -3,14 +3,16 @@ This is an easy game framework.
 
 ## 目录
 
-- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，8 个手写域各一对文件
-  （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `script` / `audio`），
-  另有数据分片 `src/joy_lut.{c,h}`。第 9 个域 `math` 没有手写 `.c`：`jmath.h`
+- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，9 个手写域各一对文件
+  （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `sys` / `script` / `audio`），
+  另有数据分片 `src/joy_lut.{c,h}`。`math` 是生成物域、没有手写 `.c`：`jmath.h`
   的标量/向量数学由 `jmath_wrap.js` 生成到 `api/generated/jmath_wrappers.{h,c}`。
   不依赖任何脚本运行时。
-  域边界按渲染上下文划分：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖
-  `joy_r3d_p` 的 3D HUD 控件归 `r3d`，两边都不单设 UI 文件。
-- `include/joy/japi.h` —— 公开 API 聚合入口，只逐个 include 8 个域头，
+  域边界按渲染上下文与抽象层次划分：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，
+  依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`，两边都不单设 UI 文件；
+  网络协议与服务器归 `net`，跨平台 OS 原语（socket / 时间 / 崩溃 / 网卡枚举）
+  归 `sys`，碰撞求交归 `collision`。
+- `include/joy/japi.h` —— 公开 API 聚合入口，只逐个 include 9 个域头，
   自身不含声明；`include/joy/jdefs.h` 提供公开类型。
 - `external/` / `test/` —— 第三方源码与测试。
 - `api/` —— 与脚本语言无关的绑定 API 契约：IDL、覆盖率报告、共享 C 运行层与各后端薄适配生成物，见 `api/README.md`。

@@ -13,6 +13,7 @@
 #include "../../src/joy_r3d.h"
 #include "../../src/joy_scene.h"
 #include "../../src/joy_net.h"
+#include "../../src/joy_sys.h"
 #include "../../src/joy_script.h"
 #include "../../src/joy_audio.h"
 

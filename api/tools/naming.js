@@ -23,7 +23,8 @@ const DOMAINS = new Set([
   'r2d',    // r2d/font/jtext/image/jspine/jparticle + 2D 控件/即时模式 UI（原 ui 域并入）
   'r3d',    // r3d/jlight/jgltf + 3D HUD 控件
   'scene',  // scene/game/jecs/jtilemap/janimator/animation/jtimer/jpm
-  'net',    // net*/tcp*/kcp*/ws*/iocp/pack/unpack/netmessage
+  'net',    // 网络协议与服务器：net*/tcp*/kcp*/ws*/iocp（IOCP 服务器留在本域）
+  'sys',    // 跨平台 OS 原语：socket 封装 / 时间 / 崩溃处理 / 网卡枚举（原 net 域 jsys 分片拆出）
   'audio',  // audio
   'script', // modules/module/jmsgpack
 ]);
@@ -91,7 +92,7 @@ const ALIASES = new Map([
   ['joy_core_simple_fps_value', 'SimpleFpsValue'],
   ['joy_core_get_clipboard_text', 'GetClipboardText'],
   ['joy_core_set_clipboard_text', 'SetClipboardText'],
-  ['joy_net_get_local_ips', 'GetLocalIps'],
+  ['joy_sys_get_local_ips', 'GetLocalIps'],
   /* P1 第三批：碎片归位（pack/unpack → net，jtimer/game_timer → scene，
    * push → core，find_min_separation → math）。 */
   ['joy_core_pack_int8', 'PackInt8'],
@@ -899,28 +900,28 @@ const ALIASES = new Map([
   ['joy_collision_box2d_foreach_joints', 'Box2dForeachJoints'],
   ['joy_collision_box2d_foreach_arbiters', 'Box2dForeachArbiters'],
   /* P1 第十四批：sys 归 net（joy_net_sys_*），audio 归 audio。 */
-  ['joy_net_sys_init_netenv', 'SysInitNetenv'],
-  ['joy_net_sys_release_netenv', 'SysReleaseNetenv'],
-  ['joy_net_sys_anyaddr', 'SysAnyaddr'],
-  ['joy_net_sys_closesocket', 'SysClosesocket'],
-  ['joy_net_sys_set_sock_sndtimeo', 'SysSetSockSndtimeo'],
-  ['joy_net_sys_set_sock_rcvtimeo', 'SysSetSockRcvtimeo'],
-  ['joy_net_sys_set_sock_accpettimeo', 'SysSetSockAccpettimeo'],
-  ['joy_net_sys_set_sock_broadcast', 'SysSetSockBroadcast'],
-  ['joy_net_sys_set_sock_reuseaddr', 'SysSetSockReuseaddr'],
-  ['joy_net_sys_tcp', 'SysTcp'],
-  ['joy_net_sys_udp', 'SysUdp'],
-  ['joy_net_sys_bind', 'SysBind'],
-  ['joy_net_sys_connect', 'SysConnect'],
-  ['joy_net_sys_listen', 'SysListen'],
-  ['joy_net_sys_accept', 'SysAccept'],
-  ['joy_net_sys_send', 'SysSend'],
-  ['joy_net_sys_recv', 'SysRecv'],
-  ['joy_net_sys_recvfrom', 'SysRecvfrom'],
-  ['joy_net_sys_sendto', 'SysSendto'],
-  ['joy_net_sys_current_time', 'SysCurrentTime'],
-  ['joy_net_sys_sleep', 'SysSleep'],
-  ['joy_net_sys_install_crash_handlers', 'SysInstallCrashHandlers'],
+  ['joy_sys_init_netenv', 'SysInitNetenv'],
+  ['joy_sys_release_netenv', 'SysReleaseNetenv'],
+  ['joy_sys_anyaddr', 'SysAnyaddr'],
+  ['joy_sys_closesocket', 'SysClosesocket'],
+  ['joy_sys_set_sock_sndtimeo', 'SysSetSockSndtimeo'],
+  ['joy_sys_set_sock_rcvtimeo', 'SysSetSockRcvtimeo'],
+  ['joy_sys_set_sock_accpettimeo', 'SysSetSockAccpettimeo'],
+  ['joy_sys_set_sock_broadcast', 'SysSetSockBroadcast'],
+  ['joy_sys_set_sock_reuseaddr', 'SysSetSockReuseaddr'],
+  ['joy_sys_tcp', 'SysTcp'],
+  ['joy_sys_udp', 'SysUdp'],
+  ['joy_sys_bind', 'SysBind'],
+  ['joy_sys_connect', 'SysConnect'],
+  ['joy_sys_listen', 'SysListen'],
+  ['joy_sys_accept', 'SysAccept'],
+  ['joy_sys_send', 'SysSend'],
+  ['joy_sys_recv', 'SysRecv'],
+  ['joy_sys_recvfrom', 'SysRecvfrom'],
+  ['joy_sys_sendto', 'SysSendto'],
+  ['joy_sys_current_time', 'SysCurrentTime'],
+  ['joy_sys_sleep', 'SysSleep'],
+  ['joy_sys_install_crash_handlers', 'SysInstallCrashHandlers'],
   ['joy_audio_open_device', 'AudioOpenDevice'],
   ['joy_audio_close_device', 'AudioCloseDevice'],
   ['joy_audio_create_wav', 'AudioCreateWav'],

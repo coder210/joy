@@ -4,7 +4,7 @@
  *
  * 只做三件事：解析 DECL_SOURCES 契约头、维护 api/idl/joy.idl、产出 api/generated/coverage.md。
  * P0 阶段不生成任何会被调用的胶水代码，现有各模块的 bindings 目录一行不动。
- * 契约头共 10 个：jdefs.h + 8 个 src/joy_<域>.h + generated/jmath_wrappers.h。
+ * 契约头共 11 个：jdefs.h + 9 个 src/joy_<域>.h + generated/jmath_wrappers.h。
  * japi.h 只做 include 聚合，本身不含声明；声明按域归属到对应配套头。
  *
  * 用法（任意目录，零 npm 依赖，只用 Node 内置 fs/path）：
@@ -228,8 +228,8 @@ function classify(name, ret, params, reason, structs) {
 
 /* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「原生声明」
  * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。
- * 8 个域的声明归属地是 src/joy_<域>.h；include/joy/japi.h 只是 include 聚合，
- * 本身不含任何 JOY_API 声明，因此 8 个域头必须逐个登记为来源。
+ * 9 个手写域的声明归属地是 src/joy_<域>.h；include/joy/japi.h 只是 include 聚合，
+ * 本身不含任何 JOY_API 声明，因此 9 个域头必须逐个登记为来源。
  * input 已并回 core：13 个 API 统一为 joy_core_input_*，声明并入 src/joy_core.h；
  * ui 已并回 r2d：218 个 API 统一为 joy_r2d_*（其中 begin/end 避让帧起止，改名
  * joy_r2d_im_*），声明并入 src/joy_r2d.h，见 idl/rename_map.json。 */
@@ -241,6 +241,7 @@ const DECL_SOURCES = [
   { label: 'src/joy_r3d.h', file: path.join(JOY_REPO, 'src/joy_r3d.h') },
   { label: 'src/joy_scene.h', file: path.join(JOY_REPO, 'src/joy_scene.h') },
   { label: 'src/joy_net.h', file: path.join(JOY_REPO, 'src/joy_net.h') },
+  { label: 'src/joy_sys.h', file: path.join(JOY_REPO, 'src/joy_sys.h') },
   { label: 'src/joy_script.h', file: path.join(JOY_REPO, 'src/joy_script.h') },
   { label: 'src/joy_audio.h', file: path.join(JOY_REPO, 'src/joy_audio.h') },
   { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },

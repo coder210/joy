@@ -19,7 +19,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../..');
 /* math 只由 api/generated/jmath_wrappers.c 实现（不扫生成物），
  * 手写域里碰撞/GJK/box2d 已拆到 collision，见 audit_domain_layout.js。 */
-const DOMAINS = ['core', 'math', 'collision', 'r2d', 'r3d', 'scene', 'net', 'audio', 'script'];
+const DOMAINS = ['core', 'math', 'collision', 'r2d', 'r3d', 'scene', 'net', 'sys', 'audio', 'script'];
 
 /* 去注释、去行注释，保留换行以维持行号 */
 function strip(s) {

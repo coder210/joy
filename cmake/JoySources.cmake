@@ -3,8 +3,8 @@
 #
 # 这份清单就是架构文档：增删文件必须在这里登记，路径全部相对 JOY_ROOT
 # （由 JoyTargets.cmake 设置为本仓库根）。源码按性质分三处，互不混放：
-#   src/             人工实现，8 个域文件 + 1 个显式登记的数据分片
-#                    （第 9 个域 math 没有手写 .c，实现由 api/generated/ 生成）
+#   src/             人工实现，9 个域文件 + 1 个显式登记的数据分片
+#                    （另有生成物域 math，实现由 api/generated/ 生成）
 #   api/generated/   工具生成，勿手改
 #   external/        vendored 第三方（含一个自有包装 aes_util.c）
 #
@@ -13,7 +13,7 @@
 #   2. 一个域只有一个 .c —— src/joy_<域>.c；
 #   3. 每个 .c 必配一个同名内部头 —— src/joy_<域>.h，且 .c 必须 include 它。
 #   函数名前缀 joy_<域>_ 必须与文件名、配套头的域一致。
-#   域白名单：8 个手写域 core collision r2d r3d scene net script audio，
+#   域白名单：9 个手写域 core collision r2d r3d scene net sys script audio，
 #   外加 1 个仅由生成物实现的域 math（见 audit_domain_layout.js 的
 #   GENERATED_ONLY_DOMAINS）；math 与 collision 的分工是：jmath.h 的标量/向量
 #   数学由 jmath_wrap.js 生成 joy_math_* 归 math，碰撞/GJK/box2d 求交归
@@ -33,7 +33,8 @@
 #          / jui / jui_im（原 ui 域并入）
 #                                           scene jscene / janimator / jtilemap /
 #                                                 jecs / jprocmap / jbehavior
-#   net    jnetwork / jsys                   script jmsgpack / jmodule
+#   net    jnetwork / IOCP 分片              script jmsgpack / jmodule
+#   sys    jsys（socket / 时间 / 崩溃 / 网卡枚举，2026-11-15 从 net 拆出）
 #   audio  jaudio                           core   jinput（原 input 域并入）
 #
 # 顺序敏感项：
@@ -88,6 +89,13 @@ set(JOY_SRC_NET
     src/joy_net.c
 )
 
+# 原 src/joy_net.c 的 jsys.c 分片拆出为 sys 域：23 条跨平台 OS 原语
+# （socket / 时间 / 崩溃处理 / 网卡枚举）改名 joy_sys_*；3 条 IOCP 服务器
+# 属于网络层，留在 joy_net.c，不随分片搬走。
+set(JOY_SRC_SYS
+    src/joy_sys.c
+)
+
 set(JOY_SRC_SCRIPT
     src/joy_script.c
 )
@@ -119,6 +127,7 @@ set(JOY_ALL_SOURCE_GROUPS
     JOY_SRC_R3D
     JOY_SRC_SCENE
     JOY_SRC_NET
+    JOY_SRC_SYS
     JOY_SRC_SCRIPT
     JOY_SRC_AUDIO
     JOY_SRC_VENDOR

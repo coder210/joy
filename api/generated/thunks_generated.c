@@ -538,184 +538,184 @@ static joy_value_t t_joy_core_set_clipboard_text(joy_value_t* a, int n, joy_stat
         return joy_v_null();
 }
 
-static joy_value_t t_joy_net_sys_init_netenv(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_init_netenv(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_init_netenv");
-        _r = joy_net_sys_init_netenv();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_init_netenv");
+        _r = joy_sys_init_netenv();
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_release_netenv(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_release_netenv(joy_value_t* a, int n, joy_status_t* st)
 {
         bool _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_release_netenv");
-        _r = joy_net_sys_release_netenv();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_release_netenv");
+        _r = joy_sys_release_netenv();
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_anyaddr(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_anyaddr(joy_value_t* a, int n, joy_status_t* st)
 {
         int _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_anyaddr");
-        _r = joy_net_sys_anyaddr();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_anyaddr");
+        _r = joy_sys_anyaddr();
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_closesocket(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_closesocket(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_closesocket");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_closesocket.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_closesocket");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_closesocket.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = joy_net_sys_closesocket(p0);
+        _r = joy_sys_closesocket(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_set_sock_sndtimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_set_sock_sndtimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_sndtimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_sndtimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_sndtimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_set_sock_sndtimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_sndtimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_sndtimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = joy_net_sys_set_sock_sndtimeo(p0, p1);
+        _r = joy_sys_set_sock_sndtimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_set_sock_rcvtimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_set_sock_rcvtimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_rcvtimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_rcvtimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_rcvtimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_set_sock_rcvtimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_rcvtimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_rcvtimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = joy_net_sys_set_sock_rcvtimeo(p0, p1);
+        _r = joy_sys_set_sock_rcvtimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_set_sock_accpettimeo(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_set_sock_accpettimeo(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int p1;
         int _r;
-        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_accpettimeo");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_accpettimeo.arg0");
-        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_accpettimeo.arg1");
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_set_sock_accpettimeo");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_accpettimeo.arg0");
+        if (a[1].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_accpettimeo.arg1");
         p0 = (int64_t)a[0].as.i64;
         p1 = (int)a[1].as.i32;
-        _r = joy_net_sys_set_sock_accpettimeo(p0, p1);
+        _r = joy_sys_set_sock_accpettimeo(p0, p1);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_set_sock_broadcast(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_set_sock_broadcast(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_broadcast");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_broadcast.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_set_sock_broadcast");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_broadcast.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = joy_net_sys_set_sock_broadcast(p0);
+        _r = joy_sys_set_sock_broadcast(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_set_sock_reuseaddr(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_set_sock_reuseaddr(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         int _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_set_sock_reuseaddr");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_set_sock_reuseaddr.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_set_sock_reuseaddr");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_set_sock_reuseaddr.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = joy_net_sys_set_sock_reuseaddr(p0);
+        _r = joy_sys_set_sock_reuseaddr(p0);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_tcp(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_tcp(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_tcp");
-        _r = joy_net_sys_tcp();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_tcp");
+        _r = joy_sys_tcp();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_joy_net_sys_udp(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_udp(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_udp");
-        _r = joy_net_sys_udp();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_udp");
+        _r = joy_sys_udp();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_joy_net_sys_bind(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_bind(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         bool _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_bind");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_bind.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_bind");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_bind.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_bind.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_bind.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = joy_net_sys_bind(p0, p1, p2);
+        _r = joy_sys_bind(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_connect(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_connect(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         bool _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_connect");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_connect.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_connect");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_connect.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_connect.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_connect.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = joy_net_sys_connect(p0, p1, p2);
+        _r = joy_sys_connect(p0, p1, p2);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_listen(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_listen(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         bool _r;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_listen");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_listen.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_listen");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_listen.arg0");
         p0 = (int64_t)a[0].as.i64;
-        _r = joy_net_sys_listen(p0);
+        _r = joy_sys_listen(p0);
         return joy_v_bool((bool)_r);
 }
 
-static joy_value_t t_joy_net_sys_send(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_send(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
         int p2;
         int _r;
-        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_send");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_send.arg2");
+        if (n != 3) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_send");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_send.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_send.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_send.arg2");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
-        _r = joy_net_sys_send(p0, p1, p2);
+        _r = joy_sys_send(p0, p1, p2);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t p0;
         const char* p1;
@@ -723,43 +723,43 @@ static joy_value_t t_joy_net_sys_sendto(joy_value_t* a, int n, joy_status_t* st)
         const char* p3;
         int p4;
         int _r;
-        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_sendto");
-        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg0");
-        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg1");
-        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg2");
-        if (a[3].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg3");
-        if (a[4].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sendto.arg4");
+        if (n != 5) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_sendto");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sendto.arg0");
+        if (a[1].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sendto.arg1");
+        if (a[2].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sendto.arg2");
+        if (a[3].kind != JOY_V_STR) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sendto.arg3");
+        if (a[4].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sendto.arg4");
         p0 = (int64_t)a[0].as.i64;
         p1 = (const char*)a[1].as.str;
         p2 = (int)a[2].as.i32;
         p3 = (const char*)a[3].as.str;
         p4 = (int)a[4].as.i32;
-        _r = joy_net_sys_sendto(p0, p1, p2, p3, p4);
+        _r = joy_sys_sendto(p0, p1, p2, p3, p4);
         return joy_v_i32((int)_r);
 }
 
-static joy_value_t t_joy_net_sys_current_time(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_current_time(joy_value_t* a, int n, joy_status_t* st)
 {
         int64_t _r;
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_current_time");
-        _r = joy_net_sys_current_time();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_current_time");
+        _r = joy_sys_current_time();
         return joy_v_i64((int64_t)_r);
 }
 
-static joy_value_t t_joy_net_sys_sleep(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_sleep(joy_value_t* a, int n, joy_status_t* st)
 {
         int p0;
-        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_sleep");
-        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_net_sys_sleep.arg0");
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_sleep");
+        if (a[0].kind != JOY_V_I32) return joy_v_err(st, JOY_ERR_TYPE, "joy_sys_sleep.arg0");
         p0 = (int)a[0].as.i32;
-        joy_net_sys_sleep(p0);
+        joy_sys_sleep(p0);
         return joy_v_null();
 }
 
-static joy_value_t t_joy_net_sys_install_crash_handlers(joy_value_t* a, int n, joy_status_t* st)
+static joy_value_t t_joy_sys_install_crash_handlers(joy_value_t* a, int n, joy_status_t* st)
 {
-        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_net_sys_install_crash_handlers");
-        joy_net_sys_install_crash_handlers();
+        if (n != 0) return joy_v_err(st, JOY_ERR_ARGC, "joy_sys_install_crash_handlers");
+        joy_sys_install_crash_handlers();
         return joy_v_null();
 }
 
@@ -12241,18 +12241,18 @@ static const joy_value_kind k_joy_core_game_timer_get_time_scale[] = { JOY_V_HAN
 static const joy_value_kind k_joy_core_game_timer_set_target_fps[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_joy_core_game_timer_get_target_fps[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_set_clipboard_text[] = { JOY_V_STR };
-static const joy_value_kind k_joy_net_sys_closesocket[] = { JOY_V_I64 };
-static const joy_value_kind k_joy_net_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_set_sock_rcvtimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_set_sock_accpettimeo[] = { JOY_V_I64, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_set_sock_broadcast[] = { JOY_V_I64 };
-static const joy_value_kind k_joy_net_sys_set_sock_reuseaddr[] = { JOY_V_I64 };
-static const joy_value_kind k_joy_net_sys_bind[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_connect[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_listen[] = { JOY_V_I64 };
-static const joy_value_kind k_joy_net_sys_send[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_sendto[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32, JOY_V_STR, JOY_V_I32 };
-static const joy_value_kind k_joy_net_sys_sleep[] = { JOY_V_I32 };
+static const joy_value_kind k_joy_sys_closesocket[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_sys_set_sock_sndtimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_set_sock_rcvtimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_set_sock_accpettimeo[] = { JOY_V_I64, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_set_sock_broadcast[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_sys_set_sock_reuseaddr[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_sys_bind[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_connect[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_listen[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_sys_send[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_sendto[] = { JOY_V_I64, JOY_V_STR, JOY_V_I32, JOY_V_STR, JOY_V_I32 };
+static const joy_value_kind k_joy_sys_sleep[] = { JOY_V_I32 };
 static const joy_value_kind k_joy_net_iocp_server_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_net_iocp_process_events[] = { JOY_V_HANDLE, JOY_V_I32 };
 static const joy_value_kind k_joy_r2d_font_create[] = { JOY_V_STR, JOY_V_I32 };
@@ -12955,25 +12955,25 @@ static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_game_timer_set_target_fps", "GameTimerSetTargetFps", t_joy_core_game_timer_set_target_fps, 2, k_joy_core_game_timer_set_target_fps, JOY_V_NULL },
         { "core", "joy_core_game_timer_get_target_fps", "GameTimerGetTargetFps", t_joy_core_game_timer_get_target_fps, 1, k_joy_core_game_timer_get_target_fps, JOY_V_I32 },
         { "core", "joy_core_set_clipboard_text", "SetClipboardText", t_joy_core_set_clipboard_text, 1, k_joy_core_set_clipboard_text, JOY_V_NULL },
-        { "net", "joy_net_sys_init_netenv", "SysInitNetenv", t_joy_net_sys_init_netenv, 0, NULL, JOY_V_BOOL },
-        { "net", "joy_net_sys_release_netenv", "SysReleaseNetenv", t_joy_net_sys_release_netenv, 0, NULL, JOY_V_BOOL },
-        { "net", "joy_net_sys_anyaddr", "SysAnyaddr", t_joy_net_sys_anyaddr, 0, NULL, JOY_V_I32 },
-        { "net", "joy_net_sys_closesocket", "SysClosesocket", t_joy_net_sys_closesocket, 1, k_joy_net_sys_closesocket, JOY_V_BOOL },
-        { "net", "joy_net_sys_set_sock_sndtimeo", "SysSetSockSndtimeo", t_joy_net_sys_set_sock_sndtimeo, 2, k_joy_net_sys_set_sock_sndtimeo, JOY_V_I32 },
-        { "net", "joy_net_sys_set_sock_rcvtimeo", "SysSetSockRcvtimeo", t_joy_net_sys_set_sock_rcvtimeo, 2, k_joy_net_sys_set_sock_rcvtimeo, JOY_V_I32 },
-        { "net", "joy_net_sys_set_sock_accpettimeo", "SysSetSockAccpettimeo", t_joy_net_sys_set_sock_accpettimeo, 2, k_joy_net_sys_set_sock_accpettimeo, JOY_V_I32 },
-        { "net", "joy_net_sys_set_sock_broadcast", "SysSetSockBroadcast", t_joy_net_sys_set_sock_broadcast, 1, k_joy_net_sys_set_sock_broadcast, JOY_V_I32 },
-        { "net", "joy_net_sys_set_sock_reuseaddr", "SysSetSockReuseaddr", t_joy_net_sys_set_sock_reuseaddr, 1, k_joy_net_sys_set_sock_reuseaddr, JOY_V_I32 },
-        { "net", "joy_net_sys_tcp", "SysTcp", t_joy_net_sys_tcp, 0, NULL, JOY_V_I64 },
-        { "net", "joy_net_sys_udp", "SysUdp", t_joy_net_sys_udp, 0, NULL, JOY_V_I64 },
-        { "net", "joy_net_sys_bind", "SysBind", t_joy_net_sys_bind, 3, k_joy_net_sys_bind, JOY_V_BOOL },
-        { "net", "joy_net_sys_connect", "SysConnect", t_joy_net_sys_connect, 3, k_joy_net_sys_connect, JOY_V_BOOL },
-        { "net", "joy_net_sys_listen", "SysListen", t_joy_net_sys_listen, 1, k_joy_net_sys_listen, JOY_V_BOOL },
-        { "net", "joy_net_sys_send", "SysSend", t_joy_net_sys_send, 3, k_joy_net_sys_send, JOY_V_I32 },
-        { "net", "joy_net_sys_sendto", "SysSendto", t_joy_net_sys_sendto, 5, k_joy_net_sys_sendto, JOY_V_I32 },
-        { "net", "joy_net_sys_current_time", "SysCurrentTime", t_joy_net_sys_current_time, 0, NULL, JOY_V_I64 },
-        { "net", "joy_net_sys_sleep", "SysSleep", t_joy_net_sys_sleep, 1, k_joy_net_sys_sleep, JOY_V_NULL },
-        { "net", "joy_net_sys_install_crash_handlers", "SysInstallCrashHandlers", t_joy_net_sys_install_crash_handlers, 0, NULL, JOY_V_NULL },
+        { "sys", "joy_sys_init_netenv", "SysInitNetenv", t_joy_sys_init_netenv, 0, NULL, JOY_V_BOOL },
+        { "sys", "joy_sys_release_netenv", "SysReleaseNetenv", t_joy_sys_release_netenv, 0, NULL, JOY_V_BOOL },
+        { "sys", "joy_sys_anyaddr", "SysAnyaddr", t_joy_sys_anyaddr, 0, NULL, JOY_V_I32 },
+        { "sys", "joy_sys_closesocket", "SysClosesocket", t_joy_sys_closesocket, 1, k_joy_sys_closesocket, JOY_V_BOOL },
+        { "sys", "joy_sys_set_sock_sndtimeo", "SysSetSockSndtimeo", t_joy_sys_set_sock_sndtimeo, 2, k_joy_sys_set_sock_sndtimeo, JOY_V_I32 },
+        { "sys", "joy_sys_set_sock_rcvtimeo", "SysSetSockRcvtimeo", t_joy_sys_set_sock_rcvtimeo, 2, k_joy_sys_set_sock_rcvtimeo, JOY_V_I32 },
+        { "sys", "joy_sys_set_sock_accpettimeo", "SysSetSockAccpettimeo", t_joy_sys_set_sock_accpettimeo, 2, k_joy_sys_set_sock_accpettimeo, JOY_V_I32 },
+        { "sys", "joy_sys_set_sock_broadcast", "SysSetSockBroadcast", t_joy_sys_set_sock_broadcast, 1, k_joy_sys_set_sock_broadcast, JOY_V_I32 },
+        { "sys", "joy_sys_set_sock_reuseaddr", "SysSetSockReuseaddr", t_joy_sys_set_sock_reuseaddr, 1, k_joy_sys_set_sock_reuseaddr, JOY_V_I32 },
+        { "sys", "joy_sys_tcp", "SysTcp", t_joy_sys_tcp, 0, NULL, JOY_V_I64 },
+        { "sys", "joy_sys_udp", "SysUdp", t_joy_sys_udp, 0, NULL, JOY_V_I64 },
+        { "sys", "joy_sys_bind", "SysBind", t_joy_sys_bind, 3, k_joy_sys_bind, JOY_V_BOOL },
+        { "sys", "joy_sys_connect", "SysConnect", t_joy_sys_connect, 3, k_joy_sys_connect, JOY_V_BOOL },
+        { "sys", "joy_sys_listen", "SysListen", t_joy_sys_listen, 1, k_joy_sys_listen, JOY_V_BOOL },
+        { "sys", "joy_sys_send", "SysSend", t_joy_sys_send, 3, k_joy_sys_send, JOY_V_I32 },
+        { "sys", "joy_sys_sendto", "SysSendto", t_joy_sys_sendto, 5, k_joy_sys_sendto, JOY_V_I32 },
+        { "sys", "joy_sys_current_time", "SysCurrentTime", t_joy_sys_current_time, 0, NULL, JOY_V_I64 },
+        { "sys", "joy_sys_sleep", "SysSleep", t_joy_sys_sleep, 1, k_joy_sys_sleep, JOY_V_NULL },
+        { "sys", "joy_sys_install_crash_handlers", "SysInstallCrashHandlers", t_joy_sys_install_crash_handlers, 0, NULL, JOY_V_NULL },
         { "net", "joy_net_iocp_server_destroy", "IocpServerDestroy", t_joy_net_iocp_server_destroy, 1, k_joy_net_iocp_server_destroy, JOY_V_NULL },
         { "net", "joy_net_iocp_process_events", "IocpProcessEvents", t_joy_net_iocp_process_events, 2, k_joy_net_iocp_process_events, JOY_V_NULL },
         { "r2d", "joy_r2d_font_create", "FontCreate", t_joy_r2d_font_create, 2, k_joy_r2d_font_create, JOY_V_HANDLE },
@@ -13799,62 +13799,62 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_core_set_clipboard_text", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_core_set_clipboard_text";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_init_netenv", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_init_netenv";
+        joy_api_call("joy_sys_init_netenv", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_init_netenv";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_release_netenv", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_release_netenv";
+        joy_api_call("joy_sys_release_netenv", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_release_netenv";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_anyaddr", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_anyaddr";
+        joy_api_call("joy_sys_anyaddr", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_anyaddr";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_closesocket", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_closesocket";
+        joy_api_call("joy_sys_closesocket", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_closesocket";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_set_sock_sndtimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_sndtimeo";
+        joy_api_call("joy_sys_set_sock_sndtimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_set_sock_sndtimeo";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_set_sock_rcvtimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_rcvtimeo";
+        joy_api_call("joy_sys_set_sock_rcvtimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_set_sock_rcvtimeo";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_set_sock_accpettimeo", NULL, 3, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_accpettimeo";
+        joy_api_call("joy_sys_set_sock_accpettimeo", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_set_sock_accpettimeo";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_set_sock_broadcast", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_broadcast";
+        joy_api_call("joy_sys_set_sock_broadcast", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_set_sock_broadcast";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_set_sock_reuseaddr", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_set_sock_reuseaddr";
+        joy_api_call("joy_sys_set_sock_reuseaddr", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_set_sock_reuseaddr";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_tcp", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_tcp";
+        joy_api_call("joy_sys_tcp", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_tcp";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_udp", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_udp";
+        joy_api_call("joy_sys_udp", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_udp";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_bind", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_bind";
+        joy_api_call("joy_sys_bind", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_bind";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_connect", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_connect";
+        joy_api_call("joy_sys_connect", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_connect";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_listen", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_listen";
+        joy_api_call("joy_sys_listen", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_listen";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_send", NULL, 4, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_send";
+        joy_api_call("joy_sys_send", NULL, 4, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_send";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_sendto", NULL, 6, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_sendto";
+        joy_api_call("joy_sys_sendto", NULL, 6, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_sendto";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_current_time", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_current_time";
+        joy_api_call("joy_sys_current_time", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_current_time";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_sleep", NULL, 2, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_sleep";
+        joy_api_call("joy_sys_sleep", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_sleep";
         st = JOY_OK;
-        joy_api_call("joy_net_sys_install_crash_handlers", NULL, 1, &st);
-        if (st != JOY_ERR_ARGC) return "registry/joy_net_sys_install_crash_handlers";
+        joy_api_call("joy_sys_install_crash_handlers", NULL, 1, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_sys_install_crash_handlers";
         st = JOY_OK;
         joy_api_call("joy_net_iocp_server_destroy", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_net_iocp_server_destroy";
