@@ -16,6 +16,10 @@
  *      joy.h 聚合 api/generated/jmath_wrappers.h，不占 src/j<域>.h。
  *   R6 数据分片：DATA_SHARDS 里显式登记的文件不是域实现文件，不参与 R1/R2，
  *      但必须配同名 .h、include 它、不反向 include joy.h，且不得含 joy_* 函数定义。
+ *   R7 域头声明归位：src/j<域>.h 里的函数声明，带 joy_<域2>_ 前缀的域段必须
+ *      等于文件域；不带前缀的裸名，其定义所在 .c 的域也必须等于文件域。
+ *      只管声明（R4 只管定义），防止行为树之类整块声明被错放进别的域头。
+ *      带 JOY_API 与否都检查：生成链不收的声明同样不能放错位置。
  *
  * 范围：api/generated/ 生成物、external/ 第三方、examples/、modules/、SDL/ 等
  * 不属于「joy 手写域实现」，不参与本规则，仍由各自清单管理。
@@ -178,7 +182,52 @@ for (const h of hFiles) {
   if (m && DOMAINS.includes(m[1]) && !got.has(m[1])) errors.push(`R3 src/${h}：没有对应的 .c`);
 }
 
-console.log('域布局审计：一域一 .c、每 .c 配 .h、函数定义纯域、引用方向正确、数据分片已登记');
+/* ------------------------------------------------------------------ R7
+ * 域头声明归位。R4 只检查 .c 的函数「定义」，头里的「声明」无人管，
+ * 曾出现 17 条 joy_scene_bt_* / bt_* 行为树声明整块错放在 jaudio.h。
+ * 两类判定：
+ *   - 带 joy_<域2>_ 前缀：域段必须等于文件域（DOMAINS 内的合法域才算跨域）；
+ *   - 裸名（P1 历史名）：若它在本仓某个手写域 .c 里有定义，则该域必须等于文件域。
+ * 不要求「声明必须有定义」：msgpack 内联、宏包装、条件编译下不存在实现等
+ * 26 处存量会误伤，因此只在能明确定位到别域实现时才报错。
+ * 关键字与短占位符（if/for/bool/d/solid…）是行首正则的误匹配，直接排除。
+ */
+const DECL_KEYWORDS = new Set(['if', 'for', 'while', 'switch', 'return', 'sizeof', 'bool', 'd', 'solid']);
+function findAnyDefs(src) {
+  return new Set([...strip(src).matchAll(/\b([a-zA-Z_]\w*)\s*\([^;{}]*\)\s*\{/g)].map(m => m[1]));
+}
+function findDecls(src) {
+  const out = [];
+  for (const line of strip(src).split(/\r?\n/)) {
+    const m = line.match(/^\s*(?:JOY_API\s+)?[\w*]+\s*\*?\s*([A-Za-z_]\w*)\s*\([^;]*\)\s*;/);
+    if (m && !DECL_KEYWORDS.has(m[1])) out.push(m[1]);
+  }
+  return out;
+}
+/* name -> 定义所在的手写域；同名多处定义不报（R2 已保证一域一 .c）。 */
+const defOwner = new Map();
+for (const d of got) {
+  const p = path.join(SRC, `j${d}.c`);
+  for (const n of findAnyDefs(fs.readFileSync(p, 'utf8'))) {
+    if (!defOwner.has(n)) defOwner.set(n, d);
+  }
+}
+for (const d of got) {
+  const h = `j${d}.h`;
+  const hSrc = fs.readFileSync(path.join(SRC, h), 'utf8');
+  for (const n of findDecls(hSrc)) {
+    const m = n.match(/^joy_([a-z0-9]+)_/);
+    if (m) {
+      if (DOMAINS.includes(m[1]) && m[1] !== d) {
+        errors.push(`R7 src/${h}：声明 ${n} 属于 ${m[1]} 域，应放在 src/j${m[1]}.h`);
+      }
+    } else if (defOwner.has(n) && defOwner.get(n) !== d) {
+      errors.push(`R7 src/${h}：裸名声明 ${n} 的定义在 ${defOwner.get(n)} 域，应放在 src/j${defOwner.get(n)}.h`);
+    }
+  }
+}
+
+console.log('域布局审计：一域一 .c、每 .c 配 .h、定义与声明均纯域、引用方向正确、数据分片已登记');
 console.log('='.repeat(70));
 for (const r of rows) {
   console.log(`  ${r.f.padEnd(20)} 域=${r.dom.padEnd(7)} 函数定义=${String(r.defs).padStart(4)}  配套头=${r.h.padEnd(5)} 跨域=${r.foreign}`);
@@ -195,4 +244,4 @@ if (errors.length) {
   process.exit(1);
 }
 console.log('\nOK：每个域恰有一个 .c，每个 .c 都有配套头且纯域，'
-  + '声明归属方向正确，数据分片已登记且无函数定义。');
+  + '声明也归位到所属域头、引用方向正确，数据分片已登记且无函数定义。');

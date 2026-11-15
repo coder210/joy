@@ -168,6 +168,39 @@ extern "C" {
         JOY_API void joy_scene_ecs_register(joy_ecs_world_p world, joy_ecs_system_t system);
         JOY_API int joy_scene_ecs_test();
 
+        /* ===== 行为树（jbehavior.c 分片，归 scene 域） =====
+         * 这 17 条是内部声明，刻意不带 JOY_API：它们不在 IDL / 生成链里，
+         * 供 jscene.c 自身与经 japi.h 包含本头的 TU 使用。实现全在 jscene.c。
+         * 2026-11-16 从 src/jaudio.h 归位到此（原先错放在 audio 域头）。 */
+        /* ===== 运行与生命周期管理 ===== */
+        joy_bt_status_t joy_scene_bt_node_run(joy_bt_node_t* node, float dt);
+        void        joy_scene_bt_node_reset(joy_bt_node_t* node);
+        void        joy_scene_bt_node_destroy(joy_bt_node_t* node);
+        /* Action: 执行动作，返回 SUCCESS / FAILURE / RUNNING */
+        joy_bt_node_t* joy_scene_bt_action_create(joy_bt_action_fn fn);
+        joy_bt_node_t* joy_scene_bt_action_createv(joy_bt_action_fn fn, void* userdata);
+        void joy_scene_bt_action_set_userdata(joy_bt_node_t* node, void* userdata);
+        void* joy_scene_bt_action_get_userdata(joy_bt_node_t* node);
+        /* Condition: 条件判断，true → SUCCESS, false → FAILURE */
+        joy_bt_node_t* joy_scene_bt_condition_create(joy_bt_condition_fn pred);
+        /* Wait: 等待指定秒数 */
+        joy_bt_node_t* joy_scene_bt_wait_create(float seconds);
+        /* ===== 组合节点 ===== */
+        /* Sequence: 顺序执行全部子节点，全部成功才返回 SUCCESS */
+        joy_bt_node_t* joy_scene_bt_sequence_create(joy_bt_node_t** children, int count);
+        /* Selector: 顺序尝试子节点，任一成功即返回 SUCCESS */
+        joy_bt_node_t* joy_scene_bt_selector_create(joy_bt_node_t** children, int count);
+        /* Parallel: 并行执行，success_count 个成功即成功 */
+        joy_bt_node_t* joy_scene_bt_parallel_create(joy_bt_node_t** children, int count, int success_count);
+        /* Inverter: 反转子节点结果 */
+        joy_bt_node_t* bt_inverter_create(joy_bt_node_t* child);
+        /* Succeeder: 总是返回 SUCCESS */
+        joy_bt_node_t* bt_succeeder_create(joy_bt_node_t* child);
+        /* Repeater: 重复子节点 times 次（-1 无限） */
+        joy_bt_node_t* bt_repeater_create(joy_bt_node_t* child, int times);
+        joy_bt_node_t* joy_scene_bt_statemachine_create(joy_bt_state_slot_t* states, int count, const char* initial);
+        void       joy_scene_bt_statemachine_transition(joy_bt_node_t* node, const char* state_name);
+
 #ifdef __cplusplus
 }
 #endif
