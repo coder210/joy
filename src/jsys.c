@@ -1,15 +1,15 @@
 /******************************************************************************
- * src/joy_sys.c —— sys 域唯一实现文件（一个域一个 .c，配 joy_sys.h）
+ * src/jsys.c —— sys 域唯一实现文件（一个域一个 .c，配 jsys.h）
  * 职责：跨平台 OS 原语 —— socket 封装 / 时间 / 崩溃处理与栈回溯 / 网卡枚举
- * 拆分自：src/joy_net.c 的 jsys.c 分片（2026-11-15）。该分片与网络协议段
+ * 拆分自：src/jnet.c 的 jsys.c 分片（2026-11-15）。该分片与网络协议段
  *         零私有符号共享、依赖单向（net 调 sys），故整段搬出；IOCP 服务器
- *         属于网络层，留在 joy_net.c。
- * 说明：本域公开 API 声明在配套头 src/joy_sys.h，由 include/joy/japi.h 聚合包含；
+ *         属于网络层，留在 jnet.c。
+ * 说明：本域公开 API 声明在配套头 src/jsys.h，由 include/joy/japi.h 聚合包含；
  *       平台条件编译与私有宏（JOY_HAVE_BACKTRACE / JOY_HAVE_IFADDRS）在文件末尾
  *       #undef，不外泄到其它翻译单元。
  ******************************************************************************/
 
-#include "joy_sys.h"
+#include "jsys.h"
 
 /* ==================== 拆分自 src/jsys.c ==================== */
 #include "joy.h"
@@ -752,4 +752,4 @@ int joy_sys_get_local_ips(char ips[][JOY_MAX_IP], int max_count)
 #undef JOY_HAVE_IFADDRS
 #undef SIOCGIFADDR
 
-/* ==================== 结束 src/joy_sys.c ==================== */
+/* ==================== 结束 src/jsys.c ==================== */

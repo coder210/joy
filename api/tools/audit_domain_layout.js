@@ -3,16 +3,17 @@
  * 域布局门禁：一个 .c 一定是一个域；一个域不允许多个 .c；每个 .c 要有一个头文件。
  *
  * 具体规则（全部作用于 src/ 下的人工实现文件）：
- *   R1 文件名必须是 joy_<域>.c，域须在白名单 DOMAINS 内；
+ *   R1 文件名必须是 j<域>.c（如 jaudio.c），域须在白名单 DOMAINS 内；
+ *      文件名用短前缀 j<域>，公开 API 名仍用长前缀 joy_<域>_*，两者域段相同。
  *   R2 每个域恰好一个 .c；GENERATED_ONLY_DOMAINS 中的域由 api/generated/ 的
- *      生成物实现，豁免「必须有 src/joy_<域>.c」，其余域与 .c 集合严格相等；
+ *      生成物实现，豁免「必须有 src/j<域>.c」，其余域与 .c 集合严格相等；
  *   R3 每个 .c 必须有同名 .h；该 .h 须有 include guard，且 .c 必须 include 它；
  *   R4 .c 内所有 joy_* 函数定义的域前缀必须与文件名域一致（纯域）。
  *      只算函数定义，不算跨域调用、注释、声明与共享句柄类型。
  *   R5 引用方向：域配套头是该域声明的归属地，不得反向 include 聚合门面 joy.h，
  *      须自带 <joy/jtypes.h> 与 extern "C"；include/joy/japi.h 必须逐个
  *      include 全部手写域头，且自身不得残留 JOY_API 声明；生成物域的声明由
- *      joy.h 聚合 api/generated/jmath_wrappers.h，不占 src/joy_<域>.h。
+ *      joy.h 聚合 api/generated/jmath_wrappers.h，不占 src/j<域>.h。
  *   R6 数据分片：DATA_SHARDS 里显式登记的文件不是域实现文件，不参与 R1/R2，
  *      但必须配同名 .h、include 它、不反向 include joy.h，且不得含 joy_* 函数定义。
  *
@@ -28,17 +29,17 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '../..');
 const SRC = path.join(ROOT, 'src');
 const DOMAINS = ['core', 'collision', 'r2d', 'r3d', 'scene', 'net', 'sys', 'script', 'audio'];
-/* 仅由工具生成物实现的域：没有 src/joy_<域>.c，实现落在 api/generated/。
+/* 仅由工具生成物实现的域：没有 src/j<域>.c，实现落在 api/generated/。
  * math 域的 220 条 API 由 jmath_wrap.js 从 include/joy/jmath.h 生成，声明在
  * api/generated/jmath_wrappers.h（由 joy.h 聚合）、实现在 jmath_wrappers.c。
  * 它仍是合法域名（naming.js 的 DOMAINS 保留 math，IDL domain 判定要用），
  * 但豁免 R2/R5，且必须核对生成物确实存在、确实只承载该域的函数定义。
- * 碰撞/GJK/box2d 等几何求交已拆到 collision 域，见 src/joy_collision.c。 */
+ * 碰撞/GJK/box2d 等几何求交已拆到 collision 域，见 src/jcollision.c。 */
 const GENERATED_ONLY_DOMAINS = ['math'];
 const GENERATED_IMPL = { math: 'api/generated/jmath_wrappers.c' };
 /* 数据分片白名单：只放纯数据、没有任何 joy_* 函数定义的文件。
  * 新增数据分片必须同时登记在 cmake/JoySources.cmake 的对应源码组里。 */
-const DATA_SHARDS = ['joy_lut.c'];
+const DATA_SHARDS = ['jlut.c'];
 
 function strip(s) {
   return s.replace(/\/\*[\s\S]*?\*\//g, m => m.replace(/[^\n]/g, ''))
@@ -111,14 +112,14 @@ for (const f of cFiles) {
     continue;
   }
 
-  const m = f.match(/^joy_([a-z0-9]+)\.c$/);
-  if (!m) { errors.push(`R1 ${f}：文件名必须是 joy_<域>.c 或登记进 DATA_SHARDS`); continue; }
+  const m = f.match(/^j([a-z0-9]+)\.c$/);
+  if (!m) { errors.push(`R1 ${f}：文件名必须是 j<域>.c 或登记进 DATA_SHARDS`); continue; }
   const dom = m[1];
   if (!DOMAINS.includes(dom)) { errors.push(`R1 ${f}：域 "${dom}" 不在白名单内`); continue; }
   if (got.has(dom)) { errors.push(`R2 域 ${dom} 有多个 .c：${f}`); continue; }
   got.add(dom);
 
-  const h = `joy_${dom}.h`;
+  const h = `j${dom}.h`;
   const raw = fs.readFileSync(path.join(SRC, f), 'utf8');
   const defs = findDefs(strip(raw));
 
@@ -139,8 +140,8 @@ for (const f of cFiles) {
       errors.push(`R5 include/joy/japi.h：未聚合包含 src/${h}`);
     }
   }
-  const incRe = new RegExp('^[ \\t]*#[ \\t]*include[ \\t]+["<]joy_' + dom + '\\.h[">]', 'm');
-  if (!incRe.test(raw)) errors.push(`R3 ${f}：未 #include "joy_${dom}.h"`);
+  const incRe = new RegExp('^[ \\t]*#[ \\t]*include[ \\t]+["<]j' + dom + '\\.h[">]', 'm');
+  if (!incRe.test(raw)) errors.push(`R3 ${f}：未 #include "j${dom}.h"`);
 
   /* R4：纯域 */
   const foreign = defs.filter(d => d.domain !== dom);
@@ -149,13 +150,13 @@ for (const f of cFiles) {
   }
   rows.push({ f, dom, defs: defs.length, h: hFiles.has(h) ? 'ok' : 'MISS', foreign: foreign.length });
 }
-for (const d of DOMAINS) if (!got.has(d)) errors.push(`R2 域 ${d} 缺少 src/joy_${d}.c`);
+for (const d of DOMAINS) if (!got.has(d)) errors.push(`R2 域 ${d} 缺少 src/j${d}.c`);
 
 /* R2 生成物实现域：src/ 下不得出现该域的 .c/.h，生成物必须存在且纯域。 */
 for (const d of GENERATED_ONLY_DOMAINS) {
   if (DOMAINS.includes(d)) errors.push(`R2 域 ${d} 同时登记在 DOMAINS 与 GENERATED_ONLY_DOMAINS`);
-  if (fs.existsSync(path.join(SRC, `joy_${d}.c`)) || hFiles.has(`joy_${d}.h`)) {
-    errors.push(`R2 生成物域 ${d} 不应有 src/joy_${d}.c/.h（实现应在 api/generated/）`);
+  if (fs.existsSync(path.join(SRC, `j${d}.c`)) || hFiles.has(`j${d}.h`)) {
+    errors.push(`R2 生成物域 ${d} 不应有 src/j${d}.c/.h（实现应在 api/generated/）`);
   }
   const impl = GENERATED_IMPL[d];
   if (!impl || !fs.existsSync(path.join(ROOT, impl))) {
@@ -173,7 +174,7 @@ for (const d of GENERATED_ONLY_DOMAINS) {
 
 /* 游离头文件（有 .h 无对应 .c） */
 for (const h of hFiles) {
-  const m = h.match(/^joy_([a-z0-9]+)\.h$/);
+  const m = h.match(/^j([a-z0-9]+)\.h$/);
   if (m && DOMAINS.includes(m[1]) && !got.has(m[1])) errors.push(`R3 src/${h}：没有对应的 .c`);
 }
 

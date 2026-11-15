@@ -1,5 +1,5 @@
 /******************************************************************************
- * src/joy_core.h —— core 域声明头（joy_core.c 的配套头）
+ * src/jcore.h —— core 域声明头（jcore.c 的配套头）
  * 职责：核心 / 系统工具 / 定时与编码
  * 方向：本头是该域声明的归属地，由 include/joy/japi.h 聚合包含；
  *       本头只依赖基础类型头，不再 include 聚合门面 joy.h，避免循环包含。
@@ -159,7 +159,7 @@ extern "C" {
          * 全部是 L0/L1，生成链可直接产出四端绑定；旧的
          * *_process_event(const void*) 暂时保留，新逻辑应走这组 API。
          * 状态是进程级单例输入流，与 joy 的单窗口模型一致。
-         * input 域已并回 core，声明随 src/joy_core.h 聚合；source 行号由 --scan 刷新。 */
+         * input 域已并回 core，声明随 src/jcore.h 聚合；source 行号由 --scan 刷新。 */
         JOY_API void  joy_core_input_feed_key(int scancode, bool down);
         JOY_API void  joy_core_input_feed_mouse_move(float x, float y);
         JOY_API void  joy_core_input_feed_mouse_button(int button, bool down);

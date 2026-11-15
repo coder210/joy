@@ -68,14 +68,14 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 | `script` | modules / module / moudles / jmsgpack | 33 |
 
 `input` 域已并回 `core`：13 个 API 统一为 `joy_core_input_*`，
-声明与实现物理并入 `src/joy_core.h` / `src/joy_core.c`。改名时
+声明与实现物理并入 `src/jcore.h` / `src/jcore.c`。改名时
 `rename_map.json` 追加 13 条继承映射（保住 `status:on`），`api/tools/naming.js`
 的 `ALIASES` 把新名钉回旧的 `JoyInput*` 脚本层方法名，四端绑定零改动。
 
 `math` 域的手写部分拆为 `collision` 域（2026-11-15）：因为已有
 `include/joy/jmath.h`（`JOY_INLINE` 标量/向量数学库），`src/joy_math.{c,h}`
 再叫 math 会重复且名不副实——那 87 条 API 全是碰撞求交 / GJK / box2d /
-tilemap 扫掠，没有一条标量数学。文件改名 `src/joy_collision.{c,h}`，
+tilemap 扫掠，没有一条标量数学。文件改名 `src/jcollision.{c,h}`，
 API 统一为 `joy_collision_*`（`joy_math_collision2d_*` 剥掉重复的
 collision 段变 `joy_collision_2d_*`）。纯数学的 220 条 `joy_math_*` 是
 `jmath_wrap.js` 从 `jmath.h` 生成的，仍归 `math` 域，但实现在
@@ -87,20 +87,20 @@ collision 段变 `joy_collision_2d_*`）。纯数学的 220 条 `joy_math_*` 是
 
 `ui` 域已并回 `r2d`（2026-11-15）：218 个 API 统一为 `joy_r2d_*`
 （`joy_ui_begin/end` 与 r2d 帧起止同名，避让为 `joy_r2d_im_begin/end`），
-声明与实现物理并入 `src/joy_r2d.h` / `src/joy_r2d.c`，`src/joy_ui.{h,c}` 删除。
+声明与实现物理并入 `src/jr2d.h` / `src/jr2d.c`，`src/joy_ui.{h,c}` 删除。
 **域边界按渲染上下文划分**：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖
 `joy_r3d_p` / `joy_render_mesh_p` 的 3D HUD 控件归 `r3d`；两边都不再单设 UI 文件。
 改名时 `rename_map.json` 追加 218 条继承映射（保住 162 条 `status:on`），
 `naming.js` 的 `ALIASES` 只改 key 保留 value，四端脚本层方法名零改动。
 
-`jsys.c` 分片从 `net` 拆为 `sys` 域（2026-11-15）：`src/joy_net.c` 里那 1212 行
+`jsys.c` 分片从 `net` 拆为 `sys` 域（2026-11-15）：`src/jnet.c` 里那 1212 行
 是跨平台 OS 适配（WinSock2 / DbgHelp / Iphlpapi 对 execinfo / ifaddrs），与前面
 2045 行的 KCP / TCP / WebSocket 协议代码是两个抽象层次，且依赖单向——`net`
 调 `sys` 14 个函数，`sys` 不碰 `net` 任何符号。故把其中的 OS 原语部分搬出为
-`src/joy_sys.{c,h}`，23 条 `joy_net_sys_*` / `joy_net_get_local_ips` 改名
+`src/jsys.{c,h}`，23 条 `joy_net_sys_*` / `joy_net_get_local_ips` 改名
 `joy_sys_*`（`joy_net_` 前缀把时间 / 崩溃处理 / 网卡枚举锁在网络命名空间里，
 名不副实）。3 条 `joy_net_iocp_*` 是网络服务器实现，与 KCP/TCP/WS 同层，
-**留在 `joy_net.c` 且不改名**；IOCP 块内的 `#ifdef JOY_WIN` 自身平衡，留在
+**留在 `jnet.c` 且不改名**；IOCP 块内的 `#ifdef JOY_WIN` 自身平衡，留在
 `net` 时需在该文件头部补 `mswsock.h` / `Windows.h` / `ws2tcpip.h`。
 `rename_map.json` 追加 23 条链式映射，`ALIASES` 只改 key，域白名单 8→9 手写域、
 `DECL_SOURCES` 10→11。
@@ -109,9 +109,11 @@ collision 段变 `joy_collision_2d_*`）。纯数学的 220 条 `joy_math_*` 是
 调用方；控件、协议、碰撞维度一律合并。域清单封闭，防止再次长到 85 个
 （`GENERIC_FIRST` 兜底漏出的 `min` / `raw` / `should` 等垃圾域一并收编）。
 
-**2026-11-13 起追加一条硬规则，2026-11-15 收紧**：一个域恰好一个
-`src/joy_<域>.c`，必配同名 `.h`；`.c` 内所有 `joy_*` 函数定义的前缀必须与
-文件域一致（9 个手写域 + 1 个显式登记的数据分片 `src/joy_lut.c`）；
+**2026-11-13 起追加一条硬规则，2026-11-15 收紧，2026-11-16 改文件名**：
+一个域恰好一个 `src/j<域>.c`，必配同名 `.h`（短前缀 `j<域>` 是文件名，
+公开 API 仍用长前缀 `joy_<域>_*`，域段相同即可）；`.c` 内所有 `joy_*`
+函数定义的前缀必须与文件域一致（9 个手写域 + 1 个显式登记的数据分片
+`src/jlut.c`）；
 唯一例外是 `math` 域没有手写 `.c`，实现由 `api/generated/jmath_wrappers.c`
 承担，登记在 `GENERATED_ONLY_DOMAINS`。
 域边界按**渲染上下文 / 技术职责 / 抽象层次**判定，不按历史名、也不按
@@ -297,16 +299,16 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 
 ### 声明归属地与 `--scan` 顺序稳定
 
-公开 API 声明按域归属在 `src/joy_<域>.h`（`joy_<域>.c` 的配套头），
-`include/joy/japi.h` 只是逐个 `#include "../../src/joy_<域>.h"` 的聚合入口，
+公开 API 声明按域归属在 `src/j<域>.h`（`j<域>.c` 的配套头），
+`include/joy/japi.h` 只是逐个 `#include "../../src/j<域>.h"` 的聚合入口，
 自身不含任何 `JOY_API` 声明。每个域头自带 include guard、`extern "C"` 与
 `<joy/jtypes.h>`，**不得**反过来 include `joy.h`，否则形成循环包含；
 `audit_domain_layout.js` 的 R5 会把方向错误拦在 CI 外；R6 单独管理
-`DATA_SHARDS` 白名单里的纯数据分片（当前只有 `src/joy_lut.c`），
+`DATA_SHARDS` 白名单里的纯数据分片（当前只有 `src/jlut.c`），
 它们不参与「一域一 .c」，但必须配同名 `.h` 且不含任何函数定义。
 
 `DECL_SOURCES` 共 11 个来源：`include/joy/jdefs.h` + 9 个手写域头
-（`src/joy_<域>.h`，域名为 `core collision r2d r3d scene net sys script audio`）+
+（`src/j<域>.h`，域名为 `core collision r2d r3d scene net sys script audio`）+
 `api/generated/jmath_wrappers.h`（生成物域 `math` 的声明，由 `joy.h` 聚合）。
 `--scan` 从它们解析出全部 1170 条声明。
 
@@ -334,7 +336,7 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 {"name":"joy_r2d_font_create","domain":"r2d","level":"L1","reason":"不透明指针 → 句柄 / 所有权","status":"on",
  "owns":"joy_r2d_font_destroy","ret":"font_p","params":[{"name":"filename","ctype":"char*","isConst":true},
  {"name":"fontsize","ctype":"int","isConst":false}],
- "source":"src/joy_r2d.h:190","note":""}
+ "source":"src/jr2d.h:190","note":""}
 ```
 
 | 字段 | 归属 | 说明 |
@@ -479,7 +481,7 @@ POD 结构体。记录对象、数组、回调、其余 72 条 L2 仍留待后�
 
 cs / lua / js 已按此落地。新后端只需要两份东西：一个「VM 值 ↔ `joy_value`」
 的转换表，和一个遍历 `joy_thunks_table()` 的注册循环（方法名取 `script_name`，
-参数类型取 `arg_kinds`，返回类型取 `ret_kind`）。把入口登记到 `joy_<name>.h`，
+参数类型取 `arg_kinds`，返回类型取 `ret_kind`）。把入口登记到 `j<name>.h`，
 在宿主创建时调用一次，`stub.c` 补空桩即可；`thunks_generated.c` 由 IDL 驱动，
 **不需要为每条 API 写后端代码**。
 
@@ -493,7 +495,7 @@ node third_party/joy/api/tools/gen_bindings.js --check
 
 `--check` 不写文件，会校验：IDL 字段完整、无重复 `name`、`owns` 指向存在、
 **开放条目的 `owns` 类型严格匹配**、只有 L0/L1 及可展开的 L2 被开放、11 个契约头
-（`include/joy/jdefs.h` + 9 个 `src/joy_<域>.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
+（`include/joy/jdefs.h` + 9 个 `src/j<域>.h` + `generated/jmath_wrappers.h`）与 IDL 同步，且 `coverage.md`、
 `thunks_generated.c`、`modules/cs/bindings/api/api_generated.c`、
 `modules/cs/scripts/Api.generated.cs` 四个生成物，以及
 `generated/jmath_wrappers.{h,c}`、`include/joy/joy.h` 里那行 include 都是最新的。

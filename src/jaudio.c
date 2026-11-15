@@ -1,13 +1,13 @@
 /******************************************************************************
- * src/joy_audio.c —— audio 域唯一实现文件（一个域一个 .c，配 joy_audio.h）
+ * src/jaudio.c —— audio 域唯一实现文件（一个域一个 .c，配 jaudio.h）
  * 职责：音频
  * 合并自：jaudio.c
- * 说明：本域公开 API 声明在配套头 src/joy_audio.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jaudio.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_audio.h"
+#include "jaudio.h"
 
 /* ==================== 合并自 src/jaudio.c ==================== */
 #include "SDL3/SDL.h"

@@ -1,7 +1,7 @@
 /******************************************************************************
- * src/joy_sys.h —— sys 域声明头（joy_sys.c 的配套头）
+ * src/jsys.h —— sys 域声明头（jsys.c 的配套头）
  * 职责：跨平台 OS 原语的公开 API 声明 —— socket / 时间 / 崩溃处理 / 网卡枚举。
- * 边界：网络协议与服务器（含 IOCP）在 src/joy_net.h；本头不放网络服务器 API。
+ * 边界：网络协议与服务器（含 IOCP）在 src/jnet.h；本头不放网络服务器 API。
  * 方向：本头是该域声明的归属地，由 include/joy/japi.h 聚合包含；
  *       本头只依赖基础类型头，不再 include 聚合门面 joy.h，避免循环包含。
  * 生成链：本头是 gen_bindings.js 的 DECL_SOURCES 之一，改动声明后必须跑 --scan。

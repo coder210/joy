@@ -1,14 +1,14 @@
 /******************************************************************************
- * src/joy_net.c —— net 域唯一实现文件（一个域一个 .c，配 joy_net.h）
+ * src/jnet.c —— net 域唯一实现文件（一个域一个 .c，配 jnet.h）
  * 职责：网络协议与服务器（KCP / TCP / WebSocket / IOCP）
  * 合并自：jnetwork.c；IOCP 服务器分片（原 jsys.c 内的网络实现）
- * 说明：本域公开 API 声明在配套头 src/joy_net.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jnet.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  * 说明：跨平台 OS 原语已拆到 sys 域（src/joy_sys.{c,h}），本文件只保留
  *       网络协议与服务器；跨域调用 joy_sys_* 由 japi.h 聚合声明。
  ******************************************************************************/
 
-#include "joy_net.h"
+#include "jnet.h"
 
 /* ==================== 合并自 src/jnetwork.c ==================== */
 #include "external/klib/khash.h"
@@ -2520,4 +2520,4 @@ void joy_net_iocp_process_events(joy_iocp_server_p server, int timeout_ms)
 
 #endif // JOY_WIN
 
-/* ==================== 结束 src/joy_net.c ==================== */
+/* ==================== 结束 src/jnet.c ==================== */

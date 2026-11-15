@@ -1,12 +1,12 @@
 /******************************************************************************
- * src/joy_lut.c —— math 域数据分片（两张定点三角查表的唯一定义）
+ * src/jlut.c —— math 域数据分片（两张定点三角查表的唯一定义）
  * 说明：这是显式登记的数据分片，不属于「9 个手写域 = 9 个 .c」的域实现文件；
  *       它不含任何 joy_* 函数定义，只提供 SIN_LUT / tan_lut 两个只读数组。
- * 声明：extern 声明与长度宏在 include/joy/jlut.h，由配套头 joy_lut.h 引入。
+ * 声明：extern 声明与长度宏在 include/joy/jlut.h，由配套头 jlut.h 引入。
  * 登记：cmake/JoySources.cmake 的 JOY_SRC_MATH；门禁白名单见 audit_domain_layout.js。
  ******************************************************************************/
 
-#include "joy_lut.h"
+#include "jlut.h"
 
 /* SIN_LUT / tan_lut 两张查表的唯一定义翻译单元。
  * 历史上它们是 jlut.h 里的 static 数组，经 jmath.h -> joy.h 被每个 .c 各复制一份

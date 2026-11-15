@@ -1,13 +1,13 @@
 /******************************************************************************
- * src/joy_core.c —— core 域唯一实现文件（一个域一个 .c，配 joy_core.h）
+ * src/jcore.c —— core 域唯一实现文件（一个域一个 .c，配 jcore.h）
  * 职责：核心 / 系统工具 / 输入状态快照 / 第三方实现体
  * 合并自：jvendor_impl.c / jcore.c / jutils.c / joy_input.c（原 input 域）
- * 说明：本域公开 API 声明在配套头 src/joy_core.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jcore.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_core.h"
+#include "jcore.h"
 
 /* ==================== 合并自 src/jvendor_impl.c ==================== */
 #define STB_TRUETYPE_IMPLEMENTATION

@@ -3,9 +3,9 @@ This is an easy game framework.
 
 ## 目录
 
-- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，9 个手写域各一对文件
+- `src/j<域>.c` + `src/j<域>.h` —— 引擎核心，9 个手写域各一对文件
   （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `sys` / `script` / `audio`），
-  另有数据分片 `src/joy_lut.{c,h}`。`math` 是生成物域、没有手写 `.c`：`jmath.h`
+  另有数据分片 `src/jlut.{c,h}`。`math` 是生成物域、没有手写 `.c`：`jmath.h`
   的标量/向量数学由 `jmath_wrap.js` 生成到 `api/generated/jmath_wrappers.{h,c}`。
   不依赖任何脚本运行时。
   域边界按渲染上下文与抽象层次划分：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，

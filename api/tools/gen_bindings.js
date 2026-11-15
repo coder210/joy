@@ -4,7 +4,7 @@
  *
  * 只做三件事：解析 DECL_SOURCES 契约头、维护 api/idl/joy.idl、产出 api/generated/coverage.md。
  * P0 阶段不生成任何会被调用的胶水代码，现有各模块的 bindings 目录一行不动。
- * 契约头共 11 个：jdefs.h + 9 个 src/joy_<域>.h + generated/jmath_wrappers.h。
+ * 契约头共 11 个：jdefs.h + 9 个 src/j<域>.h + generated/jmath_wrappers.h。
  * japi.h 只做 include 聚合，本身不含声明；声明按域归属到对应配套头。
  *
  * 用法（任意目录，零 npm 依赖，只用 Node 内置 fs/path）：
@@ -228,22 +228,22 @@ function classify(name, ret, params, reason, structs) {
 
 /* 契约来源按顺序列出。source 记真实文件名，IDL 里就能区分「原生声明」
  * 与「工具生成的 jmath 派生包装」；顺序也决定同名时的优先级（当前无重名）。
- * 9 个手写域的声明归属地是 src/joy_<域>.h；include/joy/japi.h 只是 include 聚合，
+ * 9 个手写域的声明归属地是 src/j<域>.h；include/joy/japi.h 只是 include 聚合，
  * 本身不含任何 JOY_API 声明，因此 9 个域头必须逐个登记为来源。
- * input 已并回 core：13 个 API 统一为 joy_core_input_*，声明并入 src/joy_core.h；
+ * input 已并回 core：13 个 API 统一为 joy_core_input_*，声明并入 src/jcore.h；
  * ui 已并回 r2d：218 个 API 统一为 joy_r2d_*（其中 begin/end 避让帧起止，改名
- * joy_r2d_im_*），声明并入 src/joy_r2d.h，见 idl/rename_map.json。 */
+ * joy_r2d_im_*），声明并入 src/jr2d.h，见 idl/rename_map.json。 */
 const DECL_SOURCES = [
   { label: 'include/joy/jdefs.h', file: path.join(JOY_REPO, 'include/joy/jdefs.h') },
-  { label: 'src/joy_core.h', file: path.join(JOY_REPO, 'src/joy_core.h') },
-  { label: 'src/joy_collision.h', file: path.join(JOY_REPO, 'src/joy_collision.h') },
-  { label: 'src/joy_r2d.h', file: path.join(JOY_REPO, 'src/joy_r2d.h') },
-  { label: 'src/joy_r3d.h', file: path.join(JOY_REPO, 'src/joy_r3d.h') },
-  { label: 'src/joy_scene.h', file: path.join(JOY_REPO, 'src/joy_scene.h') },
-  { label: 'src/joy_net.h', file: path.join(JOY_REPO, 'src/joy_net.h') },
-  { label: 'src/joy_sys.h', file: path.join(JOY_REPO, 'src/joy_sys.h') },
-  { label: 'src/joy_script.h', file: path.join(JOY_REPO, 'src/joy_script.h') },
-  { label: 'src/joy_audio.h', file: path.join(JOY_REPO, 'src/joy_audio.h') },
+  { label: 'src/jcore.h', file: path.join(JOY_REPO, 'src/jcore.h') },
+  { label: 'src/jcollision.h', file: path.join(JOY_REPO, 'src/jcollision.h') },
+  { label: 'src/jr2d.h', file: path.join(JOY_REPO, 'src/jr2d.h') },
+  { label: 'src/jr3d.h', file: path.join(JOY_REPO, 'src/jr3d.h') },
+  { label: 'src/jscene.h', file: path.join(JOY_REPO, 'src/jscene.h') },
+  { label: 'src/jnet.h', file: path.join(JOY_REPO, 'src/jnet.h') },
+  { label: 'src/jsys.h', file: path.join(JOY_REPO, 'src/jsys.h') },
+  { label: 'src/jscript.h', file: path.join(JOY_REPO, 'src/jscript.h') },
+  { label: 'src/jaudio.h', file: path.join(JOY_REPO, 'src/jaudio.h') },
   { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },
 ];
 
@@ -290,7 +290,7 @@ function mergeIdl(fresh) {
   const renames = loadRenames();
   const renamedFrom = new Map([...renames].map(([from, to]) => [to, from]));
   const byName = new Map(old.map(e => [e.name, e]));
-  /* 声明在文件之间搬迁（如声明从 japi.h 移到 src/joy_collision.h）不应重排 IDL：
+  /* 声明在文件之间搬迁（如声明从 japi.h 移到 src/jcollision.h）不应重排 IDL：
    * 已存在的条目沿用旧 IDL 顺序，全新条目追加末尾。否则 --scan 会顺带重排
    * joy.idl 及所有下游生成物，产生与本次改动无关的海量 diff。 */
   const oldOrder = new Map(old.map((e, i) => [e.name, i]));

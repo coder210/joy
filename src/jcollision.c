@@ -1,18 +1,18 @@
 /******************************************************************************
- * src/joy_collision.c —— collision 域唯一实现文件（一个域一个 .c，配 joy_collision.h）
+ * src/jcollision.c —— collision 域唯一实现文件（一个域一个 .c，配 jcollision.h）
  * 职责：2D/3D 碰撞求交 / GJK / box2d / tilemap 扫掠
  * 边界：纯标量数学在 include/joy/jmath.h（JOY_INLINE），其脚本绑定包装由
  *       jmath_wrap.js 生成到 api/generated/jmath_wrappers.{h,c}，归 math 域；
  *       math 域因此没有手写 src/joy_math.c，见 audit_domain_layout.js 的
  *       GENERATED_ONLY_DOMAINS 白名单。
  * 合并自：jcollision.c / jgjk.c / jbox2d.c
- * 查表数据（SIN_LUT / tan_lut）已拆到独立数据分片 src/joy_lut.c。
- * 说明：本域公开 API 声明在配套头 src/joy_collision.h，由 include/joy/japi.h 聚合包含；
+ * 查表数据（SIN_LUT / tan_lut）已拆到独立数据分片 src/jlut.c。
+ * 说明：本域公开 API 声明在配套头 src/jcollision.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_collision.h"
+#include "jcollision.h"
 
 /* ==================== 合并自 src/jcollision.c ==================== */
 #include "joy.h"

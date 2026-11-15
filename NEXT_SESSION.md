@@ -11,17 +11,17 @@
 
 ## 0. 一句话现状
 
-`src/` 现为 **9 个手写域 = 9 个 `joy_<域>.c` + 9 个同名 `.h`**（另有 1 个登记的数据分片），
+`src/` 现为 **9 个手写域 = 9 个 `j<域>.c` + 9 个同名 `.h`**（另有 1 个登记的数据分片），
 一个域不再有多个 `.c`。**另有生成物域 `math`，没有手写 `.c`**：它的 220 条
 `joy_math_*` 由 `jmath_wrap.js` 从 `include/joy/jmath.h` 生成到
 `api/generated/jmath_wrappers.{h,c}`，登记在布局门禁的 `GENERATED_ONLY_DOMAINS`。
-**2026-11-15 把 `jsys.c` 分片从 `net` 拆为 `sys` 域**：`src/joy_net.c` 后 1212 行是
+**2026-11-15 把 `jsys.c` 分片从 `net` 拆为 `sys` 域**：`src/jnet.c` 后 1212 行是
 跨平台 OS 适配（WinSock2 / DbgHelp / Iphlpapi 对 execinfo / ifaddrs），与前 2045 行
-的网络协议代码是两个抽象层次，且依赖单向。现拆为 `src/joy_sys.{c,h}`，23 条
+的网络协议代码是两个抽象层次，且依赖单向。现拆为 `src/jsys.{c,h}`，23 条
 `joy_net_sys_*` / `joy_net_get_local_ips` 改名 `joy_sys_*`；3 条 `joy_net_iocp_*`
-是网络服务器、与 KCP/TCP/WS 同层，留在 `joy_net.c` 且不改名。域白名单 8→9 手写域、
+是网络服务器、与 KCP/TCP/WS 同层，留在 `jnet.c` 且不改名。域白名单 8→9 手写域、
 `DECL_SOURCES` 10→11。
-**2026-11-15 把原 `src/joy_math.{c,h}` 改名为 `src/joy_collision.{c,h}`**：里面 87 条
+**2026-11-15 把原 `src/joy_math.{c,h}` 改名为 `src/jcollision.{c,h}`**：里面 87 条
 API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名不副实，现统一为
 `joy_collision_*`，`math` 只留给真正的标量/向量数学。
 **2026-11-15 按用户拍板把 `ui` 域并回 `r2d`**：
@@ -46,36 +46,70 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
 | **本轮：`ui` 并回 `r2d`（2026-11-15）** | 见下方「关键决策」新增段 | 218 条改名 / 2 文件删除 / 域白名单 9→8 |
 | **本轮：`joy_math` → `joy_collision`（2026-11-15）** | 见下方「关键决策」新增段 | 87 条改名 / 2 文件改名 / 布局门禁新增生成物域 |
 | **本轮：`jsys` 分片拆为 `sys` 域（2026-11-15）** | 见下方「关键决策」新增段 | 23 条改名 / 2 文件新增 / 手写域 8→9、契约源 10→11 |
+| **本轮：`src` 文件名改回 `j<域>.{c,h}`（2026-11-16）** | 见下方「关键决策」新增段 | 20 文件改名 / 1370 处引用 / 门禁 R1 改文件名规则 |
 
 `35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
 - **一域一 `.c` 一 `.h`**：28 个旧 `.c` 按域物理合并为域文件，新增 R1–R4 布局门禁并接入 Desktop CI；
-- **反转声明归属方向**：公开声明全部下沉 `src/joy_<域>.h`，`japi.h` 改为纯 include 聚合，
+- **反转声明归属方向**：公开声明全部下沉 `src/j<域>.h`，`japi.h` 改为纯 include 聚合，
   `DECL_SOURCES` = `jdefs.h` + 9 个域头 + `jmath_wrappers.h` 共 11 个来源，新增 R5；
-- **查表数据独立成数据分片**：`SIN_LUT` / `tan_lut` 拆到 `src/joy_lut.c` + `src/joy_lut.h`，
+- **查表数据独立成数据分片**：`SIN_LUT` / `tan_lut` 拆到 `src/jlut.c` + `src/jlut.h`，
   `joy_math.c` 从 56032 行缩到 4543 行，新增 R6 白名单；
 - **`input` 并回 `core` 并统一前缀**：13 个 `joy_input_*` → `joy_core_input_*`，
   域白名单 10 → 9，`DOMAIN_ALIASES` 临时机制已删除，`open=739` / `status:on` 不丢、orphan 0。
+
+### 关键决策：`src` 文件名由 `joy_<域>.{c,h}` 改回 `j<域>.{c,h}`（2026-11-16，本轮）
+
+用户要求把 `src/` 下的文件名改回短前缀：`joy_audio.c` → `jaudio.c`、
+`joy_collision.c` → `jcollision.c`，其余同理。这是纯文件名改动，
+**函数名 `joy_<域>_*`、域名、IDL 条目、四端脚本层方法名全部不动**——
+短前缀是文件系统的命名习惯，长前缀是公开 ABI，两者不必一致。
+
+- **物理改名 20 个文件**：9 个手写域 + 1 个数据分片，每个 `.c` 与同名 `.h`
+  成对改；`api/generated/`、`include/joy/` 不在范围内（那里本来就是
+  `jmath.h` / `jtypes.h` / `jmath_wrappers.c` 这套短前缀）。
+- **门禁解绑**：`audit_domain_layout.js` 的 R1 原先靠 `^joy_([a-z0-9]+)\.c$`
+  从文件名推域，改为 `^j([a-z0-9]+)\.c$`；R3 配套头、`incRe`、游离头检查、
+  `DATA_SHARDS`（`joy_lut.c` → `jlut.c`）、生成物域豁免检查、
+  R5 聚合头检查一并改。`audit_domain_purity.js` 只看函数名，不受影响。
+  域段仍相同，所以 R4「函数名域 = 文件名域」与所有继承链、ALIASES 无需改动。
+- **同步面**：`japi.h` 的 9 条聚合 include、`DECL_SOURCES` 的 11 个 label/file、
+  `cmake/JoySources.cmake` 全部源码组与分片注释、`JoyTargets.cmake` /
+  `joy_add.cmake` 的 option 描述、`include/joy/jlut.h` 注释、各 `.c/.h`
+  自身的 `#include` 与头注释、`README.md` / `api/README.md` / 本文件。
+  `HANDOFF.md` 的历史旧名按 T4 保留。
+- **同名注意**：`src/jlut.h` 与 `include/joy/jlut.h` 同名但不同目录、不同
+  include guard（`JOY_LUT_H` / `JOY_JLUT_H`）。`jlut.c` 里 `#include "jlut.h"`
+  是引号形式，优先命中同目录 `src/jlut.h`；`jmath.h` 里 `#include "jlut.h"`
+  优先命中 `include/joy/jlut.h`；`src/jlut.h` 内用 `<joy/jlut.h>` 再引公开头。
+  Windows 全量实链 0 错误已验证这条解析链。
+- 验收：两门禁 0 违规（9 手写域 + 1 数据分片 / 1013 定义 / 混域 0）、
+  `--check OK 1170`、`--scan` 幂等、IDL `source` 全部指向 `src/j<域>.h`、
+  `open=739` / orphan 0 / 域分布不变、全仓旧文件名字面串 0、
+  `git diff --check` 0。
 
 ### 关键决策：物理合并 + 数据分片例外
 
 > 以下两节是 `35fa0ea1` 当时（9 域 / 11 个契约源）的历史记录，数字按当时状态保留；
 > **当前为 9 个手写域 + 1 个生成物域 / 11 个契约源**，
 > 以 §0、§2 与「`jsys` 分片拆为 `sys` 域」段为准。
+> **文件名口径**：2026-11-16 起 `src/` 文件统一为 `j<域>.{c,h}`，函数名
+> `joy_<域>_*` 不变；下文的现存文件名已按新写法同步，而 `joy_math.*` /
+> `joy_ui.*` 这类当时已删除或改名的旧名按 T4 保留（现在磁盘上不存在）。
 
 用户提出更严格的组织规则：**一个 `.c` 一定是一个域；一个域不允许多个 `.c`；
 每个 `.c` 要有一个头文件**。此前（第 29 条）的「一个域可以有多个 `.c`、
-不合并成巨型 TU」决策随之作废，改名为 `joy_<域>.c/.h` 后物理拼接：
+不合并成巨型 TU」决策随之作废，改名为 `j<域>.c/.h` 后物理拼接：
 
 - 域名直接进文件名，9 个域 9 对文件，一眼可数；`.h` 是该域的配套头。
-  公开 API 声明按域归属在 `src/joy_<域>.h`，`japi.h` 只做 include 聚合；
+  公开 API 声明按域归属在 `src/j<域>.h`，`japi.h` 只做 include 聚合；
   9 个域头全部登记为 `DECL_SOURCES`（连同 `jdefs.h` / `jmath_wrappers.h` 共 11 个来源），
   `source` 行号由 `--scan` 刷新即可，`audit_domain_layout.js` 的 R5 固化引用方向；
   `input` 已并回 `core`，13 个 API 统一为 `joy_core_input_*`，域前缀与文件名一致；
 - 3 个可选模块不保留独立 `.c`：`jgltf` / `jspine` / `jmodule` 作为
   `#ifdef JOY_USE_*` 段并入所属域 `.c`，开关宏由 `JoyTargets.cmake` 转发；
 - **唯一例外是数据分片**：`SIN_LUT` / `tan_lut`（约 5.1 万行）独立为
-  `src/joy_lut.c` + `src/joy_lut.h`。它不含任何函数定义，不计入
+  `src/jlut.c` + `src/jlut.h`。它不含任何函数定义，不计入
   「一域一 .c」，在 `audit_domain_layout.js` 的 `DATA_SHARDS` 与
   `cmake/JoySources.cmake` 的 `JOY_SRC_MATH` 双重登记，R6 校验配套头与纯数据；
 - `jvendor_impl.c`（stb/dr 实现宏）并入 `core` 且**必须置顶**，
@@ -85,19 +119,19 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
 - 生成物 `api/generated/`、第三方 `external/`、`examples/`、`modules/` 不属于
   `src/` 手写域实现，不在本规则管辖内。
 
-### 关键决策：`joy_math.{c,h}` → `joy_collision.{c,h}`（2026-11-15，本轮）
+### 关键决策：`joy_math.{c,h}` → `jcollision.{c,h}`（2026-11-15，本轮）
 
 用户指出：已有 `include/joy/jmath.h`（`JOY_INLINE` 标量/向量数学库），
 `src/joy_math.{c,h}` 再叫 math 重复且名不副实。核实后确认那 87 条 API
 全是 `collision2d/3d`、`gjk`、`box2d`、tilemap 扫掠（合并自
 `jcollision.c / jgjk.c / jbox2d.c`），没有一条标量数学，故改名
-`joy_collision.{c,h}`，API 统一为 `joy_collision_*`。
+`jcollision.{c,h}`，API 统一为 `joy_collision_*`。
 
 - **命名**：`joy_math_collision2d_*` 剥掉重复的 collision 段变
   `joy_collision_2d_*`（不要变成 `joy_collision_collision2d_*`）；
   `gjk* / box2d / tilemap / find` 直接换前缀。87 条里 2 条原本无
   `ALIASES` 的 `tilemap_sweep_x|y` 已补表冻结旧方法名 `JoyMathTilemapSweep*`。
-  `rename_map.json` 追加 87 条链式映射；`src/joy_r2d.c` 的 7 处跨域调用同步改名。
+  `rename_map.json` 追加 87 条链式映射；`src/jr2d.c` 的 7 处跨域调用同步改名。
 - **`math` 域保留但不再有手写 `.c`**：220 条 `joy_math_*` 是 `jmath_wrap.js`
   从 `jmath.h` 生成的，实现在 `api/generated/jmath_wrappers.c`。
   `naming.js` 的 `DOMAINS` **必须保留 `math`**（否则 `domainOf()` 会把这 220 条
@@ -105,43 +139,43 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
   豁免 R2/R5，但校验生成物存在、含 `joy_math_*` 定义且纯域。
 - **门禁 / 配置**：`naming.js` 与 `audit_domain_purity.js` 的 `DOMAINS` 加
   `collision`；`audit_domain_layout.js` 的 `DOMAINS` 用 `collision` 换掉 `math`
-  （当时手写域仍 8 个）；`DECL_SOURCES` 的 `src/joy_math.h` → `src/joy_collision.h`
+  （当时手写域仍 8 个）；`DECL_SOURCES` 的 `src/joy_math.h` → `src/jcollision.h`
   （当时仍 10 个来源）；`japi.h` 同步；`cmake/JoySources.cmake` 新增
-  `JOY_SRC_COLLISION` 组，`JOY_SRC_MATH` 只剩 `joy_lut.c` + 生成物包装。
+  `JOY_SRC_COLLISION` 组，`JOY_SRC_MATH` 只剩 `jlut.c` + 生成物包装。
 - **未动**：`api/generated/jmath_wrappers.{h,c}` 的 220 条名字与内容、
   `jmath_wrap.js` 里的 `cname: 'joy_math_' + f.name`、
   `HANDOFF.md` / `legacy_names.txt` 的历史旧名（T4 有意保留）。
 - 87 条全是 `status:off`（L2/L3），`on` 总数仍 739、IDL 仍 1170；
   IDL 里 `collision` 87 / `math` 220，`source` 分属
-  `src/joy_collision.h` 与 `api/generated/jmath_wrappers.h`。
+  `src/jcollision.h` 与 `api/generated/jmath_wrappers.h`。
 
 ### 关键决策：`jsys.c` 分片拆为 `sys` 域（2026-11-15，本轮）
 
 用户从「代码优雅」角度要求把当年自己写的跨平台封装 `jsys.c` 从
-`src/joy_net.c` 里拆出来，并明确 `joy_sys.*` 只放 OS 原语
+`src/jnet.c` 里拆出来，并明确 `joy_sys.*` 只放 OS 原语
 （socket / 时间 / 崩溃 / 网卡枚举）。**先做了脱离门禁的纯设计判断**：
-`joy_net.c` 3257 行里，1..2045 是 KCP/TCP/WebSocket/mongoose 协议，
+`jnet.c` 3257 行里，1..2045 是 KCP/TCP/WebSocket/mongoose 协议，
 2046..3257 是 WinSock2 / DbgHelp / Iphlpapi 对 execinfo / ifaddrs 的
 OS 适配，两个抽象层次、平台条件编译密度完全不同，没有理由共用一个 TU。
 
 - **边界干净**：net 段调用 14 个 `joy_net_sys_*`，sys 段不调用 net 段任何
   函数、不引用 net 段私有符号；static / struct / typedef / `#define` 重叠 0，
   三段 `#if` 各自净平衡 0。拆是纯搬运，不需要重新设计接口。
-- **两层归位，一次做到位**：`src/joy_sys.{c,h}` 只放 23 条 OS 原语，
+- **两层归位，一次做到位**：`src/jsys.{c,h}` 只放 23 条 OS 原语，
   `joy_net_sys_*` / `joy_net_get_local_ips` 改名 `joy_sys_*`（原
   `joy_net_` 前缀把时间 / 崩溃处理 / 网卡枚举锁在网络命名空间里，名不副实）。
-  **3 条 `joy_net_iocp_*` 是网络服务器、与 KCP/TCP/WS 同层，留在 `joy_net.c`
+  **3 条 `joy_net_iocp_*` 是网络服务器、与 KCP/TCP/WS 同层，留在 `jnet.c`
   且不改名** —— 不把混杂从一个文件搬到另一个文件，也避免下一轮二次改名。
   IOCP 块（原 2638..3106，`#ifdef JOY_WIN` 到 `#endif`，含非 Win 空实现）
   自身条件编译平衡、无独立 include、不引用 sys 段私有符号；留在 net 后
-  在 `joy_net.c` 头部补 `mswsock.h` / `Windows.h` / `ws2tcpip.h`。
+  在 `jnet.c` 头部补 `mswsock.h` / `Windows.h` / `ws2tcpip.h`。
 - **物理切法**：sys 段 = 2046..2637（平台头 + crashHandler + socket 封装）
-  + 3107..3257（网卡枚举 + `#undef` 收尾），两段拼成 `src/joy_sys.c`；
-  net 段 1..2045 + IOCP 块留在 `src/joy_net.c`。声明头同理：
-  `src/joy_net.h` 的 17..41 行搬到新 `src/joy_sys.h`，43..45 的 IOCP 声明留原处。
+  + 3107..3257（网卡枚举 + `#undef` 收尾），两段拼成 `src/jsys.c`；
+  net 段 1..2045 + IOCP 块留在 `src/jnet.c`。声明头同理：
+  `src/jnet.h` 的 17..41 行搬到新 `src/jsys.h`，43..45 的 IOCP 声明留原处。
 - **门禁 / 配置**：三个 `DOMAINS` 加 `sys`（手写域 8→9）；
-  `DECL_SOURCES` 加 `src/joy_sys.h`（10→11）；`japi.h` 加一行聚合；
-  `cmake/JoySources.cmake` 新增 `JOY_SRC_SYS` 组；`src/joy_lut.c`、
+  `DECL_SOURCES` 加 `src/jsys.h`（10→11）；`japi.h` 加一行聚合；
+  `cmake/JoySources.cmake` 新增 `JOY_SRC_SYS` 组；`src/jlut.c`、
   `README.md`、`api/README.md`、`gen_bindings.js` 头部注释同步。
 - **继承链**：`rename_map.json` 追加 23 条链式映射，`naming.js` 的 `ALIASES`
   只改 key 保留 value（19 条 `status:on` 全继承，四端脚本层方法名零改动）。
@@ -160,7 +194,7 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 （r3d 的 `font_cache` / `rp`，r2d 的 font/text 句柄）；按「谁依赖谁、谁一起改」
 内聚到各自渲染 TU，才是真对称。拆独立文件反而要暴露 `struct joy_r3d` 私有字段。
 
-- 物理合并：`src/joy_ui.c/.h` 的声明与实现并入 `src/joy_r2d.h/.c`，两个 ui 文件删除；
+- 物理合并：`src/joy_ui.c/.h` 的声明与实现并入 `src/jr2d.h/.c`，两个 ui 文件删除；
   `japi.h` 去掉该聚合 include，`cmake/JoySources.cmake` 去掉 `JOY_SRC_UI` 组。
 - 改名 218 条：`joy_ui_*` → `joy_r2d_*`。`joy_ui_begin/end` 与 r2d 帧起止
   `joy_r2d_begin/end` 撞名，避让为 `joy_r2d_im_begin/end`（im = immediate mode）。
@@ -198,7 +232,7 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 
 **一个手写域只有一个 `.c`，一个 `.c` 只有一个域，且必须配一个同名 `.h`。**
 两类例外：`math` 由 `api/generated/jmath_wrappers.c` 实现（`GENERATED_ONLY_DOMAINS`，
-豁免 R2 但校验生成物存在且纯域）；`joy_lut.c` 是数据分片（`DATA_SHARDS`，
+豁免 R2 但校验生成物存在且纯域）；`jlut.c` 是数据分片（`DATA_SHARDS`，
 配同名 `.h`、不含函数定义、不参与域集合校验）。
 
 ## 2. 当前硬事实
@@ -219,21 +253,21 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 
 | 域 | 文件（函数定义条数） | 合并自分片 |
 |---|---|---|
-| `core` | `joy_core.c`(110) | `jvendor_impl` / `jcore` / `jutils` / **`joy_input`（原 input 域）** |
+| `core` | `jcore.c`(110) | `jvendor_impl` / `jcore` / `jutils` / **`joy_input`（原 input 域）** |
 | `math`（生成物域） | `api/generated/jmath_wrappers.c`(220) | `jmath.h` 由 `jmath_wrap.js` 生成，非手写域文件 |
-| `collision` | `joy_collision.c`(90) | `jcollision` / `jgjk` / `jbox2d`（原 `joy_math.c`，2026-11-15 改名） |
-| `r2d` | `joy_r2d.c`(349) | `jr2d` / `jfont` / `jparticle` / `jspine` / **`jui` / `jui_im`（原 ui 域）** |
-| `r3d` | `joy_r3d.c`(165) | `jr3d` / `jlight` / `jgltf` / 3D HUD 控件 |
-| `scene` | `joy_scene.c`(150) | `jscene` / `janimator` / `jtilemap` / `jecs` / `jprocmap` / `jbehavior` |
-| `net` | `joy_net.c`(73) | `jnetwork` / IOCP 服务器分片（原 `jsys` 内的网络实现） |
-| `sys` | `joy_sys.c`(23) | `jsys`（socket / 时间 / 崩溃 / 网卡枚举，2026-11-15 从 `net` 拆出） |
-| `script` | `joy_script.c`(33) | `jmsgpack` / `jmodule` |
-| `audio` | `joy_audio.c`(20) | `jaudio` |
-| 数据分片 | `joy_lut.c`(0) | `jlut`（`SIN_LUT` / `tan_lut`，不在域集合内） |
+| `collision` | `jcollision.c`(90) | `jcollision` / `jgjk` / `jbox2d`（原 `joy_math.c`，2026-11-15 改名） |
+| `r2d` | `jr2d.c`(349) | `jr2d` / `jfont` / `jparticle` / `jspine` / **`jui` / `jui_im`（原 ui 域）** |
+| `r3d` | `jr3d.c`(165) | `jr3d` / `jlight` / `jgltf` / 3D HUD 控件 |
+| `scene` | `jscene.c`(150) | `jscene` / `janimator` / `jtilemap` / `jecs` / `jprocmap` / `jbehavior` |
+| `net` | `jnet.c`(73) | `jnetwork` / IOCP 服务器分片（原 `jsys` 内的网络实现） |
+| `sys` | `jsys.c`(23) | `jsys`（socket / 时间 / 崩溃 / 网卡枚举，2026-11-15 从 `net` 拆出） |
+| `script` | `jscript.c`(33) | `jmsgpack` / `jmodule` |
+| `audio` | `jaudio.c`(20) | `jaudio` |
+| 数据分片 | `jlut.c`(0) | `jlut`（`SIN_LUT` / `tan_lut`，不在域集合内） |
 
 函数定义总数 1013 条，与 `35fa0ea1` 合并前逐字一致；ui 合并那轮 218 条改名只换前缀，
 `joy_ui_*` 的 IDL `domain` 由 `ui` 变为 `r2d`（114 → 332 条）。本轮 `jsys` 拆分同样是
-纯搬运：`joy_net.c` 96 = `net` 73 + `sys` 23，IDL `net` 87 → `net` 64 + `sys` 23，
+纯搬运：`jnet.c` 96 = `net` 73 + `sys` 23，IDL `net` 87 → `net` 64 + `sys` 23，
 总数仍 1170、`on` 仍 739。
 
 ## 3. 下一步（按优先级）
@@ -254,9 +288,9 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 **两边都不单设 UI 文件，各自内聚到渲染器**。
 
 已实施：删除 `src/joy_ui.{h,c}`，218 条 `joy_ui_*` 改名 `joy_r2d_*` 并入
-`src/joy_r2d.{h,c}`；`joy_ui_begin/end` 避让帧起止为 `joy_r2d_im_begin/end`；
+`src/jr2d.{h,c}`；`joy_ui_begin/end` 避让帧起止为 `joy_r2d_im_begin/end`；
 域白名单 9→8、`DECL_SOURCES` 11→10；`api/README.md`、`cmake/JoySources.cmake`、
-本文件、`src/joy_r2d.{h,c}` 头部、`src/joy_r3d.h/.c` 失效注释均已同步。
+本文件、`src/jr2d.{h,c}` 头部、`src/jr3d.h/.c` 失效注释均已同步。
 `joy_r3d_*` 的 65 条 3D 控件保持原名与位置不变（归 r3d 渲染器）。
 
 验收：`--check OK 1170`、两个门禁 0 违规、全量 Debug 构建 0 错误、
@@ -271,7 +305,7 @@ orphan 0、IDL `domain` 里 `ui` 归零（`r2d` 114→332）。
 
 #### T3 `japi.h` 的安装分发风险（需要决策，不是 bug）
 
-`include/joy/japi.h` 用 `#include "../../src/joy_<域>.h"` 引用私有目录头；
+`include/joy/japi.h` 用 `#include "../../src/j<域>.h"` 引用私有目录头；
 源码树构建正常，但**单独安装 / 分发 `include/` 时会断链**。两条路：
 生成一份安装版聚合头，或把域头搬进 `include/joy/`（会动 R5 门禁、
 `DECL_SOURCES` 全部路径和 IDL 的 `source` 行号）。**先问用户要不要处理**。
@@ -408,9 +442,9 @@ iOS / wasm 静态形态、Android 真机冒烟、C# 在 iOS/wasm（宿主模型�
      脚本层方法名（`ImageCreate` / `JtextPrintx` …），改了它四份示例和 C# 绑定全崩。
 2. **新增 `.c` 必须登记到 `cmake/JoySources.cmake`**（该文件是显式清单，不用 glob），
    并归到对应域组。**但一个域只允许一个 `.c`**——新功能应写进已有的
-   `src/joy_<域>.c`，不要新建 `src/xxx.c`，否则布局门禁直接 FAIL。
+   `src/j<域>.c`，不要新建 `src/xxx.c`，否则布局门禁直接 FAIL。
    纯数据文件是唯一例外：必须同时登记 `DATA_SHARDS` 白名单并配同名 `.h`
-   （当前只有 `src/joy_lut.c`），R6 会校验它不含任何 `joy_*` 函数定义。
+   （当前只有 `src/jlut.c`），R6 会校验它不含任何 `joy_*` 函数定义。
 3. **`legacy_names.txt` 里那 6 条旧名（4 个 `joy_fov_*` + `joy_tilemap_sweep_x|y`）
    已经失效**：本轮改名后 C 名分别是 `joy_r2d_fov_draw_2d`、`joy_r3d_fov_*`、
    `joy_collision_tilemap_sweep_x|y`（本轮又从 `joy_math_*` 改为 `joy_collision_*`），
@@ -419,7 +453,7 @@ iOS / wasm 静态形态、Android 真机冒烟、C# 在 iOS/wasm（宿主模型�
 4. **两个域门禁的判定口径**（`audit_domain_purity.js` 查纯域，
    `audit_domain_layout.js` 再加「一域一 .c / 每 .c 配同名 .h」）：
    只算函数定义（签名后紧跟 `{`）。跨域**调用**、注释提及、共享句柄类型
-   （`joy_image_p` 等）都**不算**混域。`joy_r2d.c` 调 `joy_core_get_raw_window`、
+   （`joy_image_p` 等）都**不算**混域。`jr2d.c` 调 `joy_core_get_raw_window`、
    `joy_core_utf8_decode_all`、`joy_core_utils_get_current_time` 是正常单向依赖，
    不要去「修」。
 5. **注释里写别的域的函数名也会让人误判成混域**。新写注释时用「按钮 / 摇杆等

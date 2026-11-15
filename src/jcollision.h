@@ -1,5 +1,5 @@
 /******************************************************************************
- * src/joy_collision.h —— collision 域声明头（joy_collision.c 的配套头）
+ * src/jcollision.h —— collision 域声明头（jcollision.c 的配套头）
  * 职责：2D/3D 碰撞求交 / GJK / box2d / tilemap 扫掠的公开 API 声明。
  * 边界：纯标量数学（vec/mat/fp）在 include/joy/jmath.h，由 jmath_wrap.js
  *       生成的纯标量数学包装仍归 math 域；本文件只放几何求交类 API，归 collision 域。

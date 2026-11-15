@@ -1,5 +1,5 @@
 /******************************************************************************
- * src/joy_script.h —— script 域声明头（joy_script.c 的配套头）
+ * src/jscript.h —— script 域声明头（jscript.c 的配套头）
  * 职责：msgpack / 插件模块
  * 方向：本头是该域声明的归属地，由 include/joy/japi.h 聚合包含；
  *       本头只依赖基础类型头，不再 include 聚合门面 joy.h，避免循环包含。

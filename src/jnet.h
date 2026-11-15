@@ -1,7 +1,7 @@
 /******************************************************************************
- * src/joy_net.h —— net 域声明头（joy_net.c 的配套头）
+ * src/jnet.h —— net 域声明头（jnet.c 的配套头）
  * 职责：网络协议与服务器（KCP / TCP / WebSocket / IOCP）
- * 边界：跨平台 OS 原语（socket / 时间 / 崩溃 / 网卡枚举）已拆到 src/joy_sys.h。
+ * 边界：跨平台 OS 原语（socket / 时间 / 崩溃 / 网卡枚举）已拆到 src/jsys.h。
  * 方向：本头是该域声明的归属地，由 include/joy/japi.h 聚合包含；
  *       本头只依赖基础类型头，不再 include 聚合门面 joy.h，避免循环包含。
  * 生成链：本头是 gen_bindings.js 的 DECL_SOURCES 之一，改动声明后必须跑 --scan。

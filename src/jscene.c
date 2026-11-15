@@ -1,13 +1,13 @@
 /******************************************************************************
- * src/joy_scene.c —— scene 域唯一实现文件（一个域一个 .c，配 joy_scene.h）
+ * src/jscene.c —— scene 域唯一实现文件（一个域一个 .c，配 jscene.h）
  * 职责：场景 / 动画 / tilemap / ECS / 过程地图 / 行为树
  * 合并自：jscene.c / janimator.c / jtilemap.c / jecs.c / jprocmap.c / jbehavior.c
- * 说明：本域公开 API 声明在配套头 src/joy_scene.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jscene.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_scene.h"
+#include "jscene.h"
 
 /* ==================== 合并自 src/jscene.c ==================== */
 /************************************************

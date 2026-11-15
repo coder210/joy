@@ -1,15 +1,15 @@
 /******************************************************************************
- * src/joy_r2d.c —— r2d 域唯一实现文件（一个域一个 .c，配 joy_r2d.h）
+ * src/jr2d.c —— r2d 域唯一实现文件（一个域一个 .c，配 jr2d.h）
  * 职责：2D 渲染 / 字体 / 粒子 / spine / 2D 控件与即时模式 UI
  * 合并自：jr2d.c / jfont.c / jparticle.c / jspine.c / jui.c / jui_im.c
  * 边界：原 ui 域已按渲染上下文并入 r2d（依赖 joy_r2d_p 的控件归 2D 渲染器）；
  *       r3d 的 3D HUD 控件同理归 3D 渲染器，两边都不再有独立的 UI 文件。
- * 说明：本域公开 API 声明在配套头 src/joy_r2d.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jr2d.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_r2d.h"
+#include "jr2d.h"
 
 /* ==================== 合并自 src/jr2d.c ==================== */
 #include "external/stb_image.h"

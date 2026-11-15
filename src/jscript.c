@@ -1,13 +1,13 @@
 /******************************************************************************
- * src/joy_script.c —— script 域唯一实现文件（一个域一个 .c，配 joy_script.h）
+ * src/jscript.c —— script 域唯一实现文件（一个域一个 .c，配 jscript.h）
  * 职责：msgpack / 插件模块
  * 合并自：jmsgpack.c / jmodule.c
- * 说明：本域公开 API 声明在配套头 src/joy_script.h，由 include/joy/japi.h 聚合包含；
+ * 说明：本域公开 API 声明在配套头 src/jscript.h，由 include/joy/japi.h 聚合包含；
  *       本文件是该域唯一的编译单元。
  *       内部符号（static / 私有宏 / typedef）保持各分片独立，未跨分片改名。
  ******************************************************************************/
 
-#include "joy_script.h"
+#include "jscript.h"
 
 /* ==================== 合并自 src/jmsgpack.c ==================== */
 #include <msgpack/pack.h>
@@ -152,7 +152,7 @@ History:
 
 插件系统为可选模块：由 JOY_ENABLE_PLUGINS 控制（见 cmake/JoySources.cmake），
 CMake 转发为 JOY_USE_PLUGINS。未启用时本文件为空编译单元，不影响任何项目。
-公开声明在配套头 src/joy_script.h 的 JOY_USE_PLUGINS 条件段内，两者必须同步。
+公开声明在配套头 src/jscript.h 的 JOY_USE_PLUGINS 条件段内，两者必须同步。
 *************************************************/
 
 #ifdef JOY_USE_PLUGINS
