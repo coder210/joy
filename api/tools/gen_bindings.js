@@ -236,7 +236,7 @@ function classify(name, ret, params, reason, structs) {
 const DECL_SOURCES = [
   { label: 'include/joy/jdefs.h', file: path.join(JOY_REPO, 'include/joy/jdefs.h') },
   { label: 'src/joy_core.h', file: path.join(JOY_REPO, 'src/joy_core.h') },
-  { label: 'src/joy_math.h', file: path.join(JOY_REPO, 'src/joy_math.h') },
+  { label: 'src/joy_collision.h', file: path.join(JOY_REPO, 'src/joy_collision.h') },
   { label: 'src/joy_r2d.h', file: path.join(JOY_REPO, 'src/joy_r2d.h') },
   { label: 'src/joy_r3d.h', file: path.join(JOY_REPO, 'src/joy_r3d.h') },
   { label: 'src/joy_scene.h', file: path.join(JOY_REPO, 'src/joy_scene.h') },
@@ -289,7 +289,7 @@ function mergeIdl(fresh) {
   const renames = loadRenames();
   const renamedFrom = new Map([...renames].map(([from, to]) => [to, from]));
   const byName = new Map(old.map(e => [e.name, e]));
-  /* 声明在文件之间搬迁（如 math 声明从 japi.h 移到 src/joy_math.h）不应重排 IDL：
+  /* 声明在文件之间搬迁（如声明从 japi.h 移到 src/joy_collision.h）不应重排 IDL：
    * 已存在的条目沿用旧 IDL 顺序，全新条目追加末尾。否则 --scan 会顺带重排
    * joy.idl 及所有下游生成物，产生与本次改动无关的海量 diff。 */
   const oldOrder = new Map(old.map((e, i) => [e.name, i]));

@@ -4,6 +4,7 @@
 # 这份清单就是架构文档：增删文件必须在这里登记，路径全部相对 JOY_ROOT
 # （由 JoyTargets.cmake 设置为本仓库根）。源码按性质分三处，互不混放：
 #   src/             人工实现，8 个域文件 + 1 个显式登记的数据分片
+#                    （第 9 个域 math 没有手写 .c，实现由 api/generated/ 生成）
 #   api/generated/   工具生成，勿手改
 #   external/        vendored 第三方（含一个自有包装 aes_util.c）
 #
@@ -12,7 +13,11 @@
 #   2. 一个域只有一个 .c —— src/joy_<域>.c；
 #   3. 每个 .c 必配一个同名内部头 —— src/joy_<域>.h，且 .c 必须 include 它。
 #   函数名前缀 joy_<域>_ 必须与文件名、配套头的域一致。
-#   域白名单（8 个）：core math r2d r3d scene net script audio。
+#   域白名单：8 个手写域 core collision r2d r3d scene net script audio，
+#   外加 1 个仅由生成物实现的域 math（见 audit_domain_layout.js 的
+#   GENERATED_ONLY_DOMAINS）；math 与 collision 的分工是：jmath.h 的标量/向量
+#   数学由 jmath_wrap.js 生成 joy_math_* 归 math，碰撞/GJK/box2d 求交归
+#   collision。原 src/joy_math.c 已拆为 src/joy_collision.c。
 #   input 已并回 core：13 个 API 统一为 joy_core_input_*，域前缀与文件名一致。
 #   ui 已并回 r2d：218 个 API 统一为 joy_r2d_*（begin/end 避让帧起止 -> joy_r2d_im_*），
 #   声明与实现并入 src/joy_r2d.h / .c。域边界按渲染上下文划分：依赖 joy_r2d_p 的
@@ -23,7 +28,7 @@
 #
 # 每个域 .c 由若干「分片」拼接而成；各分片原本是独立 TU，合并后在分片末尾
 # 用 #undef 隔离私有宏，避免污染同域后续分片。分片归属：
-#   core   jvendor_impl / jcore / jutils     math  jcollision / jgjk / jbox2d
+#   core   jvendor_impl / jcore / jutils     collision jcollision / jgjk / jbox2d
 #   r2d    jr2d / jfont / jparticle / jspine r3d  jr3d / jlight / jgltf
 #          / jui / jui_im（原 ui 域并入）
 #                                           scene jscene / janimator / jtilemap /
@@ -54,10 +59,17 @@ set(JOY_SRC_CORE
     src/joy_core.c
 )
 
+# math 域没有手写 .c：220 条 joy_math_* 由 jmath_wrap.js 从 include/joy/jmath.h
+# 生成到 api/generated/jmath_wrappers.c；src/joy_lut.c 是它的数据分片。
 set(JOY_SRC_MATH
-    src/joy_math.c
     src/joy_lut.c
     api/generated/jmath_wrappers.c
+)
+
+# 原 src/joy_math.c 里 87 条碰撞/GJK/box2d/tilemap 求交 API 改名为
+# joy_collision_*，拆到独立的 collision 域（src/joy_collision.{c,h}）。
+set(JOY_SRC_COLLISION
+    src/joy_collision.c
 )
 
 set(JOY_SRC_R2D
@@ -102,6 +114,7 @@ set(JOY_SRC_VENDOR
 set(JOY_ALL_SOURCE_GROUPS
     JOY_SRC_CORE
     JOY_SRC_MATH
+    JOY_SRC_COLLISION
     JOY_SRC_R2D
     JOY_SRC_R3D
     JOY_SRC_SCENE

@@ -8,7 +8,7 @@
 
 /* 顺序即依赖顺序：先被 include 的域头其类型可供后续域头使用。 */
 #include "../../src/joy_core.h"
-#include "../../src/joy_math.h"
+#include "../../src/joy_collision.h"
 #include "../../src/joy_r2d.h"
 #include "../../src/joy_r3d.h"
 #include "../../src/joy_scene.h"

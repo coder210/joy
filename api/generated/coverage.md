@@ -35,8 +35,9 @@
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
+| collision | 0 | 0 | 23 | 64 | 0 | 87 |
 | core | 27 | 37 | 1 | 21 | 20 | 106 |
-| math | 220 | 0 | 23 | 64 | 0 | 307 |
+| math | 220 | 0 | 0 | 0 | 0 | 220 |
 | net | 19 | 56 | 0 | 12 | 0 | 87 |
 | r2d | 4 | 228 | 34 | 47 | 19 | 332 |
 | r3d | 0 | 117 | 14 | 19 | 0 | 150 |
@@ -158,59 +159,59 @@
 | `joy_r3d_fov_compute_radii` | 非不透明指针 / 输出参数：joy_fov_rect* | src/joy_r3d.h:454 |
 | `joy_r3d_fov_draw` | 非不透明指针 / 输出参数：float* | src/joy_r3d.h:460 |
 | `joy_r2d_fov_draw_2d` | 非不透明指针 / 输出参数：float* | src/joy_r2d.h:166 |
-| `joy_math_collision2d_get_ray_circle` | 结构体按值返回 | src/joy_math.h:22 |
-| `joy_math_collision2d_get_ray_rectangle` | 结构体按值返回 | src/joy_math.h:23 |
-| `joy_math_collision2d_get_ray_rectanglex` | 结构体按值返回 | src/joy_math.h:24 |
-| `joy_math_collision2d_get_ray_polygon` | 结构体按值返回 | src/joy_math.h:25 |
-| `joy_math_collision2d_check_lines` | 结构体指针参数 | src/joy_math.h:30 |
-| `joy_math_collision2d_get_circles` | 结构体指针参数 | src/joy_math.h:37 |
-| `joy_math_collision2d_get_rectangles` | 结构体指针参数 | src/joy_math.h:38 |
-| `joy_math_collision2d_get_polygons` | 结构体指针参数 | src/joy_math.h:39 |
-| `joy_math_collision3d_get_ray_triangle` | 结构体按值返回 | src/joy_math.h:40 |
-| `joy_math_collision3d_get_ray_quad` | 结构体按值返回 | src/joy_math.h:41 |
-| `joy_math_collision3d_get_ray_sphere` | 结构体按值返回 | src/joy_math.h:42 |
-| `joy_math_collision3d_get_ray_box` | 结构体按值返回 | src/joy_math.h:43 |
-| `joy_math_collision2df_get_ray_circle` | 结构体按值返回 | src/joy_math.h:48 |
-| `joy_math_collision2df_get_ray_rectangle` | 结构体按值返回 | src/joy_math.h:50 |
-| `joy_math_collision2df_get_ray_rectanglex` | 结构体按值返回 | src/joy_math.h:52 |
-| `joy_math_collision2df_get_ray_polygon` | 结构体按值返回 | src/joy_math.h:54 |
-| `joy_math_collision2df_check_point_rectangle` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:56 |
-| `joy_math_collision2df_check_point_circle` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:58 |
-| `joy_math_collision2df_get_squared_distance_point_circle` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:59 |
-| `joy_math_collision2df_check_point_triangle` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:60 |
-| `joy_math_collision2df_check_lines` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:62 |
-| `joy_math_collision2df_check_point_line` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:64 |
-| `joy_math_collision2df_get_circles` | 结构体指针参数 | src/joy_math.h:71 |
-| `joy_math_collision2df_get_rectangles` | 结构体指针参数 | src/joy_math.h:73 |
-| `joy_math_find_min_separation` | 非不透明指针 / 输出参数：joy_vec2f_t* | src/joy_math.h:76 |
-| `joy_math_collision2df_get_polygons` | 结构体指针参数 | src/joy_math.h:78 |
-| `joy_math_collision2df_swept_obb` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:100 |
-| `joy_math_tilemap_sweep_x` | 非不透明指针 / 输出参数：joy_fp_t* | src/joy_math.h:110 |
-| `joy_math_tilemap_sweep_y` | 非不透明指针 / 输出参数：joy_fp_t* | src/joy_math.h:112 |
-| `joy_math_collision3df_get_ray_triangle` | 结构体按值返回 | src/joy_math.h:115 |
-| `joy_math_collision3df_get_ray_quad` | 结构体按值返回 | src/joy_math.h:117 |
-| `joy_math_collision3df_get_ray_sphere` | 结构体按值返回 | src/joy_math.h:119 |
-| `joy_math_collision3df_get_ray_box` | 结构体按值返回 | src/joy_math.h:121 |
-| `joy_math_collision3df_get_ray_obb` | 结构体按值返回 | src/joy_math.h:124 |
-| `joy_math_gjk2d_collide` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:134 |
-| `joy_math_gjk2d_init_circle` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_math.h:136 |
-| `joy_math_gjk2d_init_box` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_math.h:137 |
-| `joy_math_gjk2d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_math.h:138 |
-| `joy_math_gjk2d_init_polygon` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_math.h:139 |
-| `joy_math_gjk2d_init_pie` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_math.h:140 |
-| `joy_math_gjk3df_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:144 |
-| `joy_math_gjk3df_init_box` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:145 |
-| `joy_math_gjk3df_init_obb` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:146 |
-| `joy_math_gjk3df_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:147 |
-| `joy_math_gjk3df_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:148 |
-| `joy_math_gjk3df_init_cone` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:149 |
-| `joy_math_gjk3df_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_math.h:150 |
-| `joy_math_gjk3d_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:157 |
-| `joy_math_gjk3d_init_box` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:158 |
-| `joy_math_gjk3d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:159 |
-| `joy_math_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:160 |
-| `joy_math_gjk3d_init_cone` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:161 |
-| `joy_math_gjk3d_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_math.h:162 |
+| `joy_collision_2d_get_ray_circle` | 结构体按值返回 | src/joy_collision.h:24 |
+| `joy_collision_2d_get_ray_rectangle` | 结构体按值返回 | src/joy_collision.h:25 |
+| `joy_collision_2d_get_ray_rectanglex` | 结构体按值返回 | src/joy_collision.h:26 |
+| `joy_collision_2d_get_ray_polygon` | 结构体按值返回 | src/joy_collision.h:27 |
+| `joy_collision_2d_check_lines` | 结构体指针参数 | src/joy_collision.h:32 |
+| `joy_collision_2d_get_circles` | 结构体指针参数 | src/joy_collision.h:39 |
+| `joy_collision_2d_get_rectangles` | 结构体指针参数 | src/joy_collision.h:40 |
+| `joy_collision_2d_get_polygons` | 结构体指针参数 | src/joy_collision.h:41 |
+| `joy_collision_3d_get_ray_triangle` | 结构体按值返回 | src/joy_collision.h:42 |
+| `joy_collision_3d_get_ray_quad` | 结构体按值返回 | src/joy_collision.h:43 |
+| `joy_collision_3d_get_ray_sphere` | 结构体按值返回 | src/joy_collision.h:44 |
+| `joy_collision_3d_get_ray_box` | 结构体按值返回 | src/joy_collision.h:45 |
+| `joy_collision_2df_get_ray_circle` | 结构体按值返回 | src/joy_collision.h:50 |
+| `joy_collision_2df_get_ray_rectangle` | 结构体按值返回 | src/joy_collision.h:52 |
+| `joy_collision_2df_get_ray_rectanglex` | 结构体按值返回 | src/joy_collision.h:54 |
+| `joy_collision_2df_get_ray_polygon` | 结构体按值返回 | src/joy_collision.h:56 |
+| `joy_collision_2df_check_point_rectangle` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:58 |
+| `joy_collision_2df_check_point_circle` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:60 |
+| `joy_collision_2df_get_squared_distance_point_circle` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:61 |
+| `joy_collision_2df_check_point_triangle` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:62 |
+| `joy_collision_2df_check_lines` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:64 |
+| `joy_collision_2df_check_point_line` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:66 |
+| `joy_collision_2df_get_circles` | 结构体指针参数 | src/joy_collision.h:73 |
+| `joy_collision_2df_get_rectangles` | 结构体指针参数 | src/joy_collision.h:75 |
+| `joy_collision_find_min_separation` | 非不透明指针 / 输出参数：joy_vec2f_t* | src/joy_collision.h:78 |
+| `joy_collision_2df_get_polygons` | 结构体指针参数 | src/joy_collision.h:80 |
+| `joy_collision_2df_swept_obb` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:102 |
+| `joy_collision_tilemap_sweep_x` | 非不透明指针 / 输出参数：joy_fp_t* | src/joy_collision.h:112 |
+| `joy_collision_tilemap_sweep_y` | 非不透明指针 / 输出参数：joy_fp_t* | src/joy_collision.h:114 |
+| `joy_collision_3df_get_ray_triangle` | 结构体按值返回 | src/joy_collision.h:117 |
+| `joy_collision_3df_get_ray_quad` | 结构体按值返回 | src/joy_collision.h:119 |
+| `joy_collision_3df_get_ray_sphere` | 结构体按值返回 | src/joy_collision.h:121 |
+| `joy_collision_3df_get_ray_box` | 结构体按值返回 | src/joy_collision.h:123 |
+| `joy_collision_3df_get_ray_obb` | 结构体按值返回 | src/joy_collision.h:126 |
+| `joy_collision_gjk2d_collide` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:136 |
+| `joy_collision_gjk2d_init_circle` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_collision.h:138 |
+| `joy_collision_gjk2d_init_box` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_collision.h:139 |
+| `joy_collision_gjk2d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_collision.h:140 |
+| `joy_collision_gjk2d_init_polygon` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_collision.h:141 |
+| `joy_collision_gjk2d_init_pie` | 非不透明指针 / 输出参数：joy_gjk2d_collider_t* | src/joy_collision.h:142 |
+| `joy_collision_gjk3df_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:146 |
+| `joy_collision_gjk3df_init_box` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:147 |
+| `joy_collision_gjk3df_init_obb` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:148 |
+| `joy_collision_gjk3df_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:149 |
+| `joy_collision_gjk3df_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:150 |
+| `joy_collision_gjk3df_init_cone` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:151 |
+| `joy_collision_gjk3df_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3df_collider_t* | src/joy_collision.h:152 |
+| `joy_collision_gjk3d_init_sphere` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:159 |
+| `joy_collision_gjk3d_init_box` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:160 |
+| `joy_collision_gjk3d_init_capsule` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:161 |
+| `joy_collision_gjk3d_init_cylinder` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:162 |
+| `joy_collision_gjk3d_init_cone` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:163 |
+| `joy_collision_gjk3d_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/joy_collision.h:164 |
 | `joy_scene_animator_set_on_enter` | 未知类型需人工标注：joy_anim_state_cb | src/joy_scene.h:46 |
 | `joy_scene_animator_set_on_exit` | 未知类型需人工标注：joy_anim_state_cb | src/joy_scene.h:47 |
 | `joy_r2d_label_create` | 非不透明指针 / 输出参数：int* | src/joy_r2d.h:269 |
@@ -275,17 +276,17 @@
 | `joy_scene_ecs_query` | 可变参数 | src/joy_scene.h:166 |
 | `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | src/joy_scene.h:167 |
 | `joy_scene_ecs_register` | 未知类型需人工标注：joy_ecs_system_t | src/joy_scene.h:168 |
-| `joy_math_box2d_create_world` | 未知类型需人工标注：joy_vec2f_t | src/joy_math.h:165 |
-| `joy_math_box2d_clear_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:166 |
-| `joy_math_box2d_destroy_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:167 |
-| `joy_math_box2d_step` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:168 |
-| `joy_math_box2d_create_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:169 |
-| `joy_math_box2d_destroy_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:170 |
-| `joy_math_box2d_create_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:171 |
-| `joy_math_box2d_destroy_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_math.h:172 |
-| `joy_math_box2d_foreach_bodies` | 函数指针 / 回调 | src/joy_math.h:173 |
-| `joy_math_box2d_foreach_joints` | 函数指针 / 回调 | src/joy_math.h:174 |
-| `joy_math_box2d_foreach_arbiters` | 函数指针 / 回调 | src/joy_math.h:175 |
+| `joy_collision_box2d_create_world` | 未知类型需人工标注：joy_vec2f_t | src/joy_collision.h:167 |
+| `joy_collision_box2d_clear_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:168 |
+| `joy_collision_box2d_destroy_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:169 |
+| `joy_collision_box2d_step` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:170 |
+| `joy_collision_box2d_create_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:171 |
+| `joy_collision_box2d_destroy_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:172 |
+| `joy_collision_box2d_create_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:173 |
+| `joy_collision_box2d_destroy_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/joy_collision.h:174 |
+| `joy_collision_box2d_foreach_bodies` | 函数指针 / 回调 | src/joy_collision.h:175 |
+| `joy_collision_box2d_foreach_joints` | 函数指针 / 回调 | src/joy_collision.h:176 |
+| `joy_collision_box2d_foreach_arbiters` | 函数指针 / 回调 | src/joy_collision.h:177 |
 
 ## 有意排除（X）
 

@@ -3196,7 +3196,7 @@ bool joy_r2d_combobox_is_pressed(joy_combobox_p combobox, float x, float y)
         rect.y = combobox->main_rect.y;
         rect.width = combobox->main_rect.w;
         rect.height = combobox->main_rect.h;
-        return joy_math_collision2d_check_point_rectangle(logic, rect);
+        return joy_collision_2d_check_point_rectangle(logic, rect);
 }
 
 bool joy_r2d_combobox_is_open(joy_combobox_p combobox)
@@ -3220,7 +3220,7 @@ int joy_r2d_combobox_hit_item(joy_combobox_p combobox, float x, float y)
                     combobox->dropdown_rect.w,
                     combobox->item_height
                 };
-                if (joy_math_collision2d_check_point_rectangle(logic, item_rect)) return i;
+                if (joy_collision_2d_check_point_rectangle(logic, item_rect)) return i;
         }
         return -1;
 }
@@ -4051,7 +4051,7 @@ int joy_r2d_datagrid_hit_row(joy_datagrid_p grid, float x, float y)
         if (!grid) return -1;
         joy_vec2_t logic = joy_r2d_coordinates_from_window(grid->r2d, x, y);
         joy_rectangle_t rect = { (float)grid->x, (float)(grid->y + grid->row_height), (float)grid->width, (float)grid->height };
-        if (!joy_math_collision2d_check_point_rectangle(logic, rect))
+        if (!joy_collision_2d_check_point_rectangle(logic, rect))
                 return -1;
         int clicked_row = grid->scroll_offset + ((int)(logic.y - rect.y)) / grid->row_height;
         if (clicked_row < grid->row_count) return clicked_row;
@@ -4213,7 +4213,7 @@ bool joy_r2d_radio_is_pressed(joy_radio_p radio, float x, float y)
         hit_area.width = radio->hit_area.w;
         hit_area.height = radio->hit_area.h;
 
-        if (joy_math_collision2d_check_point_rectangle(pt, hit_area)) {
+        if (joy_collision_2d_check_point_rectangle(pt, hit_area)) {
                 radio->checked = !radio->checked;
                 return true;
         }
@@ -4339,7 +4339,7 @@ bool joy_r2d_checkbox_is_pressed(joy_checkbox_p cb, float x, float y)
         hit_area.y = cb->hit_area.y;
         hit_area.width = cb->hit_area.w;
         hit_area.height = cb->hit_area.h;
-        if (joy_math_collision2d_check_point_rectangle(pt, hit_area)) {
+        if (joy_collision_2d_check_point_rectangle(pt, hit_area)) {
                 joy_r2d_checkbox_toggle(cb);
                 return true;
         }
@@ -5339,7 +5339,7 @@ bool joy_r2d_inputbox_is_pressed(joy_inputbox_p ti, float x, float y)
         rect.width = ti->rect.w;
         rect.height = ti->rect.h;
         logic = joy_r2d_coordinates_from_window(ti->r2d, x, y);
-        if (joy_math_collision2d_check_point_rectangle(logic, rect)) {
+        if (joy_collision_2d_check_point_rectangle(logic, rect)) {
                 joy_r2d_inputbox_focus(ti);
                 inputbox_clear_sel(ti);
                 float local_x = logic.x - ti->rect.x - 2 + ti->scroll_offset;
@@ -5361,7 +5361,7 @@ bool joy_r2d_inputbox_is_hovered(joy_inputbox_p ti, float x, float y)
         rect.width = ti->rect.w;
         rect.height = ti->rect.h;
         logic = joy_r2d_coordinates_from_window(ti->r2d, x, y);
-        ti->hovered = joy_math_collision2d_check_point_rectangle(logic, rect);
+        ti->hovered = joy_collision_2d_check_point_rectangle(logic, rect);
         return ti->hovered;
 }
 

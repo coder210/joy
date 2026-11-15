@@ -3,9 +3,11 @@ This is an easy game framework.
 
 ## 目录
 
-- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，8 个域各一对文件
-  （`core` / `math` / `r2d` / `r3d` / `scene` / `net` / `script` / `audio`），
-  另有数据分片 `src/joy_lut.{c,h}`。不依赖任何脚本运行时。
+- `src/joy_<域>.c` + `src/joy_<域>.h` —— 引擎核心，8 个手写域各一对文件
+  （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `script` / `audio`），
+  另有数据分片 `src/joy_lut.{c,h}`。第 9 个域 `math` 没有手写 `.c`：`jmath.h`
+  的标量/向量数学由 `jmath_wrap.js` 生成到 `api/generated/jmath_wrappers.{h,c}`。
+  不依赖任何脚本运行时。
   域边界按渲染上下文划分：依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖
   `joy_r3d_p` 的 3D HUD 控件归 `r3d`，两边都不单设 UI 文件。
 - `include/joy/japi.h` —— 公开 API 聚合入口，只逐个 include 8 个域头，

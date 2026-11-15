@@ -52,12 +52,13 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 脚本层与 C++ vtable 仍是 PascalCase，由 `naming.js` 的 `methodName()` 生成 ——
 **两层命名是有意分层，不是不一致**。
 
-### 域表（把现有 85 个自发生长的 domain 归并成 8 个）
+### 域表（85 个自发生长的 domain 归并为 8 个手写域 + 1 个生成物域）
 
 | 域 | 吸收的历史 domain | IDL 条数 |
 |---|---|---|
 | `core` | env / window / log / error / ticks / quit / clipboard / event / mouse / utf8 / hash 系列 / game_timer / pack / unpack / **input(13) / 输入状态快照** | 106 |
-| `math` | jmath(220) / collision* / gjk* / box2d / tilemap 碰撞（shape 已移到 r2d） | 307 |
+| `math`（生成物域） | `jmath.h` 的标量/向量数学，由 `jmath_wrap.js` 生成 `joy_math_*` 包装，实现在 `api/generated/jmath_wrappers.c` | 220 |
+| `collision` | collision* / gjk* / box2d / tilemap 扫掠（原 `math` 域的手写部分，2026-11-15 拆出） | 87 |
 | `r2d` | r2d / font / jtext / jspine / jparticle / **image / text / animation / shape / fov(2D)** / **ui(218，2D 控件与即时模式 UI)** | 332 |
 | `r3d` | r3d / jlight / jgltf / fov(3D) / 3D HUD 控件（含在这 150 条里） | 150 |
 | `scene` | scene / game / jecs / jtilemap / janimator / jpm / **bt** | 135 |
@@ -69,6 +70,19 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 声明与实现物理并入 `src/joy_core.h` / `src/joy_core.c`。改名时
 `rename_map.json` 追加 13 条继承映射（保住 `status:on`），`api/tools/naming.js`
 的 `ALIASES` 把新名钉回旧的 `JoyInput*` 脚本层方法名，四端绑定零改动。
+
+`math` 域的手写部分拆为 `collision` 域（2026-11-15）：因为已有
+`include/joy/jmath.h`（`JOY_INLINE` 标量/向量数学库），`src/joy_math.{c,h}`
+再叫 math 会重复且名不副实——那 87 条 API 全是碰撞求交 / GJK / box2d /
+tilemap 扫掠，没有一条标量数学。文件改名 `src/joy_collision.{c,h}`，
+API 统一为 `joy_collision_*`（`joy_math_collision2d_*` 剥掉重复的
+collision 段变 `joy_collision_2d_*`）。纯数学的 220 条 `joy_math_*` 是
+`jmath_wrap.js` 从 `jmath.h` 生成的，仍归 `math` 域，但实现在
+`api/generated/jmath_wrappers.c`，不是手写 `.c`：因此 `math` 是
+`audit_domain_layout.js` 的 `GENERATED_ONLY_DOMAINS`（豁免 R2，但校验
+生成物存在且纯域）。`rename_map.json` 追加 87 条链式映射继承
+`status` / `owns` / `note`，`naming.js` 的 `ALIASES` 只改 key 保留 value，
+四端脚本层方法名零改动。
 
 `ui` 域已并回 `r2d`（2026-11-15）：218 个 API 统一为 `joy_r2d_*`
 （`joy_ui_begin/end` 与 r2d 帧起止同名，避让为 `joy_r2d_im_begin/end`），
@@ -84,11 +98,14 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 
 **2026-11-13 起追加一条硬规则，2026-11-15 收紧**：一个域恰好一个
 `src/joy_<域>.c`，必配同名 `.h`；`.c` 内所有 `joy_*` 函数定义的前缀必须与
-文件域一致（8 个域 + 1 个显式登记的数据分片 `src/joy_lut.c`）。
+文件域一致（8 个手写域 + 1 个显式登记的数据分片 `src/joy_lut.c`）；
+唯一例外是 `math` 域没有手写 `.c`，实现由 `api/generated/jmath_wrappers.c`
+承担，登记在 `GENERATED_ONLY_DOMAINS`。
 域边界按**渲染上下文 / 技术职责**判定，不按历史名、也不按「控件」这个概念：
 纹理 / 文字 / 图元 / 动画 / 2D FOV 与依赖 `joy_r2d_p` 的 2D 控件归 `r2d`；
 3D 渲染 / glTF / 3D FOV 与依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`；
-行为树归 `scene`，tilemap 碰撞归 `math`，网络打包与时间工具归 `core`。
+行为树归 `scene`，碰撞求交 / GJK / box2d / tilemap 扫掠归 `collision`，
+标量 / 向量数学归 `math`，网络打包与时间工具归 `core`。
 由 `audit_domain_purity.js`（纯域）与 `audit_domain_layout.js`（一域一 `.c`、
 每 `.c` 配同名 `.h`、引用方向、数据分片白名单）两个门禁固化；
 完整文件归属表见 `cmake/JoySources.cmake` 头部。
@@ -273,8 +290,10 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 `DATA_SHARDS` 白名单里的纯数据分片（当前只有 `src/joy_lut.c`），
 它们不参与「一域一 .c」，但必须配同名 `.h` 且不含任何函数定义。
 
-`DECL_SOURCES` 共 10 个来源：`include/joy/jdefs.h` + 8 个域头 +
-`api/generated/jmath_wrappers.h`。`--scan` 从它们解析出全部 1170 条声明。
+`DECL_SOURCES` 共 10 个来源：`include/joy/jdefs.h` + 8 个手写域头
+（`src/joy_<域>.h`，域名为 `core collision r2d r3d scene net script audio`）+
+`api/generated/jmath_wrappers.h`（生成物域 `math` 的声明，由 `joy.h` 聚合）。
+`--scan` 从它们解析出全部 1170 条声明。
 
 `mergeIdl()` 让已有条目沿用旧 IDL 顺序、全新条目追加末尾，因此声明在文件之间
 搬迁只会刷新 `source` 等自动字段，不会重排 `joy.idl` 及下游生成物。

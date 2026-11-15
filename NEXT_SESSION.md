@@ -11,8 +11,14 @@
 
 ## 0. 一句话现状
 
-`src/` 现为 **8 个域 = 8 个 `joy_<域>.c` + 8 个同名 `.h`**（另有 1 个登记的数据分片），
-一个域不再有多个 `.c`。**2026-11-15 按用户拍板把 `ui` 域并回 `r2d`**：
+`src/` 现为 **8 个手写域 = 8 个 `joy_<域>.c` + 8 个同名 `.h`**（另有 1 个登记的数据分片），
+一个域不再有多个 `.c`。**第 9 个域 `math` 没有手写 `.c`**：它的 220 条 `joy_math_*`
+由 `jmath_wrap.js` 从 `include/joy/jmath.h` 生成到 `api/generated/jmath_wrappers.{h,c}`，
+登记在布局门禁的 `GENERATED_ONLY_DOMAINS`。
+**2026-11-15 把原 `src/joy_math.{c,h}` 改名为 `src/joy_collision.{c,h}`**：里面 87 条
+API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名不副实，现统一为
+`joy_collision_*`，`math` 只留给真正的标量/向量数学。
+**2026-11-15 按用户拍板把 `ui` 域并回 `r2d`**：
 依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`，
 两边都不再单设 UI 文件，域边界按渲染上下文划分。218 条 `joy_ui_*` 统一为
 `joy_r2d_*`，`src/joy_ui.{h,c}` 删除，`DECL_SOURCES` 由 11 个变 10 个。
@@ -32,6 +38,7 @@
 | **`35fa0ea1`（本轮重构）** | 见下方四项，同一次提交 | `src/` 20 个新文件 / 26 个旧 `.c` 删除 / 11 个契约源 / 13 条 API 改名 |
 | 紧随其后的 `docs:` 提交 | 只回填本页的 CI 结论与提交号，不改任何代码 | 1 文件 |
 | **本轮：`ui` 并回 `r2d`（2026-11-15）** | 见下方「关键决策」新增段 | 218 条改名 / 2 文件删除 / 域白名单 9→8 |
+| **本轮：`joy_math` → `joy_collision`（2026-11-15）** | 见下方「关键决策」新增段 | 87 条改名 / 2 文件改名 / 布局门禁新增生成物域 |
 
 `35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
@@ -46,7 +53,8 @@
 ### 关键决策：物理合并 + 数据分片例外
 
 > 以下两节是 `35fa0ea1` 当时（9 域 / 11 个契约源）的历史记录，数字按当时状态保留；
-> **当前为 8 域 / 10 个契约源**，以 §0、§2 与「`ui` 并回 `r2d`」段为准。
+> **当前为 8 个手写域 + 1 个生成物域 / 10 个契约源**，
+> 以 §0、§2 与「`joy_math` → `joy_collision`」段为准。
 
 用户提出更严格的组织规则：**一个 `.c` 一定是一个域；一个域不允许多个 `.c`；
 每个 `.c` 要有一个头文件**。此前（第 29 条）的「一个域可以有多个 `.c`、
@@ -69,6 +77,36 @@
   合并脚本见 `build/merge_domains.js`（构建期临时产物，不入版本库）。
 - 生成物 `api/generated/`、第三方 `external/`、`examples/`、`modules/` 不属于
   `src/` 手写域实现，不在本规则管辖内。
+
+### 关键决策：`joy_math.{c,h}` → `joy_collision.{c,h}`（2026-11-15，本轮）
+
+用户指出：已有 `include/joy/jmath.h`（`JOY_INLINE` 标量/向量数学库），
+`src/joy_math.{c,h}` 再叫 math 重复且名不副实。核实后确认那 87 条 API
+全是 `collision2d/3d`、`gjk`、`box2d`、tilemap 扫掠（合并自
+`jcollision.c / jgjk.c / jbox2d.c`），没有一条标量数学，故改名
+`joy_collision.{c,h}`，API 统一为 `joy_collision_*`。
+
+- **命名**：`joy_math_collision2d_*` 剥掉重复的 collision 段变
+  `joy_collision_2d_*`（不要变成 `joy_collision_collision2d_*`）；
+  `gjk* / box2d / tilemap / find` 直接换前缀。87 条里 2 条原本无
+  `ALIASES` 的 `tilemap_sweep_x|y` 已补表冻结旧方法名 `JoyMathTilemapSweep*`。
+  `rename_map.json` 追加 87 条链式映射；`src/joy_r2d.c` 的 7 处跨域调用同步改名。
+- **`math` 域保留但不再有手写 `.c`**：220 条 `joy_math_*` 是 `jmath_wrap.js`
+  从 `jmath.h` 生成的，实现在 `api/generated/jmath_wrappers.c`。
+  `naming.js` 的 `DOMAINS` **必须保留 `math`**（否则 `domainOf()` 会把这 220 条
+  回退成 `joy` 域，IDL 全乱）；布局门禁新增 `GENERATED_ONLY_DOMAINS = ['math']`
+  豁免 R2/R5，但校验生成物存在、含 `joy_math_*` 定义且纯域。
+- **门禁 / 配置**：`naming.js` 与 `audit_domain_purity.js` 的 `DOMAINS` 加
+  `collision`；`audit_domain_layout.js` 的 `DOMAINS` 用 `collision` 换掉 `math`
+  （手写域仍 8 个）；`DECL_SOURCES` 的 `src/joy_math.h` → `src/joy_collision.h`
+  （仍 10 个来源）；`japi.h` 同步；`cmake/JoySources.cmake` 新增
+  `JOY_SRC_COLLISION` 组，`JOY_SRC_MATH` 只剩 `joy_lut.c` + 生成物包装。
+- **未动**：`api/generated/jmath_wrappers.{h,c}` 的 220 条名字与内容、
+  `jmath_wrap.js` 里的 `cname: 'joy_math_' + f.name`、
+  `HANDOFF.md` / `legacy_names.txt` 的历史旧名（T4 有意保留）。
+- 87 条全是 `status:off`（L2/L3），`on` 总数仍 739、IDL 仍 1170；
+  IDL 里 `collision` 87 / `math` 220，`source` 分属
+  `src/joy_collision.h` 与 `api/generated/jmath_wrappers.h`。
 
 ### 关键决策：`ui` 并回 `r2d`（2026-11-15，本轮）
 
@@ -103,15 +141,19 @@
 | 依赖 `joy_r2d_p` 的 2D 控件 / 即时模式 UI（原 ui 域） | `r2d` |
 | 3D 渲染 / 3D FOV / glTF / 依赖 `joy_r3d_p` 的 3D HUD 控件 | `r3d` |
 | 行为树（bt） | `scene` |
-| tilemap 碰撞扫描 | `math` |
+| 碰撞求交 / GJK / box2d / tilemap 扫掠 | `collision` |
+| 标量 / 向量 / 定点数学（`jmath.h` 及其生成包装） | `math`（生成物域） |
 | 网络打包 / 时间工具 | `core` |
 
-**边界口诀：看 API 第一个句柄参数是 `joy_r2d_p` 还是 `joy_r3d_p`。**
-`ui` 不再是域，也不再有同名文件；域白名单 8 个：`core math r2d r3d scene net script audio`。
+**边界口诀：看 API 第一个句柄参数是 `joy_r2d_p` 还是 `joy_r3d_p`；
+数学与碰撞按「是不是几何求交」分，不要按 `math` 这个词分。**
+`ui` 不再是域，也不再有同名文件；手写域白名单 8 个：
+`core collision r2d r3d scene net script audio`，外加生成物域 `math`。
 
-**一个域只有一个 `.c`，一个 `.c` 只有一个域，且必须配一个同名 `.h`。**
-显式登记的数据分片（`joy_lut.c`）是唯一例外：它同样配同名 `.h`，
-但不含函数定义，也不参与域集合校验。
+**一个手写域只有一个 `.c`，一个 `.c` 只有一个域，且必须配一个同名 `.h`。**
+两类例外：`math` 由 `api/generated/jmath_wrappers.c` 实现（`GENERATED_ONLY_DOMAINS`，
+豁免 R2 但校验生成物存在且纯域）；`joy_lut.c` 是数据分片（`DATA_SHARDS`，
+配同名 `.h`、不含函数定义、不参与域集合校验）。
 
 ## 2. 当前硬事实
 
@@ -119,19 +161,20 @@
 |---|---|
 | HEAD / 远端 | 见 `git log -1`；本轮改动按 §6 约定提交并推送，推送后需等三条 CI |
 | IDL | 1170 条，`status:on` 739 条，vtable 739；`--scan` 幂等、orphan 0 |
-| 域布局 | `src/` **9 个 `.c`（8 域实现 + 1 数据分片）/ 9 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0** |
+| 域布局 | `src/` **9 个 `.c`（8 手写域实现 + 1 数据分片）/ 9 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0**；另有生成物域 `math`（220 条定义，在 `api/generated/`） |
 | `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
 | `ctest` | 4/4（`--timeout 25`） |
-| CI | 本轮 `82030b54` 的 Desktop / Android / Web **3/3 success**（Actions API 核实）；`35fa0ea1` 同为 3/3（历史，§3.0 T5） |
+| CI | `82030b54` 的 Desktop / Android / Web **3/3 success**（历史，Actions API 核实）；本轮推送结果按 §6 待确认；`35fa0ea1` 同为 3/3（§3.0 T5） |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
-### 域 → 文件 归属表（8 个域 `.c` + 1 个数据分片，均配同名 `.h`）
+### 域 → 文件 归属表（8 个手写域 `.c` + 1 个数据分片，均配同名 `.h`）
 
 | 域 | 文件（函数定义条数） | 合并自分片 |
 |---|---|---|
 | `core` | `joy_core.c`(110) | `jvendor_impl` / `jcore` / `jutils` / **`joy_input`（原 input 域）** |
-| `math` | `joy_math.c`(90) | `jcollision` / `jgjk` / `jbox2d` |
+| `math`（生成物域） | `api/generated/jmath_wrappers.c`(220) | `jmath.h` 由 `jmath_wrap.js` 生成，非手写域文件 |
+| `collision` | `joy_collision.c`(90) | `jcollision` / `jgjk` / `jbox2d`（原 `joy_math.c`，2026-11-15 改名） |
 | `r2d` | `joy_r2d.c`(349) | `jr2d` / `jfont` / `jparticle` / `jspine` / **`jui` / `jui_im`（原 ui 域）** |
 | `r3d` | `joy_r3d.c`(165) | `jr3d` / `jlight` / `jgltf` / 3D HUD 控件 |
 | `scene` | `joy_scene.c`(150) | `jscene` / `janimator` / `jtilemap` / `jecs` / `jprocmap` / `jbehavior` |
@@ -320,7 +363,8 @@ iOS / wasm 静态形态、Android 真机冒烟、C# 在 iOS/wasm（宿主模型�
    （当前只有 `src/joy_lut.c`），R6 会校验它不含任何 `joy_*` 函数定义。
 3. **`legacy_names.txt` 里那 6 条旧名（4 个 `joy_fov_*` + `joy_tilemap_sweep_x|y`）
    已经失效**：本轮改名后 C 名分别是 `joy_r2d_fov_draw_2d`、`joy_r3d_fov_*`、
-   `joy_math_tilemap_sweep_x|y`，全部落在白名单域内。别再当成「例外」去豁免。
+   `joy_collision_tilemap_sweep_x|y`（本轮又从 `joy_math_*` 改为 `joy_collision_*`），
+   全部落在白名单域内。别再当成「例外」去豁免。
    该文件仍须保留（存量 1156 条靠它通过 `--check`）。
 4. **两个域门禁的判定口径**（`audit_domain_purity.js` 查纯域，
    `audit_domain_layout.js` 再加「一域一 .c / 每 .c 配同名 .h」）：
