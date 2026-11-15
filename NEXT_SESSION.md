@@ -123,7 +123,7 @@
 | `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
 | `ctest` | 4/4（`--timeout 25`） |
-| CI | `35fa0ea1` 的 Desktop / Android / Web **3/3 success**（历史，§3.0 T5）；本轮推送结果待确认 |
+| CI | 本轮 `82030b54` 的 Desktop / Android / Web **3/3 success**（Actions API 核实）；`35fa0ea1` 同为 3/3（历史，§3.0 T5） |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
 ### 域 → 文件 归属表（8 个域 `.c` + 1 个数据分片，均配同名 `.h`）
@@ -198,8 +198,12 @@ orphan 0、IDL `domain` 里 `ui` 归零（`r2d` 114→332）。
 - Web examples (cpp/lua/js) #60，19:00:50Z 完成。
 
 本机没有 `gh` CLI，用的是公开 Actions REST 接口
-`https://api.github.com/repos/coder210/joy/actions/runs?head_sha=HEAD_SHA`（仓库为 public）。
+`https://api.github.com/repos/coder210/joy/actions/runs?head_sha=HEAD_SHA`（仓库为 public，
+`head_sha` 必须传完整 40 位，短 SHA 会返回 `total_count: 0`）。
 本项已结；之后纯文档提交也会触发三条 CI，按 §6 仍需确认结果，但不属于本轮遗留待办。
+
+本轮 `82030b54` 推送后同样按 §6 等到结果：Desktop / Android / Web
+三条工作流 `completed / success`（约 140 秒）。
 
 #### T6 提交状态（下一任无需处理，仅作说明）
 
