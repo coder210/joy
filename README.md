@@ -12,15 +12,28 @@ This is an easy game framework.
   依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`，两边都不单设 UI 文件；
   网络协议与服务器归 `net`，跨平台 OS 原语（socket / 时间 / 崩溃 / 网卡枚举）
   归 `sys`，碰撞求交归 `collision`。
-- `include/joy/japi.h` —— 公开 API 聚合入口，只逐个 include 9 个域头，
-  自身不含声明；`include/joy/jdefs.h` 提供公开类型。
-- `external/` / `test/` —— 第三方源码与测试。
+- `include/joy/` —— 公开头：`joy.h` 聚合门面、`japi.h` 聚合入口（只 include
+  9 个域头，自身不含声明）、`jdefs.h` 公开类型、`jtypes.h` 基础类型、
+  `jmath.h` 标量/向量数学、`jlut.h` 查表 extern。
+- `external/` —— vendored 第三方源码（含一个自有包装 `aes_util.c`）。
+- `examples/` —— cpp / lua / js / csharp 四份同构示例，同时是下游项目的模板；
+  `ctest` 的四语言冒烟用例在这里注册。
+- `android/` —— Android 打包脚本与应用标签。
+- `runtimes/` —— 预编译脚本运行时（CLR），按 RID 分目录。
 - `api/` —— 与脚本语言无关的绑定 API 契约：IDL、覆盖率报告、共享 C 运行层与各后端薄适配生成物，见 `api/README.md`。
 - `modules/` —— 可选的脚本后端：`lua`、`js`、`cs`。
 - `SDL/` `msgpack/` `spine/` —— 第三方源码。
 
 引用时统一写 `#include <joy/xxx.h>`（include 根为本仓库的父目录，
 即下游的 `third_party/`）。
+
+## 文档
+
+- `README.md` —— 本页：目录与构建用法。
+- `NEXT_SESSION.md` —— 交接：当前状态、待办与验证命令。
+- `HANDOFF.md` —— 历史决策、关键技术事实与踩坑清单。
+- `api/README.md` —— 绑定契约、域表、IDL 与生成链规则。
+- `TYPE_RENAME_TASK.md` —— 类型名统一任务书（已完成，留存设计依据）。
 
 ## 脚本模块
 

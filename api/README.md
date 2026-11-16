@@ -12,19 +12,19 @@
 
 | 文件 | 谁维护 | 作用 |
 |---|---|---|
-| `gen_bindings.js` | 人工 | 解析 `include/joy/{defs,api}.h` + `generated/jmath_wrappers.h`、维护 IDL、产出全部生成物。零 npm 依赖，只用 Node 内置 `fs` / `path` |
+| `gen_bindings.js` | 人工 | 解析 11 个契约源（`include/joy/jdefs.h` + 9 个 `src/j<域>.h` + `generated/jmath_wrappers.h`）、维护 IDL、产出全部生成物。零 npm 依赖，只用 Node 内置 `fs` / `path` |
 | `naming.js` | 人工 | **三端共用**的命名与句柄判定规则，避免各后端长出自己的方言 |
 | `emit_thunks.js` | 人工 | 共享 thunk / 注册表生成器（纯字符串函数） |
 | `emit_cs.js` | 人工 | cs 后端薄适配生成器，产出 C icall 与 C# 强类型包装 |
 | `emit_vtable.js` | 人工 | C++ 后端强签名 vtable 生成器：覆盖 `status:on` 的 L0/L1 与可展开的 L2，支持标量 / `const char*` / 强句柄类型 |
-| `structs.js` | 人工 | 值类型结构体布局解析（含 `ft_t` → `float` 别名归一化）+ L2 参数按字段展开，四个生成器共用 |
+| `structs.js` | 人工 | 值类型结构体布局解析（含 `joy_ft_t` → `float` 别名归一化）+ L2 参数按字段展开，四个生成器共用 |
 | `jmath_wrap.js` | 人工 | 解析 `jmath.h`，生成 `generated/jmath_wrappers.{h,c}`；作为模块被 `--check` 直接调用 |
-| `generated/jmath_wrappers.h` | 工具生成，勿手改 | 220 条全标量 `JOY_API` 声明，第二个契约输入源；`joy.h` 只留一行 include |
+| `generated/jmath_wrappers.h` | 工具生成，勿手改 | 220 条全标量 `JOY_API` 声明，11 个契约源里的生成物；`joy.h` 只留一行 include |
 | `generated/jmath_wrappers.c` | 工具生成，勿手改 | jmath 数学函数的外部链接包装实现，由 `cmake/JoySources.cmake` 显式收编 |
 | `joy.idl` | 工具初始化 + 人工补充 | 唯一真相源。JSON 数组、**每条 API 占一行**，便于 diff |
 | `coverage.md` | 工具生成，勿手改 | 分级统计、按域分布、`owns` 待裁决、L3 手写清单 |
 | `thunks_generated.c` | 工具生成，勿手改 | `status: on` 的 L0/L1 及可展开的 L2 会生成 thunk、注册表与自检 |
-| `generated/joy_api_vtable.h` | 工具生成，勿手改 | 739 个强签名函数指针 + 句柄薄包装 typedef（`jr2d_p`→`Jr2d`，编译期不可混传）+ `abi_version` / `size` |
+| `generated/joy_api_vtable.h` | 工具生成，勿手改 | 739 个强签名函数指针 + 句柄薄包装 typedef（`joy_r2d_p`→`Jr2d`，编译期不可混传）+ `abi_version` / `size` |
 | `generated/joy_api_vtable.c` | 工具生成，勿手改 | 739 个 shim（强签名 ↔ `joy_value`）、宿主侧填表 `joy_api_vtable_init()`、自检 `joy_api_vtable_selftest()` |
 | `modules/cs/bindings/api/api_generated.c` | 工具生成，勿手改 | Mono 值 → `joy_value[]` → `joy_api_call()`，注册 `Joy.Api.Native::*` |
 | `modules/cs/scripts/Api.generated.cs` | 工具生成，勿手改 | `Joy.Api.Bindings` / `Diagnostics` / 强类型句柄类，public API 无 `IntPtr` |
@@ -34,11 +34,11 @@
 | `runtime/joy_obj.*` | 人工 | 句柄表、引用计数、类型 tag 校验、自动析构 |
 | `runtime/joy_thunk.*` | 人工 | thunk 签名 / 三端共用注册表，以及按名调用入口 `joy_api_call()` |
 | `joy_api.h` | 人工 | 对外唯一入口：`joy_api_selftest()` |
-| `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的存量 API 名，命名门禁的豁免基线。**不能删除**：6 条 `joy_fov_*` / `joy_tilemap_sweep_*` 例外的域名不在白名单，靠它过门禁 |
+| `idl/legacy_names.txt` | 工具冻结，只减不增 | P0 冻结的存量 API 名，命名门禁的豁免基线。**不能删除**：存量 1156 条靠它通过 `--check`；原 6 条 `joy_fov_*` / `joy_tilemap_sweep_*` 例外已改名归位、不再依赖它 |
 
 > `include/joy/compat.h`（旧名兼容层）与 `include/joy/jcont.h`（孤岛容器头）已于
-> 2026-11-11 删除：前者在 P1 收尾清空宏块后已无内容，后者仅被 `src/jutils.c`
-> 死引用且从未使用其中符号。两者都不在 `joy.h` 链与生成链内。
+> 2026-11-11 删除：前者在 P1 收尾清空宏块后已无内容，后者仅被当时的 `src/jutils.c`
+> 死引用且从未使用其中符号（该文件已并入 `src/jcore.c`）。两者都不在 `joy.h` 链与生成链内。
 
 ## 公开 API 命名规范（P0 起，分阶段迁移）
 

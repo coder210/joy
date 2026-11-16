@@ -13,7 +13,7 @@
 ## 1. 项目是什么
 
 joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_bindings.js` 从
-11 个契约头（`jdefs.h` + 9 个 `src/joy_<域>.h` + `jmath_wrappers.h`）生成四份
+11 个契约头（`jdefs.h` + 9 个 `src/j<域>.h` + `jmath_wrappers.h`）生成四份
 后端的绑定（C++ vtable、C thunk、C# P/Invoke、jmath 包装）；`japi.h` 只做聚合。`examples/` 下有 cpp / lua / js / csharp 四份功能相同的示例，**它们同时是
 给以后项目用的模板**，所以改动要按模板标准处理（注释、平台分支、可覆盖参数）。
 
@@ -39,11 +39,11 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 - **`compat.h` 与 `jcont.h` 已删除**（2026-11-11）：前者是空兼容层、后者是仅被
   `src/jutils.c` 死引用且从未使用符号的 900 行孤岛容器头；已移除 `joy.h` 与
   `jutils.c` 两处 include，删除后全量构建 0 错误。
-- **公开 API 命名迁移 P1 基本完成**：1150 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
-  调用点 / 生成物四处 C 符号一致。**6 条例外**：
-  `joy_fov_*`(4) 与 `joy_math_tilemap_sweep_x|y`(2)，域名回退成白名单外的 `joy`，
-  均为 L3 / `status:off` / 不暴露；因在 `legacy_names.txt` 豁免名单里 `--check`
-  查不到。本轮决定保持现状（不暴露，改名收益低于动公开头的风险），只如实记录。
+- **公开 API 命名迁移 P1 已完成**：1170 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
+  调用点 / 生成物四处 C 符号一致。原 6 条例外（4 个 `joy_fov_*` +
+  `joy_tilemap_sweep_x|y`）已按域改名归位：`joy_r2d_fov_draw_2d`、`joy_r3d_fov_*`、
+  `joy_collision_tilemap_sweep_x|y`，全部落在白名单域内，不再依赖豁免；
+  `legacy_names.txt` 仍保留，作为 1156 条存量的 `--check` 豁免基线。
 - Android：CI 已多次跑通（`Android APKs` 工作流 `success`），**已产出 4 个 APK**（见 §6）。
 - Web：已部署到 GitHub Pages（`web.yml` 仅 push 触发），站点 https://coder210.github.io/joy/ 可访问。
 
@@ -523,7 +523,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374）。
 
 ### 生成链路的正确操作顺序
-1. 改所属域的配套头 `src/joy_<域>.h`（声明按域归属，`japi.h` 只做聚合；
+1. 改所属域的配套头 `src/j<域>.h`（声明按域归属，`japi.h` 只做聚合；
    `source` 行号由 `--scan` 刷新，无需再靠「放文件末尾」规避漂移）
 2. `node api/tools/gen_bindings.js --scan`
 3. `node api/tools/gen_bindings.js --enable name:<api_name>`（必须带 `name:` 前缀）
@@ -532,23 +532,25 @@ SDL3 返回内部静态缓存，`SDL_free` 会在退出时堆损坏（0xC0000374
 
 ### 公开 API 命名（P1 已完成）
 `j` 前缀是最初设计的项目命名空间，后来没贯彻，IDL 里一度长出 85 个 domain。
-现已统一为 `joy_<域>_<动作>`，9 个域的封闭白名单在
+现已统一为 `joy_<域>_<动作>`，白名单是 9 个手写域 + 生成物域 `math`，封闭在
 `api/tools/naming.js` 的 `DOMAINS`（归并表与门禁说明见 `api/README.md`）。
 `--check` 只卡新增，存量 1156 条冻结在 `api/idl/legacy_names.txt`。
-**迁移已收尾**：`api/idl/rename_map.json` 现有 **1166 条**旧名→新名映射
+**迁移已收尾**：`api/idl/rename_map.json` 现有 **1626 条**旧名→新名映射
 （2026-11-10 清掉 4 条无声明的 `utils_aes_*` 死映射；2026-11-13 追加 16 条，
-去掉 `joy_scene_jtimer_*` / `joy_r2d_jtext_*` 域名后重复的历史 `j` 前缀）。
+去掉 `joy_scene_jtimer_*` / `joy_r2d_jtext_*` 域名后重复的历史 `j` 前缀；
+2026-11-13～16 又依次追加 input 13、ui 并入 r2d 218、math→collision 87、
+jsys→sys 23 条）。
 `--scan` 据此继承 `status`/`owns`/`borrowed`/`note`：**C 函数改名必须先在映射表
 追加一层「旧 C 名 → 新 C 名」再 `--scan`**，否则新名被当成新条目、`status:on`
 会被重置成 `off`、`owns` 也会丢。同时 `naming.js` 的 `ALIASES` 要同步改 key
 （value 是冻结的脚本层方法名，保持不变），否则脚本层会退化成
 `pascal(newName)`。`include/joy/compat.h` 与 `include/joy/jcont.h` 均已删除，
-全仓不再有 `#define` 桥接。`legacy_names.txt` 仍须保留（6 条例外靠它豁免）。
+全仓不再有 `#define` 桥接。`legacy_names.txt` 仍须保留——存量 1156 条靠它通过
+`--check`；原 6 条例外已改名归位、不再依赖它豁免。
 `script`(33) 与 `core` 域里的
 `joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
-thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域名不在
-10 域白名单（见 §2），因 legacy 豁免不被门禁拦截。脚本层 PascalCase 方法名由
-`ALIASES` 冻结，C 名改了不受影响。**新增声明写到所属域的 `src/joy_<域>.h`，
+thunk/vtable/C# 绑定）。脚本层 PascalCase 方法名由
+`ALIASES` 冻结，C 名改了不受影响。**新增声明写到所属域的 `src/j<域>.h`，
 改名必须原位替换**；`source` 行号由 `--scan` 刷新，条目顺序由 `mergeIdl()` 保持稳定。
 
 ### 其他
@@ -559,7 +561,7 @@ thunk/vtable/C# 绑定）。另有 6 条 `joy_fov_*`/`joy_tilemap_sweep_*` 域�
 ## 5. 如何验证（本机可跑）
 
 ```powershell
-cd e:/c++/joy
+cd d:/github/joy
 node api/tools/gen_bindings.js --check          # 生成门禁
 cmake -S . -B build                              # 配置
 cmake --build build --config Debug               # 全量构建

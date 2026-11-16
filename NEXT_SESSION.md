@@ -1,4 +1,4 @@
-# 交接：当前进展与下一步（2026-11-15）
+# 交接：当前进展与下一步（2026-11-16）
 
 > 换 AI 交接文档。先读这一页，再读 `HANDOFF.md` 的 §2 / §4 / §5 / §6 / §7。
 > 本文件只记**当前状态**与**接下来该做什么**；历史细节在 `HANDOFF.md`。
@@ -28,6 +28,10 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
 依赖 `joy_r2d_p` 的 2D 控件归 `r2d`，依赖 `joy_r3d_p` 的 3D HUD 控件归 `r3d`，
 两边都不再单设 UI 文件，域边界按渲染上下文划分。218 条 `joy_ui_*` 统一为
 `joy_r2d_*`，`src/joy_ui.{h,c}` 删除，`DECL_SOURCES` 由 11 个变 10 个。
+**2026-11-16 把 `src/` 文件名改回短前缀 `j<域>.{c,h}`**（公开 ABI 仍 `joy_<域>_*`），
+并把 `src/*.h` 登记进 CMake 头文件清单、让它们在 VS 解决方案可见。
+**同日行为树 17 条声明从 `jaudio.h` 归位到 `jscene.h`**，布局门禁新增 R7：
+`src/j<域>.h` 里的声明域段必须等于文件域（此前 R4 只管 `.c` 定义，管不到头）。
 两个域门禁 + `--check` + 全量 Debug 构建 + `ctest` 4/4 + 可选模块全开实链均通过。
 **§3.0 的 T1 已按此方案解决，不要再向用户追问 A / C。**
 
@@ -335,14 +339,14 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 
 | 项 | 值 |
 |---|---|
-| HEAD / 远端 | 见 `git log -1`；本轮改动按 §6 约定提交并推送，推送后需等三条 CI |
+| HEAD / 远端 | 见 `git log -1`；工作区干净，`main` 与 `origin/main` 同步 |
 | IDL | 1170 条，`status:on` 739 条，vtable 739；`--scan` 幂等、orphan 0；域分布 `sys` 23 / `net` 64 |
 | 域布局 | `src/` **10 个 `.c`（9 手写域实现 + 1 数据分片）/ 10 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0**；另有生成物域 `math`（220 条定义，在 `api/generated/`） |
 | 契约源 | `DECL_SOURCES` 11 个：`jdefs.h` + 9 个手写域头 + `jmath_wrappers.h` |
 | `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
 | 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
 | `ctest` | 4/4（`--timeout 25`） |
-| CI | 本轮 `a37ed53b` 的 Desktop / Android / Web **3/3 success**（Actions API 核实）；`d46d05ed` / `e4e0d272` / `82030b54` / `35fa0ea1` 同为 3/3（历史，§3.0 T5） |
+| CI | 截至 `d1952d19`：Desktop #87 / Android #90 / Web #71 **3/3 success**（Actions API 核实）；更早的 `a37ed53b` / `d46d05ed` / `e4e0d272` / `82030b54` / `35fa0ea1` 同为 3/3（历史，§3.0 T5）。纯文档提交也会触发三条，按 §6 仍需确认，但不影响代码结论 |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
 
 ### 域 → 文件 归属表（9 个手写域 `.c` + 1 个数据分片，均配同名 `.h`）
@@ -372,6 +376,7 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 
 > **2026-11-15 更新**：用户就「2D 的 UI 有单独文件、3D 没有，不统一」拍板，
 > 已把 `ui` 域并回 `r2d`（见 §1「关键决策」）。**T1 已解决，不要再追问 A / C。**
+> **2026-11-16 更新**：文件短前缀改名、VS 头文件登记、R7 声明归位均已完成（见 §1）。
 > 现行待办只剩 **T3（需用户决策）**；T2 已顺带处理；T4 有意保留；T5 已结；
 > T6 只是提交状态说明。§3.1 起的 P0–P3 是更早一轮的项：
 > P0 两条已修、P1 需先定口径、P2/P3 明确「不是待办」。
@@ -582,7 +587,7 @@ iOS / wasm 静态形态、Android 真机冒烟、C# 在 iOS/wasm（宿主模型�
 ## 5. 验证命令（复制即用）
 
 ```powershell
-cd e:/c++/joy
+cd d:/github/joy
 
 # 1. 两个域门禁（纯域 + 布局：一域一 .c、每 .c 配同名 .h）
 node api/tools/audit_domain_purity.js        # 退出码 0 = 通过
@@ -613,7 +618,8 @@ cmake --build build/opt_check --config Debug --target example_cpp
 git --no-pager diff --check                   # 无输出
 git status -sb                                # 确认 src/ 新文件已 add，不是 ??
 git push origin main                          # 然后等三条 CI 全绿再收工
-# 本机未装 gh CLI；装了则 gh run list --limit 3 看三条工作流，否则看 Actions 页面
+# 查 CI：本机未装 gh；用公开 Actions API，head_sha 必须传完整 40 位（短 SHA 返回 0）
+# https://api.github.com/repos/coder210/joy/actions/runs?head_sha=<完整SHA>
 ```
 
 ## 6. 协作约定（用户偏好，已被多次强调）
