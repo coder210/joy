@@ -4314,7 +4314,7 @@ void joy_r3d_light_render(joy_light_sys_p s, joy_r2d_p r2d){
 
 /* ==================== 合并自 src/jgltf.c ==================== */
 /******************************************************************************
- * jgltf —— joy 的 glTF/glb 加载 + CPU 骨骼蒙皮动画 + 绘制模块（可选, 需定义 JOY_USE_GLTF）
+ * jgltf —— joy 的 glTF/glb 加载 + CPU 骨骼蒙皮动画 + 绘制模块（始终编译）
  *
  * 渲染：降级路径——每帧用 joy_r3d_mesh_custom_lit 按新顶点重建 lit mesh、
  *      joy_r3d_draw_mesh_lit 绘制（r3d_mesh_skinned_* 动态蒙皮接口从未实现，
@@ -4326,17 +4326,17 @@ void joy_r3d_light_render(joy_light_sys_p s, joy_r2d_p r2d){
  *   - 走非索引三角形列表绘制，因此带 INDICES 的 primitive
  *     在加载时按索引展开成非索引进制顶点（skin 属性随顶点复制），交给 GPU 时
  *     不建索引缓冲。
- *   - 未启用 JOY_USE_GLTF 时本文件为空编译单元，不影响任何项目。
+ *   - 本分片无条件编译（功能必须始终可用），但它是降级实现、无真机验证：
+ *     所有对外符号收口为 static，只在 jr3d.c 内可见；未进 src/jr3d.h、
+ *     IDL 与四端绑定，不构成公开 API。等功能验证完成再决定是否开放。
  *****************************************************************************/
-
-#ifdef JOY_USE_GLTF
 
 #define CGLTF_IMPLEMENTATION
 #include "external/cgltf/cgltf.h"
 
 #include "joy.h"
 /* 本 TU 用 SDL_IOFromFile / SDL_ReadIO / SDL_WriteIO / SDL_CloseIO 与 Sint64，
- * 公共头不再间接提供 SDL 声明，启用 JOY_USE_GLTF 时必须自己包含。 */
+ * 公共头不再间接提供 SDL 声明，本分片必须自己包含。 */
 #include <SDL3/SDL.h>
 
 #include <stdio.h>
@@ -4381,7 +4381,7 @@ struct joy_gltf_asset {
 
 /* 句柄别名必须定义在 struct joy_gltf_instance 之前：它的第一个字段就要用
  * joy_gltf_asset_p。这两个 struct 此前从未 typedef 成句柄类型，文件里却一直
- * 使用未加 joy_ 前缀的旧别名，是 JOY_USE_GLTF 一打开就编译不过的预存缺陷
+ * 使用未加 joy_ 前缀的旧别名，是分片启用编译时会触发的预存缺陷
  * （收口版即有，与本轮改名无关）。 */
 typedef struct joy_gltf_asset joy_gltf_asset_t, *joy_gltf_asset_p;
 
@@ -4712,7 +4712,7 @@ static int build_prim(joy_gltf_prim_src_t* out, cgltf_primitive* pr, cgltf_skin*
 }
 
 /* 从 primitive 的 baseColor 贴图(image 的 bufferView)解码出 GPU 纹理；无贴图/失败返回 NULL */
-void* jgltf_prim_load_texture(joy_r3d_p r3d, cgltf_primitive* pr) {
+static void* jgltf_prim_load_texture(joy_r3d_p r3d, cgltf_primitive* pr) {
         if (!pr || !pr->material) return NULL;
         cgltf_texture_view* tv = &pr->material->pbr_metallic_roughness.base_color_texture;
         if (!tv->texture || !tv->texture->image) return NULL;
@@ -4731,7 +4731,7 @@ void* jgltf_prim_load_texture(joy_r3d_p r3d, cgltf_primitive* pr) {
         return NULL;
 }
 
-joy_gltf_asset_p jgltf_asset_load(joy_r3d_p r3d, const char* path) {
+static joy_gltf_asset_p jgltf_asset_load(joy_r3d_p r3d, const char* path) {
         long fsize; unsigned char* raw; unsigned char* clean; long clen = 0;
         cgltf_options opt; cgltf_data* data = NULL; cgltf_result res;
         joy_gltf_asset_p a; int mi, pi; cgltf_size i, pc;
@@ -4853,9 +4853,9 @@ joy_gltf_asset_p jgltf_asset_load(joy_r3d_p r3d, const char* path) {
 
 /* ==================== asset 生命周期 ==================== */
 
-void jgltf_asset_retain(joy_gltf_asset_p a) { if (a) a->refs++; }
+static void jgltf_asset_retain(joy_gltf_asset_p a) { if (a) a->refs++; }
 
-void jgltf_asset_release(joy_gltf_asset_p a) {
+static void jgltf_asset_release(joy_gltf_asset_p a) {
         int i;
         if (!a) return;
         if (--a->refs > 0) return;
@@ -4876,24 +4876,24 @@ void jgltf_asset_release(joy_gltf_asset_p a) {
         free(a);
 }
 
-int jgltf_asset_animation_count(joy_gltf_asset_p a) { return a ? a->anim_count : 0; }
-const char* joy_r3d_gltf_asset_animation_name(joy_gltf_asset_p a, int index) {
+static int jgltf_asset_animation_count(joy_gltf_asset_p a) { return a ? a->anim_count : 0; }
+static const char* joy_r3d_gltf_asset_animation_name(joy_gltf_asset_p a, int index) {
         if (!a || index < 0 || index >= a->anim_count) return NULL;
         return a->data->animations[index].name;
 }
-float joy_r3d_gltf_asset_animation_duration(joy_gltf_asset_p a, int index) {
+static float joy_r3d_gltf_asset_animation_duration(joy_gltf_asset_p a, int index) {
         if (!a || index < 0 || index >= a->anim_count) return 0.0f;
         return a->anim_duration[index];
 }
-int jgltf_asset_node_count(joy_gltf_asset_p a) { return a ? a->node_count : 0; }
-int jgltf_asset_prim_count(joy_gltf_asset_p a) { return a ? a->prim_count : 0; }
-int joy_r3d_gltf_asset_has_skin(joy_gltf_asset_p a) {
+static int jgltf_asset_node_count(joy_gltf_asset_p a) { return a ? a->node_count : 0; }
+static int jgltf_asset_prim_count(joy_gltf_asset_p a) { return a ? a->prim_count : 0; }
+static int joy_r3d_gltf_asset_has_skin(joy_gltf_asset_p a) {
         int i;
         if (!a) return 0;
         for (i = 0; i < a->prim_count; i++) if (a->prims[i].skinned) return 1;
         return 0;
 }
-JOY_API void joy_r3d_gltf_asset_bounds(joy_gltf_asset_p a, joy_vec3_t* out_center, float* out_radius) {
+static void joy_r3d_gltf_asset_bounds(joy_gltf_asset_p a, joy_vec3_t* out_center, float* out_radius) {
         if (a) {
                 if (out_center) *out_center = a->bounds_center;
                 if (out_radius) *out_radius = a->bounds_radius;
@@ -4905,7 +4905,7 @@ JOY_API void joy_r3d_gltf_asset_bounds(joy_gltf_asset_p a, joy_vec3_t* out_cente
 
 /* ==================== instance ==================== */
 
-joy_gltf_instance_p jgltf_instance_create(joy_gltf_asset_p a) {
+static joy_gltf_instance_p jgltf_instance_create(joy_gltf_asset_p a) {
         joy_gltf_instance_p inst;
         cgltf_node* nodes;
         int i;
@@ -4949,7 +4949,7 @@ joy_gltf_instance_p jgltf_instance_create(joy_gltf_asset_p a) {
         return inst;
 }
 
-void jgltf_instance_destroy(joy_gltf_instance_p inst) {
+static void jgltf_instance_destroy(joy_gltf_instance_p inst) {
         int i;
         if (!inst) return;
         for (i = 0; i < inst->prim_count; i++) {
@@ -4970,22 +4970,22 @@ void jgltf_instance_destroy(joy_gltf_instance_p inst) {
         free(inst);
 }
 
-void jgltf_instance_set_animation(joy_gltf_instance_p inst, int index) {
+static void jgltf_instance_set_animation(joy_gltf_instance_p inst, int index) {
         if (!inst || index < 0) return;
         if (index >= inst->asset->anim_count) index = 0;
         inst->anim_index = index;
         inst->time = 0.0f;
 }
-int  jgltf_instance_animation(joy_gltf_instance_p inst) { return inst ? inst->anim_index : -1; }
-void jgltf_instance_set_speed(joy_gltf_instance_p inst, float speed) {
+static int  jgltf_instance_animation(joy_gltf_instance_p inst) { return inst ? inst->anim_index : -1; }
+static void jgltf_instance_set_speed(joy_gltf_instance_p inst, float speed) {
         if (inst) inst->speed = speed;
 }
-float jgltf_instance_speed(joy_gltf_instance_p inst) { return inst ? inst->speed : 1.0f; }
-void jgltf_instance_set_paused(joy_gltf_instance_p inst, bool paused) {
+static float jgltf_instance_speed(joy_gltf_instance_p inst) { return inst ? inst->speed : 1.0f; }
+static void jgltf_instance_set_paused(joy_gltf_instance_p inst, bool paused) {
         if (inst) inst->paused = paused;
 }
 
-void jgltf_instance_update(joy_gltf_instance_p inst, float dt) {
+static void jgltf_instance_update(joy_gltf_instance_p inst, float dt) {
         joy_gltf_asset_p a; int ni, v, k; cgltf_size c;
         cgltf_animation* an; float dur;
 
@@ -5106,7 +5106,7 @@ void jgltf_instance_update(joy_gltf_instance_p inst, float dt) {
         }
 }
 
-void jgltf_instance_draw(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat44_t* model) {
+static void jgltf_instance_draw(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat44_t* model) {
         int i;
         static int dbg_printed = 0;
         if (!inst || !r3d) return;
@@ -5151,7 +5151,7 @@ void jgltf_instance_draw(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat4
 }
 
 /* 沿 skin 关节链画线段：每段 = 子关节世界位置 → 父关节世界位置（已按 model 变换到世界） */
-void joy_r3d_gltf_instance_draw_bones(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat44_t* model) {
+static void joy_r3d_gltf_instance_draw_bones(joy_r3d_p r3d, joy_gltf_instance_p inst, const joy_mat44_t* model) {
         joy_gltf_asset_p a; int j, k, seg; const joy_mat44_t* m;
         float* verts; int vcount;
         joy_mat44_t identity;
@@ -5208,9 +5208,8 @@ void joy_r3d_gltf_instance_draw_bones(joy_r3d_p r3d, joy_gltf_instance_p inst, c
         inst->bones_mesh = mesh;
 }
 
-int jgltf_instance_moved_vertices(joy_gltf_instance_p inst) { return inst ? inst->moved_vertices : 0; }
+static int jgltf_instance_moved_vertices(joy_gltf_instance_p inst) { return inst ? inst->moved_vertices : 0; }
 
-#endif /* JOY_USE_GLTF */
 
 /* 恢复「独立 TU」语义：本分片的私有宏不外泄到同域后续分片 */
 #undef CGLTF_IMPLEMENTATION

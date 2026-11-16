@@ -49,6 +49,7 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
 | **本轮：`src` 文件名改回 `j<域>.{c,h}`（2026-11-16）** | 见下方「关键决策」新增段 | 20 文件改名 / 1370 处引用 / 门禁 R1 改文件名规则 |
 | **本轮：让 `src/*.h` 在 VS 中显示（2026-11-16）** | 见下方「关键决策」新增段 | 2 个 CMake 文件 / 新增 `joy_collect_headers()` / 17 个头登记进 IDE |
 | **本轮：行为树声明归位 `scene` + 门禁 R7（2026-11-16）** | 见下方「关键决策」新增段 | 17 条声明 `jaudio.h` → `jscene.h` / 布局门禁新增 R7 |
+| **本轮：删 `JOY_ENABLE_GLTF`，分片无条件编译且收口符号（2026-11-16）** | 见下方「关键决策」新增段 | 删 1 个 option + 1 个宏 / 22 个符号转 static / 不开放 API |
 
 `35fa0ea1` 包含四件事（细节见「关键决策」段）：
 
@@ -59,6 +60,43 @@ API 全是碰撞/GJK/box2d/tilemap 扫掠，与已有的 `jmath.h` 重名且名�
   `joy_math.c` 从 56032 行缩到 4543 行，新增 R6 白名单；
 - **`input` 并回 `core` 并统一前缀**：13 个 `joy_input_*` → `joy_core_input_*`，
   域白名单 10 → 9，`DOMAIN_ALIASES` 临时机制已删除，`open=739` / `status:on` 不丢、orphan 0。
+
+### 关键决策：删掉 `JOY_ENABLE_GLTF`，glTF 无条件编译但不开放 API（2026-11-16，本轮）
+
+用户拍板：「glTF 一定是要开的，这个开关没有意义；如果功能还有问题，
+就不要把 api 开放出来。」两条独立要求，一起落地。
+
+- **开关为什么没意义**：glTF/glb 加载是 3D 渲染必备能力，做成默认 OFF 的
+  可选项，等于默认构建里根本没有这个能力；而 `joy_all` 的 `INTERFACE_SOURCES`
+  本来就列出全部 `.c`，开关只是给同一份源码加/去一个宏，不追加源文件、
+  不追加依赖（`cgltf.h` 是 header-only、`stb_image` 实现在 jcore.c 的
+  vendor 分片、SDL3 本来就链接），所以不存在「开了会变重」的成本。
+  全仓只有 3 条验证命令会传 `-DJOY_ENABLE_GLTF=ON`，CI 从未开启，
+  也就是这 882 行长期处于「没人编译」的状态。
+- **删了什么**：`cmake/JoyTargets.cmake` 的 `option(JOY_ENABLE_GLTF ...)` 与
+  `if(JOY_ENABLE_GLTF) target_compile_definitions(... JOY_USE_GLTF)`；
+  `src/jr3d.c` 的 `#ifdef JOY_USE_GLTF` / `#endif` 两行。
+  `#undef CGLTF_IMPLEMENTATION` 保留（隔离本分片私有宏，不外泄到同域后续分片）。
+  核实 `CGLTF_IMPLEMENTATION` 全仓唯一手工定义在 jr3d.c，
+  头里另外两处是给 IDE 智能感知的 `__INTELLISENSE__` 自保护，不会重复展开。
+- **为什么不开放 API**：这分片是降级实现（每帧销毁重建 lit mesh，无动态
+  顶点更新接口，没有 GLTF 模型 / 真机可验运行）。它原本有 22 个非 static
+  全局符号，其中 5 个叫 `joy_r3d_gltf_*`、还有 1 个带 `JOY_API`，
+  看着像公开 API，实际 20 个在分片内「只有定义、无调用」，
+  全仓其它文件 0 引用、域头 0 声明、IDL 0 条、examples 0 引用。
+  现在 22 个全部收口为 `static`，去掉唯一的 `JOY_API`，
+  **只保留内部实现、不构成任何对外契约**；等功能验证完成，
+  再决定是否在 `jr3d.h` / IDL / 四端绑定里正式开放。
+  函数名刻意不改（含 5 个 `joy_` 前缀），避免动门禁的域定义统计
+  （`audit_domain_purity.js` / R4 纯文本扫描，仍计 165 条 r3d 定义 / 1013 总数）。
+- **门禁数字不变**：两个域门禁都只做文本扫描、不解析 `#ifdef`，
+  条件编译里的定义本来就计入，所以删包裹后 165 / 1013 / 混域 0 不变；
+  `static` 不影响 `findDefs` 匹配。IDL / 生成物零变化，`--check` 直接通过。
+- **验证命令同步**：§5 去掉 `-DJOY_ENABLE_GLTF=ON`，注释里明确
+  「改过 jr3d.c 的 jgltf 段也要一起验」。历史决策段里两处旧命令按 T4
+  保留并加口径标注；`HANDOFF.md` 的历史叙述同样按 T4 不动。
+- 验收：三门禁 0 违规、`--check OK 1170`、全量 Debug 构建 0 错误 0 警告、
+  `ctest` 4/4、SPINE+PLUGINS 全开实链 0 错误、`git diff --check` 0。
 
 ### 关键决策：行为树声明归位 `scene` 域 + 新增门禁 R7（2026-11-16，本轮）
 
@@ -414,6 +452,8 @@ orphan 0、IDL `domain` 里 `ui` 归零（`r2d` 114→332）。
 `cmake -S examples -B build/opt_check -DJOY_ENABLE_GLTF=ON -DJOY_ENABLE_SPINE=ON`
 的**编译阶段已通过**（`jgltf.obj` 生成成功）；生成链 / 域纯度 / 默认构建 /
 `ctest` 均不受影响。
+> 注：上面两处 `-DJOY_ENABLE_GLTF=ON` 是当时的命令记录（T4 保留）。
+> 2026-11-16 起该开关已删除，glTF 分片无条件编译，见本节新增段与 §5。
 
 #### P0-b 三个 r3d 动态蒙皮 API 从未实现 —— 已最小降级适配（2026-11-13）
 
@@ -562,10 +602,11 @@ $a = $norm.Invoke('api/idl/joy.idl')
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 必须 4/4
 
-# 5. 可选模块（默认 OFF，改过域文件里的 gltf/spine/plugins 分片必查）
+# 5. 可选模块（默认 OFF，改过域文件里的 spine/plugins 分片必查）
+#    glTF 分片无条件编译，改过 jr3d.c 的 jgltf 段也要一起验；
 #    必须用 examples 入口并指定 target：根入口 JOY_BUILD_EXAMPLES=OFF 时
 #    joy::all 是 INTERFACE，不会真正编译/链接分片
-cmake -S examples -B build/opt_check -DJOY_ENABLE_GLTF=ON -DJOY_ENABLE_SPINE=ON -DJOY_ENABLE_PLUGINS=ON
+cmake -S examples -B build/opt_check -DJOY_ENABLE_SPINE=ON -DJOY_ENABLE_PLUGINS=ON
 cmake --build build/opt_check --config Debug --target example_cpp
 
 # 6. 收尾

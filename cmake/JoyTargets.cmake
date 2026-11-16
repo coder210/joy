@@ -16,7 +16,11 @@
 get_filename_component(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 get_filename_component(JOY_INCLUDE_ROOT "${JOY_ROOT}/.." ABSOLUTE)
 
-option(JOY_ENABLE_GLTF   "启用 jr3d.c 中的 glTF 分片（JOY_USE_GLTF）" OFF)
+# glTF 分片无条件编译，不需要开关：功能必须始终可用；但它是降级实现，
+# 在验证完成前只在 jr3d.c 内部可见，不进 jr3d.h / IDL / 四端绑定。
+# 旧缓存里可能残留 JOY_ENABLE_GLTF（2026-11-16 删除），显式清掉避免误读。
+unset(JOY_ENABLE_GLTF CACHE)
+
 option(JOY_ENABLE_SPINE  "启用 jr2d.c 中的 spine 分片并链接 spine-c" OFF)
 option(JOY_ENABLE_PLUGINS "启用 jscript.c 中的插件分片（SDL_LoadObject）" OFF)
 # 旧手写胶水 modules/*/bindings/legacy/ 已整体删除，开关随之移除；
@@ -67,9 +71,7 @@ elseif(TARGET msgpack-c)
     target_link_libraries(joy_all INTERFACE msgpack-c)
 endif()
 
-if(JOY_ENABLE_GLTF)
-    target_compile_definitions(joy_all INTERFACE JOY_USE_GLTF)
-endif()
+# 其余可选分片仍按开关转发为 JOY_USE_*。
 if(JOY_ENABLE_SPINE)
     target_compile_definitions(joy_all INTERFACE JOY_USE_SPINE)
     if(TARGET spine-c)

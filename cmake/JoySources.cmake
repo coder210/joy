@@ -47,9 +47,11 @@
 # 顺序敏感项：
 #   - jvendor_impl 分片（stb/dr 的 *_IMPLEMENTATION 全仓唯一定义）必须置于 core
 #     最前；实现宏若晚于其它分片对同名头的 #include，实现体不会展开。
-#   - jgltf / jspine / jmodule 分片整体分别被 JOY_USE_GLTF / JOY_USE_SPINE /
-#     JOY_USE_PLUGINS 包裹；JOY_ENABLE_* 由 JoyTargets.cmake 转发为 JOY_USE_*，
-#     未启用时对应分片为空段，因此不再需要按开关追加源文件。
+#   - jspine / jmodule 分片分别被 JOY_USE_SPINE / JOY_USE_PLUGINS 包裹；
+#     JOY_ENABLE_* 由 JoyTargets.cmake 转发为 JOY_USE_*，未启用时对应分片为空段，
+#     因此不再需要按开关追加源文件。
+#   - jgltf 分片无条件编译（glTF 是必备能力，不设开关）；它是降级实现，
+#     对外符号全部为 static，不在域头 / IDL / 绑定里开放，见 jr3d.c 分片头注释。
 #
 # 数据分片 src/jlut.c（SIN_LUT / tan_lut 查表，约 5.1 万行）是两张表的
 # 唯一定义；它属于 math 源码组但不计入「一域一 .c」。extern 声明与长度宏仍在
