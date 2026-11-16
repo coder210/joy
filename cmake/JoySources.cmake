@@ -40,16 +40,15 @@
 #          / jui / jui_im（原 ui 域并入）
 #                                           scene jscene / janimator / jtilemap /
 #                                                 jecs / jprocmap / jbehavior
-#   net    jnetwork / IOCP 分片              script jmsgpack / jmodule
+#   net    jnetwork / IOCP 分片              codec  jmsgpack
 #   sys    jsys（socket / 时间 / 崩溃 / 网卡枚举，2026-11-15 从 net 拆出）
 #   audio  jaudio                           core   jinput（原 input 域并入）
 #
 # 顺序敏感项：
 #   - jvendor_impl 分片（stb/dr 的 *_IMPLEMENTATION 全仓唯一定义）必须置于 core
 #     最前；实现宏若晚于其它分片对同名头的 #include，实现体不会展开。
-#   - jspine / jmodule 分片分别被 JOY_USE_SPINE / JOY_USE_PLUGINS 包裹；
-#     JOY_ENABLE_* 由 JoyTargets.cmake 转发为 JOY_USE_*，未启用时对应分片为空段，
-#     因此不再需要按开关追加源文件。
+#   - jspine 分片无条件编译（JOY_USE_SPINE 由 JoyTargets.cmake 恒定义并链接 spine-c）；
+#     原 jmodule 插件分片已于 2026-11-16 整体删除，不再有 JOY_ENABLE_PLUGINS。
 #   - jgltf 分片无条件编译（glTF 是必备能力，不设开关）；它是降级实现，
 #     对外符号全部为 static，不在域头 / IDL / 绑定里开放，见 jr3d.c 分片头注释。
 #
@@ -105,8 +104,10 @@ set(JOY_SRC_SYS
     src/jsys.c
 )
 
-set(JOY_SRC_SCRIPT
-    src/jscript.c
+# 原 script 域（插件 + msgpack）在 2026-11-16 删除插件后改名为 codec：
+# 只剩 msgpack 打包/解包的薄封装，域名与职责对齐。
+set(JOY_SRC_CODEC
+    src/jcodec.c
 )
 
 set(JOY_SRC_AUDIO
@@ -137,7 +138,7 @@ set(JOY_ALL_SOURCE_GROUPS
     JOY_SRC_SCENE
     JOY_SRC_NET
     JOY_SRC_SYS
-    JOY_SRC_SCRIPT
+    JOY_SRC_CODEC
     JOY_SRC_AUDIO
     JOY_SRC_VENDOR
 )
@@ -166,7 +167,7 @@ set(JOY_HEADERS_SRC
     src/jscene.h
     src/jnet.h
     src/jsys.h
-    src/jscript.h
+    src/jcodec.h
     src/jaudio.h
     src/jlut.h
 )

@@ -25,7 +25,7 @@ joy 是一个 C 引擎（`src/` + `include/joy/`），用 `api/tools/gen_binding
 | L2 | 值类型结构体按字段展开 | 能，需 `structs.js` 认得字段类型 |
 | L3 | 结构体指针 / 出参 / 回调 / 可变参 | 不能，`status:off`，消费方退化 |
 
-当前：**1170 条 IDL，739 条 `status:on`，vtable 739 个强签名**（其中 7 条是
+当前：**1159 条 IDL，739 条 `status:on`，vtable 739 个强签名**（其中 7 条是
 `borrowed` 借用句柄见 §3 的 14，13 条 3D mesh 靠单参数 dtor 开放见 §3 的 15；
 较收口时 IDL +13 条（§3 的 22 新增 11 条输入 API、§3 的 23 新增 2 条边沿
 API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类后开放的
@@ -39,7 +39,7 @@ API），`status:on` +18 条（这 13 条再加 §3 的 23 修复 `Uint8` 分类
 - **`compat.h` 与 `jcont.h` 已删除**（2026-11-11）：前者是空兼容层、后者是仅被
   `src/jutils.c` 死引用且从未使用符号的 900 行孤岛容器头；已移除 `joy.h` 与
   `jutils.c` 两处 include，删除后全量构建 0 错误。
-- **公开 API 命名迁移 P1 已完成**：1170 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
+- **公开 API 命名迁移 P1 已完成**：1159 条收敛为 `joy_<域>_<动作>`，声明 / 定义 /
   调用点 / 生成物四处 C 符号一致。原 6 条例外（4 个 `joy_fov_*` +
   `joy_tilemap_sweep_x|y`）已按域改名归位：`joy_r2d_fov_draw_2d`、`joy_r3d_fov_*`、
   `joy_collision_tilemap_sweep_x|y`，全部落在白名单域内，不再依赖豁免；
@@ -547,8 +547,8 @@ jsys→sys 23 条）。
 `pascal(newName)`。`include/joy/compat.h` 与 `include/joy/jcont.h` 均已删除，
 全仓不再有 `#define` 桥接。`legacy_names.txt` 仍须保留——存量 1156 条靠它通过
 `--check`；原 6 条例外已改名归位、不再依赖它豁免。
-`script`(33) 与 `core` 域里的
-`joy_core_utils_*`(20) 因带函数指针参数或属有意排除项，维持 X 级（不进
+`codec`(22) 的 msgpack 与 `core` 域里的
+`joy_core_utils_*`(20) 因带结构体指针 / 回调参数或属有意排除项，维持 X 级（不进
 thunk/vtable/C# 绑定）。脚本层 PascalCase 方法名由
 `ALIASES` 冻结，C 名改了不受影响。**新增声明写到所属域的 `src/j<域>.h`，
 改名必须原位替换**；`source` 行号由 `--scan` 刷新，条目顺序由 `mergeIdl()` 保持稳定。
@@ -609,7 +609,7 @@ Get-ChildItem runtimes/android-arm64 -Recurse -File   # 主库 + 4 个 libSystem
 ### 交付范围（已完成）
 生成链路（IDL → thunk / vtable / C# / 四语言示例）、公开 API 命名统一、
 `borrowed` 借用语义、单参数 mesh dtor、四平台 CLR 运行时入库、Android 4 个
-APK、Web Pages 部署、桌面 / Android / Web 三套 CI。当前 **1170 条 IDL，
+APK、Web Pages 部署、桌面 / Android / Web 三套 CI。当前 **1159 条 IDL，
 739 条 `status:on`**；验收结果见 §10。
 
 ### 已完成，不要当待办
@@ -713,8 +713,8 @@ success。四项均已满足，所以没有遗留任务。
    若基于过期 IDL 改名会改错名字。
 
 7. **X 级（不暴露）靠 `SKIP_DOMAINS` 或 `SKIP_PREFIXES` 维持。**
-   `script`（改 `joy_script_*`）、`utils`（改 `joy_core_utils_*`）因带函数指针参数/
-   属有意排除项，改名后仍判 X 级、不进 thunk/vtable/C# 绑定。若要暴露，
+   `codec`（`joy_codec_msgpack_*`）、`utils`（`joy_core_utils_*`）因带结构体指针 /
+   回调参数属有意排除项，改名后仍判 X 级、不进 thunk/vtable/C# 绑定。若要暴露，
    去掉 `gen_bindings.js` 里对应的跳过项即可，命名已就位。
 
 8. **本机无 NDK / Emscripten，CI 只能靠 GitHub REST API 查。**
@@ -756,7 +756,7 @@ success。四项均已满足，所以没有遗留任务。
 
 | 项 | 结果 |
 |---|---|
-| `node api/tools/gen_bindings.js --check` | OK（1170 条，6 个生成物最新） |
+| `node api/tools/gen_bindings.js --check` | OK（1159 条，6 个生成物最新） |
 | `cmake --build build --config Debug` | 0 错误，构建不依赖 `compat.h` |
 | `ctest --test-dir build -C Debug --timeout 25` | 四语言冒烟 4/4 |
 | GitHub Actions 三个构建型工作流 | success（见 §9.8） |

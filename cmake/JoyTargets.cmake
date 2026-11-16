@@ -16,13 +16,12 @@
 get_filename_component(JOY_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 get_filename_component(JOY_INCLUDE_ROOT "${JOY_ROOT}/.." ABSOLUTE)
 
-# glTF 分片无条件编译，不需要开关：功能必须始终可用；但它是降级实现，
-# 在验证完成前只在 jr3d.c 内部可见，不进 jr3d.h / IDL / 四端绑定。
-# 旧缓存里可能残留 JOY_ENABLE_GLTF（2026-11-16 删除），显式清掉避免误读。
+# 可选分片开关已全部移除（2026-11-16）：
+#   glTF / spine 无条件编译；插件系统（jmodule 分片）整体删除。
+# 旧缓存里可能残留这些变量，显式清掉避免误读。
 unset(JOY_ENABLE_GLTF CACHE)
-
-option(JOY_ENABLE_SPINE  "启用 jr2d.c 中的 spine 分片并链接 spine-c" OFF)
-option(JOY_ENABLE_PLUGINS "启用 jscript.c 中的插件分片（SDL_LoadObject）" OFF)
+unset(JOY_ENABLE_SPINE CACHE)
+unset(JOY_ENABLE_PLUGINS CACHE)
 # 旧手写胶水 modules/*/bindings/legacy/ 已整体删除，开关随之移除；
 # 脚本层只剩 IDL 驱动的 Joy.Api.Bindings，宿主接口留在 modules/cs/bindings/host/。
 
@@ -71,17 +70,16 @@ elseif(TARGET msgpack-c)
     target_link_libraries(joy_all INTERFACE msgpack-c)
 endif()
 
-# 其余可选分片仍按开关转发为 JOY_USE_*。
-if(JOY_ENABLE_SPINE)
-    target_compile_definitions(joy_all INTERFACE JOY_USE_SPINE)
-    if(TARGET spine-c)
-        target_link_libraries(joy_all INTERFACE spine-c)
-        target_include_directories(joy_all INTERFACE "${JOY_ROOT}/spine/spine-c/include")
-    endif()
+# spine 分片无条件编译：spine 源码随仓库分发（根 CMakeLists 会 add_subdirectory(spine)），
+# 骨骼动画属于 r2d 的常规能力，不再做成默认 OFF 的开关。
+# 作为子模块使用时，调用方必须先 add_subdirectory(<joy 目录>/spine) 提供 spine-c。
+if(NOT TARGET spine-c)
+    message(FATAL_ERROR
+        "joy 需要 spine-c 目标：请先 add_subdirectory(<joy 目录>/spine) 再 add_subdirectory(joy)")
 endif()
-if(JOY_ENABLE_PLUGINS)
-    target_compile_definitions(joy_all INTERFACE JOY_USE_PLUGINS)
-endif()
+target_compile_definitions(joy_all INTERFACE JOY_USE_SPINE)
+target_link_libraries(joy_all INTERFACE spine-c)
+target_include_directories(joy_all INTERFACE "${JOY_ROOT}/spine/spine-c/include")
 
 # 平台与工具链配置：源码注入下这些宏会作用于宿主的全部 TU（含宿主自身代码），
 # 这是与旧 joy_add.cmake 一致的语义，不是新增行为。
@@ -108,6 +106,31 @@ set(JOY_EXTERNAL_DIR          "${JOY_ROOT}/external")
 set(JOY_SCRIPT_INCLUDE_ROOT   "${JOY_INCLUDE_ROOT}")
 set(JOY_SCRIPT_EXTRA_INCLUDES "${JOY_INCLUDE_ROOT}")
 set(JOY_MSGPACK_DIR           "${JOY_ROOT}/msgpack")
+
+# 把 JOY_REQUESTED_MODULES 声明的集合同步到三个 cache 勾选框。
+# 该属性只存在于内存：不写 cache 的话，VS / CMake GUI 里 JOY_MODULE_*
+# 仍显示默认 OFF，看起来像"没启用"，每次配置都得手动勾一遍。
+# 规则：列表内 ON、列表外 OFF。属性未设置时完全不动，保留
+# `-DJOY_MODULE_LUA=ON` 这种单独开模块的原有用法。
+# 注意：开了 JOY_BUILD_EXAMPLES 就会把示例用到的后端持久化为 ON；
+# 若之后关掉 examples 又不想编这些模块，需要显式 -DJOY_MODULE_XXX=OFF。
+get_property(_joy_module_list GLOBAL PROPERTY JOY_REQUESTED_MODULES)
+if(_joy_module_list)
+    set(_joy_module_help_lua "Lua 脚本模块（Lua VM + 绑定胶水）")
+    set(_joy_module_help_js  "JavaScript (duktape) 脚本模块")
+    set(_joy_module_help_cs  "C# 脚本模块（源码直接编入调用方 target）")
+    foreach(_joy_mod IN ITEMS lua js cs)
+        string(TOUPPER "${_joy_mod}" _joy_mod_upper)
+        if(_joy_mod IN_LIST _joy_module_list)
+            set(_joy_mod_value ON)
+        else()
+            set(_joy_mod_value OFF)
+        endif()
+        set(JOY_MODULE_${_joy_mod_upper} ${_joy_mod_value}
+            CACHE BOOL "${_joy_module_help_${_joy_mod}}" FORCE)
+    endforeach()
+    message(STATUS "joy: 脚本模块按请求列表自动勾选 = ${_joy_module_list}")
+endif()
 
 foreach(_joy_mod IN ITEMS lua js cs)
     set(_joy_mod_dir "${JOY_ROOT}/modules/${_joy_mod}")

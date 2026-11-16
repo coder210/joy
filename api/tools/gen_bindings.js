@@ -51,14 +51,14 @@ const LEGACY_NAMES = path.join(JOY_API, 'idl', 'legacy_names.txt');
  * 且旧名不再变成 orphan，否则已开放的绑定会被静默关掉。每批填一次。 */
 const RENAME_MAP = path.join(JOY_API, 'idl', 'rename_map.json');
 
-/* 有意排除：条件编译下不存在、返回缓冲约定依赖 SDL、插件系统停用、测试符号。
+/* 有意排除：返回缓冲约定依赖 SDL、spine 手写绑定未做、测试符号。
  * SKIP_PREFIXES 管存量名字，SKIP_DOMAINS 管三段式新名字。 */
-/* jspine 是有意排除（JOY_USE_SPINE 条件编译）；迁移后新名沿用同一排除，
- * 否则 19 条会从 X 掉回 L0/L1 混进 thunk 生成。 */
+/* jspine 仍是有意排除（19 条 X 级、无手写绑定）；2026-11-16 起 spine 分片
+ * 无条件编译，但排除依据变成「未开放」而不是条件编译。 */
 const SKIP_PREFIXES = ['joy_core_utils_', 'joy_r2d_spine_'];
 /* 旧名 jecs_test 已随 P1 迁成 joy_scene_ecs_test，源码里不再存在，无需保留防护。 */
 const SKIP_NAMES = new Set(['joy_scene_ecs_test']);
-const SKIP_DOMAINS = new Set(['script']);
+const SKIP_DOMAINS = new Set(['codec']);
 const DESTROY_SUFFIXES = ['destroy', 'free', 'release', 'delete'];
 
 const SCALARS = new Set([
@@ -242,7 +242,7 @@ const DECL_SOURCES = [
   { label: 'src/jscene.h', file: path.join(JOY_REPO, 'src/jscene.h') },
   { label: 'src/jnet.h', file: path.join(JOY_REPO, 'src/jnet.h') },
   { label: 'src/jsys.h', file: path.join(JOY_REPO, 'src/jsys.h') },
-  { label: 'src/jscript.h', file: path.join(JOY_REPO, 'src/jscript.h') },
+  { label: 'src/jcodec.h', file: path.join(JOY_REPO, 'src/jcodec.h') },
   { label: 'src/jaudio.h', file: path.join(JOY_REPO, 'src/jaudio.h') },
   { label: 'api/generated/jmath_wrappers.h', file: JMATH_WRAPPERS_H },
 ];

@@ -14,7 +14,7 @@
 #include "../../src/jscene.h"
 #include "../../src/jnet.h"
 #include "../../src/jsys.h"
-#include "../../src/jscript.h"
+#include "../../src/jcodec.h"
 #include "../../src/jaudio.h"
 
 #endif /* JOY_API_H */

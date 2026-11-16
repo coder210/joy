@@ -167,13 +167,12 @@ extern "C" {
                 const float* radii, int seg, float feather, float outer_radius);
 
 
-        /* ==================== Spine 骨骼动画（jspine，可选模块） ====================
-         * 启用方式：定义 JOY_USE_SPINE 并链接 spine-c，见 joy_add_sources(<target> SPINE)。
+        /* ==================== Spine 骨骼动画（jspine，无条件编译） ====================
+         * spine-c 源码随仓库分发，joy::all 无条件链接；不再有 JOY_ENABLE_SPINE 开关。
          * 分两层，便于 ECS 使用：
          *   joy_spine_asset_t    —— 共享资源（atlas + skeletonData），多实体复用，由资源管理器持有
          *   joy_spine_instance_t —— 每实体一份的"组件"，纯数据结构，可直接 emplace 到 ECS
          */
-#ifdef JOY_USE_SPINE
 #include <spine/spine.h>
 
         typedef struct joy_spine_asset joy_spine_asset_t, * joy_spine_asset_p;
@@ -236,7 +235,6 @@ extern "C" {
         JOY_API bool joy_r2d_spine_instance_bounds(joy_spine_instance_p inst, float *out_x, float *out_y,
                                             float *out_w, float *out_h);
         JOY_API const char *joy_r2d_spine_instance_animation(joy_spine_instance_p inst);
-#endif /* JOY_USE_SPINE */
 
 
         JOY_API joy_particle_cfg_t joy_r2d_particle_cfg_default(void);

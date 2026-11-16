@@ -25,7 +25,8 @@ function(joy_add_sources TARGET)
         set_property(GLOBAL PROPERTY JOY_REQUESTED_MODULES ${JAS_MODULES})
     endif()
     if(JAS_SPINE)
-        set(JOY_ENABLE_SPINE ON CACHE BOOL "启用 jr2d.c 中的 spine 分片并链接 spine-c" FORCE)
+        # 兼容旧调用：spine 分片自 2026-11-16 起无条件编译，该参数不再需要。
+        message(STATUS "joy_add_sources: SPINE 已无条件启用，参数可以省略")
     endif()
     if(JAS_EXCLUDE)
         message(WARNING

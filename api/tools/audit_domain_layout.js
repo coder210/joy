@@ -32,7 +32,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
 const SRC = path.join(ROOT, 'src');
-const DOMAINS = ['core', 'collision', 'r2d', 'r3d', 'scene', 'net', 'sys', 'script', 'audio'];
+const DOMAINS = ['core', 'collision', 'r2d', 'r3d', 'scene', 'net', 'sys', 'codec', 'audio'];
 /* 仅由工具生成物实现的域：没有 src/j<域>.c，实现落在 api/generated/。
  * math 域的 220 条 API 由 jmath_wrap.js 从 include/joy/jmath.h 生成，声明在
  * api/generated/jmath_wrappers.h（由 joy.h 聚合）、实现在 jmath_wrappers.c。

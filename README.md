@@ -4,7 +4,7 @@ This is an easy game framework.
 ## 目录
 
 - `src/j<域>.c` + `src/j<域>.h` —— 引擎核心，9 个手写域各一对文件
-  （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `sys` / `script` / `audio`），
+  （`core` / `collision` / `r2d` / `r3d` / `scene` / `net` / `sys` / `codec` / `audio`），
   另有数据分片 `src/jlut.{c,h}`。`math` 是生成物域、没有手写 `.c`：`jmath.h`
   的标量/向量数学由 `jmath_wrap.js` 生成到 `api/generated/jmath_wrappers.{h,c}`。
   不依赖任何脚本运行时。
@@ -37,7 +37,9 @@ This is an easy game framework.
 
 ## 脚本模块
 
-joy 本身不带脚本运行时，语言后端按需启用：
+joy 本身不带脚本运行时，语言后端按需启用。`-DJOY_BUILD_EXAMPLES=ON` 时
+会按示例实际需要自动勾选 `JOY_MODULE_LUA` / `JOY_MODULE_JS` / `JOY_MODULE_CS`
+（探测到 CLR 才含 cs），不需要再手动勾：
 
 ```cmake
 include(${CMAKE_SOURCE_DIR}/third_party/joy/joy_add.cmake)

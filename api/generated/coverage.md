@@ -10,9 +10,9 @@
 
 | 项 | 数量 |
 |---|---|
-| `joy.h` 中 `JOY_API` 声明 | 1170 |
+| `joy.h` 中 `JOY_API` 声明 | 1159 |
 | `joy.h` 中值类型 `typedef struct` | 47 |
-| IDL 条目 | 1170 |
+| IDL 条目 | 1159 |
 | 已开放（`status: on`） | 739 |
 | 借用句柄（`borrowed`，不注册析构） | 12（已开放 7） |
 | 待人工确认 `owns` | 11 |
@@ -25,7 +25,7 @@
 | L1 | 不透明指针 → 句柄，需所有权测试 | 547 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
 | L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 199 |
-| X | 有意排除，不进绑定层 | 73 |
+| X | 有意排除，不进绑定层 | 62 |
 
 开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与
 缓冲校验的条目，被跳过的原因会在命令输出和下面各节列出；**开放 ≠ 业务已调用**。
@@ -35,6 +35,7 @@
 | domain | L0 | L1 | L2 | L3 | X | 合计 |
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
+| codec | 0 | 0 | 0 | 0 | 22 | 22 |
 | collision | 0 | 0 | 23 | 64 | 0 | 87 |
 | core | 27 | 37 | 1 | 21 | 20 | 106 |
 | math | 220 | 0 | 0 | 0 | 0 | 220 |
@@ -42,7 +43,6 @@
 | r2d | 4 | 228 | 34 | 47 | 19 | 332 |
 | r3d | 0 | 117 | 14 | 19 | 0 | 150 |
 | scene | 1 | 95 | 2 | 36 | 1 | 135 |
-| script | 0 | 0 | 0 | 0 | 33 | 33 |
 | sys | 19 | 0 | 0 | 4 | 0 | 23 |
 
 ## 待办：返回句柄但缺 `owns`
@@ -215,31 +215,31 @@
 | `joy_collision_gjk3d_init_mesh` | 非不透明指针 / 输出参数：joy_gjk3d_collider_t* | src/jcollision.h:164 |
 | `joy_scene_animator_set_on_enter` | 未知类型需人工标注：joy_anim_state_cb | src/jscene.h:46 |
 | `joy_scene_animator_set_on_exit` | 未知类型需人工标注：joy_anim_state_cb | src/jscene.h:47 |
-| `joy_r2d_label_create` | 非不透明指针 / 输出参数：int* | src/jr2d.h:269 |
-| `joy_r2d_label_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:271 |
-| `joy_r2d_button_get_position` | 结构体按值返回 | src/jr2d.h:277 |
-| `joy_r2d_button_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:286 |
-| `joy_r2d_combobox_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:336 |
-| `joy_r2d_combobox_add_itemx` | 非不透明指针 / 输出参数：int* | src/jr2d.h:340 |
-| `joy_r2d_layout_grid_create` | 非不透明指针 / 输出参数：float* | src/jr2d.h:357 |
-| `joy_r2d_layout_grid_destroy` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:359 |
-| `joy_r2d_layout_grid_next_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:360 |
-| `joy_r2d_layout_grid_set_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:361 |
-| `joy_r2d_layout_grid_cell` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:363 |
-| `joy_r2d_layout_grid_label` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:365 |
-| `joy_r2d_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:370 |
-| `joy_r2d_datagrid_addrow` | 非不透明指针 / 输出参数：char** | src/jr2d.h:392 |
-| `joy_r2d_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | src/jr2d.h:407 |
-| `joy_r2d_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | src/jr2d.h:431 |
-| `joy_r2d_joystick_set_textures_for_mode` | 未知类型需人工标注：joy_joystick_dir_mode | src/jr2d.h:433 |
-| `joy_r2d_joystick_get_direction` | 结构体按值返回 | src/jr2d.h:443 |
-| `joy_r2d_inputbox_set_callback` | 函数指针 / 回调 | src/jr2d.h:450 |
-| `joy_r2d_process_widget_event` | 非不透明指针 / 输出参数：void** | src/jr2d.h:511 |
-| `joy_r2d_set_theme` | 非不透明指针 / 输出参数：joy_ui_theme_t* | src/jr2d.h:541 |
-| `joy_r2d_get_mouse` | 非不透明指针 / 输出参数：float* | src/jr2d.h:555 |
-| `joy_r2d_text_measure` | 非不透明指针 / 输出参数：int* | src/jr2d.h:575 |
-| `joy_r2d_checkbox` | 非不透明指针 / 输出参数：bool* | src/jr2d.h:592 |
-| `joy_r2d_slider` | 非不透明指针 / 输出参数：float* | src/jr2d.h:594 |
+| `joy_r2d_label_create` | 非不透明指针 / 输出参数：int* | src/jr2d.h:267 |
+| `joy_r2d_label_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:269 |
+| `joy_r2d_button_get_position` | 结构体按值返回 | src/jr2d.h:275 |
+| `joy_r2d_button_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:284 |
+| `joy_r2d_combobox_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:334 |
+| `joy_r2d_combobox_add_itemx` | 非不透明指针 / 输出参数：int* | src/jr2d.h:338 |
+| `joy_r2d_layout_grid_create` | 非不透明指针 / 输出参数：float* | src/jr2d.h:355 |
+| `joy_r2d_layout_grid_destroy` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:357 |
+| `joy_r2d_layout_grid_next_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:358 |
+| `joy_r2d_layout_grid_set_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:359 |
+| `joy_r2d_layout_grid_cell` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:361 |
+| `joy_r2d_layout_grid_label` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:363 |
+| `joy_r2d_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:368 |
+| `joy_r2d_datagrid_addrow` | 非不透明指针 / 输出参数：char** | src/jr2d.h:390 |
+| `joy_r2d_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | src/jr2d.h:405 |
+| `joy_r2d_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | src/jr2d.h:429 |
+| `joy_r2d_joystick_set_textures_for_mode` | 未知类型需人工标注：joy_joystick_dir_mode | src/jr2d.h:431 |
+| `joy_r2d_joystick_get_direction` | 结构体按值返回 | src/jr2d.h:441 |
+| `joy_r2d_inputbox_set_callback` | 函数指针 / 回调 | src/jr2d.h:448 |
+| `joy_r2d_process_widget_event` | 非不透明指针 / 输出参数：void** | src/jr2d.h:509 |
+| `joy_r2d_set_theme` | 非不透明指针 / 输出参数：joy_ui_theme_t* | src/jr2d.h:539 |
+| `joy_r2d_get_mouse` | 非不透明指针 / 输出参数：float* | src/jr2d.h:553 |
+| `joy_r2d_text_measure` | 非不透明指针 / 输出参数：int* | src/jr2d.h:573 |
+| `joy_r2d_checkbox` | 非不透明指针 / 输出参数：bool* | src/jr2d.h:590 |
+| `joy_r2d_slider` | 非不透明指针 / 输出参数：float* | src/jr2d.h:592 |
 | `joy_scene_tilemap_resolve_gid` | 结构体按值返回 | src/jscene.h:55 |
 | `joy_scene_tilemap_get_tile_def_size` | 非不透明指针 / 输出参数：int* | src/jscene.h:57 |
 | `joy_scene_tilemap_get_tile_uv` | 数组参数 | src/jscene.h:58 |
@@ -269,7 +269,7 @@
 | `joy_scene_set_destroy_callback` | 未知类型需人工标注：joy_scene_destroy_fn | src/jscene.h:136 |
 | `joy_scene_set_event_callback` | 未知类型需人工标注：joy_scene_event_fn | src/jscene.h:137 |
 | `joy_scene_set_fixed_update_callback` | 未知类型需人工标注：joy_scene_fixed_update_fn | src/jscene.h:138 |
-| `joy_r2d_particle_cfg_default` | 结构体按值返回 | src/jr2d.h:242 |
+| `joy_r2d_particle_cfg_default` | 结构体按值返回 | src/jr2d.h:240 |
 | `joy_scene_ecs_kill` | 未知类型需人工标注：joy_ecs_id_t | src/jscene.h:161 |
 | `joy_scene_ecs_set` | 未知类型需人工标注：joy_ecs_id_t | src/jscene.h:163 |
 | `joy_scene_ecs_get` | 未知类型需人工标注：joy_ecs_id_t | src/jscene.h:164 |
@@ -313,59 +313,48 @@
 | `joy_core_utils_md5x` | src/jcore.h:34 |
 | `joy_core_utils_des_crypt` | src/jcore.h:35 |
 | `joy_core_utils_des_decrypt` | src/jcore.h:36 |
-| `joy_r2d_spine_asset_load` | src/jr2d.h:205 |
-| `joy_r2d_spine_asset_free` | src/jr2d.h:207 |
-| `joy_r2d_spine_asset_animation_count` | src/jr2d.h:209 |
-| `joy_r2d_spine_asset_animation_duration` | src/jr2d.h:211 |
-| `joy_r2d_spine_instance_init` | src/jr2d.h:214 |
-| `joy_r2d_spine_instance_free` | src/jr2d.h:215 |
-| `joy_r2d_spine_instance_reset` | src/jr2d.h:216 |
-| `joy_r2d_spine_instance_set_animation` | src/jr2d.h:217 |
-| `joy_r2d_spine_instance_add_animation` | src/jr2d.h:219 |
-| `joy_r2d_spine_instance_update` | src/jr2d.h:223 |
-| `joy_r2d_spine_instance_sync` | src/jr2d.h:224 |
-| `joy_r2d_spine_instance_draw` | src/jr2d.h:225 |
-| `joy_r2d_spine_instance_set_position` | src/jr2d.h:228 |
-| `joy_r2d_spine_instance_set_scale` | src/jr2d.h:229 |
-| `joy_r2d_spine_instance_set_rotation` | src/jr2d.h:230 |
-| `joy_r2d_spine_instance_set_flip_x` | src/jr2d.h:231 |
-| `joy_r2d_spine_instance_set_alpha` | src/jr2d.h:232 |
-| `joy_r2d_spine_instance_set_tint` | src/jr2d.h:233 |
-| `joy_r2d_spine_instance_bounds` | src/jr2d.h:236 |
+| `joy_r2d_spine_asset_load` | src/jr2d.h:204 |
+| `joy_r2d_spine_asset_free` | src/jr2d.h:206 |
+| `joy_r2d_spine_asset_animation_count` | src/jr2d.h:208 |
+| `joy_r2d_spine_asset_animation_duration` | src/jr2d.h:210 |
+| `joy_r2d_spine_instance_init` | src/jr2d.h:213 |
+| `joy_r2d_spine_instance_free` | src/jr2d.h:214 |
+| `joy_r2d_spine_instance_reset` | src/jr2d.h:215 |
+| `joy_r2d_spine_instance_set_animation` | src/jr2d.h:216 |
+| `joy_r2d_spine_instance_add_animation` | src/jr2d.h:218 |
+| `joy_r2d_spine_instance_update` | src/jr2d.h:222 |
+| `joy_r2d_spine_instance_sync` | src/jr2d.h:223 |
+| `joy_r2d_spine_instance_draw` | src/jr2d.h:224 |
+| `joy_r2d_spine_instance_set_position` | src/jr2d.h:227 |
+| `joy_r2d_spine_instance_set_scale` | src/jr2d.h:228 |
+| `joy_r2d_spine_instance_set_rotation` | src/jr2d.h:229 |
+| `joy_r2d_spine_instance_set_flip_x` | src/jr2d.h:230 |
+| `joy_r2d_spine_instance_set_alpha` | src/jr2d.h:231 |
+| `joy_r2d_spine_instance_set_tint` | src/jr2d.h:232 |
+| `joy_r2d_spine_instance_bounds` | src/jr2d.h:235 |
 | `joy_scene_ecs_test` | src/jscene.h:169 |
-| `joy_script_module_create` | src/jscript.h:18 |
-| `joy_script_module_destroy` | src/jscript.h:19 |
-| `joy_script_module_query` | src/jscript.h:20 |
-| `joy_script_module_register` | src/jscript.h:21 |
-| `joy_script_module_require` | src/jscript.h:27 |
-| `joy_script_modules_retire` | src/jscript.h:28 |
-| `joy_script_module_instance_create` | src/jscript.h:29 |
-| `joy_script_module_instance_init` | src/jscript.h:30 |
-| `joy_script_module_instance_event` | src/jscript.h:31 |
-| `joy_script_module_instance_update` | src/jscript.h:32 |
-| `joy_script_module_instance_release` | src/jscript.h:33 |
-| `joy_script_msgpack_packer_init` | src/jscript.h:36 |
-| `joy_script_msgpack_pack_int` | src/jscript.h:37 |
-| `joy_script_msgpack_pack_int64` | src/jscript.h:38 |
-| `joy_script_msgpack_pack_uint` | src/jscript.h:39 |
-| `joy_script_msgpack_pack_uint64` | src/jscript.h:40 |
-| `joy_script_msgpack_pack_nil` | src/jscript.h:41 |
-| `joy_script_msgpack_pack_array` | src/jscript.h:42 |
-| `joy_script_msgpack_pack_str` | src/jscript.h:43 |
-| `joy_script_msgpack_pack_str_body` | src/jscript.h:44 |
-| `joy_script_msgpack_unpacked_init` | src/jscript.h:45 |
-| `joy_script_msgpack_unpacked_destroy` | src/jscript.h:46 |
-| `joy_script_msgpack_unpack_next` | src/jscript.h:48 |
-| `joy_script_msgpack_unpacked_data` | src/jscript.h:51 |
-| `joy_script_msgpack_object_type` | src/jscript.h:52 |
-| `joy_script_msgpack_object_array_size` | src/jscript.h:53 |
-| `joy_script_msgpack_object_array_at` | src/jscript.h:54 |
-| `joy_script_msgpack_object_str_size` | src/jscript.h:55 |
-| `joy_script_msgpack_object_str_ptr` | src/jscript.h:56 |
-| `joy_script_msgpack_object_u64` | src/jscript.h:57 |
-| `joy_script_msgpack_object_i64` | src/jscript.h:58 |
-| `joy_script_msgpack_object_boolean` | src/jscript.h:59 |
-| `joy_script_msgpack_object_f64` | src/jscript.h:60 |
+| `joy_codec_msgpack_packer_init` | src/jcodec.h:17 |
+| `joy_codec_msgpack_pack_int` | src/jcodec.h:18 |
+| `joy_codec_msgpack_pack_int64` | src/jcodec.h:19 |
+| `joy_codec_msgpack_pack_uint` | src/jcodec.h:20 |
+| `joy_codec_msgpack_pack_uint64` | src/jcodec.h:21 |
+| `joy_codec_msgpack_pack_nil` | src/jcodec.h:22 |
+| `joy_codec_msgpack_pack_array` | src/jcodec.h:23 |
+| `joy_codec_msgpack_pack_str` | src/jcodec.h:24 |
+| `joy_codec_msgpack_pack_str_body` | src/jcodec.h:25 |
+| `joy_codec_msgpack_unpacked_init` | src/jcodec.h:26 |
+| `joy_codec_msgpack_unpacked_destroy` | src/jcodec.h:27 |
+| `joy_codec_msgpack_unpack_next` | src/jcodec.h:29 |
+| `joy_codec_msgpack_unpacked_data` | src/jcodec.h:32 |
+| `joy_codec_msgpack_object_type` | src/jcodec.h:33 |
+| `joy_codec_msgpack_object_array_size` | src/jcodec.h:34 |
+| `joy_codec_msgpack_object_array_at` | src/jcodec.h:35 |
+| `joy_codec_msgpack_object_str_size` | src/jcodec.h:36 |
+| `joy_codec_msgpack_object_str_ptr` | src/jcodec.h:37 |
+| `joy_codec_msgpack_object_u64` | src/jcodec.h:38 |
+| `joy_codec_msgpack_object_i64` | src/jcodec.h:39 |
+| `joy_codec_msgpack_object_boolean` | src/jcodec.h:40 |
+| `joy_codec_msgpack_object_f64` | src/jcodec.h:41 |
 
 ## `jmath.h`
 

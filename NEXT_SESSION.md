@@ -328,7 +328,7 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 数学与碰撞按「是不是几何求交」分；网络按「是不是 OS 原语」分——socket
 / 时间 / 崩溃 / 网卡枚举归 `sys`，协议 / 服务器（含 Windows IOCP）归 `net`。**
 `ui` 不再是域，也不再有同名文件；手写域白名单 9 个：
-`core collision r2d r3d scene net sys script audio`，外加生成物域 `math`。
+`core collision r2d r3d scene net sys codec audio`，外加生成物域 `math`。
 
 **一个手写域只有一个 `.c`，一个 `.c` 只有一个域，且必须配一个同名 `.h`。**
 两类例外：`math` 由 `api/generated/jmath_wrappers.c` 实现（`GENERATED_ONLY_DOMAINS`，
@@ -340,11 +340,11 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 | 项 | 值 |
 |---|---|
 | HEAD / 远端 | 见 `git log -1`；工作区干净，`main` 与 `origin/main` 同步 |
-| IDL | 1170 条，`status:on` 739 条，vtable 739；`--scan` 幂等、orphan 0；域分布 `sys` 23 / `net` 64 |
-| 域布局 | `src/` **10 个 `.c`（9 手写域实现 + 1 数据分片）/ 10 个 `.h` / 1013 条函数定义 / 混域 0 / 违规 0**；另有生成物域 `math`（220 条定义，在 `api/generated/`） |
+| IDL | 1159 条，`status:on` 739 条，vtable 739；`--scan` 幂等、orphan 0；域分布 `sys` 23 / `net` 64 / `codec` 22 |
+| 域布局 | `src/` **10 个 `.c`（9 手写域实现 + 1 数据分片）/ 10 个 `.h` / 1002 条函数定义 / 混域 0 / 违规 0**；另有生成物域 `math`（220 条定义，在 `api/generated/`） |
 | 契约源 | `DECL_SOURCES` 11 个：`jdefs.h` + 9 个手写域头 + `jmath_wrappers.h` |
-| `--check` | OK：1170 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
-| 全量 Debug 构建 | 0 错误；GLTF+SPINE+PLUGINS 全开 `example_cpp` 实建 0 错误 |
+| `--check` | OK：1159 entries，report/thunks/vtable/cs glue/jmath 全部最新 |
+| 全量 Debug 构建 | 0 错误；spine 无条件编译、`example_cpp` 实建 0 错误，`ctest` 4/4 |
 | `ctest` | 4/4（`--timeout 25`） |
 | CI | 截至 `d1952d19`：Desktop #87 / Android #90 / Web #71 **3/3 success**（Actions API 核实）；更早的 `a37ed53b` / `d46d05ed` / `e4e0d272` / `82030b54` / `35fa0ea1` 同为 3/3（历史，§3.0 T5）。纯文档提交也会触发三条，按 §6 仍需确认，但不影响代码结论 |
 | 人工字段 | `borrowed` 12、`owns` 非空 83、`note` 非空 42 |
@@ -361,11 +361,11 @@ OS 适配，两个抽象层次、平台条件编译密度完全不同，没有�
 | `scene` | `jscene.c`(150) | `jscene` / `janimator` / `jtilemap` / `jecs` / `jprocmap` / `jbehavior` |
 | `net` | `jnet.c`(73) | `jnetwork` / IOCP 服务器分片（原 `jsys` 内的网络实现） |
 | `sys` | `jsys.c`(23) | `jsys`（socket / 时间 / 崩溃 / 网卡枚举，2026-11-15 从 `net` 拆出） |
-| `script` | `jscript.c`(33) | `jmsgpack` / `jmodule` |
+| `codec` | `jcodec.c`(22) | `jmsgpack`（原 `script` 域，2026-11-16 改名） |
 | `audio` | `jaudio.c`(20) | `jaudio` |
 | 数据分片 | `jlut.c`(0) | `jlut`（`SIN_LUT` / `tan_lut`，不在域集合内） |
 
-函数定义总数 1013 条，与 `35fa0ea1` 合并前逐字一致；ui 合并那轮 218 条改名只换前缀，
+函数定义总数 1002 条（原 1013，2026-11-16 删除插件分片 11 条）；ui 合并那轮 218 条改名只换前缀，
 `joy_ui_*` 的 IDL `domain` 由 `ui` 变为 `r2d`（114 → 332 条）。本轮 `jsys` 拆分同样是
 纯搬运：`jnet.c` 96 = `net` 73 + `sys` 23，IDL `net` 87 → `net` 64 + `sys` 23，
 总数仍 1170、`on` 仍 739。
@@ -594,7 +594,7 @@ node api/tools/audit_domain_purity.js        # 退出码 0 = 通过
 node api/tools/audit_domain_layout.js        # 退出码 0 = 通过
 
 # 2. 生成链门禁
-node api/tools/gen_bindings.js --check        # OK: 1170 条
+node api/tools/gen_bindings.js --check        # OK: 1159 条
 
 # 3. 幂等性（改过名之后必查；Windows 上必须按 EOL 归一化比较，见 §4 第 7 条）
 $norm = { param($p) ((Get-Content -Raw $p) -replace "`r`n", "`n") }
@@ -607,11 +607,11 @@ $a = $norm.Invoke('api/idl/joy.idl')
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure --timeout 25   # 必须 4/4
 
-# 5. 可选模块（默认 OFF，改过域文件里的 spine/plugins 分片必查）
-#    glTF 分片无条件编译，改过 jr3d.c 的 jgltf 段也要一起验；
+# 5. 示例目标（改过 spine / glTF 分片必查）
+#    glTF 与 spine 都无条件编译，不再有 -DJOY_ENABLE_* 开关；
 #    必须用 examples 入口并指定 target：根入口 JOY_BUILD_EXAMPLES=OFF 时
 #    joy::all 是 INTERFACE，不会真正编译/链接分片
-cmake -S examples -B build/opt_check -DJOY_ENABLE_SPINE=ON -DJOY_ENABLE_PLUGINS=ON
+cmake -S examples -B build/opt_check
 cmake --build build/opt_check --config Debug --target example_cpp
 
 # 6. 收尾

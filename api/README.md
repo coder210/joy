@@ -5,7 +5,7 @@
 
 > **边界**：本目录只产出契约、报告，以及可被三后端共用的 C 运行层 / 薄适配生成物。
 > 旧的 `modules/*/bindings/` 手写胶水一行未删，新旧链路并行；哪些 API 真正开放由
-> `joy.idl` 的 `status: on` 决定（当前 739 / 1170，含 L2 试点、jmath 包装 220 条）。**开放 ≠ 业务已调用**。
+> `joy.idl` 的 `status: on` 决定（当前 739 / 1159，含 L2 试点、jmath 包装 220 条）。**开放 ≠ 业务已调用**。
 > 所有生成物都提交进仓，`git diff` 随时能看清改了什么。
 
 ## 文件
@@ -65,7 +65,7 @@ C 层保持小写下划线：既避开 Win32 的 PascalCase 全局符号（`Wind
 | `net` | 网络协议与服务器：net* / tcp* / kcp* / ws* / iocp / netmessage（IOCP 三条留在本域） | 64 |
 | `sys` | 跨平台 OS 原语：socket 封装 / 时间 / 崩溃处理 / 网卡枚举（原 `net` 域 `jsys` 分片，2026-11-15 拆出） | 23 |
 | `audio` | audio | 20 |
-| `script` | modules / module / moudles / jmsgpack | 33 |
+| `codec` | msgpack 打包 / 解包封装（序列化编解码；原 `script` 域，插件删除后改名） | 22 |
 
 `input` 域已并回 `core`：13 个 API 统一为 `joy_core_input_*`，
 声明与实现物理并入 `src/jcore.h` / `src/jcore.c`。改名时
@@ -317,9 +317,9 @@ node third_party/joy/api/tools/gen_bindings.js --check    # 只校验不写文�
 它们不参与「一域一 .c」，但必须配同名 `.h` 且不含任何函数定义。
 
 `DECL_SOURCES` 共 11 个来源：`include/joy/jdefs.h` + 9 个手写域头
-（`src/j<域>.h`，域名为 `core collision r2d r3d scene net sys script audio`）+
+（`src/j<域>.h`，域名为 `core collision r2d r3d scene net sys codec audio`）+
 `api/generated/jmath_wrappers.h`（生成物域 `math` 的声明，由 `joy.h` 聚合）。
-`--scan` 从它们解析出全部 1170 条声明。
+`--scan` 从它们解析出全部 1159 条声明。
 
 `mergeIdl()` 让已有条目沿用旧 IDL 顺序、全新条目追加末尾，因此声明在文件之间
 搬迁只会刷新 `source` 等自动字段，不会重排 `joy.idl` 及下游生成物。
@@ -401,7 +401,7 @@ unwrap 等）。`emit_thunks.js` 的 `ownsIssue()` 会放行这类条目而不�
                     joy_obj（句柄 / refcount / dtor）→ 真正的 joy C API
 ```
 
-**当前开放 739 条**（`--scan` 输出的 `open`）：由 `joy.idl` 的 1170 条里
+**当前开放 739 条**（`--scan` 输出的 `open`）：由 `joy.idl` 的 1159 条里
 `status: on` 的条目逐条过闸生成；L3 / X 与被闸门跳过的条目仍留在表外。
 分级明细以 `api/generated/coverage.md` 为准，本段不再列举逐批累计数。
 

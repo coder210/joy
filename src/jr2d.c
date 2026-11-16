@@ -2046,7 +2046,7 @@ bool joy_r2d_particle_is_active(joy_particle_p p) {
 
 /* ==================== 合并自 src/jspine.c ==================== */
 /******************************************************************************
- * jspine —— joy 的 Spine 骨骼动画模块（可选，需定义 JOY_USE_SPINE 并链接 spine-c）
+ * jspine —— joy 的 Spine 骨骼动画模块（无条件编译，spine-c 由 joy::all 链接）
  *
  * 渲染实现基于 Spine 官方 spine-sdl 封装（spine-runtimes 4.1，spine-sdl/src/spine-sdl-c.c），
  * 移植到 SDL3（SDL_Vertex.color 在 SDL3 是 SDL_FColor）并接入 joy 的 jr2d。
@@ -2054,11 +2054,7 @@ bool joy_r2d_particle_is_active(joy_particle_p p) {
  * 面向 ECS 的两层结构：
  *   joy_spine_asset_t    共享资源（atlas + skeletonData + animationStateData），多实体复用
  *   joy_spine_instance_t 组件：每实体一份，纯数据，可直接 emplace 进 ECS（entt 等）
- *
- * 未启用 JOY_USE_SPINE 时本文件为空编译单元，不影响任何项目。
  *****************************************************************************/
-
-#ifdef JOY_USE_SPINE
 
 #include <SDL3/SDL.h>
 #include <spine/spine.h>
@@ -2597,8 +2593,6 @@ bool joy_r2d_spine_instance_bounds(joy_spine_instance_p inst, float *out_x, floa
         if (out_h) *out_h = max_y - min_y;
         return true;
 }
-
-#endif /* JOY_USE_SPINE */
 
 /* ==================== 结束 src/jspine.c ==================== */
 

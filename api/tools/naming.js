@@ -26,7 +26,7 @@ const DOMAINS = new Set([
   'net',    // 网络协议与服务器：net*/tcp*/kcp*/ws*/iocp（IOCP 服务器留在本域）
   'sys',    // 跨平台 OS 原语：socket 封装 / 时间 / 崩溃处理 / 网卡枚举（原 net 域 jsys 分片拆出）
   'audio',  // audio
-  'script', // modules/module/jmsgpack
+  'codec',  // msgpack 打包/解包封装（序列化编解码，原 script 域）
 ]);
 
 /* 三段式新名字 → 域名；不符合（存量名字、拼错的前缀）返回 null。
