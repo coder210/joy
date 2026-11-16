@@ -8,6 +8,12 @@
  ******************************************************************************/
 
 #include "jr3d.h"
+#include "external/klib/kvec.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "external/stb_image.h"
 
 /* ==================== 合并自 src/jr3d.c ==================== */
 #include "joy.h"
@@ -3931,9 +3937,6 @@ void joy_r3d_draw_grid(joy_r3d_p r, int slices, float spacing, float line_width)
 /* ==================== 结束 src/jr3d.c ==================== */
 
 /* ==================== 合并自 src/jlight.c ==================== */
-#include "external/klib/kvec.h"
-#include <SDL3/SDL.h>
-#include "joy.h"
 
 #define JLIGHT_MAX 128
 #define JLIGHT_OCCLUDER_MAX 512
@@ -4334,18 +4337,11 @@ void joy_r3d_light_render(joy_light_sys_p s, joy_r2d_p r2d){
 #define CGLTF_IMPLEMENTATION
 #include "external/cgltf/cgltf.h"
 
-#include "joy.h"
 /* 本 TU 用 SDL_IOFromFile / SDL_ReadIO / SDL_WriteIO / SDL_CloseIO 与 Sint64，
  * 公共头不再间接提供 SDL 声明，本分片必须自己包含。 */
-#include <SDL3/SDL.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 /* 贴图解码用 stb_image（实现在 joy/jimpl.c 的 STB_IMAGE_IMPLEMENTATION） */
-#include "external/stb_image.h"
 
 /* ==================== 内部类型 ==================== */
 

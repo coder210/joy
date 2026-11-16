@@ -316,7 +316,7 @@ static void jvector_destroy_##name(jvector_##name##_p vec) \
         typedef struct joy_image joy_image_t, * joy_image_p;
         typedef struct joy_text joy_text_t, * joy_text_p;
         typedef struct joy_animation joy_animation_t, * joy_animation_p;
-        typedef struct joy_layout_grid joy_layout_grid_t;   // 栅格布局（见下方 jlayout_*）
+        typedef struct joy_layout_grid joy_layout_grid_t, * joy_layout_grid_p;   // 栅格布局（见下方 jlayout_*）
         typedef struct joy_r3d   joy_r3d_t, * joy_r3d_p;          /* 3D 渲染上下文 */
         typedef struct joy_render_mesh joy_render_mesh_t, * joy_render_mesh_p;  /* 网格 */
 

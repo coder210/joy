@@ -15,16 +15,16 @@
 | IDL 条目 | 1159 |
 | 已开放（`status: on`） | 739 |
 | 借用句柄（`borrowed`，不注册析构） | 12（已开放 7） |
-| 待人工确认 `owns` | 11 |
-| 所有权待裁决（类型不匹配 / 缺 `owns`） | 11 |
+| 待人工确认 `owns` | 13 |
+| 所有权待裁决（类型不匹配 / 缺 `owns`） | 13 |
 | orphan（`joy.h` 中已消失） | 0 |
 
 | 级别 | 含义 | 数量 |
 |---|---|---|
 | L0 | 纯标量 + const char*，可直接生成 | 277 |
-| L1 | 不透明指针 → 句柄，需所有权测试 | 547 |
+| L1 | 不透明指针 → 句柄，需所有权测试 | 555 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
-| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 199 |
+| L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 191 |
 | X | 有意排除，不进绑定层 | 62 |
 
 开放由 `joy.idl` 的 `status` 控制。`--enable` 只放行通过类型、所有权与
@@ -36,11 +36,11 @@
 |---|---|---|---|---|---|---|
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | codec | 0 | 0 | 0 | 0 | 22 | 22 |
-| collision | 0 | 0 | 23 | 64 | 0 | 87 |
+| collision | 0 | 5 | 23 | 59 | 0 | 87 |
 | core | 27 | 37 | 1 | 21 | 20 | 106 |
 | math | 220 | 0 | 0 | 0 | 0 | 220 |
 | net | 0 | 56 | 0 | 8 | 0 | 64 |
-| r2d | 4 | 228 | 34 | 47 | 19 | 332 |
+| r2d | 4 | 231 | 34 | 44 | 19 | 332 |
 | r3d | 0 | 117 | 14 | 19 | 0 | 150 |
 | scene | 1 | 95 | 2 | 36 | 1 | 135 |
 | sys | 19 | 0 | 0 | 4 | 0 | 23 |
@@ -63,6 +63,8 @@
 | `joy_r3d_gen_checkerboard` | `void*` | src/jr3d.h:77 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r3d_create_line_pipeline` | `void*` | src/jr3d.h:417 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r3d_create_lighting_pipeline` | `void*` | src/jr3d.h:424 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
+| `joy_r2d_layout_grid_create` | `joy_layout_grid_p` | src/jr2d.h:355 | — |
+| `joy_collision_box2d_create_world` | `joy_box2d_world_p` | src/jcollision.h:167 | — |
 
 ## 待办：所有权待裁决（`owns` 不可信）
 
@@ -84,6 +86,8 @@
 | `joy_r3d_gen_checkerboard` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r3d_create_line_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r3d_create_lighting_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
+| `joy_r2d_layout_grid_create` | `joy_layout_grid_p` | （无） | 返回句柄但缺 owns | — |
+| `joy_collision_box2d_create_world` | `joy_box2d_world_p` | （无） | 返回句柄但缺 owns | — |
 
 ## L3 清单（必须手写 thunk）
 
@@ -222,12 +226,9 @@
 | `joy_r2d_combobox_set_text` | 非不透明指针 / 输出参数：int* | src/jr2d.h:334 |
 | `joy_r2d_combobox_add_itemx` | 非不透明指针 / 输出参数：int* | src/jr2d.h:338 |
 | `joy_r2d_layout_grid_create` | 非不透明指针 / 输出参数：float* | src/jr2d.h:355 |
-| `joy_r2d_layout_grid_destroy` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:357 |
-| `joy_r2d_layout_grid_next_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:358 |
-| `joy_r2d_layout_grid_set_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:359 |
-| `joy_r2d_layout_grid_cell` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:361 |
-| `joy_r2d_layout_grid_label` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:363 |
-| `joy_r2d_layout_grid_button_row` | 非不透明指针 / 输出参数：joy_layout_grid_t* | src/jr2d.h:368 |
+| `joy_r2d_layout_grid_cell` | 非不透明指针 / 输出参数：float* | src/jr2d.h:361 |
+| `joy_r2d_layout_grid_label` | 非不透明指针 / 输出参数：float* | src/jr2d.h:363 |
+| `joy_r2d_layout_grid_button_row` | 非不透明指针 / 输出参数：char** | src/jr2d.h:368 |
 | `joy_r2d_datagrid_addrow` | 非不透明指针 / 输出参数：char** | src/jr2d.h:390 |
 | `joy_r2d_checkbox_set_state` | 未知类型需人工标注：joy_checkbox_state_t | src/jr2d.h:405 |
 | `joy_r2d_joystick_set_dir_mode` | 未知类型需人工标注：joy_joystick_dir_mode | src/jr2d.h:429 |
@@ -278,13 +279,8 @@
 | `joy_scene_ecs_queryx` | 非不透明指针 / 输出参数：char** | src/jscene.h:167 |
 | `joy_scene_ecs_register` | 未知类型需人工标注：joy_ecs_system_t | src/jscene.h:168 |
 | `joy_collision_box2d_create_world` | 未知类型需人工标注：joy_vec2f_t | src/jcollision.h:167 |
-| `joy_collision_box2d_clear_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:168 |
-| `joy_collision_box2d_destroy_world` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:169 |
-| `joy_collision_box2d_step` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:170 |
-| `joy_collision_box2d_create_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:171 |
-| `joy_collision_box2d_destroy_body` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:172 |
-| `joy_collision_box2d_create_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:173 |
-| `joy_collision_box2d_destroy_joint` | 非不透明指针 / 输出参数：joy_box2d_world_t* | src/jcollision.h:174 |
+| `joy_collision_box2d_create_joint` | 未知类型需人工标注：joy_vec2f_t | src/jcollision.h:173 |
+| `joy_collision_box2d_destroy_joint` | 结构体指针参数 | src/jcollision.h:174 |
 | `joy_collision_box2d_foreach_bodies` | 函数指针 / 回调 | src/jcollision.h:175 |
 | `joy_collision_box2d_foreach_joints` | 函数指针 / 回调 | src/jcollision.h:176 |
 | `joy_collision_box2d_foreach_arbiters` | 函数指针 / 回调 | src/jcollision.h:177 |

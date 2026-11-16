@@ -541,7 +541,7 @@ extern "C" {
         } joy_box2d_arbiter_t;
 
 
-        typedef struct joy_box2d_world_t joy_box2d_world_t;
+        typedef struct joy_box2d_world joy_box2d_world_t, * joy_box2d_world_p;
 
 
 

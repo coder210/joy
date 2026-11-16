@@ -8,6 +8,10 @@
  ******************************************************************************/
 
 #include "jcore.h"
+#include "joy.h"
+#include <SDL3/SDL.h>
+#include <time.h>
+#include <string.h>
 
 /* ==================== 合并自 src/jvendor_impl.c ==================== */
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -39,9 +43,6 @@
 /* ==================== 结束 src/jvendor_impl.c ==================== */
 
 /* ==================== 合并自 src/jcore.c ==================== */
-#include "joy.h"
-#include "external/stb_image.h"
-#include <SDL3/SDL.h>
 
 union joy_window {
         SDL_Window* sdl_window;
@@ -695,13 +696,10 @@ void joy_core_set_clipboard_text(const char* text)
 /* ==================== 结束 src/jcore.c ==================== */
 
 /* ==================== 合并自 src/jutils.c ==================== */
-#include <time.h>
 #include "external/md5.h"
 #include "external/base64.h"
 #include "external/aes_util.h"
 #include "external/des.h"
-#include <SDL3/SDL.h>
-#include "joy.h"
 
 
 #define MT_N 624
@@ -1555,8 +1553,6 @@ uint64_t joy_core_timer_get_elapsed(joy_timer_p jtimer)
  * 这些 API 全是标量（L0/L1），生成链可直接产出四端绑定；相比之下旧的
  * *_process_event(const void*) 因 void* 参数被判 status:off。
  * ============================================================ */
-#include "joy.h"
-#include <string.h>
 
 #define JOY_INPUT_KEY_COUNT           512
 #define JOY_INPUT_MOUSE_BUTTON_COUNT 8

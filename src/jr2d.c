@@ -10,12 +10,17 @@
  ******************************************************************************/
 
 #include "jr2d.h"
+#include <float.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* ==================== 合并自 src/jr2d.c ==================== */
 #include "external/stb_image.h"
 #include "external/stb_image_write.h"
 #include "external/stb_truetype.h"
 #include <SDL3/SDL.h>
+#include <spine/spine.h>
+#include <spine/extension.h>
 #include "external/klib/kvec.h"
 #include "joy.h"
 
@@ -1775,9 +1780,6 @@ void joy_r2d_fov_draw_2d(joy_r2d_p r, float px, float py,
 /* ==================== 结束 src/jr2d.c ==================== */
 
 /* ==================== 合并自 src/jfont.c ==================== */
-#include "external/stb_truetype.h"
-#include <SDL3/SDL.h>
-#include "joy.h"
 
 struct joy_font {
 	stbtt_fontinfo fontinfo;
@@ -1866,8 +1868,6 @@ Version: 1.0
 Date: 2024.7.15
 History:
 *************************************************/
-#include "external/klib/kvec.h"
-#include "joy.h"
 
 /* ======================== 内部粒子结构 ======================== */
 typedef struct {
@@ -2056,16 +2056,7 @@ bool joy_r2d_particle_is_active(joy_particle_p p) {
  *   joy_spine_instance_t 组件：每实体一份，纯数据，可直接 emplace 进 ECS（entt 等）
  *****************************************************************************/
 
-#include <SDL3/SDL.h>
-#include <spine/spine.h>
-#include <spine/extension.h>
 
-#include "joy.h"
-#include "external/stb_image.h" /* 实现在 src/jvendor_impl.c（STB_IMAGE_IMPLEMENTATION） */
-
-#include <float.h>
-#include <stdlib.h>
-#include <string.h>
 
 /* ==================== 内部类型 ==================== */
 
@@ -2600,9 +2591,6 @@ bool joy_r2d_spine_instance_bounds(joy_spine_instance_p inst, float *out_x, floa
 /* 原 ui 域唯一的 .c/.h 已删除；控件实现按渲染上下文并入 r2d。
    内部符号（static / 私有宏 / typedef）保持各分片独立，见文件末尾 #undef。 */
 /* ==================== 合并自 src/jui.c ==================== */
-#include "external/klib/kvec.h"
-#include <SDL3/SDL.h>
-#include "joy.h"
 
 #define JOYSTICK_BG_COLOR 0x555555FF
 #define JOYSTICK_HANDLE_COLOR 0x888888FF
@@ -6331,11 +6319,7 @@ void joy_r2d_layout_grid_button_row(joy_layout_grid_t* g, joy_r2d_p r2d, joy_fon
  *   - 文字统一走 joy_r2d_text_printx 缓存，避免每帧建销纹理。
  * ============================================================================ */
 
-#include <SDL3/SDL.h>
-#include "joy.h"
 
-#include <stdlib.h>
-#include <string.h>
 
 /* ------------------------------ 结构定义 ------------------------------ */
 

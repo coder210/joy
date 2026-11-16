@@ -352,20 +352,20 @@ extern "C" {
          * 每行：用 joy_r2d_layout_grid_label() 在左列画标签、用 joy_r2d_layout_grid_cell() 取右列矩形，
          * 再用各控件 *_create(r2d, px/LW, py/LH, pw/LW, ph/LH, ...) 创建控件。
          * col_fracs 为各列宽占比（和≈1），pad 为单元格内边距（像素）。 */
-        JOY_API joy_layout_grid_t* joy_r2d_layout_grid_create(float ox, float oy, float width, float row_h,
+        JOY_API joy_layout_grid_p joy_r2d_layout_grid_create(float ox, float oy, float width, float row_h,
                 int ncols, const float* col_fracs, float pad);
-        JOY_API void joy_r2d_layout_grid_destroy(joy_layout_grid_t* g);
-        JOY_API void joy_r2d_layout_grid_next_row(joy_layout_grid_t* g);
-        JOY_API void joy_r2d_layout_grid_set_row(joy_layout_grid_t* g, int row);
+        JOY_API void joy_r2d_layout_grid_destroy(joy_layout_grid_p g);
+        JOY_API void joy_r2d_layout_grid_next_row(joy_layout_grid_p g);
+        JOY_API void joy_r2d_layout_grid_set_row(joy_layout_grid_p g, int row);
         /* 取第 col 列的像素矩形（已含内边距）。x/y/w/h 可为 NULL。 */
-        JOY_API void joy_r2d_layout_grid_cell(joy_layout_grid_t* g, int col, float* x, float* y, float* w, float* h);
+        JOY_API void joy_r2d_layout_grid_cell(joy_layout_grid_p g, int col, float* x, float* y, float* w, float* h);
         /* 在第 col 列画左对齐、垂直居中的标签，并返回该列像素矩形（cx/cy/cw/ch 可为 NULL）。 */
-        JOY_API void joy_r2d_layout_grid_label(joy_layout_grid_t* g, joy_r2d_p r2d, joy_font_p font,
+        JOY_API void joy_r2d_layout_grid_label(joy_layout_grid_p g, joy_r2d_p r2d, joy_font_p font,
                 const char* text, int n, joy_color_t c, int col,
                 float* cx, float* cy, float* cw, float* ch);
         /* 在当前行创建 n 个等宽按钮（横向按钮条/菜单），各占一列；
          * 按钮指针写入 out[]（调用方分配 n 个），创建后自动换到下一行。 */
-        JOY_API void joy_r2d_layout_grid_button_row(joy_layout_grid_t* g, joy_r2d_p r2d, joy_font_p font,
+        JOY_API void joy_r2d_layout_grid_button_row(joy_layout_grid_p g, joy_r2d_p r2d, joy_font_p font,
                 const char** labels, int n, joy_button_p* out);
 
         // 可输入下拉列表框

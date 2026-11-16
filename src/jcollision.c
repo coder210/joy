@@ -13,6 +13,9 @@
  ******************************************************************************/
 
 #include "jcollision.h"
+#include "external/klib/kvec.h"
+#include "external/klib/khash.h"
+#include "external/klib/klist.h"
 
 /* ==================== 合并自 src/jcollision.c ==================== */
 #include "joy.h"
@@ -1903,8 +1906,6 @@ bool joy_collision_3d_check_box_sphere(joy_bounding_box_t a, joy_sphere_t b)
 /* ==================== 结束 src/jcollision.c ==================== */
 
 /* ==================== 合并自 src/jgjk.c ==================== */
-#include "external/klib/kvec.h"
-#include "joy.h"
 
 /* ============ OBB 辅助: 欧拉角(绕X/Y/Z) -> 列主序旋转矩阵 ============ */
 
@@ -3520,10 +3521,6 @@ void joy_collision_gjk2d_init_pie(joy_gjk2d_collider_t *c, joy_vec2f_t pos, joy_
 /* ==================== 结束 src/jgjk.c ==================== */
 
 /* ==================== 合并自 src/jbox2d.c ==================== */
-#include "external/klib/khash.h"
-#include "external/klib/klist.h"
-#include "external/klib/kvec.h"
-#include "joy.h"
 
 // --- klib container types ---
 
@@ -4126,14 +4123,14 @@ _arbiter_apply_impulse(joy_box2d_arbiter_t* arbiter, joy_box2d_body_t* b1, joy_b
 }
 
 
-typedef struct joy_box2d_world_t {
+struct joy_box2d_world {
 	joy_vec2f_t gravity;
 	int iterations;
 	int id;
 	khash_t(bodies_map)* bodies;
 	klist_t(joints_list)* joints;
 	khash_t(arbiters_map)* arbiters;
-} joy_box2d_world_t;
+};
 
 
 static void

@@ -164,17 +164,17 @@ extern "C" {
         JOY_API void joy_collision_gjk3d_init_mesh(joy_gjk3d_collider_t* c, joy_vec3_t* vertices, int num);
 
         /* ==================== box2d ==================== */
-        JOY_API joy_box2d_world_t* joy_collision_box2d_create_world(joy_vec2f_t gravity, int iterations);
-        JOY_API void joy_collision_box2d_clear_world(joy_box2d_world_t* world);
-        JOY_API void joy_collision_box2d_destroy_world(joy_box2d_world_t* world);
-        JOY_API void joy_collision_box2d_step(joy_box2d_world_t* world, joy_fp_t dt);
-        JOY_API joy_box2d_body_t* joy_collision_box2d_create_body(joy_box2d_world_t* world, joy_fp_t mass, joy_fp_t bx, joy_fp_t by);
-        JOY_API void joy_collision_box2d_destroy_body(joy_box2d_world_t* world, int id);
-        JOY_API joy_box2d_joint_t* joy_collision_box2d_create_joint(joy_box2d_world_t* world, int id1, int id2, joy_vec2f_t anchor);
-        JOY_API void joy_collision_box2d_destroy_joint(joy_box2d_world_t* world, joy_box2d_joint_t* joint);
-        JOY_API void joy_collision_box2d_foreach_bodies(joy_box2d_world_t* world, void (*iterator)(joy_box2d_body_t*));
-        JOY_API void joy_collision_box2d_foreach_joints(joy_box2d_world_t* world, void (*iterator)(joy_box2d_joint_t*, joy_box2d_body_t*, joy_box2d_body_t*));
-        JOY_API void joy_collision_box2d_foreach_arbiters(joy_box2d_world_t* world, void (*iterator)(joy_box2d_arbiter_t*));
+        JOY_API joy_box2d_world_p joy_collision_box2d_create_world(joy_vec2f_t gravity, int iterations);
+        JOY_API void joy_collision_box2d_clear_world(joy_box2d_world_p world);
+        JOY_API void joy_collision_box2d_destroy_world(joy_box2d_world_p world);
+        JOY_API void joy_collision_box2d_step(joy_box2d_world_p world, joy_fp_t dt);
+        JOY_API joy_box2d_body_t* joy_collision_box2d_create_body(joy_box2d_world_p world, joy_fp_t mass, joy_fp_t bx, joy_fp_t by);
+        JOY_API void joy_collision_box2d_destroy_body(joy_box2d_world_p world, int id);
+        JOY_API joy_box2d_joint_t* joy_collision_box2d_create_joint(joy_box2d_world_p world, int id1, int id2, joy_vec2f_t anchor);
+        JOY_API void joy_collision_box2d_destroy_joint(joy_box2d_world_p world, joy_box2d_joint_t* joint);
+        JOY_API void joy_collision_box2d_foreach_bodies(joy_box2d_world_p world, void (*iterator)(joy_box2d_body_t*));
+        JOY_API void joy_collision_box2d_foreach_joints(joy_box2d_world_p world, void (*iterator)(joy_box2d_joint_t*, joy_box2d_body_t*, joy_box2d_body_t*));
+        JOY_API void joy_collision_box2d_foreach_arbiters(joy_box2d_world_p world, void (*iterator)(joy_box2d_arbiter_t*));
 
 #ifdef __cplusplus
 }

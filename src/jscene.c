@@ -8,6 +8,13 @@
  ******************************************************************************/
 
 #include "jscene.h"
+#include "external/klib/kvec.h"
+#include "external/stb_image.h"
+#include "external/klib/khash.h"
+#include "external/cJSON.h"
+#include <stdlib.h>
+#include <string.h>
+#include "external/klib/klist.h"
 
 /* ==================== 合并自 src/jscene.c ==================== */
 /************************************************
@@ -547,9 +554,6 @@ int joy_scene_manager_get_count(joy_scene_manager_p mgr)
 /* ==================== 结束 src/jscene.c ==================== */
 
 /* ==================== 合并自 src/janimator.c ==================== */
-#include <SDL3/SDL.h>
-#include "external/klib/kvec.h"
-#include "joy.h"
 
 /* ========== Internal Types ========== */
 
@@ -1159,16 +1163,8 @@ Version: 1.0
 Date: 2026.5.22
 History:
 *************************************************/
-#include "external/stb_image.h"
-#include "external/klib/kvec.h"
-#include "external/klib/khash.h"
-#include "external/cJSON.h"
-#include <stdlib.h>
-#include <string.h>
 /* 公共头不再间接提供 SDL 声明：本 TU 用到 SDL_LoadFile / SDL_free，
  * 必须自己包含 SDL 头，否则 Android clang 在 C99 下报隐式函数声明。 */
-#include <SDL3/SDL.h>
-#include "joy.h"
 
 
 
@@ -2331,11 +2327,6 @@ void joy_scene_tilemap_render_destroy(joy_tilemap_render_p r)
 /* ==================== 结束 src/jtilemap.c ==================== */
 
 /* ==================== 合并自 src/jecs.c ==================== */
-#include "SDL3/SDL.h"
-#include "external/klib/khash.h"
-#include "external/klib/klist.h"
-#include "external/klib/kvec.h"
-#include "joy.h"
 
 // ==================== Bitset 实现 ====================
 typedef struct joy_bitset {
@@ -2943,7 +2934,6 @@ History:
         参数（网格尺寸/出生安全区/障碍密度与高度/簇大小范围）全部集中在 joy_pm_config_t 中。
 *************************************************/
 
-#include "joy.h"
 
 /* ============ 内部辅助 ============ */
 
@@ -3363,7 +3353,6 @@ Version: 1.0
 Date: 2021.3.18
 History:
 *************************************************/
-#include "joy.h"
 
 /* =================================================================
  * 基础生命周期
