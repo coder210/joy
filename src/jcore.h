@@ -114,6 +114,16 @@ extern "C" {
         JOY_API bool joy_core_window_get_fullscreen(joy_window_p win);
         JOY_API void joy_core_window_set_icon(joy_window_p win, const char* png_path);
 
+        /* ---- 动态库加载（宿主侧：加载游戏插件 / 可选扩展模块） ----
+         * 语义 = SDL_LoadObject / SDL_LoadFunction / SDL_UnloadObject，
+         * 失败时错误串走 joy_core_get_error()。
+         * 调用方（宿主 exe）必须链接 joy，因此引擎在 exe 与插件里各有一份：
+         * 宿主只用这组 API 做加载，不要拿 exe 里那份去创建/操作游戏对象
+         * （joy_obj 句柄表按实例分开，跨副本传句柄无效）。 */
+        JOY_API joy_lib_p joy_core_lib_load(const char* path);
+        JOY_API void* joy_core_lib_symbol(joy_lib_p lib, const char* name);
+        JOY_API void joy_core_lib_unload(joy_lib_p lib);
+
         JOY_API void joy_core_dispatch_event(joy_event_callbacks_t cbs,
                 const void* event, void* arg);
         JOY_API int  joy_core_get_event_type(const void* event);

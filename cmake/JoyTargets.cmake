@@ -81,6 +81,49 @@ target_compile_definitions(joy_all INTERFACE JOY_USE_SPINE)
 target_link_libraries(joy_all INTERFACE spine-c)
 target_include_directories(joy_all INTERFACE "${JOY_ROOT}/spine/spine-c/include")
 
+# --------------------------------------------------------------- joy::core
+# 单域静态库：只编 src/jcore.c（约 1.4k 行，域内自洽、不调用其它域）。
+# 用途：宿主 exe 只需要少量 core API（典型是 joy_core_lib_* 加载游戏插件）时
+# 链这个，而不是链 joy::all —— 后者是源码注入，会把整套引擎（约 7.4 万行）
+# 也编进 exe。注意静态库按 .obj 粒度入库：一旦引用 core 的任一符号，
+# jcore.obj 里的 core 实现（含其内联的图像/音频解码器）会整体进来。
+# core 域用到的 external 小工具（base64/md5/des）单独编进来，
+# 否则静态库只带 jcore.obj 时会缺这几个符号。
+add_library(joy_core STATIC
+    "${JOY_ROOT}/src/jcore.c"
+    "${JOY_ROOT}/external/base64.c"
+    "${JOY_ROOT}/external/md5.c"
+    "${JOY_ROOT}/external/des.c")
+add_library(joy::core ALIAS joy_core)
+target_include_directories(joy_core PUBLIC
+    "${JOY_INCLUDE_ROOT}"
+    "${JOY_ROOT}"
+    "${JOY_ROOT}/include"
+    "${JOY_ROOT}/include/joy"
+    "${JOY_ROOT}/api"
+    "${JOY_ROOT}/msgpack/include"
+    "${CMAKE_BINARY_DIR}/msgpack/include")
+target_compile_definitions(joy_core PUBLIC JOY_STATIC)
+target_compile_features(joy_core PUBLIC c_std_99)
+if(TARGET SDL3::SDL3)
+    target_link_libraries(joy_core PUBLIC SDL3::SDL3)
+endif()
+# 与 joy::all 保持同一组头文件可见性/编译宏：jcore.c 会经 joy.h -> japi.h
+# 读到各域声明（含 spine 类型），宏不一致会导致同一进程里两套头布局。
+if(TARGET spine-c)
+    target_compile_definitions(joy_core PUBLIC JOY_USE_SPINE)
+    target_include_directories(joy_core PUBLIC "${JOY_ROOT}/spine/spine-c/include")
+    target_link_libraries(joy_core PUBLIC spine-c)
+endif()
+if(TARGET msgpack-c-static)
+    target_link_libraries(joy_core PUBLIC msgpack-c-static)
+elseif(TARGET msgpack-c)
+    target_link_libraries(joy_core PUBLIC msgpack-c)
+endif()
+if(MSVC)
+    target_compile_options(joy_core PRIVATE /utf-8)
+endif()
+
 # 平台与工具链配置：源码注入下这些宏会作用于宿主的全部 TU（含宿主自身代码），
 # 这是与旧 joy_add.cmake 一致的语义，不是新增行为。
 if(MSVC)

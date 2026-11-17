@@ -176,6 +176,31 @@ void joy_core_window_set_icon(joy_window_p win, const char* png_path)
         SDL_free(filedata);
 }
 
+/* ---------------- 动态库加载（宿主侧） ---------------- */
+
+joy_lib_p joy_core_lib_load(const char* path)
+{
+        if (!path || !*path) {
+                SDL_SetError("joy_core_lib_load: empty path");
+                return NULL;
+        }
+        return (joy_lib_p)SDL_LoadObject(path);
+}
+
+void* joy_core_lib_symbol(joy_lib_p lib, const char* name)
+{
+        if (!lib || !name || !*name) {
+                SDL_SetError("joy_core_lib_symbol: null lib or empty symbol");
+                return NULL;
+        }
+        return (void*)SDL_LoadFunction((SDL_SharedObject*)lib, name);
+}
+
+void joy_core_lib_unload(joy_lib_p lib)
+{
+        if (lib) SDL_UnloadObject((SDL_SharedObject*)lib);
+}
+
 static const char* key_name(SDL_Keycode k)
 {
 	static char buf[2];
