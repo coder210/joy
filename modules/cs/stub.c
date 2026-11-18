@@ -42,6 +42,8 @@ void csopen_host(void) {}
 void csopen_api(void) {}
 void csopen_borrow(void) {}
 void csopen_r3d(void) {}
+void csopen_crypto(void) {}
+void csopen_collision(void) {}
 
 /* 输入桥 / 宿主状态同理：宿主只通过 joy_csharp.h 调用，关闭模块时也要能链接 */
 void csx_input_key(int scancode, bool down) { (void)scancode; (void)down; }

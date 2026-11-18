@@ -145,6 +145,10 @@ csx_p csx_create(void) {
         csopen_borrow();
         /* r3d L3 手写适配（basis 绘制 / 投影 / 动态 mesh）+ borrow_r3d。 */
         csopen_r3d();
+        /* MD5 桥（帧同步 checksum，复用 joy_core_utils_md5x）。 */
+        csopen_crypto();
+        /* GJK3D box-box 桥（帧同步碰撞，复用 joy_collision_gjk3df_*）。 */
+        csopen_collision();
         assembly_list_init(&csx->assemblies);
         csx->userdata = NULL;
         return csx;
