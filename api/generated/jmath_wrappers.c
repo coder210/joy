@@ -50,6 +50,36 @@ int64_t joy_math_fp_sub(int64_t a, int64_t b)
         return (int64_t)fp_sub(a, b);
 }
 
+int64_t joy_math_fp_mul(int64_t a, int64_t b)
+{
+        return (int64_t)fp_mul(a, b);
+}
+
+int64_t joy_math_fp_div(int64_t a, int64_t b)
+{
+        return (int64_t)fp_div(a, b);
+}
+
+int64_t joy_math_fp_abs(int64_t x)
+{
+        return (int64_t)fp_abs(x);
+}
+
+int64_t joy_math_fp_sqrt(int64_t x)
+{
+        return (int64_t)fp_sqrt(x);
+}
+
+int64_t joy_math_fp_sin(int64_t x)
+{
+        return (int64_t)fp_sin(x);
+}
+
+int64_t joy_math_fp_cos(int64_t x)
+{
+        return (int64_t)fp_cos(x);
+}
+
 int64_t joy_math_fp_zero(void)
 {
         return (int64_t)fp_zero();
@@ -98,6 +128,36 @@ int64_t joy_math_fp_clamp(int64_t a, int64_t low, int64_t high)
 int64_t joy_math_fp_lerp(int64_t a, int64_t b, int64_t t)
 {
         return (int64_t)fp_lerp(a, b, t);
+}
+
+int64_t joy_math_fp_round(int64_t value)
+{
+        return (int64_t)fp_round(value);
+}
+
+int64_t joy_math_fp_atan(int64_t z)
+{
+        return (int64_t)fp_atan(z);
+}
+
+int64_t joy_math_fp_atan2(int64_t y, int64_t x)
+{
+        return (int64_t)fp_atan2(y, x);
+}
+
+int64_t joy_math_fp_exp(int64_t x)
+{
+        return (int64_t)fp_exp(x);
+}
+
+int64_t joy_math_fp_ln(int64_t x)
+{
+        return (int64_t)fp_ln(x);
+}
+
+int64_t joy_math_fp_pow(int64_t b, int64_t exp)
+{
+        return (int64_t)fp_pow(b, exp);
 }
 
 int64_t joy_math_vec2f_negate_x(int64_t a_x, int64_t a_y)

@@ -250,6 +250,8 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dSetClearColor(ulong r, uint cr, uint cg, uint cb);
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dCameraLookat(ulong r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy);
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong R3dMeshCube(ulong r, float w, float h, float d);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong R3dMeshSphere(ulong r, float radius, int slices, int stacks);
@@ -397,6 +399,10 @@ namespace Joy.Api
         internal static extern void R3dCheckboxDraw(ulong r, ulong m, ulong cb, float winW, float winH);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void R3dDrawGrid(ulong r, int slices, float spacing, float line_width);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDrawMeshSolid(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void R3dDrawWire(ulong r, ulong m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern ulong R3dMeshCubeLit(ulong r, float w, float h, float d);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -1485,6 +1491,30 @@ namespace Joy.Api
         internal static extern float JmathVec3DivZ(float a_x, float a_y, float a_z, float s);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern float JmathFtRadians(float degrees);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpMul(long a, long b);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpDiv(long a, long b);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpAbs(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpSqrt(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpSin(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpCos(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpRound(long value);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpAtan(long z);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpAtan2(long y, long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpExp(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpLn(long x);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern long JoyMathFpPow(long b, long exp);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Release(ulong handle);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -2766,6 +2796,11 @@ namespace Joy.Api
             if (r == null) throw new ArgumentNullException(nameof(r));
             Native.R3dSetClearColor(r.Handle, cr, cg, cb);
         }
+        public static void R3dCameraLookat(Jr3d r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            Native.R3dCameraLookat(r.Handle, eye_x, eye_y, eye_z, target_x, target_y, target_z, up_x, up_y, up_z, fovy);
+        }
         public static RenderMesh R3dMeshCube(Jr3d r, float w, float h, float d)
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
@@ -3187,6 +3222,18 @@ namespace Joy.Api
         {
             if (r == null) throw new ArgumentNullException(nameof(r));
             Native.R3dDrawGrid(r.Handle, slices, spacing, line_width);
+        }
+        public static void R3dDrawMeshSolid(Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.R3dDrawMeshSolid(r.Handle, m.Handle, pos_x, pos_y, pos_z, scale_x, scale_y, scale_z, color_r, color_g, color_b, color_a);
+        }
+        public static void R3dDrawWire(Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint color_r, uint color_g, uint color_b, uint color_a)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            Native.R3dDrawWire(r.Handle, m.Handle, pos_x, pos_y, pos_z, scale_x, scale_y, scale_z, color_r, color_g, color_b, color_a);
         }
         public static RenderMesh R3dMeshCubeLit(Jr3d r, float w, float h, float d)
         {
@@ -5721,6 +5768,54 @@ namespace Joy.Api
         public static float JmathFtRadians(float degrees)
         {
             return Native.JmathFtRadians(degrees);
+        }
+        public static long JoyMathFpMul(long a, long b)
+        {
+            return Native.JoyMathFpMul(a, b);
+        }
+        public static long JoyMathFpDiv(long a, long b)
+        {
+            return Native.JoyMathFpDiv(a, b);
+        }
+        public static long JoyMathFpAbs(long x)
+        {
+            return Native.JoyMathFpAbs(x);
+        }
+        public static long JoyMathFpSqrt(long x)
+        {
+            return Native.JoyMathFpSqrt(x);
+        }
+        public static long JoyMathFpSin(long x)
+        {
+            return Native.JoyMathFpSin(x);
+        }
+        public static long JoyMathFpCos(long x)
+        {
+            return Native.JoyMathFpCos(x);
+        }
+        public static long JoyMathFpRound(long value)
+        {
+            return Native.JoyMathFpRound(value);
+        }
+        public static long JoyMathFpAtan(long z)
+        {
+            return Native.JoyMathFpAtan(z);
+        }
+        public static long JoyMathFpAtan2(long y, long x)
+        {
+            return Native.JoyMathFpAtan2(y, x);
+        }
+        public static long JoyMathFpExp(long x)
+        {
+            return Native.JoyMathFpExp(x);
+        }
+        public static long JoyMathFpLn(long x)
+        {
+            return Native.JoyMathFpLn(x);
+        }
+        public static long JoyMathFpPow(long b, long exp)
+        {
+            return Native.JoyMathFpPow(b, exp);
         }
     }
 }

@@ -1838,6 +1838,29 @@ static void icall_R3dSetClearColor(uint64_t p0, uint32_t p1, uint32_t p2, uint32
         return;
 }
 
+static void icall_R3dCameraLookat(uint64_t p0, float p1, float p2, float p3, float p4, float p5, float p6, float p7, float p8, float p9, float p10)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[11];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_f64((double)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_f64((double)p8);
+        args[9] = joy_v_f64((double)p9);
+        args[10] = joy_v_f64((double)p10);
+        (void)joy_api_call("joy_r3d_camera_lookat", args, 11, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_camera_lookat", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
 static uint64_t icall_R3dMeshCube(uint64_t p0, float p1, float p2, float p3)
 {
         joy_status_t st = JOY_OK;
@@ -3025,6 +3048,54 @@ static void icall_R3dDrawGrid(uint64_t p0, int32_t p1, float p2, float p3)
         (void)joy_api_call("joy_r3d_draw_grid", args, 4, &st);
         if (st != JOY_OK) {
                 fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_grid", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_R3dDrawMeshSolid(uint64_t p0, uint64_t p1, float p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[12];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        args[11] = joy_v_u32((uint32_t)p11);
+        (void)joy_api_call("joy_r3d_draw_mesh_solid", args, 12, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_mesh_solid", joy_status_name(st), joy_last_error_where());
+                return;
+        }
+        return;
+}
+
+static void icall_R3dDrawWire(uint64_t p0, uint64_t p1, float p2, float p3, float p4, float p5, float p6, float p7, uint32_t p8, uint32_t p9, uint32_t p10, uint32_t p11)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t args[12];
+        args[0] = joy_v_handle((uint64_t)p0);
+        args[1] = joy_v_handle((uint64_t)p1);
+        args[2] = joy_v_f64((double)p2);
+        args[3] = joy_v_f64((double)p3);
+        args[4] = joy_v_f64((double)p4);
+        args[5] = joy_v_f64((double)p5);
+        args[6] = joy_v_f64((double)p6);
+        args[7] = joy_v_f64((double)p7);
+        args[8] = joy_v_u32((uint32_t)p8);
+        args[9] = joy_v_u32((uint32_t)p9);
+        args[10] = joy_v_u32((uint32_t)p10);
+        args[11] = joy_v_u32((uint32_t)p11);
+        (void)joy_api_call("joy_r3d_draw_wire", args, 12, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_r3d_draw_wire", joy_status_name(st), joy_last_error_where());
                 return;
         }
         return;
@@ -11579,6 +11650,178 @@ static float icall_JmathFtRadians(float p0)
         return (float)r.as.f64;
 }
 
+static int64_t icall_JoyMathFpMul(int64_t p0, int64_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        args[0] = joy_v_i64((int64_t)p0);
+        args[1] = joy_v_i64((int64_t)p1);
+        r = joy_api_call("joy_math_fp_mul", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_mul", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpDiv(int64_t p0, int64_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        args[0] = joy_v_i64((int64_t)p0);
+        args[1] = joy_v_i64((int64_t)p1);
+        r = joy_api_call("joy_math_fp_div", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_div", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpAbs(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_abs", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_abs", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpSqrt(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_sqrt", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_sqrt", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpSin(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_sin", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_sin", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpCos(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_cos", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_cos", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpRound(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_round", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_round", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpAtan(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_atan", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_atan", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpAtan2(int64_t p0, int64_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        args[0] = joy_v_i64((int64_t)p0);
+        args[1] = joy_v_i64((int64_t)p1);
+        r = joy_api_call("joy_math_fp_atan2", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_atan2", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpExp(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_exp", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_exp", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpLn(int64_t p0)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[1];
+        args[0] = joy_v_i64((int64_t)p0);
+        r = joy_api_call("joy_math_fp_ln", args, 1, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_ln", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
+static int64_t icall_JoyMathFpPow(int64_t p0, int64_t p1)
+{
+        joy_status_t st = JOY_OK;
+        joy_value_t r;
+        joy_value_t args[2];
+        args[0] = joy_v_i64((int64_t)p0);
+        args[1] = joy_v_i64((int64_t)p1);
+        r = joy_api_call("joy_math_fp_pow", args, 2, &st);
+        if (st != JOY_OK) {
+                fprintf(stderr, "[joy.api] %s failed: %s at %s\n", "joy_math_fp_pow", joy_status_name(st), joy_last_error_where());
+                return 0;
+        }
+        return (int64_t)r.as.i64;
+}
+
 /* 句柄对象被 GC 时由 C# finalizer 调这里；计数仅供自检。 */
 static void icall_release(uint64_t h) { joy_obj_release((uint64_t)h); }
 static uint32_t icall_live_count(void) { return joy_obj_live_count(); }
@@ -11707,6 +11950,7 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dEnd", (const void*)icall_R3dEnd);
         csx_register_internal_call("Joy.Api.Native::R3dGetDrawCalls", (const void*)icall_R3dGetDrawCalls);
         csx_register_internal_call("Joy.Api.Native::R3dSetClearColor", (const void*)icall_R3dSetClearColor);
+        csx_register_internal_call("Joy.Api.Native::R3dCameraLookat", (const void*)icall_R3dCameraLookat);
         csx_register_internal_call("Joy.Api.Native::R3dMeshCube", (const void*)icall_R3dMeshCube);
         csx_register_internal_call("Joy.Api.Native::R3dMeshSphere", (const void*)icall_R3dMeshSphere);
         csx_register_internal_call("Joy.Api.Native::R3dMeshPlane", (const void*)icall_R3dMeshPlane);
@@ -11781,6 +12025,8 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxSetColors", (const void*)icall_R3dCheckboxSetColors);
         csx_register_internal_call("Joy.Api.Native::R3dCheckboxDraw", (const void*)icall_R3dCheckboxDraw);
         csx_register_internal_call("Joy.Api.Native::R3dDrawGrid", (const void*)icall_R3dDrawGrid);
+        csx_register_internal_call("Joy.Api.Native::R3dDrawMeshSolid", (const void*)icall_R3dDrawMeshSolid);
+        csx_register_internal_call("Joy.Api.Native::R3dDrawWire", (const void*)icall_R3dDrawWire);
         csx_register_internal_call("Joy.Api.Native::R3dMeshCubeLit", (const void*)icall_R3dMeshCubeLit);
         csx_register_internal_call("Joy.Api.Native::R3dMeshSphereLit", (const void*)icall_R3dMeshSphereLit);
         csx_register_internal_call("Joy.Api.Native::R3dMeshPlaneLit", (const void*)icall_R3dMeshPlaneLit);
@@ -12325,6 +12571,18 @@ void csopen_api(void)
         csx_register_internal_call("Joy.Api.Native::JmathVec3DivY", (const void*)icall_JmathVec3DivY);
         csx_register_internal_call("Joy.Api.Native::JmathVec3DivZ", (const void*)icall_JmathVec3DivZ);
         csx_register_internal_call("Joy.Api.Native::JmathFtRadians", (const void*)icall_JmathFtRadians);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpMul", (const void*)icall_JoyMathFpMul);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpDiv", (const void*)icall_JoyMathFpDiv);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpAbs", (const void*)icall_JoyMathFpAbs);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpSqrt", (const void*)icall_JoyMathFpSqrt);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpSin", (const void*)icall_JoyMathFpSin);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpCos", (const void*)icall_JoyMathFpCos);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpRound", (const void*)icall_JoyMathFpRound);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpAtan", (const void*)icall_JoyMathFpAtan);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpAtan2", (const void*)icall_JoyMathFpAtan2);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpExp", (const void*)icall_JoyMathFpExp);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpLn", (const void*)icall_JoyMathFpLn);
+        csx_register_internal_call("Joy.Api.Native::JoyMathFpPow", (const void*)icall_JoyMathFpPow);
         csx_register_internal_call("Joy.Api.Native::Release", (const void*)icall_release);
         csx_register_internal_call("Joy.Api.Native::DebugLiveCount", (const void*)icall_live_count);
         csx_register_internal_call("Joy.Api.Native::DebugDestroyCount", (const void*)icall_destroy_count);

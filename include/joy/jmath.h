@@ -154,7 +154,7 @@ JOY_INLINE joy_fp_t fp_sub(joy_fp_t a, joy_fp_t b)
 }
 
 /* fp_mul */
-static joy_fp_t fp_mul(joy_fp_t a, joy_fp_t b)
+JOY_INLINE joy_fp_t fp_mul(joy_fp_t a, joy_fp_t b)
 {
 	int64_t xl = a;
 	int64_t yl = b;
@@ -189,7 +189,7 @@ static int count_leading_zeroes(uint64_t x)
 	return result;
 }
 
-static joy_fp_t fp_div(joy_fp_t a, joy_fp_t b)
+JOY_INLINE joy_fp_t fp_div(joy_fp_t a, joy_fp_t b)
 {
 	int64_t xl = a;
 	int64_t yl = b;
@@ -245,7 +245,7 @@ static joy_fp_t fp_eq(joy_fp_t a, joy_fp_t b)
 	return a == b;
 }
 
-static joy_fp_t fp_abs(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_abs(joy_fp_t x)
 {
 	joy_fp_t r;
 	if (x == JOY_FP_MIN_VALUE) {
@@ -258,7 +258,7 @@ static joy_fp_t fp_abs(joy_fp_t x)
 	return r;
 }
 
-static joy_fp_t fp_sqrt(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_sqrt(joy_fp_t x)
 {
 	int64_t xl = x;
 	if (xl < 0) 
@@ -332,7 +332,7 @@ clamp_sin_value(joy_fp_t angle, bool *flip_horizontal, bool *flip_vertical)
 	return clampedPiOver2;
 }
 
-static joy_fp_t fp_sin(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_sin(joy_fp_t x)
 {
 	bool flip_horizontal = false;
 	bool flip_vertical = false;
@@ -345,7 +345,7 @@ static joy_fp_t fp_sin(joy_fp_t x)
 	return flip_vertical ? -nearest_value : nearest_value;
 }
 
-static joy_fp_t fp_cos(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_cos(joy_fp_t x)
 {
 	joy_fp_t angle = x + (x > 0 ? -JOY_FP_PI - JOY_FP_PI_OVER_2 : JOY_FP_PI_OVER_2);
 	return fp_sin(angle);
@@ -420,7 +420,7 @@ static joy_fp_t fp_ceil(joy_fp_t value)
 }
 
 // Fix64.Round：四舍五入到最近整数，恰为 .5 时取偶数（银行家舍入）
-static joy_fp_t fp_round(joy_fp_t value)
+JOY_INLINE joy_fp_t fp_round(joy_fp_t value)
 {
 	uint64_t fractional = (uint64_t)(value & 0x00000000FFFFFFFFLL);
 	joy_fp_t integral = fp_floor(value);
@@ -465,7 +465,7 @@ static joy_fp_t fp_tan(joy_fp_t x)
 }
 
 // Fix64.Atan：反正切（欧拉级数，收敛到 [0,π/2)）
-static joy_fp_t fp_atan(joy_fp_t z)
+JOY_INLINE joy_fp_t fp_atan(joy_fp_t z)
 {
 	if (z == 0) return 0;
 	bool neg = z < 0;
@@ -499,7 +499,7 @@ static joy_fp_t fp_atan(joy_fp_t z)
 }
 
 // Fix64.Atan2：四象限反正切（基于 Atan）
-static joy_fp_t fp_atan2(joy_fp_t y, joy_fp_t x)
+JOY_INLINE joy_fp_t fp_atan2(joy_fp_t y, joy_fp_t x)
 {
 	if (x == 0) {
 		if (y > 0) return JOY_FP_PI_OVER_2;
@@ -524,7 +524,7 @@ static joy_fp_t fp_acos(joy_fp_t x)
 }
 
 // Fix64.Exp：e^x（幂级数展开）
-static joy_fp_t fp_exp(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_exp(joy_fp_t x)
 {
 	if (x == 0) return fp_one();
 	if (x == fp_one()) return JOY_FP_E;
@@ -544,7 +544,7 @@ static joy_fp_t fp_exp(joy_fp_t x)
 }
 
 // Fix64.Ln：自然对数（牛顿迭代）
-static joy_fp_t fp_ln(joy_fp_t x)
+JOY_INLINE joy_fp_t fp_ln(joy_fp_t x)
 {
 	if (x <= 0) return 0;
 	int scaling = 0;
@@ -563,7 +563,7 @@ static joy_fp_t fp_ln(joy_fp_t x)
 }
 
 // Fix64.Pow(b, exp)：b^exp = e^(exp·ln b)
-static joy_fp_t fp_pow(joy_fp_t b, joy_fp_t exp)
+JOY_INLINE joy_fp_t fp_pow(joy_fp_t b, joy_fp_t exp)
 {
 	if (b == fp_one()) return fp_one();
 	if (exp == 0) return fp_one();

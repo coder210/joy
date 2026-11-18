@@ -57,11 +57,19 @@ function collectStructs() {
       for (const raw of m[1].split(';')) {
         const line = raw.trim();
         if (!line) continue;
-        const fm = line.match(/^(.*?)([A-Za-z_]\w*)\s*$/);
+        /* 允许一行多变量声明：joy_ft_t x, y, z; —— 逗号分隔的各段共享同一 ctype。
+         * 先拆出「类型 + 首变量名」，再把后续逗号段当作同名类型的新变量。 */
+        const parts = line.split(',').map(s => s.trim()).filter(Boolean);
+        const fm = parts[0].match(/^(.*?)([A-Za-z_]\w*)\s*$/);
         if (!fm || /[\[\]*()]/.test(fm[1])) { ok = false; break; }
         const ctype = normType(fm[1]);
         if (!SCALARS.has(ctype)) { ok = false; break; }
         fields.push({ name: fm[2], ctype });
+        for (let i = 1; i < parts.length; ++i) {
+          if (!/^[A-Za-z_]\w*$/.test(parts[i])) { ok = false; break; }
+          fields.push({ name: parts[i], ctype });
+        }
+        if (!ok) break;
       }
       out.set(m[2], ok && fields.length ? fields : null);
     }

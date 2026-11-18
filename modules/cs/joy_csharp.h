@@ -63,6 +63,7 @@ void csopen_input(void);
 void csopen_host(void);
 void csopen_api(void);            /* IDL 驱动的共享 thunk 薄适配 */
 void csopen_borrow(void);         /* 宿主自建对象 → 脚本层借用句柄 */
+void csopen_r3d(void);            /* r3d L3 手写适配 + borrow_r3d（生成链路不覆盖的 API） */
 
 /* ---- 宿主 → 胶水层的输入桥 ----
  * 宿主把 SDL 事件写进来，C# 侧通过 Joy.Input 轮询，因此 C# 不需要接触 SDL_Event。 */

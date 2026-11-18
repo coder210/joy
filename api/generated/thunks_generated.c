@@ -1756,6 +1756,41 @@ static joy_value_t t_joy_r3d_set_clear_color(joy_value_t* a, int n, joy_status_t
         return joy_v_null();
 }
 
+static joy_value_t t_joy_r3d_camera_lookat(joy_value_t* a, int n, joy_status_t* st)
+{
+        joy_r3d_p p0;
+        joy_vec3_t p1 = { 0 };
+        joy_vec3_t p2 = { 0 };
+        joy_vec3_t p3 = { 0 };
+        float p4;
+        if (n != 11) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_camera_lookat");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg0");
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_camera_lookat.arg0");
+        if (a[1].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg1");
+        p1.x = (float)a[1].as.f64;
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg2");
+        p1.y = (float)a[2].as.f64;
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg3");
+        p1.z = (float)a[3].as.f64;
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg4");
+        p2.x = (float)a[4].as.f64;
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg5");
+        p2.y = (float)a[5].as.f64;
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg6");
+        p2.z = (float)a[6].as.f64;
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg7");
+        p3.x = (float)a[7].as.f64;
+        if (a[8].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg8");
+        p3.y = (float)a[8].as.f64;
+        if (a[9].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg9");
+        p3.z = (float)a[9].as.f64;
+        if (a[10].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_camera_lookat.arg10");
+        p4 = (float)a[10].as.f64;
+        joy_r3d_camera_lookat(p0, p1, p2, p3, p4);
+        return joy_v_null();
+}
+
 static joy_value_t t_joy_r3d_mesh_cube(joy_value_t* a, int n, joy_status_t* st)
 {
         joy_r3d_p p0;
@@ -3189,6 +3224,82 @@ static joy_value_t t_joy_r3d_draw_grid(joy_value_t* a, int n, joy_status_t* st)
         p2 = (float)a[2].as.f64;
         p3 = (float)a[3].as.f64;
         joy_r3d_draw_grid(p0, p1, p2, p3);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_r3d_draw_mesh_solid(joy_value_t* a, int n, joy_status_t* st)
+{
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_vec3_t p2 = { 0 };
+        joy_vec3_t p3 = { 0 };
+        joy_color_t p4 = { 0 };
+        if (n != 12) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_draw_mesh_solid");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg0");
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_draw_mesh_solid.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg1");
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_draw_mesh_solid.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg2");
+        p2.x = (float)a[2].as.f64;
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg3");
+        p2.y = (float)a[3].as.f64;
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg4");
+        p2.z = (float)a[4].as.f64;
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg5");
+        p3.x = (float)a[5].as.f64;
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg6");
+        p3.y = (float)a[6].as.f64;
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg7");
+        p3.z = (float)a[7].as.f64;
+        if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg8");
+        p4.r = (uint8_t)a[8].as.u32;
+        if (a[9].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg9");
+        p4.g = (uint8_t)a[9].as.u32;
+        if (a[10].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg10");
+        p4.b = (uint8_t)a[10].as.u32;
+        if (a[11].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_mesh_solid.arg11");
+        p4.a = (uint8_t)a[11].as.u32;
+        joy_r3d_draw_mesh_solid(p0, p1, p2, p3, p4);
+        return joy_v_null();
+}
+
+static joy_value_t t_joy_r3d_draw_wire(joy_value_t* a, int n, joy_status_t* st)
+{
+        joy_r3d_p p0;
+        joy_render_mesh_p p1;
+        joy_vec3_t p2 = { 0 };
+        joy_vec3_t p3 = { 0 };
+        joy_color_t p4 = { 0 };
+        if (n != 12) return joy_v_err(st, JOY_ERR_ARGC, "joy_r3d_draw_wire");
+        if (a[0].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg0");
+        p0 = (joy_r3d_p)joy_obj_deref(a[0].as.handle, "joy_r3d_p", st);
+        if (!p0) return joy_v_err(st, *st, "joy_r3d_draw_wire.arg0");
+        if (a[1].kind != JOY_V_HANDLE) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg1");
+        p1 = (joy_render_mesh_p)joy_obj_deref(a[1].as.handle, "joy_render_mesh_p", st);
+        if (!p1) return joy_v_err(st, *st, "joy_r3d_draw_wire.arg1");
+        if (a[2].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg2");
+        p2.x = (float)a[2].as.f64;
+        if (a[3].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg3");
+        p2.y = (float)a[3].as.f64;
+        if (a[4].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg4");
+        p2.z = (float)a[4].as.f64;
+        if (a[5].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg5");
+        p3.x = (float)a[5].as.f64;
+        if (a[6].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg6");
+        p3.y = (float)a[6].as.f64;
+        if (a[7].kind != JOY_V_F64) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg7");
+        p3.z = (float)a[7].as.f64;
+        if (a[8].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg8");
+        p4.r = (uint8_t)a[8].as.u32;
+        if (a[9].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg9");
+        p4.g = (uint8_t)a[9].as.u32;
+        if (a[10].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg10");
+        p4.b = (uint8_t)a[10].as.u32;
+        if (a[11].kind != JOY_V_U32) return joy_v_err(st, JOY_ERR_TYPE, "joy_r3d_draw_wire.arg11");
+        p4.a = (uint8_t)a[11].as.u32;
+        joy_r3d_draw_wire(p0, p1, p2, p3, p4);
         return joy_v_null();
 }
 
@@ -12203,6 +12314,150 @@ static joy_value_t t_joy_math_ft_radians(joy_value_t* a, int n, joy_status_t* st
         return joy_v_f64((float)_r);
 }
 
+static joy_value_t t_joy_math_fp_mul(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_mul");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_mul.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_mul.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = joy_math_fp_mul(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_div(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_div");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_div.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_div.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = joy_math_fp_div(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_abs(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_abs");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_abs.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_abs(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_sqrt(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_sqrt");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_sqrt.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_sqrt(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_sin(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_sin");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_sin.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_sin(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_cos(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_cos");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_cos.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_cos(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_round(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_round");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_round.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_round(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_atan(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_atan");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_atan.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_atan(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_atan2(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_atan2");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_atan2.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_atan2.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = joy_math_fp_atan2(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_exp(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_exp");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_exp.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_exp(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_ln(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t _r;
+        if (n != 1) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_ln");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_ln.arg0");
+        p0 = (int64_t)a[0].as.i64;
+        _r = joy_math_fp_ln(p0);
+        return joy_v_i64((int64_t)_r);
+}
+
+static joy_value_t t_joy_math_fp_pow(joy_value_t* a, int n, joy_status_t* st)
+{
+        int64_t p0;
+        int64_t p1;
+        int64_t _r;
+        if (n != 2) return joy_v_err(st, JOY_ERR_ARGC, "joy_math_fp_pow");
+        if (a[0].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_pow.arg0");
+        if (a[1].kind != JOY_V_I64) return joy_v_err(st, JOY_ERR_TYPE, "joy_math_fp_pow.arg1");
+        p0 = (int64_t)a[0].as.i64;
+        p1 = (int64_t)a[1].as.i64;
+        _r = joy_math_fp_pow(p0, p1);
+        return joy_v_i64((int64_t)_r);
+}
+
 static const joy_value_kind k_joy_core_lcg_random_create[] = { JOY_V_U64 };
 static const joy_value_kind k_joy_core_lcg_random_destroy[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_core_lcg_random_next[] = { JOY_V_HANDLE };
@@ -12311,6 +12566,7 @@ static const joy_value_kind k_joy_r3d_begin[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_end[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_get_draw_calls[] = { JOY_V_HANDLE };
 static const joy_value_kind k_joy_r3d_set_clear_color[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_camera_lookat[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_mesh_cube[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_mesh_sphere[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_r3d_mesh_plane[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_I32 };
@@ -12385,6 +12641,8 @@ static const joy_value_kind k_joy_r3d_checkbox_is_hovered[] = { JOY_V_HANDLE, JO
 static const joy_value_kind k_joy_r3d_checkbox_set_colors[] = { JOY_V_HANDLE, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_joy_r3d_checkbox_draw[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_draw_grid[] = { JOY_V_HANDLE, JOY_V_I32, JOY_V_F64, JOY_V_F64 };
+static const joy_value_kind k_joy_r3d_draw_mesh_solid[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
+static const joy_value_kind k_joy_r3d_draw_wire[] = { JOY_V_HANDLE, JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_U32, JOY_V_U32, JOY_V_U32, JOY_V_U32 };
 static const joy_value_kind k_joy_r3d_mesh_cube_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_r3d_mesh_sphere_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_I32, JOY_V_I32 };
 static const joy_value_kind k_joy_r3d_mesh_plane_lit[] = { JOY_V_HANDLE, JOY_V_F64, JOY_V_F64, JOY_V_I32 };
@@ -12911,6 +13169,18 @@ static const joy_value_kind k_joy_math_vec3_div_x[] = { JOY_V_F64, JOY_V_F64, JO
 static const joy_value_kind k_joy_math_vec3_div_y[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_math_vec3_div_z[] = { JOY_V_F64, JOY_V_F64, JOY_V_F64, JOY_V_F64 };
 static const joy_value_kind k_joy_math_ft_radians[] = { JOY_V_F64 };
+static const joy_value_kind k_joy_math_fp_mul[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_div[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_abs[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_sqrt[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_sin[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_cos[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_round[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_atan[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_atan2[] = { JOY_V_I64, JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_exp[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_ln[] = { JOY_V_I64 };
+static const joy_value_kind k_joy_math_fp_pow[] = { JOY_V_I64, JOY_V_I64 };
 
 static const joy_thunk_entry s_thunks[] = {
         { "core", "joy_core_lcg_random_create", "LcgRandomCreate", t_joy_core_lcg_random_create, 1, k_joy_core_lcg_random_create, JOY_V_HANDLE },
@@ -13034,6 +13304,7 @@ static const joy_thunk_entry s_thunks[] = {
         { "r3d", "joy_r3d_end", "R3dEnd", t_joy_r3d_end, 1, k_joy_r3d_end, JOY_V_NULL },
         { "r3d", "joy_r3d_get_draw_calls", "R3dGetDrawCalls", t_joy_r3d_get_draw_calls, 1, k_joy_r3d_get_draw_calls, JOY_V_I32 },
         { "r3d", "joy_r3d_set_clear_color", "R3dSetClearColor", t_joy_r3d_set_clear_color, 4, k_joy_r3d_set_clear_color, JOY_V_NULL },
+        { "r3d", "joy_r3d_camera_lookat", "R3dCameraLookat", t_joy_r3d_camera_lookat, 11, k_joy_r3d_camera_lookat, JOY_V_NULL },
         { "r3d", "joy_r3d_mesh_cube", "R3dMeshCube", t_joy_r3d_mesh_cube, 4, k_joy_r3d_mesh_cube, JOY_V_HANDLE },
         { "r3d", "joy_r3d_mesh_sphere", "R3dMeshSphere", t_joy_r3d_mesh_sphere, 4, k_joy_r3d_mesh_sphere, JOY_V_HANDLE },
         { "r3d", "joy_r3d_mesh_plane", "R3dMeshPlane", t_joy_r3d_mesh_plane, 4, k_joy_r3d_mesh_plane, JOY_V_HANDLE },
@@ -13108,6 +13379,8 @@ static const joy_thunk_entry s_thunks[] = {
         { "r3d", "joy_r3d_checkbox_set_colors", "R3dCheckboxSetColors", t_joy_r3d_checkbox_set_colors, 13, k_joy_r3d_checkbox_set_colors, JOY_V_NULL },
         { "r3d", "joy_r3d_checkbox_draw", "R3dCheckboxDraw", t_joy_r3d_checkbox_draw, 5, k_joy_r3d_checkbox_draw, JOY_V_NULL },
         { "r3d", "joy_r3d_draw_grid", "R3dDrawGrid", t_joy_r3d_draw_grid, 4, k_joy_r3d_draw_grid, JOY_V_NULL },
+        { "r3d", "joy_r3d_draw_mesh_solid", "R3dDrawMeshSolid", t_joy_r3d_draw_mesh_solid, 12, k_joy_r3d_draw_mesh_solid, JOY_V_NULL },
+        { "r3d", "joy_r3d_draw_wire", "R3dDrawWire", t_joy_r3d_draw_wire, 12, k_joy_r3d_draw_wire, JOY_V_NULL },
         { "r3d", "joy_r3d_mesh_cube_lit", "R3dMeshCubeLit", t_joy_r3d_mesh_cube_lit, 4, k_joy_r3d_mesh_cube_lit, JOY_V_HANDLE },
         { "r3d", "joy_r3d_mesh_sphere_lit", "R3dMeshSphereLit", t_joy_r3d_mesh_sphere_lit, 4, k_joy_r3d_mesh_sphere_lit, JOY_V_HANDLE },
         { "r3d", "joy_r3d_mesh_plane_lit", "R3dMeshPlaneLit", t_joy_r3d_mesh_plane_lit, 4, k_joy_r3d_mesh_plane_lit, JOY_V_HANDLE },
@@ -13652,6 +13925,18 @@ static const joy_thunk_entry s_thunks[] = {
         { "math", "joy_math_vec3_div_y", "JmathVec3DivY", t_joy_math_vec3_div_y, 4, k_joy_math_vec3_div_y, JOY_V_F64 },
         { "math", "joy_math_vec3_div_z", "JmathVec3DivZ", t_joy_math_vec3_div_z, 4, k_joy_math_vec3_div_z, JOY_V_F64 },
         { "math", "joy_math_ft_radians", "JmathFtRadians", t_joy_math_ft_radians, 1, k_joy_math_ft_radians, JOY_V_F64 },
+        { "math", "joy_math_fp_mul", "JoyMathFpMul", t_joy_math_fp_mul, 2, k_joy_math_fp_mul, JOY_V_I64 },
+        { "math", "joy_math_fp_div", "JoyMathFpDiv", t_joy_math_fp_div, 2, k_joy_math_fp_div, JOY_V_I64 },
+        { "math", "joy_math_fp_abs", "JoyMathFpAbs", t_joy_math_fp_abs, 1, k_joy_math_fp_abs, JOY_V_I64 },
+        { "math", "joy_math_fp_sqrt", "JoyMathFpSqrt", t_joy_math_fp_sqrt, 1, k_joy_math_fp_sqrt, JOY_V_I64 },
+        { "math", "joy_math_fp_sin", "JoyMathFpSin", t_joy_math_fp_sin, 1, k_joy_math_fp_sin, JOY_V_I64 },
+        { "math", "joy_math_fp_cos", "JoyMathFpCos", t_joy_math_fp_cos, 1, k_joy_math_fp_cos, JOY_V_I64 },
+        { "math", "joy_math_fp_round", "JoyMathFpRound", t_joy_math_fp_round, 1, k_joy_math_fp_round, JOY_V_I64 },
+        { "math", "joy_math_fp_atan", "JoyMathFpAtan", t_joy_math_fp_atan, 1, k_joy_math_fp_atan, JOY_V_I64 },
+        { "math", "joy_math_fp_atan2", "JoyMathFpAtan2", t_joy_math_fp_atan2, 2, k_joy_math_fp_atan2, JOY_V_I64 },
+        { "math", "joy_math_fp_exp", "JoyMathFpExp", t_joy_math_fp_exp, 1, k_joy_math_fp_exp, JOY_V_I64 },
+        { "math", "joy_math_fp_ln", "JoyMathFpLn", t_joy_math_fp_ln, 1, k_joy_math_fp_ln, JOY_V_I64 },
+        { "math", "joy_math_fp_pow", "JoyMathFpPow", t_joy_math_fp_pow, 2, k_joy_math_fp_pow, JOY_V_I64 },
 };
 
 const joy_thunk_entry* joy_thunks_table(int* count)
@@ -14036,6 +14321,9 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r3d_set_clear_color", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_set_clear_color";
         st = JOY_OK;
+        joy_api_call("joy_r3d_camera_lookat", NULL, 12, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_camera_lookat";
+        st = JOY_OK;
         joy_api_call("joy_r3d_mesh_cube", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_cube";
         st = JOY_OK;
@@ -14257,6 +14545,12 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_r3d_draw_grid", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_grid";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_draw_mesh_solid", NULL, 13, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_mesh_solid";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_draw_wire", NULL, 13, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_r3d_draw_wire";
         st = JOY_OK;
         joy_api_call("joy_r3d_mesh_cube_lit", NULL, 5, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_r3d_mesh_cube_lit";
@@ -15889,6 +16183,42 @@ const char* joy_api_selftest(void)
         st = JOY_OK;
         joy_api_call("joy_math_ft_radians", NULL, 2, &st);
         if (st != JOY_ERR_ARGC) return "registry/joy_math_ft_radians";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_mul", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_mul";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_div", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_div";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_abs", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_abs";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_sqrt", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_sqrt";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_sin", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_sin";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_cos", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_cos";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_round", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_round";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_atan", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_atan";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_atan2", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_atan2";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_exp", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_exp";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_ln", NULL, 2, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_ln";
+        st = JOY_OK;
+        joy_api_call("joy_math_fp_pow", NULL, 3, &st);
+        if (st != JOY_ERR_ARGC) return "registry/joy_math_fp_pow";
 
         /* L2 试点：用展开后的参数个数调用，args 全为 NULL 值，
          * thunk 在类型校验处返回，不会执行任何 joy 业务函数。 */
@@ -15918,8 +16248,17 @@ const char* joy_api_selftest(void)
         joy_api_call("joy_r2d_animation_add_clip", args, 7, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r2d_animation_add_clip";
         st = JOY_OK;
+        joy_api_call("joy_r3d_camera_lookat", args, 11, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r3d_camera_lookat";
+        st = JOY_OK;
         joy_api_call("joy_r3d_checkbox_set_colors", args, 13, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_r3d_checkbox_set_colors";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_draw_mesh_solid", args, 12, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r3d_draw_mesh_solid";
+        st = JOY_OK;
+        joy_api_call("joy_r3d_draw_wire", args, 12, &st);
+        if (st != JOY_ERR_TYPE) return "L2/joy_r3d_draw_wire";
         st = JOY_OK;
         joy_api_call("joy_scene_animator_state_add_clip", args, 8, &st);
         if (st != JOY_ERR_TYPE) return "L2/joy_scene_animator_state_add_clip";

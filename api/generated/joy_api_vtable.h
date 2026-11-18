@@ -261,6 +261,7 @@ typedef struct JoyApi {
         void (*R3dEnd)(void* _jv_ctx, Jr3d r);
         int (*R3dGetDrawCalls)(void* _jv_ctx, Jr3d r);
         void (*R3dSetClearColor)(void* _jv_ctx, Jr3d r, uint8_t cr, uint8_t cg, uint8_t cb);
+        void (*R3dCameraLookat)(void* _jv_ctx, Jr3d r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy);
         RenderMesh (*R3dMeshCube)(void* _jv_ctx, Jr3d r, float w, float h, float d);
         RenderMesh (*R3dMeshSphere)(void* _jv_ctx, Jr3d r, float radius, int slices, int stacks);
         RenderMesh (*R3dMeshPlane)(void* _jv_ctx, Jr3d r, float w, float d, int segs);
@@ -335,6 +336,8 @@ typedef struct JoyApi {
         void (*R3dCheckboxSetColors)(void* _jv_ctx, Jr3dCheckbox cb, uint8_t box_r, uint8_t box_g, uint8_t box_b, uint8_t box_a, uint8_t check_r, uint8_t check_g, uint8_t check_b, uint8_t check_a, uint8_t hover_r, uint8_t hover_g, uint8_t hover_b, uint8_t hover_a);
         void (*R3dCheckboxDraw)(void* _jv_ctx, Jr3d r, RenderMesh m, Jr3dCheckbox cb, float winW, float winH);
         void (*R3dDrawGrid)(void* _jv_ctx, Jr3d r, int slices, float spacing, float line_width);
+        void (*R3dDrawMeshSolid)(void* _jv_ctx, Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a);
+        void (*R3dDrawWire)(void* _jv_ctx, Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a);
         RenderMesh (*R3dMeshCubeLit)(void* _jv_ctx, Jr3d r, float w, float h, float d);
         RenderMesh (*R3dMeshSphereLit)(void* _jv_ctx, Jr3d r, float radius, int slices, int stacks);
         RenderMesh (*R3dMeshPlaneLit)(void* _jv_ctx, Jr3d r, float w, float d, int segs);
@@ -879,6 +882,18 @@ typedef struct JoyApi {
         float (*JmathVec3DivY)(void* _jv_ctx, float a_x, float a_y, float a_z, float s);
         float (*JmathVec3DivZ)(void* _jv_ctx, float a_x, float a_y, float a_z, float s);
         float (*JmathFtRadians)(void* _jv_ctx, float degrees);
+        int64_t (*JoyMathFpMul)(void* _jv_ctx, int64_t a, int64_t b);
+        int64_t (*JoyMathFpDiv)(void* _jv_ctx, int64_t a, int64_t b);
+        int64_t (*JoyMathFpAbs)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpSqrt)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpSin)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpCos)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpRound)(void* _jv_ctx, int64_t value);
+        int64_t (*JoyMathFpAtan)(void* _jv_ctx, int64_t z);
+        int64_t (*JoyMathFpAtan2)(void* _jv_ctx, int64_t y, int64_t x);
+        int64_t (*JoyMathFpExp)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpLn)(void* _jv_ctx, int64_t x);
+        int64_t (*JoyMathFpPow)(void* _jv_ctx, int64_t b, int64_t exp);
 } JoyApi;
 
 /* 宿主侧填表；返回 0 成功。DLL 侧只需校验 abi_version / size。 */

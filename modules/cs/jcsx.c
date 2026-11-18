@@ -143,6 +143,8 @@ csx_p csx_create(void) {
         csopen_api();
         /* 宿主自建对象（窗口 / 渲染器）→ 脚本层可用的借用句柄。 */
         csopen_borrow();
+        /* r3d L3 手写适配（basis 绘制 / 投影 / 动态 mesh）+ borrow_r3d。 */
+        csopen_r3d();
         assembly_list_init(&csx->assemblies);
         csx->userdata = NULL;
         return csx;

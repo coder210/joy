@@ -15,6 +15,7 @@ namespace JoyGame
         internal static bool Passed { get; private set; }
         internal static string Detail { get; private set; } = "not-run";
         private static string _vec2Detail = "n/a";
+        private static string _r3dDetail = "n/a";
 
         private static void CreateAndDrop(ulong seed)
         {
@@ -47,7 +48,10 @@ namespace JoyGame
                        && System.Math.Abs(vy - 6f) < 0.001f
                        && System.Math.Abs(dot - 11f) < 0.001f;
 
-            return seedOk && hashOk && vec2Ok;
+            // r3d L3 手写适配：6 个 internal call 用空句柄跑通（headless 安全，不碰 GPU）
+            bool r3dOk = Joy.Api.R3dExt.SelfTest(out _r3dDetail);
+
+            return seedOk && hashOk && vec2Ok && r3dOk;
         }
 
         /* P4 前置检查：新链路 public 入口不能把 IntPtr / 裸句柄暴露给业务层。 */
@@ -97,7 +101,7 @@ namespace JoyGame
                        + " live=" + live0 + "->" + liveAfter + "->" + liveNow
                        + " destroyed=" + (deadNow - dead0)
                        + " real=" + realOk + " opaque=" + opaqueOk
-                       + " vec2=" + _vec2Detail;
+                       + " vec2=" + _vec2Detail + " r3d=" + _r3dDetail;
                 Joy.Host.log("[api.cs] " + (Passed ? "PASS " : "FAIL ") + Detail);
             }
             catch (Exception ex)

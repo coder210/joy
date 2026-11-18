@@ -1653,6 +1653,29 @@ static void shim_joy_r3d_set_clear_color(void* _jv_ctx, Jr3d r, uint8_t cr, uint
         return;
 }
 
+static void shim_joy_r3d_camera_lookat(void* _jv_ctx, Jr3d r, float eye_x, float eye_y, float eye_z, float target_x, float target_y, float target_z, float up_x, float up_y, float up_z, float fovy)
+{
+        joy_value_t _jv_args[11];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_f64(eye_x);
+        _jv_args[2] = joy_v_f64(eye_y);
+        _jv_args[3] = joy_v_f64(eye_z);
+        _jv_args[4] = joy_v_f64(target_x);
+        _jv_args[5] = joy_v_f64(target_y);
+        _jv_args[6] = joy_v_f64(target_z);
+        _jv_args[7] = joy_v_f64(up_x);
+        _jv_args[8] = joy_v_f64(up_y);
+        _jv_args[9] = joy_v_f64(up_z);
+        _jv_args[10] = joy_v_f64(fovy);
+        _jv_r = joy_api_call("joy_r3d_camera_lookat", _jv_args, 11, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
 static RenderMesh shim_joy_r3d_mesh_cube(void* _jv_ctx, Jr3d r, float w, float h, float d)
 {
         joy_value_t _jv_args[4];
@@ -2774,6 +2797,54 @@ static void shim_joy_r3d_draw_grid(void* _jv_ctx, Jr3d r, int slices, float spac
         _jv_args[2] = joy_v_f64(spacing);
         _jv_args[3] = joy_v_f64(line_width);
         _jv_r = joy_api_call("joy_r3d_draw_grid", _jv_args, 4, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_r3d_draw_mesh_solid(void* _jv_ctx, Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+{
+        joy_value_t _jv_args[12];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_f64(pos_x);
+        _jv_args[3] = joy_v_f64(pos_y);
+        _jv_args[4] = joy_v_f64(pos_z);
+        _jv_args[5] = joy_v_f64(scale_x);
+        _jv_args[6] = joy_v_f64(scale_y);
+        _jv_args[7] = joy_v_f64(scale_z);
+        _jv_args[8] = joy_v_u32(color_r);
+        _jv_args[9] = joy_v_u32(color_g);
+        _jv_args[10] = joy_v_u32(color_b);
+        _jv_args[11] = joy_v_u32(color_a);
+        _jv_r = joy_api_call("joy_r3d_draw_mesh_solid", _jv_args, 12, &_jv_st);
+        (void)_jv_r;
+        (void)_jv_st;
+        return;
+}
+
+static void shim_joy_r3d_draw_wire(void* _jv_ctx, Jr3d r, RenderMesh m, float pos_x, float pos_y, float pos_z, float scale_x, float scale_y, float scale_z, uint8_t color_r, uint8_t color_g, uint8_t color_b, uint8_t color_a)
+{
+        joy_value_t _jv_args[12];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_handle(r.h);
+        _jv_args[1] = joy_v_handle(m.h);
+        _jv_args[2] = joy_v_f64(pos_x);
+        _jv_args[3] = joy_v_f64(pos_y);
+        _jv_args[4] = joy_v_f64(pos_z);
+        _jv_args[5] = joy_v_f64(scale_x);
+        _jv_args[6] = joy_v_f64(scale_y);
+        _jv_args[7] = joy_v_f64(scale_z);
+        _jv_args[8] = joy_v_u32(color_r);
+        _jv_args[9] = joy_v_u32(color_g);
+        _jv_args[10] = joy_v_u32(color_b);
+        _jv_args[11] = joy_v_u32(color_a);
+        _jv_r = joy_api_call("joy_r3d_draw_wire", _jv_args, 12, &_jv_st);
         (void)_jv_r;
         (void)_jv_st;
         return;
@@ -10525,6 +10596,154 @@ static float shim_joy_math_ft_radians(void* _jv_ctx, float degrees)
         return (float) _jv_r.as.f64;
 }
 
+static int64_t shim_joy_math_fp_mul(void* _jv_ctx, int64_t a, int64_t b)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(a);
+        _jv_args[1] = joy_v_i64(b);
+        _jv_r = joy_api_call("joy_math_fp_mul", _jv_args, 2, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_div(void* _jv_ctx, int64_t a, int64_t b)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(a);
+        _jv_args[1] = joy_v_i64(b);
+        _jv_r = joy_api_call("joy_math_fp_div", _jv_args, 2, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_abs(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_abs", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_sqrt(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_sqrt", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_sin(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_sin", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_cos(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_cos", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_round(void* _jv_ctx, int64_t value)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(value);
+        _jv_r = joy_api_call("joy_math_fp_round", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_atan(void* _jv_ctx, int64_t z)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(z);
+        _jv_r = joy_api_call("joy_math_fp_atan", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_atan2(void* _jv_ctx, int64_t y, int64_t x)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(y);
+        _jv_args[1] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_atan2", _jv_args, 2, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_exp(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_exp", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_ln(void* _jv_ctx, int64_t x)
+{
+        joy_value_t _jv_args[1];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(x);
+        _jv_r = joy_api_call("joy_math_fp_ln", _jv_args, 1, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
+static int64_t shim_joy_math_fp_pow(void* _jv_ctx, int64_t b, int64_t exp)
+{
+        joy_value_t _jv_args[2];
+        joy_value_t _jv_r;
+        joy_status_t _jv_st = JOY_OK;
+        (void)_jv_ctx;
+        _jv_args[0] = joy_v_i64(b);
+        _jv_args[1] = joy_v_i64(exp);
+        _jv_r = joy_api_call("joy_math_fp_pow", _jv_args, 2, &_jv_st);
+        if (_jv_st != JOY_OK || _jv_r.kind != JOY_V_I64) return (int64_t)0;
+        return (int64_t) _jv_r.as.i64;
+}
+
 int joy_api_vtable_init(JoyApi* api, void* ctx)
 {
         if (!api) return -1;
@@ -10653,6 +10872,7 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dEnd = shim_joy_r3d_end;
         api->R3dGetDrawCalls = shim_joy_r3d_get_draw_calls;
         api->R3dSetClearColor = shim_joy_r3d_set_clear_color;
+        api->R3dCameraLookat = shim_joy_r3d_camera_lookat;
         api->R3dMeshCube = shim_joy_r3d_mesh_cube;
         api->R3dMeshSphere = shim_joy_r3d_mesh_sphere;
         api->R3dMeshPlane = shim_joy_r3d_mesh_plane;
@@ -10727,6 +10947,8 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->R3dCheckboxSetColors = shim_joy_r3d_checkbox_set_colors;
         api->R3dCheckboxDraw = shim_joy_r3d_checkbox_draw;
         api->R3dDrawGrid = shim_joy_r3d_draw_grid;
+        api->R3dDrawMeshSolid = shim_joy_r3d_draw_mesh_solid;
+        api->R3dDrawWire = shim_joy_r3d_draw_wire;
         api->R3dMeshCubeLit = shim_joy_r3d_mesh_cube_lit;
         api->R3dMeshSphereLit = shim_joy_r3d_mesh_sphere_lit;
         api->R3dMeshPlaneLit = shim_joy_r3d_mesh_plane_lit;
@@ -11271,6 +11493,18 @@ int joy_api_vtable_init(JoyApi* api, void* ctx)
         api->JmathVec3DivY = shim_joy_math_vec3_div_y;
         api->JmathVec3DivZ = shim_joy_math_vec3_div_z;
         api->JmathFtRadians = shim_joy_math_ft_radians;
+        api->JoyMathFpMul = shim_joy_math_fp_mul;
+        api->JoyMathFpDiv = shim_joy_math_fp_div;
+        api->JoyMathFpAbs = shim_joy_math_fp_abs;
+        api->JoyMathFpSqrt = shim_joy_math_fp_sqrt;
+        api->JoyMathFpSin = shim_joy_math_fp_sin;
+        api->JoyMathFpCos = shim_joy_math_fp_cos;
+        api->JoyMathFpRound = shim_joy_math_fp_round;
+        api->JoyMathFpAtan = shim_joy_math_fp_atan;
+        api->JoyMathFpAtan2 = shim_joy_math_fp_atan2;
+        api->JoyMathFpExp = shim_joy_math_fp_exp;
+        api->JoyMathFpLn = shim_joy_math_fp_ln;
+        api->JoyMathFpPow = shim_joy_math_fp_pow;
         return 0;
 }
 
