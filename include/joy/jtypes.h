@@ -249,6 +249,9 @@ extern "C" {
 
 
         /* ========== Types ========== */
+        /* 已加载的动态库句柄（对应 core 域的 joy_core_lib_*，宿主侧加载插件/扩展用） */
+        typedef struct joy_lib joy_lib_t, * joy_lib_p;
+
         typedef struct joy_animator joy_animator_t, * joy_animator_p;
 
         /* Parameter types */

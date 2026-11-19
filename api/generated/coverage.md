@@ -10,19 +10,19 @@
 
 | 项 | 数量 |
 |---|---|
-| `joy.h` 中 `JOY_API` 声明 | 1171 |
+| `joy.h` 中 `JOY_API` 声明 | 1174 |
 | `joy.h` 中值类型 `typedef struct` | 47 |
-| IDL 条目 | 1171 |
+| IDL 条目 | 1174 |
 | 已开放（`status: on`） | 754 |
 | 借用句柄（`borrowed`，不注册析构） | 12（已开放 7） |
-| 待人工确认 `owns` | 13 |
-| 所有权待裁决（类型不匹配 / 缺 `owns`） | 13 |
+| 待人工确认 `owns` | 15 |
+| 所有权待裁决（类型不匹配 / 缺 `owns`） | 15 |
 | orphan（`joy.h` 中已消失） | 0 |
 
 | 级别 | 含义 | 数量 |
 |---|---|---|
 | L0 | 纯标量 + const char*，可直接生成 | 289 |
-| L1 | 不透明指针 → 句柄，需所有权测试 | 555 |
+| L1 | 不透明指针 → 句柄，需所有权测试 | 558 |
 | L2 | 结构体按值 → P2-A 试点按字段展开成标量序列 | 74 |
 | L3 | 复杂签名 → 必须手写 thunk，不自动生成 | 191 |
 | X | 有意排除，不进绑定层 | 62 |
@@ -37,7 +37,7 @@
 | audio | 6 | 14 | 0 | 0 | 0 | 20 |
 | codec | 0 | 0 | 0 | 0 | 22 | 22 |
 | collision | 0 | 5 | 23 | 59 | 0 | 87 |
-| core | 27 | 37 | 1 | 21 | 20 | 106 |
+| core | 27 | 40 | 1 | 21 | 20 | 109 |
 | math | 232 | 0 | 0 | 0 | 0 | 232 |
 | net | 0 | 56 | 0 | 8 | 0 | 64 |
 | r2d | 4 | 231 | 34 | 44 | 19 | 332 |
@@ -65,6 +65,8 @@
 | `joy_r3d_create_lighting_pipeline` | `void*` | src/jr3d.h:424 | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r2d_layout_grid_create` | `joy_layout_grid_p` | src/jr2d.h:355 | — |
 | `joy_collision_box2d_create_world` | `joy_box2d_world_p` | src/jcollision.h:167 | — |
+| `joy_core_lib_load` | `joy_lib_p` | src/jcore.h:123 | — |
+| `joy_core_lib_symbol` | `void*` | src/jcore.h:124 | — |
 
 ## 待办：所有权待裁决（`owns` 不可信）
 
@@ -88,6 +90,8 @@
 | `joy_r3d_create_lighting_pipeline` | `void*` | （无） | 返回句柄但缺 owns | 新建 SDL GPU 对象；释放需 (device,obj) 双参数且不在 joy.h；返回 void* 被 canEmitCs / okHandle 排除，保持 off（B 不覆盖） |
 | `joy_r2d_layout_grid_create` | `joy_layout_grid_p` | （无） | 返回句柄但缺 owns | — |
 | `joy_collision_box2d_create_world` | `joy_box2d_world_p` | （无） | 返回句柄但缺 owns | — |
+| `joy_core_lib_load` | `joy_lib_p` | （无） | 返回句柄但缺 owns | — |
+| `joy_core_lib_symbol` | `void*` | （无） | 返回句柄但缺 owns | — |
 
 ## L3 清单（必须手写 thunk）
 
@@ -117,9 +121,9 @@
 | `joy_core_unpack_string` | 非 const char* 输出缓冲 | src/jcore.h:86 |
 | `joy_core_timer_create` | 未知类型需人工标注：joy_timer_callback | src/jcore.h:88 |
 | `joy_core_get_mouse_pos` | 非不透明指针 / 输出参数：float* | src/jcore.h:106 |
-| `joy_core_log_info` | 可变参数 | src/jcore.h:126 |
-| `joy_core_log_debug` | 可变参数 | src/jcore.h:127 |
-| `joy_core_log_error` | 可变参数 | src/jcore.h:128 |
+| `joy_core_log_info` | 可变参数 | src/jcore.h:136 |
+| `joy_core_log_debug` | 可变参数 | src/jcore.h:137 |
+| `joy_core_log_error` | 可变参数 | src/jcore.h:138 |
 | `joy_sys_get_local_ips` | 数组参数 | src/jsys.h:20 |
 | `joy_sys_accept` | 非 const char* 输出缓冲 | src/jsys.h:34 |
 | `joy_sys_recv` | 非 const char* 输出缓冲 | src/jsys.h:36 |
