@@ -10,7 +10,15 @@
 #define JOY_SIN_LUT_LENGTH 205887
 #define JOY_TAN_LUT_LENGTH 205887
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const long long SIN_LUT[JOY_SIN_LUT_LENGTH];
 extern const long long tan_lut[JOY_TAN_LUT_LENGTH];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* JOY_JLUT_H */

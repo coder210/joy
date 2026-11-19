@@ -17,6 +17,20 @@ namespace Joy.Api
             long dirx, long diry, long dirz,
             out long nx, out long ny, out long nz, out long depth);
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern bool gjk_mesh_box(
+            long[] verts, int vertCount,
+            long bx, long by, long bz, long bhx, long bhy, long bhz,
+            long dirx, long diry, long dirz,
+            out long nx, out long ny, out long nz, out long depth);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern bool ray_obb(
+            long ox, long oy, long oz, long dx, long dy, long dz,
+            long bx, long by, long bz, long bhx, long bhy, long bhz,
+            long rx, long ry, long rz,
+            out long dist);
+
         /// <summary>
         /// box(a) vs box(b) 碰撞检测。命中时输出 normal（a→b）与 depth（fp 原始值）。
         /// </summary>
@@ -30,6 +44,33 @@ namespace Joy.Api
                                bx, by, bz, bhx, bhy, bhz,
                                dirx, diry, dirz,
                                out nx, out ny, out nz, out depth);
+        }
+
+        /// <summary>
+        /// mesh（顶点数组，每 3 个 fp = xyz）vs box 的 GJK 检测。命中时输出 normal（mesh→box）与 depth。
+        /// </summary>
+        public static bool MeshBox(
+            long[] verts, int vertCount,
+            long bx, long by, long bz, long bhx, long bhy, long bhz,
+            long dirx, long diry, long dirz,
+            out long nx, out long ny, out long nz, out long depth)
+        {
+            return gjk_mesh_box(verts, vertCount,
+                                bx, by, bz, bhx, bhy, bhz,
+                                dirx, diry, dirz,
+                                out nx, out ny, out nz, out depth);
+        }
+
+        /// <summary>射线 vs OBB（rotation 为欧拉弧度）。命中输出距离（fp）。</summary>
+        public static bool RayObb(
+            long ox, long oy, long oz, long dx, long dy, long dz,
+            long bx, long by, long bz, long bhx, long bhy, long bhz,
+            long rx, long ry, long rz,
+            out long dist)
+        {
+            return ray_obb(ox, oy, oz, dx, dy, dz,
+                           bx, by, bz, bhx, bhy, bhz,
+                           rx, ry, rz, out dist);
         }
     }
 }
