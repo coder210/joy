@@ -42,6 +42,7 @@ void csopen_host(void) {}
 void csopen_api(void) {}
 void csopen_borrow(void) {}
 void csopen_r3d(void) {}
+void csopen_r3d_plus(void) {}
 void csopen_crypto(void) {}
 void csopen_collision(void) {}
 

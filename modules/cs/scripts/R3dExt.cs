@@ -17,6 +17,12 @@ namespace Joy.Api
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern ulong borrow_r3d(IntPtr p);
 
+        /* joy_r3d_create 在 IDL 里 status:off（不透明指针/所有权），生成器不出
+         * thunk，这里手写适配。入参是生成链路的 Jwindow 句柄，C 侧 deref 出
+         * joy_window_p；返回的新句柄带 joy_r3d_destroy dtor，所有权归 C#。 */
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern ulong r3d_create(ulong win, string shaderDir);
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void draw_mesh_solid_basis(ulong r, ulong m, float[] mat,
             byte cr, byte cg, byte cb, byte ca);
@@ -40,6 +46,18 @@ namespace Joy.Api
         {
             if (p == IntPtr.Zero) return null;
             ulong h = borrow_r3d(p);
+            return h == 0 ? null : new Jr3d(h);
+        }
+
+        /// <summary>
+        /// 由脚本侧创建 3D 渲染上下文（对应 joy_r3d_create(win, shader_dir)）。
+        /// win 是生成链路的窗口句柄；shaderDir 为着色器目录（相对资源根，如 "shaders"）。
+        /// 返回句柄带 joy_r3d_destroy 析构，交由 GC/Release 释放；失败返回 null。
+        /// </summary>
+        public static Jr3d R3dCreate(Jwindow win, string shaderDir)
+        {
+            if (win == null) throw new ArgumentNullException(nameof(win));
+            ulong h = r3d_create(win.Handle, shaderDir ?? "");
             return h == 0 ? null : new Jr3d(h);
         }
 
@@ -95,9 +113,9 @@ namespace Joy.Api
         }
 
         /// <summary>
-        /// Headless 自检：用句柄 0 调用全部 6 个 InternalCall。C 侧对空句柄
+        /// Headless 自检：用句柄 0 调用全部 7 个 InternalCall。C 侧对空句柄
         /// deref 失败即安全返回，不触碰 GPU，因此可在 dummy 驱动的 --smoke 下跑。
-        /// 验证三件事：(1) 6 个 internal call 都已注册且可从 C# 调到（否则抛
+        /// 验证三件事：(1) 7 个 internal call 都已注册且可从 C# 调到（否则抛
         /// EntryPointNotFoundException）；(2) float[] 数组 / out 参数跨 ABI 正确；
         /// (3) 空句柄路径安全（不崩、按约定返回 false / 0）。
         /// </summary>
@@ -127,7 +145,10 @@ namespace Joy.Api
                 float[] verts = new float[15] { 0,0,0,0,0, 1,0,0,1,0, 0,1,0,0,1 };
                 if (mesh_custom(0UL, verts, 3) != 0UL) { detail = "mesh_custom(null)!=0"; return false; }
 
-                detail = "6 internal calls OK (null-handle safe)";
+                // r3d_create：伪 window 句柄 deref 失败，安全返回 0（InternalCall 已注册）
+                if (r3d_create(0UL, "shaders") != 0UL) { detail = "r3d_create(badwin)!=0"; return false; }
+
+                detail = "7 internal calls OK (null-handle safe)";
                 return true;
             } catch (Exception ex) {
                 detail = ex.GetType().Name + ": " + ex.Message;

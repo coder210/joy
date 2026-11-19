@@ -48,8 +48,14 @@ namespace JoyGame
                        && System.Math.Abs(vy - 6f) < 0.001f
                        && System.Math.Abs(dot - 11f) < 0.001f;
 
-            // r3d L3 手写适配：6 个 internal call 用空句柄跑通（headless 安全，不碰 GPU）
+            // r3d L3 手写适配：7 个 internal call 用空句柄跑通（headless 安全，不碰 GPU）
             bool r3dOk = Joy.Api.R3dExt.SelfTest(out _r3dDetail);
+
+            // r3d L3/L2 手写适配第二批：18 个 internal call 空句柄自检
+            string r3dPlusDetail;
+            bool r3dPlusOk = Joy.Api.R3dExtPlus.SelfTest(out r3dPlusDetail);
+            _r3dDetail += " | plus=" + r3dPlusDetail;
+            r3dOk = r3dOk && r3dPlusOk;
 
             return seedOk && hashOk && vec2Ok && r3dOk;
         }

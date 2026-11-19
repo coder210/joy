@@ -25,6 +25,8 @@
     <Compile Include="scripts/HostHandles.cs" />
     <!-- r3d L3 手写适配（IDL status:off 的 basis 绘制 / 投影 / 动态 mesh） -->
     <Compile Include="scripts/R3dExt.cs" />
+    <!-- r3d L3/L2 手写适配第二批（纹理 / 坐标 / UI 创建 / get_text / 配色） -->
+    <Compile Include="scripts/R3dExtPlus.cs" />
     <!-- MD5 桥（joy_core_utils_md5x，帧同步 checksum） -->
     <Compile Include="scripts/CryptoExt.cs" />
     <!-- GJK3D box-box 桥（joy_collision_gjk3df_*，帧同步碰撞） -->

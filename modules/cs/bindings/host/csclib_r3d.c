@@ -31,6 +31,12 @@ static void r3d_mesh_dtor(void* p)
         if (p) joy_r3d_mesh_destroy_one((joy_render_mesh_p)p);
 }
 
+/* dtor for a script-created r3d context; joy_r3d_destroy is single-arg. */
+static void r3d_destroy_dtor(void* p)
+{
+        if (p) joy_r3d_destroy((joy_r3d_p)p);
+}
+
 /* handle -> raw pointer; NULL on failure (including wrong tag). */
 static void* deref(uint64_t h, const char* tag)
 {
@@ -46,6 +52,22 @@ static uint64_t w_borrow_r3d(intptr_t p)
 {
         if (!p) return 0;
         return joy_obj_register((void*)p, "joy_r3d_p", NULL, "host.borrow");
+}
+
+/* Script-side r3d creation: deref the generated-chain Jwindow handle, call
+ * joy_r3d_create(win, shader_dir), register the result as an owned handle. */
+static uint64_t w_r3d_create(uint64_t win_h, MonoString* shader_dir)
+{
+        /* generated-chain window uses tag "joy_window_p"; the legacy host
+         * borrow bridge registers "jwindow_p". Accept either. */
+        joy_window_p win = (joy_window_p)deref(win_h, "joy_window_p");
+        if (!win) win = (joy_window_p)deref(win_h, "jwindow_p");
+        if (!win) return 0;
+        char* dir = shader_dir ? mono_string_to_utf8(shader_dir) : NULL;
+        joy_r3d_p r = joy_r3d_create(win, dir);
+        if (dir) mono_free(dir);
+        if (!r) return 0;
+        return joy_obj_register((void*)r, "joy_r3d_p", r3d_destroy_dtor, "joy_r3d_create");
 }
 
 /* mat44: C# passes float[16] in joy_mat44_t field order:
@@ -114,6 +136,7 @@ static uint64_t w_mesh_custom(uint64_t r, MonoArray* verts, int vertex_count)
 
 void csopen_r3d(void)
 {
+        csx_register_internal_call("Joy.Api.R3dExt::r3d_create", (const void*)w_r3d_create);
         csx_register_internal_call("Joy.Api.R3dExt::borrow_r3d", (const void*)w_borrow_r3d);
         csx_register_internal_call("Joy.Api.R3dExt::draw_mesh_solid_basis", (const void*)w_draw_mesh_solid_basis);
         csx_register_internal_call("Joy.Api.R3dExt::draw_wire_basis", (const void*)w_draw_wire_basis);
