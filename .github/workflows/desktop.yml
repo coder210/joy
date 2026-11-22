@@ -131,10 +131,11 @@ jobs:
           bcl=$(find "$out" -maxdepth 1 -name 'System.*.dll' | wc -l)
           echo "deployed BCL count: $bcl (whitelist ~29, not full 161)"
           [ "$bcl" -lt 60 ] || { echo "::error::BCL not pruned (found $bcl)"; exit 1; }
+          # 已经 cd 到 $out，这里只放文件名（带路径会拼成 out/out/...）。
           if [ "$RUNNER_OS" = "Windows" ]; then
-            exe="$out/example_csharp.exe"
+            exe=example_csharp.exe
           else
-            exe="$out/example_csharp"
+            exe=example_csharp
           fi
           ( cd "$out" && SDL_VIDEODRIVER=dummy "./$exe" --smoke 20 ) 2>&1 | tee csharp-selfcontained.log
           grep -Fq 'command-line mode' csharp-selfcontained.log \
