@@ -95,19 +95,28 @@ function(joy_deploy_selfcontained _target _csproj _cs_out _runtime_dir _config)
 
     # file(GLOB) 在 configure 时 publish 目录还不存在，拿不到 BCL 清单。
     # 改为部署时用一个 cmake -P 脚本按白名单裁剪（脚本在 build 时读取真实目录）。
+    #
+    # 白名单通过文件传递而非 -DKEEP=a;b;c：分号列表在 -D 参数里会被 shell
+    # 当成命令分隔符（等价于 `System.Runtime.dll: command not found`），
+    # 即使加 VERBATIM 在不同 CMake/shell 组合下也不可靠。写成 .cmake 文件
+    # 由 -P 脚本 include，路径不含分号，跨平台安全。
     set(_prune_script "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/JoySelfContainedPrune.cmake")
+    set(_keep_file "${CMAKE_BINARY_DIR}/_bcl_keep_${_target}.cmake")
+    file(WRITE "${_keep_file}"
+         "set(JOY_BCL_KEEP \"${JOY_SELFCONTAINED_BCL_KEEP}\")\n")
     add_custom_target(${_target}_sc_deploy
         COMMAND ${CMAKE_COMMAND} -E make_directory "${_runtime_dir}"
         COMMAND ${CMAKE_COMMAND} -E copy_directory "${_publish_dir}" "${_runtime_dir}"
         COMMAND ${CMAKE_COMMAND}
                 "-DPublishDir=${_publish_dir}"
                 "-DRuntimeDir=${_runtime_dir}"
-                "-DKEEP=${JOY_SELFCONTAINED_BCL_KEEP}"
+                "-DKeepFile=${_keep_file}"
                 -P "${_prune_script}"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${_cs_out}/JoyGame.dll" "${_runtime_dir}/JoyGame.dll"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${_cs_out}/JoyGame.pdb" "${_runtime_dir}/JoyGame.pdb"
         DEPENDS ${_target}_sc_publish
-        COMMENT "Deploying self-contained runtime (BCL pruned) + JoyGame.dll/pdb for ${_target}")
+        COMMENT "Deploying self-contained runtime (BCL pruned) + JoyGame.dll/pdb for ${_target}"
+        VERBATIM)
 endfunction()

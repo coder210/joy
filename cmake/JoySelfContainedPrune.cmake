@@ -5,15 +5,22 @@
 # 输入变量（由 -D 传入）：
 #   PublishDir  - dotnet publish 的输出目录（仅用于判断，不修改）
 #   RuntimeDir  - 已复制全部 publish 文件的运行期目录（在这里删除多余 BCL）
-#   KEEP        - 分号分隔的白名单文件名
+#   KeepFile    - 由 configure 生成的 .cmake 文件，里面 set(JOY_BCL_KEEP "a;b;c")
+#                 走文件而非 -DKEEP=a;b;c 是为了避开 shell 对分号的解析
 
 # cmake -P 是独立脚本模式，不继承工程的 cmake_minimum_required 策略，
 # 必须显式开启 IN_LIST（CMP0057），否则 if(... IN_LIST ...) 报 Unknown arguments。
 cmake_policy(SET CMP0057 NEW)
 
-if(NOT DEFINED RuntimeDir OR NOT DEFINED KEEP)
-    message(FATAL_ERROR "JoySelfContainedPrune: RuntimeDir / KEEP not set")
+if(NOT DEFINED RuntimeDir OR NOT DEFINED KeepFile)
+    message(FATAL_ERROR "JoySelfContainedPrune: RuntimeDir / KeepFile not set")
 endif()
+
+include("${KeepFile}")
+if(NOT DEFINED JOY_BCL_KEEP)
+    message(FATAL_ERROR "JoySelfContainedPrune: JOY_BCL_KEEP not defined in ${KeepFile}")
+endif()
+set(KEEP ${JOY_BCL_KEEP})
 
 file(GLOB _all_bcl LIST_DIRECTORIES false
     "${RuntimeDir}/System.*.dll" "${RuntimeDir}/Microsoft.*.dll")

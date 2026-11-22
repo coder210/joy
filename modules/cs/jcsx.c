@@ -54,17 +54,25 @@ typedef char csx_char_t;
 #endif
 #define CSX_UCO_METHOD        ((const csx_char_t*)-1)
 
+/* 调用约定：MSVC 用 __cdecl/__stdcall，GCC/Clang 上这些关键字不存在，留空。
+ * x64 上各平台调用约定统一，留空正确；x86 Windows 由 __cdecl 保证匹配 hostfxr。 */
+#if defined(_WIN32)
+#  define CSX_CC __cdecl
+#else
+#  define CSX_CC
+#endif
+
 /* 组件模式（框架依赖专用）：hostfxr_initialize_for_runtime_config */
-typedef int (__cdecl *csx_init_for_config_fn)(
+typedef int (CSX_CC *csx_init_for_config_fn)(
     const csx_char_t* config_path, const void* params, void** out_ctx);
 /* 命令行模式（Godot 导出版用这个，支持自包含）：hostfxr_initialize_for_dotnet_command_line。
  * argv[0] 必须是主程序集 DLL 路径（同目录需有 .runtimeconfig.json / .deps.json）。
  * 它等价于 `dotnet <argv[0]> <argv[1]...>`，但只初始化运行时、不执行 Main。 */
-typedef int (__cdecl *csx_init_for_cmdline_fn)(
+typedef int (CSX_CC *csx_init_for_cmdline_fn)(
     int argc, const csx_char_t** argv, const void* params, void** out_ctx);
-typedef int (__cdecl *csx_get_delegate_fn)(
+typedef int (CSX_CC *csx_get_delegate_fn)(
     void* ctx, int type, void** out_delegate);
-typedef int (__cdecl *csx_close_fn)(void* ctx);
+typedef int (CSX_CC *csx_close_fn)(void* ctx);
 #if defined(_WIN32)
 typedef int (__stdcall *csx_load_asm_get_fp_fn)(
     const csx_char_t* asm_path, const csx_char_t* type_name,
@@ -82,12 +90,7 @@ typedef int (*csx_load_asm_get_fp_fn)(
  * com_register=3, com_unregister=4, load_assembly_and_get_function_pointer=5）。 */
 #define CSX_HDT_LOAD_ASM_GET_FP 5
 
-/* coreclr_initialize / coreclr_create_delegate（Android fallback，__cdecl）*/
-#if defined(_WIN32)
-#  define CSX_CC __cdecl
-#else
-#  define CSX_CC
-#endif
+/* coreclr_initialize / coreclr_create_delegate（Android fallback）复用上面的 CSX_CC */
 typedef int (CSX_CC *csx_coreclr_init_fn)(
     const char* exe_path, const char* friendly_name, int prop_count,
     const char** keys, const char** values, void** out_host, unsigned int* out_domain);
