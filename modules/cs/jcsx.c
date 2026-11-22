@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "jprobe.h"   /* Android 启动阶段弹窗诊断；桌面编译为空 */
 
 /* ---- 动态库加载（跨平台）---- */
 #if defined(_WIN32)
@@ -296,8 +297,11 @@ static bool csx_init_desktop(csx_p csx)
 #if defined(__ANDROID__)
 static bool csx_init_android(csx_p csx)
 {
+        JPROBE("P1 enter csx_init_android");
         void* lib = CSX_DL_LOAD("libmonosgen-2.0.so");
+        JPROBE("P2 after dlopen libmonosgen");
         if (!lib) {
+                JPROBE("P2-FAIL dlopen libmonosgen returned NULL");
                 joy_core_log_error("load libmonosgen failed");
                 return false;
         }
@@ -307,7 +311,9 @@ static bool csx_init_android(csx_p csx)
                 (csx_coreclr_create_delegate_fn)CSX_DL_SYM(lib, "coreclr_create_delegate");
         csx_coreclr_shutdown_fn shutdown_fn =
                 (csx_coreclr_shutdown_fn)CSX_DL_SYM(lib, "coreclr_shutdown");
+        JPROBE("P3 after dlsym coreclr_initialize/create_delegate/shutdown");
         if (!coreclr_init || !create_delegate || !shutdown_fn) {
+                JPROBE("P3-FAIL coreclr symbols missing");
                 joy_core_log_error("coreclr symbols missing on Android libmonosgen");
                 CSX_DL_CLOSE(lib);
                 return false;
@@ -322,11 +328,14 @@ static bool csx_init_android(csx_p csx)
                  "%s/System.Private.CoreLib.dll:%s/System.Runtime.dll:%s/netstandard.dll:"
                  "%s/System.Collections.dll:%s/Joy.Bindings.dll:%s/JoyGame.dll",
                  libdir, libdir, libdir, libdir, libdir, libdir);
+        JPROBE("P4 before coreclr_initialize");
         const char* keys[] = { "TRUSTED_PLATFORM_ASSEMBLIES", "APP_PATHS", "NATIVE_DLL_SEARCH_DIRECTORIES" };
         const char* vals[] = { tpa, libdir, libdir };
         void* host = NULL; unsigned int domain = 0;
         int rc = coreclr_init("joy", "joy", 3, keys, vals, &host, &domain);
+        JPROBE("P5 after coreclr_initialize");
         if (rc < 0 || !host) {
+                JPROBE("P5-FAIL coreclr_initialize failed");
                 joy_core_log_error("coreclr_initialize failed: 0x%x", rc);
                 CSX_DL_CLOSE(lib);
                 return false;
@@ -339,6 +348,7 @@ static bool csx_init_android(csx_p csx)
         csx->android = true;
         snprintf(csx->asm_dir, sizeof(csx->asm_dir), "%s", libdir);
         joy_core_log_info("CoreCLR initialized via libmonosgen (Android)");
+        JPROBE("P6 csx_init_android OK");
         return true;
 }
 #endif
@@ -413,9 +423,12 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         }
 #else
         if (csx->create_delegate) {
+                JPROBE("P7 before create_delegate Bootstrap");
                 int rc = csx->create_delegate(csx->host_handle, csx->domain_id,
                                               "JoyGame", "JoyGame.GameApplication", "Bootstrap", &initialize_fn);
+                JPROBE("P8 after create_delegate Bootstrap");
                 if (rc < 0 || !initialize_fn) {
+                        JPROBE("P8-FAIL create_delegate Bootstrap failed");
                         joy_core_log_error("create_delegate GameApplication.Bootstrap failed: 0x%x", rc);
                         return false;
                 }
@@ -427,8 +440,10 @@ bool csx_load_assembly(csx_p csx, const char* filename)
         }
 
         /* UCO 签名：void Initialize(IntPtr lookupFn)，Cdecl。 */
+        JPROBE("P9 before calling Bootstrap (managed NativeFuncs.Initialize)");
         typedef void (CSX_CDECL *init_bindings_fn)(void*);
         ((init_bindings_fn)initialize_fn)((void*)&csx_lookup_internal_call);
+        JPROBE("P10 after calling Bootstrap (bindings registered)");
         joy_core_log_info("Managed bindings initialized, %d native calls registered", s_icall_count);
         return true;
 }
@@ -452,8 +467,14 @@ static void* csx_load_entry(csx_p csx, const char* asm_file, const char* type_na
 {
         void* fn = NULL;
         if (csx->android) {
+                char _pb[256];
+                snprintf(_pb, sizeof(_pb), "P11 before create_delegate entry: %s", method_name);
+                JPROBE(_pb);
                 int rc = csx->create_delegate(csx->host_handle, csx->domain_id,
                                               "JoyGame", type_name, method_name, &fn);
+                snprintf(_pb, sizeof(_pb), "P12 after create_delegate entry %s: rc=0x%x fn=%s",
+                         method_name, rc, fn ? "OK" : "NULL");
+                JPROBE(_pb);
                 if (rc < 0 || !fn)
                         joy_core_log_error("create_delegate %s failed: 0x%x", method_name, rc);
                 return fn;

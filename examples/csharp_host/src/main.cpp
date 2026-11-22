@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "../../../modules/cs/jprobe.h"   /* Android 启动阶段弹窗诊断；桌面编译为空 */
 #include "../../mobile_display.h"
 
 static const int APP_W = 480;
@@ -155,10 +156,16 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
     (void)appstate;
 
+    JPROBE("H1 SDL_AppInit entered");
     joy_examples_setup_mobile_display();  /* 必须在 JoyGame 建窗口之前 */
     /* JoyGame.dll / lib/ / fonts/ 都是相对资源根的路径 */
     joy_examples_align_working_dir(argc > 0 ? argv[0] : NULL);
-    if (!setup_clr_dirs()) return SDL_APP_FAILURE;
+    JPROBE("H2 before setup_clr_dirs (unpack DLLs from assets)");
+    if (!setup_clr_dirs()) {
+        JPROBE("H2-FAIL setup_clr_dirs failed (unpack failed)");
+        return SDL_APP_FAILURE;
+    }
+    JPROBE("H3 after setup_clr_dirs (DLLs unpacked OK)");
 
     int i = find_arg(argc, argv, "--smoke");
     if (i >= 0 && i + 1 < argc) g_smoke_frames = atoi(argv[i + 1]);
@@ -175,28 +182,38 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     /* stderr 在 Android 上不稳定，全部走 SDL_Log → logcat，闪退时能定位到
      * 是 CLR 初始化、程序集加载还是方法查找哪一步失败。 */
     SDL_Log("[cs] creating CoreCLR, assembly=%s", g_assembly);
+    JPROBE("H4 before csx_create (see P1-P10 inside)");
     g_csx = csx_create();
+    JPROBE("H5 after csx_create");
     if (!g_csx) {
+        JPROBE("H5-FAIL csx_create returned NULL");
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[host] csx_create failed (CLR runtime unavailable?)");
         return SDL_APP_FAILURE;
     }
+    JPROBE("H6 before csx_load_assembly");
     if (!csx_load_assembly(g_csx, g_assembly)) {
+        JPROBE("H6-FAIL csx_load_assembly failed");
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[host] load assembly failed: %s", g_assembly);
         return SDL_APP_FAILURE;
     }
+    JPROBE("H7 after csx_load_assembly");
 
+    JPROBE("H8 before find OnInit/OnFrame/OnShutdown (P11-P12 inside)");
     g_on_init = csx_find_method(g_csx, "JoyGame", "Host", "OnInit", 3);
     g_on_frame = csx_find_method(g_csx, "JoyGame", "Host", "OnFrame", 1);
     g_on_shutdown = csx_find_method(g_csx, "JoyGame", "Host", "OnShutdown", 0);
     if (!g_on_init || !g_on_frame) {
+        JPROBE("H8-FAIL OnInit/OnFrame not found");
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "[host] JoyGame.Host.OnInit/OnFrame not found");
         return SDL_APP_FAILURE;
     }
+    JPROBE("H9 after find methods (all OK)");
     SDL_Log("[cs] CoreCLR ready");
 
+    JPROBE("H10 before calling C# Host.OnInit (creates window/renderer)");
     {
         int w = APP_W;
         int h = APP_H;
@@ -204,6 +221,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
         void* args[3] = { &w, &h, &smoke };
         csx_invoke_method(g_csx, g_on_init, args);
     }
+    JPROBE("H11 after C# Host.OnInit returned");
 
     g_last_tick_ns = SDL_GetTicksNS();
     return SDL_APP_CONTINUE;
